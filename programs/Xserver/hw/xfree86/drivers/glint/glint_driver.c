@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.121 2001/04/10 20:33:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.122 2001/04/19 09:28:32 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -79,7 +79,7 @@
 # define TRACE(str)
 #endif
 
-static OptionInfoPtr	GLINTAvailableOptions(int chipid, int busid);
+static const OptionInfoRec *	GLINTAvailableOptions(int chipid, int busid);
 static void	GLINTIdentify(int flags);
 static Bool	GLINTProbe(DriverPtr drv, int flags);
 static Bool	GLINTPreInit(ScrnInfoPtr pScrn, int flags);
@@ -193,7 +193,7 @@ typedef enum {
     OPTION_FLATPANEL
 } GLINTOpts;
 
-static OptionInfoRec GLINTOptions[] = {
+static const OptionInfoRec GLINTOptions[] = {
     { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_RGB_BITS,		"RGBbits",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -574,7 +574,7 @@ GLINTIdentify(int flags)
     xf86PrintChipsets(GLINT_NAME, "driver for 3Dlabs chipsets", GLINTChipsets);
 }
 
-static OptionInfoPtr
+static const OptionInfoRec *
 GLINTAvailableOptions(int chipid, int busid)
 {
     return GLINTOptions;
@@ -1135,33 +1135,36 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     xf86CollectOptions(pScrn, NULL);
 
     /* Process the options */
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, GLINTOptions);
+    if (!(pGlint->Options = xalloc(sizeof(GLINTOptions))))
+	return FALSE;
+    memcpy(pGlint->Options, GLINTOptions, sizeof(GLINTOptions));
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pGlint->Options);
 
     /* Default to 8bits per RGB */
     if (pScrn->depth == 30)  pScrn->rgbBits = 10;	
     else pScrn->rgbBits = 8;
-    if (xf86GetOptValInteger(GLINTOptions, OPTION_RGB_BITS, &pScrn->rgbBits)) {
+    if (xf86GetOptValInteger(pGlint->Options, OPTION_RGB_BITS, &pScrn->rgbBits)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Bits per RGB set to %d\n",
 		       pScrn->rgbBits);
     }
 
     from = X_DEFAULT;
     pGlint->HWCursor = TRUE; /* ON by default */
-    if (xf86ReturnOptValBool(GLINTOptions, OPTION_SW_CURSOR, FALSE)) {
+    if (xf86ReturnOptValBool(pGlint->Options, OPTION_SW_CURSOR, FALSE)) {
 	from = X_CONFIG;
 	pGlint->HWCursor = FALSE;
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pGlint->HWCursor ? "HW" : "SW");
-    if (xf86ReturnOptValBool(GLINTOptions, OPTION_FLATPANEL, FALSE)) {
+    if (xf86ReturnOptValBool(pGlint->Options, OPTION_FLATPANEL, FALSE)) {
 	pGlint->UseFlatPanel = TRUE;
         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using Flat Panel Interface\n");
     }
-    if (xf86ReturnOptValBool(GLINTOptions, OPTION_NOACCEL, FALSE)) {
+    if (xf86ReturnOptValBool(pGlint->Options, OPTION_NOACCEL, FALSE)) {
 	pGlint->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }
-    if (xf86ReturnOptValBool(GLINTOptions, OPTION_SHADOW_FB, FALSE)) {
+    if (xf86ReturnOptValBool(pGlint->Options, OPTION_SHADOW_FB, FALSE)) {
 	pGlint->ShadowFB = TRUE;
 	pGlint->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
@@ -1169,7 +1172,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     /* Check whether to use the FBDev stuff and fill in the rest of pScrn */
-    if (xf86ReturnOptValBool(GLINTOptions, OPTION_FBDEV, FALSE)) {
+    if (xf86ReturnOptValBool(pGlint->Options, OPTION_FBDEV, FALSE)) {
     	if (!FBDevProbed && !xf86LoadSubModule(pScrn, "fbdevhw"))
     	{
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "couldn't load fbdevHW module!\n");	
@@ -1206,7 +1209,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 
     pScrn->overlayFlags = 0;
     from = X_DEFAULT;
-    if ((s = xf86GetOptValString(GLINTOptions, OPTION_OVERLAY))) {
+    if ((s = xf86GetOptValString(pGlint->Options, OPTION_OVERLAY))) {
 	if (!*s || !xf86NameCmp(s, "8,24") || !xf86NameCmp(s, "24,8")) {
 	    Overlay = TRUE;
 	} else {
@@ -1283,14 +1286,14 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     if ((pGlint->Chipset == PCI_VENDOR_TI_CHIP_PERMEDIA2) ||
 	(pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V) ||
 	(pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2)) {
-    	if (xf86ReturnOptValBool(GLINTOptions, OPTION_BLOCK_WRITE, FALSE)) {
+    	if (xf86ReturnOptValBool(pGlint->Options, OPTION_BLOCK_WRITE, FALSE)) {
 	    pGlint->UseBlockWrite = TRUE;
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Block Writes enabled\n");
     	}
     }
 
     if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_500TX) {
-    	if (xf86ReturnOptValBool(GLINTOptions, OPTION_FIREGL3000, FALSE)) {
+    	if (xf86ReturnOptValBool(pGlint->Options, OPTION_FIREGL3000, FALSE)) {
 	    /* Can't we detect a Fire GL 3000 ????? and remove this ? */
 	    pGlint->UseFireGL3000 = TRUE;
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,

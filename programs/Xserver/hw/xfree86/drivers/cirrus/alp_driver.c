@@ -11,7 +11,7 @@
  *    Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.17 2000/12/07 15:43:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.19 2001/02/15 17:39:27 eich Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -127,7 +127,7 @@ typedef enum {
 	OPTION_MEMCFG2
 } CirOpts;
 
-static OptionInfoRec CirOptions[] = {
+static const OptionInfoRec CirOptions[] = {
 	{ OPTION_HW_CURSOR,	"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
 	{ OPTION_NOACCEL,	"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
 	{ OPTION_MMIO,		"MMIO",		OPTV_BOOLEAN,	{0}, FALSE },
@@ -270,7 +270,7 @@ alpSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 
 #endif /* XFree86LOADER */
 
-OptionInfoPtr
+const OptionInfoRec *
 AlpAvailableOptions(int chipid)
 {
     return CirOptions;
@@ -631,11 +631,14 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86CollectOptions(pScrn, NULL);
 
 	/* Process the options */
-	xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, CirOptions);
+	if (!(pCir->Options = xalloc(sizeof(CirOptions))))
+		return FALSE;
+	memcpy(pCir->Options, CirOptions, sizeof(CirOptions));
+	xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pCir->Options);
 
 	if (!xf86IsPrimaryPci(pCir->PciInfo) 
-	    && !(pInt || (xf86IsOptionSet(CirOptions,OPTION_MEMCFG1)
-			   && xf86IsOptionSet(CirOptions,OPTION_MEMCFG2))))
+	    && !(pInt || (xf86IsOptionSet(pCir->Options,OPTION_MEMCFG1)
+			   && xf86IsOptionSet(pCir->Options,OPTION_MEMCFG2))))
 	    return FALSE;
 					   
 	if (pScrn->depth == 8) 
@@ -643,12 +646,12 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 
 	from = X_DEFAULT;
 	pCir->HWCursor = FALSE;
-	if (xf86GetOptValBool(CirOptions, OPTION_HW_CURSOR, &pCir->HWCursor))
+	if (xf86GetOptValBool(pCir->Options, OPTION_HW_CURSOR, &pCir->HWCursor))
 		from = X_CONFIG;
 
 	xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pCir->HWCursor ? "HW" : "SW");
-	if (xf86ReturnOptValBool(CirOptions, OPTION_NOACCEL, FALSE)) {
+	if (xf86ReturnOptValBool(pCir->Options, OPTION_NOACCEL, FALSE)) {
 		pCir->NoAccel = TRUE;
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
 	}
@@ -721,12 +724,12 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 	/* User options can override the MMIO default */
 #if 0
 	/* Will we ever support MMIO on 5446A or older? */
-	if (xf86ReturnOptValBool(CirOptions, OPTION_MMIO, FALSE)) {
+	if (xf86ReturnOptValBool(pCir->Options, OPTION_MMIO, FALSE)) {
 		pCir->UseMMIO = TRUE;
 		from = X_CONFIG;
 	}
 #endif
-	if (!xf86ReturnOptValBool(CirOptions, OPTION_MMIO, TRUE)) {
+	if (!xf86ReturnOptValBool(pCir->Options, OPTION_MMIO, TRUE)) {
 		pCir->UseMMIO = FALSE;
 		from1 = X_CONFIG;
  	} else if (pCir->IOAddress) {
@@ -806,12 +809,12 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 	/* XXX If UseMMIO == TRUE and for any reason we cannot do MMIO,
 	   abort here */
 
-	if (xf86GetOptValBool(CirOptions,
+	if (xf86GetOptValBool(pCir->Options,
 			      OPTION_SHADOW_FB,&pCir->shadowFB))
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ShadowFB %s.\n",
 		       pCir->shadowFB ? "enabled" : "disabled");
 	    
-	if ((s = xf86GetOptValString(CirOptions, OPTION_ROTATE))) {
+	if ((s = xf86GetOptValString(pCir->Options, OPTION_ROTATE))) {
 	    if(!xf86NameCmp(s, "CW")) {
 		/* accel is disabled below for shadowFB */
 		pCir->shadowFB = TRUE;
@@ -856,8 +859,8 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 	pCir->chip.alp->sr0f = (CARD32)-1;
 	pCir->chip.alp->sr17 = (CARD32)-1;
 
-	(void) xf86GetOptValULong(CirOptions, OPTION_MEMCFG1, (unsigned long *)&pCir->chip.alp->sr0f);
-	(void) xf86GetOptValULong(CirOptions, OPTION_MEMCFG2, (unsigned long *)&pCir->chip.alp->sr17);
+	(void) xf86GetOptValULong(pCir->Options, OPTION_MEMCFG1, (unsigned long *)&pCir->chip.alp->sr0f);
+	(void) xf86GetOptValULong(pCir->Options, OPTION_MEMCFG2, (unsigned long *)&pCir->chip.alp->sr17);
 	/*
 	 * If the user has specified the amount of memory in the XF86Config
 	 * file, we respect that setting.

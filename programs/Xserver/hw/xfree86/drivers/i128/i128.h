@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128.h,v 1.4 2000/12/11 01:53:00 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128.h,v 1.5 2001/04/01 14:00:11 tsi Exp $ */
 /*
  * Number Nine I128 functions
  *
@@ -98,6 +98,8 @@ typedef struct {
     Bool		(*ProgramDAC)(ScrnInfoPtr, DisplayModePtr);
     unsigned int	(*ddc1Read)(ScrnInfoPtr);
     Bool		(*i2cInit)(ScrnInfoPtr);
+
+    OptionInfoPtr	Options;
 
 } I128Rec, *I128Ptr;
 

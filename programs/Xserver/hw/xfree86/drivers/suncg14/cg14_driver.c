@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg14/cg14_driver.c,v 1.1 2000/06/30 17:15:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg14/cg14_driver.c,v 1.2 2000/12/02 15:30:53 tsi Exp $ */
 
 #define PSZ 8
 #include "xf86.h"
@@ -37,7 +37,7 @@
 #include "xf86cmap.h"
 #include "cg14.h"
 
-static OptionInfoPtr CG14AvailableOptions(int chipid, int busid);
+static const OptionInfoRec * CG14AvailableOptions(int chipid, int busid);
 static void	CG14Identify(int flags);
 static Bool	CG14Probe(DriverPtr drv, int flags);
 static Bool	CG14PreInit(ScrnInfoPtr pScrn, int flags);
@@ -87,7 +87,7 @@ DriverRec SUNCG14 = {
     0
 };
 
-static OptionInfoRec CG14Options[] = {
+static const OptionInfoRec CG14Options[] = {
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -169,8 +169,7 @@ CG14FreeRec(ScrnInfoPtr pScrn)
     return;
 }
 
-static 
-OptionInfoPtr
+static const OptionInfoRec *
 CG14AvailableOptions(int chipid, int busid)
 {
     return CG14Options;
@@ -346,7 +345,10 @@ CG14PreInit(ScrnInfoPtr pScrn, int flags)
     /* Collect all of the relevant option flags (fill in pScrn->options) */
     xf86CollectOptions(pScrn, NULL);
     /* Process the options */
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, CG14Options);
+    if (!(pCg14->Options = xalloc(sizeof(CG14Options))))
+	return FALSE;
+    memcpy(pCg14->Options, CG14Options, sizeof(CG14Options));
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pCg14->Options);
 
     /*
      * This must happen after pScrn->display has been set because

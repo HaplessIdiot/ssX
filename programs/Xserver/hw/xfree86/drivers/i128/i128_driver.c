@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.18 2001/01/21 21:19:26 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.19 2001/04/01 14:00:11 tsi Exp $ */
 
 
 /* All drivers should typically include these */
@@ -71,7 +71,7 @@
  */
 
 /* Mandatory functions */
-static OptionInfoPtr	I128AvailableOptions(int chipid, int busid);
+static const OptionInfoRec *	I128AvailableOptions(int chipid, int busid);
 static void	I128Identify(int flags);
 static Bool	I128Probe(DriverPtr drv, int flags);
 static Bool	I128PreInit(ScrnInfoPtr pScrn, int flags);
@@ -460,7 +460,7 @@ typedef enum {
     OPTION_DEBUG
 } I128Opts;
 
-static OptionInfoRec I128Options[] = {
+static const OptionInfoRec I128Options[] = {
     { OPTION_FLATPANEL,		"FlatPanel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -482,10 +482,10 @@ static OptionInfoRec I128Options[] = {
  *		int chipid  - currently unused
  *		int busid   - currently unused
  * Returns:
- *		OptionInfoPtr - all accepted options
+ *		const OptionInfoRec * - all accepted options
  */
 
-static OptionInfoPtr
+static const OptionInfoRec *
 I128AvailableOptions(int chipid, int busid)
 {
     return I128Options;
@@ -637,7 +637,10 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
     xf86CollectOptions(pScrn, NULL);
 
     /* Process the options */
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, I128Options);
+    if (!(pI128->Options = xalloc(sizeof(I128Options))))
+	return FALSE;
+    memcpy(pI128->Options, I128Options, sizeof(I128Options));
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pI128->Options);
 
     if (pScrn->depth == 8)
 	pScrn->rgbBits = 8;
@@ -648,38 +651,38 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
      */
     from = X_DEFAULT;
     pI128->HWCursor = TRUE;
-    if (xf86GetOptValBool(I128Options, OPTION_HW_CURSOR, &pI128->HWCursor)) {
+    if (xf86GetOptValBool(pI128->Options, OPTION_HW_CURSOR, &pI128->HWCursor)) {
 	from = X_CONFIG;
     }
     /* For compatibility, accept this too (as an override) */
-    if (xf86ReturnOptValBool(I128Options, OPTION_SW_CURSOR, FALSE)) {
+    if (xf86ReturnOptValBool(pI128->Options, OPTION_SW_CURSOR, FALSE)) {
 	from = X_CONFIG;
 	pI128->HWCursor = FALSE;
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pI128->HWCursor ? "HW" : "SW");
-    if (xf86ReturnOptValBool(I128Options, OPTION_NOACCEL, FALSE)) {
+    if (xf86ReturnOptValBool(pI128->Options, OPTION_NOACCEL, FALSE)) {
 	pI128->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     } else pI128->NoAccel = FALSE;
-    if (xf86ReturnOptValBool(I128Options, OPTION_SYNC_ON_GREEN, FALSE)) {
+    if (xf86ReturnOptValBool(pI128->Options, OPTION_SYNC_ON_GREEN, FALSE)) {
 	pI128->DACSyncOnGreen = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Sync-on-Green enabled\n");
     } else pI128->DACSyncOnGreen = FALSE;
-    if (xf86ReturnOptValBool(I128Options, OPTION_SHOWCACHE, FALSE)) {
+    if (xf86ReturnOptValBool(pI128->Options, OPTION_SHOWCACHE, FALSE)) {
 	pI128->ShowCache = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ShowCache enabled\n");
     } else pI128->ShowCache = FALSE;
-    if (xf86ReturnOptValBool(I128Options, OPTION_DAC6BIT, FALSE)) {
+    if (xf86ReturnOptValBool(pI128->Options, OPTION_DAC6BIT, FALSE)) {
 	pI128->DAC8Bit = FALSE;
 	pScrn->rgbBits = 6;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Dac6Bit enabled\n");
     } else pI128->DAC8Bit = TRUE;
-    if (xf86ReturnOptValBool(I128Options, OPTION_DEBUG, FALSE)) {
+    if (xf86ReturnOptValBool(pI128->Options, OPTION_DEBUG, FALSE)) {
 	pI128->Debug = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Debug enabled\n");
     } else pI128->Debug = FALSE;
-    if (xf86ReturnOptValBool(I128Options, OPTION_FLATPANEL, FALSE)) {
+    if (xf86ReturnOptValBool(pI128->Options, OPTION_FLATPANEL, FALSE)) {
 	pI128->FlatPanel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "FlatPanel forced\n");
     } else pI128->FlatPanel = FALSE;

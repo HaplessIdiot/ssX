@@ -26,7 +26,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.h,v 1.7 2001/02/15 20:00:14 eich Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.h,v 1.8 2001/03/22 03:10:58 dawes Exp $
  */
 
 #ifndef _VESA_H_
@@ -113,6 +113,7 @@ typedef struct _VESARec
     DGAModePtr pDGAMode;
     int nDGAMode;
     CloseScreenProcPtr CloseScreen;
+    OptionInfoPtr Options;
 } VESARec, *VESAPtr;
 
 typedef struct _ModeInfoData {

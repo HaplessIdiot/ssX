@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.21 2001/04/27 14:40:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.22 2001/05/02 15:06:08 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -145,7 +145,7 @@ typedef enum {
     OPTION_FBDEV
 } RADEONOpts;
 
-OptionInfoRec RADEONOptions[] = {
+const OptionInfoRec RADEONOptions[] = {
     { OPTION_NOACCEL,      "NoAccel",          OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_SW_CURSOR,    "SWcursor",         OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_DAC_6BIT,     "Dac6Bit",          OPTV_BOOLEAN, {0}, FALSE },
@@ -731,7 +731,7 @@ static Bool RADEONPreInitWeight(ScrnInfoPtr pScrn)
 	if (!xf86SetWeight(pScrn, defaultWeight, defaultWeight)) return FALSE;
     } else {
 	pScrn->rgbBits = 8;
-	if (xf86ReturnOptValBool(RADEONOptions, OPTION_DAC_6BIT, FALSE)) {
+	if (xf86ReturnOptValBool(info->Options, OPTION_DAC_6BIT, FALSE)) {
 	    pScrn->rgbBits = 6;
 	    info->dac6bits = TRUE;
 	}
@@ -899,7 +899,7 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
 		   "Using flat panel for display\n");
 #else
 				/* Panel CRT mode override */
-	if ((info->CRTOnly = xf86ReturnOptValBool(RADEONOptions,
+	if ((info->CRTOnly = xf86ReturnOptValBool(info->Options,
 						  OPTION_CRT, FALSE))) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		       "Using external CRT instead of "
@@ -913,12 +913,12 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
 				/* Panel width/height overrides */
 	info->PanelXRes = 0;
 	info->PanelYRes = 0;
-	if (xf86GetOptValInteger(RADEONOptions,
+	if (xf86GetOptValInteger(info->Options,
 				 OPTION_PANEL_WIDTH, &(info->PanelXRes))) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		       "Flat panel width: %d\n", info->PanelXRes);
 	}
-	if (xf86GetOptValInteger(RADEONOptions,
+	if (xf86GetOptValInteger(info->Options,
 				 OPTION_PANEL_HEIGHT, &(info->PanelYRes))) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		       "Flat panel height: %d\n", info->PanelYRes);
@@ -930,7 +930,7 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
 
 #ifdef XF86DRI
 				/* AGP/PCI */
-    if (xf86ReturnOptValBool(RADEONOptions, OPTION_IS_PCI, FALSE)) {
+    if (xf86ReturnOptValBool(info->Options, OPTION_IS_PCI, FALSE)) {
 	info->IsPCI = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Forced into PCI-only mode\n");
     } else {
@@ -1069,7 +1069,9 @@ static Bool RADEONPreInitModes(ScrnInfoPtr pScrn)
 /* This is called by RADEONPreInit to initialize the hardware cursor. */
 static Bool RADEONPreInitCursor(ScrnInfoPtr pScrn)
 {
-    if (!xf86ReturnOptValBool(RADEONOptions, OPTION_SW_CURSOR, FALSE)) {
+    RADEONInfoPtr info = RADEONPTR(pScrn);
+
+    if (!xf86ReturnOptValBool(info->Options, OPTION_SW_CURSOR, FALSE)) {
 	if (!xf86LoadSubModule(pScrn, "ramdac")) return FALSE;
     }
     return TRUE;
@@ -1078,7 +1080,9 @@ static Bool RADEONPreInitCursor(ScrnInfoPtr pScrn)
 /* This is called by RADEONPreInit to initialize hardware acceleration. */
 static Bool RADEONPreInitAccel(ScrnInfoPtr pScrn)
 {
-    if (!xf86ReturnOptValBool(RADEONOptions, OPTION_NOACCEL, FALSE)) {
+    RADEONInfoPtr info = RADEONPTR(pScrn);
+
+    if (!xf86ReturnOptValBool(info->Options, OPTION_NOACCEL, FALSE)) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) return FALSE;
     }
     return TRUE;
@@ -1100,7 +1104,7 @@ static Bool RADEONPreInitDRI(ScrnInfoPtr pScrn)
 {
     RADEONInfoPtr   info = RADEONPTR(pScrn);
 
-    if (xf86ReturnOptValBool(RADEONOptions, OPTION_CP_PIO, FALSE)) {
+    if (xf86ReturnOptValBool(info->Options, OPTION_CP_PIO, FALSE)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Forcing CP into PIO mode\n");
 	info->CPMode = RADEON_DEFAULT_CP_PIO_MODE;
     } else {
@@ -1116,7 +1120,7 @@ static Bool RADEONPreInitDRI(ScrnInfoPtr pScrn)
     info->CPusecTimeout = RADEON_DEFAULT_CP_TIMEOUT;
 
     if (!info->IsPCI) {
-	if (xf86GetOptValInteger(RADEONOptions,
+	if (xf86GetOptValInteger(info->Options,
 				 OPTION_AGP_MODE, &(info->agpMode))) {
 	    if (info->agpMode < 1 || info->agpMode > RADEON_AGP_MAX_MODE) {
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -1127,7 +1131,7 @@ static Bool RADEONPreInitDRI(ScrnInfoPtr pScrn)
 		       "Using AGP %dx mode\n", info->agpMode);
 	}
 
-	if (xf86GetOptValInteger(RADEONOptions,
+	if (xf86GetOptValInteger(info->Options,
 				 OPTION_AGP_SIZE, (int *)&(info->agpSize))) {
 	    switch (info->agpSize) {
 	    case 4:
@@ -1145,7 +1149,7 @@ static Bool RADEONPreInitDRI(ScrnInfoPtr pScrn)
 	    }
 	}
 
-	if (xf86GetOptValInteger(RADEONOptions,
+	if (xf86GetOptValInteger(info->Options,
 				 OPTION_RING_SIZE, &(info->ringSize))) {
 	    if (info->ringSize < 1 || info->ringSize >= (int)info->agpSize) {
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -1155,7 +1159,7 @@ static Bool RADEONPreInitDRI(ScrnInfoPtr pScrn)
 	    }
 	}
 
-	if (xf86GetOptValInteger(RADEONOptions,
+	if (xf86GetOptValInteger(info->Options,
 				 OPTION_BUFFER_SIZE, &(info->bufSize))) {
 	    if (info->bufSize < 1 || info->bufSize >= (int)info->agpSize) {
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -1183,13 +1187,13 @@ static Bool RADEONPreInitDRI(ScrnInfoPtr pScrn)
 	info->agpTexSize = info->agpSize - (info->ringSize + info->bufSize);
     }
 
-    if (xf86GetOptValInteger(RADEONOptions, OPTION_USEC_TIMEOUT,
+    if (xf86GetOptValInteger(info->Options, OPTION_USEC_TIMEOUT,
 			     &(info->CPusecTimeout))) {
 	/* This option checked by the RADEON DRM kernel module */
     }
 
     /* Depth moves are disabled by default since they are extremely slow */
-    if ((info->depthMoves = xf86ReturnOptValBool(RADEONOptions,
+    if ((info->depthMoves = xf86ReturnOptValBool(info->Options,
 						 OPTION_DEPTH_MOVE, FALSE))) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Enabling depth moves\n");
     } else {
@@ -1286,11 +1290,13 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
 				/* We can't do this until we have a
 				   pScrn->display. */
     xf86CollectOptions(pScrn, NULL);
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, RADEONOptions);
+    if (!(info->Options = xalloc(sizeof(RADEONOptions))))     goto fail;
+    memcpy(info->Options, RADEONOptions, sizeof(RADEONOptions));
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, info->Options);
 
     if (!RADEONPreInitWeight(pScrn))    goto fail;
 
-    if (xf86ReturnOptValBool(RADEONOptions, OPTION_FBDEV, FALSE)) {
+    if (xf86ReturnOptValBool(info->Options, OPTION_FBDEV, FALSE)) {
 	info->FBDev = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		   "Using framebuffer device\n");
@@ -1501,7 +1507,7 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			   info->CurrentLayout.pixel_bytes);
 	int maxy        = info->FbMapSize / width_bytes;
 
-	if (xf86ReturnOptValBool(RADEONOptions, OPTION_NOACCEL, FALSE)) {
+	if (xf86ReturnOptValBool(info->Options, OPTION_NOACCEL, FALSE)) {
 	    xf86DrvMsg(scrnIndex, X_WARNING,
 		       "Acceleration disabled, not initializing the DRI\n");
 	    info->directRenderingEnabled = FALSE;
@@ -1781,7 +1787,7 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     xf86SetSilkenMouse(pScreen);
 
 				/* Acceleration setup */
-    if (!xf86ReturnOptValBool(RADEONOptions, OPTION_NOACCEL, FALSE)) {
+    if (!xf86ReturnOptValBool(info->Options, OPTION_NOACCEL, FALSE)) {
 	if (RADEONAccelInit(pScreen)) {
 	    xf86DrvMsg(scrnIndex, X_INFO, "Acceleration enabled\n");
 	    info->accelOn = TRUE;
@@ -1800,7 +1806,7 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
 				/* Hardware cursor setup */
-    if (!xf86ReturnOptValBool(RADEONOptions, OPTION_SW_CURSOR, FALSE)) {
+    if (!xf86ReturnOptValBool(info->Options, OPTION_SW_CURSOR, FALSE)) {
 	if (RADEONCursorInit(pScreen)) {
 	    int width, height;
 

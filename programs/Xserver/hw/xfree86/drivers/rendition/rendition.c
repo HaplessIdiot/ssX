@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.38 2000/12/14 16:33:10 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.40 2001/02/15 17:50:33 eich Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -82,7 +82,7 @@
  * local function prototypes
  */
 
-static OptionInfoPtr renditionAvailableOptions(int, int);
+static const OptionInfoRec * renditionAvailableOptions(int, int);
 static void       renditionIdentify(int);
 static Bool       renditionProbe(DriverPtr, int);
 static Bool       renditionPreInit(ScrnInfoPtr, int);
@@ -108,7 +108,7 @@ static void renditionLoadPalette(ScrnInfoPtr, int, int *, LOCO *, VisualPtr);
  * global data
  */
 
-OptionInfoRec renditionOptions[]={
+OptionInfoRec const renditionOptions[]={
     { OPTION_FBWC,      "FramebufferWC", OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_SW_CURSOR, "SW_Cursor", OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_NOACCEL,   "NoAccel",  OPTV_BOOLEAN, {0}, FALSE },
@@ -274,7 +274,7 @@ static PciChipsets renditionPCIchipsets[] = {
  * functions
  */
 
-static OptionInfoPtr
+static const OptionInfoRec *
 renditionAvailableOptions(int chipid, int busid)
 {
     return renditionOptions;
@@ -466,7 +466,7 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
 {
     static ClockRange renditionClockRange = {NULL, 0, 135000, -1, FALSE, TRUE, 1, 1, 0};
     MessageType       From;
-    int               i, videoRam, Rounding, nModes = 0;
+    int               videoRam, Rounding, nModes = 0;
     char             *Module;
     const char       *Sym;
     vgaHWPtr          pvgaHW;
@@ -568,8 +568,11 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     /* collect all of the options flags and process them */
 
     xf86CollectOptions(pScreenInfo, NULL);
+    if (!(pRendition->Options = xalloc(sizeof(renditionOptions))))
+	return FALSE;
+    memcpy(pRendition->Options, renditionOptions, sizeof(renditionOptions));
     xf86ProcessOptions(pScreenInfo->scrnIndex, pScreenInfo->options, 
-        renditionOptions);
+        pRendition->Options);
 
 
     /* Ensure depth-specific entry points are available */
@@ -661,7 +664,7 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
       /* Reserv memory and load the microcode */
       /****************************************/
 #if USE_ACCEL
-    if (!xf86ReturnOptValBool(renditionOptions, OPTION_NOACCEL,0)) {
+    if (!xf86ReturnOptValBool(pRendition->Options, OPTION_NOACCEL,0)) {
       RENDITIONAccelPreInit (pScreenInfo);
     }
     else
@@ -671,8 +674,6 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
 	       ("Skipping acceleration\n"));
 #endif
-
-    xf86MarkOptionUsedByName(renditionOptions,"NoAccel");
 
     From = X_PROBED;
     xf86DrvMsg(pScreenInfo->scrnIndex, From, "videoRam: %d kBytes\n", videoRam);
@@ -689,7 +690,7 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
 
     pRendition->board.shadowfb=TRUE;
 
-    if ((in_string = xf86GetOptValString(renditionOptions, OPTION_ROTATE))) {
+    if ((in_string = xf86GetOptValString(pRendition->Options, OPTION_ROTATE))) {
       if(!xf86NameCmp(in_string, "CW")) {
 	/* accel is disabled below for shadowFB */
 	pRendition->board.shadowfb = TRUE;
@@ -708,9 +709,8 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
 		   "Valid options are \"CW\" or \"CCW\"\n");
       }
     }
-    xf86MarkOptionUsedByName(renditionOptions,"Rotate");
 
-    if (xf86ReturnOptValBool(renditionOptions, OPTION_SHADOW_FB,1)||
+    if (xf86ReturnOptValBool(pRendition->Options, OPTION_SHADOW_FB,1)||
 	pRendition->board.rotate) {
       if (!xf86LoadSubModule(pScreenInfo, "shadowfb")) {
 	xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
@@ -728,22 +728,20 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
       xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
 		 "\"Shadow Framebuffer\" disabled\n");
     }
-    xf86MarkOptionUsedByName(renditionOptions,"ShadowFB");
 
 
     /* Load Ramdac module if needed */
-    if (!xf86ReturnOptValBool(renditionOptions, OPTION_SW_CURSOR,0) &&
+    if (!xf86ReturnOptValBool(pRendition->Options, OPTION_SW_CURSOR,0) &&
 	!pRendition->board.rotate){
       if (!xf86LoadSubModule(pScreenInfo, "ramdac")) {
 	return FALSE;
       }
       xf86LoaderReqSymLists(ramdacSymbols, NULL);
     }
-    xf86MarkOptionUsedByName(renditionOptions,"SWCursor");
 
 #if USE_ACCEL
     /* Load XAA if needed */
-    if (!xf86ReturnOptValBool(renditionOptions, OPTION_NOACCEL,0) &&
+    if (!xf86ReturnOptValBool(pRendition->Options, OPTION_NOACCEL,0) &&
 	!pRendition->board.rotate) {
       if (!xf86LoadSubModule(pScreenInfo, "xaa")) {
 	return FALSE;
@@ -754,7 +752,7 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
 
 #if 0
     /* Load DDC module if needed */
-    if (!xf86ReturnOptValBool(renditionOptions, OPTION_NO_DDC,0)){
+    if (!xf86ReturnOptValBool(pRendition->Options, OPTION_NO_DDC,0)){
       if (!xf86LoadSubModule(pScreenInfo, "ddc")) {
 	xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
 		   ("Loading of DDC library failed, skipping DDC-probe\n"));
@@ -770,7 +768,7 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     }
 #else
     /* Load DDC module if needed */
-    if (!xf86ReturnOptValBool(renditionOptions, OPTION_NO_DDC,0)){
+    if (!xf86ReturnOptValBool(pRendition->Options, OPTION_NO_DDC,0)){
       if (!xf86LoadSubModule(pScreenInfo, "vbe")) {
 	xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
 		   ("Loading of DDC library failed, skipping DDC-probe\n"));
@@ -860,7 +858,7 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     if (!pScreenInfo->chipset)
         pScreenInfo->chipset = (char *)renditionChipsets[0].name;
 
-    if(!xf86ReturnOptValBool(renditionOptions, OPTION_SW_CURSOR,0)){
+    if(!xf86ReturnOptValBool(pRendition->Options, OPTION_SW_CURSOR,0)){
       if(!pRendition->board.rotate)
 	/* Do preemtive things for HW cursor */
 	RenditionHWCursorPreInit(pScreenInfo);
@@ -1282,7 +1280,7 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* has to be after cfb*ScreenInit and before cursor init */
     /*********************************************************/
 #if USE_ACCEL
-    if (!xf86ReturnOptValBool(renditionOptions, OPTION_NOACCEL,0)) 
+    if (!xf86ReturnOptValBool(pRendition->Options, OPTION_NOACCEL,0)) 
       RENDITIONAccelXAAInit (pScreen);
 #endif
 
@@ -1290,7 +1288,7 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     xf86SetSilkenMouse(pScreen);
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
-    if(!xf86ReturnOptValBool(renditionOptions, OPTION_SW_CURSOR,0)&&
+    if(!xf86ReturnOptValBool(pRendition->Options, OPTION_SW_CURSOR,0)&&
        !pRendition->board.rotate){
       /* Initialise HW cursor */
       if(!RenditionHWCursorInit(scrnIndex, pScreen)){
@@ -1335,10 +1333,9 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     xf86DPMSInit(pScreen, renditionDPMSSet, 0);
 
-    if (xf86ReturnOptValBool(renditionOptions, OPTION_OVERCLOCK_MEM,0)) {
+    if (xf86ReturnOptValBool(pRendition->Options, OPTION_OVERCLOCK_MEM,0)) {
       RENDITIONPTR(pScreenInfo)->board.overclock_mem=TRUE;
     }
-    xf86MarkOptionUsedByName(renditionOptions,"Overclock_Mem");
 
     /* Wrap the screen's CloseScreen vector and set its SaveScreen vector */
     prenditionPriv->CloseScreen = pScreen->CloseScreen;
@@ -1434,15 +1431,16 @@ renditionMapMem(ScrnInfoPtr pScreenInfo)
 {
   Bool WriteCombine;
   int mapOption;
+  renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
 
 #ifdef DEBUG
   ErrorF("Mapping ...\n");
   ErrorF("%d %d %d %x %d\n", pScreenInfo->scrnIndex, VIDMEM_FRAMEBUFFER, 
-     RENDITIONPTR(pScreenInfo)->pcitag,
-     RENDITIONPTR(pScreenInfo)->board.mem_base, pScreenInfo->videoRam);
+     pRendition->pcitag,
+     pRendition->board.mem_base, pScreenInfo->videoRam);
 #endif
 
-  if (RENDITIONPTR(pScreenInfo)->board.chip==V1000_DEVICE){
+  if (pRendition->board.chip==V1000_DEVICE){
     /* Some V1000 boards are known to have problems with Write-Combining */
     /* V2x00 also found to have similar problems with memcpy & WC ! */
     WriteCombine = 0;
@@ -1452,7 +1450,7 @@ renditionMapMem(ScrnInfoPtr pScreenInfo)
     WriteCombine = 1;
   }
   /* Override on users request */
-  WriteCombine=xf86ReturnOptValBool(renditionOptions, OPTION_FBWC, WriteCombine);
+  WriteCombine=xf86ReturnOptValBool(pRendition->Options, OPTION_FBWC, WriteCombine);
   if (WriteCombine){
     xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
 	       ("Requesting Write-Combined memory access\n"));
@@ -1464,12 +1462,10 @@ renditionMapMem(ScrnInfoPtr pScreenInfo)
     mapOption = VIDMEM_MMIO;
   }
 
-  xf86MarkOptionUsedByName(renditionOptions,"FramebufferWC");
-
-    RENDITIONPTR(pScreenInfo)->board.vmem_base=
+    pRendition->board.vmem_base=
         xf86MapPciMem(pScreenInfo->scrnIndex, mapOption,
-        RENDITIONPTR(pScreenInfo)->pcitag,
-        (unsigned long)RENDITIONPTR(pScreenInfo)->board.mem_base,
+        pRendition->pcitag,
+        (unsigned long)pRendition->board.mem_base,
 	pScreenInfo->videoRam);
     return TRUE;
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.82 2001/02/15 17:54:55 eich Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.83 2001/04/06 16:51:19 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -63,7 +63,7 @@
  */
 
 /* Mandatory functions */
-static OptionInfoPtr TsengAvailableOptions(int chipid, int busid);
+static const OptionInfoRec * TsengAvailableOptions(int chipid, int busid);
 static void TsengIdentify(int flags);
 static Bool TsengProbe(DriverPtr drv, int flags);
 static Bool TsengPreInit(ScrnInfoPtr pScrn, int flags);
@@ -181,7 +181,7 @@ typedef enum {
     OPTION_SET_MCLK
 } TsengOpts;
 
-static OptionInfoRec TsengOptions[] =
+static const OptionInfoRec TsengOptions[] =
 {
     {OPTION_HIBIT_HIGH, "hibit_high", OPTV_BOOLEAN,
 	{0}, FALSE},
@@ -387,8 +387,7 @@ TsengPCI2Type(ScrnInfoPtr pScrn, int ChipID)
     return TRUE;
 }
 
-static 
-OptionInfoPtr
+static const OptionInfoRec *
 TsengAvailableOptions(int chipid, int busid)
 {
     return TsengOptions;
@@ -1206,14 +1205,14 @@ TsengProcessHibit(ScrnInfoPtr pScrn)
     TsengPtr pTseng = TsengPTR(pScrn);
 
     PDEBUG("	TsengProcessHibit\n");
-    if (xf86IsOptionSet(TsengOptions, OPTION_HIBIT_HIGH)) {
-	if (xf86IsOptionSet(TsengOptions, OPTION_HIBIT_LOW)) {
+    if (xf86IsOptionSet(pTseng->Options, OPTION_HIBIT_HIGH)) {
+	if (xf86IsOptionSet(pTseng->Options, OPTION_HIBIT_LOW)) {
 	    xf86Msg(X_ERROR, "\nOptions \"hibit_high\" and \"hibit_low\" are incompatible;\n");
 	    xf86Msg(X_ERROR, "    specify only one (not both) in XFree86 configuration file\n");
 	    return FALSE;
 	}
 	pTseng->save_divide = 0x40;
-    } else if (xf86IsOptionSet(TsengOptions, OPTION_HIBIT_HIGH)) {
+    } else if (xf86IsOptionSet(pTseng->Options, OPTION_HIBIT_HIGH)) {
 	pTseng->save_divide = 0;
     } else {
 	from = X_PROBED;
@@ -1249,13 +1248,16 @@ TsengProcessOptions(ScrnInfoPtr pScrn)
     xf86CollectOptions(pScrn, NULL);
 
     /* Process the options */
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, TsengOptions);
+    if (!(pTseng->Options = xalloc(sizeof(TsengOptions))))
+	return FALSE;
+    memcpy(pTseng->Options, TsengOptions, sizeof(TsengOptions));
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pTseng->Options);
 
     from = X_DEFAULT;
     pTseng->HWCursor = FALSE;	       /* default */
-    if (xf86GetOptValBool(TsengOptions, OPTION_HW_CURSOR, &pTseng->HWCursor))
+    if (xf86GetOptValBool(pTseng->Options, OPTION_HW_CURSOR, &pTseng->HWCursor))
 	from = X_CONFIG;
-    if (xf86ReturnOptValBool(TsengOptions, OPTION_SW_CURSOR, FALSE)) {
+    if (xf86ReturnOptValBool(pTseng->Options, OPTION_SW_CURSOR, FALSE)) {
 	from = X_CONFIG;
 	pTseng->HWCursor = FALSE;
     }
@@ -1271,7 +1273,7 @@ TsengProcessOptions(ScrnInfoPtr pScrn)
     if (pScrn->bitsPerPixel >= 8) {
         if (pTseng->ChipType != TYPE_ET4000)
 	    pTseng->UseAccel = TRUE;
-	if (xf86ReturnOptValBool(TsengOptions, OPTION_NOACCEL, FALSE)) {
+	if (xf86ReturnOptValBool(pTseng->Options, OPTION_NOACCEL, FALSE)) {
 	    pTseng->UseAccel = FALSE;
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
 	}
@@ -1279,30 +1281,30 @@ TsengProcessOptions(ScrnInfoPtr pScrn)
 	pTseng->UseAccel = FALSE;  /* 1bpp and 4bpp are always non-accelerated */
 
     pTseng->SlowDram = FALSE;
-    if (xf86IsOptionSet(TsengOptions, OPTION_SLOW_DRAM)) {
+    if (xf86IsOptionSet(pTseng->Options, OPTION_SLOW_DRAM)) {
 	pTseng->SlowDram = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using slow DRAM access\n");
     }
     pTseng->MedDram = FALSE;
-    if (xf86IsOptionSet(TsengOptions, OPTION_MED_DRAM)) {
+    if (xf86IsOptionSet(pTseng->Options, OPTION_MED_DRAM)) {
 	pTseng->MedDram = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using Medium-speed DRAM access\n");
     }
     pTseng->FastDram = FALSE;
-    if (xf86IsOptionSet(TsengOptions, OPTION_FAST_DRAM)) {
+    if (xf86IsOptionSet(pTseng->Options, OPTION_FAST_DRAM)) {
 	pTseng->FastDram = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using fast DRAM access\n");
     }
     if ((pTseng->SetW32Interleave = 
-	xf86GetOptValBool(TsengOptions, OPTION_W32_INTERLEAVE, &pTseng->W32Interleave)) )
+	xf86GetOptValBool(pTseng->Options, OPTION_W32_INTERLEAVE, &pTseng->W32Interleave)) )
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Forcing W32p memory interleave %s.\n",
 	    pTseng->W32Interleave ? "ON" : "OFF");
     if ((pTseng->SetPCIBurst = 
-	xf86GetOptValBool(TsengOptions, OPTION_PCI_BURST, &pTseng->PCIBurst)) )
+	xf86GetOptValBool(pTseng->Options, OPTION_PCI_BURST, &pTseng->PCIBurst)) )
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Forcing PCI burst mode %s.\n",
 	    pTseng->PCIBurst ? "ON" : "OFF");
     from = X_CONFIG;
-    if (xf86GetOptValBool(TsengOptions, OPTION_LINEAR, &pTseng->UseLinMem)) {
+    if (xf86GetOptValBool(pTseng->Options, OPTION_LINEAR, &pTseng->UseLinMem)) {
 	/* check if linear mode is allowed */
 	if (pTseng->UseLinMem) {
 	    if (!CHIP_SUPPORTS_LINEAR) {
@@ -1327,17 +1329,17 @@ TsengProcessOptions(ScrnInfoPtr pScrn)
 	(pTseng->UseLinMem) ? "linear" : "banked");
 
     pTseng->ShowCache = FALSE;
-    if (xf86ReturnOptValBool(TsengOptions, OPTION_SHOWCACHE, FALSE)) {
+    if (xf86ReturnOptValBool(pTseng->Options, OPTION_SHOWCACHE, FALSE)) {
 	pTseng->ShowCache = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "(for debugging only:) Visible off-screen memory\n");
     }
     pTseng->Legend = FALSE;
-    if (xf86ReturnOptValBool(TsengOptions, OPTION_LEGEND, FALSE)) {
+    if (xf86ReturnOptValBool(pTseng->Options, OPTION_LEGEND, FALSE)) {
 	pTseng->Legend = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using Legend pixel clock selection.\n");
     }
     pTseng->NoClockchip = FALSE;
-    if (xf86ReturnOptValBool(TsengOptions, OPTION_NOCLOCKCHIP, FALSE)) {
+    if (xf86ReturnOptValBool(pTseng->Options, OPTION_NOCLOCKCHIP, FALSE)) {
 	pTseng->NoClockchip = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Disabling clockchip programming.\n");
     }
@@ -1349,12 +1351,12 @@ TsengProcessOptions(ScrnInfoPtr pScrn)
 	pScrn->progClock = FALSE;
 
     pTseng->UsePCIRetry = FALSE;
-    if (xf86ReturnOptValBool(TsengOptions, OPTION_PCI_RETRY, FALSE)) {
+    if (xf86ReturnOptValBool(pTseng->Options, OPTION_PCI_RETRY, FALSE)) {
 	pTseng->UsePCIRetry = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
     }
     pTseng->MemClk = 0;
-    if (xf86GetOptValFreq(TsengOptions, OPTION_SET_MCLK, OPTUNITS_MHZ, &real))
+    if (xf86GetOptValFreq(pTseng->Options, OPTION_SET_MCLK, OPTUNITS_MHZ, &real))
 	pTseng->MemClk = (int)(real * 1000.0);
     return TRUE;
 }

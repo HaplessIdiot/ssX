@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.10 2000/12/02 15:30:43 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.11 2001/04/05 21:29:14 dawes Exp $ */
 
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
@@ -67,7 +67,7 @@
 /*
  * prototypes
  */
-static OptionInfoPtr IMSTTAvailableOptions(int chipid, int busid);
+static const OptionInfoRec * IMSTTAvailableOptions(int chipid, int busid);
 static void IMSTTIdentify(int flags);
 static Bool IMSTTProbe(DriverPtr drv, int flags);
 static Bool IMSTTPreInit(ScrnInfoPtr pScrn, int flags);
@@ -137,7 +137,7 @@ typedef enum {
 	OPTION_FBDEV
 } IMSTTOpts;
 
-static OptionInfoRec IMSTTOptions[] =
+static const OptionInfoRec IMSTTOptions[] =
 {
 	{ OPTION_NOACCEL, "noaccel", OPTV_BOOLEAN, {0}, FALSE },
 	{ OPTION_SWCURSOR, "swcursor", OPTV_BOOLEAN, {0}, FALSE },
@@ -260,7 +260,7 @@ static void IMSTTFreeRec(ScrnInfoPtr pScrn)
 }
 
 
-static OptionInfoPtr IMSTTAvailableOptions(int chipid, int busid)
+static const OptionInfoRec * IMSTTAvailableOptions(int chipid, int busid)
 {
 	return IMSTTOptions;
 }
@@ -387,15 +387,18 @@ static Bool IMSTTPreInit(ScrnInfoPtr pScrn, int flags)
 
 	xf86CollectOptions(pScrn, NULL);
 
-	xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, IMSTTOptions);
+	if (!(iptr->Options = xalloc(sizeof(IMSTTOptions))))
+		return FALSE;
+	memcpy(iptr->Options, IMSTTOptions, sizeof(IMSTTOptions));
+	xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, iptr->Options);
 
-	if (xf86ReturnOptValBool(IMSTTOptions, OPTION_NOACCEL, FALSE)) {
+	if (xf86ReturnOptValBool(iptr->Options, OPTION_NOACCEL, FALSE)) {
 		iptr->NoAccel = TRUE;
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: NoAccel - acceleration disabled\n");
 	} else
 		iptr->NoAccel = FALSE;
 #if 0
-	if (xf86ReturnOptValBool(IMSTTOptions, OPTION_SWCURSOR, FALSE))
+	if (xf86ReturnOptValBool(iptr->Options, OPTION_SWCURSOR, FALSE))
 		iptr->HWCursor = FALSE;
 	else
 		iptr->HWCursor = TRUE;
@@ -407,14 +410,14 @@ static Bool IMSTTPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using %s cursor\n",
 		   iptr->HWCursor ? "HW" : "SW");
 
-	if (xf86ReturnOptValBool(IMSTTOptions, OPTION_INITDAC, FALSE)) {
+	if (xf86ReturnOptValBool(iptr->Options, OPTION_INITDAC, FALSE)) {
 		iptr->InitDAC = TRUE;
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: not initalizing DACn");
 	} else {
 		iptr->InitDAC = FALSE;
 	}
 
-	if (xf86ReturnOptValBool(IMSTTOptions, OPTION_FBDEV, FALSE)) {
+	if (xf86ReturnOptValBool(iptr->Options, OPTION_FBDEV, FALSE)) {
 		iptr->FBDev = TRUE;
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 			   "Using framebuffer device\n");

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.17 2000/12/06 15:35:15 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.18 2001/02/15 17:39:28 eich Exp $ */
 
 /* (c) Itai Nahshon */
 
@@ -63,6 +63,7 @@ typedef struct {
         void                    (* InitAccel)(ScrnInfoPtr);
         int                     offscreen_size;
         int                     offscreen_offset;
+	OptionInfoPtr		Options;
 } CirRec, *CirPtr;
 
 /* CirrusClk.c */

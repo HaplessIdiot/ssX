@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.48 2001/01/21 21:19:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.49 2001/04/25 17:46:42 alanh Exp $ */
 
 #define COMPILER_H_EXTRAS
 #include "apm.h"
@@ -27,7 +27,7 @@
 #define TEXT_AMOUNT 32768
 
 /* Mandatory functions */
-static OptionInfoPtr	ApmAvailableOptions(int chipid, int busid);
+static const OptionInfoRec *	ApmAvailableOptions(int chipid, int busid);
 static void     ApmIdentify(int flags);
 static Bool     ApmProbe(DriverPtr drv, int flags);
 static Bool     ApmPreInit(ScrnInfoPtr pScrn, int flags);
@@ -95,7 +95,7 @@ typedef enum {
     OPTION_PCI_RETRY
 } ApmOpts;
 
-static OptionInfoRec ApmOptions[] =
+static const OptionInfoRec ApmOptions[] =
 {
     {OPTION_SET_MCLK, "SetMclk", OPTV_FREQ,
 	{0}, FALSE},
@@ -294,8 +294,7 @@ ApmIdentify(int flags)
 		      ApmChipsets);
 }
 
-static
-OptionInfoPtr
+static const OptionInfoRec *
 ApmAvailableOptions(int chipid, int busid)
 {
     return ApmOptions;
@@ -612,7 +611,10 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
     xf86CollectOptions(pScrn, NULL);
 
     /* Process the options */
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, ApmOptions);
+    if (!(pApm->Options = xalloc(sizeof(ApmOptions))))
+	return FALSE;
+    memcpy(pApm->Options, ApmOptions, sizeof(ApmOptions));
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pApm->Options);
 
     pApm->scrnIndex = pScrn->scrnIndex;
     /* Set the bits per RGB for 8bpp mode */
@@ -620,16 +622,16 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 	/* Default to 8 */
 	pScrn->rgbBits = 8;
     }
-    if (xf86ReturnOptValBool(ApmOptions, OPTION_NOLINEAR, FALSE)) {
+    if (xf86ReturnOptValBool(pApm->Options, OPTION_NOLINEAR, FALSE)) {
 	pApm->noLinear = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "No linear framebuffer\n");
     }
     from = X_DEFAULT;
     pApm->hwCursor = FALSE;
-    if (xf86GetOptValBool(ApmOptions, OPTION_HW_CURSOR, &pApm->hwCursor))
+    if (xf86GetOptValBool(pApm->Options, OPTION_HW_CURSOR, &pApm->hwCursor))
 	from = X_CONFIG;
     if (pApm->noLinear ||
-	xf86ReturnOptValBool(ApmOptions, OPTION_SW_CURSOR, FALSE)) {
+	xf86ReturnOptValBool(pApm->Options, OPTION_SW_CURSOR, FALSE)) {
 	from = X_CONFIG;
 	pApm->hwCursor = FALSE;
     }
@@ -638,24 +640,24 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
     from = X_DEFAULT;
     if (pScrn->bitsPerPixel < 8)
 	pApm->NoAccel = TRUE;
-    if (xf86ReturnOptValBool(ApmOptions, OPTION_NOACCEL, FALSE)) {
+    if (xf86ReturnOptValBool(pApm->Options, OPTION_NOACCEL, FALSE)) {
 	from = X_CONFIG;
 	pApm->NoAccel = TRUE;
     }
     if (pApm->NoAccel)
 	xf86DrvMsg(pScrn->scrnIndex, from, "Acceleration disabled\n");
-    if (xf86GetOptValFreq(ApmOptions, OPTION_SET_MCLK, OPTUNITS_MHZ, &real)) {
+    if (xf86GetOptValFreq(pApm->Options, OPTION_SET_MCLK, OPTUNITS_MHZ, &real)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MCLK used is %.1f MHz\n", real);
 	pApm->MemClk = (int)(real * 1000.0);
     }
-    if (xf86ReturnOptValBool(ApmOptions, OPTION_SHADOW_FB, FALSE)) {
+    if (xf86ReturnOptValBool(pApm->Options, OPTION_SHADOW_FB, FALSE)) {
 	pApm->ShadowFB = TRUE;
 	pApm->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		"Using \"Shadow Framebuffer\" - acceleration disabled\n");
     }
-    if (xf86ReturnOptValBool(ApmOptions, OPTION_PCI_RETRY, FALSE)) {
-	if (xf86ReturnOptValBool(ApmOptions, OPTION_PCI_BURST, FALSE)) {
+    if (xf86ReturnOptValBool(pApm->Options, OPTION_PCI_RETRY, FALSE)) {
+	if (xf86ReturnOptValBool(pApm->Options, OPTION_PCI_BURST, FALSE)) {
 	  pApm->UsePCIRetry = TRUE;
 	  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
 	}

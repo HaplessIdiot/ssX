@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from the XFree86 Project and Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi.h,v 1.3 2001/02/15 18:20:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi.h,v 1.4 2001/03/03 22:26:13 tsi Exp $ */
 
 #ifndef _SMI_H
 #define _SMI_H
@@ -239,6 +239,8 @@ typedef struct
 	void (*BlockHandler)(int i, pointer blockData, pointer pTimeout,
 						 pointer pReadMask);
 #endif
+
+	OptionInfoPtr		Options;
 
 } SMIRec, *SMIPtr;
 

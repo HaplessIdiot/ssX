@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.48 2001/01/21 21:19:29 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.50 2001/02/15 17:44:24 eich Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -110,7 +110,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "extensions/xf86dgastr.h"
 
 /* Mandatory functions */
-static OptionInfoPtr	NEOAvailableOptions(int chipid, int busid);
+static const OptionInfoRec *	NEOAvailableOptions(int chipid, int busid);
 static void     NEOIdentify(int flags);
 static Bool     NEOProbe(DriverPtr drv, int flags);
 static Bool     NEOPreInit(ScrnInfoPtr pScrn, int flags);
@@ -265,7 +265,7 @@ typedef enum {
     OPTION_ROTATE
 } NEOOpts;
 
-static OptionInfoRec NEO_2070_Options[] = {
+static const OptionInfoRec NEO_2070_Options[] = {
     { OPTION_NOACCEL,	"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SW_CURSOR,	"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NO_MMIO,	"noMMIO",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -285,7 +285,7 @@ static OptionInfoRec NEO_2070_Options[] = {
     { -1,                  NULL,           OPTV_NONE,	{0}, FALSE }
 };
 
-static OptionInfoRec NEOOptions[] = {
+static const OptionInfoRec NEOOptions[] = {
     { OPTION_NOLINEAR_MODE,"NoLinear",  OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOACCEL,	"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SW_CURSOR,	"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -458,8 +458,7 @@ NEOFreeRec(ScrnInfoPtr pScrn)
     pScrn->driverPrivate = NULL;
 }
 
-static
-OptionInfoPtr
+static const OptionInfoRec *
 NEOAvailableOptions(int chipid, int busid)
 {
     int chip = (chipid & 0x0000ffff);
@@ -906,10 +905,15 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     /* Collect all of the relevant option flags (fill in pScrn->options) */
     xf86CollectOptions(pScrn, NULL);
     /* Process the options */
-    if (nPtr->NeoChipset == NM2070)
-	nPtr->Options = (OptionInfoPtr)NEO_2070_Options;
-    else
-	nPtr->Options = (OptionInfoPtr)NEOOptions;
+    if (nPtr->NeoChipset == NM2070) {
+	if (!(nPtr->Options = xalloc(sizeof(NEO_2070_Options))))
+	    return FALSE;
+	memcpy(nPtr->Options, NEO_2070_Options, sizeof(NEO_2070_Options));
+    } else {
+	if (!(nPtr->Options = xalloc(sizeof(NEOOptions))))
+	    return FALSE;
+	memcpy(nPtr->Options, NEOOptions, sizeof(NEOOptions));
+    }
 
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, nPtr->Options);
 

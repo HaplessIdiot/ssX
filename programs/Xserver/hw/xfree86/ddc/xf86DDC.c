@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.18 2000/11/03 18:46:08 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.19 2000/11/16 19:44:55 eich Exp $ */
 
 /* xf86DDC.c 
  * 
@@ -112,14 +112,12 @@ typedef enum {
     DDCOPT_NODDC
 } DDCOpts;
 
-static OptionInfoRec DDCOptions[] = {
+static const OptionInfoRec DDCOptions[] = {
     { DDCOPT_NODDC1,	"NoDDC1",	OPTV_BOOLEAN,	{0},	FALSE },
     { DDCOPT_NODDC2,	"NoDDC2",	OPTV_BOOLEAN,	{0},	FALSE },
     { DDCOPT_NODDC,	"NoDDC",	OPTV_BOOLEAN,	{0},	FALSE },
     { -1,		NULL,		OPTV_NONE,	{0},	FALSE },
 };
-
-#define nDDCOptions (sizeof(DDCOptions) / sizeof(DDCOptions[0]))
 
 xf86MonPtr 
 xf86DoEDID_DDC1(
@@ -133,13 +131,15 @@ xf86DoEDID_DDC1(
     int sigio;
     /* Default DDC and DDC1 to enabled. */
     Bool noddc = FALSE, noddc1 = FALSE;
-    OptionInfoRec options[nDDCOptions];
+    OptionInfoPtr options;
 
+    options = xnfalloc(sizeof(DDCOptions));
     (void)memcpy(options, DDCOptions, sizeof(DDCOptions));
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, options);
 
     xf86GetOptValBool(options, DDCOPT_NODDC, &noddc);
     xf86GetOptValBool(options, DDCOPT_NODDC1, &noddc1);
+    xfree(options);
     
     if (noddc || noddc1)
 	return NULL;
@@ -168,13 +168,15 @@ xf86DoEDID_DDC2(int scrnIndex, I2CBusPtr pBus)
     xf86MonPtr tmp = NULL;
     /* Default DDC and DDC2 to enabled. */
     Bool noddc = FALSE, noddc2 = FALSE;
-    OptionInfoRec options[nDDCOptions];
+    OptionInfoPtr options;
 
+    options = xnfalloc(sizeof(DDCOptions));
     (void)memcpy(options, DDCOptions, sizeof(DDCOptions));
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, options);
 
     xf86GetOptValBool(options, DDCOPT_NODDC, &noddc);
     xf86GetOptValBool(options, DDCOPT_NODDC2, &noddc2);
+    xfree(options);
     
     if (noddc || noddc2)
 	return NULL;

@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.34 2001/01/21 21:19:24 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.36 2001/02/15 17:39:28 eich Exp $ */
 
 #define EXPERIMENTAL
 
@@ -119,7 +119,7 @@ typedef enum {
 	OPTION_NOACCEL
 } LgOpts;
 
-static OptionInfoRec LgOptions[] = {
+static const OptionInfoRec LgOptions[] = {
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHADOW_FB,         "ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -278,7 +278,7 @@ lgSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 
 #endif /* XFree86LOADER */
 
-OptionInfoPtr
+const OptionInfoRec *
 LgAvailableOptions(int chipid)
 {
     return LgOptions;
@@ -527,17 +527,20 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86CollectOptions(pScrn, NULL);
 
 	/* Process the options */
-	xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, LgOptions);
+	if (!(pCir->Options = xalloc(sizeof(LgOptions))))
+		return FALSE;
+	memcpy(pCir->Options, LgOptions, sizeof(LgOptions));
+	xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pCir->Options);
 
 	pScrn->rgbBits = 6; 
 	from = X_DEFAULT;
 	pCir->HWCursor = FALSE;
-	if (xf86GetOptValBool(LgOptions, OPTION_HW_CURSOR, &pCir->HWCursor))
+	if (xf86GetOptValBool(pCir->Options, OPTION_HW_CURSOR, &pCir->HWCursor))
 		from = X_CONFIG;
 
 	xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pCir->HWCursor ? "HW" : "SW");
-	if (xf86ReturnOptValBool(LgOptions, OPTION_NOACCEL, FALSE)) {
+	if (xf86ReturnOptValBool(pCir->Options, OPTION_NOACCEL, FALSE)) {
 		pCir->NoAccel = TRUE;
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
 	}
@@ -681,12 +684,12 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 		if (!xf86SetGamma(pScrn, zeros))
 			return FALSE;
 	}
-	if (xf86GetOptValBool(LgOptions,
+	if (xf86GetOptValBool(pCir->Options,
 			      OPTION_SHADOW_FB,&pCir->shadowFB))
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ShadowFB %s.\n",
 		       pCir->shadowFB ? "enabled" : "disabled");
 	    
-	if ((s = xf86GetOptValString(LgOptions, OPTION_ROTATE))) {
+	if ((s = xf86GetOptValString(pCir->Options, OPTION_ROTATE))) {
 	    if(!xf86NameCmp(s, "CW")) {
 		/* accel is disabled below for shadowFB */
 		pCir->shadowFB = TRUE;

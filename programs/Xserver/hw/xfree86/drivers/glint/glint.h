@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.46 2001/03/19 22:50:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.47 2001/04/18 09:24:47 alanh Exp $ */
 /*
  * Copyright 1997-2001 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -174,6 +174,7 @@ typedef struct {
     GLINTConfigPrivPtr	pVisualConfigsPriv;
     GLINTRegRec		DRContextRegs;
 #endif
+    OptionInfoPtr	Options;
 } GLINTRec, *GLINTPtr;
 
 /* Defines for PCI data */

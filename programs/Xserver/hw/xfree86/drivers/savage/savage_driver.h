@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.h,v 1.7 2001/04/27 12:58:28 dawes Exp $ */
 
 #ifndef SAVAGE_VGAHWMMIO_H
 #define SAVAGE_VGAHWMMIO_H
@@ -107,6 +107,7 @@ typedef struct _Savage {
 
     /* Here are all the Options */
 
+    OptionInfoPtr	Options;
     Bool		ShowCache;
     Bool		pci_burst;
     Bool		NoPCIRetry;

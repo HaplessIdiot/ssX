@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.46 2000/06/21 17:28:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.61 2001/04/19 14:05:55 alanh Exp $ */
 
 #include "fb.h"
 #include "xf1bpp.h"
@@ -101,7 +101,7 @@ static void SISModifyModeInfo(DisplayModePtr mode);
 static void SiSPreSetMode(ScrnInfoPtr pScrn);
 
 void SiSOptions(ScrnInfoPtr pScrn);
-OptionInfoPtr SISAvailableOptions(int chipid, int busid);
+const OptionInfoRec * SISAvailableOptions(int chipid, int busid);
 void SiSSetup(ScrnInfoPtr pScrn);
 void SISVGAPreInit(ScrnInfoPtr pScrn);
 Bool SiSAccelInit(ScreenPtr pScreen);

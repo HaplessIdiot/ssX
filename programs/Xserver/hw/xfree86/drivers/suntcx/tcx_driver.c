@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suntcx/tcx_driver.c,v 1.2 2000/12/01 00:24:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suntcx/tcx_driver.c,v 1.3 2000/12/02 15:30:57 tsi Exp $ */
 
 #define PSZ 8
 #include "xf86.h"
@@ -37,7 +37,7 @@
 #include "xf86cmap.h"
 #include "tcx.h"
 
-static OptionInfoPtr TCXAvailableOptions(int chipid, int busid);
+static const OptionInfoRec * TCXAvailableOptions(int chipid, int busid);
 static void	TCXIdentify(int flags);
 static Bool	TCXProbe(DriverPtr drv, int flags);
 static Bool	TCXPreInit(ScrnInfoPtr pScrn, int flags);
@@ -91,7 +91,7 @@ typedef enum {
     OPTION_HW_CURSOR
 } TCXOpts;
 
-static OptionInfoRec TCXOptions[] = {
+static const OptionInfoRec TCXOptions[] = {
     { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
@@ -175,8 +175,7 @@ TCXFreeRec(ScrnInfoPtr pScrn)
     return;
 }
 
-static 
-OptionInfoPtr
+static const OptionInfoRec *
 TCXAvailableOptions(int chipid, int busid)
 {
     return TCXOptions;
@@ -374,7 +373,10 @@ TCXPreInit(ScrnInfoPtr pScrn, int flags)
     /* Collect all of the relevant option flags (fill in pScrn->options) */
     xf86CollectOptions(pScrn, NULL);
     /* Process the options */
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, TCXOptions);
+    if (!(pTcx->Options = xalloc(sizeof(TCXOptions))))
+	return FALSE;
+    memcpy(pTcx->Options, TCXOptions, sizeof(TCXOptions));
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pTcx->Options);
 
     /*
      * This must happen after pScrn->display has been set because
@@ -420,9 +422,9 @@ TCXPreInit(ScrnInfoPtr pScrn, int flags)
     if (hwCursor) {
 	from = X_DEFAULT;
 	pTcx->HWCursor = TRUE;
-	if (xf86GetOptValBool(TCXOptions, OPTION_HW_CURSOR, &pTcx->HWCursor))
+	if (xf86GetOptValBool(pTcx->Options, OPTION_HW_CURSOR, &pTcx->HWCursor))
 	    from = X_CONFIG;
-	if (xf86ReturnOptValBool(TCXOptions, OPTION_SW_CURSOR, FALSE)) {
+	if (xf86ReturnOptValBool(pTcx->Options, OPTION_SW_CURSOR, FALSE)) {
 	    from = X_CONFIG;
 	    pTcx->HWCursor = FALSE;
 	}

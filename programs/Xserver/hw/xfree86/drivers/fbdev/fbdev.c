@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.28 2001/01/21 21:19:25 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.29 2001/04/06 18:16:30 dawes Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -48,7 +48,7 @@
 /* -------------------------------------------------------------------- */
 /* prototypes                                                           */
 
-static OptionInfoPtr FBDevAvailableOptions(int chipid, int busid);
+static const OptionInfoRec * FBDevAvailableOptions(int chipid, int busid);
 static void	FBDevIdentify(int flags);
 static Bool	FBDevProbe(DriverPtr drv, int flags);
 static Bool	FBDevPreInit(ScrnInfoPtr pScrn, int flags);
@@ -113,7 +113,7 @@ typedef enum {
 	OPTION_FBDEV
 } FBDevOpts;
 
-static OptionInfoRec FBDevOptions[] = {
+static const OptionInfoRec FBDevOptions[] = {
 	{ OPTION_SHADOW_FB,	"ShadowFB",	OPTV_BOOLEAN,	{0},	FALSE },
 #if 0
 	{ OPTION_ROTATE,	"Rotate",	OPTV_STRING,	{0},	FALSE },
@@ -222,6 +222,7 @@ typedef struct {
 	/* DGA info */
 	DGAModePtr			pDGAMode;
 	int				nDGAMode;
+	OptionInfoPtr			Options;
 } FBDevRec, *FBDevPtr;
 
 #define FBDEVPTR(p) ((FBDevPtr)((p)->driverPrivate))
@@ -247,7 +248,7 @@ FBDevFreeRec(ScrnInfoPtr pScrn)
 
 /* -------------------------------------------------------------------- */
 
-static OptionInfoPtr
+static const OptionInfoRec *
 FBDevAvailableOptions(int chipid, int busid)
 {
 	return FBDevOptions;
@@ -438,15 +439,18 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 
 	/* handle options */
 	xf86CollectOptions(pScrn, NULL);
-	xf86ProcessOptions(pScrn->scrnIndex, fPtr->pEnt->device->options, FBDevOptions);
+	if (!(fPtr->Options = xalloc(sizeof(FBDevOptions))))
+		return FALSE;
+	memcpy(fPtr->Options, FBDevOptions, sizeof(FBDevOptions));
+	xf86ProcessOptions(pScrn->scrnIndex, fPtr->pEnt->device->options, fPtr->Options);
 
 	/* use shadow framebuffer by default */
-	fPtr->shadowFB = xf86ReturnOptValBool(FBDevOptions, OPTION_SHADOW_FB, TRUE);
+	fPtr->shadowFB = xf86ReturnOptValBool(fPtr->Options, OPTION_SHADOW_FB, TRUE);
 
 #if 0
 	/* rotation (doesn't work yet) */
 	fPtr->rotate = 0;
-	if ((s = xf86GetOptValString(FBDevOptions, OPTION_ROTATE)))
+	if ((s = xf86GetOptValString(fPtr->Options, OPTION_ROTATE)))
 	{
 	  if(!xf86NameCmp(s, "CW"))
 	  {

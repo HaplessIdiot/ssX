@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.198 2001/04/25 14:23:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.199 2001/04/27 05:14:04 keithp Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -103,7 +103,7 @@
  */
 
 /* Mandatory functions */
-static OptionInfoPtr	MGAAvailableOptions(int chipid, int busid);
+static const OptionInfoRec *	MGAAvailableOptions(int chipid, int busid);
 static void	MGAIdentify(int flags);
 static Bool	MGAProbe(DriverPtr drv, int flags);
 static Bool	MGAPreInit(ScrnInfoPtr pScrn, int flags);
@@ -221,7 +221,7 @@ typedef enum {
     OPTION_DRI
 } MGAOpts;
 
-static OptionInfoRec MGAOptions[] = {
+static const OptionInfoRec MGAOptions[] = {
     { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_PCI_RETRY,		"PciRetry",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -547,8 +547,7 @@ MGAFreeRec(ScrnInfoPtr pScrn)
     pScrn->driverPrivate = NULL;
 }
 
-static
-OptionInfoPtr
+static const OptionInfoRec *
 MGAAvailableOptions(int chipid, int busid)
 {
     return MGAOptions;
@@ -1388,11 +1387,14 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     xf86CollectOptions(pScrn, NULL);
 
     /* Process the options */
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, MGAOptions);
+    if (!(pMga->Options = xalloc(sizeof(MGAOptions))))
+	return FALSE;
+    memcpy(pMga->Options, MGAOptions, sizeof(MGAOptions));
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pMga->Options);
 
 #if !defined(__powerpc__)
     pMga->softbooted = FALSE;
-    if (xf86ReturnOptValBool(MGAOptions, OPTION_INT10, FALSE) &&
+    if (xf86ReturnOptValBool(pMga->Options, OPTION_INT10, FALSE) &&
         xf86LoadSubModule(pScrn, "int10")) {
         xf86Int10InfoPtr pInt;
 
@@ -1435,7 +1437,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
 #ifdef USEMGAHAL
-    if (HAL_CHIPSETS && !xf86ReturnOptValBool(MGAOptions, OPTION_NOHAL, FALSE)
+    if (HAL_CHIPSETS && !xf86ReturnOptValBool(pMga->Options, OPTION_NOHAL, FALSE)
         && xf86LoadSubModule(pScrn, "mga_hal")) {
 	 xf86LoaderReqSymLists(halSymbols, NULL);
 	 xf86DrvMsg(pScrn->scrnIndex, X_INFO,"Matrox HAL module used\n");
@@ -1467,7 +1469,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     from = X_DEFAULT;
     pMga->agpMode = MGA_DEFAULT_AGP_MODE;
 
-    if (xf86GetOptValInteger(MGAOptions,
+    if (xf86GetOptValInteger(pMga->Options,
 			     OPTION_AGP_MODE, &(pMga->agpMode))) {
        if (pMga->agpMode < 1) {
 	  pMga->agpMode = 1;
@@ -1488,40 +1490,40 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      * The preferred method is to use the "hw cursor" option as a tri-state
      * option, with the default set above.
      */
-    if (xf86GetOptValBool(MGAOptions, OPTION_HW_CURSOR, &pMga->HWCursor)) {
+    if (xf86GetOptValBool(pMga->Options, OPTION_HW_CURSOR, &pMga->HWCursor)) {
 	from = X_CONFIG;
     }
 
     /* For compatibility, accept this too (as an override) */
-    if (xf86ReturnOptValBool(MGAOptions, OPTION_NOACCEL, FALSE)) {
+    if (xf86ReturnOptValBool(pMga->Options, OPTION_NOACCEL, FALSE)) {
 	pMga->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }
-    if (xf86ReturnOptValBool(MGAOptions, OPTION_PCI_RETRY, FALSE)) {
+    if (xf86ReturnOptValBool(pMga->Options, OPTION_PCI_RETRY, FALSE)) {
 	pMga->UsePCIRetry = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
     }
-    if (xf86ReturnOptValBool(MGAOptions, OPTION_SYNC_ON_GREEN, FALSE)) {
+    if (xf86ReturnOptValBool(pMga->Options, OPTION_SYNC_ON_GREEN, FALSE)) {
 	pMga->SyncOnGreen = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Sync-on-Green enabled\n");
     }
-    if (xf86ReturnOptValBool(MGAOptions, OPTION_SHOWCACHE, FALSE)) {
+    if (xf86ReturnOptValBool(pMga->Options, OPTION_SHOWCACHE, FALSE)) {
 	pMga->ShowCache = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ShowCache enabled\n");
     }
-    if (xf86ReturnOptValBool(MGAOptions, OPTION_MGA_SDRAM, FALSE)) {
+    if (xf86ReturnOptValBool(pMga->Options, OPTION_MGA_SDRAM, FALSE)) {
 	pMga->HasSDRAM = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Has SDRAM\n");
     }
-    if (xf86GetOptValFreq(MGAOptions, OPTION_SET_MCLK, OPTUNITS_MHZ, &real)) {
+    if (xf86GetOptValFreq(pMga->Options, OPTION_SET_MCLK, OPTUNITS_MHZ, &real)) {
 	pMga->MemClk = (int)(real * 1000.0);
     }
-    if ((s = xf86GetOptValString(MGAOptions, OPTION_OVERLAY))) {
+    if ((s = xf86GetOptValString(pMga->Options, OPTION_OVERLAY))) {
       if (!*s || !xf86NameCmp(s, "8,24") || !xf86NameCmp(s, "24,8")) {
 	if(pScrn->bitsPerPixel == 32 && pMga->SecondCrtc == FALSE) {
 	    pMga->Overlay8Plus24 = TRUE;
 	    if(!xf86GetOptValInteger(
-			MGAOptions, OPTION_COLOR_KEY,&(pMga->colorKey)))
+			pMga->Options, OPTION_COLOR_KEY,&(pMga->colorKey)))
 		pMga->colorKey = TRANSPARENCY_KEY;
 	    pScrn->colorKey = pMga->colorKey;
 	    pScrn->overlayFlags = OVERLAY_8_32_PLANAR;
@@ -1538,7 +1540,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
       }
     }
 
-    if(xf86GetOptValInteger(MGAOptions, OPTION_VIDEO_KEY, &(pMga->videoKey))) {
+    if(xf86GetOptValInteger(pMga->Options, OPTION_VIDEO_KEY, &(pMga->videoKey))) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "video key set to 0x%x\n",
 				pMga->videoKey);
     } else {
@@ -1546,22 +1548,22 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 			  (1 << pScrn->offset.green) |
         (((pScrn->mask.blue >> pScrn->offset.blue) - 1) << pScrn->offset.blue);
     }
-    if (xf86ReturnOptValBool(MGAOptions, OPTION_SHADOW_FB, FALSE)) {
+    if (xf86ReturnOptValBool(pMga->Options, OPTION_SHADOW_FB, FALSE)) {
 	pMga->ShadowFB = TRUE;
 	pMga->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		"Using \"Shadow Framebuffer\" - acceleration disabled\n");
     }
-    if (xf86ReturnOptValBool(MGAOptions, OPTION_FBDEV, FALSE)) {
+    if (xf86ReturnOptValBool(pMga->Options, OPTION_FBDEV, FALSE)) {
 	pMga->FBDev = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		"Using framebuffer device\n");
     }
-    if (xf86ReturnOptValBool(MGAOptions, OPTION_OVERCLOCK_MEM, FALSE)) {
+    if (xf86ReturnOptValBool(pMga->Options, OPTION_OVERCLOCK_MEM, FALSE)) {
 	pMga->OverclockMem = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Overclocking memory\n");
     }
-    if (xf86ReturnOptValBool(MGAOptions, OPTION_TEXTURED_VIDEO, FALSE)) {
+    if (xf86ReturnOptValBool(pMga->Options, OPTION_TEXTURED_VIDEO, FALSE)) {
 	pMga->TexturedVideo = TRUE;
     }
     if (pMga->FBDev) {
@@ -1578,7 +1580,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	pScrn->ValidMode     = fbdevHWValidMode;
     }
     pMga->Rotate = 0;
-    if ((s = xf86GetOptValString(MGAOptions, OPTION_ROTATE))) {
+    if ((s = xf86GetOptValString(pMga->Options, OPTION_ROTATE))) {
       if(!xf86NameCmp(s, "CW")) {
 	pMga->ShadowFB = TRUE;
 	pMga->NoAccel = TRUE;
@@ -1772,11 +1774,11 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    Bool UseHalf = FALSE;
 	    int adjust;
 
-	    xf86GetOptValBool(MGAOptions, OPTION_CRTC2HALF, &UseHalf);
+	    xf86GetOptValBool(pMga->Options, OPTION_CRTC2HALF, &UseHalf);
 	    adjust = pScrn->videoRam / 2;
 
 	    if (UseHalf == TRUE ||
-		  xf86GetOptValInteger(MGAOptions, OPTION_CRTC2RAM, &adjust)) {
+		  xf86GetOptValInteger(pMga->Options, OPTION_CRTC2RAM, &adjust)) {
 	        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 			   "Crtc2 will use %dK of VideoRam\n",
 			   adjust);
@@ -2041,7 +2043,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 #ifdef USEMGAHAL
     MGA_HAL(
     swap_head
-        = xf86ReturnOptValBool(MGAOptions, OPTION_SWAPPED_HEAD, FALSE);
+        = xf86ReturnOptValBool(pMga->Options, OPTION_SWAPPED_HEAD, FALSE);
 
     if(pMga->SecondCrtc == FALSE) {
         pMga->pBoard = xalloc(sizeof(CLIENTDATA) + MGAGetBOARDHANDLESize());
@@ -2557,7 +2559,7 @@ static void FillModeInfoStruct(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pMga->pMgaModeInfo->flSignalMode = 0x10;
 
     /* Set TV standard */
-    if ((s = xf86GetOptValString(MGAOptions, OPTION_TVSTANDARD))) {
+    if ((s = xf86GetOptValString(pMga->Options, OPTION_TVSTANDARD))) {
     	if (!xf86NameCmp(s, "PAL")) {
     		pMga->pMgaModeInfo->flSignalMode = 0x00;
     		pMga->pMgaModeInfo->ulRefreshRate = 50;
@@ -2572,7 +2574,7 @@ static void FillModeInfoStruct(ScrnInfoPtr pScrn, DisplayModePtr mode)
     }
 
     /* Set Cable Type */
-    if ((s = xf86GetOptValString(MGAOptions, OPTION_CABLETYPE))) {
+    if ((s = xf86GetOptValString(pMga->Options, OPTION_CABLETYPE))) {
     	if (!xf86NameCmp(s, "SCART_RGB")) {
     		pMga->pMgaModeInfo->ulCableType = TV_SCART_RGB;
     	} else if (!xf86NameCmp(s, "SCART_COMPOSITE")) {
@@ -2623,7 +2625,7 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     Bool tv2 = FALSE;
     ULONG status;
     Bool swap_head
-      = xf86ReturnOptValBool(MGAOptions, OPTION_SWAPPED_HEAD, FALSE);
+      = xf86ReturnOptValBool(pMga->Options, OPTION_SWAPPED_HEAD, FALSE);
 
     if (pMga->pMgaHwInfo)
     {
@@ -3028,7 +3030,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
       * InitGLXVisuals call back.
       * The DRI does not work when textured video is enabled at this time.
       */
-    if (!xf86ReturnOptValBool(MGAOptions, OPTION_DRI, TRUE)) {
+    if (!xf86ReturnOptValBool(pMga->Options, OPTION_DRI, TRUE)) {
 	driFrom = X_CONFIG;
     } else if ( pMga->NoAccel ) {
        xf86DrvMsg( pScrn->scrnIndex, X_ERROR,

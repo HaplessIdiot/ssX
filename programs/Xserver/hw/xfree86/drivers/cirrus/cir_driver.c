@@ -11,7 +11,7 @@
  *	Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.63 2000/12/27 04:57:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.65 2001/02/15 17:39:27 eich Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -40,7 +40,7 @@
 
 /* Mandatory functions */
 
-static OptionInfoPtr	CIRAvailableOptions(int chipid, int busid);
+static const OptionInfoRec *	CIRAvailableOptions(int chipid, int busid);
 static void	CIRIdentify(int flags);
 static Bool	CIRProbe(DriverPtr drv, int flags);
 
@@ -184,8 +184,7 @@ CIRIdentify(int flags)
 	xf86PrintChipsets(CIR_NAME, "driver for Cirrus chipsets", CIRChipsets);
 }
 
-static
-OptionInfoPtr
+static const OptionInfoRec *
 CIRAvailableOptions(int chipid, int busid)
 {
 	int chip = chipid & 0xffff;

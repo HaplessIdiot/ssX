@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.8 2001/02/09 03:23:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.10 2001/03/08 17:12:12 eich Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -51,7 +51,7 @@ static void SMI_DisableMmio(ScrnInfoPtr pScrn);
  * Forward definitions for the functions that make up the driver.
  */
 
-static OptionInfoPtr SMI_AvailableOptions(int chipid, int busid);
+static const OptionInfoRec * SMI_AvailableOptions(int chipid, int busid);
 static void SMI_Identify(int flags);
 static Bool SMI_Probe(DriverPtr drv, int flags);
 static Bool SMI_PreInit(ScrnInfoPtr pScrn, int flags);
@@ -158,7 +158,7 @@ typedef enum
 
 } SMIOpts;
 
-static OptionInfoRec SMIOptions[] =
+static const OptionInfoRec SMIOptions[] =
 {
    { OPTION_PCI_BURST,		 "pci_burst",		  OPTV_BOOLEAN, {0}, FALSE },
    { OPTION_FIFO_CONSERV,	 "fifo_conservative", OPTV_BOOLEAN, {0}, FALSE },
@@ -385,7 +385,7 @@ SMI_FreeRec(ScrnInfoPtr pScrn)
 	LEAVE_PROC("SMI_FreeRec");
 }
 
-static OptionInfoPtr
+static const OptionInfoRec *
 SMI_AvailableOptions(int chipid, int busid)
 {
 	ENTER_PROC("SMI_AvailableOptions");
@@ -618,9 +618,12 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	}
 
 	/* Process the options */
-	xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, SMIOptions);
+	if (!(pSmi->Options = xalloc(sizeof(SMIOptions))))
+		return FALSE;
+	memcpy(pSmi->Options, SMIOptions, sizeof(SMIOptions));
+	xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pSmi->Options);
 
-	if (xf86ReturnOptValBool(SMIOptions, OPTION_PCI_BURST, FALSE))
+	if (xf86ReturnOptValBool(pSmi->Options, OPTION_PCI_BURST, FALSE))
 	{
 		pSmi->pci_burst = TRUE;
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: pci_burst - PCI burst "
@@ -632,9 +635,9 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	}
 
 	pSmi->NoPCIRetry = TRUE;
-	if (xf86ReturnOptValBool(SMIOptions, OPTION_PCI_RETRY, FALSE))
+	if (xf86ReturnOptValBool(pSmi->Options, OPTION_PCI_RETRY, FALSE))
 	{
-		if (xf86ReturnOptValBool(SMIOptions, OPTION_PCI_BURST, FALSE))
+		if (xf86ReturnOptValBool(pSmi->Options, OPTION_PCI_BURST, FALSE))
 		{
 			pSmi->NoPCIRetry = FALSE;
 			xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: pci_retry\n");
@@ -646,7 +649,7 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 		}
 	}
 
-	if (xf86IsOptionSet(SMIOptions, OPTION_FIFO_CONSERV))
+	if (xf86IsOptionSet(pSmi->Options, OPTION_FIFO_CONSERV))
 	{
 		pSmi->fifo_conservative = TRUE;
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: fifo_conservative "
@@ -657,7 +660,7 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 		pSmi->fifo_conservative = FALSE;
 	}
 
-	if (xf86IsOptionSet(SMIOptions, OPTION_FIFO_MODERATE))
+	if (xf86IsOptionSet(pSmi->Options, OPTION_FIFO_MODERATE))
 	{
 		pSmi->fifo_moderate = TRUE;
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: fifo_moderate set\n");
@@ -667,7 +670,7 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 		pSmi->fifo_moderate = FALSE;
 	}
 
-	if (xf86IsOptionSet(SMIOptions, OPTION_FIFO_AGGRESSIVE))
+	if (xf86IsOptionSet(pSmi->Options, OPTION_FIFO_AGGRESSIVE))
 	{
 		pSmi->fifo_aggressive = TRUE;
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: fifo_aggressive set\n");
@@ -677,7 +680,7 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 		pSmi->fifo_aggressive = FALSE;
 	}
 
-	if (xf86ReturnOptValBool(SMIOptions, OPTION_NOACCEL, FALSE))
+	if (xf86ReturnOptValBool(pSmi->Options, OPTION_NOACCEL, FALSE))
 	{
 		pSmi->NoAccel = TRUE;
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: NoAccel - Acceleration "
@@ -688,7 +691,7 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 		pSmi->NoAccel = FALSE;
 	}
 
-	if (xf86ReturnOptValBool(SMIOptions, OPTION_SHOWCACHE, FALSE))
+	if (xf86ReturnOptValBool(pSmi->Options, OPTION_SHOWCACHE, FALSE))
 	{
 		pSmi->ShowCache = TRUE;
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: show_cache set\n");
@@ -698,7 +701,7 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 		pSmi->ShowCache = FALSE;
 	}
 
-	if (xf86GetOptValFreq(SMIOptions, OPTION_MCLK, OPTUNITS_MHZ, &real))
+	if (xf86GetOptValFreq(pSmi->Options, OPTION_MCLK, OPTUNITS_MHZ, &real))
 	{
 		pSmi->MCLK = (int)(real * 1000.0);
 		if (pSmi->MCLK <= 120000)
@@ -721,11 +724,11 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 
 	from = X_DEFAULT;
 	pSmi->hwcursor = TRUE;
-	if (xf86GetOptValBool(SMIOptions, OPTION_HWCURSOR, &pSmi->hwcursor))
+	if (xf86GetOptValBool(pSmi->Options, OPTION_HWCURSOR, &pSmi->hwcursor))
 	{
 		from = X_CONFIG;
 	}
-	if (xf86ReturnOptValBool(SMIOptions, OPTION_SWCURSOR, FALSE))
+	if (xf86ReturnOptValBool(pSmi->Options, OPTION_SWCURSOR, FALSE))
 	{
 		pSmi->hwcursor = FALSE;
 		from = X_CONFIG;
@@ -733,7 +736,7 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, from, "Using %s Cursor\n",
 			pSmi->hwcursor ? "Hardware" : "Software");
 
-	if (xf86GetOptValBool(SMIOptions, OPTION_SHADOW_FB, &pSmi->shadowFB))
+	if (xf86GetOptValBool(pSmi->Options, OPTION_SHADOW_FB, &pSmi->shadowFB))
 	{
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ShadowFB %s.\n",
 				pSmi->shadowFB ? "enabled" : "disabled");
@@ -742,7 +745,7 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	#if 1 /* PDR#932 */
 	if ((pScrn->depth == 8) || (pScrn->depth == 16))
 	#endif /* PDR#932 */
-	if ((s = xf86GetOptValString(SMIOptions, OPTION_ROTATE)))
+	if ((s = xf86GetOptValString(pSmi->Options, OPTION_ROTATE)))
 	{
 		if(!xf86NameCmp(s, "CW"))
 		{
@@ -768,7 +771,7 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	}
 
 #ifdef XvExtension
-	if (xf86GetOptValInteger(SMIOptions, OPTION_VIDEOKEY, &pSmi->videoKey))
+	if (xf86GetOptValInteger(pSmi->Options, OPTION_VIDEOKEY, &pSmi->videoKey))
 	{
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: Video key set to "
 				"0x%08X\n", pSmi->videoKey);
@@ -780,7 +783,7 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 						<< pScrn->offset.blue);
 	}
 
-	if (xf86ReturnOptValBool(SMIOptions, OPTION_BYTESWAP, FALSE))
+	if (xf86ReturnOptValBool(pSmi->Options, OPTION_BYTESWAP, FALSE))
 	{
 		pSmi->ByteSwap = TRUE;
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: ByteSwap enabled.\n");
@@ -791,7 +794,7 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	}
 #endif
 
-	if (xf86GetOptValBool(SMIOptions, OPTION_USEBIOS, &pSmi->useBIOS))
+	if (xf86GetOptValBool(pSmi->Options, OPTION_USEBIOS, &pSmi->useBIOS))
 	{
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: UseBIOS %s.\n",
 				pSmi->useBIOS ? "enabled" : "disabled");
@@ -802,7 +805,7 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 		pSmi->useBIOS = TRUE;
 	}
 
-	if (xf86GetOptValBool(SMIOptions, OPTION_ZOOMONLCD, &pSmi->zoomOnLCD))
+	if (xf86GetOptValBool(pSmi->Options, OPTION_ZOOMONLCD, &pSmi->zoomOnLCD))
 	{
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: ZoomOnLCD %s.\n",
 				pSmi->zoomOnLCD ? "enabled" : "disabled");

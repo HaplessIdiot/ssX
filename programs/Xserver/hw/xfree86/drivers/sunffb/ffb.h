@@ -24,7 +24,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.5 2000/12/01 00:24:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.6 2001/03/03 22:41:34 tsi Exp $ */
 
 #ifndef FFB_H
 #define FFB_H
@@ -212,6 +212,8 @@ typedef struct {
 	Bool dri_enabled;
 	ffb_dri_state_t *pFfbSarea;
 #endif
+
+	OptionInfoPtr Options;
 } FFBRec, *FFBPtr;
 
 /* Acceleration */

@@ -27,7 +27,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.14 2001/03/22 03:57:30 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.15 2001/04/01 14:00:12 tsi Exp $
  */
 
 #include "vesa.h"
@@ -43,7 +43,7 @@
 #include "xf86cmap.h"
 
 /* Mandatory functions */
-static OptionInfoPtr VESAAvailableOptions(int chipid, int busid);
+static const OptionInfoRec * VESAAvailableOptions(int chipid, int busid);
 static void VESAIdentify(int flags);
 static Bool VESAProbe(DriverPtr drv, int flags);
 static Bool VESAPreInit(ScrnInfoPtr pScrn, int flags);
@@ -124,7 +124,7 @@ typedef enum {
     OPTION_SHADOW_FB
 } VESAOpts;
 
-static OptionInfoRec VESAOptions[] = {
+static const OptionInfoRec VESAOptions[] = {
     { OPTION_SHADOW_FB,	"ShadowFB",	OPTV_BOOLEAN,	{0},	FALSE },
     { -1,		NULL,		OPTV_NONE,	{0},	FALSE }
 };
@@ -218,8 +218,7 @@ vesaSetup(pointer Module, pointer Options, int *ErrorMajor, int *ErrorMinor)
 
 #endif
 
-static
-OptionInfoPtr
+static const OptionInfoRec *
 VESAAvailableOptions(int chipid, int busid)
 {
     return (VESAOptions);
@@ -753,10 +752,13 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* options */
     xf86CollectOptions(pScrn, NULL);
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, VESAOptions);
+    if (!(pVesa->Options = xalloc(sizeof(VESAOptions))))
+	return FALSE;
+    memcpy(pVesa->Options, VESAOptions, sizeof(VESAOptions));
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pVesa->Options);
 
     /* Use shadow by default */
-    if (xf86ReturnOptValBool(VESAOptions, OPTION_SHADOW_FB, TRUE))
+    if (xf86ReturnOptValBool(pVesa->Options, OPTION_SHADOW_FB, TRUE))
 	pVesa->shadowFB = TRUE;
 
     mode = ((ModeInfoData*)pScrn->modes->Private)->data;

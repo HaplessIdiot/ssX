@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.45 2001/04/10 16:08:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.46 2001/04/18 14:52:41 dawes Exp $ */
 
 /*
  * Authors:
@@ -71,7 +71,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /* Required Functions: */
 
 static void I810Identify(int flags);
-static OptionInfoPtr	I810AvailableOptions(int chipid, int busid);
+static const OptionInfoRec *	I810AvailableOptions(int chipid, int busid);
 static Bool I810Probe(DriverPtr drv, int flags);
 static Bool I810PreInit(ScrnInfoPtr pScrn, int flags);
 static Bool I810ScreenInit(int Index, ScreenPtr pScreen, int argc, char **argv);
@@ -124,7 +124,7 @@ typedef enum {
    OPTION_NO_DDC
 } I810Opts;
 
-static OptionInfoRec I810Options[] = {
+static const OptionInfoRec I810Options[] = {
    { OPTION_NOACCEL, "NoAccel", OPTV_BOOLEAN, {0}, FALSE },
    { OPTION_SW_CURSOR, "SWcursor", OPTV_BOOLEAN, {0}, FALSE },
    { OPTION_COLOR_KEY, "ColorKey", OPTV_INTEGER, {0}, FALSE },
@@ -355,8 +355,7 @@ I810Identify(int flags) {
    xf86PrintChipsets(I810_NAME, "Driver for Intel i810 chipset", I810Chipsets);
 }
 
-static
-OptionInfoPtr
+static const OptionInfoRec *
 I810AvailableOptions(int chipid, int busid)
 {
     return I810Options;
@@ -440,9 +439,10 @@ I810DoDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
     xf86MonPtr MonInfo = NULL;
+    I810Ptr pI810 = I810PTR(pScrn);
 
     /* Honour Option "noDDC" */
-    if (xf86ReturnOptValBool(I810Options, OPTION_NO_DDC, FALSE) ) {
+    if (xf86ReturnOptValBool(pI810->Options, OPTION_NO_DDC, FALSE) ) {
       return MonInfo;
     }
 
@@ -541,10 +541,6 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
         return FALSE;
    }
 
-   pScrn->rgbBits=8;
-   if (xf86ReturnOptValBool(I810Options, OPTION_DAC_6BIT, FALSE))
-      pScrn->rgbBits=6;
-
    if (!xf86SetWeight(pScrn, defaultWeight, defaultWeight))
       return FALSE;
 
@@ -559,13 +555,20 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
 
    /* Process the options */
    xf86CollectOptions(pScrn, NULL);
-   xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, I810Options);
+   if (!(pI810->Options = xalloc(sizeof(I810Options))))
+      return FALSE;
+   memcpy(pI810->Options, I810Options, sizeof(I810Options));
+   xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pI810->Options);
+
+   pScrn->rgbBits=8;
+   if (xf86ReturnOptValBool(pI810->Options, OPTION_DAC_6BIT, FALSE))
+      pScrn->rgbBits=6;
 
    /* 6-BIT dac isn't reasonable for modes with > 8bpp */
-   if (xf86ReturnOptValBool(I810Options, OPTION_DAC_6BIT, FALSE) &&
+   if (xf86ReturnOptValBool(pI810->Options, OPTION_DAC_6BIT, FALSE) &&
        pScrn->bitsPerPixel>8) {
       OptionInfoPtr ptr;
-      ptr=xf86TokenToOptinfo(I810Options, OPTION_DAC_6BIT);
+      ptr=xf86TokenToOptinfo(pI810->Options, OPTION_DAC_6BIT);
       ptr->found=FALSE;
    }
 
@@ -786,14 +789,14 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
    }
    xf86LoaderReqSymbols("fbScreenInit", NULL);
 
-   if (!xf86ReturnOptValBool(I810Options, OPTION_NOACCEL, FALSE)) {
+   if (!xf86ReturnOptValBool(pI810->Options, OPTION_NOACCEL, FALSE)) {
       if (!xf86LoadSubModule(pScrn, "xaa")) {
 	 I810FreeRec(pScrn);
 	 return FALSE;
       }
    }
 
-   if (!xf86ReturnOptValBool(I810Options, OPTION_SW_CURSOR, FALSE)) {
+   if (!xf86ReturnOptValBool(pI810->Options, OPTION_SW_CURSOR, FALSE)) {
       if (!xf86LoadSubModule(pScrn, "ramdac")) {
 	 I810FreeRec(pScrn);
 	 return FALSE;
@@ -801,7 +804,7 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
       xf86LoaderReqSymLists(ramdacSymbols, NULL);
    }
 
-   if (xf86GetOptValInteger(I810Options, OPTION_COLOR_KEY, &(pI810->colorKey)))
+   if (xf86GetOptValInteger(pI810->Options, OPTION_COLOR_KEY, &(pI810->colorKey)))
    {
       xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "video overlay key set to 0x%x\n",
                                                 pI810->colorKey);
@@ -1394,7 +1397,7 @@ I810SetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
    }
 
    /* Turn on 8 bit dac if requested */
-   if (xf86ReturnOptValBool(I810Options, OPTION_DAC_6BIT, FALSE))
+   if (xf86ReturnOptValBool(pI810->Options, OPTION_DAC_6BIT, FALSE))
       i810Reg->PixelPipeCfg0 = DAC_6_BIT;
    else
       i810Reg->PixelPipeCfg0 = DAC_8_BIT;
@@ -1629,7 +1632,7 @@ I810AllocateFront(ScrnInfoPtr pScrn) {
    pI810->FbMemBox.y1=0;
    pI810->FbMemBox.y2=pScrn->virtualY;
 
-   xf86GetOptValInteger(I810Options, OPTION_CACHE_LINES, &cache_lines);
+   xf86GetOptValInteger(pI810->Options, OPTION_CACHE_LINES, &cache_lines);
 
    if (cache_lines < 0) {
       /* make sure there is enough for two DVD sized YUV buffers */
@@ -1735,8 +1738,8 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
     * InitGLXVisuals call back.
     */
    
-   if (xf86ReturnOptValBool(I810Options, OPTION_NOACCEL, FALSE) ||
-       !xf86ReturnOptValBool(I810Options, OPTION_DRI, TRUE)) {
+   if (xf86ReturnOptValBool(pI810->Options, OPTION_NOACCEL, FALSE) ||
+       !xf86ReturnOptValBool(pI810->Options, OPTION_DRI, TRUE)) {
       pI810->directRenderingEnabled = FALSE;
       driFrom = X_CONFIG;
    } else {
@@ -1816,7 +1819,7 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
       return FALSE;
    }
 
-   if (!xf86ReturnOptValBool(I810Options, OPTION_NOACCEL, FALSE)) {
+   if (!xf86ReturnOptValBool(pI810->Options, OPTION_NOACCEL, FALSE)) {
       if (pI810->LpRing.mem.Size != 0) {
          I810SetRingRegs( pScrn );
 
@@ -1833,7 +1836,7 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
    miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
-   if (!xf86ReturnOptValBool(I810Options, OPTION_SW_CURSOR, FALSE)) {
+   if (!xf86ReturnOptValBool(pI810->Options, OPTION_SW_CURSOR, FALSE)) {
       if (!I810CursorInit(pScreen)) {
          xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
                     "Hardware cursor initialization failed\n");

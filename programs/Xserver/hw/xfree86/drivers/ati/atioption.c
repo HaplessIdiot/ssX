@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.15 2001/01/06 20:58:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.16 2001/03/25 05:32:09 tsi Exp $ */
 /*
  * Copyright 1999 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -30,7 +30,7 @@
 /*
  * Recognised XF86Config options.
  */
-OptionInfoRec ATIPublicOptions[] =
+const OptionInfoRec ATIPublicOptions[] =
 {
     {
         ATI_OPTION_ACCEL,
@@ -124,7 +124,7 @@ const unsigned long ATIPublicOptionSize = SizeOf(ATIPublicOptions);
  *
  * Return recognised options that are intended for public consumption.
  */
-OptionInfoPtr
+const OptionInfoRec *
 ATIAvailableOptions
 (
     int ChipId,

@@ -21,7 +21,7 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.17 2000/06/19 15:01:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.18 2001/01/31 16:14:59 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -211,6 +211,7 @@ typedef enum {
     OPTION_EXPOSE	/* obsolete, ignored */
 } OptToken;
 
+/* XXX These should be made const, and per-screen/adaptor copies processed. */
 static OptionInfoRec AdaptorOptions[] = {
     { OPTION_DEVICE,		"Device",	OPTV_STRING,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp.h,v 1.4 2000/12/06 15:35:15 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp.h,v 1.6 2001/02/15 17:39:28 eich Exp $ */
 
 /* (c) Itai Nahshon */
 
@@ -6,7 +6,7 @@
 #define ALP_H
 
 extern ScrnInfoPtr AlpProbe(int entity);
-extern OptionInfoPtr	AlpAvailableOptions(int chipid);
+extern const OptionInfoRec *	AlpAvailableOptions(int chipid);
 
 # ifdef _ALP_PRIVATE_
 /* Saved registers that are not part of the core VGA */
