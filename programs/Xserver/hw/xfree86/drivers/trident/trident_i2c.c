@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_i2c.c,v 1.3 1999/04/25 10:02:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_i2c.c,v 1.2 1999/01/23 09:55:59 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"

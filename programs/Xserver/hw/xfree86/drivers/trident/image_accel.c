@@ -23,7 +23,7 @@
  * 
  * Trident 3DImage' accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/image_accel.c,v 1.12 1999/08/24 07:31:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/image_accel.c,v 1.11 1999/06/20 07:14:32 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"

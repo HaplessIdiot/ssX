@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.8 1999/06/20 07:14:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.7 1999/04/25 11:34:10 dawes Exp $ */
 
 #define NTSC 14.31818
 #define PAL  17.73448
@@ -36,6 +36,7 @@
 #define OldMode2 0x0D
 #define OldMode1 0x0E
 #define NewMode1 0x0E
+#define Protection 0x11
 #define MCLKLow 0x16
 #define MCLKHigh 0x17
 #define ClockLow 0x18
@@ -43,10 +44,12 @@
 
 /* 3x4 */
 #define Offset 0x13
+#define Underline 0x14
 #define CRTCModuleTest 0x1E
 #define FIFOControl 0x20
 #define LinearAddReg 0x21
 #define DRAMTiming 0x23
+#define RAMDACTiming 0x25
 #define CRTHiOrd 0x27
 #define AddColReg 0x29
 #define InterfaceSel 0x2A
@@ -57,6 +60,7 @@
 #define PixelBusReg 0x38
 #define PCIReg 0x39
 #define DRAMControl 0x3A
+#define MiscContReg 0x3C
 #define CursorXLow 0x40
 #define CursorXHigh 0x41
 #define CursorYLow 0x42
@@ -85,6 +89,8 @@
 /* 3CE */
 #define MiscExtFunc 0x0F
 #define MiscIntContReg 0x2F
+#define CyberControl 0x30
+#define CyberEnhance 0x31
 
 /* Graphics Engine for 9420/9430 */
 
@@ -204,13 +210,21 @@
 #define TRIDENT_READ_REG(r) \
 	*(volatile CARD32 *)((char*)pTrident->IOBase+(r))
 
-#if USE_MMIO
 #define OUTB(addr, data) \
-	(*(volatile CARD8 *)(pTrident->IOBase + (addr)) = (data))
+{ \
+	if (IsPciCard && UseMMIO) \
+	    (*(volatile CARD8 *)(pTrident->IOBase + (addr)) = (data)); \
+	else \
+	    outb(addr, data); \
+}
 #define OUTW(addr, data) \
-	(*(volatile CARD16 *)(pTrident->IOBase + (addr)) = (data))
-#define INB(addr) \
-	*(volatile CARD8 *)(pTrident->IOBase + (addr))
+{ \
+	if (IsPciCard && UseMMIO) \
+	    (*(volatile CARD16 *)(pTrident->IOBase + (addr)) = (data)); \
+	else \
+	    outw(addr, data); \
+}
+#define INB(addr) ((IsPciCard && UseMMIO) ? *(volatile CARD8 *)(pTrident->IOBase + addr) : inb(addr))
 
 #define OUTW_3C4(reg) \
     	OUTW(0x3C4, (tridentReg->tridentRegs3C4[reg])<<8 | (reg))
@@ -219,43 +233,15 @@
 #define OUTW_3x4(reg) \
     	OUTW(vgaIOBase + 4, (tridentReg->tridentRegs3x4[reg])<<8 | (reg))
 #define INB_3x4(reg) \
-    	(OUTB(vgaIOBase + 4, reg), \
-    	tridentReg->tridentRegs3x4[reg] = INB(vgaIOBase + 5))
+    	OUTB(vgaIOBase + 4, reg); \
+    	tridentReg->tridentRegs3x4[reg] = INB(vgaIOBase + 5)
 #define INB_3C4(reg) \
-    	(OUTB(0x3C4, reg), \
-    	tridentReg->tridentRegs3C4[reg] = INB(0x3C5))
+    	OUTB(0x3C4, reg); \
+    	tridentReg->tridentRegs3C4[reg] = INB(0x3C5);
 #define INB_3CE(reg) \
-    	(OUTB(0x3CE, reg), \
-    	tridentReg->tridentRegs3CE[reg] = INB(0x3CF))
-#else
-#define OUTB(addr, data) \
-	outb(addr, data); 
-#define OUTW(addr, data) \
-	outw(addr, data);
-#define INB(addr) \
-	inb(addr)
+    	OUTB(0x3CE, reg); \
+    	tridentReg->tridentRegs3CE[reg] = INB(0x3CF);
 
-#define OUTW_3C4(reg) \
-	outw(0x3C4, reg);
-#define OUTW_3CE(reg) \
-	outw(0x3CE, reg);
-#define OUTW_3x4(reg) \
-	outw(vgaIOBase + 4, reg);
-#define INB_3x4(reg) \
-    	(outb(vgaIOBase + 4, reg), \
-	tridentReg->tridentRegs3x4[reg] = inb(vgaIOBase + 5))
-#define INB_3C4(reg) \
-	(outb(0x3C4, reg), \
-    	tridentReg->tridentRegs3C4[reg] = inb(0x3C5))
-#define INB_3CE(reg) \
-	(outb(0x3CE, reg), \
-    	tridentReg->tridentRegs3CE[reg] = inb(0x3CF))
-#endif
-
-#define IMAGEBUSY(b) \
-	(b = (*(volatile CARD32 *)(pTrident->IOBase+IMAGE_GE_STATUS)) & 0xF0000000)
-#define BLADEBUSY(b) \
-	(b = (*(volatile CARD32 *)(pTrident->IOBase+BLADE_GE_STATUS)) & 0xFE800000)
 #define BLTBUSY(b) \
 	(b = (*(volatile CARD8 *)(pTrident->IOBase+GER_STATUS)) & GE_BUSY)
 #define OLDBLTBUSY(b) \
@@ -318,9 +304,13 @@
 #define TGUI_DSTCLIP_XY(x,y) \
 	(*(volatile CARD32 *)(pTrident->IOBase + GER_DSTCLIP_XY) = XY_MERGE(x,y))
 #define TGUI_PATLOC(addr) \
-	(*(volatile CARD16 *)(pTrident->IOBase +GER_PATLOC) = (addr))
+	(*(volatile CARD16 *)(pTrident->IOBase + GER_PATLOC) = (addr))
 #define TGUI_CKEY(c) \
 	(*(volatile CARD32 *)(pTrident->IOBase + GER_CKEY) = (c))
+#define IMAGEBUSY(b) \
+	(b = (*(volatile CARD32 *)(pTrident->IOBase+IMAGE_GE_STATUS)) & 0xF0000000)
+#define BLADEBUSY(b) \
+	(b = (*(volatile CARD32 *)(pTrident->IOBase+BLADE_GE_STATUS)) & 0xFE800000)
 #define IMAGE_OUT(addr, c) \
 	(*(volatile CARD32 *)(pTrident->IOBase + addr) = (c))
 #define BLADE_OUT(addr, c) \

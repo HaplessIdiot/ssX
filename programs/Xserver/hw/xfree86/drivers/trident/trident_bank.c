@@ -23,29 +23,73 @@
  */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_bank.c,v 1.1 1998/11/15 04:30:33 dawes Exp $ */
 
+/* All drivers should typically include these */
+#include "xf86.h"
+#include "xf86_OSproc.h"
+#include "xf86_ansic.h"
+
+/* Drivers for PCI hardware need this */
+#include "xf86PciInfo.h"
+
+/* Drivers that need to access the PCI config space directly need this */
+#include "xf86Pci.h"
+
+#include "compiler.h"
+#include "trident.h"
 #include "trident_regs.h"
 
-void TVGA8900SetRead(int bank)
+int TVGA8900SetRead(ScreenPtr pScreen, int bank)
 {
-  MMIO_OUTW(0x3c4, (((bank & 0xff) ^ 0x02)<<8)|0x0E);
+  ScrnInfoPtr pScrn;
+  TRIDENTPtr pTrident;
+  pScrn = xf86Screens[pScreen->myNum];
+  pTrident = TRIDENTPTR(pScrn);
+  OUTW(0x3c4, 0xC000 | (((bank & 0x3f) ^ 0x02)<<8)|0x0E);
+  return 0;
 }
-void TGUISetRead(int bank)
+int TGUISetRead(ScreenPtr pScreen, int bank)
 {
-  MMIO_OUTB(0x3d9, bank & 0xff);
+  ScrnInfoPtr pScrn;
+  TRIDENTPtr pTrident;
+  pScrn = xf86Screens[pScreen->myNum];
+  pTrident = TRIDENTPTR(pScrn);
+  OUTB(0x3d9, bank & 0xff);
+  return 0;
 }
-void TVGA8900SetWrite(int bank)
+int TVGA8900SetWrite(ScreenPtr pScreen, int bank)
 {
-  MMIO_OUTW(0x3c4, (((bank & 0xff) ^ 0x02)<<8)|0x0E);
+  ScrnInfoPtr pScrn;
+  TRIDENTPtr pTrident;
+  pScrn = xf86Screens[pScreen->myNum];
+  pTrident = TRIDENTPTR(pScrn);
+  OUTW(0x3c4, 0xC000 | (((bank & 0x3f) ^ 0x02)<<8)|0x0E);
+  return 0;
 }
-void TGUISetWrite(int bank)
+int TGUISetWrite(ScreenPtr pScreen, int bank)
 {
-  MMIO_OUTB(0x3d8, bank & 0xff);
+  ScrnInfoPtr pScrn;
+  TRIDENTPtr pTrident;
+  pScrn = xf86Screens[pScreen->myNum];
+  pTrident = TRIDENTPTR(pScrn);
+  OUTB(0x3d8, bank & 0xff);
+  return 0;
 }
-void TVGA8900SetReadWrite(int bank)
+int TVGA8900SetReadWrite(ScreenPtr pScreen, int bank)
 {
-  MMIO_OUTW(0x3c4, (((bank & 0xff) ^ 0x02)<<8)|0x0E);
+  ScrnInfoPtr pScrn;
+  TRIDENTPtr pTrident;
+  pScrn = xf86Screens[pScreen->myNum];
+  pTrident = TRIDENTPTR(pScrn);
+  OUTW(0x3c4, 0xC000 | (((bank & 0x3f) ^ 0x02)<<8)|0x0E);
+  return 0;
 }
-void TGUISetReadWrite(int bank)
+int TGUISetReadWrite(ScreenPtr pScreen, int bank)
 {
-  MMIO_OUTW(0x3d8, (bank & 0xff)<< 8 | bank & 0xff);
+  ScrnInfoPtr pScrn;
+  TRIDENTPtr pTrident;
+  pScrn = xf86Screens[pScreen->myNum];
+  pTrident = TRIDENTPTR(pScrn);
+  OUTB(0x3d8, bank & 0xff);
+  OUTB(0x3d9, bank & 0xff);
+  return 0;
 }

@@ -23,7 +23,7 @@
  * 
  * Trident Blade3D accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.3 1999/06/20 07:14:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.2 1999/04/25 10:02:27 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -101,6 +101,7 @@ BladeInitializeAccelerator(ScrnInfoPtr pScrn)
     CARD32 stride;
 
     stride = (pScrn->displayWidth >> 3) << 20;
+
     BLADE_OUT(0x21C8, stride);
     BLADE_OUT(0x21CC, stride);
     BLADE_OUT(0x21D0, stride);
@@ -119,10 +120,15 @@ BladeInitializeAccelerator(ScrnInfoPtr pScrn)
 	    stride |= 2<<29;
 	    break;
     }
+    BLADE_OUT(0x21B8, 0);
     BLADE_OUT(0x21B8, stride);
     BLADE_OUT(0x21BC, stride);
     BLADE_OUT(0x21C0, stride);
     BLADE_OUT(0x21C4, stride);
+    if (pTrident->HasSGRAM)
+    	BLADE_OUT(0x2168, 1<<26); /* Enables Block Write if available (SGRAM) */
+    else
+	BLADE_OUT(0x2168, 0);
     BLADE_OUT(0x216C, 0);
 }
 
@@ -143,10 +149,6 @@ BladeAccelInit(ScreenPtr pScreen)
 		     LINEAR_FRAMEBUFFER |
 		     OFFSCREEN_PIXMAPS;
  
-#if 0
-    infoPtr->PixmapCacheFlags = DO_NOT_BLIT_STIPPLES;
-#endif
- 
     infoPtr->Sync = BladeSync;
 
     infoPtr->SetClippingRectangle = BladeSetClippingRectangle;
@@ -166,13 +168,12 @@ BladeAccelInit(ScreenPtr pScreen)
 			       LINE_PATTERN_POWER_OF_2_ONLY;
 #endif
 
-#if 1
-    infoPtr->SolidFillFlags = 0;
+    infoPtr->SolidFillFlags = NO_PLANEMASK;
     infoPtr->SetupForSolidFill = BladeSetupForFillRectSolid;
     infoPtr->SubsequentSolidFillRect = BladeSubsequentFillRectSolid;
-#endif
     
     infoPtr->ScreenToScreenCopyFlags = ONLY_TWO_BITBLT_DIRECTIONS |
+					NO_PLANEMASK |
 					NO_TRANSPARENCY;
 
     infoPtr->SetupForScreenToScreenCopy = 	
@@ -180,7 +181,7 @@ BladeAccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentScreenToScreenCopy = 		
 				BladeSubsequentScreenToScreenCopy;
 
-    infoPtr->Mono8x8PatternFillFlags =  
+    infoPtr->Mono8x8PatternFillFlags = NO_PLANEMASK | NO_TRANSPARENCY |
 					BIT_ORDER_IN_BYTE_MSBFIRST |
 					HARDWARE_PATTERN_SCREEN_ORIGIN |
 					HARDWARE_PATTERN_PROGRAMMED_BITS;
@@ -223,7 +224,7 @@ BladeAccelInit(ScreenPtr pScreen)
 
     infoPtr->SetupForImageWrite = BladeSetupForImageWrite;
     infoPtr->SubsequentImageWriteRect = BladeSubsequentImageWriteRect;
-    infoPtr->ImageWriteFlags =  
+    infoPtr->ImageWriteFlags =  NO_PLANEMASK |
 				NO_TRANSPARENCY |
 				LEFT_EDGE_CLIPPING_NEGATIVE_X |
 				LEFT_EDGE_CLIPPING |
@@ -249,14 +250,14 @@ BladeSyncClip(ScrnInfoPtr pScrn)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     int busy;
-    int cnt = 5000000;
+    int cnt = 10000000;
 
     BLADEBUSY(busy);
     while (busy != 0) {
 	if (--cnt < 0) {
 	    ErrorF("GE timeout\n");
-	    BLADE_OUT(0x2120, 0x00000000);
-	    BladeInitializeAccelerator(pScrn);
+	    BLADE_OUT(0x2124, 1<<7);
+	    BLADE_OUT(0x2124, 0);
 	    break;
 	}
     	BLADEBUSY(busy);
@@ -268,16 +269,17 @@ BladeSync(ScrnInfoPtr pScrn)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     int busy;
-    int cnt = 500000;
+    int cnt = 10000000;
 
     if (pTrident->Clipping) BladeDisableClipping(pScrn);
+    BLADE_OUT(0x216C, 0);
 
     BLADEBUSY(busy);
     while (busy != 0) {
 	if (--cnt < 0) {
 	    ErrorF("GE timeout\n");
-	    BLADE_OUT(0x2120, 0x00000000);
-	    BladeInitializeAccelerator(pScrn);
+	    BLADE_OUT(0x2124, 1<<7);
+	    BLADE_OUT(0x2124, 0);
 	    break;
 	}
     	BLADEBUSY(busy);
@@ -294,10 +296,12 @@ BladeSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
     pTrident->BltScanDirection = 0;
     if ((xdir < 0) || (ydir < 0)) pTrident->BltScanDirection |= 1<<1;
 
+#if 0
     if (transparency_color != -1) {
 	BLADE_OUT(0x2168, transparency_color & 0xffffff);
 	pTrident->BltScanDirection |= 1<<6;
     }
+#endif
  
     if (planemask != -1) {
 	REPLICATE(planemask);
@@ -579,6 +583,7 @@ BladeSetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
     BLADE_OUT(0x2148, XAAPatternROP[rop]);
+
     if (bg == -1) {
     REPLICATE(fg);
     BLADE_OUT(0x216C, 0x80000000 | 1<<30);
@@ -586,7 +591,9 @@ BladeSetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
     BLADE_OUT(0x2170, patternx);
     BLADE_OUT(0x2170, patterny);
     BLADE_OUT(0x2174, fg);
+#if 0
     BLADE_OUT(0x2178, ~fg);
+#endif
     } else {
     REPLICATE(fg);
     REPLICATE(bg);
