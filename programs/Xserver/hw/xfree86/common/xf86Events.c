@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.104 2000/12/07 20:32:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.105 2001/03/05 20:18:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -345,23 +345,14 @@ xf86PostKbdEvent(unsigned key)
      * PANIX returns DICOP standards based keycodes in using 106jp 
      * keyboard. We need to remap some keys. 
      */
-#define KEY_P_UP	0x5A
-#define KEY_P_PGUP	0x5B
-#define KEY_P_LEFT	0x5C
-#define KEY_P_BKSL	0x73
-#define KEY_P_YEN	0x7D
-#define KEY_P_NFER	0x7B
-#define KEY_P_XFER	0x79
-
   if(xf86Info.panix106 == TRUE){
     switch (scanCode) {
-    /* case 0x78:        scanCode = KEY_P_UP;     break;   not needed*/
-    case 0x56:        scanCode = KEY_P_BKSL;   break;  /* Backslash */
-    case 0x5A:        scanCode = KEY_P_NFER;   break;  /* No Kanji Transfer*/
-    case 0x5B:        scanCode = KEY_P_XFER;   break;  /* Kanji Tranfer */
-    case 0x5C:        scanCode = KEY_P_YEN;    break;  /* Yen curs pgup */
-    case 0x6B:        scanCode = KEY_P_LEFT;   break;  /* Cur Left */
-    case 0x6F:        scanCode = KEY_P_PGUP;   break;  /* Cur PageUp */
+    case 0x56:        scanCode = KEY_BSlash2;	break;  /* Backslash */
+    case 0x5A:        scanCode = KEY_NFER;	break;  /* No Kanji Transfer*/
+    case 0x5B:        scanCode = KEY_XFER;	break;  /* Kanji Tranfer */
+    case 0x5C:        scanCode = KEY_Yen;	break;  /* Yen curs pgup */
+    case 0x6B:        scanCode = KEY_Left;	break;  /* Cur Left */
+    case 0x6F:        scanCode = KEY_PgUp;	break;  /* Cur PageUp */
     case 0x72:        scanCode = KEY_AltLang;  break;  /* AltLang(right) */
     case 0x73:        scanCode = KEY_RCtrl;    break;  /* not needed */
     }
