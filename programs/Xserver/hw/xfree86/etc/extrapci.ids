@@ -14,7 +14,7 @@
 #	changes/additions that aren't XFree86-specific to the pciids
 #	project (http://pciids.sf.net/).
 #
-#	$XFree86: xc/programs/Xserver/hw/xfree86/etc/extrapci.ids,v 1.1 2002/07/15 20:46:01 dawes Exp $
+#	$XFree86: xc/programs/Xserver/hw/xfree86/etc/extrapci.ids,v 1.3 2002/09/16 18:06:06 eich Exp $
 #
 
 # Vendors, devices and subsystems. Please keep sorted.
@@ -26,4 +26,10 @@
 #		subvendor subdevice  subsystem_name	<-- two tabs
 #
 # Use lower-case hex digits for all numeric values.
-	0c30  F69030
+
+# Example: Add a new chipset for vendor who's ID is xyzw
+#
+# xyzw	"
+#	20ce	New Chipset Description
+
+
