@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.131 2001/04/16 21:04:59 herrb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.132 2001/04/17 21:00:17 alanh Exp $
 
 
 
@@ -187,7 +187,7 @@ XCONFIGDEFINES = -DPROJECTROOT='"$(PROJECTROOT)"' \
 XF86CONFIGFILE = XConfigFile
 XCONFIGUREDEFINES = -DXF86CONFIGFILE='"$(XF86CONFIGFILE)"'
 
-    DEFINES = $(CONSDEFINES) $(KBDDEFINES) $(EXT_DEFINES) $(OSDEFINES)
+    DEFINES = $(CONSDEFINES) $(KBDDEFINES) $(EXT_DEFINES) $(OS_DEFINES)
 
 AllTarget($(OFILES))
 
