@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.42tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.43tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -341,7 +341,7 @@
 #define PCI_MAP_IS_MEM(b)	(!PCI_MAP_IS_IO(b))
 
 #define PCI_MAP_IS64BITMEM(b)	\
-	(((b) & PCI_MAP_MEMORY_TYPE_MASK) == PCI_MAP_MEMORY_TYPE_64BIT)
+	(((b) & PCI_MAP_MEMORY_TYPE) == PCI_MAP_MEMORY_TYPE_64BIT)
 
 #define PCIGETMEMORY(b)		((b) & PCI_MAP_MEMORY_ADDRESS_MASK)
 #define PCIGETMEMORY64HIGH(b)	(*((CARD32*)&b + 1))

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/dmxinit.c,v 1.5 2005/01/27 02:42:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxinit.c,v 1.6tsi Exp $ */
 /*
  * Copyright 2001-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -510,7 +510,7 @@ static void dmxDisplayInit(DMXScreenInfo *dmxScreen)
 /* If this doesn't compile, just add || defined(yoursystem) to the line
  * below.  This information is to help with bug reports and is not
  * critical. */
-#if !defined(_POSIX_SOURCE) && !defined(__sgi)
+#if !defined(_POSIX_SOURCE) && !defined(__sgi) && !defined(__UNIXOS2__)
 static const char *dmxExecOS(void) { return ""; }
 #else
 #include <sys/utsname.h>
