@@ -2,7 +2,7 @@
 
                             Marc Aurele La France
 
-                                 2000 May 3
+                                2000 June 15
 
                                   Abstract
 
@@ -564,8 +564,6 @@ Support for the following will be added in a future release:
 
    o Hardware cursors.
 
-   o DGA X server extension.
-
    o TVOut, i.e. the ability to use a television screen as a monitor.
 
    o Motion Video, i.e. displaying an asynchronous data stream (TV signal,
@@ -641,7 +639,7 @@ found in XFree86 3.3.2, 3.3.3, 3.3.3.1, 3.3.3.2, 3.3.4, 3.3.5 and 3.3.6.
 Version 5 is an almost complete restructuring of version 4 to fit in the
 newer driver API of XFree86 4.0 and later.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.30 2000/05/03 20:27:39 tsi Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.31 2000/06/19 15:00:54 tsi Exp $
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.ati,v 3.48 2000/06/17 17:44:21 dawes Exp $

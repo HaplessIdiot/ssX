@@ -2723,6 +2723,12 @@ DGAInit.
                The offset into the linear framebuffer that
                corresponds to pixel (0,0) for this mode.
 
+          address
+
+               The virtual address of the framebuffer as
+               mapped by the driver.  This is needed when
+               DGA_PIXMAP_AVAILABLE is set.
+
                /** The DGAFunctionRec **/
 
                typedef struct {
@@ -2738,7 +2744,7 @@ DGAInit.
                  Bool (*SetMode)(ScrnInfoPtr pScrn, DGAModePtr pMode);
                  void (*SetViewport)(ScrnInfoPtr pScrn, int x, int y, int flags);
                  int  (*GetViewport)(ScrnInfoPtr pScrn);
-                 void (*Flush)(ScrnInfoPtr);
+                 void (*Sync)(ScrnInfoPtr);
                  void (*FillRect)(
                       ScrnInfoPtr pScrn,
                       int x, int y, int w, int h,
@@ -2836,7 +2842,7 @@ DGAInit.
           the last SetViewport request is still pending, bit one if
           the one before that is still pending, etc.
 
-     void Flush (pScrn)
+     void Sync (pScrn)
 
           This function should ensure that any graphics accelerator
           operations have finished.  This function should not
@@ -6279,7 +6285,7 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.29 2000/05/03 00:43:57 tsi Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.30 2000/06/19 15:00:52 tsi Exp $
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/DESIGN,v 1.25 2000/06/17 17:44:20 dawes Exp $

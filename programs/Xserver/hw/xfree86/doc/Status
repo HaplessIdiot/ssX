@@ -105,14 +105,16 @@ architectures known to work on (e.g., Alpha, PPC), etc.
 
       4.0.1:
             Accelerated support is provided for the Rage 128 chips by the
-            "r128" driver.  Unaccelerated support is provided for all of the
-            others except the Mach8 and some early Mach32 chips by the "ati"
-            driver.
+            "r128" driver.  Accelerated support is provided for the Mach64
+            Rage variants by the "ati" driver.  Unaccelerated support is pro-
+            vided for all of the others except the Mach8 and some early
+            Mach32 chips by the "ati" driver.
 
       Summary:
             All chips supported in 3.3.6 are supported in 4.0.1 except for
             Mach8 and some old Mach32 chips.  The support in 4.0.1 is, how-
-            ever, unaccelerated for all chips except the Rage 128.
+            ever, unaccelerated for all chips except the Mach64, Rage and
+            Rage 128 variants.
 
 7.  Avance Logic
 
@@ -566,7 +568,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             No Weitek chips are supported in 4.0.1.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.16 2000/06/15 01:26:21 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.17 2000/06/19 15:00:54 tsi Exp $
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/Status,v 1.12 2000/06/17 17:44:23 dawes Exp $
