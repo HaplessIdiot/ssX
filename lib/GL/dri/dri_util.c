@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/dri_util.c,v 1.4 2003/02/08 21:26:43 dawes Exp $ */
+/* $XFree86: xc/lib/GL/dri/dri_util.c,v 1.5 2003/02/11 03:30:20 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -629,7 +629,7 @@ __driUtilUpdateDrawableInfo(Display *dpy, int scrn,
 	pdp->numClipRects = 0;
 	pdp->pClipRects = NULL;
 	pdp->numBackClipRects = 0;
-	pdp->pBackClipRects = 0;
+	pdp->pBackClipRects = NULL;
     }
     else
        pdp->pStamp = &(psp->pSAREA->drawableTable[pdp->index].stamp);
@@ -740,8 +740,14 @@ static void driDestroyDrawable(Display *dpy, void *drawablePrivate)
         (*psp->DriverAPI.DestroyBuffer)(pdp);
 	if (__driWindowExists(dpy, pdp->draw))
 	    (void)XF86DRIDestroyDrawable(dpy, scrn, pdp->draw);
-	if (pdp->pClipRects)
+	if (pdp->pClipRects) {
 	    Xfree(pdp->pClipRects);
+	    pdp->pClipRects = NULL;
+	}
+	if (pdp->pBackClipRects) {
+	    Xfree(pdp->pBackClipRects);
+	    pdp->pBackClipRects = NULL;
+	}
 	Xfree(pdp);
     }
 }
@@ -763,8 +769,8 @@ static void driDestroyContext(Display *dpy, int scrn, void *contextPrivate)
  		psp->fullscreen = NULL;
  	    }
 	}
-	__driGarbageCollectDrawables(pcp->driScreenPriv->drawHash);
 	(*pcp->driScreenPriv->DriverAPI.DestroyContext)(pcp);
+	__driGarbageCollectDrawables(pcp->driScreenPriv->drawHash);
 	(void)XF86DRIDestroyContext(dpy, scrn, pcp->contextID);
 	Xfree(pcp);
     }
