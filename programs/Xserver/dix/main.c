@@ -46,6 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: main.c,v 5.30 94/04/17 20:26:40 dpw Exp $ */
+/* $XFree86$ */
 
 #include "X.h"
 #include "Xproto.h"
