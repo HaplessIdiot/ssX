@@ -1,4 +1,4 @@
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.ati,v 3.1 1994.09.01 Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.ati,v 3.2 1994/09/07 15:52:45 dawes Exp $
 
 This is the README for the XFree86 ATI VGA Wonder driver used in the XF86_Mono,
 XF86_VGA16 and XF86_SVGA servers.
@@ -44,11 +44,9 @@ video memory.
 What is the ATI VGA Wonder driver *not*?
 ---------------------------------------
 
-This driver does not yet support more than 8 bits of pixel depth.  This is
-because XFree86 does not yet include an unaccelerated server for more than
-8-bit colour.  Therefore, even if your manual says that your graphics adapter
-supports modes using more than 256 colours, the ATI VGA Wonder driver will not
-use these modes.
+This driver does not yet support more than 8 bits of pixel depth.  Even if your
+manual says that your graphics adapter supports modes using more than 256
+colours, the ATI VGA Wonder driver will not use these modes.
 
 The ATI VGA Wonder driver is not an accelerated driver.  If your board is based
 on the Mach8, Mach32 or Mach64 video controllers, this driver will not use the
@@ -73,7 +71,7 @@ the same reason, unless the board also has a video controller from the VGA
 Wonder series (or is connected to one through the VGA passthrough connector).
 
 These boards are available with a variety of clock generators and RAMDACs.  See
-the Xconfig section below for details.  These boards are available with or
+the XF86Config section below for details.  These boards are available with or
 without a mouse.  When they do have a mouse (ISA boards only), it is either a
 proprietary ATIXL busmouse, or one that uses the Logitech busmouse protocol.
 
@@ -84,18 +82,18 @@ Wonder+ boards use a 28800-2 and a 18810.  Other than these, ATI's board naming
 convention (if it can be said that one exists) starts to fall apart.
 
 
-What should I put in my Xconfig file?
-------------------------------------
+What should I put in my XF86Config file?
+---------------------------------------
 
 The chipset will be automatically detected.  The chipset name for this driver
 is "vgawonder".  If you specify "ati" or "mach64" instead, any clocks
-specification in Xconfig will be ignored (which means the clocks will be
+specification in XF86Config will be ignored (which means the clocks will be
 probed).  This is done to ensure you are aware that the clocks specification
 for previous versions of the driver is not supported by this version.
 
-The clocks line to be specified in your Xconfig depend on what the board uses
-to generate dot clocks, and on whether or not the board is based on the Mach64
-accelerator.
+The clocks line to be specified in your XF86Config depends on what the board
+uses to generate dot clocks, and on whether or not the board is based on the
+Mach64 accelerator.
 
 For all boards, except those based on the Mach64, one of the following clocks
 specifications (or an initial subset thereof) can be used depending on what the
@@ -211,10 +209,10 @@ Upgrading from other releases
 If you have an Xconfig for XFree86 versions earlier than 2.1.1, or for the
 alpha Mach64 server, you will need to change it to use it for this version.
 Specifically, you should run the server with the -probeonly flag and the
-Xconfig you used with the older XFree86.  This will cause the clocks to be
-probed.  You should replace the Xconfig clocks with the set above that is
-closest to the clocks reported by the probe.  You can then change the chipset
-specification to "vgawonder".
+the XF86Config derived from the Xconfig you used with the older XFree86.  This
+will cause the clocks to be probed.  You should replace the XF86Config clocks
+with the set above that is closest to the clocks reported by the probe.  You
+can then change the chipset specification to "vgawonder".
 
 You should not need to change your mode definitions except for those that are
 already driving your monitor close to its tolerance limits.  You might need to

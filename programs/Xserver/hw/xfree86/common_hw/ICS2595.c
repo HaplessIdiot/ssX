@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ICS2595.c,v 3.0 1994/09/20 12:46:58 dawes Exp $ */
 
 /* Norbert Distler ndistler@physik.tu-muenchen.de  94/09/19 */
 
@@ -20,7 +20,7 @@ Bool
 ICS2595SetClock(frequency)
 register long frequency;
 {  
- unsigned  FeedDiv,  BigD, Location;
+   unsigned int FeedDiv, BigD, Location;
 
   if (frequency>MAX_ICS2595_FREQ)
    return FALSE;        /* Frequency too high! */
@@ -41,9 +41,9 @@ register long frequency;
  FeedDiv = (unsigned int) ((frequency/QUARZFREQ)*43);
  FeedDiv -= 257;
 
- Location = 0x02; 		/* what clock to reprogram */    		
+ Location = 0x04; 		/* what clock to reprogram */    		
 
- return ICS2595SetClock(FeedDiv, BigD, Location);
+ return SetICS2595( FeedDiv, BigD, Location);
 
 }	/* end of ICS2595SetClock */
 
@@ -58,12 +58,8 @@ unsigned int N, D, L;
 {
 	int vgaCRIndex = vgaIOBase + 4;
 	int vgaCRReg = vgaIOBase + 5;
-        unsigned int i, tmp42, tmp5c;
+        unsigned int i;
        
-        outb(vgaCRIndex, 0x42);
-        tmp42 = inb(vgaCRReg);
-	outb(vgaCRIndex, 0x5c);
-	tmp5c = inb(vgaCRReg);
 
 	outb(vgaCRIndex, 0x42); /* Start programming sequence for ICS2595-02 */
 	outb(vgaCRReg,   0x00);
@@ -112,10 +108,10 @@ unsigned int N, D, L;
 	outb(vgaCRIndex, 0x5c);
 	outb(vgaCRReg, 0x20);
 	outb(vgaCRReg, 0x00);
-	outb(vgaCRIndex, 0x5c);        /* might be incorrect to restore */
-	outb(vgaCRReg, tmp5c);	       /* old values, might be 0x04, 0x04 */
+	outb(vgaCRIndex, 0x5c);        /* might be incorrect  */
+	outb(vgaCRReg, L);	       
         outb(vgaCRIndex, 0x42);
-	outb(vgaCRReg, tmp42);
+	outb(vgaCRReg, L);
 
         return TRUE;         
 }		

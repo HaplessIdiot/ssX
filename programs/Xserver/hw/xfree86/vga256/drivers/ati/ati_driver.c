@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.6 1994/09/07 15:55:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.7tsi 1994.09.14 Exp $ */
 /*
  * Copyright 1994 by Marc Aurele La France (TSI @ UQV), tsi@gpu.srv.ualberta.ca
  *
@@ -61,15 +61,13 @@
  * The ATI x8800 chips use special registers for their extended features.
  * These registers are accessible through an index I/O port and a data I/O
  * port.  On most boards, BIOS initialization stores the index port number in
- * the Graphics register bank (0x03CE), indices 0x50 and 0x51.  In a few of
- * these cases, this value has been lost by the time the operating system kicks
- * in, presumably due to a bug in the BIOS's mode select code.  On many boards
- * (Mach64 boards being notable exceptions), the index port number can also be
- * found in the short integer at offset 0x10 in the BIOS.  If both assumptions
- * fail, this driver will use 0x01CE as the index port number, which happens to
- * be the correct port on all known ATI video adapters.  The data port number
- * is one more than the index port number (i.e. 0x01CF).  These ports differ in
- * their I/O behaviour from the normal VGA ones:
+ * the Graphics register bank (0x03CE), indices 0x50 and 0x51.  Unfortunately,
+ * these registers are write-only (a.k.a. black holes).  On all but Mach64
+ * boards, the index port number can be found in the short integer at offset
+ * 0x10 in the BIOS.  For Mach64's, this driver will use 0x01CE as the index
+ * port number.  The data port number is one more than the index port number
+ * (i.e. 0x01CF).  These ports differ slightly in their I/O behaviour from the
+ * normal VGA ones:
  *
  *    write:  outw(0x01CE, (data << 8) | index);
  *    read:   outb(0x01CE, index);  data = inb(0x01CF);
@@ -177,10 +175,10 @@
  * There is some question as to whether or not bit 1 of index 0xB9 can
  * be used for clock selection on a V4 board.  This driver makes it
  * available only if the "undocumented_clocks" option (itself
- * undocumented :-)) is specified in Xconfig.
+ * undocumented :-)) is specified in XF86Config.
  *
  * Also it appears that bit 0 of index 0xB9 can also be used for clock
- * selection on some boards.  It is also only available under Xconfig
+ * selection on some boards.  It is also only available under XF86Config
  * option "undocumented_clocks".
  */
 
@@ -279,13 +277,13 @@ vgaVideoChipRec ATI =
         VGA_DIVIDE_VERT,        /* Divide interlaced vertical timings */
         {0,},                   /* Options are set by ATIProbe */
         16,                     /* Virtual X rounding */
-	FALSE,			/* No linear fb */
-	0,			/* Linear fb base address */
-	0,			/* Linear fb size */
-	FALSE,			/* Support 16bpp */
-	FALSE,			/* Support 32bpp */
-	NULL,			/* List of builtin modes */
-	1,			/* Clock scaling factor */
+        FALSE,                  /* No linear frame buffer */
+        0,                      /* Linear frame buffer base address */
+        0,                      /* Linear frame buffer size */
+        FALSE,                  /* No support for 16 bits per pixel (yet) */
+        FALSE,                  /* No support for 32 bits per pixel (yet) */
+        NULL,                   /* List of builtin modes */
+        1,                      /* Clock scaling factor */
 };
 
 /*
@@ -300,13 +298,25 @@ vgaVideoChipRec ATI =
 #define DAC_Data        0x03C9
 
 /*
- * This driver needs non-standard I/O ports.  The first (or only) two are
- * determined by ATIProbe and are initialized to their most probable values
- * here.
+ * This driver needs non-standard I/O ports.  The first two are determined by
+ * ATIProbe and are initialized to their most probable values here.
  */
 static unsigned ATI_IOPorts[] =
 {
-        0x01CE, 0x01CF
+        /* ATI VGA Wonder extended registers */
+        0x01CE, 0x01CF,
+
+        /* 8514/A registers */
+        GP_STAT, SUBSYS_CNTL,
+
+        /* Mach8 registers */
+        EXT_FIFO_STATUS, CLOCK_SEL,
+
+        /* Mach32 registers */
+        MEM_BNDRY, MEM_CFG, MISC_OPTIONS
+
+        /* Mach64 registers */
+
 };
 static int Num_ATI_IOPorts =
         (sizeof(ATI_IOPorts) / sizeof(ATI_IOPorts[0]));
@@ -343,12 +353,11 @@ static int Num_Probe_IOPorts =
 /*
  * Handy macros to read and write registers.
  */
-#define GetReg(Port, Index)        \
-        (                          \
-                outb(Port, Index), \
-                inb(Port + 1)      \
+#define ATIGetExtReg(Index)             \
+        (                               \
+                outb(ATIExtReg, Index), \
+                inb(ATIExtReg + 1)      \
         )
-#define ATIGetExtReg(Index)        GetReg(ATIExtReg, Index)
 #define ATIPutExtReg(Index, Register_Value)     \
         outw(ATIExtReg, ((Register_Value) << 8) | Index)
 
@@ -788,19 +797,22 @@ ATIMach32videoRam(void)
         int Case_Number, Pixel_Number;
         Bool AllPixelsOK;
 
-        /* Enable accelerator */
+        /* Save register values to be modified */
         saved_CLOCK_SEL = inw(CLOCK_SEL);
+        saved_MEM_BNDRY = inw(MEM_BNDRY);
+        saved_MISC_OPTIONS = inw(MISC_OPTIONS) & ~MEM_SIZE_ALIAS;
+        saved_EXT_GE_CONFIG = inw(R_EXT_GE_CONFIG);
+
+        /* Wait for enough FIFO entries */
+        ATIWaitQueue(7);
+
+        /* Enable accelerator */
         outw(CLOCK_SEL, saved_CLOCK_SEL | DISABPASSTHRU);
 
-        /*
-         * Set up a 512k VGA boundary so "blue screen" writes that happen when
-         * in accelerator mode won't show up in the wrong place.
-         */
-        saved_MEM_BNDRY = inw(MEM_BNDRY);
-        outw(MEM_BNDRY, 0);
+        /* Make accelerator and VGA share video memory */
+        outw(MEM_BNDRY, saved_MEM_BNDRY & ~(MEM_PAGE_BNDRY | MEM_BNDRY_ENA));
 
         /* Prevent video memory wrap */
-        saved_MISC_OPTIONS = inw(MISC_OPTIONS) & ~MEM_SIZE_ALIAS;
         outw(MISC_OPTIONS, saved_MISC_OPTIONS | MEM_SIZE_4M);
 
         /*
@@ -808,7 +820,6 @@ ATIMach32videoRam(void)
          * No need to mess with the CRT because the results of this test are
          * not intended to be seen.
          */
-        saved_EXT_GE_CONFIG = inw(R_EXT_GE_CONFIG);
         outw(EXT_GE_CONFIG, PIX_WIDTH_16BPP | ORDER_16BPP_565 | 0x000A);
         outw(GE_PITCH, 1024 >> 3);
         outw(GE_OFFSET_HI, 0);
@@ -861,6 +872,7 @@ ATIMach32videoRam(void)
         }
 
         /* Restore what was changed and correct MISC_OPTIONS register */
+        ATIWaitQueue(4);
         outw(EXT_GE_CONFIG, saved_EXT_GE_CONFIG);
         outw(MISC_OPTIONS, saved_MISC_OPTIONS |
                 Test_Case[Case_Number].Miscellaneous_Options_Setting);
@@ -868,6 +880,9 @@ ATIMach32videoRam(void)
 
         /* Re-enable VGA passthrough */
         outw(CLOCK_SEL, saved_CLOCK_SEL & ~DISABPASSTHRU);
+
+        /* Wait for activity to die down */
+        WaitIdleEmpty();
 
         /* Tell ATIProbe the REAL story */
         return Test_Case[Case_Number].videoRamSize;
@@ -979,6 +994,11 @@ ATIProbe()
                         return (FALSE);
                 }
 
+                /*
+                 * Pick up extended register index I/O port number.
+                 */
+                ATIExtReg = *((short *)(BIOS_Data + 0x10));
+
                 if (!(BIOS_Data[0x44] & 0x40))
                 {
                         /* An accelerator is present */
@@ -1043,7 +1063,7 @@ ATIProbe()
                         if (ATIBoard == ATI_BOARD_MACH32)
                         {
                                 IO_Value = inw(CONFIG_STATUS_1);
-                                if (IO_Value & _8514_ONLY)
+                                if (IO_Value & (_8514_ONLY | CHIP_DIS))
                                 {
                                         ErrorF(
               "Mach32 detected but VGA Wonder capability cannot be enabled\n");
@@ -1149,16 +1169,8 @@ ATIProbe()
         /*
          * Set up extended register addressing.
          */
-        ATIExtReg = ((GetReg(0x03CE, 0x51) & 0x03) << 8) |
-                GetReg(0x03CE, 0x50);
-        if (ATIExtReg == 0)
-        {
-                ATIExtReg = *((short *)(BIOS_Data + 0x10));
-                if (ATIExtReg == 0)
-                        ATIExtReg = 0x01CE;
-                outw(0x03CE, ((ATIExtReg & 0x00FF) << 8) | 0x0050);
-                outw(0x03CE,  (ATIExtReg & 0x0300)       | 0x8051);
-        }
+        outw(0x03CE, ((ATIExtReg & 0x00FF) << 8) | 0x0050);
+        outw(0x03CE,  (ATIExtReg & 0x0300)       | 0x8051);
         ATI_IOPorts[0] = ATIExtReg;
         ATI_IOPorts[1] = ATIExtReg + 1;
 
@@ -1205,7 +1217,7 @@ ATIProbe()
         }
 
         /*
-         * Normalize any Xconfig videoRam value.
+         * Normalize any XF86Config videoRam value.
          */
         for (Index = 0; videoRamSizes[++Index]; )
                 if (vga256InfoRec.videoRam < videoRamSizes[Index])
@@ -1218,7 +1230,7 @@ ATIProbe()
          */
         if (vga256InfoRec.videoRam == 0)
         {
-                /* Normalization might have zeroed Xconfig videoRam value */
+                /* Normalization might have zeroed XF86Config videoRam value */
                 OFLG_CLR(XCONFIG_VIDEORAM, &vga256InfoRec.xconfigFlag);
                 vga256InfoRec.videoRam = MachvideoRam;
         }
@@ -1278,8 +1290,8 @@ ATIProbe()
                 }
 
         /*
-         * If the user has specified the clock values in the Xconfig file, we
-         * respect those choices.
+         * If the user has specified the clock values in the XF86Config file,
+         * we respect those choices.
          */
         if ((!vga256InfoRec.clocks) ||
             (OFLG_ISSET(OPTION_PROBE_CLKS, &vga256InfoRec.options)))
@@ -1372,6 +1384,8 @@ Bool enter;
 {
         static unsigned char saved_ab,
                 saved_b4, saved_b8, saved_b9, saved_be;
+        static unsigned short saved_clock_sel, saved_misc_options,
+                saved_mem_bndry, saved_mem_cfg;
         static Bool entered = LEAVE;
         unsigned char tmp;
 
@@ -1382,6 +1396,37 @@ Bool enter;
         if (enter == ENTER)
         {
                 xf86EnableIOPorts(vga256InfoRec.scrnIndex);
+
+                if (ATIBoard == ATI_BOARD_MACH32)
+                {
+                        /* Save register values to be modified */
+                        saved_clock_sel = inw(CLOCK_SEL);
+                        saved_misc_options = inw(MISC_OPTIONS);
+                        saved_mem_bndry = inw(MEM_BNDRY);
+                        saved_mem_cfg = inw(MEM_CFG);
+
+                        /* Wait for enough FIFO entries */
+                        ATIWaitQueue(4);
+
+                        /* Ensure VGA is enabled */
+                        outw(CLOCK_SEL, saved_clock_sel & ~DISABPASSTHRU);
+                        outw(MISC_OPTIONS, saved_misc_options &
+                                ~(DISABLE_VGA | DISABLE_DAC));
+
+                        /* Disable any video memory boundary */
+                        outw(MEM_BNDRY, saved_mem_bndry &
+                                ~(MEM_PAGE_BNDRY | MEM_BNDRY_ENA));
+
+                        /* Disable direct video memory aperture */
+                        outw(MEM_CFG, saved_mem_cfg &
+                                ~(MEM_APERT_SEL | MEM_APERT_PAGE | MEM_APERT_LOC));
+
+                        /* Wait for all activity to die down */
+                        WaitIdleEmpty();
+
+                        /* Reset the 8514/A and disable all interrupts */
+                        outw(SUBSYS_CNTL, GPCTRL_RESET | CHPTEST_NORMAL);
+                }
 
                 vgaIOBase = (inb(0x03CC) & 0x01) ? 0x03D0 : 0x03B0;
 
@@ -1432,6 +1477,25 @@ Bool enter;
                                 ATIPutExtReg(0xAB,
                                         (saved_ab & 0x18) | (tmp & 0xE7));
                         }
+                }
+
+                if (ATIBoard == ATI_BOARD_MACH32)
+                {
+                        /* Wait for enough FIFO entries */
+                        ATIWaitQueue(4);
+
+                        /* Restore modified accelerator registers */
+                        outw(MEM_CFG, saved_mem_cfg);
+                        outw(MEM_BNDRY, saved_mem_bndry);
+                        outw(MISC_OPTIONS, saved_misc_options);
+                        outw(CLOCK_SEL, saved_clock_sel);
+
+                        /* Wait for all activity to die down */
+                        WaitIdleEmpty();
+
+                        /* Reset the 8514/A and disable all interrupts */
+                        outw(SUBSYS_CNTL, GPCTRL_RESET | CHPTEST_NORMAL);
+                        outw(SUBSYS_CNTL, GPCTRL_ENAB | CHPTEST_NORMAL);
                 }
 
                 xf86DisableIOPorts(vga256InfoRec.scrnIndex);

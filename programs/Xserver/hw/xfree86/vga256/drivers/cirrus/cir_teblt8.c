@@ -1,5 +1,5 @@
 /* $XConsortium: cir_teblt8.c,v 1.2 94/04/17 20:32:34 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.6 1994/08/31 04:44:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.7 1994/09/19 13:45:53 dawes Exp $ */
 /*
  * TEGblt - ImageText expanded glyph fonts only.  For
  * 8 bit displays, in Copy mode with no clipping.
@@ -265,6 +265,7 @@ void CirrusPolyGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	int shift, line;
 	unsigned dworddata;
 	int destaddr, blitwidth;
+	int fontwidthlimit;
 
 	void (*PolyGlyph)();
 
@@ -286,8 +287,12 @@ void CirrusPolyGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 
 	PolyGlyph = NULL;
 
-	if (glyphWidthBytes != 4 || glyphWidth > (HAVE543X() ? 32 : 16) ||
-	(!HAVE543X() && h > 96))
+	if (HAVEBITBLTENGINE() && HAVE543X())
+		fontwidthlimit = 32;	/* BitBLT transfer function used. */
+	else
+		fontwidthlimit = 16;	/* Color expansion function used. */
+	if (glyphWidthBytes != 4 || glyphWidth > fontwidthlimit ||
+	(fontwidthlimit == 16 && h > 96))
 	        if (pGC->alu == GXcopy)
         		PolyGlyph = vga256PolyGlyphBlt8;
 	        else
@@ -357,7 +362,7 @@ void CirrusPolyGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 		 * color registers must be loaded, and the background color
 		 * registers must be loaded with the bitwise complement of
 		 * the foreground color. */
-		color = ~pGC->fgPixel;
+		color = (~pGC->fgPixel) & 0xff;
 		color = color | (color << 8) | (color << 16) | (color << 24);
 		SETBACKGROUNDCOLOR32(color);
 		color = pGC->fgPixel;

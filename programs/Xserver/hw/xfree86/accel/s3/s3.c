@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.34 1994/09/20 12:45:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.35 1994/09/20 13:07:44 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -993,7 +993,9 @@ s3Probe()
       if (S3_964_SERIES(s3ChipId)) {
          nonMuxMaxClock = 0;  /* 964 can only be in pixmux mode when */
          pixMuxMinWidth = 0;  /* working in enhanced mode */  
-	 pixMuxLimitedWidths = FALSE;
+	 if (!OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options)) {
+	    pixMuxLimitedWidths = FALSE;
+	 }
       }
    } else if (s3ATT498PixMux) {
       pixMuxPossible = TRUE;
@@ -1830,8 +1832,23 @@ icd2061ClockSelect(freq)
 	    result = FALSE;
 	    break;
 	 }
-         outb(vgaCRIndex, 0x42);/* select the clock */
-         outb(vgaCRReg, 0x02);
+#ifdef ICS2595
+	 if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
+	    outb(vgaCRIndex, 0x42);/* select the clock */
+	    outb(vgaCRReg, 0x04);
+	    outb(vgaCRIndex, 0x5c);
+	    outb(vgaCRReg, 0x20);
+	    outb(vgaCRReg, 0x00);
+	    outb(vgaCRIndex, 0x5c);
+	    outb(vgaCRReg, 0x04);
+	    outb(vgaCRIndex, 0x42);
+	    outb(vgaCRReg, 0x04);
+	 } else
+#endif
+	 {
+	    outb(vgaCRIndex, 0x42);/* select the clock */
+	    outb(vgaCRReg, 0x02);
+	 }
 	 usleep(150000);
 	 /* Do the clock doubler selection in s3Init() */
       }

@@ -1,5 +1,5 @@
 /* $XConsortium: fLineBres.s,v 1.2 94/03/29 11:19:12 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fLineBres.s,v 3.1 1994/08/31 04:49:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fLineBres.s,v 3.2 1994/09/08 14:29:39 dawes Exp $ */
 /* Copyright 1992 by James Tsillas, Arlignton, Massachusetts.
 
 		All Rights Reserved
@@ -53,15 +53,9 @@ e3:
 
 	SEG_TEXT
 	ALIGNTEXT4
-#ifdef OLDVGA
-GLOBL	GLNAME(fastcfbBresS)
-
-GLNAME(fastcfbBresS):
-#else
 GLOBL	GLNAME(fastvga256BresS)
 
 GLNAME(fastvga256BresS):
-#endif
 	PUSH_L	(EBP)
 	MOV_L	(ESP,EBP)
 	PUSH_L	(EDI)

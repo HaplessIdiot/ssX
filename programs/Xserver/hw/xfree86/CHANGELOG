@@ -1,3 +1,12 @@
+XFree86 3.0Fa (21 September 1994)
+332. Added copyright to the output of reconfig.
+331. Fixes for vgawonder driver (Marc Aurele La France).
+330. Update README.ati and ati.test.c (Marc Aurele La France).
+329. Fix potential problem with tranparent text for the cirrus 543x
+     (Harm Hanemaayer).
+328. Fixes for ICS2595 clock code (Norbert Distler).
+327. Remove cfb.banked.
+
 XFree86 3.0F (20 September 1994)
 326. Fix problem building reconfig when BuildServersOnly is YES.
 325. Upates to README.FreeBSD (Rich Murphey).

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/regati.h,v 3.0tsi 1994.09.16 Exp $ */
 /*
  * Copyright 1994 by Marc Aurele La France (TSI @ UQV), tsi@gpu.srv.ualberta.ca
  *
@@ -48,22 +48,22 @@
 #define DAC_R_INDEX		0x02eb
 #define DAC_W_INDEX		0x02ec
 #define DAC_DATA		0x02ed
-#define H_DISP			0x06e8
-#define H_SYNC_STRT		0x0ae8
-#define H_SYNC_WID		0x0ee8
+#define H_DISP			0x06e8		/* Write */
+#define H_SYNC_STRT		0x0ae8		/* Write */
+#define H_SYNC_WID		0x0ee8		/* Write */
 #define HSYNCPOL_POS			0x0000
 #define HSYNCPOL_NEG			0x0020
 #define H_POLARITY_POS			HSYNCPOL_POS	/* Sigh */
 #define H_POLARITY_NEG			HSYNCPOL_NEG	/* Sigh */
-#define V_TOTAL			0x12e8
-#define V_DISP			0x16e8
-#define V_SYNC_STRT		0x1ae8
-#define V_SYNC_WID		0x1ee8
+#define V_TOTAL			0x12e8		/* Write */
+#define V_DISP			0x16e8		/* Write */
+#define V_SYNC_STRT		0x1ae8		/* Write */
+#define V_SYNC_WID		0x1ee8		/* Write */
 #define VSYNCPOL_POS			0x0000
 #define VSYNCPOL_NEG			0x0020
 #define V_POLARITY_POS			VSYNCPOL_POS	/* Sigh */
 #define V_POLARITY_NEG			VSYNCPOL_NEG	/* Sigh */
-#define DISP_CNTL		0x22e8
+#define DISP_CNTL		0x22e8		/* Write */
 #define ODDBNKENAB			0x0001
 #define MEMCFG_2			0x0000
 #define MEMCFG_4			0x0002
@@ -108,8 +108,8 @@
 #define GPCTRL_NC			0x0000
 #define GPCTRL_ENAB			0x4000
 #define GPCTRL_RESET			0x8000
-#define ROM_PAGE_SEL		0x46e8
-#define ADVFUNC_CNTL		0x4ae8
+#define ROM_PAGE_SEL		0x46e8		/* Write */
+#define ADVFUNC_CNTL		0x4ae8		/* Write */
 #define DISABPASSTHRU			0x0001
 #define CLOKSEL				0x0004
 /*	?			0x4ee8 */
@@ -127,10 +127,10 @@
 /*	?			0x7ee8 */
 #define CUR_Y			0x82e8
 #define CUR_X			0x86e8
-#define DESTY_AXSTP		0x8ae8
-#define DESTX_DIASTP		0x8ee8
+#define DESTY_AXSTP		0x8ae8		/* Write */
+#define DESTX_DIASTP		0x8ee8		/* Write */
 #define ERR_TERM		0x92e8
-#define MAJ_AXIS_PCNT		0x96e8
+#define MAJ_AXIS_PCNT		0x96e8		/* Write */
 #define GP_STAT			0x9ae8		/* Read */
 #define GE_STAT			0x9ae8		/* Alias */
 #define DATARDY				0x0100
@@ -156,7 +156,7 @@
 #define CMD_RECTV2				0x8000
 #define CMD_LINEAF				0xa000
 #define CMD_BITBLT				0xc000
-#define SHORT_STROKE		0x9ee8
+#define SHORT_STROKE		0x9ee8		/* Write */
 #define SSVDRAW				0x0010
 #define VECDIR_000			0x0000
 #define VECDIR_045			0x0020
@@ -166,24 +166,24 @@
 #define VECDIR_225			0x00a0
 #define VECDIR_270			0x00c0
 #define VECDIR_315			0x00e0
-#define BKGD_COLOR		0xa2e8
-#define FRGD_COLOR		0xa6e8
-#define WRT_MASK		0xaae8
-#define RD_MASK			0xaee8
-#define COLOR_CMP		0xb2e8
-#define BKGD_MIX		0xb6e8
+#define BKGD_COLOR		0xa2e8			/* Write */
+#define FRGD_COLOR		0xa6e8			/* Write */
+#define WRT_MASK		0xaae8			/* Write */
+#define RD_MASK			0xaee8			/* Write */
+#define COLOR_CMP		0xb2e8			/* Write */
+#define BKGD_MIX		0xb6e8			/* Write */
 /*					0x001f	See MIX_* definitions below */
 #define BSS_BKGDCOL			0x0000
 #define BSS_FRGDCOL			0x0020
 #define BSS_PCDATA			0x0040
 #define BSS_BITBLT			0x0060
-#define FRGD_MIX		0xbae8
+#define FRGD_MIX		0xbae8			/* Write */
 /*					0x001f	See MIX_* definitions below */
 #define FSS_BKGDCOL			0x0000
 #define FSS_FRGDCOL			0x0020
 #define FSS_PCDATA			0x0040
 #define FSS_BITBLT			0x0060
-#define MULTIFUNC_CNTL		0xbee8
+#define MULTIFUNC_CNTL		0xbee8		/* Write */
 #define MIN_AXIS_PCNT			0x0000
 #define SCISSORS_T			0x1000
 #define SCISSORS_L			0x2000
@@ -233,10 +233,12 @@
 /*	?			0xfee8 */
 
 /* ATI Mach8 & Mach32 register definitions */
-/*	?			0x02ee */
-/*	?			0x06ee */
-#define CURSOR_OFFSET_LO	0x0aee
-#define CURSOR_OFFSET_HI	0x0eee
+#define OVERSCAN_COLOR_8	0x02ee		/* Write */	/* Mach32 */
+#define OVERSCAN_BLUE_24	0x02ef		/* Write */	/* Mach32 */
+#define OVERSCAN_GREEN_24	0x06ee		/* Write */	/* Mach32 */
+#define OVERSCAN_RED_24		0x06ef		/* Write */	/* Mach32 */
+#define CURSOR_OFFSET_LO	0x0aee		/* Write */	/* Mach32 */
+#define CURSOR_OFFSET_HI	0x0eee		/* Write */	/* Mach32 */
 #define CONFIG_STATUS_1		0x12ee		/* Read */
 #define CLK_MODE			0x0001			/* Mach8 */
 #define BUS_16				0x0002			/* Mach8 */
@@ -285,15 +287,17 @@
 #define Z4GB				0x2000			/* Mach32 */
 #define LOC2_MDRAM			0x4000			/* Mach32 */
 #define VERT_CURSOR_POSN	0x16ee		/* Write */	/* Mach32 */
-#define CURSOR_COLOR_0		0x1aee				/* Mach32 */
-#define CURSOR_COLOR_1		0x1aef				/* Mach32 */
-#define HORZ_CURSOR_OFFSET	0x1eee				/* Mach32 */
-#define VERT_CURSOR_OFFSET	0x1eef				/* Mach32 */
-/*	?			0x22ee */
-#define CRT_PITCH		0x26ee
-#define CRT_OFFSET_LO		0x2aee
-#define CRT_OFFSET_HI		0x2eee
-/*	?			0x32ee */
+#define FIFO_TEST_DATA		0x1aee		/* Read */	/* Mach32 */
+#define CURSOR_COLOR_0		0x1aee		/* Write */	/* Mach32 */
+#define CURSOR_COLOR_1		0x1aef		/* Write */	/* Mach32 */
+#define HORZ_CURSOR_OFFSET	0x1eee		/* Write */	/* Mach32 */
+#define VERT_CURSOR_OFFSET	0x1eef		/* Write */	/* Mach32 */
+#define DAC_CNTL		0x22ee				/* Mach32-PCI */
+#define CRT_PITCH		0x26ee		/* Write */
+#define CRT_OFFSET_LO		0x2aee		/* Write */
+#define CRT_OFFSET_HI		0x2eee		/* Write */
+#define LOCAL_CNTL		0x32ee				/* Mach32 */
+#define FIFO_OPT		0x36ee		/* Write */	/* Mach8 */
 #define MISC_OPTIONS		0x36ee				/* Mach32 */
 #define W_STATE_ENA			0x0000			/* Mach32 */
 #define HOST_8_ENA			0x0001			/* Mach32 */
@@ -309,10 +313,13 @@
 #define TEST_MODE			0x0100			/* Mach32 */
 #define BLK_WR_ENA			0x0400			/* Mach32 */
 #define _64_DRAW_ENA			0x0800			/* Mach32 */
-#define EXT_CURSOR_COLOR_0	0x3aee				/* Mach32 */
-#define EXT_CURSOR_COLOR_1	0x3eee				/* Mach32 */
+#define FIFO_TEST_TAG		0x3aee		/* Read */	/* Mach32 */
+#define EXT_CURSOR_COLOR_0	0x3aee		/* Write */	/* Mach32 */
+#define EXT_CURSOR_COLOR_1	0x3eee		/* Write */	/* Mach32 */
 #define MEM_BNDRY		0x42ee				/* Mach32 */
-#define SHADOW_CTL		0x46ee
+#define MEM_PAGE_BNDRY			0x000f			/* Mach32 */
+#define MEM_BNDRY_ENA			0x0010			/* Mach32 */
+#define SHADOW_CTL		0x46ee		/* Write */
 #define CLOCK_SEL		0x4aee
 /*	DISABPASSTHRU			0x0001	See ADVFUNC_CNTL */
 #define VFIFO_DEPTH_1			0x0100			/* Mach32 */
@@ -333,17 +340,23 @@
 #define COMPOSITE_SYNC			0x1000
 /*	?			0x4eee */
 #define ROM_ADDR_1		0x52ee
-/*	?			0x56ee */
-#define SHADOW_SET		0x5aee
+#define ROM_ADDR_2		0x56ee		/* Sick ... */
+#define SHADOW_SET		0x5aee		/* Write */
 #define MEM_CFG			0x5eee				/* Mach32 */
+#define MEM_APERT_SEL			0x0003			/* Mach32 */
+#define MEM_APERT_PAGE			0x000c			/* Mach32 */
+#define MEM_APERT_LOC			0xfff0			/* Mach32 */
 #define EXT_GE_STATUS		0x62ee		/* Read */	/* Mach32 */
 #define HORZ_OVERSCAN		0x62ee		/* Write */	/* Mach32 */
-#define VERT_OVERSCAN		0x66ee				/* Mach32 */
-/*	?			0x6aee */
-#define GE_OFFSET_LO		0x6eee
-#define GE_OFFSET_HI		0x72ee
-#define GE_PITCH		0x76ee
-#define EXT_GE_CONFIG		0x7aee				/* Mach32 */
+#define VERT_OVERSCAN		0x66ee		/* Write */	/* Mach32 */
+#define MAX_WAITSTATES		0x6aee
+#define GE_OFFSET_LO		0x6eee		/* Write */
+#define BOUNDS_LEFT		0x72ee		/* Read */
+#define GE_OFFSET_HI		0x72ee		/* Write */
+#define BOUNDS_TOP		0x76ee		/* Read */
+#define GE_PITCH		0x76ee		/* Write */
+#define BOUNDS_RIGHT		0x7aee		/* Read */
+#define EXT_GE_CONFIG		0x7aee		/* Write */	/* Mach32 */
 #define PIXEL_WIDTH_4			0x0000			/* Mach32 */
 #define PIXEL_WIDTH_8			0x0010			/* Mach32 */
 #define PIXEL_WIDTH_16			0x0020			/* Mach32 */
@@ -360,13 +373,15 @@
 #define DAC_8_BIT_EN			0x4000			/* Mach32 */
 #define PIX_WIDTH_16BPP			PIXEL_WIDTH_16		/* Mach32 */
 #define ORDER_16BPP_565			RGB16_565		/* Mach32 */
-#define MISC_CNTL		0x7eee				/* Mach32 */
-/*	?			0x82ee */
+#define BOUNDS_BOTTOM		0x7eee		/* Read */
+#define MISC_CNTL		0x7eee		/* Write */	/* Mach32 */
+#define PATT_DATA_INDEX		0x82ee
 /*	?			0x86ee */
 /*	?			0x8aee */
-#define R_EXT_GE_CONFIG		0x8eee				/* Mach32 */
-#define R_MISC_CNTL		0x92ee				/* Mach32 */
-#define BRES_COUNT		0x96ee				/* Mach32 */
+#define R_EXT_GE_CONFIG		0x8eee		/* Read */	/* Mach32 */
+#define PATT_DATA		0x8eee		/* Write */
+#define R_MISC_CNTL		0x92ee		/* Read */	/* Mach32 */
+#define BRES_COUNT		0x96ee
 #define EXT_FIFO_STATUS		0x9aee		/* Read */
 #define LINEDRAW_INDEX		0x9aee		/* Write */
 /*	?			0x9eee */
@@ -376,35 +391,44 @@
 #define CLIP_MODE_1			0x0200	/* Line segments */
 #define CLIP_MODE_2			0x0400	/* Polygon boundary lines */
 #define CLIP_MODE_3			0x0600	/* Patterned lines */
-#define DEST_X_START		0xa6ee				/* Mach32 */
-#define DEST_X_END		0xaaee				/* Mach32 */
-#define DEST_Y_END		0xaeee				/* Mach32 */
-/*	?			0xb2ee */
-/*	?			0xb6ee */
-#define ALU_FG_FN		0xbaee				/* Mach32 */
-/*	?			0xbeee */
-/*	?			0xc2ee */
-/*	?			0xc6ee */
-/*	?			0xcaee */
-#define DP_CONFIG		0xceee
+#define DEST_X_START		0xa6ee		/* Write */
+#define DEST_X_END		0xaaee		/* Write */
+#define DEST_Y_END		0xaeee		/* Write */
+#define R_H_TOTAL_DISP		0xb2ee		/* Read */	/* Mach32 */
+#define SRC_X_START		0xb2ee		/* Write */
+#define R_H_SYNC_STRT		0xb6ee		/* Read */	/* Mach32 */
+#define ALU_BG_FN		0xb6ee		/* Write */
+#define R_H_SYNC_WID		0xbaee		/* Read */	/* Mach32 */
+#define ALU_FG_FN		0xbaee		/* Write */
+#define SRC_X_END		0xbeee		/* Write */
+#define R_V_TOTAL		0xc2ee		/* Read */
+#define SRC_Y_DIR		0xc2ee		/* Write */
+#define R_V_DISP		0xc6ee		/* Read */	/* Mach32 */
+#define EXT_SHORT_STROKE	0xc6ee		/* Write */
+#define R_V_SYNC_STRT		0xcaee		/* Read */	/* Mach32 */
+#define SCAN_X			0xcaee		/* Write */
+#define VERT_LINE_CNTR		0xceee		/* Read */	/* Mach32 */
+#define DP_CONFIG		0xceee		/* Write */
 #define READ_WRITE			0x0001
 #define DATA_WIDTH			0x0200
 #define DATA_ORDER			0x1000
 #define FG_COLOR_SRC_FG			0x2000
 #define FG_COLOR_SRC_BLIT		0x6000
-/*	?			0xd2ee */
-/*	?			0xd6ee */
+#define R_V_SYNC_WID		0xd2ee		/* Read */
+#define PATT_LENGTH		0xd2ee		/* Write */
+#define PATT_INDEX		0xd6ee		/* Write */
 #define READ_SRC_X		0xdaee		/* Read */	/* Mach32 */
-#define EXT_SCISSOR_L		0xdaee		/* Write */	/* Mach32 */
-#define EXT_SCISSOR_T		0xdeee				/* Mach32 */
-#define EXT_SCISSOR_R		0xe2ee				/* Mach32 */
-#define EXT_SCISSOR_B		0xe6ee				/* Mach32 */
+#define EXT_SCISSOR_L		0xdaee		/* Write */
+#define READ_SRC_Y		0xdeee		/* Read */	/* Mach32 */
+#define EXT_SCISSOR_T		0xdeee		/* Write */
+#define EXT_SCISSOR_R		0xe2ee		/* Write */
+#define EXT_SCISSOR_B		0xe6ee		/* Write */
 /*	?			0xeaee */
-/*	?			0xeeee */
-/*	?			0xf2ee */
+#define DEST_COMP_FN		0xeeee		/* Write */
+#define DEST_COLOR_CMP_MASK	0xf2ee		/* Write */	/* Mach32 */
 /*	?			0xf6ee */
-#define CHIP_ID			0xfaee				/* Mach32 */
-#define LINEDRAW		0xfeee
+#define CHIP_ID			0xfaee		/* Read */	/* Mach32 */
+#define LINEDRAW		0xfeee		/* Write */
 
 /* ATI Mach64 register definitions */
 /*	?			0x12ec */
@@ -465,31 +489,31 @@
 
 /* Wait until "n" queue entries are free */
 #define ibm8514WaitQueue(n)						\
-        {								\
-                while (inw(GP_STAT) & (0x0100 >> (n)));			\
-        }
+	{								\
+		while (inw(GP_STAT) & (0x0100 >> (n)));			\
+	}
 #define ATIWaitQueue(n)							\
-        {								\
-                while (inw(EXT_FIFO_STATUS) & (0x10000 >> (n)));	\
-        }
+	{								\
+		while (inw(EXT_FIFO_STATUS) & (0x10000 >> (n)));	\
+	}
 
 /* Wait until GP is idle and queue is empty */
 #define WaitIdleEmpty()							\
-        {								\
-                while (inw(GP_STAT) & (GPBUSY | 1));			\
-        }
+	{								\
+		while (inw(GP_STAT) & (GPBUSY | 1));			\
+	}
 #define ProbeWaitIdleEmpty()						\
-        {								\
-                int i;							\
-                for (i = 0; i < 100000; i++)				\
-                        if (!(inw(GP_STAT) & (GPBUSY | 1)))		\
-                                break;					\
-        }
+	{								\
+		int i;							\
+		for (i = 0; i < 100000; i++)				\
+			if (!(inw(GP_STAT) & (GPBUSY | 1)))		\
+				break;					\
+	}
 
 /* Wait until GP has data available */
 #define WaitDataReady()							\
-        {								\
-                while (!(inw(GP_STAT) & DATARDY));			\
-        }
+	{								\
+		while (!(inw(GP_STAT) & DATARDY));			\
+	}
 
 #endif /* _REGATI_H_ */

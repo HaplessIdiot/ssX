@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.2 1994/09/18 08:48:11 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.3 1994/09/19 13:39:17 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -124,11 +124,11 @@ XCOMM    SampleRate	150
 
 XCOMM Emulate3Buttons is an option for 2-button Microsoft mice
 
-XCOMM	Emulate3Buttons
+XCOMM    Emulate3Buttons
 
 XCOMM ChordMiddle is an option for some 3-button Logitech mice
 
-XCOMM	ChordMiddle
+XCOMM    ChordMiddle
 
 EndSection
 
@@ -152,21 +152,31 @@ XCOMM Bandwidth is in MHz unless units are specified
 XCOMM HorizSync is in kHz unless units are specified.
 XCOMM HorizSync may be a comma separated list of discrete values, or a
 XCOMM comma separated list of ranges of values.
+XCOMM NOTE: the values here are examples only.  Refer to your monitor's
+XCOMM user manual for the correct numbers.
 
-    HorizSync   31.5
+    HorizSync   31.5  # typical for a single frequency fixed-sync monitor
 
-XCOMM    HorizSync	30-64
-XCOMM    HorizSync	31.5, 35.2
-XCOMM    HorizSync	15-25, 30-50
+XCOMM    HorizSync	30-64         # multisync
+XCOMM    HorizSync	31.5, 35.2    # multiple fixed sync frequencies
+XCOMM    HorizSync	15-25, 30-50  # multiple ranges of sync frequencies
 
 XCOMM VertRefresh is in Hz unless units are specified.
 XCOMM VertRefresh may be a comma separated list of discrete values, or a
 XCOMM comma separated list of ranges of values.
+XCOMM NOTE: the values here are examples only.  Refer to your monitor's
+XCOMM user manual for the correct numbers.
 
-    VertRefresh 60
+    VertRefresh 60  # typical for a single frequency fixed-sync monitor
 
-XCOMM Modes can be specified in two formats.  A compact on-line format, or
+XCOMM    VertRefresh	50-100        # multisync
+XCOMM    VertRefresh	60, 65        # multiple fixed sync frequencies
+XCOMM    VertRefresh	40-50, 80-100 # multiple ranges of sync frequencies
+
+XCOMM Modes can be specified in two formats.  A compact one-line format, or
 XCOMM a multi-line format.
+
+XCOMM These two are equivalent
 
 XCOMM    ModeLine "640x480" 25 640 664 760 800 480 491 493 525
 
@@ -175,6 +185,8 @@ XCOMM    ModeLine "640x480" 25 640 664 760 800 480 491 493 525
         HTimings	640 664 760 800
         VTimings	480 491 493 525
     EndMode
+
+XCOMM These two are equivalent
 
 XCOMM    ModeLine "1024x768i" 45 1024 1048 1208 1264 768 776 784 817 Interlace
 
