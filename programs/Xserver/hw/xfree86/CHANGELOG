@@ -1,4 +1,10 @@
 XFree86 4.1.99.1 (xx June 2001)
+ 102. Cygwin/XFree86 fixes.
+      Release pressed modifier keys when server looses focus.
+      Remove declaration in lib/X11/lcGetConv.c (no longer needed).
+      Remove unnecessary #if(n)def __CYGWIN__ in lib/X11/lcGetConv.c, one in
+      lib/dps/csconndi.c and one in lib/font/Type1/regions.h.
+      Add a new SharedDepLibraryTarget rule (#4763-#4768, Harold Hunt).
  101. Fix bogus handling of BUS_CNTL Mach64 register (Marc La France).
  100. Fix a typo in xc/programs/bitmap/Bitmap.h (#4757, Suhaib Siddiqi).
   99. Add Cygwin/XFree86 manpage and minor tweaks (#4756, Harold Hunt).
@@ -13493,4 +13499,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1847 2001/06/12 09:45:51 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1848 2001/06/13 02:33:27 tsi Exp $

@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.8 2001/06/04 13:04:41 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.9 2001/06/05 10:10:28 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -524,6 +524,9 @@ winRestoreModeKeyStates (ScreenPtr pScreen);
 
 Bool
 winIsFakeCtrl_L (UINT message, WPARAM wParam, LPARAM lParam);
+
+void
+winKeybdReleaseModifierKeys ();
 
 /*
  * winmisc.c
