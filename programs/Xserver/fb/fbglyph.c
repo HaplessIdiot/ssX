@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbglyph.c,v 1.10 2001/03/03 22:14:44 tsi Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbglyph.c,v 1.11 2001/05/29 04:54:09 keithp Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -34,9 +34,19 @@ fbGlyphIn (RegionPtr	pRegion,
 	   int		height)
 {
     BoxRec  box;
+    BoxPtr  pExtents = REGION_EXTENTS (0, pRegion);
 
-    if (x + width < 0) return FALSE;
-    if (y + height < 0) return FALSE;
+    /*
+     * Check extents by hand to avoid 16 bit overflows
+     */
+    if (x < (int) pExtents->x1) 
+	return FALSE;
+    if ((int) pExtents->x2 < x + width) 
+	return FALSE;
+    if (y < (int) pExtents->y1)
+	return FALSE;
+    if ((int) pExtents->y2 < y + height)
+	return FALSE;
     box.x1 = x;
     box.x2 = x + width;
     box.y1 = y;
@@ -261,10 +271,10 @@ fbPolyGlyphBlt (DrawablePtr	pDrawable,
 			      FbBits,
 			      int,
 			      int);
-    FbBits	    *dst;
-    FbStride	    dstStride;
-    int		    dstBpp;
-    int		    dstXoff, dstYoff;
+    FbBits	    *dst = 0;
+    FbStride	    dstStride = 0;
+    int		    dstBpp = 0;
+    int		    dstXoff = 0, dstYoff = 0;
     
     glyph = 0;
     if (pGC->fillStyle == FillSolid && pPriv->and == 0)
@@ -352,10 +362,10 @@ fbImageGlyphBlt (DrawablePtr	pDrawable,
 			      FbBits,
 			      int,
 			      int);
-    FbBits	    *dst;
-    FbStride	    dstStride;
-    int		    dstBpp;
-    int		    dstXoff, dstYoff;
+    FbBits	    *dst = 0;
+    FbStride	    dstStride = 0;
+    int		    dstBpp = 0;
+    int		    dstXoff = 0, dstYoff = 0;
     
     glyph = 0;
     if (pPriv->and == 0)
