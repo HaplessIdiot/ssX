@@ -1,8 +1,13 @@
-3538. Add drm_poll to fix SIGIO problem in the drm kernel modules, and change
+XFree86 3.9.17a (20 January 2000)
+3543. Add drm_poll to fix SIGIO problem in the drm kernel modules, and change
       drm to use /{proc,dev}/dri to avoid conflicts with /{proc,dev}/graphics
       (Rik Faith and Daryll Strauss).
-
-XFree86 3.9.17a (20 January 2000)
+3542. Fix some fb/glint-realted static build problems (Marc La France).
+3541. Add 3.9.17 xterm information to the RELNOTES (#3541, Thomas Dickey).
+3540. Fix some 64-bit problems in the GLX code (#3539, Dave Gilbert).
+3539. Execute the GLINT delta code in the Probe for each instance of
+      hardware found, not just the first one (#3534, Michael Rohleder).
+3538. Allow mesa to build on an Alpha (#3533, Matt Grossman).
 3537. Fix glint/Imakefile so that the correct fb.h is included, and rename
       the private fb.h file in fbdevhw so that it won't be mistakenly included
       instead of the one in Xserver/fb (David Dawes).
@@ -34,6 +39,8 @@ XFree86 3.9.17a (20 January 2000)
 
 XFree86 3.9.17 (31 December 1999)
 3523. Clean up bindist directories for the loader server (Robin Cutshaw).
+3522a. Fix return values in PsImageText8() and PsImageText16() (#3535,
+      Takaaki Nomura).
 3522. Old-style DGA keyboard input fix (#3536, Keith Packard).
 
 XFree86 3.9.16Za (29 December 1999)
@@ -9258,4 +9265,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.935 2000/01/19 23:01:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.936 2000/01/20 07:25:28 martin Exp $

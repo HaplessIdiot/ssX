@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.52 1999/12/03 19:17:33 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.55 2000/01/18 18:40:13 alanh Exp $ */
 /* $PI: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.37 1999/07/02 18:38:31 faith Exp $ */
 
 #define PSZ 8
@@ -801,12 +801,10 @@ GLINTProbe(DriverPtr drv, int flags)
 	    pScrn->SwitchMode	 = GLINTSwitchMode;
 	    pScrn->FreeScreen	 = GLINTFreeScreen;
 
-	}
-
 /* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX */
 /* NEED TO MOVE THIS OUT OF THE PROBE CODE */
 /* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX */
-	{
+	  {
 	    int temp;
 	    int bugbase = 0;
 	    /*
@@ -873,12 +871,14 @@ GLINTProbe(DriverPtr drv, int flags)
 		xf86DrvMsg(-1, X_INFO, 
 			   "Glint Delta BUG, fixing.....old = 0x%x, new = 0x%x\n", 
 			   bugbase, glintbase3);
+	  }
+
+	  /*
+	   * ok, now let's forget about the Delta, in case we found one
+	   */
+	  deltatag = deltabase = 0;
 	}
 
-	/*
-	 * ok, now let's forget about the Delta, in case we found one
-	 */
-	deltatag = deltabase = 0;
     }
 
     if (usedChips) xfree(usedChips);

@@ -9,7 +9,7 @@
 <date>31 August 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.20 2000/01/03 14:54:37 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.21 2000/01/03 15:19:08 robin Exp $
 </ident>
 
 <abstract>
@@ -937,6 +937,39 @@ New Features:
 	for feature comparison by returning the patch number (e.g., 111) in
 	the secondary DA response.
 
+  <item>Modify treatment of <tt>XK_Delete</tt> keysym so it transmits
+	parameterized VT220-style "<tt>&lt;esc&gt;[3~</tt>" if modifiers
+	(shift, control alt) are given.
+
+  <item>Add ``cacheDoublesize'' resource to limit the caching of font
+	information for double-sized characters, to accommodate X terminals
+	with limited font memory.
+
+  <item>Add ``metaSendsEscape'' resource, with corresponding control sequence
+	and menu entry.  Like ``eightBitInput'', this causes xterm to send ESC
+	prefixing the given key, but applies to all keys and is independent
+	of the 8-bit/7-bit terminal setting.
+
+  <item>Implement an 88-color model for systems where 256-colors cannot be
+	allocated.
+
+  <item>Add support for DEC Locator control sequences for xterm.  This allows
+	the xterm mouse to be used with applications that use the DEC Locator
+	sequences, such as VAX Tpu, or SMG$ based applications.
+
+  <item>Implement <tt>-hold</tt> option, allowing users to retain the window
+	after a shell has exited.
+
+  <item>Add an application resource, ``messages'' (and a corresponding
+	<tt>-</tt>/<tt>+mesg</tt> option) which controls the initial
+	permission on the terminal.
+
+  <item>Implement UTF-8 translation for Media Copy (print) operations.
+
+  <item>Implement vt320 control sequences for Print Composed Main Display and
+	for Print All Pages.  The latter directs xterm to print the current
+	screen as well as the scrollback buffer.
+
 </itemize>
 
 Bug fixes/improvements:
@@ -965,6 +998,76 @@ Bug fixes/improvements:
 
   <item>Add test/demo scripts for double size characters, font switching,
 	screen resizing and colors.
+
+  <item>Amend treatment of ALT key so that if ALT is used as a modifier in
+	key translations, then no parameter will be sent in escape sequences
+	for Sun/PC function keys.
+
+  <item>Improved the ptyInitialErase logic to make it work better with
+	a terminfo library.
+
+  <item>Modify treatment of line-drawing characters in UTF-8 mode so that
+	Unicode values are used rather than characters 1-31 for storing the
+	translated characters.
+
+  <item>Modify translation of UTF-8 sequences to reject ``overly long''
+	variations.
+
+  <item>Correct a case where colors were not rendered properly.  This
+	happened when an application inserted several lines, then changed
+	colors.  If this was done all in one write, then there would be no
+	intervening refresh, and the new color was applied to the pending
+	scrolling operation which was awaiting the next refresh.
+
+  <item>Corrected misspelled resource name in command-line option for HP
+	function keys.
+
+  <item>Change label on ``Sun/PC Keyboard'' popup menu entry to ``VT220
+	Keyboard'', since the checked state corresponds to VT220 rather than
+	Sun/PC.
+
+  <item>Two corrections to simulation of bold font via overstriking:
+
+	<itemize>
+
+	  <item>use clipping to avoid leaving trash at end of the text, and
+
+	  <item>add brackets so wide-character logic does not fall-through
+		into the overstriking logic.
+
+	</itemize>
+
+  <item>Modify checks for repeat-character control sequence to test the
+	character class against xterm's state table, rather than the
+	<tt>isprint()</tt> macro.
+
+  <item>Modify terminfo entry for ``xterm-xfree86'' to reflect modifiers for
+	shift and control.
+
+  <item>Add several entries to termcap file to make it have the same set
+	of aliases as the terminfo file.
+
+  <item>Scale the color values used for xterm-256color terminfo entry to
+	0..1000, as expected by ncurses.
+
+  <item>Change xterm-r6 terminfo definitions for F1-F4 to match program.
+
+  <item>Remove obsolete documentation about modifiers which can be returned
+	in mouse tracking mode, and modify logic to ignore modifiers other
+	than the existing ones, e.g., NumLock.
+
+  <item>Use free bit from obsolete shift-modifier coding of mouse tracking
+	button events to encode buttons 4 and 5, e.g., for a wheel mouse.
+	Move the suggested wheel-mouse button translations into charproc.c to
+	simplify customization.
+
+  <item>Modify warning if change-ownership of PTY fails; some
+	configurations may not happen to have old-style PTY's.
+
+  <item>Add more information, i.e., with strerror for some system calls in
+	the main program which may fail due to insufficient permissions.
+
+  <item>Various improvements to configure script, e.g., tests for utmp.
 
 </itemize>
 
