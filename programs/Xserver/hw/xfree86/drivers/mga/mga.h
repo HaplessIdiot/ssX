@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.39 1999/06/12 14:15:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.40 1999/06/13 07:11:04 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -202,8 +202,6 @@ extern CARD32 MGAAtypeNoBLK[16];
 
 void MGAAdjustFrame(int scrnIndex, int x, int y, int flags);
 Bool MGASwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
-
-void MGAHandleColormaps(ScreenPtr pScreen, ScrnInfoPtr pScrn);
 
 void MGA2064SetupFuncs(ScrnInfoPtr pScrn);
 void MGAGSetupFuncs(ScrnInfoPtr pScrn);
