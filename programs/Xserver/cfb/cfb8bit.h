@@ -35,6 +35,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cfb8bit.h,v 1.18 95/04/07 18:59:27 kaleb Exp $ */
+/* $XFree86$ */
 
 #include "servermd.h"
 

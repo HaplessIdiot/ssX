@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include "assyntax.h"
 
  	FILE("egc_asm.s")
