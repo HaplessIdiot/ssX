@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.94tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.95tsi Exp $ */
 
 /*
  * Copyright (C) 1994-1999 The XFree86 Project, Inc.
@@ -2291,6 +2291,12 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
    					/* Mode only for non-primary? */
    else
      vgaHWRestore(pScrn, vgaSavePtr, VGA_SR_MODE);
+
+   /* vgaHWRestore might change IOBase between color and mono */
+   vgaIOBase = hwp->IOBase;
+   vgaCRIndex = vgaIOBase + 4;
+   vgaCRReg = vgaCRIndex + 1;
+
  		/* moved from before vgaHWRestore, to prevent segfault? */
    VGAOUT8(vgaCRIndex, 0x66);             
    VGAOUT8(vgaCRReg, cr66);

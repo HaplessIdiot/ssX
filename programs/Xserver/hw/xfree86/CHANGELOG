@@ -1,4 +1,9 @@
 XFree86 4.4.99.22 (xx January 2005)
+ 274. Fix strtkysym test failure (Alan Coopersmith).
+ 273. Fix for en_IE.ISO8859-15 locale (Barry Scott).
+ 272. Allow black as an XV colourkey in the Savage driver (Angelus Dei).
+ 271. Fix S3 Virge driver bug when mode restorations result in a switch between
+      colour and mono operation (Joachim Kuebart).
  270. Fixes for the Croatian XKB map (#7002, Vlatko Kosturjak).
  269. Fix off-by-one problem for keys on FreeBSD/sparc64 (Bugzilla #1503,
       Marius Strobl).
@@ -19281,7 +19286,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3385 2005/01/14 01:50:00 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3386 2005/01/16 02:42:25 dawes Exp $
 
 
 
