@@ -53,7 +53,6 @@ extern Bool xf86BestRefresh;
 extern Gamma xf86Gamma;
 extern char *xf86ServerName;
 extern Bool xf86ShowUnresolved;
-extern Bool xf86inSuspend;
 
 /* Other parameters */
 

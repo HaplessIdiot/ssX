@@ -1,4 +1,8 @@
 XFree86 4.2.99.3 (xx December 2002)
+ 621. Let kbd driver test if Xserver is in suspend before handling any
+      input events (Egbert Eich).
+ 620. Fixed agp version checking to accept minor versions >= the specified
+      number (Leif Delgass).
  619. Update referenced symbols lists for the mga, vesa, i810 and vmware
       drivers (David Dawes).
  618. Add missing symbol to the mga driver's referenced symbols lists

@@ -43,6 +43,7 @@ extern Bool fbSlotClaimed;
 extern Bool sbusSlotClaimed;
 #endif
 extern confDRIRec xf86ConfigDRI;
+extern Bool xf86inSuspend;
 
 #define XF86SCRNINFO(p) ((ScrnInfoPtr)((p)->devPrivates[xf86ScreenIndex].ptr))
 
