@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                               29 August 1999
+                               31 August 1999
 
                                   Abstract
 
@@ -12,8 +12,11 @@
 1.  Summary of new features in 3.9.16 compared with 3.9.15.
 
 This section contains a brief summary of what has changed since the previous
-snapshot.  More detailed information can be found in the sections that fol-
-low.
+snapshot.  Unfortunately, only a small number of changes are listed here.
+For detailed information, refer to the CHANGELOG file in the xc/pro-
+grams/Xserver/hw/xfree86 directory in the source tree.  The sections that
+follow this one have details of features that are new to the pre-4.0 snapshot
+series.
 
    o The "apm" driver has been updated.  See the APM section (section 2.11.1,
      page 1) below.
@@ -29,6 +32,10 @@ low.
    o New driver for Intel i740.  The driver is called "i740".
 
    o New driver for 3Dfx Banshee and Voodoo 3.  The driver is called "tdfx".
+
+   o Some work on adding WYSIWYG capabilities to the Xaw text widget.
+
+   o Some preliminary support for programming modes has been added to xedit.
 
 2.  X server
 
@@ -597,8 +604,8 @@ New features:
      urable control of the widgets, and to allow setting resources at run
      time.
 
-   o Since Xpm is integrated in XFree86 3.9.16, programs linked with the new
-     Xaw library will also link with Xpm. This allows for color background
+   o Since Xpm was integrated into XFree86, programs linked with the new Xaw
+     library     will also link with Xpm. This allows for color background
      pixmaps, and also for shaped widgets.
 
    o The text widget is the widget that will present more changes. These
@@ -626,6 +633,12 @@ New features:
           cation.
 
         o Text indentation support is also available.
+
+   o This snapshot shows the current state of the work to add to the Xaw text
+     widget WYSIWYG capabilities. The state is very initial, and can be seen
+     as a candidate to a candidate to a very early alpha snapshot. There is
+     no public interface for programming yet, because the current one is very
+     likely to change before ready to use.
 
 Bug fixes:
 
@@ -758,6 +771,15 @@ xedit. These include:
 
         o The interface also checks for repeated words.
 
+   o A first tentative to add programming modes was done. Currently, there
+     are two modes:
+
+        o C-mode: this mode is expected to be stable, and fully usable.
+
+        o Html-mode: a lot of work needs to be done yet. It is included in
+          this snapshot only to show what the new text widget capabilities
+          can do.
+
 4.  Fonts and Internationalisation
 
 Details about the font support in this version of XFree86 can be found in the
@@ -827,7 +849,7 @@ been implemented is a modified search path for the X server's XF86Config
 file.  The details of this can be found above in the Configuration File (sec-
 tion 2.2, page 1) section.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.16 1999/08/29 12:53:39 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.18 1999/08/31 08:39:09 dawes Exp $
 
 
 $XFree86$
