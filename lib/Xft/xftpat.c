@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftpat.c,v 1.2 2000/11/30 06:59:45 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftpat.c,v 1.3 2000/12/07 23:57:28 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -261,9 +261,16 @@ XftPatternGetInteger (XftPattern *p, const char *object, int id, int *i)
     r = XftPatternGet (p, object, id, &v);
     if (r != XftResultMatch)
 	return r;
-    if (v.type != XftTypeInteger)
+    switch (v.type) {
+    case XftTypeDouble:
+	*i = (int) v.u.d;
+	break;
+    case XftTypeInteger:
+	*i = v.u.i;
+	break;
+    default:
         return XftResultTypeMismatch;
-    *i = v.u.i;
+    }
     return XftResultMatch;
 }
 
@@ -276,9 +283,16 @@ XftPatternGetDouble (XftPattern *p, const char *object, int id, double *d)
     r = XftPatternGet (p, object, id, &v);
     if (r != XftResultMatch)
 	return r;
-    if (v.type != XftTypeDouble)
+    switch (v.type) {
+    case XftTypeDouble:
+	*d = v.u.d;
+	break;
+    case XftTypeInteger:
+	*d = (double) v.u.i;
+	break;
+    default:
         return XftResultTypeMismatch;
-    *d = v.u.d;
+    }
     return XftResultMatch;
 }
 

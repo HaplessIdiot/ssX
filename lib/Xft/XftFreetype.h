@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/XftFreetype.h,v 1.4 2000/12/02 10:02:04 keithp Exp $
+ * $XFree86: xc/lib/Xft/XftFreetype.h,v 1.5 2000/12/05 03:13:28 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -60,20 +60,20 @@ _XFUNCPROTOBEGIN
 void
 XftGlyphLoad (Display		*dpy,
 	      XftFontStruct	*font,
-	      unsigned long	*glyphs,
+	      XftChar32		*glyphs,
 	      int		nglyph);
 
 void
 XftGlyphCheck (Display		*dpy,
 	       XftFontStruct	*font,
-	       unsigned long	glyph,
-	       unsigned long	*missing,
+	       XftChar32	glyph,
+	       XftChar32	*missing,
 	       int		*nmissing);
 
 Bool
 XftFreeTypeGlyphExists (Display		*dpy,
 			XftFontStruct	*font,
-			unsigned int	glyph);
+			XftChar32	glyph);
 
 /* xftrender.c */
 
@@ -82,40 +82,40 @@ XftRenderString8 (Display *dpy, Picture src,
 		  XftFontStruct *font, Picture dst,
 		  int srcx, int srcy,
 		  int x, int y,
-		  unsigned char *string, int len);
+		  XftChar8 *string, int len);
 
 void
 XftRenderString16 (Display *dpy, Picture src, 
 		   XftFontStruct *font, Picture dst,
 		   int srcx, int srcy,
 		   int x, int y,
-		   unsigned short *string, int len);
+		   XftChar16 *string, int len);
 
 void
 XftRenderString32 (Display *dpy, Picture src, 
 		   XftFontStruct *font, Picture dst,
 		   int srcx, int srcy,
 		   int x, int y,
-		   unsigned int *string, int len);
+		   XftChar32 *string, int len);
 
 void
 XftRenderExtents8 (Display	    *dpy,
 		   XftFontStruct    *font,
-		   unsigned char    *string, 
+		   XftChar8	    *string, 
 		   int		    len,
 		   XGlyphInfo	    *extents);
 
 void
 XftRenderExtents16 (Display	    *dpy,
 		    XftFontStruct   *font,
-		    unsigned short  *string, 
+		    XftChar16	    *string, 
 		    int		    len,
 		    XGlyphInfo	    *extents);
 
 void
 XftRenderExtents32 (Display	    *dpy,
 		    XftFontStruct   *font,
-		    unsigned int    *string, 
+		    XftChar32	    *string, 
 		    int		    len,
 		    XGlyphInfo	    *extents);
 

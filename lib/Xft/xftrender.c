@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftrender.c,v 1.3 2000/12/01 21:32:02 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftrender.c,v 1.4 2000/12/05 03:13:29 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -29,18 +29,18 @@ XftRenderString8 (Display *dpy, Picture src,
 		  XftFontStruct *font, Picture dst,
 		  int srcx, int srcy,
 		  int x, int y,
-		  unsigned char *string, int len)
+		  XftChar8 *string, int len)
 {
-    unsigned long   missing[XFT_NMISSING];
+    unsigned int    missing[XFT_NMISSING];
     int		    nmissing;
-    unsigned char   *s;
+    XftChar8	    *s;
     int		    l;
 
     s = string;
     l = len;
     nmissing = 0;
     while (l--)
-	XftGlyphCheck (dpy, font, (unsigned long) *s++, missing, &nmissing);
+	XftGlyphCheck (dpy, font, (unsigned int) *s++, missing, &nmissing);
     if (nmissing)
 	XftGlyphLoad (dpy, font, missing, nmissing);
     XRenderCompositeString8 (dpy, PictOpOver, src, dst,
@@ -53,18 +53,18 @@ XftRenderString16 (Display *dpy, Picture src,
 		   XftFontStruct *font, Picture dst,
 		   int srcx, int srcy,
 		   int x, int y,
-		   unsigned short *string, int len)
+		   XftChar16 *string, int len)
 {
-    unsigned long   missing[XFT_NMISSING];
+    unsigned int    missing[XFT_NMISSING];
     int		    nmissing;
-    unsigned short  *s;
+    XftChar16	    *s;
     int		    l;
 
     s = string;
     l = len;
     nmissing = 0;
     while (l--)
-	XftGlyphCheck (dpy, font, (unsigned long) *s++, missing, &nmissing);
+	XftGlyphCheck (dpy, font, (unsigned int) *s++, missing, &nmissing);
     if (nmissing)
 	XftGlyphLoad (dpy, font, missing, nmissing);
     XRenderCompositeString16 (dpy, PictOpOver, src, dst,
@@ -79,7 +79,7 @@ XftRenderString32 (Display *dpy, Picture src,
 		   int x, int y,
 		   unsigned int *string, int len)
 {
-    unsigned long   missing[XFT_NMISSING];
+    unsigned int    missing[XFT_NMISSING];
     int		    nmissing;
     unsigned int    *s;
     int		    l;
@@ -88,7 +88,7 @@ XftRenderString32 (Display *dpy, Picture src,
     l = len;
     nmissing = 0;
     while (l--)
-	XftGlyphCheck (dpy, font, (unsigned long) *s++, missing, &nmissing);
+	XftGlyphCheck (dpy, font, (unsigned int) *s++, missing, &nmissing);
     if (nmissing)
 	XftGlyphLoad (dpy, font, missing, nmissing);
     XRenderCompositeString32 (dpy, PictOpOver, src, dst,
@@ -99,13 +99,13 @@ XftRenderString32 (Display *dpy, Picture src,
 void
 XftRenderExtents8 (Display	    *dpy,
 		   XftFontStruct    *font,
-		   unsigned char    *string, 
+		   XftChar8    *string, 
 		   int		    len,
 		   XGlyphInfo	    *extents)
 {
-    unsigned long   missing[XFT_NMISSING];
+    unsigned int    missing[XFT_NMISSING];
     int		    nmissing;
-    unsigned char   *s, c;
+    XftChar8	    *s, c;
     int		    l;
     XGlyphInfo	    *gi;
     int		    x, y;
@@ -114,7 +114,7 @@ XftRenderExtents8 (Display	    *dpy,
     l = len;
     nmissing = 0;
     while (l--)
-	XftGlyphCheck (dpy, font, (unsigned long) *s++, missing, &nmissing);
+	XftGlyphCheck (dpy, font, (unsigned int) *s++, missing, &nmissing);
     if (nmissing)
 	XftGlyphLoad (dpy, font, missing, nmissing);
     
@@ -164,13 +164,13 @@ XftRenderExtents8 (Display	    *dpy,
 void
 XftRenderExtents16 (Display	    *dpy,
 		    XftFontStruct   *font,
-		    unsigned short  *string, 
+		    XftChar16  *string, 
 		    int		    len,
 		    XGlyphInfo	    *extents)
 {
-    unsigned long   missing[XFT_NMISSING];
+    unsigned int    missing[XFT_NMISSING];
     int		    nmissing;
-    unsigned short  *s, c;
+    XftChar16	    *s, c;
     int		    l;
     XGlyphInfo	    *gi;
     int		    x, y;
@@ -179,7 +179,7 @@ XftRenderExtents16 (Display	    *dpy,
     l = len;
     nmissing = 0;
     while (l--)
-	XftGlyphCheck (dpy, font, (unsigned long) *s++, missing, &nmissing);
+	XftGlyphCheck (dpy, font, (unsigned int) *s++, missing, &nmissing);
     if (nmissing)
 	XftGlyphLoad (dpy, font, missing, nmissing);
     
@@ -233,7 +233,7 @@ XftRenderExtents32 (Display	    *dpy,
 		    int		    len,
 		    XGlyphInfo	    *extents)
 {
-    unsigned long   missing[XFT_NMISSING];
+    unsigned int    missing[XFT_NMISSING];
     int		    nmissing;
     unsigned int    *s, c;
     int		    l;
@@ -244,7 +244,7 @@ XftRenderExtents32 (Display	    *dpy,
     l = len;
     nmissing = 0;
     while (l--)
-	XftGlyphCheck (dpy, font, (unsigned long) *s++, missing, &nmissing);
+	XftGlyphCheck (dpy, font, (unsigned int) *s++, missing, &nmissing);
     if (nmissing)
 	XftGlyphLoad (dpy, font, missing, nmissing);
     

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftextent.c,v 1.1 2000/11/29 08:39:22 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftextent.c,v 1.2 2000/12/01 21:32:02 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -27,7 +27,7 @@
 void
 XftTextExtents8 (Display	*dpy,
 		 XftFont	*font,
-		 unsigned char  *string, 
+		 XftChar8	*string, 
 		 int		len,
 		 XGlyphInfo	*extents)
 {
@@ -44,7 +44,7 @@ XftTextExtents8 (Display	*dpy,
 void
 XftTextExtents16 (Display	    *dpy,
 		  XftFont	    *font,
-		  unsigned short    *string, 
+		  XftChar16	    *string, 
 		  int		    len,
 		  XGlyphInfo	    *extents)
 {
@@ -61,7 +61,7 @@ XftTextExtents16 (Display	    *dpy,
 void
 XftTextExtents32 (Display	*dpy,
 		  XftFont	*font,
-		  unsigned int	*string, 
+		  XftChar32	*string, 
 		  int		len,
 		  XGlyphInfo	*extents)
 {

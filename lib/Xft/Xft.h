@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/Xft.h,v 1.11 2000/12/05 03:13:27 keithp Exp $
+ * $XFree86: xc/lib/Xft/Xft.h,v 1.12 2000/12/06 18:03:24 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -30,6 +30,10 @@
 
 #include <X11/Xfuncproto.h>
 #include <X11/Xosdefs.h>
+
+typedef unsigned char	XftChar8;
+typedef unsigned short	XftChar16;
+typedef unsigned int	XftChar32;
 
 #define XFT_FAMILY	    "family"	/* String */
 #define XFT_STYLE	    "style"	/* String */
@@ -230,7 +234,7 @@ XftDrawString8 (XftDraw		*d,
 		XftFont		*font,
 		int		x, 
 		int		y,
-		unsigned char	*string,
+		XftChar8	*string,
 		int		len);
 
 void
@@ -239,7 +243,7 @@ XftDrawString16 (XftDraw	*draw,
 		 XftFont	*font,
 		 int		x,
 		 int		y,
-		 unsigned short	*string,
+		 XftChar16	*string,
 		 int		len);
 
 void
@@ -248,7 +252,7 @@ XftDrawString32 (XftDraw	*draw,
 		 XftFont	*font,
 		 int		x,
 		 int		y,
-		 unsigned int	*string,
+		 XftChar32	*string,
 		 int		len);
 void
 XftDrawRect (XftDraw	    *d,
@@ -268,21 +272,21 @@ XftDrawSetClip (XftDraw	    *d,
 void
 XftTextExtents8 (Display	*dpy,
 		 XftFont	*font,
-		 unsigned char  *string, 
+		 XftChar8	*string, 
 		 int		len,
 		 XGlyphInfo	*extents);
 
 void
 XftTextExtents16 (Display	    *dpy,
 		  XftFont	    *font,
-		  unsigned short    *string, 
+		  XftChar16	    *string, 
 		  int		    len,
 		  XGlyphInfo	    *extents);
 
 void
 XftTextExtents32 (Display	*dpy,
 		  XftFont	*font,
-		  unsigned int	*string, 
+		  XftChar32	*string, 
 		  int		len,
 		  XGlyphInfo	*extents);
     
@@ -306,7 +310,7 @@ void
 XftFontClose (Display *dpy, XftFont *font);
 
 Bool
-XftGlyphExists (Display *dpy, XftFont *font, unsigned int glyph);
+XftGlyphExists (Display *dpy, XftFont *font, XftChar32 glyph);
     
 /* xftfreetype.c */
 /* xftfs.c */

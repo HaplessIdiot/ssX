@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.2 2000/12/02 10:02:05 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.3 2000/12/03 19:03:22 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -44,10 +44,12 @@ static const int    filters[3][3] = {
 {    65538*1/13,65538*3/13,65538*9/13 },
 };
 
+#define _UntestedGlyph	((XGlyphInfo *) 1)
+
 void
 XftGlyphLoad (Display		*dpy,
 	      XftFontStruct	*font,
-	      unsigned long	*glyphs,
+	      XftChar32		*glyphs,
 	      int		nglyph)
 {
 #ifdef FREETYPE2
@@ -84,6 +86,10 @@ XftGlyphLoad (Display		*dpy,
     while (nglyph--)
     {
 	charcode = (FT_ULong) *glyphs++;
+	gi = font->realized[charcode];
+	if (!gi)
+	    continue;
+	
 	if (font->encoded)
 	{
 	    glyphindex = FT_Get_Char_Index (font->face, charcode);
@@ -225,7 +231,6 @@ XftGlyphLoad (Display		*dpy,
 	    continue;
 	}
 	
-	gi = font->realized[charcode];
 	gi->width = width;
 	gi->height = height;
 	gi->x = -TRUNC(left);
@@ -318,8 +323,8 @@ XftGlyphLoad (Display		*dpy,
 void
 XftGlyphCheck (Display		*dpy,
 	       XftFontStruct	*font,
-	       unsigned long	glyph,
-	       unsigned long	*missing,
+	       XftChar32	glyph,
+	       XftChar32	*missing,
 	       int		*nmissing)
 {
 #ifdef FREETYPE2
@@ -338,22 +343,28 @@ XftGlyphCheck (Display		*dpy,
 	    realized = (XGlyphInfo **) malloc (nrealized * sizeof (XGlyphInfo *));
 	if (!realized)
 	    return;
-	memset (realized + font->nrealized, 0, 
-		(nrealized - font->nrealized) *  sizeof (XGlyphInfo *));
+	for (n = font->nrealized; n < nrealized; n++)
+	    realized[n] = _UntestedGlyph;
+	
 	font->realized = realized;
 	font->nrealized = nrealized;
     }
-    if (!font->realized[glyph])
+    if (font->realized[glyph] == _UntestedGlyph)
     {
-	font->realized[glyph] = (XGlyphInfo *) malloc (sizeof (XGlyphInfo));
-	n = *nmissing;
-	missing[n++] = glyph;
-	if (n == XFT_NMISSING)
+	if (XftFreeTypeGlyphExists (dpy, font, glyph))
 	{
-	    XftGlyphLoad (dpy, font, missing, n);
-	    n = 0;
+	    font->realized[glyph] = (XGlyphInfo *) malloc (sizeof (XGlyphInfo));
+	    n = *nmissing;
+	    missing[n++] = glyph;
+	    if (n == XFT_NMISSING)
+	    {
+		XftGlyphLoad (dpy, font, missing, n);
+		n = 0;
+	    }
+	    *nmissing = n;
 	}
-	*nmissing = n;
+	else
+	    font->realized[glyph] = 0;
     }
 #endif
 }
@@ -361,7 +372,7 @@ XftGlyphCheck (Display		*dpy,
 Bool
 XftFreeTypeGlyphExists (Display		*dpy,
 			XftFontStruct	*font,
-			unsigned int	glyph)
+			XftChar32	glyph)
 {
 #ifdef FREETYPE2
     if (font->encoded)
