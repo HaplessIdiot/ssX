@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/hook.c,v 1.7 2002/09/08 03:59:01 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/hook.c,v 1.9 2003/01/08 05:07:40 paulo Exp $ */
 
 /*
  * This file is intended to be used to add all the necessary hooks to xedit
@@ -1022,7 +1022,7 @@ no_substitute_label:
 		    to = RSCAN(from, 1, True);
 		    from = LSCAN(to, 1, False);
 		    if (to == last) {
-			XawTextSetInsertionPoint(w, from + len);
+			XawTextSetInsertionPoint(w, from);
 			break;
 		    }
 		}
