@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xmu/StrToCurs.c,v 1.6 1998/10/03 09:06:34 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/StrToCurs.c,v 1.7 2001/01/17 19:42:57 dawes Exp $ */
 
 #include	<X11/Intrinsic.h>
 #include	<X11/StringDefs.h>
@@ -128,7 +128,7 @@ XmuCvtStringToCursor(XrmValuePtr args, Cardinal *num_args,
     Screen *screen;
     register int i;
     char maskname[PATH_MAX];
-    Pixmap source, mask;
+    Pixmap source, mask = 0;
     /* XXX - make fg/bg resources */
     static XColor bgColor = {0, 0xffff, 0xffff, 0xffff};
     static XColor fgColor = {0, 0, 0, 0};

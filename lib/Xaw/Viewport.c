@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Viewport.c,v 1.8 2000/09/26 15:56:55 tsi Exp $ */
+/* $XFree86: xc/lib/Xaw/Viewport.c,v 1.9 2001/01/17 19:42:36 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -755,17 +755,19 @@ ComputeWithForceBars(Widget widget, Bool query, XtWidgetGeometry *intended,
 	if (w->viewport.allowvert || w->viewport.allowhoriz) {
 	    XtQueryGeometry(child, intended, &preferred);
 	  
-	    if (!(intended->request_mode & CWWidth))
+	    if (!(intended->request_mode & CWWidth)) {
 		if (preferred.request_mode & CWWidth)
 		    intended->width = preferred.width;
 		else
 		    intended->width = XtWidth(child);
+	    }
 
-	    if (!(intended->request_mode & CWHeight))
+	    if (!(intended->request_mode & CWHeight)) {
 		if (preferred.request_mode & CWHeight)
 		    intended->height = preferred.height;
 		else
 		    intended->height = XtHeight(child);
+	    }
 	}
     }
     else {

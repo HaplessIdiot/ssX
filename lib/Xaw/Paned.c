@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Paned.c,v 1.9 1999/06/06 08:48:01 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Paned.c,v 1.10 2001/01/17 19:42:28 dawes Exp $ */
 
 /*
  * Updated and significantly modified from the Athena VPaned Widget.
@@ -1334,11 +1334,12 @@ CreateGrip(Widget child)
      
     XtSetArg(arglist[num_args], XtNtranslations, pw->paned.grip_translations);
     num_args++;
-    if ((cursor = pw->paned.grip_cursor) == None)
+    if ((cursor = pw->paned.grip_cursor) == None) {
 	if (IsVert(pw))
 	    cursor = pw->paned.v_grip_cursor;
 	else
 	    cursor = pw->paned.h_grip_cursor;
+    }
 
     XtSetArg(arglist[num_args], XtNcursor, cursor);
     num_args++;
@@ -1451,11 +1452,12 @@ ChangeAllGripCursors(PanedWidget pw)
 	Arg arglist[1];
 	Cursor cursor;
       
-	if ((cursor = pw->paned.grip_cursor) == None)
+	if ((cursor = pw->paned.grip_cursor) == None) {
 	    if (IsVert(pw))
 		cursor = pw->paned.v_grip_cursor;
 	    else
 		cursor = pw->paned.h_grip_cursor;
+	}
 
 	if (HasGrip(*childP)) {
 	    XtSetArg(arglist[0], XtNcursor, cursor);

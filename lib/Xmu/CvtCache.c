@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/CvtCache.c,v 3.4 2001/01/17 19:42:54 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CvtCache.c,v 3.5 2001/07/25 15:04:50 dawes Exp $ */
 
 /* 
  * Author:  Jim Fulton, MIT X Consortium
@@ -39,12 +39,6 @@ in this Software without prior written authorization from The Open Group.
 static int _CloseDisplay(XmuDisplayQueue*, XmuDisplayQueueEntry*);
 static int _FreeCCDQ(XmuDisplayQueue*);
 static void _InitializeCvtCache(XmuCvtCache*);
-
-/*
- * From LocBitmap.c
- */
-void _XmuStringToBitmapFreeCache(register XmuCvtCache*);
-void _XmuStringToBitmapInitCache(register XmuCvtCache*);
 
 /*
  * Initialization

@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextSink.c,v 1.17 2000/10/02 02:32:12 tsi Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSink.c,v 1.18 2001/01/17 19:42:34 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -934,12 +934,14 @@ XawTextSinkPreparePaint(Widget w, int y, int line, XawTextPosition from,
 	(w, y, line, from, to, highlight);
 }
 
+#if 0
 /*ARGSUSED*/
 static void
 PreparePaint(Widget w, int y, int line, XawTextPosition from, XawTextPosition to,
 	     Bool highlight)
 {
 }
+#endif
 
 void
 XawTextSinkDoPaint(Widget w)
@@ -949,11 +951,13 @@ XawTextSinkDoPaint(Widget w)
     (*cclass->text_sink_class.extension->DoPaint)(w);
 }
 
+#if 0
 /*ARGSUSED*/
 static void
 DoPaint(Widget w)
 {
 }
+#endif
 
 Bool
 XawTextSinkEndPaint(Widget w)
@@ -997,6 +1001,7 @@ EndPaint(Widget w)
 
     XtFree((XtPointer)sink->text_sink.paint);
     sink->text_sink.paint = NULL;
+    return (True);
 }
 
 static XawTextPropertyList **prop_lists;
@@ -1148,7 +1153,7 @@ DestroyTextPropertyList(XawTextPropertyList *list)
     XtFree((char*)list);
 }
 
-XawTextProperty *
+static XawTextProperty *
 _XawTextSinkGetProperty(XawTextPropertyList *list, XrmQuark property)
 {
     if (property != NULLQUARK && list && list->properties) {
@@ -1189,7 +1194,7 @@ XawTextSinkCopyProperty(Widget w, XrmQuark property)
     return (ret);
 }
 
-XawTextProperty *
+static XawTextProperty *
 _XawTextSinkAddProperty(XawTextPropertyList *list, XawTextProperty *property,
 			Bool replace)
 {

@@ -21,12 +21,12 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/StrToLong.c,v 1.6 1999/03/21 07:34:38 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/StrToLong.c,v 1.7 2001/01/17 19:42:57 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
-#include "SysUtil.h"
-#include "Converters.h"
+#include <X11/Xmu/SysUtil.h>
+#include <X11/Xmu/Converters.h>
 
 void
 XmuCvtStringToLong(XrmValuePtr args, Cardinal *num_args,

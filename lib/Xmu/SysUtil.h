@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/SysUtil.h,v 1.6 1998/10/03 09:06:36 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/SysUtil.h,v 1.7 2001/01/17 19:42:57 dawes Exp $ */
 
 #ifndef _SYSUTIL_H_
 #define _SYSUTIL_H_
@@ -36,6 +36,7 @@ int XmuGetHostname
     int			maxlen
 );
 
+#ifndef _XMU_H_
 int XmuSnprintf
 (
  char			*str,
@@ -43,6 +44,7 @@ int XmuSnprintf
  _Xconst char		*fmt,
     ...
  );
+#endif
 
 _XFUNCPROTOEND
 
