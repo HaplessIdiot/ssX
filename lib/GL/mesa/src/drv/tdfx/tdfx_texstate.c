@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_texstate.c,v 1.2 2002/02/22 21:45:04 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_texstate.c,v 1.3tsi Exp $ */
 
 /*
  * Original rewrite:
@@ -1478,6 +1478,7 @@ selectSingleTMUSrc(tdfxContextPtr fxMesa, GLint tmu, FxBool LODblend)
    fxMesa->dirty |= TDFX_UPLOAD_TEXTURE_ENV;
 }
 
+#ifdef UNUSED
 static void print_state(tdfxContextPtr fxMesa)
 {
    GLcontext *ctx = fxMesa->glCtx;
@@ -1499,7 +1500,7 @@ static void print_state(tdfxContextPtr fxMesa)
           fxMesa->TexState.EnvMode[1]);
    printf("   BaseFmt: GL=0x%x  Gr:0x%x\n", base1, fxMesa->TexState.TexFormat[1]);
 }
-
+#endif
 
 /*
  * When we're only using a single texture unit, we always use the 0th

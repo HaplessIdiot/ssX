@@ -41,7 +41,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86: xc/lib/Xp/XpNotifyPdm.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/lib/Xp/XpNotifyPdm.c,v 1.7tsi Exp $ */
 
 #include <X11/extensions/Print.h>
 #include <X11/Xlibint.h>
@@ -570,6 +570,7 @@ static Bool digOutPropertyNotify(
     return( False );
 }
 
+#ifdef UNUSED
 /*
  * Dig out a ClientMessage of type PDM_REPLY.
  */
@@ -590,7 +591,7 @@ static Bool digOutClientMessage(
     }
     return( False );
 }
-
+#endif
 
 
 /******************************************************************************

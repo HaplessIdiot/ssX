@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.21tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.22tsi Exp $ */
 
 /*
  *
@@ -128,6 +128,7 @@ static void SavageSubsequentMono8x8PatternFillRect(
     int w,
     int h);
 
+#if 0
 static void SavageSetupForColor8x8PatternFill(
     ScrnInfoPtr pScrn,
     int patternx,
@@ -144,6 +145,7 @@ static void SavageSubsequentColor8x8PatternFillRect(
     int y,
     int w,
     int h);
+#endif
 
 static void SavageSetClippingRectangle(
     ScrnInfoPtr pScrn,
@@ -989,6 +991,7 @@ SavageSubsequentMono8x8PatternFillRect(
 }
 
 
+#if 0
 static void 
 SavageSetupForColor8x8PatternFill(
     ScrnInfoPtr pScrn,
@@ -1049,6 +1052,7 @@ SavageSubsequentColor8x8PatternFillRect(
     BCI_SEND(BCI_X_Y(x, y));
     BCI_SEND(BCI_W_H(w, h));
 }
+#endif
 
 
 static void

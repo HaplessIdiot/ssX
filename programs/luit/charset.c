@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/luit/charset.c,v 1.6 2002/10/17 01:06:09 dawes Exp $ */
+/* $XFree86: xc/programs/luit/charset.c,v 1.7tsi Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -40,6 +40,7 @@ IdentityRecode(unsigned int n, CharsetPtr self)
     return n;
 }
 
+#ifdef UNUSED
 static int
 IdentityReverse(unsigned int n, CharsetPtr self)
 {
@@ -66,6 +67,7 @@ IdentityReverse(unsigned int n, CharsetPtr self)
     }
 #undef IS_GL
 }
+#endif
 
 static int
 NullReverse(unsigned int n, CharsetPtr self)

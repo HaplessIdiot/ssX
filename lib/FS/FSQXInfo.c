@@ -23,7 +23,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS 
  * SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/FS/FSQXInfo.c,v 1.5tsi Exp $ */
 
 /*
 
@@ -91,8 +91,10 @@ FSQueryXInfo(svr, fid, info, props, offsets, prop_data)
     props->num_offsets = local_pi.num_offsets;
     props->data_len = local_pi.data_len;
 
+#if SIZE_MAX <= UINT_MAX
     if (props->num_offsets > SIZE_MAX / sizeof(FSPropOffset)) 
 	return FSBadAlloc;
+#endif
 
     /* prepare for prop data */
     offset_data = (FSPropOffset *)

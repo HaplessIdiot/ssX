@@ -24,7 +24,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS 
  * SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/FS/FSListExt.c,v 1.6tsi Exp $ */
 
 /*
 
@@ -73,8 +73,12 @@ FSListExtensions(svr, next)
 	SyncHandle();
 	return (char **) NULL;
     }
-    if (rep.nExtensions && rep.nExtensions <= SIZE_MAX / sizeof(char *)
-	&& rep.length <= (SIZE_MAX>>2)) {
+    if (rep.nExtensions
+#if (SIZE_MAX >> 2) <= UINT_MAX
+	&& rep.nExtensions <= SIZE_MAX / sizeof(char *)
+	&& rep.length <= (SIZE_MAX>>2)
+#endif
+	) {
 	list = (char **) FSmalloc((unsigned)(rep.nExtensions * sizeof(char *)));
 	rlen = (rep.length << 2) - SIZEOF(fsListExtensionsReply);
 	c = (char *) FSmalloc((unsigned) rlen + 1);
