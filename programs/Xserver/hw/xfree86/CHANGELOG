@@ -1,4 +1,8 @@
 XFree86 4.3.99.17 (xx November 2003)
+ 624. Fix hide/unhide of XDarwin application with xpr when an AppleWM-aware
+      window manager is not present (Torrey T. Lyons).
+ 623. Fix generic rootless code bug which caused the wrong region to be
+      damaged on window resize (Torrey T. Lyons).
  622. Fix server crash when doing 'listwithinfo' of an outline font in
       a directory marked ":unscaled" (Bugzilla #911, David Dawes).
  621. Fix a key truncation problem with 'xauth add' (Bugzilla #903,
@@ -18258,7 +18262,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2992 2003/11/25 03:15:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2993 2003/11/26 03:47:49 dawes Exp $
 
 
 
