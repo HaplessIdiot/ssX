@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/39 1997/02/26 18:09:44 kaleb $
-XCOMM $XFree86: xc/lib/Imakefile,v 3.24 1999/01/03 03:58:14 dawes Exp $
+XCOMM $XFree86: xc/lib/Imakefile,v 3.25 1999/01/11 14:40:02 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -43,6 +43,10 @@ XF86DGALIB = Xxf86dga
 XVLIB = Xv
 #endif
 
+#if BuildGLXLibrary
+GLXLIB = GL
+#endif
+
 XF86EXTLIBS = $(XF86MISCLIB) $(XF86VMLIB) $(XF86DGALIB)
 
 #if BuildLBX
@@ -68,14 +72,15 @@ LINTSUBDIRS = Xau Xdmcp $(THRSTUBLIB) X11 oldX ICE SM Xext Xt \
 	     $(SSLIB) $(XF86MISCLIB) $(XF86VMLIB) $(XF86DGALIB) \
 	     Xmu Xaw Xpm XIE Xi Xtst FS \
 	     PEX5 $(XKBLIBDIR) $(XKBUILIBDIR) $(LBXUTILDIR) $(XALIBDIR) \
-	     Xp $(XVLIB) $(ZLIBDIR) $(REGEXDIR)
+	     Xp $(XVLIB) $(GLXLIB) $(ZLIBDIR) $(REGEXDIR)
 #else
 #if XnestServer
 XEXTDIR = Xext
 #endif
 
 LINTSUBDIRS = Xau Xdmcp X11 $(XEXTDIR) $(XKBLIBDIR) $(XKBUILIBDIR) \
-	      $(LBXUTILDIR) $(XF86EXTLIBS) $(XVLIB) $(ZLIBDIR) $(REGEXDIR)
+	      $(LBXUTILDIR) $(XF86EXTLIBS) $(XVLIB) $(GLXLIB) $(ZLIBDIR) \
+	      $(REGEXDIR)
 #endif
 
 SUBDIRS = $(BERKDIR) xtrans $(LINTSUBDIRS) $(FONTSUBDIR)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.16 1999/01/13 08:31:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.17 1999/02/07 06:18:46 dawes Exp $ */
 
 
 /*
@@ -143,6 +143,7 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(SetClipRects)
   SYMFUNC(ValidateGC)
   SYMFUNC(VerifyRectOrder)
+  SYMFUNC(SetDashes)
   /* globals.c */
 #ifdef DPMSExtension
   SYMVAR(DPMSEnabled)

@@ -1,0 +1,15 @@
+
+XCOMM Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/mesa/include/Imakefile,v 1.1 1999/02/23 07:49:30 martin Exp $
+
+#define IHaveModules
+#include <Server.tmpl>
+
+#define IHaveSubdirs
+
+      SUBDIRS = GL
+      DEFINES = $(GLX_DEFINES)
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+MakeLintLibSubdirs($(SUBDIRS))
+LintSubdirs($(SUBDIRS))

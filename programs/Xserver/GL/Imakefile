@@ -1,0 +1,62 @@
+
+XCOMM Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/Imakefile,v 1.9 1999/02/27 03:25:03 jens Exp $
+
+#define IHaveModules
+#include <Server.tmpl>
+
+#define IHaveSubdirs
+
+#if GlxUseSGISI
+ CORE_SUBDIR = /* opengl */
+#else
+ CORE_SUBDIR = mesa
+#endif
+
+#if BuildXF86DRI
+DRI_SUBDIR = dri
+ DRI_DONES = dri/DONE dri/drm/DONE
+  DRI_OBJS = dri/?*.o dri/drm/?*.o
+#endif
+
+#if DoLoadableServer
+SUBDIRS = glx $(DRI_SUBDIR) $(CORE_SUBDIR)
+
+MSRCS = glxmodule.c
+MOBJS = glxmodule.o
+
+DONES = \
+	glx/DONE \
+	$(DRI_DONES)
+
+SRCS = $(MSRCS)
+
+OBJS = \
+	glx/?*.o \
+	$(DRI_OBJS) \
+	$(MOBJS)
+
+INCLUDES = -Iinclude -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
+	   -I$(EXTINCSRC)
+DEPEND_DEFINES = $(EXT_DEFINES)
+      DEFINES = $(GLX_DEFINES)
+
+#if HasParallelMake
+MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
+#endif
+
+ModuleObjectRule()
+
+DepLibraryModuleTarget(glx,$(SUBDIRS) $(DONES) $(MOBJS),$(OBJS))
+InstallLibraryModule(glx,$(MODULEDIR),extensions)
+ForceSubdirs($(SUBDIRS))
+
+#else
+SUBDIRS = glx $(DRI_SUBDIR) $(CORE_SUBDIR)
+MakeSubdirs($(SUBDIRS))
+#endif
+
+DependTarget()
+
+DependSubdirs($(SUBDIRS))
+MakeLintLibSubdirs($(SUBDIRS))
+LintSubdirs($(SUBDIRS))

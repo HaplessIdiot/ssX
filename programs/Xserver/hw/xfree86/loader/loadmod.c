@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.40 1999/01/26 10:40:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.41 1999/01/31 12:22:03 dawes Exp $ */
 
 /*
  *
@@ -63,7 +63,7 @@ typedef Bool (*GlxInitVisualsType) (
    unsigned long /* sizes */ ,
    int	/* bitsPerRGB */
 );
-GlxInitVisualsType GlxInitVisualsPtr;
+GlxInitVisualsType GlxInitVisualsPtr = NULL;
 #endif
 
 typedef struct _pattern {

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.38 1999/01/31 12:21:12 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.39 1999/02/07 06:18:09 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -259,6 +259,12 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.38 1999/01/31 12:21:12 dawes Exp $
 #ifndef BuildXantiLibrary
 #define BuildXantiLibrary	BuildXantiExt
 #endif
+#ifndef BuildGlxExt
+#define BuildGlxExt		NO
+#endif
+#ifndef BuildGLXLibrary
+#define BuildGLXLibrary		BuildGlxExt
+#endif
 
 #ifndef BuildMiscDocs
 #define BuildMiscDocs		NO
@@ -464,7 +470,11 @@ $(FONTDIR)/100dpi/,$(FONTDIR)/75dpi/
 #endif
 #ifndef GlxDefines
 #if BuildGlxExt
+#ifdef GlxExtraDefines
+#define GlxDefines -DGLXEXT GlxExtraDefines
+#else
 #define GlxDefines -DGLXEXT
+#endif
 #else
 #define GlxDefines /**/
 #endif
@@ -1237,6 +1247,21 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #endif
 #endif
 
+#if BuildGLXLibrary
+#ifndef SharedLibGlx
+#define SharedLibGlx		HasSharedLibraries
+#endif
+#ifndef NormalLibGlx
+#define NormalLibGlx		YES
+#endif
+#ifndef DebugLibGlx
+#define DebugLibGlx		NO
+#endif
+#ifndef ProfileLibGlx
+#define ProfileLibGlx		NO
+#endif
+#endif
+
 #ifndef SharedLibXext
 #define SharedLibXext HasSharedLibraries
 #endif
@@ -1333,6 +1358,18 @@ ProjectUnsharedLibReferences(XV,Xv,$(XVLIBSRC),XBuildLibDir)
 SharedLibReferences(XANTI,Xanti,$(XANTILIBSRC),SOXANTIREV,SharedXantiRev)
 #else
 ProjectUnsharedLibReferences(XANTI,Xanti,$(XANTILIBSRC),XBuildLibDir)
+#endif
+#endif
+
+#if BuildGLXLibrary
+    GLXLIBSRC = $(LIBSRC)/GL
+#if SharedLibGlx
+#ifndef SharedGlxRev
+#define SharedGlxRev 1.2
+#endif
+SharedLibReferences(GLX,GL,$(GLXLIBSRC),SOGLREV,SharedGlxRev)
+#else
+ProjectUnsharedLibReferences(GLX,GL,$(GLXLIBSRC),XBuildLibDir)
 #endif
 #endif
 

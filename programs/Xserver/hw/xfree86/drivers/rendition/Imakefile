@@ -10,7 +10,7 @@ XCOMM #define SUBDIRS vlib
 SRCS=rendition_driver.c hwcursor.c vmodes.c vos.c vramdac.c vvga.c v1krisc.o vboard.c vloaduc.c
 OBJS=rendition_driver.o hwcursor.o vmodes.o vos.o vramdac.o vvga.o v1krisc.o vboard.o vloaduc.o
 
-EXTRA_DEFINES=-DXSERVER 
+DEFINES=-DXSERVER 
 #-DDEBUG
 
 RDRVDIR=drivers/vga256/rendition

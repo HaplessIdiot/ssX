@@ -1,0 +1,33 @@
+
+XCOMM Header: /p0/cvs/X39-3D/xc/lib/GL/dri/Imakefile,v 1.2 1999/02/26 08:35:31 martin Exp $
+
+#define IHaveSubdirs
+#define PassCDebugFlags
+
+SUBDIRS = drm
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+
+#if Malloc0ReturnsNull
+ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
+#endif
+
+      DEFINES = $(ALLOC_DEFINES)
+     INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
+         SRCS = XF86dri.c
+         OBJS = XF86dri.o
+
+all::
+	LibMkdir(unshared)
+
+.c.o:
+	UnsharedLibObjCompile($(_NOOP_))
+	NormalSharedLibObjCompile($(_NOOP_))
+
+all:: $(OBJS)
+
+clean::
+	LibCleanDir(unshared)
+
+DependTarget()

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.67 1999/02/19 21:27:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.68 1999/02/28 11:19:45 dawes Exp $ */
 
 /*
  *
@@ -146,6 +146,23 @@ extern int testinx(unsigned short, unsigned char);
 #ifdef DPMSExtension
 extern void DPMSSet(CARD16);
 #endif
+
+/* XXX Should get all of these from elsewhere */
+
+#ifdef GLXEXT
+typedef Bool (*GlxInitVisualsType) (
+   VisualPtr * /* visualp */ ,
+   DepthPtr * /* depthp */ ,
+   int * /* nvisualp */ ,
+   int * /* ndepthp */ ,
+   int * /* rootDepthp */ ,
+   VisualID * /* defaultVisp */ ,
+   unsigned long /* sizes */ ,
+   int	/* bitsPerRGB */
+);
+extern GlxInitVisualsType GlxInitVisualsPtr;
+#endif
+
 
 /* XFree86 things */
 
@@ -728,6 +745,10 @@ LOOKUP xfree86LookupTab[] = {
 
 #if defined(__powerpc__) && (!defined(NO_INLINE) || defined(Lynx))
    SYMVAR(ioBase)
+#endif
+
+#ifdef GLXEXT
+   SYMVAR(GlxInitVisualsPtr)
 #endif
 
   { 0, 0 },
