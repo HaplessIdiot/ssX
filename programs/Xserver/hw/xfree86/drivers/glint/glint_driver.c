@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.39 1999/06/13 05:18:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.40 1999/06/14 07:31:53 dawes Exp $ */
 /* $PI: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.29 1999/06/09 20:05:12 jens Exp $ */
 
 #define PSZ 8
@@ -864,9 +864,9 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	for (i = 1; i < pScrn->numEntities; i++) {
 	    pEnt = xf86GetEntityInfo(pScrn->entityList[i]);
 	    pPci = xf86GetPciInfoForEntity(pEnt->index);
-	    if (pPci->chipType == PCI_CHIP_DELTA ||
+	    if (pPci->chipType == PCI_CHIP_DELTA
 #if 0
-		pPci->chipType == PCI_CHIP_GAMMA
+		|| pPci->chipType == PCI_CHIP_GAMMA
 #endif
 	       ) {
 		pGlint->pEntGeometry = pEnt;
@@ -876,7 +876,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	    } else if (pPci->chipType == PCI_CHIP_MX) {
 		if (pGlint->numMXDevices >= GLINT_MAX_MX_DEVICES) {
 		    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-			%d MX chips supported, additional MX device ignored\n",
+			"%d MX chips supported, additional MX device ignored\n",
 			GLINT_MAX_MX_DEVICES);
 		} else {
 		    pGlint->pEntMX[pGlint->numMXDevices] = pEnt;
@@ -1177,7 +1177,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
         GLINTMapMem(pScrn);
 	if( (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_500TX) ||
 	    (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_MX) ||
-	    (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA) ))
+	    (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA) )
 	    pScrn->videoRam = 1024 * (1 << ((GLINT_READ_REG(FBMemoryCtl) & 
 							0xE0000000)>>29));
 	else 
