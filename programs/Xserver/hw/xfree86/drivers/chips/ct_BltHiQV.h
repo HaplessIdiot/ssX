@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_BltHiQV.h,v 1.4 1998/08/20 08:55:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_BltHiQV.h,v 1.5 1998/08/29 05:43:06 dawes Exp $ */
 
 /* Definitions for the Chips and Technology BitBLT engine communication. */
 /* These are done using Memory Mapped IO, of the registers */
@@ -68,17 +68,23 @@
 /*
  * This version resets the blitter if a timeout occurs
  */
+/* For some odd reason the blitter busy bit occasionly "locks up" when 
+ * it gets polled to fast. However I have observed this behavior only 
+ * when doing ScreenToScreenColorExpandFill on a 65550. This operation
+ * was broken anyway (the source offest register is not observed) therefore
+ * no action was taken.
+ */
 #define ctBLTWAIT \
-  outb(0x3D6,0x20); {int timeout; \
+outb(0x3D6,0x20);   {int timeout; \
                      timeout = 0; \
 		     for (;;) { \
-                         if (!(inb(0x3D7)&0x1)) break; \
+                         if (!(inb(0x3D7) & 0x1)) break; \
                          timeout++; \
-                         if (timeout == 10000000) { \
+                         if (timeout == 100000) { \
 			    unsigned char tmp; \
-                            ErrorF("CHIPS: BitBlt Engine Timeout\n"); \
 			    tmp = inb(0x3D7); \
 			    outb(0x3D7, ((tmp & 0xFD) | 0x2)); \
+			    outb(0x3D7, (tmp & 0xFD)); \
 			    break; \
                          } \
 		      } \

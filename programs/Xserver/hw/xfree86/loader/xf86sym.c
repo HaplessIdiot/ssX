@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.46 1998/11/15 04:30:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.47 1998/11/22 10:37:35 dawes Exp $ */
 
 /*
  *
@@ -40,6 +40,7 @@
 #include "xf86xv.h"
 #include "xf86_8plus24.h"
 #include "xf86cmap.h"
+#include "xf86fbman.h"
 #include "opaque.h"
 #include "dgaproc.h"
 #include "loader.h"

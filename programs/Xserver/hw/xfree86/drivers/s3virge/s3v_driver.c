@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.1 1998/11/01 12:36:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.3 1998/11/22 10:37:30 dawes Exp $ */
 
 /*
  *
@@ -12,6 +12,9 @@
  * Port to 4.0 design level
  *
  * S3 ViRGE driver
+ *
+ * based largely on the SVGA driver,
+ * Started 09/03/97 by S. Marineau
  *
  *
  */
@@ -50,6 +53,7 @@ static Bool S3VSaveScreen(ScreenPtr pScreen, Bool unblank);
 static void S3VInitSTREAMS(ScrnInfoPtr pScrn, unsigned int *streams, DisplayModePtr mode);
 static void S3VAdjustFrame(int scrnIndex, int x, int y, int flags);
 static Bool S3VSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
+static void S3VLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies, LOCO *colors, short visualClass);
 
 
 /*
@@ -431,14 +435,14 @@ S3VProbe(DriverPtr drv, int flags)
 	    pScrn->driverName	 = S3VIRGE_DRIVER_NAME;
 	    pScrn->name		 = S3VIRGE_NAME;
 	    pScrn->Probe	 = S3VProbe;
-	    pScrn->PreInit	 = /*NULL;*/ S3VPreInit;
-	    pScrn->ScreenInit	 = /*NULL;*/ S3VScreenInit;
-	    pScrn->SwitchMode	 = /*NULL;*/ S3VSwitchMode;
-	    pScrn->AdjustFrame	 = /*NULL;*/ S3VAdjustFrame;
-	    pScrn->EnterVT	 = /*NULL;*/ S3VEnterVT;
-	    pScrn->LeaveVT	 = /*NULL;*/ S3VLeaveVT;
+	    pScrn->PreInit	 = S3VPreInit;
+	    pScrn->ScreenInit	 = S3VScreenInit;
+	    pScrn->SwitchMode	 = S3VSwitchMode;
+	    pScrn->AdjustFrame	 = S3VAdjustFrame;
+	    pScrn->EnterVT	 = S3VEnterVT;
+	    pScrn->LeaveVT	 = S3VLeaveVT;
 	    pScrn->FreeScreen	 = NULL; /*S3VFreeScreen;*/
-	    pScrn->ValidMode	 = /*NULL;*/ S3VValidMode;
+	    pScrn->ValidMode	 = S3VValidMode;
 	    pScrn->device	 = usedDevs[i];
 	    foundScreen = TRUE;
 	}
@@ -554,10 +558,10 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-   #if 0 /* from MGA */
     /*
      * If the driver can do gamma correction, it should call xf86SetGamma()
-     * here.
+     * here. (from MGA, no ViRGE gamma support yet, but needed for 
+     * xf86HandleColormaps support. )
      */
 
     {
@@ -567,7 +571,6 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 	}
     }
-   #endif
 
     /* We use a programamble clock */
     pScrn->progClock = TRUE;
@@ -663,37 +666,6 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     } else
    	ps3v->late_ras_precharge = FALSE;
 	       
-#if 0
-    from = X_DEFAULT;
-    pMga->HWCursor = FALSE;
-    if (xf86GetOptValBool(MGAOptions, OPTION_HW_CURSOR, &pMga->HWCursor)) {
-	from = X_CONFIG;
-    }
-    if (xf86IsOptionSet(MGAOptions, OPTION_SW_CURSOR)) {
-	from = X_CONFIG;
-	pMga->HWCursor = FALSE;
-    }
-    xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
-		pMga->HWCursor ? "HW" : "SW");
-    if (xf86IsOptionSet(MGAOptions, OPTION_NOACCEL)) {
-	pMga->NoAccel = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
-    }
-    if (xf86IsOptionSet(MGAOptions, OPTION_PCI_RETRY)) {
-	pMga->UsePCIRetry = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
-    }
-    if (xf86IsOptionSet(MGAOptions, OPTION_SYNC_ON_GREEN)) {
-	pMga->SyncOnGreen = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Sync-on-Green enabled\n");
-    }
-    if (xf86IsOptionSet(MGAOptions, OPTION_SHOWCACHE)) {
-	pMga->ShowCache = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ShowCache enabled\n");
-    }
-
-#endif
-
     /* Find the PCI slot for this screen */
     /*
      * XXX Ignoring the Type list for now.  It might be needed when
@@ -1047,28 +1019,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 #ifdef XFreeXDGA
    vga256InfoRec.directMode = XF86DGADirectPresent;
 #endif
-
-   OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
-   OFLG_SET(OPTION_SLOW_EDODRAM, &S3V.ChipOptionFlags);
-   OFLG_SET(OPTION_FAST_DRAM, &S3V.ChipOptionFlags);
-   OFLG_SET(OPTION_FPM_VRAM, &S3V.ChipOptionFlags);
-   OFLG_SET(OPTION_PCI_BURST_ON, &S3V.ChipOptionFlags);
-   OFLG_SET(OPTION_FIFO_CONSERV, &S3V.ChipOptionFlags);
-   OFLG_SET(OPTION_FIFO_MODERATE, &S3V.ChipOptionFlags);
-   OFLG_SET(OPTION_FIFO_AGGRESSIVE, &S3V.ChipOptionFlags);
-   OFLG_SET(OPTION_PCI_RETRY, &S3V.ChipOptionFlags);
-   OFLG_SET(OPTION_NOACCEL, &S3V.ChipOptionFlags);
-   OFLG_SET(OPTION_HW_CURSOR, &S3V.ChipOptionFlags);
-   OFLG_SET(OPTION_EARLY_RAS_PRECHARGE, &S3V.ChipOptionFlags);
-   OFLG_SET(OPTION_LATE_RAS_PRECHARGE, &S3V.ChipOptionFlags);
 #endif
-
-#if 0
-   /* delete me */
-   S3V.ChipLinearBase = vga256InfoRec.MemBase;
-   S3V.ChipLinearSize = vga256InfoRec.videoRam * 1024;
-#endif
-
 
 
 	/* find BIOS base?  See above, do MELCO bios detect */
@@ -1369,9 +1320,6 @@ S3VSave (ScrnInfoPtr pScrn)
    else
    	vgaHWSave(pScrn, vgaSavePtr, VGA_SR_MODE);
    
-   /* Dup the VGA state to the new mode state ? */
-   memcpy( &hwp->ModeReg, vgaSavePtr, sizeof(vgaRegRec) );
-	 
    #if 1
    OUTREG8(vgaCRIndex, 0x66);
    OUTREG8(vgaCRReg, cr66);
@@ -1507,9 +1455,14 @@ S3VSave (ScrnInfoPtr pScrn)
    OUTREG8(vgaCRReg, cr66);
  #endif
 
-   /* Dup the S3V state to the new mode state ? */
-   memcpy( &ps3v->ModeReg, save, sizeof(S3VRegRec) );
-
+   				/* Dup the VGA & S3V state to the */
+				/* new mode state, but only first time. */
+   if( !ps3v->ModeStructInit ) {
+     memcpy( &hwp->ModeReg, vgaSavePtr, sizeof(vgaRegRec) );
+     memcpy( &ps3v->ModeReg, save, sizeof(S3VRegRec) );
+     ps3v->ModeStructInit = TRUE;
+   }
+   			 
    if (xf86GetVerbosity() > 1) S3VPrintRegs(pScrn);
 
    return;
@@ -1995,7 +1948,8 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     return FALSE;
     					/* Save the chip/graphics state */
   S3VSave(pScrn);
-  
+				 	/* Blank the screen during init */
+  vgaHWBlankScreen(pScrn, TRUE );  
     					/* Initialise the first mode */
   if (!S3VModeInit(pScrn, pScrn->currentMode))
     return FALSE;
@@ -2079,13 +2033,8 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     return FALSE;
       
   xf86SetBlackWhitePixels(pScreen);
-
-  /* Handle color map setup */
-					/* Both xf4bpp & cfb */
-					/* ViRGE only uses cfb so far */
-  if (pScrn->pixmapBPP == 8) {
-	vgaHandleColormaps(pScreen, pScrn);
-  } else {
+	 
+  if (pScrn->pixmapBPP > 8) {
     	VisualPtr visual;
 					/* Fixup RGB ordering */
 	visual = pScreen->visuals + pScreen->numVisuals;
@@ -2118,7 +2067,19 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     					/* Initialise default colourmap */
   if (!miCreateDefColormap(pScreen))
     return FALSE;
-
+  					/* Initialize colormap layer.   */
+					/* Must follow initialization   */
+					/* of the default colormap. 	*/
+					/* And SetGamma call, else it 	*/
+					/* will load palette with solid */
+					/* white. */
+  if(!xf86HandleColormaps(pScreen, 256, 6, S3VLoadPalette, 
+			CMAP_RELOAD_ON_MODE_SWITCH ))
+	return FALSE;
+				    	/* All the ugly stuff is done, 	*/
+					/* so re-enable the screen. 	*/
+  vgaHWBlankScreen(pScrn, FALSE );  
+    
   pScreen->SaveScreen = S3VSaveScreen;
 
     					/* Wrap the current CloseScreen function */
@@ -2235,7 +2196,8 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
    new->CR43 = 0x00;
    /*new->CR65 = 0x00;*/
    				/* Enable MMIO to RAMDAC registers */
-   new->CR65 = 0x02;
+   new->CR65 = 0x04;
+   /*new->CR65 = 0x02;  3.9Nm */
    new->CR54 = 0x00;
    
     /*cep*/  
@@ -2673,6 +2635,27 @@ S3VSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 
 
 
+void S3VLoadPalette(
+    ScrnInfoPtr pScrn, 
+    int numColors, 
+    int *indicies,
+    LOCO *colors,
+    short visualClass
+){
+    S3VPtr ps3v = S3VPTR(pScrn);
+    int i, index;
+
+    for(i = 0; i < numColors; i++) {
+	index = indicies[i];
+        OUTREG8(0x3c8, index);
+        OUTREG8(0x3c9, colors[index].red);
+        OUTREG8(0x3c9, colors[index].green);
+        OUTREG8(0x3c9, colors[index].blue);
+    }
+}
+
+
+
 
 
 /* This function is used to debug, it prints out the contents of s3 regs */
@@ -2682,7 +2665,7 @@ S3VPrintRegs(ScrnInfoPtr pScrn)
 {
     unsigned char tmp1, tmp2;
     vgaHWPtr hwp = VGAHWPTR(pScrn);
-    /* S3VPtr ps3v = S3VPTR(pScrn); */
+    S3VPtr ps3v = S3VPTR(pScrn);
     int vgaCRIndex, vgaCRReg, vgaIOBase;
     vgaIOBase = hwp->IOBase;
     vgaCRIndex = vgaIOBase + 4;

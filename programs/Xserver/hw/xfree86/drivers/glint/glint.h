@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.10 1998/09/19 12:14:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.11 1998/11/15 04:30:26 dawes Exp $ */
 /*
  * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -36,6 +36,7 @@
 typedef struct {
 	unsigned long glintRegs[0x2000];
 	unsigned long DacRegs[0x100];
+	unsigned char cmap[0x300];
 } GLINTRegRec, *GLINTRegPtr;
 
 #define GLINTPTR(p)	((GLINTPtr)((p)->driverPrivate))

@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.6 1998/08/29 14:34:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.7 1998/09/05 06:36:48 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -247,6 +247,7 @@ void
 Permedia2Save(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
+    int i;
 
     glintReg->glintRegs[Aperture0 >> 3] = GLINT_READ_REG(Aperture0);
     glintReg->glintRegs[Aperture1 >> 3] = GLINT_READ_REG(Aperture1);
@@ -272,6 +273,10 @@ Permedia2Save(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     glintReg->glintRegs[PMVideoControl >> 3] = GLINT_READ_REG(PMVideoControl);
     glintReg->glintRegs[VClkCtl >> 3] = GLINT_READ_REG(VClkCtl);
     glintReg->glintRegs[ChipConfig >> 3] = GLINT_READ_REG(ChipConfig);
+
+    Permedia2ReadAddress(pScrn, 0x00);
+    for (i=0;i<768;i++)
+	glintReg->cmap[i] = Permedia2ReadData(pScrn);
 
     glintReg->DacRegs[PM2DACIndexMCR] = 
 				Permedia2InIndReg(pScrn, PM2DACIndexMCR);
@@ -305,6 +310,7 @@ void
 Permedia2Restore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
+    int i;
 
 #if 0
     GLINT_SLOW_WRITE_REG(0, ResetStatus);
@@ -340,6 +346,10 @@ Permedia2Restore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMVsStart >> 3], PMVsStart);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMVsEnd >> 3], PMVsEnd);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[ChipConfig >> 3], ChipConfig);
+
+    Permedia2WriteAddress(pScrn, 0x00);
+    for (i=0;i<768;i++)
+        Permedia2WriteData(pScrn, glintReg->cmap[i]);
 
     Permedia2OutIndReg(pScrn, PM2DACIndexMCR, 0x00, 
 					glintReg->DacRegs[PM2DACIndexMCR]);

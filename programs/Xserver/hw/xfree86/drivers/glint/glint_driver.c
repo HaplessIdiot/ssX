@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.13 1998/11/15 04:30:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.14 1998/11/22 10:37:22 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -142,7 +142,7 @@ static PciChipsets GLINTPciChipsets[] = {
 typedef enum {
     OPTION_SW_CURSOR,
     OPTION_HW_CURSOR,
-    OPTION_NO_PCI_RETRY,
+    OPTION_PCI_RETRY,
     OPTION_RGB_BITS,
     OPTION_NOACCEL,
     OPTION_BLOCK_WRITE,
@@ -153,7 +153,7 @@ typedef enum {
 static OptionInfoRec GLINTOptions[] = {
     { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_NO_PCI_RETRY,	"NoPciRetry",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_PCI_RETRY,		"PciRetry",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_RGB_BITS,		"RGBbits",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_BLOCK_WRITE,	"BlockWrite",	OPTV_BOOLEAN,   {0}, FALSE },
@@ -173,6 +173,40 @@ static RamDacSupportedInfoRec TXMXRamdacs[] = {
     { IBM526_RAMDAC },
     { IBM640_RAMDAC },
     { -1 }
+};
+
+static const char *vgahwSymbols[] = {
+    "vgaHWGetHWRec",
+    "vgaHWUnlock",
+    "vgaHWInit",
+    "vgaHWProtect",
+    "vgaHWGetIOBase",
+    "vgaHWMapMem",
+    "vgaHWLock",
+    "vgaHWFreeHWRec",
+    "vgaHWSaveScreen",
+    NULL
+};
+
+static const char *fbSymbols[] = {
+    "xf1bppScreenInit",
+    "xf4bppScreenInit",
+    "cfbScreenInit",
+    "cfb16ScreenInit",
+    "cfb24ScreenInit",
+    "cfb32ScreenInit",
+    "cfbGCPrivateIndex",
+    "cfb16GCPrivateIndex",
+    "cfb32GCPrivateIndex",
+    "cfbBresS",
+    "cfb16BresS",
+    "cfb32BresS",
+    NULL
+};
+
+static const char *racSymbols[] = {
+    "xf86RACInit",
+    NULL
 };
 
 #ifdef XFree86LOADER
@@ -216,21 +250,12 @@ glintSetup(pointer module, pointer opts, int *errmaj, int *errmin)
     if (!setupDone) {
 	setupDone = TRUE;
 	xf86AddDriver(&GLINT, module, 0);
-
-	/*
-	 * Modules that this driver always requires can be loaded here
-	 * by calling LoadSubModule().
-	 */
-
-	/*
-	 * The return value must be non-NULL on success even though there
-	 * is no TearDownProc.
-	 */
-	return (pointer)1;
-    } else {
-	if (errmaj) *errmaj = LDR_ONCEONLY;
-	return NULL;
+	LoaderRefSymLists(vgahwSymbols, fbSymbols, racSymbols, NULL);
+	return (pointer)TRUE;
     }
+
+    if (errmaj) *errmaj = LDR_ONCEONLY;
+    return NULL;
 }
 
 #endif /* XFree86LOADER */
@@ -476,7 +501,6 @@ GLINTProbe(DriverPtr drv, int flags)
 
     for (i = 0; i < numUsed; i++) {
 	pPci = usedPci[i];
-	/* XXX Is this really needed since we already know what it is? */
 	resource = xf86FindPciResource(usedChips[i], GLINTPciChipsets);
 
 	/*
@@ -520,7 +544,6 @@ GLINTProbe(DriverPtr drv, int flags)
 		      }
 
 		      /* Claim our devices */
-		      /* XXX Is the usage here correct for the new RM code? */
 	    	      if (!xf86ClaimPciSlot((*checkusedPci)->bus, 
 					  (*checkusedPci)->device, 
 					  (*checkusedPci)->func,
@@ -551,9 +574,10 @@ GLINTProbe(DriverPtr drv, int flags)
 	    pScrn->device	 = usedDevs[i];
 	    foundScreen = TRUE;
 
+/* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX */
+/* NEED TO MOVE THIS OUT OF THE PROBE CODE */
+/* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX */
 	    {
-		/* XXX Why is the cards state being changed in the Probe? */
-
 		int temp;
 		int bugbase = 0;
   		/*
@@ -836,10 +860,10 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	pGlint->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }
-    pGlint->UsePCIRetry = TRUE;
-    if (xf86IsOptionSet(GLINTOptions, OPTION_NO_PCI_RETRY)) {
-	pGlint->UsePCIRetry = FALSE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry disabled\n");
+    pGlint->UsePCIRetry = FALSE;
+    if (xf86IsOptionSet(GLINTOptions, OPTION_PCI_RETRY)) {
+	pGlint->UsePCIRetry = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
     }
 
     i = xf86GetPciInfoForScreen(pScrn->scrnIndex, &pciList, NULL);
@@ -1089,8 +1113,6 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 		return FALSE;
 	    break;
     }
-
-    /* XXX Set HW cursor use */
 
     /* Set the min pixel clock */
     pGlint->MinClock = 16250;	/* XXX Guess, need to check this */

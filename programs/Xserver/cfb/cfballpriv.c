@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfballpriv.c,v 1.4 1997/11/22 00:00:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfballpriv.c,v 1.5 1998/10/04 09:37:36 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -42,6 +42,7 @@ int cfbWindowPrivateIndex;
 int cfbGCPrivateIndex;
 #ifdef CFB_NEED_SCREEN_PRIVATE
 int cfbScreenPrivateIndex = -1;
+static unsigned long cfbGeneration = 0;
 #endif
 
 extern RegionPtr (*cfbPuntCopyPlane)();
@@ -73,8 +74,11 @@ cfbAllocatePrivates(pScreen, window_index, gc_index)
 	return FALSE;
     cfbPuntCopyPlane = miCopyPlane;
 #ifdef CFB_NEED_SCREEN_PRIVATE
-    if (screenInfo.numScreens == 1)
+    if (cfbGeneration != serverGeneration)
+    {
       cfbScreenPrivateIndex = AllocateScreenPrivateIndex ();
+      cfbGeneration = serverGeneration;
+    }
     if (cfbScreenPrivateIndex == -1)
 	return FALSE;
 #endif

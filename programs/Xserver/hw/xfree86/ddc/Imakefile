@@ -1,0 +1,26 @@
+XCOMM $XFree86$
+
+#define IHaveModules
+#include <Server.tmpl>
+
+SRCS = xf86DDC.c edid.c interpret_edid.c print_edid.c \
+	interpret_vdif.o print_vdif.c
+OBJS = xf86DDC.o edid.o interpret_edid.o print_edid.o \
+	interpret_vdif.o print_vdif.o
+
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
+           -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
+           -I$(XF86SRC)/i2c
+
+ModuleObjectRule()
+
+LibraryModuleTarget(ddc, $(OBJS))
+
+InstallLibraryModule(ddc,$(MODULEDIR))
+
+DependTarget()
+
+InstallLinkKitLibrary(xf86DDC,$(LINKKITDIR)/lib)
+InstallLinkKitNonExecFile(xf86DDC.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(ddc.h,$(LINKKITDIR)/include)
+

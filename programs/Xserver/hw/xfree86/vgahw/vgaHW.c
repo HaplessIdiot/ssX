@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.10 1998/11/01 12:36:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.11 1998/11/15 10:22:39 dawes Exp $ */
 
 /*
  *
@@ -1472,7 +1472,6 @@ vgaHWUnlock(vgaHWPtr hwp)
      hwp->writeCrtc(hwp, 0x11, hwp->readCrtc(hwp, 0x11) | 0x80);
 }
 
-
 static void
 vgaHWLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 		 short visualClass)
@@ -1508,4 +1507,94 @@ vgaHWHandleColormaps(ScreenPtr pScreen)
 				   CMAP_RELOAD_ON_MODE_SWITCH);
     }
     return TRUE;
+}
+
+/* ----------------------- DDC support ------------------------*/
+/* 
+ * Adjust v_active, v_blank, v_sync, v_sync_end, v_blank_end, v_total
+ * to read out EDID at a faster rate. Allowed maximum is 25kHz with
+ * 20 usec v_sync active. Set positive v_sync polarity, turn off lightpen
+ * readback, enable access to cr00-cr07.
+ */
+
+#include "xf86DDC.h"
+
+/* vertical timings */
+#define DISPLAY_END 0x04
+#define BLANK_START DISPLAY_END
+#define SYNC_START BLANK_START
+#define SYNC_END 0x09
+#define BLANK_END SYNC_END
+#define V_TOTAL BLANK_END
+/* this function doesn't have to be reentrant for our purposes */
+struct _vgaDdcSave {
+    unsigned char cr03;
+    unsigned char cr06;
+    unsigned char cr07;
+    unsigned char cr09;
+    unsigned char cr10;
+    unsigned char cr11;
+    unsigned char cr12;
+    unsigned char cr15;
+    unsigned char cr16;
+    unsigned char msr;
+};
+
+void
+vgaHWddc1SetSpeed(ScrnInfoPtr pScrn, int speed)
+{
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
+    unsigned char tmp;
+    struct _vgaDdcSave* save;
+    switch ((xf86ddcSpeed)speed) {
+    case DDC_FAST:
+        
+        if (hwp->ddc != NULL) break;
+        hwp->ddc = xnfcalloc(sizeof(struct _vgaDdcSave),1);
+	save = (struct _vgaDdcSave *)hwp->ddc;
+      /* Lightpen register disable - allow access to cr10 & 11; just in case */
+	save->cr03 = hwp->readCrtc(hwp, 0x03); 
+	hwp->writeCrtc(hwp,0x03,(save->cr03 |0x80));
+	save->cr12 = hwp->readCrtc(hwp, 0x12); 
+	hwp->writeCrtc(hwp,0x12,DISPLAY_END);
+	save->cr15 = hwp->readCrtc(hwp, 0x15); 
+	hwp->writeCrtc(hwp,0x15,BLANK_START);
+	save->cr10 = hwp->readCrtc(hwp, 0x10); 
+	hwp->writeCrtc(hwp,0x10,SYNC_START);
+	save->cr11 = hwp->readCrtc(hwp, 0x11); 
+	/* unprotect group 1 registers; just in case ...*/
+	hwp->writeCrtc(hwp,0x11,((save->cr11 & 0x70) | SYNC_END));
+	save->cr16 = hwp->readCrtc(hwp, 0x16); 
+	hwp->writeCrtc(hwp,0x16,BLANK_END);
+	save->cr06 = hwp->readCrtc(hwp, 0x06); 
+	hwp->writeCrtc(hwp,0x06,V_TOTAL);
+	/* all values have less than 8 bit - mask out 9th and 10th bits */
+	save->cr09 = hwp->readCrtc(hwp, 0x09); 
+	hwp->writeCrtc(hwp,0x09,(save->cr09 &0xDF));
+	save->cr07 = hwp->readCrtc(hwp, 0x07); 
+	hwp->writeCrtc(hwp,0x07,(save->cr07 &0x10));
+	/* vsync polarity negativ */
+	save->msr = hwp->readMiscOut(hwp); 
+	hwp->writeMiscOut(hwp,(save->msr | 0x80));
+	break;
+    case DDC_SLOW:
+        if (hwp->ddc == NULL) break;
+	save = (struct _vgaDdcSave *)hwp->ddc;
+	hwp->writeMiscOut(hwp,save->msr);
+	hwp->writeCrtc(hwp,0x07,save->cr07);
+	tmp = hwp->readCrtc(hwp, 0x09);
+	hwp->writeCrtc(hwp,0x09,((save->cr09 & 0x20) | (tmp & 0xDF)));
+	hwp->writeCrtc(hwp,0x06,save->cr06);
+	hwp->writeCrtc(hwp,0x16,save->cr16);
+	hwp->writeCrtc(hwp,0x11,save->cr11);
+	hwp->writeCrtc(hwp,0x10,save->cr10);
+	hwp->writeCrtc(hwp,0x15,save->cr15);
+	hwp->writeCrtc(hwp,0x12,save->cr12);
+	hwp->writeCrtc(hwp,0x03,save->cr03);
+	xfree(save);
+	hwp->ddc = NULL;
+	break;
+    default:
+	break;
+    }
 }

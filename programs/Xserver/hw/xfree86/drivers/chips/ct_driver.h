@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.13 1998/08/29 14:34:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.14 1998/11/01 12:35:51 dawes Exp $ */
 
 
 #ifndef _CT_DRIVER_H_
@@ -31,6 +31,26 @@
 #include "xaa.h"
 #include "xaalocal.h"		/* XAA internals as we replace some of XAA */
 #include "xf86Cursor.h"
+#include "xf86i2c.h"
+
+/* Supported chipsets */
+typedef enum {
+    CHIPS_CT65520,
+    CHIPS_CT65525,
+    CHIPS_CT65530,
+    CHIPS_CT65535,
+    CHIPS_CT65540,
+    CHIPS_CT65545,
+    CHIPS_CT65546,
+    CHIPS_CT65548,
+    CHIPS_CT65550,
+    CHIPS_CT65554,
+    CHIPS_CT65555,
+    CHIPS_CT68554,
+    CHIPS_CT69000,
+    CHIPS_CT64200,
+    CHIPS_CT64300
+} CHIPSType;
 
 /* Clock related */
 typedef struct {
@@ -233,7 +253,14 @@ typedef struct {
 #endif
     int			Bank;
 #endif
+    unsigned char       ddc_mask;
+    I2CBusPtr           I2C;
 } CHIPSRec, *CHIPSPtr;
+
+typedef struct _CHIPSi2c {
+  unsigned char i2cClockBit;
+  unsigned char i2cDataBit;
+} CHIPSI2CRec, *CHIPSI2CPtr;
 
 /* External variables */
 extern int ChipsAluConv[];
@@ -267,6 +294,10 @@ void CHIPSMMIOSync(ScrnInfoPtr pScrn);
 Bool CHIPSHiQVAccelInit(ScreenPtr pScreen);
 void CHIPSHiQVSync(ScrnInfoPtr pScrn);
 Bool CHIPSCursorInit(ScreenPtr pScreen);
+
+/* ddc */
+extern void chips_ddc1(ScrnInfoPtr pScrn);
+extern Bool chips_i2cInit(ScrnInfoPtr pScrn);
 
 /* To aid debugging of 32 bit register access we make the following defines */
 /*

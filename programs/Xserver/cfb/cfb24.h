@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfb24.h,v 1.2 1998/07/25 09:07:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb24.h,v 1.3 1998/11/22 10:37:00 dawes Exp $ */
 /*
  * Copyright (C) 1994-1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -67,16 +67,6 @@
 #include "cfb.h"
 #undef CFB_PROTOTYPES_ONLY
 #include "cfbunmap.h"
-
-extern int cfb24ScreenPrivateIndex;
-extern int cfb24GCPrivateIndex;
-extern int cfb24WindowPrivateIndex;
-
-#define cfb24GetGCPrivate(pGC)	((cfbPrivGCPtr)\
-	(pGC)->devPrivates[cfb24GCPrivateIndex].ptr)
-
-#define cfb24GetWindowPrivate(_pWin) ((cfbPrivWin *)\
-	(_pWin)->devPrivates[cfb24WindowPrivateIndex].ptr)
 
 #undef PSZ
 #ifdef OLDPSZ
