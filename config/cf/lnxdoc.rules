@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.20 2000/12/07 15:43:36 tsi Exp $
+XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.21 2000/12/07 16:36:54 tsi Exp $
 XCOMM
 XCOMM Rules for formatting Linuxdoc-SGML documentation
 XCOMM
@@ -81,28 +81,28 @@ clean::									@@\
  */
 
 #ifndef UpdateFormattedDoc
-#define UpdateFormattedDoc(textfile)					@@\
+#define UpdateFormattedDoc(textfile,dstdir)				@@\
 update.docs:: textfile							@@\
-	-@if [ -f $(FORMATTEDDIR)/textfile ]; then \			@@\
+	-@if [ -f dstdir/textfile ]; then \				@@\
 	    if [ "$(FORCEUPDATE)" = yes ]; then set -x; \		@@\
 		if [ "$(FOLLOWLINK)" = no ]; then \			@@\
-			$(RM) $(FORMATTEDDIR)/textfile; \		@@\
+			$(RM) dstdir/textfile; \			@@\
 		fi; \							@@\
-		cp textfile $(FORMATTEDDIR)/textfile; \			@@\
-		echo "" >> $(FORMATTEDDIR)/textfile; \			@@\
-		echo "\$$XFree86\$$" >> $(FORMATTEDDIR)/textfile; \	@@\
+		cp textfile dstdir/textfile; \				@@\
+		echo "" >> dstdir/textfile; \				@@\
+		echo "\$$XFree86\$$" >> dstdir/textfile; \		@@\
 	    else \							@@\
 		$(RM) __tmp1__ __tmp2__; \				@@\
 		grep "Generated from XFree86:" textfile > __tmp1__; \	@@\
-		grep "Generated from XFree86:" $(FORMATTEDDIR)/textfile > __tmp2__; \	@@\
+		grep "Generated from XFree86:" dstdir/textfile > __tmp2__; \	@@\
 		if diff __tmp1__ __tmp2__ > /dev/null 2>&1; then :; \	@@\
 		else set -x; \						@@\
 			if [ "$(FOLLOWLINK)" = no ]; then \		@@\
-				$(RM) $(FORMATTEDDIR)/textfile; \	@@\
+				$(RM) dstdir/textfile; \		@@\
 			fi; \						@@\
-			cp textfile $(FORMATTEDDIR)/textfile ; \	@@\
-			echo "" >> $(FORMATTEDDIR)/textfile; \		@@\
-			echo "\$$XFree86\$$" >> $(FORMATTEDDIR)/textfile; \ @@\
+			cp textfile dstdir/textfile ; \			@@\
+			echo "" >> dstdir/textfile; \			@@\
+			echo "\$$XFree86\$$" >> dstdir/textfile; \	@@\
 		fi; \							@@\
 	    fi; \							@@\
 	fi								@@\
@@ -113,7 +113,7 @@ update.docs:: textfile							@@\
 LinuxDocSgmlToText(sgmlfile,textfile)					@@\
 LinuxDocSgmlToHtml(sgmlfile,base)					@@\
 LinuxDocSgmlToPs(sgmlfile,base)						@@\
-UpdateFormattedDoc(textfile)
+UpdateFormattedDoc(textfile,$(FORMATTEDDIR))
 
 #define LinuxDocReadmeTarget(base)					@@\
 LinuxDocTargetLong(base.sgml,ReadmeFile(base),base)
