@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.14 2003/02/26 18:59:49 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.15 2003/04/13 15:14:22 herrb Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XF86Config __filemansuffix__ __vendorversion__
@@ -1628,7 +1628,7 @@ The
 keyword is optional.  Some older versions of XFree86 (4.2 and earlier) don't
 recognise the
 .B Absolute
-keyword, so it's safest to just specificy the coorindates without it.
+keyword, so it's safest to just specify the coordinates without it.
 .TP 4
 .BI "RightOf   \*q" screen-id \*q
 .TP 4

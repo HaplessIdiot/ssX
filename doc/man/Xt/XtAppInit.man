@@ -25,7 +25,7 @@
 .\" dealing in this Software without prior written authorization from the 
 .\" X Consortium.
 .\"
-.\" $XFree86: xc/doc/man/Xt/XtAppInit.man,v 1.4 2001/03/04 00:04:25 tsi Exp $
+.\" $XFree86: xc/doc/man/Xt/XtAppInit.man,v 1.5 2003/04/28 22:18:18 herrb Exp $
 .\"
 .ds tk X Toolkit
 .ds xT X Toolkit Intrinsics \- C Language Interface
@@ -159,7 +159,7 @@ Specifies a pointer to the number of command line parameters.
 .IP \fIargv_in_out\fP 1i
 Specifies the command line parameters.
 .IP \fIfallback_resources\fP 1i
-Specifies resource valus to be used if the application class resource
+Specifies resource values to be used if the application class resource
 file cannot be opened or read, or NULL.
 .IP \fIargs\fP 1i
 Specifies the argument list to override any other resource specification

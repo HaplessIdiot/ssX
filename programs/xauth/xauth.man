@@ -23,7 +23,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86: xc/programs/xauth/xauth.man,v 1.6 2001/01/27 18:21:07 dawes Exp $
+.\" $XFree86: xc/programs/xauth/xauth.man,v 1.7 2001/12/14 20:01:15 dawes Exp $
 .\"
 .TH XAUTH 1 __xorgversion__
 .SH NAME
@@ -147,7 +147,7 @@ description of the \fIadd\fP command.
 .TP 8
 .B "[n]merge \fR[\fIfilename\fP...]"
 Authorization entries are read from the specified files and are merged into
-the authorization database, superceding any matching existing entries. If
+the authorization database, superseding any matching existing entries. If
 the \fInmerge\fP command is used, the numeric format given in the description
 of the \fIextract\fP command is used.  If a filename consists of just a single
 dash, the standard input will be read if it hasn't been read before.
