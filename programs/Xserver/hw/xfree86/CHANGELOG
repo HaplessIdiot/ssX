@@ -1,4 +1,6 @@
 XFree86 4.2.99.1 (XX March 2002)
+ 131. Drop the indirect buffer after ScreenInit, fixes corruption and
+      kernel error messages. (#5199, Michel Dänzer).
  130. Add Polygon support to Render extension (Carl Worth, Keith Packard)
  129. Add Intel i845G 2D support to the i8x0 driver, DRI is disabled. 
       (#A.1062, Graeme Fisher, 2D3D).
@@ -14788,4 +14790,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2210 2002/05/10 12:50:03 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2211 2002/05/13 05:28:54 keithp Exp $
