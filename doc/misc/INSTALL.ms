@@ -3,7 +3,7 @@
 .\" X11R6.5.1 Installation instructions. Use troff -ms macros
 .\"
 .\"
-.\" $XFree86: xc/doc/misc/INSTALL.ms,v 1.4 2001/01/17 16:57:40 dawes Exp $
+.\" $XFree86: xc/doc/misc/INSTALL.ms,v 1.5 2001/01/22 22:26:59 dawes Exp $
 .ds Ts August 20, 2000\"
 .\"
 .ie t \{
@@ -116,8 +116,14 @@ This quick summary is no substitute for reading the full build
 instructions later in this document.
 .LP
 Edit \fBxc/config/cf/site.def\fP for local preferences.
-If you want to install somewhere other than \fB/usr/X11R6.5.1\fP,
+If you want to install and use the installation from somewhere other than
+\fB/usr/X11R6.5.1\fP,
 change \fBProjectRoot\fP. (Do \fInot\fP use \fBDESTDIR\fP.)
+.LP
+If you are cross compiling you will want to use \fBDESTDIR\fP to specify where
+the installation should take place. Failure to do so will corrupt your
+native installation of X.
+.LP
 If you want to build with \fIgcc\fP uncomment the \fBHasGcc2\fP line.
 If you have \fIgcc\fP, but not \fIcc\fP, please read the full
 build instructions.

@@ -1,4 +1,9 @@
 XFree86 4.1.99.1 (xx June 2001)
+  18. Treat GL_POINT like GL_POINTS and GL_LINE like GL_LINES in the sunffb
+      DRI driver (#4677, David S. Miller).
+  17. Some doc updates related to cross compiling (#A.413, Scott A McConnell).
+  16. Fix bsdLib.rules and bsdLib.tmpl problems that show up when
+      X11ProjectRoot is defined (#4676, Johnny C. Lam).
   15. Fix Trident XVideo colorkey at depth 15, 24 (Alan Hourihane).
   14. Fix some apm driver bugs, including one that prevented acceleration
       from working (#4674, Loïc Grenié).
@@ -13332,4 +13337,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1797 2001/05/23 20:13:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1798 2001/05/24 09:35:57 alanh Exp $
