@@ -129,7 +129,9 @@
 
      14.
         The `xf86config' utility for generating XF86Config files has
+
         been improved and now uses a database of video cards.
+
      15.
         The X server LinkKit has been updated to include support for
         LBX.
@@ -193,8 +195,8 @@
 
         o  Linux
 
-        o  Amoeba
 
+        o  Amoeba
 
         o  Minix-386
 
@@ -259,8 +261,8 @@
 
      Trident
         TVGA8800CS, TVGA8900B, TVGA8900C, TVGA8900CL, TVGA9000,
-        TVGA9000i, TVGA9100B, TVGA9200CX, TVGA9320, TVGA9400CX, TVGA9420
 
+        TVGA9000i, TVGA9100B, TVGA9200CX, TVGA9320, TVGA9400CX, TVGA9420
 
      ATI
         18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6, 68800-3,
@@ -328,6 +330,7 @@
 
   The Trident TGUI9440 series of chips is not yet supported, but we are
   working on this.
+
   Some types of the Mach64 cards are not fully supported.  Refer to
   README.Mach64 for details.
 
@@ -390,10 +393,12 @@
   are using the latest release of XFree86.  Check the versions listed on
   ftp.xfree86.org:/pub/XFree86 <ftp://ftp.xfree86.org/pub/XFree86>.
 
+
   There is a Usenet news group comp.windows.x.i386unix that contains
   mostly discussions about XFree86 and related topics. Many questions
   can be answered there. The answers to common questions are found in
   the corresponding FAQ.
+
   7.  Credits
 
   XFree86 was originally put together by:
@@ -453,6 +458,7 @@
      o  Paul Vixie <paul@vix.com>
 
      o  Mark Weaver <Mark_Weaver@brown.edu>
+
 
      o  David Wexelblat <dwex@XFree86.org>
 
@@ -519,12 +525,12 @@
 
      LynxOS AT support by:
 
+
         o  Thomas Mueller <tm@systrix.de>
 
      Linux shared libraries by:
 
         o  Orest Zborowski <orestz@eskimo.com>,
-
 
         o  Dirk Hohndel <hohndel@XFree86.org>
 
@@ -583,6 +589,8 @@
         o  Hans Nasten <nasten@everyware.se>,
 
         o  Scott Laird <lair@midway.uchicago.edu>
+
+
 
      Cirrus accelerated code by:
 
@@ -714,6 +722,8 @@
 
         o  Hamish Coleman <hamish@zot.apana.org.au>
 
+
+
      XFree86-VidModeExtension and xvidtune client by:
 
         o  Kaleb S. Keithley <kaleb@x.org>
@@ -778,6 +788,7 @@
   investigation about funding, we decided to form our own corporation to
   provide the avenue we needed to meet the requirements of the X Consor-
   tium bylaws.
+
 
   By doing this, we were able to be involved in the beta-test interval
   for X11R6, and have contributed the majority of XFree86 to the X11R6
@@ -855,7 +866,6 @@
      o  AT&T Global Information Services <http://www.attgis.com/>
         (formerly NCR)
 
-
      o  Andrew Burgess
 
      o  Berkeley Software Design, Inc <http://www.bsdi.com/>, Falls
@@ -910,6 +920,8 @@
 
      o  Norbert Reithinger
 
+
+
      o  SPEA Software AG, Starnberg, Germany
 
      o  STB Systems
@@ -918,9 +930,10 @@
 
      o  Joel Storm
 
-     o  S.u.S.E, GmbH, Fuerth, Germany
+     o  S.u.S.E. GmbH <http://www.suse.de>, Fuerth, Germany
 
-     o  Tekelec Airtronic GmbH, Muenchen, Germany
+     o  Tekelec Airtronic GmbH <http://www.tekelec.com>, Muenchen,
+        Germany
 
      o  Jim Tsillas
 
@@ -974,6 +987,7 @@
 
         +  ref.tfs.com:/pub/mirrors/XFree86
            <ftp://ref.tfs.com/pub/mirrors/XFree86> (source patches and
+
            FreeBSD binaries)
 
         +  ftp.eecs.umich.edu:/BSD/XFree86/3.1.2
@@ -1039,6 +1053,7 @@
 
         +  ftp.nectec.or.th:/pub/mirrors/XFree86/3.1.2
            <ftp://ftp.nectec.or.th/pub/mirrors/XFree86/3.1.2> (source
+
            patches and binaries)
 
 
@@ -1051,8 +1066,9 @@
   archive, and which compile-time option selections were made when
   building the distribution.
 
+
   $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.32 1995/08/06 03:01:35 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.33 1995/09/17 06:31:58 dawes Exp $
 
 
 
@@ -1104,21 +1120,4 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-$XFree86$
+\n$XFree86$

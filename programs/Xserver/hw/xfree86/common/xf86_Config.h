@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Config.h,v 1.5 95/01/16 13:17:02 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.32 1995/08/13 09:44:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.34 1995/09/23 01:45:33 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -119,7 +119,6 @@ typedef struct {
 #define VENDOR		10007
 #define DASH		10008
 #define COMMA		10009
-
 
 #ifdef INIT_CONFIG
 static SymTabRec TopLevelTab[] = {
@@ -485,7 +484,6 @@ static SymTabRec DisplayTab[] = {
   { OPTION,		"option" },
   { INVERTVCLK,		"invertvclk" },
   { BLANKDELAY,		"blankdelay" },
-  { BLANKDELAY,		"blank_delay" },
   { EARLYSC,		"earlysc" },
   { -1,			"" },
 };

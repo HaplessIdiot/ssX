@@ -1,11 +1,10 @@
   Information for SCO Users
-  David McCullough
+  David McCullough (davidm@stallion.com)
   14 December 1994
 
   1.  Binary Distribution
 
-  The following files are provided in the binary distribution, where XXX
-  is the new version and NNN is the previous version:
+  The following files are provided in the binary distribution:
 
 
           README.SCO
@@ -14,64 +13,82 @@
           gunzip.Z
              The GNU uncompress utility.
 
-          *XFXXX-doc.tz
+          *X312Xdoc.tgz
              The XFree86 specific documentation.
 
-          XFNNN-XXX.tz
-             Files to upgrade from all NNN versions to XXX.  This
-             file may not be present if the upgrade is too
-             substantial (ie., X11R5 -> X11R6).
-
-          XFXXX-Mono.tz
+          X312Mono.tgz
              The Mono server
 
-          XFXXX-VGA16.tz
+          X312VG16.tgz
              The 16 colour VGA server
 
-          XFXXX-SVGA.tz
+          X312SVGA.tgz
              The Super VGA server
 
-          XFXXX-S3.tz
+          X312S3.tgz
              The S3 server
 
-       There will most likely be more servers than listed here.
-       You should select the server you need.  Check the directory
-       listing for any other servers that may be there.
+          X3128514.tgz
+             The 8514 server
 
-          *XFXXX-cfg.tz
+          X312AGX.tgz
+             The AGX server
+
+          X312Mc32.tgz
+             The Mach 32 server
+
+          X312Mc64.tgz
+             The Mach 64 server
+
+          X312Mc8.tgz
+             The Mach 8 server
+
+          X312P9k.tgz
+             The P9000 server
+
+          X312W32.tgz
+             The ET4000/W32 server
+
+          *X312cfg.tgz
              The local configuration files for xdm/fs/xinit.
 
-          *XFXXX-bin.tz
+          *X312bin.tgz
              The bin directory, contains most executables.
 
-          *XFXXX-lib.tz
+          *X312lib.tgz
              The shared and unshared libraries.
 
-          *XFXXX-fnt1.tz
+          *X312fnt1.tgz
              75dpi and misc fonts.
 
-          XFXXX-fnt2.tz
+          X312fnt2.tgz
              100dpi and Speedo fonts.
 
-          *XFXXX-inc.tz
-             The X11 include files.
+     *X312inc.tgz
+        The X11 include files.
 
-          XFXXX-man.tz
-             The formatted man pages.
+     X312man.tgz
+        The formatted man pages.
 
-          XFXXX-lkit.tz
-             The server link kit (all drivers + PEX).
+     X312lkit.tgz
+        The server link kit (all drivers + PEX).
 
-          XFXXX-util.tz
-             Lots of PD utilities provided as is.
-     XFXXX-pex.tz
+     X312util.tgz
+        Lots of PD utilities provided as is.
+
+     X312pex.tgz
         All files relating to PEX including libraries and
         header files.  The LinkKit is required to obtain
         servers capable of running PEX.
 
+     dmmap-1_0.btz
+        The binary distribution of the ``dmmap'' driver for
+        allowing access to strange video ram addresses by
+        XFree86.
+
 
   To obtain a minimum XFree86 installation you will require the archives
-  marked with a '*' above, the server binary best suited to your machine
+  marked with a `*' above, the server binary best suited to your machine
   and optionally "gunzip.Z".  All the files are compressed with "gzip"
   except of course "gunzip.Z" which is compressed using the conventional
   compress program.
@@ -81,14 +98,19 @@
      1. Obtain the files you require.
 
 
-        as root,
+        The rest of this procedure must be done as root.  If you do not
+        run the extraction as root the permissions on the files will not
+        be correct.  For example,  the `X' server is s-bit root and will
+        not function correctly if extracted as an ordinary user.
 
      2. create a directory /usr/X11R6, permissions 755 should do nicely.
 
      3. cd /usr/X11R6
 
      4. extract the archives, for example:
-                    gunzip < XFXXX-bin.tz | tar xvf -
+
+                    gunzip < X312bin.tgz | tar xvf -
+
 
 
      5. if you have installed man pages see the later section on setting
@@ -101,33 +123,14 @@
         document, to see if there are any system requirements you have
         to make for the server to operate correctly.
 
-  If you intend using the programs from the utilities archive then you
-  should be aware that they are provided as is.  They are not part of
-  the XFree86 distribution nor are they part of the standard MIT distri-
-  bution.  Every attempt is made to ensure that they work to a usable
-  degree but they are not perfect.  All programs in the utilities
-  archive come with a manual entry (which is also in the utilities
-  archive).  Information on the author(s) can usually be located in the
-  man page or by running the executable.
-
   2.  Source Distribution
 
   The SCO port comes as part of the standard XFree86 distribution.
   Consult the XFree86 README for more information on the location of
   sources.
 
+
   3.  Before Running XFree86
-
-
-  Before you can run XFree86 with shared libraries enabled you must up
-  the shared library count in the kernel.  This is only required for
-  3.2.2 systems.  To accomplish this log in as root and run:
-
-           cd /etc/conf/cf.d
-           ./configure SHLBMAX=6
-           cd ../bin
-           ./idbuild
-
 
 
   The SCO xterm terminfo description is not compatible with the xterm in
@@ -149,11 +152,116 @@
   located in /usr/X11R6/lib/X11/etc.  Both distributions provide
   instructions for installation/removal within the README file.
 
+  If you do not have the SCO TCP/IP package installed do not panic.
+  XFree86 will work fine without TCP/IP but you will most likely have to
+  do some or all of these things:
+
+     o  Do not worry about errors from the X server complaining about
+        ``/dev/socksys''.  The X server is configured to run on systems
+        with and without TCP/IP.  This error is just pointing out that
+        you do not have TCP/IP and that this method of connecting to the
+        server has been disabled.
+
+
+     o  Do worry about errors involving ``/dev/spx'' or the ``sco''
+        connection type.  This means something is wrong with the streams
+        pipes that are used for connections on the local machine.  First
+        be sure that your server has the ``s-bit'' set.  You can do this
+        by running this command for the X server you are using:
+
+        ls -al /usr/X11R6/bin/XF86_XXXXXX
+
+        The output should contain the `s' character instead of the `x'
+        character.  For example:
+
+
+          -rwsr-xr-x   1 root     bin      1074060 Jul 24 11:54 XF86_W32
+
+
+
+
+
+     is correct while:
+
+
+          -rwxr-xr-x   1 root     bin      1074060 Jul 24 11:54 XF86_W32
+
+
+
+
+
+     is not.
+
+
+     o  you may have to install streams into the kernel with ``mkdev
+        streams'' Check the SCO Manuals for more information on this.
+
+     o  you may have to configure some devices in /dev,  check in the
+        "Trouble Shooting" section of this document for the entry which
+        comments on ``/dev/spx'' and ``Xsco''.
+
+
+     o  Your streams resources may be configured too low.  You should
+        check your streams parameters against the following values,  if
+        the are higher then you do not need to changes them.  To check
+        these values, login as root, change directory to
+        ``/etc/conf/cf.d'' and then run ``./configure''.
+
+        Once you are running configure,  choose the ``Streams Data''
+        option and step through the entries.  Just press <ENTER> at each
+        prompt unless you want to change a value.  The values to look
+        for,  and their minimum values, are:
+
+
+
+                             NSTREAM      128
+                             NQUEUE       512
+                             NBLK4096     4
+                             NBLK2048     32
+                             NBLK1024     32
+                             NBLK512      32
+                             NBLK256      64
+                             NBLK128      256
+                             NBLK64       256
+                             NBLK16       256
+                             NBLK4        128
+                             NUMSP        128
+
+
+
+
+
+
+     You will not normally need to change any of these,  if however you
+     do have to change some,  configure will confirm that you want to
+     save the changes before exiting,  and will give you further
+     instructions on rebuilding the unix kernel.
+
+
+     o  Under SCO 3.2.4,  without TCP/IP installed the Screen Saver
+        extension behaves badly.  If your screen flickers between black
+        and the correct screen as you move the mouse or type,  then you
+        will have to turn the screen saver off.  To do this add a line
+        like:
+
+
+
+                              xset s off
+
+
+
+
+
+
+     To your startup script (ie., .startxrc, .xinitrc, ...).  This will
+     turn the screen saver off and prevent the bug from occurring.
+
   4.  Switching Consoles
 
   XFree86 uses similar console switching keys as the SCO R4 and R5
   servers.  That is, Ctrl-PrntScr takes you to the next console along
   from the one X is running on.  If this is the last console it will
+
   take you to console 1.  Those interested in modifying the console
   switching should look in
   xc/programs/Xserver/hw/xfree86/common/xf86Events.c.
@@ -165,7 +273,9 @@
   /usr/X11R6/man to the MANPATH in /etc/default/man, the line should
   look similar to:
 
+
            MANPATH=/usr/man:/usr/X11R6/man
+
 
 
 
@@ -214,37 +324,22 @@
   to create the following header files in the appropriate places.
 
 
-       A) create a /usr/include/sys/uio.h containing the following:
-           #ifndef _XFREE86_UIO_
-           #define _XFREE86_UIO_ 1
+     1. create a /usr/include/sys/uio.h containing the following:
 
-           #ifndef __IOVEC__
-           #define __IOVEC__ 1
-           typedef struct iovec {
-               caddr_t iov_base;
-               int iov_len;
-           } iovec_t;
-           #endif /* __IOVEC__ */
 
-           #endif /* _XFREE86_UIO_ */
 
-       B) create a /usr/include/net/errno.h containing
+            #ifndef _XFREE86_UIO_
+            #define _XFREE86_UIO_ 1
 
-           #ifndef _XFREE86_ERRNO_
-           #define _XFREE86_ERRNO_ 1
-           #include <errno.h>
-           #endif /* _XFREE86_ERRNO_ */
+            #ifndef __IOVEC__
+            #define __IOVEC__ 1
+            typedef struct iovec {
+                caddr_t iov_base;
+                int iov_len;
+            } iovec_t;
+            #endif /* __IOVEC__ */
 
-       C) create a /usr/include/sys/bsdtypes.h which is empty for
-       now.
-
-       D) create a < sys/time.h > under the gnu include directory
-       containing the following (this protects the system header
-       file from multiple inclusions) You do not have to change the
-       system header file!
-           #ifndef _SYS_TIME_H_
-           #define _SYS_TIME_H_ 1
-           #include < /usr/include/sys/time.h >    #endif /* _SYS_TIME_H_ */
+            #endif /* _XFREE86_UIO_ */
 
 
 
@@ -254,10 +349,12 @@
   required for the correct compilation of "xdm".
 
   To compile from here, follow the XFree86 README, basically after
-  obtaining X11r5, applying the XFree86 patches and completing the above
+  obtaining X11R6, applying the XFree86 patches and completing the above
   changes you should only need to run:
 
+
            make BOOTSTRAPCFLAGS="-DSYSV -Di386 -DSCO" World
+
 
 
 
@@ -266,6 +363,7 @@
   XFree86. To fix this apply the following patch from the directory con-
   taining the 'mit' directory.  This is personal taste only, if you are
   installing through symbolic links then leave this one alone.
+
   ----------8<-----------------8<------------------------------------
   *** mit/util/scripts/bsdinst.sh%        Tue Mar  2 14:27:16 1993
   --- mit/util/scripts/bsdinst.sh Tue Mar  2 14:27:17 1993
@@ -284,11 +382,15 @@
   ----------8<-----------------8<------------------------------------
 
 
+
   8.  Compiling XFree86 under 3.2.4
 
   Compiling gcc2.5.8 is accomplished after doing the following.
 
+
            ./configure i386-*-sco3.2v4.2
+
+
 
 
 
@@ -315,7 +417,9 @@
 
      3. Add a -DSCO324 to the BOOTSTRAPCFLAGS when you do the make
         World.
+
                 make BOOTSTRAPCFLAGS="-DSYSV -Di386 -DSCO -DSCO324" World
+
 
      Under 3.2.4 several different options become activated.
 
@@ -325,18 +429,6 @@
         o  The default compile line will contain -D_NO_PROTOTYPE instead
            of -DNO_PROTOTYPE as this is what 3.2.4 expects.
 
-     4. If you have problems with mkshlib reporting an error like
-
-
-                mkshlib: : cannot exec /bin/sh
-
-
-     when compiling libX11, then the following should fix it,
-             rm -f lib/X/libX11.a
-             env - make
-
-     The error is related to a lack of environment space.
-
   9.  Compiling with __STDC__=0
 
   DO NOT make these changes unless you have gcc configured with
@@ -344,7 +436,9 @@
   If it prints out STDC_VALUE=1 do not make these changes.  If it prints
   out STDC_VALUE=0 then you will have to make the following changes.
 
+
            main() { printf("STDC_VALUE=%d\n", __STDC__); }
+
 
 
 
@@ -353,11 +447,14 @@
   you will have to edit mit/config/x386.cf.  Look for the pattern
   GCC_STDC_VALUE and replace the 1 by a 0.  For example the line
 
+
            #define GCC_STDC_VALUE 1
 
 
 
+
   should become,
+
 
            #define GCC_STDC_VALUE 0
 
@@ -394,27 +491,110 @@
 
      o  Not all of the applications in /usr/X11R6/bin have been
         debugged.
-     o  Shared libraries are not implemented in XFree86 3.1 yet.
+
+     o  Shared libraries are not implemented in XFree86 3.1 yet.  This
+        means the binaries use a log of disk space and a lot of memory
 
   12.  Trouble Shooting
 
 
      Problem:
 
-          Server aborts with the error message, "Failed to map
-          video display memory".
+          The server does not start up,  and I cannot tell what is
+          going wrong as it did not print any error messages.
 
 
      Causes:
 
-          Your system does not have the correct
-          /etc/conf/pack.d/cn/class.h, You can confirm this by
-          editing the file and looking for the string "SVGA", if it
-          is not there then you should re-install this file from
-          the "Extended Utilities" diskettes provided with your OS.
-          If this is not possible then installing the "dmmap"
-          driver from the distribution may allow the server to
-          operate correctly.
+          There can be any number of causes why the server doesn't
+          start.  The first step is to find out what the server has
+          to say.  To do this we have to catch the error output of
+          the server into a file.  This output contains a log of
+          what the server is finding/doing as it starts up.  To get
+          this output run:
+
+                         startx 2> /tmp/errs
+
+
+
+          The output of the server will now be in "/tmp/errs".  You
+          should look through this output for possible problems,
+          and then check here in this document for any references
+          to the problems you are seeing.
+
+
+     Problem:
+
+
+     The server starts up,  the screen goes blank,  and I
+     never see anything else.  It appears that my machine has
+     hung.
+
+
+     Causes:
+
+          Again this can have many causes.  Most likely your
+          XF86Config is wrong.  You should be able to kill the
+          server by typing Ctrl-Alt-BackSpace,  if it is still run-
+          ning.  If this does not restore your display then you may
+          have to drive your system blind.  Always keep another
+          login running at the shell prompt so that you may switch
+          to that screen and run commands even if you cannot see
+          anything on the screen.  Try these things,  usually in
+          the order given:
+
+             o  log out of the login where you started ``X'' and
+                then change consoles.  This will cause the SCO
+                screen switching code to try to reset the card.
+
+             o  run ``vidi v80x25'',  this command will also try to
+                set your card into a viewable mode.
+
+             o  shutdown the machine cleanly with ``shutdown'' and
+                try again.
+
+          When first trying to get XFree86 to run,  be sure to use
+          a simple setup.  Get 640x480 working first then move on
+          to higher resolutions.  Always trap the output of the
+          server as shown earlier.  Once you have the valid clocks
+          for your video card (as provided in the server output),
+          hard code them into your XF86Config as this will take
+          some strain off your monitor during XFree86 startup where
+          it usually probes the various clock frequencies.  Getting
+          the ``X'' screen to appear can be a painfully slow task.
+          Be patient and read as much of the doco as you can han-
+          dle.  You will get it to work.
+
+
+     Problem:
+
+
+                     Fatal server error:
+                     xf86MapVidMem:No class map defined for (XXXXX,XXXXX)
+
+
+
+
+     Causes:
+
+
+             1. Your system does not have the correct
+                /etc/conf/pack.d/cn/class.h, You can confirm this
+                by editing the file and looking for the string
+                "SVGA", if it is not there then you should re-
+                install this file from the "Extended Utilities"
+                diskettes provided with your OS.  If this is not
+                possible then installing the "dmmap" driver from
+                the distribution may allow the server to operate
+                correctly.
+
+             2. You are using a server that requires special access
+                to the video memory on your card.  The only way to
+                fix this is to install the "dmmap" memory mapping
+
+           driver for SCO.  The source for this driver is
+           provided in /usr/X11R6/lib/X11/etc/dmmap.shar.  For
+           example, the ET4000W32 server will require this.
 
 
      Problem:
@@ -460,12 +640,12 @@
                 cd /etc/conf/cf.d; ./configure and increase the
                 number of pseudo ttys.  Rebuild the kernel.  "ls
                 -al /dev/ttyp0 /dev/ptyp0" to get the major numbers
-           for the slave and master drivers.  Use mknod to
-           create the extra devices using the naming schemes
-           ttyp[0-9a-f] and ptyp[0-9a-f].
+                for the slave and master drivers.  Use mknod to
+                create the extra devices using the naming schemes
+                ttyp[0-9a-f] and ptyp[0-9a-f].
 
-        3.2.4
-           Run "mkdev ptty" and increase the number of ptty's.
+             3.2.4
+                Run "mkdev ptty" and increase the number of ptty's.
 
 
      Problem:
@@ -476,12 +656,14 @@
 
      Causes:
 
+
+
         1. You are running an original 1.3 distribution of XFree86.
-           Update to the latest version (2.0 or greater).
+           Update to the latest version (3.1 or greater).
 
         2. You have resized the window and not ran "eval `resize`"
            before using your application.  The SCO operating system does
-           not support dynamic resizing or xterms fully so this command
+           not support dynamic resizing of xterms fully so this command
            must be run after resizing an xterm in order for
            curses/termcap applications to operate correctly.
 
@@ -526,6 +708,8 @@
           When linking against the SCO motif library I get an unre-
           solved external for "XtDisplayStringConversionWarning"
           when using gcc.
+
+
      Causes:
 
 
@@ -533,27 +717,22 @@
           fiers.  To work around this add the following code to
           your application when compiling under XFree86 with gcc
           and SCO motif.
-              #ifdef SCO
-              void XtDisplayStringConversionWarnin(dpy, from, toType)
-                  Display*  dpy;
-                  String    from;
-                  String    toType;
-              { XtDisplayStringConversionWarning(dpy, from, toType); }
-              #endif
 
 
 
-     Problem:
-
-          When compiling the XFree86 source under 3.2.4, libX11
-          fails to get built with an error like "mkshlib : : cannot
-          exec /bin/sh"
 
 
-     Causes:
 
-          Read the section on compiling for 3.2.4.  To fix this use
-          "env - make".
+
+         #ifdef SCO
+         void XtDisplayStringConversionWarnin(dpy, from, toType)
+             Display*  dpy;
+             String    from;
+             String    toType;
+         { XtDisplayStringConversionWarning(dpy, from, toType); }
+         #endif
+
+
 
 
      Problem:
@@ -579,50 +758,42 @@
              3. You need a file in /etc/conf/node.d which contains
                 something like:
 
+                        clone   spx             c       sp
+                        sp      X0S             c       127
+                        sp      X0R             c       126
+                        sp      X1S             c       125
+                        sp      X1R             c       124
+                        sp      X2S             c       123
+                        sp      X2R             c       122
+                        sp      X3S             c       121
+                        sp      X3R             c       120
+                        sp      X4S             c       119
+                        sp      X4R             c       118
+                        sp      X5S             c       117
+                        sp      X5R             c       116
+                        sp      X6S             c       115
+                        sp      X6R             c       114
+                        sp      X7S             c       113
+                        sp      X7R             c       112
 
 
 
+          if you don't have something like this (maybe called
+          "Xsco") then create one and that should fix your problem.
+          As far as I can tell the streams pseudo tty driver should
+          be there.
+
+          The simplest way to get the devices if you had to create
+          this file is to rebuild the kernel and the environment.
+          If you don't want to do this then:
 
 
 
-
-
-
-
-
-
-
-                   clone   spx             c       sp
-                   sp      X0S             c       127
-                   sp      X0R             c       126
-                   sp      X1S             c       125
-                   sp      X1R             c       124
-                   sp      X2S             c       123
-                   sp      X2R             c       122
-                   sp      X3S             c       121
-                   sp      X3R             c       120
-                   sp      X4S             c       119
-                   sp      X4R             c       118
-                   sp      X5S             c       117
-                   sp      X5R             c       116
-                   sp      X6S             c       115
-                   sp      X6R             c       114
-                   sp      X7S             c       113
-                   sp      X7R             c       112
-
-
-     if you don't have something like this (maybe called
-     "Xsco") then create one and that should fix your problem.
-     As far as I can tell the streams pseudo tty driver should
-     be there.
-
-     The simplest way to get the devices if you had to create
-     this file is to rebuild the kernel and the environment.
-     If you don't want to do this then:
 
              touch /etc/.new_unix
              cd /etc/conf/bin
              ./idmkenv
+
 
 
      and try it out.
@@ -645,8 +816,9 @@
   an ftp site for the binary distribution.
 
 
+
   $XConsortium: SCO.sgml,v 1.4 95/01/27 16:14:31 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.7 1995/07/21 14:40:54 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.8 1995/09/17 06:31:59 dawes Exp $
 
 
 
@@ -659,4 +831,29 @@
 
 
 
-$XFree86$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\n$XFree86$
