@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.52 1998/01/01 20:05:28 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.53 1998/01/11 03:48:26 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -1140,9 +1140,6 @@ struct pci_vendor_device {
                             { 0x5578, "7855", NF },
                             { 0x6078, "7860", NF },
                             { 0x7078, "294x", NF },
-                            { 0x7111, "82371AB PIIX4 IDE", NF },
-                            { 0x7112, "82371AB PIIX4 USB", NF },
-                            { 0x7113, "82371AB PIIX4 ACPI", NF },
                             { 0x7178, "2940", NF },
                             { 0x7278, "7872", NF },
                             { 0x7478, "2944", NF },
