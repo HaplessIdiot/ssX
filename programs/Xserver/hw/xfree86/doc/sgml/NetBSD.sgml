@@ -1,7 +1,7 @@
 <!doctype linuxdoc system>
 
 <article>
-<title> README for XFree86 3.1.2E on NetBSD
+<title> README for XFree86 3.1.2E on NetBSD and OpenBSD
 <author>Rich  Murphey,
 David Dawes,
 Marc  Wandschneider,
@@ -69,7 +69,7 @@ XFree86 3.1.2E supports NetBSD on PC98 machines. Servers for these
 machines are available in the <tt/NetBSD-PC98/ directory on the above
 FTP servers. 
 
-This binary distribution should also work with OpenBSD/i386.
+This binary distribution has also been tested with OpenBSD/i386.
 
 
 <sect>Bug Reports for This Document
@@ -703,7 +703,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.25 1996/03/29 22:17:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.26 1996/05/13 06:39:35 dawes Exp $
 
 
 

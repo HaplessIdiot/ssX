@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.23 1996/05/12 11:57:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.24 1996/05/13 06:39:27 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -494,10 +494,15 @@ xf86MseProcAux(pPointer, what, mouse, fd, ctrl)
  	  *fd = mousefd;
 
       if (mousefd != -1) {
-	  if (mouse->mseType == P_PS2)
-	      write(mousefd, "\364", 1);
+	  if (mousefd == -2) {
+	      if (fd)
+		  *fd = -1;
+	  } else {
+	      if (mouse->mseType == P_PS2)
+	          write(mousefd, "\364", 1);
 	  
-	  AddEnabledDevice(mousefd);
+	      AddEnabledDevice(mousefd);
+	  }
 	  mouse->lastButtons = 0;
 	  mouse->emulateState = 0;
 	  pPointer->public.on = TRUE;

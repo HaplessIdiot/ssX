@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/include/extensions/xf86dgastr.h,v 3.0 1995/12/09 11:03:16 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -14,7 +14,7 @@ Copyright (c) 1995  XFree86 Inc.
 #define XF86DGANAME "XFree86-DGA"
 
 #define XF86DGA_MAJOR_VERSION	0	/* current version numbers */
-#define XF86DGA_MINOR_VERSION	0
+#define XF86DGA_MINOR_VERSION	1
 
 typedef struct _XF86DGAQueryVersion {
     CARD8	reqType;		/* always DGAReqCode */
@@ -46,6 +46,17 @@ typedef struct _XF86DGAGetVideoLL {
     CARD16      pad B16;
 } xXF86DGAGetVideoLLReq;
 #define sz_xXF86DGAGetVideoLLReq	8
+
+typedef struct _XF86DGAInstallColormap{
+    CARD8	reqType;
+    CARD8	dgaReqType;
+    CARD16	length B16;
+    CARD16	screen B16;
+    CARD16	pad2; 
+    CARD32	id B32;  /* colormap. */
+} xXF86DGAInstallColormapReq;
+#define sz_xXF86DGAInstallColormapReq        12
+
 
 typedef struct {
     BYTE	type;

@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_io.c,v 3.1 1996/03/04 05:16:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_io.c,v 3.2 1996/03/10 12:06:30 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -158,7 +158,7 @@ MouseDevPtr mouse;
 		if (xf86AllowMouseOpenFail) {
 			ErrorF("Cannot open mouse (%s) - Continuing...\n",
 				strerror(errno));
-			return(-1);
+			return(-2);
 		}
 		FatalError("Cannot open mouse (%s)\n", strerror(errno));
 	}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.2 1996/01/17 12:46:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.3 1996/05/06 05:55:37 dawes Exp $ */
 
 /*
 
@@ -14,6 +14,8 @@ Copyright (c) 1995  XFree86 Inc
 #include "misc.h"
 #include "dixstruct.h"
 #include "extnsionst.h"
+#include "colormapst.h"
+#include "cursorstr.h"
 #include "scrnintstr.h"
 #include "servermd.h"
 #define _XF86DGA_SERVER_
@@ -43,6 +45,12 @@ static DISPATCH_PROC(ProcXF86DGAGetVideoLL);
 static DISPATCH_PROC(ProcXF86DGAGetViewPort);
 static DISPATCH_PROC(ProcXF86DGASetVidPage);
 static DISPATCH_PROC(ProcXF86DGASetViewPort);
+static DISPATCH_PROC(ProcDGAInstallColormap);
+
+/*
+ * SProcs should probably be deleted, a local connection can never
+ * be byte flipped!? - Jon.
+ */
 static DISPATCH_PROC(SProcXF86DGADirectVideo);
 static DISPATCH_PROC(SProcXF86DGADispatch);
 static DISPATCH_PROC(SProcXF86DGAQueryVersion);
@@ -188,7 +196,7 @@ ProcXF86DGADirectVideo(client)
           xf86VTSema = TRUE;
           vptr->EnterLeaveVT(ENTER, stuff->screen);
        }
-       vptr->directMode = stuff->enable|XF86DGADirectPresent;
+       vptr->directMode = (0x0f&stuff->enable)|XF86DGADirectPresent;
     }
 
     return (client->noClientException);
@@ -316,6 +324,41 @@ LocalClient(client)
     return FALSE;
 }
 
+
+static int
+ProcDGAInstallColormap(client)
+    register ClientPtr client;
+{
+    ColormapPtr pcmp;
+    ScrnInfoPtr vptr;
+    REQUEST(xXF86DGAInstallColormapReq);
+
+    REQUEST_SIZE_MATCH(xXF86DGAInstallColormapReq);
+
+    vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
+
+    if (xf86VTSema == TRUE) {/* only valid when switched away! */
+	return DGAErrorBase + XF86DGADirectNotActivated;
+    }
+    if (!xf86VTSema && !(vptr->directMode & XF86DGADirectGraphics)) {
+	return DGAErrorBase + XF86DGAScreenNotActive;
+    }
+
+    pcmp = (ColormapPtr  )LookupIDByType(stuff->id, RT_COLORMAP);
+    if (pcmp)
+    {
+        vptr->directMode |= XF86DGAHasColormap;
+        (*(pcmp->pScreen->InstallColormap)) (pcmp);
+        vptr->directMode &= ~XF86DGAHasColormap;
+        return (client->noClientException);
+    }
+    else
+    {
+        client->errorValue = stuff->id;
+        return (BadColor);
+    }
+}
+
 static int
 ProcXF86DGADispatch (client)
     register ClientPtr	client;
@@ -341,6 +384,8 @@ ProcXF86DGADispatch (client)
 	return ProcXF86DGAGetVidPage(client);
     case X_XF86DGASetVidPage:
 	return ProcXF86DGASetVidPage(client);
+    case X_XF86DGAInstallColormap:
+	return ProcDGAInstallColormap(client);
     default:
 	return BadRequest;
     }

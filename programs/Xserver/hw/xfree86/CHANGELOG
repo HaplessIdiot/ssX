@@ -1,3 +1,46 @@
+XFree86 3.1.2Ed (10 August 1996)
+621. Fix xterm colour translation problem (Michael Rohleder and
+     Thomas E. Dickey).
+620. xterm termcap/terminfo fixes (Thomas E. Dickey).
+619. Add escape sequences to xterm that act like CDE ddterm's window
+     operations (Thomas E. Dickey).
+618. Set the initial cleared screen colour correctly for the 8514 and Mach8
+     servers to match the default black pixel value and the -flipPixels
+     flag (Hans Nasten).
+617. Add support for LynxOS AT version 2.4.0, and client-only support for
+     LynxOS microSPARC and PowerPC (Thomas Mueller).
+616. Config updates for OpenBSD and NetBSD 1.2 (Matthieu Herrb).
+615. Fix typo in trident driver, and update XFree86 man page (Alan Hourihane).
+614. Fix problems with Trio64V+ video blanking signal.  Some undocumented
+     options "trio64v+_bug1" to "trio64v+_bug3" have been added enable/disable
+     parts of the code in case they are required later (Harald Koenig).
+613. Don't require SuperProbe to do the BIOS signature check for VGA cards
+     when the PCI probe detects a VGA card (Koen Gadeyne).
+612. Add ET6000 detection to SuperProbe (Koen Gadeyne).
+611. Add PCI detection of ET6000 to scanpci and SVGA server (Koen Gadeyne).
+610. Update AGX documentation (Henry Worth).
+609. Add DGA support to the AGX server (Henry Worth).
+608. AGX server recognises "fast_vram" and "slow_vram" options as equivalents
+     to "fast_dram" and "slow_dram" (Henry Worth).
+607. 8 bit/RGB DAC mode is now the default for the AGX server where supported
+     (Henry Worth).
+606. Fix initialisation of the Bt481 for AGX-016 based Hercules dual-DAC
+     Graphite cards (Henry Worth).
+605. Fix overscan colour correctly for the AGX server to match the change
+     to the default black pixel value and the -flipPixels flag (Henry Worth).
+604. Update et4000w32.c for ChipHas24bpp in vgaVideoChipRec (Thomas E. Dickey).
+603. Prevent Xserver from exiting when a mouse device can't be opened and
+     the '-allowMouseOpenFail' command line option is used (Joe Moss).
+602. Add CL-GD5446 detection to SuperProbe.
+601. Add support for CL-GD5446 to the cirrus driver (Corin Anderson).
+600. Add PCI detection of Cirrus CL-GD5446 to SVGA server and scanpci
+     (Corin Anderson).
+599. Add a function XF86DGAForkApp() to the dga library, which causes
+     the client to fork, with the parent remaining to clean up after the
+     child exits (Jon Tombs).
+598. Add an InstallColormap function to the DGA extension (Jon Tombs).
+597. Fix broken DGA setviewport on SVGA servers (Jon Tombs).
+
 XFree86 3.1.2Ec (8 July 1996)
 596. XF86Setup fixes and udpates (Joe Moss).
 595. Fix some build problems on Solaris due to the positioning of

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.44 1996/02/04 08:57:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.45 1996/05/10 06:56:40 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -62,6 +62,15 @@
 
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
+
+#ifdef XFreeXDGA
+#include "X.h"
+#include "Xproto.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 extern Bool xf86Resetting, xf86Exiting, xf86ProbeFailed;
 extern Bool miDCInitialize();
@@ -132,7 +141,7 @@ ScrnInfoRec agxInfoRec = {
     -1,                 /* int s3BlankDelay    */
 #ifdef XFreeXDGA
     0,                  /* int directMode    */
-    NULL,               /* Set Vid Page    */
+    agxSetVidPage,      /* Set Vid Page    */
     0,                  /* unsigned long physBase    */
     0,                  /* int physSize    */
 #endif
@@ -398,6 +407,7 @@ agxProbe()
    OFLG_SET(OPTION_BT485_CURS, &validOptions);
    OFLG_SET(OPTION_BT482_CURS, &validOptions);
    OFLG_SET(OPTION_DAC_8_BIT, &validOptions);
+   OFLG_SET(OPTION_DAC_6_BIT, &validOptions);
    OFLG_SET(OPTION_NOACCEL, &validOptions);
    OFLG_SET(OPTION_SYNC_ON_GREEN, &validOptions);
    OFLG_SET(OPTION_8_BIT_BUS, &validOptions);
@@ -415,6 +425,8 @@ agxProbe()
    OFLG_SET(OPTION_FIFO_AGGRESSIVE, &validOptions);
    OFLG_SET(OPTION_VLB_A, &validOptions);
    OFLG_SET(OPTION_VLB_B, &validOptions);
+   OFLG_SET(OPTION_FAST_VRAM, &validOptions);
+   OFLG_SET(OPTION_SLOW_VRAM, &validOptions);
    OFLG_SET(OPTION_FAST_DRAM, &validOptions);
    OFLG_SET(OPTION_SLOW_DRAM, &validOptions);
    OFLG_SET(OPTION_MED_DRAM, &validOptions);
@@ -791,16 +803,22 @@ for information on how to manually configure.\n",
    /*
     * Handle RAMDAC Option flags.
     */
+   
 
-   if(AGX_SERIES(agxChipId))
-     if (OFLG_ISSET(OPTION_DAC_8_BIT, &agxInfoRec.options)) {
-        xf86Dac8Bit = TRUE;
-     }
-     else {
-        xf86Dac8Bit = FALSE;
-     }
+   if(AGX_SERIES(agxChipId)) {
+      /* Default is 8-bit DAC -- unless default "NORMAL" RAMDAC (handled below) */ 
+      if (OFLG_ISSET(OPTION_DAC_8_BIT, &agxInfoRec.options)) {
+         xf86Dac8Bit = TRUE;
+      }
+      else if (OFLG_ISSET(OPTION_DAC_6_BIT, &agxInfoRec.options)) {
+         xf86Dac8Bit = FALSE;
+      }
+      else {
+         xf86Dac8Bit = TRUE;
+      }
+   }
    else
-     xf86Dac8Bit = TRUE;
+      xf86Dac8Bit = TRUE;
 
 
    if(AGX_SERIES(agxChipId)) {
@@ -821,6 +839,16 @@ for information on how to manually configure.\n",
       if( xf86RamDacType == HERC_DUAL_DAC
           || xf86RamDacType == HERC_SMALL_DAC ) {
          hercProbeRamDac();
+      }
+
+      if( xf86RamDacType == NORMAL_DAC ) {
+         /* Default needs to be 6 bit */
+         if (OFLG_ISSET(OPTION_DAC_8_BIT, &agxInfoRec.options)) {
+            xf86Dac8Bit = TRUE;
+         }
+         else {
+            xf86Dac8Bit = FALSE;
+         }
       }
 
       xf86DacSyncOnGreen = FALSE;
@@ -1214,6 +1242,15 @@ for information on how to manually configure.\n",
                agxScratchSize>>10, agxScratchOffset );
    }
 
+#ifdef XFreeXDGA
+    agxInfoRec.physBase = (unsigned long) agxInfoRec.VGAbase;
+    agxInfoRec.physBase = (unsigned long) agxPhysVidMem;
+    agxInfoRec.physSize = 64 * 1024;
+    agxInfoRec.displayWidth = agxDisplayWidth;
+    agxInfoRec.directMode = XF86DGADirectPresent;
+#endif
+
+
    return TRUE;
 }
 
@@ -1421,8 +1458,10 @@ agxEnterLeaveVT(enter, screen_idx)
       xf86EnableIOPorts(screen_idx);
       if (vgaPhysBase)
 	 xf86MapDisplay(screen_idx, VGA_REGION); 
+#if 0 
       if (agxPhysVidMem != vgaPhysBase) 
 	 xf86MapDisplay(screen_idx, LINEAR_REGION);
+#endif
 
       xf86MapDisplay(screen_idx, LINEAR_REGION);
 
@@ -1523,8 +1562,10 @@ agxEnterLeaveVT(enter, screen_idx)
       xf86EnableIOPorts(screen_idx);
       if (vgaPhysBase)
 	 xf86MapDisplay(screen_idx, VGA_REGION);
+#if 0
       if (agxPhysVidMem != vgaPhysBase) 
 	 xf86MapDisplay(screen_idx, LINEAR_REGION);
+#endif
 
       xf86MapDisplay(screen_idx, LINEAR_REGION);
 
@@ -1572,7 +1613,11 @@ agxEnterLeaveVT(enter, screen_idx)
       LUTissaved = TRUE;
 
       outb(agxIdxReg, 0);  /* make sure index is not 0x51 */
-      if( agxInfoRec.bitsPerPixel == 8 ) {
+      if( agxInfoRec.bitsPerPixel == 8
+#ifdef XFreeXDGA
+           && (!(agxInfoRec.directMode & XF86DGADirectGraphics))
+#endif
+      ) {
          /* make sure screen is blanked during exit */
          if(XGA_PALETTE_CONTROL(agxChipId)) {
             outb(agxIdxReg, IR_CUR_PAL_INDEX_LO);
@@ -1587,23 +1632,57 @@ agxEnterLeaveVT(enter, screen_idx)
          outb(palDataReg, 0);
          outb(palDataReg, 0);
          outb(palDataReg, 0);
-      }
-      if(XGA_PALETTE_CONTROL(agxChipId)) {
-         outb(agxIdxReg, IR_PAL_MASK);
-         outb(agxByteData, 0x00);
-      }
-      else {
-         outb(VGA_PAL_MASK, 0x00);
+         if(XGA_PALETTE_CONTROL(agxChipId)) {
+            outb(agxIdxReg, IR_PAL_MASK);
+            outb(agxByteData, 0x00);
+         }
+         else {
+            outb(VGA_PAL_MASK, 0x00);
+         }
       }
 
       if (!xf86Resetting) {
-         agxCleanUp();
+
+#ifdef XFreeXDGA
+          if (!(agxInfoRec.directMode & XF86DGADirectGraphics)) {
+#endif
+             if( agxInfoRec.bitsPerPixel == 8 ) {
+                /* make sure screen is blanked during exit */
+                if(XGA_PALETTE_CONTROL(agxChipId)) {
+                   outb(agxIdxReg, IR_CUR_PAL_INDEX_LO);
+                   outb(agxByteData, 0x00);
+                   outb(agxIdxReg, IR_PAL_DATA);
+                   palDataReg = agxByteData;
+                }
+                else {
+                   outb(VGA_PAL_WRITE_INDEX, 0x00);
+                   palDataReg = VGA_PAL_DATA;
+                }
+                outb(palDataReg, 0);
+                outb(palDataReg, 0);
+                outb(palDataReg, 0);
+                if(XGA_PALETTE_CONTROL(agxChipId)) {
+                    outb(agxIdxReg, IR_PAL_MASK);
+                    outb(agxByteData, 0x00);
+                }
+                else {
+                    outb(VGA_PAL_MASK, 0x00);
+                }
+             }
+
+             agxCleanUp();
+#ifdef XFreeXDGA
+          } 
+#endif
       }
 
       if (vgaPhysBase)
          xf86UnMapDisplay(screen_idx, VGA_REGION);
+#if 0
       if (agxPhysVidMem != vgaPhysBase)
          xf86UnMapDisplay(screen_idx, LINEAR_REGION);
+#endif
+
       xf86UnMapDisplay(screen_idx, LINEAR_REGION);
    }
 #if 0

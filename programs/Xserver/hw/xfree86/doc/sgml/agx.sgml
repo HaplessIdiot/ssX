@@ -212,9 +212,13 @@ Device Section Entries and Options Currently Supported:
 <tag/Ramdac related Option Flags:/
 
 <descrip>
+<tag/&dquot;dac_6_bit&dquot;/   
+				 Sets RAMDAC to VGA default 6-bit DAC mode
+                                 (default for "normal").
+
 <tag/&dquot;dac_8_bit&dquot;/   
 				 Sets supported RAMDAC's to 8-bit DAC mode
-                                 (all but "normal").
+                                 (default for all but "normal").
 
 <tag/&dquot;sync_on_green&dquot;/ 
 				 Composite sync on green for RAMDAC's that 
@@ -287,10 +291,15 @@ Set or clear CPU access wait state, default is the POST setting.
            POST defaults should be ok.
 
 <descrip>
-<tag/&dquot;vram_delay_latch&dquot;, &dquot;vram delay_ras&dquot;, &dquot;vram_extend_ras&dquot;, &dquot;slow_dram&dquot; /  
-         Set all of the above vram options.
+<tag/&dquot;vram_delay_latch&dquot;, 
+     &dquot;vram delay_ras&dquot;, 
+     &dquot;vram_extend_ras&dquot;/  Vram timing options.
+         
+<tag/&dquot;slow_vram&dquot;, 
+     &dquot;slow_dram&dquot;/       Set all of the vram timing options.
 <tag/&dquot;med_dram&dquot;/        Set vram latch delay, clear others.
-<tag/&dquot;fast_dram&dquot;/       All of the vram options are cleared.  
+<tag/&dquot;fast_vram&dquot;,
+     &dquot;fast_dram&dquot;/       All of the vram timing options are cleared.  
                                Should be specified if directly specifying
                                VRAM options in order to clear POST settings. 
 </descrip>
@@ -594,7 +603,7 @@ Set or clear CPU access wait state, default is the POST setting.
 <p>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.14 1995/12/28 03:49:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.15 1996/02/04 09:08:32 dawes Exp $
 
 
 

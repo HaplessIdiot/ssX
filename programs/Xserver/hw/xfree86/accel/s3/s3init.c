@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.91 1996/05/13 07:29:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.92 1996/06/29 09:07:12 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -90,6 +90,7 @@ extern Bool s3PixelMultiplexing;
 extern pointer vgaBase;
 extern pointer vgaBaseLow;
 extern pointer vgaBaseHigh;
+int currents3dac_border = 0xff;
 
 #ifdef PC98
 extern void crtswitch(short);
@@ -974,8 +975,26 @@ s3Init(mode)
    new->Sequencer[0] = 0x03;		/* XXXX shouldn't need this */
    new->CRTC[19] = s3BppDisplayWidth >> 3;
    new->CRTC[23] = 0xE3;		/* XXXX shouldn't need this */
-   new->Attribute[17] = 0xFF;		/* The overscan colour gets */
+   new->Attribute[0x11] = currents3dac_border; /* The overscan colour AR11 gets */
 					/* disabled anyway */
+
+   if (S3_TRIO64V_SERIES(s3ChipId) ^
+       !!OFLG_ISSET(OPTION_TRIO64VP_BUG2, &s3InfoRec.options)) {
+      /* set correct blanking w/o border for Trio64V+ */
+      new->CRTC[2]  = mode->CrtcHDisplay >> 3;
+      new->CRTC[3] &= ~0x1f;
+      new->CRTC[3] |=  ((mode->CrtcHTotal >> 3) - 2) & 0x1f;
+      new->CRTC[5] &= ~0x80;
+      new->CRTC[5] |= (((mode->CrtcHTotal >> 3) - 2) & 0x20) << 2;
+      
+      new->CRTC[21] =  (mode->CrtcVDisplay - 1) & 0xff; 
+      new->CRTC[7] &= ~0x08;
+      new->CRTC[7] |= ((mode->CrtcVDisplay - 1) & 0x100) >> 5;
+      new->CRTC[9] &= ~0x20;
+      new->CRTC[9] |= ((mode->CrtcVDisplay - 1) & 0x200) >> 4;
+
+      new->CRTC[22] = (mode->CrtcVTotal - 2) & 0xFF;
+   }
 
    vgaProtect(TRUE);
 
@@ -1551,7 +1570,8 @@ s3Init(mode)
       cr33 = inb(vgaCRReg) & ~0x28;
 
       /* for Trio64+ we need corrected blank signal timing */
-      if (!S3_TRIO64V_SERIES(s3ChipId /* , s3ChipRev */)) {
+      if (!S3_TRIO64V_SERIES(s3ChipId /* , s3ChipRev */) ^ 
+	  !!OFLG_ISSET(OPTION_TRIO64VP_BUG1, &s3InfoRec.options)) {
 	 cr33 |= 0x20;
       }
 
@@ -2717,24 +2737,42 @@ s3Init(mode)
 	 mode->CrtcVAdjusted = TRUE;
       }
 
-      i = (((mode->CrtcVTotal - 2) & 0x400) >> 10) |
-	  (((mode->CrtcVDisplay - 1) & 0x400) >> 9) |
-	  (((mode->CrtcVSyncStart) & 0x400) >> 8)  |
-	  (((mode->CrtcVSyncStart) & 0x400) >> 6) | 0x40;
+      if (S3_TRIO64V_SERIES(s3ChipId) ^
+	  !!OFLG_ISSET(OPTION_TRIO64VP_BUG2, &s3InfoRec.options))
+	 i = (((mode->CrtcVTotal - 2) & 0x400) >> 10)  |
+	     (((mode->CrtcVDisplay - 1) & 0x400) >> 9) |
+	     (((mode->CrtcVDisplay - 1) & 0x400) >> 8) |
+	     (((mode->CrtcVSyncStart) & 0x400) >> 6)   | 0x40;
+      else
+	 i = (((mode->CrtcVTotal - 2) & 0x400) >> 10)  |
+	     (((mode->CrtcVDisplay - 1) & 0x400) >> 9) |
+	     (((mode->CrtcVSyncStart) & 0x400) >> 8)   |
+	     (((mode->CrtcVSyncStart) & 0x400) >> 6)   | 0x40;
 	  
       outb(vgaCRIndex, 0x5e);
       outb(vgaCRReg, i);
 
-      i = ((((mode->CrtcHTotal >> 3) - 5) & 0x100) >> 8) |
-	  ((((mode->CrtcHDisplay >> 3) - 1) & 0x100) >> 7) |
-	  ((((mode->CrtcHSyncStart >> 3) - 1) & 0x100) >> 6) |
-	  ((mode->CrtcHSyncStart & 0x800) >> 7);
+      if (S3_TRIO64V_SERIES(s3ChipId) ^
+	  !!OFLG_ISSET(OPTION_TRIO64VP_BUG2, &s3InfoRec.options)) {
+	 i = ((((mode->CrtcHTotal >> 3) - 5) & 0x100) >> 8) |
+	     ((((mode->CrtcHDisplay >> 3) - 1) & 0x100) >> 7) |
+	     (((mode->CrtcHDisplay >> 3) & 0x100) >> 6) |
+	     ((mode->CrtcHSyncStart & 0x800) >> 7);
+	 if ((mode->CrtcHTotal >> 3) - (mode->CrtcHDisplay >> 3) > 64)
+	    i |= 0x08;   /* add another 64 DCLKs to blank pulse width */
+      }
+      else {
+	 i = ((((mode->CrtcHTotal >> 3) - 5) & 0x100) >> 8) |
+	     ((((mode->CrtcHDisplay >> 3) - 1) & 0x100) >> 7) |
+	     ((((mode->CrtcHSyncStart >> 3) - 1) & 0x100) >> 6) |
+	     ((mode->CrtcHSyncStart & 0x800) >> 7);
+	 if ((mode->CrtcHSyncEnd >> 3) - (mode->CrtcHSyncStart >> 3) > 64)
+	    i |= 0x08;   /* add another 64 DCLKs to blank pulse width */
+      }
 
       if ((mode->CrtcHSyncEnd >> 3) - (mode->CrtcHSyncStart >> 3) > 32)
 	 i |= 0x20;   /* add another 32 DCLKs to hsync pulse width */
 
-      if ((mode->CrtcHSyncEnd >> 3) - (mode->CrtcHSyncStart >> 3) > 64)
-	 i |= 0x08;   /* add another 64 DCLKs to blank pulse width */
 
       outb(vgaCRIndex, 0x3b);
       itmp = (  new->CRTC[0] + ((i&0x01)<<8)

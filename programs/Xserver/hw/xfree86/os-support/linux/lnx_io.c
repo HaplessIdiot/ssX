@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.0 1996/03/04 05:16:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.1 1996/03/10 12:06:26 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -122,7 +122,7 @@ MouseDevPtr mouse;
 		if (xf86AllowMouseOpenFail) {
 			ErrorF("Cannot open mouse (%s) - Continuing...\n",
 				strerror(errno));
-			return(-1);
+			return(-2);
 		}
 		FatalError("Cannot open mouse (%s)\n", strerror(errno));
 	}

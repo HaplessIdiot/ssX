@@ -1,24 +1,22 @@
 #!/bin/bash
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/BM-Lynx.shar,v 3.0 1995/07/15 15:09:42 dawes Exp $
+# $XFree86$
 # This is a shell archive (produced by GNU sharutils 4.1).
 # To extract the files from this archive, save it to some FILE, remove
 # everything before the `!/bin/bash' line above, then type `bash FILE'.
 #
-# Made on 1995-07-13 16:22 MET DST by <tm@systrix.de>.
+# Made on 1996-07-16 11:54 MET DST by <tm@systrix.de>.
 # Source directory was `/export/home/tm/MICE'.
 #
 # Existing files will *not* be overwritten unless `-c' is specified.
 #
-# $XConsortium: BM-Lynx.shar /main/3 1995/11/12 20:16:31 kaleb $
-#
 # This shar contains:
 # length mode       name
 # ------ ---------- ------------------------------------------
-#   2147 -rw-r--r-- README.Mouse
+#   2187 -rw-r--r-- README.Mouse
 #   4329 -rw-r--r-- usr/include/busmouse.h
 #    751 -rw-r--r-- sys/devices/bmouseinfo.c
 #    145 -rw-r--r-- sys/dheaders/bmouseinfo.h
-#    384 -rw-r--r-- sys/drivers/bmouse/Makefile
+#    664 -rw-r--r-- sys/drivers/bmouse/Makefile
 #   5357 -rw-r--r-- sys/drivers/bmouse/atixlmouse.c
 #   2908 -rw-r----- sys/drivers/bmouse/bmouse.h
 #   2135 -rw-r--r-- sys/drivers/bmouse/inline.h
@@ -57,14 +55,14 @@ Bus mice).
 X
 The drivers are a port from Linux and were developed and tested using
 X
-X	- LynxOS AT V2.2, V2.2.1 and V2.3
+X	- LynxOS AT V2.2, V2.2.1, V2.3 and V2.4
 X	- several Notebook computers with PS/2 mouse interface
 X	- Microsoft Inport Mouse
 X	- ATI Graphics Vantage graphics card with ATI mouse port
 X
 - Package Installation
 X
-1. As super-user (root) unpack the tar file
+1. As super-user (root) unpack the tar file (or the shar archive for XFree86)
 X
 X   # cd /
 X   # tar xvf BMOUSE.tar
@@ -120,12 +118,12 @@ X      # od -x /dev/bmouseatixl		for a ATI/XL bus mouse
 X      # od -x /dev/bmousemslogitec	for a Logitec bus mouse
 X
 SHAR_EOF
-  $shar_touch -am 0712143495 'README.Mouse' &&
+  $shar_touch -am 0716115396 'README.Mouse' &&
   chmod 0644 'README.Mouse' ||
   echo 'restore of README.Mouse failed'
   shar_count="`wc -c < 'README.Mouse'`"
-  test 2147 -eq "$shar_count" ||
-    echo "README.Mouse: original size 2147, current size $shar_count"
+  test 2187 -eq "$shar_count" ||
+    echo "README.Mouse: original size 2187, current size $shar_count"
 fi
 # ============= usr/include/busmouse.h ==============
 if test ! -d 'usr'; then
@@ -406,7 +404,7 @@ clean :
 X	rm -f *.o *~ *.bak core
 X
 mousedrvr.o : $(DRIVERS)
-X	ld -r -o mousedrvr.o $(DRIVERS)
+X	/bin/ld -r -o mousedrvr.o $(DRIVERS)
 X
 install: mousedrvr.o
 X	libr rv ../../drivlib.a mousedrvr.o
@@ -414,14 +412,26 @@ X
 depend :
 X	makedepend *.c
 X
+ps2mouse.o :
+X	if [ "`uname -r`" = "2.4.0" ]; then \
+X	make _ps2mouse.o NEW_GCC=/cygnus/94q4-lynxos-x86/bin/gcc; \
+X	else \
+X	make _ps2mouse.o NEW_GCC=/bin/gcc; \
+X	fi; \
+X	ln -s _ps2mouse.o ps2mouse.o
+X
+_ps2mouse.o : ps2mouse.c
+X	$(NEW_GCC) -c $(CFLAGS) ps2mouse.c -o _ps2mouse.o
+X
+X
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 SHAR_EOF
-  $shar_touch -am 0623101295 'sys/drivers/bmouse/Makefile' &&
+  $shar_touch -am 0716115396 'sys/drivers/bmouse/Makefile' &&
   chmod 0644 'sys/drivers/bmouse/Makefile' ||
   echo 'restore of sys/drivers/bmouse/Makefile failed'
   shar_count="`wc -c < 'sys/drivers/bmouse/Makefile'`"
-  test 384 -eq "$shar_count" ||
-    echo "sys/drivers/bmouse/Makefile: original size 384, current size $shar_count"
+  test 664 -eq "$shar_count" ||
+    echo "sys/drivers/bmouse/Makefile: original size 664, current size $shar_count"
 fi
 # ============= sys/drivers/bmouse/atixlmouse.c ==============
 if test -f 'sys/drivers/bmouse/atixlmouse.c' && test X"$1" != X"-c"; then

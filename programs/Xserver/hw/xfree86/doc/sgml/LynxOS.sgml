@@ -4,30 +4,33 @@
 
 <title> README for XFree86 3.1.2 on LynxOS
 <author>Thomas Mueller
-<date>14 November 1995
+<date>16 July 1996
 <toc>
 
 <sect>What and Where is XFree86?<p>
-XFree86 is a port of X11R6 that supports several versions of Intel-
+XFree86 is a port of X11R6.1 that supports several versions of Intel-
 based Unix.  It is derived from X386 1.2, which was the X server
 distributed with X11R5.  This release consists of many new features
 and performance improvements as well as many bug fixes.  The release
-is available as source patches against the X Consortium X11R6 code, as
+is available as source patches against the X Consortium X11R6.1 code, as
 well as binary distributions for many architectures.
 
 See the Copyright Notice in <url url="COPYRIGHT.html" name="COPYRIGHT">.
 
 The sources for XFree86 are available by anonymous ftp from:
 
-<url url="ftp://ftp.XFree86.org/pub/XFree86/current"
-name="ftp.XFree86.org:/pub/XFree86/current">
+<htmlurl name="ftp.XFree86.org:/pub/XFree86/current"
+url="ftp://ftp.XFree86.org/pub/XFree86/current">
  
-The XFree86 LynxOS port was developed using `LynxOS AT 2.3.0 080695-A FCS'.
+The XFree86 LynxOS port was developed using `LynxOS AT 2.3.0 080695-A FCS'
+and later `LynxOS AT 2.4.0 042696'. XFree86 versions later than 3.1.2
+have not been tested on LynxOS versions earlier than 2.3.0.
 
-XFree86 currently supports only LynxOS on the AT platform. The
-library and client part of XFree86 could although compile without
-problems on other LynxOS platforms (e.g. SPARC, Motorola-68K or
-PowerPC).
+XFree86 supports LynxOS on the AT, the microSPARC and
+the PowerPC platform. X servers are currently available only
+on the AT platform. Refer to section <ref id="others"
+name="Building on microSPARC and PowerPC"> for details on XFree86
+on the non-AT platforms.
 
 <sect>Bug Reports for This Document<p>
 Send email to <it>tm@systrix.de</it> (Thomas Mueller) or
@@ -46,11 +49,11 @@ Before compiling the XFree86 distribution you will have to make a
 few little adjustments to your system:
 
   <descrip>
-  <tag>LynxOS AT 2.3 </tag>
+  <tag>LynxOS AT 2.3 and 2.4</tag>
   <itemize>
   <item> Use the CYGNUS GNU-C Compiler to build XFree86. With LynxOS 2.3.0 
-    you must execute the shell script <tt>/CYGNUS.bash</tt> to apply the
-    necessary changes to your environment.
+    and 2.4.0 you must execute the shell script <tt>/CYGNUS.bash</tt> to 
+    apply the necessary changes to your environment.
   <item> Create a shell script named /lib/cpp as follows:
   <tscreen><verb>
     #!/bin/sh
@@ -118,8 +121,8 @@ few little adjustments to your system:
   match your operating system version. Change the definitions of
   OSMajorVersion, OSMinorVersion and OSTeenyVersion accordingly.
 
-  For LynxOS 2.3.0 the OptimizedCDebugFlags is set to `-O -m486'. Higher
-  optimization levels are not enabled by default to work around a bug
+  For LynxOS 2.3.0 and 2.4.0 the OptimizedCDebugFlags is set to `-O -m486'.
+  Higher optimization levels are not enabled by default to work around a bug
   in -O2 for GCC v2.6.x.
   You might try enabling -O2 if your compiler does not have this bug,
   but if the session manager xsm hangs on startup it would be a good 
@@ -140,7 +143,7 @@ few little adjustments to your system:
 
   You must be logged in as super-user (root) when you invoke `make
   install'.  Be sure to set your environment to use the same compiler
-  (LynxOS 2.3.0, CYGNUS GNU-C) as you did during the `make World'. To
+  (LynxOS 2.3.0/2.4.0, CYGNUS GNU-C) as you did during the `make World'. To
   install the LinkKit use
 
   <tscreen><verb>
@@ -198,10 +201,11 @@ few little adjustments to your system:
 
 <sect1>Bus mouse drivers<p>
 
-  LynxOS does not provide device drivers for Bus or PS/2 mice.
+  Starting with LynxOS AT 2.4.4 LynxOS includes a PS/2 mouse driver.
+  Currently this driver is not supported by XFree86.
   <tt>/usr/X11R6/lib/X11/etc/BM-Lynx.shar</tt> contains a port 
   of the Linux drivers for those devices. To install the drivers
-  unpack the tar 
+  unpack the shar archive
 
   <tscreen><verb>
     # cd /
@@ -210,6 +214,9 @@ few little adjustments to your system:
 
   and follow the notes in <tt>/BMOUSE.Readme</tt> for further installation and
   configuration notes.
+
+  The PS/2 mouse driver works also with MetroLink X 2.3.3.1 as shipped with
+  LynxOS AT 2.4.0 unless you have the LynxOS patch 000055-00 installed.
    
 <sect1> ATC console driver and VT switching<p>
 
@@ -249,7 +256,7 @@ few little adjustments to your system:
 
   LynxOS uses cat-able manual pages, and because a doc preparation
   system is definitely not a vital component of a real-time operating
-  system you must first install groff-1.09. With LynxOS 2.3.0 it
+  system you must first install groff-1.09. Starting with LynxOS 2.3.0 it
   compiles right out of the box (or better tar archive).
 
   XFree86 manual pages may be installed using
@@ -298,8 +305,8 @@ few little adjustments to your system:
 
 <sect>Using XFree86 with Motif<p>
 
-  The Motif libraries shipped with LynxOS AT 2.3.0 can be used with
-  the XFree86 libraries. Follow the steps outlined below after
+  The Motif libraries shipped with LynxOS AT 2.3.0 and 2.4.0 can be
+  used with the XFree86 libraries. Follow the steps outlined below after
   you have installed XFree86 and LynxOS Motif on your system.
 
 <sect1>Copy Motif files<p>
@@ -338,6 +345,9 @@ few little adjustments to your system:
       ar r /usr/X11R6/lib/libXm.a Xmos.o
   </verb></tscreen>
   
+  This patch is not necessary for LynxOS 2.4.0 since POSIX support is
+  now the default for the CYGNUS compiler.
+
 <sect1>X11R6 config file patch<p>
 
   Edit <tt>/usr/X11R6/lib/X11/config/lynx.cf</tt> and change the definition
@@ -369,8 +379,19 @@ few little adjustments to your system:
   Be sure to apply the change to the file copied to
   <tt>/usr/X11R6/lib/X11/config</tt>.
 
+<sect1>Building on microSPARC and PowerPC<label id="others">
+
+<p>
+XFree86 3.1.2E also compiles on LynxOS microSPARC and on LynxOS PPC although
+currently there are no working X servers. One little
+modifications to <tt/xf86site.def/ is necessary:
+<itemize>
+<item> Set all variables defining the servers to build to
+<bf/NO/.
+</itemize>
+
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.4 1995/12/28 03:49:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.5 1996/02/04 09:08:12 dawes Exp $
 
 
 

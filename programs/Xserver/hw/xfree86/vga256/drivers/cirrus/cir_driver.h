@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.21 1996/02/04 09:13:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.22 1996/02/09 08:21:23 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -23,6 +23,7 @@
  *
  * Author:  Simon P. Cooper, <scooper@vizlab.rutgers.edu>
  * Modified: Harm Hanemaayer, <hhanemaa@cs.ruu.nl>
+ * Modified: Corin Anderson, <corina@bdc.cirrus.com>
  *
  * cir_driver.h,v 1.8 1994/09/14 13:58:59 scooper Exp
  */
@@ -216,9 +217,10 @@ extern unsigned int cirrusForegroundColorShadow,
 #define CLGD5434    10
 #define CLGD5430    11
 #define CLGD5436    12
-#define CLGD7541    13
-#define CLGD7542    14
-#define CLGD7543    15
+#define CLGD5446    13
+#define CLGD7541    14
+#define CLGD7542    15
+#define CLGD7543    16
 #define LASTCLGD    CLGD7543
 
 #define CIRRUS_BUS_SLOW 0
@@ -273,7 +275,8 @@ typedef struct
 #define HAVEBITBLTENGINE() (cirrusUseBLTEngine)
 
 #define HAVEBLTWRITEMASK() (cirrusChip == CLGD5429 || \
-	cirrusChip == CLGD5430 || cirrusChip == CLGD5436)
+	cirrusChip == CLGD5430 || cirrusChip == CLGD5436 || \
+        cirrusChip == CLGD5446)
 
 #define SETWRITEMODE(n) \
 	if (n != cirrusWriteModeShadow) { \

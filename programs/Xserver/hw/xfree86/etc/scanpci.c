@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.12 1996/05/06 05:58:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.13 1996/06/10 09:15:21 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -418,6 +418,7 @@ struct pci_vendor_device {
                             { 0x3205, "ET4000w32p rev B", NF },
                             { 0x3206, "ET4000w32p rev C", NF },
                             { 0x3207, "ET4000w32p rev D", NF },
+                            { 0x3208, "ET6000", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x100E, "Weitek", {
                             { 0x9001, "P9000", NF },
@@ -435,6 +436,7 @@ struct pci_vendor_device {
                             { 0x00A4, "GD 5434-4", NF },
                             { 0x00A8, "GD 5434-8", NF },
                             { 0x00AC, "GD 5436", NF },
+                            { 0x00B8, "GD 5446", NF },
                             { 0x1100, "CL 6729", NF },
                             { 0x1200, "CL 7542", NF },
                             { 0x0000, (char *)NULL, NF } } },

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.36 1996/06/10 09:16:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.37 1996/06/29 09:09:17 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -1298,7 +1298,9 @@ TVGA8900Save(save)
 		if ( (numClocks == 16) &&
 		     (TVGAchipset != TVGA9000) &&
 		     (TVGAchipset != TVGA9000i) )
+		{
 			outb(0x3C4, 0x0E); save->OldMode1 = inb(0x3C5); 
+		}
 		outb(0x3C4, 0x0D); save->OldMode2 = inb(0x3C5); 
 	}
 	

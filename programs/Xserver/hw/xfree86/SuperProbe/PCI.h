@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.2 1996/03/31 11:48:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.3 1996/04/15 11:29:09 dawes Exp $ */ 
 /*
  * PCI Probe
  *
@@ -229,6 +229,7 @@ void xf86writepci(
 #define PCI_CHIP_ET4000_W32P_B	0x3205
 #define PCI_CHIP_ET4000_W32P_C	0x3206
 #define PCI_CHIP_ET4000_W32P_D	0x3207
+#define PCI_CHIP_ET6000		0x3208
 
 /* Weitek */
 #define PCI_CHIP_P9000		0x9001

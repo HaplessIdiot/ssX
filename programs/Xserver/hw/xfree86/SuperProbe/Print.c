@@ -1,4 +1,4 @@
-/* $XConsortium: Print.c /main/13 1996/01/26 13:30:26 kaleb $ */
+/* $XConsortium: Print.c /main/13 1996/01/26 13:30:26 kaleb $ */ 
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.30 1996/03/31 11:48:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.31 1996/04/15 11:29:10 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -71,7 +71,8 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "Cirrus CL-GD6440",
 		  "Cirrus CL-GD5436",
 		  "Cirrus CL-GD7541", "Cirrus CL-GD7542",
-		  "Cirrus CL-GD7543"},
+		  "Cirrus CL-GD7543",
+		  "Cirrus CL-GD5446"},
 /* Compaq */	{ "Compaq (chipset unknown)",
 		  "Compaq Int. Vid. Graphics Sys.",
 		  "Compaq Advanced VGA", 
@@ -128,6 +129,7 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "Tseng ET4000/W32p Rev B",
 		  "Tseng ET4000/W32p Rev C",
 		  "Tseng ET4000/W32p Rev D",
+		  "Tseng ET6000",
 		},
 /* UMC */	{ "UMC 85c408" },
 /* Video7 */	{ "Video7 (chipset unknown)",
@@ -221,6 +223,8 @@ struct RamDac_Name RamDac_Names[] =
 	{ "20C408", "AT&T 20C408 15/16/24-bit DAC w/clock" },
 	{ "TVP3030",
 	  "TI ViewPoint3030 24-bit TrueColor DAC w/cursor,pixel-mux,clock" },
+	{ "ET6000",
+	  "Tseng Labs ET6000 built-in 15/16/24-bit DAC w/pixel-mux,clock" },
 };
 
 static CONST char *CoProc_Names[NUM_CP_TYPES][CHPS_PER_CPTYPE] = 

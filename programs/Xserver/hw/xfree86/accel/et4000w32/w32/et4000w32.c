@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.15 1995/12/16 08:19:45 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.16 1996/02/04 09:00:36 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -71,28 +71,29 @@ vgaVideoChipRec ET4000W32 = {
     ET4000W32Restore,
     ET4000W32Adjust,
     ET4000W32SaveScreen,
-    (void (*)())NoopDDA,
-    (void (*)())NoopDDA,
-    (void (*)())NoopDDA,
-    (void (*)())NoopDDA,
-    (void (*)())NoopDDA,
-    0x20000,
-    0x10000,
-    16,
-    0xFFFF,
-    0x00000, 0x10000,
-    0x00000, 0x10000,
-    TRUE,
-    VGA_NO_DIVIDE_VERT,
-    {0,},
-    8,
-    FALSE,
-    0,
-    0,
-    FALSE,
-    FALSE,
-    NULL,
-    1,
+    (void (*)())NoopDDA,	/* ChipGetMode */
+    (void (*)())NoopDDA,	/* ChipFbInit */
+    (void (*)())NoopDDA,	/* ChipSetRead */
+    (void (*)())NoopDDA,	/* ChipSetWrite */
+    (void (*)())NoopDDA,	/* ChipSetReadWrite */
+    0x20000,			/* ChipMapSize */
+    0x10000,			/* ChipSegmentSize */
+    16,				/* ChipSegmentShift */
+    0xFFFF,			/* ChipSegmentMask */
+    0x00000, 0x10000,		/* ChipReadBottom, ChipReadTop */
+    0x00000, 0x10000,		/* ChipWriteBottom, ChipWriteTop */
+    TRUE,			/* ChipUse2Banks */
+    VGA_NO_DIVIDE_VERT,		/* ChipInterlaceType */
+    {0,},			/* ChipOptionFlags */
+    8,				/* ChipRounding */
+    FALSE,			/* ChipUseLinearAddressing */
+    0,				/* ChipLinearBase */
+    0,				/* ChipLinearSize*/
+    FALSE,			/* ChipHas16bpp */
+    FALSE,			/* ChipHas24bpp */
+    FALSE,			/* ChipHas32bpp */
+    NULL,			/* ChipBuiltinModes */
+    1,				/* ChipClockScaleFactor */
 };
 
 static et4000w32_initted = FALSE;

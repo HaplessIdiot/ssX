@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8init.c,v 3.4 1995/01/28 17:00:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8init.c,v 3.5 1996/02/04 09:03:50 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -29,6 +29,7 @@
 #include "regmach8.h"
 #include "xf86.h"
 #include "xf86_OSlib.h"
+#include "xf86Procs.h"
 
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
@@ -310,7 +311,10 @@ void mach8InitEnvironment()
          * Then draw.
          */
         WaitQueue(6);
-        outw(FRGD_COLOR, 1);
+        if( xf86FlipPixels )
+          outw(FRGD_COLOR, 1);
+        else
+          outw(FRGD_COLOR, 0);
         outw(CUR_X, 0);
         outw(CUR_Y, 0);
         outw(MAJ_AXIS_PCNT, 1023);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86dga.h,v 3.0 1995/12/09 11:03:15 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dga.h,v 3.1 1996/01/17 12:44:37 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -18,11 +18,13 @@ Copyright (c) 1995  XFree86 Inc
 #define X_XF86DGASetViewPort		4
 #define X_XF86DGAGetVidPage		5
 #define X_XF86DGASetVidPage		6
+#define X_XF86DGAInstallColormap	7
 
 #define XF86DGADirectPresent		0x01
 #define XF86DGADirectGraphics		0x02
 #define XF86DGADirectMouse		0x04
 #define XF86DGADirectKeyb		0x08
+#define XF86DGAHasColormap		0x80
 
 #define XF86DGANumberEvents		0
 
@@ -70,7 +72,7 @@ Status XF86DGAGetVideo(
     char **			/* base addr */,
     int *			/* width */,
     int *			/* bank_size */,
-    int *			/* ram_size */ 
+    int *			/* ram_size */
 #endif
 );
 
@@ -124,6 +126,19 @@ Status XF86DGASetVidPage(
 #endif
 );
 
+Status XF86DGAInstallColormap(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    int				/* screen */,
+    Colormap			/*Colormap */
+#endif
+);
+
+int XF86DGAForkApp(
+#if NeedFunctionPrototypes
+    int screen
+#endif
+);
 
 _XFUNCPROTOEND
 

@@ -4,11 +4,22 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/14 1996/01/28 07:42:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.35 1996/02/20 14:31:31 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.36 1996/04/15 11:13:49 dawes Exp $
+
+#ifndef OpenBSDArchitecture
 
 #ifndef OSName
-#define OSName		NetBSD 1.1
+#define OSName		NetBSD 1.2
 #endif
+
+#else
+
+#ifndef OSName
+#define OSName		OpenBSD 1.2
+#endif
+
+#endif
+
 #ifndef OSVendor
 #define	OSVendor	/**/
 #endif
@@ -17,11 +28,11 @@ XCOMM operating system:  OSName
 #define OSMajorVersion    1
 #endif
 #ifndef OSMinorVersion
-#define OSMinorVersion    1
+#define OSMinorVersion    2
 #endif
 /* 1 = A, 2 = B, 3 = C */
 #ifndef OSTeenyVersion
-#define OSTeenyVersion	  2
+#define OSTeenyVersion	  0
 #endif
 
 /*
@@ -94,7 +105,7 @@ XCOMM operating system:  OSName
 # else
 #  define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME
 # endif
-# if OSMajorVersion >= 1 && OSMinorVersion == 1
+# if OSMajorVersion == 1 && OSMinorVersion >= 1 
 #  define ServerExtraSysLibs	-li386
 # endif
 #else

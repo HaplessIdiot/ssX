@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Tseng.c,v 3.4 1995/11/16 11:04:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Tseng.c,v 3.5 1996/02/04 08:57:11 dawes Exp $ */ 
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -30,11 +30,13 @@
 
 #include "Probe.h"
 
-static Word Ports[] = {0x000, 0x000, 0x000, 0x3BF, 0x3CB, 0x3CD, 
+static Word Ports[] = {0x000, 0x000, 0x000, 0x000, 0x000,
+                       0x3BF, 0x3CB, 0x3CD, 
 		       ATR_IDX, ATR_REG_R, SEQ_IDX, SEQ_REG};
 #define NUMPORTS (sizeof(Ports)/sizeof(Word))
 
 static int MemProbe_Tseng __STDCARGS((int));
+static Long ET6Kbase = 0;
 
 Chip_Descriptor Tseng_Descriptor = {
 	"Tseng",
@@ -52,6 +54,27 @@ int *Chipset;
 {
 	Bool result = FALSE;
 	Byte old, old1, ver;
+	int i=0;
+
+        /* check PCI config first, for ET6000 */
+	if (!NoPCI)
+	{
+	    while ((pcrp = pci_devp[i]) != (struct pci_config_reg *)NULL) {
+		if (pcrp->_vendor == PCI_VENDOR_TSENG)
+		{
+			switch (pcrp->_device)
+			{
+			case PCI_CHIP_ET6000:
+				*Chipset = CHIP_ET6K;
+				ET6Kbase = pcrp->_base1 & ~0xFF;
+				break;
+			}
+			PCIProbed = TRUE;
+			return(TRUE);
+		}
+		i++;
+	    }
+	}
 
 	/* Add CRTC to enabled ports */
 	Ports[0] = CRTC_IDX;
@@ -126,6 +149,11 @@ int Chipset;
 	Byte Save[2];
 	int Mem = 0;
 
+        if (PCIProbed)
+        {
+        Ports[3] = ET6Kbase + 0x45;
+        Ports[4] = ET6Kbase + 0x47;
+        }
 	EnableIOPorts(NUMPORTS, Ports);
 
 	/* 
@@ -183,6 +211,20 @@ int Chipset;
 			if ((Chipset != CHIP_ET4000W32) &&
 			   (rdinx(CRTC_IDX, 0x32) & 0x80))
 			    Mem = 2048;
+			break;
+		}
+	case CHIP_ET6K:
+		switch (rdinx(CRTC_IDX, 0x34) & 0x80)
+		{
+		case 0x00:  /* MDRAM */
+			Mem = ((inp(ET6Kbase+0x47) & 0x07) + 1) * 8*32; /* number of 8 32kb banks  */
+			if (inp(ET6Kbase+0x45) & 0x04)
+			{
+			Mem <<= 1;
+			}
+			break;
+		case 0x80:  /* DRAM */
+			Mem = 1024 << (inp(ET6Kbase+0x45) & 0x03);
 			break;
 		}
 	}

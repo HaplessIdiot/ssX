@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/hercRamDac.c,v 3.6 1995/05/27 03:03:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/hercRamDac.c,v 3.7 1996/02/04 08:58:24 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -428,21 +428,32 @@ hercSwitchToBigDac( doubled )
 {
    int hercDacSw = hercBrdIO + 4;
    unsigned char tmp;
-   Bool wasLittle = !(inb(hercDacSw) & 0x01);
+
+   unsigned char hercDac;
+   Bool  wasLittle;
 
    outb( agxIdxReg, IR_CLEAR_RS2 );
+
+   hercDac = inb(hercDacSw);
+   wasLittle = !(inb(hercDacSw) & 0x01);
+
    if( wasLittle ) {
+      GlennsIODelay();
+
+      GlennsIODelay();
       xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0xFF, 0x01 ); 
-      outb( agxIdxReg, IR_CLEAR_RS2 );    /* delay */
-      inb( VGA_PAL_MASK );
+
+      GlennsIODelay();
+      outb( agxIdxReg, 0 ); 
+      GlennsIODelay();
+      tmp = inb( VGA_PAL_MASK );
+      GlennsIODelay();
       outb( VGA_PAL_MASK, 0x00 );
-#if 1
-      tmp = inb(hercDacSw) | 0x01;
-      outb( hercDacSw, tmp );  /* switch to big dac */
-#else
-      outb( hercDacSw, 0x01 );  /* switch to big dac */
-#endif
-      usleep(10000);
+
+      GlennsIODelay();
+      outb( hercDacSw, hercDac | 0x01 );  /* switch to big dac */
+
+      GlennsIODelay();
    }
 
    /* nx1 Multiplexed */
@@ -461,6 +472,10 @@ hercSwitchToBigDac( doubled )
             xf86OutRamDacData( BT485_COMMAND_REG_2, BT485_PIXEL_INPUT_GATE );
             xf86OutBt485IndReg( BT485_COMMAND_REG_3, 0x00, 0x00 );
          }
+         /* 8-bit dac */ 
+         if( xf86Dac8Bit )
+            xf86OutRamDacData( BT485_COMMAND_REG_0, 0x02 );
+
          break;
 
       case 15:
@@ -508,10 +523,6 @@ hercSwitchToBigDac( doubled )
          break;
    }
 
-   /* 8-bit dac */ 
-   if( xf86Dac8Bit )
-      xf86OutRamDacData( BT485_COMMAND_REG_0, 0x02 );
-
    if( wasLittle ) {
       if( inb(hercDacSw) & 0x01 ) {
          if (xf86Verbose) 
@@ -550,15 +561,11 @@ hercPowerDownBigDac(
 
    if ( !(inb(hercDacSw) & 0x01) ) {     /* big dac */
       xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0xFF, 0x01 ); /* power-down */
+      tmp = inb(hercDacSw);
       outb( agxIdxReg, IR_CLEAR_RS2 );
       inb( VGA_PAL_MASK );
       outb( VGA_PAL_MASK, 0x00 );
-#if 1
-      tmp = inb(hercDacSw);
       outb( hercDacSw, tmp | 0x01 );  /* switch to big DAC */
-#else
-      outb( hercDacSw, 0x01 );    /* switch to big DAC */
-#endif
       usleep(10000);
    }
 
@@ -569,13 +576,9 @@ hercPowerDownBigDac(
 
    xf86OutRamDacData( BT485_COMMAND_REG_0, 0x01 );  /* powerdown */
    outb( agxIdxReg, IR_CLEAR_RS2 );
-#if 1
    tmp = inb(hercDacSw);
    outb( hercDacSw, tmp & 0xFE );  /* switch to little DAC */
-#else
-   outb( hercDacSw, 0x00 );  /* switch to little DAC */
-#endif
-   usleep(10000);
+   GlennsIODelay();
    outb( VGA_PAL_MASK, 0x00 );
    xf86OutRamDacData( BT481_COMMAND_REG_A, 0x00 );
    xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0x7E, 0x00 ); /* powerup */
@@ -616,6 +619,20 @@ hercSwitchToLittleDac(
          xf86RamDacInit = xf86Bt481Init;
       }
    }
+
+   GlennsIODelay();
+   xf86OutRamDacData( BT481_COMMAND_REG_A, 0x00 );   /* 8-bit mode */
+
+   GlennsIODelay();
+   xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0x7E, 0x00 ); /* powerup */
+   GlennsIODelay();
+   
+   if (xf86Dac8Bit)
+      xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0x7C, 0x2 );
+
+   if (xf86DacSyncOnGreen)
+      xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0x73, 0x4 );
+
 }
 
 

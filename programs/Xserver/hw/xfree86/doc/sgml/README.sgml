@@ -126,7 +126,8 @@ source distribution for full details.
 
     <tag/Others:/
 	<itemize>	
-	<ITEM>NetBSD 1.0
+	<ITEM>NetBSD 1.0, 1.1, 1.2
+	<ITEM>OpenBSD 1.2
 	<ITEM>FreeBSD 1.1.5.1, 2.0, 2.0.5
 	<ITEM>BSD/386 1.1, BSD/OS 2.0
 	<ITEM>Mach 386
@@ -387,7 +388,7 @@ XFree86 support was integrated into the base X11R6 distribution by:
 <itemize>
        <item> Rich Murphey <it>&lt;Rich@XFree86.org&gt;</it>
 </itemize>
-<tag/NetBSD  support by: /
+<tag/NetBSD, OpenBSD support by: /
 <itemize>
        <item> Matthieu Herrb <it>&lt;Matthieu.Herrb.@laas.fr&gt;</it>
 </itemize>
@@ -969,7 +970,7 @@ file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.47 1996/03/29 22:17:06 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.48 1996/03/31 11:48:59 dawes Exp $
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3cmap.c,v 3.7 1996/02/04 09:04:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3cmap.c,v 3.8 1996/03/29 22:15:57 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -56,6 +56,7 @@ static ColormapPtr InstalledMaps[MAXSCREENS];
 /* current colormap for each screen */
 
 LUTENTRY currents3dac[256];
+extern int currents3dac_border;
 
 int
 s3ListInstalledColormaps(pScreen, pmaps)
@@ -109,6 +110,7 @@ s3StoreColors(pmap, ndef, pdefs)
    int   i;
    xColorItem directDefs[256];
    extern Bool s3DAC8Bit;
+   int border_changed = 0;
 
    if (pmap != InstalledMaps[pmap->pScreen->myNum])
       return;
@@ -146,6 +148,30 @@ s3StoreColors(pmap, ndef, pdefs)
 	 outb(DAC_DATA, g);
 	 outb(DAC_DATA, b);
       }
+      if (pdefs[i].pixel == currents3dac_border) 
+	 border_changed = 1;
+   }
+   if (border_changed) {
+      int ilow=255, sum;
+      int low=currents3dac[ilow].r + currents3dac[ilow].g + currents3dac[ilow].b;
+
+      /* looking for lowest/black LUT entry */
+      for (i=0; low>0 && i<256; i++) {
+	 sum = currents3dac[i].r + currents3dac[i].g + currents3dac[i].b;
+	 if (sum < low) {
+	    low = sum;
+	    ilow = i; 
+	 }
+      }
+      i = inb(vgaIOBase + 0x0A);   /* reset flip-flop */
+      outb(0x3C0, 0x11 | 0x20);
+      currents3dac_border = ilow;
+      
+      /* change AR11 border color ... */
+      i = inb(vgaIOBase + 0x0A);   /* reset flip-flop */
+      outb(0x3C0, 0x11 | 0x20);
+      outb(0x3C0, currents3dac_border);
+      ((vgaHWPtr)vgaNewVideoState)->Attribute[0x11] = currents3dac_border;
    }
    UNBLOCK_CURSOR;
 }

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: screen.c,v 1.33 94/04/02 17:34:36 gildea Exp $
- *	$XFree86: xc/programs/xterm/screen.c,v 3.4 1996/01/24 22:05:03 dawes Exp $
+ *	$XFree86: xc/programs/xterm/screen.c,v 3.5 1996/02/18 03:45:51 dawes Exp $
  */
 
 /*
@@ -597,14 +597,18 @@ ScreenResize (screen, width, height, flags)
 
 	/* clear the right and bottom internal border because of NorthWest
 	   gravity might have left junk on the right and bottom edges */
-	XClearArea (screen->display, tw,
-		    width - screen->border, 0,                /* right edge */
-		    screen->border, height,           /* from top to bottom */
-		    False);
-	XClearArea (screen->display, tw, 
-		    0, height - screen->border,	                  /* bottom */
-		    width, screen->border,         /* all across the bottom */
-		    False);
+	if (width >= FullWidth(screen)) {
+		XClearArea (screen->display, tw,
+			    FullWidth(screen), 0,             /* right edge */
+			    0, height,                /* from top to bottom */
+			    False);
+	}
+	if (height >= FullHeight(screen)) {
+		XClearArea (screen->display, tw, 
+		    	0, FullHeight(screen),	                  /* bottom */
+		    	width, 0,                  /* all across the bottom */
+		    	False);
+	}
 
 	/* round so that it is unlikely the screen will change size on  */
 	/* small mouse movements.					*/

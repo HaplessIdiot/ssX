@@ -1,4 +1,4 @@
-/* $XConsortium: RamDac.c /main/9 1996/01/26 13:30:37 kaleb $ */
+/* $XConsortium: RamDac.c /main/9 1996/01/26 13:30:37 kaleb $ */ 
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -30,7 +30,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.20 1996/03/31 11:48:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.21 1996/04/15 11:29:12 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -981,6 +981,10 @@ int *RamDac;
 	else if (  ((SVGA_VENDOR(Chipset) == V_S3) && (Chipset >= CHIP_S3_801B))
                  ||(SVGA_VENDOR(Chipset) == V_TSENG) ) 
 	{
+	    if ( Chipset == CHIP_ET6K )
+	    {
+	      *RamDac = DAC_ET6K;
+	    }
 	    if (S3_GENDACCheck(RamDac))
 	    {
 		DisableIOPorts(NUMPORTS, Ports);

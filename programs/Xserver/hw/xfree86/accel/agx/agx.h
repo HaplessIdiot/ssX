@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.16 1995/07/01 10:47:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.17 1996/02/04 08:57:47 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  *
@@ -355,7 +355,14 @@ void agxImageClear(
     unsigned int
 #endif
 );
+
 /* agxIm.c */
+void agxSetVidPage(
+#if NeedFunctionPrototypes
+    int 
+#endif
+);
+
 void agxImageInit(
 #if NeedFunctionPrototypes
     void

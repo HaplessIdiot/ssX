@@ -1,8 +1,8 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.2 1996/01/17 12:45:52 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.3 1996/01/24 21:58:41 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
-Copyright (c) 1995  The XFree86 Project, Inc
+Copyright (c) 1995,1996  The XFree86 Project, Inc
 
 */
 
@@ -270,6 +270,28 @@ Bool XF86DGASetVidPage(dpy, screen, vpage)
     return True;
 }
 
+Bool XF86DGAInstallColormap(dpy, screen, cmap)
+Display* dpy;
+int screen;
+Colormap cmap;
+{
+   XExtDisplayInfo *info = find_display (dpy);
+   xXF86DGAInstallColormapReq *req;
+
+    XF86DGACheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86DGAInstallColormap, req);
+    req->reqType = info->codes->major_opcode;
+    req->dgaReqType = X_XF86DGAInstallColormap;
+    req->screen = screen;
+    req->id = cmap;
+    UnlockDisplay(dpy);
+    SyncHandle();
+    XSync(dpy,False);
+    return True;
+}
+
 
 /* Helper functions */
 
@@ -325,6 +347,34 @@ struct kd_memloc XFree86mloc;
 static char * _XFree86addr = NULL;
 static int    _XFree86size = 0;
 
+/*
+ * Still need to find a clean way of detecting the death of a DGA app
+ * and returning things to normal - Jon
+ * This is here to help debugging without rebooting... Also C-A-BS
+ * should restore text mode.
+ */
+
+int XF86DGAForkApp(int screen)
+{
+     pid_t pid;
+     int status;
+
+     /* fork the app, parent hangs around to clean up */
+     if ((pid = fork()) > 0) {
+        Display *disp;
+
+	waitpid(pid, &status, 0);
+	disp = XOpenDisplay(NULL);
+	XF86DGADirectVideo(disp, screen, 0);
+	XSync(disp,False);
+        if (WIFEXITED(status))
+	    _exit(0);
+	else
+	    _exit(-1);
+     }
+     return pid;
+}
+
 XF86DGADirectVideo(dis, screen, enable)
 Display *dis;
 int screen;
@@ -360,10 +410,11 @@ int enable;
 }
 
 
-static void cleanup(int sig)
+static void XF86cleanup(int sig)
 {
         Display *disp;
 	static beenhere = 0;
+
 	if (beenhere)
 		_exit(3);
 	beenhere = 1;
@@ -380,7 +431,6 @@ char **addr;
 int *width, *bank, *ram;
 {
    int offset, fd;
-   int pid, status;
 #ifdef __EMX__
    APIRET rc;
    ULONG action;
@@ -494,24 +544,14 @@ int *width, *bank, *ram;
    _XFree86size = *bank;
    _XFree86addr = *addr;
 
-#if FORK
-   if ((pid = fork())) {
-        Display *disp;
-	waitpid(pid, &status, 0);
-	disp = XOpenDisplay(NULL);
-	XF86DGADirectVideo(disp, screen, 0);
-	XSync(disp,False);
-        if (WIFEXITED(status))
-	    _exit(0);
-	else
-	    _exit(-1);
-   }
-#else
-    atexit((void(*)(void))cleanup);
-    /* one shot cleanup attempts */
-    signal(SIGSEGV, cleanup);
-    signal(SIGBUS, cleanup);
-    signal(SIGHUP, cleanup);
-    signal(SIGFPE, cleanup);  
+   
+   atexit((void(*)(void))XF86cleanup);
+   /* one shot XF86cleanup attempts */
+   signal(SIGSEGV, XF86cleanup);
+#ifdef SIGBUS
+   signal(SIGBUS, XF86cleanup);
 #endif
+   signal(SIGHUP, XF86cleanup);
+   signal(SIGFPE, XF86cleanup);  
+
 }

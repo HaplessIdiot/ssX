@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.47 1996/02/22 05:10:57 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.48 1996/05/10 06:56:18 dawes Exp $
 .TH XF86_Accel 1 "Version 3.1.2E"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
@@ -244,10 +244,8 @@ agx-010
 xga-2
 .TP 12
 xga-1
-(note: only the agx-016, agx-015, agx-014 and XGA-2 have been tested.
-Refer to the XGA and AGX-010 section of \fIREADME.agx\fP before attempting
-to use the other chipsets.
-)
+(note: Only the agx-016, agx-015, agx-014 and XGA-2 have been tested.
+Refer to \fIREADME.agx\fP before attempting to use.)
 .RE
 .RS 8
 .PP
@@ -546,9 +544,11 @@ Bt481 and Bt482 (AGX server),
 ATI68875/TLC34075/Bt885 (Mach32 server),
 ATI68875, TLC34075, ATI68860, ATI68880, STG1702, and STG1703 (Mach64
 server) RAMDACs.  This is now set by default in the S3 server when
-one of the above RAMDACs other than the AT&T 20C490/1 is used.
+one of the above RAMDACs other than the AT&T 20C490/1 is used. Is
+also the default for the AGX server, except for the default VGA
+"normal" RAMDAC.
 .sp
-\fBdac_6_bit\fP - (S3) Force 6-bit per RGB in cases where 8-bit mode
+\fBdac_6_bit\fP - (S3, AGX) Force 6-bit per RGB in cases where 8-bit mode
 would automatically be enabled.
 .sp
 \fBsync_on_green\fP - (S3, P9000) Enables generation of sync on the green

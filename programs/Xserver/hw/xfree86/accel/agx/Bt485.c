@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Bt485.c,v 3.3 1995/01/28 15:48:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Bt485.c,v 3.4 1996/02/04 08:57:41 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Copyright 1994 by Henry A. Worth  <haw30@eng.amdahl.com>
@@ -112,6 +112,7 @@ unsigned char xf86InBt485StatReg()
    return(ret);
 }
 
+#if 0
 /*
  * Convert the cursor from server-format to hardware-format.  The Bt485
  * has two planes, output sequentially.
@@ -325,7 +326,7 @@ xf86Bt485LoadCursor(pScr, pCurs, modesFlags, x, y)
 
    return;
 }
-
+#endif
 
 #ifdef __STDC__
 void

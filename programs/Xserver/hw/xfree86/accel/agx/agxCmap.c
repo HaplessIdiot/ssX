@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxCmap.c,v 3.2 1995/01/28 15:48:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxCmap.c,v 3.3 1996/02/04 08:57:53 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994    by Henry A. Worth, Sunnyvale, California.
@@ -36,6 +36,13 @@
 
 #include "agx.h"
 
+#ifdef XFreeXDGA
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif      
+
 #define NOMAPYET        (ColormapPtr) 0
 
 static ColormapPtr InstalledMaps[MAXSCREENS];
@@ -52,8 +59,6 @@ agxListInstalledColormaps(pScreen, pmaps)
   *pmaps = InstalledMaps[pScreen->myNum]->mid;
   return(1);
 }
-
-
 
 void
 agxStoreColors(pmap, ndef, pdefs)
@@ -115,7 +120,11 @@ agxStoreColors(pmap, ndef, pdefs)
          blue  = agxsavedLUT[idx].b = pdefs[i].blue >> 10;
       }
 
-      if (xf86VTSema) {
+      if ( xf86VTSema
+#ifdef XFreeXDGA
+           || (agxInfoRec.directMode & XF86DGADirectGraphics)
+#endif
+      ) {
          oldIndex = inb(agxIdxReg); 
          outb(agxIdxReg,  palIdx);
          outb(palIdxReg,  idx);
@@ -167,7 +176,11 @@ agxStoreColors(pmap, ndef, pdefs)
             overScan = tmp;
          }
          agxCRTCRegs.overscan = overScan;
-         if (xf86VTSema) {
+         if ( xf86VTSema
+#ifdef XFreeXDGA
+              || (agxInfoRec.directMode & XF86DGADirectGraphics)
+#endif
+          ) {
             oldIndex = inb(agxIdxReg); 
             outb(agxIdxReg, IR_BORDER_CLR); 
             outb(agxByteData, overScan);

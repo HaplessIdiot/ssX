@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: util.c,v 1.31 91/06/20 18:34:47 gildea Exp $
- *	$XFree86: xc/programs/xterm/util.c,v 3.5 1996/05/06 06:01:27 dawes Exp $
+ *	$XFree86: xc/programs/xterm/util.c,v 3.6 1996/06/29 09:10:55 dawes Exp $
  */
 
 /*
@@ -1207,7 +1207,7 @@ getXtermForeground(flags, color)
 	int flags;
 	int color;
 {
-	Pixel fg = (flags & FG_COLOR)
+	Pixel fg = (flags & FG_COLOR) && (color >= 0)
 			? term->screen.Acolors[color]
 			: term->screen.foreground;
 
@@ -1223,7 +1223,7 @@ getXtermBackground(flags, color)
 	int flags;
 	int color;
 {
-	Pixel bg = (flags & BG_COLOR)
+	Pixel bg = (flags & BG_COLOR) && (color >= 0)
 			? term->screen.Acolors[color]
 			: term->core.background_pixel;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.24 1995/11/18 02:29:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.25 1996/02/04 08:58:14 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -500,7 +500,10 @@ agxInfoRec.depth:%d, hercDoubledClocks:%x, usingHercBigDac:%x\n",
     crtcRegs->disp_width_hi = (temp>>8) & 0xFF;
 
 
-    crtcRegs->overscan = 0x01;
+    if( xf86FlipPixels ) 
+       crtcRegs->overscan = 0x01;
+    else 
+       crtcRegs->overscan = 0x00;
 
     /* composite sync??? */
 }
@@ -710,13 +713,15 @@ agxSetCRTCRegs(crtcRegs)
              byteData &= ~IR_M7_VLB_B;
          if (OFLG_ISSET(OPTION_VLB_B, &agxInfoRec.options)) 
              byteData |= IR_M7_VLB_B;
-         if (OFLG_ISSET(OPTION_FAST_DRAM, &agxInfoRec.options))
+         if (OFLG_ISSET(OPTION_FAST_DRAM, &agxInfoRec.options)
+             || OFLG_ISSET(OPTION_FAST_VRAM, &agxInfoRec.options))
              byteData &= ~(IR_M7_VRAM_RAS_DELAY | IR_M7_VRAM_LATCH_DELAY);
          if (OFLG_ISSET(OPTION_MED_DRAM, &agxInfoRec.options)) {
              byteData |= IR_M7_VRAM_LATCH_DELAY;
              byteData &= ~IR_M7_VRAM_RAS_DELAY;
          }
-         if (OFLG_ISSET(OPTION_SLOW_DRAM, &agxInfoRec.options)) {
+         if (OFLG_ISSET(OPTION_SLOW_DRAM, &agxInfoRec.options)
+             || OFLG_ISSET(OPTION_SLOW_VRAM, &agxInfoRec.options)) {
              byteData |= IR_M7_VRAM_RAS_DELAY;
              byteData |= IR_M7_VRAM_LATCH_DELAY;
          }
@@ -1184,27 +1189,27 @@ agxClockSelect(no,scale)
         if ( XGA_SERIES(agxChipId) 
              || (AGX_10_ONLY(agxChipId) && no < 8) ) {
            /* XGA clock selects */
-   	   outb(agxIdxReg, IR_CLOCK_SEL_1);
-   	   byteData = inb(agxByteData) & IR_CS1_WRITE_MASK;
+           outb(agxIdxReg, IR_CLOCK_SEL_1);
+           byteData = inb(agxByteData) & IR_CS1_WRITE_MASK;
            byteData &= ~IR_CS1_CLOCK_MASK & ~IR_CS1_SCALE_MASK;
            byteData = 0;
            byteData |= ((no << IR_CS1_CLOCK_SHIFT) & IR_CS1_CLOCK_MASK);
            byteData |= no >> 3;
-   	   outb(agxByteData, byteData);
+           outb(agxByteData, byteData);
     
-   	   outb(agxIdxReg, IR_CLOCK_SEL_2);
+           outb(agxIdxReg, IR_CLOCK_SEL_2);
            byteData = (no << (IR_CS2_CLOCK_SHIFT - 2)) & IR_CS2_CLOCK_MASK;
-   	   outb(agxByteData, byteData);
+           outb(agxByteData, byteData);
         }
         else if (AGX_10_ONLY(agxChipId)) { 
            /* AGX-10 unique clocks */
            outb(agxIdxReg, IR_M5_MODE_REG_5);
            byteData = inb(agxByteData) & IR_M5_WRITE_MASK 
                       & ~IR_M5_CS4_MASK & ~IR_M5_EXT_CLOCK;
-   	   outb(agxByteData, byteData);
+           outb(agxByteData, byteData);
 
-	   outb(agxIdxReg, IR_M1_AGX10_MODE_REG_1);
-	   byteData = inb(agxByteData)
+           outb(agxIdxReg, IR_M1_AGX10_MODE_REG_1);
+           byteData = inb(agxByteData)
                          & IR_M1_WRITE_MASK & ~IR_M1_CS3_MASK;
            byteData |= (no << IR_M1_CS3_SHIFT) & IR_M1_CS3_MASK;
            outb(agxByteData, byteData);
@@ -1416,7 +1421,10 @@ agxSetUpProbeCRTC(crtcRegs)
 
    crtcRegs->clock_sel = 0;
 
-   crtcRegs->overscan = 0x01;
+   if( xf86FlipPixels ) 
+      crtcRegs->overscan = 0x01;
+   else 
+      crtcRegs->overscan = 0x00;
 
    return(TRUE);
 }

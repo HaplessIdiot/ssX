@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.1 1996/06/30 10:44:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.2 1996/07/08 10:23:33 dawes Exp $ */
 
 /*
 
@@ -767,7 +767,8 @@ getsection_device(interp, varname)
 			Tcl_SetVar2(interp, namebuf, "Clocks",
 				tmpbuf, TCL_APPEND_VALUE);
 		}
-		Tcl_SetVar2(interp, namebuf, "ClockProg", dptr->clockprog, 0);
+		Tcl_SetVar2(interp, namebuf, "ClockProg",
+			StrOrNull(dptr->clockprog), 0);
 		if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(dptr->clockOptions))) {
 		    j = 0;
 		    while (xf86_ClockOptionTab[j].token != -1) {
@@ -936,18 +937,20 @@ getsection_screen(interp, varname)
 		        xf86VisualNames[dptr->defaultVisual], 0);
 		}
 		modeptr = dptr->modes;
-                sprintf(tmpbuf2, "Modes,%d", depth);
-		Tcl_SetVar2(interp, namebuf, tmpbuf2, "", 0);
-		do {
-		  /*
-                    sprintf(tmpbuf, "\"%s\" ", modeptr->name);
-		    Tcl_SetVar2(interp, namebuf, tmpbuf2, tmpbuf,
-			TCL_APPEND_VALUE);
-		  */
-		    Tcl_SetVar2(interp, namebuf, tmpbuf2, modeptr->name,
-			TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
-		    modeptr = modeptr->next;
-		} while (dptr->modes != modeptr);
+		if (modeptr) {
+                    sprintf(tmpbuf2, "Modes,%d", depth);
+		    Tcl_SetVar2(interp, namebuf, tmpbuf2, "", 0);
+		    do {
+		      /*
+                        sprintf(tmpbuf, "\"%s\" ", modeptr->name);
+		        Tcl_SetVar2(interp, namebuf, tmpbuf2, tmpbuf,
+			    TCL_APPEND_VALUE);
+		      */
+		        Tcl_SetVar2(interp, namebuf, tmpbuf2, modeptr->name,
+			    TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+		        modeptr = modeptr->next;
+		    } while (dptr->modes != modeptr);
+		}
 
                 sprintf(tmpbuf2, "Option,%d", depth);
 		Tcl_UnsetVar2(interp, namebuf, tmpbuf2, 0);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.16 1995/07/07 15:38:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.17 1996/02/04 08:58:10 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -119,6 +119,16 @@ unsigned char bank;
 
 #endif /* __GNUC__ */
 #endif
+
+#ifdef __STDC__
+void agxSetVidPage(int bank)
+#else
+void agxSetVidPage(bank)
+int bank;
+#endif
+{
+        outb( agxApIdxReg, (unsigned char) bank );
+}
 
 void
 agxImageInit()

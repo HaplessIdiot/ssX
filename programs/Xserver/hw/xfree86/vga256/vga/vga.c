@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.51 1996/05/06 05:58:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.52 1996/06/29 09:09:24 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1424,18 +1424,22 @@ vgaEnterLeaveVT(enter, screen_idx)
       saveSetReadFunc = vgaSetReadFunc;
       saveSetWriteFunc = vgaSetWriteFunc;
       saveSetReadWriteFunc = vgaSetReadWriteFunc;
-      
+
+#ifdef XFreeXDGA      
+      if (!(vga256InfoRec.directMode & XF86DGADirectGraphics)) {
+#endif
       vgaInitFunc = (Bool (*)())saveDummy;
       vgaSaveFunc = (void * (*)())saveDummy;
       vgaRestoreFunc = (void (*)())saveDummy;
       vgaAdjustFunc = (void (*)())saveDummy;
-      vgaSaveScreenFunc = saveDummy;
       vgaSetReadFunc = saveDummy;
       vgaSetWriteFunc = saveDummy;
+      vgaSetReadWriteFunc = saveDummy;
 #ifdef XFreeXDGA
-      if (!(vga256InfoRec.directMode & XF86DGADirectGraphics))
+      }
 #endif
-        vgaSetReadWriteFunc = saveDummy;
+       vgaSaveScreenFunc = saveDummy;
+ 
       
     }
 }

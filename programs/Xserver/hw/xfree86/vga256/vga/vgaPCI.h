@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.4 1996/03/31 11:50:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.5 1996/04/15 11:32:11 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -49,6 +49,7 @@
 #define PCI_CHIP_ET4000_W32P_B	0x3205
 #define PCI_CHIP_ET4000_W32P_C	0x3206
 #define PCI_CHIP_ET4000_W32P_D	0x3207
+#define PCI_CHIP_ET6000		0x3208
 
 /* Weitek */
 #define PCI_CHIP_P9000		0x9001
@@ -59,6 +60,7 @@
 #define PCI_CHIP_GD5434_4	0x00A4
 #define PCI_CHIP_GD5434_8	0x00A8
 #define PCI_CHIP_GD5436		0x00AC
+#define PCI_CHIP_GD5446         0x00B8
 #define PCI_CHIP_GD7542		0x1200
 
 /* Trident */
@@ -145,6 +147,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_ET4000_W32P_B, "ET4000W32P revB"},
 				{PCI_CHIP_ET4000_W32P_C, "ET4000W32P revC"},
 				{PCI_CHIP_ET4000_W32P_D, "ET4000W32P revD"},
+				{PCI_CHIP_ET6000,	 "ET6000"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_WEITEK,	"Weitek", {
 				{PCI_CHIP_P9000,	"P9000"},
@@ -157,6 +160,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_GD5434_4,	"GD5434"},
 				{PCI_CHIP_GD5434_8,	"GD5434"},
 				{PCI_CHIP_GD5436,	"GD5436"},
+				{PCI_CHIP_GD5446,       "GD5446"},
 				{PCI_CHIP_GD7542,	"GD7542"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_NCR_2,	"NCR",	{

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.52 1996/05/13 07:29:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.53 1996/06/29 09:07:37 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -132,6 +132,9 @@ typedef struct {
 #define OPTION_S3_INVERT_VCLK	98 /* invert VLCK (CR67:0) (S3) */
 #define OPTION_NO_PROGRAM_CLOCKS 99 /* Turn off clock programming */
 #define OPTION_NO_PCI_PROBE	100 /* Disable PCI probe (VGA) */
+#define OPTION_TRIO64VP_BUG1	101 /* Trio64V+ bug hack #1 */
+#define OPTION_TRIO64VP_BUG2	102 /* Trio64V+ bug hack #2 */
+#define OPTION_TRIO64VP_BUG3	103 /* Trio64V+ bug hack #3 */
 
 /* Debugging options */
 #define OPTION_SHOWCACHE	105 /* Allow cache to be seen (S3) */
@@ -307,6 +310,9 @@ OptFlagRec xf86_OptionTab[] = {
   { "s3_invert_vclk",	OPTION_S3_INVERT_VCLK },
   { "no_program_clocks",OPTION_NO_PROGRAM_CLOCKS },
   { "no_pci_probe",	OPTION_NO_PCI_PROBE },
+  { "trio64v+_bug1",	OPTION_TRIO64VP_BUG1 },
+  { "trio64v+_bug2",	OPTION_TRIO64VP_BUG2 },
+  { "trio64v+_bug3",	OPTION_TRIO64VP_BUG2 },
 
   { "showcache",	OPTION_SHOWCACHE },
   { "fb_debug",		OPTION_FB_DEBUG },

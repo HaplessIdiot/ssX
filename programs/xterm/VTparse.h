@@ -109,3 +109,4 @@
 #define CASE_HP_BUGGY_LL 70
 #define CASE_HPA 71
 #define CASE_VPA 72
+#define CASE_XTERM_WINOPS 73

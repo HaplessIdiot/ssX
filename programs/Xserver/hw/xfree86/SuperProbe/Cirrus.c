@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Cirrus.c,v 3.9 1995/11/30 13:03:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Cirrus.c,v 3.10 1996/02/04 08:56:39 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -208,6 +208,9 @@ int Class;
 					case 0x2B:
 						*Chipset = CHIP_CL5436;
 						break;
+					case 0x2E:
+						*Chipset = CHIP_CL5446;
+						break;
 					case 0x0A: /* guess */
 						*Chipset = CHIP_CL7541;
 						break;
@@ -224,7 +227,8 @@ int Class;
 					}
 					if (*Chipset == CHIP_CL5430 ||
 					    *Chipset == CHIP_CL5434 ||
-					    *Chipset == CHIP_CL5436)
+					    *Chipset == CHIP_CL5436 ||
+					    *Chipset == CHIP_CL5446)
 					{
 						/*
 						 * Make sure that there is

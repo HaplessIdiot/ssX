@@ -1,5 +1,5 @@
 /* $XConsortium: imakemdep.h /main/91 1995/12/05 16:44:18 mor $ */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.13 1996/01/05 13:07:10 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.14 1996/02/20 14:31:40 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -741,6 +741,9 @@ struct symtab	predefs[] = {
 #endif
 #ifdef __FreeBSD__
 	{"__FreeBSD__", "1"},
+#endif
+#ifdef __OpenBSD__
+	{"__OpenBSD__", "1"},
 #endif
 #ifdef __NetBSD__
 	{"__NetBSD__", "1"},

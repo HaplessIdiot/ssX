@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.9 1996/02/04 08:56:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.10 1996/02/12 11:12:08 dawes Exp $ */
 
 #include "Probe.h"
 #include "PatchLevel.h"
@@ -363,6 +363,7 @@ char *argv[];
     Bool Probe_DAC = TRUE;
     Bool Probe_Mem = TRUE;
     Bool NoEGA = FALSE;
+    Bool PCIVGA = FALSE;
     Bool Check_CoProc;
     Bool flag;
 
@@ -599,6 +600,22 @@ char *argv[];
     if (!NoPCI)
     {
 	xf86scanpci();
+
+        /* Now scan for VGA compatible cards in the PCI config space.
+         * This will avoid that the BIOS checking fails to detect a VGA,
+         * making SuperProbe report "MCGA =" ... [kmg]
+         */
+        i=0;
+        while ((pcrp = pci_devp[i]) != (struct pci_config_reg *)NULL) {
+            if ((pcrp->_base_class == PCI_CLASS_PREHISTORIC &&
+                   pcrp->_sub_class == PCI_SUBCLASS_PREHISTORIC_VGA) ||
+                  (pcrp->_base_class == PCI_CLASS_DISPLAY &&
+                   pcrp->_sub_class == PCI_SUBCLASS_DISPLAY_VGA))
+            {
+                    PCIVGA = TRUE;
+            }
+            i++;
+        }
     }
 
     if ((!NoBIOS) && (!NoEGA))
@@ -614,11 +631,12 @@ char *argv[];
     	    return(1);
         }
     }
-    if ((!NoEGA) &&
+    if (PCIVGA ||
+       ((!NoEGA) &&
 	((NoBIOS) ||
          ((copyright[0] == 'I') && 
           (copyright[1] == 'B') &&
-          (copyright[2] == 'M'))))
+          (copyright[2] == 'M')))))
     {
     	/*
     	 * It's an EGA or VGA

@@ -1,4 +1,4 @@
-/* $XConsortium: Probe.h /main/13 1996/01/26 13:30:31 kaleb $ */
+/* $XConsortium: Probe.h /main/13 1996/01/26 13:30:31 kaleb $ */ 
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.30 1996/03/31 11:48:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.31 1996/04/15 11:29:11 dawes Exp $ */
 
 /*
  * Includes
@@ -325,8 +325,9 @@ extern Chip_Descriptor I128_Descriptor;
 #define DAC_CH8398	46	/* Chrontel 8398 */
 #define DAC_ATT408	47	/* AT&T 20C408 */
 #define DAC_TVP3030	48	/* TI ViewPoint TVP3030 RAMDAC */
+#define DAC_ET6K	49	/* Built-in 15/16/24-bit ET6000 RAMDAC */
 
-#define DAC_MAX		DAC_TVP3030	/* UPDATE THIS! */
+#define DAC_MAX		DAC_ET6K	/* UPDATE THIS! */
 
 #define DAC_6_8_PROGRAM	0x40	/* RAMDAC programmable for 6/8-bit tables */
 #define DAC_8BIT	0x80	/* RAMDAC with 8-bit wide lookup tables */
@@ -391,7 +392,7 @@ extern struct RamDac_Name RamDac_Names[];
 #define V_SIS		22
 
 #define NUM_VENDORS	22
-#define CHPS_PER_VENDOR	30
+#define CHPS_PER_VENDOR	31
 
 #define CHIP_AHEAD_UNK	SVGA_TYPE(V_AHEAD,0)	/* Ahead unknown	*/
 #define CHIP_AHEAD_A	SVGA_TYPE(V_AHEAD,1)	/* Ahead V5000 Version A*/
@@ -463,6 +464,7 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_CL7541	SVGA_TYPE(V_CIRRUS,27)	/* Cirrus 7541		*/
 #define CHIP_CL7542	SVGA_TYPE(V_CIRRUS,28)	/* Cirrus 7542		*/
 #define CHIP_CL7543	SVGA_TYPE(V_CIRRUS,29)	/* Cirrus 7543		*/
+#define CHIP_CL5446	SVGA_TYPE(V_CIRRUS,30)	/* Cirrus 5446		*/
 #define CHIP_CPQ_UNK	SVGA_TYPE(V_COMPAQ,0)	/* Compaq unknown	*/
 #define CHIP_CPQ_IVGS	SVGA_TYPE(V_COMPAQ,1)	/* Compaq Int Vid Gr Sys*/
 #define CHIP_CPQ_AVGA	SVGA_TYPE(V_COMPAQ,2)	/* Compaq Advanced VGA	*/
@@ -549,6 +551,7 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_ET4KW32P_B	SVGA_TYPE(V_TSENG,8)	/* Tseng ET4000/W32p rB	*/
 #define CHIP_ET4KW32P_C	SVGA_TYPE(V_TSENG,9)	/* Tseng ET4000/W32p rC	*/
 #define CHIP_ET4KW32P_D	SVGA_TYPE(V_TSENG,10)	/* Tseng ET4000/W32p rD	*/
+#define CHIP_ET6K	SVGA_TYPE(V_TSENG,11)	/* Tseng ET6000		*/
 #define CHIP_UMC_408	SVGA_TYPE(V_UMC,0)	/* UMC 85c408		*/
 #define CHIP_V7_UNKNOWN	SVGA_TYPE(V_VIDEO7,0)	/* Video7 unknown	*/
 #define CHIP_V7_FWRITE	SVGA_TYPE(V_VIDEO7,1)	/* Video7 Fastwrite/VRAM*/
