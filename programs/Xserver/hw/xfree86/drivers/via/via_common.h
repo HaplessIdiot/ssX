@@ -1,9 +1,7 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_common.h,v 1.2tsi Exp $ */
 
 #ifndef _VIA_COMMON_H_
 #define _VIA_COMMON_H_ 1
-
-#include "xf86drm.h"
 
 /* WARNING: If you change any of these defines, make sure to change
  * the kernel include file as well (via_drm.h)
