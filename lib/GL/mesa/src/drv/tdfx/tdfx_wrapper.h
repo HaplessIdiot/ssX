@@ -39,7 +39,7 @@
  *
  * See fxapi.h for more revision/author details.
  */
-
+/* $XFree86$ */
 
 #ifndef __FX_GLIDE_WARPER__
 #define __FX_GLIDE_WARPER__
