@@ -1,4 +1,4 @@
-/* $XConsortium: XawIm.c,v 1.5 94/04/17 20:13:30 kaleb Exp $ */
+/* $XConsortium: XawIm.c /main/9 1996/11/09 08:20:50 kaleb $ */
 
 /*
  * Copyright 1991 by OMRON Corporation
@@ -53,11 +53,11 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
+/* $XFree86: xc/lib/Xaw/XawIm.c,v 1.1.1.4.2.1 1998/05/01 04:02:42 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <X11/Xos.h>
-#include <X11/Xlocale.h>
 #include <X11/Xfuncs.h>
 #include <X11/ShellP.h>
 #include <X11/Xaw/TextP.h>
@@ -403,7 +403,7 @@ static void FreeAllDataOfVendorShell(ve, vw)
     if (ve->im.resources) XtFree((char *)ve->im.resources);
     for (p = ve->ic.ic_table; p; p = next) {
         next = p->next;
-        XtFree((char *)ve->ic.ic_table);
+        XtFree((char *)p);
     }
 }
 
@@ -447,27 +447,26 @@ static void OpenIM(ve)
 
     if (ve->im.open_im == False) return;
     ve->im.xim = NULL;
-    if (!strcmp(setlocale(LC_ALL, NULL), "C")) return;
     if (ve->im.im_list_num <= 0) {
 	if ((p = XSetLocaleModifiers("@im=none")) != NULL && *p)
 	    xim = XOpenIM(XtDisplay(ve->parent), NULL, NULL, NULL);
     } else {
 	for (i = 0; i < ve->im.im_list_num; i++) {
 	    strcpy(modifiers, "@im=");
-	    strcat(modifiers, ve->im.im_list[i]);
+	    strncat(modifiers, ve->im.im_list[i], sizeof(modifiers) - 5/*strlen("@im=")*/);
 	    if ((p = XSetLocaleModifiers(modifiers)) != NULL && *p &&
 		(xim = XOpenIM(XtDisplay(ve->parent), NULL, NULL, NULL)) != NULL)
 		break;
 	}
     }
     if (xim == NULL) {
-	if ((p = XSetLocaleModifiers("")) != NULL && *p) {
+	if ((p = XSetLocaleModifiers("")) != NULL) {
 	    xim = XOpenIM(XtDisplay(ve->parent), NULL, NULL, NULL);
 	}
     }
     if (xim == NULL) {
 	XtAppWarning(XtWidgetToApplicationContext(ve->parent),
-	    "we can not open any input method");
+	    "Input Method Open Failed");
 	return;
     }
     if (XGetIMValues(xim, XNQueryInputStyle, &xim_styles, NULL)
@@ -1356,7 +1355,7 @@ static char** ParseIMNameList(p, num)
     strcpy(s, p);
     save_s = s;
 
-    while(1) {
+    while(i < (sizeof(list) / sizeof(list[0]))) {
 	list[i] = s;
 	ss = index(s, ',');
 	if (!ss) {
@@ -1591,34 +1590,6 @@ _XawImSetValues( inwidg, args, num_args )
 }
 
 void
-#if NeedVarargsPrototypes
-_XawImVASetValues( Widget inwidg, ... )
-#else
-_XawImVASetValues( inwidg, va_alist )
-    Widget inwidg;
-    va_dcl
-#endif
-{
-    va_list  var;
-    ArgList  args = NULL;
-    Cardinal num_args;
-    int	     total_count, typed_count;
-
-    Va_start( var, inwidg );
-    _XtCountVaList( var, &total_count, &typed_count );
-    va_end( var );
-
-    Va_start( var, inwidg );
-
-    _XtVaToArgList( inwidg, var, total_count, &args, &num_args );
-    _XawImSetValues( inwidg, args, num_args );
-    if ( args != NULL ) {
-	XtFree( (XtPointer) args );
-    }
-    va_end( var );
-}
-
-void
 #if NeedFunctionPrototypes
 _XawImSetFocusValues(
     Widget inwidg, 
@@ -1632,34 +1603,6 @@ _XawImSetFocusValues(inwidg, args, num_args)
 #endif
 {
     SetFocusValues(inwidg, args, num_args, TRUE);
-}
-
-void
-#if NeedVarargsPrototypes
-_XawImVASetFocusValues(Widget inwidg, ...)
-#else
-_XawImVASetFocusValues(inwidg, va_alist)
-    Widget	inwidg;
-    va_dcl
-#endif
-{
-    va_list		var;
-    ArgList		args = NULL;
-    Cardinal		num_args;
-    int			total_count, typed_count;
-
-    Va_start(var, inwidg);
-    _XtCountVaList(var, &total_count, &typed_count);
-    va_end(var);
-
-    Va_start(var,inwidg);
-
-    _XtVaToArgList(inwidg, var, total_count, &args, &num_args);
-    _XawImSetFocusValues(inwidg, args, num_args);
-    if (args != NULL) {
-	XtFree((XtPointer)args);
-    }
-    va_end(var);
 }
 
 void
@@ -1703,10 +1646,10 @@ _XawImWcLookupString( inwidg, event, buffer_return, bytes_buffer,
 
     if ((vw = SearchVendorShell(inwidg)) && (ve = GetExtPart(vw)) &&
 	ve->im.xim && (p = GetIcTableShared(inwidg, ve)) && p->xic) {
-	  return(XwcLookupString(p->xic, event, buffer_return, bytes_buffer,
+	  return(XwcLookupString(p->xic, event, buffer_return, bytes_buffer/sizeof(wchar_t),
 				 keysym_return, status_return));
     }
-    ret = XLookupString( event, tmp_buf, 64, keysym_return,
+    ret = XLookupString( event, tmp_buf, sizeof(tmp_buf), keysym_return,
 		         (XComposeStatus*) status_return );
     for ( i = 0, tmp_p = tmp_buf, buf_p = buffer_return; i < ret; i++ ) {
 	*buf_p++ = _Xaw_atowc(*tmp_p++);
