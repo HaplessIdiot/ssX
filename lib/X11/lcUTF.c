@@ -25,7 +25,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
   Author: Hiromu Inukai (inukai@Japan.Sun.COM) SunSoft, inc.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/lcUTF.c,v 3.5 1997/11/16 06:17:37 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUTF.c,v 3.6 1997/11/22 06:50:13 dawes Exp $ */
 #include "XlcUTF.h"
 
 static int getutfrune(
@@ -1409,7 +1409,7 @@ open_cstowcs(from_lcd, from, to_lcd, to)
 
 XLCd
 _XlcUtfLoader(name)
-    char *name;
+    _Xconst char *name;
 {
     XLCd lcd;
 

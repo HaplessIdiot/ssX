@@ -31,7 +31,7 @@
  * Modifier: Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/lcCT.c,v 3.5 1997/01/18 07:17:40 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcCT.c,v 3.6 1997/03/10 10:10:12 hohndel Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
@@ -327,7 +327,7 @@ done:
 
 XlcCharSet
 _XlcAddCT(name, encoding)
-    char *name;
+    _Xconst char *name;
     char *encoding;
 {
     CTInfo ct_info;

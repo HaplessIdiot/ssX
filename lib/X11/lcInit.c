@@ -31,7 +31,7 @@
  *   Modifier: Masayoshi Shimamura      FUJITSU LIMITED 
  *
  */
-/* $XFree86: xc/lib/X11/lcInit.c,v 3.2 1996/12/24 02:22:48 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcInit.c,v 3.3 1997/11/22 06:50:12 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -47,7 +47,7 @@
 
 extern XLCd _XlcDefaultLoader(
 #if NeedFunctionPrototypes
-    char*
+    _Xconst char*
 #endif
 );
 
@@ -55,7 +55,7 @@ extern XLCd _XlcDefaultLoader(
 #ifdef sun
 extern XLCd _XsunOsDynamicLoad(
 #if NeedFunctionPrototypes
-    char*
+    _Xconst char*
 #endif
 );
 #endif /* sun */
@@ -63,7 +63,7 @@ extern XLCd _XsunOsDynamicLoad(
 #ifdef AIXV3
 extern XLCd _XaixOsDynamicLoad(
 #if NeedFunctionPrototypes
-    char*
+    _Xconst char*
 #endif
 );
 #endif /* AIXV3 */
@@ -72,7 +72,7 @@ extern XLCd _XaixOsDynamicLoad(
 #ifdef USE_GENERIC_LOADER
 extern XLCd _XlcGenericLoader(
 #if NeedFunctionPrototypes
-    char*
+    _Xconst char*
 #endif
 );
 #endif
@@ -80,7 +80,7 @@ extern XLCd _XlcGenericLoader(
 #ifdef USE_UTF_LOADER
 extern XLCd _XlcUtfLoader(
 #if NeedFunctionPrototypes
-    char*
+    _Xconst char*
 #endif
 );
 #endif
@@ -88,7 +88,7 @@ extern XLCd _XlcUtfLoader(
 #ifdef USE_EUC_LOADER
 extern XLCd _XlcEucLoader(
 #if NeedFunctionPrototypes
-    char*
+    _Xconst char*
 #endif
 );
 #endif
@@ -96,7 +96,7 @@ extern XLCd _XlcEucLoader(
 #ifdef USE_SJIS_LOADER
 extern XLCd _XlcSjisLoader(
 #if NeedFunctionPrototypes
-    char*
+    _Xconst char*
 #endif
 );
 #endif
@@ -104,7 +104,7 @@ extern XLCd _XlcSjisLoader(
 #ifdef USE_JIS_LOADER
 extern XLCd _XlcJisLoader(
 #if NeedFunctionPrototypes
-    char*
+    _Xconst char*
 #endif
 );
 #endif
@@ -112,7 +112,7 @@ extern XLCd _XlcJisLoader(
 #ifdef USE_DYNAMIC_LOADER
 extern XLCd _XlcDynamicLoader(
 #if NeedFunctionPrototypes
-    char*
+    _Xconst char*
 #endif
 );
 #endif

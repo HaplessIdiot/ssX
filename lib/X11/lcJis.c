@@ -23,6 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "XlcGeneric.h"
@@ -878,7 +879,7 @@ open_stdc_cstowcs(from_lcd, from_type, to_lcd, to_type)
 
 XLCd
 _XlcJisLoader(name)
-    char *name;
+    _Xconst char *name;
 {
     XLCd lcd;
     XLCdGenericPart *gen;

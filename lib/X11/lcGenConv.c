@@ -31,7 +31,7 @@
  *   Modifier: Masayoshi Shimamura      FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.8 1997/11/16 06:17:36 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.9 1997/11/22 06:50:12 dawes Exp $ */
 
 
 #include "Xlibint.h"
@@ -2834,7 +2834,7 @@ open_strtowcs(from_lcd, from_type, to_lcd, to_type)
 
 XLCd
 _XlcGenericLoader(name)
-    char *name;
+    _Xconst char *name;
 {
     XLCd lcd;
     XLCdGenericPart *gen;
