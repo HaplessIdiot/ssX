@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.418 2002/11/19 15:17:09 tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.419 2002/11/20 04:32:55 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1928,8 +1928,8 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 # ifndef HasMMXSupport
 #  define HasMMXSupport YES
 # endif
-# ifndef HasKatmaiSupport
-#  define HasKatmaiSupport NO
+# ifndef HasSSESupport
+#  define HasSSESupport NO
 # endif
 # ifndef Has3DNowSupport
 #  define Has3DNowSupport NO
@@ -1938,8 +1938,8 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 # ifndef HasMMXSupport
 #  define HasMMXSupport NO
 # endif
-# ifndef HasKatmaiSupport
-#  define HasKatmaiSupport NO
+# ifndef HasSSESupport
+#  define HasSSESupport NO
 # endif
 # ifndef Has3DNowSupport
 #  define Has3DNowSupport YES
@@ -1948,8 +1948,8 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 # ifndef HasMMXSupport
 #  define HasMMXSupport NO
 # endif
-# ifndef HasKatmaiSupport
-#  define HasKatmaiSupport NO
+# ifndef HasSSESupport
+#  define HasSSESupport NO
 # endif
 # ifndef Has3DNowSupport
 #  define Has3DNowSupport NO

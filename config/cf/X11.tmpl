@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.180 2002/11/19 21:33:44 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.181 2002/11/20 04:32:55 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1222,12 +1222,18 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #endif
 #endif
 
-#ifndef MesaUseKatmai
-#ifdef HasKatmaiSupport
-#define MesaUseKatmai HasKatmaiSupport
+#ifndef MesaUseSSE
+#ifdef HasSSESupport
+#define MesaUseSSE HasSSESupport
 #else
-#define MesaUseKatmai NO
+#define MesaUseSSE NO
 #endif
+#endif
+
+/* For compatibility */
+#ifdef HasSSESupport
+#undef HasKatmaiSupport
+#define HasKatmaiSupport HasSSESupport
 #endif
 
 #ifndef DefaultFSConfigFile

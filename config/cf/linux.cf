@@ -4,7 +4,7 @@ XCOMM platform:  $Xorg: linux.cf,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.187tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.188 2002/11/14 21:01:14 tsi Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -171,7 +171,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #    define HasMMXSupport		YES
 #    define Has3DNowSupport		YES
 /* 2.4 is not yet the official (or predominant) kernel in unstable */
-#    define HasKatmaiSupport		NO
+#    define HasSSESupport		NO
 #   endif /* i386Architecture */
 # endif /* DebianMaintainer */
 #endif /* LinuxDebian */
@@ -363,18 +363,18 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #endif
 
 /*
- * Support for Intel's Katmai Native Instructions, also known as the
+ * Support for Intel's SSE Native Instructions, also known as the
  * Streaming SIMD Extensions, was introduced in the 2.4.x kernels.
  */
-#ifndef HasKatmaiSupport
+#ifndef HasSSESupport
 #  if defined (i386Architecture)
 #    if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 4)
-#      define HasKatmaiSupport		YES
+#      define HasSSESupport		YES
 #    else
-#      define HasKatmaiSupport		NO
+#      define HasSSESupport		NO
 #    endif
 #  else
-#    define HasKatmaiSupport		NO
+#    define HasSSESupport		NO
 #  endif
 #endif
 
