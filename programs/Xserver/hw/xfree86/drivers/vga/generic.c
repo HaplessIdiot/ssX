@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.66tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.67tsi Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -125,6 +125,7 @@ static const char *vgahwSymbols[] =
     "vgaHWGetIOBase",
     "vgaHWGetIndex",
     "vgaHWHandleColormaps",
+    "vgaHWHBlankKGA",
     "vgaHWInit",
     "vgaHWLock",
     "vgaHWMapMem",
@@ -134,6 +135,7 @@ static const char *vgahwSymbols[] =
     "vgaHWSaveScreen",
     "vgaHWUnlock",
     "vgaHWUnmapMem",
+    "vgaHWVBlankKGA",
     NULL
 };
 
@@ -825,7 +827,7 @@ GenericSetMode(ScrnInfoPtr pScreenInfo, DisplayModePtr pMode)
     {
 #define KGA_FLAGS (KGA_FIX_OVERSCAN | KGA_BE_TOT_DEC)
 	vgaHWHBlankKGA(pMode, &pvgaHW->ModeReg, 0, KGA_FLAGS);
-	vgaHWHBlankKGA(pMode, &pvgaHW->ModeReg, 0, KGA_FLAGS);
+	vgaHWVBlankKGA(pMode, &pvgaHW->ModeReg, 0, KGA_FLAGS);
 #undef KGA_FLAGS
     }
 
