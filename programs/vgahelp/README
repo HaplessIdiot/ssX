@@ -1,0 +1,101 @@
+
+                            VGAHelp Extension 
+                            Kaleb S. KEITHLEY
+                               kaleb@x.org
+
+Features:
+
+This is Release 0.0 (6 February, 1995) of an Xserver extension  and
+client that can be used to simplify determining and setting mode lines 
+for the XFree86 servers.
+
+
+Getting:
+
+VGAHelp may be found on ftp.x.org (198.112.44.100) and possibly other
+sites; check archie. On ftp.x.org it may be found in the files:
+
+    ~ftp/contrib/utilities/vgahelp/vgahelp.patch.gz
+    ~ftp/contrib/utilities/vgahelp/vgahelp.tar.gz
+
+
+Building:
+
+There are two parts to the VGAHelp utility. One part is a patch to the
+X Consortium and/or XFree86 sources. This patch adds two header files,
+a C source file to the extension library, and a C source file to the
+X server extensions. It also makes minor changes to the associated
+Imakefiles in order to build the extension into the library and Server.
+Lastly it makes a change to extension initialization in the server's
+machine independent (mi) portion of the server. The second part is
+a client application that exercises the extension to set the mode line
+in the server.
+
+Apply the patch at the base of the X source tree, i.e. the directory
+that contains xc and contrib using the command 'patch -p0 -s < 
+vgahalp.patch'. Edit your site.def or host.def file and add the line:
+
+    "#define ExtensionOSDefines -DVGAHELP"
+
+If you have not already built the whole distribution you may proceed to 
+'make World' using whatever BOOTSTRAPCFLAGS are necessary for your 
+platform. If you have already done so and wish to retrofit your server 
+with the extension, several steps are necessary. They are:
+
+   1) cd xc/include/extensions
+   2) make Makefile
+   3) make includes
+   4) cd ../../lib/Xext
+   5) make Makefile
+   6) make depend
+   7) make
+   8) make install
+   9) cd ../../programs/Xserver/mi
+   10) make
+   11) cd ../Xext
+   12) make Makefile
+   13) make depend
+   14) make
+   15) cd ..
+   16) make loadXF86_SVGA (or whatever server you're using.)
+   17) make install
+
+Don't forget to make your new server suid root if necessary.
+
+To build the client, untar the the file vgahelp.tar in a convenient
+directory, e.g. ~/src/vgahelp with the command 'tar xf vgahelp.tar'.
+You may then proceed to build the client with the following steps:
+
+   1) xmkmf
+   2) make depend
+   3) make
+   4) make install
+
+
+Using:
+
+Remember to restart your server. Start the vgahelp client. The vgahelp
+client will automatically query the server for the current mode line.
+If you change your server's resolution, e.g. with <Ctrl><Alt><KP_plus>
+you must requery the mode line values. To do this press the button
+labeled "Fetch". Adjust the values you want to try by moving the
+scrollbars. To apply the new values you've just set with the scrollbars
+press the button labeled "Apply". To test the new values and then
+revert to the old values after a short delay, press the button labeled
+"Test".
+
+
+Disclaimer:
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL Kaleb S. KEITHLEY (or his employer) BE LIABLE FOR 
+ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+In other words, if the "magic smoke" comes out of either your monitor or
+your computer, don't tell me about it. You have been warned.
+
+

@@ -1,9 +1,16 @@
 XCOMM $XConsortium: Imakefile,v 1.37 94/04/07 15:03:02 rws Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/include/extensions/Imakefile,v 3.0 1994/06/28 12:18:35 dawes Exp $
+
+SCREENSAVERHEADERS = saver.h saverproto.h scrnsaver.h
+
+#ifdef XFree86Version
+XVGAHELPHEADERS = VGAHelp.h VGAHelpstr.h
+#endif
 
 #if BuildExtraExtensionLibrary
-EXTRAHEADERS = saver.h saverproto.h scrnsaver.h
+EXTRAHEADERS = $(SCREENSAVERHEADERS) $(XVGAHELPHEADERS)
 #endif
+
 
 HEADERS = Xext.h multibuf.h shape.h XShm.h MITMisc.h XI.h XInput.h XIproto.h \
 	XTest.h xtestext1.h XIE.h XIEproto.h XIEprotost.h \

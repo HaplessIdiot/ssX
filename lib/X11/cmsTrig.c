@@ -1,4 +1,5 @@
 /* $XConsortium: cmsTrig.c,v 1.6 94/02/10 20:10:00 rws Exp $" */
+/* $XFree86$ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -321,7 +322,11 @@ double val;
 register double *dp;
 {
 	register double abs;
-	register double ip;
+	/*
+	 * Don't use a register for this.  The extra precision this results
+	 * in on some systems causes problems.
+	 */
+	double ip;
 
 	/* should check for illegal values here - nan, inf, etc */
 	abs = XCMS_FABS(val);

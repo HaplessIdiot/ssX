@@ -26,7 +26,7 @@
  */
 
 /* $XConsortium: Trident.c,v 1.2 94/11/21 21:29:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Trident.c,v 3.1 1994/08/31 04:20:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Trident.c,v 3.2 1995/01/28 15:47:36 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -109,6 +109,9 @@ int *Chipset;
 			break;
 		case 0xA3:
 			*Chipset = CHIP_TVGA9320;
+			break;
+		case 0xE3:
+			*Chipset = CHIP_TVGA9440;
 			break;
 		default:
 			Chip_data = chip;

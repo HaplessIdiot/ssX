@@ -1,6 +1,6 @@
 
 /* $XConsortium: sunCfb.c,v 1.15.1.2 95/01/12 18:54:42 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunCfb.c,v 3.0 1994/11/19 07:49:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunCfb.c,v 3.1 1995/01/28 15:46:02 dawes Exp $ */
 
 /*
 Copyright (c) 1990  X Consortium
@@ -268,9 +268,6 @@ Bool sunCG3Init (screen, pScreen, argc, argv)
 
 #ifndef i386 /* { */
 
-#ifdef __NetBSD__
-#include <machine/cgtworeg.h>
-#else
 #ifdef SVR4
 #include <sys/cg2reg.h>
 #else
@@ -280,7 +277,6 @@ Bool sunCG3Init (screen, pScreen, argc, argv)
 #include <machine/cgtworeg.h>
 #endif
 #endif
-#endif        /* __NetBSD__ */
 
 typedef struct {
     struct cg2memfb	mem;

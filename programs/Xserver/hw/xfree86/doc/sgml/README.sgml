@@ -671,8 +671,10 @@ involvement in X11R6.
   <item>  Dirk Hohndel
   <item>  Frank &amp; Paige McCormick
   <item>  <url url="http://www.infomagic.com/"  
-	name="InfoMagic">, Rocky Hill, NJ
+	name="InfoMagic">, Flagstaff, AZ
   <item>  LunetIX Softfair, Berlin, Germany
+  <item>  <url url="http://www.morse.net"
+	name="Morse Telecommunications">, Long Beach, NY
   <item>  MIRO Computer Products AG, Braunschweig, Germany
   <item>  Rich &amp; Amy Murphey
   <item>  Brett Neumeier
@@ -724,7 +726,7 @@ and the following mirror sites:
 	(source and binaries)
 <item>   <url url="ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.1.1" 
 	name="ftp.iastate.edu:/pub/XFree86/XFree86-3.1.1">
-	(source and NetBSD binaries)<newline>
+	(source patches and NetBSD binaries)<newline>
 	(Also via AFS: /afs/iastate.edu/public/ftp/pub/XFree86/XFree86-3.1.1)
 <item>   <url url="ftp://tsx-11.mit.edu/pub/linux/packages/X11/XFree86-3.1.1" 
 	name="tsx-11.mit.edu:/pub/linux/packages/X11/XFree86-3.1.1">
@@ -732,14 +734,12 @@ and the following mirror sites:
 <item>   <url url="ftp://ref.tfs.com/pub/mirrors/XFree86" 
 	name="ref.tfs.com:/pub/mirrors/XFree86">
 	(source patches and FreeBSD binaries)
-<!--
 <item>   <url url="ftp://ftp.eecs.umich.edu/BSD/XFree86" 
 	name="ftp.eecs.umich.edu:/BSD/XFree86">
 	(source and binaries)
--->
 <item>   <url url="ftp://sunsite.unc.edu/pub/X11/XFree86" 
 	name="sunsite.unc.edu:/pub/X11/XFree86">
-	(source and binaries)
+	(source patches and binaries)
 <item>   <url url="ftp://abode.ccd.bnl.gov/pub/XFree86" 
 	name="abode.ccd.bnl.gov:/pub/XFree86">
 	(Solaris, SVR4, SCO binaries)
@@ -749,6 +749,9 @@ and the following mirror sites:
 <itemize>
 <item>   <url url="ftp://fvkma.tu-graz.ac.at/pub/XFree86/3.1.1" 
 	name="fvkma.tu-graz.ac.at:/pub/X11/XFree86/3.1.1">
+	(source and binaries)
+<item>   <url url="ftp://ftp.switch.ch/mirror/XFree86" 
+	name="ftp.switch.ch:/mirror/XFree86">
 	(source and binaries)
 <item>   <url url="ftp://ftp.fee.vutbr.cz/pub/XFree86" 
 	name="ftp.fee.vutbr.cz:/pub/XFree86">
@@ -804,6 +807,9 @@ and the following mirror sites:
 	name="ftp.iij.ad.jp:/pub/X/XFree86">
 	(source and binaries)
 -->
+<item>   <url url="ftp://ftp.hk.super.net/mirror/XFree86" 
+	name="ftp.hk.super.net:/mirror/XFree86">
+	(source and binaries)
 <item>   <url url="ftp://ftp.nectec.or.th/pub/mirrors/XFree86" 
 	name="ftp.nectec.or.th:/pub/mirrors/XFree86">
 	(source patches and binaries)
@@ -826,7 +832,7 @@ compile-time option selections were made when building the distribution.
 
 <verb>
 $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.18 1995/02/04 04:50:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.19 1995/02/05 21:31:40 dawes Exp $
 </verb>
 
 </article>

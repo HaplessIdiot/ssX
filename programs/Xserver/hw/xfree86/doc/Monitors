@@ -474,6 +474,18 @@ Section "Monitor"
     ModeLine "800x600" 50 800 856 976 1040 600 637 643 666
 EndSection
  
+#From: erik@kroete2.freinet.de (Erik Corry)
+#Date: Wed, 8 Feb 1995 02:03:20 +0100 (MET)
+Section "Monitor"
+    Identifier "Miro 20inch CAD Monitor"
+    VendorName "Miro"
+    ModelName "Unknown-model-name"
+    BandWidth 100.0     # Actually about 64
+    HorizSync 47-49     # Actually fixed sync at ca. 48KHz
+    VertRefresh 58-62   # Actually fixed at ca. 60Hz
+    ModeLine "1096x776" 65 1096 1162 1326 1344 776 779 785 806  +vsync -hsync
+EndSection
+
 #From: ciotti@nas.nasa.gov (Robert B. Ciotti)
 #Date: Fri, 30 Sep 1994 10:34:37 -0700
 Section "Monitor"
@@ -998,5 +1010,5 @@ Section "Monitor"
     ModeLine "640x480"  28  640  664  728  792 480 484 490 505
 EndSection
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Monitors,v 3.7 1995/01/25 10:49:48 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Monitors,v 3.8 1995/01/28 15:58:36 dawes Exp $
 # $XConsortium: Monitors,v 1.7 95/01/27 15:58:08 kaleb Exp $

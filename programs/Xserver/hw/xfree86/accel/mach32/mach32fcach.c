@@ -1,5 +1,5 @@
 /* $XConsortium: mach32fcach.c,v 1.2 94/10/12 19:59:09 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fcach.c,v 3.6 1994/09/11 00:48:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fcach.c,v 3.8 1995/01/28 16:58:50 dawes Exp $ */
 /*
  * Copyright 1992, 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -71,18 +71,13 @@ void
 mach32FontCache8Init()
 {
    static int first = TRUE;
-   int free_ram;
    int x, y, w, h;
    int BitPlane;
    CachePool FontPool;
 
-   /* free_ram accounts for the cursor space */
-   free_ram = mach32InfoRec.videoRam * 1024 -
-	(mach32InfoRec.virtualX * mach32InfoRec.virtualY * 
-	(mach32InfoRec.bitsPerPixel / 8));
    x = 0;
    y = mach32InfoRec.virtualY;
-   h = free_ram / (mach32InfoRec.virtualX * (mach32InfoRec.bitsPerPixel / 8));
+   h = mach32MaxY + 1 - mach32InfoRec.virtualY;
    w = mach32InfoRec.virtualX - PIXMAP_WIDTH;
 
    if (mach32InfoRec.bitsPerPixel == 8) {

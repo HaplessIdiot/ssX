@@ -28,7 +28,7 @@
 # (michael.rohleder%iktffm.uucp@Germany.EU.net)
 
 # $XConsortium: install.sv3,v 1.1 95/01/26 15:25:15 kaleb Exp $
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/install.sv3,v 3.1 1995/01/11 03:51:22 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/install.sv3,v 3.2 1995/01/28 16:03:57 dawes Exp $
 
 #
 # XFree86 version
@@ -150,6 +150,8 @@ nawk '{
  }'  </etc/conf/cf.d/mdevice.old >/etc/conf/cf.d/mdevice
 rm /etc/conf/cf.d/mdevice.old
 
+HAS_PTC=`grep "PTC_UNITS > 32" /etc/conf/node.d/pty`
+[ "$HAS_PTC" = "" ] && {
 echo "pty	ptyq0	c	16
 pty	ptyq1	c	17
 pty	ptyq2	c	18
@@ -166,7 +168,10 @@ pty	ptyqc	c	28
 pty	ptyqd	c	29
 pty	ptyqe	c	30
 pty	ptyqf	c	31" >>/etc/conf/node.d/pty
+}
 
+HAS_PTX=`grep "PTX_UNITS > 32" /etc/conf/node.d/ptx`
+[ "$HAS_PTX" = "" ] && {
 echo "ptx	ttyq0	c	16
 ptx	ttyq1	c	17
 ptx	ttyq2	c	18
@@ -183,6 +188,7 @@ ptx	ttyqc	c	28
 ptx	ttyqd	c	29
 ptx	ttyqe	c	30
 ptx	ttyqf	c	31" >>/etc/conf/node.d/ptx
+}
 
 fi
 

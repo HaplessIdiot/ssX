@@ -1,5 +1,5 @@
 /* $XConsortium: Xlib.h,v 11.237 94/09/01 18:44:49 kaleb Exp $ */
-/* $XFree86: xc/lib/X11/Xlib.h,v 3.1 1994/08/31 06:19:12 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlib.h,v 3.2 1994/09/17 13:44:15 dawes Exp $ */
 /* 
 
 Copyright (c) 1985, 1986, 1987, 1991  X Consortium
@@ -62,7 +62,9 @@ in this Software without prior written authorization from the X Consortium.
 #ifndef X_WCHAR
 #ifdef X_NOT_STDC_ENV
 #ifndef SCO324
+#ifndef ISC
 #define X_WCHAR
+#endif
 #endif
 #endif
 #endif

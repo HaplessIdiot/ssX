@@ -1,5 +1,5 @@
 /* $XConsortium: mach32seg.c,v 1.3 94/10/12 19:59:09 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32seg.c,v 3.1 1994/09/11 00:49:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32seg.c,v 3.3 1995/01/28 16:59:30 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -111,7 +111,8 @@ mach32Segment(pDrawable, pGC, nseg, pSeg)
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);
 
-    WaitQueue(3);
+    WaitQueue(4);
+    outw(EXT_SCISSOR_B, pDrawable->pScreen->height-1);
     outw(FRGD_MIX, FSS_FRGDCOL | mach32alu[pGC->alu]);
     outw(WRT_MASK, (short)pGC->planemask);
     outw(FRGD_COLOR, (short)pGC->fgPixel);
@@ -392,7 +393,8 @@ mach32Segment(pDrawable, pGC, nseg, pSeg)
 	} /* sloped line */
     } /* while (nline--) */
 
-    WaitQueue(1);
+    WaitQueue(2);
+    outw(EXT_SCISSOR_B, mach32MaxY);
     outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
 
     WaitIdleEmpty(); /* Make sure that all commands have finished */

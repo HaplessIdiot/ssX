@@ -1,5 +1,5 @@
 /* $XConsortium: mach32line.c,v 1.3 94/10/12 19:59:09 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32line.c,v 3.1 1994/09/11 00:49:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32line.c,v 3.3 1995/01/28 16:59:17 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -128,7 +128,8 @@ mach32Line(pDrawable, pGC, mode, npt, pptInit)
     outw(EXT_SCISSOR_R, pboxInit->x2-1);
     outw(EXT_SCISSOR_B, pboxInit->y2-1);
 #else
-    WaitQueue(3);
+    WaitQueue(4);
+    outw(EXT_SCISSOR_B, pDrawable->pScreen->height-1);
 #endif
     outw(FRGD_MIX, FSS_FRGDCOL | mach32alu[pGC->alu]);
     outw(WRT_MASK, (short)pGC->planemask);
@@ -479,7 +480,7 @@ mach32Line(pDrawable, pGC, mode, npt, pptInit)
     WaitQueue(10);
     outw(LINEDRAW_OPT, CLIP_MODE_0);
 #else
-    WaitQueue(5);
+    WaitQueue(6);
 #endif
 
     /* paint the last point if the end style isn't CapNotLast.
@@ -517,8 +518,8 @@ mach32Line(pDrawable, pGC, mode, npt, pptInit)
     outw(EXT_SCISSOR_L, 0);
     outw(EXT_SCISSOR_T, 0);
     outw(EXT_SCISSOR_R, mach32MaxX);
-    outw(EXT_SCISSOR_B, mach32MaxY);
 #endif
+    outw(EXT_SCISSOR_B, mach32MaxY);
     outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
 
     WaitIdleEmpty(); /* Make sure that all commands have finished */

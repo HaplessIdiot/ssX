@@ -265,6 +265,18 @@ Section "Device"
     Option     "no_wait_state"
 EndSection
 
+#From: Richard_Burdick@fionn.cuug.ab.ca (Richard Burdick)
+#Date: Tue, 31 Jan 95 22:10:01 MST
+Section "Device"
+    Identifier "S3 with Chrontel 8391 Ramdac/clockchip"
+    VendorName "Jaton"
+    BoardName  "8241 or VL41"
+    RamDac    "ATT20C490"
+    ClockChip "ch8391"
+    #Videoram   1024
+    Option     "dac_8_bit"
+EndSection
+
 #From: Gertjan Akkerman <akkerman@dutiba.twi.tudelft.nl>
 #Date: Sat, 24 Sep 1994
 Section "Device"
@@ -607,5 +619,5 @@ Section "Device"
 EndSection
 
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Devices,v 3.7 1995/01/22 03:06:13 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Devices,v 3.8 1995/01/28 15:58:29 dawes Exp $
 $XConsortium: Devices,v 1.6 95/01/23 15:34:12 kaleb Exp $

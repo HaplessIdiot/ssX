@@ -1,5 +1,5 @@
 /* $XConsortium: mach32dline.c,v 1.3 94/10/12 19:59:09 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32dline.c,v 3.3 1994/09/11 00:48:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32dline.c,v 3.5 1995/01/28 16:58:44 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -157,7 +157,8 @@ mach32Dline(pDrawable, pGC, mode, npt, pptInit)
    pboxInit = REGION_RECTS(cclip);
    nboxInit = REGION_NUM_RECTS(cclip);
 
-   WaitQueue(6);
+   WaitQueue(7);
+   outw(EXT_SCISSOR_B, pDrawable->pScreen->height-1);
    outw(FRGD_MIX, FSS_FRGDCOL | mach32alu[pGC->alu]);
    if (pGC->lineStyle == LineDoubleDash) {
       outw(BKGD_COLOR, (short)pGC->bgPixel);
@@ -416,7 +417,8 @@ mach32Dline(pDrawable, pGC, mode, npt, pptInit)
 	    pbox++;
       }
    }
-   WaitQueue(3);
+   WaitQueue(4);
+   outw(EXT_SCISSOR_B, mach32MaxY);
    outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
    outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
    outw (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);  
