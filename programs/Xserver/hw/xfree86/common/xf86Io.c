@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.43 2001/07/23 13:15:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.45 2001/10/01 13:44:01 eich Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -415,36 +415,3 @@ GetTimeInMillis()
 }
 #endif /* DDXTIME && !QNX4 */
 
-#ifdef WSCONS_SUPPORT
-
-#define NUMEVENTS 64
-
-static void
-wsconssig(fd, closure)
-    int fd;
-    void *closure;
-{
-    static struct wscons_event events[NUMEVENTS];
-    int n, i;
-
-    n = read(fd, events, sizeof events);
-    if (n <= 0)
-	return;
-    n /= sizeof(struct wscons_event);
-    for (i = 0; i < n; i++)
-	xf86PostWSKbdEvent(&events[i]);
-}
-
-int
-xf86WSKbdProc(pKeyboard, what)
-   DeviceIntPtr pKeyboard;	/* Keyboard to manipulate */
-   int what;			/* What to do to it */
-{
-    switch (what) {
-    case DEVICE_INIT:
-	xf86FlushInput(xf86Info.kbdFd);
-	xf86InstallSIGIOHandler(xf86Info.kbdFd, wsconssig, pKeyboard);
-    }
-    return xf86KbdProc(pKeyboard, what);
-}
-#endif /* WSCONS_SUPPORT */
