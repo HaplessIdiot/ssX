@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.24 1998/08/29 05:43:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.25 1998/08/30 04:49:41 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -59,12 +59,13 @@
 /* Set to 1 if you want to set MCLK from XF86Config - AT YOUR OWN RISK! */
 #define MCLK_FROM_XCONFIG 0
 
-#define OPTION_MASK 0x20001000  /* pci_retry | interleave */
-
-
 static void MGA3026StoreColors(ScrnInfoPtr, xColorItem*, int);
 static void MGA3026SavePalette(ScrnInfoPtr, unsigned char*);
 static void MGA3026RestorePalette(ScrnInfoPtr, unsigned char*);
+static void MGA3026RamdacInit(ScrnInfoPtr);
+static void MGA3026Save(ScrnInfoPtr, vgaRegPtr, MGARegPtr, Bool);
+static void MGA3026Restore(ScrnInfoPtr, vgaRegPtr, MGARegPtr, Bool);
+static Bool MGA3026Init(ScrnInfoPtr, DisplayModePtr);
 
 
 /*
@@ -459,7 +460,7 @@ MGATi3026SetPCLK( ScrnInfoPtr pScrn, long f_out, int bpp )
  * information that is needed to initialize the mode.	The 'new' macro
  * (see definition above) is used to simply fill in the structure.
  */
-Bool
+static Bool
 MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
 	int hd, hs, he, hbs, hbe, ht, vd, vs, ve, vbs, vbe, vt, wd;
@@ -628,6 +629,11 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 	pReg->Option = pMga->Interleave << 12;
 
+        if(pMga->UsePCIRetry)
+	    pReg->Option &= ~0x20000000;
+	else
+	    pReg->Option |= 0x20000000;
+
 	pVga->MiscOutReg |= 0x0C; 
 	/* XXX Need to check the first argument */
 	MGATi3026SetPCLK( pScrn, mode->Clock, 1 << pMga->BppShift );
@@ -655,7 +661,7 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
  * the registers that have previously been saved in the vgaMGARec data 
  * structure.
  */
-void 
+static void 
 MGA3026Restore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	       Bool restoreFonts)
 {
@@ -668,11 +674,7 @@ MGA3026Restore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	for (i = 0; i < 6; i++)
 		OUTREG16(0x1FDE, (mgaReg->ExtVga[i] << 8) | i);
 
-        if(pMga->UsePCIRetry) mgaReg->Option &= ~0x20000000;
-	else mgaReg->Option |= 0x20000000;
-
-	pciWriteLong(pMga->PciTag, PCI_OPTION_REG, mgaReg->Option |
-		(pciReadLong(pMga->PciTag, PCI_OPTION_REG) & ~OPTION_MASK));
+	pciWriteLong(pMga->PciTag, PCI_OPTION_REG, mgaReg->Option);
 
 	/* select pixel clock PLL as clock source */
 	outTi3026(TVP3026_CLK_SEL, 0, mgaReg->DacRegs[3]);
@@ -734,7 +736,7 @@ MGA3026Restore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
  *
  * This function saves the video state.
  */
-void
+static void
 MGA3026Save(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	    Bool saveFonts)
 {
@@ -861,14 +863,18 @@ MGA3026SetCursorColors(
 }
 
 static Bool 
-MGA3026UseHWCursor(ScreenPtr pScr, CursorPtr pCurs)
+MGA3026UseHWCursor(ScreenPtr pScrn, CursorPtr pCurs)
 {
-  /* have this return false for DoubleScan and Interlaced */
+    /* The TVP3026 actually supports interlaced cursors.  We
+	just need somebody to write the support for it */
+    if((XF86SCRNINFO(pScrn)->currentMode->Flags & V_DBLSCAN) ||
+	(XF86SCRNINFO(pScrn)->currentMode->Flags & V_INTERLACE))
+    	return FALSE;
     return TRUE;
 }
 
 
-void
+static void
 MGA3026RamdacInit(ScrnInfoPtr pScrn)
 {
     MGAPtr pMga;
@@ -1024,4 +1030,15 @@ MGA3026RestorePalette(ScrnInfoPtr pScrn, unsigned char* pntr)
     outTi3026dreg(TVP3026_WADR_PAL, 0x00);
     while(i--) 
         outTi3026dreg(TVP3026_COL_PAL, *(pntr++));
+}
+
+
+void MGA2064SetupFuncs(ScrnInfoPtr pScrn)
+{
+    MGAPtr pMga = MGAPTR(pScrn);
+    
+    pMga->PreInit = MGA3026RamdacInit;
+    pMga->Save = MGA3026Save;
+    pMga->Restore = MGA3026Restore;
+    pMga->ModeInit = MGA3026Init;
 }

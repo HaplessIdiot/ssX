@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.35 1998/08/29 05:43:38 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.36 1998/08/29 14:34:39 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1774,15 +1774,130 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
     return TRUE;
 }
 
+static void 
+TsengSetupAccelMemory(int scrnIndex, ScreenPtr pScreen)
+{
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    TsengPtr pTseng = TsengPTR(pScrn);
+    int offscreen_videoram, videoram_end, req_videoram;
+    int i;
+
+    /*
+     * The accelerator requires free off-screen video memory to operate. The
+     * more there is, the more it can accelerate.
+     */
+
+    videoram_end = pScrn->videoRam * 1024;
+    offscreen_videoram = videoram_end -
+	pScrn->displayWidth * pScrn->virtualY * pTseng->Bytesperpixel;
+    xf86DrvMsg(scrnIndex, X_INFO, "Available off-screen memory: %d bytes.\n",
+	offscreen_videoram);
+
+    /*
+     * The HW cursor requires 1kb of off-screen memory, aligned to 1kb
+     * (256 DWORDS). Setting up its memory first ensures the alignment.
+     */
+    if (pTseng->HWCursor) {
+	req_videoram = 1024;
+	if (offscreen_videoram < req_videoram) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		"Hardware Cursor disabled. It requires %d bytes of free video memory\n",
+		req_videoram);
+	    pTseng->HWCursor = FALSE;
+	    pTseng->HWCursorBufferOffset = 0;
+	} else {
+	    offscreen_videoram -= req_videoram;
+	    videoram_end -= req_videoram;
+	    pTseng->HWCursorBufferOffset = videoram_end;
+	}
+    } else {
+	pTseng->HWCursorBufferOffset = 0;
+    }
+
+    /*
+     * Acceleration memory setup. Do this only if acceleration is enabled.
+     */
+    if (!pTseng->UseAccel) return;
+
+    /*
+     * Basic acceleration needs storage for FG, BG and PAT colors in
+     * off-screen memory. Each color requires 2(ping-pong)*8 bytes.
+     */
+    req_videoram = 2 * 8 * 3;
+    if (offscreen_videoram < req_videoram) {
+	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	    "Acceleration disabled. It requires AT LEAST %d bytes of free video memory\n",
+	    req_videoram);
+	pTseng->UseAccel = FALSE;
+	pTseng->AccelColorBufferOffset = 0;
+	goto end_memsetup;	      /* no basic acceleration means none at all */
+    } else {
+	offscreen_videoram -= req_videoram;
+	videoram_end -= req_videoram;
+	pTseng->AccelColorBufferOffset = videoram_end;
+    }
+
+    /*
+     * Color expansion (using triple buffering) requires 3 non-expanded
+     * scanlines, DWORD padded.
+     */
+    req_videoram = 3 * ((pScrn->virtualX + 31) / 32) * 4;
+    if (offscreen_videoram < req_videoram) {
+	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	    "Accelerated color expansion disabled (%d more bytes of free video memory required)\n",
+	    req_videoram - offscreen_videoram);
+	pTseng->AccelColorExpandBufferOffsets[0] = 0;
+    } else {
+	offscreen_videoram -= req_videoram;
+	for (i = 0; i < 3; i++) {
+	    videoram_end -= req_videoram / 3;
+	    pTseng->AccelColorExpandBufferOffsets[i] = videoram_end;
+	}
+    }
+
+    /*
+     * XAA ImageWrite support needs two entire line buffers. The
+     * current code assumes buffer 1 lies in the same 8kb aperture as
+     * buffer 0.
+     *
+     * [ FIXME: aren't we forgetting the DWORD padding here ? ]
+     * [ FIXME: why here double-buffering and in colexp triple-buffering? ]
+     */
+    req_videoram = 2 * (pScrn->virtualX * pTseng->Bytesperpixel);
+    /* banked mode uses an 8kb aperture for imagewrite */
+    if ((req_videoram > 8192) && (!pTseng->UseLinMem)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	    "Accelerated ImageWrites disabled (banked %dbpp virtual width must be <= %d)\n",
+	    pScrn->bitsPerPixel, 8192 / (2 * pTseng->Bytesperpixel));
+	pTseng->AccelImageWriteBufferOffsets[0] = 0;
+    } else if (offscreen_videoram < req_videoram) {
+	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	    "Accelerated ImageWrites disabled (%d more bytes of free video memory required)\n",
+	    req_videoram - offscreen_videoram);
+	pTseng->AccelImageWriteBufferOffsets[0] = 0;
+    } else {
+	offscreen_videoram -= req_videoram;
+	for (i = 0; i < 2; i++) {
+	    videoram_end -= req_videoram / 2;
+	    pTseng->AccelImageWriteBufferOffsets[i] = videoram_end;
+	}
+    }
+
+    xf86DrvMsg(scrnIndex, X_INFO, "Remaining off-screen memory available for pixmap cache: %d bytes.\n",
+	offscreen_videoram);
+
+end_memsetup:
+    pScrn->videoRam = videoram_end / 1024;
+}
+
 static Bool
 TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 {
     ScrnInfoPtr pScrn;
     TsengPtr pTseng;
-    int ret, i;
+    int ret;
     VisualPtr visual;
     int savedDefaultVisualClass;
-    int offscreen_videoram, videoram_end, req_videoram;
 
     PDEBUG("	TsengScreenInit\n");
 
@@ -1951,113 +2066,18 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    return FALSE;
 	}
     }
+
     /*
      * Initialize the acceleration interface.
-     *
-     * The accelerator requires free off-screen video memory to operate. The
-     * more there is, the more it can accelerate.
      */
-
-    videoram_end = pScrn->videoRam * 1024;
-    offscreen_videoram = videoram_end -
-	pScrn->displayWidth * pScrn->virtualY * pTseng->Bytesperpixel;
-    xf86DrvMsg(scrnIndex, X_INFO, "Available off-screen memory: %d bytes.\n",
-	offscreen_videoram);
-
-    /*
-     * The HW cursor requires 1kb of off-screen memory, aligned to 1kb
-     * (256 DWORDS). Setting up its memory first ensures the alignment.
-     */
-    if (pTseng->HWCursor) {
-	req_videoram = 1024;
-	if (offscreen_videoram < req_videoram) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		"Hardware Cursor disabled. It requires %d bytes of free video memory\n",
-		req_videoram);
-	    pTseng->HWCursor = FALSE;
-	    pTseng->HWCursorBufferOffset = 0;
-	} else {
-	    offscreen_videoram -= req_videoram;
-	    videoram_end -= req_videoram;
-	    pTseng->HWCursorBufferOffset = videoram_end;
-	}
-    } else {
-	pTseng->HWCursorBufferOffset = 0;
-    }
-
+    TsengSetupAccelMemory(scrnIndex, pScreen);
     if (pTseng->UseAccel) {
-	/*
-	 * Basic acceleration needs storage for FG, BG and PAT colors in
-	 * off-screen memory. Each color requires 2(ping-pong)*8 bytes.
-	 */
-	req_videoram = 2 * 8 * 3;
-	if (offscreen_videoram < req_videoram) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		"Acceleration disabled. It requires AT LEAST %d bytes of free video memory\n",
-		req_videoram);
-	    pTseng->UseAccel = FALSE;
-	    pTseng->AccelColorBufferOffset = 0;
-	} else {
-	    offscreen_videoram -= req_videoram;
-	    videoram_end -= req_videoram;
-	    pTseng->AccelColorBufferOffset = videoram_end;
-	}
-
-	/*
-	 * Color expansion (using triple buffering) requires 3 non-expanded
-	 * scanlines, DWORD padded.
-	 */
-	req_videoram = 3 * ((pScrn->virtualX + 31) / 32) * 4;
-	if (offscreen_videoram < req_videoram) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		"Accelerated color expansion disabled (%d more bytes of free video memory required)\n",
-		req_videoram - offscreen_videoram);
-	    pTseng->AccelColorExpandBufferOffsets[0] = 0;
-	} else {
-	    offscreen_videoram -= req_videoram;
-	    for (i = 0; i < 3; i++) {
-		videoram_end -= req_videoram / 3;
-		pTseng->AccelColorExpandBufferOffsets[i] = videoram_end;
-	    }
-	}
-
-	/*
-	 * XAA ImageWrite support needs two entire line buffers. The
-	 * current code assumes buffer 1 lies in the same 8kb aperture as
-	 * buffer 0.
-	 *
-	 * [ FIXME: aren't we forgetting the DWORD padding here ? ]
-	 * [ FIXME: why here double-buffering and in colexp triple-buffering? ]
-	 */
-	req_videoram = 2 * (pScrn->virtualX * pTseng->Bytesperpixel);
-	/* banked mode uses an 8kb aperture for imagewrite */
-	if ((req_videoram > 8192) && (!pTseng->UseLinMem)) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		"Accelerated ImageWrites disabled (banked %dbpp virtual width must be <= %d)\n",
-		pScrn->bitsPerPixel, 8192 / (2*pTseng->Bytesperpixel));
-	    pTseng->AccelImageWriteBufferOffsets[0] = 0;
-	} else if (offscreen_videoram < req_videoram) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		"Accelerated ImageWrites disabled (%d more bytes of free video memory required)\n",
-		req_videoram - offscreen_videoram);
-	    pTseng->AccelImageWriteBufferOffsets[0] = 0;
-	} else {
-	    offscreen_videoram -= req_videoram;
-	    for (i = 0; i < 2; i++) {
-		videoram_end -= req_videoram / 2;
-		pTseng->AccelImageWriteBufferOffsets[i] = videoram_end;
-	    }
-	}
-
-	pScrn->videoRam = videoram_end / 1024;
-	xf86DrvMsg(scrnIndex, X_INFO, "Remaining off-screen memory available for pixmap cache: %d bytes.\n",
-	    offscreen_videoram);
-
-	tseng_init_acl(pScreen);       /* set up accelerator */
-	if (!TsengXAAInit(pScreen)) {  /* set up XAA interface */
+	tseng_init_acl(pScreen);	/* set up accelerator */
+	if (!TsengXAAInit(pScreen)) {	/* set up XAA interface */
 	    return FALSE;
 	}
     }
+
     miInitializeBackingStore(pScreen);
     /* Initialise cursor functions */
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());

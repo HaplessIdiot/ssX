@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.1.2.1 1998/06/04 17:35:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.2 1998/07/25 16:56:40 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -157,6 +157,7 @@ extern void ARCH_PCI_INIT(void);
 typedef struct pci_bus_funcs {
 	CARD32  (*pciReadLong)(PCITAG, int);
 	void    (*pciWriteLong)(PCITAG, int, CARD32);
+        void    (*pciSetBitsLong)(PCITAG, int, CARD32, CARD32);
 	ADDRESS (*pciAddrHostToBus)(PCITAG, ADDRESS);
 	ADDRESS (*pciAddrBusToHost)(PCITAG, ADDRESS);
 } pciBusFuncs_t;
@@ -190,6 +191,7 @@ CARD32        pciByteSwap(CARD32);
 Bool          pciMfDev(int, int);
 CARD32        pciReadLongNULL(PCITAG tag, int offset);
 void          pciWriteLongNULL(PCITAG tag, int offset, CARD32 val);
+void          pciSetBitsLongNULL(PCITAG tag, int offset, CARD32 mask, CARD32 val);
 ADDRESS       pciAddrNOOP(PCITAG tag, ADDRESS);
 
 extern PCITAG (*pciFindFirstFP)(void);

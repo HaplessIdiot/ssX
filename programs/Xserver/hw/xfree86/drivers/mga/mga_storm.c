@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.25 1998/09/05 06:49:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.26 1998/09/05 10:38:39 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -132,6 +132,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
         pMga->AccelFlags = TRANSC_SOLID_FILL;
         break;
     case PCI_CHIP_MGA1064:
+    case PCI_CHIP_MGAG100:
     default:
 	pMga->AccelFlags = 0;
         break;
@@ -918,6 +919,7 @@ static void MGANAME(SetupForImageRead)(
     OUTREG(MGAREG_DWGCTL, MGADWG_IDUMP | MGADWG_BU32RGB | MGADWG_SHIFTZERO |
 			MGADWG_SGNZERO | 0x000c0000);
 }
+
 static void MGANAME(SubsequentImageReadRect)(
     ScrnInfoPtr pScrn,
     int x, int y, int w, int h
@@ -1357,7 +1359,7 @@ MGAFillSolidSpansDMA(
     }
 
     if(!n) return;
-    if(n > 3355442) n = 3355442;  /* maximum number we have room for */
+    if(n > 838860) n = 838860;  /* maximum number we have room for */
 
     OUTREG(MGAREG_OPMODE, MGAOPM_DMA_GENERAL);
     while(n) {

@@ -1,3 +1,47 @@
+XFree86 3.9Ne (13 September 1998)
+1833. Update Xv docs (#1971, Mark Vojkovich).
+1832. Add return values to the Get/Put driver functions in the Xv DDX
+      (#1970, Mark Vojkovich).
+1831. Some preliminary reorganisation of the MGA driver (#1969,
+      Mark Vojkovich).
+1830. Update CURSOR.NOTES (#1968, Mark Vojkovich).
+1829. MGA driver should recognise 15 as a valid depth (#1967,
+      Andrew Aitchison).
+1828. Experimental G100 support for the MGA driver, and fix clock PLL
+      programming (#1966, Radislaw Kapitan).
+1827. Add support for the 9660, 9680 and 9682 chips to the new trident driver,
+      and add some initial acceleration (#1963, Alan Hourihane).
+1826. Fix some planemask test problems at 16bpp with the C&T driver (#1962,
+      Taketoshi Sano).
+1825. Fix a problem with QWORD_PAD in XAA (#1961, David Bateman).
+1824. Fix SuperProbe's detection of some C&T HiQV chipsets (#1960,
+      Taketoshi Sano).
+1823. Update the mi banking code to enable resources as required (#1959,
+      Egbert Eich).
+1822. Update the generic VGA driver to use the new resource control code
+      (#1959, Egbert Eich).
+1821. Restructure the C&T driver, and fix the following:
+        - CRT half-screen blanking
+        - 1bpp mode
+        - several SEGV problems
+        - the long standing LCD blank problem
+      (#1959, Egbert Eich).
+1820. Allow a Device section without a BusID be acceptable for the primary
+      vga device when multiple heads are detected (#1959, Egbert Eich).
+1819. New resource management code, which should provide an improved
+      infrastructure for handling multi-head configuration, particularly
+      where resource sharing is required (#1959, Egbert Eich).
+1818. Fix problems with NonTE ImageText in XAA (#1958, Mark Vojkovich).
+1817. Fix the tseng driver's handling of cases when there is insufficient
+      free memory for acceleration to be used (#1957, Koen Gadeyne).
+1816. Change the RELATIVE_CHECK() macro in xf86Xinput.c to fix a multi-head
+      cursor problem (Chris Bare).
+1815. Update xf86ReadPciBIOS to set the decode enable bit while reading,
+      and update the mga driver to use xf86ReadPciBIOS when appropriate.
+1814. Use mmap for reading the BIOS on more platforms because the
+      lseek/read method doesn't work in many cases when the offset is
+      greater than 2G.
+
 XFree86 3.9Nd (6 September 1998)
 1813. Preliminary port of the trident driver for the ND (the old version
       has been moved to the olddrivers directory (#1956, Alan Hourihane).
@@ -6456,4 +6500,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.621 1998/09/06 12:56:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.622 1998/09/06 13:47:54 dawes Exp $

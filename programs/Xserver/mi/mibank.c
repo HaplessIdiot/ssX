@@ -44,7 +44,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/mi/mibank.c,v 1.1.2.5 1998/06/27 14:48:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibank.c,v 1.2 1998/07/26 02:33:06 dawes Exp $ */
 
 /*
  * This thing originated from an idea of Edwin Goei and his bank switching
@@ -163,6 +163,11 @@ typedef struct _miBankQueue
     SetPixmapWidth(pScreenPriv->pBankPixmap, width, devKind); \
     SetPixmapData(pScreenPriv->pBankPixmap, pbits)
 
+#define ENABLE_BANKING \
+     if(pScreenPriv->BankInfo.BankingEnable)\
+        (*pScreenPriv->BankInfo.BankingEnable->func)\
+           (pScreenPriv->BankInfo.BankingEnable->arg)
+
 #define SET_SINGLE_BANK(_pPix, _no) \
     SetPixmapData(_pPix, (char *)pScreenPriv->BankInfo.pBankA + \
         (*pScreenPriv->BankInfo.SetSourceAndDestinationBanks)(pScreen, (_no)) - \
@@ -246,6 +251,7 @@ static GCFuncs       miBankGCFuncs;
     GC_WRAP(pGC)
 
 #define GCOP_TOP_PART \
+    ENABLE_BANKING; \
     for (i = 0;  i < pScreenPriv->nBanks;  i++) \
     { \
         if (!(pGC->pCompositeClip = pGCPriv->pBankedClips[i])) \
@@ -270,6 +276,7 @@ static GCFuncs       miBankGCFuncs;
     { \
         int i; \
         CLIP_SAVE; \
+	ENABLE_BANKING;\
         GCOP_TOP_PART; \
         statement; \
         GCOP_BOTTOM_PART; \
@@ -393,6 +400,7 @@ miBankPutImage(
             int i, j;
 
             CLIP_SAVE;
+	    ENABLE_BANKING;
 
             i = FirstBankOf(x + pDrawable->x,     y + pDrawable->y);
             j =  LastBankOf(x + pDrawable->x + w, y + pDrawable->y + h);
@@ -468,6 +476,7 @@ miBankCopyArea(
     }
     else if (!IS_BANKED(pDst))
     {
+        ENABLE_BANKING;
         fExpose = pGC->fExpose;
         pGC->fExpose = FALSE;
 
@@ -522,6 +531,7 @@ miBankCopyArea(
     else if (!IS_BANKED(pSrc))
     {
         CLIP_SAVE;
+	ENABLE_BANKING;
 
         if (pGC->miTranslate)
         {
@@ -577,6 +587,7 @@ miBankCopyArea(
     else /* IS_BANKED(pSrc) && IS_BANKED(pDst) */
     {
         CLIP_SAVE;
+	ENABLE_BANKING;
 
         fExpose = pGC->fExpose;
 
@@ -964,6 +975,7 @@ miBankCopyPlane(
     }
     else if (!IS_BANKED(pDst))
     {
+        ENABLE_BANKING;
         fExpose = pGC->fExpose;
         pGC->fExpose = FALSE;
 
@@ -1018,6 +1030,7 @@ miBankCopyPlane(
     else if (!IS_BANKED(pSrc))
     {
         CLIP_SAVE;
+	ENABLE_BANKING;
 
         if (pGC->miTranslate)
         {
@@ -1073,6 +1086,7 @@ miBankCopyPlane(
     else /* IS_BANKED(pSrc) && IS_BANKED(pDst) */
     {
         CLIP_SAVE;
+	ENABLE_BANKING;
 
         fExpose = pGC->fExpose;
 
@@ -2005,6 +2019,7 @@ miBankPushPixels(
             int i, j;
 
             CLIP_SAVE;
+	    ENABLE_BANKING;
 
             i = FirstBankOf(x,     y);
             j =  LastBankOf(x + w, y + h);
@@ -2529,6 +2544,7 @@ miBankPaintWindow(
     else
     {
         REGION_INIT(pScreen, &tmpReg, NullBox, 0);
+	ENABLE_BANKING;
 
         for (i = 0;  i < pScreenPriv->nBanks;  i++)
         {
@@ -2703,6 +2719,7 @@ miBankSaveAreas(
     {
         REGION_INIT(pScreen, &rgnClipped, NullBox, 0);
         REGION_TRANSLATE(pScreen, prgnSave, xorg, yorg);
+	ENABLE_BANKING;
 
         for (i = 0;  i < pScreenPriv->nBanks;  i++)
         {
@@ -2756,6 +2773,7 @@ miBankRestoreAreas(
     else
     {
         REGION_INIT(pScreen, &rgnClipped, NullBox, 0);
+	ENABLE_BANKING;
 
         for (i = 0;  i < pScreenPriv->nBanks;  i++)
         {
@@ -2805,7 +2823,7 @@ miInitializeBanking(
         !pBankInfo->SetSourceBank || !pBankInfo->SetDestinationBank ||
         !pBankInfo->SetSourceAndDestinationBanks ||
         !pBankInfo->pBankA || !pBankInfo->pBankB ||
-        !pBankInfo->nBankDepth)
+        !pBankInfo->nBankDepth || !pBankInfo->BankingEnable)
         return FALSE;
 
     /*

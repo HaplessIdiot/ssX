@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.1 1998/09/06 13:47:59 dawes Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -46,6 +46,7 @@ typedef struct {
     pciVideoPtr		PciInfo;
     PCITAG		PciTag;
     int			Chipset;
+    int			ActualChipset;
     int			TVGAchipset;
     int			DACtype;
     int			RamDac;
@@ -66,11 +67,13 @@ typedef struct {
     Bool		UsePCIRetry;
     Bool		NewClockCode;
     Bool		IsCyber;
+    Bool		Clipping;
     float		frequency;
     int			MinClock;
     int			MaxClock;
     TRIDENTRegRec	SavedReg;
     TRIDENTRegRec	ModeReg;
+    short		EngineOperation;
     CARD32		AccelFlags;
     CARD32		BltScanDirection;
     RamDacRecPtr	RamDacRec;
@@ -93,6 +96,8 @@ void TridentWriteAddress(ScrnInfoPtr pScrn, CARD32 index);
 void TridentReadAddress(ScrnInfoPtr pScrn, CARD32 index);
 void TridentWriteData(ScrnInfoPtr pScrn, unsigned char data);
 unsigned char TridentReadData(ScrnInfoPtr pScrn);
+
+float CalculateMCLK(ScrnInfoPtr pScrn);
 
 /*
  * Trident Chipset Definitions
@@ -140,138 +145,6 @@ unsigned char TridentReadData(ScrnInfoPtr pScrn);
 			 (pTrident->TVGAchipset == CYBER9520) || \
 			 (pTrident->TVGAchipset == IMAGE975) || \
 			 (pTrident->TVGAchipset == IMAGE985))
-
-#ifdef INITIALIZE_LIMITS
-/* Clock Limits */
-int tridentClockLimit[] = {
-	80000,
-	80000,
-	80000,
-	80000,
-	80000,
-	80000,
-	80000,
-	80000,
-	80000,
-	80000,
-	80000,
-	80000,
-	80000,
-	80000,
-	90000,
-	90000,
-	135000,
-	135000,
-	135000,
-	170000,
-	135000,
-	135000,
-	170000,
-	170000,
-	230000,
-	230000,
-	230000,
-};
-
-int tridentClockLimit16bpp[] = {
-	40000,
-	40000,
-	40000,
-	40000,
-	40000,
-	40000,
-	40000,
-	40000,
-	40000,
-	40000,
-	40000,
-	40000,
-	40000,
-	40000,
-	45000,
-	45000,
-	135000,
-	135000,
-	135000,
-	170000,
-	135000,
-	135000,
-	170000,
-	170000,
-	230000,
-	230000,
-	230000,
-}; 
-
-int tridentClockLimit24bpp[] = {
-	25180,
-	25180,
-	25180,
-	25180,
-	25180,
-	25180,
-	25180,
-	25180,
-	25180,
-	25180,
-	25180,
-	25180,
-	25180,
-	25180,
-	25180,
-	25180,
-	70000,
-	70000,
-	70000,
-	85000,
-	70000,
-	70000,
-	85000,
-	85000,
-	115000,
-	115000,
-	115000,
-};
-
-int tridentClockLimit32bpp[] = {
-	25180,
-	25180,
-	25180,
-	25180,
-	25180,
-	25180,
-	25180,
-	25180,
-	25180,
-	25180,
-	25180,
-	25180,
-	25180,
-	25180,
-	25180,
-	25180,
-	70000,
-	70000,
-	70000,
-	85000,
-	70000,
-	70000,
-	85000,
-	85000,
-	115000,
-	115000,
-	115000,
-};
-
-#else
-
-extern int tridentClockLimit[];
-extern int tridentClockLimit16bpp[];
-extern int tridentClockLimit24bpp[];
-extern int tridentClockLimit32bpp[];
-
-#endif
-
 
 /*
  * Trident DAC's

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.5 1998/08/20 08:56:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.6 1998/08/29 05:43:40 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -73,6 +73,8 @@ static void       GenericAdjustFrame(int, int, int, int);
 static Bool       GenericEnterVT(int, int);
 static void       GenericLeaveVT(int, int);
 static void       GenericFreeScreen(int, int);
+static int        VGAFindIsaDevice();
+
 static ModeStatus GenericValidMode(int, DisplayModePtr, Bool, int);
 
 /* The root of all evil... */
@@ -152,6 +154,10 @@ static SymTabRec GenericChipsets[] =
     {-1,               NULL}
 };
 
+static IsaChipsets GenericISAchipsets[] = {
+  {CHIP_VGA_GENERIC, RES_VGA},
+  {-1,                0 }
+};
 
 static void
 GenericIdentify(int flags)
@@ -166,6 +172,7 @@ GenericIdentify(int flags)
  * This function is called once, at the start of the first server generation to
  * do a minimal probe for supported hardware.
  */
+#if 0
 static Bool
 GenericProbe(DriverPtr Driver, int flags)
 {
@@ -264,7 +271,85 @@ GenericProbe(DriverPtr Driver, int flags)
 
     return TRUE;
 }
+#endif
 
+static Bool
+GenericProbe(DriverPtr drv, int flags)
+{
+    Bool foundScreen = FALSE;
+    int nGDev, numUsed;
+    GDevPtr *GDevs, GenericGDev = NULL;
+    int usedChip;
+
+    /*
+     * Find the config file Device sections that match this
+     * driver, and return if there are none.
+     */
+    xf86EnablePrimaryDevice();
+
+    if ((nGDev = xf86MatchDevice(VGA_NAME,
+				 &GDevs)) <= 0) {
+	return foundScreen;
+    }
+  
+    usedChip = xf86MatchIsaInstances(VGA_NAME,GenericChipsets,GenericISAchipsets,
+				     VGAFindIsaDevice,GDevs,
+				     nGDev,&GenericGDev);    /*XXX*/
+    if(usedChip >= 0)
+    {
+	ScrnInfoPtr pScrn;
+	int Resource = xf86FindIsaResource(usedChip,GenericISAchipsets); /*XXX*/
+	  
+	pScrn = xf86AllocateScreen(drv,0);
+	xf86ClaimIsaSlot(Resource,&VGA,usedChip,pScrn->scrnIndex);
+	pScrn->driverVersion = VGA_VERSION_CURRENT;
+	pScrn->driverName    = VGA_DRIVER_NAME;
+	pScrn->name          = VGA_NAME;
+	pScrn->Probe         = GenericProbe;
+	pScrn->PreInit       = GenericPreInit;
+	pScrn->ScreenInit    = GenericScreenInit;
+	pScrn->SwitchMode    = GenericSwitchMode;
+	pScrn->AdjustFrame   = GenericAdjustFrame;
+	pScrn->EnterVT       = GenericEnterVT;
+	pScrn->LeaveVT       = GenericLeaveVT;
+	pScrn->FreeScreen    = GenericFreeScreen;
+	pScrn->ValidMode     = GenericValidMode;
+	pScrn->device        = GenericGDev;
+	foundScreen = TRUE;
+    }
+
+    xfree(GDevs);
+    return foundScreen;
+}
+
+static int
+VGAFindIsaDevice()
+{
+#ifndef PC98_EGC
+    CARD16 GenericIOBase = VGAHW_GET_IOBASE();
+    CARD8 CurrentValue, TestValue;
+
+    /* Unlock VGA registers */
+    VGAHW_UNLOCK(GenericIOBase);
+
+    /* VGA has one more read/write attribute register than EGA */
+    (void) inb(GenericIOBase + 0x0AU);  /* Reset flip-flop */
+    outb(0x3C0, 0x14 | 0x20);
+    CurrentValue = inb(0x3C1);
+    outb(0x3C0, CurrentValue ^ 0x0F);
+    outb(0x3C0, 0x14 | 0x20);
+    TestValue = inb(0x3C1);
+    outb(0x3C0, CurrentValue);
+
+    /* XXX:  This should restore lock state, rather than relock */
+    VGAHW_LOCK(GenericIOBase);
+
+    /* Quit now if no VGA is present */
+    if ((CurrentValue ^ 0x0F) != TestValue)
+	return -1;
+#endif
+    return (int)CHIP_VGA_GENERIC;
+}
 
 static Bool
 GenericClockSelect(ScrnInfoPtr pScreenInfo, int ClockNumber)

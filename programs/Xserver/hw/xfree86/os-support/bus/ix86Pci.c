@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.1.2.2 1998/06/06 16:22:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.2 1998/07/25 16:56:41 dawes Exp $ */
 /*
  * ix86Pci.c - x86 PCI driver
  *
@@ -146,6 +146,7 @@ typedef union {
  */
 CARD32 ix86PciReadLong(PCITAG tag, int off);
 void ix86PciWriteLong(PCITAG, int off, CARD32 val);
+void ix86PciSetBitsLong(PCITAG, int off, CARD32 mask, CARD32 val);
 
 pciBusInfo_t ix86Pci0 = {
 /* configMech  */	  PCI_CFG_MECH_UNKNOWN, /* Set by ix86PciInit() */
@@ -157,6 +158,7 @@ pciBusInfo_t ix86Pci0 = {
 /* funcs       */	  {
 	                    ix86PciReadLong,
 			    ix86PciWriteLong,
+			    ix86PciSetBitsLong,
 			    pciAddrNOOP,
 			    pciAddrNOOP
 		          },
@@ -517,6 +519,46 @@ ix86PciWriteLong(PCITAG Tag, int reg, CARD32 data)
     }
 }
 
+void
+ix86PciSetBitsLong(PCITAG Tag, int reg, CARD32 mask, CARD32 val)
+{
+    pciTagRec tag;
+    CARD32    addr, data = 0;
+    int       bus, dev, func;
+
+#ifdef DEBUGPCI
+    ErrorF("ix86PciSetBitsLong 0x%lx, %d\n", Tag, reg);
+#endif
+
+    ix86PciSelectCfgmech();
+
+    bus  = PCI_BUS_FROM_TAG(Tag);
+    dev  = PCI_DEV_FROM_TAG(Tag);
+    func = PCI_FUNC_FROM_TAG(Tag);
+
+    tag = ix86PcibusTag(bus,dev,func);
+
+    switch (ix86Pci0.configMech) {
+	case PCI_CFG_MECH_1:
+	    addr = tag.cfg1 | (reg & 0xfc);
+	    outl(PCI_CFGMECH1_ADDRESS_REG, addr);
+	    data = inl(PCI_CFGMECH1_DATA_REG);
+	    data = (data & ~mask) | val;
+	    outl(PCI_CFGMECH1_DATA_REG, data);
+	    outl(PCI_CFGMECH1_ADDRESS_REG, 0);
+	    break;
+	case PCI_CFG_MECH_2:
+	    addr = tag.cfg2.port | (reg & 0xfc);
+	    outb(PCI_CFGMECH2_ENABLE_REG, tag.cfg2.enable);
+	    outb(PCI_CFGMECH2_FORWARD_REG, tag.cfg2.forward);
+	    data = inl((CARD16)addr);
+	    data = (data & ~mask) | val;
+	    outl((CARD16)addr, data);
+	    outb(PCI_CFGMECH2_ENABLE_REG, 0);
+	    outb(PCI_CFGMECH2_FORWARD_REG, 0);
+	    break;
+    }
+}
 void  
 ix86PciInit()
 {

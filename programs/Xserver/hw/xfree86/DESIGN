@@ -2,7 +2,7 @@
 
                                   DRAFT
 
-Last modified: 6 September 1998.
+Last modified: 13 September 1998.
 
 
 
@@ -1734,8 +1734,11 @@ The XF86VideoAdaptorRec:
 	     flag is set.  If you do not provide ReclipVideo, the
 	     VIDEO_NO_CLIPPING flag will be forced.
 
+        These functions should return Success if the operation was
+	completed successfully.  They can return XvBadAlloc otherwise.
 
-	typedef  void (* PutVideoFuncPtr)( ScrnInfoPtr pScrn, 
+
+	typedef  int (* PutVideoFuncPtr)( ScrnInfoPtr pScrn, 
 		short vid_x, short vid_y, short drw_x, short drw_y,
 		short vid_w, short vid_h, short drw_w, short drw_h,
 		pointer data );
@@ -1753,7 +1756,7 @@ The XF86VideoAdaptorRec:
 	  case, the driver can opt to just not turn on the video.
 
 
-	typedef  void (* PutStillFuncPtr)( ScrnInfoPtr pScrn, 
+	typedef  int (* PutStillFuncPtr)( ScrnInfoPtr pScrn, 
 		short vid_x, short vid_y, short drw_x, short drw_y,
 		short vid_w, short vid_h, short drw_w, short drw_h,
 		pointer data );
@@ -1762,7 +1765,7 @@ The XF86VideoAdaptorRec:
 	  place only one frame from the stream on the screen. 
 	
 
-	typedef void (* GetVideoFuncPtr)( ScrnInfoPtr pScrn, 
+	typedef int (* GetVideoFuncPtr)( ScrnInfoPtr pScrn, 
 		short vid_x, short vid_y, short drw_x, short drw_y,
 		short vid_w, short vid_h, short drw_w, short drw_h,
 		pointer data );
@@ -1773,7 +1776,7 @@ The XF86VideoAdaptorRec:
 	  reading from an area larger than requested.
 	
 
-	typedef void (* GetStillFuncPtr)( ScrnInfoPtr pScrn, 
+	typedef int (* GetStillFuncPtr)( ScrnInfoPtr pScrn, 
 		short vid_x, short vid_y, short drw_x, short drw_y,
 		short vid_w, short vid_h, short drw_w, short drw_h,
 		pointer data );
@@ -3723,4 +3726,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.10 1998/09/05 06:36:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.11 1998/09/06 12:56:50 dawes Exp $

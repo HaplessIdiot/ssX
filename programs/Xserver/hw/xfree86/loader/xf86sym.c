@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.37 1998/08/13 14:46:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.38 1998/08/29 05:43:41 dawes Exp $ */
 
 /*
  *
@@ -176,6 +176,14 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86FreeBusSlots)
    SYMFUNC(xf86ParsePciBusString)
    SYMFUNC(xf86ComparePciBusString)
+   SYMFUNC(xf86ParseIsaBusString)
+   SYMFUNC(xf86IsPciBus)
+   SYMFUNC(xf86IsIsaBus)
+   SYMFUNC(xf86FindChipsetsForScreen)
+   SYMFUNC(xf86AddControlledResource)
+   SYMFUNC(xf86DelControlledResource)
+   SYMFUNC(xf86EnableAccess)
+   SYMFUNC(xf86EnablePrimaryDevice)
 
    /* xf86Cursor.c  XXX not all of these should be exported */
    SYMFUNC(xf86LockZoom)
@@ -238,6 +246,9 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86PrintChipsets)
    SYMFUNC(xf86MatchDevice)
    SYMFUNC(xf86MatchPciInstances)
+   SYMFUNC(xf86FindPciResource)
+   SYMFUNC(xf86MatchIsaInstances)
+   SYMFUNC(xf86FindIsaResource)
    SYMFUNC(xf86GetVerbosity)
    SYMFUNC(xf86GetVisualName)
    SYMFUNC(xf86GetBpp)
@@ -253,6 +264,9 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86CaughtSignal)
    SYMFUNC(xf86GetClocks)
    SYMFUNC(xf86LoadSubModule)
+   SYMFUNC(xf86Break1)
+   SYMFUNC(xf86Break2)
+   SYMFUNC(xf86Break3)
 
    /* xf86Mode.c */
    SYMFUNC(xf86GetNearestClock)
@@ -367,6 +381,7 @@ LOOKUP xfree86LookupTab[] = {
 #ifdef __alpha__
    SYMFUNC(xf86MapPciMemSparse)
 #endif
+   SYMFUNC(xf86ReadPciBIOS)
    SYMFUNC(AllocatePixmapPrivateIndex)
    SYMFUNC(AllocatePixmapPrivate)
    SYMFUNC(LoaderDefaultFunc)

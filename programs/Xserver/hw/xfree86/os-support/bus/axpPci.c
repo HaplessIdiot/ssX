@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/axpPci.c,v 1.1.2.1 1998/06/04 17:35:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/axpPci.c,v 1.2 1998/07/25 16:56:40 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -70,6 +70,7 @@ pciBusInfo_t axpPci0 = {
 /* funcs       */	  {
 	                    axpPciCfgRead,
 			    axpPciCfgWrite,
+			    axpPciCfgSetBits,
 			    pciAddrNOOP,
 			    pciAddrNOOP
 		          },
@@ -116,4 +117,17 @@ axpPciCfgWrite(PCITAG tag, int off, CARD32 val)
 	__syscall(__NR_pciconfig_write, bus, dfn, off, 4, &val);
 }
 
+void
+axpPciCfgSetBits(PCITAG tag, int off, CARD32 mask, CARD32 bits)
+{
+    int bus, dfn, len;
+    CARD32 val = 0xffffffff;
+
+    bus = PCI_BUS_FROM_TAG(tag);
+    dfn = PCI_DFN_FROM_TAG(tag);
+	
+    __syscall(__NR_pciconfig_read, bus, dfn, off, 4, &val);
+    val = (val & ^mask) | bits;
+    __syscall(__NR_pciconfig_write, bus, dfn, off, 4, &val);
+}
 #endif /* Linux */

@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.1 1998/09/06 13:48:00 dawes Exp $ */
 
 /* General Registers */
 #define SPR	0x1F		/* Software Programming Register (videoram) */
@@ -34,6 +34,7 @@
 #define NewMode1 0x0E
 
 /* 3x4 */
+#define RevisionID 0x09
 #define VCLK_A 0x18
 #define VCLK_B 0x19
 #define CRTCModuleTest 0x1E
@@ -42,10 +43,12 @@
 #define DRAMTiming 0x23
 #define CRTHiOrd 0x27
 #define AddColReg 0x29
-#define VLBusReg 0x2A
+#define InterfaceSel 0x2A
 #define Performance 0x2F
 #define GraphEngReg 0x36
 #define PixelBusReg 0x38
+#define PCIReg 0x39
+#define DRAMControl 0x3A
 #define PCIRetry 0x62
 #define TVinterface 0xC0
 #define TVMode 0xC1
@@ -159,6 +162,22 @@
 #define TGUIROP_XOR_PAT		0x5A		/* DPx */
 #define TGUIROP_XNOR_PAT	0xA5		/* PDxn */
 
+#define REPLICATE(x)  				\
+	x = x & ((1 << pScrn->bitsPerPixel) - 1);	\
+	if (pScrn->bitsPerPixel < 32) {		\
+		x |= x << 16;			\
+		if (pScrn->bitsPerPixel < 16)	\
+			x |= x << 8;		\
+	}
+
+#define CHECKCLIPPING				\
+	if (pTrident->Clipping)	{		\
+		pTrident->Clipping = FALSE;	\
+		TGUI_SRCCLIP_XY(0,0);		\
+		TGUI_DSTCLIP_XY(4095,2047);	\
+	}
+
+
 /* Merge XY */
 #define XY_MERGE(x,y) \
 		(((unsigned long)(y) << 16) | ((unsigned long)(x) & 0xffff))
@@ -233,11 +252,6 @@
 		*(unsigned char *)(tguiMMIOBase + addr) = c;
 #define TGUI_COMMAND(c) \
 		{ \
-		if (TVGAchipset >= TGUI96xx) { \
-			TGUI_SRCCLIP_XY(0,0); \
-			TGUI_DSTCLIP_XY(4095,2047); \
-		} \
-		TGUI_OPERMODE(GE_OP); \
 		TGUISync(); \
 		*(unsigned char *)(tguiMMIOBase + GER_COMMAND) = c; \
 		}
@@ -332,17 +346,11 @@
 #define TGUI_PATLOC(addr) \
 		outw(GER_BASE+GER_PATLOC, addr);
 #define TGUI_OUTB(addr, c) \
+		outb(GER_BASE+addr, c);
+#define TGUI_OUTW(addr, c) \
 		outw(GER_BASE+addr, c);
 #define TGUI_COMMAND(c) \
-		{ \
-		if (TVGAchipset >= TGUI96xx) { \
-			outl(GER_BASE+GER_SRCCLIP_XY,XY_MERGE(0,0)); \
-			outl(GER_BASE+GER_DSTCLIP_XY,XY_MERGE(4095,2047)); \
-		} \
-		outw(GER_BASE+GER_OPERMODE,GE_OP); \
-		TGUISync(); \
-		outb(GER_BASE+GER_COMMAND, c); \
-		}
+		outb(GER_BASE+GER_COMMAND, c);
 #define OLDTGUI_COMMAND(c) \
 		{ \
 		OLDTGUI_OPERMODE(GE_OP); \

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.76 1998/08/13 14:45:46 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.77 1998/08/16 10:25:39 dawes Exp $
 
 
 
@@ -195,6 +195,8 @@ OFILES = \
 		-I$(XINCLUDESRC) -I$(SERVERSRC)/Xext -I$(EXTINCSRC) \
 		-I$(FONTLIBSRC)/include -I$(XF86PARSERSRC) -I$(XF86SRC)/loader
 
+   VGAINCLUDES = -I$(XF86SRC)/vgahw
+
      OSNAME = OSName
    OSVENDOR = OSVendor
   OSNAMEDEF = -DOSNAME='"$(OSNAME)"' -DOSVENDOR='"$(OSVENDOR)"'
@@ -206,6 +208,7 @@ EXP_DEFINES = -DEXPIRY_TIME=XF86ServerExpiry $(EXP_FORCE_DEFINES)
 AllTarget($(OFILES))
 
 SpecialObjectRule(xf86Config.o,xf86Config.c,$(MODULEDEFINES))
+SpecialObjectRule(xf86Bus.o,xf86Bus.c,$(VGAINCLUDES))
 #if BuildXInputExt
 SpecialObjectRule(xf86Xinput.o,xf86Xinput.c $(ICONFIGFILES),$(XINPUT_DEVICES) $(MODULEDEFINES))
 SpecialObjectRule(xf86Switch.o,xf86Switch.c $(ICONFIGFILES),$(XINPUT_DEVICES) $(MODULEDEFINES))

@@ -147,37 +147,42 @@ static int      CHIPSValidMode(int scrnIndex, DisplayModePtr mode,
 static Bool	CHIPSSaveScreen(ScreenPtr pScreen, Bool unblank);
 
 /* Internally used functions */
-static Bool     CHIPSClockSelect(ScrnInfoPtr pScrn, int no);
-static Bool     CHIPSModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
-static void     CHIPSSave(ScrnInfoPtr pScrn);
-static void     CHIPSRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg,
+static int      chipsFindIsaDevice();
+static Bool     chipsClockSelect(ScrnInfoPtr pScrn, int no);
+static Bool     chipsModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
+static void     chipsSave(ScrnInfoPtr pScrn);
+static void     chipsRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg,
 				 CHIPSRegPtr ChipsReg, Bool restoreFonts);
-static void     CHIPSLock(ScrnInfoPtr pScrn);
-static void     CHIPSUnlock(ScrnInfoPtr pScrn);
-static void     CHIPSClockSave(ScrnInfoPtr pScrn, CHIPSClockPtr Clock);
-static void     CHIPSClockLoad(ScrnInfoPtr pScrn, CHIPSClockPtr Clock);
-static Bool     CHIPSClockFind(ScrnInfoPtr pScrn, int no, CHIPSClockPtr Clock);
-static void     CHIPSCalcClock(ScrnInfoPtr pScrn, int Clock,
+static void     chipsLock(ScrnInfoPtr pScrn);
+static void     chipsUnlock(ScrnInfoPtr pScrn);
+static void     chipsClockSave(ScrnInfoPtr pScrn, CHIPSClockPtr Clock);
+static void     chipsClockLoad(ScrnInfoPtr pScrn, CHIPSClockPtr Clock);
+static Bool     chipsClockFind(ScrnInfoPtr pScrn, int no, CHIPSClockPtr Clock);
+static void     chipsCalcClock(ScrnInfoPtr pScrn, int Clock,
 				 unsigned char *vclk);
-static Bool     CHIPSPreInit655xx(ScrnInfoPtr pScrn, int flags);
-static Bool     CHIPSPreInitHiQV(ScrnInfoPtr pScrn, int flags);
-static Bool     CHIPSPreInitWingine(ScrnInfoPtr pScrn, int flags);
-static int      CHIPSSetMonitor(ScrnInfoPtr pScrn);
-static Bool	CHIPSMapMem(ScrnInfoPtr pScrn);
-static Bool	CHIPSUnmapMem(ScrnInfoPtr pScrn);
-static void     CHIPSProtect(ScrnInfoPtr pScrn, Bool on);
-static void	CHIPSBlankScreen(ScrnInfoPtr pScrn, Bool unblank);
-static void     CHIPSRestoreExtendedRegs(CHIPSPtr cPtr, CHIPSRegPtr Regs);
-static void     CHIPSRestoreStretching(ScrnInfoPtr pScrn,
+static int      chipsGetHWClock(ScrnInfoPtr pScrn);
+static Bool     chipsPreInit655xx(ScrnInfoPtr pScrn, int flags);
+static Bool     chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags);
+static Bool     chipsPreInitWingine(ScrnInfoPtr pScrn, int flags);
+static int      chipsSetMonitor(ScrnInfoPtr pScrn);
+static Bool	chipsMapMem(ScrnInfoPtr pScrn);
+static Bool	chipsUnmapMem(ScrnInfoPtr pScrn);
+static void     chipsProtect(ScrnInfoPtr pScrn, Bool on);
+static void	chipsBlankScreen(ScrnInfoPtr pScrn, Bool unblank);
+static void     chipsRestoreExtendedRegs(CHIPSPtr cPtr, CHIPSRegPtr Regs);
+static void     chipsRestoreStretching(ScrnInfoPtr pScrn,
 				unsigned char ctHorizontalStretch,
 				unsigned char ctVerticalStretch);
-static Bool     CHIPSModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode);
-static Bool     CHIPSModeInitWingine(ScrnInfoPtr pScrn, DisplayModePtr mode);
-static Bool     CHIPSModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode);
-static int      CHIPSVideoMode(int vgaBitsPerPixel, int weightGreen,
+static Bool     chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode);
+static Bool     chipsModeInitWingine(ScrnInfoPtr pScrn, DisplayModePtr mode);
+static Bool     chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode);
+static int      chipsVideoMode(int vgaBitsPerPixel, int weightGreen,
 				int displayHSize, int displayVSize);
 static void     CHIPSDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 				int PowerManagementMode, int flags);
+static void      chipsHWCursorOn(CHIPSPtr cPtr);
+static void      chipsHWCursorOff(CHIPSPtr cPtr);
+static void      chipsFixResume(CHIPSPtr cPtr);
 
 /*
  * Initialise some arrays that are used in multiple instances of the
@@ -445,40 +450,35 @@ static SymTabRec CHIPSChipsets[] = {
     { -1,			NULL }
 };
 
-/* List of PCI chipset names */
-static char *CHIPSPciNames[] = {
-    "ct65545",
-    "ct65548",
-    "ct65550",
-    "ct65554",
-    "ct65555",
-    "ct68554",
-    "ct69000",
-    NULL
-};
-
-/* List of PCI IDs */
-static unsigned int CHIPSPciIds[] = {
-    PCI_CHIP_65545,
-    PCI_CHIP_65548,
-    PCI_CHIP_65550,
-    PCI_CHIP_65554,
-    PCI_CHIP_65555,
-    PCI_CHIP_68554,
-    PCI_CHIP_69000,
-    ~0
-};
-
 /* Conversion PCI ID to chipset name */
-static SymTabRec CHIPSPciIDToChipsets[] = {
-    { PCI_CHIP_65545,		"ct65545" },
-    { PCI_CHIP_65548,		"ct65548" },
-    { PCI_CHIP_65550,		"ct65550" },
-    { PCI_CHIP_65554,		"ct65554" },
-    { PCI_CHIP_65555,		"ct65555" },
-    { PCI_CHIP_68554,		"ct68554" },
-    { PCI_CHIP_69000,		"ct69000" },
-    { -1,			NULL }
+static PciChipsets CHIPSPCIchipsets[] = {
+    { CHIPS_CT65545, PCI_CHIP_65545, RES_SHARED_VGA },
+    { CHIPS_CT65548, PCI_CHIP_65548, RES_SHARED_VGA },
+    { CHIPS_CT65550, PCI_CHIP_65550, RES_SHARED_VGA },
+    { CHIPS_CT65554, PCI_CHIP_65554, RES_SHARED_VGA },
+    { CHIPS_CT65555, PCI_CHIP_65555, RES_SHARED_VGA },
+    { CHIPS_CT68554, PCI_CHIP_68554, RES_SHARED_VGA },
+    { CHIPS_CT69000, PCI_CHIP_69000, RES_SHARED_VGA },
+    { -1,	-1	 , -1}
+};
+
+static IsaChipsets CHIPSISAchipsets[] = {
+    { CHIPS_CT65520,		RES_VGA },
+    { CHIPS_CT65525,		RES_VGA },
+    { CHIPS_CT65530,		RES_VGA },
+    { CHIPS_CT65535,		RES_VGA },
+    { CHIPS_CT65540,		RES_VGA },
+    { CHIPS_CT65545,		RES_VGA },
+    { CHIPS_CT65546,		RES_VGA },
+    { CHIPS_CT65548,		RES_VGA },
+    { CHIPS_CT65550,		RES_VGA },
+    { CHIPS_CT65554,		RES_VGA },
+    { CHIPS_CT65555,		RES_VGA },
+    { CHIPS_CT68554,		RES_VGA },
+    { CHIPS_CT69000,		RES_VGA },
+    { CHIPS_CT64200,		RES_VGA },
+    { CHIPS_CT64300,		RES_VGA },
+    { -1,			0 }
 };
 
 /* The options supported by the Chips and Technologies Driver */
@@ -650,611 +650,168 @@ CHIPSIdentify(int flags)
 			CHIPSChipsets);
 }
 
-static Bool
-CHIPSClockSelect(ScrnInfoPtr pScrn, int no)
-{
-    CHIPSClockReg TmpClock;
-    CHIPSPtr cPtr = CHIPSPTR(pScrn);
-
-    switch (no) {
-    case CLK_REG_SAVE:
-	CHIPSClockSave(pScrn, &cPtr->SaveClock);
-	break;
-
-    case CLK_REG_RESTORE:
-	CHIPSClockLoad(pScrn, &cPtr->SaveClock);
-	break;
-
-    default:
-	if (!CHIPSClockFind(pScrn, no, &TmpClock))
-	    return (FALSE);
-	CHIPSClockLoad(pScrn, &TmpClock);
-    }
-    return (TRUE);
-}
-
-/*
- * 
- * Fout = (Fref * 4 * M) / (PSN * N * (1 << P) )
- * Fvco = (Fref * 4 * M) / (PSN * N)
- * where
- * M = XR31+2
- * N = XR32+2
- * P = XR30[3:1]
- * PSN = XR30[0]? 1:4
- * 
- * constraints:
- * 4 MHz <= Fref <= 20 MHz (typ. 14.31818 MHz)
- * 150 kHz <= Fref/(PSN * N) <= 2 MHz
- * 48 MHz <= Fvco <= 220 MHz
- * 2 < M < 128
- * 2 < N < 128
- */
-
-static void
-CHIPSClockSave(ScrnInfoPtr pScrn, CHIPSClockPtr Clock)
-{
-    unsigned char tmp;
-    CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    unsigned char Type = cPtr->ClockType;
-
-    Clock->msr = (inb(0x3CC) & 0xFE);	/* save standard VGA clock registers */
-    switch (Type & GET_STYLE) {
-    case HiQV_STYLE:
-	read_fr(0x03, Clock->fr03);  /* save alternate clock select reg.  */
-	if (!Clock->Clock) {   /* save HiQV console clock           */
-	    if (cPtr->Flags & ChipsUseVClk1) {
-		tmp = 1;
-	    } else {
-		tmp = (Clock->fr03 & 0xC) >> 2;
-		if (tmp == 3)
-		    tmp = 2;
-	    }
-	    tmp = tmp << 2;
-	    read_xr(0xC0 + tmp, cPtr->ConsoleClk[0]);
-	    read_xr(0xC1 + tmp, cPtr->ConsoleClk[1]);
-	    read_xr(0xC2 + tmp, cPtr->ConsoleClk[2]);
-	    read_xr(0xC3 + tmp, cPtr->ConsoleClk[3]);
-	}
-	break;
-    case OLD_STYLE: 
-	Clock->fcr = inb(0x3CA);
-	read_xr(0x02, Clock->xr02);  
-	read_xr(0x54, Clock->xr54);    /* save alternate clock select reg.   */
-	break;
-    case WINGINE_1_STYLE:
-    case WINGINE_2_STYLE:
-	break;
-    case NEW_STYLE:
-	read_xr(0x54, Clock->xr54);    /* save alternate clock select reg.   */
-	read_xr(0x33, Clock->xr33);    /* get status of MCLK/VCLK select reg.*/
-	break;
-    }
-#ifdef DEBUG
-    ErrorF("saved \n");
-#endif
-}
-
-static Bool
-CHIPSClockFind(ScrnInfoPtr pScrn, int no, CHIPSClockPtr Clock)
-{
-    CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    unsigned char Type = cPtr->ClockType;
-
-    if (no > (pScrn->numClocks - 1))
-	return (FALSE);
-
-    switch (Type & GET_STYLE) {
-    case HiQV_STYLE:
-	if (cPtr->Flags & ChipsUseVClk1)
-	    Clock->msr = 1 << 2;
-	else
-	    Clock->msr = 3 << 2;
-	Clock->fr03 = Clock->msr;
-	Clock->Clock = pScrn->currentMode->Clock;
-	break;
-    case NEW_STYLE:
-	if (Type & TYPE_HW) {
-	    Clock->msr = (no == 4 ? 3 << 2: (no & 0x01) << 2);
-	    Clock->xr54 = Clock->msr;               
-	    Clock->xr33 = no > 1 ? 0x80 : 0;	
-	} else {
-	    Clock->msr = 3 << 2;
-	    Clock->xr33 = 0;
-	    Clock->xr54 = Clock->msr;
-	    Clock->Clock = pScrn->currentMode->SynthClock;
-	}
-	break;
-    case OLD_STYLE:
-	if (no > 3) {
-	    Clock->msr = 3 << 2;
-	    Clock->fcr = no & 0x03;
-	    Clock->xr02 = 0;
-	    Clock->xr54 = Clock->msr & (Clock->fcr << 4);
-	} else {
-	    Clock->msr = (no << 2) & 0x4;
-	    Clock->fcr = 0;
-	    Clock->xr02 = no & 0x02;
-	    Clock->xr54 = Clock->msr;
-	}
-	break;
-    case WINGINE_1_STYLE:
-	Clock->msr = no << 2;
-    case WINGINE_2_STYLE:
-	if (Type & TYPE_HW) {
-	    Clock->msr = (no == 2 ? 3 << 2: (no & 0x01) << 2);
-	    Clock->xr33 = 0;	
-	} else {
-	    Clock->msr = 3 << 2;
-	    Clock->xr33 = 0;
-	    Clock->Clock = pScrn->currentMode->SynthClock;
-	}
-	break;
-    }
-    Clock->msr |= (inb(0x3CC) & 0xF2);
-
-#ifdef DEBUG
-    ErrorF("found\n");
-#endif
-    return (TRUE);
-}
-
-static int
-CHIPSGetHWClock(ScrnInfoPtr pScrn)
-{
-    CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    unsigned char Type = cPtr->ClockType;
-    unsigned char tmp, tmp1;
-
-    if (!(Type & TYPE_HW))
-        return 0;		/* shouldn't happen                   */
-
-    switch (Type & GET_STYLE) {
-    case WINGINE_1_STYLE:
-	return ((inb(0x3CC) & 0x0C) >> 2);
-    case WINGINE_2_STYLE:
-	tmp = ((inb(0x3CC) & 0x04) >> 2);
-	return (tmp > 2) ? 2 : tmp;
-    case OLD_STYLE:
-	if (!(cPtr->PanelType & ChipsLCD))
-	    tmp = inb(0x3CC);
-	else
-	    read_xr(0x54,tmp);
-	if (tmp & 0x08) {
-	    if (!(cPtr->PanelType & ChipsLCD))
-		tmp = inb(0x3CA) & 0x03;
-	    else 
-		tmp = (tmp >> 4) & 0x03;
-	    return (tmp + 4);
-	} else {
-	    tmp = (tmp >> 2) & 0x01;
-	    read_xr(0x02,tmp1);
-	    return (tmp + (tmp1 & 0x02));
-	}
-    case NEW_STYLE:
-	if (cPtr->PanelType & ChipsLCD) {
-	    read_xr(0x54, tmp);
-	} else
-	    tmp = inb(0x3CC);
-	tmp = (tmp & 0x0C) >> 2;
-	if (tmp > 1) return 4;
-	read_xr(0x33, tmp1);
-	tmp1 = (tmp1 & 0x80) >> 6; /* iso mode 25.175/28.322 or 32/36 MHz  */
-	return (tmp + tmp1);       /*            ^=0    ^=1     ^=4 ^=5    */
-    default:		       /* we should never get here              */
-	return (0);
-    }
-}
-
-static void
-CHIPSClockLoad(ScrnInfoPtr pScrn, CHIPSClockPtr Clock)
-{
-    CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    unsigned char Type = cPtr->ClockType;
-    volatile unsigned char tmp, tmpmsr, tmpfcr, tmp02;
-    volatile unsigned char tmp33, tmp54, tmpf03;
-    unsigned char vclk[3];       
-
-    tmpmsr = inb(0x3CC);  /* read msr, we need it for all clock styles */
-
-    switch (Type & GET_STYLE) {
-    case HiQV_STYLE:
-	read_fr(0x03, tmpf03);   /* save alternate clock select reg.  */
-	/* select fixed clock 0  before tampering with VCLK select */
-	outb(0x3C2, (tmpmsr & ~0x0D) | cPtr->SuspendHack.vgaIOBaseFlag);
-	write_fr(0x03, (tmpf03 & ~0x0C) | 0x04);
-	if (!Clock->Clock) {      /* Hack to load saved console clock  */
-	    if (cPtr->Flags & ChipsUseVClk1) {
-		tmp = 1;
-	    } else {
-		tmp = (Clock->fr03 & 0xC) >> 2;
-		if (tmp == 3)
-		    tmp = 2;
-	    }
-	    tmp = tmp << 2;
-	    write_xr(0xC0 + tmp, (cPtr->ConsoleClk[0] & 0xFF));
-	    write_xr(0xC1 + tmp, (cPtr->ConsoleClk[1] & 0xFF));
-	    write_xr(0xC2 + tmp, (cPtr->ConsoleClk[2] & 0xFF));
-	    write_xr(0xC3 + tmp, (cPtr->ConsoleClk[3] & 0xFF));
-	} else {
-	    /* 
-	     * Don't use the extra 2 bits in the M, N registers available
-	     * on the HiQV, so write zero to 0xCA 
-	     */
-	    CHIPSCalcClock(pScrn, Clock->Clock, vclk);
-	    if (cPtr->Flags & ChipsUseVClk1) { 
-		write_xr(0xC4, (vclk[1] & 0xFF));
-		write_xr(0xC5, (vclk[2] & 0xFF));
-		write_xr(0xC6, 0x0);
-		write_xr(0xC7, (vclk[0] & 0xFF));
-	    } else {
-		write_xr(0xC8, (vclk[1] & 0xFF));
-		write_xr(0xC9, (vclk[2] & 0xFF));
-		write_xr(0xCA, 0x0);
-		write_xr(0xCB, (vclk[0] & 0xFF));
-	    }
-	}
-	usleep(10000);		         /* Let VCO stabilise    */
-	write_fr(0x03, ((tmpf03 & ~0x0C) | (Clock->fr03 & 0x0C)));
-	break;
-    case WINGINE_1_STYLE:
-	break;
-    case WINGINE_2_STYLE:
-	/* Only write to soft clock registers if we really need to */
-	if ((Type & GET_TYPE) == TYPE_PROGRAMMABLE) {
-	    /* select fixed clock 0  before tampering with VCLK select */
-	    outb(0x3C2, (tmpmsr & ~0x0D) | cPtr->SuspendHack.vgaIOBaseFlag);
-	    CHIPSCalcClock(pScrn, Clock->Clock, vclk);
-	    read_xr(0x33, tmp33);     /* get status of MCLK/VCLK select reg */
-	    write_xr(0x33, tmp33 & ~0x20);
-	    write_xr(0x30, vclk[0]);
-	    write_xr(0x31, vclk[1]);     /* restore VCLK regs.   */
-	    write_xr(0x32, vclk[2]);
-	    /*  write_xr(0x33, tmp33 & ~0x20);*/
-	    usleep(10000);		     /* Let VCO stabilise    */
-	}
-	break;
-    case OLD_STYLE:
-	read_xr(0x02, tmp02);
-	read_xr(0x54, tmp54);
-	tmpfcr = inb(0x3CA);
-	write_xr(0x02, ((tmp02 & ~0x02) | (Clock->xr02 & 0x02)));
-	write_xr(0x54, ((tmp54 & 0xF0) | (Clock->xr54 & ~0xF0)));
-	outb((int)(cPtr->IOBase + 0xA),(tmpfcr & ~0x03) & Clock->fcr);
-	break;
-    case NEW_STYLE:
-	read_xr(0x33, tmp33);       /* get status of MCLK/VCLK select reg */
-	read_xr(0x54, tmp54);
-	/* Only write to soft clock registers if we really need to */
-	if ((Type & GET_TYPE) == TYPE_PROGRAMMABLE) {
-	    /* select fixed clock 0  before tampering with VCLK select */
-	    outb(0x3C2, (tmpmsr & ~0x0D) | cPtr->SuspendHack.vgaIOBaseFlag);
-	    write_xr(0x54, (tmp54 & 0xF3));
-	    CHIPSCalcClock(pScrn, Clock->Clock, vclk);
-	    write_xr(0x33, tmp33 & ~0x20);
-	    write_xr(0x30, vclk[0]);
-	    write_xr(0x31, vclk[1]);     /* restore VCLK regs.   */
-	    write_xr(0x32, vclk[2]);
-	    /*  write_xr(0x33, tmp33 & ~0x20);*/
-	    usleep(10000);		         /* Let VCO stabilise    */
-	}
-	write_xr(0x33, ((tmp33 & ~0x80) | (Clock->xr33 & 0x80))); 
-	write_xr(0x54, ((tmp54 & 0xF3) | (Clock->xr54 & ~0xF3)));
-	break;
-    }
-
-    outb(0x3C2, (Clock->msr & 0xFE) | cPtr->SuspendHack.vgaIOBaseFlag);
-#ifdef DEBUG
-    ErrorF("restored\n");
-#endif
-}
-   
-/* 
- * This is Ken Raeburn's <raeburn@raeburn.org> clock
- * calculation code just modified a little bit to fit in here.
- */
-
-static void
-CHIPSCalcClock(ScrnInfoPtr pScrn, int Clock, unsigned char *vclk)
-{
-    CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    int M, N, P, PSN, PSNx;
-
-    int bestM = 0, bestN = 0, bestP = 0, bestPSN = 0;
-    double bestError, abest = 42, bestFout = 0;
-    double target;
-
-    double Fvco, Fout;
-    double error, aerror;
-
-    int M_min = 3;
-
-    /* Hack to deal with problem of Toshiba 720CDT clock */
-    int M_max = IS_HiQV(cPtr) ? 63 : 127;
-
-
-    /* Other parameters available on the 65548 but not the 65545, and
-     * not documented in the Clock Synthesizer doc in rev 1.0 of the
-     * 65548 datasheet:
-     * 
-     * + XR30[4] = 0, VCO divider loop uses divide by 4 (same as 65545)
-     * 1, VCO divider loop uses divide by 16
-     * 
-     * + XR30[5] = 1, reference clock is divided by 5
-     * 
-     * Other parameters available on the 65550 and not on the 65545
-     * 
-     * + XRCB[2] = 0, VCO divider loop uses divide by 4 (same as 65545)
-     * 1, VCO divider loop uses divide by 16
-     * 
-     * + XRCB[1] = 1, reference clock is divided by 5
-     * 
-     * + XRCB[7] = Vclk = Mclk
-     * 
-     * + XRCA[0:1] = 2 MSB of a 10 bit M-Divisor
-     * 
-     * + XRCA[4:5] = 2 MSB of a 10 bit N-Divisor
-     * 
-     * I haven't put in any support for those here.  For simplicity,
-     * they should be set to 0 on the 65548, and left untouched on
-     * earlier chips.  */
-
-    target = Clock * 1000;
-
-    for (PSNx = 0; PSNx <= 1; PSNx++) {
-	int low_N, high_N;
-	double Fref4PSN;
-
-	PSN = PSNx ? 1 : 4;
-
-	low_N = 3;
-	high_N = 127;
-
-	while (Fref / (PSN * low_N) > 2.0e6)
-	    low_N++;
-	while (Fref / (PSN * high_N) < 150.0e3)
-	    high_N--;
-
-	Fref4PSN = Fref * 4 / PSN;
-	for (N = low_N; N <= high_N; N++) {
-	    double tmp = Fref4PSN / N;
-
-	    for (P = IS_HiQV(cPtr) ? 1 : 0; P <= 5; P++) {	
-	        /* to force post divisor on Toshiba 720CDT */
-		double Fvco_desired = target * (1 << P);
-		double M_desired = Fvco_desired / tmp;
-
-		/* Which way will M_desired be rounded?  Do all three just to
-		 * be safe.  */
-		int M_low = M_desired - 1;
-		int M_hi = M_desired + 1;
-
-		if (M_hi < M_min || M_low > M_max)
-		    continue;
-
-		if (M_low < M_min)
-		    M_low = M_min;
-		if (M_hi > M_max)
-		    M_hi = M_max;
-
-		for (M = M_low; M <= M_hi; M++) {
-		    Fvco = tmp * M;
-		    if (Fvco <= 48.0e6)
-			continue;
-		    if (Fvco > 220.0e6)
-			break;
-
-		    Fout = Fvco / (1 << P);
-
-		    error = (target - Fout) / target;
-
-		    aerror = (error < 0) ? -error : error;
-		    if (aerror < abest) {
-			abest = aerror;
-			bestError = error;
-			bestM = M;
-			bestN = N;
-			bestP = P;
-			bestPSN = PSN;
-			bestFout = Fout;
-		    }
-		}
-	    }
-	}
-    }
-    vclk[0] = (bestP << (IS_HiQV(cPtr) ? 4 : 1)) + (bestPSN == 1);
-    vclk[1] = bestM - 2;
-    vclk[2] = bestN - 2;
-#ifdef DEBUG
-    ErrorF("Freq. selected: %.2f MHz, vclk[0]=%X, vclk[1]=%X, vclk[2]=%X\n",
-	(float)(Clock / 1000.), vclk[0], vclk[1], vclk[2]);
-    ErrorF("Freq. set: %.2f MHz\n", bestFout / 1.0e6);
-#endif
-}
-
 /* Mandatory */
 static Bool
 CHIPSProbe(DriverPtr drv, int flags)
 {
-    unsigned char tmp;
-    ScrnInfoPtr pScrn = NULL;
-    int numdevsections;
-    GDevPtr * devicesections;
-    GDevPtr * usedDevs;
-    pciVideoPtr pPci = NULL, *usedPci;
-    Bool found = FALSE;
-    
-    /*
-     * All of the Chips and Technologies chipsets except the 69000 rely on
-     * VGA PIO. The 69000 MMIO for the VGA registers is not supported. So
-     * first check if some else has claimed the single VGA slot or not.
-     */
-    if (xf86CheckIsaSlot(ISA_COLOR) == FALSE)
-         return FALSE;
-     
-    /*
-     * Next we check, if there has been a chipset override in the config file
-     *
-     * for this we must find out if there is an active device section which
-     * is relevant, i.e., which has no driver specified or has THIS driver
-     * specified.
-     */
-    if ((numdevsections = xf86MatchDevice(CHIPS_DRIVER_NAME,
-					  &devicesections)) <= 0)
-        return FALSE;
+  Bool foundScreen = FALSE;
+  int numDevSections, numUsed;
+  GDevPtr *devSections, *usedDevs;
+  GDevPtr usedDev;
+  pciVideoPtr pPci, *usedPci;
+  int *usedChips;
+  int usedChip;
 
-    /*
-     * for the Chips and Technologies driver there can only be one matching
-     * device section. So issue a warning if more than one show up
-     */
-    if (numdevsections > 1) {
-	xf86Msg(X_ERROR, "%s: More than one matching \"Device\" section!\n",
-		CHIPS_NAME);
-	return FALSE;
-    }
-    
-    if (devicesections[0]->chipset == NULL) {
-        /* We have to probe the chipset. First check the PCI chipsets */
-	if (xf86GetPciVideoInfo() != NULL) {
-	    if (xf86MatchPciInstances(CHIPS_NAME, PCI_VENDOR_CHIPSTECH,
-			CHIPSPciIds, CHIPSPciNames, devicesections,
-			numdevsections, &usedDevs, &usedPci) <= 0) {
-		return FALSE;
-	    }
-
-	    pPci = usedPci[0];
-
-	    /*
-	     * Check that nothing else has claimed the slots.
-	     * For now we're checking for PCI_VGA, but that might
-	     * change to PCI_ONLY if we remove the vgaHW dependence for
-	     * the 69000 chipset or later.
-	     */
-	
-	    if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func,
-			      PCI_VGA)) {
-
-		/* Allocate a ScrnInfoRec and claim the slot */
-		pScrn = xf86AllocateScreen(drv, 0);
-		if (!xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func,
-				  PCI_VGA, pScrn->scrnIndex)) {
-		    /* This can't happen */
-		    FatalError("someone claimed the free slot!\n");
-		}
-	    }
-	} else {
-	    /* Now check for non-PCI case */
-	    if ((testinx(0x3D6, 0x18) && (testinx2(0x3D6, 0x7E, 0x3F)))) {
-		/* Chips and Technologies chipset. Check if its supported */
-		read_xr(0x00, tmp);
-		switch (tmp & 0xF0) {
-		case 0x70: 		/* CT65520 */
-		case 0x80:		/* CT65525 or CT65530 */
-		case 0xA0:		/* CT64200 */
-		case 0xB0:		/* CT64300 */
-		case 0xC0:		/* CT65535 */
-		    found = TRUE;
-		    break;
-		default:
-		    switch (tmp & 0xF8) {
-		    case 0xD0:		/* CT65540 */
-		    case 0xD8:		/* CT65545 or CT65546 or CT65548 */
-			found = TRUE;
-			break;
-		    default:
-			break;
-		    }
-		}
-	    }
-	    
-	    /* 
-	     * We could still have a HiQV style chipset. C&T have the PCI
-	     * vendor ID stored in XR01 and XR02 for HiQV chips, regardless
-	     * of whether the chip is actually connected to a PCI BUS. So
-	     * probe for C&T vendor ID.
-	     */
-	    if (!found && (rdinx(0x3D6, 0x00) == 0x2C) &&
-			(rdinx(0x3D6, 0x01) == 0x10)) {
-		read_xr(0x02,tmp);
-		switch (tmp) {
-		case 0xE0:		/* CT65550 */
-		case 0xE4:		/* CT65554 */
-		case 0xE5:		/* CT65555 */
-		case 0xF4:		/* CT68554 */
-		case 0xC0:		/* CT69000 */
-		    found = TRUE;
-		    break;
-		default:
-		    break;
-		}
-	    }
-
-	    if (!found) return FALSE;
-
-	    pScrn = xf86AllocateScreen(drv, 0);
-	    if (!xf86ClaimIsaSlot(ISA_COLOR,pScrn->scrnIndex)) {
-		/* how on earth could that happen??? */
-		FatalError("someone claimed the free slot\n");
-	    }
+  /*
+   * Find the config file Device sections that match this
+   * driver, and return if there are none.
+   */
+  if ((numDevSections = xf86MatchDevice(CHIPS_DRIVER_NAME,
+					&devSections)) <= 0) {
+    return foundScreen;
+  }
+  
+  /* PCI BUS */
+  if (xf86GetPciVideoInfo() ) {
+    numUsed = xf86MatchPciInstances(CHIPS_NAME, PCI_VENDOR_CHIPSTECH,
+				    CHIPSChipsets, CHIPSPCIchipsets, 
+				    devSections,numDevSections,
+				    &usedDevs, &usedPci, &usedChips); /*XXX*/
+    if (numUsed > 0){
+      int i;
+      for (i = 0; i < numUsed; i++) {
+	pciVideoPtr pPci;
+	BusResource Resource;
+	pPci = usedPci[i];
+	Resource = xf86FindPciResource(usedChips[i],CHIPSPCIchipsets); /*XXX*/
+	if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func,
+			     Resource)) {  /*XXX*/
+	  ScrnInfoPtr pScrn;
+	  /* Allocate a ScrnInfoRec and claim the slot */
+	  pScrn = xf86AllocateScreen(drv,0);
+	  xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func, Resource,
+			   &CHIPS, usedChips[i], pScrn->scrnIndex); /*XXX*/
+	  pScrn->driverVersion = VERSION;
+	  pScrn->driverName    = CHIPS_DRIVER_NAME;
+	  pScrn->name          = CHIPS_NAME;
+	  pScrn->Probe         = CHIPSProbe;
+	  pScrn->PreInit       = CHIPSPreInit;
+	  pScrn->ScreenInit    = CHIPSScreenInit;
+	  pScrn->SwitchMode    = CHIPSSwitchMode;
+	  pScrn->AdjustFrame   = CHIPSAdjustFrame;
+	  pScrn->EnterVT       = CHIPSEnterVT;
+	  pScrn->LeaveVT       = CHIPSLeaveVT;
+	  pScrn->FreeScreen    = CHIPSFreeScreen;
+	  pScrn->ValidMode     = CHIPSValidMode;
+	  pScrn->device        = usedDevs[i];
+	  foundScreen = TRUE;
 	}
-    } else {
-	/* If there is a chipset, it must match one we support */
-	if (xf86StringToToken(CHIPSChipsets, devicesections[0]->chipset) == -1)
-	    return FALSE;
+      }
+      
+      xfree(usedDevs);
+      xfree(usedPci);
+   }
+  }
+  /* Isa Bus */
 
-	/* Allocate a ScrnInfoRec and claim the slot */
-	pScrn = xf86AllocateScreen(drv, 0);
-
-	/* Do we claim an ISA or PCI slot? If there is a PCI Bus, assume
-	 * the chipset is on it. 
-	 */
-	if (xf86GetPciVideoInfo() != NULL) {
-
-	    if (xf86MatchPciInstances(CHIPS_NAME, PCI_VENDOR_CHIPSTECH,
-			CHIPSPciIds, CHIPSPciNames, devicesections,
-			numdevsections, &usedDevs, &usedPci) <= 0) {
-		return FALSE;
-	    }
-
-	    pPci = usedPci[0];
-
-	    if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func,
-			      PCI_VGA)) {
-
-		if (!xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func,
-				  PCI_VGA, pScrn->scrnIndex)) {
-		    /* This can't happen */
-		    FatalError("someone claimed the free slot!\n");
-		}
-	    }
-	} else {
-	    if (!xf86ClaimIsaSlot(ISA_COLOR,pScrn->scrnIndex)) {
-		/* how on earth could that happen??? */
-		FatalError("someone claimed the free slot\n");
-	    }
-	}
+  usedChip = xf86MatchIsaInstances(CHIPS_NAME,CHIPSChipsets,CHIPSISAchipsets,
+				   chipsFindIsaDevice,devSections,
+				   numDevSections,&usedDev);    /*XXX*/
+  if(usedChip >= 0)
+    {
+      ScrnInfoPtr pScrn;
+      int Resource = xf86FindIsaResource(usedChip,CHIPSISAchipsets); /*XXX*/
+	  
+      pScrn = xf86AllocateScreen(drv,0);
+      xf86ClaimIsaSlot(Resource,&CHIPS,usedChip,pScrn->scrnIndex);
+      pScrn->driverVersion = VERSION;
+      pScrn->driverName    = CHIPS_DRIVER_NAME;
+      pScrn->name          = "CHIPS";
+      pScrn->Probe         = CHIPSProbe;
+      pScrn->PreInit       = CHIPSPreInit;
+      pScrn->ScreenInit    = CHIPSScreenInit;
+      pScrn->SwitchMode    = CHIPSSwitchMode;
+      pScrn->AdjustFrame   = CHIPSAdjustFrame;
+      pScrn->EnterVT       = CHIPSEnterVT;
+      pScrn->LeaveVT       = CHIPSLeaveVT;
+      pScrn->FreeScreen    = CHIPSFreeScreen;
+      pScrn->ValidMode     = CHIPSValidMode;
+      pScrn->device        = usedDev;
+      foundScreen = TRUE;
     }
 
-    
-    /*
-     * if we get here, we have found a Chips and Technologies chipset.
-     * and already claimed the slot now fill the ScrnInfoRec
-     */
-    pScrn->driverVersion = VERSION;
-    pScrn->driverName    = CHIPS_DRIVER_NAME;
-    pScrn->name          = CHIPS_NAME;
-    pScrn->Probe         = CHIPSProbe;
-    pScrn->PreInit       = CHIPSPreInit;
-    pScrn->ScreenInit    = CHIPSScreenInit;
-    pScrn->SwitchMode	 = CHIPSSwitchMode;
-    pScrn->AdjustFrame	 = CHIPSAdjustFrame;
-    pScrn->EnterVT       = CHIPSEnterVT;
-    pScrn->LeaveVT       = CHIPSLeaveVT;
-    pScrn->FreeScreen	 = CHIPSFreeScreen;
-    pScrn->ValidMode	 = CHIPSValidMode;
-    pScrn->device        = devicesections[0];
+  xfree(devSections);
+  return foundScreen;
+}
 
-    return TRUE;
+static int
+chipsFindIsaDevice()
+{
+  int found = -1;
+  unsigned char tmp;
+  /*if ((testinx(0x3D6, 0x18) && (testinx2(0x3D6, 0x7E, 0x3F))))*/ {
+    /* Chips and Technologies chipset. Check if its supported */
+    read_xr(0x00, tmp);
+    switch (tmp & 0xF0) {
+    case 0x70: 		/* CT65520 */
+      found = CHIPS_CT65520; break;
+    case 0x80:		/* CT65525 or CT65530 */
+      found = CHIPS_CT65530; break;
+    case 0xA0:		/* CT64200 */
+      found = CHIPS_CT64200; break;
+    case 0xB0:		/* CT64300 */
+      found = CHIPS_CT64300; break;
+    case 0xC0:		/* CT65535 */
+      found = CHIPS_CT65535; break;
+    default:
+      switch (tmp & 0xF8) {
+      case 0xD0:		/* CT65540 */
+	found = CHIPS_CT65540; break;
+      case 0xD8:		/* CT65545 or CT65546 or CT65548 */
+	switch (tmp & 7) {
+	case 3:
+	  found = CHIPS_CT65546; break;
+	case 4:
+	  found = CHIPS_CT65548; break;
+	default:
+	  found = CHIPS_CT65545; break;
+
+	}
+	break;
+      default:
+	if (tmp == 0x2C) {
+	  read_xr(0x01,tmp);
+	  if (tmp != 0x10) break;
+	  read_xr(0x02,tmp);
+	  switch (tmp) {
+	  case 0xE0:		/* CT65550 */
+	    found = CHIPS_CT65550; break;
+	  case 0xE4:		/* CT65554 */
+	    found = CHIPS_CT65554; break;
+	  case 0xE5:		/* CT65555 */
+	    found = CHIPS_CT65555; break;
+	  case 0xF4:		/* CT68554 */
+	    found = CHIPS_CT68554; break;
+	  case 0xC0:		/* CT69000 */
+	    found = CHIPS_CT69000; break;
+	  default:
+	    break;
+	  }
+	}
+      break;
+      }
+      break;
+    }
+  }
+  /* We only want ISA/VL Bus - so check for PCI Bus */
+  if(found > CHIPS_CT65548) {
+    read_xr(0x08,tmp);
+    if(tmp & 0x01) found = -1; 
+  } else if(found > CHIPS_CT65535) {
+    read_xr(0x01,tmp);
+    if ((tmp & 0x07) == 0x06) found = -1;
+  }
+  return found;
 }
 
 /* Mandatory */
@@ -1268,17 +825,13 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     unsigned char tmp;
     MessageType from;
     CHIPSPtr cPtr;
+    int *numChipsets;
+
+    xf86AddControlledResource(pScrn,IO);
 
     /* The vgahw module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "vgahw"))
 	return FALSE;
-
-    /*
-     * Allocate a vgaHWRec.
-     */
-    if (!vgaHWGetHWRec(pScrn))
-        return FALSE;
-    vgaHWGetIOBase(VGAHWPTR(pScrn));
 
     /* Allocate the ChipsRec driverPrivate */
     if (!CHIPSGetRec(pScrn)) {
@@ -1289,117 +842,34 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     /* Since, the capabilities are determined by the chipset the very
      * first thing to do is, figure out the chipset and its capabilities
      */
-    if (pScrn->device->chipset && *pScrn->device->chipset) {
-	pScrn->chipset = pScrn->device->chipset;
-        cPtr->Chipset = xf86StringToToken(CHIPSChipsets, pScrn->chipset);
-        from = X_CONFIG;
-	if ((cPtr->Chipset == CHIPS_CT64200) ||
-	    (cPtr->Chipset == CHIPS_CT64300)) cPtr->Flags |= ChipsWingine;
-	if ((cPtr->Chipset >= CHIPS_CT65550) &&
-	    (cPtr->Chipset <= CHIPS_CT69000)) cPtr->Flags |= ChipsHiQV;
-    } else {
-	from = X_PROBED;
-	i = xf86GetPciInfoForScreen(pScrn->scrnIndex, &pciList, NULL);
-	if (i >= 1) {
-	    if (i > 1) {
-		/* This shouldn't happen */
-		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-			   "Expected one PCI card, but found %d\n", i);
-		CHIPSFreeRec(pScrn);
-		xfree(pciList);
-		return FALSE;
-	    }
-	    cPtr->PciInfo = *pciList;
-	    xfree(pciList);
-
-	    /*  !!!! Is this right ??? */
-	    pScrn->chipset = (char *)xf86TokenToString(CHIPSPciIDToChipsets,
-		cPtr->PciInfo->chipType);
-	    cPtr->Chipset = xf86StringToToken(CHIPSChipsets, pScrn->chipset);
+    if(xf86FindChipsetsForScreen(pScrn->scrnIndex,&CHIPS,&numChipsets) > 1)
+      return FALSE;
+    cPtr->Chipset = *numChipsets;
+    pScrn->chipset = (char *)xf86TokenToString(CHIPSChipsets,
+					       *numChipsets);
 
 	    if ((cPtr->Chipset == CHIPS_CT64200) ||
 		(cPtr->Chipset == CHIPS_CT64300)) cPtr->Flags |= ChipsWingine;
 	    if ((cPtr->Chipset >= CHIPS_CT65550) &&
 		(cPtr->Chipset <= CHIPS_CT69000)) cPtr->Flags |= ChipsHiQV;
 
-	    cPtr->PciTag = pciTag(cPtr->PciInfo->bus, cPtr->PciInfo->device,
-			  cPtr->PciInfo->func);
-	} else {
-	    read_xr(0x00, tmp);
-	    switch (tmp & 0xF0) {
-	    case 0x70:
-		cPtr->Chipset = CHIPS_CT65520;
-		break;
-	    case 0x80:		/* CT65525 or CT65530 */
-		cPtr->Chipset = CHIPS_CT65530;
-		break;
-	    case 0xA0:
-		cPtr->Chipset = CHIPS_CT64200;
-		cPtr->Flags |= ChipsWingine;
-		break;
-	    case 0xB0:
-		cPtr->Chipset = CHIPS_CT64300;
-		cPtr->Flags |= ChipsWingine;
-		break;
-	    case 0xC0:
-		cPtr->Chipset = CHIPS_CT65535;
-		break;
-	    default:
-		switch (tmp & 0xF8) {
-		case 0xD0:
-		    cPtr->Chipset = CHIPS_CT65540;
-		    break;
-		case 0xD8:
-		    switch (tmp & 7) {
-		    case 3:
-			cPtr->Chipset = CHIPS_CT65546;
-			break;
-		    case 4:
-			cPtr->Chipset = CHIPS_CT65548;
-			break;
-		    default:
-			cPtr->Chipset = CHIPS_CT65545;
-			break;
-		    }
-		    break;
-		default:
-		    break;
-		}
+	    if(xf86IsPciBus(pScrn->scrnIndex)){
+	      i = xf86GetPciInfoForScreen(pScrn->scrnIndex, &pciList, NULL);
+	      if (i > 1) {
+		/* This shouldn't happen */
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "Expected one PCI card, but found %d\n", i);
+		CHIPSFreeRec(pScrn);
+		xfree(pciList);
+		return FALSE;
+	      }
+	      cPtr->PciInfo = *pciList;
+	      xfree(pciList);
+	      
+	      cPtr->PciTag = pciTag(cPtr->PciInfo->bus, 
+				    cPtr->PciInfo->device,
+				    cPtr->PciInfo->func);
 	    }
-	    if ((cPtr->Chipset == -1) && (tmp != 0)) {
-		read_xr(0x02,tmp);
-		switch (tmp) {
-		case 0xE0:
-		    cPtr->Chipset = CHIPS_CT65550;
-		    cPtr->Flags |= ChipsHiQV;
-		    break;
-		case 0xE4:
-		    cPtr->Chipset = CHIPS_CT65554;
-		    cPtr->Flags |= ChipsHiQV;
-		    break;
-		case 0xE5:
-		    cPtr->Chipset = CHIPS_CT65555;
-		    cPtr->Flags |= ChipsHiQV;
-		    break;
-		case 0xF4:
-		    cPtr->Chipset = CHIPS_CT68554;
-		    cPtr->Flags |= ChipsHiQV;
-		    break;
-		case 0xC0:
-		    cPtr->Chipset = CHIPS_CT69000;
-		    cPtr->Flags |= ChipsHiQV;
-		    break;
-		default:
-		    CHIPSFreeRec(pScrn);
-		    return FALSE;	/* This should never happen !! */
-		    break;
-		}
-	    }
-	    pScrn->chipset = (char *)xf86TokenToString(CHIPSChipsets,
-						       cPtr->Chipset);
-	}
-    }
-    xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
 	
     /* Now that we've identified the chipset, setup the capabilities flags */
     switch (cPtr->Chipset) {
@@ -1432,20 +902,30 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	break;
     }
 
+    xf86EnableAccess(&pScrn->Access);
+
     /* Call the device specific PreInit */
     if (IS_HiQV(cPtr)) {
-	if (!CHIPSPreInitHiQV(pScrn, flags)) {
+	if (!chipsPreInitHiQV(pScrn, flags)) {
 	    return FALSE;
 	}
     } else if (IS_Wingine(cPtr)) {
-	if (!CHIPSPreInitWingine(pScrn, flags)) {
+	if (!chipsPreInitWingine(pScrn, flags)) {
 	    return FALSE;
 	}
     } else {
-	if (!CHIPSPreInit655xx(pScrn, flags)) {
+	if (!chipsPreInit655xx(pScrn, flags)) {
 	    return FALSE;
 	}
     }
+
+    /*
+     * Allocate a vgaHWRec.
+     */
+    if (!vgaHWGetHWRec(pScrn))
+        return FALSE;
+    vgaHWGetIOBase(VGAHWPTR(pScrn));
+
 
     /*
      * Setup the ClockRanges, which describe what clock ranges are available,
@@ -1453,10 +933,10 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
      */
     clockRanges = (ClockRangePtr)xnfalloc(sizeof(ClockRange));
     clockRanges->next = NULL;
+    clockRanges->ClockMulFactor = cPtr->ClockMulFactor;
     clockRanges->minClock = cPtr->MinClock;
     clockRanges->maxClock = cPtr->MaxClock;
     clockRanges->clockIndex = -1;		/* programmable */
-    clockRanges->ClockMulFactor = cPtr->ClockMulFactor;
     if (cPtr->PanelType & ChipsLCD)
 	clockRanges->interlaceAllowed = FALSE;
     else
@@ -1552,7 +1032,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	CHIPSFreeRec(pScrn);
 	return FALSE;
     }
-    if (cPtr->Flags & ChipsAccelSupport)
+    if (cPtr->Flags & ChipsAccelSupport) 
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
@@ -1563,12 +1043,11 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}
-
     return TRUE;
 }
 
 static Bool
-CHIPSPreInitHiQV(ScrnInfoPtr pScrn, int flags)
+chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 {
     int bytesPerPixel;
     unsigned char tmp;
@@ -1642,7 +1121,6 @@ CHIPSPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 
     /* Collect all of the relevant option flags (fill in pScrn->options) */
     xf86CollectOptions(pScrn, NULL);
-
     /* Process the options */
     cPtr->Options = (OptionInfoPtr)ChipsHiQVOptions;
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, cPtr->Options);
@@ -1703,7 +1181,7 @@ CHIPSPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	cPtr->UseMMIO = TRUE;
 
     /* monitor info */
-    cPtr->Monitor = CHIPSSetMonitor(pScrn);
+    cPtr->Monitor = chipsSetMonitor(pScrn);
 
     /* memory size */
     if (pScrn->device->videoRam != 0) {
@@ -2022,7 +1500,7 @@ CHIPSPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 		unsigned char vclk[3];
 
 		MemClk->Clk = pScrn->device->MemClk;
-		CHIPSCalcClock(pScrn, MemClk->Clk, vclk);
+		chipsCalcClock(pScrn, MemClk->Clk, vclk);
 		MemClk->M = vclk[1] + 2;
 		MemClk->N = vclk[2] + 2;
 		MemClk->P = (vclk[0] & 0x70) >> 4;
@@ -2170,7 +1648,7 @@ CHIPSPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 }
 
 static Bool
-CHIPSPreInitWingine(ScrnInfoPtr pScrn, int flags)
+chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 {
     int i, bytesPerPixel, NoClocks = 0;
     unsigned char tmp;
@@ -2319,7 +1797,7 @@ CHIPSPreInitWingine(ScrnInfoPtr pScrn, int flags)
     }
 
     /* monitor info */
-    cPtr->Monitor = CHIPSSetMonitor(pScrn);
+    cPtr->Monitor = chipsSetMonitor(pScrn);
 
     /* memory size */
     if (pScrn->device->videoRam != 0) {
@@ -2409,7 +1887,6 @@ CHIPSPreInitWingine(ScrnInfoPtr pScrn, int flags)
     if (cPtr->Flags & ChipsMMIOSupport)
 	cPtr->IOAddress = cPtr->FbAddress + 0x200000L;
 
-
     /* 32bit register address offsets */
     cPtr->Regs32 = (unsigned int *)xnfalloc(sizeof(ChipsReg32));
     if ((cPtr->Flags & ChipsAccelSupport) ||
@@ -2436,7 +1913,7 @@ CHIPSPreInitWingine(ScrnInfoPtr pScrn, int flags)
     cPtr->ClockMulFactor = ((pScrn->bitsPerPixel >= 8) ? bytesPerPixel : 1);
     if (cPtr->ClockMulFactor != 1)
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	       "Clocks internally scaled by %d\n", cPtr->ClockMulFactor);
+	       "Clocks scaled by %d\n", cPtr->ClockMulFactor);
 
     /* Clock type */
     switch (cPtr->Chipset) {
@@ -2476,13 +1953,13 @@ CHIPSPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	   SaveClk->Clock = CRT_TEXT_CLK_FREQ;
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Using programmable clocks\n");
     } else {  /* TYPE_PROGRAMMABLE */
-	SaveClk->Clock = CHIPSGetHWClock(pScrn);
+	SaveClk->Clock = chipsGetHWClock(pScrn);
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using textclock clock %i.\n",
 	       SaveClk->Clock);
 	if (!pScrn->device->numclocks) {
 	    pScrn->numClocks = NoClocks;
-	    xf86GetClocks(pScrn, NoClocks, CHIPSClockSelect,
-			  CHIPSProtect, CHIPSBlankScreen,
+	    xf86GetClocks(pScrn, NoClocks, chipsClockSelect,
+			  chipsProtect, chipsBlankScreen,
 			  cPtr->IOBase + 0x0A, 0x08, 1, 28322);
 	    from = X_PROBED;
 	} else {
@@ -2498,6 +1975,10 @@ CHIPSPreInitWingine(ScrnInfoPtr pScrn, int flags)
 		pScrn->clock[i] = pScrn->device->clock[i];
 	    from = X_CONFIG;
 	}
+#if 0
+	for (i = 0; i < pScrn->numClocks; i++)
+	    pScrn->clock[i] /= cPtr->ClockMulFactor;
+#endif
 	xf86ShowClocks(pScrn, from);
     }
       
@@ -2548,7 +2029,7 @@ CHIPSPreInitWingine(ScrnInfoPtr pScrn, int flags)
 }
 
 static Bool
-CHIPSPreInit655xx(ScrnInfoPtr pScrn, int flags)
+chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 {
     int i, bytesPerPixel, NoClocks = 0;
     unsigned char tmp;
@@ -2703,7 +2184,7 @@ CHIPSPreInit655xx(ScrnInfoPtr pScrn, int flags)
     }
 
     /* monitor info */
-    cPtr->Monitor = CHIPSSetMonitor(pScrn);
+    cPtr->Monitor = chipsSetMonitor(pScrn);
 
     /* memory size */
     if (pScrn->device->videoRam != 0) {
@@ -3026,8 +2507,7 @@ CHIPSPreInit655xx(ScrnInfoPtr pScrn, int flags)
     cPtr->ClockMulFactor = ((pScrn->bitsPerPixel >= 8) ? bytesPerPixel : 1);
     if (cPtr->ClockMulFactor != 1)
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	       "Clocks internally scaled by %d\n", cPtr->ClockMulFactor);
-
+	       "Clocks scaled by %d\n", cPtr->ClockMulFactor);
     /* We use a programamble clock */
     switch (cPtr->Chipset) {
     case CHIPS_CT65520:
@@ -3059,13 +2539,13 @@ CHIPSPreInit655xx(ScrnInfoPtr pScrn, int flags)
 				 LCD_TEXT_CLK_FREQ : CRT_TEXT_CLK_FREQ);
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Using programmable clocks\n");
     } else {  /* TYPE_PROGRAMMABLE */
-	SaveClk->Clock = CHIPSGetHWClock(pScrn);
+	SaveClk->Clock = chipsGetHWClock(pScrn);
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using textclock clock %i.\n",
 	       SaveClk->Clock);
 	if (!pScrn->device->numclocks) {
 	    pScrn->numClocks = NoClocks;
-	    xf86GetClocks(pScrn, NoClocks, CHIPSClockSelect,
-			  CHIPSProtect, CHIPSBlankScreen,
+	    xf86GetClocks(pScrn, NoClocks, chipsClockSelect,
+			  chipsProtect, chipsBlankScreen,
 			  cPtr->IOBase + 0x0A, 0x08, 1, 28322);
 	    from = X_PROBED;
 	} else { 
@@ -3081,9 +2561,12 @@ CHIPSPreInit655xx(ScrnInfoPtr pScrn, int flags)
 		pScrn->clock[i] = pScrn->device->clock[i];
 	    from = X_CONFIG;
 	}
+#if 0
+	for (i = 0; i < pScrn->numClocks; i++)
+	    pScrn->clock[i] /= cPtr->ClockMulFactor;
+#endif
 	xf86ShowClocks(pScrn, from);
     }
-
     /* Set the min pixel clock */
     /* XXX Guess, need to check this */
     cPtr->MinClock = 11000 / cPtr->ClockMulFactor;
@@ -3146,29 +2629,14 @@ CHIPSEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    unsigned char tmp;
     
-    /* hack: fix it up as it might be messed up by s/r */
-    tmp = inb(0x3CC);
-    outb(0x3C2, (tmp & 0xFE) | cPtr->SuspendHack.vgaIOBaseFlag);
-
-    /* enable HW cursor */
-    if (cPtr->HWCursorShown) {
-	if (IS_HiQV(cPtr)) {
-	    outb(0x3D6, 0xA0);
-	    outb(0x3D7, cPtr->HWCursorContents & 0xFF);
-	} else {
-	    HW_DEBUG(0x8);	
-	    if (cPtr->UseMMIO) {
-		MMIOmeml(DR(0x8)) = cPtr->HWCursorContents;
-	    } else {
-		outl(DR(0x8), cPtr->HWCursorContents);
-	    }
-	}
-    }
-
+    xf86EnableAccess(&pScrn->Access);
+    chipsHWCursorOn(cPtr);
     /* Should we re-save the text mode on each VT enter? */
-    return CHIPSModeInit(pScrn, pScrn->currentMode);
+    if(!chipsModeInit(pScrn, pScrn->currentMode))
+      return FALSE;
+    CHIPSAdjustFrame(pScrn->scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);    
+    return TRUE;
 }
 
 /* Mandatory */
@@ -3178,8 +2646,8 @@ CHIPSLeaveVT(int scrnIndex, int flags)
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
-    unsigned char tmp;
 
+    xf86EnableAccess(&pScrn->Access);
 #if 0
 #ifdef XFreeXDGA
     if (vga256InfoRec.directMode&XF86DGADirectGraphics) {
@@ -3188,113 +2656,19 @@ CHIPSLeaveVT(int scrnIndex, int flags)
 	 * in a row, without calling EnterVT in between. Otherwise the
 	 * effect will be to hide the cursor, perhaps permanently!!
 	 */
-	if (cPtr->HWCursorShown) {
-	    if (IS_HiQV(cPtr)) {
-		outb(0x3D6, 0xA0);
-		cPtr->HWCursorContents = inb(0x3D7);
-		outb(0x3D7, cPtr->HWCursorContents & 0xF8);
-	    } else {
-	        HW_DEBUG(0x8);	
-		if (cPtr->UseMMIO) {
-		    cPtr->HWCursorContents = inl(DR(0x8));
-		    outw(DR(0x8), cPtr->HWCursorContents & 0xFFFE);
-		} else {
-		    cPtr->HWCursorContents = MMIOmeml(DR(0x8));
-		    MMIOmemw(DR(0x8)) = cPtr->HWCursorContents & 0xFFFE;
-		}
-	    }
-	}
+        chipsHWCursorOff(cPtr);
 	return;
     }
 #endif
 #endif
 
-    /* fix things that could be messed up by suspend/resume */
-    tmp = inb(0x3CC);
-    outb(0x3C2, (tmp & 0xFE) | cPtr->SuspendHack.vgaIOBaseFlag); 
-
-    /* disable HW cursor */
-    if (cPtr->HWCursorShown) {
-	if (IS_HiQV(cPtr)) {
-	    outb(0x3D6, 0xA0);
-	    cPtr->HWCursorContents = inb(0x3D7);
-	    outb(0x3D7, cPtr->HWCursorContents & 0xF8);
-	} else {
-	    HW_DEBUG(0x8);
-	    if (cPtr->UseMMIO) {
-		cPtr->HWCursorContents = MMIOmeml(DR(0x8));
-		MMIOmemw(DR(0x8)) = cPtr->HWCursorContents & 0xFFFE;
-	    } else {
-		cPtr->HWCursorContents = inl(DR(0x8));
-		outw(DR(0x8), cPtr->HWCursorContents & 0xFFFE);
-	    }
-	}
-    }
-
     /* Invalidate the cached acceleration registers */
     cAcl->planemask = -1;
     cAcl->fgColor = -1;
     cAcl->bgColor = -1;
-
-    CHIPSRestore(pScrn, &(VGAHWPTR(pScrn))->SavedReg, &cPtr->SavedReg, TRUE);
-    CHIPSLock(pScrn);
-}
-
-void
-CHIPSLock(ScrnInfoPtr pScrn)
-{
-    vgaHWPtr hwp = VGAHWPTR(pScrn);
-    CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    unsigned char tmp;
-    
-    vgaHWLock(hwp);
-
-    if (!IS_HiQV(cPtr)) {
-	/* group protection attribute controller access */
-	outb(0x3D6, 0x15);
-	outb(0x3D7, cPtr->SuspendHack.xr15);
-	outb(0x3D6, 0x02);
-	tmp = inb(0x3D7);
-	outb(0x3D7, (tmp & ~0x18) | cPtr->SuspendHack.xr02);
-	outb(0x3D6, 0x14);
-	tmp = inb(0x3D7);
-	outb(0x3D7, (tmp & ~0x20) | cPtr->SuspendHack.xr14);
-
-	/* reset 32 bit register access */
-	if (cPtr->Chipset > CHIPS_CT65540) {
-	    outb(0x3D6, 0x03);
-	    tmp = inb(0x3D7);
-	    outb(0x3D7, (tmp & ~0x0A) | cPtr->SuspendHack.xr03);
-	}
-    }
-}
-
-static void
-CHIPSUnlock(ScrnInfoPtr pScrn)
-{
-    vgaHWPtr hwp = VGAHWPTR(pScrn);
-    CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    unsigned char tmp;
-    
-    if (!IS_HiQV(cPtr)) {
-	/* group protection attribute controller access */
-	outb(0x3D6, 0x15);
-	outb(0x3D7, 0x00);
-	outb(0x3D6, 0x02);
-	tmp = inb(0x3D7);
-	outb(0x3D7, (tmp & ~0x18));
-	outb(0x3D6, 0x14);
-	tmp = inb(0x3D7);
-	outb(0x3D7, (tmp & ~0x20));
-
-	/* enable 32 bit register access */
-	if (cPtr->Chipset > CHIPS_CT65540) {
-	    outb(0x3D6, 0x03);
-	    outb(0x3D7, (cPtr->SuspendHack.xr02 | 0x0A));
-	}
-    }
-
-    vgaHWUnlock(hwp);
+    chipsHWCursorOff(cPtr);
+    chipsRestore(pScrn, &(VGAHWPTR(pScrn))->SavedReg, &cPtr->SavedReg, TRUE);
+    chipsLock(pScrn);
 }
 
 /* Mandatory */
@@ -3310,7 +2684,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     int savedDefaultVisualClass;
     int allocatebase, freespace, currentaddr;
     
-    /*
+   /*
      * we need to get the ScrnInfoRec for this screen, so let's allocate
      * one first thing
      */
@@ -3326,25 +2700,19 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	return FALSE;
 
     /* Map the Chips memory and possible MMIO areas */
-    if (!CHIPSMapMem(pScrn))
+    if (!chipsMapMem(pScrn))
 	return FALSE;
+
+    xf86EnableAccess(&pScrn->Access);
 
     /*
      * next we save the current state and setup the first mode
      */
-    CHIPSSave(pScrn);
-    if (!CHIPSModeInit(pScrn,pScrn->currentMode))
+    chipsSave(pScrn);
+    if (!chipsModeInit(pScrn,pScrn->currentMode))
 	return FALSE;
-    CHIPSSaveScreen(pScreen,FALSE);
     CHIPSAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
-
-    /*
-     * now we fill the screen with black
-     */
-#if 0
-    CHIPSSaveScreen(pScreen,TRUE);
-#endif
-
+    
     /*
      * The next step is to setup the screen's visuals, and initialise the
      * framebuffer code.  In cases where the framebuffer's default
@@ -3398,7 +2766,6 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * Call the framebuffer layer's ScreenInit function, and fill in other
      * pScreen fields.
      */
-
     switch (pScrn->bitsPerPixel) {
     case 1:
 	ret = xf1bppScreenInit(pScreen, cPtr->FbBase,
@@ -3534,6 +2901,15 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		}
 	    }
 	}
+	{
+	  miBankEnablePtr BankEnable;
+	  xf86AddControlledResource(pScrn,MEM_IO);
+	  xf86EnableAccess(&pScrn->Access);
+	  BankEnable = (miBankEnablePtr)xnfcalloc(sizeof(miBankEnableRec),1);
+	  BankEnable->func = (void (*)(void*))xf86EnableAccess;
+	  BankEnable->arg = &pScrn->Access;
+	  pBankInfo->BankingEnable = BankEnable;
+        }
 	if (!miInitializeBanking(pScreen, pScrn->virtualX, pScrn->virtualY,
 				 pScrn->displayWidth, pBankInfo)) {
 	    xfree(pBankInfo);
@@ -3717,33 +3093,748 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     return TRUE;
 }
 
+/* Mandatory */
 static Bool
-CHIPSModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
+CHIPSSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
+{
+    xf86EnableAccess(&xf86Screens[scrnIndex]->Access);
+    return chipsModeInit(xf86Screens[scrnIndex], mode);
+}
+
+/* Mandatory */
+static void
+CHIPSAdjustFrame(int scrnIndex, int x, int y, int flags)
+{
+    ScrnInfoPtr pScrn;
+    int Base;
+    CHIPSPtr cPtr;
+    vgaHWPtr hwp;
+    unsigned char tmp;
+
+    pScrn = xf86Screens[scrnIndex];
+    hwp = VGAHWPTR(pScrn);
+    cPtr = CHIPSPTR(pScrn);
+
+    if (xf86IsOptionSet(cPtr->Options, OPTION_SHOWCACHE) && y) {
+	int lastline = cPtr->FbMapSize / 
+		((pScrn->displayWidth * pScrn->bitsPerPixel) / 8);
+	lastline -= pScrn->currentMode->VDisplay;
+	y += pScrn->virtualY - 1;
+        if (y > lastline) y = lastline;
+    }
+    
+    Base = y * pScrn->displayWidth + x;
+
+    /* calculate base bpp dep. */
+    switch (pScrn->bitsPerPixel) {
+    case 1:
+    case 4:
+	Base >>= 3;
+	break;
+    case 16:
+	Base >>= 1;
+	break;
+    case 24:
+	if (!IS_HiQV(cPtr))
+	    Base = (Base >> 2) * 3;
+	else
+	    Base = (Base >> 3) * 6;  /* 65550 seems to need 64bit alignment */
+	break;
+    case 32:
+	break;
+    default:			     /* 8bpp */
+	Base >>= 2;
+	break;
+    }
+
+    /* write base to chip */
+    /*
+     * These are the generic starting address registers.
+     */
+    xf86EnableAccess(&pScrn->Access);
+    chipsFixResume(cPtr);
+    outw(hwp->IOBase + 4, (Base & 0x00FF00) | 0x0C);
+    outw(hwp->IOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
+    if (IS_HiQV(cPtr)) {
+	outb(0x3D6, 0x09);
+	if ((inb(0x3D7) & 0x1) == 0x1)
+	    outw(hwp->IOBase + 4, ((Base & 0x0F0000) >> 8) | 0x8000 | 0x40);
+    } else {
+	outb(0x3D6, 0x0C);
+	tmp = inb(0x3D7);
+	outb(0x3D7, ((Base & (IS_Wingine(cPtr) ? 0x0F0000 : 0x030000)) >> 16) 
+	     | (tmp & 0xF8));
+    }
+#if 0
+#ifdef XFreeXDGA
+    if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
+	/* Wait until vertical retrace is in progress. */
+	while (inb(hwp->IOBase + 0xA) & 0x08);
+	while (!(inb(hwp->IOBase + 0xA) & 0x08));
+    }
+#endif
+#endif
+}
+
+/* Mandatory */
+static Bool
+CHIPSCloseScreen(int scrnIndex, ScreenPtr pScreen)
+{
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+
+    if(pScrn->vtSema){   /*§§§*/
+      xf86EnableAccess(&pScrn->Access);
+      chipsHWCursorOff(cPtr);
+      chipsRestore(pScrn, &(VGAHWPTR(pScrn))->SavedReg, &cPtr->SavedReg, TRUE);
+      chipsLock(pScrn);
+      chipsUnmapMem(pScrn);
+    }
+    if (cPtr->AccelInfoRec)
+	XAADestroyInfoRec(cPtr->AccelInfoRec);
+    if (cPtr->CursorInfoRec)
+	xf86DestroyCursorInfoRec(cPtr->CursorInfoRec);
+
+    pScrn->vtSema = FALSE;
+    pScreen->CloseScreen = cPtr->CloseScreen; /*§§§*/
+    return (*pScreen->CloseScreen)(scrnIndex, pScreen);/*§§§*/
+}
+
+/* Optional */
+static void
+CHIPSFreeScreen(int scrnIndex, int flags)
+{
+    vgaHWFreeHWRec(xf86Screens[scrnIndex]);
+    CHIPSFreeRec(xf86Screens[scrnIndex]);
+}
+
+/* Optional */
+static int
+CHIPSValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
+{
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+
+    /* The tests here need to be expanded */
+    if ((mode->Flags & V_INTERLACE) && (cPtr->Flags & ChipsLCD))
+	return MODE_BAD;
+
+    return MODE_OK;
+}
+
+#ifdef DPMSExtension
+/*
+ * DPMS Control registers
+ *
+ * XR73 6554x and 64300 (what about 65535?)
+ * XR61 6555x
+ *    0   HSync Powerdown data
+ *    1   HSync Select 1=Powerdown
+ *    2   VSync Powerdown data
+ *    3   VSync Select 1=Powerdown
+ */
+
+static void
+CHIPSDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
+			       int flags)
+{
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    unsigned char dpmsreg, seqreg, lcdoff, tmp;
+    
+    xf86EnableAccess(&pScrn->Access);
+    switch (PowerManagementMode) {
+    case DPMSModeOn:
+	/* Screen: On; HSync: On, VSync: On */
+	dpmsreg = 0x00;
+	seqreg = 0x00;
+	lcdoff = 0x0;
+	break;
+    case DPMSModeStandby:
+	/* Screen: Off; HSync: Off, VSync: On */
+	dpmsreg = 0x02;
+	seqreg = 0x20;
+	lcdoff = 0x0;
+	break;
+    case DPMSModeSuspend:
+	/* Screen: Off; HSync: On, VSync: Off */
+	dpmsreg = 0x08;
+	seqreg = 0x20;
+	lcdoff = 0x1;
+	break;
+    case DPMSModeOff:
+	/* Screen: Off; HSync: Off, VSync: Off */
+	dpmsreg = 0x0A;
+	seqreg = 0x20;
+	lcdoff = 0x1;
+	break;
+    default:
+	return;
+    }
+
+    outb(0x3C4, 0x01);
+    seqreg |= inb(0x3C5) & ~0x20;
+    outb(0x3C5, seqreg);
+    if (IS_HiQV(cPtr))
+	outb(0x3D6,0x61);
+    else
+	outb(0x3D6,0x73);
+    tmp = inb(0x3D7);
+    outb(0x3D7,((tmp & 0xF0) | dpmsreg));
+    /* Turn off the flat panel */
+    if (cPtr->PanelType & ChipsLCD) {
+	if (IS_HiQV(cPtr)) {
+	    outb(0x3D0,0x5);
+	    tmp = inb(0x3D1);
+	    if (lcdoff)
+	        outb(0x3D1, (tmp | 0x8));
+	    else
+	        outb(0x3D1, (tmp & 0xF7));
+	} else {
+	    outb(0x3D6,0x52);
+	    tmp = inb(0x3D7);
+	    if (lcdoff)
+	        outb(0x3D7, (tmp | 0x8));
+	    else
+	        outb(0x3D7, (tmp & 0xF7));
+	}
+    }
+}
+#endif
+
+static Bool
+CHIPSSaveScreen(ScreenPtr pScreen, Bool unblank)
+{
+   ScrnInfoPtr pScrn = NULL;            /* §§§ */
+
+   if (pScreen != NULL)
+      pScrn = xf86Screens[pScreen->myNum];
+
+   if (unblank)
+      SetTimeSinceLastInputEvent();
+
+   if ((pScrn != NULL) && pScrn->vtSema) { /* §§§ */
+     xf86EnableAccess(&pScrn->Access);
+     chipsBlankScreen(pScrn, unblank);
+   }
+   return (TRUE);
+}
+
+static Bool
+chipsClockSelect(ScrnInfoPtr pScrn, int no)
+{
+    CHIPSClockReg TmpClock;
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+
+    switch (no) {
+    case CLK_REG_SAVE:
+	chipsClockSave(pScrn, &cPtr->SaveClock);
+	break;
+
+    case CLK_REG_RESTORE:
+	chipsClockLoad(pScrn, &cPtr->SaveClock);
+	break;
+
+    default:
+	if (!chipsClockFind(pScrn, no, &TmpClock))
+	    return (FALSE);
+	chipsClockLoad(pScrn, &TmpClock);
+    }
+    return (TRUE);
+}
+
+/*
+ * 
+ * Fout = (Fref * 4 * M) / (PSN * N * (1 << P) )
+ * Fvco = (Fref * 4 * M) / (PSN * N)
+ * where
+ * M = XR31+2
+ * N = XR32+2
+ * P = XR30[3:1]
+ * PSN = XR30[0]? 1:4
+ * 
+ * constraints:
+ * 4 MHz <= Fref <= 20 MHz (typ. 14.31818 MHz)
+ * 150 kHz <= Fref/(PSN * N) <= 2 MHz
+ * 48 MHz <= Fvco <= 220 MHz
+ * 2 < M < 128
+ * 2 < N < 128
+ */
+
+static void
+chipsClockSave(ScrnInfoPtr pScrn, CHIPSClockPtr Clock)
+{
+    unsigned char tmp;
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    unsigned char Type = cPtr->ClockType;
+
+    Clock->msr = (inb(0x3CC) & 0xFE);	/* save standard VGA clock registers */
+    switch (Type & GET_STYLE) {
+    case HiQV_STYLE:
+	read_fr(0x03, Clock->fr03);  /* save alternate clock select reg.  */
+	if (!Clock->Clock) {   /* save HiQV console clock           */
+	    if (cPtr->Flags & ChipsUseVClk1) {
+		tmp = 1;
+	    } else {
+		tmp = (Clock->fr03 & 0xC) >> 2;
+		if (tmp == 3)
+		    tmp = 2;
+	    }
+	    tmp = tmp << 2;
+	    read_xr(0xC0 + tmp, cPtr->ConsoleClk[0]);
+	    read_xr(0xC1 + tmp, cPtr->ConsoleClk[1]);
+	    read_xr(0xC2 + tmp, cPtr->ConsoleClk[2]);
+	    read_xr(0xC3 + tmp, cPtr->ConsoleClk[3]);
+	}
+	break;
+    case OLD_STYLE: 
+	Clock->fcr = inb(0x3CA);
+	read_xr(0x02, Clock->xr02);  
+	read_xr(0x54, Clock->xr54);    /* save alternate clock select reg.   */
+	break;
+    case WINGINE_1_STYLE:
+    case WINGINE_2_STYLE:
+	break;
+    case NEW_STYLE:
+	read_xr(0x54, Clock->xr54);    /* save alternate clock select reg.   */
+	read_xr(0x33, Clock->xr33);    /* get status of MCLK/VCLK select reg.*/
+	break;
+    }
+#ifdef DEBUG
+    ErrorF("saved \n");
+#endif
+}
+
+static Bool
+chipsClockFind(ScrnInfoPtr pScrn, int no, CHIPSClockPtr Clock)
+{
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    unsigned char Type = cPtr->ClockType;
+
+    if (no > (pScrn->numClocks - 1))
+	return (FALSE);
+
+    switch (Type & GET_STYLE) {
+    case HiQV_STYLE:
+	if (cPtr->Flags & ChipsUseVClk1)
+	    Clock->msr = 1 << 2;
+	else
+	    Clock->msr = 3 << 2;
+	Clock->fr03 = Clock->msr;
+	Clock->Clock = pScrn->currentMode->Clock;
+	break;
+    case NEW_STYLE:
+	if (Type & TYPE_HW) {
+	    Clock->msr = (no == 4 ? 3 << 2: (no & 0x01) << 2);
+	    Clock->xr54 = Clock->msr;               
+	    Clock->xr33 = no > 1 ? 0x80 : 0;	
+	} else {
+	    Clock->msr = 3 << 2;
+	    Clock->xr33 = 0;
+	    Clock->xr54 = Clock->msr;
+	    Clock->Clock = pScrn->currentMode->SynthClock;
+#if 0
+	    Clock->Clock *= cPtr->ClockMulFactor;
+#endif
+	}
+	break;
+    case OLD_STYLE:
+	if (no > 3) {
+	    Clock->msr = 3 << 2;
+	    Clock->fcr = no & 0x03;
+	    Clock->xr02 = 0;
+	    Clock->xr54 = Clock->msr & (Clock->fcr << 4);
+	} else {
+	    Clock->msr = (no << 2) & 0x4;
+	    Clock->fcr = 0;
+	    Clock->xr02 = no & 0x02;
+	    Clock->xr54 = Clock->msr;
+	}
+	break;
+    case WINGINE_1_STYLE:
+	Clock->msr = no << 2;
+    case WINGINE_2_STYLE:
+	if (Type & TYPE_HW) {
+	    Clock->msr = (no == 2 ? 3 << 2: (no & 0x01) << 2);
+	    Clock->xr33 = 0;	
+	} else {
+	    Clock->msr = 3 << 2;
+	    Clock->xr33 = 0;
+	    Clock->Clock = pScrn->currentMode->SynthClock;
+#if 0
+	    Clock->Clock *= cPtr->ClockMulFactor;
+#endif
+	}
+	break;
+    }
+    Clock->msr |= (inb(0x3CC) & 0xF2);
+
+#ifdef DEBUG
+    ErrorF("found\n");
+#endif
+    return (TRUE);
+}
+
+static int
+chipsGetHWClock(ScrnInfoPtr pScrn)
+{
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    unsigned char Type = cPtr->ClockType;
+    unsigned char tmp, tmp1;
+
+    if (!(Type & TYPE_HW))
+        return 0;		/* shouldn't happen                   */
+
+    switch (Type & GET_STYLE) {
+    case WINGINE_1_STYLE:
+	return ((inb(0x3CC) & 0x0C) >> 2);
+    case WINGINE_2_STYLE:
+	tmp = ((inb(0x3CC) & 0x04) >> 2);
+	return (tmp > 2) ? 2 : tmp;
+    case OLD_STYLE:
+	if (!(cPtr->PanelType & ChipsLCD))
+	    tmp = inb(0x3CC);
+	else
+	    read_xr(0x54,tmp);
+	if (tmp & 0x08) {
+	    if (!(cPtr->PanelType & ChipsLCD))
+		tmp = inb(0x3CA) & 0x03;
+	    else 
+		tmp = (tmp >> 4) & 0x03;
+	    return (tmp + 4);
+	} else {
+	    tmp = (tmp >> 2) & 0x01;
+	    read_xr(0x02,tmp1);
+	    return (tmp + (tmp1 & 0x02));
+	}
+    case NEW_STYLE:
+	if (cPtr->PanelType & ChipsLCD) {
+	    read_xr(0x54, tmp);
+	} else
+	    tmp = inb(0x3CC);
+	tmp = (tmp & 0x0C) >> 2;
+	if (tmp > 1) return 4;
+	read_xr(0x33, tmp1);
+	tmp1 = (tmp1 & 0x80) >> 6; /* iso mode 25.175/28.322 or 32/36 MHz  */
+	return (tmp + tmp1);       /*            ^=0    ^=1     ^=4 ^=5    */
+    default:		       /* we should never get here              */
+	return (0);
+    }
+}
+
+static void
+chipsClockLoad(ScrnInfoPtr pScrn, CHIPSClockPtr Clock)
+{
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    unsigned char Type = cPtr->ClockType;
+    volatile unsigned char tmp, tmpmsr, tmpfcr, tmp02;
+    volatile unsigned char tmp33, tmp54, tmpf03;
+    unsigned char vclk[3];       
+
+    tmpmsr = inb(0x3CC);  /* read msr, we need it for all clock styles */
+
+    switch (Type & GET_STYLE) {
+    case HiQV_STYLE:
+	read_fr(0x03, tmpf03);   /* save alternate clock select reg.  */
+	/* select fixed clock 0  before tampering with VCLK select */
+	outb(0x3C2, (tmpmsr & ~0x0D) | cPtr->SuspendHack.vgaIOBaseFlag);
+	write_fr(0x03, (tmpf03 & ~0x0C) | 0x04);
+	if (!Clock->Clock) {      /* Hack to load saved console clock  */
+	    if (cPtr->Flags & ChipsUseVClk1) {
+		tmp = 1;
+	    } else {
+		tmp = (Clock->fr03 & 0xC) >> 2;
+		if (tmp == 3)
+		    tmp = 2;
+	    }
+	    tmp = tmp << 2;
+	    write_xr(0xC0 + tmp, (cPtr->ConsoleClk[0] & 0xFF));
+	    write_xr(0xC1 + tmp, (cPtr->ConsoleClk[1] & 0xFF));
+	    write_xr(0xC2 + tmp, (cPtr->ConsoleClk[2] & 0xFF));
+	    write_xr(0xC3 + tmp, (cPtr->ConsoleClk[3] & 0xFF));
+	} else {
+	    /* 
+	     * Don't use the extra 2 bits in the M, N registers available
+	     * on the HiQV, so write zero to 0xCA 
+	     */
+	    chipsCalcClock(pScrn, Clock->Clock, vclk);
+	    if (cPtr->Flags & ChipsUseVClk1) { 
+		write_xr(0xC4, (vclk[1] & 0xFF));
+		write_xr(0xC5, (vclk[2] & 0xFF));
+		write_xr(0xC6, 0x0);
+		write_xr(0xC7, (vclk[0] & 0xFF));
+	    } else {
+		write_xr(0xC8, (vclk[1] & 0xFF));
+		write_xr(0xC9, (vclk[2] & 0xFF));
+		write_xr(0xCA, 0x0);
+		write_xr(0xCB, (vclk[0] & 0xFF));
+	    }
+	}
+	usleep(10000);		         /* Let VCO stabilise    */
+	write_fr(0x03, ((tmpf03 & ~0x0C) | (Clock->fr03 & 0x0C)));
+	break;
+    case WINGINE_1_STYLE:
+	break;
+    case WINGINE_2_STYLE:
+	/* Only write to soft clock registers if we really need to */
+	if ((Type & GET_TYPE) == TYPE_PROGRAMMABLE) {
+	    /* select fixed clock 0  before tampering with VCLK select */
+	    outb(0x3C2, (tmpmsr & ~0x0D) | cPtr->SuspendHack.vgaIOBaseFlag);
+	    chipsCalcClock(pScrn, Clock->Clock, vclk);
+	    read_xr(0x33, tmp33);     /* get status of MCLK/VCLK select reg */
+	    write_xr(0x33, tmp33 & ~0x20);
+	    write_xr(0x30, vclk[0]);
+	    write_xr(0x31, vclk[1]);     /* restore VCLK regs.   */
+	    write_xr(0x32, vclk[2]);
+	    /*  write_xr(0x33, tmp33 & ~0x20);*/
+	    usleep(10000);		     /* Let VCO stabilise    */
+	}
+	break;
+    case OLD_STYLE:
+	read_xr(0x02, tmp02);
+	read_xr(0x54, tmp54);
+	tmpfcr = inb(0x3CA);
+	write_xr(0x02, ((tmp02 & ~0x02) | (Clock->xr02 & 0x02)));
+	write_xr(0x54, ((tmp54 & 0xF0) | (Clock->xr54 & ~0xF0)));
+	outb((int)(cPtr->IOBase + 0xA),(tmpfcr & ~0x03) & Clock->fcr);
+	break;
+    case NEW_STYLE:
+	read_xr(0x33, tmp33);       /* get status of MCLK/VCLK select reg */
+	read_xr(0x54, tmp54);
+	/* Only write to soft clock registers if we really need to */
+	if ((Type & GET_TYPE) == TYPE_PROGRAMMABLE) {
+	    /* select fixed clock 0  before tampering with VCLK select */
+	    outb(0x3C2, (tmpmsr & ~0x0D) | cPtr->SuspendHack.vgaIOBaseFlag);
+	    write_xr(0x54, (tmp54 & 0xF3));
+	    chipsCalcClock(pScrn, Clock->Clock, vclk);
+	    write_xr(0x33, tmp33 & ~0x20);
+	    write_xr(0x30, vclk[0]);
+	    write_xr(0x31, vclk[1]);     /* restore VCLK regs.   */
+	    write_xr(0x32, vclk[2]);
+	    /*  write_xr(0x33, tmp33 & ~0x20);*/
+	    usleep(10000);		         /* Let VCO stabilise    */
+	}
+	write_xr(0x33, ((tmp33 & ~0x80) | (Clock->xr33 & 0x80))); 
+	write_xr(0x54, ((tmp54 & 0xF3) | (Clock->xr54 & ~0xF3)));
+	break;
+    }
+
+    outb(0x3C2, (Clock->msr & 0xFE) | cPtr->SuspendHack.vgaIOBaseFlag);
+#ifdef DEBUG
+    ErrorF("restored\n");
+#endif
+}
+   
+/* 
+ * This is Ken Raeburn's <raeburn@raeburn.org> clock
+ * calculation code just modified a little bit to fit in here.
+ */
+
+static void
+chipsCalcClock(ScrnInfoPtr pScrn, int Clock, unsigned char *vclk)
+{
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    int M, N, P, PSN, PSNx;
+
+    int bestM = 0, bestN = 0, bestP = 0, bestPSN = 0;
+    double bestError, abest = 42, bestFout = 0;
+    double target;
+
+    double Fvco, Fout;
+    double error, aerror;
+
+    int M_min = 3;
+
+    /* Hack to deal with problem of Toshiba 720CDT clock */
+    int M_max = IS_HiQV(cPtr) ? 63 : 127;
+
+
+    /* Other parameters available on the 65548 but not the 65545, and
+     * not documented in the Clock Synthesizer doc in rev 1.0 of the
+     * 65548 datasheet:
+     * 
+     * + XR30[4] = 0, VCO divider loop uses divide by 4 (same as 65545)
+     * 1, VCO divider loop uses divide by 16
+     * 
+     * + XR30[5] = 1, reference clock is divided by 5
+     * 
+     * Other parameters available on the 65550 and not on the 65545
+     * 
+     * + XRCB[2] = 0, VCO divider loop uses divide by 4 (same as 65545)
+     * 1, VCO divider loop uses divide by 16
+     * 
+     * + XRCB[1] = 1, reference clock is divided by 5
+     * 
+     * + XRCB[7] = Vclk = Mclk
+     * 
+     * + XRCA[0:1] = 2 MSB of a 10 bit M-Divisor
+     * 
+     * + XRCA[4:5] = 2 MSB of a 10 bit N-Divisor
+     * 
+     * I haven't put in any support for those here.  For simplicity,
+     * they should be set to 0 on the 65548, and left untouched on
+     * earlier chips.  */
+
+    target = Clock * 1000;
+
+    for (PSNx = 0; PSNx <= 1; PSNx++) {
+	int low_N, high_N;
+	double Fref4PSN;
+
+	PSN = PSNx ? 1 : 4;
+
+	low_N = 3;
+	high_N = 127;
+
+	while (Fref / (PSN * low_N) > 2.0e6)
+	    low_N++;
+	while (Fref / (PSN * high_N) < 150.0e3)
+	    high_N--;
+
+	Fref4PSN = Fref * 4 / PSN;
+	for (N = low_N; N <= high_N; N++) {
+	    double tmp = Fref4PSN / N;
+
+	    for (P = IS_HiQV(cPtr) ? 1 : 0; P <= 5; P++) {	
+	        /* to force post divisor on Toshiba 720CDT */
+		double Fvco_desired = target * (1 << P);
+		double M_desired = Fvco_desired / tmp;
+
+		/* Which way will M_desired be rounded?  Do all three just to
+		 * be safe.  */
+		int M_low = M_desired - 1;
+		int M_hi = M_desired + 1;
+
+		if (M_hi < M_min || M_low > M_max)
+		    continue;
+
+		if (M_low < M_min)
+		    M_low = M_min;
+		if (M_hi > M_max)
+		    M_hi = M_max;
+
+		for (M = M_low; M <= M_hi; M++) {
+		    Fvco = tmp * M;
+		    if (Fvco <= 48.0e6)
+			continue;
+		    if (Fvco > 220.0e6)
+			break;
+
+		    Fout = Fvco / (1 << P);
+
+		    error = (target - Fout) / target;
+
+		    aerror = (error < 0) ? -error : error;
+		    if (aerror < abest) {
+			abest = aerror;
+			bestError = error;
+			bestM = M;
+			bestN = N;
+			bestP = P;
+			bestPSN = PSN;
+			bestFout = Fout;
+		    }
+		}
+	    }
+	}
+    }
+    vclk[0] = (bestP << (IS_HiQV(cPtr) ? 4 : 1)) + (bestPSN == 1);
+    vclk[1] = bestM - 2;
+    vclk[2] = bestN - 2;
+#ifdef DEBUG
+    ErrorF("Freq. selected: %.2f MHz, vclk[0]=%X, vclk[1]=%X, vclk[2]=%X\n",
+	(float)(Clock / 1000.), vclk[0], vclk[1], vclk[2]);
+    ErrorF("Freq. set: %.2f MHz\n", bestFout / 1.0e6);
+#endif
+}
+
+static void
+chipsSave(ScrnInfoPtr pScrn)
+{
+    vgaRegPtr VgaSave = &VGAHWPTR(pScrn)->SavedReg;
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    CHIPSRegPtr ChipsSave;
+    int i;
+    unsigned char tmp;
+
+    ChipsSave = &cPtr->SavedReg;
+
+    /* set registers that we can program the controller */
+    /* bank 0 */
+    if (IS_HiQV(cPtr)) {
+	outw(0x3D6, 0x0E);
+    } else {
+	outw(0x3D6, 0x10);
+	outw(0x3D6, 0x11);
+	outb(0x3D6, 0x0C);     /* WINgine stores MSB here */
+	tmp = inb(0x3D7) & ~0x50;
+	outb(0x3D7, tmp);
+    }
+    chipsFixResume(cPtr);
+    outb(0x3D6,0x02);
+    tmp = inb(0x3D7);
+    outb(0x3D7,tmp & ~0x18);
+
+    /* get generic registers */
+    vgaHWSave(pScrn, VgaSave, TRUE);
+
+    /* save clock */
+    chipsClockSave(pScrn, &ChipsSave->Clock);
+
+    /* save extended registers */
+    if (IS_HiQV(cPtr)) {
+	for (i = 0; i < 0xFF; i++) {
+	    outb(0x3D6, i);
+	    ChipsSave->XR[i] = inb(0x3D7);
+#ifdef DEBUG
+	    ErrorF("XS%X - %X\n", i, ChipsSave->XR[i]);
+#endif
+	}
+	for (i = 0; i < 0x80; i++) {
+	    outb(0x3D0, i);
+	    ChipsSave->FR[i] = inb(0x3D1);
+#ifdef DEBUG
+	    ErrorF("FS%X - %X\n", i, ChipsSave->FR[i]);
+#endif
+	}
+	/* Save CR0-CR40 even though we don't use them, so they can be 
+	 *  printed */
+	for (i = 0x0; i < 0x80; i++) {
+	    outb(cPtr->IOBase + 4, i);
+	    ChipsSave->CR[i] = inb(cPtr->IOBase + 5);
+#ifdef DEBUG
+	    ErrorF("CS%X - %X\n", i, ChipsSave->CR[i]);
+#endif
+	}
+    } else {
+	for (i = 0; i < 0x7D; i++) { /* don't touch XR7D and XR7F on WINGINE */
+	    outb(0x3D6, i);
+	    ChipsSave->XR[i] = inb(0x3D7);
+#ifdef DEBUG
+	    ErrorF("XS%X - %X\n", i, ChipsSave->XR[i]);
+#endif
+	}
+    }
+}
+
+static Bool
+chipsModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     unsigned char tmp;
 
-    CHIPSUnlock(pScrn);
-
-    /* fix things that could be messed up by suspend/resume */
-    if (!IS_HiQV(cPtr))
-	outw(0x3D6,0x15);
-    tmp = inb(0x3CC);
-    outb(0x3C2, (tmp & 0xFE) | cPtr->SuspendHack.vgaIOBaseFlag); 
-    outb(cPtr->IOBase + 4, 0x11);
-    tmp = inb(cPtr->IOBase + 5);
-    outb(cPtr->IOBase + 5, (tmp & 0x7F));
+    chipsUnlock(pScrn);
+    chipsFixResume(cPtr);
 
     if (IS_HiQV(cPtr))
-	return CHIPSModeInitHiQV(pScrn, mode);
+	return chipsModeInitHiQV(pScrn, mode);
     else if (IS_Wingine(cPtr))
-        return CHIPSModeInitWingine(pScrn, mode);
+        return chipsModeInitWingine(pScrn, mode);
     else
-      return CHIPSModeInit655xx(pScrn, mode);
+      return chipsModeInit655xx(pScrn, mode);
 }
 
 static Bool
-CHIPSModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
+chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
     int i;
     int lcdHTotal, lcdHDisplay;
@@ -3768,7 +3859,7 @@ CHIPSModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pScrn->vtSema = TRUE;
 
     /* init clock */
-    if (!CHIPSClockFind(pScrn, mode->ClockIndex, &ChipsNew->Clock)) {
+    if (!chipsClockFind(pScrn, mode->ClockIndex, &ChipsNew->Clock)) {
 	ErrorF("bomb 1\n");
 	return (FALSE);
     }
@@ -3932,7 +4023,7 @@ CHIPSModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	ChipsNew->XR[0x82] |=0x02;
 
     /* software mode flag */
-    ChipsNew->XR[0xE2] = CHIPSVideoMode(pScrn->bitsPerPixel,
+    ChipsNew->XR[0xE2] = chipsVideoMode(pScrn->bitsPerPixel,
 	pScrn->weight.green, (cPtr->PanelType & ChipsLCD) ?
 	min(mode->CrtcHDisplay, cPtr->PanelSize.HDisplay) :
 	mode->CrtcHDisplay, mode->CrtcVDisplay);
@@ -4038,15 +4129,15 @@ CHIPSModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     }
 
     /* Program the registers */
-    vgaHWProtect(pScrn, TRUE);
-    CHIPSRestore(pScrn, ChipsStd, ChipsNew, FALSE);
-    vgaHWProtect(pScrn, FALSE);
+    /*vgaHWProtect(pScrn, TRUE);*/
+    chipsRestore(pScrn, ChipsStd, ChipsNew, FALSE);
+    /*vgaHWProtect(pScrn, FALSE);*/
     
     return(TRUE);
 }
 
 static Bool
-CHIPSModeInitWingine(ScrnInfoPtr pScrn, DisplayModePtr mode)
+chipsModeInitWingine(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
     int i, bytesPerPixel;
     vgaHWPtr hwp = VGAHWPTR(pScrn);
@@ -4059,6 +4150,13 @@ CHIPSModeInitWingine(ScrnInfoPtr pScrn, DisplayModePtr mode)
     ChipsStd = &hwp->ModeReg;
 
     bytesPerPixel = pScrn->bitsPerPixel >> 3;
+
+    /* 
+     * This chipset seems to have problems if 
+     * HBlankEnd is choosen equals HTotal
+     */
+    if (!mode->CrtcHAdjusted)
+      mode->CrtcHBlankEnd = min(mode->CrtcHSyncEnd, mode->CrtcHTotal - 2);
 
     /* correct the timings for 16/24 bpp */
     if (pScrn->bitsPerPixel == 16) {
@@ -4095,7 +4193,7 @@ CHIPSModeInitWingine(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pScrn->vtSema = TRUE;
     
     /* init clock */
-    if (!CHIPSClockFind(pScrn, mode->ClockIndex, &ChipsNew->Clock)) {
+    if (!chipsClockFind(pScrn, mode->ClockIndex, &ChipsNew->Clock)) {
 	ErrorF("bomb 1\n");
 	return (FALSE);
     }
@@ -4173,7 +4271,7 @@ CHIPSModeInitWingine(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	| (((mode->CrtcVBlankStart) & 0x400) >> 6 );
 
     /* set video mode */
-    ChipsNew->XR[0x2B] = CHIPSVideoMode(pScrn->bitsPerPixel,
+    ChipsNew->XR[0x2B] = chipsVideoMode(pScrn->bitsPerPixel,
 	pScrn->weight.green, mode->CrtcHDisplay, mode->CrtcVDisplay);
 #ifdef DEBUG
     ErrorF("VESA Mode: %Xh\n", ChipsNew->XR[0x2B]);
@@ -4253,15 +4351,15 @@ CHIPSModeInitWingine(ScrnInfoPtr pScrn, DisplayModePtr mode)
     }
 
     /* Program the registers */
-    vgaHWProtect(pScrn, TRUE);
-    CHIPSRestore(pScrn, ChipsStd, ChipsNew, FALSE);
-    vgaHWProtect(pScrn, FALSE);
+    /*vgaHWProtect(pScrn, TRUE);*/
+    chipsRestore(pScrn, ChipsStd, ChipsNew, FALSE);
+    /*vgaHWProtect(pScrn, FALSE);*/
 
     return (TRUE);
 }
 
 static Bool
-CHIPSModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
+chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
     int i, bytesPerPixel;
     int lcdHTotal, lcdHDisplay;
@@ -4289,6 +4387,13 @@ CHIPSModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	cPtr->PanelSize.HDisplay = mode->CrtcHDisplay;
 	cPtr->PanelSize.VDisplay = mode->CrtcVDisplay;
     }
+    
+    /* 
+     * This chipset seems to have problems if 
+     * HBlankEnd is choosen equals HTotal
+     */
+    if (!mode->CrtcHAdjusted)
+      mode->CrtcHBlankEnd = min(mode->CrtcHSyncEnd, mode->CrtcHTotal - 2);
 
     /* correct the timings for 16/24 bpp */
     if (pScrn->bitsPerPixel == 16) {
@@ -4316,7 +4421,11 @@ CHIPSModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    mode->CrtcHAdjusted = TRUE;
 	}
     }
-
+    ErrorF("bl start: 0x%X bl end: 0x%X  e - s = 0x%X\n",
+	   mode->CrtcHBlankStart>>3,
+	   mode->CrtcHBlankEnd>>3,
+	   ((mode->CrtcHBlankEnd - mode->CrtcHBlankStart)>>3)&0x3F);
+	   
     /* store orig. HSyncStart needed for flat panel mode */
     HSyncStart = mode->CrtcHSyncStart / (pScrn->bitsPerPixel >= 8 ? 
 					 bytesPerPixel : 1 ) - 16;
@@ -4331,7 +4440,7 @@ CHIPSModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pScrn->vtSema = TRUE;
     
     /* init clock */
-    if (!CHIPSClockFind(pScrn, mode->ClockIndex, &ChipsNew->Clock)) {
+    if (!chipsClockFind(pScrn, mode->ClockIndex, &ChipsNew->Clock)) {
 	ErrorF("bomb 1\n");
 	return (FALSE);
     }
@@ -4576,7 +4685,7 @@ CHIPSModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
     }
 
     /* set video mode */
-    ChipsNew->XR[0x2B] = CHIPSVideoMode(pScrn->bitsPerPixel,
+    ChipsNew->XR[0x2B] = chipsVideoMode(pScrn->bitsPerPixel,
 	pScrn->weight.green, (cPtr->PanelType & ChipsLCD) ?
 	min(HDisplay, cPtr->PanelSize.HDisplay) : HDisplay,
 	cPtr->PanelSize.VDisplay);
@@ -4724,97 +4833,22 @@ CHIPSModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
     }
 
     /* Program the registers */
-    vgaHWProtect(pScrn, TRUE);
-    CHIPSRestore(pScrn, ChipsStd, ChipsNew, FALSE);
-    vgaHWProtect(pScrn, FALSE);
+    /*vgaHWProtect(pScrn, TRUE);*/
+    chipsRestore(pScrn, ChipsStd, ChipsNew, FALSE);
+    /*vgaHWProtect(pScrn, FALSE);*/
 
     return (TRUE);
 }
 
-static void
-CHIPSSave(ScrnInfoPtr pScrn)
-{
-    vgaRegPtr VgaSave = &VGAHWPTR(pScrn)->SavedReg;
-    CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    CHIPSRegPtr ChipsSave;
-    int i;
-    unsigned char tmp;
-
-    ChipsSave = &cPtr->SavedReg;
-
-    /* set registers that we can program the controller */
-    /* bank 0 */
-    if (IS_HiQV(cPtr)) {
-	outw(0x3D6, 0x0E);
-    } else {
-	outw(0x3D6, 0x10);
-	outw(0x3D6, 0x11);
-	outb(0x3D6, 0x0C);     /* WINgine stores MSB here */
-	tmp = inb(0x3D7) & ~0x50;
-	outb(0x3D7, tmp);
-	outw(0x3D6, 0x15); /* could be messed up by suspend/resume */
-    }
-    /* fix things that could be messed up by suspend/resume */
-    tmp = inb(0x3CC);
-    outb(0x3C2, (tmp & 0xFE) | (cPtr->SuspendHack.vgaIOBaseFlag)); 
-    outb(cPtr->IOBase +4, 0x11);
-    tmp = inb(cPtr->IOBase + 5);
-    outb(cPtr->IOBase + 5, (tmp & 0x7F));
-    outb(0x3D6,0x02);
-    tmp = inb(0x3D7);
-    outb(0x3D7,tmp & ~0x18);
-
-    /* get generic registers */
-    vgaHWSave(pScrn, VgaSave, TRUE);
-
-    /* save clock */
-    CHIPSClockSave(pScrn, &ChipsSave->Clock);
-
-    /* save extended registers */
-    if (IS_HiQV(cPtr)) {
-	for (i = 0; i < 0xFF; i++) {
-	    outb(0x3D6, i);
-	    ChipsSave->XR[i] = inb(0x3D7);
-#ifdef DEBUG
-	    ErrorF("XS%X - %X\n", i, ChipsSave->XR[i]);
-#endif
-	}
-	for (i = 0; i < 0x80; i++) {
-	    outb(0x3D0, i);
-	    ChipsSave->FR[i] = inb(0x3D1);
-#ifdef DEBUG
-	    ErrorF("FS%X - %X\n", i, ChipsSave->FR[i]);
-#endif
-	}
-	/* Save CR0-CR40 even though we don't use them, so they can be 
-	 *  printed */
-	for (i = 0x0; i < 0x80; i++) {
-	    outb(cPtr->IOBase + 4, i);
-	    ChipsSave->CR[i] = inb(cPtr->IOBase + 5);
-#ifdef DEBUG
-	    ErrorF("CS%X - %X\n", i, ChipsSave->CR[i]);
-#endif
-	}
-    } else {
-	for (i = 0; i < 0x7D; i++) { /* don't touch XR7D and XR7F on WINGINE */
-	    outb(0x3D6, i);
-	    ChipsSave->XR[i] = inb(0x3D7);
-#ifdef DEBUG
-	    ErrorF("XS%X - %X\n", i, ChipsSave->XR[i]);
-#endif
-	}
-    }
-}
-
 static void 
-CHIPSRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, CHIPSRegPtr ChipsReg,
+chipsRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, CHIPSRegPtr ChipsReg,
 	     Bool restoreFonts)
 {
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     unsigned char tmp;
     int i;
 
-    vgaHWProtect(pScrn, TRUE);
+    /*vgaHWProtect(pScrn, TRUE);*/
 
     /* set registers so that we can program the controller */
     if (IS_HiQV(cPtr)) {
@@ -4831,12 +4865,7 @@ CHIPSRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, CHIPSRegPtr ChipsReg,
 	outb(0x3D7, (tmp & ~0x20)); /* enable vsync on ST01 */
     }
 
-    /* fix things that could be messed up by suspend/resume */
-    outb(0x3C2, (((VgaReg->MiscOutReg) & 0xFE) |
-			cPtr->SuspendHack.vgaIOBaseFlag));
-    outb(cPtr->IOBase + 4, 0x11);
-    tmp = inb(cPtr->IOBase + 5);
-    outb(cPtr->IOBase + 5, (tmp & 0x7F)); /*group 0 protection off */
+    chipsFixResume(cPtr);
 
     /* wait for vsync if sequencer is running - stop sequencer */
     if (cPtr->SyncResetIgn) {        /* only do if sync reset is ignored */
@@ -4846,37 +4875,36 @@ CHIPSRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, CHIPSRegPtr ChipsReg,
     }
 
     /* set the clock */
-#ifdef DEBUG
-    ErrorF("1: 0x3CC: %X ", (unsigned char)inb(0x3CC));
-#endif
-    CHIPSClockLoad(pScrn, &ChipsReg->Clock);
-#ifdef DEBUG
-    ErrorF("-> %X\n", (unsigned char)inb(0x3CC));
-#endif
+    chipsClockLoad(pScrn, &ChipsReg->Clock);
 
     /* set extended regs */
-    CHIPSRestoreExtendedRegs(cPtr, ChipsReg);
-
+    chipsRestoreExtendedRegs(cPtr, ChipsReg);
+#if 0
+    /* if people complain about lock ups or blank screens -- reenable */
     /* set CRTC registers - do it before sequencer restarts */
     for (i=0; i<25; i++) 
 	outw(cPtr->IOBase + 4, (VgaReg->CRTC[i] << 8) | i);
+#endif
+    /* set generic registers */
+    vgaHWRestore(pScrn, VgaReg, restoreFonts);
 
     /* set stretching registers */
     if (IS_HiQV(cPtr)) {
-	CHIPSRestoreStretching(pScrn, (unsigned char)ChipsReg->FR[0x40],
+	chipsRestoreStretching(pScrn, (unsigned char)ChipsReg->FR[0x40],
 			       (unsigned char)ChipsReg->FR[0x48]);
+#if 0 
+	/* if people report about stretching not working -- reenable */
 	/* why twice ? :
 	 * sometimes the console is not well restored even if these registers 
 	 * are good, re-write the registers works around it
 	 */
-	CHIPSRestoreStretching(pScrn, (unsigned char)ChipsReg->FR[0x40],
+	chipsRestoreStretching(pScrn, (unsigned char)ChipsReg->FR[0x40],
 			       (unsigned char)ChipsReg->FR[0x48]);
+#endif
     } else if (!IS_Wingine(cPtr))
-	CHIPSRestoreStretching(pScrn, (unsigned char)ChipsReg->XR[0x55],
+	chipsRestoreStretching(pScrn, (unsigned char)ChipsReg->XR[0x55],
 			       (unsigned char)ChipsReg->XR[0x57]);
 
-    /* set generic registers */
-    vgaHWRestore(pScrn, VgaReg, restoreFonts);
 
     /* perform a synchronous reset */
     if (!cPtr->SyncResetIgn) {
@@ -4891,7 +4919,6 @@ CHIPSRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, CHIPSRegPtr ChipsReg,
 	if (!IS_HiQV(cPtr))
 	    write_xr(0x0E,tmp);
     }
-
     /* Flag valid start address, if using CRT extensions */
     if (IS_HiQV(cPtr) && (ChipsReg->XR[0x09] & 0x1) == 0x1) {
 	outb(cPtr->IOBase + 4, 0x40);
@@ -4899,45 +4926,13 @@ CHIPSRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, CHIPSRegPtr ChipsReg,
 	outb(cPtr->IOBase + 5, tmp | 0x80);
     }
 
-#ifdef DEBUG
-    ErrorF("3: 0x3CC: %X", (unsigned char)inb(0x3CC));
-#endif
-    /* fix things that could be messed up by suspend/resume. 
-     * Do it again here, as Nozomi seems to need it          */
-    outb(0x3C2, (((VgaReg->MiscOutReg) & 0xFE) |
-			cPtr->SuspendHack.vgaIOBaseFlag));
-    outb(cPtr->IOBase + 4, 0x11);
-    tmp = inb(cPtr->IOBase + 5);
-    outb(cPtr->IOBase + 5, (tmp & 0x7F));
-
-    vgaHWProtect(pScrn, FALSE);
-
-#ifdef DEBUG
-    ErrorF("-> %X\n", (unsigned char)inb(0x3CC));
-#endif
-
-#ifdef DEBUG
-    /* debug - dump out all the extended registers... */
-    if (IS_HiQV(cPtr)) {
-	for (i = 0; i < 0xFF; i++) {
-	    outb(0x3D6, i);
-	    ErrorF("XR%X - %X : %X\n", i, ChipsReg->XR[i], inb(0x3D7));
-	}
-	for (i = 0; i < 0x80; i++) {
-	    outb(0x3D0, i);
-	    ErrorF("FR%X - %X : %X\n", i, ChipsReg->FR[i], inb(0x3D1));
-	}
-    } else {
-	for (i = 0; i < 0x80; i++) {
-	    outb(0x3D6, i);
-	    ErrorF("XR%X - %X : %X\n", i, ChipsReg->XR[i], inb(0x3D7));
-	}
-    }
-#endif
+    /* Do it again here, as Nozomi seems to need it          */
+     chipsFixResume(cPtr);
+    /*vgaHWProtect(pScrn, FALSE);*/
 }
 
 static void
-CHIPSRestoreExtendedRegs(CHIPSPtr cPtr, CHIPSRegPtr Regs)
+chipsRestoreExtendedRegs(CHIPSPtr cPtr, CHIPSRegPtr Regs)
 {
     int i;
     unsigned char tmp;
@@ -5035,159 +5030,28 @@ CHIPSRestoreExtendedRegs(CHIPSPtr cPtr, CHIPSRegPtr Regs)
 		outb(0x3D7, Regs->XR[i]);
 	}
     }
-}
-
-/* Mandatory */
-static Bool
-CHIPSSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
-{
-    return CHIPSModeInit(xf86Screens[scrnIndex], mode);
-}
-
-/* Mandatory */
-static void
-CHIPSAdjustFrame(int scrnIndex, int x, int y, int flags)
-{
-    ScrnInfoPtr pScrn;
-    int Base;
-    CHIPSPtr cPtr;
-    vgaHWPtr hwp;
-    unsigned char tmp;
-
-    pScrn = xf86Screens[scrnIndex];
-    hwp = VGAHWPTR(pScrn);
-    cPtr = CHIPSPTR(pScrn);
-
-    if (xf86IsOptionSet(cPtr->Options, OPTION_SHOWCACHE) && y) {
-	int lastline = cPtr->FbMapSize / 
-		((pScrn->displayWidth * pScrn->bitsPerPixel) / 8);
-	lastline -= pScrn->currentMode->VDisplay;
-	y += pScrn->virtualY - 1;
-        if (y > lastline) y = lastline;
-    }
-    
-    Base = y * pScrn->displayWidth + x;
-
-    /* fix things that could be messed up by suspend/resume */
-    if (!IS_HiQV(cPtr))
-	outw(0x3D6,0x15);
-    tmp = inb(0x3CC);
-    outb(0x3C2, (tmp & 0xFE) | cPtr->SuspendHack.vgaIOBaseFlag); 
-    outb(cPtr->IOBase + 4, 0x11);
-    tmp = inb(cPtr->IOBase + 5);
-    outb(cPtr->IOBase + 5, (tmp & 0x7F));
-
-    /* calculate base bpp dep. */
-    switch (pScrn->bitsPerPixel) {
-    case 1:
-    case 4:
-	Base >>= 3;
-	break;
-    case 16:
-	Base >>= 1;
-	break;
-    case 24:
-	if (!IS_HiQV(cPtr))
-	    Base = (Base >> 2) * 3;
-	else
-	    Base = (Base >> 3) * 6;  /* 65550 seems to need 64bit alignment */
-	break;
-    case 32:
-	break;
-    default:			     /* 8bpp */
-	Base >>= 2;
-	break;
-    }
-
-    /* write base to chip */
-    /*
-     * These are the generic starting address registers.
-     */
-    outw(hwp->IOBase + 4, (Base & 0x00FF00) | 0x0C);
-    outw(hwp->IOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
+#ifdef DEBUG
+    /* debug - dump out all the extended registers... */
     if (IS_HiQV(cPtr)) {
-	outb(0x3D6, 0x09);
-	if ((inb(0x3D7) & 0x1) == 0x1)
-	    outw(hwp->IOBase + 4, ((Base & 0x0F0000) >> 8) | 0x8000 | 0x40);
+	for (i = 0; i < 0xFF; i++) {
+	    outb(0x3D6, i);
+	    ErrorF("XR%X - %X : %X\n", i, ChipsReg->XR[i], inb(0x3D7));
+	}
+	for (i = 0; i < 0x80; i++) {
+	    outb(0x3D0, i);
+	    ErrorF("FR%X - %X : %X\n", i, ChipsReg->FR[i], inb(0x3D1));
+	}
     } else {
-	outb(0x3D6, 0x0C);
-	tmp = inb(0x3D7);
-	outb(0x3D7, ((Base & (IS_Wingine(cPtr) ? 0x0F0000 : 0x030000)) >> 16) 
-	     | (tmp & 0xF8));
-    }
-#if 0
-#ifdef XFreeXDGA
-    if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
-	/* Wait until vertical retrace is in progress. */
-	while (inb(hwp->IOBase + 0xA) & 0x08);
-	while (!(inb(hwp->IOBase + 0xA) & 0x08));
-    }
-#endif
-#endif
-}
-
-/* Mandatory */
-static Bool
-CHIPSCloseScreen(int scrnIndex, ScreenPtr pScreen)
-{
-    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-    CHIPSPtr cPtr = CHIPSPTR(pScrn);
-
-    /* disable HW cursor */
-    if (cPtr->HWCursorShown) {
-	if (IS_HiQV(cPtr)) {
-	    outb(0x3D6, 0xA0);
-	    cPtr->HWCursorContents = inb(0x3D7);
-	    outb(0x3D7, cPtr->HWCursorContents & 0xF8);
-	} else {
-	    HW_DEBUG(0x8);
-	    if (cPtr->UseMMIO) {
-		cPtr->HWCursorContents = MMIOmeml(DR(0x8));
-		MMIOmemw(DR(0x8)) = cPtr->HWCursorContents & 0xFFFE;
-	    } else {
-		cPtr->HWCursorContents = inl(DR(0x8));
-		outw(DR(0x8), cPtr->HWCursorContents & 0xFFFE);
-	    }
+	for (i = 0; i < 0x80; i++) {
+	    outb(0x3D6, i);
+	    ErrorF("XR%X - %X : %X\n", i, ChipsReg->XR[i], inb(0x3D7));
 	}
     }
-
-    CHIPSRestore(pScrn, &(VGAHWPTR(pScrn))->SavedReg, &cPtr->SavedReg, TRUE);
-    CHIPSLock(pScrn);
-    CHIPSUnmapMem(pScrn);
-    if (cPtr->AccelInfoRec)
-	XAADestroyInfoRec(cPtr->AccelInfoRec);
-    if (cPtr->CursorInfoRec)
-	xf86DestroyCursorInfoRec(cPtr->AccelInfoRec);
-
-    pScrn->vtSema = FALSE;
-    pScreen->CloseScreen = cPtr->CloseScreen;
-    return (*pScreen->CloseScreen)(scrnIndex, pScreen);
-}
-
-/* Optional */
-static void
-CHIPSFreeScreen(int scrnIndex, int flags)
-{
-    vgaHWFreeHWRec(xf86Screens[scrnIndex]);
-    CHIPSFreeRec(xf86Screens[scrnIndex]);
-}
-
-/* Optional */
-static int
-CHIPSValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
-{
-    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-    CHIPSPtr cPtr = CHIPSPTR(pScrn);
-
-    /* The tests here need to be expanded */
-    if ((mode->Flags & V_INTERLACE) && (cPtr->Flags & ChipsLCD))
-	return MODE_BAD;
-
-    return MODE_OK;
+#endif
 }
 
 static void
-CHIPSRestoreStretching(ScrnInfoPtr pScrn, unsigned char ctHorizontalStretch,
+chipsRestoreStretching(ScrnInfoPtr pScrn, unsigned char ctHorizontalStretch,
 		       unsigned char ctVerticalStretch)
 {
     unsigned char tmp;
@@ -5210,7 +5074,7 @@ CHIPSRestoreStretching(ScrnInfoPtr pScrn, unsigned char ctHorizontalStretch,
 }
 
 static int
-CHIPSVideoMode(int vgaBitsPerPixel, int weightGreen, int displayHSize,
+chipsVideoMode(int vgaBitsPerPixel, int weightGreen, int displayHSize,
 	       int displayVSize)
 {
     /*     4 bpp  8 bpp  16 bpp  18 bpp  24 bpp  32 bpp */
@@ -5270,234 +5134,13 @@ CHIPSVideoMode(int vgaBitsPerPixel, int weightGreen, int displayHSize,
     return videoMode;
 }
 
-static void
-CHIPSBlankScreen(ScrnInfoPtr pScrn, Bool unblank)
-{
-    CHIPSPtr cPtr;
-    unsigned char scrn;
-#ifdef DEBUG
-    static char counter = 0;
-#endif
-    cPtr = CHIPSPTR(pScrn);
-
-    /* fix things that could be messed up by suspend/resume */
-    if (!IS_HiQV(cPtr))
-	outw(0x3D6,0x15);
-
-    outb(0x3C4,1);
-    scrn = inb(0x3C5);
-    if (unblank) {
-	scrn &= 0xDF;                       /* enable screen */
-    } else {
-	scrn |= 0x20;                       /* blank screen */
-    }
-
-    /* synchronous reset - stop counters */
-    if (!cPtr->SyncResetIgn) {
-	outw(0x3C4, 0x0100);        
-#ifdef DEBUG
-	ErrorF("Seq. reset on\n");
-#endif
-    }
-
-    outw(0x3C4, (scrn << 8) | 0x01); /* change mode */
-
-    /* end reset - start counters */
-    if (!cPtr->SyncResetIgn) {
-	outw(0x3C4, 0x0300); 
-#ifdef DEBUG
-	counter++;
-	ErrorF("Count: %i Seq. reset off\n",counter);
-#endif
-    }
-}
-
-static Bool
-CHIPSSaveScreen(ScreenPtr pScreen, Bool unblank)
-{
-    CHIPSBlankScreen(xf86Screens[pScreen->myNum], unblank);
-    return TRUE;
-}
-
-static char
-CHIPSTestDACComp(ScrnInfoPtr pScrn, unsigned char a, unsigned char b,
-		 unsigned char c)
-{
-    CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    unsigned char type;
-
-    outb(0x3C8,00);
-    while (inb(cPtr->IOBase + 0xA) & 0x08);   /* wait for vsync to end */
-    while (!(inb(cPtr->IOBase + 0xA) & 0x08));  /* wait for new vsync  */
-    outb(0x3C9,a);              /* set pattern */
-    outb(0x3C9,b);
-    outb(0x3C9,c);
-
-    while (inb(cPtr->IOBase +0xA) & 0x01);  /* wait for hsync to end  */
-    type = inb(0x3C2);          /* read comparator        */
-
-    return (type & 0x10);
-}
-
-static int
-CHIPSProbeMonitor(ScrnInfoPtr pScrn)
-{
-    CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    unsigned char dacmask;
-    unsigned char dacdata[3];
-    unsigned char xr1, xr2;
-    int type = 2;  /* no monitor */
-
-    dacmask = inb(0x3C6);    /* save registers */ 
-    outb(0x3C6,00);
-    outb(0x3C7,00);
-    dacdata[0]=inb(0x3C9);
-    dacdata[1]=inb(0x3C9);
-    dacdata[2]=inb(0x3C9);
-    if (!IS_HiQV(cPtr)) {
-	read_xr(0x06, xr1);
-	read_xr(0x1F, xr2);
-	write_xr(0x06, xr1 & 0xF1);  /* turn on dac */
-	write_xr(0x1F, xr2 & 0x7F);  /* enable comp */
-    } else {
-	read_xr(0x81,xr1);
-	read_xr(0xD0,xr2);
-	write_xr(0x81,(xr1 & 0xF0));
-	write_xr(0xD0,(xr2 | 0x03));
-    }
-    if (CHIPSTestDACComp(pScrn, 0x12,0x12,0x12)) {         /* test patterns */
-	if (CHIPSTestDACComp(pScrn,0x14,0x14,0x14))        /* taken  from   */
-	    if (!CHIPSTestDACComp(pScrn,0x2D,0x14,0x14))   /* BIOS          */
-		if (!CHIPSTestDACComp(pScrn,0x14,0x2D,0x14))
-		    if (!CHIPSTestDACComp(pScrn,0x14,0x14,0x2D))
-			if (!CHIPSTestDACComp(pScrn,0x2D,0x2D,0x2D))
-			    type = 0;    /* color monitor */
-    } else {     
-	if (CHIPSTestDACComp(pScrn,0x04,0x12,0x04))
-	    if (!CHIPSTestDACComp(pScrn,0x1E,0x12,0x04))
-		if (!CHIPSTestDACComp(pScrn,0x04,0x2D,0x04))
-		    if (!CHIPSTestDACComp(pScrn,0x1E,0x16,0x15))
-			if (CHIPSTestDACComp(pScrn,0x00,0x00,0x00))
-			    type = 1;    /* monochrome */
-    }
-
-    outb(0x3C8,00);         /* restore registers */
-    outb(0x3C9,dacdata[0]);
-    outb(0x3C9,dacdata[1]);
-    outb(0x3C9,dacdata[2]);
-    outb(0x3C6,dacmask);
-    if (!IS_HiQV(cPtr)) {
-	write_xr(0x06,xr1);
-	write_xr(0x1F,xr2);
-    } else {
-	write_xr(0x81,xr1);
-	write_xr(0xD0,xr2);
-    }
-    return type;
-}
-
-static int
-CHIPSSetMonitor(ScrnInfoPtr pScrn)
-{
-    int tmp= CHIPSProbeMonitor(pScrn);
-
-    switch (tmp) {
-    case 0:
-	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Color monitor detected\n");
-	break;
-    case 1:
-	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Monochrome monitor detected\n");
-	break;
-    default:
-	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "No monitor detected\n");
-    }
-    return (tmp);
-}
-
-#ifdef DPMSExtension
-/*
- * DPMS Control registers
- *
- * XR73 6554x and 64300 (what about 65535?)
- * XR61 6555x
- *    0   HSync Powerdown data
- *    1   HSync Select 1=Powerdown
- *    2   VSync Powerdown data
- *    3   VSync Select 1=Powerdown
- */
-
-static void
-CHIPSDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
-			       int flags)
-{
-    CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    unsigned char dpmsreg, seqreg, lcdoff, tmp;
-    
-    switch (PowerManagementMode) {
-    case DPMSModeOn:
-	/* Screen: On; HSync: On, VSync: On */
-	dpmsreg = 0x00;
-	seqreg = 0x00;
-	lcdoff = 0x0;
-	break;
-    case DPMSModeStandby:
-	/* Screen: Off; HSync: Off, VSync: On */
-	dpmsreg = 0x02;
-	seqreg = 0x20;
-	lcdoff = 0x0;
-	break;
-    case DPMSModeSuspend:
-	/* Screen: Off; HSync: On, VSync: Off */
-	dpmsreg = 0x08;
-	seqreg = 0x20;
-	lcdoff = 0x1;
-	break;
-    case DPMSModeOff:
-	/* Screen: Off; HSync: Off, VSync: Off */
-	dpmsreg = 0x0A;
-	seqreg = 0x20;
-	lcdoff = 0x1;
-	break;
-    default:
-	return;
-    }
-
-    outb(0x3C4, 0x01);
-    seqreg |= inb(0x3C5) & ~0x20;
-    outb(0x3C5, seqreg);
-    if (IS_HiQV(cPtr))
-	outb(0x3D6,0x61);
-    else
-	outb(0x3D6,0x73);
-    tmp = inb(0x3D7);
-    outb(0x3D7,((tmp & 0xF0) | dpmsreg));
-    /* Turn off the flat panel */
-    if (cPtr->PanelType & ChipsLCD) {
-	if (IS_HiQV(cPtr)) {
-	    outb(0x3D0,0x5);
-	    tmp = inb(0x3D1);
-	    if (lcdoff)
-	        outb(0x3D1, (tmp | 0x8));
-	    else
-	        outb(0x3D1, (tmp & 0xF7));
-	} else {
-	    outb(0x3D6,0x52);
-	    tmp = inb(0x3D7);
-	    if (lcdoff)
-	        outb(0x3D7, (tmp | 0x8));
-	    else
-	        outb(0x3D7, (tmp & 0xF7));
-	}
-    }
-}
-#endif
 
 /*
  * Map the framebuffer and MMIO memory.
  */
 
 static Bool
-CHIPSMapMem(ScrnInfoPtr pScrn)
+chipsMapMem(ScrnInfoPtr pScrn)
 {
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     vgaHWPtr hwp = VGAHWPTR(pScrn);
@@ -5550,7 +5193,7 @@ CHIPSMapMem(ScrnInfoPtr pScrn)
  */
 
 static Bool
-CHIPSUnmapMem(ScrnInfoPtr pScrn)
+chipsUnmapMem(ScrnInfoPtr pScrn)
 {
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
 
@@ -5563,7 +5206,257 @@ CHIPSUnmapMem(ScrnInfoPtr pScrn)
 }
 
 static void
-CHIPSProtect(ScrnInfoPtr pScrn, Bool on)
+chipsProtect(ScrnInfoPtr pScrn, Bool on)
 {
     vgaHWProtect(pScrn, on);
 }
+
+static void
+chipsBlankScreen(ScrnInfoPtr pScrn, Bool unblank)
+{
+    CHIPSPtr cPtr;
+    unsigned char scrn;
+    cPtr = CHIPSPTR(pScrn);
+    
+    /* fix things that could be messed up by suspend/resume */
+    if (!IS_HiQV(cPtr))
+	outw(0x3D6,0x15);
+
+    outb(0x3C4,1);
+    scrn = inb(0x3C5);
+
+    if (unblank) {
+	scrn &= 0xDF;                       /* enable screen */
+    } else {
+	scrn |= 0x20;                       /* blank screen */
+    }
+
+    /* synchronous reset - stop counters */
+    if (!cPtr->SyncResetIgn) {
+	outw(0x3C4, 0x0100);        
+    }
+
+    outw(0x3C4, (scrn << 8) | 0x01); /* change mode */
+
+    /* end reset - start counters */
+    if (!cPtr->SyncResetIgn) {
+	outw(0x3C4, 0x0300); 
+    }
+}
+
+static void
+chipsLock(ScrnInfoPtr pScrn)
+{
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    unsigned char tmp;
+    
+    vgaHWLock(hwp);
+
+    if (!IS_HiQV(cPtr)) {
+	/* group protection attribute controller access */
+	outb(0x3D6, 0x15);
+	outb(0x3D7, cPtr->SuspendHack.xr15);
+	outb(0x3D6, 0x02);
+	tmp = inb(0x3D7);
+	outb(0x3D7, (tmp & ~0x18) | cPtr->SuspendHack.xr02);
+	outb(0x3D6, 0x14);
+	tmp = inb(0x3D7);
+	outb(0x3D7, (tmp & ~0x20) | cPtr->SuspendHack.xr14);
+
+	/* reset 32 bit register access */
+	if (cPtr->Chipset > CHIPS_CT65540) {
+	    outb(0x3D6, 0x03);
+	    tmp = inb(0x3D7);
+	    outb(0x3D7, (tmp & ~0x0A) | cPtr->SuspendHack.xr03);
+	}
+    }
+}
+
+static void
+chipsUnlock(ScrnInfoPtr pScrn)
+{
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    unsigned char tmp;
+    
+    if (!IS_HiQV(cPtr)) {
+	/* group protection attribute controller access */
+	outb(0x3D6, 0x15);
+	outb(0x3D7, 0x00);
+	outb(0x3D6, 0x02);
+	tmp = inb(0x3D7);
+	outb(0x3D7, (tmp & ~0x18));
+	outb(0x3D6, 0x14);
+	tmp = inb(0x3D7);
+	outb(0x3D7, (tmp & ~0x20));
+
+	/* enable 32 bit register access */
+	if (cPtr->Chipset > CHIPS_CT65540) {
+	    outb(0x3D6, 0x03);
+	    outb(0x3D7, (cPtr->SuspendHack.xr02 | 0x0A));
+	}
+    }
+    vgaHWUnlock(hwp);
+}
+
+static void
+chipsHWCursorOn(CHIPSPtr cPtr)
+{
+    /* enable HW cursor */
+    if (cPtr->HWCursorShown) {
+	if (IS_HiQV(cPtr)) {
+	    outb(0x3D6, 0xA0);
+	    outb(0x3D7, cPtr->HWCursorContents & 0xFF);
+	} else {
+	    HW_DEBUG(0x8);	
+	    if (cPtr->UseMMIO) {
+		MMIOmeml(DR(0x8)) = cPtr->HWCursorContents;
+	    } else {
+		outl(DR(0x8), cPtr->HWCursorContents);
+	    }
+	}
+    }
+}
+
+static void
+chipsHWCursorOff(CHIPSPtr cPtr)
+{
+    /* disable HW cursor */
+    if (cPtr->HWCursorShown) {
+	if (IS_HiQV(cPtr)) {
+	    outb(0x3D6, 0xA0);
+	    cPtr->HWCursorContents = inb(0x3D7);
+	    outb(0x3D7, cPtr->HWCursorContents & 0xF8);
+	} else {
+	    HW_DEBUG(0x8);
+	    if (cPtr->UseMMIO) {
+		cPtr->HWCursorContents = MMIOmeml(DR(0x8));
+		MMIOmemw(DR(0x8)) = cPtr->HWCursorContents & 0xFFFE;
+	    } else {
+		cPtr->HWCursorContents = inl(DR(0x8));
+		outw(DR(0x8), cPtr->HWCursorContents & 0xFFFE);
+	    }
+	}
+    }
+}
+
+void
+chipsFixResume(CHIPSPtr cPtr)
+{
+  unsigned char tmp;
+    /* fix things that could be messed up by suspend/resume */
+    if (!IS_HiQV(cPtr))
+	outw(0x3D6,0x15);
+    tmp = inb(0x3CC);
+    outb(0x3C2, (tmp & 0xFE) | cPtr->SuspendHack.vgaIOBaseFlag); 
+    outb(cPtr->IOBase + 4, 0x11);
+    tmp = inb(cPtr->IOBase + 5);
+    outb(cPtr->IOBase + 5, (tmp & 0x7F));
+
+    /* fix things that could be messed up by suspend/resume */
+    if (!IS_HiQV(cPtr))
+	outw(0x3D6,0x15);
+    tmp = inb(0x3CC);
+    outb(0x3C2, (tmp & 0xFE) | cPtr->SuspendHack.vgaIOBaseFlag); 
+    outb(cPtr->IOBase + 4, 0x11);
+    tmp = inb(cPtr->IOBase + 5);
+    outb(cPtr->IOBase + 5, (tmp & 0x7F));
+}
+
+static char
+chipsTestDACComp(ScrnInfoPtr pScrn, unsigned char a, unsigned char b,
+		 unsigned char c)
+{
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    unsigned char type;
+
+    outb(0x3C8,00);
+    while (inb(cPtr->IOBase + 0xA) & 0x08){};   /* wait for vsync to end */
+    while (!(inb(cPtr->IOBase + 0xA) & 0x08)){};  /* wait for new vsync  */
+    outb(0x3C9,a);              /* set pattern */
+    outb(0x3C9,b);
+    outb(0x3C9,c);
+
+    while (!(inb(cPtr->IOBase +0xA) & 0x01)){};  /* wait for hsync to end  */
+    while (inb(cPtr->IOBase +0xA) & 0x01){};  /* wait for hsync to end  */
+    type = inb(0x3C2);          /* read comparator        */
+
+    return (type & 0x10);
+}
+
+static int
+chipsProbeMonitor(ScrnInfoPtr pScrn)
+{
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    unsigned char dacmask;
+    unsigned char dacdata[3];
+    unsigned char xr1, xr2;
+    int type = 2;  /* no monitor */
+
+    dacmask = inb(0x3C6);    /* save registers */ 
+    outb(0x3C6,00);
+    outb(0x3C7,00);
+    dacdata[0]=inb(0x3C9);
+    dacdata[1]=inb(0x3C9);
+    dacdata[2]=inb(0x3C9);
+    if (!IS_HiQV(cPtr)) {
+	read_xr(0x06, xr1);
+	read_xr(0x1F, xr2);
+	write_xr(0x06, xr1 & 0xF1);  /* turn on dac */
+	write_xr(0x1F, xr2 & 0x7F);  /* enable comp */
+    } else {
+	read_xr(0x81,xr1);
+	read_xr(0xD0,xr2);
+	write_xr(0x81,(xr1 & 0xF0));
+	write_xr(0xD0,(xr2 | 0x03));
+    }
+    if (chipsTestDACComp(pScrn, 0x12,0x12,0x12)) {         /* test patterns */
+	if (chipsTestDACComp(pScrn,0x14,0x14,0x14))        /* taken  from   */
+	    if (!chipsTestDACComp(pScrn,0x2D,0x14,0x14))   /* BIOS          */
+		if (!chipsTestDACComp(pScrn,0x14,0x2D,0x14))
+		    if (!chipsTestDACComp(pScrn,0x14,0x14,0x2D))
+			if (!chipsTestDACComp(pScrn,0x2D,0x2D,0x2D))
+			    type = 0;    /* color monitor */
+    } else {     
+	if (chipsTestDACComp(pScrn,0x04,0x12,0x04))
+	    if (!chipsTestDACComp(pScrn,0x1E,0x12,0x04))
+		if (!chipsTestDACComp(pScrn,0x04,0x2D,0x04))
+		    if (!chipsTestDACComp(pScrn,0x1E,0x16,0x15))
+			if (chipsTestDACComp(pScrn,0x00,0x00,0x00))
+			    type = 1;    /* monochrome */
+    }
+
+    outb(0x3C8,00);         /* restore registers */
+    outb(0x3C9,dacdata[0]);
+    outb(0x3C9,dacdata[1]);
+    outb(0x3C9,dacdata[2]);
+    outb(0x3C6,dacmask);
+    if (!IS_HiQV(cPtr)) {
+	write_xr(0x06,xr1);
+	write_xr(0x1F,xr2);
+    } else {
+	write_xr(0x81,xr1);
+	write_xr(0xD0,xr2);
+    }
+    return type;
+}
+
+static int
+chipsSetMonitor(ScrnInfoPtr pScrn)
+{
+    int tmp= chipsProbeMonitor(pScrn);
+
+    switch (tmp) {
+    case 0:
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Color monitor detected\n");
+	break;
+    case 1:
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Monochrome monitor detected\n");
+	break;
+    default:
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "No monitor detected\n");
+    }
+    return (tmp);
+}
+

@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/mi/mibank.h,v 1.1.2.1 1998/04/18 11:39:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibank.h,v 1.2 1998/07/26 02:33:06 dawes Exp $ */
 
 #ifndef __MIBANK_H__
 #define __MIBANK_H__ 1
@@ -44,6 +44,11 @@ typedef int miBankProc(
 );
 
 typedef miBankProc *miBankProcPtr;
+
+typedef struct _miBankEnable {
+  void (* func)(void *arg);
+  void *arg;
+} miBankEnableRec, *miBankEnablePtr;
 
 typedef struct _miBankInfo
 {
@@ -71,6 +76,7 @@ typedef struct _miBankInfo
     miBankProcPtr SetSourceBank;                /* Set pBankA bank number */
     miBankProcPtr SetDestinationBank;           /* Set pBankB bank number */
     miBankProcPtr SetSourceAndDestinationBanks; /* Set both bank numbers */
+    miBankEnablePtr BankingEnable;              /* Enable banking         */
 
     pointer pBankA;     /* First aperture location */
     pointer pBankB;     /* First or second aperture location */
