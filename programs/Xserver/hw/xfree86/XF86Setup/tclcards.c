@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclcards.c,v 3.1 1996/06/30 10:44:10 dawes Exp $ */
 
 /*
 
@@ -35,10 +35,17 @@ int TCL_XF86GetCardEntry(
 #endif
 );
 
+int lookupcard(
+#if NeedNestedPrototypes
+    char	*name
+#endif
+);
+
 /*
    Adds all the Cards database specific commands to the Tcl interpreter
 */
 
+int
 Cards_Init(interp)
     Tcl_Interp	*interp;
 {
@@ -64,6 +71,7 @@ Cards_Init(interp)
    a list of the cards in the database
 */
 
+int
 TCL_XF86GetCardList(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -94,6 +102,7 @@ TCL_XF86GetCardList(clientData, interp, argc, argv)
    the full info on the given card
 */
 
+int
 TCL_XF86GetCardEntry(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.74 1996/06/10 08:42:18 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.75 1996/06/29 09:02:01 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -278,6 +278,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.74 1996/06/10 08:42:18 dawes Exp $
 */
 #define WacomSupport		YES
 #define ElographicsSupport	YES 
+#define SummaSketchSupport	YES
 
 /*
  * if your system supports dynamic loading of modules using

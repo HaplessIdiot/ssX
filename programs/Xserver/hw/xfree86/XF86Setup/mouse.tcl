@@ -1,4 +1,4 @@
-# $XFree86$
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.2 1996/06/30 10:44:06 dawes Exp $
 
 #
 #
@@ -389,7 +389,8 @@ proc Mouse_setsettings { w } {
 		} else {
 			set Pointer(BaudRate) $baudRate
 		}
-		if { [$w.mouse.srate.scale cget -state] == "disabled" } {
+		if { [$w.mouse.srate.scale cget -state] == "disabled"
+				|| $sampleRate == 0 } {
 			set Pointer(SampleRate) ""
 		} else {
 			set Pointer(SampleRate) $sampleRate

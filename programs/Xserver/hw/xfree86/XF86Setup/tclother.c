@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclother.c,v 3.2 1996/06/30 10:44:13 dawes Exp $ */
 
 /*
 
@@ -8,7 +8,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
+#include <X11/Xos.h>
 #include <X11/Xproto.h>
 #include <X11/Xfuncs.h>
 #include <tcl.h>
@@ -82,6 +82,7 @@ static int	TCL_XF86Sleep(
    Adds all the new commands to the Tcl interpreter
 */
 
+int
 XF86Other_Init(interp)
     Tcl_Interp	*interp;
 {
@@ -116,14 +117,13 @@ XF86Other_Init(interp)
 	return TCL_OK;
 }
 
+int
 TCL_XF86GetUID(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
     int		argc;
     char	*argv[];
 {
-	int idx;
-
 	if (argc != 1) {
 		Tcl_SetResult(interp, "Usage: getuid", TCL_STATIC);
 		return TCL_ERROR;
@@ -131,10 +131,11 @@ TCL_XF86GetUID(clientData, interp, argc, argv)
 
 	/* This is short, so we can write directly into the
 	   pre-allocated buffer */
-	sprintf(interp->result, "%d", getuid());
+	sprintf(interp->result, "%d", (int) getuid());
 	return TCL_OK;
 }
 
+int
 TCL_XF86ServerRunning(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -159,14 +160,13 @@ TCL_XF86ServerRunning(clientData, interp, argc, argv)
 	return TCL_OK;
 }
 
+int
 TCL_XF86ProcessRunning(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
     int		argc;
     char	*argv[];
 {
-	Display *display;
-
 	if (argc != 2) {
 		Tcl_SetResult(interp, "Usage: process_running <pid>", TCL_STATIC);
 		return TCL_ERROR;
@@ -180,6 +180,7 @@ TCL_XF86ProcessRunning(clientData, interp, argc, argv)
 	return TCL_OK;
 }
 
+int
 TCL_XF86HasSymlinks(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -199,6 +200,7 @@ TCL_XF86HasSymlinks(clientData, interp, argc, argv)
 	return TCL_OK;
 }
 
+int
 TCL_XF86Link(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -221,6 +223,7 @@ TCL_XF86Link(clientData, interp, argc, argv)
 	return TCL_OK;
 }
 
+int
 TCL_XF86UnLink(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -239,6 +242,7 @@ TCL_XF86UnLink(clientData, interp, argc, argv)
 	return TCL_OK;
 }
 
+int
 TCL_XF86Sleep(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;

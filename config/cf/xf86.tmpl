@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.6 1996/02/18 03:40:45 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.7 1996/02/18 12:00:44 dawes Exp $
 
 #if XF86LinkKit
     TOP_INCLUDES = TopIncludes
@@ -29,6 +29,9 @@ XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.6 1996/02/18 03:40:45 dawes Exp $
 #ifndef ElographicsSupport
 #define ElographicsSupport	NO
 #endif
+#ifndef SummaSketchSupport
+#define SummaSketchSupport	NO
+#endif
 
 #if BuildDynamicLoading
        MODULEDIR = $(USRLIBDIR)/modules
@@ -49,5 +52,10 @@ XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.6 1996/02/18 03:40:45 dawes Exp $
 #  define ElographicsDefines -DELOGRAPHICS_SUPPORT
 # else
 #  define ElographicsDefines
+# endif
+# if SummaSketchSupport
+#  define SummaSketchDefines -DSUMMASKETCH_SUPPORT
+# else
+#  define SummaSketchDefines
 # endif
 #endif

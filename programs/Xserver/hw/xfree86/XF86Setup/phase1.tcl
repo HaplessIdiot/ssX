@@ -1,4 +1,4 @@
-# $XFree86$
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.1 1996/06/30 10:44:07 dawes Exp $
 #
 # Phase I
 #
@@ -42,12 +42,12 @@ proc message { text {buttontype okay} } {
 		puts $text
 		if { [string compare $buttontype yesno] == 0 } {
 			puts -nonewline "Okay (y/n)? "
-			gets response
+			gets stdin response
 			return [string match {[yY]} [string index $response 0]]
 		}
 		if { [string compare $buttontype okay] == 0 } {
 			puts -nonewline "Press \[Enter\] to continue..."
-			gets response
+			gets stdin response
 		}
 		return
 	}
@@ -330,7 +330,7 @@ if { !$UseConfigFile } {
 		puts "This program needs to make a link to the real mouse device."
 		puts {What name should be used for the link (press [Enter] to accept}
 		puts -nonewline "the default of $Pointer(Device))? "
-		gets response
+		gets stdin response
 		if [string length $response] {
 			set Pointer(Device) $response
 		}

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.12 1996/05/12 11:57:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.13 1996/06/10 09:14:49 dawes Exp $ */
 
 #include "Xmd.h"
 #include "XI.h"
@@ -289,11 +289,20 @@ OpenInputDevice (dev, client, status)
     ClientPtr client;
     int *status;
 {
-  LocalDevicePtr        local = (LocalDevicePtr)dev->public.devicePrivate;
-
-  if (local->flags & XI86_NO_OPEN_ON_INIT) {
-    dev->startup = TRUE;
-  }
+    extern int	BadDevice;
+    
+    if (!dev->inited) {
+	*status = BadDevice;
+    } else {
+	if (!dev->public.on) {
+	    if (!EnableDevice(dev)) {
+		*status = BadDevice;
+	    } else {
+		/* to prevent ProcXOpenDevice to call EnableDevice again */
+		dev->startup = FALSE;
+	    }
+	}
+    }
 }
 
 
@@ -802,7 +811,7 @@ xf86PostMotionEvent(DeviceIntPtr	device,
 		xv->type = DeviceValuator;
 		xv->deviceid = device->id;
 	    
-		xv->num_valuators = loop % 6;
+		xv->num_valuators = (loop % 6) + 1;
 		xv->first_valuator = first_valuator + (loop / 6) * 6;
 		xv->device_state = 0;
 		
@@ -887,7 +896,7 @@ xf86PostProximityEvent(DeviceIntPtr	device,
 	    xv->type = DeviceValuator;
 	    xv->deviceid = device->id;
 	
-	    xv->num_valuators = loop % 6;
+	    xv->num_valuators = (loop % 6) + 1;
 	    xv->first_valuator = first_valuator + (loop / 6) * 6;
 	    xv->device_state = 0;
 	
@@ -949,7 +958,7 @@ xf86PostButtonEvent(DeviceIntPtr	device,
 	    xv->deviceid = device->id;
 	    xv->device_state = 0;
 	    /* if the device is in the relative mode we don't have to send valuators */
-	    xv->num_valuators = is_absolute ? (loop % 6) : 0;
+	    xv->num_valuators = is_absolute ? (loop % 6) + 1 : 0;
 	    xv->first_valuator = first_valuator + (loop / 6) * 6;
 	    xf86eqEnqueue(xE);
 	    /* if the device is in the relative mode only one event is needed */

@@ -1,15 +1,32 @@
+XFree86 3.1.2Ec (8 July 1996)
+596. XF86Setup fixes and udpates (Joe Moss).
+595. Fix some build problems on Solaris due to the positioning of
+     <stdlib.h> includes in xconsole and xwd (William Austin).
+594. Fix a make problem in xfree98/vga16/drivers (Takaaki Nomura).
+593. Add some minor features from ISO 6429 to xterm (Thomas E. Dickey).
+592. Fix for SiS clock programming, and implement HW cursor for SiS
+     (Alan Hourihane).
+591. XInput support for SummaSketch tablets (Steven Lang).
+590. Improve the startup of the Wacom driver (Frederic Lepied).
+589. Fix an XInput bug with extended events reporting the wrong number
+     of valuators (Frederic Lepied).
+588. Fix xterm's utmp usage for Solaris (Christos Zoulas).
+
 XFree86 3.1.2Eb (30 June 1996)
+587. Fix MMIO setting which causes problems with Trio64V+ cards in machines
+     with PCI SCSI controllers (Harald Koenig).
 586. Auto-select the ICD2061A for Diamond Stealth 64 VRAM cards (when
      a Diamond BIOS, Bt485 and S3 964 are all detected).
 585. Fix a problem with the VGA16 server when Chipset "generic" is specified.
 584. Fix twm/gram.y and fonts/PEX/to_wfont.y problems that show up when
-     using bison-1.15 (Matthieu Herrb).
+     using bison-1.25 (Matthieu Herrb).
 583. Move the beta expiry check code into a separate file, and add a command
      line option to allow the expiry date to be extended when a key is
      provided.
 582. Preliminary 24bpp packed support for some S3 cards (Harald Koenig).
 581. Add 24bpp (packed pixel) support for cfb (cfb24), and the required
-     hooks for using it with the SVGA server (NoZomi Ytow).
+     hooks for using it with the SVGA server (Shigehiro Nomura and
+     NoZomi Ytow).
 580. Fix some xterm background colouring problems (Thomas E. Dickey).
 579. Allow the PCI burst to be separately turned on/off for read and write
      for the TGUI chips (Alan Hourihane).

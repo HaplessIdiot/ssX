@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf /main/10 1996/01/22 17:35:30 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.48 1996/06/13 07:54:39 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.49 1996/06/29 09:01:54 dawes Exp $
 
 #ifndef OSName
 #define OSName			FreeBSD 2.1
@@ -219,7 +219,7 @@ dirs: .EXEC								@@\
 #endif
 
 #ifndef StaticLibrary
-#define StaticLibrary(libpath,libname) -static Concat(-L,libpath) Concat(-l,libname) -Wl,-Bdynamic
+#define StaticLibrary(libpath,libname) -Wl,-Bstatic Concat(-L,libpath) Concat(-l,libname) -Wl,-Bdynamic
 #endif
 
 #include <bsdLib.rules>

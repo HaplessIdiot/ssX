@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.10 1996/05/11 11:04:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.11 1996/06/10 09:14:45 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -647,7 +647,6 @@ xf86EloReadInput(LocalDevicePtr	local)
     if (!xf86IsCorePointer(local->dev) ||
 	xf86EloCalibrate(priv, &cur_x, &cur_y) == Success)
       xf86PostMotionEvent(local->dev, TRUE, 0, 2, cur_x, cur_y);
-    ErrorF("after\n");
     
     /*
      * Emit a button press or release.
@@ -938,10 +937,10 @@ xf86EloControl(DeviceIntPtr	dev,
   case DEVICE_INIT:
     {
 #if defined(sun) && !defined(i386)
-      char      *name = getenv("ELO_DEV");
-      char      *calib = getenv("ELO_CALIB");
-      char	*speed = getenv("ELO_SPEED");
-      char	*delays = getenv("ELO_DELAYS");
+      char      *name = (char *) getenv("ELO_DEV");
+      char      *calib = (char *) getenv("ELO_CALIB");
+      char	*speed = (char *) getenv("ELO_SPEED");
+      char	*delays = (char *) getenv("ELO_DELAYS");
 #endif
       
       DBG(2, ErrorF("Elographics touchscreen init...\n"));
@@ -1071,6 +1070,7 @@ xf86EloControl(DeviceIntPtr	dev,
       DBG(3, ErrorF("Try to see if the link is at the specified rate\n"));
       memset(&termios_tty, 0, sizeof(termios_tty));
       termios_tty.c_cflag = priv->link_speed | CS8 | CREAD | CLOCAL;
+      termios_tty.c_cc[VMIN] = 1;
       if (tcsetattr(local->fd, TCSANOW, &termios_tty) < 0) {
 	Error("Unable to configure Elographics touchscreen port");
 	goto not_success;

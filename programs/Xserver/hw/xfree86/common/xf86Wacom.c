@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.15 1996/05/11 11:04:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.16 1996/06/10 09:14:48 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
@@ -439,16 +439,27 @@ send_request(int	fd,
 	     char	*answer)
 {
   int	len, nr;
+  int	maxtry = MAXTRY;
   
   /* send request string */
-  SYSCALL(len = write(fd, request, strlen(request)));
-  if (len == -1) Error("Wacom write");
+  do {
+    SYSCALL(len = write(fd, request, strlen(request)));
+    if ((len == -1) && (errno != EAGAIN)) {
+      ErrorF("Wacom write error : %s", strerror(errno));
+      return NULL;
+    }
+    maxtry--;
+  } while ((len == -1) && maxtry);
 
+  if (maxtry == 0) {
+    ErrorF("Wacom unable to write request string '%s' after %d tries\n", request, MAXTRY);
+    return NULL;
+  }
+  
   do {
     struct timeval	timeout;
     int			err;
     fd_set		readfds;
-    int                 maxtry = MAXTRY;
     
     FD_ZERO(&readfds);
     FD_SET(fd, &readfds);
@@ -458,7 +469,8 @@ send_request(int	fd,
     SYSCALL(err = select(FD_SETSIZE, &readfds, NULL, NULL, &timeout));
     switch (err) {
     case -1:
-      Error("select");
+      ErrorF("Wacom select error : %s\n", strerror(errno));
+      return NULL;
       break;
     case 0:
       ErrorF("Timeout while reading Wacom tablet. No tablet connected ???\n");
@@ -466,16 +478,37 @@ send_request(int	fd,
       break;
     }
 
+    maxtry = MAXTRY;
+    
     do {    
       SYSCALL(nr = read(fd, answer, 1));
-      if ((nr == -1) && (errno != EAGAIN)) Error("Wacom read");
-      maxtry--;
-      
+      if ((nr == -1) && (errno != EAGAIN)) {
+	ErrorF("Wacom read error : %s\n", strerror(errno));
+	return NULL;
+      }
+      maxtry--;  
     } while ((answer[0] != request[0]) && maxtry);
 
+    if (maxtry == 0) {
+      ErrorF("Wacom unable to read first byte of request '%s' answer after %d tries\n", request, MAXTRY);
+      return NULL;
+    }
+
     do {    
-      SYSCALL(nr = read(fd, answer+1, 1));
-      if ((nr == -1) && (errno != EAGAIN)) Error("Wacom read");
+      maxtry = MAXTRY;
+      do {    
+	SYSCALL(nr = read(fd, answer+1, 1));
+	if ((nr == -1) && (errno != EAGAIN)) {
+	  ErrorF("Wacom read error : %s\n", strerror(errno));
+	  return NULL;
+	}
+	maxtry--;  
+      } while ((nr == -1) && maxtry);
+      
+      if (maxtry == 0) {
+	ErrorF("Wacom unable to read second byte of request '%s' answer after %d tries\n", request, MAXTRY);
+	return NULL;
+      }
 
       if (answer[1] != request[1])
 	answer[0] = answer[1];
@@ -489,14 +522,21 @@ send_request(int	fd,
   /* read until carriage return */
   len = 2;
   do {    
-    SYSCALL(nr = read(fd, answer+len, 1));
-    
-    if (nr == -1) {
-      if (errno != EAGAIN)
-        Error("read");
+    maxtry = MAXTRY;
+    do {    
+      SYSCALL(nr = read(fd, answer+len, 1));
+      if ((nr == -1) && (errno != EAGAIN)) {
+	ErrorF("Wacom read error : %s\n", strerror(errno));
+	return NULL;
+      }
+      maxtry--;  
+    } while ((nr == -1) && maxtry);
+
+    if (maxtry == 0) {
+      ErrorF("Wacom unable to read last byte of request '%s' answer after %d tries\n", request, MAXTRY);
+      return NULL;
     }
-    else
-      len += nr;
+    len += nr;
   } while (answer[len-1] != '\r');
 
   answer[len-1] = '\0';
@@ -531,7 +571,7 @@ xf86WcmReadInput(LocalDevicePtr         local)
   SYSCALL(len = read(local->fd, buffer, sizeof(buffer)));
 
   if (len <= 0) {
-    Error("error reading wacom device");
+    ErrorF("Error reading wacom device : %s\n", strerror(errno));
     return;
   } else {
     DBG(10, ErrorF("xf86WcmReadInput read %d bytes\n", len));
@@ -854,23 +894,26 @@ xf86WcmOpen(LocalDevicePtr	local)
 
   SYSCALL(local->fd = open(priv->wcmDevice, O_RDWR|O_NDELAY));
   if (local->fd == -1) {
-    Error(priv->wcmDevice);
+    ErrorF("Error opening %s : %s\n", priv->wcmDevice, strerror(errno));
     return !Success;
   }
 
 #ifdef POSIX_TTY
-  err = tcgetattr(local->fd, &termios_tty);
+  SYSCALL(err = tcgetattr(local->fd, &termios_tty));
+
   if (err == -1) {
-    Error("tcgetattr");
+    ErrorF("Wacom tcgetattr error : %s\n", strerror(errno));
     return !Success;
   }
   termios_tty.c_iflag = IXOFF;
-  termios_tty.c_cflag = B9600|CS8|CREAD ;
+  termios_tty.c_oflag = 0;
+  termios_tty.c_cflag = B9600|CS8|CREAD|CLOCAL;
   termios_tty.c_lflag = 0;
 
   termios_tty.c_cc[VINTR] = 0;
   termios_tty.c_cc[VQUIT] = 0;
   termios_tty.c_cc[VERASE] = 0;
+  termios_tty.c_cc[VEOF] = 0;
 #ifdef VWERASE
   termios_tty.c_cc[VWERASE] = 0;
 #endif
@@ -884,6 +927,9 @@ xf86WcmOpen(LocalDevicePtr	local)
   termios_tty.c_cc[VEOL2] = 0;
 #endif
   termios_tty.c_cc[VSUSP] = 0;
+#ifdef VDSUSP
+  termios_tty.c_cc[VDSUSP] = 0;
+#endif
 #ifdef VDISCARD
   termios_tty.c_cc[VDISCARD] = 0;
 #endif
@@ -891,14 +937,16 @@ xf86WcmOpen(LocalDevicePtr	local)
   termios_tty.c_cc[VLNEXT] = 0; 
 #endif
 	
-  termios_tty.c_cc[VMIN] = 1 ;
-  termios_tty.c_cc[VTIME] = 10 ;
+  /* minimum 1 character in one read call and timeout to 100 ms */
+  termios_tty.c_cc[VMIN] = 1;
+  termios_tty.c_cc[VTIME] = 10;
 
-  err = tcsetattr(local->fd, TCSANOW, &termios_tty);
+  SYSCALL(err = tcsetattr(local->fd, TCSANOW, &termios_tty));
   if (err == -1) {
-    Error("tcsetattr TCSANOW");
+    ErrorF("Wacom tcsetattr TCSANOW error : %s\n", strerror(errno));
     return !Success;
   }
+
 #else
   Code for OSs without POSIX tty functions
 #endif
@@ -909,7 +957,7 @@ xf86WcmOpen(LocalDevicePtr	local)
   SYSCALL(err = write(local->fd, WC_RESET_IV, strlen(WC_RESET_IV)));
   if (err == -1)
     {
-      Error("write");
+      ErrorF("Wacom write error : %s\n", strerror(errno));
       return !Success;
     }
     
@@ -919,10 +967,26 @@ xf86WcmOpen(LocalDevicePtr	local)
   SYSCALL(err = select(0, NULL, NULL, NULL, &timeout));
   if (err == -1)
     {
-      Error("select");
+      ErrorF("Wacom select error : %s\n", strerror(errno));
       return !Success;
     }
   
+#ifdef POSIX_TTY
+  /* send a START just for the case the tablet would have been stopped */
+  SYSCALL(err = tcflow(local->fd, TCION));
+  if (err == -1) {
+    ErrorF("Wacom tcflow TCION error : %s\n", strerror(errno));
+  }
+
+  /* flush input and output */
+  SYSCALL(err = tcflush(local->fd, TCIOFLUSH));
+  if (err == -1) {
+    ErrorF("Wacom tcflush TCIOFLUSH error : %s\n", strerror(errno));
+  }
+#else
+  Code for OSs without POSIX tty functions
+#endif
+
   DBG(2, ErrorF("reading model\n"));
   if (!send_request(local->fd, WC_MODEL, buffer)) 
     return !Success;
@@ -968,7 +1032,7 @@ xf86WcmOpen(LocalDevicePtr	local)
   /* send a setup string to the tablet */
   SYSCALL(err = write(local->fd, setup_string, strlen(setup_string)));
   if (err == -1) {
-    Error("write");
+    ErrorF("Wacom write error : %s\n", strerror(errno));
     return !Success;
   }
 
@@ -977,7 +1041,7 @@ xf86WcmOpen(LocalDevicePtr	local)
   if (HANDLE_TILT(priv)) {
       SYSCALL(err = write(local->fd, WC_TILT_MODE, strlen(WC_TILT_MODE)));
       if (err == -1) {
-	  Error("write");
+	  ErrorF("Wacom write error : %s\n", strerror(errno));
 	  return !Success;
       }
   }
@@ -996,7 +1060,7 @@ xf86WcmOpen(LocalDevicePtr	local)
       SYSCALL(err = write(local->fd, buf, strlen(buf)));
 
       if (err == -1) {
-	  Error("write");
+	  ErrorF("Wacom write error : %s\n", strerror(errno));
 	  return !Success;
       }
   }
@@ -1358,7 +1422,7 @@ xf86WcmAllocate(char *  name,
   LocalDevicePtr        local = (LocalDevicePtr) xalloc(sizeof(LocalDeviceRec));
   WacomDevicePtr        priv = (WacomDevicePtr) xalloc(sizeof(WacomDeviceRec));
 #if defined(sun) && !defined(i386)
-  char			*dev_name = getenv("WACOM_DEV");  
+  char			*dev_name = (char *) getenv("WACOM_DEV");  
 #endif
   
   local->name = name;

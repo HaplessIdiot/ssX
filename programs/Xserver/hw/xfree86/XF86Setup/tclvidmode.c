@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclvidmode.c,v 3.1 1996/06/30 10:44:14 dawes Exp $ */
 
 /*
 
@@ -44,6 +44,7 @@ XErrorEvent *err;
    Adds all the vidmode specific commands to the Tcl interpreter
 */
 
+int
 XF86vid_Init(interp)
     Tcl_Interp	*interp;
 {
@@ -85,6 +86,7 @@ XF86vid_Init(interp)
    The version is returned simple floating point number (e.g. 0.4)
 */
 
+int
 TCL_XF86VidModeQueryVersion(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -122,6 +124,7 @@ TCL_XF86VidModeQueryVersion(clientData, interp, argc, argv)
    The first element is the EventBase and the second is the ErrorBase
 */
 
+int
 TCL_XF86VidModeQueryExtension(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -158,6 +161,7 @@ TCL_XF86VidModeQueryExtension(clientData, interp, argc, argv)
    various video mode parameters (including any flags)
 */
 
+int
 TCL_XF86VidModeGetModeLine(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -212,6 +216,7 @@ TCL_XF86VidModeGetModeLine(clientData, interp, argc, argv)
    various video mode parameters (including any flags)
 */
 
+int
 TCL_XF86VidModeGetAllModeLines(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -268,6 +273,7 @@ TCL_XF86VidModeGetAllModeLines(clientData, interp, argc, argv)
 	}
 }
 
+int
 TCL_XF86VidModeGetMonitor(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -330,6 +336,7 @@ TCL_XF86VidModeGetMonitor(clientData, interp, argc, argv)
 #undef MNVSync
 }
 
+int
 TCL_XF86VidModeLockModeSwitch(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -373,6 +380,7 @@ TCL_XF86VidModeLockModeSwitch(clientData, interp, argc, argv)
 	return TCL_OK;
 }
 
+int
 TCL_XF86VidModeSwitchMode(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;

@@ -1,7 +1,7 @@
 .\"#! troff -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
 .\" $XConsortium: ctlseqs.ms,v 1.16 94/12/28 20:45:48 gildea Exp $
-.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.0 1996/02/12 11:10:48 dawes Exp $
+.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.1 1996/03/10 11:51:11 dawes Exp $
 .\"
 .\" Copyright 1991, 1994 X Consortium
 .\"
@@ -134,6 +134,7 @@
 .[] D D
 .[] E E
 .[] F F
+.[] G G
 .[] H H
 .[] J J
 .[] K K
@@ -317,6 +318,8 @@ Cursor Down \*(Ps Times (default = 1) (CUD)
 Cursor Forward \*(Ps Times (default = 1) (CUF)
 .IP \\*(Es\\*([[\\*(Ps\\*s\\*D
 Cursor Backward \*(Ps Times (default = 1) (CUB)
+.IP \\*(Es\\*([[\\*(Pm\\*s\\*G
+Cursor Character Absolute  [column] (default = [row,1]) (CHA)
 .IP \\*(Es\\*([[\\*(Ps\\*s\\*;\\*(Ps\\*s\\*H
 Cursor Position [row;column] (default = [1,1]) (CUP)
 .IP \\*(Es\\*([[\\*(Ps\\*s\\*J
@@ -344,6 +347,8 @@ Send Device Attributes (DA)
   \*(Ps = \*0 or omitted \(-> request attributes from terminal
   \(-> \*(Es\*([[\*?\*1\*;\*2\*c (``I am a VT100 with Advanced
 Video Option.'')
+.IP \\*(Es\\*([[\\*(Pm\\*s\\*d
+Line Position Absolute  [row] (default = [1,column]) (VPA)
 .IP \\*(Es\\*([[\\*(Ps\\*s\\*;\\*(Ps\\*s\\*f
 Horizontal and Vertical Position [row;column] (default = [1,1]) (HVP)
 .IP \\*(Es\\*([[\\*(Ps\\*s\\*g
@@ -354,6 +359,8 @@ Tab Clear (TBC)
 Set Mode (SM)
   \*(Ps = \*4 \(-> Insert Mode (IRM)
   \*(Ps = \*2\*0 \(-> Automatic Newline (LNM)
+.IP \\*(Es\\*([[\\*(Pm\\*s\\*j
+Character Position Absolute  [column] (default = [row,1]) (HPA)
 .IP \\*(Es\\*([[\\*(Pm\\*s\\*l
 Reset Mode (RM)
   \*(Ps = \*4 \(-> Replace Mode (IRM)
@@ -362,9 +369,13 @@ Reset Mode (RM)
 Character Attributes (SGR)
   \*(Ps = \*0 \(-> Normal (default)
   \*(Ps = \*1 \(-> Bold
-  \*(Ps = \*4 \(-> Underscore
+  \*(Ps = \*4 \(-> Underlined
   \*(Ps = \*5 \(-> Blink (appears as Bold)
   \*(Ps = \*7 \(-> Inverse
+  \*(Ps = \*2\*2 \(-> Normal (neither bold nor faint)
+  \*(Ps = \*2\*4 \(-> Not underlined
+  \*(Ps = \*2\*5 \(-> Steady (not blinking)
+  \*(Ps = \*2\*7 \(-> Positive (not inverse)
   \*(Ps = \*3\*0 \(-> Set foreground color to Black
   \*(Ps = \*3\*1 \(-> Set foreground color to Red
   \*(Ps = \*3\*2 \(-> Set foreground color to Green

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclmisc.c,v 3.1 1996/06/30 10:44:11 dawes Exp $ */
 
 /*
 
@@ -9,9 +9,19 @@
 #include <X11/Intrinsic.h>
 #include <X11/Xmd.h>
 #include <X11/extensions/xf86misc.h>
+#include <X11/Xos.h>
 #include <tcl.h>
 #include <tk.h>
+#include <ctype.h>
 #include "tclmisc.h"
+
+#if X_NOT_STDC_ENV
+int atoi(
+#if NeedFunctionPrototypes
+  char  *str
+#endif
+);
+#endif
 
 static int (*savErrorFunc)();
 static int errorOccurred;
@@ -30,6 +40,7 @@ XErrorEvent *err;
    Adds all the xf86misc specific commands to the Tcl interpreter
 */
 
+int
 XF86Misc_Init(interp)
     Tcl_Interp	*interp;
 {
@@ -68,6 +79,7 @@ XF86Misc_Init(interp)
 	return TCL_OK;
 }
 
+int
 StrCaseCmp(s1, s2)
 char *s1, *s2;
 {
@@ -98,6 +110,7 @@ char *s1, *s2;
    The version is returned simple floating point number (e.g. 0.4)
 */
 
+int
 TCL_XF86MiscQueryVersion(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -135,6 +148,7 @@ TCL_XF86MiscQueryVersion(clientData, interp, argc, argv)
    The first element is the EventBase and the second is the ErrorBase
 */
 
+int
 TCL_XF86MiscQueryExtension(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -169,6 +183,7 @@ TCL_XF86MiscQueryExtension(clientData, interp, argc, argv)
    powersaver timeouts
 */
 
+int
 TCL_XF86MiscGetSaver(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -202,6 +217,7 @@ TCL_XF86MiscGetSaver(clientData, interp, argc, argv)
    sets the powersaver timeouts
 */
 
+int
 TCL_XF86MiscSetSaver(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -246,6 +262,7 @@ static char *kbdtable[] = { "None", "84Key", "101Key", "Other", "Xqueue" };
    keyboard settings
 */
 
+int
 TCL_XF86MiscGetKbdSettings(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -280,6 +297,7 @@ TCL_XF86MiscGetKbdSettings(clientData, interp, argc, argv)
    sets the keyboard settings
 */
 
+int
 TCL_XF86MiscSetKbdSettings(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -348,6 +366,7 @@ static char *msetable[] = { "None", "Microsoft", "MouseSystems", "MMSeries",
    mouse settings
 */
 
+int
 TCL_XF86MiscGetMouseSettings(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -402,6 +421,7 @@ static char *setmouseusage =
 		" <baudrate> <samplerate> on|off <timeout>"
 		" on|off [ClearDTR] [ClearRTS] [ReOpen]";
 
+int
 TCL_XF86MiscSetMouseSettings(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -411,7 +431,6 @@ TCL_XF86MiscSetMouseSettings(clientData, interp, argc, argv)
 	XF86MiscMouseSettings mseinfo;
 	int i;
 	Tk_Window tkwin;
-	char tmpbuf[200];
 
         if (argc < 8 || argc > 11) {
                 Tcl_SetResult(interp, setmouseusage, TCL_STATIC);

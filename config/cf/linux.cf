@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf /main/18 1996/02/02 18:59:31 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.39 1996/05/06 05:52:05 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.40 1996/06/29 09:01:58 dawes Exp $
 
 #ifndef LinuxElfDefault
 #ifdef i386Architecture
@@ -117,7 +117,7 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.39 1996/05/06 05:52:05 dawe
 #ifdef i386Architecture
 #define OptimizedCDebugFlags	DefaultGcc2i386Opt -m486
 #define StandardDefines		-Dlinux -D__i386__ -D_POSIX_SOURCE \
-				-D_BSD_SOURCE -D_GNU_SOURCE -DX_LOCALE
+				-D_BSD_SOURCE -D_SVID_SOURCE -DX_LOCALE
 #define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 #define HasWChar32		YES
 #define StandardCppDefines	-traditional StandardDefines
@@ -167,7 +167,7 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.39 1996/05/06 05:52:05 dawe
 #endif
 
 #ifndef StaticLibrary
-#define StaticLibrary(libpath,libname) -static Concat(-L,libpath) Concat(-l,libname) -Wl,-Bdynamic
+#define StaticLibrary(libpath,libname) -Wl,-Bstatic Concat(-L,libpath) Concat(-l,libname) -Wl,-Bdynamic
 #endif
 
 #include <lnxLib.rules>

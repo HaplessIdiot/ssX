@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/18 1996/01/16 16:08:36 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.36 1996/06/10 09:14:41 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.37 1996/06/29 14:11:05 dawes Exp $
 
 
 
@@ -44,8 +44,11 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.36 1996/06/1
 # if ElographicsSupport
    ELOGRAPHICS_SRC = xf86Elo.c
 # endif
+# if SummaSketchSupport
+   SUMMASKETCH_SRC = xf86Summa.c
+# endif
 # if ! BuildDynamicLoading
-    XINPUT_DEVICES = JoystickDefines WacomDefines ElographicsDefines
+    XINPUT_DEVICES = JoystickDefines WacomDefines ElographicsDefines SummaSketchDefines
 #  if JoystickSupport
       JOYSTICK_OBJ = xf86Jstk.o
 #  endif
@@ -54,6 +57,9 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.36 1996/06/1
 #  endif
 #  if ElographicsSupport
    ELOGRAPHICS_OBJ = xf86Elo.o
+#  endif
+#  if SummaSketchSupport
+   SUMMASKETCH_OBJ = xf86Summa.o
 #  endif
 # else
  SHARED_CFLAGS = PositionIndependentCFlags $(MODULEDEFINES)
@@ -115,6 +121,7 @@ SRCS =	\
 	$(JOYSTICK_SRC) \
 	$(WACOM_SRC) \
 	$(ELOGRAPHICS_SRC) \
+	$(SUMMASKETCH_SRC) \
 	$(XKBDDXSRC) \
 	$(BETASRC) \
 	$(SERVERSRCS)
@@ -131,6 +138,7 @@ OBJS = \
 	$(JOYSTICK_OBJ) \
 	$(WACOM_OBJ) \
 	$(ELOGRAPHICS_OBJ) \
+	$(SUMMASKETCH_OBJ) \
 	$(XKBDDXOBJ) \
 	$(BETAOBJ) \
 	$(KBD).o
@@ -188,6 +196,11 @@ InstallDynamicModule(xf86Wacom.so,$(MODULEDIR))
 SpecialObjectRule(xf86Elo.o,xf86Elo.c,$(SHARED_CFLAGS))
 DynamicModuleTarget(xf86Elo.so,xf86Elo.o)
 InstallDynamicModule(xf86Elo.so,$(MODULEDIR))
+#  endif
+#  if SummaSketchSupport
+SpecialObjectRule(xf86Summa.o,xf86Summa.c,$(SHARED_CFLAGS))
+DynamicModuleTarget(xf86Summa.so,xf86Summa.o)
+InstallDynamicModule(xf86Summa.so,$(MODULEDIR))
 #  endif
 # endif
 #endif
