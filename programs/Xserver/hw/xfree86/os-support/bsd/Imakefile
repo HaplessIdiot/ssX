@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/27 11:06:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.43 2000/06/23 19:51:01 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.44 2000/08/15 16:05:37 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -94,8 +94,13 @@ AXP_SRC=bsd_ev56.c
 AXP_OBJ=bsd_ev56.o
 #endif
 
+#if defined(FreeBSDArchitecture) && HasAgpGart
+AGP_SRC=lnx_agp.c
+AGP_OBJ=lnx_agp.o
+#else
 AGP_SRC=agp_noop.c
 AGP_OBJ=agp_noop.o
+#endif
 
 SRCS = bsd_init.c bsd_video.c bsd_io.c bsd_VTsw.c \
        libc_wrapper.c $(IOPERM_SRC) std_kbdEv.c posix_tty.c $(MOUSESRC) \
@@ -161,7 +166,11 @@ LinkSourceFile(stdPci.c,../shared)
 LinkSourceFile(vidmem.c,../shared)
 LinkSourceFile(sigio.c,../shared)
 LinkSourceFile(kmod_noop.c,../shared)
+#if defined(FreeBSDArchitecture) && HasAgpGart
+LinkSourceFile(lnx_agp.c,../linux)
+#else
 LinkSourceFile(agp_noop.c,../shared)
+#endif
 
 DependTarget()
 

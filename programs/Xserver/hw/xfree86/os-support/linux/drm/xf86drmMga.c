@@ -40,7 +40,9 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #define MAP_FAILED ((void *)-1)
 #endif
 
+#ifdef __linux__
 #include <sys/sysmacros.h>	/* for makedev() */
+#endif
 #include "xf86drm.h"
 #include "xf86drmMga.h"
 #include "drm.h"

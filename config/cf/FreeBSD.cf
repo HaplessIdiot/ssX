@@ -2,7 +2,7 @@ XCOMM platform:  $TOG: FreeBSD.cf /main/21 1997/10/05 20:42:34 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.96 2000/07/07 20:06:56 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.97 2000/08/01 23:38:45 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		DefaultToElfFormat
@@ -129,6 +129,16 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #ifndef BuildXF86DRI
 #if OSMajorVersion >= 5 || (OSMajorVersion == 4 && OSMinorVersion >= 1)
 #define BuildXF86DRI		YES
+#endif
+#endif
+
+/*
+ * 4.1/i386 and 5.0/i386 have the AGP driver.
+ */
+#ifndef HasAgpGart
+#if defined(i386Architecture) && \
+	(OSMajorVersion >= 5 || (OSMajorVersion == 4 && OSMinorVersion >= 1))
+#define HasAgpGart		YES
 #endif
 #endif
 

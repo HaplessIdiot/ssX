@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/sis/Imakefile,v 1.3 2000/08/04 03:51:41 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/sis/Imakefile,v 1.4 2000/08/11 17:27:10 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -43,7 +43,7 @@ OS_SUBDIR = bsd
 		-I$(XF86DRIVERSRC)/sis \
 		-I../../../include -I../.. -I../../X \
                 -I../common/ \
-                -I$(XF86OSSRC)/linux/drm/kernel
+                -I$(XF86OSSRC)/$(OS_SUBDIR)/drm/kernel
 #endif
 
 MESA_INCLUDES = -I. -I.. -I../../include
