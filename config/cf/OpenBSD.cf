@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.76 2002/10/29 23:24:18 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.77 2002/12/16 22:48:27 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -352,7 +352,7 @@ install:: fonts.alias							@@\
  */
 #ifndef LocalConfigFiles
 #define LocalConfigFiles \
-	OpenBSDLib.rules
+	OpenBSDLib.rules OpenBSDLib.tmpl
 #endif
 
 /*
@@ -441,6 +441,16 @@ install:: fonts.alias							@@\
 #   define HasMTRRSupport		NO
 #  endif
 # endif
+
+/* 
+ * agpgart support (OpenBSD 3.2 and up) 
+ */ 
+# if OSMajorVersion > 3 || (OSMajorVersion == 3 && OSMinorVersion > 1)
+#  ifndef HasAgpGart 
+#   define HasAgpGart   YES 
+#  endif 
+# endif 
+ 
 
 # ifndef DefaultGcc2i386Opt
 #   if (OSMajorVersion == 2 && OSMinorVersion >= 3) || OSMajorVersion > 2
@@ -805,6 +815,8 @@ install:: fonts.alias							@@\
 #  define NeedUIThrStubs			YES 
 #  define ThreadsCompileFlag		-pthread
 #  define ThreadsLibraries		-pthread
+# else
+#  define ThreadedX			NO
 # endif 
 #endif
 
