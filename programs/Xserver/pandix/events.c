@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/pandix/events.c,v 1.6 1998/12/20 22:18:58 dawes Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -101,6 +101,14 @@ extern PanoramiXData *panoramiXdataPtr;
 #define _SECURITY_SERVER
 #include "extensions/security.h"
 #endif
+
+#include "XIproto.h"
+#include "exevents.h"
+#include "extnsionst.h"
+
+#include "dixevents.h"
+#include "dixgrabs.h"
+#include "dispatch.h"
 
 extern WindowPtr *WindowTable;
 
@@ -211,7 +219,6 @@ Mask EventMaskForClient();
 Bool CheckDeviceGrabs();
 void EnqueueEvent();
 
-extern GrabPtr CreateGrab();		/* Defined in grabs.c */
 extern Bool GrabMatchesSecond();
 extern Bool DeletePassiveGrabFromList();
 extern int AddPassiveGrabToList();
@@ -1197,7 +1204,8 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
 	else
 	{
 	    if ((type == DeviceMotionNotify) &&
-		MaybeSendDeviceMotionNotifyHint (pEvents, mask) != 0)
+		MaybeSendDeviceMotionNotifyHint(
+			(deviceKeyButtonPointer*)pEvents, mask) != 0)
 		return 1;
 	}
 #endif
@@ -1315,8 +1323,9 @@ DeliverEventsToWindow(pWin, pEvents, count, filter, grab, mskidx)
     {
 	if (((type == DeviceMotionNotify) || (type == DeviceButtonPress)) &&
 	    deliveries)
-	    CheckDeviceGrabAndHintWindow (pWin, type, pEvents, grab, client, 
-					  deliveryMask);
+	    CheckDeviceGrabAndHintWindow (pWin, type, 
+					  (deviceKeyButtonPointer*) pEvents, 
+					  grab, client, deliveryMask);
     }
 #endif
     if (deliveries)

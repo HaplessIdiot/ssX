@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/1 1997/10/29 13:27:41 kaleb $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/panmi/Imakefile,v 1.5 1998/12/13 05:33:04 dawes Exp $
 #include <Server.tmpl>
 
 #if ! HasCbrt
@@ -7,14 +7,21 @@ CBRT_SRC = cbrt.c
 CBRT_OBJ = cbrt.o
 #endif
 
+#if DoLoadableServer
+EXTRAMIINITEXTOBJ = miinitext.o
+#else
+MIINITEXTSRC = miinitext.c
+MIINITEXTOBJ = miinitext.o
+#endif
+
 SRCS =  $(CBRT_SRC) mivaltree.c mipolyseg.c mipolyrect.c \
 	mipoly.c mipolycon.c mipolygen.c mipolyutil.c \
 	mifillrct.c miwideline.c mispans.c \
- 	miarc.c mizerarc.c mifillarc.c \
+	miarc.c mizerarc.c mifillarc.c \
 	miwindow.c micursor.c miregion.c \
 	mipolytext.c mibitblt.c mipolypnt.c mipushpxl.c \
 	miexpose.c miglblt.c mizerline.c mifpolycon.c \
-	midash.c mibstore.c mibank.c miinitext.c mieq.c \
+	midash.c mibstore.c mibank.c $(MIINITEXTSRC) mieq.c \
 	mipointer.c misprite.c midispcur.c miscrinit.c miclipn.c migc.c \
 	micmap.c
 
@@ -25,16 +32,17 @@ OBJS =	$(CBRT_OBJ) mivaltree.o mipolyseg.o mipolyrect.o \
 	miwindow.o micursor.o miregion.o \
 	mipolytext.o mibitblt.o mipolypnt.o mipushpxl.o \
 	miexpose.o miglblt.o mizerline.o mifpolycon.o \
-	midash.o mibstore.o mibank.o miinitext.o mieq.o \
+	midash.o mibstore.o mibank.o $(MIINITEXTOBJ) mieq.o \
 	mipointer.o misprite.o midispcur.o miscrinit.o miclipn.o migc.o \
 	micmap.o
 
 #ifdef XFree86Version
 /* 
- * Make sure XINPUT, XF86VidTune isn't defined for the miinitext.o 
+ * Make sure XINPUT, XF86VidTune, etc aren't defined for the miinitext.o 
  * used by Xnest, Xvfb 
  */
-EXT_DEFINES = ExtensionDefines -UXINPUT -UXF86VIDMODE
+EXT_DEFINES = ExtensionDefines -UXINPUT -UXF86VIDMODE -UXFreeXDGA -UXF86MISC \
+	-UXFree86LOADER
 #else
 EXT_DEFINES = ExtensionDefines
 #endif
@@ -55,16 +63,19 @@ NormalLibraryTarget(cbrt,cbrt.o)
 SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES))
 SpecialCObjectRule(miscrinit,$(ICONFIGFILES),$(EXT_DEFINES))
 
+AllTarget($(EXTRAMIINITEXTOBJ))
+
 InstallLinkKitLibrary(mi,$(LINKKITDIR)/lib)
 InstallLinkKitLibrary(cbrt,$(LINKKITDIR)/lib)
 InstallLinkKitNonExecFile(mi.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(mibank.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(mibstore.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(miline.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(mipointer.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(misprite.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(mispritest.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(mistruct.h,$(LINKKITDIR)/include)
-InstallLinkKitNonExecFile(miinitext.c,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(miinitext.c,$(LINKKITDIR))
 
 LinkSourceFile(cbrt.c,../mi)
 LinkSourceFile(miarc.c,../mi)
