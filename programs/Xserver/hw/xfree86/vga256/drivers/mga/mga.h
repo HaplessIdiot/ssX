@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga.h,v 3.4 1996/11/18 13:18:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga.h,v 3.5 1996/12/09 11:54:16 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -19,11 +19,11 @@
 #define INREG8(addr) xf86ReadSparse8(MGAMMIOBase, (addr))
 #define INREG16(addr) xf86ReadSparse16(MGAMMIOBase, (addr))
 #define OUTREG8(addr,val) do { xf86WriteSparse8((val),MGAMMIOBase,(addr)); \
-				mb();} while 0
+				mb();} while(0)
 #define OUTREG16(addr,val) do { {xf86WriteSparse16((val),MGAMMIOBase,(addr)); \
-				mb();} while 0
+				mb();} while(0)
 #define OUTREG(addr, val) do { xf86WriteSparse32((val),MGAMMIOBase,(addr)); \
-				mb();} while 0
+				mb();} while(0)
 #else /* __alpha__ */
 #define INREG8(addr) *(volatile CARD8 *)(MGAMMIOBase + (addr))
 #define INREG16(addr) *(volatile CARD16 *)(MGAMMIOBase + (addr))

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/r61_main/5 1996/02/02 18:44:52 gildea $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.70 1996/11/18 13:07:47 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.71 1996/11/24 09:51:28 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -571,7 +571,10 @@ CFB32DIR = cfb32
 DDXDIR1 = hw/xfree86
 XF86SVGASUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) \
                   $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
-XF86SVGAOBJS = $(XF86COMSRC)/XF86_SVGA.o $(XF86SRC)/vga256/vga256Conf.o
+XF86SVGAOBJS = $(XF86COMSRC)/XF86_SVGA.o $(XF86SRC)/vga256/vga256Conf.o \
+               $(XF86SRC)/xaa/xaavga256/xaavga256.o \
+               $(XF86SRC)/xaa/xaa16/xaa16.o $(XF86SRC)/xaa/xaa24/xaa24.o \
+               $(XF86SRC)/xaa/xaa32/xaa32.o
 XF86SVGALIBS = $(VGADRIVERSRC)/LibraryTargetName(driver256) \
                $(XF86SRC)/xaa/LibraryTargetName(xaa) \
                $(XF86SRC)/vga256/LibraryTargetName(vga256) \

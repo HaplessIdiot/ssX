@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/4 1996/01/26 13:58:43 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/Imakefile,v 3.7 1996/11/18 13:15:37 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/Imakefile,v 3.8 1996/11/20 14:01:53 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = ark_driver.c ark_bank.s ark_cursor.c ark_bitblt.c ark_blt16.c \
@@ -39,6 +39,7 @@ InstallLinkKitNonExecFile(ark_cursor.c,$(LINKKITDIR)/drivers/vga256/ark)
 InstallLinkKitNonExecFile(ark_cursor.h,$(LINKKITDIR)/drivers/vga256/ark)
 InstallLinkKitNonExecFile(ark_bitblt.c,$(LINKKITDIR)/drivers/vga256/ark)
 InstallLinkKitNonExecFile(ark_blt16.c,$(LINKKITDIR)/drivers/vga256/ark)
+InstallLinkKitNonExecFile(ark_accel.c,$(LINKKITDIR)/drivers/vga256/ark)
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/ark)
 
 DependTarget()

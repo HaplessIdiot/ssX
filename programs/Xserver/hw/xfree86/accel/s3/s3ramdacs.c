@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ramdacs.c,v 3.0 1996/11/18 13:10:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ramdacs.c,v 3.1 1996/12/09 11:51:39 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -165,7 +165,7 @@ s3RamdacInfo s3Ramdacs[] = {
 
 #if 0
 
-static int TEMPLATE_PreInit()
+static Bool TEMPLATE_PreInit()
 {
     /* Verify that depth is supported by ramdac */
 
@@ -208,7 +208,8 @@ static Bool BT485_Probe()
     unsigned char tmp,tmp2;
 
     /*quick check*/
-    if (!S3_928_ONLY(s3ChipId) && !S3_964_SERIES(s3ChipId))
+    if (!S3_928_ONLY(s3ChipId) && !S3_964_SERIES(s3ChipId) && 
+			!S3_968_SERIES(s3ChipId))
 	return FALSE;
 
     tmp = inb(0x3C6);
@@ -261,7 +262,7 @@ static int BT485_SERIES_PreInit()
 	OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options) ||
 	OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &s3InfoRec.options) ||
 	OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) ||
-	S3_964_SERIES(s3ChipId)) {
+	S3_964_SERIES(s3ChipId) || S3_968_SERIES(s3ChipId)) {
       s3Bt485PixMux = TRUE;
       /* XXXX Are the defaults for the other parameters correct? */
       pixMuxPossible = TRUE;
@@ -310,7 +311,7 @@ static int BT485_SERIES_PreInit()
 	  nonMuxMaxClock = 0;
 	  pixMuxMinWidth = 0;
  	}
-      } else if (S3_964_SERIES(s3ChipId)) {
+      } else if (S3_964_SERIES(s3ChipId) || S3_968_SERIES(s3ChipId)) {
          nonMuxMaxClock = 0;  /* 964 can only be in pixmux mode when */
          pixMuxMinWidth = 0;  /* working in enhanced mode */  
 	 pixMuxLimitedWidths = FALSE;

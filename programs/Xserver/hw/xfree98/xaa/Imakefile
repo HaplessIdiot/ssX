@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/Imakefile,v 3.0 1996/11/18 13:22:00 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/xaa/Imakefile,v 3.0 1996/11/24 09:58:21 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -32,7 +32,7 @@ INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \
 	   -I$(SERVERSRC)/include -I$(INCLUDESRC) -I$(FONTINCSRC)
 
 
-NormalDepLibraryTarget(xaa,$(OBJS) $(SUBDIRS) $(DONES),$(OBJS) $(BPPOBJS))
+NormalDepLibraryTarget(xaa,$(OBJS) $(SUBDIRS) $(DONES),$(OBJS))
 NormalLibraryObjectRule()
 NormalAsmObjectRule()
 
@@ -77,3 +77,9 @@ DependTarget()
 
 ForceSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
+
+#ifndef DontInstallPC98Version
+InstallLinkKitLibrary(xaa,$(LINKKITDIR)/lib)
+InstallLinkKitNonExecFile(xf86scrin.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(xf86xaa.h,$(LINKKITDIR)/include)
+#endif

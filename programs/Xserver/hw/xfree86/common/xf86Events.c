@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.38 1996/10/03 08:34:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.39 1996/12/09 11:52:07 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -639,7 +639,13 @@ xf86PostKbdEvent(key)
       switch (specialkey) {
 	
       case KEY_BackSpace:
-	if (!xf86Info.dontZap) GiveUp(0);
+	if (!xf86Info.dontZap) {
+#ifdef XFreeXDGA
+  if (((ScrnInfoPtr)(xf86Info.currentScreen->devPrivates[xf86ScreenIndex].ptr))->directMode&XF86DGADirectGraphics) 
+	break;
+#endif
+	 GiveUp(0);
+        }
 	break;
 	
 	/*

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile.LK /main/5 1995/09/04 19:49:48 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.31 1996/10/10 14:01:01 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.32 1996/10/13 11:18:50 dawes Exp $
 /*
  * Server Makefile for LinkKit
  */
@@ -87,6 +87,8 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.31 1996/
 #endif
              MI = lib/LibraryTargetName(mi)
            FONT = lib/LibraryTargetName(font)
+        XAALIBS = lib/LibraryTargetName(xaa)
+        XAAOBJS = lib/xaavga256.o lib/xaa16.o lib/xaa24.o lib/xaa32.o
 #if NeedLibGcc
          GCCLIB = -lgcc
 #endif
@@ -216,8 +218,8 @@ XCOMM XFree86 SVGA Server
 XCOMM
 DDXDIR1 = $(VGADRIVERSRC)
 XF86SVGASUBDIRS = $(VGADRIVERSRC)
-XF86SVGAOBJS = XF86_SVGA.o vga256Conf.o
-XF86SVGALIBS = $(VGADRIVERSRC)/LibraryTargetName(driver256) \
+XF86SVGAOBJS = XF86_SVGA.o vga256Conf.o $(XAAOBJS)
+XF86SVGALIBS = $(VGADRIVERSRC)/LibraryTargetName(driver256) $(XAALIBS) \
 	       $(DRIVERSRC)/LibraryTargetName(vga256) $(XF86LIBS) CFBLibs
 XF86SVGASYSLIBS = $(SYSLIBS)
 VGADRIVERS = XF86SvgaDrivers

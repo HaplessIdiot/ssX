@@ -1,5 +1,5 @@
 /* $XConsortium: Xlibint.h /main/111 1996/02/02 14:10:09 kaleb $ */
-/* $XFree86: xc/lib/X11/Xlibint.h,v 3.4 1996/02/04 08:54:27 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlibint.h,v 3.5 1996/02/09 08:18:51 dawes Exp $ */
 
 /*
 
@@ -872,7 +872,7 @@ extern char *_XGetAsyncReply(
     Bool	/* discard */
 #endif
 );
-extern _XFlush(
+extern int _XFlush(
 #if NeedFunctionPrototypes
     Display*	/* dpy */
 #endif
@@ -883,26 +883,26 @@ extern int _XEventsQueued(
     int 	/* mode */
 #endif
 );
-extern _XReadEvents(
+extern int _XReadEvents(
 #if NeedFunctionPrototypes
     Display*	/* dpy */
 #endif
 );
-extern _XRead(
+extern int _XRead(
 #if NeedFunctionPrototypes
     Display*	/* dpy */,
     char*	/* data */,
     long	/* size */
 #endif
 );
-extern _XReadPad(
+extern int _XReadPad(
 #if NeedFunctionPrototypes
     Display*	/* dpy */,
     char*	/* data */,
     long	/* size */
 #endif
 );
-extern _XSend(
+extern int _XSend(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
     _Xconst char*	/* data */,
@@ -917,13 +917,13 @@ extern Status _XReply(
     Bool	/* discard */
 #endif
 );
-extern _XEnq(
+extern int _XEnq(
 #if NeedFunctionPrototypes
     Display*	/* dpy */,
     xEvent*	/* event */
 #endif
 );
-extern _XDeq(
+extern int _XDeq(
 #if NeedFunctionPrototypes
     Display*	/* dpy */,
     _XQEvent*	/* prev */,

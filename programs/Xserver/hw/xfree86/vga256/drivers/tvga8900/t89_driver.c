@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.49 1996/11/18 13:18:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.50 1996/11/20 14:01:58 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -47,6 +47,9 @@
  *	    Alan Hourihane, rewrote to support all cards with appropriate 
  * 			    speedups. Linear access, hw cursor etc... v4.0
  *			    Needs more work yet though !
+ * 
+ *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
+ *				   clockchip programming code.
  */
 /* $XConsortium: t89_driver.c /main/19 1996/01/26 14:29:55 kaleb $ */
 
@@ -218,6 +221,7 @@ TGUISetClock(no)
 	int p, q, r, s; 
 	int startn, endn;
 	int endm;
+	int startk = 1, endk = 1;
 	unsigned char temp;
 
 	p = q = r = s = 0;
@@ -242,14 +246,20 @@ TGUISetClock(no)
 	if (vgaBitsPerPixel == 32)
 		freq *= 3;
 
-	for (k=1;k<3;k++)
+	if (freq < 16000)
+		startk = 2;
+	else if (freq > 75000)
+		endk = 2;
+	
+	for (k=startk;k<endk;k++)
 	  for (n=startn;n<endn;n++)
 	    for (m=1;m<endm;m++)
 	    {
 		ffreq = ((( (n + 8) * 14.31818) / ((m + 2) * k)) * 1000);
 		if ((ffreq > freq - clock_diff) && (ffreq < freq + clock_diff)) 
 		{
-				p = n; q = m; r = k; s = ffreq;
+			p = n; q = m; r = k; s = ffreq;
+			clock_diff = (freq > ffreq) ? freq - ffreq : ffreq - freq;
 		}
 	    }
 

@@ -1,4 +1,16 @@
-XFree86 3.2d (9 November 1996)
+XFree86 3.2e (12 December 1996)
+  89. Fix some TGUI clock programming problems (Massimiliano Ghilardi).
+  88. Disable <ctrl><alt><backspace> when in DGA mode (Mark Vojkovich).
+  87. Fix some XAA-related server link problems (Marc Aurele La France).
+  86. Fix some LinkKit problems (David Bateman and Takaaki Nomura).
+  85. Fix some more implicit typing in function declarations (Andreas Schwab).
+  84. Add some more ELSA cards to the Cards file (Harald Koenig).
+  83. Fix the ICS5342 clock limit (Harald Koenig).
+  82. Fix typos in the mga Alpha support.
+  81. Fix a typo in the XThrStub Imakefile (H.J. Lu).
+  80. Resync the PC98 Imakefiles (Takaaki Nomura).
+
+XFree86 3.2d (9 December 1996)
   79. Updates to SCO Open Server 5 support (Tom Angert and J Kean Johnston).
   78. Add support for Linux C library version 6 (GLIBC), and fix some
       prototype problems (H.J. Lu).
@@ -106,6 +118,27 @@ XFree86 3.2a (18 November 1996)
   13. Fix S3 ReadImage with a planemask (when ReadImageNoMem can't be used)
       (Harald Koenig).
   12. S3 line and text fixes (Harald Koenig).
+  11. Fix DGA colourmap problems in the W32 server.
+  10. Fix a problem with realloc usage in xrdb for some older OSs
+      (eg, SunOS 4.x) (Wolfgang Rupprecht).
+   9. Fix an xrdb malloc problem (Michael Lipp).
+   8. Fix xload problems on Solaris 2.5 (David Thompson).
+   7. Fix xload problem for most BSD OSs that was introduced in 3.2, and
+      fix some problems in the BSDI-specific code (Matthieu Herrb).
+   6. Modify the external ClockProg support to allow for programmable
+      clocks (ie, no clocks line) (Egbert Eich).
+   5. Fix W32p rev C and rev D PCI ids (Koen Gadeyne).
+   4. Fix a problem which causes a server crash on PANIX/PC98 when using
+      the XFree86-Misc extension (Takaaki Nomura).
+   3. S3 server probe cleanup (Mark Vojkovich).
+   2. Fix XF86Setup compile problem on Solaris (Robin Cutshaw).
+   1. Patches for OS/2 support (Holger Veit).
+
+XFree86 3.2 (26 October 1996)
+1079. Fix a bug in xgc that can cause a SEGV (Takaaki Nomura).
+1078. README and FreeBSD doc updates (Takaaki Nomura).
+1077. RELNOTES updates, and some updates to the preinst and postinst scripts.
+1076. Tell xf86config about the S3V server.
 1075. Fix some typos in XF86Setup.
 1074. Fix a problem with XF86Setup that shows up when there is no
       <Xroot>/bin/X link present.

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/Imakefile,v 3.4 1996/11/18 13:18:04 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/Imakefile,v 3.5 1996/12/09 11:54:15 dawes Exp $
 XCOMM
 XCOMM This is an Imakefile for the MGA driver.  
 XCOMM
@@ -45,10 +45,10 @@ InstallLinkKitNonExecFile(mgareg.h,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(mgadriver.c,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(mgabank.s,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(mgabankc.c,$(LINKKITDIR)/drivers/vga256/mga)
-InstallLinkKitNonExecFile(mgafillrct.c,$(LINKKITDIR)/drivers/vga256/mga)
-InstallLinkKitNonExecFile(mgapntwin.c,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(mga_line.c,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(mga_initacc.c,$(LINKKITDIR)/drivers/vga256/mga)
+InstallLinkKitNonExecFile(mga_accel.c,$(LINKKITDIR)/drivers/vga256/mga)
+InstallLinkKitNonExecFile(mga_map.h,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/mga)
 
 DependTarget()
