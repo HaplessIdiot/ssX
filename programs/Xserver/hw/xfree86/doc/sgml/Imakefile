@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/28 05:13:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.80 2002/06/03 21:22:09 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.81 2002/12/10 03:52:56 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -167,4 +167,8 @@ FORMATTEDDIR = ..
 /* Update RELNOTES at top level */
 UpdateFormattedDoc(RELNOTES,$(TOP))
 #endif
+
+/* Update the README files in xc/programs/xkbcomp */
+UpdateFormattedDocLong(README.XKB-Config,$(PROGRAMSRC)/xkbcomp,README.config)
+UpdateFormattedDocLong(README.XKB-Enhancing,$(PROGRAMSRC)/xkbcomp,README.enhancing)
 
