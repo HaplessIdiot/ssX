@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xv/Imakefile,v 1.6 2002/09/16 18:05:25 eich Exp $
+XCOMM $XFree86: xc/lib/Xv/Imakefile,v 1.7 2002/10/16 00:37:33 dawes Exp $
 
 #define DoNormalLib NormalLibXv
 #define DoSharedLib SharedLibXv
@@ -23,7 +23,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
          OBJS = Xv.o
      LINTLIBS = $(LINTXLIB)
 
-#define IncludeNormalLibInSharedObject
+#define IncludeSharedObjectInNormalLib
 
 #include <Library.tmpl>
 
