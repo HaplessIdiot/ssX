@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.59 2002/05/22 21:38:28 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.60 2002/05/31 18:46:00 dawes Exp $ */
 
 /*
  *
@@ -881,6 +881,7 @@ void *
 ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP **ppLookup)
 {
     loaderPtr tmp = NULL;
+    void *ret = NULL;
     unsigned char	magic[SARMAG];
     struct ar_hdr	hdr;
 #if defined(__powerpc__) && defined(Lynx)
@@ -1090,6 +1091,13 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP **ppLookup)
 	if( offset&0x1 ) /* odd value */
 		lseek(arfd,1,SEEK_CUR); /* make it an even boundary */
 
+	if (tmp->private == (void *) -1L) {
+	    ErrorF("Skipping \"%s\":  No symbols found\n", tmp->name);
+	    continue;
+	}
+	else
+	    ret = tmp->private;
+
 	/* Add the lookup table returned from funcs.LoadModule to the
 	 * one we're going to return.
 	 */
@@ -1114,10 +1122,7 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP **ppLookup)
     if (nametable)
 	xf86loaderfree(nametable);
 
-    if (tmp)
-	return tmp->private;
-    else
-	return 0;
+    return ret;
 }
 
 /*
@@ -1234,8 +1239,10 @@ LoaderOpen(const char *module, const char *cname, int handle,
 	return -1;
     }
 
-    LoaderAddSymbols(new_handle, tmp->module, pLookup);
-    xf86loaderfree(pLookup);
+    if (tmp->private != (void *) -1L) {
+	LoaderAddSymbols(new_handle, tmp->module, pLookup);
+	xf86loaderfree(pLookup);
+    }
 
     close(fd);
 
