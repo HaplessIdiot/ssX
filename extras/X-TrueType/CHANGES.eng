@@ -1,0 +1,41 @@
+* Changes between 1.1pl05 and 1.2
+  - fix several bugs in code converter, and
+  - change directory hierarchie (for XFree86 New Design).
+
+* Changes between 1.1pl04 and 1.1pl05
+  - fix when HasSharedLibraries is defined as No,
+  - add new converters (contributed by Pablo Saratxaga), and
+  - fix for Very Lazy using particular fonts.
+
+* Changes between 1.1pl03 and 1.1pl04
+  - add "cr" (Code Range) TTCap to restrict code range.
+
+* Changes between 1.1pl02 and 1.1pl03
+  - fix for FreeBSD ELF Platforms.
+
+* Changes between 1.1pl01 and 1.1pl02
+  - fix for MS Unicode font to use unicode charset, and
+  - add the XLFD range specifies.
+
+* Changes between 1.1pl00 and 1.1pl01
+  - added the very lazy font metrics calculation method,
+  - fix for the ISO 8859-11, and
+  - fix for ftcconv.c if the code converter module is linked
+    statically.
+
+* Changes between 1.1 and 1.1pl00
+   - added the true font property of the font metrics.
+
+* Changes between 1.0pl00 and 1.1.
+   - switched the base XFree86 source codes to version 3.3.3,
+   - added TCVN encoding (contributed by Pablo Saratxaga),
+   - bug fix for the font rotation, and
+   - added the code to calculation the raw width and to store the
+     `attributes' field in the `XCharStruct'.
+
+* Changes between 1.0 and 1.0pl00.
+   - added 'Turn on/off Hinting' to TTCap,
+   - added some encodings, and
+   - some bug fix.
+
+# end of file
