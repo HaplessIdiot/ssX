@@ -159,7 +159,7 @@ XFree86 4.X.Ya (?? January 2001)
       (Alan Hourihane).
   14. Fix colourmap problems at depth15/16 on Permedia3 (Alan Hourihane).
   13. Bump xc/programs/Xserver/GL/dri (libdri.a) version to 3.1.0 to
-      correspond with change 1212, and modify drivers accordingly
+      correspond with the DRI backbuffer rewrite, and modify drivers accordingly
       (Alan Hourihane).
   12. Enable ImageWrites on Rage128 and Radeon (Alan Hourihane).
   11. Add DRIMoveBuffersHelper function to prevent code duplication in
@@ -12301,4 +12301,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1532 2001/01/22 21:09:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1533 2001/01/22 21:32:32 dawes Exp $
