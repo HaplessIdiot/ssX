@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.28 2003/11/03 05:11:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.29 2004/02/13 23:58:39 dawes Exp $ */
 
 /*
  * Copyright (c) 1998-2001 by The XFree86 Project, Inc.
@@ -1115,12 +1115,10 @@ localQueryLargestOffscreenLinear(
 
     *size = 0;
     
-    if (!offman->LinearAreas) return FALSE;
-
     pLink = offman->LinearAreas;
-    pLinkRet = pLink;
 
-    if (!pLink->area) {
+    if (pLink && !pLink->area) {
+	pLinkRet = pLink;
 	while (pLink) {
 	    if (pLink->free) {
 		if (pLink->linear.size > pLinkRet->linear.size)

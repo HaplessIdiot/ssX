@@ -1,4 +1,12 @@
 XFree86 4.4.99.22 (xx January 2005)
+ 270. Fixes for the Croatian XKB map (#7002, Vlatko Kosturjak).
+ 269. Fix off-by-one problem for keys on FreeBSD/sparc64 (Bugzilla #1503,
+      Marius Strobl).
+ 268. Improve the handling of timeouts in R128CCEWaitForIdle() (Bugzilla #271,
+      Michel Dänzer).
+ 267. Add 9 missing South African locales (Bugzilla #1526, Dwayne Bailey).
+ 266. Fix the xf86fbman's largest linear area offscreen computation
+      (Bugzilla #1527, Egbert Eich, submitted by Michael Lampe).
  265. Xterm patch #198 (Thomas Dickey).
 
 XFree86 4.4.99.21 (12 January 2005)
@@ -19273,7 +19281,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3384 2005/01/12 12:02:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3385 2005/01/14 01:50:00 dickey Exp $
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.163 2004/06/08 01:28:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.164 2004/09/22 01:55:45 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -467,7 +467,7 @@ xf86PostKbdEvent(unsigned key)
 #if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT) || defined(WSCONS_SUPPORT)
   static Bool first_time = TRUE;
 #endif
-#if defined(__sparc__) && defined(__linux__)
+#if defined(__sparc__) && (defined(__linux__) || defined(__FreeBSD__))
   static int  kbdSun = -1;
 #endif
   /* Disable any keyboard processing while in suspend */
@@ -483,7 +483,7 @@ xf86PostKbdEvent(unsigned key)
   }
 #endif
 
-#if defined (__sparc__) && defined(__linux__)
+#if defined(__sparc__) && (defined(__linux__) || defined(__FreeBSD__))
   if (kbdSun == -1) {
     if ((xf86Info.xkbmodel && !strcmp(xf86Info.xkbmodel, "sun"))
 	|| (xf86Info.xkbrules && !strcmp(xf86Info.xkbrules, "sun")))
@@ -493,7 +493,7 @@ xf86PostKbdEvent(unsigned key)
   }
   if (kbdSun)
     goto special;
-#endif /* __sparc__ && __linux__ */
+#endif /* __sparc__ && (__linux__ || __FreeBSD__) */
 
 #ifdef __linux__
   if (xf86Info.kbdCustomKeycodes) {
@@ -648,7 +648,6 @@ xf86PostKbdEvent(unsigned key)
       scanCode = KEY_Pause;       /* pause */
     }
 
-#ifndef __sparc64__
   /*
    * PC keyboards generate separate key codes for
    * Alt+Print and Control+Pause but in the X keyboard model
@@ -661,7 +660,6 @@ xf86PostKbdEvent(unsigned key)
     else if (scanCode == KEY_Break)
       scanCode = KEY_Pause;
   }
-#endif
   
   /*
    * and now get some special keysequences
@@ -697,7 +695,7 @@ customkeycodes:
     }
   }
 #endif
-#if defined (__sparc__) && defined(__linux__)
+#if defined(__sparc__) && (defined(__linux__) || defined(__FreeBSD__))
 special:
   if (kbdSun) {
     switch (scanCode) {
@@ -731,7 +729,7 @@ special:
      */
     scanCode--;
   }
-#endif /* defined (__sparc__) && defined(__linux__) */
+#endif /* __sparc__ && (__linux__ || __FreeBSD__) */
 
 #ifdef XKB
   if ((xf86Info.ddxSpecialKeys == SKWhenNeeded &&
