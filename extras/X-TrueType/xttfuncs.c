@@ -4,6 +4,7 @@
    Copyright (c) 1998 Kazushi (Jam) Marukawa, All rights reserved.
    Copyright (c) 1998 Takuya SHIOZAKI, All rights reserved.
    Copyright (c) 1998 X-TrueType Server Project, All rights reserved.
+   Copyright (c) 2003 After X-TT Project, All rights reserved.
 
 ===Notice
    Redistribution and use in source and binary forms, with or without
@@ -27,11 +28,11 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
    SUCH DAMAGE.
 
-   Major Release ID: X-TrueType Server Version 1.3 [Aoi MATSUBARA Release 3]
+   Major Release ID: X-TrueType Server Version 1.4 [Charles's Wain Release 0]
 
 Notice===
 */
-/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.16 2003/01/29 22:15:33 dawes Exp $ */
+/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.17 2003/02/17 03:59:22 dawes Exp $ */
 
 #include "xttversion.h"
 
@@ -87,6 +88,13 @@ static char const * const releaseID =
 #define XTT_PROPORTIONAL_SPACING  1
 #define XTT_MONOSPACED            0
 #define XTT_CONSTANT_SPACING     -1
+
+#define XTT_DOUBLE_STRIKE                     0x01
+#define XTT_DOUBLE_STRIKE_MKBOLD_EDGE_LEFT    0x02
+#define XTT_DOUBLE_STRIKE_CORRECT_B_BOX_WIDTH 0x10
+
+#define XTT_FORCE_CONSTANT_SPACING 0x01
+#define XTT_FORCE_CONSTANT_SPACING_CACHE_KEY_OFFSET 0x00010000
 
 #define IS_TT_Matrix_Unit(matrix) \
 (((matrix).xx == 65536) && ((matrix).yx == 0) && \
@@ -494,6 +502,7 @@ FreeType_CloseFont(FontPtr pFont)
     FreeType_Deinit();
     codeconv_free_code_converter(&ft->codeConverterInfo);
 
+    if ( ft->dummy_bitmap ) xfree(ft->dummy_bitmap);
     xfree(ft);
     xfree(pFont->info.props);
 }
@@ -506,17 +515,83 @@ static CharInfoRec nocharinfo = {/*metrics*/{0,0,0,0,0,0},
  * It is useful but poor.
  */
 static void
-make_up_bold_bitmap(TT_Raster_Map *map)
+make_up_bold_bitmap(TT_Raster_Map *map, int ds_mode)
 {
     int x, y;
-    char *p = (char *)map->bitmap;
-    for (y=0; y<map->rows; y++) {
-        char lsb = 0;
-        for (x=0; x<map->cols; x++) {
-            char tmp = *p<<7;
-            *p |= (*p>>1) | lsb;
-            lsb = tmp;
-            p++;
+    unsigned char *p = (unsigned char *)map->bitmap;
+    if ( ds_mode & XTT_DOUBLE_STRIKE_MKBOLD_EDGE_LEFT ) {
+        for (y=0; y<map->rows; y++) {
+            unsigned char rev_pat=0;
+            unsigned char lsb = 0;
+            for (x=0; x<map->cols; x++) {
+                unsigned char tmp = *p<<7;
+                if ( (rev_pat & 0x01) && (*p & 0x80) ) p[-1] &= 0xfe;
+                rev_pat = ~(*p);
+                *p |= (*p>>1) | lsb;
+                *p &= ~(rev_pat & (*p << 1));
+                lsb = tmp;
+                p++;
+            }
+        }
+    }
+    else {
+        for (y=0; y<map->rows; y++) {
+            unsigned char lsb = 0;
+            for (x=0; x<map->cols; x++) {
+                unsigned char tmp = *p<<7;
+                *p |= (*p>>1) | lsb;
+                lsb = tmp;
+                p++;
+            }
+        }
+    }
+}
+
+static void
+make_up_italic_bitmap(TT_Raster_Map *map, int shift)
+{
+    int x, y;
+    unsigned char *p = (unsigned char *)map->bitmap;
+    if ( 0 <= shift ) {
+        for (y=0; y<map->rows; y++) {
+            unsigned char *tmp_p = p + y*map->cols;
+            int tmp_byte_shift,tmp_shift=shift * (map->rows -1 -y) / map->rows;
+            tmp_byte_shift = tmp_shift/8;
+            tmp_shift %= 8;
+            if ( tmp_shift ) {
+                for (x=map->cols-1;0<=x;x--) {
+                    if ( x != map->cols-1 ) 
+                        tmp_p[x+1] |= tmp_p[x]<<(8-tmp_shift);
+                    tmp_p[x]>>=tmp_shift;
+                }
+            }
+            if ( tmp_byte_shift ) {
+                for (x=map->cols-1;0<x;x--) {
+                    tmp_p[x] = tmp_p[x-1];
+                }
+                tmp_p[x]=0;
+            }
+        }
+    }
+    else {
+        for (y=0; y<map->rows; y++) {
+            unsigned char *tmp_p = p + y*map->cols;
+            int tmp_byte_shift,tmp_shift = -shift * (map->rows -1 -y) / map->rows;
+            tmp_byte_shift = tmp_shift/8;
+            tmp_shift %= 8;
+            if ( tmp_shift ) {
+                for (x=0;x<map->cols;x++) {
+                    if ( x != 0 ) 
+                        tmp_p[x-1] |= tmp_p[x]>>(8-tmp_shift);
+                    tmp_p[x]<<=tmp_shift;
+                }
+            }
+            if ( tmp_byte_shift ) {
+                for (x=0;x<map->cols-1;x++) {
+                    tmp_p[x] = tmp_p[x+1];
+                }
+                tmp_p[x]=0;
+            }
         }
     }
 }
@@ -551,7 +626,7 @@ static struct fc_entry_vfuncs fc_tt_vfuncs = {
 /* calculate glyph metric from glyph index */
 
 static xCharInfo *
-get_metrics(FreeTypeFont *ft, int c, struct xtt_char_width char_width)
+get_metrics(FreeTypeFont *ft, int c, struct xtt_char_width char_width, int force_c)
 {
     FreeTypeFaceInfo *fi = &faceTable[ft->fid];
 
@@ -559,9 +634,17 @@ get_metrics(FreeTypeFont *ft, int c, struct xtt_char_width char_width)
     CharInfoPtr charInfo;
     int width, ascent, descent;
     int lbearing, rbearing;
+    int sbit_rsb_shift=0;
+    int sbit_lsb_shift=0;
+    int cache_key_offset;
+    int sbit_ok;
     TT_Glyph_Metrics metrics;
 
     TT_BBox* bbox = &metrics.bbox;
+
+    if ( force_c & XTT_FORCE_CONSTANT_SPACING )
+        cache_key_offset = XTT_FORCE_CONSTANT_SPACING_CACHE_KEY_OFFSET;
+    else cache_key_offset=0;
 
     /*
      * Check invalid char index.
@@ -571,42 +654,62 @@ get_metrics(FreeTypeFont *ft, int c, struct xtt_char_width char_width)
         goto next;
     }
 
-    if (!FontCacheSearchEntry(ft->cache, c, &entry)) {
-        if (!ft->isVeryLazy) {
-            /*
-             * load sbit's metrics.
-             * load outline's metrics if fails now.
-             * But it is better that we are able to select
-             * another way, i.e. load NULL glyph if fails.
-             */
-            if ( fi->sbit &&
-                 IS_TT_Matrix_Unit(ft->matrix) &&
-                 ft->isEmbeddedBitmap ) {
-                if ( TT_Load_Glyph_Bitmap(fi->face, ft->instance, c,
-                                          fi->sbit) ) {
-                    fi->sbit->map.size = 0;
-                } else {
-                    metrics.bbox     = fi->sbit->metrics.bbox;
-                    metrics.bearingX = fi->sbit->metrics.horiBearingX;
-                    metrics.bearingY = fi->sbit->metrics.horiBearingY;
-                    metrics.advance  = fi->sbit->metrics.horiAdvance;
-                }
-            } else
-                if ( fi->sbit )
-                    fi->sbit->map.size = 0;
-            if ( (!fi->sbit) || (!fi->sbit->map.size) ) {
-                /* load outline's metrics */
-                TT_Load_Glyph(ft->instance, fi->glyph, c, ft->flag);
-                TT_Get_Glyph_Metrics(fi->glyph, &metrics);
-                {
-                    TT_Outline outline;
-                    TT_Get_Glyph_Outline(fi->glyph, &outline);
-                    outline.dropout_mode = 2;
-                    TT_Transform_Outline(&outline, &ft->matrix);
-                    TT_Get_Outline_BBox(&outline, bbox);
-                }
+    if (!FontCacheSearchEntry(ft->cache, cache_key_offset+c, &entry)) {
+      if ( force_c & XTT_FORCE_CONSTANT_SPACING ) {
+        /* return &(ft->forceConstantMetrics); */
+        if ((entry = FontCacheGetEntry()) == NULL) {
+            charInfo = &nocharinfo;
+            fprintf(stderr, "get_metrics: can't get cache entry\n");
+            goto next;
+        }
+        FC_TT_SETVFUNC(entry);
+        FC_TT_INIT_PRIVATE(entry);
+        charInfo = &entry->charInfo;
+        charInfo->metrics.leftSideBearing = ft->forceConstantMetrics.leftSideBearing;
+        charInfo->metrics.rightSideBearing = ft->forceConstantMetrics.rightSideBearing;
+        charInfo->metrics.ascent = ft->forceConstantMetrics.ascent;
+        charInfo->metrics.descent = ft->forceConstantMetrics.descent;
+        charInfo->metrics.characterWidth = ft->forceConstantMetrics.characterWidth;
+        charInfo->metrics.attributes = ft->forceConstantMetrics.attributes;
+      }
+      else {
+        if ( !(ft->isVeryLazy && 0.0 < ft->scaleBitmap) && fi->sbit &&
+             (IS_TT_Matrix_Unit(ft->matrix) || ft->autoItalicUsingEmbeddedBitmapShift) &&
+             ft->isEmbeddedBitmap ) {
+            if ( TT_Load_Glyph_Bitmap(fi->face, ft->instance, c,
+                                      fi->sbit) ) {
+                fi->sbit->map.size = 0;
+            } else {
+                metrics.bbox     = fi->sbit->metrics.bbox;
+                metrics.bearingX = fi->sbit->metrics.horiBearingX;
+                metrics.bearingY = fi->sbit->metrics.horiBearingY;
+                metrics.advance  = fi->sbit->metrics.horiAdvance;
+                if ( 0 < ft->autoItalicUsingEmbeddedBitmapShift )
+                    sbit_rsb_shift = ft->autoItalicUsingEmbeddedBitmapShift;
+                if ( ft->autoItalicUsingEmbeddedBitmapShift < 0 )
+                    sbit_lsb_shift = ft->autoItalicUsingEmbeddedBitmapShift;
             }
-        } else {
+        } else
+            if ( fi->sbit )
+                fi->sbit->map.size = 0;
+        sbit_ok=0;
+        if ( fi->sbit ) {
+            if ( fi->sbit->map.size ) sbit_ok=1;
+        }
+        if ( !sbit_ok ) {
+          /* load outline's metrics */
+          if (!ft->isVeryLazy) {
+              TT_Load_Glyph(ft->instance, fi->glyph, c, ft->flag);
+              TT_Get_Glyph_Metrics(fi->glyph, &metrics);
+              {
+                  TT_Outline outline;
+                  TT_Get_Glyph_Outline(fi->glyph, &outline);
+                  outline.dropout_mode = 2;
+                  TT_Transform_Outline(&outline, &ft->matrix);
+                  TT_Get_Outline_BBox(&outline, bbox);
+              }
+          }
+          else {
             /*
              * very lazy method,
              * parse the htmx field in TrueType font.
@@ -669,6 +772,8 @@ get_metrics(FreeTypeFont *ft, int c, struct xtt_char_width char_width)
                 TT_Pos bbox_width = bbox->xMax - bbox->xMin;
                 TT_Pos add_width;
 
+                if ( sbit_scale <= 0.0 ) sbit_scale=1.0;
+
                 /* parse sbit entry */
                 if (!TT_Get_SBit_Strike(fi->face, ft->instance, &strike)) {
                     TT_SBit_Range*  range = strike.sbit_ranges;
@@ -686,6 +791,7 @@ get_metrics(FreeTypeFont *ft, int c, struct xtt_char_width char_width)
                     }
                 }
             }
+          }
         }
 
         /*
@@ -695,10 +801,19 @@ get_metrics(FreeTypeFont *ft, int c, struct xtt_char_width char_width)
         ascent   = FLOOR64(bbox->yMax + 32) / 64;
         descent  = CEIL64(-bbox->yMin - 32) / 64;
         lbearing = FLOOR64(bbox->xMin + 32) / 64;
-        rbearing = FLOOR64(bbox->xMax + 32) / 64 + (ft->isDoubleStrike?1:0);
+        rbearing = FLOOR64(bbox->xMax + 32) / 64;
+        if ( ft->doubleStrike ) rbearing++;
+        rbearing += sbit_rsb_shift;
+        lbearing += sbit_lsb_shift;
 
         width    = FLOOR64((int)floor(metrics.advance * ft->scaleBBoxWidth
                               * ft->pixel_width_unit_x + .5) + 32) / 64;
+        if ( ft->doubleStrike & XTT_DOUBLE_STRIKE_CORRECT_B_BOX_WIDTH ) {
+            width++;
+        }
+        width += ft->adjustBBoxWidthByPixel;
+        rbearing += ft->adjustRightSideBearingByPixel;
+        lbearing += ft->adjustLeftSideBearingByPixel;
 
         if ((entry = FontCacheGetEntry()) == NULL) {
             charInfo = &nocharinfo;
@@ -711,6 +826,7 @@ get_metrics(FreeTypeFont *ft, int c, struct xtt_char_width char_width)
 
         /* monospaced */
         if ( char_width.pixel && width) {
+            int max_rsb,max_lsb;
             /* XXX */
             FC_TT_PRIVATE(entry)->shift = (char_width.pixel - width) / 2;
 
@@ -735,6 +851,27 @@ get_metrics(FreeTypeFont *ft, int c, struct xtt_char_width char_width)
                 }
             }
             width = char_width.pixel;
+            if ( ft->isInconsistentMetrics ) {
+                /* prevent excess */
+                if ( ft->pFont->info.minbounds.rightSideBearing 
+                     < ft->pFont->info.maxbounds.rightSideBearing ) 
+                    max_rsb=ft->pFont->info.maxbounds.rightSideBearing;
+                else
+                    max_rsb=ft->pFont->info.minbounds.rightSideBearing;
+                if ( ft->pFont->info.maxbounds.leftSideBearing 
+                     < ft->pFont->info.minbounds.leftSideBearing ) 
+                    max_lsb=ft->pFont->info.maxbounds.leftSideBearing;
+                else
+                    max_lsb=ft->pFont->info.minbounds.leftSideBearing;
+                if ( max_rsb - max_lsb < rbearing-lbearing) {
+                    rbearing-=(rbearing-lbearing)-(max_rsb - max_lsb);
+                }
+                if ( rbearing < lbearing ) rbearing=lbearing;
+                if ( ft->pFont->info.maxbounds.ascent < ascent )
+                    ascent = ft->pFont->info.maxbounds.ascent;
+                if ( ft->pFont->info.maxbounds.descent < descent )
+                    descent = ft->pFont->info.maxbounds.descent;
+            }
         }
         charInfo->metrics.leftSideBearing  = lbearing;
         charInfo->metrics.rightSideBearing = rbearing;
@@ -745,7 +882,8 @@ get_metrics(FreeTypeFont *ft, int c, struct xtt_char_width char_width)
             (char_width.raw ? char_width.raw :
              (unsigned short)(short)(floor(1000 * metrics.advance / 64.
                                            / ft->pixel_size)));
-        FontCacheInsertEntry(ft->cache, c, entry);
+      }
+      FontCacheInsertEntry(ft->cache, cache_key_offset+c, entry);
     } else {
         charInfo = &entry->charInfo;
     }
@@ -756,7 +894,7 @@ get_metrics(FreeTypeFont *ft, int c, struct xtt_char_width char_width)
 
 /* unify get_glyph_prop and get_glyph_const */
 static CharInfoPtr
-get_glyph(FreeTypeFont *ft, int c, int spacing)
+get_glyph(FreeTypeFont *ft, int c, int spacing, int force_c)
 {
     FreeTypeFaceInfo *fi = &faceTable[ft->fid];
     FontCacheEntryPtr entry;
@@ -766,6 +904,12 @@ get_glyph(FreeTypeFont *ft, int c, int spacing)
     int width, height, descent, lbearing;
     int glyph = ft->pFont->glyph;
     int bytes;
+    int cache_key_offset;
+    int sbit_ok;
+
+    if ( force_c & XTT_FORCE_CONSTANT_SPACING )
+        cache_key_offset = XTT_FORCE_CONSTANT_SPACING_CACHE_KEY_OFFSET;
+    else cache_key_offset=0;
 
     /*
      * Check invalid char index.
@@ -775,7 +919,7 @@ get_glyph(FreeTypeFont *ft, int c, int spacing)
         goto next;
     }
 
-    if (FontCacheSearchEntry(ft->cache, c, &entry)) {
+    if (FontCacheSearchEntry(ft->cache, cache_key_offset+c, &entry)) {
         if (entry->charInfo.bits != NULL) {
             return &entry->charInfo;
         }
@@ -788,9 +932,9 @@ get_glyph(FreeTypeFont *ft, int c, int spacing)
             char_width.raw   = ft->pFont->info.maxbounds.attributes;
         } else
             char_width.pixel = char_width.raw = 0;
-        get_metrics(ft, c, char_width);
+        get_metrics(ft, c, char_width, force_c);
         /* Retry to get it created in get_metrics(). */
-        if (!FontCacheSearchEntry(ft->cache, c, &entry)) {
+        if (!FontCacheSearchEntry(ft->cache, cache_key_offset+c, &entry)) {
             charInfo = &nocharinfo;
             fprintf(stderr, "get_glyph: can't get cache entry\n");
             goto next;
@@ -798,7 +942,8 @@ get_glyph(FreeTypeFont *ft, int c, int spacing)
     }
     charInfo = &entry->charInfo;
     {
-        if (fi->sbit && IS_TT_Matrix_Unit(ft->matrix) &&
+        if (fi->sbit && 
+            ( IS_TT_Matrix_Unit(ft->matrix) || ft->autoItalicUsingEmbeddedBitmapShift ) &&
             ft->isEmbeddedBitmap) {
             if (TT_Load_Glyph_Bitmap(fi->face, ft->instance, c, fi->sbit))
                 fi->sbit->map.size = 0;
@@ -811,7 +956,11 @@ get_glyph(FreeTypeFont *ft, int c, int spacing)
          * But it is better that we are able to select
          * another way, i.e. load NULL glyph if fails.
          */
-        if ((!fi->sbit) || (!fi->sbit->map.size)) {
+        sbit_ok=0;
+        if ( fi->sbit ) {
+            if ( fi->sbit->map.size ) sbit_ok=1;
+        }
+        if ( !sbit_ok ) {
             TT_Load_Glyph(ft->instance, fi->glyph, c,  ft->flag);
             TT_Get_Glyph_Outline(fi->glyph, &outline);
             outline.dropout_mode = 2;
@@ -853,38 +1002,80 @@ get_glyph(FreeTypeFont *ft, int c, int spacing)
         /* alignment */
         bytes = (bytes + (glyph) - 1) & -glyph;
         ft->map.cols  = bytes;
+        /* In the case of XFree86-4, map.cols should not be zero when height exists. */
+        /* (The crash of verdana.ttf) */
+        if ( ft->map.cols <= 0 ) ft->map.cols = glyph;
         ft->map.width = width;
         ft->map.flow = TT_Flow_Down;
         ft->map.size  = ft->map.rows * ft->map.cols;
-        if (!FontCacheGetBitmap(entry, ft->map.size)) {
+        if (!FontCacheGetBitmap(entry, ft->map.size+2*ft->map.cols)) {
             charInfo = &nocharinfo;
             fprintf(stderr, "can't get glyph image area\n");
             goto next;
         }
         ft->map.bitmap = charInfo->bits;
         if ( ft->map.bitmap == NULL ) goto next;
+        if ( bytes <= 0 ) goto next;
+        if ( height <= 0 ) goto next;
 
         /*
          * draw a sbit or an outline glyph
          */
-        if (fi->sbit && fi->sbit->map.size &&
-            IS_TT_Matrix_Unit(ft->matrix) && ft->isEmbeddedBitmap)
+        if ( sbit_ok &&
+            (IS_TT_Matrix_Unit(ft->matrix) || ft->autoItalicUsingEmbeddedBitmapShift) &&
+            ft->isEmbeddedBitmap) {
             /*
              * Metrics on sbits are already cropped.
              * And the parameters, ?_offset, on XTT_Get_SBit_Bitmap are
              * different from TT_Get_Glyph_Bitmap's one.
              */
             XTT_Get_SBit_Bitmap(&ft->map, fi->sbit, -lbearing, descent);
+            if (ft->autoItalicUsingEmbeddedBitmapShift)
+                make_up_italic_bitmap(&ft->map,ft->autoItalicUsingEmbeddedBitmapShift);
+        }
         else {
             TT_Translate_Outline(&outline, -lbearing * 64, descent * 64);
             TT_Get_Outline_Bitmap(engine, &outline, &ft->map);
         }
-        if (ft->isDoubleStrike)
-            make_up_bold_bitmap(&ft->map);
+        if (ft->doubleStrike)
+            make_up_bold_bitmap(&ft->map,ft->doubleStrike);
         (*ft->convert)(ft, ft->map.bitmap, ft->map.size);
     }
  next:
     return charInfo;
+}
+
+static char *get_dummy_bitmap(FreeTypeFont *ft)
+{
+    int width, height, bytes, size;
+    int max_rsb, max_lsb;
+    int glyph = ft->pFont->glyph;
+
+    if ( ft->dummy_bitmap ) goto next;
+    if ( ft->pFont->info.minbounds.rightSideBearing 
+         < ft->pFont->info.maxbounds.rightSideBearing ) 
+        max_rsb=ft->pFont->info.maxbounds.rightSideBearing;
+    else
+        max_rsb=ft->pFont->info.minbounds.rightSideBearing;
+    if ( ft->pFont->info.maxbounds.leftSideBearing 
+         < ft->pFont->info.minbounds.leftSideBearing ) 
+        max_lsb=ft->pFont->info.maxbounds.leftSideBearing;
+    else
+        max_lsb=ft->pFont->info.minbounds.leftSideBearing;
+    width  = max_rsb - max_lsb;
+    height = ft->pFont->info.maxbounds.ascent 
+        + ft->pFont->info.maxbounds.descent;
+    bytes = (width + 7) / 8;
+    bytes = (bytes + (glyph) - 1) & -glyph;
+    if ( bytes <= 0 ) bytes = glyph;
+    size  = (height+2) * bytes;
+
+    ft->dummy_bitmap = 
+        (char *)xalloc(sizeof(char)*size);
+    if( ft->dummy_bitmap )
+        memset(ft->dummy_bitmap,0,sizeof(char)*size);
+ next:
+    return(ft->dummy_bitmap);
 }
 
 int
@@ -899,7 +1090,8 @@ FreeTypeGetGlyphs (FontPtr pFont,
     CharInfoPtr *glyphsBase = glyphs;
 
     int spacing = 0;
-    int i,nullbits,ncmark;
+    int i,nullbits,ncmark,force_c,out_of_range;
+    int force_c_init,force_c_inside;
 
     dprintf((stderr, "FreeTypeGetGlyphs: %p %d\n", pFont, count));
 
@@ -915,48 +1107,63 @@ FreeTypeGetGlyphs (FontPtr pFont,
         break;
     }
 
+    if ( ft->forceConstantSpacingBegin <= ft->forceConstantSpacingEnd ) force_c_inside=1;
+    else force_c_inside=0;
+    force_c_init=0;
+    out_of_range=0;
+    force_c=force_c_init;
     while (count--) {
-        unsigned int c1=0, c2;
+        unsigned int c1,c2,c=0;
 
         *glyphs = &nocharinfo;
         switch (encoding) {
         case Linear8Bit:
         case TwoD8Bit:
-            c1 = *chars++;
-            dprintf((stderr, "%04x\n", c1));
+            c = *chars++;
+            dprintf((stderr, "%04x\n", c));
             break;
         case Linear16Bit:
         case TwoD16Bit:
+            force_c=force_c_init;
             c1 = *chars++;
             c2 = *chars++;
+            c  = (c1<<8|c2);
+            if ( force_c_inside ) {
+                if ( c <= ft->forceConstantSpacingEnd && ft->forceConstantSpacingBegin <= c )
+                    force_c|=XTT_FORCE_CONSTANT_SPACING;
+            }
+            else {      /* for GB18030 proportional */
+                if ( c <= ft->forceConstantSpacingEnd || ft->forceConstantSpacingBegin <= c )
+                    force_c|=XTT_FORCE_CONSTANT_SPACING;
+            }
             dprintf((stderr, "code: %02x%02x", c1,c2));
             if (c1 >= pFont->info.firstRow &&
                 c1 <= pFont->info.lastRow  &&
                 c2 >= pFont->info.firstCol &&
                 c2 <= pFont->info.lastCol) {
-                c1 = (c1<<8|c2);
+                out_of_range=0;
             } else {
+                out_of_range=1;
                 dprintf((stderr, ", out of range.  We use nocharinfo.\n"));
                 *glyphs = &nocharinfo;
-                goto next;
             }
             break;
         default:
             goto next;
         }
-
-        c1 = ft->codeConverterInfo.ptrCodeConverter(c1);
-        dprintf((stderr, " ->%04x\n ->", c1));
-        c1 = TT_Char_Index(ft->charmap, c1);
-        dprintf((stderr, "%d\n", c1));
-        *glyphs = get_glyph(ft, c1, spacing);
-
+        if ( out_of_range == 0 ) {
+            c = ft->codeConverterInfo.ptrCodeConverter(c);
+            dprintf((stderr, " ->%04x\n ->", c));
+            c = TT_Char_Index(ft->charmap, c);
+            dprintf((stderr, "%d\n", c));
+            *glyphs = get_glyph(ft, c, spacing, force_c);
+        }
     next:
 #if 1
         /* fallback for XAA */
         if ( *glyphs == &nocharinfo ) {
             dprintf((stderr, "nocharinfo causes a server crash. Instead We use .notdef glyph.\n"));
-            *glyphs = get_glyph(ft, 0, spacing);
+            *glyphs = get_glyph(ft, 0, spacing, force_c);
         }
 #endif
         glyphs++;
@@ -982,8 +1189,11 @@ FreeTypeGetGlyphs (FontPtr pFont,
       else {
         dprintf((stderr,"[%d]:%x\n",i,glyphsBase[i]->bits));
         if ( glyphsBase[i]->bits == NULL ) {
-            glyphsBase[i]->metrics.ascent=0;
-            glyphsBase[i]->metrics.descent=0;
+            glyphsBase[i]->bits = get_dummy_bitmap(ft);
+            if ( glyphsBase[i]->bits == NULL ) {
+                glyphsBase[i]->metrics.ascent=0;
+                glyphsBase[i]->metrics.descent=0;
+            }
             nullbits++;
         }
         /*
@@ -992,15 +1202,17 @@ FreeTypeGetGlyphs (FontPtr pFont,
           So (*glyphs)->ascent must not become larger than maxbounds.ascent.
           This is the same also about descent.
          */
-        if ( pFont->info.maxbounds.ascent < glyphsBase[i]->metrics.ascent ) {
+        if ( ft->isInconsistentMetrics ) {
+          if ( pFont->info.maxbounds.ascent < glyphsBase[i]->metrics.ascent ) {
             dprintf((stderr, " Invalid ascent : maxbounds.ascent=%d metrics.ascent=%d [corrected]\n",
                      pFont->info.maxbounds.ascent,glyphsBase[i]->metrics.ascent));
             glyphsBase[i]->metrics.ascent = pFont->info.maxbounds.ascent;
-        }
-        if ( pFont->info.maxbounds.descent < glyphsBase[i]->metrics.descent ) {
+          }
+          if ( pFont->info.maxbounds.descent < glyphsBase[i]->metrics.descent ) {
             dprintf((stderr, " Invalid descent : maxbounds.descent=%d metrics.descent=%d [corrected]\n",
                      pFont->info.maxbounds.descent,glyphsBase[i]->metrics.descent));
             glyphsBase[i]->metrics.descent = pFont->info.maxbounds.descent;
+          }
         }
       }
     }
@@ -1023,8 +1235,12 @@ FreeTypeGetMetrics (FontPtr pFont,
 {
     FreeTypeFont *ft = (FreeTypeFont*) pFont->fontPrivate;
     xCharInfo **glyphsBase = glyphs;
-    unsigned int c=0,c2;
-    int i;
+    unsigned int c,c1,c2;
+    int i,force_c,force_c_init,force_c_inside;
+
+    if ( ft->forceConstantSpacingBegin <= ft->forceConstantSpacingEnd ) force_c_inside=1;
+    else force_c_inside=0;
+    force_c_init=0;
 
     /*dprintf((stderr, "FreeTypeGetMetrics: %d\n", count));*/
     if (ft->spacing == 'm' || ft->spacing == 'p') {
@@ -1036,45 +1252,80 @@ FreeTypeGetMetrics (FontPtr pFont,
         } else
             char_width.pixel = char_width.raw = 0;
 
-        while (count--) {
-            *glyphs = &(&nocharinfo)->metrics;
-            switch (encoding) {
-            case Linear8Bit:
-            case TwoD8Bit:
+        switch (encoding) {
+        case Linear8Bit:
+        case TwoD8Bit:
+            while (count--) {
                 c = *chars++;
-                break;
-            case Linear16Bit:
-            case TwoD16Bit:
-                c  = *chars++;
+                c = ft->codeConverterInfo.ptrCodeConverter(c);
+                *glyphs = get_metrics(ft, TT_Char_Index(ft->charmap, c),
+                                      char_width, 0);
+#if 1
+                if ( *glyphs == &(&nocharinfo)->metrics ) {        /* fallback */
+                    /* dprintf((stderr, "nocharinfo -> Instead We use .notdef glyph.\n")); */
+                    *glyphs = get_metrics(ft, 0, char_width, 0);
+                }
+#endif
+                glyphs++;
+            }
+            break;
+        case Linear16Bit:
+        case TwoD16Bit:
+            force_c=force_c_init;
+            while (count--) {
+                /* force_c=force_c_init; */
+                c1 = *chars++;
                 c2 = *chars++;
-                if (c  >= pFont->info.firstRow &&
-                    c  <= pFont->info.lastRow  &&
-                    c2 >= pFont->info.firstCol &&
-                    c2 <= pFont->info.lastCol) {
-                    c  = (c<<8|c2);
+                c  = (c1<<8|c2);
+                if ( force_c_inside ) {
+                    if ( c <= ft->forceConstantSpacingEnd && ft->forceConstantSpacingBegin <= c ) {
+                        /* force_c|=XTT_FORCE_CONSTANT_SPACING; */
+                        *glyphs = &(ft->forceConstantMetrics);
+                        glyphs++;
+                        continue;
+                    }
+                }
+                else {          /* for GB18030 proportional  */
+                    if ( c <= ft->forceConstantSpacingEnd || ft->forceConstantSpacingBegin <= c ) {
+                        /* force_c|=XTT_FORCE_CONSTANT_SPACING; */
+                        *glyphs = &(ft->forceConstantMetrics);
+                        glyphs++;
+                        continue;
+                    }
+                }
+                /* not forceConstant */
+                if ( c1 >= pFont->info.firstRow &&
+                     c1 <= pFont->info.lastRow  &&
+                     c2 >= pFont->info.firstCol &&
+                     c2 <= pFont->info.lastCol ) {
+                    c = ft->codeConverterInfo.ptrCodeConverter(c);
+                    *glyphs = get_metrics(ft, TT_Char_Index(ft->charmap, c),
+                                          char_width, force_c);
                 } else {
                     *glyphs = &(&nocharinfo)->metrics;
-                    goto next;
                 }
-                break;
-            default:
-                goto next;
-            }
-            /* dprintf((stderr, "code: %04x ->", c));*/
-            c = ft->codeConverterInfo.ptrCodeConverter(c);
-            /* dprintf((stderr, "%04x\n", c));*/
-            *glyphs = get_metrics(ft, TT_Char_Index(ft->charmap, c),
-                                  char_width);
-    next:
 #if 1
-            /* fallback */
-            if ( *glyphs == &(&nocharinfo)->metrics ) {
-                dprintf((stderr, "nocharinfo -> Instead We use .notdef glyph.\n"));
-                *glyphs = get_metrics(ft, 0, char_width);
-            }
+                if ( *glyphs == &(&nocharinfo)->metrics ) {        /* fallback */
+                    /* dprintf((stderr, "nocharinfo -> Instead We use .notdef glyph.\n")); */
+                    *glyphs = get_metrics(ft, 0, char_width, force_c);
+                }
 #endif
-            glyphs++;
+                glyphs++;
+            }
+            break;
+        default:
+            while (count--) {
+                *glyphs = &(&nocharinfo)->metrics;
+#if 1
+                if ( *glyphs == &(&nocharinfo)->metrics ) {        /* fallback */
+                    /* dprintf((stderr, "nocharinfo -> Instead We use .notdef glyph.\n")); */
+                    *glyphs = get_metrics(ft, 0, char_width, 0);
+                }
+#endif
+                glyphs++;
+            }
         }
+
         *pCount = glyphs - glyphsBase;
         /*
           The XFree86 sometimes allocates memory with the value of maxbounds.ascent
@@ -1082,7 +1333,8 @@ FreeTypeGetMetrics (FontPtr pFont,
           So (*glyphs)->ascent must not become larger than maxbounds.ascent.
           This is the same also about descent.
          */
-        for ( i=0 ; i<*pCount ; i++ ) {
+        if ( ft->isInconsistentMetrics ) {
+          for ( i=0 ; i<*pCount ; i++ ) {
             if ( pFont->info.maxbounds.ascent < glyphsBase[i]->ascent ) {
                 dprintf((stderr, " Invalid ascent : maxbounds.ascent=%d metrics.ascent=%d [corrected]\n",
                          pFont->info.maxbounds.ascent,glyphsBase[i]->ascent));
@@ -1093,6 +1345,7 @@ FreeTypeGetMetrics (FontPtr pFont,
                          pFont->info.maxbounds.descent,glyphsBase[i]->descent));
                 glyphsBase[i]->descent = pFont->info.maxbounds.descent;
             }
+          }
         }
     } else {                                    /* -c- */
         switch (encoding) {
@@ -1164,12 +1417,14 @@ freetype_compute_bounds(FreeTypeFont *ft,
                         struct xtt_char_width char_width)
 {
     int row, col;
-    short c;
+    unsigned int c;
     xCharInfo minchar, maxchar, *tmpchar = NULL;
     int overlap, maxOverlap;
     long swidth      = 0;
     long total_width = 0;
-    int num_chars    = 0;
+    int num_cols, num_chars = 0;
+    int force_c, force_c_init, skip_ok = 0;
+    int force_c_inside;
 
     minchar.ascent = minchar.descent =
     minchar.leftSideBearing = minchar.rightSideBearing =
@@ -1179,35 +1434,98 @@ freetype_compute_bounds(FreeTypeFont *ft,
     maxchar.characterWidth = maxchar.attributes = -32767;
     maxOverlap = -32767;
 
+    if ( ft->forceConstantSpacingBegin <= ft->forceConstantSpacingEnd ) force_c_inside=1;
+    else force_c_inside=0;
+    /* Parse all glyphs */
+    force_c_init=0;
+    num_cols = 1 + pinfo->lastCol - pinfo->firstCol;
     for (row = pinfo->firstRow; row <= pinfo->lastRow; row++) {
-        for (col = pinfo->firstCol; col <= pinfo->lastCol; col++) {
-            c = row<<8|col;
-#if 0
-            fprintf(stderr, "comp_bounds: %x ->", c);
-#endif
-            c = ft->codeConverterInfo.ptrCodeConverter(c);
-#if 0
-            fprintf(stderr, "%x\n", c);
-#endif
-            if (c) {
-                tmpchar =
-                    get_metrics(ft, TT_Char_Index(ft->charmap, c),
-                                char_width);
-                }
-
-            if (!tmpchar || !tmpchar->characterWidth)
-                continue;
-
-                adjust_min_max(&minchar, &maxchar, tmpchar);
-                overlap = tmpchar->rightSideBearing - tmpchar->characterWidth;
-                if (maxOverlap < overlap)
-                    maxOverlap = overlap;
-                num_chars++;
-                swidth += ABS(tmpchar->characterWidth);
-                total_width += tmpchar->characterWidth;
+      if ( skip_ok && tmpchar ) {
+        if ( force_c_inside ) {
+          if ( ft->forceConstantSpacingBegin < row<<8 && row<<8 < (ft->forceConstantSpacingEnd & 0x0ff00) ) {
+            if (tmpchar->characterWidth) {
+              num_chars += num_cols;
+              swidth += ABS(tmpchar->characterWidth)*num_cols;
+              total_width += tmpchar->characterWidth*num_cols;
+              continue;
+            }
+          }
+          else skip_ok=0;
         }
+        else {          /* for GB18030 proportional */
+          if ( ft->forceConstantSpacingBegin < row<<8 || row<<8 < (ft->forceConstantSpacingEnd & 0x0ff00) ) {
+            if (tmpchar->characterWidth) {
+              num_chars += num_cols;
+              swidth += ABS(tmpchar->characterWidth)*num_cols;
+              total_width += tmpchar->characterWidth*num_cols;
+              continue;
+            }
+          }
+          else skip_ok=0;
+        }
+      }
+      for (col = pinfo->firstCol; col <= pinfo->lastCol; col++) {
+          c = row<<8|col;
+          force_c=force_c_init;
+          if ( force_c_inside ) {
+              if ( c <= ft->forceConstantSpacingEnd && ft->forceConstantSpacingBegin <= c )
+                  force_c|=XTT_FORCE_CONSTANT_SPACING;
+          }
+          else {        /* for GB18030 proportional */
+              if ( c <= ft->forceConstantSpacingEnd || ft->forceConstantSpacingBegin <= c )
+                  force_c|=XTT_FORCE_CONSTANT_SPACING;
+          }
+#if 0
+          fprintf(stderr, "comp_bounds: %x ->", c);
+#endif
+          if ( skip_ok == 0 || force_c == force_c_init ){
+              tmpchar=NULL;
+              c = ft->codeConverterInfo.ptrCodeConverter(c);
+#if 0
+              fprintf(stderr, "%x\n", c);
+#endif
+              if (c) {
+                  tmpchar =
+                      get_metrics(ft, TT_Char_Index(ft->charmap, c),
+                                  char_width, force_c);
+              }
+          }
+          if ( !tmpchar || tmpchar == &(&nocharinfo)->metrics )
+              continue;
+          adjust_min_max(&minchar, &maxchar, tmpchar);
+          overlap = tmpchar->rightSideBearing - tmpchar->characterWidth;
+          if (maxOverlap < overlap)
+              maxOverlap = overlap;
+          
+          if (!tmpchar->characterWidth)
+              continue;
+          num_chars++;
+          swidth += ABS(tmpchar->characterWidth);
+          total_width += tmpchar->characterWidth;
+          
+          if ( force_c & XTT_FORCE_CONSTANT_SPACING ) skip_ok=1;
+      }
     }
 
+    /* Check index 0 */
+    tmpchar = get_metrics(ft, 0, char_width, 0);
+    if ( tmpchar && tmpchar != &(&nocharinfo)->metrics ) {
+        adjust_min_max(&minchar, &maxchar, tmpchar);
+        overlap = tmpchar->rightSideBearing - tmpchar->characterWidth;
+        if (maxOverlap < overlap)
+            maxOverlap = overlap;
+    }
+    if ( 0 <= ft->forceConstantSpacingEnd ) {
+        tmpchar = get_metrics(ft, 0, char_width, 
+                              force_c_init|XTT_FORCE_CONSTANT_SPACING);
+        if ( tmpchar && tmpchar != &(&nocharinfo)->metrics ) {
+            adjust_min_max(&minchar, &maxchar, tmpchar);
+            overlap = tmpchar->rightSideBearing - tmpchar->characterWidth;
+            if (maxOverlap < overlap)
+                maxOverlap = overlap;
+        }
+    }
+    /* AVERAGE_WIDTH ... 1/10 pixel unit */
     if (num_chars > 0) {
         swidth = (swidth * 10.0 + num_chars / 2.0) / num_chars;
         if (total_width < 0)
@@ -1216,7 +1534,7 @@ freetype_compute_bounds(FreeTypeFont *ft,
     } else
         vals->width = 0;
 
-    if(char_width.pixel) {
+    if (char_width.pixel) {
         maxchar.characterWidth = char_width.pixel;
         minchar.characterWidth = char_width.pixel;
     }
@@ -1290,14 +1608,15 @@ restrict_code_range(unsigned short *refFirstCol,
 }
 
 
-static void
-restrict_code_range_by_str(unsigned short *refFirstCol,
+static int
+restrict_code_range_by_str(int count,unsigned short *refFirstCol,
                           unsigned short *refFirstRow,
                           unsigned short *refLastCol,
                           unsigned short *refLastRow,
                           char const *str)
 {
     int nRanges = 0;
+    int result = 0;
     fsRange *ranges = NULL;
     char const *p, *q;
 
@@ -1354,7 +1673,7 @@ restrict_code_range_by_str(unsigned short *refFirstCol,
             /* comma - single code */
             maxpoint = minpoint;
 
-        if (minpoint>maxpoint) {
+        if ( count <= 0 && minpoint>maxpoint ) {
             int tmp;
             tmp = minpoint;
             minpoint = maxpoint;
@@ -1381,12 +1700,66 @@ restrict_code_range_by_str(unsigned short *refFirstCol,
     }
 
     if (ranges) {
-        restrict_code_range(refFirstCol, refFirstRow, refLastCol, refLastRow,
-                           ranges, nRanges);
+        if ( count <= 0 ) {
+            restrict_code_range(refFirstCol, refFirstRow, refLastCol, refLastRow,
+                                ranges, nRanges);
+        }
+        else {
+            int i;
+            fsRange *r;
+            for ( i=0 ; i<nRanges ; i++ ) {
+                if ( count <= i ) break;
+                r = ranges+i;
+                refFirstCol[i] = r->min_char_low;
+                refLastCol[i] = r->max_char_low;
+                refFirstRow[i] = r->min_char_high;
+                refLastRow[i] = r->max_char_high;
+            }
+            result=i;
+        }
         xfree(ranges);
     }
+    return result;
 }
 
+static int compute_new_extents( FontScalablePtr vals, double scale, int lsb, int rsb, int desc, int asc,
+                                int *lsb_result, int *rsb_result, int *desc_result, int *asc_result )
+{
+#define TRANSFORM_POINT(matrix, x, y, dest) \
+    ((dest)[0] = (matrix)[0] * (x) + (matrix)[2] * (y), \
+     (dest)[1] = (matrix)[1] * (x) + (matrix)[3] * (y))
+
+#define CHECK_EXTENT(lsb, rsb, desc, asc, data) \
+    ((lsb) > (data)[0] ? (lsb) = (data)[0] : 0 , \
+     (rsb) < (data)[0] ? (rsb) = (data)[0] : 0, \
+     (-desc) > (data)[1] ? (desc) = -(data)[1] : 0 , \
+     (asc) < (data)[1] ? (asc) = (data)[1] : 0)
+    double newlsb, newrsb, newdesc, newasc;
+    double point[2];
+
+    /* Compute new extents for this glyph */
+    TRANSFORM_POINT(vals->pixel_matrix, lsb, -desc, point);
+    newlsb  = point[0];
+    newrsb  = newlsb;
+    newdesc = -point[1];
+    newasc  = -newdesc;
+    TRANSFORM_POINT(vals->pixel_matrix, lsb, asc, point);
+    CHECK_EXTENT(newlsb, newrsb, newdesc, newasc, point);
+    TRANSFORM_POINT(vals->pixel_matrix, rsb, -desc, point);
+    CHECK_EXTENT(newlsb, newrsb, newdesc, newasc, point);
+    TRANSFORM_POINT(vals->pixel_matrix, rsb, asc, point);
+    CHECK_EXTENT(newlsb, newrsb, newdesc, newasc, point);
+
+    /* ???: lsb = (int)floor(newlsb * scale); */
+    *lsb_result   = (int)floor(newlsb * scale + 0.5);
+    *rsb_result   = (int)floor(newrsb * scale + 0.5);
+    *desc_result  = (int)ceil(newdesc * scale - 0.5);
+    *asc_result   = (int)floor(newasc * scale + 0.5);
+
+    return 0;
+#undef CHECK_EXTENT
+#undef TRANSFORM_POINT
+}
 
 int
 FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
@@ -1407,6 +1780,14 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
     FontInfoPtr pinfo;
     FreeTypeFont *ft;
     int ret, bit, byte, glyph, scan, image;
+    int maxbounds_character_width, force_c_lsb_flag=0, force_c_rsb_flag=0;
+    int always_embedded_bitmap;
+    int force_c_adjust_width_by_pixel=0;
+    int force_c_adjust_lsb_by_pixel=0, force_c_adjust_rsb_by_pixel=0;
+    int force_c_representative_metrics_char_code;
+    double force_c_scale_b_box_width;
+    double force_c_scale_lsb=0.0, force_c_scale_rsb=1.0;
+    double auto_italic=0;
 
     char xlfdName[MAXFONTNAMELEN];
     char familyname[MAXFONTNAMELEN];
@@ -1562,6 +1943,7 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
     if (SPropRecValList_search_record(&listPropRecVal,
                                       &contRecValue,
                                       "AutoItalic")) {
+        auto_italic = SPropContainer_value_dbl(contRecValue);
         vals->pixel_matrix[2] +=
             vals->pixel_matrix[0] * SPropContainer_value_dbl(contRecValue);
         vals->point_matrix[2] +=
@@ -1653,26 +2035,48 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
         ft->scaleWidth *= (double)setwidth_value / 500.0;
     }
     ft->scaleBBoxWidth = 1.0;
+    ft->adjustBBoxWidthByPixel = 0;
+    ft->adjustLeftSideBearingByPixel = 0;
+    ft->adjustRightSideBearingByPixel = 0;
     if (SPropRecValList_search_record(&listPropRecVal,
                                       &contRecValue,
                                       "ScaleBBoxWidth")) {
         /* Scaling to Bounding Box Width */
-        double scaleBBoxWidth = SPropContainer_value_dbl(contRecValue);
+        int lv;
+        char *endptr,*beginptr;
+        double v,scaleBBoxWidth=1.0;
+        beginptr = SPropContainer_value_str(contRecValue);
+        do {
+            if ( strlen(beginptr) < 1 ) break;
+            v=strtod(beginptr, &endptr);
+            if ( endptr!=beginptr ) {
+                scaleBBoxWidth = v;
+            }
+            if ( *endptr != ';' && *endptr != ',' ) break;
+            beginptr=endptr+1;
+            lv=strtol(beginptr, &endptr, 10);
+            if ( endptr!=beginptr ) {
+                ft->adjustBBoxWidthByPixel = lv;
+            }
+            if ( *endptr != ',' ) break;
+            beginptr=endptr+1;
+            lv=strtol(beginptr, &endptr, 10);
+            if ( endptr!=beginptr ) {
+                ft->adjustLeftSideBearingByPixel = lv;
+            }
+            if ( *endptr != ',' ) break;
+            beginptr=endptr+1;
+            lv=strtol(beginptr, &endptr, 10);
+            if ( endptr!=beginptr ) {
+                ft->adjustRightSideBearingByPixel = lv;
+            }
+        } while ( 0 );
 
         if (scaleBBoxWidth<=0.0) {
             fprintf(stderr, "ScaleBBoxWitdh needs plus.\n");
             return -1;
         }
         ft->scaleBBoxWidth = scaleBBoxWidth;
-    }
-    ft->scaleBBoxWidth *= ft->scaleWidth;
-    ft->isDoubleStrike = False;
-    if (SPropRecValList_search_record(&listPropRecVal,
-                                      &contRecValue,
-                                      "DoubleStrike")) {
-        /* Set or Reset Auto Bold Flag */
-        if (SPropContainer_value_bool(contRecValue))
-            ft->isDoubleStrike = True;
     }
 
     ft->spacing = spacing;
@@ -1708,6 +2112,74 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
                 goto quit;
             }
         }
+    /* */
+    ft->doubleStrike = 0;
+    if (SPropRecValList_search_record(&listPropRecVal,
+                                      &contRecValue,
+                                      "DoubleStrike")) {
+        /* Set or Reset Auto Bold Flag */
+        char *strDoubleStrike = SPropContainer_value_str(contRecValue);
+        Bool err = False;
+        if ( 0 < strlen(strDoubleStrike) ) {
+            switch (strDoubleStrike[0]) {
+            case 'm':
+            case 'M':
+            case 'l':
+            case 'L':
+                ft->doubleStrike |= XTT_DOUBLE_STRIKE;
+                ft->doubleStrike |= XTT_DOUBLE_STRIKE_MKBOLD_EDGE_LEFT;
+                break;
+            case 'y':
+            case 'Y':
+                ft->doubleStrike |= XTT_DOUBLE_STRIKE;
+                break;
+            case 'n':
+            case 'N':
+                ft->doubleStrike = 0;
+                break;
+            default:
+                err = True;
+            }
+            if ( err != True ) {
+                if ( strDoubleStrike[1] ) {
+                    switch (strDoubleStrike[1]) {
+                    case 'b':
+                    case 'B':
+                    case 'p':
+                    case 'P':
+                    case 'y':
+                    case 'Y':
+                        ft->doubleStrike |= XTT_DOUBLE_STRIKE_CORRECT_B_BOX_WIDTH;
+                        break;
+                    default:
+                        break;
+                    }
+                }
+                if ( ft->doubleStrike & XTT_DOUBLE_STRIKE_MKBOLD_EDGE_LEFT ) {
+                    char *comma_ptr=strchr(strDoubleStrike,';');
+                    if ( !comma_ptr ) comma_ptr=strchr(strDoubleStrike,',');
+                    if ( comma_ptr ) {
+                        if ( comma_ptr[1] ) {
+                            char *endptr;
+                            int mkboldMaxPixel;
+                            mkboldMaxPixel=strtol(comma_ptr+1, &endptr, 10);
+                            if ( *endptr == '\0' && mkboldMaxPixel <= vals->pixel ) {
+                              ft->doubleStrike &= ~XTT_DOUBLE_STRIKE_MKBOLD_EDGE_LEFT;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else
+            err = True;
+        if (err) {
+            xfree(ft);
+            DestroyFontRec(pFont);
+            result = BadFontName;
+            goto quit;
+        }
+    }
     /* very lazy metrics */
     ft->isVeryLazy = False;
     if (SPropRecValList_search_record(&listPropRecVal,
@@ -1721,11 +2193,41 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
 
     /* embedded bitmap */
     ft->isEmbeddedBitmap = True;
+    always_embedded_bitmap=0;
     if (SPropRecValList_search_record(&listPropRecVal,
                                       &contRecValue,
-                                      "EmbeddedBitmap"))
-        ft->isEmbeddedBitmap = SPropContainer_value_bool(contRecValue);
-
+                                      "EmbeddedBitmap")) {
+        char *strEmbeddedBitmap = SPropContainer_value_str(contRecValue);
+        Bool err = False;
+        if ( 1 == strlen(strEmbeddedBitmap) ) {
+            switch (strEmbeddedBitmap[0]) {
+            case 'y':
+            case 'Y':
+                ft->isEmbeddedBitmap = True;
+                always_embedded_bitmap=1;
+                break;
+            case 'u':
+            case 'U':
+                ft->isEmbeddedBitmap = True;
+                always_embedded_bitmap=0;
+                break;
+            case 'n':
+            case 'N':
+                ft->isEmbeddedBitmap = False;
+                break;
+            default:
+                err = True;
+            }
+        }
+        else
+            err = True;
+        if (err) {
+            xfree(ft);
+            DestroyFontRec(pFont);
+            result = BadFontName;
+            goto quit;
+        }
+    }
     if ((ret = FreeType_OpenFont(ft, vals, glyph, &hints))
         != Successful) {
         xfree(ft);
@@ -1734,7 +2236,7 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
         goto quit;
     }
 
-    ft->scaleBitmap = 1.0;
+    ft->scaleBitmap = 0.0;
     if((ft->isVeryLazy) &&
        SPropRecValList_search_record(&listPropRecVal,
                                      &contRecValue,
@@ -1790,7 +2292,7 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
         if (SPropRecValList_search_record(&listPropRecVal,
                                            &contRecValue,
                                            "CodeRange")) {
-            restrict_code_range_by_str(&pinfo->firstCol, &pinfo->firstRow,
+            restrict_code_range_by_str(0,&pinfo->firstCol, &pinfo->firstRow,
                                       &pinfo->lastCol, &pinfo->lastRow,
                                       SPropContainer_value_str(contRecValue));
         }
@@ -1798,6 +2300,109 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
                            &pinfo->lastCol, &pinfo->lastRow,
                            vals->ranges, vals->nranges);
     }
+
+    /* forceConstantSpacing{Begin,End} */
+    ft->forceConstantSpacingBegin = -1;
+    ft->forceConstantSpacingEnd = -1;
+    if ( ft->spacing == 'p' ){
+        unsigned short first_col=0,last_col=0x00ff;
+        unsigned short first_row=0,last_row=0x00ff;
+        if (SPropRecValList_search_record(&listPropRecVal,
+                                           &contRecValue,
+                                           "ForceConstantSpacingCodeRange")) {
+            if ( restrict_code_range_by_str(1,&first_col, &first_row,
+                                            &last_col, &last_row,
+                                            SPropContainer_value_str(contRecValue)) == 1 ) {
+              ft->forceConstantSpacingBegin = (int)( first_row<<8 | first_col );
+              ft->forceConstantSpacingEnd = (int)( last_row<<8 | last_col );
+              /* fprintf(stderr,"fc=%x-%x\n",ft->forceConstantSpacingBegin,ft->forceConstantSpacingEnd); */
+            }
+        }
+    }
+
+    force_c_representative_metrics_char_code = -2;
+    force_c_scale_b_box_width = 1.0;
+    if ( ft->spacing == 'p' ){
+        unsigned short first_col=pinfo->firstCol,last_col=pinfo->lastCol;
+        unsigned short first_row=pinfo->firstRow,last_row=pinfo->lastRow;
+        if ( SPropRecValList_search_record(&listPropRecVal,
+                                           &contRecValue,
+                                           "ForceConstantSpacingMetrics")) {
+            char *strMetrics;
+            strMetrics = SPropContainer_value_str(contRecValue);
+            if ( strMetrics ) {
+                char *comma_ptr,*period_ptr,*semic_ptr;
+                semic_ptr=strchr(strMetrics,';');
+                comma_ptr=strchr(strMetrics,',');
+                period_ptr=strchr(strMetrics,'.');
+                if ( semic_ptr && comma_ptr ) 
+                    if ( semic_ptr < comma_ptr ) comma_ptr=NULL;
+                if ( semic_ptr && period_ptr ) 
+                    if ( semic_ptr < period_ptr ) period_ptr=NULL;
+                if ( !comma_ptr && !period_ptr && strMetrics != semic_ptr ) {
+                    if ( restrict_code_range_by_str(1,&first_col, &first_row,
+                                                    &last_col, &last_row,
+                                                    SPropContainer_value_str(contRecValue)) == 1 ) {
+                      force_c_representative_metrics_char_code = 
+                          (int)( first_row<<8 | first_col );
+                      /* fprintf(stderr,"fm=%x\n",force_c_representative_metrics_char_code); */
+                    }
+                }
+                else {
+                    double v;
+                    char *endptr,*beginptr=strMetrics;
+                    do {
+                        v=strtod(beginptr, &endptr);
+                        if ( endptr!=beginptr ) {
+                            force_c_scale_b_box_width = v;
+                        }
+                        if ( *endptr != ',' ) break;
+                        beginptr=endptr+1;
+                        v=strtod(beginptr, &endptr);
+                        if ( endptr!=beginptr ) {
+                            force_c_scale_lsb = v;
+                            force_c_lsb_flag=1;
+                        }
+                        if ( *endptr != ',' ) break;
+                        beginptr=endptr+1;
+                        v=strtod(beginptr, &endptr);
+                        if ( endptr!=beginptr ) {
+                            force_c_scale_rsb = v;
+                            force_c_rsb_flag=1;
+                        }
+                    } while (0);
+                }
+                if ( semic_ptr ) {
+                    int lv;
+                    char *endptr,*beginptr=semic_ptr+1;
+                    do {
+                        lv=strtol(beginptr, &endptr, 10);
+                        if ( endptr!=beginptr ) {
+                            force_c_adjust_width_by_pixel=lv;
+                        }
+                        if ( *endptr != ',' ) break;
+                        beginptr=endptr+1;
+                        lv=strtol(beginptr, &endptr, 10);
+                        if ( endptr!=beginptr ) {
+                            force_c_adjust_lsb_by_pixel=lv;
+                        }
+                        if ( *endptr != ',' ) break;
+                        beginptr=endptr+1;
+                        lv=strtol(beginptr, &endptr, 10);
+                        if ( endptr!=beginptr ) {
+                            force_c_adjust_rsb_by_pixel=lv;
+                        }
+                    } while (0);
+                }
+            }
+        }
+    }
+
+    force_c_scale_b_box_width *= ft->scaleBBoxWidth;
+    force_c_scale_b_box_width *= ft->scaleWidth;
+    ft->scaleBBoxWidth *= ft->scaleWidth;
+
+    ft->isInconsistentMetrics = False;
 
     pinfo->allExist = 0;
     pinfo->drawDirection = LeftToRight;
@@ -1815,8 +2420,9 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
          */
         int raw_ascent, raw_descent, raw_width;     /* RAW */
         int lsb, rsb, desc, asc;
-        double newlsb, newrsb, newdesc, newasc;
-        double point[2];
+        int force_c_lsb, force_c_rsb, force_c_raw_width;
+        int newlsb, newrsb, newdesc, newasc;
+        int force_c_newlsb, force_c_newrsb, force_c_newdesc, force_c_newasc;
         double scale;
         struct xtt_char_width char_width = {0,0};
 
@@ -1844,49 +2450,80 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
         raw_ascent  = faceTable[ft->fid].prop.horizontal->Ascender;
         raw_descent = -(faceTable[ft->fid].prop.horizontal->Descender);
 
+        ft->PixelAdjustmentBBoxWidthCorrectionRatio=1.0;
+        scale = 1.0 / faceTable[ft->fid].prop.header->Units_Per_EM;
+        maxbounds_character_width = 
+            faceTable[ft->fid].prop.horizontal->advance_Width_Max
+            * ft->scaleBBoxWidth;
+        /* width: all widths are identical */
+        maxbounds_character_width = 
+            (int)floor(maxbounds_character_width * vals->pixel_matrix[0]  * scale + 0.5); 
+        if ( ft->doubleStrike & XTT_DOUBLE_STRIKE_CORRECT_B_BOX_WIDTH ) {
+            ft->PixelAdjustmentBBoxWidthCorrectionRatio = 
+                (double)(maxbounds_character_width+ft->adjustBBoxWidthByPixel+1)/maxbounds_character_width;
+            maxbounds_character_width += ft->adjustBBoxWidthByPixel+1;
+        }
+        else {
+            ft->PixelAdjustmentBBoxWidthCorrectionRatio = 
+                (double)(maxbounds_character_width+ft->adjustBBoxWidthByPixel)/maxbounds_character_width;
+            maxbounds_character_width += ft->adjustBBoxWidthByPixel;
+        }
         /*
          * Apply scaleBBoxWidth.
          */
+        if ( force_c_rsb_flag )
+            force_c_rsb = (int)floor(raw_width * force_c_scale_rsb
+                                     * ft->scaleBBoxWidth + 0.5);
+        else
+            force_c_rsb = (int)floor(rsb * force_c_scale_b_box_width + 0.5);
+        if ( force_c_lsb_flag )
+            force_c_lsb = (int)floor(raw_width * force_c_scale_lsb
+                                     * ft->scaleBBoxWidth);
+        else
+            force_c_lsb = (int)floor(lsb * force_c_scale_b_box_width);
+        force_c_raw_width = raw_width * force_c_scale_b_box_width
+                            * ft->PixelAdjustmentBBoxWidthCorrectionRatio;
         lsb    = (int)floor(lsb * ft->scaleBBoxWidth);
         rsb    = (int)floor(rsb * ft->scaleBBoxWidth + 0.5);
-        raw_width = raw_width * ft->scaleBBoxWidth;
+        raw_width = raw_width * ft->scaleBBoxWidth * ft->PixelAdjustmentBBoxWidthCorrectionRatio;
 
-#define TRANSFORM_POINT(matrix, x, y, dest) \
-    ((dest)[0] = (matrix)[0] * (x) + (matrix)[2] * (y), \
-     (dest)[1] = (matrix)[1] * (x) + (matrix)[3] * (y))
+        compute_new_extents( vals, scale, lsb, rsb, desc, asc,
+                             &newlsb, &newrsb, &newdesc, &newasc );
+        compute_new_extents( vals, scale, force_c_lsb, force_c_rsb, desc, asc,
+                             &force_c_newlsb, &force_c_newrsb, &force_c_newdesc, &force_c_newasc );
 
-#define CHECK_EXTENT(lsb, rsb, desc, asc, data) \
-    ((lsb) > (data)[0] ? (lsb) = (data)[0] : 0 , \
-     (rsb) < (data)[0] ? (rsb) = (data)[0] : 0, \
-     (-desc) > (data)[1] ? (desc) = -(data)[1] : 0 , \
-     (asc) < (data)[1] ? (asc) = (data)[1] : 0)
-
-        /* Compute new extents for this glyph */
-        TRANSFORM_POINT(vals->pixel_matrix, lsb, -desc, point);
-        newlsb  = point[0];
-        newrsb  = newlsb;
-        newdesc = -point[1];
-        newasc  = -newdesc;
-        TRANSFORM_POINT(vals->pixel_matrix, lsb, asc, point);
-        CHECK_EXTENT(newlsb, newrsb, newdesc, newasc, point);
-        TRANSFORM_POINT(vals->pixel_matrix, rsb, -desc, point);
-        CHECK_EXTENT(newlsb, newrsb, newdesc, newasc, point);
-        TRANSFORM_POINT(vals->pixel_matrix, rsb, asc, point);
-        CHECK_EXTENT(newlsb, newrsb, newdesc, newasc, point);
-
-        /*
-         * TrueType font is scaled.  So we made scaling value.
-         */
-        scale = 1.0 / faceTable[ft->fid].prop.header->Units_Per_EM;
-        /* ???: lsb = (int)floor(newlsb * scale); */
-        lsb   = (int)floor(newlsb * scale + 0.5);
-        rsb   = (int)floor(newrsb * scale + 0.5);
-        desc  = (int)ceil(newdesc * scale - 0.5);
-        asc   = (int)floor(newasc * scale + 0.5);
+        /* 
+        fprintf(stderr,"rsb %d -> %d\n",(int)floor(vals->pixel_matrix[0] * rsb * scale + 0.5),newrsb);
+        fprintf(stderr,"lsb %d -> %d\n",(int)floor(vals->pixel_matrix[0] * lsb * scale),newlsb);
+        */
+        if ( !IS_TT_Matrix_Unit(ft->matrix) && ft->isEmbeddedBitmap && always_embedded_bitmap ) {
+            if ( 0 <= auto_italic ) {
+                ft->autoItalicUsingEmbeddedBitmapShift=
+                    newrsb - (int)floor(vals->pixel_matrix[0] * rsb * scale + 0.5);
+                if ( ft->autoItalicUsingEmbeddedBitmapShift < 0 )
+                    ft->autoItalicUsingEmbeddedBitmapShift=0;
+            }
+            else {
+                ft->autoItalicUsingEmbeddedBitmapShift=
+                    newlsb - (int)floor(vals->pixel_matrix[0] * lsb * scale);
+                if ( 0 < ft->autoItalicUsingEmbeddedBitmapShift )
+                    ft->autoItalicUsingEmbeddedBitmapShift=0;
+            }
+        }
+        else {
+            ft->autoItalicUsingEmbeddedBitmapShift=0;
+        }
+        lsb = newlsb;
+        rsb = newrsb;
+        desc = newdesc;
+        asc = newasc;
+        force_c_lsb = force_c_newlsb;
+        force_c_rsb = force_c_newrsb;
 
         /*
          * raw_* for are differs.
          */
+        force_c_raw_width *= base_width * 1000. * scale / base_height;
         raw_width   *= base_width * 1000. * scale / base_height;
         raw_ascent  *= 1000. * scale;
         raw_descent *= 1000. * scale;
@@ -1896,14 +2533,16 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
          * This line metrics returns the line metrics of font file,
          * but not X's font as you want.
          */
-        if (IS_TT_Matrix_Unit(ft->matrix) &&
+        if ( (IS_TT_Matrix_Unit(ft->matrix) || ft->autoItalicUsingEmbeddedBitmapShift) &&
             faceTable[ft->fid].sbit && ft->isEmbeddedBitmap)
         {
             TT_SBit_Strike strike;
             TT_UFWord adv_width_max =
                 faceTable[ft->fid].prop.horizontal->advance_Width_Max;
             int scaleBBoxWidth = ft->scaleBBoxWidth;
+            int forceConstantSpacingScaleBBoxWidth = force_c_scale_b_box_width;
             int sbit_lsb, sbit_rsb, sbit_desc, sbit_asc;
+            int force_c_sbit_lsb, force_c_sbit_rsb;
 
             if (TT_Get_SBit_Strike(faceTable[ft->fid].face, ft->instance,
                                     &strike))
@@ -1911,21 +2550,39 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
             else {
                 sbit_lsb  = (int)floor(strike.hori.min_origin_SB
                                   * scaleBBoxWidth);
+                force_c_sbit_lsb  = (int)floor(strike.hori.min_origin_SB
+                                    * forceConstantSpacingScaleBBoxWidth);
                 /* XXX: It is not correct value */
                 sbit_rsb  = MAX((int)floor(strike.hori.max_width
                                   * scaleBBoxWidth + .5),
                                 (int)floor((adv_width_max * scale
                                   - strike.hori.min_advance_SB)
                                   * scaleBBoxWidth + .5));
+                force_c_sbit_rsb  = MAX((int)floor(strike.hori.max_width
+                                  * forceConstantSpacingScaleBBoxWidth + .5),
+                                (int)floor((adv_width_max * scale
+                                  - strike.hori.min_advance_SB)
+                                  * forceConstantSpacingScaleBBoxWidth + .5));
 
                 sbit_desc = strike.hori.min_after_BL * -1;
                 sbit_asc  = strike.hori.max_before_BL;
+
+                if ( 0 < ft->autoItalicUsingEmbeddedBitmapShift ) {
+                    sbit_rsb += ft->autoItalicUsingEmbeddedBitmapShift;
+                    force_c_sbit_rsb += ft->autoItalicUsingEmbeddedBitmapShift;
+                }
+                if ( ft->autoItalicUsingEmbeddedBitmapShift < 0 ) {
+                    sbit_lsb += ft->autoItalicUsingEmbeddedBitmapShift;
+                    force_c_sbit_lsb += ft->autoItalicUsingEmbeddedBitmapShift;
+                }
 
                 /* We set line metrics as bellow */
                 lsb  = MIN(lsb,  sbit_lsb);
                 rsb  = MAX(rsb,  sbit_rsb);
                 desc = MAX(desc, sbit_desc);
                 asc  = MAX(asc,  sbit_asc);
+                if ( !force_c_rsb_flag ) force_c_rsb = MAX(force_c_rsb,force_c_sbit_rsb);
+                if ( !force_c_lsb_flag ) force_c_lsb = MIN(force_c_lsb,force_c_sbit_lsb);
 
                 dprintf((stderr, "outline: lsb %d, rsb %d, desc %d, asc %d\n",
                          lsb, rsb, desc, asc));
@@ -1934,16 +2591,71 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
             }
         }
 
+        /* Pixel adjustment */
+        if ( ft->doubleStrike /* & XTT_DOUBLE_STRIKE_CORRECT_B_BOX_WIDTH */ ) {
+             rsb++;
+             force_c_rsb++;
+        }
+        lsb         += ft->adjustLeftSideBearingByPixel;
+        force_c_lsb += ft->adjustLeftSideBearingByPixel;
+        rsb         += ft->adjustRightSideBearingByPixel;
+        force_c_rsb += ft->adjustRightSideBearingByPixel;
+
+        /* Metrics for forceConstantSpacing */
+        {
+            xCharInfo *tmpchar = NULL;
+            unsigned int c;
+            /* Get Representative Metrics */
+            if ( force_c_representative_metrics_char_code == -1 ) {
+                tmpchar = get_metrics(ft, 0, char_width, 0);
+            }
+            else if ( 0 <= force_c_representative_metrics_char_code ) {
+                c = force_c_representative_metrics_char_code;
+                c = ft->codeConverterInfo.ptrCodeConverter(c);
+                tmpchar = get_metrics(ft, TT_Char_Index(ft->charmap, c),
+                                      char_width, 0);
+                if ( tmpchar == &(&nocharinfo)->metrics ) {
+                    tmpchar = get_metrics(ft, 0, char_width, 0);
+                }
+            }
+            if ( tmpchar == &(&nocharinfo)->metrics ) tmpchar=NULL;
+            if ( tmpchar ) {
+                if ( 0 < tmpchar->characterWidth ) {
+                    ft->forceConstantMetrics.leftSideBearing  = tmpchar->leftSideBearing;
+                    ft->forceConstantMetrics.rightSideBearing = tmpchar->rightSideBearing;
+                    ft->forceConstantMetrics.characterWidth   = tmpchar->characterWidth;
+                    ft->forceConstantMetrics.ascent           = tmpchar->ascent;
+                    ft->forceConstantMetrics.descent          = tmpchar->descent;
+                    ft->forceConstantMetrics.attributes       = tmpchar->attributes;
+                }
+            }
+            else {
+                int width = 
+                    faceTable[ft->fid].prop.horizontal->advance_Width_Max 
+                    * force_c_scale_b_box_width;
+                /* width: all widths are identical */
+                width = (int)floor(width * vals->pixel_matrix[0]  * scale + 0.5);
+                if ( ft->doubleStrike & XTT_DOUBLE_STRIKE_CORRECT_B_BOX_WIDTH ) width++;
+                width += ft->adjustBBoxWidthByPixel;
+                
+                ft->forceConstantMetrics.leftSideBearing  = force_c_lsb;
+                ft->forceConstantMetrics.rightSideBearing = force_c_rsb;
+                ft->forceConstantMetrics.characterWidth   = width;
+                ft->forceConstantMetrics.ascent           = asc;
+                ft->forceConstantMetrics.descent          = desc;
+                ft->forceConstantMetrics.attributes       = force_c_raw_width;
+                
+            }
+            ft->forceConstantMetrics.leftSideBearing  += force_c_adjust_lsb_by_pixel;
+            ft->forceConstantMetrics.rightSideBearing += force_c_adjust_rsb_by_pixel;
+            ft->forceConstantMetrics.characterWidth   += force_c_adjust_width_by_pixel;
+        }
 
         /* ComputeBounds */
         if (ft->spacing == 'c' || ft->spacing == 'm') { /* constant width */
 
             int width =
-                faceTable[ft->fid].prop.horizontal->advance_Width_Max
-                    * ft->scaleBBoxWidth;
-
-            /* width: all widths are identical */
-            width = (int)floor(width * vals->pixel_matrix[0]  * scale + 0.5);
+                maxbounds_character_width;
 
             /* AVERAGE_WIDTH ... 1/10 pixel unit */
             vals->width = width * 10;
@@ -1976,6 +2688,9 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
 
                 /* calculate pedantic way */
                 for(;i<NUM_EM_ARRAY;i++) {
+                    /* Caution! Only charsets on em_indexarray[] are parsed.     */
+                    /* In the case of '-m-', we should check each ascent/descent */
+                    /* in FreeTypeGetGlyphs() and FreeTypeGetMetrics().          */
                     if (!strncasecmp(em_indexarray[i].registry,
                                      charset,
                                      strlen(em_indexarray[i].registry))) {
@@ -1987,7 +2702,7 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
                             em_char =
                                 get_metrics(ft,
                                             TT_Char_Index(ft->charmap, c),
-                                            char_width);
+                                            char_width, 0);
                             char_width.pixel = em_char->characterWidth;
                             char_width.raw   = em_char->attributes;
                             freetype_compute_bounds(ft, pinfo, vals,
@@ -2011,6 +2726,8 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
                 pFont->info.minbounds.ascent           = asc;
                 pFont->info.minbounds.descent          = desc;
                 pFont->info.minbounds.attributes       = 0;
+
+                ft->isInconsistentMetrics = True;
             }
 
             pFont->info.ink_maxbounds = pFont->info.maxbounds;

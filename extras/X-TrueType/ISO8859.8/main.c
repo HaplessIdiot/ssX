@@ -2,6 +2,7 @@
 /* ===FileName: ===
    Copyright (c) 1998 Takuya SHIOZAKI, All Rights reserved.
    Copyright (c) 1998 X-TrueType Server Project, All rights reserved. 
+   Copyright (c) 1999 Pablo Saratxaga <pablo@mandrakesoft.com>
    
 ===Notice
    Redistribution and use in source and binary forms, with or without
@@ -25,7 +26,7 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
    SUCH DAMAGE.
 
-   Major Release ID: X-TrueType Server Version 1.2 [Aoi MATSUBARA Release 2]
+   Major Release ID: X-TrueType Server Version 1.3 [Aoi MATSUBARA Release 3]
 
 Notice===
  */
@@ -43,23 +44,26 @@ static char const * const releaseID =
 
 typedef enum
 {
-    ISO8859_8
+    ISO8859_8,
+    CP1255
 } CharSetMagic;
 
 static CharSetRelation const charSetRelations[] = {
-    { "iso8859",  NULL, "8",  ISO8859_8, { 0x20, 0xff, 0,    0,    0x20 } },
+    { "iso8859",   NULL,      "8", ISO8859_8, { 0x20, 0xff,  0,  0, 0x20 } },
+    { "microsoft", NULL, "cp1255",    CP1255, { 0x20, 0xff,  0,  0, 0x20 } },
     { NULL, NULL, NULL, 0, { 0, 0, 0, 0, 0 } }
 };
 
 
 CODECONV_TEMPLATE(cc_iso8859_8_to_ucs2);
+CODECONV_TEMPLATE(cc_cp1255_to_ucs2);
 static MapIDRelation const mapIDRelations[] = {
-    { ISO8859_8,    EPlfmISO,     EEncISO10646,
-                                  cc_iso8859_8_to_ucs2,                NULL },
-    { ISO8859_8,    EPlfmUnicode, EEncAny,
-                                  cc_iso8859_8_to_ucs2,                NULL },
-    { ISO8859_8,    EPlfmMS,      EEncMSUnicode,
-                                  cc_iso8859_8_to_ucs2,                NULL },
+    { ISO8859_8,    EPlfmISO,     EEncISO10646,  cc_iso8859_8_to_ucs2, NULL },
+    { ISO8859_8,    EPlfmUnicode, EEncAny,       cc_iso8859_8_to_ucs2, NULL },
+    { ISO8859_8,    EPlfmMS,      EEncMSUnicode, cc_iso8859_8_to_ucs2, NULL },
+    { CP1255,       EPlfmISO,     EEncISO10646,  cc_cp1255_to_ucs2,    NULL },
+    { CP1255,       EPlfmUnicode, EEncAny,       cc_cp1255_to_ucs2,    NULL },
+    { CP1255,       EPlfmMS,      EEncMSUnicode, cc_cp1255_to_ucs2,    NULL },
     { -1, 0, 0, NULL, NULL }
 };
 

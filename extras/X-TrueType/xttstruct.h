@@ -3,6 +3,7 @@
    Copyright (c) 1998 Go Watanabe, All rights reserved.
    Copyright (c) 1998 Takuya SHIOZAKI, All rights reserved.
    Copyright (c) 1998 X-TrueType Server Project, All rights reserved.
+   Copyright (c) 2003 After X-TT Project, All rights reserved.
 
 ===Notice
    Redistribution and use in source and binary forms, with or without
@@ -26,11 +27,11 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
    SUCH DAMAGE.
 
-   Major Release ID: X-TrueType Server Version 1.3 [Aoi MATSUBARA Release 3]
+   Major Release ID: X-TrueType Server Version 1.4 [Charles's Wain Release 0]
 
 Notice===
 */
-/* $XFree86$ */
+/* $XFree86: xc/extras/X-TrueType/xttstruct.h,v 1.2 2001/08/01 00:44:33 tsi Exp $ */
 
 #ifndef _XTTSTRUCT_H_
 #define _XTTSTRUCT_H_
@@ -101,14 +102,26 @@ typedef struct FreeTypeFont {
 
     int spacing;
     double scaleBBoxWidth;
-    Bool isDoubleStrike;
+    int adjustBBoxWidthByPixel;
+    int adjustLeftSideBearingByPixel;
+    int adjustRightSideBearingByPixel;
+    int doubleStrike;
+    int autoItalicUsingEmbeddedBitmapShift;
+    double PixelAdjustmentBBoxWidthCorrectionRatio;
     Bool isVeryLazy;
     Bool isEmbeddedBitmap;
+    Bool isInconsistentMetrics;
     double scaleWidth;
     double scaleBitmap;
 
     double pixel_size;             /* to calc attributes (actual height) */
     double pixel_width_unit_x;     /* to calc width (cosine) */
+
+    int forceConstantSpacingBegin;
+    int forceConstantSpacingEnd;
+    xCharInfo forceConstantMetrics;
+
+    char *dummy_bitmap;
 
 } FreeTypeFont, *FreeTypeFontPtr;
 
