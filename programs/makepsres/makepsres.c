@@ -35,6 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #include <stdio.h>
 #include <errno.h>
@@ -991,7 +992,7 @@ static void HandleUnopenableUPRFile(filename, err)
 {
     if (issueWarnings) {
 	fprintf (stderr, "%s:  Could not open file %s (%s).\n",
-		 program, filename, sys_errlist[err]);
+		 program, filename, strerror(err));
     }
 
     if (strict) exit(1);
@@ -1550,7 +1551,7 @@ static void HandleUnopenableFile(filename, err)
 
     if (issueWarnings) {
 	fprintf (stderr, "%s:  Could not open file %s (%s).\n",
-		 program, filename, sys_errlist[err]);
+		 program, filename, strerror(err));
     }
 
     if (strict) exit(1);
@@ -1682,7 +1683,7 @@ static void ProcessDirectory (directoryName, top, fileFunction)
       /* Treat top level failures to open differently from subdirectories */
       if (top || issueWarnings) {
 	  fprintf (stderr, "%s:  Could not open directory %s (%s).\n",
-		   program, directoryName, sys_errlist[errno]);
+		   program, directoryName, strerror(errno));
       }
       if (strict) exit(1);
       return;
@@ -1696,7 +1697,7 @@ static void ProcessDirectory (directoryName, top, fileFunction)
       if (stat(filePath, &status) == -1) {
 	  if (issueWarnings) {
 	      fprintf(stderr, "Couldn't get status of file %s (%s)\n",
-		      filePath, sys_errlist[errno]);
+		      filePath, strerror(errno));
 	  }
 	  if (strict) exit(1);
 	  continue;
@@ -2192,7 +2193,7 @@ void CheckBackup(filename)
 	    fprintf(stderr, "%s:  Could not back up output file %s\n",
 		    program, filename);
 	    fprintf(stderr, "            and will not write over it (%s)\n",
-		    sys_errlist[errno]);
+		    strerror(errno));
 	    exit(1);
 	}
     } else (void) unlink(filename);
@@ -2312,7 +2313,7 @@ main (argc, argv)
   if (outputFile == NULL) {
       fprintf (stderr,
 	       "%s: Failed to open %s for writing: %s\n",
-	       program, outputFilename, sys_errlist[errno]);
+	       program, outputFilename, strerror(errno));
       exit (1);
   }
 
