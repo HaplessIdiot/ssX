@@ -1080,9 +1080,6 @@ ject has been provided from its proceeds.
 
    o American Micro Group
 
-   o AT&T Global Information Services <URL:http://www.attgis.com/> (formerly
-     NCR)
-
    o ATI Technologies Inc <URL:http://www.atitech.ca/>
 
    o Andrew Burgess
@@ -1114,6 +1111,9 @@ ject has been provided from its proceeds.
 
    o InfoMagic <URL:http://www.infomagic.com/>, Flagstaff, AZ
 
+   o Daniel Kraemer
+
+   o Frank & Paige McCormick
 
 
 
@@ -1127,10 +1127,6 @@ README for XFree86[tm] 3.2A
 
 
 
-   o Daniel Kraemer
-
-   o Frank & Paige McCormick
-
    o Linux International
 
    o Linux Support Team, Erlangen, Germany
@@ -1142,6 +1138,8 @@ README for XFree86[tm] 3.2A
    o MIRO Computer Products AG, Braunschweig, Germany
 
    o Rich & Amy Murphey
+
+   o NCR Corp <URL:http://www.ncr.com/>
 
    o Brett Neumeier
 
@@ -1181,6 +1179,8 @@ README for XFree86[tm] 3.2A
 
 The XFree86 Project, Inc, welcomes the additional contribution of funding
 and/or equipment.  Such contributions should be tax-deductible; we will know
+for certain when the lawyers get finished with the papers.  For more informa-
+tion, contact The XFree86 Project, Inc, at <BOD@XFree86.org>
 
 
 
@@ -1191,10 +1191,6 @@ and/or equipment.  Such contributions should be tax-deductible; we will know
 
 README for XFree86[tm] 3.2A
 
-
-
-for certain when the lawyers get finished with the papers.  For more informa-
-tion, contact The XFree86 Project, Inc, at <BOD@XFree86.org>
 
 
 8.  Archive sites
@@ -1246,7 +1242,11 @@ and the following mirror sites:
 
 	o ftp://ftp.hk.super.net/mirror/XFree86 (source and binaries)
 
+	o ftp://ftp.nectec.or.th/pub/mirrors/XFree86 (source patches and bina-
+	  ries)
 
+
+Ensure that you are getting XFree86 3.2A - some of these sites may archive
 
 
 
@@ -1259,21 +1259,21 @@ README for XFree86[tm] 3.2A
 
 
 
-	o ftp://ftp.nectec.or.th/pub/mirrors/XFree86 (source patches and bina-
-	  ries)
-
-
-Ensure that you are getting XFree86 3.2A - some of these sites may archive
 older releases as well.  Check the RELNOTES to find which files you need to
 take from the archive.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.76 1997/03/03 10:19:18 hohndel Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.77 1997/04/13 14:50:04 dawes Exp $
 
 
 
 
 
      $XConsortium: README.sgml /main/31 1996/10/28 05:43:24 kaleb $
+
+
+
+
+
 
 
 

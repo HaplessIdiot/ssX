@@ -11,14 +11,15 @@
 
 				  David McKay
 
-				23 October 1996
+				20th March 1997
 
 
 
 1.  XFree driver for NVidia NV1 / SGS-Thomson STG2000 v1.0
 
-This is the first release of a driver for the above chips. This driver has very
-basic functionality, and does not use the accelerated features of the chip.
+This driver now accelerates bitblits and filled rectangles. It also support a
+hardware cursor.  More graphic acceleration is planned. There is no plan to
+support the audio functionality of the chip.
 
 1.1  Notes
 
@@ -40,14 +41,13 @@ basic functionality, and does not use the accelerated features of the chip.
 
 1.2  Known Bugs
 
-   o Corruption of a single pixel in 8bpp mode when switching VCs
-
    o The driver should force Weight 555 in 16 bpp mode
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NV1.sgml,v 3.2 1997/01/24 09:32:15 dawes Exp $
+   o The hardware cursor doesn't work if an doublescan mode is selected.
 
+   o Screen blanking doesn't work, nor does DPMS.
 
-
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NV1.sgml,v 3.3 1997/03/22 09:35:30 hohndel Exp $
 
 
 
