@@ -1,4 +1,7 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 310. Add XftCache creation to fonts/Type1 (Keith Packard)
+ 309. Add Xmuu library for non-Xt/Xaw dependent applications (Jim Gettys)
+ 308. Add i810 and Xv support to kdrive (Pontus Lidman)
  307. Fix Radeon CPUToScreen acceleration on Alpha platforms (Jay Estabrook).
  306. Fix bug in ServerLayout option handling when there's no ServerFlags
       section present (David Dawes).
@@ -12769,4 +12772,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1647 2001/03/28 14:37:02 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1649 2001/03/28 20:08:21 alanh Exp $

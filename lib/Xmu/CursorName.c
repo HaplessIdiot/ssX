@@ -21,9 +21,8 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/CursorName.c,v 3.4 1999/03/21 07:34:35 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CursorName.c,v 3.5 2001/01/17 19:42:54 dawes Exp $ */
 
-#include <X11/Intrinsic.h>
 #include <X11/Xmu/CharSet.h>
 #include <X11/Xmu/CurUtil.h>
 #include <X11/cursorfont.h>
@@ -113,14 +112,15 @@ XmuCursorNameToIndex(_Xconst char *name)
 			{"watch",		XC_watch},
 			{"xterm",		XC_xterm},
     };
+#define NUM_CURSOR_NAMES    (sizeof (cursor_names) / sizeof (cursor_names[0]))
     register _Xconst struct _CursorName *table;
-    register Cardinal i;
+    register int i;
     char tmp[40];
     
     if (strlen (name) >= sizeof tmp) return -1;
     XmuCopyISOLatin1Lowered (tmp, name);
 
-    for (i=0, table=cursor_names; i < XtNumber(cursor_names); i++, table++ ) {
+    for (i=0, table=cursor_names; i < NUM_CURSOR_NAMES; i++, table++ ) {
 	if (strcmp(tmp, table->name) == 0) return table->shape;
     }
 

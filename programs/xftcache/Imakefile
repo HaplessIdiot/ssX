@@ -9,5 +9,3 @@ OBJS=xftcache.o
 ComplexProgramTarget(xftcache)
 LinkBuildBinary(ProgramTargetName(xftcache))
 
-install::
-	$(DESTDIR)$(BINDIR)/xftcache

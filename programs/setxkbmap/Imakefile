@@ -14,4 +14,6 @@ all::
 clean::
 	RemoveFiles(test.h *.xkm *.xkb)
 
+#if BuildXKBlib
 ComplexProgramTarget(setxkbmap)
+#endif
