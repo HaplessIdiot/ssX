@@ -44,7 +44,7 @@ copyright holders.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.18 2002/05/31 18:45:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.19tsi Exp $ */
 
 #include <X11/Xproto.h>
 #include <string.h>
@@ -1119,9 +1119,7 @@ SendFileToCommand(
 	 */
 	if(userName)
 	{
-	    uid_t myUid;
-
-	    if((myUid = geteuid()) == (uid_t)0)
+	    if(geteuid() == (uid_t)0)
 	    {
 	        struct passwd *pPasswd;
 
@@ -1369,12 +1367,11 @@ VectorizeCommand(
     XpContextPtr pContext)
 {
     char *cmdName;
-    int numChars;
 
     if(command == (char *)NULL)
 	return (char *)NULL;
     
-    numChars = GetToken(command, &cmdName);
+    (void) GetToken(command, &cmdName);
 
     if(cmdName == (char *)NULL)
 	return (char *)NULL;

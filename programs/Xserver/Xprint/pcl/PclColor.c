@@ -45,7 +45,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclColor.c,v 1.8 2001/01/17 22:36:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclColor.c,v 1.9tsi Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -396,7 +396,7 @@ PclUpdateColormap(DrawablePtr pDrawable,
     
     PclContextPrivPtr cPriv;
     PclPaletteMapPtr pMap;
-    PclCmapToContexts *pCmap, *tCmap;
+    PclCmapToContexts *pCmap;
     PclContextListPtr new;
     char t[80];
     Colormap c;
@@ -437,13 +437,8 @@ PclUpdateColormap(DrawablePtr pDrawable,
 	  sPriv = (PclScreenPrivPtr)cmap->pScreen
 	    ->devPrivates[PclScreenPrivateIndex].ptr;
 	  pCmap = sPriv->colormaps;
-	  while( pCmap )
-	    {
-		if( pCmap->colormapId == cmap->mid )
-		  break;
-		tCmap = pCmap;
+	  while( pCmap && ( pCmap->colormapId != cmap->mid ) )
 		pCmap = pCmap->next;
-	    }
 	  new = (PclContextListPtr)xalloc( sizeof( PclContextList ) );
 	  new->context = pCon;
 	  new->next = pCmap->contexts;

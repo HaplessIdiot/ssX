@@ -43,7 +43,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclPrint.c,v 1.6 2001/01/17 22:36:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclPrint.c,v 1.7tsi Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -137,7 +137,6 @@ PclEndJob(
     int retVal;
     char *fileName, *trailer;
     struct stat statBuf;
-    int n;
     PclPaletteMapPtr p;
 
     trailer = "\033%-12345X@PJL RESET\n";
@@ -199,14 +198,14 @@ PclEndJob(
      * purposes.
      */
     rewind( priv->pJobFile );
-    n = stat( priv->jobFileName, &statBuf );
+    stat( priv->jobFileName, &statBuf );
     
 #ifdef CCP_DEBUG
     unlink( "/users/prince/XpOutput" );
     xpoutput = fopen( "/users/prince/XpOutput", "w" );
     
     rewind( priv->pJobFile );
-    n = TransferBytes( priv->pJobFile, xpoutput,
+    TransferBytes( priv->pJobFile, xpoutput,
 		      (int)statBuf.st_size );
     fclose( xpoutput );
 #endif

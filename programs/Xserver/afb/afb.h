@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afb.h,v 3.8 2001/10/28 03:32:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afb.h,v 3.9tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -64,7 +64,7 @@ extern int afbInverseAlu[];
 extern int afbScreenPrivateIndex;
 /* warning: PixelType definition duplicated in maskbits.h */
 #ifndef PixelType
-#define PixelType CARD32 
+#define PixelType CARD32
 #endif /* PixelType */
 
 #define AFB_MAX_DEPTH 8
@@ -1110,7 +1110,7 @@ typedef struct {
 	(pointer) = (PixelType *)_pPix->devPrivate.ptr; \
 	(width) = ((int)_pPix->devKind) / sizeof (PixelType); \
 	(size) = (width) * _pPix->drawable.height; \
-	(dep) = _pPix->drawable.depth; \
+	(dep) = _pPix->drawable.depth; (void)(dep); \
 }
 
 #define afbGetByteWidthAndPointer(pDrawable, width, pointer) \
