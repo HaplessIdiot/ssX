@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86:$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suntcx/tcx_driver.c,v 1.1 2000/06/30 17:15:16 dawes Exp $ */
 
 #define PSZ 8
 #include "xf86.h"
@@ -699,6 +699,9 @@ TCXCloseScreen(int scrnIndex, ScreenPtr pScreen)
     if (pTcx->thc)
 	xf86UnmapSbusMem(pTcx->psdp, pTcx->fb, 8192);
     
+    if (pTcx->HWCursor)
+	xf86SbusHideOsHwCursor (pTcx->psdp);
+
     pScreen->CloseScreen = pTcx->CloseScreen;
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);
     return FALSE;

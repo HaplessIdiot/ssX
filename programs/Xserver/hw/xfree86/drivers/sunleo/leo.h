@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo.h,v 1.1 2000/05/18 23:21:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo.h,v 1.2 2000/06/30 17:15:16 dawes Exp $ */
 
 #ifndef LEO_H
 #define LEO_H
@@ -77,6 +77,7 @@ typedef struct {
 	sbusDevicePtr	psdp;
 	Bool		HWCursor;
 	Bool		NoAccel;
+	Bool		vtSema;
 	CloseScreenProcPtr CloseScreen;
 	xf86CursorInfoPtr CursorInfoRec;
 	unsigned char	CursorShiftX, CursorShiftY;

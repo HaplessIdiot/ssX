@@ -1,3 +1,4 @@
+
 /*
  * Leo (ZX) framebuffer driver.
  *
@@ -20,7 +21,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo_driver.c,v 1.1 2000/05/18 23:21:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo_driver.c,v 1.2 2000/05/23 04:47:46 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -604,6 +605,7 @@ LeoEnterVT(int scrnIndex, int flags)
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     LeoPtr pLeo = GET_LEO_FROM_SCRN(pScrn);
 
+    pLeo->vtSema = FALSE;
     LeoVtChange (pScrn->pScreen, TRUE);
     if (pLeo->HWCursor)
 	xf86SbusHideOsHwCursor (pLeo->psdp);
@@ -620,8 +622,10 @@ static void
 LeoLeaveVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    LeoPtr pLeo = GET_LEO_FROM_SCRN(pScrn);
 
     LeoVtChange (pScrn->pScreen, FALSE);
+    pLeo->vtSema = TRUE;
 }
 
 
@@ -639,6 +643,9 @@ LeoCloseScreen(int scrnIndex, ScreenPtr pScreen)
 
     pScrn->vtSema = FALSE;
     xf86UnmapSbusMem(pLeo->psdp, pLeo->fb, 0x803000);
+
+    if (pLeo->HWCursor)
+	xf86SbusHideOsHwCursor (pLeo->psdp);
 
     pScreen->CloseScreen = pLeo->CloseScreen;
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);

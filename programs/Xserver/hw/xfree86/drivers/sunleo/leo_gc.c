@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo_gc.c,v 1.1 2000/05/18 23:21:40 dawes Exp $ */
 
 #define PSZ 32
 
@@ -233,10 +233,12 @@ LeoValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
 	/* flags for changing the proc vector */
 	LeoPrivGCPtr gcPriv;
         cfbPrivGCPtr devPriv;
-	int oneRect;
+	int oneRect, type;
+	LeoPtr pLeo = LeoGetScreenPrivate (pDrawable->pScreen);
 	
 	gcPriv = LeoGetGCPrivate (pGC);
-	if (pDrawable->type != DRAWABLE_WINDOW) {
+	type = pLeo->vtSema ? -1 : pDrawable->type;
+	if (type != DRAWABLE_WINDOW) {
 		if (gcPriv->type == DRAWABLE_WINDOW) {
 			extern GCOps cfbNonTEOps;
 
@@ -244,7 +246,7 @@ LeoValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
 			pGC->ops = &cfbNonTEOps;
 			changes = (1 << (GCLastBit+1)) - 1;
 			pGC->stateChanges = changes;
-			gcPriv->type = pDrawable->type;
+			gcPriv->type = type;
 		}
 		cfbValidateGC (pGC, changes, pDrawable);
 		return;

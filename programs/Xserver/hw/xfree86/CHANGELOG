@@ -1,4 +1,18 @@
 XFree86 4.0.1h (xx December 2000)
+1037. Fix an i810 init problem that resulted in the fallback to 2D failing
+      for one case where there's insufficient memory to enable the DRI
+      (David Dawes, from VA's 7.0.1).
+1036. Add support for printing a vendor-specific version string in the
+      X server startup messages (David Dawes, from VA's 7.0.1).
+1035. Xwd workaround for a gcc bug (Red Hat's XFree86-4.0.1-xwd-gcc-workaround
+      patch).
+1034. Fixes for sparc drivers, mostly to prevent accessing the hardware
+      when the server doesn't have control of the VT (Red Hat's
+      XFree86-4.0.1-ffb patch).
+1033. Use OS-provided interface for accessing PCI config space on Linux/ia64
+      (based on Red Hat's XFree86-4.0.1-ia64-pci patch).
+1032. Use AsmDefines when processing the Sparc assembler code for cfb
+      (based on Red Hat's XFree86-4.0-sparc-asmflags patch).
 1031. Add PAM authentication to the X server (based on Red Hat's
       XFree86-4.0-Xwrapper patch).
 1030. Add Slovenian and Romanian entries to XKB's keymap/xfree86 file
@@ -11721,4 +11735,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1422 2000/11/30 20:37:45 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1423 2000/11/30 23:30:02 dawes Exp $

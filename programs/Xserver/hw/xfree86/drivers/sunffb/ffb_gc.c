@@ -24,7 +24,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_gc.c,v 1.1 2000/05/18 23:21:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_gc.c,v 1.2 2000/05/23 04:47:44 dawes Exp $ */
 
 #include "ffb.h"
 #include "ffb_regs.h"
@@ -454,11 +454,13 @@ CreatorValidateGC (GCPtr pGC, Mask changes, DrawablePtr pDrawable)
 	/* flags for changing the proc vector */
 	cfbPrivGCPtr devPriv;
 	CreatorPrivGCPtr gcPriv;
-	int	oneRect;
+	int	oneRect, type;
 	int	accel, drawableChanged;
+	FFBPtr  pFfb = GET_FFB_FROM_SCREEN(pDrawable->pScreen);
 
 	gcPriv = CreatorGetGCPrivate (pGC);
-	if (pDrawable->type != DRAWABLE_WINDOW) {
+	type = pFfb->vtSema ? -1 : pDrawable->type;
+	if (type != DRAWABLE_WINDOW) {
 		if (gcPriv->type == DRAWABLE_WINDOW) {
 			extern GCOps cfbNonTEOps;
 			extern GCOps cfb32NonTEOps;
@@ -472,7 +474,7 @@ CreatorValidateGC (GCPtr pGC, Mask changes, DrawablePtr pDrawable)
 
 			changes = (1 << (GCLastBit+1)) - 1;
 			pGC->stateChanges = changes;
-			gcPriv->type = pDrawable->type;
+			gcPriv->type = type;
 		}
 		if (pGC->depth == 8)
 			cfbValidateGC (pGC, changes, pDrawable);

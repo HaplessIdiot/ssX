@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.34 2000/09/26 15:57:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.35 2000/11/13 23:06:08 dawes Exp $ */
 
 /*
  * Authors:
@@ -1684,6 +1684,11 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
    xf86SetBlackWhitePixels(pScreen);
 
 #ifdef XF86DRI
+   if (pI810->LpRing.mem.Start == 0 && pI810->directRenderingEnabled) {
+      pI810->directRenderingEnabled = 0;
+      I810DRICloseScreen(pScreen);
+   }
+
    if (!pI810->directRenderingEnabled) {
       pI810->DoneFrontAlloc = FALSE;
       if (!I810AllocateGARTMemory( pScrn ))
@@ -1750,11 +1755,6 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
    I810InitVideo(pScreen);
 
 #ifdef XF86DRI
-   if (pI810->LpRing.mem.Start == 0 && pI810->directRenderingEnabled) {
-      pI810->directRenderingEnabled = 0;
-      I810DRICloseScreen(pScreen);
-   }
-	 
    if (pI810->directRenderingEnabled) {
       /* Now that mi, cfb, drm and others have done their thing, 
        * complete the DRI setup.

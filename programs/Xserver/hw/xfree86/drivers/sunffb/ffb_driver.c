@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_driver.c,v 1.4 2000/06/23 19:29:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_driver.c,v 1.5 2000/06/30 17:15:16 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -979,6 +979,7 @@ FFBEnterVT(int scrnIndex, int flags)
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     FFBPtr pFfb = GET_FFB_FROM_SCRN(pScrn);
 
+    pFfb->vtSema = FALSE;
     if (!pFfb->NoAccel)
 	CreatorVtChange (pScrn->pScreen, TRUE);
     if (pFfb->HWCursor)
@@ -1005,6 +1006,11 @@ FFBLeaveVT(int scrnIndex, int flags)
 
     if (!pFfb->NoAccel)
 	CreatorVtChange (pScrn->pScreen, FALSE);
+
+    if (pFfb->HWCursor)
+	xf86SbusHideOsHwCursor (pFfb->psdp);
+
+    pFfb->vtSema = TRUE;
     return;
 }
 
@@ -1040,6 +1046,9 @@ FFBCloseScreen(int scrnIndex, ScreenPtr pScreen)
     xf86UnmapSbusMem(pFfb->psdp, pFfb->regs, 16384);
     xf86UnmapSbusMem(pFfb->psdp, pFfb->dac, 8192);
     xf86UnmapSbusMem(pFfb->psdp, (void *)pFfb->strapping_bits, 8192);
+
+    if (pFfb->HWCursor)
+	xf86SbusHideOsHwCursor (pFfb->psdp);
 
     pScreen->CloseScreen = pFfb->CloseScreen;
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.84 2000/11/28 16:10:21 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.85 2000/11/30 23:29:53 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -940,6 +940,9 @@ TCLIBDIR = TclLibDir
 #endif
 #ifndef AsCmd
 #define AsCmd as
+#endif
+#ifndef AsmDefines
+#define AsmDefines /**/
 #endif
 #ifndef CompressCmd
 #define CompressCmd compress
