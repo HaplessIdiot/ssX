@@ -86,7 +86,7 @@ void
 xf86BusProbe(void)
 {
     xf86PciProbe();
-#ifdef __sparc__
+#if defined(__sparc__) && !defined(__OpenBSD__)
     xf86SbusProbe();
 #endif
 }
@@ -2434,7 +2434,7 @@ xf86PostProbe(void)
 
     if (fbSlotClaimed) {
         if (pciSlotClaimed || isaSlotClaimed 
-#ifdef __sparc__
+#if defined(__sparc__) && !defined(__OpenBSD__)
 	    || sbusSlotClaimed
 #endif
 	    ) { 
@@ -2502,8 +2502,12 @@ xf86PostProbe(void)
     }
     xf86FreeResList(acc);
 
-#if !(defined(__alpha__) && defined(linux))
-    /* No need to validate on Alpha Linux, trust the kernel. */
+#if !(defined(__alpha__) && defined(linux)) && \
+    !(defined(__sparc64__) && defined(__OpenBSD__))
+    /* 
+     * No need to validate on Alpha Linux or OpenBSD/sparc64, 
+     * trust the kernel.
+     */
     ValidatePci();
 #endif
     

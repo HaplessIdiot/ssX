@@ -357,10 +357,6 @@ install:: fonts.alias							@@\
 
 # endif /* XF86Server */
 
-/* FreeType2 don't work on 64bit machines */
-# define BuildFreetype2Library  NO
-# define BuildXftLibrary	NO
-
 # include <xfree86.cf>
 
 #endif /* AlphaArchitecture */
@@ -699,15 +695,19 @@ install:: fonts.alias							@@\
 # define UseElfFormat		YES
 
 # ifndef XF86Server
-#  define XF86Server		NO
+#  define XF86Server		YES
 # endif
 
 # define ServerExtraDefines	GccGasOption -D_XSERVER64 XFree86ServerDefines
-# define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME
+# define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DDDXOSINIT
+# define XkbServerDefines  -DXKB_ALWAYS_USES_SOFT_REPEAT
 
-/* FreeType2 don't work on 64bit machines */
-# define BuildFreetype2Library  NO
-# define BuildXftLibrary	NO
+# if XF86Server
+#   ifndef DoLoadableServer
+#     define DoLoadableServer	NO
+#   endif
+#   define XFree86ConsoleDefines -DWSCONS_SUPPORT
+# endif
 
 # include <xfree86.cf>
 
