@@ -1,4 +1,8 @@
-#! /bin/sh -x
+#! /bin/sh
+
+# $XFree86$
+
+set -x
 
 #	@(#)mmdoc	1.21	/doccenter/tmadm/src/shell/s.mmdoc
 #	general documentation generator
