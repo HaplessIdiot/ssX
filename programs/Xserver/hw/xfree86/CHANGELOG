@@ -8,7 +8,6 @@ XFree86 3.9.17b (24 January 2000)
       Latin1 keysyms and has no effect on scaron and zcaron, for example
       (#3595, Ville Hallik).
 3584. Add Estonian keyboard support to XKB (#3595, Ville Hallik).
->>>>>>> 3.954
 3583. Hack to disable optimisation when building Xext/xf86vmode.c on FreeBSD
       4.0 to avoid a compiler bug (David Dawes).
 3582. Disable the hardware cursor in the tdfx driver when the screen is
