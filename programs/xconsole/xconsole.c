@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xconsole.c,v 1.21 95/01/05 21:04:06 kaleb Exp $
- * $XFree86: xc/programs/xconsole/xconsole.c,v 3.5 1995/07/15 15:12:20 dawes Exp $
+ * $XFree86: xc/programs/xconsole/xconsole.c,v 3.6 1995/09/17 06:32:30 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -817,7 +817,7 @@ get_pty (pty, tty, ttydev, ptydev)
 #ifdef SCO
 #define	OSM_DEVICE	"/dev/error"
 #else
-#if defined(USL) && (OSMAJORVERSION >= 2)
+#ifdef USL
 #define OSM_DEVICE	"/dev/osm2"
 #define NO_READAHEAD
 #else

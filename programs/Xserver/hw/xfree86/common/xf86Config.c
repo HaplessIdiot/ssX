@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.56 1995/07/16 09:14:35 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.57 1995/07/17 12:45:18 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -354,19 +354,14 @@ getToken(tab)
 	}
       
       /*
-       * ... and now we MUST have a valid token. Since all tokens are handled
-       * caseinsenitive, they are all lowercased internally. The search is
+       * ... and now we MUST have a valid token.  The search is
        * handled later along with the pushed tokens.
        */
       else
 	{
-	  configRBuf[0] = isupper (c) ? tolower(c) : c;
-	  i = 0;
+          i = -1;
 	  do {
-	    c = configBuf[configPos++];
-	    if (isupper (c))
-	      c = tolower (c);
-	    configRBuf[++i] = c;
+	    configRBuf[++i] = (c = configBuf[configPos++]);;
 	  } while ((c != ' ') && (c != '\t') && (c != '\n') && (c != '\0'));
 	  configRBuf[i] = '\0'; i=0;
 	}
@@ -393,7 +388,7 @@ getToken(tab)
     {
       i = 0;
       while (tab[i].token != -1)
-	if (strcmp(configRBuf,tab[i].name) == 0)
+	if (StrCaseCmp(configRBuf,tab[i].name) == 0)
 	  return(tab[i].token);
 	else
 	  i++;

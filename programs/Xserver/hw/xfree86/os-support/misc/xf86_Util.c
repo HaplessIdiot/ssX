@@ -1,4 +1,5 @@
 /* $XConsortium: xf86_Util.c,v 1.1 94/03/28 21:30:15 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -33,6 +34,7 @@
 
 /*
  * A portable hack at implementing strcasecmp()
+ * The characters '_', ' ', and '\t' are ignored in the comparison
  */
 int StrCaseCmp(s1, s2)
 char *s1, *s2;
@@ -45,6 +47,10 @@ char *s1, *s2;
 		else
 			return(1);
 
+	while (*s1 == '_' || *s1 == ' ' || *s1 == '\t')
+		s1++;
+	while (*s2 == '_' || *s2 == ' ' || *s2 == '\t')
+		s2++;
 	c1 = (isupper(*s1) ? tolower(*s1) : *s1);
 	c2 = (isupper(*s2) ? tolower(*s2) : *s2);
 	while (c1 == c2)
@@ -52,6 +58,10 @@ char *s1, *s2;
 		if (c1 == '\0')
 			return(0);
 		s1++; s2++;
+		while (*s1 == '_' || *s1 == ' ' || *s1 == '\t')
+			s1++;
+		while (*s2 == '_' || *s2 == ' ' || *s2 == '\t')
+			s2++;
 		c1 = (isupper(*s1) ? tolower(*s1) : *s1);
 		c2 = (isupper(*s2) ? tolower(*s2) : *s2);
 	}
