@@ -17,70 +17,19 @@
 We highly recommend using gcc to build XFree86, but XFree86 also generally
 builds with the native compiler for each OS platform;
 
-1.  How to get the XFree86 4.4.0 source
+1.  How to get the XFree86 4.4.99.21 source
 
-The recommended way of getting the XFree86 4.4.0 source is to obtain it
+The recommended way of getting the XFree86 4.4.99.21 source is to obtain it
 directly from the XFree86 CVS repository.  There are several ways of doing
 that, and they are described at our CVS web page
 <URL:http://www.xfree86.org/cvs/>  The CVS tag for this release is
-"xf-4_4_0".   The tag for the maintenance branch for this release is
-"xf-4_4-branch".
+"xf-4_4_99_21".
 
-Another method of getting the XFree86 4.4.0 source is to either download the
-4.4.0 source tarballs from the XFree86 ftp site.  The procedure for this is
-as follows:
+Alternatively you can download the source for the XFree86 4.4.99.21 snapshot
+as a tarball from ftp://ftp.xfree86.org/pub/XFree86/devel-
+snaps/XFree86-4.4.99.21.tar.bz2.  This can be extracted by running:
 
-   o The XFree86 4.4.0 source is contained in the files:
-
-          XFree86-4.4.0-src-1.tgz
-
-          XFree86-4.4.0-src-2.tgz
-
-          XFree86-4.4.0-src-3.tgz
-
-          XFree86-4.4.0-src-4.tgz
-
-          XFree86-4.4.0-src-5.tgz
-
-          XFree86-4.4.0-src-6.tgz
-
-          XFree86-4.4.0-src-7.tgz
-
-     These can be found at ftp://ftp.xfree86.org/pub/XFree86/4.4.0/source/
-     and similar locations on XFree86 mirror sites.  XFree86-4.4.0-src-4.tgz
-     and XFree86-4.4.0-src-5.tgz contains the fonts.  XFree86-4.4.0-src-6.tgz
-     contains the documentation source.  XFree86-4.4.0-src-7.tgz contains the
-     hardcopy documentation.  XFree86-4.4.0-src-1.tgz,
-     XFree86-4.4.0-src-2.tgz and XFree86-4.4.0-src-3.tgz contains everything
-     else.  If you don't need the docs or fonts you can get by with only
-     XFree86-4.4.0-src-1.tgz, XFree86-4.4.0-src-2.tgz and
-     XFree86-4.4.0-src-3.tgz.
-
-   o Extract each of these files by running the following from a directory on
-     a filesystem containing enough space (the full source requires around
-     305MB, and a similar amount is required in addition to this for the com-
-     piled binaries):
-
-          gzip -d < XFree86-4.4.0-src-1.tgz | tar vxf -
-
-          gzip -d < XFree86-4.4.0-src-2.tgz | tar vxf -
-
-          gzip -d < XFree86-4.4.0-src-3.tgz | tar vxf -
-
-          gzip -d < XFree86-4.4.0-src-4.tgz | tar vxf -
-
-          gzip -d < XFree86-4.4.0-src-5.tgz | tar vxf -
-
-          gzip -d < XFree86-4.4.0-src-6.tgz | tar vxf -
-
-          gzip -d < XFree86-4.4.0-src-7.tgz | tar vxf -
-
-Alternatively, if you already have a pristine copy of the XFree86 4.3.0
-source, you can download patches from
-ftp://ftp.xfree86.org/pub/XFree86/4.4.0/patches/ that will allow you to con-
-vert it to 4.4.0.  Information about which patch files to download and how to
-apply them can be found in the "How to get XFree86" section of the README for
-this release.
+     bzip2 -d < XFree86-4.4.99.21.tar.bz2 | tar vxf -
 
 All methods will produce one main source directory called xc.
 
@@ -98,10 +47,6 @@ find the default settings by checking the .cf file(s) relevant to your OS.
 A good rule to follow is only to change things that you understand as it's
 easy to create build problems by changing the default configuration.  Check
 the configuration parameters specified in the xc/config/cf/README.
-
-If you are using just the XFree86-4.4.0-src-1.tgz, XFree86-4.4.0-src-2.tgz
-and XFree86-4.4.0-src-3.tgz parts of the source dist, you will need to define
-BuildFonts to NO.
 
 3.  Using a shadow directory of symbolic links for the build
 
@@ -131,6 +76,7 @@ To make a shadow directory of symbolic links, use the following steps:
    o use the "lndir" command to make the shadow tree:
 
           cd build
+
           lndir ../xc
 
      Note that you can refer to the xc directory with an absolute path if
@@ -266,4 +212,4 @@ XFree86:
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.16 tsi Exp $
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/BUILD,v 3.27 2004/12/08 22:32:05 dawes Exp $
+$XFree86$
