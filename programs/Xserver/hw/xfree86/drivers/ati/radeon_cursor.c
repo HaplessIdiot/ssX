@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.17 2002/10/31 05:49:58 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.18 2002/12/16 16:19:12 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -217,12 +217,24 @@ static void RADEONLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *image)
     CARD32         save2      = 0;
 
     if (!info->IsSecondary) {
-	save1 = INREG(RADEON_CRTC_GEN_CNTL) & ~(CARD32) (3 << 20);
+	save1 = INREG(RADEON_CRTC_GEN_CNTL);
+	if (save1 & (3 << 20)) {
+	    /* Workaround the flickering problem when switching from
+	     * rgba cursor.  This happens even when cursor is turned
+	     * off.  There may be a better way to do this.
+	     */
+	    RADEONWaitForVerticalSync(pScrn);
+	    save1 &= ~(CARD32) (3 << 20);
+	}
 	OUTREG(RADEON_CRTC_GEN_CNTL, save1 & (CARD32)~RADEON_CRTC_CUR_EN);
     }
 
     if (info->IsSecondary || info->Clone) {
-	save2 = INREG(RADEON_CRTC2_GEN_CNTL) & ~(CARD32) (3 << 20);
+	save2 = INREG(RADEON_CRTC2_GEN_CNTL);
+	if (save2 & (3 << 20)) {
+	    RADEONWaitForVerticalSync2(pScrn);
+	    save2 &= ~(CARD32) (3 << 20);
+	}
 	OUTREG(RADEON_CRTC2_GEN_CNTL, save2 & (CARD32)~RADEON_CRTC2_CUR_EN);
     }
 
@@ -355,14 +367,27 @@ static void RADEONLoadCursorARGB (ScrnInfoPtr pScrn, CursorPtr pCurs)
 	return;	/* XXX can't happen */
     
     if (!info->IsSecondary) {
-	save1 = INREG(RADEON_CRTC_GEN_CNTL) & ~(CARD32) (3 << 20);
-	save1 |= (CARD32) 2 << 20;
+	save1 = INREG(RADEON_CRTC_GEN_CNTL);
+	OUTREG(RADEON_CRTC_GEN_CNTL, save1 & (CARD32)~RADEON_CRTC_CUR_EN);
+	if ((save1 & (3 << 20)) != (2 << 20)) {
+	    /* Workaround the flickering problem when switching from
+	     * mono cursor.  This happens even when cursor is turned
+	     * off.  There may be a better way to do this.
+	     */
+	    RADEONWaitForVerticalSync(pScrn);
+	    save1 &= ~(CARD32) (3 << 20);
+	    save1 |=  (CARD32) (2 << 20);
+	}
 	OUTREG(RADEON_CRTC_GEN_CNTL, save1 & (CARD32)~RADEON_CRTC_CUR_EN);
     }
 
     if (info->IsSecondary || info->Clone) {
-	save2 = INREG(RADEON_CRTC2_GEN_CNTL) & ~(CARD32) (3 << 20);
-	save2 |= (CARD32) 2 << 20;
+	save2 = INREG(RADEON_CRTC2_GEN_CNTL);
+	if ((save2 & (3 << 20)) != (2 << 20)) {
+	    RADEONWaitForVerticalSync2(pScrn);
+	    save2 &= ~(CARD32) (3 << 20);
+	    save2 |= (CARD32) (2 << 20);
+	}
 	OUTREG(RADEON_CRTC2_GEN_CNTL, save2 & (CARD32)~RADEON_CRTC2_CUR_EN);
     }
 
@@ -390,7 +415,7 @@ static void RADEONLoadCursorARGB (ScrnInfoPtr pScrn, CursorPtr pCurs)
     for (; y < 64; y++)
 	for (x = 0; x < 64; x++)
 	    *d++ = 0;
-    
+
     if (!info->IsSecondary)
 	OUTREG(RADEON_CRTC_GEN_CNTL, save1);
 

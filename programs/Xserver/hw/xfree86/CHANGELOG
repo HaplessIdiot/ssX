@@ -1,4 +1,18 @@
 XFree86 4.2.99.4 (xx January 2003)
+ 751. Fix for Mono8x8 patterns on Radeon (#A.1520, Juergen Keil, Kevin Martin).
+ 750. Fix for Radeon mode validation (#A.1330, #A.1380, #A.1393, #A.1522,
+      #A.1523, Wayne Whitney, Hui Yu@ATI, Juergen Keil).
+ 749. Workaround for flickering problem with switching between ARGB and mono
+      cursors on Radeons (#A.1380, Hui Yu@ATI).
+ 748. DDCMode fix for VidMode extension (#A.1380, Kevin Martin, Hui Yu@ATI).
+ 747. Panel detection bug fix for Radeon (#A.1380, Hui Yu@ATI).
+ 746. Add Xv overlay support for dual headed Radeons (#A.1380, Hui Yu@ATI).
+ 745. Fix Radeon driver's 24-bit support for flat panels (#A.1380, Hui Yu@ATI).
+ 744. Add Radeon 9500/Pro support (#A.1380, Hui Yu@ATI).
+ 743. Disable CGWorkaround for non-A11 rev R300s (Kevin Martin, Hui Yu@ATI).
+ 742. Radeon solid/dashed line fix for RV200 and newer card (Kevin Martin).
+ 741. Radeon overlay gamma fix (Hui Yu@ATI).
+ 740. Radeon LG panel fix (Hui Yu@ATI).
  739. Change makedepend to warn about any whitespace it finds in front of
       pre-processor directives (Marc La France).
  738. Missing deadkeys in UTF-8 compose table (Mike Fabian).
@@ -16038,4 +16052,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2477 2003/01/16 16:09:07 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2478 2003/01/17 17:09:50 tsi Exp $

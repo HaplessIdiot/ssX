@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.139 2002/12/23 15:37:25 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.141 2003/01/16 16:09:08 eich Exp $ */
 /*
  * Copyright 1995-2002 by The XFree86 Project, Inc.
  *
@@ -89,10 +89,10 @@
 #define PCI_CHIP_QV1280			0x3033
 
 /* ATI */
-#define PCI_CHIP_R3004P_AD		0x4144
-#define PCI_CHIP_R3004P_AE		0x4145
-#define PCI_CHIP_R3004P_AF		0x4146
-#define PCI_CHIP_R3004P_AG		0x4147
+#define PCI_CHIP_R300_AD		0x4144
+#define PCI_CHIP_R300_AE		0x4145
+#define PCI_CHIP_R300_AF		0x4146
+#define PCI_CHIP_R300_AG		0x4147
 #define PCI_CHIP_MACH32			0x4158
 #define PCI_CHIP_R200_BB		0x4242
 #define PCI_CHIP_MACH64CT		0x4354

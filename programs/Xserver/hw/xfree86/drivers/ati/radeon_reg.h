@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.22 2002/11/25 21:03:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.23 2002/12/16 16:19:14 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -217,6 +217,10 @@
 #define RADEON_CONFIG_APER_SIZE             0x0108
 #define RADEON_CONFIG_BONDS                 0x00e8
 #define RADEON_CONFIG_CNTL                  0x00e0
+#       define RADEON_CFG_ATI_REV_A11       (0   << 16)
+#       define RADEON_CFG_ATI_REV_A12       (1   << 16)
+#       define RADEON_CFG_ATI_REV_A13       (2   << 16)
+#       define RADEON_CFG_ATI_REV_ID_MASK   (0xf << 16)
 #define RADEON_CONFIG_MEMSIZE               0x00f8
 #define RADEON_CONFIG_MEMSIZE_EMBEDDED      0x0114
 #define RADEON_CONFIG_REG_1_BASE            0x010c
@@ -493,6 +497,7 @@
 #define RADEON_DST_LINE_START               0x1600
 #define RADEON_DST_LINE_END                 0x1604
 #define RADEON_DST_LINE_PATCOUNT            0x1608
+#       define RADEON_BRES_CNTL_SHIFT       8
 #define RADEON_DST_OFFSET                   0x1404
 #define RADEON_DST_PITCH                    0x1408
 #define RADEON_DST_PITCH_OFFSET             0x142c
@@ -555,6 +560,7 @@
 #define RADEON_FP_GEN_CNTL                  0x0284
 #       define RADEON_FP_FPON                  (1 <<  0)
 #       define RADEON_FP_TMDS_EN               (1 <<  2)
+#       define RADEON_FP_PANEL_FORMAT          (1 <<  3)
 #       define RADEON_FP_EN_TMDS               (1 <<  7)
 #       define RADEON_FP_DETECT_SENSE          (1 <<  8)
 #       define RADEON_FP_SEL_CRTC2             (1 << 13)
@@ -613,6 +619,8 @@
 #define RADEON_GEN_INT_STATUS               0x0044
 #       define RADEON_VSYNC_INT_AK          (1 <<  2)
 #       define RADEON_VSYNC_INT             (1 <<  2)
+#       define RADEON_VSYNC2_INT_AK         (1 <<  6)
+#       define RADEON_VSYNC2_INT            (1 <<  6)
 #define RADEON_GENENB                       0x03c3 /* VGA */
 #define RADEON_GENFC_RD                     0x03ca /* VGA */
 #define RADEON_GENFC_WT                     0x03da /* VGA, 0x03ba */
@@ -867,6 +875,8 @@
 #       define RADEON_P2PLL_REF_DIV_MASK    0x03ff
 #       define RADEON_P2PLL_ATOMIC_UPDATE_R (1 << 15) /* same as _W */
 #       define RADEON_P2PLL_ATOMIC_UPDATE_W (1 << 15) /* same as _R */
+#       define R300_PPLL_REF_DIV_ACC_MASK   (0x3ff < 18)
+#       define R300_PPLL_REF_DIV_ACC_SHIFT  18
 #define RADEON_PALETTE_DATA                 0x00b4
 #define RADEON_PALETTE_30_DATA              0x00b8
 #define RADEON_PALETTE_INDEX                0x00b0

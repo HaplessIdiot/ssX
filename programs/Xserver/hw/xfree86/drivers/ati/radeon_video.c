@@ -1,7 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.20 2002/11/01 06:08:36 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.21 2002/12/16 16:19:15 dawes Exp $ */
 
 #include "radeon.h"
 #include "radeon_macros.h"
+#include "radeon_probe.h"
 #include "radeon_reg.h"
 
 #include "xf86.h"
@@ -18,6 +19,8 @@
 #define CLIENT_VIDEO_ON 0x04
 
 #define TIMER_MASK      (OFF_TIMER | FREE_TIMER)
+
+extern int gRADEONEntityIndex;
 
 #ifndef XvExtension
 void RADEONInitVideo(ScreenPtr pScreen) {}
@@ -401,20 +404,13 @@ RADEONResetVideo(ScrnInfoPtr pScrn)
     
     if (info->ChipFamily == CHIP_FAMILY_R200 ||
 	info->ChipFamily == CHIP_FAMILY_R300) {
+	int i;
+
 	OUTREG(RADEON_OV0_LIN_TRANS_A, 0x12a20000);
 	OUTREG(RADEON_OV0_LIN_TRANS_B, 0x198a190e);
 	OUTREG(RADEON_OV0_LIN_TRANS_C, 0x12a2f9da);
 	OUTREG(RADEON_OV0_LIN_TRANS_D, 0xf2fe0442);
 	OUTREG(RADEON_OV0_LIN_TRANS_E, 0x12a22046);
-	OUTREG(RADEON_OV0_LIN_TRANS_F, 0x175f);
-    } else {
-	int i;
-
-	OUTREG(RADEON_OV0_LIN_TRANS_A, 0x12a00000);
-	OUTREG(RADEON_OV0_LIN_TRANS_B, 0x1990190e);
-	OUTREG(RADEON_OV0_LIN_TRANS_C, 0x12a0f9c0);
-	OUTREG(RADEON_OV0_LIN_TRANS_D, 0xf3000442);
-	OUTREG(RADEON_OV0_LIN_TRANS_E, 0x12a02040);
 	OUTREG(RADEON_OV0_LIN_TRANS_F, 0x175f);
 
 	/*
@@ -428,6 +424,13 @@ RADEONResetVideo(ScrnInfoPtr pScrn)
 	    OUTREG(def_gamma[i].gammaReg,
 		   (def_gamma[i].gammaSlope<<16) | def_gamma[i].gammaOffset);
 	}
+    } else {
+	OUTREG(RADEON_OV0_LIN_TRANS_A, 0x12a00000);
+	OUTREG(RADEON_OV0_LIN_TRANS_B, 0x1990190e);
+	OUTREG(RADEON_OV0_LIN_TRANS_C, 0x12a0f9c0);
+	OUTREG(RADEON_OV0_LIN_TRANS_D, 0xf3000442);
+	OUTREG(RADEON_OV0_LIN_TRANS_E, 0x12a02040);
+	OUTREG(RADEON_OV0_LIN_TRANS_F, 0x175f);
     }
 }
 
@@ -1005,6 +1008,11 @@ RADEONDisplayVideo(
     offset1 += ((left >> 16) & ~7) << 1;
     offset2 += ((left >> 16) & ~7) << 1;
 
+    if (info->IsSecondary) {
+	offset1 += info->FbMapSize;
+	offset2 += info->FbMapSize;
+    }
+
     tmp = (left & 0x0003ffff) + 0x00028000 + (h_inc << 3);
     p1_h_accum_init = ((tmp <<  4) & 0x000f8000) |
 		      ((tmp << 12) & 0xf0000000);
@@ -1036,14 +1044,12 @@ RADEONDisplayVideo(
 	x_off = 0;
 
     /* Put the hardware overlay on CRTC2:
-     * For now, the CRTC2 overlay is only implemented for clone mode.
-     * Xinerama 2nd head will be similar, but there are other issues.
      *
      * Since one hardware overlay can not be displayed on two heads 
      * at the same time, we might need to consider using software
-     * rendering for the second head (do we really need it?).
+     * rendering for the second head.
      */
-    if (info->Clone && info->OverlayOnCRTC2) {
+    if ((info->Clone && info->OverlayOnCRTC2) || info->IsSecondary) {
 	x_off = 0;
 	OUTREG(RADEON_OV1_Y_X_START, ((dstBox->x1
 				       + x_off
@@ -1212,6 +1218,7 @@ RADEONPutImage(
    offset = (info->videoLinear->offset * bpp) + (top * dstPitch);
    if(pPriv->doubleBuffer)
 	offset += pPriv->currentBuffer * new_size * bpp;
+
    dst_start = info->FB + offset;
 
    switch(id) {
