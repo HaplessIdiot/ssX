@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/config.h,v 1.1 2000/04/04 22:36:58 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/config.h,v 1.2 2000/04/05 18:13:59 dawes Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -50,6 +50,24 @@
 #define strcasecmp stricmp
 #define setenv putenv
 #define PATH_MAX 260
+#endif
+
+/* Get PATH_MAX */
+#ifndef PATH_MAX
+# if defined(_POSIX_SOURCE)
+#  include <limits.h>
+# else
+#  define _POSIX_SOURCE
+#  include <limits.h>
+#  undef _POSIX_SOURCE
+# endif
+# ifndef PATH_MAX
+#  ifdef MAXPATHLEN
+#   define PATH_MAX MAXPATHLEN
+#  else
+#   define PATH_MAX 1024
+#  endif
+# endif
 #endif
 
 #include <xf86Parser.h>
