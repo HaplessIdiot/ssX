@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/freetype2/freetype/config/Imakefile,v 1.4 2001/07/19 02:22:45 tsi Exp $
+XCOMM $XFree86: xc/lib/freetype2/freetype/config/Imakefile,v 1.5 2001/07/25 09:26:52 alanh Exp $
 
 FREETYPETOP = $(TOP)/extras/freetype2
 FREETYPESRC = $(FREETYPETOP)/src
@@ -22,7 +22,7 @@ XCOMM Build and install a configure-compatible freetype-config
 
 LinkSourceFile(freetype-config.in,$(FREETYPETOP)/builds/unix)
 
-FREETYPE_VERSION=6.1.0
+FREETYPE_VERSION=7.0.1
 
 freetype-config: freetype-config.in
 	sed -e s%@prefix@%$(PROJECTROOT)% -e s%@exec_prefix@%$(PROJECTROOT)% \
