@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.270tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.271tsi Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -519,6 +519,20 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildXprint		YES
 #else
 #define BuildXprint		NO
+#endif
+#endif
+#if BuildXprint
+#ifndef XpRasterDDX
+#define XpRasterDDX		YES
+#endif
+#ifndef XpColorPclDDX
+#define XpColorPclDDX		YES
+#endif
+#ifndef XpMonoPclDDX
+#define XpMonoPclDDX		NO
+#endif
+#ifndef XpPostScriptDDX
+#define XpPostScriptDDX		YES
 #endif
 #endif
 #ifndef BuildXprintLib
