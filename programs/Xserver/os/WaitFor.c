@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.28 2001/04/01 14:00:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.29 2001/04/05 19:29:44 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -144,9 +144,6 @@ WaitForSomething(pClientsReady)
 {
     int i;
     struct timeval waittime, *wt;
-#ifdef __CYGWIN__
-    struct timeval waittime0, *wt0;
-#endif
     INT32 timeout;
 #ifdef DPMSExtension
     INT32 standbyTimeout, suspendTimeout, offTimeout;
@@ -342,10 +339,6 @@ WaitForSomething(pClientsReady)
 #ifdef XTESTEXT1
 	/* XXX how does this interact with new write block handling? */
 	if (playback_on) {
-#ifdef __CYGWIN__
-	    waittime.tv_sec = 0;
-	    waittime.tv_usec = 0;
-#endif
 	    wt = &waittime;
 	    XTestComputeWaitTime (&waittime);
 	}
@@ -360,14 +353,7 @@ WaitForSomething(pClientsReady)
 	}
 	else 
 	{
-#ifndef __CYGWIN__
 	    i = Select (MaxClients, &LastSelectMask, NULL, NULL, wt);
-#else
-	    waittime0.tv_sec = 0;
-	    waittime0.tv_usec = 10000;
-	    wt0 = &waittime0;
-	    i = Select (MaxClients, &LastSelectMask, NULL, NULL, wt0);
-#endif
 	}
 	selecterr = errno;
 	WakeupHandler(i, (pointer)&LastSelectMask);
