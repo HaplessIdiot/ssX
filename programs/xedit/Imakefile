@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.17 93/08/17 20:49:32 rws Exp $
-XCOMM $XFree86: xc/programs/xedit/Imakefile,v 1.15 2001/09/04 19:44:17 paulo Exp $
+XCOMM $XFree86: xc/programs/xedit/Imakefile,v 1.16 2001/09/11 06:42:54 paulo Exp $
 
 #include "lisp/lisp.cf"
 
@@ -39,7 +39,6 @@ STRCCMP_DEFINES = -DNEED_STRCASECMP
 
 #ifdef IHaveSubdirs
 ForceSubdirs($(SUBDIRS))
-MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
 #endif
 

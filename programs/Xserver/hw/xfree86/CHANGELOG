@@ -1,4 +1,7 @@
 XFree86 4.1.99.5 (xx January 2002)
+ 637. Build fixes for xedit/lisp. Don't define NEED_SNPRINTF when not needed.
+      Avoid a double recursion into subdirs (#5123, Matthieu Herrb).
+      Added code for systems without getpagesize.
  636. Fix the xdm's handling of keys, allowing keypad keys to work (#A.662,
       Servaas Vandenberghe).
  635. Fix hang when quitting XDarwin before starting X server
@@ -14451,4 +14454,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2110 2002/01/01 23:08:58 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2111 2002/01/02 23:49:11 dawes Exp $
