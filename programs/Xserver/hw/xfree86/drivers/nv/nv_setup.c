@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.19 2002/10/14 18:22:45 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.20 2002/11/26 23:41:59 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -208,18 +208,18 @@ NVIsSecond (ScrnInfoPtr pScrn)
     NVPtr pNv = NVPTR(pScrn);
 
     if(pNv->FlatPanel == 1) {
-       switch(pNv->Chipset) {
-       case NV_CHIP_GEFORCE4_440_GO:
-       case NV_CHIP_GEFORCE4_440_GO_M64:
-       case NV_CHIP_GEFORCE4_420_GO:
-       case NV_CHIP_GEFORCE4_420_GO_M32:
-       case NV_CHIP_QUADRO4_500_GOGL:
-       case NV_CHIP_0x0177:
-       case NV_CHIP_0x017D:
-       case NV_CHIP_0x0186:
-       case NV_CHIP_0x0187:
-       case NV_CHIP_0x0286:
-       case NV_CHIP_0x028C:
+       switch(pNv->Chipset & 0xffff) {
+       case 0x0174:
+       case 0x0175:
+       case 0x0176:
+       case 0x0177:
+       case 0x0179:
+       case 0x017C:
+       case 0x017D:
+       case 0x0186:
+       case 0x0187:
+       case 0x0286:
+       case 0x028C:
            pNv->SecondCRTC = TRUE;
            break;
        default:
@@ -345,19 +345,19 @@ NVCommonSetup(ScrnInfoPtr pScrn)
                                            0x00001000);
 
     if(pNv->FlatPanel == -1) {
-       switch(pNv->Chipset) {
-       case NV_CHIP_GEFORCE4_440_GO:
-       case NV_CHIP_GEFORCE4_440_GO_M64:
-       case NV_CHIP_GEFORCE4_420_GO:
-       case NV_CHIP_GEFORCE4_420_GO_M32:
-       case NV_CHIP_QUADRO4_500_GOGL:
-       case NV_CHIP_GEFORCE2_GO:
-       case NV_CHIP_0x0177:
-       case NV_CHIP_0x017D:
-       case NV_CHIP_0x0186:
-       case NV_CHIP_0x0187:
-       case NV_CHIP_0x0286:
-       case NV_CHIP_0x028C:
+       switch(pNv->Chipset & 0xffff) {
+       case 0x0112:   /* known laptop chips */
+       case 0x0174:
+       case 0x0175:
+       case 0x0176:
+       case 0x0177:
+       case 0x0179:
+       case 0x017C:
+       case 0x017D:
+       case 0x0186:
+       case 0x0187:
+       case 0x0286:
+       case 0x028C:
            xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
                       "On a laptop.  Assuming Digital Flat Panel\n");
            pNv->FlatPanel = 1;
@@ -371,7 +371,7 @@ NVCommonSetup(ScrnInfoPtr pScrn)
 
     switch(pNv->Chipset & 0x0ff0) {
     case 0x0110:
-        if(pNv->Chipset == NV_CHIP_GEFORCE2_GO)
+        if((pNv->Chipset & 0xffff) == 0x0112)
             pNv->SecondCRTC = TRUE;
 #if defined(__powerpc__)
         else if(pNv->FlatPanel == 1)
