@@ -371,7 +371,7 @@ TIramdac3026SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
 	ramdacReg->DacRegs[TIDAC_key_blue_high] = 0x00;
 	ramdacReg->DacRegs[TIDAC_key_ctrl] = 0x10;
 	ramdacReg->DacRegs[TIDAC_sense_test] = 0x00;
-	if (ramdacReg->Overlay) {
+	if (pScrn->overlayFlags & OVERLAY_8_32_PLANAR) {
 	    ramdacReg->DacRegs[TIDAC_true_color_ctrl] = 0x06;
 	    ramdacReg->DacRegs[TIDAC_misc_ctrl] = 0x3C;
 	    ramdacReg->DacRegs[TIDAC_key_ctrl] = 0x01;
@@ -488,7 +488,7 @@ TIramdac3030SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
 	ramdacReg->DacRegs[TIDAC_key_blue_high] = 0x00;
 	ramdacReg->DacRegs[TIDAC_key_ctrl] = 0x10;
 	ramdacReg->DacRegs[TIDAC_sense_test] = 0x00;
-	if (ramdacReg->Overlay) {
+	if (pScrn->overlayFlags & OVERLAY_8_32_PLANAR) {
 	    ramdacReg->DacRegs[TIDAC_true_color_ctrl] = 0x06;
 	    ramdacReg->DacRegs[TIDAC_misc_ctrl] = 0x3C;
 	    ramdacReg->DacRegs[TIDAC_key_ctrl] = 0x01;
