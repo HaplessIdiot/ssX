@@ -1,0 +1,8 @@
+
+XCOMM $XFree86: xc/programs/xvinfo/Imakefile,v 1.0 Exp $
+
+LOCAL_LIBRARIES = -lXext -lXv
+           SRCS = xvinfo.c
+           OBJS = xvinfo.o
+
+ComplexProgramTarget(xvinfo)
