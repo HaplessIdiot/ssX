@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $TOG: miinitext.c /main/45 1997/11/12 14:38:54 kaleb $ */
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.26 1997/11/16 10:46:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.27 1997/11/22 06:50:32 dawes Exp $ */
 
 #include "misc.h"
 #include "extension.h"
@@ -240,7 +240,7 @@ InitExtensions(argc, argv)
 #ifdef XTRAP
     if (!noTestExtensions) DEC_XTRAPInit();
 #endif
-#ifdef SCREENSAVER && !defined(PRINT_ONLY_SERVER)
+#if defined(SCREENSAVER) && !defined(PRINT_ONLY_SERVER)
     ScreenSaverExtensionInit ();
 #endif
 #ifdef XV
@@ -261,7 +261,7 @@ InitExtensions(argc, argv)
 #ifdef XSYNC
     SyncExtensionInit();
 #endif
-#ifdef XKB && !defined(PRINT_ONLY_SERVER)
+#if defined(XKB) && !defined(PRINT_ONLY_SERVER)
     if (!noXkbExtension) XkbExtensionInit();
 #endif
 #ifdef XCMISC

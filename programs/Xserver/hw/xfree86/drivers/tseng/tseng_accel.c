@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.15 1997/11/09 08:03:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.16 1997/11/22 00:00:16 hohndel Exp $ */
 
 
 /*
@@ -2574,7 +2574,7 @@ void TsengSubsequentScanlineCPUToScreenFillStippledRect(x, y, w, h, src, srcwidt
 #else
            TsengSubsequentCPUToScreenColorExpand(x,y++,w,1,0);
 #endif
-	   DestPntr = CPU2ACLBase; 
+	   DestPntr = (CARD32 *)CPU2ACLBase; 
    	   while(count--) {
  	     *DestPntr = (pattern >> offset) | 
 				(pattern << (width - offset));
@@ -2600,7 +2600,7 @@ void TsengSubsequentScanlineCPUToScreenFillStippledRect(x, y, w, h, src, srcwidt
 	   count = dwords;
 	   offset = srcx;
 	   	   	
-	   DestPntr = CPU2ACLBase;
+	   DestPntr = (CARD32 *)CPU2ACLBase;
 
            WAIT_INTERFACE;
 #ifdef USE_FAST_ACLINIT

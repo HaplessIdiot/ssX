@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.17 1997/07/10 08:17:10 hohndel Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.18 1997/10/25 13:49:53 hohndel Exp $
 
 #ifdef i386Architecture
 # define OSName			LynxOS AT
@@ -365,10 +365,6 @@ install.man:: list                                                      @@\
 #  undef BuildXInputExt
 # endif
 # define BuildXInputExt			NO
-# if BuildDPMSExt
-#  undef BuildDPMSExt
-# endif
-# define BuildDPMSExt			NO
 # define BuildXF86MiscExt		NO
 /*
  * XFree86 uses its own (more portable) database routines to speed up 

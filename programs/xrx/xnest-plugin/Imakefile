@@ -53,9 +53,6 @@ INCLUDES = -I. $(PLUGIN_INCLUDES) $(RX_INCLUDES) $(VENDOR_INCLUDES)
 PLUGIN_OBJS = $(PLUGINSRC)/PRead.o $(PLUGINSRC)/PParse.o \
 	$(PLUGINSRC)/BuildReq.o $(PLUGINSRC)/XUrls.o
 
-WIDGET_SRCS = rxLabel.c rxPushB.c
-WIDGET_OBJS = rxLabel.o rxPushB.o
-
 SRCS = Main.c SetWin.c PProcess.c NewNDest.c XnestDis.c $(IWDGET_SRCS)
 OBJS = Main.o SetWin.o PProcess.o NewNDest.o XnestDis.o \
 	$(PLUGINSRC)/stubs.o $(PLUGIN_OBJS) $(WIDGET_OBJS)
@@ -63,7 +60,5 @@ OBJS = Main.o SetWin.o PProcess.o NewNDest.o XnestDis.o \
 #include <Library.tmpl>
 
 LinkFile(Main.c,$(PLUGINSRC)/Main.c)
-LinkFile(rxLabel.c,$(PLUGINSRC)/rxLabel.c)
-LinkFile(rxPushB.c,$(PLUGINSRC)/rxPushB.c)
 
 DependTarget()

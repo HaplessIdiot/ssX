@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.53 1997/07/29 12:07:39 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.54 1997/08/26 10:01:00 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -101,7 +101,9 @@ ScrnInfoRec p9000InfoRec = {
     (void (*)())NoopDDA,/* void (* EnterLeaveCursor)() */
     p9000AdjustFrame,   /* void (* AdjustFrame)() */
     p9000SwitchMode,	/* Bool (* SwitchMode)() */
+#ifdef DPMSExtension
     p9000DPMSSet,	/* void (* DPMSSet)() */
+#endif
     p9000PrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
     {5, 6, 5},		/* xrgb weight */
