@@ -4,7 +4,7 @@ XCOMM platform:  $Xorg: linux.cf,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.178 2002/09/03 06:48:28 keithp Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.179 2002/09/04 03:09:46 dawes Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -439,7 +439,7 @@ XCOMM This may change soon
 #define HasSnprintf		YES
 #define HasMkstemp		YES
 #endif
-#ifndef HasGetresuid
+#if !defined(HasGetresuid) && (LinuxCLibMajorVersion >= 6)
 #define HasGetresuid		YES
 #endif
 #if OSMajorVersion >= 2
