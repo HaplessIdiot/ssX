@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.5 1996/10/08 12:21:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.6 1996/10/10 14:03:31 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -868,8 +868,14 @@ s3Init(mode)
 	 outb(vgaCRReg, tmp);
       }
       if (mode->Private[0] & (1 << S3_BLANK_DELAY)) {
-	 outb(vgaCRIndex, 0x6d);
-	 outb(vgaCRReg, mode->Private[S3_BLANK_DELAY]);
+	 if (S3_ViRGE_VX_SERIES(s3ChipId)) {
+	    outb(vgaCRIndex, 0x6d);
+	    outb(vgaCRReg, mode->Private[S3_BLANK_DELAY]);
+	 } else {
+	    outb(vgaCRIndex, 0x65);
+	    tmp = inb(vgaCRReg) & 0xc7;
+	    outb(vgaCRReg,tmp | ((mode->Private[S3_BLANK_DELAY] & 0x07) << 3));
+	 }
       }
       if (mode->Private[0] & (1 << S3_EARLY_SC)) {
 	 outb(vgaCRIndex, 0x65);

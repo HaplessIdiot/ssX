@@ -22,7 +22,7 @@
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.5 1996/10/06 13:15:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.6 1996/10/10 14:03:44 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -144,6 +144,15 @@ pointer tgaVideoMem = NULL;
 extern unsigned char *tgaVideoMemSave;
 static tgaCRTCRegRec tgaCRTCRegs;
 volatile unsigned long *VidBase;
+#define tgaReorderSwapBits(a,b)		b = \
+		(a & 0x80) >> 7 | \
+		(a & 0x40) >> 5 | \
+		(a & 0x20) >> 3 | \
+		(a & 0x10) >> 1 | \
+		(a & 0x08) << 1 | \
+		(a & 0x04) << 3 | \
+		(a & 0x02) << 5 | \
+		(a & 0x01) << 7;
 
 /*
  * tgaPrintIdent
@@ -205,17 +214,43 @@ Bool
 tgaProbe()
 {
   int i;
-  int tx, ty;
   Bool pModeInited = FALSE;
   pointer Base;
   DisplayModePtr pMode, pEnd;
   OFlagSet validOptions;
+  int found_device = FALSE;
+  char buf[80];
+  char *find_dev = "DEC DC21030"; 
+  char *find_string = "Prefetchable 32 bit memory";
+  int fin = 0;
+  FILE *fd;
+
+  /* Find the base address of the TGA chip through /proc/pci */
+  /* Not very elegant, but it does the job for now. */
+  if (tgaInfoRec.MemBase == 0) {
+  fd = fopen("/proc/pci", "r");
+  if (fd != NULL) {
+  	fgets(buf, 80, fd);	/* Grab first line */
+  	do {
+		if (strstr(buf, "Bus"))
+			found_device = FALSE;
+		if (strstr(buf, find_dev))
+			found_device = TRUE;
+		if (found_device)
+	  		if (strstr(buf, find_string))
+	   		    tgaInfoRec.MemBase = 
+				strtoul(strstr(buf,"0x"),(char **)NULL,16);
+		if (!fgets(buf, 80, fd)) fin = 1;	/* End of File */
+  	} while (fin == 0);
+  }
+  }
 
   /*
    * DEC 21030 TGA is a memory mapped device only.....
    * Therefore we need to mmap device to do the probe.
    * We need PCI routines for the Alpha - We don't as yet have them.
    * Therefore we use MemBase from XF86Config to set base address.
+   * But, if we have found it through /proc/pci - we use this.
    */
   if (tgaInfoRec.MemBase == 0)
   {
@@ -288,26 +323,29 @@ tgaProbe()
 
   /* Initialize options that reflect the TGA */
   OFLG_ZERO(&validOptions);
-#if NOTYET	/* Cursor support isn't here yet! */
+
+#ifdef NOTYET
   /* According to the 21030 manual - The Cursor of the 21030 is latched
    * through to the RAMDAC's own cursor, so it may be that both of these
    * are the same, but obviously we've got different methods of accessing
    * them. I guess that the UDB(Multia) has these latches.....
    */
-  /* Use TGA's own HW cursor */
-  OFLG_SET(OPTION_HW_CURSOR, &validOptions);
-  /* Or, use BT485 HW cursor */
-  OFLG_SET(OPTION_BT485_CURS, &validOptions);
+  if (tga_type != TYPE_TGA_8PLANE)
+	/* Use BT463 Ramdac cursor, utilizing 24Plane/24Plane3d chip */
+  	OFLG_SET(OPTION_HW_CURSOR, &validOptions);
+  else
+  	/* Or - If we have an 8plane use BT485 HW cursor directly */
+  	OFLG_SET(OPTION_BT485_CURS, &validOptions);
 #endif
+
   OFLG_SET(OPTION_DAC_8_BIT, &validOptions);
   OFLG_SET(OPTION_DAC_6_BIT, &validOptions);
   OFLG_SET(OPTION_POWER_SAVER, &validOptions);
-  xf86VerifyOptions(&validOptions, &tgaInfoRec);
 
+  xf86VerifyOptions(&validOptions, &tgaInfoRec);
   tgaInfoRec.chipset = "tga";
   xf86ProbeFailed = FALSE;
 
-  /* No PixMux yet ! for the BT485 */
   tgaInfoRec.dacSpeed = 135000; 	/* 135MHz for the Bt485 */
   tgaInfoRec.maxClock = 135000;		/* 135MHz for the Bt485 */
 
@@ -399,6 +437,9 @@ tgaProbe()
   if (OFLG_ISSET(OPTION_DAC_8_BIT, &tgaInfoRec.options))
 	tgaDAC8Bit = TRUE;
 
+  if (OFLG_ISSET(OPTION_DAC_6_BIT, &tgaInfoRec.options))
+	tgaDAC8Bit = FALSE;
+
   if (OFLG_ISSET(OPTION_POWER_SAVER, &tgaInfoRec.options))
 	tgaPowerSaver = TRUE;
 
@@ -424,6 +465,7 @@ tgaInitialize (scr_index, pScreen, argc, argv)
 	char		**argv;
 {
 	int displayResolution = 75; 	/* default to 75dpi */
+	int i;
 	extern int monitorResolution;
 
 	/* Init the screen */
@@ -436,13 +478,14 @@ tgaInitialize (scr_index, pScreen, argc, argv)
 	tgaCalcCRTCRegs(&tgaCRTCRegs, tgaInfoRec.modes);
 	tgaSetCRTCRegs(&tgaCRTCRegs);
 	tgaInitEnvironment();
+	for (i = 0; i < 256; i++)
+	{ 
+		tgaReorderSwapBits(i, tgaSwapBits[i]);
+	}
 
-#ifdef TGA_ACCEL
-	/* NOT THERE YET ! */
 	xf86InitCache(tgaCacheMoveBlock);
 	tgaFontCache8Init();
 	tgaImageInit();
-#endif
 
 	/*
 	 * Take display resolution from the -dpi flag 
@@ -547,18 +590,11 @@ tgaEnterLeaveVT(enter, screen_idx)
 	    tgaInitEnvironment();
 	    tgaRestoreDACvalues();
 	    tgaAdjustFrame(pScr->frameX0, pScr->frameY0);
+	    tgaRestoreCursor(pScreen);
 
 #ifdef NOTYET
 	    tgaCacheInit(tgaInfoRec.virtualX, tgaInfoRec.virtualY);
 	    tgaFontCache8Init(tgaInfoRec.virtualX, tgaInfoRec.virtualY);
-
-	    tgaRestoreCursor(pScreen);
-
-	    if (LUTissaved) {
-		tgaRestoreLUT(tgasavedLUT);
-		LUTissaved = FALSE;
-		tgaRestoreColor0(pScreen);
-	    }
 #endif
 
 	    if (pspix->devPrivate.ptr != tgaVideoMem && ppix) {
@@ -599,11 +635,6 @@ tgaEnterLeaveVT(enter, screen_idx)
 	    }
 	}
 
-#ifdef NOTYET
-	tgaCursorOff();
-	tgaSaveLUT(tgasavedLUT);
-	LUTissaved = TRUE;
-#endif
 	if (!xf86Resetting) {
 #ifdef XFreeXDGA
 	    if (!(tgaInfoRec.directMode & XF86DGADirectGraphics))
@@ -852,5 +883,11 @@ tgaValidMode(mode, verbose)
     DisplayModePtr mode;
     Bool verbose;
 {
+    if (mode->Flags & V_INTERLACE)
+    {
+	ErrorF("%s %s: Cannot support interlaced modes, deleting.\n",
+			XCONFIG_GIVEN, tgaInfoRec.name);
+	return MODE_BAD;
+    }
     return MODE_OK;
 }

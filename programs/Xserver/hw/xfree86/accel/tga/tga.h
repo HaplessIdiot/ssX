@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.h,v 3.0 1996/09/22 05:04:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.h,v 3.1 1996/09/25 14:16:20 dawes Exp $ */
 
 #ifndef _TGA_H_
 #define _TGA_H_
@@ -569,7 +569,7 @@ void tgaCacheMoveBlock(
     unsigned int
 #endif
 );
-/* tgaCursor.c */
+/* tgacurs.c */
 Bool tgaCursorInit(
 #if NeedFunctionPrototypes
     char *,
@@ -614,6 +614,12 @@ void tgaQueryBestSize(
     unsigned short *,
     unsigned short *,
     ScreenPtr 
+#endif
+);
+/* tgaBtCurs.c */
+void tgaBtRecolorCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr, CursorPtr, Bool
 #endif
 );
 /* tgadline.c */

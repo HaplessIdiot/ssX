@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86dga.h,v 3.2 1996/08/10 13:03:33 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dga.h,v 3.3 1996/10/16 14:28:54 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -26,6 +26,7 @@ Copyright (c) 1995  XFree86 Inc
 #define XF86DGADirectGraphics		0x02
 #define XF86DGADirectMouse		0x04
 #define XF86DGADirectKeyb		0x08
+#define XF86DGADirectColormap		0x10
 #define XF86DGAHasColormap		0x80
 
 #define XF86DGANumberEvents		0

@@ -27,7 +27,7 @@
 /* Modified for Cirrus by Harm Hanemaayer, <hhanemaa@cs.ruu.nl> */
 /* Modified for Chips by David Bateman, <dbateman@ee.uts.edu.au> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_FillRct.c,v 3.0 1996/08/11 13:02:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_FillRct.c,v 3.1 1996/09/29 13:39:14 dawes Exp $ */
 
 /*
  * This file contains the high level PolyFillRect function.
@@ -189,8 +189,8 @@ ctcfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 #if (PPW == 4)
     case FillStippled:
 #ifdef CT_POST_312F_ACCL
-	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
-							pRotatedPixmap)
+	if ((!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
+		pRotatedPixmap) || ctAvoidImageBLT)
 	    BoxFill = vga2568FillRectStippledUnnatural;
 	else {
 	    BoxFill = ctcfbFillRectTransparentStippled32;

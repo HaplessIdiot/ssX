@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3cmap.c,v 3.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3cmap.c,v 3.1 1996/10/03 08:33:20 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -140,7 +140,8 @@ s3StoreColors(pmap, ndef, pdefs)
       }
       if (xf86VTSema
 #ifdef XFreeXDGA
-	  || (s3InfoRec.directMode & XF86DGADirectGraphics)
+	  || !(s3InfoRec.directMode & XF86DGADirectColormap)
+	  || (s3InfoRec.directMode & XF86DGAHasColormap)
 #endif
          ) {
 	 outb(DAC_W_INDEX, pdefs[i].pixel);
@@ -207,11 +208,8 @@ s3InstallColormap(pmap)
    prgb = (xrgb *) ALLOCATE_LOCAL(entries * sizeof(xrgb));
    defs = (xColorItem *) ALLOCATE_LOCAL(entries * sizeof(xColorItem));
 
-#ifdef XFreeXDGA
-   if (xf86VTSema || !(s3InfoRec.directMode & XF86DGAHasColormap))
-#endif
-      if (oldmap != NOMAPYET)
-         WalkTree(pmap->pScreen, TellLostMap, &oldmap->mid);
+   if (oldmap != NOMAPYET)
+      WalkTree(pmap->pScreen, TellLostMap, &oldmap->mid);
 
    InstalledMaps[pmap->pScreen->myNum] = pmap;
 

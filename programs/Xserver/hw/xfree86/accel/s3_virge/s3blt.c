@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3blt.c,v 3.3 1996/10/08 13:11:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3blt.c,v 3.4 1996/10/10 14:03:28 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -515,7 +515,7 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
    /*
     * If switched away, or doing pixmap->pixmap copy, just use cfb.
     */
-   if (!xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask) ||
+   if (1 || !xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask) ||
        (pSrcDrawable->type != DRAWABLE_WINDOW &&
 	pDstDrawable->type != DRAWABLE_WINDOW)) {
       RegionPtr ret=NULL;

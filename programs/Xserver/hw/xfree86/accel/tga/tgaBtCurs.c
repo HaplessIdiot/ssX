@@ -24,7 +24,7 @@
  * Modified by Alan Hourihane (alanh@fairlite.demon.co.uk) for use with TGA
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgaBtCurs.c,v 3.0 1996/09/22 05:04:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgaBtCurs.c,v 3.1 1996/09/25 14:16:21 dawes Exp $ */
 
 #define NEED_EVENTS
 #include <X.h>
@@ -127,9 +127,12 @@ tgaBtCursorOn()
     tgaOutBtReg(BT_COMMAND_REG_2, 0xFC, 0x03);
 #endif
   {
+#if 0
     TGA_WRITE_REG(BT485_CMD_2, TGA_RAMDAC_SETUP_REG);
     oldBt485 = TGA_READ_REG(TGA_RAMDAC_REG) & 0xFC;
     BT485_WRITE(oldBt485|0x03, BT485_CMD_2);
+#endif
+    BT485_WRITE(0x23, BT485_CMD_2);
   }
   return;
 }
@@ -143,9 +146,12 @@ tgaBtCursorOff()
     tgaOutBtReg(BT_COMMAND_REG_2, 0xFC, 0x00);
 #endif
   {
+#if 0
     TGA_WRITE_REG(BT485_CMD_2, TGA_RAMDAC_SETUP_REG);
     oldBt485 = TGA_READ_REG(TGA_RAMDAC_REG) & 0xFC;
     BT485_WRITE(oldBt485|0x00, BT485_CMD_2);
+#endif
+    BT485_WRITE(0x20, BT485_CMD_2);
   }
   return;
 }
@@ -190,13 +196,19 @@ tgaBtMoveCursor(pScr, x, y)
 }
 
 void
-tgaBtRecolorCursor(pScr, pCurs)
+tgaBtRecolorCursor(pScr, pCurs, displayed)
      ScreenPtr pScr;
      CursorPtr pCurs;
 {
    extern Bool tgaDAC8Bit;
 
-   if (!xf86VTSema) return;
+   if (!xf86VTSema) {
+	miRecolorCursor(pScr, pCurs, displayed);
+	return;
+   }
+
+   if (!displayed)
+	return;
 
    /* Start writing at address 1 (0 is overscan color) */
 #if 0
@@ -270,13 +282,15 @@ tgaBtLoadCursor(pScr, pCurs, x, y)
    if ((tmpcurs = tgaInBtReg(BT_COMMAND_REG_2)) & 0x03)
       tgaBtCursorOff();
 #endif
-   BT485_WRITE(BT485_CMD_2, TGA_RAMDAC_SETUP_REG);
+#if 0
+   TGA_WRITE_REG(BT485_CMD_2, TGA_RAMDAC_SETUP_REG);
    oldBt485 = TGA_READ_REG(TGA_RAMDAC_REG);
    if ((tmpcurs = oldBt485) & 0x03)
+#endif
       tgaBtCursorOff();
 
    /* load colormap */
-   tgaBtRecolorCursor(pScr, pCurs);
+   tgaBtRecolorCursor(pScr, pCurs, TRUE);
 
    ram = (unsigned char *)pCurs->bits->devPriv[index];
 
@@ -290,9 +304,12 @@ tgaBtLoadCursor(pScr, pCurs, x, y)
 #if 0
    tgaOutBtRegCom3(0xF8, 0x04);
 #endif
+#if 0
    TGA_WRITE_REG(BT485_CMD_3, TGA_RAMDAC_SETUP_REG);
    oldBt485 = TGA_READ_REG(TGA_RAMDAC_REG) & 0xF8;
    BT485_WRITE(oldBt485|0x04, BT485_CMD_3);
+#endif
+   BT485_WRITE(0x14, BT485_CMD_3);
 
    if (tgaInfoRec.modes->Flags & V_INTERLACE) {
 #if 0
@@ -324,9 +341,11 @@ tgaBtLoadCursor(pScr, pCurs, x, y)
 #if 0
       tgaOutBtReg(BT_COMMAND_REG_2, 0xF7, 0x08);
 #endif
+#if 0
       TGA_WRITE_REG(BT485_CMD_2, TGA_RAMDAC_SETUP_REG);
       oldBt485 = TGA_READ_REG(TGA_RAMDAC_REG) & 0xF7;
       BT485_WRITE(oldBt485|0x08, BT485_CMD_2);
+#endif
    } else {
       /* Start data output */
 #if 0
@@ -349,9 +368,11 @@ tgaBtLoadCursor(pScr, pCurs, x, y)
 #if 0
       tgaOutBtReg(BT_COMMAND_REG_2, 0xF7, 0x00);
 #endif
+#if 0
       TGA_WRITE_REG(BT485_CMD_2, TGA_RAMDAC_SETUP_REG);
       oldBt485 = TGA_READ_REG(TGA_RAMDAC_REG) & 0xF7;
       BT485_WRITE(oldBt485|0x00, BT485_CMD_2);
+#endif
    }
 
    UNBLOCK_CURSOR;
@@ -359,8 +380,10 @@ tgaBtLoadCursor(pScr, pCurs, x, y)
    /* position cursor */
    tgaBtMoveCursor(0, x, y);
 
+#if 0
    /* turn the cursor on */
    if ((tmpcurs & 0x03) || tgaInitCursorFlag)
+#endif
       tgaBtCursorOn();
 
    if (tgaInitCursorFlag)

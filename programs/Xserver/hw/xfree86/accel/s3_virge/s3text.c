@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3text.c,v 3.5 1996/10/08 12:21:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3text.c,v 3.6 1996/10/16 14:40:31 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -88,7 +88,6 @@ DBGOUT(0x59);
 	 pix = 0;
 
 	 for (i = 0; i < newwidth; i += 32) {
-DBGOUT(0x80 | n++);
 	    getbuf = SWPBIT(pix+3)<<24 | SWPBIT(pix+2)<<16
 	       |     SWPBIT(pix+1)<< 8 | SWPBIT(pix+0)<< 0;
 	    *IMG_TRANS = getbuf;

@@ -1,6 +1,16 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/dRegs.c,v 3.0 1996/08/11 13:02:56 dawes Exp $ */
 
-#include "AsmMacros.h"
+#ifdef __NetBSD__
+/*
+ * For NetBSD compile with -li386
+ */
+# include <sys/types.h>
+# include <machine/pio.h>
+# include <machine/sysarch.h>
+# define iopl i386_iopl
+#else /* NetBSD */
+# include "AsmMacros.h"*/
+#endif /* NetBSD */
 
 #include <unistd.h>
 #include <stdio.h>

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgacurs.h,v 3.0 1996/09/22 05:04:43 dawes Exp $ */
 
 /*
  * Copyright 1995,96 by Alan Hourihane, Wigan, England.
@@ -29,7 +29,7 @@ extern Bool tgaReloadCursor;
 
 #define BLOCK_CURSOR    tgaBlockCursor = TRUE;
 
-#define UNBLOCK_CURSOR  { \
+#define UNBLOCK_CURSOR  { mem_barrier(); \
 			    if (tgaReloadCursor) \
 			       tgaRestoreCursor(savepScreen); \
 			    tgaBlockCursor = FALSE; \

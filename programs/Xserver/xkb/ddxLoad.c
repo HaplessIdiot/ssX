@@ -1,5 +1,5 @@
 /* $XConsortium: ddxLoad.c /main/16 1996/06/11 11:31:21 kaleb $ */
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.12 1996/09/29 13:48:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.13 1996/10/13 11:32:22 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -138,6 +138,10 @@ char 	cmd[PATH_MAX],file[PATH_MAX],xkm_output_dir[PATH_MAX],*map,*outFile;
     if (xkm_output_dir[strlen(xkm_output_dir)] != '/') /* hi IBM, Digital */
 	(void) strcat (xkm_output_dir, "/");
     if (XkbBaseDirectory!=NULL) {
+#ifdef __EMX__
+        char *tmpbase = (char*)__XOS2RedirRoot(XkbBaseDirectory);
+        int i;
+#endif
 	if (strlen(XkbBaseDirectory)*2+(xkbDebugFlags>9?2:1)
 		+(map?strlen(map)+3:0)+strlen(PRE_ERROR_MSG)
 		+strlen(ERROR_PREFIX)+strlen(POST_ERROR_MSG1)
@@ -150,12 +154,23 @@ char 	cmd[PATH_MAX],file[PATH_MAX],xkm_output_dir[PATH_MAX],*map,*outFile;
 #endif
 	    return False;
 	}
+#ifndef __EMX__
 	sprintf(cmd,"%s/xkbcomp -w %d -R%s -xkm %s%s -em1 %s -emp %s -eml %s keymap/%s %s%s.xkm",
 		XkbBaseDirectory,
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
 		XkbBaseDirectory,(map?"-m ":""),(map?map:""),
 		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,file,
 		xkm_output_dir,outFile);
+#else
+	for (i=0; i<strlen(tmpbase); i++) if (tmpbase[i]=='/') tmpbase[i]='\\';
+	sprintf(cmd,"%s\\xkbcomp -w %d -R%s -xkm %s%s -em1 %s -emp %s -eml %s keymap/%s %s%s.xkm",
+		tmpbase,
+		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
+		XkbBaseDirectory,(map?"-m ":""),(map?map:""),
+		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,file,
+		xkm_output_dir,outFile);
+	ErrorF("Command line for XKB is %s\n",cmd);
+#endif
     }
     else {
 	if ((xkbDebugFlags>9?2:1)+(map?strlen(map)+3:0)+strlen(PRE_ERROR_MSG)

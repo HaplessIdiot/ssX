@@ -1,5 +1,5 @@
 .\" Copyright (c) 1996  The XFree86 Project
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/man/XF86DGA.man,v 3.1 1996/10/03 08:34:30 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/man/XF86DGA.man,v 3.2 1996/10/16 14:41:04 dawes Exp $
 .\" 
 .de ZN
 .ie t \fB\^\\$1\^\fR\\$2
@@ -94,6 +94,8 @@ XF86DGADirectGraphics          enable Direct Video mode
 XF86DGADirectMouse             enable reporting of pointer movement
                                as relative motion
 XF86DGADirectKeyb              enable direct reporting of keyboard events
+XF86DGADirectColormap          give direct control of the colormap to
+                               XF86DGAInstallColormap().
 .fi
 .IP \fIflags_return\fP 2i
 Reports the DirectVideo features supported by the hardware.  When zero,

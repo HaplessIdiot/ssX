@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.4 1996/10/06 13:15:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.5 1996/10/10 14:03:27 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -187,6 +187,27 @@ int s3alu_sp[16] =
    ROP_DPno,
    ROP_DPan,
    ROP_1
+};
+
+/* ROP  ->  (ROP & P) | (D & ~P) */
+int s3alu_pat[16] =
+{
+   ROP_0PaDPnao,
+   ROP_DSaPaDPnao,
+   ROP_SDnaPaDPnao,
+   ROP_SPaDPnao,
+   ROP_DSnaPaDPnao,
+   ROP_DPaDPnao,
+   ROP_DSxPaDPnao,
+   ROP_DSoPaDPnao,
+   ROP_DSonPaDPnao,
+   ROP_DSxnPaDPnao,
+   ROP_DnPaDPnao,
+   ROP_SDnoPaDPnao,
+   ROP_SnPaDPnao,
+   ROP_DSnoPaDPnao,
+   ROP_DSanPaDPnao,
+   ROP_1PaDPnao
 };
 
 #if 0
@@ -1512,7 +1533,12 @@ redo_mode_lookup:
 	    else
 	       pMode->Private[S3_BLANK_DELAY] = 0x70;
 	 else
-	    pMode->Private[S3_BLANK_DELAY] = 0x00;
+	    if (s3Bpp == 1)
+	       pMode->Private[S3_BLANK_DELAY] = 0x00;
+	    else if (s3Bpp == 2)
+	       pMode->Private[S3_BLANK_DELAY] = 0x02;
+	    else
+	       pMode->Private[S3_BLANK_DELAY] = 0x04;
       }
 
       /* Set default for early_sc */

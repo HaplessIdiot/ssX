@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.12tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.13 1996/09/24 13:48:45 dawes Exp $
 
 #define OSName           OS/2
 #define OSVendor	 IBM
@@ -92,6 +92,17 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.12tsi Exp $
 #define ConnectionFlags		-DTCPCONN -DOS2PIPECONN
 #define StdIncDir $(C_INCLUDE_PATH)
 
+/* XF86Setup stuff */
+#define HasTcl			YES
+#define TclLibDir		$(X11ROOT)$(SHLIBDIR)
+#define TclIncDir		$(X11ROOT)$(INCROOT)/tcl
+#define TclLibName		xtcl
+
+#define HasTk			YES
+#define TkLibDir		$(X11ROOT)$(SHLIBDIR)
+#define TkIncDir		$(X11ROOT)$(INCROOT)/tk
+#define TkLibName		xtk
+
 /*
  * Compiler Features
  */
@@ -174,7 +185,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.12tsi Exp $
 # define OptimizedCDebugFlags 	-m486 DefaultGcc2i386Opt
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME
 #else
-# define OptimizedCDebugFlags 	-O2
+# define OptimizedCDebugFlags 	-O
 # define ServerOSDefines 	/**/
 #endif
 #ifdef i386Architecture

@@ -6,7 +6,7 @@
 <title> Information for Chips and Technologies Users
 <author> David Bateman (<it>dbateman@ee.uts.edu.au</it>),
          Egbert Eich (<it>Egbert.Eich@Physik.TH-Darmstadt.DE</it>)
-<date> 3rd July 1996
+<date> 3rd October 1996
 
 <!-- Table of contents -->
 <toc>
@@ -69,8 +69,8 @@ with many additional features added. These include
 	color (i.e 32bpp mode). It also appears that memory mapped I/O
 	is possible on all bus configurations. Support for these chips are
 	new to the server and currently quite limited. Testing with these
-	chips has only been done on Toshiba 720CDT's. There is no support
-	for H/W acceleration at this point.
+	chips has only been done on Toshiba 720CDT's. There is only limited
+	support for H/W acceleration at this point.
 	(Max Ram: 4Mb, Max Dclk: 80MHz@3.3V,110MHz@5V)
 </descrip>
 
@@ -97,6 +97,14 @@ Option &dquot;no_bitblt&dquot; (Chips 65545 and later)
 	65545 and above have. If you can use the  "<tt>noaccel</tt>" option
 	to correct a problem, then this option might be better to use.
 	It still allows the use of generic speedups.
+<tag>
+Option &dquot;no_imageblt&dquot; (Chips 65545 and later)
+</tag>
+	This option will have the effect of disabling the use of BitBLT
+	functions that go from system memory to video memory. It is
+	useful for problems related to image writes, and possible
+	acceleration problems. In general this will result in a reduced
+	performance.
 <tag>
 videoram 1024 (or another value)
 </tag>
@@ -130,7 +138,7 @@ Option &dquot;STN&dquot;
  	and TFT displays. This forces it to identify the display
 	as a SS STN rather than a TFT.
 <tag>
-Option &dquot;ext_fram_buf&dquot;
+Option &dquot;ext_fram_buf&dquot; (DSTN machines only)
 </tag>
 	In case the chipset uses a separate framebuffer (one that is
 	not part of the vram) this option makes all of the vram available
@@ -142,9 +150,19 @@ Option &dquot;use_modeline&dquot;
 	size of the mode specified in XF86Config. For this reason the
 	default behaviour of the server is to use the panel timings already
 	installed in the chip. The user can force the panel timings to be
-	recalculated from the modeline with this option, but this will
-	probably prevent the use of a mode size that is different than the
-	panel size.
+	recalculated from the modeline with this option. However the panel
+	size will still be probed.
+<tag>
+Option &dquot;fix_panel_size&dquot;
+</tag>
+	For some machines the LCD panel size is incorrectly probed from
+	the registers. This option forces the LCD panel size to be
+	overridden by the modeline display sizes. This will prevent the
+	use of a mode that is a different size than the panel. Before
+	using this check that the server reports an incorrect panel
+	size. This option can be used in conjunction with the option
+	&dquot;use_modeline&dquot; to program all the panel timings using
+	the modeline values.
 <tag>
 Option &dquot;no_stretch&dquot;
 </tag>
@@ -199,6 +217,13 @@ Option &dquot;suspend_hack&dquot;
 	machines. It overrides the options &dquot;lcd_center&dquot; 
 	and &dquot;no_stretch&dquot;.
 <tag>
+Option &dquot;use_18bit_bus&dquot;  (Chips 65540/45/46/48)
+</tag>
+	For 24bpp on TFT screens, the server assumes that a 24bit bus
+	is being used. This can result in a reddish tint to 24bpp mode.
+	This option, selects an 18 bit TFT bus. For other depths this
+	option has no effect.
+<tag>
 Chipset &dquot;ct65546&dquot; (or some other chip)
 </tag>
 	It is possible that the chip could be misidentified, particular
@@ -211,6 +236,13 @@ Chipset &dquot;ct65546&dquot; (or some other chip)
 	force the server to identify their chip as a ct65546 and so have a
 	larger maximum bandwidth. Note that this forces the server to exceed
 	the documented limitations of the chip, so take care.
+<tag>
+Option &dquot;sync_on_green&dquot; (Chips 65550/54)
+</tag>
+	Composite sync on green. Possibly useful if you wish to use an
+	old workstation monitor. The 65550/54 internal RAMDAC's support
+	this mode of operation, but whether a particular machine does
+	depends on the manufacturer. 
 </descrip>
 
 <sect> Modelines <p>
@@ -264,9 +296,10 @@ driver you'll needed to considered several points
 
 The ct655xx driver is capable of driving both a CRT and a flat panel
 display. Generally most modelines that work with CRT's will also work
-with the ct655xx driver. If the "<tt>use_modeline</tt>" option is not
-specified, only the clock, polarities, vertical and horizontal sizes
-are used in the mode calculations on an LCD. Hence a mode like
+with the ct655xx driver. If the "<tt>use_modeline</tt>" or 
+"<tt>fix_panel_size</tt>" options are not specified, only the clock,
+polarities, vertical and horizontal sizes are used in the mode calculations
+on an LCD. Hence a mode like
 
 <quote><verb>
 Modeline "640x480@8bpp"   21.000  640    0    0    0   480    0    0    0
@@ -275,8 +308,8 @@ Modeline "640x480@8bpp"   21.000  640    0    0    0   480    0    0    0
 will often be sufficient for a laptop screen. Just program the zeroed
 values above to those you would use for a CRT. It should also be noted that
 flat panels often prefer dot clocks that are much slower than CRT's. Below
-you'll find listed below a set of modelines that are in use of a variety
-of machines. These can be used as starting points for new modelines.
+you'll find listed a set of modelines that are in use of a variety of
+machines. These can be used as starting points for new modelines.
 
 <quote><verb>
 Modeline "640x480@8bpp"   21.000  640  688  704  776   480  480  481  486
@@ -302,6 +335,32 @@ Modeline "1024x768@16bpp" 65.000 1024 1032 1176 1344   768  771  777  806
 Tested on a Toshiba 720CDT, (1024x768 TFT, 65550, 2Mbyte)
 </verb></quote>
 
+Note that there are some machines that are known to need the panel timings
+reprogrammed for use with XFree using the "<tt>use_modeline</tt>" option.
+One such machine is the "<tt>Prostar 8200</tt>" with a 640x480 TFT. For
+this machine a modeline that is known to work is
+
+<quote><verb>
+Modeline "640x480@8bpp"	  25.175  640  672  728  816   480  489  501  526
+Modeline "640x480@16bpp"  25.175  640  672  728  816   480  489  501  526
+Tested on a Prostar 8200, (640x480, 65548, 1Mbyte)
+</verb></quote>
+
+Also there are some machines that are known to report the LCD panel size
+incorrectly. The correct panel size can be forced into registers from the
+modeline values using the "<tt>fix_panel_size</tt>" option. Two machines
+that are know to need this option are the HP OmniBook 5000CTS and the
+NEC Versa 4080 800x600 TFT machines. A modeline that is known to work
+with the Onmibook in conjunction with the "<tt>use_modeline</tt>" and
+"<tt>fix_panel_size</tt>" options is
+
+<quote><verb>
+Modeline "800x600@8bpp"	  28.322  800  808  848  936   600  600  604  628
+Tested on a HP OmniBook 5000CTS (800x600 TFT, 65548, 1Mbyte)
+</verb></quote>
+
+The NEC Versa 4080 just needs the "fix_panel_size" option.
+
 <sect> Troubleshooting <p>
 
 <descrip>
@@ -325,7 +384,11 @@ Tested on a Toshiba 720CDT, (1024x768 TFT, 65550, 2Mbyte)
         non-standard mode, maybe you need to tweak the timings a bit. If
         it is a standard mode and frequency that your screen should be
         able to handle, try to find different timings for a similar mode
-        and frequency combination.
+        and frequency combination. For LCD modes, it is possible that your
+	LCD panel requires different panel timings at the text console than
+	with a graphics mode. In this case you will need the
+	"<tt>use_modeline</tt>" and perhaps also the "<tt>fix_panel_size</tt>"
+	options to reprogram the LCD panel timings to sensible values.
 <tag> `Wavy' screen.</tag>
         Horizontal waving or jittering of the whole screen, continuously
         (independent from drawing operations).  You are probably using a
@@ -363,10 +426,10 @@ Tested on a Toshiba 720CDT, (1024x768 TFT, 65550, 2Mbyte)
 	are related to the panel size, and not the mode size. There is
 	no facility in the current Xservers to specify these values,
 	and so the server attempts to read the panel size from the
-	chip. If the user has used the "<tt>use_modeline</tt>" option the
-	panel timings are derived from the mode, which can be different
-	than the panel size. Try deleting the "<tt>use_modeline</tt>" option
-	from XF86Config or using an LCD/CRT switch.
+	chip. If the user has used the "<tt>use_modeline</tt>" or
+	"<tt>fix_panel_size</tt>" options the panel timings are derived
+	from the mode, which can be different than the panel size. Try
+	deleting theses options	from XF86Config or using an LCD/CRT switch.
 <tag> After a suspend/resume my screen is messed up</tag>
 	During a suspend/resume, the BIOS controls what is read and 
 	written back to the registers. If the screen is using a mode
@@ -375,14 +438,28 @@ Tested on a Toshiba 720CDT, (1024x768 TFT, 65550, 2Mbyte)
 	as close to VESA like as possible should be selected. It is also
 	possible that the VGA palette can be affected by a suspend/resume.
 	Using an 8bpp, the colour will then be displayed incorrectly. This
-	shouldn't affect higher depths.
+	shouldn't affect higher depths, and is fixable with a swicth to
+	the virtual console and back.
 <tag> The right hand edge of the mode isn't visible on the LCD</tag>
 	This is usually due to a problem with the "<tt>lcd-center</tt>"
 	option. If this option is removed form XF86Config, then the problem
-	might go away.
+	might go away. Alternatively the manufacturer could have incorrectly
+	programmed the panel size in the EGA console mode. The
+	"<tt>fix_panel_size</tt>" can be used to force the modeline values into
+	the panel size registers. Two machines that are known to have this
+	problem are the "<tt>HP OmniBook 5000</tt>" and the "<tt>NEC  Versa
+	4080</tt>".
+<tag> My TFT screen has a reddish tint in 24bpp mode</tag>
+	The server assumes that the TFT bus width is 24bits. If this is not
+	true then the screen will appear to have a reddish tint. This can
+	be fixed by using the "<tt>use_18bit_bus</tt>" option. Note that
+	the reverse is also true. If the "<tt>use_18bit_bus</tt>" is used
+	at the TFT bus width is 24bpp, the the screen will appear reddish.
+	Note that this option only has an effect on TFT screens. 
 <tag> I can't start X-windows with 16 or 24bpp</tag>
 	Firstly, is your machine capable of 16/24bpp with the mode
-	specified. You need at least a 65540 to use 16/24bpp, and the
+	specified. Many LCD displays are incapable of using a 24bpp 
+	mode. Also you need at least a 65540 to use 16/24bpp, and the
 	amount of memory used by the mode will be doubled/tripled. The
 	correct options to start the server with these modes are
 <verb>
@@ -408,7 +485,7 @@ Tested on a Toshiba 720CDT, (1024x768 TFT, 65550, 2Mbyte)
 
 <sect> Disclaimer <p>
 
-Xfree, allows to user to do damage to their hardware with software.
+Xfree, allows the user to do damage to their hardware with software.
 Although the authors of this software have tried to prevent this, they
 disclaim all responsibility for any damage caused by the software. Use
 caution, if you think the Xserver is frying your screen, TURN THE COMPUTER
@@ -432,7 +509,7 @@ software.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.5 1996/09/29 13:36:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.6 1996/10/03 08:34:54 dawes Exp $
 </verb>
 
 </article>

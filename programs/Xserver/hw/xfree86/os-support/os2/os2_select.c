@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_select.c,v 3.2 1996/08/21 08:39:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_select.c,v 3.3 1996/09/03 15:12:38 dawes Exp $ */
 
 /*
  * (c) Copyright 1996 by Sebastien Marineau
@@ -30,7 +30,6 @@
 
 /* os2_select.c: reimplementation of the xserver select(), optimized for speed */
 
-#include <sys/emx.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory.h>
@@ -38,6 +37,7 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/errno.h>
+#include <emx/io.h>
 
 #define INCL_DOSSEMAPHORES
 #define INCL_DOSPROFILE
@@ -74,6 +74,8 @@ HMODULE hmod_so32dll;
 static int (*os2_tcp_select)(int *,int,int,int,long);
 int os2_set_error(ULONG);
 ULONG os2_get_sys_millis();
+extern int _files[];
+
 
 
 /* This is a new implementation of select, for improved efficiency */
@@ -389,7 +391,7 @@ APIRET rc;
                 ( (FD_ISSET(pipeSemState[i].usKey,&sd->read_copy)) ||
                   (FD_ISSET(pipeSemState[i].usKey,&sd->write_copy)) )){
                 errno = EBADF;
-                fprintf(stderr,"Pipe has closed down, fd=%d\n",pipeSemState[i].usKey);
+                /* fprintf(stderr,"Pipe has closed down, fd=%d\n",pipeSemState[i].usKey); */
                 return (-1);
                 }
             i++;
@@ -479,50 +481,4 @@ ULONG os2_get_sys_millis()
         return(0);
         }
    return(milli);
-}
-
-#define MIN(a,b) (((a) < (b)) ? (a) : (b))
-
-int _select2 (int nfds, fd_set *readfds, fd_set *writefds,
-             fd_set *exceptfds, struct timeval *timeout)
-{
-  struct _select args;
-  int i, j, n;
-
-  args.nfds = nfds;
-  args.readfds = readfds;
-  args.writefds = writefds;
-  args.exceptfds = exceptfds;
-  args.timeout = timeout;
-  n = MIN (FD_SETSIZE, _nfiles);
-  if (readfds != NULL)
-    {
-      for (i = 0; i < n; ++i) {
-        if (FD_ISSET (i, readfds) && (!(_files[i] & F_PIPE)))
-         {
-            FD_CLR (i, readfds);    
-         }
-       }
-    }
-
-   if (writefds != NULL)
-    {
-      for (i = 0; i < n; ++i) {
-        if (FD_ISSET (i, writefds) && (!(_files[i] & F_PIPE)))
-         {
-            FD_CLR (i, writefds);
-         }
-       }
-    }
-   if (exceptfds != NULL)
-    {
-      for (i = 0; i < n; ++i) {
-        if (FD_ISSET (i, exceptfds) && (!(_files[i] & F_PIPE)))
-         {
-            FD_CLR (i, exceptfds);
-         }
-       }
-    }
-
- return __select (&args);
 }

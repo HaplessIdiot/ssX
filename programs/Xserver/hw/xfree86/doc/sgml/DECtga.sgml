@@ -3,7 +3,7 @@
 
 <title> Information for DEC 21030 Users (aka TGA)
 <author> The XFree86 Project, Inc.
-<date> 21 September 1996
+<date> 17th October 1996
 <toc>
 
 <p>
@@ -21,7 +21,7 @@ that matches other criteria.
 
 <item>Due to 3. Virtual Resolutions is not supported either.
 
-<item>VideoRam is currently limited to 2MB and is not changeable.
+<item>VideoRam is currently limited to 2MB.
 
 <item>The 8plane 21030 is currently the only supported chipset. I don't
 have access to the 24plane or the 24plane3D chip.
@@ -34,13 +34,15 @@ have access to the 24plane or the 24plane3D chip.
 <tag>Option &dquot;dac_6_bit&dquot;</tag>
 	Turn on 6Bit BT485 RamDac.
 <tag>MemBase &dquot;0x???????&dquot;</tag>
-	This setting has to be used, Check /proc/pci for the 21030 and
-	look for the "Prefetchable 32 bit memory at 0x???????" and enter
-	this as your MemBase setting.
+	If the server does not detect the base address of the 21030, then
+	Check /proc/pci for the 21030 and look for the "Prefetchable 32 bit
+	memory at 0x???????" and enter this as your MemBase setting.
 <tag>Option &dquot;hw_cursor&dquot;</tag>
-	Not yet available, but will turn on 21030's hardware cursor.
+	Not yet available, but will turn on BT463 hardware cursor.
+	(NOTE: for the 24plane and 24plane3D chip.)
 <tag>Option &dquot;bt485_curs&dquot;</tag>
 	Not yet available, but will turn on the BT485 RamDac's cursor.
+	(NOTE: for the 8plane chip.)
 
 </descrip>
 <item>No acceleration features of the 21030 have been taken advantage of yet!
@@ -52,7 +54,7 @@ known as the Multia, in a Linux environment.
 
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DECtga.sgml,v 3.1 1996/09/25 14:17:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DECtga.sgml,v 3.2 1996/09/29 13:36:38 dawes Exp $
 </verb>
 
 </article>

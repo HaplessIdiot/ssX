@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_stubs.c,v 3.0 1996/03/10 12:06:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_stubs.c,v 3.1 1996/05/13 06:40:10 dawes Exp $ */
 /*
  * (c) Copyright 1996 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -27,8 +27,8 @@
  *
  */
 
-#include "X.h"
-#include "Xpoll.h"
+#include "X11/X.h"
+#include "X11/Xpoll.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_textblt.s,v 3.0 1996/09/29 13:39:26 dawes Exp $ */
 
 #include "assyntax.h"
 
@@ -51,6 +51,7 @@
 
 #define bound_var	REGIND(ESP)
 
+#if 0	/* Not used yet. Use the dword aligned code for HiQV */
 	ALIGNTEXT4
 
 	GLOBL GLNAME(ctTransferTextHiQV)
@@ -178,7 +179,7 @@ GLNAME(ctTransferTextHiQV):
 	POP_L	(EBX)
 	POP_L	(EBP)
 	RET
-
+#endif
 
 	ALIGNTEXT4
 

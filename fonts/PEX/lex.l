@@ -1,6 +1,6 @@
 %{
 /* $XConsortium: lex.l,v 5.9 95/01/05 19:18:40 kaleb Exp $ */
-/* $XFree86: xc/fonts/PEX/lex.l,v 3.7 1994/12/10 01:36:01 dawes Exp $ */
+/* $XFree86: xc/fonts/PEX/lex.l,v 3.8 1995/01/28 15:41:45 dawes Exp $ */
 
 /*****************************************************************
 
@@ -68,7 +68,7 @@ extern double atof(char *);
 \'[^']*\' |
 \"[^"]*\"		return string(yytext, yyleng);
 #.*			;
-[ ,;\t\n]*              /* natural dilimters */ ;
+[ ,;\t\n\r]*              /* natural dilimters */ ;
 
 [a-zA-Z][a-zA-Z0-9_.]*	{
 				int	token;

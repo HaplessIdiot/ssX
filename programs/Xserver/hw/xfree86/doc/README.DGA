@@ -53,6 +53,8 @@ Prototypes for these functions can be found in <X11/extensions/xf86dga.h>
                                       as relative motion
        XF86DGADirectKeyb              enable direct reporting of keyboard
                                       events
+       XF86DGADirectColor             gives exclusive control of the colormap
+                                      to XF86DGAInstallColormap()
 
 
   XF86DGASetVidPage(Display *display, int screen, int page)
@@ -91,4 +93,4 @@ Prototypes for these functions can be found in <X11/extensions/xf86dga.h>
      Fork the app, parent process hangs around to return non DGA mode should
      the child exit for any reason. Returns 0, or error returned by fork().
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.DGA,v 3.2 1996/08/10 13:06:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.DGA,v 3.3 1996/10/16 14:40:59 dawes Exp $

@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.h,v 3.2 1996/08/24 12:54:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.h,v 3.3 1996/09/29 13:39:22 dawes Exp $ */
 
 /*#define DEBUG
 #define CT_HW_DEBUG */
@@ -41,6 +41,7 @@ extern unsigned int ctCursorAddress;   /* The address in video ram of cursor */
 /* The adress in video ram of the tile pattern.  */
 extern unsigned int ctBLTPatternAddress;
 extern Bool ctUseMMIO;
+extern Bool ctAvoidImageBLT;
 extern unsigned char *ctMMIOBase;
 extern unsigned char *ctBltDataWindow;
 

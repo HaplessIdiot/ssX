@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.10 1996/04/15 11:13:54 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.11 1996/05/10 06:53:55 dawes Exp $
 
 .SUFFIXES: .Osuf .c .CCsuf
 
@@ -309,6 +309,33 @@ Concat(Build,target):							@@\
 clean::									@@\
 	$(RM) target.c
 
+#ifndef ServerTargetWithFlags
+#define	ServerTargetWithFlags(server,subdirs,objects,libs,syslibs,flags) @@\
+AllTarget(ProgramTargetName(server))					@@\
+ProgramTargetName(server): subdirs objects libs				@@\
+	MoveToBakFile($@)						@@\
+	LinkRule($@,$(LDOPTIONS),objects,libs $(LDLIBS) syslibs)	@@\
+	emxbind -a ProgramTargetName(server) -h255			@@\
+									@@\
+Concat(load,server):							@@\
+	MoveToBakFile(ProgramTargetName(server))			@@\
+	LinkRule(ProgramTargetName(server),$(LDOPTIONS),objects,libs $(LDLIBS) syslibs) @@\
+									@@\
+loadX:: Concat(load,server)						@@\
+									@@\
+SentinelProgramTarget(server,subdirs objects libs,objects libs $(LDLIBS) syslibs) @@\
+SentinelLinkTarget(Concat(load,server),server,objects libs $(LDLIBS) syslibs) @@\
+PurifyProgramTarget(server,subdirs objects libs,objects libs $(LDLIBS) syslibs) @@\
+PurifyLinkTarget(Concat(load,server),server,objects libs $(LDLIBS) syslibs) @@\
+ProofProgramTarget(server,subdirs objects libs,objects libs $(LDLIBS) syslibs) @@\
+ProofLinkTarget(Concat(load,server),server,objects libs $(LDLIBS) syslibs) @@\
+									@@\
+InstallProgramWithFlags(server,$(BINDIR),flags)				@@\
+									@@\
+clean::									@@\
+	RemoveFile(ProgramTargetName(server))
+#endif /* ServerTargetWithFlags */
+
 /*
  * ServerTarget - rules to compile, link, and relink a normal server
  * Need a .def file for OS/2
@@ -455,3 +482,20 @@ install.man:: list                                                      @@\
 step::									@@\
 	-for %i in (dirs) do $(MKDIRHIER) $(DESTDIR)%i
 #endif /* MakeDirectories */
+
+#ifndef YaccFile
+#define YaccFile(file,flags)						@@\
+depend:: file.c								@@\
+									@@\
+file.h file.c: file.y							@@\
+	$(YACC) flags file.y						@@\
+	$(MV) y.tab.c file.c						@@\
+	@if exist y.tab.h $(MV) y.tab.h file.h				@@\
+									@@\
+clean::									@@\
+	RemoveFiles(y.tab.c y.tab.h file.h file.c)
+#endif /* YaccFile */
+
+#ifndef StaticLibrary
+#define StaticLibrary(libpath,libname) Concat4(libpath,/,libname,_s.a)
+#endif

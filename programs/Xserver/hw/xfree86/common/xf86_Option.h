@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.57 1996/08/16 12:29:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.58 1996/09/14 13:10:02 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -66,6 +66,7 @@ typedef struct {
 #define OPTION_EXT_FRAM_BUF     14 /* external frame accelerator (CT) */
 #define OPTION_LCD_STRETCH      15 /* disable LCD stretching */
 #define OPTION_LCD_CENTER	16 /* enable LCD centering */
+#define OPTION_PANEL_SIZE	17 /* (CT) Fix wrong panel size set in registers */
 
 /* Memory options */
 #define OPTION_FAST_DRAM	20 /* fast DRAM (for ET4000, S3, AGX) */
@@ -142,6 +143,7 @@ typedef struct {
 #define OPTION_TRIO64VP_BUG3	103 /* Trio64V+ bug hack #3 */
 #define OPTION_USE_MODELINE	104 /* use modeline for LCD instead of preset (ct)*/
 #define OPTION_SUSPEND_HACK	105 /* (CT) Use different suspend/resume scheme */
+#define OPTION_18_BIT_BUS	106 /* (CT) Use 18bit TFT bus for 24bpp mode */
 
 /* Debugging options */
 #define OPTION_SHOWCACHE	108 /* Allow cache to be seen (S3) */
@@ -247,6 +249,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "no_stretch",	OPTION_LCD_STRETCH },
   { "lcd_center",	OPTION_LCD_CENTER },
   { "lcd_centre",	OPTION_LCD_CENTER },
+  { "fix_panel_size",	OPTION_PANEL_SIZE },
 
   { "fast_dram",	OPTION_FAST_DRAM },
   { "med_dram",		OPTION_MED_DRAM },
@@ -325,6 +328,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "trio64v+_bug3",	OPTION_TRIO64VP_BUG3 },
   { "use_modeline",	OPTION_USE_MODELINE },
   { "suspend_hack",	OPTION_SUSPEND_HACK },
+  { "use_18bit_bus",	OPTION_18_BIT_BUS },
 
   { "showcache",	OPTION_SHOWCACHE },
   { "fb_debug",		OPTION_FB_DEBUG },

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyInit.c,v 3.0 1996/09/29 12:47:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyInit.c,v 3.1 1996/10/03 08:31:37 dawes Exp $ */
 
 /*
  * This is sunInit.c modified for LynxOS
@@ -417,7 +417,12 @@ static void getKbdType()
 #if 0
 	sunKbdWait();
 #endif
-	(void) ioctl (sunKbdPriv.fd, KIOCTYPE, &sunKbdPriv.type);
+	if (ioctl (sunKbdPriv.fd, KIOCTYPE, &sunKbdPriv.type) < 0 && errno == EINVAL) {
+	    ErrorF("failed to get keyboard type, maybe wrong console driver:");
+	    ErrorF(" assuming Type 4 keyboard\n");
+	    sunKbdPriv.type = KB_SUN4;
+	    return;
+	}
 	switch (sunKbdPriv.type) {
 	case KB_SUN2:
 	case KB_SUN3:
@@ -452,7 +457,11 @@ void OsVendorInit(
 	getKbdType ();
 	if (sunKbdPriv.type == KB_SUN4) {
 #if defined(PATCHED_CONSOLE)
-	    (void) ioctl (sunKbdPriv.fd, KIOCLAYOUT, &sunKbdPriv.layout);
+	    if ( ioctl (sunKbdPriv.fd, KIOCLAYOUT, &sunKbdPriv.layout) < 0 && errno == EINVAL) {
+	    	ErrorF("failed to get keyboard layout, maybe wrong console driver:");
+	    	ErrorF(" assuming layout 0\n");
+	    	sunKbdPriv.layout = 0;
+	    }
 	    if (sunKbdPriv.layout < 0 ||
 		sunKbdPriv.layout > sunMaxLayout ||
 		sunType4KeyMaps[sunKbdPriv.layout] == NULL)

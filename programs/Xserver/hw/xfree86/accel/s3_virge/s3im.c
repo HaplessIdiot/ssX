@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3im.c,v 3.5 1996/10/08 13:12:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3im.c,v 3.6 1996/10/16 14:40:28 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -569,6 +569,7 @@ s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
    if (alu != ROP_0 && alu != ROP_1 && alu != ROP_D && alu != ROP_Dn)
    for (j = 0; j < h; j++) {
       CARD32 wrapped=0, *pnext=NULL;
+      CARD32 wrapped3=0, *pnext3=NULL;
       CARD32 *pend;
       CARD32 *plines;
 
@@ -577,20 +578,19 @@ s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
       pend = (CARD32 *)(pline + pw * s3Bpp);
 
       switch ((pw * s3Bpp) & 3) {
-      case 1:
-	 wrapped = (ldl_u(pline) << 8)
-	    | (pline[pw - 1] << 0);
-	 pnext = (CARD32 *)(pline + 3);
-	 break;
       case 2:
 	 wrapped = (ldw_u(pline) << 16)
 	    | (ldw_u(pline + pw - 2) << 0);
 	 pnext = (CARD32 *)(pline + 2);
 	 break;
+      case 1:
       case 3:
-	 wrapped = (pline[0] << 24)
+	 wrapped = (ldl_u(pline) << 8)
+	    | (pline[pw - 1] << 0);
+	 pnext = (CARD32 *)(pline + 3);
+	 wrapped3 = (pline[0] << 24)
 	    | ((ldl_u(pline + pw - 3) & 0xffffff) << 0);
-	 pnext = (CARD32 *)(pline + 1);
+	 pnext3 = (CARD32 *)(pline + 1);
       }
 
       modulus (x - pox, pw, mod);
@@ -599,8 +599,17 @@ s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
       for (i=0; i < w * s3Bpp; i+=4)  {
          /* we need to check for wrap round */
          if (plines + 1 > pend) {
-	    *IMG_TRANS = wrapped;
-            plines = pnext;
+	    switch ((unsigned char *)(pend) - (unsigned char *)(plines)) {
+	    case 1:
+	    case 2:
+	       *IMG_TRANS = wrapped;
+	       plines = pnext;
+	       break;
+	    case 3:
+	       *IMG_TRANS = wrapped3;
+	       plines = pnext3;
+	       break;
+	    }
 	 } else {
 	    *IMG_TRANS = ldl_u(plines++);
 	 }
@@ -747,11 +756,11 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 #endif
 	       }
 	       else if (pw >= 16) {
-		  pix = (((ldl_u(pnt)) >> x2) & MSKBIT(np)) | (*ptmp << np);
-	       }
-	       else if (pw >= 8) {
-		  pix = ((ldl_u(pnt) >> x2) & MSKBIT(np)) | (ldl_u(ptmp) << np)
-		     | (ldl_u(pnt) << (np+pw));
+		  if (np+pw >= 32)
+		     pix = ((ldl_u(pnt) >> x2) & MSKBIT(np)) | ((ldl_u(ptmp) & MSKBIT(pw)) << np);
+		  else
+		     pix = ((ldl_u(pnt) >> x2) & MSKBIT(np)) | ((ldl_u(ptmp) & MSKBIT(pw)) << np)
+			| (ldl_u(ptmp) << (np+pw));
 	       }
 	       else {
 		  pix = (*ptmp >> x2) & MSKBIT(np);
@@ -765,7 +774,7 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 			 | (s3SwapBits[ ( pix >> 16 ) & 0xff ] << 16)
 			 | (s3SwapBits[ ( pix >> 24 ) & 0xff ] << 24);
 	       srcx += 32;
-	       if (srcx >= pw)
+	       while (srcx >= pw)
 		  srcx -= pw;
 	       dstw -= 32;
 	    }

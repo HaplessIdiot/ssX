@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.5 1996/05/10 06:59:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.6 1996/09/03 15:12:39 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -122,7 +122,7 @@ unsigned long Size;
 		char buf[20],dr[3];
 		ULONG drive;
 		APIRET rc = DosQuerySysInfo(5,5,&drive,sizeof(drive));
-		if (!rc) dr[0] = 0;
+		if (rc) dr[0] = 0;
 		else {	dr[0] = drive+96;
 			dr[1] = ':';
 			dr[2] = 0;

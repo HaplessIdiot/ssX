@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_mouse.c,v 3.8 1996/05/13 06:40:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_mouse.c,v 3.9 1996/08/20 12:29:52 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -103,7 +103,7 @@ int what;
 		if(hMouse==65535) rc = MouOpen((PSZ)0, &hMouse);
 		if (rc != 0)
 			FatalError("Cannot open mouse, rc=%d\n",rc);
-		xf86Info.mouseDev.mseFd = -1;
+		xf86Info.mouseDev->mseFd = -1;
 
 		/* flush mouse queue */
 		MouFlushQue(hMouse);
@@ -140,10 +140,10 @@ int what;
 		break;
       
 	case DEVICE_ON:
-		/*AddEnabledDevice(xf86Info.mouseDev.mseFd);*/
+		/*AddEnabledDevice(xf86Info.mouseDev->mseFd);*/
 		if(!HandleValid) return(-1);
-		xf86Info.mouseDev.lastButtons = 0;
-		xf86Info.mouseDev.emulateState = 0;
+		xf86Info.mouseDev->lastButtons = 0;
+		xf86Info.mouseDev->emulateState = 0;
 		pPointer->public.on = TRUE;
 		state = 0x300;
 		rc=MouSetDevStatus(&state,hMouse);
@@ -160,7 +160,7 @@ int what;
 		MouSetDevStatus(&state,hMouse);
 		state = 0;
 		MouSetEventMask(&state,hMouse);
-		/*RemoveEnabledDevice(xf86Info.mouseDev.mseFd);*/
+		/*RemoveEnabledDevice(xf86Info.mouseDev->mseFd);*/
 		if (what == DEVICE_CLOSE) {
 			/* MouClose(hMouse);
 			hMouse=65535;

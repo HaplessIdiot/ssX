@@ -1,6 +1,6 @@
   Information for SVR4 Users
   The XFree86 Project, Inc
-  7 July 1995
+  14 Oct 1996
 
   NOTE: If you intend to use any of the accelerated servers, read sec-
   tion 10 and follow the instructions.  Otherwise the X server will
@@ -383,7 +383,28 @@
 
   to your .xinitrc file (or your Xsetup file if using xdm).
 
-  10.  A kernel patch that is required for accelerated servers
+  10.  106 Japanese keyboard problem on PANIX
+
+  PANIX for PC-AT uses Japanese keycodes standardized by DICOP(Desktop
+  UNIX for Intel Cooperative Promotion Group) in Japan.  Therefore
+  keycode confliction occurs with 106 Japanese keyboard in XFree86.  To
+  avoid it, specify the keyword "panix106" in XF86Config like this:
+
+
+
+
+
+    Section "Keyboard"
+      Protocol    "Standard"
+      Autorepeat  500 5
+      XkbModel    "jp106"
+      XkbLayout   "jp"
+      panix106
+    EndSection
+
+
+
+  11.  A kernel patch that is required for accelerated servers
 
   SVR4.0 has a bug handling programs that access extended I/O registers
   (above 0x3FF).  Boards like S3 and 8514/A use these extended I/O
@@ -392,7 +413,6 @@
   that works around the problem, and provided scripts for you that will
   both install and back out the patch.  You must install this if you
   intend to use the S3, 8514, Mach8, Mach32, P9000, AGX or W32 servers.
-
 
   Dell 2.2 is known to not need the patch, because Thomas Roell found
   and fixed the bug while he was working for Dell.  Microport has fixed
@@ -415,33 +435,13 @@
   information.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.9 1996/10/03 08:34:53 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.10 1996/10/16 14:41:15 dawes Exp $
 
 
 
 
 
   $XConsortium: SVR4.sgml /main/4 1995/11/12 20:00:10 kaleb $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c /main/122 1996/01/14 16:45:32 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.18 1996/06/29 09:10:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.19 1996/09/01 04:49:33 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -244,11 +244,11 @@ LockServer()
   (void) sprintf(lock, "%s%s%s", LOCK_PATH, display, LOCK_SUFFIX);
 #else
   /* OS/2 uses TMP directory, must also prepare for 8.3 names */
-  char *tmppath = getenv("TMP");
+  { char *tmppath = getenv("TMP");
   if (!tmppath)
     FatalError("No TMP dir found\n");
   (void) sprintf(tmp, "%s/xf86$%s.lck",tmppath, display);
-  (void) sprintf(lock, "%s/xf86_%s.lck",tmppath, display);
+  (void) sprintf(lock, "%s/xf86_%s.lck",tmppath, display); }
 #endif
 
   /*

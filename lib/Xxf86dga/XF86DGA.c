@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.5 1996/08/21 08:38:04 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.6 1996/10/16 14:30:04 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -213,9 +213,7 @@ Bool XF86DGASetViewPort(dpy, screen, x, y)
     req->y = y;
     UnlockDisplay(dpy);
     SyncHandle();
-#if 0
     XSync(dpy,False);
-#endif
     return True;
 }
 
@@ -583,9 +581,12 @@ int *width, *bank, *ram;
 		"XF86DGAGetVideo: failed to mmap /dev/pmap$ (rc=%d)\n",
                 rc);
 #else /* !__EMX__ */
+#ifndef MAP_FILE
+#define MAP_FILE 0
+#endif
    /* This requires linux-0.99.pl10 or above */
    *addr = (void *)mmap(NULL, *bank, PROT_READ,
-                            MAP_SHARED, fd, (off_t)offset);
+                        MAP_FILE | MAP_SHARED, fd, (off_t)offset);
 #ifdef DEBUG
    fprintf(stderr, "XF86DGAGetVideo: physaddr: 0x%08x, size: %d\n",
 	   (long)offset, *bank);

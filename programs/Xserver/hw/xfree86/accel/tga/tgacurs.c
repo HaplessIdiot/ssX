@@ -19,7 +19,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgacurs.c,v 3.0 1996/09/22 05:04:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgacurs.c,v 3.1 1996/09/25 14:16:22 dawes Exp $ */
 
 /*
  * Modified by Amancio Hasty and Jon Tombs and Erik Nygren
@@ -67,7 +67,7 @@ static Bool tgaUnrealizeCursor(
 
 static void tgaSetCursor(
 #if NeedFunctionPrototypes
-   ScreenPtr, CursorPtr, int, int, Bool  
+   ScreenPtr, CursorPtr, int, int
 #endif
 );
 
@@ -164,17 +164,18 @@ tgaCursorInit(pm, pScr)
      char *pm;
      ScreenPtr pScr;
 {
-   tgahotX = 0;
-   tgahotY = 0;
    tgaBlockCursor = FALSE;
    tgaReloadCursor = FALSE;
 
    if (tgaCursGeneration != serverGeneration) {
+     tgahotX = 0;
+     tgahotY = 0;
      if (OFLG_ISSET(OPTION_BT485_CURS, &tgaInfoRec.options))
      {
 	if (!(miPointerInitialize(pScr, &tgaBtPointerSpriteFuncs,
 			       &xf86PointerScreenFuncs, FALSE)))
 	return FALSE;
+	pScr->RecolorCursor = tgaBtRecolorCursor;
      }
 #if 0
      else
@@ -229,12 +230,10 @@ tgaUnrealizeCursor(pScr, pCurs)
 }
 
 static void
-tgaSetCursor(pScr, pCurs, x, y, generateEvent)
+tgaSetCursor(pScr, pCurs, x, y)
      ScreenPtr pScr;
      CursorPtr pCurs;
      int   x, y;
-     Bool  generateEvent;
-
 {
    int index = pScr->myNum;
 

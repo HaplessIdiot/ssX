@@ -27,7 +27,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Os2.c,v 3.3 1996/02/04 08:56:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Os2.c,v 3.4 1996/08/20 12:26:10 dawes Exp $ */
 
 
 #include "Probe.h"
@@ -80,8 +80,8 @@ int OpenVideo()
 	}
 
 	/* check for correct EMX */
-	if (_emx_rev < 43) {
-		fputs ("This program requires emx.dll revision 43 (0.9b fix 05) "
+	if (_emx_rev < 50) {
+		fputs ("This program requires emx.dll revision 50 (0.9c) "
 			"or later.\n", stderr);
 		rc = DosLoadModule (fail, sizeof (fail), "emx", &hmod);
 		if (rc == 0) {

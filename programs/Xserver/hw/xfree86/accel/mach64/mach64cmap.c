@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64cmap.c,v 3.5 1996/09/15 11:17:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64cmap.c,v 3.6 1996/09/22 08:47:47 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -106,6 +106,7 @@ mach64StoreColors(pmap, ndef, pdefs)
 	}
 	if (xf86VTSema
 #ifdef XFreeXDGA
+	    || !(mach64InfoRec.directMode & XF86DGADirectColormap)
 	    || (mach64InfoRec.directMode & XF86DGAHasColormap)
 #endif
 	   ) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.12 1996/09/26 13:56:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.13 1996/09/29 13:36:31 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -924,7 +924,7 @@ xf86writepci(int scrnIndex, int bus, int cardnum, int func, int reg,
     /* Check for a PCI bus, and find the config type */
     pcibusSetup();
 
-    if (pciConfigType == 0);
+    if (pciConfigType == 0)
 	return;
 
     tag = pcibusTag(bus, cardnum, func);

@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgainit.c,v 3.4 1996/10/08 12:23:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgainit.c,v 3.5 1996/10/10 14:03:46 dawes Exp $ */
 
 #include "tga.h"
 #include "tga_presets.h"
@@ -97,15 +97,7 @@ tgaSetCRTCRegs(crtcRegs)
 	ICS1562ClockSelect(crtcRegs->clock_sel);
 	TGA_WRITE_REG(virtX, TGA_HORIZ_REG);
 	TGA_WRITE_REG(virtY, TGA_VERT_REG);
-	if ( (OFLG_ISSET(OPTION_HW_CURSOR, &tgaInfoRec.options)) ||
-	     (OFLG_ISSET(OPTION_BT485_CURS, &tgaInfoRec.options)) )
-	{
-		TGA_WRITE_REG(0x05, TGA_VALID_REG); /* Enable Video & Cursor */
-	}
-	else
-	{
-		TGA_WRITE_REG(0x01, TGA_VALID_REG); /* Enable Video Only */
-	}
+	TGA_WRITE_REG(0x05, TGA_VALID_REG); /* Enable Video */
 }
 
 void
@@ -196,12 +188,27 @@ tgaInit(mode)
 
 	memcpy((unsigned char *)tgaVideoMem, tgaVideoMemSave, 0x200000L);
 
-	tgaInitCursorFlag = TRUE;
 	tgaInitialized = 1;
+	tgaInitCursorFlag = TRUE;
 
 	return(TRUE);
 }
 
+void
+#if NeedFunctionPrototypes
+BT485Enable(void)
+#else
+BT485Enable()
+#endif
+{
+   /* Specific BT485 setup, for UDB(Multia) 8plane TGA */
+   BT485_WRITE(0xA0 | (tgaDAC8Bit ? 2 : 0), BT485_CMD_0);
+   BT485_WRITE(0x01, BT485_ADDR_PAL_WRITE);
+   BT485_WRITE(0x14, BT485_CMD_3); /* 64x64 cursor */
+   BT485_WRITE(0x40, BT485_CMD_1); /* 8bpp */
+   BT485_WRITE(0x20, BT485_CMD_2);
+   BT485_WRITE(0xFF, BT485_PIXEL_MASK);
+}
 
 #if NeedFunctionPrototypes
 static void
@@ -211,29 +218,8 @@ static void
 InitLUT()
 #endif
 {
-   short i, j;
+   int i;
 
-   if (tgaDAC8Bit)
-   {
-   	BT485_WRITE(0xA2, BT485_CMD_0);
-   }
-   else
-   {
-	BT485_WRITE(0xA0, BT485_CMD_0);
-   }
-   BT485_WRITE(0x01, BT485_ADDR_PAL_WRITE);
-   BT485_WRITE(0x14, BT485_CMD_3); /* 64x64 cursor */
-   BT485_WRITE(0x40, BT485_CMD_1); /* 8bpp */
-   if (OFLG_ISSET(OPTION_BT485_CURS, &tgaInfoRec.options))
-   {
-	BT485_WRITE(0x23, BT485_CMD_2);	/* X11 Cursor */
-   }
-   else
-   {
-   	BT485_WRITE(0x20, BT485_CMD_2); /* Disable BT485 Cursor */
-   }
-   BT485_WRITE(0xFF, BT485_PIXEL_MASK);
-   
    /* Get BT485's pallette */
    BT485_WRITE(0x00, BT485_ADDR_PAL_WRITE);
    TGA_WRITE_REG(BT485_DATA_PAL, TGA_RAMDAC_SETUP_REG);
@@ -269,6 +255,12 @@ void
 tgaInitEnvironment()
 #endif
 {
+   if (tga_type == TYPE_TGA_8PLANE)
+	BT485Enable();
+#ifdef SUPPORT24
+   else
+	BT463Enable();
+#endif
    InitLUT();
 }
 
@@ -287,6 +279,9 @@ tgaInitAperture()
 					tgaInfoRec.videoRam * 1024);
 
 	tgaVideoMemSave = (unsigned char *)xalloc(tgaInfoRec.videoRam * 1024);
+	if (tgaVideoMemSave == NULL)
+		FatalError("Unable to allocate save/restore buffer, "
+			   "aborting.....\n");
 
 #ifdef XFreeXDGA
 	tgaInfoRec.physBase = (tgaInfoRec.MemBase + 

@@ -1,15 +1,15 @@
-  Readme for the XFree86 3.1.2 LinkKit
+  Readme for the XFree86 3.2 LinkKit
   The XFree86 Project, Inc.
-  7 July 1995
+  14 Oct 1996
 
-  1.  Readme for the XFree86 3.1.2 LinkKit
+  1.  Readme for the XFree86 3.2 LinkKit
 
 
      1. For systems which don't use gcc-2, you may need to install
         libgcc.a if the binary distribution you are using was built with
         gcc-2.
 
-     2. Make sure that you have the XFree86 3.1.2 libraries installed
+     2. Make sure that you have the XFree86 3.2 libraries installed
         under /usr/X11R6 if you will be linking Xnest with the LinkKit.
         The LinkKit is now self-contained for the other servers.
 
@@ -79,6 +79,11 @@
 
         o  To build the Xnest server: set XnestServer to YES.
 
+        o  If you are building more than one Xserver, uncomment the
+           ServerToInstall line and set it to the name of the Xserver
+           you want to be the default server (i.e., the one that the
+           ``X'' sym-link points to).
+
         o  Set XF86SvgaDrivers to the list of drivers you want to
            include in the SVGA server.
 
@@ -97,6 +102,9 @@
            one included in the Mono and VGA16 and SVGA servers because
            its probe always succeeds.
 
+        o  To use dynamically loadable modules(e.g. PEX, XIE): set
+           ExtensionsDynamicModules to YES.
+
         o  To include the PEX extension: set BuildPexExt to YES.
 
         o  To include the X Image Extension: set BuildXIE to YES.
@@ -105,18 +113,13 @@
 
         o  To exclude the Record Extension: set BuildRECORD to NO.
 
-        o  To include the Screen Saver extension: set
-           BuildScreenSaverExt to YES.
+        o  To exclude the Screen Saver extension: set
+           BuildScreenSaverExt to NO.
 
         o  Although it is possible to disable other extensions through
            this mechanism, doing so is not recommended because savings
            in server size are not appreciable, or the resulting server
            might even be crippled in some way.
-
-        o  If you are building more than one Xserver, uncomment the
-           ServerToInstall line and set it to the name of the Xserver
-           you want to be the default server (i.e., the one that the
-           ``X'' sym-link points to).
 
 
      4. If you are including a driver that it not part of the standard
@@ -126,9 +129,9 @@
         the Mono and VGA16 servers) and copy either the source or .o
         file and a suitable Imakefile into that directory.  The name of
         the directory should be the same as the name of the driver
+
         (refer to the documentation in the VGADriverDoc directory for
         more details).
-
 
      5. To build the Makefile, run
 
@@ -155,11 +158,8 @@
         extensions are included, start the Xserver and run `xdpyinfo'.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.10 1996/10/13 11:19:44 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.11 1996/10/16 14:41:12 dawes Exp $
   $XConsortium: LinkKit.sgml /main/4 1995/11/12 19:59:36 kaleb $
-
-
-
 
 
 

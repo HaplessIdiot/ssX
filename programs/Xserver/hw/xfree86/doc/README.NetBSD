@@ -414,25 +414,6 @@
   called XF86Setup. It has to be run as root. Refer to its documentation
   for details about its use.
 
-  Important notice
-
-  On NetBSD and OpenBSD, XF86Setup needs a larger stack than the system
-  default limit of 512 kbytes. Be sure to raise your stack size limit by
-  using the command:
-
-  limit stacksize 2048k
-
-
-  if you're running a C-shell variant or the
-
-  ulimit -s 2048
-
-
-  command with the Bourne shell variants.
-
-  If you don't do this, the X server will crash and probably  won't
-  restore the text mode properly.
-
   You'll need info on your hardware:
 
      o  Your mouse type, baud rate and its /dev entry.
@@ -442,10 +423,10 @@
      o  Your monitor's sync frequencies.
 
   The recommended way to generate an XF86Config file is to use the
-  XF86Setup utility.  Also, there is a sample file installed as
-  /usr/X11R6/lib/X11/XF86Config.eg, which can be used as a starting
-  point. The  xf86config text utility is still there for the (few) cases
-  where XF86Setup can't be used.
+  XF86Setup utility.  The xf86config text utility is still there for the
+  (few) cases where XF86Setup can't be used. Also, there is a sample
+  file installed as /usr/X11R6/lib/X11/XF86Config.eg, which can be used
+  as a starting point.
 
   For details about the XF86Config file format, refer to the
   XF86Config(5) manual page.
@@ -456,10 +437,6 @@
   /usr/X11R6/lib/X11/XF86Config.hostname or
   /usr/X11R6/lib/X11/XF86Config.
 
-  Once you've set up a XF86Config file, you can fine tune the video
-  modes with the xvidtune utility.
-
-
   If you have a Xconfig file for XFree86 2.x, use reconfig to translate
   part of it into the new format:
 
@@ -468,26 +445,62 @@
 
   and complete the rest with the help of XF86Setup.
 
+  Once you've set up a XF86Config file, you can fine tune the video
+  modes with the xvidtune utility.
+
+  5.1.  About mouse configuration
+
   If your serial mouse does not work try using kermit or tip to connect
   to the mouse serial port and verify that it does indeed generate
   characters.
 
+  The NetBSD pms mouse driver handles PS/2 style mice as Busmouse.
+  Specify the protocol busmouse in the mouse section of your XF86Config
+  file if you're using a PS/2 mouse.
+
+  The OpenBSD pms driver  provides both "raw" and "cooked" (translated)
+
+  modes.  "raw" mode does not do protocol translation, so XFree86 would
+  use the PS/2 protocol for talking to the device in that mode.
+  "cooked" mode is the old BusMouse translation.  By default, the driver
+  runs in "cooked" mode.  It can be switched using ioctls or by opening
+  the first minor device which is /dev/pms0r.
+
+  5.2.  Other input devices
+
   XFree86 now support the dynamic loading of drivers for external input
   devices using the XInput extension. Currently supported devices are:
 
-     o  Joystick
+     o  Joystick (xf86Jstk.so)
 
-     o  Wacom tablets (Wacom IV protocol only)
+     o  Wacom tablets (Wacom IV protocol only, xf86Wacom.so)
 
-     o  Elographics touchscreen
+     o  SummaSketch tablets (xf86Summa.so)
+
+     o  Elographics touchscreen (xf86Elo.so)
+
+  To use a specific device, add the line
+
+       load "module"
+
+
+  in the Module section of XF86Config, where module is the name of the
+  .so file corresponding to your device.  You also need to set up a XIn-
+  put section in XF86Config.  Refer to the XF86Config(5) man page for
+  detailed configuration instructions.
+
+  You can then change the device used to drive the X pointer with the
+  xsetpointer(1) command.
 
   For joystick support, you'll need to install the joystick device
   driver in the kernel. It is included in NetBSD 1.2 and OpenBSD. See
   joy(4) for details.
 
-  The PEX and XIE extensions are also supported as external modules now.
-  If you want to have access to these exensions, add the following lines
-  to the Module section of XF86Config:
+  5.3.  Configuring PEX and XIE extensions
+
+  The PEX and XIE extensions are now supported as external modules.  If
+  you want to have access to these exensions, add the following lines to
+  the Module section of XF86Config:
 
 
           load    "pex5.so"
@@ -495,9 +508,6 @@
 
 
 
-
-  Refer to the XF86Config(5) man page for detailed configuration
-  instructions.
 
   6.  Running X
 
@@ -523,7 +533,6 @@
 
 
        options XSERVER, UCONSOLE
-
 
 
   The server supports the two standard NetBSD/i386 console drivers:
@@ -582,6 +591,7 @@
   By default NetBSD 0.9C and higher include the BSD 4.4 kernel security
   feature that disable access to the /dev/mem device when in multi-users
   mode. But XFree86 servers can take advantage (or require) linear
+
   access to the display memory.
 
   The P9000, Mach64 and AGX servers require linear memory access, other
@@ -644,10 +654,14 @@
 
 
 
-        # System V-like IPC
-        options         SYSVMSG
-        options         SYSVSEM
-        options         SYSVSHM
+
+
+
+
+   # System V-like IPC
+   options         SYSVMSG
+   options         SYSVSEM
+   options         SYSVSHM
 
 
 
@@ -656,13 +670,11 @@
 
 
 
-
-
-   # rm -f ../compile/<KERNEL-NAME>/*
-   # config <KERNEL-NAME>
-   # cd ../compile/<KERNEL-NAME>
-   # make depend
-   # make
+        # rm -f ../compile/<KERNEL-NAME>/*
+        # config <KERNEL-NAME>
+        # cd ../compile/<KERNEL-NAME>
+        # make depend
+        # make
 
 
 
@@ -712,7 +724,6 @@
 
 
 
-
      o  if you're using syscons put:
 
 
@@ -724,7 +735,7 @@
      o  if you're running codrv put:
 
 
-      #define XFree86ConsoleDefines -DCODRV_SUPPORT
+           #define XFree86ConsoleDefines -DCODRV_SUPPORT
 
 
 
@@ -777,7 +788,6 @@
   By default XFree86 3.2 builds for NetBSD with shared libraries
   support. If you're building on 0.9 or don't want shared libraries add
   the following line to xf86site.def:
-
 
 
        #define BuildBsdSharedLibs      NO
@@ -853,9 +863,6 @@
   Otherwise, just add ``-lXt'' to your library list in the Imakefile or
   Makefile and relink.
 
-
-
-
   10.  Thanks
 
   Many thanks to:
@@ -873,20 +880,13 @@
         machines in preparing the FreeBSD binary release.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.35 1996/10/06 13:16:45 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.36 1996/10/16 14:41:13 dawes Exp $
 
 
 
 
 
   $XConsortium: NetBSD.sgml /main/9 1996/01/28 08:05:37 kaleb $
-
-
-
-
-
-
-
 
 
 

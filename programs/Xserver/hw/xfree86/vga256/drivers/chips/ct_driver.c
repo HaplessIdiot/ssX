@@ -1,5 +1,5 @@
 /* $XConsortium: ct_driver.c /main/6 1996/01/12 12:16:39 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.23 1996/10/03 08:46:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.24 1996/10/16 14:42:32 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -152,12 +152,13 @@ static void ctClockSave();
 static void ctClockLoad();
 static Bool ctClockFind();
 static void ctCalcClock();
-
+static void ctScaleClock();
 
 
 /* Blitter related */
 unsigned int ctBLTPatternAddress = 0; /*address in video ram of tile pattern*/
 unsigned char *ctBltDataWindow = NULL;
+Bool ctAvoidImageBLT = FALSE;
 int ctReg32MMIO[]={0x83D0,0x87D0,0x8BD0,0x8FD0,0x93D0,0x97D0,0x9BD0,0x9FD0,
 		   0xA3D0,0xA7D0,0xABD0,0xAFD0,0xB3D0};
 int ctReg32HiQV[]={0x00,0x04,0x08,0x0C,0x10,0x14,0x18,0x1C,0x20};
@@ -198,10 +199,11 @@ static Bool CHIPSInit655xx();
 static Bool CHIPSInitHiQV32();
 static int  CHIPSValidMode();
 static void *CHIPSSave();
+static void CHIPSSaveScreen();
 static void CHIPSRestore();
 static void CHIPSAdjust();
 static void CHIPSFbInit();
-#if 0			/*it is not used but leaved for the future */
+#if 0			/*it is not used but left for the future */
 static void CHIPSGetMode();
 #endif
 
@@ -231,11 +233,7 @@ vgaVideoChipRec CHIPS =
     CHIPSSave,
     CHIPSRestore,
     CHIPSAdjust,
-#if 0
     CHIPSSaveScreen,
-#else
-    vgaHWSaveScreen,
-#endif
     (void (*)())NoopDDA,
     CHIPSFbInit,
     CHIPSSetRead,	
@@ -416,8 +414,8 @@ ctClockSave(Clock)
 {
     unsigned char temp;
 
-/*?*/Clock->msr = (inb(0x3CC) & 0x0C) /*| 1*/; /* save the standard VGA clock 
-					   * registers */
+    Clock->msr = (inb(0x3CC) & 0xFE);	/* save the standard VGA clock 
+				      	 * registers */
     if (ctisHiQV32) {
 	read_fr(0x03, Clock->fr03);  /* save alternate clock select reg.  */
 	if (!ctCurrentClock) {	     /* save 65550+ console clock         */
@@ -459,7 +457,7 @@ ctClockLoad(Type, Clock)
        
 	/* select fixed clock 0  before tampering with VCLK select */
 	temp = inb(0x3CC);
-/*?*/	outb(0x3C2, (temp & ~0x0C) /*| 0x01*/);
+	outb(0x3C2, (temp & ~0x0D) | ctVgaIOBaseFlag);
 	if (ctisHiQV32) {
 	    write_fr(0x03, (tempf03 & ~0x0C) | 0x04);
 	    if (!Clock->Clock) {       /* Hack to load saved console clock */
@@ -492,8 +490,14 @@ ctClockLoad(Type, Clock)
 	}
 	usleep(10000);		         /* Let VCO stabilise    */
     }
-    temp = inb(0x3CC) & ~0x0C;
-/*?*/outb(0x3C2, temp | Clock->msr /*| 1*/); /* restore VGA clock select reg. */
+
+#ifdef IO_DEBUG
+    ErrorF("ctClockLoad: 0x3C2: %X ->",inb(0x3CC));
+#endif
+    outb(0x3C2, (Clock->msr & 0xFE) | ctVgaIOBaseFlag);
+#ifdef IO_DEBUG
+    ErrorF(" %X\n",inb(0x3CC));
+#endif
     if (ctisHiQV32) {
 	write_fr(0x03, ((tempf03 & ~0x0C) | (Clock->fr03 & 0x0C)));
     } else {
@@ -535,7 +539,7 @@ ctClockFind(Type, no, Clock)
 
     case TYPE_HW:
 	if ((Type & 0x0F) == OLD_STYLE) {	/* Old Chipsets */
-	    Clock->msr = no << 2;
+	    Clock->msr = (no << 2) & 0xC;
 	    Clock->xr54 = Clock->msr;
 	    Clock->xr33 = 0;
 	} else {
@@ -546,7 +550,7 @@ ctClockFind(Type, no, Clock)
 	}
 	break;
     }
-/*?*/  Clock->msr |= (inb(0x3CC) & 0xF3) /*| 1*/;
+    Clock->msr |= (inb(0x3CC) & 0xF2);
 
 #ifdef DEBUG
     ErrorF("found\n");
@@ -888,6 +892,13 @@ CHIPSProbe()
 	}
     }
 
+#ifndef MONOVGA
+#ifdef XFreeXDGA
+     /* we support direct Video mode */
+     vga256InfoRec.directMode = XF86DGADirectPresent;
+#endif
+#endif
+
     /* By default the page mapping variables are setup for
      * chips earlier than the 65550. Hence correct these
      */
@@ -1099,11 +1110,19 @@ CHIPSProbe()
 		ctSize.HRetraceEnd, ctSize.HTotal);
 #endif
 	    ErrorF("%s %s: ct65545+: Display Size: x=%i; y=%i\n",
-		XCONFIG_PROBED, vga256InfoRec.name,
-		ctSize.HDisplay, ctSize.VDisplay);
+		   XCONFIG_PROBED, vga256InfoRec.name,
+		   ctSize.HDisplay, ctSize.VDisplay);
+	}
+	/* Warn the user if the panel size has been overridden by
+	 * the modeline values
+	 */
+	if (OFLG_ISSET(OPTION_PANEL_SIZE, &vga256InfoRec.options)) {
+	    ErrorF("%s %s: ct65545+: Display size overridden by modelines.\n",
+		   XCONFIG_GIVEN, vga256InfoRec.name);
 	}
     }
 
+    
     /* Frame Buffer */
     if (IS_STN(ctPanelType)) {
 	if (ctisHiQV32) {
@@ -1374,6 +1393,9 @@ CHIPSProbe()
     OFLG_SET(OPTION_MMIO, &CHIPS.ChipOptionFlags);
     OFLG_SET(OPTION_SUSPEND_HACK, &CHIPS.ChipOptionFlags);
     OFLG_SET(OPTION_SYNC_ON_GREEN, &CHIPS.ChipOptionFlags);
+    OFLG_SET(OPTION_PANEL_SIZE, &CHIPS.ChipOptionFlags);
+    OFLG_SET(OPTION_18_BIT_BUS, &CHIPS.ChipOptionFlags);
+    OFLG_SET(OPTION_NO_IMAGEBLT, &CHIPS.ChipOptionFlags);
 
     return (TRUE);
 }
@@ -1396,6 +1418,36 @@ CHIPSEnterLeave(enter)
 	ErrorF("Leave)\n");
 #endif
 
+#ifndef MONOVGA
+#ifdef XFreeXDGA
+    if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter) {
+	/* 
+	 * Disable HW cursor. I hope DGA can't call EnterLeave(leave) twice
+	 * in a row, and that another EnterLeave(leave) can't be called
+	 * before DGA finishes with an EnterLeave(enter). Otherwise the
+	 * effect will be to hide the cursor, perhaps permanently!!
+	 */
+	if (ctHWcursorShown) {
+	    if (ctisHiQV32) {
+		outb(0x3D6, 0xA0);
+		ctHWcursorContents = inb(0x3D7);
+		outb(0x3D7, ctHWcursorContents & 0xF8);
+	    } else {
+		if(!ctUseMMIO){
+		    HW_DEBUG(0x8);
+		    ctHWcursorContents = inl(DR(0x8));
+		    outw(DR(0x8), ctHWcursorContents & 0xFFFE);
+		} else {
+		    HW_DEBUG(ctMMIO[0x8]);
+		    ctHWcursorContents = MMIOmeml(ctMMIO[0x8]);
+		    MMIOmemw(ctMMIO[0x8]) = ctHWcursorContents & 0xFFFE;
+		}
+	    }
+	}
+	return;
+    }
+#endif
+#endif
     if (enter) {
       /* enable IO ports */
 	xf86EnableIOPorts(vga256InfoRec.scrnIndex);
@@ -1487,6 +1539,9 @@ CHIPSEnterLeave(enter)
 	}
 
       /* disable IO ports */
+#ifdef IO_DEBUG
+      ErrorF("E/L: 0x3CC: %X\n", (unsigned char)inb(0x3CC));
+#endif
       xf86DisableIOPorts(vga256InfoRec.scrnIndex);
     }
 }
@@ -1502,7 +1557,10 @@ CHIPSRestore(restore)
     ErrorF("CHIPSRestore\n");
 #endif
 
-    /* set registers that we can program the controller */
+    /* reset hcounter -- just in case... */
+    outw(0x3C4,0x07);
+
+    /* set registers so that we can program the controller */
     if (ctisHiQV32) {
 	outw(0x3D6, 0x0E);
     } else {
@@ -1517,36 +1575,32 @@ CHIPSRestore(restore)
     tmp = inb(ctCRvalue);
     outb(ctCRvalue, (tmp & 0x7F)); /*group 0 protection off */
 
-    /* turn off stretching before setting regs */
-    if (ctisHiQV32) { 
-      ctRestoreStretching(0x00, 0x00);
-    } else {
-      unsigned char tmp55, tmp57;
-      read_xr(0x55,tmp55);
-      read_xr(0x57,tmp57);
-      if((tmp55 & 0x20) || (tmp57 & 0x20)){
-	ctRestoreStretching(tmp55 & (~0x20),	/* disable h-double    */
-			    tmp57 & (~0x20));   /* disable v-stretching*/
-      }
-    }
-
     /* set the clock */
+#ifdef IO_DEBUG
+    ErrorF("1: 0x3CC: %X ", (unsigned char)inb(0x3CC));
+#endif
     if (restore->std.NoClock >= 0)
       ctClockLoad(ctClockType, &restore->ctClock);
+#ifdef IO_DEBUG
+    ErrorF("-> %X\n", (unsigned char)inb(0x3CC));
+#endif
 
     /* set extended regs */
     ctRestore(restore);
-/*?*/    /*if (!ctisHiQV32)
-      outw(0x3D6, 0x15);*/	       /* do we have to do this again? */
 
     /* set generic registers */
-    if (!ctisHiQV32 && (vga256InfoRec.textclock >= 0)) /*for ext. clock prog*/ 
-      vga256InfoRec.textclock = ctScaleClock(ENTER, &vga256InfoRec.textclock);
+    if (!ctisHiQV32&&(vga256InfoRec.textclock>=0)&&(vga256InfoRec.textclock<=MAXCLOCKS)) 
+      ctScaleClock(ENTER, &vga256InfoRec.textclock);
     vgaHWRestore((vgaHWPtr) restore);
-    if (!ctisHiQV32 && (vga256InfoRec.textclock >= 0)) 
-      vga256InfoRec.textclock = ctScaleClock(LEAVE, &vga256InfoRec.textclock);
+    if (!ctisHiQV32&&(vga256InfoRec.textclock>=0)&&(vga256InfoRec.textclock<=MAXCLOCKS)) 
+      ctScaleClock(LEAVE, &vga256InfoRec.textclock);
 
     /* set stretching registers */
+    if(!(inb(ctST01reg) & 0x08)) { /* if sequencer is running .... */
+	while (((inb(ctST01reg)) & 0x08) == 0x08){};/* wait VSync off */
+        while (((inb(ctST01reg)) & 0x08) == 0 ) {}; /* wait VSync on */
+    }
+    outw(0x3C4,0x07);              /* reset hsync - just in case...*/
     if (ctisHiQV32) {
       ctRestoreStretching(restore->Port_3D0[0x40],restore->Port_3D0[0x48]);
       /* why twice ? :
@@ -1558,36 +1612,31 @@ CHIPSRestore(restore)
     else {
       ctRestoreStretching(restore->Port_3D6[0x55],restore->Port_3D6[0x57]);
     }
-#if 0
-#ifdef IO_DEBUG
-	ErrorF("0x3CC: %X", (unsigned char)inb(0x3CC));
-#endif
-/*?*/    outb(0x3C2, (((((vgaHWPtr) restore)->MiscOutReg) & 0xFE) 
-		 | ctVgaIOBaseFlag));
-#ifdef IO_DEBUG
-	ErrorF("-> %X\n", (unsigned char)inb(0x3CC));
-#endif
-#endif
- /* Flag valid start address, if using CRT extensions */
+
+    /* Flag valid start address, if using CRT extensions */
     if (ctisHiQV32 && (restore->Port_3D6[0x09] & 0x1) == 0x1) {
       outb(ctCRindex, 0x40);
       tmp = inb(ctCRvalue);
       outb(ctCRvalue, tmp | 0x80);
     }
 
-#if 0
 #ifdef IO_DEBUG
-	ErrorF("0x3CC: %X", (unsigned char)inb(0x3CC));
+    ErrorF("3: 0x3CC: %X", (unsigned char)inb(0x3CC));
 #endif
-/*?*/    outb(0x3C2, (((((vgaHWPtr) restore)->MiscOutReg) & 0xFE) 
+    /* fix things that could be messed up by suspend/resume. 
+     * Do it again here, as Nozomi seems to need it          */
+    outb(0x3C2, (((((vgaHWPtr) restore)->MiscOutReg) & 0xFE) 
 		 | ctVgaIOBaseFlag));
+    outb(ctCRindex, 0x11);
+    tmp = inb(ctCRvalue);
+    outb(ctCRvalue, (tmp & 0x7F));
+
 #ifdef IO_DEBUG
-	ErrorF("-> %X\n", (unsigned char)inb(0x3CC));
+    ErrorF("-> %X\n", (unsigned char)inb(0x3CC));
 #endif
-#endif 
+
  /* set mode */
     ctXMode = restore->XMode;
-
 
 #ifdef DEBUG
     /* debug - dump out all the extended registers... */
@@ -1645,8 +1694,6 @@ CHIPSSave(save)
     outb(ctCRvalue, (tmp & 0x7F));
 
     /* Disable horizontal/vertical stretching   */
-    /* now reenable the timing sequencer to catch VSync in ctRestoreStreching*/
-    outw(0x3C4, 0x0300);
     if (ctisHiQV32) {
       /* must reset Stretching, because graphic mode must not be change
        * with stretching enable.
@@ -1654,13 +1701,10 @@ CHIPSSave(save)
        */
       read_fr(0x40, ctHorizontalStretch);
       read_fr(0x48, ctVerticalStretch);
-      ctRestoreStretching(0, 0);
     }
     else {
       read_xr(0x55, ctHorizontalStretch);
       read_xr(0x57, ctVerticalStretch);
-      ctRestoreStretching(ctHorizontalStretch & (~0x20),
-			  ctVerticalStretch & (~0x20) );
     }      
 
     /* get generic registers */
@@ -1685,12 +1729,6 @@ CHIPSSave(save)
 	    ErrorF("FS%X - %X\n", i, save->Port_3D0[i]);
 #endif
 	}
-	/* these registers are already saved and modified 
-	   stretching is disabled as soon as possible.
-	*/
-	save->Port_3D0[0x40] = ctHorizontalStretch ;
-	save->Port_3D0[0x48] = ctVerticalStretch ;
-
 	/* Save CR0-CR40 even though we don't use them, so they can be 
 	 *  printed */
 	for (i = 0x0; i < 0x80; i++) {
@@ -1717,12 +1755,6 @@ CHIPSSave(save)
 	    ErrorF("XS%X - %X\n", i, save->Port_3D6[i]);
 #endif
 	}
-	/* these registers are already saved and modified 
-	   streching is disabled as soon as possible.
-	*/
-	save->Port_3D6[0x55] = ctHorizontalStretch ;
-	save->Port_3D6[0x57] = ctVerticalStretch ;
-
 	if(!ctUseMMIO){ 
 	  for (i=0;i<0xD;i++){
 	    HW_DEBUG(i); save->BltReg[i] = inl(DR(i));
@@ -1771,6 +1803,15 @@ CHIPSInit655xx(mode)
 #ifdef DEBUG
     ErrorF("CHIPSInit655xx\n");
 #endif
+
+    /*
+     * Possibly fix up the panel size, if the manufacture is stupid
+     * enough to set it incorrectly in text modes
+     */
+    if (OFLG_ISSET(OPTION_PANEL_SIZE, &vga256InfoRec.options)) {
+	ctSize.HDisplay = mode->CrtcHDisplay;
+	ctSize.VDisplay = mode->CrtcVDisplay;
+    }
 
     /* correct the timings for 16/24 bpp */
     if (vgaBitsPerPixel == 16) {
@@ -2114,7 +2155,11 @@ CHIPSInit655xx(mode)
     } else if (vgaBitsPerPixel == 24) {
 	new->Port_3D6[0x06] |= 0xC8;   /*24 bpp colour               */
 	new->Port_3D6[0x0F] |= 0x10;   /*Hi-/True-Colour             */
-	new->Port_3D6[0x50] |= 0x80;   /*24 bit TFT data width       */
+	if (OFLG_ISSET(OPTION_18_BIT_BUS, &vga256InfoRec.options)) {
+	    new->Port_3D6[0x50] &= 0x7F;   /*18 bit TFT data width   */
+	} else {
+	    new->Port_3D6[0x50] |= 0x80;   /*24 bit TFT data width   */
+	}
     }
 
     /*CRT only: interlaced mode */
@@ -2435,8 +2480,8 @@ CHIPSAdjust(x, y)
     unsigned char tmp;
 
     /* fix things that could be messed up by suspend/resume */
-    if(ctisHiQV32)
-      outb(0x3D6,0x15);
+    if(!ctisHiQV32)
+        outb(0x3D6,0x15);
     tmp = inb(0x3CC);
     outb(0x3C2, (tmp & 0xFE) | ctVgaIOBaseFlag); 
     outb(ctCRindex, 0x11);
@@ -2480,9 +2525,9 @@ CHIPSAdjust(x, y)
     }
 #ifdef XFreeXDGA
     if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
-	/* Wait until vertical retrace is in progress. */
-	while (inb(vgaIOBase + 0xA) & 0x08);
-	while (!(inb(vgaIOBase + 0xA) & 0x08));
+      /* Wait until vertical retrace is in progress. */
+      while (inb(vgaIOBase + 0xA) & 0x08);
+      while (!(inb(vgaIOBase + 0xA) & 0x08));
     }
 #endif
 }
@@ -2531,6 +2576,12 @@ CHIPSFbInit()
 	    XCONFIG_GIVEN : XCONFIG_PROBED,
 	    vga256InfoRec.name, useSpeedUp);
 
+	if (OFLG_ISSET(OPTION_NO_IMAGEBLT, &vga256InfoRec.options)) {
+	    ErrorF("%s %s: CHIPS: Not using system-to-video BitBLT.\n",
+		   XCONFIG_GIVEN, vga256InfoRec.name);
+	    ctAvoidImageBLT = TRUE;
+	}
+	
 	if (!ctisHiQV32) {
 	    switch (vgaBitsPerPixel) {
 	    case 8:
@@ -2550,12 +2601,14 @@ CHIPSFbInit()
 		vga256LowlevFuncs.fillSolidSpans = ctcfbFillSolidSpansGeneral;
 	    
 #ifdef CT_POST_312F_ACCL
-		vga256LowlevFuncs.copyPlane1to8 = ctcfbCopyPlane1to8;
-		vga256TEOps1Rect.PolyGlyphBlt = ctcfbPolyGlyphBlt;
-		vga256TEOps.PolyGlyphBlt = ctcfbPolyGlyphBlt;
-		vga256LowlevFuncs.teGlyphBlt8 = ctcfbImageGlyphBlt;
-		vga256TEOps1Rect.ImageGlyphBlt = ctcfbImageGlyphBlt;
-		vga256TEOps.ImageGlyphBlt = ctcfbImageGlyphBlt;
+		if (!OFLG_ISSET(OPTION_NO_IMAGEBLT, &vga256InfoRec.options)) {
+		    vga256LowlevFuncs.copyPlane1to8 = ctcfbCopyPlane1to8;
+		     vga256TEOps1Rect.PolyGlyphBlt = ctcfbPolyGlyphBlt;
+		     vga256TEOps.PolyGlyphBlt = ctcfbPolyGlyphBlt;
+		     vga256LowlevFuncs.teGlyphBlt8 = ctcfbImageGlyphBlt;
+		     vga256TEOps1Rect.ImageGlyphBlt = ctcfbImageGlyphBlt;
+		     vga256TEOps.ImageGlyphBlt = ctcfbImageGlyphBlt;
+		}
 #endif
 
 		/* Setup the address of the tile in vram. Tile must
@@ -2588,10 +2641,12 @@ CHIPSFbInit()
 		cfb16NonTEOps.PolyFillRect = ctcfbPolyFillRect;
 
 #ifdef CT_POST_312F_ACCL
-		cfb16TEOps1Rect.PolyGlyphBlt = ctcfbPolyGlyphBlt;
-		cfb16TEOps.PolyGlyphBlt = ctcfbPolyGlyphBlt;
-		cfb16TEOps1Rect.ImageGlyphBlt = ctcfbImageGlyphBlt;
-		cfb16TEOps.ImageGlyphBlt = ctcfbImageGlyphBlt;
+		if (!OFLG_ISSET(OPTION_NO_IMAGEBLT, &vga256InfoRec.options)) {
+		    cfb16TEOps1Rect.PolyGlyphBlt = ctcfbPolyGlyphBlt;
+		    cfb16TEOps.PolyGlyphBlt = ctcfbPolyGlyphBlt;
+		    cfb16TEOps1Rect.ImageGlyphBlt = ctcfbImageGlyphBlt;
+		    cfb16TEOps.ImageGlyphBlt = ctcfbImageGlyphBlt;
+		}
 #endif
 
 		/* Setup the address of the tile in vram. Tile must
@@ -2626,11 +2681,13 @@ CHIPSFbInit()
 		cfb24NonTEOps.PolyFillRect = ctcfbPolyFillRect;
 
 #ifdef CT_POST_312F_ACCL
-#if 0 /* These haven't been tested. Not even sure they'd be faster */
-		cfb24TEOps1Rect.PolyGlyphBlt = ctcfbPolyGlyphBlt;
-		cfb24TEOps.PolyGlyphBlt = ctcfbPolyGlyphBlt;
-		cfb24TEOps1Rect.ImageGlyphBlt = ctcfbImageGlyphBlt;
-		cfb24TEOps.ImageGlyphBlt = ctcfbImageGlyphBlt;
+#ifdef CT_24BPP_TEXT
+		if (!OFLG_ISSET(OPTION_NO_IMAGEBLT, &vga256InfoRec.options)) {
+		    cfb24TEOps1Rect.PolyGlyphBlt = ctcfbPolyGlyphBlt;
+		    cfb24TEOps.PolyGlyphBlt = ctcfbPolyGlyphBlt;
+		    cfb24TEOps1Rect.ImageGlyphBlt = ctcfbImageGlyphBlt;
+		    cfb24TEOps.ImageGlyphBlt = ctcfbImageGlyphBlt;
+		}
 #endif
 #endif
 		/* Setup the address of the tile in vram. Tile must
@@ -2665,11 +2722,14 @@ CHIPSFbInit()
 		    vga256LowlevFuncs.fillSolidSpans = ctMMIOFillSolidSpansGeneral;
 
 #ifdef CT_POST_312F_ACCL
-		    vga256TEOps1Rect.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
-		    vga256TEOps.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
-		    vga256LowlevFuncs.teGlyphBlt8 = ctMMIOImageGlyphBlt;
-		    vga256TEOps1Rect.ImageGlyphBlt = ctMMIOImageGlyphBlt;
-		    vga256TEOps.ImageGlyphBlt = ctMMIOImageGlyphBlt;
+		    if (!OFLG_ISSET(OPTION_NO_IMAGEBLT,
+				   &vga256InfoRec.options)) {
+			vga256TEOps1Rect.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
+			vga256TEOps.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
+			vga256LowlevFuncs.teGlyphBlt8 = ctMMIOImageGlyphBlt;
+			vga256TEOps1Rect.ImageGlyphBlt = ctMMIOImageGlyphBlt;
+			vga256TEOps.ImageGlyphBlt = ctMMIOImageGlyphBlt;
+		    }
 #endif
 
 #ifdef CT_LINE_ACCL
@@ -2690,10 +2750,13 @@ CHIPSFbInit()
 		    cfb16NonTEOps.FillSpans = ctMMIOFillSolidSpansGeneral;
 
 #ifdef CT_POST_312F_ACCL
-		    cfb16TEOps1Rect.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
-		    cfb16TEOps.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
-		    cfb16TEOps1Rect.ImageGlyphBlt = ctMMIOImageGlyphBlt;
-		    cfb16TEOps.ImageGlyphBlt = ctMMIOImageGlyphBlt;
+		    if (!OFLG_ISSET(OPTION_NO_IMAGEBLT,
+				   &vga256InfoRec.options)) {
+			cfb16TEOps1Rect.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
+			cfb16TEOps.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
+			cfb16TEOps1Rect.ImageGlyphBlt = ctMMIOImageGlyphBlt;
+			cfb16TEOps.ImageGlyphBlt = ctMMIOImageGlyphBlt;
+		    }
 #endif
 
 #ifdef CT_LINE_ACCL
@@ -2720,11 +2783,14 @@ CHIPSFbInit()
 		    cfb24NonTEOps.FillSpans = ctMMIOFillSolidSpansGeneral;
 
 #ifdef CT_POST_312F_ACCL
-#if 0 /* These haven't been tested. Not even sure they'd be faster */
-		    cfb24TEOps1Rect.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
-		    cfb24TEOps.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
-		    cfb24TEOps1Rect.ImageGlyphBlt = ctMMIOImageGlyphBlt;
-		    cfb24TEOps.ImageGlyphBlt = ctMMIOImageGlyphBlt;
+#ifdef CT_24BPP_TEXT
+		    if (!OFLG_ISSET(OPTION_NO_IMAGEBLT,
+				   &vga256InfoRec.options)) {
+			cfb24TEOps1Rect.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
+			cfb24TEOps.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
+			cfb24TEOps1Rect.ImageGlyphBlt = ctMMIOImageGlyphBlt;
+			cfb24TEOps.ImageGlyphBlt = ctMMIOImageGlyphBlt;
+		    }
 #endif
 #endif
 
@@ -2784,20 +2850,23 @@ CHIPSFbInit()
 #endif
 
 #if 0	/* Untested with the HiQV. Need adaptation */
-		    vga256LowlevFuncs.copyPlane1to8 = ctcfbCopyPlane1to8;
 
 		    /* Hook special op. fills (and tiles): */
 		    vga256TEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
 		    vga256NonTEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
 		    vga256TEOps.PolyFillRect = ctcfbPolyFillRect;
 		    vga256NonTEOps.PolyFillRect = ctcfbPolyFillRect;
-	    
-		    vga256TEOps1Rect.PolyGlyphBlt = ctHiQVPolyGlyphBlt;
-		    vga256TEOps.PolyGlyphBlt = ctHiQVPolyGlyphBlt;
-		    vga256LowlevFuncs.teGlyphBlt8 = ctHiQVImageGlyphBlt;
-		    vga256TEOps1Rect.ImageGlyphBlt = ctHiQVImageGlyphBlt;
-		    vga256TEOps.ImageGlyphBlt = ctHiQVImageGlyphBlt;
 
+		    if (!OFLG_ISSET(OPTION_NO_IMAGEBLT,
+				   &vga256InfoRec.options)) {	    
+			vga256LowlevFuncs.copyPlane1to8 = ctcfbCopyPlane1to8;
+			vga256TEOps1Rect.PolyGlyphBlt = ctHiQVPolyGlyphBlt;
+			vga256TEOps.PolyGlyphBlt = ctHiQVPolyGlyphBlt;
+			vga256LowlevFuncs.teGlyphBlt8 = ctHiQVImageGlyphBlt;
+			vga256TEOps1Rect.ImageGlyphBlt = ctHiQVImageGlyphBlt;
+			vga256TEOps.ImageGlyphBlt = ctHiQVImageGlyphBlt;
+		    }
+		    
 #endif	/* Untested with the HiQV. Need adaptation */
 		    break;
 		
@@ -2848,11 +2917,14 @@ CHIPSFbInit()
 		    cfb16NonTEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
 		    cfb16NonTEOps.PolyFillRect = ctcfbPolyFillRect;
 
-		    cfb16TEOps1Rect.PolyGlyphBlt = ctHiQVPolyGlyphBlt;
-		    cfb16TEOps.PolyGlyphBlt = ctHiQVPolyGlyphBlt;
-		    cfb16TEOps1Rect.ImageGlyphBlt = ctHiQVImageGlyphBlt;
-		    cfb16TEOps.ImageGlyphBlt = ctHiQVImageGlyphBlt;
-
+		    if (!OFLG_ISSET(OPTION_NO_IMAGEBLT, 
+				   &vga256InfoRec.options)) {
+			cfb16TEOps1Rect.PolyGlyphBlt = ctHiQVPolyGlyphBlt;
+			cfb16TEOps.PolyGlyphBlt = ctHiQVPolyGlyphBlt;
+			cfb16TEOps1Rect.ImageGlyphBlt = ctHiQVImageGlyphBlt;
+			cfb16TEOps.ImageGlyphBlt = ctHiQVImageGlyphBlt;
+		    }
+		    
 #endif	/* Untested with the HiQV. Need adaptation */
 
 		    break;
@@ -2906,11 +2978,14 @@ CHIPSFbInit()
 		    cfb24NonTEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
 		    cfb24NonTEOps.PolyFillRect = ctcfbPolyFillRect;
 
-		    cfb24TEOps1Rect.PolyGlyphBlt = ctHiQVPolyGlyphBlt;
-		    cfb24TEOps.PolyGlyphBlt = ctHiQVPolyGlyphBlt;
-		    cfb24TEOps1Rect.ImageGlyphBlt = ctHiQVImageGlyphBlt;
-		    cfb24TEOps.ImageGlyphBlt = ctHiQVImageGlyphBlt;
-
+		    if (!OFLG_ISSET(OPTION_NO_IMAGEBLT, 
+				   &vga256InfoRec.options)) {
+			cfb24TEOps1Rect.PolyGlyphBlt = ctHiQVPolyGlyphBlt;
+			cfb24TEOps.PolyGlyphBlt = ctHiQVPolyGlyphBlt;
+			cfb24TEOps1Rect.ImageGlyphBlt = ctHiQVImageGlyphBlt;
+			cfb24TEOps.ImageGlyphBlt = ctHiQVImageGlyphBlt;
+		    }
+		    
 #endif	/* Untested with the HiQV. Need adaptation */
 
 		}
@@ -2964,17 +3039,6 @@ CHIPSFbInit()
 ctRestoreStretching(ctHorizontalStretch, ctVerticalStretch)
     unsigned char ctHorizontalStretch, ctVerticalStretch;
 {
-    unsigned char tmp;
-    /*
-     *	be careful timing sequencer must be enabled.
-     */
-    
-    /* wait for sync */
-    /* Stretching must be disable during VSync */
-    while (((inb(ctST01reg)) & 0x08) == 0x08){};/* wait VSync off */
-    /* to be sure we work at start Vsync */
-    while (((inb(ctST01reg)) & 0x08) == 0 ) {}; /* wait VSync on */
-
     /* write to regs. */
     if (ctisHiQV32) {
         write_fr(0x40, ctHorizontalStretch);
@@ -2985,11 +3049,6 @@ ctRestoreStretching(ctHorizontalStretch, ctVerticalStretch)
         write_xr(0x57, ctVerticalStretch);
     }
 
-    /* wait for sync */
-    while (((inb(ctST01reg)) & 0x08) == 0x08){};/* wait VSync off */
-    /* wait one more frame */
-    while ( ((inb(ctST01reg)) & 0x08) == 0 ) {}; /* wait VSync on */
-    
     usleep(20000);			/* to be active */
 }
 
@@ -3170,46 +3229,139 @@ void ctHWDebug(addr)
      int addr;
 {
 #if CT_DEBUG_WAIT
-  usleep(CT_DEBUG_WAIT);
+    usleep(CT_DEBUG_WAIT);
 #endif
-  ErrorF("Register/Address: %X\n",addr);
+    ErrorF("Register/Address: %X\n",addr);
 }
 #endif
 
-int ctScaleClock(enter,clock)
-int *clock;
+static void ctScaleClock(enter,clock)
 Bool enter;
+int *clock;
 {
-  static int saveClock;
-  static int saveTextClock;
+    /* 
+     * This is needed to scale programmable and fixed clocks to their
+     * real value. Clocks from a clock line are handled differently
+     * from the programmable clocks where text clock don't need rescaling.
+     * Using a clock line for programmable clocks does not really make 
+     * sense but as long as the higher level drivers need this we have to 
+     * do a pretty bad hack to rescale the textclock too, as a clock setting
+     * program needs the frequency - not the number.
+     */
+    static int saveClock;
+    static int saveTextClock;
 
- if(enter)
-    {
-      if (*clock < MAXCLOCKS){
-	/* save clock */
-	saveClock = vga256InfoRec.clock[*clock];
-	/* scale clock */
-	vga256InfoRec.clock[*clock] /= CHIPS.ChipClockScaleFactor;
-      } else {
-	/* save clock */
-	saveClock = *clock;
-	/* scale clock */
-	*clock /= CHIPS.ChipClockScaleFactor;
-      }
-  } else {
-    if (*clock < MAXCLOCKS)
-      /* restore clock */
-      vga256InfoRec.clock[*clock] = saveClock;
-    else 
-      /* restore clock */
-      *clock = saveClock; 
+    if(enter) {
+	if (*clock < MAXCLOCKS){
+	    /* save clock */
+	    saveClock = vga256InfoRec.clock[*clock];
+	    /* scale clock */
+	    vga256InfoRec.clock[*clock] *= CHIPS.ChipClockScaleFactor;
+	} else {
+	    /* save clock */
+	    saveClock = *clock;
+	    /* scale clock */
+	    *clock *= CHIPS.ChipClockScaleFactor;
+	}
+    } else {
+	if (*clock < MAXCLOCKS)
+	    /* restore clock */
+	    vga256InfoRec.clock[*clock] = saveClock;
+	else 
+	    /* restore clock */
+	    *clock = saveClock; 
     }
 }
 
-	    
+void
+CHIPSSaveScreen(start)
+     Bool start;
+{ 
+    /*
+     * this function makes sure that the vertical counters are 0 before 
+     * resetting the sequencer and resetting/stopping the horizontal 
+     * character counters. Assuming that any SS_START has a corresponding 
+     * SS_FINISH it implements a counter to make sure that the sequencer 
+     * doesn't get restarted until the last SS_FINISH is called. Doing 
+     * this we hope to avoid problems during mode changes with temporarily 
+     * messed up counters.
+     * NOTE: This is assumption is not correct! During a syncronous reset
+     * the sequencer is still running!!! Therefore we do a "reset/stop 
+     * hcounter after the sequencer reset and any time SS_START is called.
+     * Also we have to take care in CHIPSRestore to reset/stop the hcounters
+     * there again since they are restarted any time something get written
+     * to the sequencer regs. This happens in vgaProtect() after this function
+     * was called and also in vgaHWRestore(). If this proves to be a problem
+     * we might have to replace vgaHWRestore() by our own routine. We certainly
+     * have to wait for vsync to become active again and turn of the hcounter
+     * again before we fiddle with the stretching stuff.
+     * For the moment I'd like to leave this function as it is but we might
+     * be able to remove it.
+     */
+    static char counter = 0;
+    unsigned char tmp;
 
+#ifdef DEBUG
+    ErrorF("CHIPSSaveScreen\n");
+#endif
 
+    /* fix things that could be messed up by suspend/resume */
+    if(!ctisHiQV32)
+        outb(0x3D6,0x15);
+    tmp = inb(0x3CC);
+    outb(0x3C2, (tmp & 0xFE) | ctVgaIOBaseFlag); 
+    outb(ctCRindex, 0x11);
+    tmp = inb(ctCRvalue);
+    outb(ctCRvalue, (tmp & 0x7F));
 
+    if (start == SS_START) {
+	if(!counter){
+#ifdef DEBUG
+	    outb(0x3C4,00);
+	    if (((tmp=inb(0x3C5)) & 0x03) == 0x03){
+#endif 
+		/* wait for vertical counter to be 0 */
+		while (((inb(ctST01reg)) & 0x08) == 0x08){};/* wait VSync off*/
+		/* to be sure we work at start Vsync */
+		while (((inb(ctST01reg)) & 0x08) == 0 ) {}; /* wait VSync on */
+#ifdef DEBUG
+	    } else { 
+		ErrorF("Oops: SR00 = %X\n",tmp);
+	    }
+#endif
+	
+	    /* synchronous reset - stop counters */
+	    outw(0x3C4, 0x0100);        
+#ifdef DEBUG
+	    ErrorF("Seq. reset on\n");
+#endif
+	}
+	/* reset horizontal counter */
+	outb(0x3C4,0x07);
+	outb(0x3C5,0x00);
 
+	counter++;
+#ifdef DEBUG
+	ErrorF("Counter: %i\n",counter);
+#endif
+    } else {
+	counter--;
+	if(!counter){
+	    /* reset hcounter again !don't fiddle with this! */
+	    outw(0x3C4,0x07);
 
+	    /* end reset - start counters */
+	    outw(0x3C4, 0x0300); 
+#ifdef DEBUG
+	    ErrorF("Seq. reset off\n");
+#endif
+	}
+#ifdef DEBUG
+	ErrorF("Counter: %i\n",counter);
+#endif
+	if (counter<0){
+	    counter=0;
+	};
+    }
+}
 

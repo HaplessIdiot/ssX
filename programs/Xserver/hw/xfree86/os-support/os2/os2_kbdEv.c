@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.9 1996/05/13 06:40:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.10 1996/09/03 15:12:36 dawes Exp $ */
 /*
  * (c) Copyright 1994,1996 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -449,7 +449,7 @@ void *arg;
 {
         struct KeyPacket packet;
         APIRET rc;
-        USHORT length;
+        USHORT length,print_flag;
         ULONG queueParam;
         HMONITOR hKbdMonitor;
         MONIN monInbuf;
@@ -488,10 +488,14 @@ void *arg;
                         }
                 queueParam=packet.mnflags+(packet.ddflags<<16);
                 if(packet.mnflags&0x7F00) rc=DosWriteQueue(hKbdQueue,queueParam,0L,NULL,0L);
-                /*ErrorF("xf86-OS/2: wrote a char to queue, rc=%d\n",rc);
-                ErrorF("Kbd Monitor: Key press %d, scan code %d, ddflags %d\n",
+                /*ErrorF("xf86-OS/2: wrote a char to queue, rc=%d\n",rc); */
+                print_flag=packet.ddflags & 0x1F;
+ 
+                /*ErrorF("Kbd Monitor: Key press %d, scan code %d, ddflags %d\n"
                         packet.mnflags&0x8000,(packet.mnflags&0x7F00)>>8,packet.ddflags); */
-                rc=DosMonWrite((PBYTE)&monOutbuf,(PBYTE)&packet,length);
+/* This line will swallow print-screen keypresses */
+                if(print_flag == 0x13 || print_flag == 0x14 || print_flag == 0x15 || print_flag == 0x16){ rc = 0; }
+                else { rc=DosMonWrite((PBYTE)&monOutbuf,(PBYTE)&packet,length); }
                 if(rc) {
                         ErrorF("DosMonWrite returned bad RC! rc=%d\n",rc);
                         DosMonClose(hKbdMonitor); exit(1);

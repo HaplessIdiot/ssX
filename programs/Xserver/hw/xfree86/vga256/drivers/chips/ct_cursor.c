@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_cursor.c,v 3.3 1996/09/25 14:18:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_cursor.c,v 3.4 1996/09/29 13:39:19 dawes Exp $ */
 
 /*
  * Hardware cursor handling. Adapted from cirrus/cir_cursor.c and
@@ -575,6 +575,7 @@ CHIPSRecolorCursor(pScr, pCurs, displayed)
 	outb(0x3D6, 0x80);
 	outb(0x3D7, xr80);	       /* Enable normal palette addressing */
     } else {
+#if 0	/* It appears that the colour is always specified in Hi-Color! */
 	if (xf86weight.green == 5) {
 	    packedcolbg = ((pCurs->backRed & 0xf800) >> 1)
 		| ((pCurs->backGreen & 0xf800) >> 6)
@@ -582,7 +583,9 @@ CHIPSRecolorCursor(pScr, pCurs, displayed)
 	    packedcolfg = ((pCurs->foreRed & 0xf800) >> 1)
 		| ((pCurs->foreGreen & 0xf800) >> 6)
 		| ((pCurs->foreBlue & 0xf800) >> 11);
-	} else {
+	} else
+#endif
+       {
 	    packedcolfg = ((pCurs->foreRed & 0xf800) >> 0)
 		| ((pCurs->foreGreen & 0xfc00) >> 5)
 		| ((pCurs->foreBlue & 0xf800) >> 11);

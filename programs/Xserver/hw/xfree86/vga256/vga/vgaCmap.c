@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaCmap.c,v 3.10 1996/09/22 08:48:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaCmap.c,v 3.11 1996/09/25 14:34:31 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -135,6 +135,7 @@ vgaStoreColors(pmap, ndef, pdefs)
 
         if (xf86VTSema
 #ifdef XFreeXDGA
+	    || !(vga256InfoRec.directMode & XF86DGADirectColormap)
 	    || (vga256InfoRec.directMode & XF86DGAHasColormap)
 #endif
 	   )
