@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the copyright holders.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.58tsi Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.59 2003/07/18 15:39:48 tsi Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -783,7 +783,8 @@ set_sun_path(const char *port, const char *upath, char *path)
 
 static int
 TRANS(SocketCreateListener) (XtransConnInfo ciptr, 
-			     struct sockaddr *sockname, int socknamelen)
+			     struct sockaddr *sockname,
+			     int socknamelen, unsigned int flags)
 
 {
     int	namelen = socknamelen;
@@ -803,7 +804,10 @@ TRANS(SocketCreateListener) (XtransConnInfo ciptr,
 
     while (bind (fd, (struct sockaddr *) sockname, namelen) < 0)
     {
-	if (errno == EADDRINUSE)
+	if (errno == EADDRINUSE) {
+	    if (flags & ADDR_IN_USE_ALLOWED)
+		break;
+	} else
 	    return TRANS_ADDR_IN_USE;
 
 	if (retry-- == 0) {
@@ -853,7 +857,7 @@ TRANS(SocketCreateListener) (XtransConnInfo ciptr,
 
 #ifdef TCPCONN
 static int
-TRANS(SocketINETCreateListener) (XtransConnInfo ciptr, char *port)
+TRANS(SocketINETCreateListener) (XtransConnInfo ciptr, char *port, unsigned int flags)
 
 {
 #if defined(IPv6) && defined(AF_INET6)
@@ -958,7 +962,7 @@ TRANS(SocketINETCreateListener) (XtransConnInfo ciptr, char *port)
 #endif
 
     if ((status = TRANS(SocketCreateListener) (ciptr,
-	(struct sockaddr *) &sockname, namelen)) < 0)
+	(struct sockaddr *) &sockname, namelen, flags)) < 0)
     {
 	PRMSG (1,
     "SocketINETCreateListener: ...SocketCreateListener() failed\n",
@@ -983,7 +987,8 @@ TRANS(SocketINETCreateListener) (XtransConnInfo ciptr, char *port)
 #ifdef UNIXCONN
 
 static int
-TRANS(SocketUNIXCreateListener) (XtransConnInfo ciptr, char *port)
+TRANS(SocketUNIXCreateListener) (XtransConnInfo ciptr, char *port,
+				 unsigned int flags)
 
 {
     struct sockaddr_un	sockname;
@@ -1034,7 +1039,7 @@ TRANS(SocketUNIXCreateListener) (XtransConnInfo ciptr, char *port)
     unlink (sockname.sun_path);
 
     if ((status = TRANS(SocketCreateListener) (ciptr,
-	(struct sockaddr *) &sockname, namelen)) < 0)
+	(struct sockaddr *) &sockname, namelen, flags)) < 0)
     {
 	PRMSG (1,
     "SocketUNIXCreateListener: ...SocketCreateListener() failed\n",

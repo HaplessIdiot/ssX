@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.60 2003/07/09 15:27:35 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.61 2003/07/16 01:39:00 dawes Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -186,7 +186,6 @@ Bool AnyClientsWriteBlocked;	/* true if some client blocked on write */
 
 Bool RunFromSmartParent;	/* send SIGUSR1 to parent process */
 Bool PartialNetwork;		/* continue even if unable to bind all addrs */
-char *protNoListen;             /* don't listen on this protocol */
 static Pid_t ParentProcess;
 #ifdef __UNIXOS2__
 Pid_t GetPPID(Pid_t pid);
@@ -325,12 +324,6 @@ CreateWellKnownSockets(void)
 
     sprintf (port, "%d", atoi (display));
 
-    if (protNoListen)
-        if (_XSERVTransNoListen(protNoListen))
-        {
-	    FatalError ("Failed to disable listen for %s", protNoListen);
-	}
-    
     if ((_XSERVTransMakeAllCOTSServerListeners (port, &partial,
 	&ListenTransCount, &ListenTransConns) >= 0) &&
 	(ListenTransCount >= 1))

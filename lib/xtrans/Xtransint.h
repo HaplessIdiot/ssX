@@ -283,10 +283,13 @@ typedef struct _Xtransport {
     );
 
 #ifdef TRANS_SERVER
+/* Flags */
+# define ADDR_IN_USE_ALLOWED	1
 
     int	(*CreateListener)(
 	XtransConnInfo,		/* connection */
-	char *			/* port */
+	char *,			/* port */
+	unsigned int		/* flags */
     );
 
     int	(*ResetListener)(

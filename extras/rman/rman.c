@@ -3974,7 +3974,6 @@ source_out0(const char *pin, char end)
   while (*p && *p!=end) {
     if (*p=='\\') {	/* escape character */
 	 switch (*++p) {
- 
  	 case '&':	/* no space.  used as a no-op sometimes */
  	 case '^':	/* 1/12 em space */
  	 case '|':      /* 1/6 em space */
@@ -4104,6 +4103,9 @@ source_out0(const char *pin, char end)
 	     }
 	   }
 	   break;
+	 case 0:
+	     /* ignore */
+	     break;
 	 default:		/* unknown escaped character */
 	   sputchar(*p++);
 	 }
@@ -4133,7 +4135,7 @@ source_out0(const char *pin, char end)
     /* postpone check until after following character so catch closing tags */
     if ((sI>=4+1 && plain[sI-1-1]==')') ||
 	   /*  (plain[sI-1]==' ' && (q=strchr(plain,' '))!=NULL && q<&plain[sI-1])) */
-	 (plain[sI-1]==' ' && !isalnum(plain[sI-1-1]))) {
+	 (sI>=2 && plain[sI-1]==' ' && !isalnum(plain[sI-1-1]))) {
 	 /* regardless, flush buffer */
 	 source_flush();
     }

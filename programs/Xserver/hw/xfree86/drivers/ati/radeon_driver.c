@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.101tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.102 2003/07/19 15:59:22 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -405,26 +405,9 @@ static void
 RADEONPreInt10Save(ScrnInfoPtr pScrn, void **pPtr)
 {
     RADEONInfoPtr  info   = RADEONPTR(pScrn);
-    unsigned char *RADEONMMIO;
-    int            mapped = 0;
+    unsigned char *RADEONMMIO = info->MMIO;
     CARD32 CardTmp;
     static struct RADEONInt10Save SaveStruct = { 0, 0, 0 };
-
-    /*
-     * First make sure we have the pci and mmio info and that mmio is mapped
-     */
-    if (!info->PciInfo)
-	info->PciInfo = xf86GetPciInfoForEntity(info->pEnt->index);
-    if (!info->PciTag)
-	info->PciTag = pciTag(info->PciInfo->bus, info->PciInfo->device,
-			      info->PciInfo->func);
-    if (!info->MMIOAddr)
-	info->MMIOAddr = info->PciInfo->memBase[2] & 0xffffff00;
-    if (!info->MMIO) {
-	RADEONMapMMIO(pScrn);
-	mapped = 1;
-    }
-    RADEONMMIO = info->MMIO;
 
     /* Save the values and zap MEM_CNTL */
     SaveStruct.MEM_CNTL = INREG(RADEON_MEM_CNTL);
@@ -440,31 +423,19 @@ RADEONPreInt10Save(ScrnInfoPtr pScrn, void **pPtr)
     OUTREG(RADEON_MPP_TB_CONFIG, CardTmp);
 
     *pPtr = (void *)&SaveStruct;
-
-    /* Unmap mmio space if we mapped it */
-    if (mapped)
-	RADEONUnmapMMIO(pScrn);
 }
 
 static void
 RADEONPostInt10Check(ScrnInfoPtr pScrn, void *ptr)
 {
     RADEONInfoPtr  info   = RADEONPTR(pScrn);
-    unsigned char *RADEONMMIO;
+    unsigned char *RADEONMMIO = info->MMIO;
     struct RADEONInt10Save *pSave = ptr;
     CARD32 CardTmp;
-    int            mapped = 0;
 
     /* If we don't have a valid (non-zero) saved MEM_CNTL, get out now */
     if (!pSave || !pSave->MEM_CNTL)
 	return;
-
-    /* First make sure that mmio is mapped */
-    if (!info->MMIO) {
-	RADEONMapMMIO(pScrn);
-	mapped = 1;
-    }
-    RADEONMMIO = info->MMIO;
 
     /*
      * If either MEM_CNTL is currently zero or inconistent (configured for
@@ -499,10 +470,6 @@ RADEONPostInt10Check(ScrnInfoPtr pScrn, void *ptr)
 	CardTmp |= (pSave->MPP_TB_CONFIG & 0xff000000u);
 	OUTREG(RADEON_MPP_TB_CONFIG, CardTmp);
     }
-
-    /* Unmap mmio space if we mapped it */
-    if (mapped)
-	RADEONUnmapMMIO(pScrn);
 }
 
 /* Allocate our private RADEONInfoRec */
@@ -777,13 +744,10 @@ static int RADEONDiv(int n, int d)
 static RADEONMonitorType RADEONDisplayDDCConnected(ScrnInfoPtr pScrn, RADEONDDCType DDCType, xf86MonPtr* MonInfo)
 {
     RADEONInfoPtr info = RADEONPTR(pScrn);
-    unsigned char *RADEONMMIO;
+    unsigned char *RADEONMMIO = info->MMIO;
     unsigned long DDCReg;
     RADEONMonitorType MonType = MT_NONE;
     int i, j;
-
-    RADEONMapMMIO(pScrn);
-    RADEONMMIO = info->MMIO;
 
     DDCReg = info->DDCReg;
     switch(DDCType)
@@ -1322,6 +1286,7 @@ static void RADEONQueryConnectedDisplays(ScrnInfoPtr pScrn, xf86Int10InfoPtr pIn
 		   (info->VBIOS && (INREG(RADEON_BIOS_4_SCRATCH) & 4))) {
 	    /* non-DDC laptop panel connected on primary */
 	    pRADEONEnt->MonType1 = MT_LCD;
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Non-DDC laptop panel detected\n");
 	} else {
 	    /* CRT on DVI, TODO: not reliable, make it always return false for now*/
 	    pRADEONEnt->MonType1 = RADEONCrtIsPhysicallyConnected(pScrn, pRADEONEnt->ReversedDAC);
@@ -1562,17 +1527,11 @@ static Bool RADEONProbePLLParameters(ScrnInfoPtr pScrn)
     unsigned char ppll_div_sel;
     unsigned Nx, M;
     unsigned xclk, tmp, ref_div;
-    int mapped=0, hTotal, vTotal, num, denom, m, n;
+    int hTotal, vTotal, num, denom, m, n;
     float hz, vclk, xtal;
     long start_secs, start_usecs, stop_secs, stop_usecs, total_usecs;
     int i;
 
-    if (!info->MMIO) {
-        RADEONMapMMIO(pScrn);
-        RADEONMMIO = info->MMIO;
-        mapped = 1;
-    }
- 
     tmp = INREG(RADEON_DEVICE_ID);
  
     for(i=0; i<1000000; i++)
@@ -1661,9 +1620,6 @@ static Bool RADEONProbePLLParameters(ScrnInfoPtr pScrn)
 
     tmp = INPLL(pScrn, RADEON_X_MPLL_REF_FB_DIV);
     ref_div = INPLL(pScrn, RADEON_PPLL_REF_DIV) & 0x3ff;
-
-    if (mapped)
-        RADEONUnmapMMIO(pScrn);
 
     Nx = (tmp & 0xff00) >> 8;
     M = (tmp & 0xff);
@@ -1845,7 +1801,7 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
     GDevPtr        dev    = pEnt->device;
     int            offset = 0; /* RAM Type */
     MessageType    from;
-    unsigned char *RADEONMMIO;
+    unsigned char *RADEONMMIO = info->MMIO;
 
 				/* Chipset */
     from = X_PROBED;
@@ -2026,23 +1982,6 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
     xf86DrvMsg(pScrn->scrnIndex, from,
 	       "Linear framebuffer at 0x%08lx\n", info->LinearAddr);
 
-				/* MMIO registers */
-    from             = X_PROBED;
-    info->MMIOAddr   = info->PciInfo->memBase[2] & 0xffffff00;
-    if (dev->IOBase) {
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		   "MMIO address override, using 0x%08x instead of 0x%08x\n",
-		   dev->IOBase,
-		   info->MMIOAddr);
-	info->MMIOAddr = dev->IOBase;
-	from           = X_CONFIG;
-    } else if (!info->MMIOAddr) {
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No valid MMIO address\n");
-	return FALSE;
-    }
-    xf86DrvMsg(pScrn->scrnIndex, from,
-	       "MMIO registers at 0x%08lx\n", info->MMIOAddr);
-
 				/* BIOS */
     from              = X_PROBED;
     info->BIOSAddr    = info->PciInfo->biosBase & 0xfffe0000;
@@ -2059,10 +1998,7 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
 		   "BIOS at 0x%08lx\n", info->BIOSAddr);
     }
 
-    RADEONMapMMIO(pScrn);
-    RADEONMMIO               = info->MMIO;
-
-				/* Read registers used to determine options */
+ 				/* Read registers used to determine options */
     from                     = X_PROBED;
     if (info->FBDev)
 	pScrn->videoRam      = fbdevHWGetVidmem(pScrn) / 1024;
@@ -2121,8 +2057,6 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
 
     info->MemCntl            = INREG(RADEON_SDRAM_MODE_REG);
     info->BusCntl            = INREG(RADEON_BUS_CNTL);
-    RADEONMMIO               = NULL;
-    RADEONUnmapMMIO(pScrn);
 
 				/* RAM */
     switch (info->MemCntl >> 30) {
@@ -3704,7 +3638,7 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
     RADEONInfoPtr     info;
     xf86Int10InfoPtr  pInt10 = NULL;
     void *int10_save = NULL;
-    
+
     RADEONTRACE(("RADEONPreInit\n"));
     if (pScrn->numEntities != 1) return FALSE;
 
@@ -3716,6 +3650,7 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
     info->CurCloneMode = NULL;
     info->CloneModes   = NULL;
     info->IsSwitching  = FALSE;
+    info->MMIO         = NULL;
 
     info->pEnt         = xf86GetEntityInfo(pScrn->entityList[pScrn->numEntities - 1]);
     if (info->pEnt->location.type != BUS_PCI) goto fail;
@@ -3724,6 +3659,25 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
     info->PciTag  = pciTag(info->PciInfo->bus,
 			   info->PciInfo->device,
 			   info->PciInfo->func);
+    info->MMIOAddr   = info->PciInfo->memBase[2] & 0xffffff00;
+    if (info->pEnt->device->IOBase) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		   "MMIO address override, using 0x%08x instead of 0x%08x\n",
+		   info->pEnt->device->IOBase,
+		   info->MMIOAddr);
+	info->MMIOAddr = info->pEnt->device->IOBase;
+    } else if (!info->MMIOAddr) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No valid MMIO address\n");
+	goto fail1;
+    }
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	       "MMIO registers at 0x%08lx\n", info->MMIOAddr);
+
+    if(!RADEONMapMMIO(pScrn)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
+		   "Memory map the MMIO region failed\n");
+	goto fail1;
+    }
 
 #if !defined(__alpha__)
     if (xf86GetPciDomain(info->PciTag) ||
@@ -3748,7 +3702,7 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
 		xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 			   "Only one monitor detected, Second screen "
 			   "will NOT be created\n");
-		return FALSE;
+		goto fail2;
 	    }
 	    pRADEONEnt->pSecondaryScrn = pScrn;
 	} else {
@@ -3765,6 +3719,7 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
     if (flags & PROBE_DETECT) {
 	RADEONProbeDDC(pScrn, info->pEnt->index);
 	RADEONPostInt10Check(pScrn, int10_save);
+	if(info->MMIO) RADEONUnmapMMIO(pScrn);
 	return TRUE;
     }
 
@@ -3772,7 +3727,7 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
     xf86LoaderReqSymLists(vgahwSymbols, NULL);
     if (!vgaHWGetHWRec(pScrn)) {
 	RADEONFreeRec(pScrn);
-	return FALSE;
+	goto fail2;
     }
 
     vgaHWGetIOBase(VGAHWPTR(pScrn));
@@ -3874,6 +3829,9 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
     if (pInt10)
 	xf86FreeInt10(pInt10);
 
+    if(info->MMIO) RADEONUnmapMMIO(pScrn);    
+    info->MMIO = NULL;
+
     xf86DrvMsg(pScrn->scrnIndex, X_NOTICE,
 	       "For information on using the multimedia capabilities\n of this"
 	       " adapter, please see http://gatos.sf.net.\n");
@@ -3897,6 +3855,11 @@ fail:
 	xf86FreeInt10(pInt10);
 
     vgaHWFreeHWRec(pScrn);
+
+ fail2:
+    if(info->MMIO) RADEONUnmapMMIO(pScrn);    
+    info->MMIO = NULL;
+ fail1:
     RADEONFreeRec(pScrn);
 
     return FALSE;
@@ -6461,8 +6424,8 @@ static Bool RADEONCloseScreen(int scrnIndex, ScreenPtr pScreen)
 
     if (pScrn->vtSema) {
 	RADEONRestore(pScrn);
-	RADEONUnmapMem(pScrn);
     }
+    RADEONUnmapMem(pScrn);
 
     if (info->accel) XAADestroyInfoRec(info->accel);
     info->accel = NULL;

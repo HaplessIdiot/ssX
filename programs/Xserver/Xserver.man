@@ -22,7 +22,7 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
-.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.25tsi Exp $
+.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.26 2003/07/09 15:27:30 tsi Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XSERVER 1 __xorgversion__
@@ -168,6 +168,8 @@ causes all remaining command line arguments to be ignored.
 disables a transport type.  For example, TCP/IP connections can be disabled
 with
 .BR "\-nolisten tcp" .
+This option may be issued multiple times to disable listening to different
+transport types.
 .TP 8
 .B \-noreset
 prevents a server reset when the last client connection is closed.  This
