@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:21:20 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.5 1994/06/15 15:42:28 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.6 1994/06/28 12:29:04 dawes Exp $
 #include <Server.tmpl>
 
 #ifdef i386MachArchitecture
@@ -16,6 +16,15 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.5 1994/06/15
 # endif
 #endif
 
+#if UseOldXconfigFormat
+  XCONFIGSRC = xf86oConfig
+  XCONFIGFILE = Xconfig
+  XCONFIGDEFINES = -DOLD_XCONFIG
+#else
+  XCONFIGSRC = xf86Config
+  XCONFIGFILE = XF86Config
+#endif
+
 SERVERSRCS = \
 	XF86_SVGA.c \
 	XF86_VGA16.c \
@@ -28,7 +37,7 @@ SERVERSRCS = \
 	XF86_AGX.c
 
 SRCS =	\
-	xf86Config.c \
+	$(XCONFIGSRC).c \
 	xf86Cursor.c \
 	xf86Events.c \
 	xf86Init.c \
@@ -40,7 +49,7 @@ SRCS =	\
 	$(SERVERSRCS)
 
 OBJS = \
-	xf86Config.o \
+	$(XCONFIGSRC).o \
 	xf86Cursor.o \
 	xf86Events.o \
 	xf86Io.o \
@@ -54,6 +63,8 @@ OBJS = \
      OSNAME = OSName
    OSVENDOR = OSVendor
   OSNAMEDEF = -DOSNAME='"$(OSNAME)"' -DOSVENDOR='"$(OSVENDOR)"'
+
+    DEFINES = $(XCONFIGDEFINES)
 
 #if XF86MonoServer
 VGA2BUILD = -DBUILD_VGA2
@@ -72,7 +83,7 @@ XF86SCREENFLAGS = $(VGA2BUILD) $(VGA16BUILD) $(VGA2MONOBUILD) $(VGA16MONOBUILD)
 
 all:: xf86Init.o xf86Init_m.o xf86_Option.o
 
-SpecialObjectRule(xf86Config.o,xf86Config.c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/Xconfig"')
+SpecialObjectRule(xf86Config.o,xf86Config.c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"')
 SpecialObjectRule(xf86Init.o,xf86Init.c $(ICONFIGFILES),$(OSNAMEDEF) $(EXT_DEFINES))
 SpecialCObjectRule(xf86Events,$(ICONFIGFILES),$(EXT_DEFINES))
 #if XF86SVGAServer

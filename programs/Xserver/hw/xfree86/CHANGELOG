@@ -1,3 +1,6 @@
+XFree86 3.0Dg (3 September 1994)
+214. Change over to new config file format -- XF86Config (Gertjan Akkerman).
+
 XFree86 3.0Df (31 August 1994)
 213. Amoeba support updates (Kees Verstoep).
 212. Fixes for Viper PCI support (Matt Thomas).
