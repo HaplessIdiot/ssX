@@ -32,7 +32,7 @@ THIS SOFTWARE.
 	                          frankyling@hgrd01.enet.dec.com
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/imLcIm.c,v 1.5 2000/06/14 18:20:33 dawes Exp $ */
 
 #include <stdio.h>
 /*
@@ -263,8 +263,9 @@ _XimLocalOpenIM(im)
 	goto Open_Error;
     private->cstowc_conv = conv;
 
-    private->locale_code = * _XimGetLocaleCode(XLC_PUBLIC(lcd,encoding_name),
-                            (XlcCharSet*) &(private->keyboard_charset));
+    if (!(conv = _XlcOpenConverter(lcd,	XlcNUcsChar, lcd, XlcNChar)))
+	goto Open_Error;
+    private->ucs_conv = conv;
 
     im->methods = &Xim_im_local_methods;
     private->current_ic = (XIC)NULL;

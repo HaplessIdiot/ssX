@@ -23,7 +23,7 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  */
-/* $XFree86: xc/lib/font/fc/fsio.c,v 3.10 1999/12/27 00:39:27 robin Exp $ */
+/* $XFree86: xc/lib/font/fc/fsio.c,v 3.11 1999/12/27 01:14:10 robin Exp $ */
 /*
  * font server i/o routines
  */
@@ -107,7 +107,8 @@ _fs_connect(char *servername, int *err)
 {
     XtransConnInfo  trans_conn;		/* transport connection object */
     int		    ret;
-    int		    i;
+    int		    i = 0;
+    int		    retries = 5;
 
     /*
      * Open the network connection.
@@ -123,10 +124,12 @@ _fs_connect(char *servername, int *err)
      */
 
     _FontTransSetOption(trans_conn, TRANS_NONBLOCKING, 1);
-    
-    do
+
+    do {
+	if (i == TRANS_TRY_CONNECT_AGAIN)
+	    sleep(1);
 	i = _FontTransConnect(trans_conn,servername);
-    while (i == TRANS_TRY_CONNECT_AGAIN);
+    } while ((i == TRANS_TRY_CONNECT_AGAIN) && (retries-- > 0));
 
     if (i < 0)
     {

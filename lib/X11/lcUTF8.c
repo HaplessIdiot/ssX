@@ -24,17 +24,18 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/lcUTF8.c,v 1.6 2000/10/27 18:30:49 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUTF8.c,v 1.7 2000/11/28 16:10:24 dawes Exp $ */
 
 /*
  * This file contains:
  *
  * I. Conversion routines CompoundText/CharSet <--> Unicode/UTF-8.
  *
- *    Used for two purposes:
+ *    Used for three purposes:
  *      1. The UTF-8 locales, see below.
  *      2. Unicode aware applications for which the use of 8-bit character
  *         sets is an anachronism.
+ *      3. For conversion from keysym to locale encoding.
  *
  * II. An UTF-8 locale loader.
  *     Supports: all locales with codeset UTF-8.
@@ -70,6 +71,7 @@ OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * without first going through the list of predefined character sets.
  */
 
+#include <stdio.h>
 #include "Xlibint.h"
 #include "XlcPubI.h"
 #include "XlcGeneric.h"
@@ -165,6 +167,7 @@ typedef struct _Utf8ConvRec {
  */
 
 #include "lcUniConv/utf8.h"
+#include "lcUniConv/ucs2be.h"
 #ifdef notused
 #include "lcUniConv/ascii.h"
 #endif
@@ -336,9 +339,17 @@ static Utf8ConvRec all_charsets[] = {
     { "ISO10646-1", NULLQUARK,
 	utf8_mbtowc, utf8_wctomb
     },
+
+    /* Encoding ISO10646-1 for fonts means UCS2-like encoding
+       so for conversion to FontCharSet we need this record */
+    { "ISO10646-1", NULLQUARK,
+	ucs2be_mbtowc, ucs2be_wctomb
+    }
 };
 
-#define all_charsets_count (sizeof(all_charsets)/sizeof(all_charsets[0]))
+#define charsets_table_size (sizeof(all_charsets)/sizeof(all_charsets[0]))
+#define all_charsets_count  (charsets_table_size - 1)
+#define ucs2_conv_index     (charsets_table_size - 1)
 
 static void
 init_all_charsets()
@@ -346,7 +357,7 @@ init_all_charsets()
     Utf8Conv convptr;
     int i;
 
-    for (convptr = all_charsets, i = all_charsets_count; i > 0; convptr++, i--)
+    for (convptr = all_charsets, i = charsets_table_size; i > 0; convptr++, i--)
 	convptr->xrm_name = XrmStringToQuark(convptr->name);
 }
 
@@ -902,6 +913,148 @@ open_strtoutf8(from_lcd, from_type, to_lcd, to_type)
     return create_conv(from_lcd, &methods_strtoutf8);
 }
 
+/* Support for the input methods. */
+XPointer
+_Utf8GetConvByName( name )
+    char *name;
+{
+    XrmQuark xrm_name;
+    Utf8Conv convptr;
+    int i;
+
+    if (name == NULL)
+        return (XPointer) NULL;
+
+    lazy_init_all_charsets();
+    xrm_name = XrmStringToQuark(name);
+
+    for (convptr = all_charsets, i = all_charsets_count-1; i > 0; convptr++, i--)
+	if (convptr->xrm_name == xrm_name)
+	    return (XPointer) convptr->wctocs;
+    return (XPointer) NULL;
+}
+
+/* from XlcNUcsChar to XlcNChar  needed for input methods */
+
+static XlcConv
+create_ucstocs_conv(lcd, methods)
+    XLCd lcd;
+    XlcConvMethods methods;
+{
+
+    if (XLC_PUBLIC_PART(lcd)->codeset &&
+	(!_XlcCompareISOLatin1(XLC_PUBLIC_PART(lcd)->codeset, "UTF-8"))) {
+
+        XlcConv conv;
+        Utf8Conv *preferred;
+        conv = (XlcConv) Xmalloc(sizeof(XlcConvRec));
+        if (conv == (XlcConv) NULL)
+	    return (XlcConv) NULL;
+    
+        preferred = (Utf8Conv *) Xmalloc(sizeof(Utf8Conv) * 2);
+        if (preferred == (Utf8Conv *) NULL) {
+	    Xfree((char *) conv);
+	    return (XlcConv) NULL;
+        }
+        preferred[0] = &all_charsets[0]; /* ISO10646 */
+        preferred[1] = (Utf8Conv) NULL;
+
+        conv->methods = methods;
+        conv->state = (XPointer) preferred;
+
+        return conv;
+    } else {
+        return create_tocs_conv(lcd, methods);
+    }
+}
+
+static int
+charset_wctocs_exactly(preferred, charsetp, sidep, conv, r, wc, n)
+    Utf8Conv *preferred;
+    Utf8Conv *charsetp;
+    XlcSide *sidep;
+    XlcConv conv;
+    unsigned char *r;
+    ucs4_t wc;
+    int n;
+{
+    int count;
+    Utf8Conv convptr;
+
+    for (; *preferred != (Utf8Conv) NULL; preferred++) {
+	convptr = *preferred;
+	count = convptr->wctocs(conv, r, wc, n);
+	if (count == RET_TOOSMALL)
+	    return RET_TOOSMALL;
+	if (count != RET_ILSEQ) {
+	    *charsetp = convptr;
+	    *sidep = (*r < 0x80 ? XlcGL : XlcGR);
+	    return count;
+	}
+    }
+    return RET_ILSEQ;
+}
+
+static int
+ucstocs1(conv, from, from_left, to, to_left, args, num_args)
+    XlcConv conv;
+    XPointer *from;
+    int *from_left;
+    XPointer *to;
+    int *to_left;
+    XPointer *args;
+    int num_args;
+{
+    ucs4_t const *src = (ucs4_t const *) *from;
+    unsigned char *dst = (unsigned char *) *to;
+    int unconv_num = 0;
+    Utf8Conv *preferred_charsets = (Utf8Conv *) conv->state;
+    Utf8Conv chosen_charset = NULL;
+    XlcSide chosen_side = XlcNONE;
+    XlcCharSet charset = NULL;
+    int count;
+
+    if (from == NULL || *from == NULL)
+	return 0;
+
+    count = charset_wctocs_exactly(preferred_charsets, &chosen_charset,
+                                   &chosen_side, conv, dst, *src, *to_left);
+    if (count < 1) {
+        unconv_num++;
+        count = 0;
+    } else {
+        charset = _XlcGetCharSetWithSide(chosen_charset->name, chosen_side);
+    }
+    if (charset == NULL)
+	return -1;
+
+    *from = (XPointer) ++src;
+    (*from_left)--;
+    *to = (XPointer) dst;
+    *to_left -= count;
+
+    if (num_args >= 1)
+	*((XlcCharSet *)args[0]) = charset;
+
+    return unconv_num;
+}
+
+static XlcConvMethodsRec methods_ucstocs1 = {
+    close_tocs_converter,
+    ucstocs1,
+    NULL
+};
+
+static XlcConv
+open_ucstocs1(from_lcd, from_type, to_lcd, to_type)
+    XLCd from_lcd;
+    char *from_type;
+    XLCd to_lcd;
+    char *to_type;
+{
+    return create_ucstocs_conv(from_lcd, &methods_ucstocs1);
+}
+
 /* Registers UTF-8 converters for a non-UTF-8 locale. */
 void
 _XlcAddUtf8Converters(lcd)
@@ -912,6 +1065,7 @@ _XlcAddUtf8Converters(lcd)
     _XlcSetConverter(lcd, XlcNUtf8String, lcd, XlcNChar, open_utf8tocs1);
     _XlcSetConverter(lcd, XlcNString, lcd, XlcNUtf8String, open_strtoutf8);
     _XlcSetConverter(lcd, XlcNUtf8String, lcd, XlcNString, open_utf8tostr);
+    _XlcSetConverter(lcd, XlcNUcsChar,    lcd, XlcNChar, open_ucstocs1);
 }
 
 /***************************************************************************/
@@ -1488,6 +1642,106 @@ open_identity(from_lcd, from_type, to_lcd, to_type)
     return create_conv(from_lcd, &methods_identity);
 }
 
+/* from MultiByte/WideChar to FontCharSet. */
+/* They really use converters to CharSet
+ * but with different create_conv procedure. */
+
+#define BUFFSIZE 20
+
+static XlcConv
+create_tofontcs_conv(lcd, methods)
+    XLCd lcd;
+    XlcConvMethods methods;
+{
+    XlcConv conv;
+    int i, num, k, count;
+    char **value, buf[BUFFSIZE];
+    Utf8Conv *preferred;
+
+    conv = (XlcConv) Xmalloc(sizeof(XlcConvRec));
+    if (conv == (XlcConv) NULL)
+	return (XlcConv) NULL;
+
+    lazy_init_all_charsets();
+
+    for (i = 0, num= 0;; i++) {
+        sprintf(buf, "fs%d.charset.name", i);
+        _XlcGetResource(lcd, "XLC_FONTSET", buf, &value, &count);
+        if( count < 1){
+            sprintf(buf, "fs%d.charset", i);
+            _XlcGetResource(lcd, "XLC_FONTSET", buf, &value, &count);
+            if (count < 1)
+                break;
+        }
+        num += count;
+    }
+    preferred = (Utf8Conv *) Xmalloc((num + 1) * sizeof(Utf8Conv));
+    if (preferred == (Utf8Conv *) NULL) {
+	Xfree((char *) conv);
+	return (XlcConv) NULL;
+    }
+
+    /* Loop through all fontsets mentioned in the locale. */
+    for (i = 0, num = 0;; i++) {
+        sprintf(buf, "fs%d.charset.name", i);
+        _XlcGetResource(lcd, "XLC_FONTSET", buf, &value, &count);
+        if( count < 1){
+            sprintf(buf, "fs%d.charset", i);
+            _XlcGetResource(lcd, "XLC_FONTSET", buf, &value, &count);
+            if (count < 1)
+                break;
+        }
+	while (count-- > 0){
+	    XlcCharSet charset = _XlcGetCharSet(*value++);
+	    char *name = charset->encoding_name;
+	    /* If it wasn't already encountered... */
+	    for (k = num - 1; k >= 0; k--)
+		if (!strcmp(preferred[k]->name, name))
+		    break;
+	    if (k < 0) {
+                /* For fonts "ISO10646-1" means not utf8 but ucs2.*/
+                if (!strcmp("ISO10646-1", name)) {
+                    preferred[num++] = &all_charsets[ucs2_conv_index];
+                    continue;
+                }
+		/* Look it up in all_charsets[]. */
+		for (k = 0; k < all_charsets_count-1; k++)
+		    if (!strcmp(all_charsets[k].name, name)) {
+			/* Add it to the preferred set. */
+			preferred[num++] = &all_charsets[k];
+			break;
+		    }
+	    }
+        }
+    }
+    preferred[num] = (Utf8Conv) NULL;
+
+    conv->methods = methods;
+    conv->state = (XPointer) preferred;
+
+    return conv;
+}
+
+static XlcConv
+open_wcstofcs(from_lcd, from_type, to_lcd, to_type)
+    XLCd from_lcd;
+    char *from_type;
+    XLCd to_lcd;
+    char *to_type;
+{
+    return create_tofontcs_conv(from_lcd, &methods_wcstocs);
+}
+
+static XlcConv
+open_utf8tofcs(from_lcd, from_type, to_lcd, to_type)
+    XLCd from_lcd;
+    char *from_type;
+    XLCd to_lcd;
+    char *to_type;
+{
+    return create_tofontcs_conv(from_lcd, &methods_utf8tocs);
+}
+
 XLCd
 _XlcUtf8Loader(name)
     _Xconst char *name;
@@ -1529,6 +1783,10 @@ _XlcUtf8Loader(name)
     _XlcSetConverter(lcd, XlcNMultiByte, lcd, XlcNString, open_utf8tostr);
     _XlcSetConverter(lcd, XlcNUtf8String, lcd, XlcNMultiByte, open_identity);
     _XlcSetConverter(lcd, XlcNMultiByte, lcd, XlcNUtf8String, open_identity);
+
+    /* Register converters for XlcNFontCharSet */
+    _XlcSetConverter(lcd, XlcNMultiByte, lcd, XlcNFontCharSet, open_utf8tofcs);
+    _XlcSetConverter(lcd, XlcNWideChar, lcd, XlcNFontCharSet, open_wcstofcs);
 
     _XlcAddUtf8Converters(lcd);
 

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.26 2000/06/13 02:28:28 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.27 2000/10/27 18:30:48 dawes Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -34,6 +34,7 @@ from The Open Group.
 #include "Xlibint.h"
 #include "Xlcint.h"
 #include "XlcPubI.h"
+#include "Ximint.h"
 #include <X11/Xutil.h>
 #include <X11/Xmd.h>
 #define XK_LATIN1
@@ -100,24 +101,6 @@ _XkbHandleSpecialSym(keysym, buffer, nbytes, extra_rtrn)
     return 1;
 }
 
-extern int
-_XimGetCharCode (
-#if NeedFunctionPrototypes
-    unsigned long /* locale_code */,
-    KeySym /* keysym */,
-    unsigned char* /* buf */,
-    int /* nbytes */
-#endif
-);
-
-extern unsigned long Const*
-_XimGetLocaleCode (
-#if NeedFunctionPrototypes
-    _Xconst char* /* encoding_name */,
-    XlcCharSet* /* pass NULL here */
-#endif
-);
-
 /*ARGSUSED*/
 static int 
 #if NeedFunctionPrototypes
@@ -135,13 +118,10 @@ _XkbKSToKnownSet (priv, keysym, buffer, nbytes, extra_rtrn)
     int *extra_rtrn;
 #endif
 {
-    unsigned long keysymSet;
     char tbuf[8],*buf;
 
     if (extra_rtrn)
 	*extra_rtrn= 0;
-
-    keysymSet = *((unsigned long Const *)priv);
 
     /* convert "dead" diacriticals for dumb applications */
     if ( (keysym&0xffffff00)== 0xfe00 ) {
@@ -173,7 +153,7 @@ _XkbKSToKnownSet (priv, keysym, buffer, nbytes, extra_rtrn)
     if ((keysym&0xffffff00)==0xff00) {
 	return _XkbHandleSpecialSym(keysym, buf, nbytes, extra_rtrn);
     }
-    return _XimGetCharCode (keysymSet, keysym, (unsigned char *)buf, nbytes);
+    return _XimGetCharCode (priv, keysym, (unsigned char *)buf, nbytes);
 }
 
 typedef struct _XkbToKS {
@@ -263,7 +243,7 @@ _XkbGetConverters(encoding_name, cvt_rtrn)
     if ( !cvt_rtrn ) return 0;
 
     cvt_rtrn->KSToMB = _XkbKSToKnownSet;
-    cvt_rtrn->KSToMBPriv = (XPointer) _XimGetLocaleCode(encoding_name, NULL);
+    cvt_rtrn->KSToMBPriv = _XimGetLocaleCode(encoding_name);
     cvt_rtrn->MBToKS = _XkbKnownSetToKS;
     cvt_rtrn->MBToKSPriv = NULL;
     cvt_rtrn->KSToUpper = __XkbDefaultToUpper;

@@ -31,7 +31,7 @@
  * Modifier: Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/XlcPublic.h,v 1.4 2000/02/25 18:27:54 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlcPublic.h,v 1.5 2000/02/29 03:09:03 dawes Exp $ */
 /*
  * Most of this API is documented in i18n/Framework.PS
  */
@@ -155,7 +155,9 @@ typedef struct _XlcConvMethodsRec{
 #define XlcNUtf8String 		"utf8String"
 #define XlcNCharSet 		"charSet"
 #define XlcNCTCharSet 		"CTcharSet"
+#define XlcNFontCharSet		"FontCharSet"
 #define XlcNChar 		"char"
+#define XlcNUcsChar 		"UCSchar"
 
 typedef struct _XlcConvRec {
     XlcConvMethods 		methods;

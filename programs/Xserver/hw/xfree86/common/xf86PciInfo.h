@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.76 2000/11/02 22:15:46 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.77 2000/11/27 00:10:05 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -239,6 +239,7 @@
 #define PCI_CHIP_RADEON_QG	0x5147
 #define PCI_CHIP_RAGE128RE	0x5245
 #define PCI_CHIP_RAGE128RF	0x5246
+#define PCI_CHIP_RAGE128RG	0x5247
 #define PCI_CHIP_RAGE128RK	0x524B
 #define PCI_CHIP_RAGE128RL	0x524C
 #define PCI_CHIP_MACH64VT	0x5654

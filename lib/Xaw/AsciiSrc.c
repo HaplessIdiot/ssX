@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.23 1999/09/27 06:29:10 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.24 2000/06/13 23:15:48 dawes Exp $ */
 
 /*
  * AsciiSrc.c - AsciiSrc object. (For use with the text widget).
@@ -43,12 +43,16 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xmu/Misc.h>
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/AsciiSrcP.h>
-#include <X11/Xaw/MultiSrcP.h> 
+#include <X11/Xaw/MultiSrcP.h>
 #ifndef OLDXAW
 #include <X11/Xaw/TextSinkP.h>
 #include <X11/Xaw/AsciiSinkP.h>
 #endif
 #include "Private.h"
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #if (defined(ASCII_STRING) || defined(ASCII_DISK))
 #include <X11/Xaw/AsciiText.h>		/* for Widget Classes */
@@ -1398,7 +1402,9 @@ StorePiecesInString(AsciiSrcObject src)
 static FILE *
 InitStringOrFile(AsciiSrcObject src, Bool newString)
 {
-    char *open_mode = NULL;
+    mode_t open_mode = 0;
+    const char *fdopen_mode = NULL;
+    int fd;
     FILE *file;
     char fileName[TMPSIZ];
 
@@ -1438,7 +1444,8 @@ InitStringOrFile(AsciiSrcObject src, Bool newString)
 		XtErrorMsg("NoFile", "asciiSourceCreate", "XawError",
 			   "Creating a read only disk widget and no file specified.",
 			   NULL, 0);
-	    open_mode = "r";
+	    open_mode = O_RDONLY;
+	    fdopen_mode = "r";
 	    break;
 	case XawtextAppend:
 	case XawtextEdit:
@@ -1446,10 +1453,17 @@ InitStringOrFile(AsciiSrcObject src, Bool newString)
 		src->ascii_src.string = fileName;
 		(void)tmpnam(src->ascii_src.string);
 		src->ascii_src.is_tempfile = True;
-		open_mode = "w";
+		open_mode = O_WRONLY | O_CREAT | O_EXCL;
+		fdopen_mode = "w";
 	    }
 	    else
-		open_mode = "r+";
+/* O_NOFOLLOW is a FreeBSD & Linux extension */
+#ifdef O_NOFOLLOW
+		open_mode = O_RDWR | O_NOFOLLOW;
+#else
+		open_mode = O_RDWR; /* unsafe; subject to race conditions */
+#endif /* O_NOFOLLOW */
+		fdopen_mode = "r+";
 	    break;
 	default:
 	    XtErrorMsg("badMode", "asciiSourceCreate", "XawError",
@@ -1469,12 +1483,14 @@ InitStringOrFile(AsciiSrcObject src, Bool newString)
     }
 
     if (!src->ascii_src.is_tempfile) {
-	if ((file = fopen(src->ascii_src.string, open_mode)) != 0) {
-	    (void)fseek(file, 0, 2);
-	    src->ascii_src.length = (XawTextPosition)ftell(file);
-	    return (file);
+	if ((fd = open(src->ascii_src.string, open_mode, 0666))) {
+	    if ((file = fdopen(fd, fdopen_mode))) {
+		(void)fseek(file, 0, SEEK_END);
+		src->ascii_src.length = (XawTextPosition)ftell(file);
+		return (file);
+	    }
 	}
-	else {
+	{
 	    String params[2];
 	    Cardinal num_params = 2;
 
@@ -1483,10 +1499,10 @@ InitStringOrFile(AsciiSrcObject src, Bool newString)
 	    XtAppWarningMsg(XtWidgetToApplicationContext((Widget)src),
 			    "openError", "asciiSourceCreate", "XawWarning",
 			    "Cannot open file %s; %s", params, &num_params);
-	  }
-      }
-      src->ascii_src.length = 0;
-      return (NULL);
+	}
+    }
+    src->ascii_src.length = 0;
+    return (NULL);
 }
 
 static void
