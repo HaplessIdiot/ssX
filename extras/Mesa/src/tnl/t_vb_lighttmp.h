@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/tnl/t_vb_lighttmp.h,v 1.4 2003/10/22 15:27:45 tsi Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  4.1
@@ -143,7 +143,7 @@ static void TAG(light_rgba_spec)( GLcontext *ctx,
    VB->SecondaryColorPtr[0] = &store->LitSecondary[0];
    UNCLAMPED_FLOAT_TO_CHAN(sumA[0], ctx->Light.Material[0].Diffuse[3]);
 
-#if IDX & LIGHT_TWOSIDED
+#if IDX & LIGHT_TWOSIDE
    VB->ColorPtr[1] = &store->LitColor[1];
    VB->SecondaryColorPtr[1] = &store->LitSecondary[1];
    UNCLAMPED_FLOAT_TO_CHAN(sumA[1], ctx->Light.Material[1].Diffuse[3]);
