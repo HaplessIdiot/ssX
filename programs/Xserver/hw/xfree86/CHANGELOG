@@ -1,5 +1,7 @@
 XFree86 3.1.1Z (22 July 1995)
-     Code Freeze for 3.1.2.
+233. Code Freeze for 3.1.2.
+232. Fix an imake config problem on non-XFree86 platforms.
+231. xman update for Solaris 2.5 (William Austin).
 230. Cyrillic fonts with KOI8 encoding added (Cronyx Ltd, Serge Vakulenko,
      Andrey A. Chernov).
 229. Allow ndbm to be used for the rgb database on NetBSD for those
