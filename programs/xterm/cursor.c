@@ -1,5 +1,6 @@
 /*
  *	$XConsortium: cursor.c,v 1.14 93/09/20 17:42:23 hersh Exp $
+ *	$XFree86$
  */
 
 /*
