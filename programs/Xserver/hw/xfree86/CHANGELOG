@@ -1,3 +1,10 @@
+XFree86 3.1.2Zc (24 October 1996)
+1066. Xvfb shouldn't depend on cfb24 (Geert Uytterhoeven).
+1065. Update contrib to R6.1.
+1064. C&T doc updates (David Bateman).
+1063. Fix an image stipple problem in the S3V server (Harald Koenig).
+1062. Doc updates (Takaaki Nomura).
+
 XFree86 3.1.2Zb (23 October 1996)
 1061. Fix some NV1 problems, including clock selection problems and
       pixel corruption problems (David McKay).
