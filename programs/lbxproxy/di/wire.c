@@ -25,7 +25,11 @@
 #include <stdio.h>
 #include "wire.h"
 #include "init.h"
+#ifndef Lynx
 #include <sys/uio.h>
+#else
+#include <uio.h>
+#endif
 #include <errno.h>
 #include "proxyopts.h"
 #include "swap.h"

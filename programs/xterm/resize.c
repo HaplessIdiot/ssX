@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: resize.c,v 1.34 95/05/24 22:12:04 gildea Exp $
- *	$XFree86: xc/programs/xterm/resize.c,v 3.16 1996/10/03 08:50:36 dawes Exp $
+ *	$XFree86: xc/programs/xterm/resize.c,v 3.17 1996/10/16 14:45:16 dawes Exp $
  */
 
 /*
@@ -99,7 +99,11 @@
 
 #include <sys/ioctl.h>
 #ifdef USE_SYSV_TERMIO
-# include <sys/termio.h>
+# ifndef Lynx
+#  include <sys/termio.h>
+# else
+#  include <termio.h>
+# endif
 #else /* else not USE_SYSV_TERMIO */
 # ifdef USE_TERMIOS
 #  include <termios.h>

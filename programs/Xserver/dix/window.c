@@ -1,5 +1,5 @@
 /* $XConsortium: window.c /main/210 1996/10/28 07:24:59 kaleb $ */
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.4 1996/12/23 06:29:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.5 1996/12/24 02:23:47 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -1286,7 +1286,8 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		 */
 		win_owner = LookupClient (pWin->drawable.id, client);
 
-		if (win_owner->appgroup && !pWin->parent->parent &&
+		if ( win_owner && win_owner->appgroup &&
+		    !pWin->parent->parent &&
 		    (ag_colormap = XagDefaultColormap (win_owner)))
 		    cmap = ag_colormap;
 		else

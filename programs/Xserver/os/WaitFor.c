@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: WaitFor.c /main/55 1996/12/02 10:22:24 lehors $ */
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.8 1996/12/23 07:09:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.9 1997/01/12 10:49:04 dawes Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -176,7 +176,7 @@ WaitForSomething(pClientsReady)
 	    XFD_COPYSET (&ClientsWithInput, &clientsReadable);
 	    break;
 	}
-	if (ScreenSaverTime || timers)
+	if (ScreenSaverTime > 0 || DPMSEnabled || timers)
 	    now = GetTimeInMillis();
 	wt = NULL;
 	if (timers)
@@ -193,24 +193,25 @@ WaitForSomething(pClientsReady)
 	    }
 	}
 #ifdef DPMSExtension
-	if ((ScreenSaverTime)||
-	    ((DPMSStandbyTime)||(DPMSSuspendTime)||(DPMSOffTime)) && DPMSEnabled)
+	if (ScreenSaverTime > 0 ||
+	    (DPMSEnabled &&
+	     (DPMSStandbyTime > 0 || DPMSSuspendTime > 0 || DPMSOffTime > 0)))
 #else
-	if (ScreenSaverTime)
+	if (ScreenSaverTime > 0)
 #endif
 	{
 #ifdef DPMSExtension
 
-	    if (ScreenSaverTime)
+	    if (ScreenSaverTime > 0)
 		timeout = (ScreenSaverTime -
 			   (now - lastDeviceEventTime.milliseconds));
-	    if (DPMSStandbyTime)
+	    if (DPMSStandbyTime > 0)
 		standbyTimeout = (DPMSStandbyTime -
 				  (now - lastDeviceEventTime.milliseconds));
-	    if (DPMSSuspendTime)
+	    if (DPMSSuspendTime > 0)
 		suspendTimeout = (DPMSSuspendTime -
 				  (now - lastDeviceEventTime.milliseconds));
-	    if (DPMSOffTime)
+	    if (DPMSOffTime > 0)
 		offTimeout = (DPMSOffTime -
 			      (now - lastDeviceEventTime.milliseconds));
 #else
@@ -218,7 +219,7 @@ WaitForSomething(pClientsReady)
 		       (now - lastDeviceEventTime.milliseconds));
 #endif /* DPMSExtension */
 #ifdef DPMSExtension
-	    if ((timeout <= 0)&&(ScreenSaverTime))
+	    if (timeout <= 0 && ScreenSaverTime > 0)
 #else
 	    if (timeout <= 0) /* may be forced by AutoResetServer() */
 #endif /* DPMSExtension */
@@ -226,13 +227,13 @@ WaitForSomething(pClientsReady)
 		INT32 timeSinceSave;
 
 		timeSinceSave = -timeout;
-		if ((timeSinceSave >= timeTilFrob) && (timeTilFrob >= 0))
+		if (timeSinceSave >= timeTilFrob && timeTilFrob >= 0)
 		{
 		    ResetOsBuffers(); /* not ideal, but better than nothing */
 		    SaveScreens(SCREEN_SAVER_ON, ScreenSaverActive);
 #ifdef DPMSExtension
-		    if ((ScreenSaverInterval) &&
-			(DPMSPowerLevel == DPMSModeOn))
+		    if (ScreenSaverInterval > 0 &&
+			DPMSPowerLevel == DPMSModeOn)
 #else
 		    if (ScreenSaverInterval)
 #endif /* DPMSExtension */
@@ -247,8 +248,19 @@ WaitForSomething(pClientsReady)
 	    }
 	    else
 	    {
-		if (timeout > ScreenSaverTime)
+		if (ScreenSaverTime > 0 && timeout > ScreenSaverTime)
 		    timeout = ScreenSaverTime;
+#ifdef DPMSExtension
+		if (DPMSEnabled)
+		{
+		    if (standbyTimeout > 0 && timeout > standbyTimeout)
+			timeout = standbyTimeout;
+		    if (suspendTimeout > 0 && timeout > suspendTimeout)
+			timeout = suspendTimeout;
+		    if (offTimeout > 0 && timeout > offTimeout)
+			timeout = offTimeout;
+		}
+#endif
 		timeTilFrob = 0;
 	    }
 	    if (timeTilFrob >= 0 && (!wt || timeout < (timers->expires - now)))
@@ -260,13 +272,13 @@ WaitForSomething(pClientsReady)
 	    }
 #ifdef DPMSExtension
 	    /* don't bother unless it's switched on */
-	    if (DPMSEnabled == TRUE)
+	    if (DPMSEnabled)
 	    {
 		/*
 		 * If this mode's enabled, and if the time's come
 		 * and if we're still at a lesser mode, do it now.
 		 */
-		if (DPMSStandbyTime) {
+		if (DPMSStandbyTime > 0) {
 		    if (standbyTimeout <= 0) {
 			if (DPMSPowerLevel < DPMSModeStandby) {
 			    DPMSSet(DPMSModeStandby);
@@ -277,36 +289,20 @@ WaitForSomething(pClientsReady)
 		 * and ditto.  Note that since these modes can have the
 		 * same timeouts, they can happen at the same time.
 		 */
-		if (DPMSSuspendTime) {
+		if (DPMSSuspendTime > 0) {
 		    if (suspendTimeout <= 0) {
 			if (DPMSPowerLevel < DPMSModeSuspend) {
 			    DPMSSet(DPMSModeSuspend);
 			}
 		    }
 		}
-		if (DPMSOffTime) {
+		if (DPMSOffTime > 0) {
 		    if (offTimeout <= 0) {
 			if (DPMSPowerLevel < DPMSModeOff) {
 			    DPMSSet(DPMSModeOff);
 			}
 		    }
 		}
-		/*
-		 * Now decide on the next timer comparing against the screen
-		 * saver timer, select the next low timeout value that's more
-		 * than zero.  Zero or less means that we just enabled that
-		 * mode, or that the mode's disabled.  If we fall through,
-		 * it's ok, it means that screen saver is next.
-		 */
-		if (suspendTimeout > 0)
-		    timeout = (suspendTimeout < timeout) ?
-			      suspendTimeout : timeout;
-		if (standbyTimeout > 0)
-		    timeout = (standbyTimeout < timeout) ?
-			      standbyTimeout : timeout;
-		if (offTimeout > 0)
-		    timeout = (offTimeout < timeout) ?
-			      offTimeout : timeout;
            }
 #endif
 	}

@@ -62,7 +62,7 @@ SOFTWARE.
 #undef _POSIX_SOURCE
 #endif
 #endif
-#ifndef SYSV
+#if !defined(SYSV) && !defined(Lynx)
 #include <sys/resource.h>
 #endif
 

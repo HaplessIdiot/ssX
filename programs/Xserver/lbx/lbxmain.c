@@ -21,7 +21,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/lbx/lbxmain.c,v 1.3 1996/12/31 07:08:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxmain.c,v 1.4 1997/01/02 04:42:58 dawes Exp $ */
  
 #include <sys/types.h>
 #define NEED_REPLIES
@@ -50,7 +50,11 @@
 #ifdef X_NOT_STDC_ENV
 extern int errno;
 #endif
+#ifndef Lynx
 #include <sys/uio.h>
+#else
+#include <uio.h>
+#endif
 #include <stdio.h>
 
 #ifndef X_NOT_POSIX

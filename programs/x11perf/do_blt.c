@@ -365,8 +365,13 @@ void DoPutImage(xp, p, reps)
 #ifdef MITSHM
 
 #include <sys/types.h>
+#ifndef Lynx
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#else
+#include <ipc.h>
+#include <shm.h>
+#endif
 #include <X11/extensions/XShm.h>
 
 static XImage		shm_image;

@@ -1,5 +1,5 @@
 /* $XConsortium: access.c /main/68 1996/12/15 22:57:09 rws $ */
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.16 1996/12/09 11:57:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.17 1996/12/23 07:09:55 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -65,7 +65,11 @@ SOFTWARE.
 #ifdef ESIX
 #include <lan/socket.h>
 #else
+#ifndef Lynx
 #include <sys/socket.h>
+#else
+#include <socket.h>
+#endif
 #endif
 #include <sys/ioctl.h>
 #else

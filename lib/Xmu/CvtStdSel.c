@@ -1,5 +1,5 @@
 /* $XConsortium: CvtStdSel.c /main/42 1996/12/04 10:26:05 lehors $ */
-/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.7 1996/12/09 11:50:00 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.8 1996/12/23 06:00:59 dawes Exp $ */
 
 /*
  
@@ -56,10 +56,12 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xwinsock.h>
 #define XOS_USE_MTSAFE_NETDBAPI
 #else
-#ifdef Lynx
-#include <sys/types.h>
-#endif
+#ifndef Lynx
 #include <sys/socket.h>
+#else
+#include <sys/types.h>
+#include <socket.h>
+#endif
 #define XOS_USE_XT_LOCKING
 #endif
 #define X_INCLUDE_NETDB_H

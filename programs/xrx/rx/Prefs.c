@@ -33,7 +33,11 @@ the X Consortium.
 #include <ctype.h>
 #include "RxI.h"		/* for Malloc & Free */
 #include <X11/StringDefs.h>
+#ifndef Lynx
 #include <sys/socket.h>
+#else
+#include <socket.h>
+#endif
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>

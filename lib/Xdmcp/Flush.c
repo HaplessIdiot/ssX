@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Flush.c /main/11 1996/11/13 14:44:22 lehors $
- * $XFree86: xc/lib/Xdmcp/Flush.c,v 3.2 1994/06/28 12:23:10 dawes Exp $
+ * $XFree86: xc/lib/Xdmcp/Flush.c,v 3.3 1996/12/23 06:00:47 dawes Exp $
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -44,7 +44,11 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xwinsock.h>
 #else
 #ifndef MINIX
+#ifndef Lynx
 #include <sys/socket.h>
+#else
+#include <socket.h>
+#endif /* !Lynx */
 #endif /* !MINIX */
 #endif
 #endif

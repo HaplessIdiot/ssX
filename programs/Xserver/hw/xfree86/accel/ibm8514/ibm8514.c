@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.27 1996/11/24 09:53:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.28 1996/12/23 06:37:52 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -73,6 +73,7 @@ ScrnInfoRec ibm8514InfoRec = {
     (void (*)())NoopDDA,/* void (* EnterLeaveCursor)() */
     (void (*)())NoopDDA,/* void (* AdjustFrame)() */
     (Bool (*)())NoopDDA,/* Bool (* SwitchMode)() */
+    (void (*)())NoopDDA,/* void (* DPMSSet)() */
     ibm8514PrintIdent,  /* void (* PrintIdent)() */
     8,			/* int depth */
     {0, 0, 0},          /* xrgb weight */
@@ -113,10 +114,10 @@ ScrnInfoRec ibm8514InfoRec = {
     0,			/* int s3Madjust */
     0,			/* int s3Nadjust */
     0,			/* int s3MClk */
+    0,			/* int chipID */
+    0,			/* int chipRev */
     0,			/* unsigned long VGAbase */
     0,			/* int s3RefClk */
-    0,			/* int suspendTime */
-    0,			/* int offTime */
     -1,			/* int s3BlankDelay */
     0,			/* int textClockFreq */
     NULL,               /* char* DCConfig */

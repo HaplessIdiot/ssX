@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.32 1996/11/24 09:53:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.33 1996/12/23 06:39:41 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -81,6 +81,7 @@ ScrnInfoRec mach8InfoRec = {
     (void (*)())NoopDDA,/* void (* EnterLeaveCursor)() */
     mach8Adjust,	/* void (* AdjustFrame)() */
     mach8SwitchMode,	/* Bool (* SwitchMode)() */
+    (void (*)())NoopDDA,/* void (* DPMSSet)() */
     mach8PrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
     {0, 0, 0},          /* xrgb weight */
@@ -121,10 +122,10 @@ ScrnInfoRec mach8InfoRec = {
     0,			/* int s3Madjust */
     0,			/* int s3Nadjust */
     0,			/* int s3MClk */
+    0,			/* int chipID */
+    0,			/* int chipRev */
     0,			/* unsigned long VGAbase */
     0,			/* int s3RefClk */
-    0,			/* int suspendTime */
-    0,			/* int offTime */
     -1,			/* int s3BlankDelay */
     0,			/* int textClockFreq */
     NULL,               /* char* DCConfig */

@@ -41,6 +41,10 @@ in this Software without prior written authorization from the X Consortium.
 #define RConst Const
 #endif
 
+#if defined(Lynx) && defined(ROUNDUP)
+#undef ROUNDUP
+#endif
+
 /* assumes pad is a power of 2 */
 #define ROUNDUP(nbytes, pad) (((nbytes) + ((pad) - 1)) & ~(long)((pad) - 1))
 

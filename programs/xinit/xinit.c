@@ -1,5 +1,5 @@
 /* $XConsortium: xinit.c /main/58 1996/02/22 10:37:38 kaleb $ */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.15 1996/10/17 15:23:48 dawes Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.16 1996/12/23 07:11:24 dawes Exp $ */
 
 /*
 
@@ -158,7 +158,7 @@ char *displayNum;
 char *program;
 Display *xd;			/* server connection */
 #ifndef SYSV
-#if defined(SVR4) || defined(_POSIX_SOURCE) || defined(CSRG_BASED) || defined(__EMX__)
+#if defined(SVR4) || defined(_POSIX_SOURCE) || defined(CSRG_BASED) || defined(__EMX__) || defined(Lynx)
 int status;
 #else
 union wait	status;
@@ -468,7 +468,7 @@ processTimeout(timeout, string)
 			break;
 		alarm(0);
 #else /* SYSV */
-#if defined(SVR4) || defined(_POSIX_SOURCE)
+#if defined(SVR4) || defined(_POSIX_SOURCE) || defined(Lynx)
 		if ((pidfound = waitpid(serverpid, &status, WNOHANG)) == serverpid)
 			break;
 #else

@@ -1,5 +1,5 @@
 /* $XConsortium: waitfor.c /main/15 1996/08/30 14:22:34 kaleb $ */
-/* $XFree86: xc/programs/xfs/os/waitfor.c,v 3.3 1996/06/10 09:18:04 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/waitfor.c,v 3.4 1996/12/23 07:11:21 dawes Exp $ */
 /*
  * waits for input
  */
@@ -57,7 +57,7 @@ in this Software without prior written authorization from the X Consortium.
 
 #include	<stdio.h>
 #include	<errno.h>
-#ifndef MINIX
+#if !defined(MINIX) && !defined(Lynx)
 #include	<sys/param.h>
 #endif
 

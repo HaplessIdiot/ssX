@@ -1,5 +1,5 @@
 /* $XConsortium: xhost.c,v 11.63 95/04/03 20:56:49 mor Exp $ */
-/* $XFree86: xc/programs/xhost/xhost.c,v 3.4 1996/08/25 14:14:29 dawes Exp $ */
+/* $XFree86: xc/programs/xhost/xhost.c,v 3.5 1996/11/18 13:25:15 dawes Exp $ */
 /*
 
 Copyright (c) 1985, 1986, 1987  X Consortium
@@ -68,7 +68,11 @@ typedef long sign32;
 #include <interlan/in.h>
 #else
 #ifndef AMOEBA
+#ifndef Lynx
 #include <sys/socket.h>
+#else
+#include <socket.h>
+#endif
 #include <netdb.h>
 #include <netinet/in.h>
 #else
