@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.17 2000/06/21 21:35:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.18 2000/06/23 19:29:40 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -32,7 +32,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
 
-#if XFree86LOADER
+#ifdef XFree86LOADER
 #include "xf86.h"
 #include "xf86_ansic.h"
 #else
@@ -1403,7 +1403,7 @@ DRICopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
 static void
 DRIGetSecs(long *secs, long *usecs)
 {
-#if XFree86LOADER
+#ifdef XFree86LOADER
     getsecs(secs,usecs);
 #else
     struct timeval tv;

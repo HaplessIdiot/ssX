@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_accel.c,v 1.10 2000/06/14 00:16:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_accel.c,v 1.11 2000/06/17 00:03:22 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -198,7 +198,7 @@ void R128WaitForFifoFunction(ScrnInfoPtr pScrn, int entries)
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		   "FIFO timed out, resetting engine...\n");
 	R128EngineReset(pScrn);
-#if XF86DRI
+#ifdef XF86DRI
 	if (info->CCE2D) R128CCEStart(pScrn);
 #endif
     }
@@ -229,7 +229,7 @@ void R128WaitForIdle(ScrnInfoPtr pScrn)
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		   "Idle timed out, resetting engine...\n");
 	R128EngineReset(pScrn);
-#if XF86DRI
+#ifdef XF86DRI
 	if (info->CCE2D) R128CCEStart(pScrn);
 #endif
     }

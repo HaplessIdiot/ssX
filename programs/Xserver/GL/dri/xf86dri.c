@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/xf86dri.c,v 1.6 2000/02/23 04:46:52 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/xf86dri.c,v 1.7 2000/06/17 00:03:12 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -33,7 +33,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
 
-#if XFree86LOADER
+#ifdef XFree86LOADER
 #include "xf86.h"
 #include "xf86_ansic.h"
 #endif
