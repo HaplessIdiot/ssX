@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86wrapper.c,v 3.3 1997/03/28 09:43:02 hohndel Exp $ */
 
 
 #include "gcstruct.h"
@@ -54,30 +54,17 @@ xf86FillPolygonWrapper(pDrawable, pGC, shape, mode, count, ptsIn)
 {
      cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
      
-     SYNC_CHECK;     
-
-     if (devPriv->oneRect && pGC->fillStyle == FillSolid) {
-	if (devPriv->rop == GXcopy)
-            cfbFillPoly1RectCopy(pDrawable, pGC, shape, mode, count, ptsIn);
-	else
-	    cfbFillPoly1RectGeneral(pDrawable, pGC, shape, mode, count, ptsIn);
-     } else
-	miFillPolygon(pDrawable, pGC, shape, mode, count, ptsIn);
-
+     SYNC_CHECK;
+     /* It's possible that these don't even need a SYNC_CHECK.
+	I haven't checked.  If they don't, they don't need a wrapper
+	either */   
+  
+     if(devPriv->rop == GXcopy)
+	cfbFillPoly1RectCopy(pDrawable, pGC, shape, mode, count, ptsIn);
+     else
+	cfbFillPoly1RectGeneral(pDrawable, pGC, shape, mode, count, ptsIn);
 }
 
-
-void static
-xf86PolyRectangleWrapper(pDrawable, pGC, nRectsInit, pRectsInit)
-    DrawablePtr  pDrawable;	
-    GCPtr        pGC;    	
-    int	         nRectsInit; 	
-    xRectangle  *pRectsInit;
-{
-     SYNC_CHECK;     
-
-     miPolyRectangle(pDrawable, pGC, nRectsInit, pRectsInit);
-}
 
 void static
 xf86PolyArcWrapper(pDraw, pGC, narcs, parcs)
@@ -86,12 +73,22 @@ xf86PolyArcWrapper(pDraw, pGC, narcs, parcs)
     int		narcs;
     xArc	*parcs;
 {
-    SYNC_CHECK;     
-   
-    if (pGC->lineWidth == 0) 
-    	miZeroPolyArc(pDraw, pGC, narcs, parcs);
-    else
-    	miPolyArc(pDraw, pGC, narcs, parcs);
+    /* Only used when PIXEL_ADDR is defined */
+    cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
+
+    SYNC_CHECK;   
+
+    switch (devPriv->rop) {
+	case GXxor:
+	    cfbZeroPolyArcSS8Xor(pDraw, pGC, narcs, parcs);
+	    break;
+	case GXcopy:
+	    cfbZeroPolyArcSS8Copy(pDraw, pGC, narcs, parcs);
+	    break;
+	default:
+	    cfbZeroPolyArcSS8General(pDraw, pGC, narcs, parcs);
+	    break;
+    }
 }
 
 void static
@@ -104,21 +101,14 @@ xf86PolyLinesWrapper(pDrawable, pGC, mode, npt, pptInit)
 {
     SYNC_CHECK;     
 
-     if (pGC->lineStyle == LineSolid) {
-	    if(pGC->lineWidth == 0) {
-		if (pGC->fillStyle == FillSolid)
-		   cfbLineSS(pDrawable, pGC, mode, npt, pptInit);
- 		else
-		   miZeroLine(pDrawable, pGC, mode, npt, pptInit);
-	    }
-	    else
-		miWideLine(pDrawable, pGC, mode, npt, pptInit);
-     } else {
-	    if ((pGC->lineWidth == 0) && (pGC->fillStyle == FillSolid))
-		cfbLineSD(pDrawable, pGC, mode, npt, pptInit);
-	    else
-		miWideDash(pDrawable, pGC, mode, npt, pptInit);
-     }
+     if (pGC->lineStyle == LineSolid) { 
+#ifdef NO_ONE_RECT
+	cfb8LineSS1Rect(pDrawable, pGC, mode, npt, pptInit);
+#else
+	cfbLineSS(pDrawable, pGC, mode, npt, pptInit);
+#endif
+     } else 
+	cfbLineSD(pDrawable, pGC, mode, npt, pptInit);
 }
 
 
@@ -131,13 +121,14 @@ xf86PolySegmentWrapper(pDrawable, pGC, nseg, pSeg)
 {
     SYNC_CHECK;     
 
-     if((pGC->lineWidth == 0) && (pGC->fillStyle == FillSolid)) {
-     	if (pGC->lineStyle == LineSolid) 
-		cfbSegmentSS(pDrawable, pGC, nseg, pSeg);
-	else
-		cfbSegmentSD(pDrawable, pGC, nseg, pSeg);
-     } else 
-       	miPolySegment(pDrawable, pGC, nseg, pSeg);
+    if (pGC->lineStyle == LineSolid) {
+#ifdef NO_ONE_RECT
+	cfbSegmentSS1Rect(pDrawable, pGC, nseg, pSeg);
+#else
+	cfbSegmentSS(pDrawable, pGC, nseg, pSeg);
+#endif
+    } else
+	cfbSegmentSD(pDrawable, pGC, nseg, pSeg);
 
 }
 
@@ -150,9 +141,13 @@ xf86ImageGlyphBltWrapper(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     CharInfoPtr *ppci;		
     unsigned char *pglyphBase;	
 {
-    SYNC_CHECK;     
+    SYNC_CHECK;
 
-     miImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
+#if PSZ == 8
+    cfbTEGlyphBlt8(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
+#else
+    cfbTEGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
+#endif
 }
 
 void static
@@ -163,10 +158,10 @@ xf86PolyGlyphBltWrapper(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     unsigned int nglyph;
     CharInfoPtr *ppci;		
     unsigned char *pglyphBase;
-{
-    SYNC_CHECK;     
+{	    
+    SYNC_CHECK;
 
-     miPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
+    cfbPolyGlyphBlt8(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
 }
 
 void static
@@ -178,48 +173,56 @@ xf86FillSpansWrapper(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int *pwidthInit;		
     int fSorted;
 {
+    void (*FillSpansFunc) ();
     cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
-
-    SYNC_CHECK;     
 
     switch (pGC->fillStyle) {
     case FillSolid:
 	switch (devPriv->rop) {
 	case GXcopy:
-	    cfbSolidSpansCopy(pDrawable, pGC, nInit, pptInit, 
-						pwidthInit, fSorted);
+	    FillSpansFunc = cfbSolidSpansCopy;
 	    break;
 	case GXxor:
-	    cfbSolidSpansXor(pDrawable, pGC, nInit, pptInit, 
-						pwidthInit, fSorted);
+	    FillSpansFunc = cfbSolidSpansXor;
 	    break;
 	default:
-	    cfbSolidSpansGeneral(pDrawable, pGC, nInit, pptInit, 
-						pwidthInit, fSorted);
+	    FillSpansFunc = cfbSolidSpansGeneral;
 	    break;
 	}
 	break;
     case FillTiled:
 	if (devPriv->pRotatedPixmap) {
 	    if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK)
-		cfbTile32FSCopy(pDrawable, pGC, nInit, pptInit, 
-						pwidthInit, fSorted);
+		FillSpansFunc = cfbTile32FSCopy;
 	    else
-		cfbTile32FSGeneral(pDrawable, pGC, nInit, pptInit, 	
-						pwidthInit, fSorted);
+		FillSpansFunc = cfbTile32FSGeneral;
 	} else
-	    cfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, 
-						pwidthInit, fSorted);
+	    FillSpansFunc = cfbUnnaturalTileFS;
 	break;
     case FillStippled:
-	    cfbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, 
-						pwidthInit, fSorted);
+#ifdef FOUR_BIT_CODE
+	if (devPriv->pRotatedPixmap)
+	    FillSpansFunc = cfb8Stipple32FS;
+	else
+#endif
+	    FillSpansFunc = cfbUnnaturalStippleFS;
 	break;
     case FillOpaqueStippled:
-	    cfbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, 
-						pwidthInit, fSorted);
+#ifdef FOUR_BIT_CODE
+	if (devPriv->pRotatedPixmap)
+	    FillSpansFunc = cfb8OpaqueStipple32FS;
+	else
+#endif
+	    FillSpansFunc = cfbUnnaturalStippleFS;
 	break;
+    default:
+	FatalError("xf86ValidateGC: illegal fillStyle\n");
     }
+
+    SYNC_CHECK;
+  
+   (*FillSpansFunc)(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+   
 }
 
 
@@ -230,18 +233,13 @@ xf86PolyFillArcWrapper(pDraw, pGC, narcs, parcs)
     int		narcs;
     xArc	*parcs;
 {
-    SYNC_CHECK;     
+     cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
+     SYNC_CHECK;     
 
-     if (pGC->fillStyle == FillSolid) {
-    	cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
-
-	    if(devPriv->rop == GXcopy) 
-	        cfbPolyFillArcSolidCopy(pDraw, pGC, narcs, parcs);
-	    else
-	        cfbPolyFillArcSolidGeneral(pDraw, pGC, narcs, parcs);
-      } else 
-	 	miPolyFillArc(pDraw, pGC, narcs, parcs);
-	     
+     if(devPriv->rop == GXcopy) 
+	 cfbPolyFillArcSolidCopy(pDraw, pGC, narcs, parcs);
+     else
+	 cfbPolyFillArcSolidGeneral(pDraw, pGC, narcs, parcs);
 }
 
 void  static
@@ -251,13 +249,9 @@ xf86PolyFillRectWrapper(pDrawable, pGC, nrectFill, prectInit)
     int		nrectFill; 
     xRectangle	*prectInit;  
 {
-    SYNC_CHECK;     
+     SYNC_CHECK;
         
-     if ((pGC->fillStyle == FillSolid) || (pGC->fillStyle == FillTiled)) {
-        cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit);
-     } else 
-       	miPolyFillRect(pDrawable, pGC, nrectFill, prectInit);
-
+     cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit);
 }
 
 
@@ -273,20 +267,75 @@ xf86CopyAreaWrapper(pSrcDrawable, pDstDrawable,
 {
     SYNC_CHECK;     
 
-     cfbCopyArea(pSrcDrawable, pDstDrawable,
+    cfbCopyArea(pSrcDrawable, pDstDrawable,
             pGC, srcx, srcy, width, height, dstx, dsty);
 }
 
+void static
+xf86PutImageWrapper(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
+    DrawablePtr pDraw;
+    GCPtr	pGC;
+    int		depth, x, y, w, h;
+    int		leftPad;
+    int		format;
+    char 	*pImage;
+{
+    SYNC_CHECK;     
+
+    cfbPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage);
+}
 
 
+void static
+xf86PolyPointWrapper(pDrawable, pGC, mode, npt, pptInit)
+    DrawablePtr pDrawable;
+    GCPtr pGC;
+    int mode;
+    int npt;
+    xPoint *pptInit;
+{
+    /* currently unused */
+}
+
+
+void
+xf86SetSpansWrapper(pDrawable, pGC, pcharsrc, ppt, pwidth, nspans, fSorted)
+    DrawablePtr		pDrawable;
+    GCPtr		pGC;
+    char		*pcharsrc;
+    register DDXPointPtr ppt;
+    int			*pwidth;
+    int			nspans;
+    int			fSorted;
+{
+    SYNC_CHECK;
+
+    cfbSetSpans(pDrawable, pGC, pcharsrc, ppt, pwidth, nspans, fSorted);
+}
+
+void static
+xf86PushPixelsWrapper (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
+    GCPtr	pGC;
+    PixmapPtr	pBitmap;
+    DrawablePtr	pDrawable;
+    int		dx, dy, xOrg, yOrg;
+{
+    cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
+
+    SYNC_CHECK;
+
+#ifdef FOUR_BIT_CODE
+    if (pGC->fillStyle == FillSolid && devPriv->rop == GXcopy)
+	cfbPushPixels8(pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg);
+    else
+#endif
+    	mfbPushPixels(pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg);
+}
 
 void XF86NAME(xf86InitWrappers)()
 {
     if(!xf86GCInfoRec.FillPolygonWrapper)
 	xf86GCInfoRec.FillPolygonWrapper = xf86FillPolygonWrapper;
-
-    if(!xf86GCInfoRec.PolyRectangleWrapper)
-	xf86GCInfoRec.PolyRectangleWrapper = xf86PolyRectangleWrapper;
 
     if(!xf86GCInfoRec.PolyArcWrapper)
 	xf86GCInfoRec.PolyArcWrapper = xf86PolyArcWrapper;
@@ -315,7 +364,17 @@ void XF86NAME(xf86InitWrappers)()
     if(!xf86GCInfoRec.CopyAreaWrapper)
 	xf86GCInfoRec.CopyAreaWrapper = xf86CopyAreaWrapper;
 
+    if(!xf86GCInfoRec.PolyPointWrapper)
+	xf86GCInfoRec.PolyPointWrapper = xf86PolyPointWrapper;
+
+    if(!xf86GCInfoRec.PutImageWrapper)
+	xf86GCInfoRec.PutImageWrapper = xf86PutImageWrapper;
+
+    if(!xf86GCInfoRec.SetSpansWrapper)
+	xf86GCInfoRec.SetSpansWrapper = xf86SetSpansWrapper;
+
+    if(!xf86GCInfoRec.PushPixelsWrapper)
+	xf86GCInfoRec.PushPixelsWrapper = xf86PushPixelsWrapper;
+
 }
-
-
 

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/19 1996/10/25 21:24:28 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.31 1997/03/17 07:18:28 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.33 1997/04/08 14:55:19 hohndel Exp $
 
 
 
@@ -317,6 +317,7 @@ LinkSourceFile(xf86_Config.h,$(XF86SRC)/common)
 LinkSourceFile(xf86_Mouse.c,$(XF86SRC)/common)
 LinkSourceFile(xf86_Option.c,$(XF86SRC)/common)
 LinkSourceFile(xf86_Option.h,$(XF86SRC)/common)
+LinkSourceFile(xf86_ldext.h,$(XF86SRC)/common)
 
 InstallLinkKitLibrary(xf86,$(XF98LINKKITDIR)/lib98)
 InstallLinkKitNonExecFile(xf86Init.o,$(XF98LINKKITDIR)/lib98)
@@ -332,10 +333,12 @@ InstallLinkKitNonExecFile(xf86_Option.h,$(XF98LINKKITDIR)/include)
 InstallLinkKitNonExecFile(xf86_Option.c,$(XF98LINKKITDIR))
 InstallLinkKitNonExecFile(xf86_Config.h,$(XF98LINKKITDIR)/include)
 InstallLinkKitNonExecFile(xf86DCConf.h,$(XF98LINKKITDIR)/include)
+InstallLinkKitNonExecFile(xf86_ldext.h,$(XF98LINKKITDIR)/include)
 InstallLinkKitNonExecFile(compiler.h,$(XF98LINKKITDIR)/include)
 InstallLinkKitNonExecFile(XF86_SVGA.c,$(XF98LINKKITDIR))
 InstallLinkKitNonExecFile(XF86_VGA16.c,$(XF98LINKKITDIR))
 InstallLinkKitNonExecFile(XF86_S3.c,$(XF98LINKKITDIR))
+InstallLinkKitNonExecFile(XF86_LOADER.c,$(XF98LINKKITDIR))
 #endif
 
 DependTarget()

@@ -43,7 +43,6 @@ xf86GCInfoRecType xf86GCInfoRec = {
     NULL,	/* PolyFillRectSolidFallBack() */
 /************ start of wrappers ***************/
     NULL,	/* FillPolygonWrapper */
-    NULL,	/* PolyRectangleWrapper */
     NULL,	/* PolyArcWrapper */
     NULL,	/* PolyLinesWrapper */
     NULL,	/* PolySegmentWrapper */
@@ -52,7 +51,11 @@ xf86GCInfoRecType xf86GCInfoRec = {
     NULL,	/* FillSpansWrapper */
     NULL,	/* PolyFillArcWrapper */
     NULL,	/* PolyFillRectWrapper */
-    NULL	/* CopyAreaWrapper */
+    NULL,	/* CopyAreaWrapper */
+    NULL,	/* PolyPointWrapper */ 
+    NULL,	/* PutImageWrapper */
+    NULL,	/* SetSpansWrapper */
+    NULL	/* PushPixelsWrapper */
 };
 
 xf86AccelInfoRecType xf86AccelInfoRec = {

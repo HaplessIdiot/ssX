@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirrus_acl.c,v 1.2 1997/04/08 10:12:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirrus_acl.c,v 1.3 1997/04/08 13:16:26 hohndel Exp $ */
 
 /*
  * New-style acceleration for chips with BitBLT engine:
@@ -212,7 +212,7 @@ static void InitializeChipFeatures() {
     if (cirrusChip == CLGD5446)
         cirrusChipFeatures |= CPUFRAMEBUFFERCONCURRENCY;
 
-    if (cirrusChip <= CLGD5429 || HAVE754X())
+    if (cirrusChip <= CLGD5429 || HAVE75XX())
         /* At least the 5426/28 and 7543. */
         cirrusChipFeatures |= FGCOLORREGISTERSIDEEFFECT;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/Ti3026Curs.c,v 1.1 1997/02/10 16:40:34 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.1 1997/03/11 13:28:06 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -46,7 +46,7 @@
 
 #include "vga.h"
 
-#include "mgareg.h"
+#include "mga_reg.h"
 #include "mga.h"
 
 extern unsigned char inTi3026();

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.0 1996/10/03 08:28:12 dawes Exp $
+XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.1 1996/12/09 11:48:06 dawes Exp $
 
 /*
  * This is for SCO Open Server 5.0.2 or later.
@@ -21,7 +21,7 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.0 1996/10/03 08:28:12 dawes Exp $
 #define OSMinorVersion          0
 #endif
 #ifndef OSTeenyVersion
-#define OSTeenyVersion          2
+#define OSTeenyVersion          4
 #endif
 
 /*
@@ -39,7 +39,7 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.0 1996/10/03 08:28:12 dawes Exp $
  * product of this is that we get better signals too.
  */
 
-#define StandardDefines         -D_SVID3 -Dsco -DSCO -DSYSV -Di386 -DSCO325 -DSVR4 -DFD_SETSIZE=256
+#define StandardDefines         -Dsco -DSCO -DSYSV -Di386 -DSCO325 -DSVR4 -DFD_SETSIZE=256 -D_NO_STATIC -D_SVID3
 #ifdef HasGcc2
 # define DefaultCCOptions       -melf
 # define CcCmd                  gcc
@@ -47,7 +47,7 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.0 1996/10/03 08:28:12 dawes Exp $
 # define DefaultCDebugFlags     -O
 # define OptimizedCDebugFlags   -O
 #else
-# define DefaultCCOptions       -dy 
+# define DefaultCCOptions       -dy
 # define CcCmd                  cc
 # define ExtraLoadOptions       -b elf
 # define DefaultCDebugFlags     -O
@@ -68,8 +68,13 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.0 1996/10/03 08:28:12 dawes Exp $
  * can try and thrash this whole lot out. I would dearly love to have this
  * functionality enabled.
  */
+#ifndef PexDynamicModule
 #define PexDynamicModule        NO
+#endif
+
+#ifndef XieDynamicModule
 #define XieDynamicModule        NO
+#endif
 
 #ifndef HasSymLinks
 # define HasSymLinks            YES
@@ -78,9 +83,10 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.0 1996/10/03 08:28:12 dawes Exp $
 #define XawI18nDefines          -DHAS_WCHAR_H -DHAS_ISW_FUNCS
 #if ScoOsMouse
 # define ServerExtraSysLibs     $(CBRT) -lm -levent
-# define ServerExtraDefines     -DUSE_OSMOUSE XFree86ServerDefines
+# define ServerExtraDefines     ServerCCOptions -DUSE_OSMOUSE XFree86ServerDefines
 #else
 # define ServerExtraSysLibs     $(CBRT) -lm
+# define ServerExtraDefines     ServerCCOptions XFree86ServerDefines
 #endif
 #define ExtraLibraries          -lsocket
 #define NeedWidePrototypes      NO
@@ -113,7 +119,7 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.0 1996/10/03 08:28:12 dawes Exp $
 #define LdCombineFlags          -r 
 
 #define HasLdRunPath            YES
-#define HasPoll                 YES
+#define HasPoll                 NO
 #define PatheticCpp             YES
 
 #define ArCmdBase               ar

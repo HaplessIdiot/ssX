@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirFillSt.c,v 3.15 1997/02/17 09:47:24 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirFillSt.c,v 1.1 1997/03/06 23:15:14 hohndel Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -211,13 +211,13 @@ void CirrusFillRectTile(pDrawable, pGC, nBox, pBox)
 		 * Always use BitBLT on the 543x.
 		 */
 		if (width == 16 && height == 16 && 
-		((!(HAVE543X() || HAVE754X() || cirrusChip == CLGD5446) &&
+		((!(HAVE543X() || HAVE75XX() || cirrusChip == CLGD5446) &&
 		vga256InfoRec.displayWidth < 2048) ||
-		((HAVE543X() || HAVE754X() || cirrusChip == CLGD5446) && 
+		((HAVE543X() || HAVE75XX() || cirrusChip == CLGD5446) && 
 		 vga256InfoRec.displayWidth < 4096)))
 			goto tile16x16;
 		if (width == 32 && height == 32 && 
-		(HAVE543X() || HAVE754X() || cirrusChip == 5446) &&
+		(HAVE543X() || HAVE75XX() || cirrusChip == 5446) &&
 		vga256InfoRec.displayWidth < 2048 && cirrusUseMMIO)
 			goto tile32x32;
 #if 0	/* broken. */

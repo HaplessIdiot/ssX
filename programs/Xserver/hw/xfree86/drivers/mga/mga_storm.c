@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_accel.c,v 1.1 1997/03/06 23:16:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.1 1997/03/06 23:16:00 hohndel Exp $ */
 
 /*
  * This is a sample driver implementation template for the new acceleration
@@ -14,7 +14,7 @@
 #include "xf86xaa.h"
 
 #include "mga.h"
-#include "mgareg.h"
+#include "mga_reg.h"
 #include "mga_map.h"
 
 /*
@@ -24,25 +24,32 @@
 void MgaSync();
  
 /*
+ * forward definitions for once only compiled functions.
+ */
+void MGAStormAccelInit();
+void MgaStormSync();
+void MgaStormEngineInit();
+
+/*
  * forward definitions for the functions in this file.
  * MGANAME macro gives correct name for current depth
  */
-void MGANAME(SetupForFillRectSolid)();
-void MGANAME(SubsequentFillRectSolid)();
-void MGANAME(SubsequentFillTrapezoidSolid)();
-void MGANAME(SetupForScreenToScreenCopy)();
-void MGANAME(SubsequentScreenToScreenCopy)();
-void MGANAME(SetupForCPUToScreenColorExpand)();
-void MGANAME(SubsequentCPUToScreenColorExpand)();
-void MGANAME(SetupForScreenToScreenColorExpand)();
-void MGANAME(SubsequentScreenToScreenColorExpand)();
-void MGANAME(SetupFor8x8PatternColorExpand)();
-void MGANAME(Subsequent8x8PatternColorExpand)();
-void MGANAME(SubsequentTwoPointLine)();
-void MGANAME(SetupForDashedLine)();
-void MGANAME(SubsequentDashedBresenhamLine)();
-void MGANAME(SetClippingRectangle)();
-
+static void MGANAME(SetupForFillRectSolid)();
+static void MGANAME(SubsequentFillRectSolid)();
+static void MGANAME(SubsequentFillTrapezoidSolid)();
+static void MGANAME(SetupForScreenToScreenCopy)();
+static void MGANAME(SubsequentScreenToScreenCopy)();
+static void MGANAME(SetupForCPUToScreenColorExpand)();
+static void MGANAME(SubsequentCPUToScreenColorExpand)();
+static void MGANAME(SetupForScreenToScreenColorExpand)();
+static void MGANAME(SubsequentScreenToScreenColorExpand)();
+static void MGANAME(SetupFor8x8PatternColorExpand)();
+static void MGANAME(Subsequent8x8PatternColorExpand)();
+static void MGANAME(SubsequentTwoPointLine)();
+static void MGANAME(SetupForDashedLine)();
+static void MGANAME(SubsequentDashedBresenhamLine)();
+static void MGANAME(SetClippingRectangle)();
+  
 static int mga_cmd, mga_lastcmd, mga_linecmd, mga_rop;
 static int mga_sgn, mga_lastsgn, mga_lastcxright, mga_lastshift;
 static int mgablitxdir, mgablitydir;
@@ -102,7 +109,7 @@ void MGANAME(AccelInit)()
      * The following line installs a "Sync" function, that waits for
      * all coprocessor operations to complete.
      */
-    xf86AccelInfoRec.Sync = MgaSync;
+    xf86AccelInfoRec.Sync = MgaStormSync;
 
     /*
      * We want to set up the FillRectSolid primitive for filling a solid
@@ -213,6 +220,82 @@ void MGANAME(AccelInit)()
     }
 }
 
+
+#if PSZ == 8
+
+/* functions specific to this chipset, to be compiled just the once */
+
+/*
+ * The following function sets up the supported acceleration. Call it
+ * from the FbInit() function in the SVGA driver.
+ */
+void MGAStormAccelInit() {
+    switch( vgaBitsPerPixel )
+    {
+    case 8:
+    	Mga8AccelInit();
+    	break;
+    case 16:
+    	Mga16AccelInit();
+    	break;
+    case 24:
+    	Mga24AccelInit();
+    	break;
+    case 32:
+    	Mga32AccelInit();
+    	break;
+    }
+}
+
+/*
+ * This is the implementation of the Sync() function.
+ */
+void MgaStormSync() 
+{
+    /*
+     * Flush the read cache (SDK 5-2)
+     * It doesn't matter which VGA register we write,
+     * so we pick one that's not used in "Power" mode.
+     */
+    OUTREG8(MGAREG_CRTC_INDEX, 0);
+     
+    WAITUNTILFINISHED();
+}
+
+/*
+ * Global initialization of drawing engine
+ */
+void MGAStormEngineInit()
+{
+    long maccess;
+    
+    switch( vgaBitsPerPixel )
+    {
+    case 8:
+        maccess = 0;
+        break;
+    case 16:
+	/* set 16 bpp, turn off dithering, turn on 5:5:5 pixels */
+        maccess = 1 + (1 << 30) + (1 << 31);
+        break;
+    case 24:
+        maccess = 3;
+        break;
+    case 32:
+        maccess = 2;
+        break;
+    }
+    
+    OUTREG(MGAREG_PITCH, vga256InfoRec.displayWidth);
+    OUTREG(MGAREG_YDSTORG, MGAydstorg);
+    OUTREG(MGAREG_MACCESS, maccess);
+    OUTREG(MGAREG_PLNWT, ~0);
+    OUTREG(MGAREG_OPMODE, 0);
+}
+
+#endif /* PSZ == 8 */ /* once only compilation */
+
+  
 /*
  * Replicate colors and planemasks
  */ 

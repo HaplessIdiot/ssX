@@ -1,4 +1,10 @@
 XFree86 3.2At (11 April 1997)
+ 665. Add Mystique to scanpci (#264, Guy Desbief).
+ 664. Fix problems with delayed syncing (#263, Mark Vojkovich).
+ 663. Fix LinkKit and cirrus driver (#262, Takaaki Nomura).
+ 662. Fix I18N bug (#261, Nagao Tadaaki).
+ 661. First steps to get loader on SCO (#260, J. Kean Johnston).
+ 660. File structure changes for mga driver (#259, Radek Kapitan).
  659. Add stubs to load GLX extension (#228,246, Henry Worth, Dirk Hohndel).
 
 XFree86 3.2As (09 April 1997)
@@ -4316,4 +4322,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.443 1997/04/08 13:15:46 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.444 1997/04/10 10:06:26 hohndel Exp $

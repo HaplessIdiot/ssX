@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.38 1997/03/22 09:36:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.39 1997/03/27 08:31:08 hohndel Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -516,6 +516,8 @@ struct pci_vendor_device {
                             { 0x0000, (char *)NULL, NF } } },
         { 0x102B, "Matrox", {
                             { 0x0518, "MGA-2 Atlas PX2085", NF },
+                            { 0x0519, "MGA Millennium", NF },
+                            { 0x051a, "MGA Mystique", NF },
                             { 0x0D10, "MGA Impression", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x102C, "CT", {

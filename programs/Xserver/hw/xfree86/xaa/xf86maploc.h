@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86maploc.h,v 3.2 1997/01/02 04:38:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86maploc.h,v 3.3 1997/01/12 10:48:13 dawes Exp $ */
 
 
 /* Functions that are only referenced from within this directory. */
@@ -27,16 +27,14 @@ xf86ValidateGC(
 void
 xf86GCNewFillPolygon(
 #if NeedFunctionPrototypes
-    GCPtr	pGC,
-    Bool	new_cfb_line
+    GCPtr	pGC
 #endif
 );
 
 void
 xf86GCNewRectangle(
 #if NeedFunctionPrototypes
-    GCPtr	pGC,
-    Bool	new_cfb_line
+    GCPtr	pGC
 #endif
 );
 
@@ -44,32 +42,28 @@ void
 xf86GCNewLine(
 #if NeedFunctionPrototypes
     GCPtr	pGC,
-    DrawablePtr pDrawable,
-    Bool	new_cfb_line
+    DrawablePtr pDrawable
 #endif
 );
 
 void
 xf86GCNewText(
 #if NeedFunctionPrototypes
-    GCPtr	pGC,
-    Bool	new_cfb_text
+    GCPtr	pGC
 #endif
 );
 
 void
 xf86GCNewFillSpans(
 #if NeedFunctionPrototypes
-    GCPtr	pGC,
-    Bool	new_cfb_fillspans
+    GCPtr	pGC
 #endif
 );
 
 void
 xf86GCNewFillArea(
 #if NeedFunctionPrototypes
-    GCPtr	pGC,
-    Bool	new_cfb_fillarea
+    GCPtr	pGC
 #endif
 );
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.10 1997/03/27 08:31:40 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.12 1997/04/08 13:17:03 hohndel Exp $ */
 
 
 /* AccelInfoRec flags */
@@ -385,15 +385,6 @@ typedef struct {
 #endif
     );
 
-    void (*PolyRectangleWrapper)(
-#if NeedNestedPrototypes
-    	DrawablePtr  	pDrawable,	
-    	GCPtr        	pGC,    	
-    	int	      	nRectsInit, 	
-    	xRectangle  	*pRectsInit
-#endif
-   );
-
 
     void (*PolyArcWrapper)(
 #if NeedNestedPrototypes
@@ -492,6 +483,54 @@ typedef struct {
 #endif
    );
 
+   void (*PolyPointWrapper)(
+#if NeedNestedPrototypes
+    	DrawablePtr 	pDrawable,
+    	GCPtr 		pGC,
+    	int 		mode,
+    	int 		npt,
+    	xPoint 		*pptInit
+#endif
+   );
+
+    void (*PutImageWrapper)(
+#if NeedNestedPrototypes
+    	DrawablePtr 	pDraw,
+    	GCPtr		pGC,
+    	int		depth,
+	int 		x, 
+	int		y, 
+	int		w, 
+	int		h,
+    	int		leftPad,
+    	int		format,
+    	char 		*pImage
+#endif
+   );
+
+    void (*SetSpansWrapper)(
+#if NeedNestedPrototypes
+    	DrawablePtr	pDrawable,
+    	GCPtr		pGC,
+    	char		*pcharsrc,
+    	DDXPointPtr 	ppt,
+    	int		*pwidth,
+    	int		nspans,
+    	int		fSorted
+#endif
+   );
+   
+    void (*PushPixelsWrapper) (
+#if NeedNestedPrototypes
+   	GCPtr		pGC,
+    	PixmapPtr	pBitmap,
+    	DrawablePtr	pDrawable,
+    	int		dx,
+	int 		dy, 
+	int		xOrg, 
+	int		yOrg
+#endif
+   );
   
 } xf86GCInfoRecType;
 

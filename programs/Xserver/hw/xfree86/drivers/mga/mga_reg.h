@@ -2,15 +2,15 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mgareg.h,v 1.1 1997/03/06 23:16:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mgareg.h,v 1.2 1997/04/08 10:12:52 hohndel Exp $ */
 
 /*
  * mga register file 
  *
  */ 
 
-#ifndef _MGAREG_H_
-#define _MGAREG_H_
+#ifndef _MGA_REG_H_
+#define _MGA_REG_H_
 
 #define	MGAREG_DWGCTL		0x1c00
 #define	MGAREG_MACCESS		0x1c04

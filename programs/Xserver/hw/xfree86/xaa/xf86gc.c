@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.6 1997/01/18 06:57:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.7 1997/01/22 11:17:12 dawes Exp $ */
 
 /***********************************************************
 
@@ -111,35 +111,23 @@ static GCFuncs xf86GCFuncs = {
  */
 
 #ifdef VGA256
-#define MatchCommon vga256matchCommon
 #define NonTEOps vga256NonTEOps
 #else
 #if PSZ == 8
-#define MatchCommon cfbMatchCommon
 #define NonTEOps cfbNonTEOps
 #endif
 #if PSZ == 16
-#define MatchCommon cfb16MatchCommon
 #define NonTEOps cfb16NonTEOps
 #endif
 #if PSZ == 24
-#define MatchCommon cfb24MatchCommon
 #define NonTEOps cfb24NonTEOps
 #endif
 #if PSZ == 32
-#define MatchCommon cfb32MatchCommon
 #define NonTEOps cfb32NonTEOps
 #endif
 #endif
 
 extern GCOps NonTEOps;
-
-extern GCOps *MatchCommon(
-#if NeedFunctionPrototypes
-    GCPtr	    pGC,
-    cfbPrivGCPtr    devPriv
-#endif
-);
 
 Bool
 xf86CreateGC(pGC)
@@ -204,16 +192,13 @@ xf86ValidateGC(pGC, changes, pDrawable)
     int		oneRect;
     int		drawableChanged;
     Bool	VTSwitch;
-    Bool	new_cfb_rrop, new_cfb_fillspans;
-    Bool	new_cfb_text, new_cfb_fillarea, new_cfb_line;
-    Bool	match_common;
 
     /*
      * The devPrivate.val indicates what kind of of GC ops we are
      * dealing with:
      *
      *	0	cfb defaults structure
-     *  1	modified cfb ops
+     *  1	default "wrapped" ops (this is new)
      *  2	modified on-screen (accelerated) ops
      */
     VTSwitch = (last_xf86VTSema != xf86VTSema);
@@ -340,7 +325,10 @@ xf86ValidateGC(pGC, changes, pDrawable)
 	    new_line = TRUE;
 	    break;
 	case GCJoinStyle:
+	    break;
 	case GCCapStyle:
+    	/* Accelerated PolySegment may change with the CapStyle. */
+            new_line = TRUE;
 	    break;
 	case GCFillStyle:
 	    new_text = TRUE;
@@ -409,9 +397,9 @@ xf86ValidateGC(pGC, changes, pDrawable)
      * If the drawable has changed,  ensure suitable
      * entries are in the proc vector. 
      */
-    if (drawableChanged) {
+    if (drawableChanged) 
 	new_fillspans = TRUE;	/* deal with FillSpans later */
-    }
+    
 
     if (new_rotate || new_fillspans)
     {
@@ -459,7 +447,6 @@ xf86ValidateGC(pGC, changes, pDrawable)
 	}
     }
 
-    new_cfb_rrop = new_rrop;
 
     if (new_rrop)
     {
@@ -469,9 +456,7 @@ xf86ValidateGC(pGC, changes, pDrawable)
 	devPriv->rop = cfbReduceRasterOp (pGC->alu, pGC->fgPixel,
 					   pGC->planemask,
 					   &devPriv->and, &devPriv->xor);
-	if (old_rrop == devPriv->rop)
-	    new_cfb_rrop = FALSE;
-	else
+	if (!(old_rrop == devPriv->rop))
 	{
 #ifdef PIXEL_ADDR
 	    new_line = TRUE;
@@ -492,6 +477,41 @@ xf86ValidateGC(pGC, changes, pDrawable)
     {
 	pGC->ops = miCreateGCOps (pGC->ops);
 	pGC->ops->devPrivate.val = 1;
+
+       /* 
+	*  Fill in pGC->ops with conservative defaults. 
+	*  Most of this initialization isn't necessary since we
+	*  Will be overwriting most of these in the xf86gcmisc.c 
+        *  functions.  This is just done for safety. 
+ 	*/
+
+	pGC->ops->FillSpans = xf86GCInfoRec.FillSpansWrapper;
+	pGC->ops->SetSpans = xf86GCInfoRec.SetSpansWrapper;
+	pGC->ops->PutImage = xf86GCInfoRec.PutImageWrapper;
+	pGC->ops->CopyArea = xf86GCInfoRec.CopyAreaWrapper;
+	pGC->ops->CopyPlane = xf86CopyPlane;
+	pGC->ops->PolyPoint = miPolyPoint;
+	pGC->ops->Polylines = miWideLine;
+	pGC->ops->PolySegment = miPolySegment;
+	pGC->ops->PolyRectangle = miPolyRectangle;
+	pGC->ops->PolyArc = miZeroPolyArc;
+	pGC->ops->FillPolygon = miFillPolygon;
+	pGC->ops->PolyFillRect = miPolyFillRect;
+	pGC->ops->PolyFillArc = miPolyFillArc;
+	pGC->ops->PolyText8 = miPolyText8;
+	pGC->ops->PolyText16 = miPolyText16;
+	pGC->ops->ImageText8 = miImageText8;
+	pGC->ops->ImageText16 = miImageText16;
+#ifdef WriteBitGroup
+	pGC->ops->ImageGlyphBlt = cfbImageGlyphBlt8;
+#else
+	pGC->ops->ImageGlyphBlt = miImageGlyphBlt;
+#endif
+	pGC->ops->PolyGlyphBlt = miPolyGlyphBlt;
+	pGC->ops->PushPixels = xf86GCInfoRec.PushPixelsWrapper;
+#ifdef NEED_LINEHELPER
+	pGC->ops->LineHelper = NULL;
+#endif
     }
 
     if (pGC->ops->devPrivate.val == 1) {
@@ -507,62 +527,11 @@ xf86ValidateGC(pGC, changes, pDrawable)
 	pGC->ops->devPrivate.val = 2;
     }
 
-    match_common = FALSE;
-
-    if (new_cfb_rrop || new_fillspans || new_text || new_fillarea || new_line)
-    {
-	GCOps	*newops;
-
-        new_cfb_fillspans = new_fillspans;
-        new_cfb_text = new_text;
-        new_cfb_fillarea = new_fillarea;
-        new_cfb_line = new_line;
-
-	if (newops = MatchCommon (pGC, devPriv))
- 	{
- 	    /*
- 	     * We must make a copy of the NonTEOps etc.
- 	     * because we might modify the GC ops further for
- 	     * accelerated functions.
- 	     */
-#if 0
-	    if (pGC->ops->devPrivate.val)
-		miDestroyGCOps (pGC->ops);
-#endif
-	    *(pGC->ops) = *newops;
-	    /* Make sure the devPrivate.val is correct! */
-	    pGC->ops->devPrivate.val = 2;
-	    /*
-	     * These are special, the cfb logic relies on MatchCommon
-	     * to select the right functions for the common case, and
-	     * we must not re-evaluate the cfb functions later.
-	     */
-	    new_cfb_rrop = new_cfb_line = new_cfb_fillspans = new_cfb_text =
-	    new_cfb_fillarea = FALSE;
-	    /*
-	     * Because the MatchCommon replaced all GCops with cfb functions,
-	     * all accelerated functions must be re-evaluated, which is
-	     * indicated with a flag.
-	     */
-	    match_common = TRUE;
-	}
- 	else
- 	{
-#if 0
-	    if (!pGC->ops->devPrivate.val)
-	    {
-		pGC->ops = miCreateGCOps (pGC->ops);
-		pGC->ops->devPrivate.val = 1;
-	    }
-#endif
-	}
-    }
 
     /* deal with the changes we've collected */
     /*
      * We must detect changes that affect the selection of acceleration
-     * functions (only relevant if match_common is false), beyond what
-     * is required for cfb.
+     * functions.
      * If the planemask or rrop changed, new_rrop will be
      * true. It is also true if the foreground color is changed.
      * This is convenient, since this precisely matches the
@@ -576,37 +545,25 @@ xf86ValidateGC(pGC, changes, pDrawable)
         new_fillarea = TRUE;
     }
 
-    if (new_line || match_common) {
-        xf86GCNewFillPolygon(pGC, new_cfb_line);
-
-        xf86GCNewRectangle(pGC, new_cfb_line);
+    if (new_line) {
+        xf86GCNewFillPolygon(pGC);
+        xf86GCNewRectangle(pGC);
     }
 
-    if (!new_line && (changes & GCCapStyle)) {
-        /* Accelerated PolySegment may change with the CapStyle. */
-        new_line = TRUE;
-        new_cfb_line = FALSE;
-    }
-    if (new_line || match_common)
-        xf86GCNewLine(pGC, pDrawable, new_cfb_line);
+   
+    if (new_line)
+        xf86GCNewLine(pGC, pDrawable);
 
-    if ((new_text || match_common) && (pGC->font))
-        xf86GCNewText(pGC, new_cfb_text);
+    if ((new_text) && (pGC->font))
+        xf86GCNewText(pGC);
 
-    if (new_fillspans || match_common)
-        xf86GCNewFillSpans(pGC, new_cfb_fillspans);
+    if (new_fillspans)
+        xf86GCNewFillSpans(pGC);
 
-    if (new_fillarea || match_common) {
-        xf86GCNewFillArea(pGC, new_cfb_fillarea);
-    }
+    if (new_fillarea) 
+        xf86GCNewFillArea(pGC);
 
-    if (new_rrop || match_common)
+    if (new_rrop)
         xf86GCNewCopyArea(pGC);
 
-    /*
-     * xf86CopyPlane contains faster unaccelerated functions, so we
-     * want to use it in any case. That does mean xf86CopyPlane has
-     * to do some checking.
-     */
-    pGC->ops->CopyPlane = xf86CopyPlane;
 }
