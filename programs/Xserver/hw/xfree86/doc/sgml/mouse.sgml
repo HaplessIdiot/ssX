@@ -6,6 +6,11 @@
 <title>Mouse Support in XFree86
 <author>Kazutaka Yokota
 <date>4 July 1999
+
+<ident>
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/mouse.sgml,v 1.3 1999/07/04 07:58:04 dawes Exp $
+</ident>
+
 <toc>
  
 <sect>Introduction <p>
@@ -658,8 +663,4 @@ PS/2 mouse detection:
 </verb>
 
 
-
-<verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/mouse.sgml,v 1.2 1999/07/04 06:58:26 dawes Exp $
-</verb>
 </article>

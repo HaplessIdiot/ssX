@@ -4,6 +4,10 @@
 <title>Licenses</title>
 <author>The XFree86 Project</author>
 
+<ident>
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.3 1999/05/09 06:06:26 dawes Exp $
+</ident>
+
 <sect>XFree86 License
 <p>
 XFree86 code without an explicit copyright is covered by the following
@@ -604,9 +608,5 @@ Copyright (c) 1994-1999 Silicon Graphics, Inc. All Rights Reserved.
 solely in object code form, Recipient may replace the words "this file" with
 "this software" in both the first and second sentences.]
 
-
-<verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.2 1999/05/04 11:27:15 dawes Exp $
-</verb>
 
 </article>

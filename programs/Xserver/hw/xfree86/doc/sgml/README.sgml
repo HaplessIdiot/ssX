@@ -9,6 +9,9 @@
 <author>The XFree86 Project, Inc
 <date>4 July 1999 (this document needs work!)
 
+<ident>
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.90 1999/07/04 12:49:10 dawes Exp $
+</ident>
 
 <abstract>
 
@@ -73,8 +76,5 @@ to the latest source and to other developers.
 
 
 
-<verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.89 1999/07/04 12:21:24 dawes Exp $
-</verb>
 
 </article>

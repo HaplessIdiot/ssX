@@ -8,6 +8,10 @@
 <author>The XFree86 Project, Inc
 <date>6 July 1999 (this document needs work!)
 
+<ident>
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.2 1999/07/06 08:47:54 dawes Exp $
+</ident>
+
 <abstract>
 
 This document contains some information about the features present
@@ -190,8 +194,5 @@ Known problems:
 
 
 
-<verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.1 1999/07/04 12:49:11 dawes Exp $
-</verb>
 
 </article>
