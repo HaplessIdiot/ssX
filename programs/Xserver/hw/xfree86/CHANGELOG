@@ -1,3 +1,7 @@
+XFree86 4.2.99.3 (xx October 2002)
+ 440. Server support for the alpha architecture on OpenBSD 3.2. 
+      (Matthieu Herrb, Arthur Grabowski). 
+
 XFree86 4.2.99.2 (21 October 2002)
  439. Workaround for <linux/input.h> conflict (Marc La France).
  438. Fix some memory leaks in libX11 i18n code (#A.1314, Olivier Chapuis).
@@ -15423,4 +15427,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2354 2002/10/22 02:44:25 dawes Exp $
+$XFree86: CHANGELOG,v 3.2355 2002/10/29 15:48:07 tsi Exp $
