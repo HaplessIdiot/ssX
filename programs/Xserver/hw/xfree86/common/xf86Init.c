@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.205 2003/09/02 17:13:39 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.206 2003/09/09 03:20:36 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -167,7 +167,8 @@ xf86CreateRootWindow(WindowPtr pWin)
     /* Can't find hook we are hung on */
 	xf86DrvMsg(pScreen->myNum, X_WARNING /* X_ERROR */,
 		  "xf86CreateRootWindow %p called when not in pScreen->CreateWindow %p n",
-		   xf86CreateRootWindow, pScreen->CreateWindow );
+		   (void *)xf86CreateRootWindow,
+		   (void *)pScreen->CreateWindow );
   }
 
   /* Unhook this function ... */
@@ -216,7 +217,8 @@ xf86CreateRootWindow(WindowPtr pWin)
       xf86RegisteredPropertiesTable[pScreen->myNum] = NULL;
     } else {
       xf86Msg(X_ERROR, "xf86CreateRootWindow unexpectedly called with "
-	      "non-root window %p (parent %p)\n", pWin, pWin->parent);
+	      "non-root window %p (parent %p)\n",
+	      (void *)pWin, (void *)pWin->parent);
       ret = FALSE;
     }
   }

@@ -44,7 +44,7 @@
  *   12 September 2002 - Better software scaling with some averaging, giving a
  *     nicer picture.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_video.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_video.c,v 1.4 2003/04/23 21:51:37 tsi Exp $ */
 
 
 /*
@@ -588,11 +588,11 @@ static FBLinearPtr I740AllocateMemory(ScrnInfoPtr pScrn, FBLinearPtr linear, int
 	return linear;
 
       if(xf86ResizeOffscreenLinear(linear, size)) {
-        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "I740AllocateMemory resized to %d - %p\n", (int) size, linear);  /* ### */
+        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "I740AllocateMemory resized to %d - %p\n", (int) size, (void *)linear);  /* ### */
 	return linear;
       }
 
-      xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "I740AllocateMemory free %p - %d < %d\n", linear, (int) linear->size, (int) size);  /* ### */
+      xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "I740AllocateMemory free %p - %d < %d\n", (void *)linear, (int) linear->size, (int) size);  /* ### */
       xf86FreeOffscreenLinear(linear);
     }
 
@@ -616,7 +616,7 @@ static FBLinearPtr I740AllocateMemory(ScrnInfoPtr pScrn, FBLinearPtr linear, int
       new_linear = xf86AllocateOffscreenLinear(pScreen, size, 4, 
 					       NULL, NULL, NULL);
     } 
-  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "I740AllocateMemory allocated %d - %p\n", (int) size, new_linear);  /* ### */
+  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "I740AllocateMemory allocated %d - %p\n", (int) size, (void *)new_linear);  /* ### */
 
   return new_linear;
 }

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.89 2003/09/21 01:20:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.90 2003/09/24 02:43:23 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -2152,7 +2152,7 @@ I810SwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
 
    if (I810_DEBUG & DEBUG_VERBOSE_CURSOR)
-      ErrorF("I810SwitchMode %p %x\n", mode, flags);
+      ErrorF("I810SwitchMode %p %x\n", (void *)mode, flags);
 
    return I810ModeInit(pScrn, mode);
 }

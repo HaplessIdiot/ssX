@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.125 2003/09/09 13:33:50 twini Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.126 2003/09/24 02:43:27 dawes Exp $ */
 /*
  * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
  *
@@ -11343,7 +11343,7 @@ sisSaveUnlockExtRegisterLock(SISPtr pSiS, unsigned char *reg1, unsigned char *re
 #endif
           xf86DrvMsg(pSiS->pScrn->scrnIndex, X_ERROR,
                "Failed to unlock sr registers (%p, %x, 0x%02x; %ld)\n",
-	       pSiS, pSiS->RelIO, val, mylockcalls);
+	       (void *)pSiS, pSiS->RelIO, val, mylockcalls);
 #ifdef TWDEBUG
           for(i = 0; i <= 0x3f; i++) {
 	  	inSISIDXREG(SISSR, i, val1);
@@ -11370,7 +11370,7 @@ sisSaveUnlockExtRegisterLock(SISPtr pSiS, unsigned char *reg1, unsigned char *re
 	  if(val != 0xA1) {
 	     xf86DrvMsg(pSiS->pScrn->scrnIndex, X_ERROR,
 	        "Failed to unlock cr registers (%p, %x, 0x%02x)\n",
-	       pSiS, pSiS->RelIO, val);
+	       (void *)pSiS, pSiS->RelIO, val);
 	  }
        }
     }

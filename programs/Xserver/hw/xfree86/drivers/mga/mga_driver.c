@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.236 2003/08/23 15:03:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.237 2003/09/21 01:20:20 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1051,7 +1051,8 @@ MGAdoDDC(ScrnInfoPtr pScrn)
   /* Read and output monitor info using DDC2 over I2C bus */
   if (pMga->I2C) {
     MonInfo = xf86DoEDID_DDC2(pScrn->scrnIndex,pMga->I2C);
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "I2C Monitor info: %p\n", MonInfo);
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "I2C Monitor info: %p\n",
+		(void *)MonInfo);
     xf86PrintEDID(MonInfo);
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of I2C Monitor info\n");
   }
@@ -1062,7 +1063,8 @@ MGAdoDDC(ScrnInfoPtr pScrn)
     MonInfo = xf86DoEDID_DDC1(pScrn->scrnIndex,
 					 pMga->DDC1SetSpeed,
 					 pMga->ddc1Read ) ;
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "DDC Monitor info: %p\n", MonInfo);
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "DDC Monitor info: %p\n",
+	       (void *)MonInfo);
     xf86PrintEDID( MonInfo );
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of DDC Monitor info\n");
   }
@@ -1074,7 +1076,8 @@ MGAdoDDC(ScrnInfoPtr pScrn)
       vbeFree(pVbe);
 
       if (MonInfo){
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "VBE DDC Monitor info: %p\n", MonInfo);
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "VBE DDC Monitor info: %p\n",
+		   (void *)MonInfo);
 	xf86PrintEDID( MonInfo );
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of VBE DDC Monitor info\n\n");
       }

@@ -1,4 +1,4 @@
-/* $Id: citron.c,v 1.10 2003/09/24 02:43:31 dawes Exp $
+/* $Id: citron.c,v 1.11 2003/09/24 03:16:58 dawes Exp $
  * Copyright (c) 1998  Metro Link Incorporated
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.c,v 1.9 2003/06/27 21:48:04 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.c,v 1.10 2003/09/24 02:43:31 dawes Exp $ */
 
 /*
  * Based, in part, on code with the following copyright notice:
@@ -713,7 +713,7 @@ cit_StartTimer(cit_PrivatePtr priv, int nr)
 {
 	priv->timer_ptr[nr] = TimerSet(priv->timer_ptr[nr], 0, priv->timer_val1[nr],
 			 priv->timer_callback[nr], (pointer)priv);
-	DBG(5, ErrorF ("%scit_StartTimer[%d] called PTR=%p\n", CI_INFO, nr, priv->timer_ptr));
+	DBG(5, ErrorF ("%scit_StartTimer[%d] called PTR=%p\n", CI_INFO, nr, (void *)priv->timer_ptr));
 }
 
 
@@ -724,7 +724,7 @@ static void
 cit_CloseTimer(cit_PrivatePtr priv, int nr)
 {
 
-	DBG(5, ErrorF ("%scit_CloseTimer[%d] called PTR=%p\n", CI_INFO, nr, priv->timer_ptr));
+	DBG(5, ErrorF ("%scit_CloseTimer[%d] called PTR=%p\n", CI_INFO, nr, (void *)priv->timer_ptr));
 	if(priv->timer_ptr[nr])
 	{
 		TimerFree(priv->timer_ptr[nr]);
