@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaWideLine.c,v 1.1.2.3 1998/07/25 10:32:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaWideLine.c,v 1.2 1998/07/25 16:58:54 dawes Exp $ */
 
 /*
 
@@ -83,10 +83,10 @@ XAAFillRectHelper(GCPtr pGC, int x1, int y1, int dx, int dy)
 	
    if(x1 < extents->x1) x1 = extents->x1;
    if(x2 >= extents->x2) x2 = extents->x2 - 1;
-   if(!(dx = x2 - x1)) return;
+   if((dx = x2 - x1)<1) return;
    if(y1 < extents->y1) y1 = extents->y1;
    if(y2 >= extents->y2) y2 = extents->y2 - 1;
-   if(!(dy = y2 - y1)) return;
+   if((dy = y2 - y1)<1) return;
 
    (*infoRec->SubsequentSolidFillRect)(infoRec->pScrn, x1, y1, dx, dy);
 }

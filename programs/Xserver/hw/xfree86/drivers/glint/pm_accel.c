@@ -28,7 +28,7 @@
  * 
  * Permedia accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_accel.c,v 1.1.2.3 1998/07/18 17:53:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_accel.c,v 1.2 1998/07/25 16:55:49 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -195,7 +195,7 @@ PermediaAccelInit(ScreenPtr pScreen)
   xf86GCInfoRec.SecondaryPolyFillRectStippledFlags = 0;
   xf86GCInfoRec.SecondaryPolyFillRectOpaqueStippledFlags = 0;
  
-  if (UsePCIRetry) {
+  if (pGlint->UsePCIRetry) {
       xf86AccelInfoRec.ImageTextTE = PermediaImageTextTECPUToScreenColorExpand;
       xf86GCInfoRec.ImageGlyphBltTE = xf86ImageGlyphBltTE;
       xf86AccelInfoRec.PolyTextTE = PermediaPolyTextTECPUToScreenColorExpand;

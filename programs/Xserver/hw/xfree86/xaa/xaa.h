@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.1.2.9 1998/07/24 11:36:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.2 1998/07/25 16:58:41 dawes Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -104,6 +104,8 @@
 #define CACHE_MONO_8x8			0x00000001
 #define CACHE_COLOR_8x8			0x00000002
 #define DO_NOT_BLIT_STIPPLES		0x00000004
+#define DO_NOT_TILE_MONO_DATA		0x00000008	
+#define DO_NOT_TILE_COLOR_DATA		0x00000010
 
 
 #define DEGREES_0	0
@@ -310,6 +312,7 @@ typedef struct _XAAInfoRec {
 
 
 /* Color expansion */
+
    void (*SetupForColorExpandFill)(
 	ScrnInfoPtr pScrn,
 	int fg, int bg,
@@ -351,6 +354,23 @@ typedef struct _XAAInfoRec {
 
    int NumScanlineColorExpandBuffers;
    unsigned char **ScanlineColorExpandBuffers;
+
+/* Screen to screen color expansion */
+
+   void (*SetupForScreenToScreenColorExpandCopy) (
+	ScrnInfoPtr pScrn,
+	int fg, int bg,
+	int rop,
+	unsigned int planemask
+   );
+   int ScreenToScreenColorExpandCopyFlags;
+
+   void (*SubsequentScreenToScreenColorExpandCopy)(
+	ScrnInfoPtr pScrn,
+	int x, int y, int w, int h,
+	int srcx, int srcy, int skipleft
+   );
+   
 
 /*  Image transfers */
 
@@ -474,6 +494,17 @@ typedef struct _XAAInfoRec {
    );
    int FillColorExpandRectsFlags;
 
+   void (*FillCacheExpandRects)(
+	ScrnInfoPtr pScrn,
+	int fg, int bg, int rop,
+	unsigned int planemask,
+	int nBox,
+	BoxPtr pBox,
+	int xorg, int yorg,
+	PixmapPtr pPix
+   );
+   int FillCacheExpandRectsFlags;
+
    void (*FillSolidSpans)(
 	ScrnInfoPtr pScrn,
 	int fg, int rop,
@@ -536,6 +567,19 @@ typedef struct _XAAInfoRec {
 	PixmapPtr pPix
    );
    int FillColorExpandSpansFlags;
+
+   void (*FillCacheExpandSpans)(
+	ScrnInfoPtr pScrn,
+	int fg, int bg, int rop,
+	unsigned int planemask,
+	int n,
+	DDXPointPtr ppt,
+	int *pwidth,
+	int fSorted,
+	int xorg, int yorg,
+	PixmapPtr pPix
+   );
+   int FillCacheExpandSpansFlags;
 
    void (*TEGlyphRenderer)(
 	ScrnInfoPtr pScrn,
@@ -639,6 +683,15 @@ typedef struct _XAAInfoRec {
    );  
    int PolyFillRectColorExpandFlags;
 
+   void (*PolyFillRectCacheExpand)(
+	DrawablePtr pDraw,
+	GCPtr pGC,
+	int nrectFill, 	
+	xRectangle *prectInit
+   );  
+   int PolyFillRectCacheExpandFlags;
+
+
    /** FillSpans **/   
 
    void (*FillSpansSolid)(
@@ -690,6 +743,16 @@ typedef struct _XAAInfoRec {
 	int		fSorted 
    );
    int FillSpansCacheBltFlags;
+
+   void (*FillSpansCacheExpand)(
+	DrawablePtr	pDraw,
+	GCPtr		pGC,
+	int		nInit,
+	DDXPointPtr 	ppt,
+	int		*pwidth,
+	int		fSorted 
+   );
+   int FillSpansCacheExpandFlags;
 
    int (*PolyText8TE) (
 	DrawablePtr pDraw,
@@ -830,6 +893,46 @@ typedef struct _XAAInfoRec {
    );
    int FillPolygonSolidFlags;
 
+   void (*FillPolygonMono8x8Pattern)(
+	DrawablePtr	pDrawable,
+	GCPtr		pGC,
+	int		shape,
+	int		mode,
+	int		count,
+	DDXPointPtr	ptsIn 
+   );
+   int FillPolygonMono8x8PatternFlags;
+
+   void (*FillPolygonColor8x8Pattern)(
+	DrawablePtr	pDrawable,
+	GCPtr		pGC,
+	int		shape,
+	int		mode,
+	int		count,
+	DDXPointPtr	ptsIn 
+   );
+   int FillPolygonColor8x8PatternFlags;
+
+   void (*FillPolygonCacheBlt)(
+	DrawablePtr	pDrawable,
+	GCPtr		pGC,
+	int		shape,
+	int		mode,
+	int		count,
+	DDXPointPtr	ptsIn 
+   );
+   int FillPolygonCacheBltFlags;
+
+   void (*FillPolygonCacheExpand)(
+	DrawablePtr	pDrawable,
+	GCPtr		pGC,
+	int		shape,
+	int		mode,
+	int		count,
+	DDXPointPtr	ptsIn 
+   );
+   int FillPolygonCacheExpandFlags;
+
    void (*PolyFillArcSolid)(
 	DrawablePtr	pDraw,
 	GCPtr		pGC,
@@ -905,6 +1008,8 @@ typedef struct _XAAInfoRec {
    int  CachePixelGranularity;
    int  MaxCacheableTileWidth;
    int  MaxCacheableTileHeight;
+   int  MaxCacheableStippleWidth;
+   int  MaxCacheableStippleHeight;
 
    XAACacheInfoPtr (*CacheTile)(
 	ScrnInfoPtr Scrn, PixmapPtr pPix
@@ -912,6 +1017,9 @@ typedef struct _XAAInfoRec {
    XAACacheInfoPtr (*CacheStipple)(
 	ScrnInfoPtr Scrn, PixmapPtr pPix, 
 	int fg, int bg
+   );
+   XAACacheInfoPtr (*CacheMonoStipple)(
+	ScrnInfoPtr Scrn, PixmapPtr pPix
    );
    XAACacheInfoPtr (*CacheMono8x8Pattern)(
 	ScrnInfoPtr Scrn, int pat0, int pat1

@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.1.2.1 1998/07/18 17:53:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.2 1998/07/25 16:55:48 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -93,7 +93,7 @@ PM2VDAC_CalculateClock
 
     for (f=1;f<256;f++) {
 	for (pre=1;pre<256;pre++) {
-	    for (post=0;post<5;post++) {
+	    for (post=0;post<2;post++) { 
 	    	freq = ((refclock * f) / (pre * (1 << divide[post])));
 		if ((reqclock > freq - freqerr)&&(reqclock < freq + freqerr)){
 		    freqerr = (reqclock > freq) ? 
@@ -139,7 +139,7 @@ Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     pReg->glintRegs[0x54] = Shiftbpp(pScrn,mode->CrtcHTotal);
     pReg->glintRegs[0x55] = Shiftbpp(pScrn,pReg->glintRegs[0x50] + 
-					   pReg->glintRegs[0x52]);
+				     		pReg->glintRegs[0x52]);
     pReg->glintRegs[0x56] = Shiftbpp(pScrn,pReg->glintRegs[0x50]);
     pReg->glintRegs[0x57] = Shiftbpp(pScrn,mode->CrtcHTotal-mode->CrtcHDisplay);
     pReg->glintRegs[0x58] = Shiftbpp(pScrn,pScrn->displayWidth>>1);
@@ -156,7 +156,6 @@ Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     /* We stick the RAMDAC into 64bit mode */
     /* And reduce the horizontal timings and clock by half */
     pReg->glintRegs[0x5D] |= 1<<16;
-    mode->Clock /= 2;
     pReg->glintRegs[0x54] >>= 1;
     pReg->glintRegs[0x55] >>= 1;
     pReg->glintRegs[0x56] >>= 1;
@@ -177,7 +176,7 @@ Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     	unsigned long clockused;
     	unsigned long fref = PERMEDIA2V_REF_CLOCK;
 	
-    	clockused = PM2VDAC_CalculateClock(mode->Clock,fref,&m,&n,&p);
+    	clockused = PM2VDAC_CalculateClock(mode->Clock/2,fref,&m,&n,&p);
 	pReg->glintRegs[0x70] = m;
 	pReg->glintRegs[0x71] = n;
 	pReg->glintRegs[0x72] = p;
@@ -224,6 +223,7 @@ Permedia2VSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     int i;
     GLINTPtr pGlint = GLINTPTR(pScrn);
 
+    glintReg->glintRegs[0x60] = GLINT_READ_REG(ChipConfig);
     glintReg->glintRegs[0x00]  = GLINT_READ_REG(Aperture0);
     glintReg->glintRegs[0x01]  = GLINT_READ_REG(Aperture1);
     glintReg->glintRegs[0x02]  = GLINT_READ_REG(PMFramebufferWriteMask);
@@ -246,7 +246,6 @@ Permedia2VSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     glintReg->glintRegs[0x5F] = GLINT_READ_REG(PMScreenBase);
     glintReg->glintRegs[0x5D] = GLINT_READ_REG(PMVideoControl);
     glintReg->glintRegs[0x5E] = GLINT_READ_REG(VClkCtl);
-    glintReg->glintRegs[0x60] = GLINT_READ_REG(ChipConfig);
 
     /* save colors */
     GLINT_SLOW_WRITE_REG(0xFF, PM2DACReadMask);
@@ -282,6 +281,7 @@ Permedia2VRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     GLINTPtr pGlint = GLINTPTR(pScrn);
     CARD32 temp;
 
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x60], ChipConfig);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x00], Aperture0);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x01], Aperture1);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x02], PMFramebufferWriteMask);
@@ -304,7 +304,6 @@ Permedia2VRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x5C], PMVbEnd);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x5B], PMVsStart);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x5A], PMVsEnd);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x60], ChipConfig);
 
     GLINT_SLOW_WRITE_REG(0, PM2VDACIndexRegHigh);
 
@@ -318,8 +317,8 @@ Permedia2VRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     GLINT_SLOW_WRITE_REG(PM2VDACRDColorFormat, PM2VDACIndexRegLow);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x82],PM2VDACIndexData);
 
-    GLINT_SLOW_WRITE_REG(PM2VDACIndexClockAControl >> 8, PM2VDACIndexRegHigh);
-    GLINT_SLOW_WRITE_REG(PM2VDACIndexClockAControl, PM2VDACIndexRegLow);
+    GLINT_SLOW_WRITE_REG(PM2VDACIndexClockControl >> 8, PM2VDACIndexRegHigh);
+    GLINT_SLOW_WRITE_REG(PM2VDACIndexClockControl, PM2VDACIndexRegLow);
     temp = GLINT_READ_REG(PM2VDACIndexData);
     GLINT_SLOW_WRITE_REG(temp & 0xFC, PM2VDACIndexData);
 
@@ -330,9 +329,10 @@ Permedia2VRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     GLINT_SLOW_WRITE_REG(PM2VDACRDDClk0PostScale, PM2VDACIndexRegLow);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x72], PM2VDACIndexData);
 
-    GLINT_SLOW_WRITE_REG(PM2VDACIndexClockAControl, PM2VDACIndexRegLow);
+    GLINT_SLOW_WRITE_REG(PM2VDACIndexClockControl, PM2VDACIndexRegLow);
     GLINT_SLOW_WRITE_REG(temp | 0x03, PM2VDACIndexData);
     GLINT_SLOW_WRITE_REG(0, PM2VDACIndexRegHigh);
+
 }
 
 static void 
@@ -358,12 +358,10 @@ Permedia2vLoadCursorImage(
     GLINTPtr pGlint = GLINTPTR(pScrn);
     int i;
        
-    Permedia2vHideCursor(pScrn);
     GLINT_SLOW_WRITE_REG((PM2VDACRDCursorPattern>>8)&0xff, PM2VDACIndexRegHigh);
     for (i=0; i<1024; i++) 
     	Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPattern+i, 0x00, *(src++));
     GLINT_SLOW_WRITE_REG(0, PM2VDACIndexRegHigh);
-    Permedia2vShowCursor(pScrn);
 }
 
 static void
@@ -377,6 +375,8 @@ Permedia2vSetCursorPosition(
 
     /* Output position - "only" 12 bits of location documented */
    
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorHotSpotX, 0x00, 0x00);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorHotSpotY, 0x00, 0x00);
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorXLow, 0x00, x & 0xFF);
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorXHigh, 0x00, (x>>8) & 0x0F);
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorYLow, 0x00, y & 0xFF);
@@ -402,6 +402,7 @@ Permedia2vSetCursorColors(
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+9, 0x00, fg >> 16);
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+10, 0x00, fg >> 8);
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+11, 0x00, fg);
+   
     GLINT_SLOW_WRITE_REG(0, PM2VDACIndexRegHigh);
 }
 

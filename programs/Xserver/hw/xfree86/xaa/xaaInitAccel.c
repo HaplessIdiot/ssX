@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.1.2.10 1998/07/24 11:36:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.2 1998/07/25 16:58:48 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -36,6 +36,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     Bool HaveClipper = FALSE;
     Bool HaveImageWriteRect = FALSE;
     Bool HaveScanlineImageWriteRect = FALSE;
+    Bool HaveScreenToScreenColorExpandCopy = FALSE;
 
     infoRec->pScrn = pScrn;
     infoRec->NeedToSync = FALSE;
@@ -216,6 +217,12 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	HaveScanlineColorExpansion = TRUE;
 
 
+    /**** Screen to Screen Color Expansion ****/
+
+    if(infoRec->SetupForScreenToScreenColorExpandCopy &&
+       infoRec->SubsequentScreenToScreenColorExpandCopy)
+	HaveScreenToScreenColorExpandCopy = TRUE;
+
     /**** Image Writes ****/
 
     if(infoRec->SetupForImageWrite && infoRec->ImageWriteBase &&
@@ -253,9 +260,12 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	xf86ErrorF("\t8x8 color pattern filled trapezoids\n");
 
     if(HaveColorExpansion)
-	xf86ErrorF("\tColor expansion\n");
+	xf86ErrorF("\tCPU to Screen color expansion\n");
     else if(HaveScanlineColorExpansion)
-	xf86ErrorF("\tIndirect color expansion\n");
+	xf86ErrorF("\tIndirect CPU to Screen color expansion\n");
+
+    if(HaveScreenToScreenColorExpandCopy)
+	xf86ErrorF("\tScreen to Screen color expansion\n");
 
     if(HaveSolidTwoPointLine || HaveSolidBresenhamLine)
 	xf86ErrorF("\tSolid Lines\n");
@@ -378,6 +388,27 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     } else if(HaveScreenToScreenCopy) {
 	infoRec->FillCacheBltSpans = XAAFillCacheBltSpans;
 	infoRec->FillCacheBltSpansFlags = infoRec->ScreenToScreenCopyFlags;     
+    }
+
+
+    /**** FillCacheExpandRects ****/
+
+    if(infoRec->FillCacheExpandRects) {
+	xf86ErrorF("\tDriver provided FillCacheExpandRects replacement\n");
+    } else if(HaveScreenToScreenColorExpandCopy) {
+	infoRec->FillCacheExpandRects = XAAFillCacheExpandRects;
+	infoRec->FillCacheExpandRectsFlags = 
+		infoRec->ScreenToScreenColorExpandCopyFlags;     
+    }
+   	
+    /**** FillCacheExpandSpans ****/
+
+    if(infoRec->FillCacheExpandSpans) {
+	xf86ErrorF("\tDriver provided FillCacheExpandSpans replacement\n");
+    } else if(HaveScreenToScreenColorExpandCopy) {
+	infoRec->FillCacheExpandSpans = XAAFillCacheExpandSpans;
+	infoRec->FillCacheExpandSpansFlags = 
+		infoRec->ScreenToScreenColorExpandCopyFlags;     
     }
 
 
@@ -827,6 +858,22 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	}
     }
 
+    if(infoRec->FillCacheExpandRects) {
+	if(!infoRec->PolyFillRectCacheExpand) {
+	    infoRec->PolyFillRectCacheExpand = XAAPolyFillRectCacheExpand;
+	    infoRec->PolyFillRectCacheExpandFlags =
+				infoRec->FillCacheExpandRectsFlags;
+	}
+    }
+    if(infoRec->FillCacheExpandSpans) {
+	if(!infoRec->FillSpansCacheExpand) {
+	    infoRec->FillSpansCacheExpand = XAAFillSpansCacheExpand;
+	    infoRec->FillSpansCacheExpandFlags =
+				infoRec->FillCacheExpandSpansFlags;
+	}
+    }
+
+
     if(infoRec->TEGlyphRenderer &&
 	!(infoRec->TEGlyphRendererFlags & NO_TRANSPARENCY)) {
 
@@ -918,6 +965,25 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	infoRec->FillPolygonSolidFlags = infoRec->SolidFillFlags;
     }
 
+    if(!infoRec->FillPolygonMono8x8Pattern && HaveMono8x8PatternFillRect) {
+	infoRec->FillPolygonMono8x8Pattern = XAAFillPolygonMono8x8Pattern;
+	infoRec->FillPolygonMono8x8PatternFlags = 
+				infoRec->Mono8x8PatternFillFlags;
+    }
+
+    if(!infoRec->FillPolygonCacheExpand && HaveScreenToScreenColorExpandCopy) {
+	infoRec->FillPolygonCacheExpand = XAAFillPolygonCacheExpand;
+	infoRec->FillPolygonCacheExpandFlags = 
+				infoRec->ScreenToScreenColorExpandCopyFlags;
+    }
+
+    if(!infoRec->FillPolygonCacheBlt && HaveScreenToScreenCopy) {
+	infoRec->FillPolygonCacheBlt = XAAFillPolygonCacheBlt;
+	infoRec->FillPolygonCacheBltFlags = 
+				infoRec->ScreenToScreenCopyFlags;
+    }
+
+
     if(!infoRec->PolyFillArcSolid && HaveSolidFillRect) {
 	infoRec->PolyFillArcSolid = XAAPolyFillArcSolid;
 	infoRec->PolyFillArcSolidFlags = infoRec->SolidFillFlags;
@@ -963,10 +1029,10 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	infoRec->ValidatePushPixels = XAAValidatePushPixels;
     } 
 
-    /* By default XAA assumes the FillSpans and PolyFillRects have
-	the same restrictions.  If you supply GC level replacements
-	for either of these and alter this relationship you may need
-	to supply replacement validation routines */
+    /* By default XAA assumes the FillSpans, PolyFillRects, FillPolygon
+	and PolyFillArcs have the same restrictions.  If you supply GC 
+	level replacements for any of these and alter this relationship 
+	you may need to supply replacement validation routines */
 
     if(!infoRec->ValidateFillSpans && 
 	(infoRec->FillSpansSolid || infoRec->FillSpansMono8x8Pattern ||
@@ -1026,16 +1092,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 		infoRec->ImageGlyphBltMask |= GCBackground;
 	}
 	infoRec->ValidateImageGlyphBlt = XAAValidateImageGlyphBlt;
-    }
-
-    if(!infoRec->ValidateFillPolygon && infoRec->ValidateFillSpans) {
-	infoRec->ValidateFillPolygon = XAAValidateFillPolygon;
-	infoRec->FillPolygonMask = infoRec->FillSpansMask;
-    }
-
-    if(!infoRec->ValidatePolyFillArc && infoRec->ValidateFillSpans) {
-	infoRec->ValidatePolyFillArc = XAAValidatePolyFillArc;
-	infoRec->PolyFillArcMask = infoRec->FillSpansMask;
     }
 
     /* By default XAA only provides a Validation function for the 
@@ -1109,6 +1165,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 
     if(!infoRec->CacheTile && infoRec->WritePixmapToCache)
 	infoRec->CacheTile = XAACacheTile;
+    if(!infoRec->CacheMonoStipple && infoRec->WritePixmapToCache)
+	infoRec->CacheMonoStipple = XAACacheMonoStipple;
     if(!infoRec->CacheStipple && infoRec->WriteBitmapToCache)
 	infoRec->CacheStipple = XAACacheStipple;
     if(!infoRec->CacheMono8x8Pattern && infoRec->WriteMono8x8PatternToCache)

@@ -29,7 +29,7 @@
  * 
  * Permedia 2 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.1.2.5 1998/07/18 17:53:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.2 1998/07/25 16:55:47 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -41,23 +41,12 @@
 #include "glint_regs.h"
 #include "glint.h"
 
-static char	bppand[4] = { 0x03, 0x01, 0x00, 0x00 };
-#if 0
-extern int      ScanlineWordCount;
-static int	span;
-static int      gcolor;
-static int      gbg, gfg;
-
-extern void	xf86ImageGlyphBltTE();
-extern void	xf86PolyGlyphBltTE();
-#endif
-
 static void	Permedia2Sync(ScrnInfoPtr pScrn);
-static void    Permedia2SetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
+static void	Permedia2SetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
 					int rop, unsigned int planemask);
 static void	Permedia2SubsequentFillRectSolid(ScrnInfoPtr pScrn, int x,
 					int y, int w, int h);
-static void    Permedia2SetupForFillRectSolid24bpp(ScrnInfoPtr pScrn,int color,
+static void    	Permedia2SetupForFillRectSolid24bpp(ScrnInfoPtr pScrn,int color,
 					int rop, unsigned int planemask);
 static void	Permedia2SubsequentFillRectSolid24bpp(ScrnInfoPtr pScrn, int x,
 						int y, int w, int h);
@@ -74,25 +63,26 @@ static void	Permedia2SetupForScreenToScreenCopy2432bpp(ScrnInfoPtr pScrn,
 				int xdir, int ydir, int rop,
 				unsigned int planemask,
 				int transparency_color);
+static void	Permedia2SetClippingRectangle(ScrnInfoPtr pScrn, int x, int y,
+				int w, int h);
+static void    	Permedia2SetupForHorVertLine(ScrnInfoPtr pScrn,int color,
+					int rop, unsigned int planemask);
+static void	Permedia2SubsequentHorVertLine(ScrnInfoPtr pScrn, int x, int y, int len, int dir);
 #if 0
-static void	Permedia2SubsequentTwoPointLine ();
-static void	Permedia2SubsequentTwoPointLine24bpp ();
-static void	Permedia2SetupFor8x8PatternColorExpand ();
-static void	Permedia2Subsequent8x8PatternColorExpand();
-static void	Permedia2SetupFor8x8PatternColorExpand24bpp ();
-static void	Permedia2Subsequent8x8PatternColorExpand24bpp();
-static void	Permedia2SetupForScanlineScreenToScreenColorExpand ();
-static void	Permedia2SetupForScanlineScreenToScreenColorExpand24bpp();
-static void	Permedia2SubsequentScanlineScreenToScreenColorExpand ();
-static void	Permedia2SetClippingRectangle();
 static void	Permedia2FillRectStippled();
-static void	Permedia2WriteBitmap();
 static void	Permedia2ImageTextTECPUToScreenColorExpand();
 static void	Permedia2PolyTextTECPUToScreenColorExpand();
-static void 	Permedia2DoImageWrite8bpp();
-static void 	Permedia2DoImageWrite16bpp();
-static void 	Permedia2DoImageWrite32bpp();
 #endif
+static void	Permedia2WriteBitmap(ScrnInfoPtr pScrn, int x, int y, int w, int h, unsigned char *src, int srcwidth, int skipleft, int fg, int bg, int rop, unsigned int planemask);
+static void	Permedia2FillColorExpandRects(ScrnInfoPtr pScrn, int fg, int bg, int rop, unsigned int planemask, int nBox, BoxPtr pBox, int xorg, int yorg, PixmapPtr pPixmap);
+static void	Permedia2SetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int patternx, int patterny, int fg, int bg, int rop, unsigned int planemask);
+static void	Permedia2SubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, int patternx, int patterny, int x, int y, int w, int h);
+static void	Permedia2SetupForMono8x8PatternFill24bpp(ScrnInfoPtr pScrn, int patternx, int patterny, int fg, int bg, int rop, unsigned int planemask);
+static void	Permedia2SubsequentMono8x8PatternFillRect24bpp(ScrnInfoPtr pScrn, int patternx, int patterny, int x, int y, int w, int h);
+static void 	Permedia2WritePixmap8bpp(ScrnInfoPtr pScrn, int x, int y, int w, int h, unsigned char *src, int srcwidth, int rop, unsigned int planemask, int transparency_color, int bpp, int depth);
+static void 	Permedia2WritePixmap16bpp(ScrnInfoPtr pScrn, int x, int y, int w, int h, unsigned char *src, int srcwidth, int rop, unsigned int planemask, int transparency_color, int bpp, int depth);
+static void 	Permedia2WritePixmap24bpp(ScrnInfoPtr pScrn, int x, int y, int w, int h, unsigned char *src, int srcwidth, int rop, unsigned int planemask, int transparency_color, int bpp, int depth);
+static void 	Permedia2WritePixmap32bpp(ScrnInfoPtr pScrn, int x, int y, int w, int h, unsigned char *src, int srcwidth, int rop, unsigned int planemask, int transparency_color, int bpp, int depth);
 
 static void
 Permedia2InitializeEngine(ScrnInfoPtr pScrn)
@@ -101,8 +91,8 @@ Permedia2InitializeEngine(ScrnInfoPtr pScrn)
 
     /* Initialize the Accelerator Engine to defaults */
 
-    GLINT_SLOW_WRITE_REG(0, 		ScissorMode);
-    GLINT_SLOW_WRITE_REG(1, 		FBWriteMode);
+    GLINT_SLOW_WRITE_REG(UNIT_DISABLE,	ScissorMode);
+    GLINT_SLOW_WRITE_REG(UNIT_ENABLE,	FBWriteMode);
     GLINT_SLOW_WRITE_REG(0, 		dXDom);
     GLINT_SLOW_WRITE_REG(0, 		dXSub);
     GLINT_SLOW_WRITE_REG(GWIN_DisableLBUpdate,   GLINTWindow);
@@ -181,19 +171,13 @@ Permedia2AccelInit(ScreenPtr pScreen)
 				Permedia2SetupForFillRectSolid24bpp;
     	infoPtr->SubsequentSolidFillRect = 	
 				Permedia2SubsequentFillRectSolid24bpp;
-#if 0
-    	infoPtr->SubsequentTwoPointLine = 
-				Permedia2SubsequentTwoPointLine24bpp;
-#endif
     } else {
     	infoPtr->SetupForSolidFill = Permedia2SetupForFillRectSolid;
     	infoPtr->SubsequentSolidFillRect = Permedia2SubsequentFillRectSolid;
-#if 0
-    	infoPtr->SubsequentTwoPointLine = Permedia2SubsequentTwoPointLine;
-#endif
     }
+    infoPtr->SetupForSolidLine = Permedia2SetupForHorVertLine;
+    infoPtr->SubsequentSolidHorVertLine = Permedia2SubsequentHorVertLine;
     
-#if 0
     if (pScrn->bitsPerPixel >= 24) {
 	infoPtr->SetupForScreenToScreenCopy = 	
 				Permedia2SetupForScreenToScreenCopy2432bpp;
@@ -209,75 +193,58 @@ Permedia2AccelInit(ScreenPtr pScreen)
 
     infoPtr->SetClippingRectangle = Permedia2SetClippingRectangle;
 
-    infoPtr->ColorExpandFlags = VIDEO_SOURCE_GRANULARITY_PIXEL |
-    					CPU_TRANSFER_PAD_DWORD |
-    					ONLY_TRANSPARENCY_SUPPORTED |
-    					BIT_ORDER_IN_BYTE_LSBFIRST;
-
-  xf86AccelInfoRec.ScratchBufferAddr = 1;
-  xf86AccelInfoRec.ScratchBufferBase = 
-	(void *)((char*)pGlint->IOBase + OutputFIFO + 4);
-  xf86AccelInfoRec.ScratchBufferSize = 255 * sizeof(CARD32);
-  xf86AccelInfoRec.PingPongBuffers = 1;
-
-  if (pScrn->bitsPerPixel == 24) {
-    xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand =
-    	Permedia2SetupForScanlineScreenToScreenColorExpand24bpp;
-  } else {
-    xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand =
-    	Permedia2SetupForScanlineScreenToScreenColorExpand;
-  }
-  xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
-    	Permedia2SubsequentScanlineScreenToScreenColorExpand;
-  
-  xf86AccelInfoRec.PatternFlags =
+    infoPtr->Mono8x8PatternFillFlags = 
     				HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
     				HARDWARE_PATTERN_PROGRAMMED_BITS |
-    				HARDWARE_PATTERN_MONO_TRANSPARENCY |
     				HARDWARE_PATTERN_SCREEN_ORIGIN;
 
-  if (pScrn->bitsPerPixel == 24) {
-    xf86AccelInfoRec.SetupFor8x8PatternColorExpand = 
-				Permedia2SetupFor8x8PatternColorExpand24bpp;
-    xf86AccelInfoRec.Subsequent8x8PatternColorExpand = 
-				Permedia2Subsequent8x8PatternColorExpand24bpp;
-  } else {
-    xf86AccelInfoRec.SetupFor8x8PatternColorExpand = 
-				Permedia2SetupFor8x8PatternColorExpand;
-    xf86AccelInfoRec.Subsequent8x8PatternColorExpand = 
-				Permedia2Subsequent8x8PatternColorExpand;
-  }
+    if (pScrn->bitsPerPixel == 24) {
+	infoPtr->SetupForMono8x8PatternFill =
+				Permedia2SetupForMono8x8PatternFill24bpp;
+	infoPtr->SubsequentMono8x8PatternFillRect = 
+				Permedia2SubsequentMono8x8PatternFillRect24bpp;
+    } else {
+	infoPtr->SetupForMono8x8PatternFill =
+				Permedia2SetupForMono8x8PatternFill;
+	infoPtr->SubsequentMono8x8PatternFillRect = 
+				Permedia2SubsequentMono8x8PatternFillRect;
+    }
 
   if (pScrn->bitsPerPixel != 24) {
-  	/* Replace XAA functions */
-  	xf86AccelInfoRec.FillRectOpaqueStippled = Permedia2FillRectStippled;
-  	xf86AccelInfoRec.FillRectStippled = Permedia2FillRectStippled;
-  	xf86GCInfoRec.SecondaryPolyFillRectOpaqueStippledFlags = 0;
-  	xf86GCInfoRec.SecondaryPolyFillRectStippledFlags = 0;
-  	xf86AccelInfoRec.WriteBitmap = Permedia2WriteBitmap;
+	/* Performance loss ??? */
+	/* infoPtr->FillColorExpandRects = Permedia2FillColorExpandRects; */
+  	infoPtr->WriteBitmap = Permedia2WriteBitmap;
 
+#if 0
   	xf86AccelInfoRec.ImageTextTE=Permedia2ImageTextTECPUToScreenColorExpand;
   	xf86GCInfoRec.ImageGlyphBltTE = xf86ImageGlyphBltTE;
  
   	xf86AccelInfoRec.PolyTextTE = Permedia2PolyTextTECPUToScreenColorExpand;
   	xf86GCInfoRec.PolyGlyphBltTE = xf86PolyGlyphBltTE;
-  }
-
-  if (pScrn->bitsPerPixel == 8)
-  	xf86AccelInfoRec.DoImageWrite = Permedia2DoImageWrite8bpp;
-  else
-  if (pScrn->bitsPerPixel == 16)
-  	xf86AccelInfoRec.DoImageWrite = Permedia2DoImageWrite16bpp;
-  else
-  if (pScrn->bitsPerPixel == 32)
-  	xf86AccelInfoRec.DoImageWrite = Permedia2DoImageWrite32bpp;
 #endif
+    }
+
+    if (pScrn->bitsPerPixel == 8)
+  	infoPtr->WritePixmap = Permedia2WritePixmap8bpp;
+    else
+    if (pScrn->bitsPerPixel == 16)
+  	infoPtr->WritePixmap = Permedia2WritePixmap16bpp;
+    else
+#if 0
+    if (pScrn->bitsPerPixel == 24)
+  	infoPtr->WritePixmap = Permedia2WritePixmap24bpp;
+    else
+#endif
+    if (pScrn->bitsPerPixel == 32)
+  	infoPtr->WritePixmap = Permedia2WritePixmap32bpp;
 
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
     AvailFBArea.y2 = pGlint->FbMapSize / (pScrn->displayWidth * 
 					  pScrn->bitsPerPixel / 8);
+    if (AvailFBArea.x2 > 2048) AvailFBArea.x2 = 2047;
+    if (AvailFBArea.y2 > 2048) AvailFBArea.y2 = 2047;
 
     xf86InitFBManager(pScreen, &AvailFBArea);
 
@@ -287,28 +254,27 @@ Permedia2AccelInit(ScreenPtr pScreen)
 static void
 Permedia2Sync(ScrnInfoPtr pScrn)
 {
-	GLINTPtr pGlint = GLINTPTR(pScrn);
+    GLINTPtr pGlint = GLINTPTR(pScrn);
 
-	while (GLINT_READ_REG(DMACount) != 0);
-	GLINT_WAIT(2);
-	GLINT_WRITE_REG(0xc00, FilterMode);
-	GLINT_WRITE_REG(0, GlintSync);
-	do {
-    		while(GLINT_READ_REG(OutFIFOWords) == 0);
+    while (GLINT_READ_REG(DMACount) != 0);
+    GLINT_WAIT(2);
+    GLINT_WRITE_REG(0xc00, FilterMode);
+    GLINT_WRITE_REG(0, GlintSync);
+    do {
+   	while(GLINT_READ_REG(OutFIFOWords) == 0);
 #define Sync_tag 0x188
-	} while (GLINT_READ_REG(OutputFIFO) != Sync_tag);
+    } while (GLINT_READ_REG(OutputFIFO) != Sync_tag);
 }
 
-#if 0
 static void
-Permedia2SetClippingRectangle (int x1, int y1, int x2, int y2)
+Permedia2SetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2)
 {
-  GLINT_WAIT(3);
-  GLINT_WRITE_REG (((y1&0x0fff)<<16)|(x1&0x0fff), ScissorMinXY);
-  GLINT_WRITE_REG (((y2&0x0fff)<<16)|(x2&0x0fff), ScissorMaxXY);
-  GLINT_WRITE_REG (1, ScissorMode);
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    GLINT_WAIT(3);
+    GLINT_WRITE_REG (((y1&0x0fff)<<16)|(x1&0x0fff), ScissorMinXY);
+    GLINT_WRITE_REG (((y2&0x0fff)<<16)|(x2&0x0fff), ScissorMaxXY);
+    GLINT_WRITE_REG (1, ScissorMode);
 }
-#endif
 
 static void
 Permedia2SetupForScreenToScreenCopy2432bpp(ScrnInfoPtr pScrn, 
@@ -317,104 +283,122 @@ Permedia2SetupForScreenToScreenCopy2432bpp(ScrnInfoPtr pScrn,
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
 
-  pGlint->BltScanDirection = 0;
-  if (xdir == 1) pGlint->BltScanDirection |= XPositive;
-  if (ydir == 1) pGlint->BltScanDirection |= YPositive;
+    pGlint->BltScanDirection = 0;
+    if (xdir == 1) pGlint->BltScanDirection |= XPositive;
+    if (ydir == 1) pGlint->BltScanDirection |= YPositive;
   
-  pGlint->ROP = rop;
+    pGlint->ROP = rop;
 
-  GLINT_WAIT(5);
-  DO_PLANEMASK(planemask);
+    GLINT_WAIT(3);
+    DO_PLANEMASK(planemask);
 
-  GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
-  GLINT_WRITE_REG(0, RasterizerMode);
-
-  if ((rop == GXset) || (rop == GXclear)) {
+    if ((rop == GXset) || (rop == GXclear)) {
 	GLINT_WRITE_REG(pGlint->pprod, FBReadMode);
-  } else
-  if ((rop == GXcopy) || (rop == GXcopyInverted)) {
-	GLINT_WRITE_REG(pGlint->pprod|FBRM_SrcEnable, FBReadMode);
-  } else {
-	GLINT_WRITE_REG(pGlint->pprod|FBRM_SrcEnable|pGlint->BlitMode, FBReadMode);
-  }
-  GLINT_WRITE_REG(rop<<1|UNIT_ENABLE, LogicalOpMode);
+    } else {
+    	if ((rop == GXcopy) || (rop == GXcopyInverted)) {
+	    GLINT_WRITE_REG(pGlint->pprod|FBRM_SrcEnable, FBReadMode);
+        } else {
+	    GLINT_WRITE_REG(pGlint->pprod|FBRM_SrcEnable|pGlint->BlitMode, 
+								FBReadMode);
+        }
+    }
+    GLINT_WRITE_REG(rop<<1|UNIT_ENABLE, LogicalOpMode);
 }
 
 static void
-Permedia2SubsequentScreenToScreenCopy2432bpp (ScrnInfoPtr pScrn, int x1,
+Permedia2SubsequentScreenToScreenCopy2432bpp(ScrnInfoPtr pScrn, int x1,
 					int y1, int x2, int y2, int w, int h)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
 
-  int srcaddr = y1 * pScrn->displayWidth + x1;
-  int dstaddr = y2 * pScrn->displayWidth + x2;
-  GLINT_WAIT(4);
-  GLINT_WRITE_REG((y2<<16)|x2, RectangleOrigin);
-  GLINT_WRITE_REG((h<<16)|w, RectangleSize);
-  GLINT_WRITE_REG(srcaddr - dstaddr, FBSourceOffset);
-  GLINT_WRITE_REG(PrimitiveRectangle | pGlint->BltScanDirection, Render);
+    int srcaddr = y1 * pScrn->displayWidth + x1;
+    int dstaddr = y2 * pScrn->displayWidth + x2;
+    GLINT_WAIT(4);
+    GLINT_WRITE_REG((y2<<16)|x2, RectangleOrigin);
+    GLINT_WRITE_REG((h<<16)|w, RectangleSize);
+    GLINT_WRITE_REG(srcaddr - dstaddr, FBSourceOffset);
+    GLINT_WRITE_REG(PrimitiveRectangle | pGlint->BltScanDirection, Render);
 }
 
 static void
-Permedia2SetupForScreenToScreenCopy (ScrnInfoPtr pScrn, 
+Permedia2SetupForScreenToScreenCopy(ScrnInfoPtr pScrn, 
 				int xdir, int ydir, int rop,
 				unsigned int planemask, int transparency_color)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
 
-  pGlint->BltScanDirection = 0;
-  if (xdir == 1) pGlint->BltScanDirection |= XPositive;
-  if (ydir == 1) pGlint->BltScanDirection |= YPositive;
+    pGlint->BltScanDirection = 0;
+    if (xdir == 1) pGlint->BltScanDirection |= XPositive;
+    if (ydir == 1) pGlint->BltScanDirection |= YPositive;
   
-  pGlint->ROP = rop;
+    pGlint->ROP = rop;
 
-  GLINT_WAIT(4);
-  DO_PLANEMASK(planemask);
-  GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
-  GLINT_WRITE_REG(0, RasterizerMode);
+    GLINT_WAIT(2);
+    DO_PLANEMASK(planemask);
 
-  if ((rop == GXset) || (rop == GXclear)) {
+    if ((rop == GXset) || (rop == GXclear)) {
 	pGlint->FrameBufferReadMode = pGlint->pprod;
-  } else
-  if ((rop == GXcopy) || (rop == GXcopyInverted)) {
-	pGlint->FrameBufferReadMode = pGlint->pprod | FBRM_SrcEnable;
-  } else {
-	pGlint->FrameBufferReadMode = pGlint->pprod | FBRM_SrcEnable | pGlint->BlitMode;
-  }
-  GLINT_WRITE_REG(rop<<1|UNIT_ENABLE, LogicalOpMode);
+    } else
+    if ((rop == GXcopy) || (rop == GXcopyInverted)) {
+	pGlint->FrameBufferReadMode = pGlint->pprod |FBRM_SrcEnable;
+    } else {
+	pGlint->FrameBufferReadMode = pGlint->pprod | FBRM_SrcEnable |
+							pGlint->BlitMode;
+    }
+    GLINT_WRITE_REG(rop<<1|UNIT_ENABLE, LogicalOpMode);
 }
 
 static void
-Permedia2SubsequentScreenToScreenCopy (ScrnInfoPtr pScrn, int x1, int y1,
+Permedia2SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
 					int x2, int y2, int w, int h)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
-  int lowerbits = bppand[(pScrn->bitsPerPixel>>3)-1];
-  int srcaddr;
-  int dstaddr;
-  char align;
+    int srcaddr;
+    int dstaddr;
+    char align;
 
-  /* We can only use GXcopy for Packed modes */
-  if (pGlint->ROP != GXcopy) {
+    /* We can only use GXcopy for Packed modes */
+    if (pGlint->ROP != GXcopy) {
   	srcaddr = y1 * pScrn->displayWidth + x1;
   	dstaddr = y2 * pScrn->displayWidth + x2;
-	GLINT_WAIT(5);
+	GLINT_WAIT(6);
 	GLINT_WRITE_REG(pGlint->FrameBufferReadMode, FBReadMode);
   	GLINT_WRITE_REG((y2<<16)|x2, RectangleOrigin);
   	GLINT_WRITE_REG((h<<16)|w, RectangleSize);
-  } else {
-  	srcaddr = y1 * pScrn->displayWidth + (x1 & ~lowerbits);
-  	dstaddr = y2 * pScrn->displayWidth + (x2 & ~lowerbits);
-  	align = (x2 & lowerbits) - (x1 & lowerbits);
-	GLINT_WAIT(6);
-	GLINT_WRITE_REG(pGlint->FrameBufferReadMode | FBRM_Packed, FBReadMode);
+    } else {
+  	srcaddr = y1 * pScrn->displayWidth + (x1 & ~pGlint->bppalign);
+  	dstaddr = y2 * pScrn->displayWidth + (x2 & ~pGlint->bppalign);
+  	align = (x2 & pGlint->bppalign) - (x1 & pGlint->bppalign);
+	GLINT_WAIT(7);
+	GLINT_WRITE_REG(pGlint->FrameBufferReadMode|FBRM_Packed, FBReadMode);
   	GLINT_WRITE_REG((y2<<16)|(x2>>pGlint->BppShift), RectangleOrigin);
   	GLINT_WRITE_REG((h<<16)|((w+7)>>pGlint->BppShift), RectangleSize);
   	GLINT_WRITE_REG(align<<29|x2<<16|(x2+w), PackedDataLimits);
-  }
+    }
 
-  GLINT_WRITE_REG(srcaddr - dstaddr, FBSourceOffset);
-  GLINT_WRITE_REG(PrimitiveRectangle | pGlint->BltScanDirection, Render);
+    GLINT_WRITE_REG(0, WaitForCompletion);
+    GLINT_WRITE_REG(srcaddr - dstaddr, FBSourceOffset);
+    GLINT_WRITE_REG(PrimitiveRectangle | pGlint->BltScanDirection, Render);
+}
+
+static void
+Permedia2SetupForHorVertLine(ScrnInfoPtr pScrn, int color,
+					 int rop, unsigned int planemask)
+{
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    pGlint->ROP = rop;
+
+    GLINT_WAIT(4);
+    DO_PLANEMASK(planemask);
+    GLINT_WRITE_REG(color, GLINTColor);
+    REPLICATE(color);
+    GLINT_WRITE_REG(color, FBBlockColor);
+    if (rop == GXcopy) {
+  	GLINT_WRITE_REG(pGlint->pprod, FBReadMode);
+    } else {
+  	GLINT_WRITE_REG(pGlint->pprod|pGlint->BlitMode, FBReadMode);
+    }
+    GLINT_WRITE_REG(rop<<1|UNIT_ENABLE, LogicalOpMode);
 }
 
 static void
@@ -422,23 +406,19 @@ Permedia2SetupForFillRectSolid24bpp(ScrnInfoPtr pScrn, int color,
 					 int rop, unsigned int planemask)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
-#if 0
-  gcolor = color;
-#endif
+    pGlint->ForeGroundColor = color;
+    pGlint->ROP = rop;
 
-  GLINT_WAIT(7);
-  DO_PLANEMASK(planemask);
-  pGlint->ROP = rop;
-  GLINT_WRITE_REG(UNIT_ENABLE, ColorDDAMode);
-  GLINT_WRITE_REG(color, ConstantColor);
-  if (rop == GXcopy) {
+    GLINT_WAIT(5);
+    DO_PLANEMASK(planemask);
+    GLINT_WRITE_REG(UNIT_ENABLE, ColorDDAMode);
+    GLINT_WRITE_REG(color, ConstantColor);
+    if (rop == GXcopy) {
   	GLINT_WRITE_REG(pGlint->pprod, FBReadMode);
-  } else {
+    } else {
   	GLINT_WRITE_REG(pGlint->pprod|pGlint->BlitMode, FBReadMode);
-  }
-  GLINT_WRITE_REG(0, RasterizerMode);
-  GLINT_WRITE_REG(rop<<1|UNIT_ENABLE, LogicalOpMode);
-  GLINT_WRITE_REG(1<<16,dY);
+    }
+    GLINT_WRITE_REG(rop<<1|UNIT_ENABLE, LogicalOpMode);
 }
 
 static void
@@ -446,69 +426,62 @@ Permedia2SetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
 				    int rop, unsigned int planemask)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
-#if 0
-  gcolor = color;
-#endif
-  REPLICATE(color);
 
-  GLINT_WAIT(7);
-  DO_PLANEMASK(planemask);
-  pGlint->ROP = rop;
-  if (rop == GXcopy) {
-	pGlint->FrameBufferReadMode = pGlint->pprod;
+    REPLICATE(color);
+
+    GLINT_WAIT(5);
+    DO_PLANEMASK(planemask);
+    pGlint->ROP = rop;
+    if (rop == GXcopy) {
 	GLINT_WRITE_REG(pGlint->pprod, FBReadMode);
 	GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
 	GLINT_WRITE_REG(color, FBBlockColor);
-  } else {
+    } else {
 	GLINT_WRITE_REG(UNIT_ENABLE, ColorDDAMode);
       	GLINT_WRITE_REG(color, ConstantColor);
 	/* We can use Packed mode for filling solid non-GXcopy rasters */
-	pGlint->FrameBufferReadMode = pGlint->pprod|FBRM_DstEnable;
-  }
-  GLINT_WRITE_REG(0, RasterizerMode);
-  GLINT_WRITE_REG(rop<<1|UNIT_ENABLE, LogicalOpMode);
-  GLINT_WRITE_REG(1<<16,dY);
+	GLINT_WRITE_REG(pGlint->pprod|FBRM_DstEnable|FBRM_Packed, FBReadMode);
+    }
+    GLINT_WRITE_REG(rop<<1|UNIT_ENABLE, LogicalOpMode);
 }
 
 static void
 Permedia2SubsequentFillRectSolid24bpp(ScrnInfoPtr pScrn, int x, int y, int w, int h)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
-  GLINT_WAIT(3);
-  GLINT_WRITE_REG((y<<16)|x, RectangleOrigin);
-  GLINT_WRITE_REG((h<<16)|w, RectangleSize);
+    GLINT_WAIT(3);
+    GLINT_WRITE_REG((y<<16)|x, RectangleOrigin);
+    GLINT_WRITE_REG((h<<16)|w, RectangleSize);
 
-  GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive, Render);
+    GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive, Render);
 }
 
 static void
 Permedia2SubsequentFillRectSolid(ScrnInfoPtr pScrn, int x, int y, int w, int h)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
-  int speed = 0;
+    int speed = 0;
 
-  if (pGlint->ROP == GXcopy) {
+    if (pGlint->ROP == GXcopy) {
 	GLINT_WAIT(3);
   	GLINT_WRITE_REG((y<<16)|x, RectangleOrigin);
   	GLINT_WRITE_REG((h<<16)|w, RectangleSize);
   	speed = FastFillEnable;
-  } else {
-	GLINT_WAIT(5);
-	GLINT_WRITE_REG(pGlint->FrameBufferReadMode|FBRM_Packed, FBReadMode);
+    } else {
+	GLINT_WAIT(4);
   	GLINT_WRITE_REG((y<<16)|x>>pGlint->BppShift, RectangleOrigin);
   	GLINT_WRITE_REG((h<<16)|(w+7)>>pGlint->BppShift, RectangleSize);
   	GLINT_WRITE_REG(x<<16|(x+w), PackedDataLimits);
   	speed = 0;
-  }
-  GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive | speed, Render);
+    }
+    GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive | speed, Render);
 }
 
-#if 0
-static void
-MoveBYTE(dest, src, dwords)
-   register CARD32* dest;
-   register unsigned char* src;
-   register int dwords;
+static void MoveBYTE(
+   register CARD32* dest,
+   register unsigned char* src,
+   register int dwords
+)
 {
      while(dwords) {
 	*dest = *src;
@@ -518,11 +491,11 @@ MoveBYTE(dest, src, dwords)
      }	
 }
 
-static void
-MoveWORDS(dest, src, dwords)
-   register CARD32* dest;
-   register unsigned short* src;
-   register int dwords;
+static void MoveWORDS(
+   register CARD32* dest,
+   register unsigned short* src,
+   register int dwords
+)
 {
      while(dwords & ~0x01) {
 	*dest = *src;
@@ -538,11 +511,10 @@ MoveWORDS(dest, src, dwords)
     }
 }
 
-static void
-MoveDWORDS(dest, src, dwords)
-   register CARD32* dest;
-   register CARD32* src;
-   register int dwords;
+static void MoveDWORDS(
+   register CARD32* dest,
+   register CARD32* src,
+   register int dwords )
 {
      while(dwords & ~0x03) {
 	*dest = *src;
@@ -553,294 +525,214 @@ MoveDWORDS(dest, src, dwords)
 	dest += 4;
 	dwords -= 4;
      }	
-     switch(dwords) {
-	case 0:	return;
-	case 1: *dest = *src;
-		return;
-	case 2: *dest = *src;
-		*(dest + 1) = *(src + 1);
-		return;
-	case 3: *dest = *src;
-		*(dest + 1) = *(src + 1);
- 		*(dest + 2) = *(src + 2);
-		return;
-    }
+     if (!dwords) return;
+     *dest = *src;
+     if (dwords == 1) return;
+     *(dest + 1) = *(src + 1);
+     if (dwords == 2) return;
+     *(dest + 2) = *(src + 2);
 }
 
-static int LineCountDown;
-
-static void
-Permedia2SetupForScanlineScreenToScreenColorExpand24bpp(int x,int y,int w,int h,
-				int bg, int fg, int rop, unsigned planemask)
+static void 
+Permedia2SetupForMono8x8PatternFill24bpp(ScrnInfoPtr pScrn, 
+					   int patternx, int patterny, 
+					   int fg, int bg, int rop,
+					   unsigned int planemask)
 {
-  gfg = fg;
-  REPLICATE (gfg);
+    GLINTPtr pGlint = GLINTPTR(pScrn);
 
-  GLINT_WAIT(9);
-  DO_PLANEMASK(planemask);
-  GLINT_WRITE_REG((rop<<1)|UNIT_ENABLE, LogicalOpMode);
-  GLINT_WRITE_REG((y<<16)|x, RectangleOrigin);
-  GLINT_WRITE_REG((h<<16)|w, RectangleSize);
-  ScanlineWordCount = (w + 31) >> 5;
-  if (rop == GXcopy) {
-      GLINT_WRITE_REG(pGlint->pprod, FBReadMode);
-  } else {
-      GLINT_WRITE_REG(pGlint->pprod | pGlint->BlitMode, FBReadMode);
-  }
-  GLINT_WRITE_REG(UNIT_ENABLE, ColorDDAMode);
-  GLINT_WRITE_REG(gfg, ConstantColor);
-  GLINT_WRITE_REG(BitMaskPackingEachScanline, RasterizerMode);
-  GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive |
-							SyncOnBitMask, Render);
+    if (bg == -1) pGlint->FrameBufferReadMode = -1;
+	else    pGlint->FrameBufferReadMode = 0;
 
-   LineCountDown = h;
-   GLINT_WAIT(ScanlineWordCount + 1);
-   GLINT_WRITE_REG(((ScanlineWordCount - 1) << 16) | 0x0D, OutputFIFO);
-}
+    pGlint->ForeGroundColor = fg;
+    pGlint->BackGroundColor = bg;
+    REPLICATE(pGlint->ForeGroundColor);
+    REPLICATE(pGlint->BackGroundColor);
+  
+    GLINT_WAIT(12);
+    DO_PLANEMASK(planemask);
+    GLINT_WRITE_REG((patternx & 0xFF), AreaStipplePattern0);
+    GLINT_WRITE_REG((patternx & 0xFF00) >> 8, AreaStipplePattern1);
+    GLINT_WRITE_REG((patternx & 0xFF0000) >> 16, AreaStipplePattern2);
+    GLINT_WRITE_REG((patternx & 0xFF000000) >> 24, AreaStipplePattern3);
+    GLINT_WRITE_REG((patterny & 0xFF), AreaStipplePattern4);
+    GLINT_WRITE_REG((patterny & 0xFF00) >> 8, AreaStipplePattern5);
+    GLINT_WRITE_REG((patterny & 0xFF0000) >> 16, AreaStipplePattern6);
+    GLINT_WRITE_REG((patterny & 0xFF000000) >> 24, AreaStipplePattern7);
+  
+    pGlint->ROP = rop;
 
-static void
-Permedia2SetupForScanlineScreenToScreenColorExpand (int x, int y, int w, int h,
-				int bg, int fg, int rop, unsigned planemask)
-{
-  gfg = fg;
-  REPLICATE (gfg);
-
-  GLINT_WAIT(9);
-  DO_PLANEMASK(planemask);
-  GLINT_WRITE_REG((rop<<1)|UNIT_ENABLE, LogicalOpMode);
-  GLINT_WRITE_REG((y<<16)|x, RectangleOrigin);
-  GLINT_WRITE_REG((h<<16)|w, RectangleSize);
-  ScanlineWordCount = (w + 31) >> 5;
-  if (rop == GXcopy) {
-      GLINT_WRITE_REG(0, RasterizerMode);
-      GLINT_WRITE_REG(pGlint->pprod, FBReadMode);
-      GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
-      GLINT_WRITE_REG(gfg, FBBlockColor);
-      GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive |
-					SyncOnBitMask | FastFillEnable, Render);
-  } else {
+    if (rop == GXcopy) {
+	GLINT_WRITE_REG(pGlint->pprod, FBReadMode);
+    } else {
 	GLINT_WRITE_REG(pGlint->pprod | pGlint->BlitMode, FBReadMode);
-    	GLINT_WRITE_REG(UNIT_ENABLE, ColorDDAMode);
-	GLINT_WRITE_REG(gfg, ConstantColor);
-  	GLINT_WRITE_REG(BitMaskPackingEachScanline, RasterizerMode);
-	GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive |
-							SyncOnBitMask, Render);
-  }
-
-   LineCountDown = h;
-   GLINT_WAIT(ScanlineWordCount + 1);
-   GLINT_WRITE_REG(((ScanlineWordCount - 1) << 16) | 0x0D, OutputFIFO);
-}
-
-static void
-Permedia2SubsequentScanlineScreenToScreenColorExpand(int srcaddr)
-{
-   if(--LineCountDown) {
-      GLINT_WAIT(ScanlineWordCount + 1);
-      GLINT_WRITE_REG(((ScanlineWordCount - 1) << 16) | 0x0D, OutputFIFO);
-   }
+    }
+    GLINT_WRITE_REG(UNIT_ENABLE, ColorDDAMode);
+    GLINT_WRITE_REG((rop<<1) | UNIT_ENABLE, LogicalOpMode);
 }
 
 static void 
-Permedia2SetupFor8x8PatternColorExpand24bpp(int patternx, int patterny, 
-					   int bg, int fg, int rop,
-					   unsigned planemask)
+Permedia2SetupForMono8x8PatternFill(ScrnInfoPtr pScrn, 
+					   int patternx, int patterny, 
+					   int fg, int bg, int rop,
+					   unsigned int planemask)
 {
-  if (bg == -1) mode = -1;
-	else    mode = 0;
+    GLINTPtr pGlint = GLINTPTR(pScrn);
 
-  gfg = fg;
-  gbg = bg;
-  REPLICATE(gfg);
-  REPLICATE(gbg);
-  
-  GLINT_WAIT(13);
-  DO_PLANEMASK(planemask);
-  GLINT_WRITE_REG((patternx & 0xFF), AreaStipplePattern0);
-  GLINT_WRITE_REG((patternx & 0xFF00) >> 8, AreaStipplePattern1);
-  GLINT_WRITE_REG((patternx & 0xFF0000) >> 16, AreaStipplePattern2);
-  GLINT_WRITE_REG((patternx & 0xFF000000) >> 24, AreaStipplePattern3);
-  GLINT_WRITE_REG((patterny & 0xFF), AreaStipplePattern4);
-  GLINT_WRITE_REG((patterny & 0xFF00) >> 8, AreaStipplePattern5);
-  GLINT_WRITE_REG((patterny & 0xFF0000) >> 16, AreaStipplePattern6);
-  GLINT_WRITE_REG((patterny & 0xFF000000) >> 24, AreaStipplePattern7);
-  
-  grop = rop;
+    if (bg == -1) pGlint->FrameBufferReadMode = -1;
+	else    pGlint->FrameBufferReadMode = 0;
 
-  if (rop == GXcopy) {
-      GLINT_WRITE_REG(pGlint->pprod, FBReadMode);
-  } else {
-      GLINT_WRITE_REG(pprod | pGlint->BlitMode, FBReadMode);
-  }
-  GLINT_WRITE_REG(UNIT_ENABLE, ColorDDAMode);
-  GLINT_WRITE_REG(0, RasterizerMode);
-  GLINT_WRITE_REG((rop<<1) | UNIT_ENABLE, LogicalOpMode);
+    pGlint->ForeGroundColor = fg;
+    pGlint->BackGroundColor = bg;
+    REPLICATE(pGlint->ForeGroundColor);
+    REPLICATE(pGlint->BackGroundColor);
+  
+    GLINT_WAIT(12);
+    DO_PLANEMASK(planemask);
+    GLINT_WRITE_REG((patternx & 0xFF), AreaStipplePattern0);
+    GLINT_WRITE_REG((patternx & 0xFF00) >> 8, AreaStipplePattern1);
+    GLINT_WRITE_REG((patternx & 0xFF0000) >> 16, AreaStipplePattern2);
+    GLINT_WRITE_REG((patternx & 0xFF000000) >> 24, AreaStipplePattern3);
+    GLINT_WRITE_REG((patterny & 0xFF), AreaStipplePattern4);
+    GLINT_WRITE_REG((patterny & 0xFF00) >> 8, AreaStipplePattern5);
+    GLINT_WRITE_REG((patterny & 0xFF0000) >> 16, AreaStipplePattern6);
+    GLINT_WRITE_REG((patterny & 0xFF000000) >> 24, AreaStipplePattern7);
+
+    pGlint->ROP = rop;
+
+    if (rop == GXcopy) {
+	GLINT_WRITE_REG(pGlint->pprod, FBReadMode);
+	GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
+    } else {
+	GLINT_WRITE_REG(pGlint->pprod | pGlint->BlitMode, FBReadMode);
+	GLINT_WRITE_REG(UNIT_ENABLE, ColorDDAMode);
+    }
+    GLINT_WRITE_REG((rop<<1) | UNIT_ENABLE, LogicalOpMode);
 }
 
 static void 
-Permedia2SetupFor8x8PatternColorExpand(int patternx, int patterny, 
-					   int bg, int fg, int rop,
-					   unsigned planemask)
-{
-  if (bg == -1) mode = -1;
-	else    mode = 0;
-
-  gfg = fg;
-  gbg = bg;
-  REPLICATE(gfg);
-  REPLICATE(gbg);
-  
-  GLINT_WAIT(13);
-  DO_PLANEMASK(planemask);
-  GLINT_WRITE_REG((patternx & 0xFF), AreaStipplePattern0);
-  GLINT_WRITE_REG((patternx & 0xFF00) >> 8, AreaStipplePattern1);
-  GLINT_WRITE_REG((patternx & 0xFF0000) >> 16, AreaStipplePattern2);
-  GLINT_WRITE_REG((patternx & 0xFF000000) >> 24, AreaStipplePattern3);
-  GLINT_WRITE_REG((patterny & 0xFF), AreaStipplePattern4);
-  GLINT_WRITE_REG((patterny & 0xFF00) >> 8, AreaStipplePattern5);
-  GLINT_WRITE_REG((patterny & 0xFF0000) >> 16, AreaStipplePattern6);
-  GLINT_WRITE_REG((patterny & 0xFF000000) >> 24, AreaStipplePattern7);
-  
-  grop = rop;
-
-  if (rop == GXcopy) {
-      GLINT_WRITE_REG(pprod, FBReadMode);
-      GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
-  } else {
-      GLINT_WRITE_REG(pprod | pGlint->BlitMode, FBReadMode);
-      GLINT_WRITE_REG(UNIT_ENABLE, ColorDDAMode);
-  }
-  GLINT_WRITE_REG(0, RasterizerMode);
-  GLINT_WRITE_REG((rop<<1) | UNIT_ENABLE, LogicalOpMode);
-}
-
-static void 
-Permedia2Subsequent8x8PatternColorExpand24bpp(int patternx, int patterny, 
+Permedia2SubsequentMono8x8PatternFillRect24bpp(ScrnInfoPtr pScrn, 	
+				   int patternx, int patterny,
 				   int x, int y,
 				   int w, int h)
 {
-  span = 0;
+    GLINTPtr pGlint = GLINTPTR(pScrn);
   
-  GLINT_WAIT(8);
-  GLINT_WRITE_REG((y<<16)|x, RectangleOrigin);
-  GLINT_WRITE_REG((h<<16)|w, RectangleSize);
+    GLINT_WAIT(8);
+    GLINT_WRITE_REG((y<<16)|x, RectangleOrigin);
+    GLINT_WRITE_REG((h<<16)|w, RectangleSize);
 
-  if (mode != -1) {
-      	  GLINT_WRITE_REG(gbg, ConstantColor);
-	  GLINT_WRITE_REG(patternx<<7|patterny<<12| ASM_InvertPattern |
-			UNIT_ENABLE, AreaStippleMode);
-	  GLINT_WRITE_REG(AreaStippleEnable | XPositive | 
-				YPositive | PrimitiveRectangle, Render);
-  }
+    if (pGlint->FrameBufferReadMode != -1) {
+	GLINT_WRITE_REG(pGlint->BackGroundColor, ConstantColor);
+	GLINT_WRITE_REG(patternx<<7|patterny<<12| ASM_InvertPattern |
+						UNIT_ENABLE, AreaStippleMode);
+	GLINT_WRITE_REG(AreaStippleEnable | XPositive | 
+					YPositive | PrimitiveRectangle, Render);
+    }
 
-  GLINT_WRITE_REG(gfg, ConstantColor);
-  GLINT_WRITE_REG(patternx<<7|patterny<<12|UNIT_ENABLE, AreaStippleMode);
-  GLINT_WRITE_REG(AreaStippleEnable | XPositive | YPositive |
+    GLINT_WRITE_REG(pGlint->ForeGroundColor, ConstantColor);
+    GLINT_WRITE_REG(patternx<<7|patterny<<12|UNIT_ENABLE, AreaStippleMode);
+    GLINT_WRITE_REG(AreaStippleEnable | XPositive | YPositive |
 						PrimitiveRectangle, Render);
 }
 
 static void 
-Permedia2Subsequent8x8PatternColorExpand(int patternx, int patterny, int x, int y,
+Permedia2SubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, 
+				   int patternx, int patterny,
+				   int x, int y,
 				   int w, int h)
 {
-  span = 0;
+    GLINTPtr pGlint = GLINTPTR(pScrn);
   
-  GLINT_WAIT(8);
-  GLINT_WRITE_REG((y<<16)|x, RectangleOrigin);
-  GLINT_WRITE_REG((h<<16)|w, RectangleSize);
+    GLINT_WAIT(8);
+    GLINT_WRITE_REG((y<<16)|x, RectangleOrigin);
+    GLINT_WRITE_REG((h<<16)|w, RectangleSize);
 
-  if (mode != -1) {
-	if (grop == GXcopy) {
-      	  GLINT_WRITE_REG(gbg, FBBlockColor);
-	  GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive | 
+    if (pGlint->FrameBufferReadMode != -1) {
+	if (pGlint->ROP == GXcopy) {
+      	    GLINT_WRITE_REG(pGlint->BackGroundColor, FBBlockColor);
+	    GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive | 
 					FastFillEnable, Render);
 	} else { 
-      	  GLINT_WRITE_REG(gbg, ConstantColor);
-	  GLINT_WRITE_REG(patternx<<7|patterny<<12| ASM_InvertPattern |
+      	    GLINT_WRITE_REG(pGlint->BackGroundColor, ConstantColor);
+	    GLINT_WRITE_REG(patternx<<7|patterny<<12| ASM_InvertPattern |
 			UNIT_ENABLE, AreaStippleMode);
-	  GLINT_WRITE_REG(AreaStippleEnable | XPositive | 
+  	    GLINT_WRITE_REG(AreaStippleEnable | XPositive | 
 				YPositive | PrimitiveRectangle, Render);
 	}
-  }
+    }
 
-  if (grop == GXcopy) {
-	GLINT_WRITE_REG(gfg, FBBlockColor);
-	span = FastFillEnable;
-  } else {
-  	GLINT_WRITE_REG(gfg, ConstantColor);
-	span = 0;
-  }
-  GLINT_WRITE_REG(patternx<<7|patterny<<12|UNIT_ENABLE, AreaStippleMode);
-  GLINT_WRITE_REG(AreaStippleEnable | span | XPositive | YPositive |
-						PrimitiveRectangle, Render);
+    if (pGlint->ROP == GXcopy) {
+	GLINT_WRITE_REG(pGlint->ForeGroundColor, FBBlockColor);
+	pGlint->FrameBufferReadMode = FastFillEnable;
+    } else {
+  	GLINT_WRITE_REG(pGlint->ForeGroundColor, ConstantColor);
+	pGlint->FrameBufferReadMode = 0;
+    }
+    GLINT_WRITE_REG(patternx<<7|patterny<<12|UNIT_ENABLE, AreaStippleMode);
+    GLINT_WRITE_REG(AreaStippleEnable | pGlint->FrameBufferReadMode | 
+			XPositive | YPositive | PrimitiveRectangle, Render);
 }
 
 static void
-Permedia2SubsequentTwoPointLine24bpp(int x1, int y1, int x2, int y2, int bias)
+Permedia2SubsequentHorVertLine(ScrnInfoPtr pScrn,int x,int y,int len,int dir)
 {
-  int dy = y2 - y1 + 1;
+    GLINTPtr pGlint = GLINTPTR(pScrn);
   
-  GLINT_WAIT(5);
-  GLINT_WRITE_REG (gcolor, GLINTColor);
-  GLINT_WRITE_REG (x1 << 16, StartXDom);
-  GLINT_WRITE_REG (y1 << 16, StartY);
-  GLINT_WRITE_REG (dy, GLINTCount);
-
-  GLINT_WRITE_REG (PrimitiveLine, Render);
-}
-
-static void
-Permedia2SubsequentTwoPointLine (int x1, int y1, int x2, int y2, int bias)
-{
-  int dy = y2 - y1 + 1;
-  
-  if((dy < 16) && (grop == GXcopy)) {
+    if (pGlint->ROP == GXcopy) {
 	GLINT_WAIT(3);
-  	GLINT_WRITE_REG((y1<<16)|x1, RectangleOrigin);
-  	GLINT_WRITE_REG((dy<<16)|1, RectangleSize);
-	GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive | 
-		FastFillEnable, Render);
-        return;
-  }
-  
-  GLINT_WAIT(6);
-  GLINT_WRITE_REG(mode, FBReadMode);
-  GLINT_WRITE_REG (gcolor, GLINTColor);
-  GLINT_WRITE_REG (x1 << 16, StartXDom);
-  GLINT_WRITE_REG (y1 << 16, StartY);
-  GLINT_WRITE_REG (dy, GLINTCount);
+	if (dir == DEGREES_0) {
+            GLINT_WRITE_REG((y<<16)|x, RectangleOrigin);
+            GLINT_WRITE_REG((1<<16)|len, RectangleSize);
+	} else {
+            GLINT_WRITE_REG((y<<16)|x, RectangleOrigin);
+            GLINT_WRITE_REG((len<<16)|1, RectangleSize);
+	}
+        GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive | 
+							FastFillEnable, Render);
+    } else {
+	GLINT_WAIT(6);
+	GLINT_WRITE_REG(x<<16, StartXDom);
+	GLINT_WRITE_REG(y<<16, StartY);
 
-  GLINT_WRITE_REG (PrimitiveLine, Render);
+	if (dir == DEGREES_0) {
+	    GLINT_WRITE_REG(1<<16, dXDom);
+	    GLINT_WRITE_REG(0, dY);
+        } else {
+	    GLINT_WRITE_REG(0, dXDom);
+	    GLINT_WRITE_REG(1<<16, dY);
+        }
+
+        GLINT_WRITE_REG(len, GLINTCount);
+        GLINT_WRITE_REG(PrimitiveLine, Render);
+    }
 }
-
 
 static unsigned int ShiftMasks[33] = {
-  0x00000000, 0x00000001, 0x00000003, 0x00000007,
-  0x0000000F, 0x0000001F, 0x0000003F, 0x0000007F,
-  0x000000FF, 0x000001FF, 0x000003FF, 0x000007FF,
-  0x00000FFF, 0x00001FFF, 0x00003FFF, 0x00007FFF, 
-  0x0000FFFF, 0x0001FFFF, 0x0003FFFF, 0x0007FFFF,
-  0x000FFFFF, 0x001FFFFF, 0x003FFFFF, 0x007FFFFF,
-  0x00FFFFFF, 0x01FFFFFF, 0x03FFFFFF, 0x07FFFFFF,
-  0x0FFFFFFF, 0x1FFFFFFF, 0x3FFFFFFF, 0x7FFFFFFF,
-  0xFFFFFFFF
+    0x00000000, 0x00000001, 0x00000003, 0x00000007,
+    0x0000000F, 0x0000001F, 0x0000003F, 0x0000007F,
+    0x000000FF, 0x000001FF, 0x000003FF, 0x000007FF,
+    0x00000FFF, 0x00001FFF, 0x00003FFF, 0x00007FFF, 
+    0x0000FFFF, 0x0001FFFF, 0x0003FFFF, 0x0007FFFF,
+    0x000FFFFF, 0x001FFFFF, 0x003FFFFF, 0x007FFFFF,
+    0x00FFFFFF, 0x01FFFFFF, 0x03FFFFFF, 0x07FFFFFF,
+    0x0FFFFFFF, 0x1FFFFFFF, 0x3FFFFFFF, 0x7FFFFFFF,
+    0xFFFFFFFF
 };
 
 static void
-Permedia2StippleCPUToScreen(x, y, w, h, src, srcwidth,
-stipplewidth, stippleheight, srcx, srcy)
-    int x, y, w, h;
-    unsigned char *src;
-    int srcwidth;
-    int stipplewidth, stippleheight;
-    int srcx, srcy;
+Permedia2StippleCPUToScreen(ScrnInfoPtr pScrn, int x, int y, int w, int h, 
+				unsigned char *src, int srcwidth,
+    				int stipplewidth, int stippleheight,
+    				int srcx, int srcy)
 {
+    GLINTPtr pGlint = GLINTPTR(pScrn);
     unsigned char *srcp = (srcwidth * srcy) + src;
     int dwords = (w + 31) >> 5; 
     int count, offset; 
 
-  GLINT_WAIT(1);
-  GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive | span | SyncOnBitMask, Render);
+    GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive | 
+			pGlint->FrameBufferReadMode | SyncOnBitMask, Render);
 
     if(stipplewidth < 32) {
 	register int width;
@@ -899,7 +791,8 @@ stipplewidth, stippleheight, srcx, srcy)
 		    }
 		} else {
 			GLINT_WRITE_REG((*((CARD32*)srcp) << shift) |
-			((*scratch >> scratch2) & ShiftMasks[shift]), BitMaskPattern);
+			((*scratch >> scratch2) & ShiftMasks[shift]), 
+								BitMaskPattern);
 		}
 
 		offset += 32;
@@ -917,167 +810,125 @@ stipplewidth, stippleheight, srcx, srcy)
     }
 }
 
-
 static void
-Permedia2FillRectStippled(pDrawable, pGC, nBoxInit, pBoxInit)
-    DrawablePtr pDrawable;
-    GCPtr pGC;
-    int nBoxInit;		/* number of rectangles to fill */
-    BoxPtr pBoxInit;		/* Pointer to first rectangle to fill */
+Permedia2FillColorExpandRects(ScrnInfoPtr pScrn, int fg, int bg, int rop, 
+				unsigned int planemask, int nBox, BoxPtr pBox,
+				int xorg, int yorg, PixmapPtr pPixmap)
 {
+    GLINTPtr pGlint = GLINTPTR(pScrn);
     int rectWidth, rectHeight;
-    BoxPtr pBox;
-    int color;
-    int nBox;
-    int xoffset, yoffset, StippleType;
-    PixmapPtr pPixmap = pGC->stipple;
+    int StippleType;
 
-    if(pGC->fillStyle == FillStippled){	/* Transparent Stipples */
+    if (bg == -1) {	/* Transparent Stipples */
 	StippleType = 0;
-    } else if(pGC->alu == GXcopy)  /* OpaqueEasyStipples */
-	StippleType = 2;
+    } else if(rop == GXcopy)  /* OpaqueEasyStipples */
+	StippleType = 1;
     else 				/* OpaqueHardStipples */
-	StippleType = 4;
+	StippleType = 2;
 
-    /* >>>>>>>>>>> Set ROP, Planemask <<<<<<<<<<< */
-    GLINT_WAIT(5);
-    DO_PLANEMASK(pGC->planemask);
-    GLINT_WRITE_REG((pGC->alu<<1)|UNIT_ENABLE, LogicalOpMode);
-    if (pGC->alu == GXcopy) {
-	span = FastFillEnable;
+    GLINT_WAIT(10);
+    DO_PLANEMASK(planemask);
+    GLINT_WRITE_REG((rop<<1)|UNIT_ENABLE, LogicalOpMode);
+    if (rop == GXcopy) {
+	pGlint->FrameBufferReadMode = FastFillEnable;
  	GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
 	GLINT_WRITE_REG(0, RasterizerMode);
-	GLINT_WRITE_REG(pprod, FBReadMode);
+	GLINT_WRITE_REG(pGlint->pprod, FBReadMode);
     } else {
-	span = 0;
+	pGlint->FrameBufferReadMode = 0;
  	GLINT_WRITE_REG(UNIT_ENABLE, ColorDDAMode);
 	GLINT_WRITE_REG(BitMaskPackingEachScanline, RasterizerMode);
-	GLINT_WRITE_REG(pprod | pGlint->BlitMode, FBReadMode);
+	GLINT_WRITE_REG(pGlint->pprod | pGlint->BlitMode, FBReadMode);
     }
+    rectWidth = pBox->x2 - pBox->x1;
+    rectHeight = pBox->y2 - pBox->y1;
+    GLINT_WRITE_REG((pBox->y1<<16)|pBox->x1, RectangleOrigin);
+    GLINT_WRITE_REG((rectHeight<<16)|rectWidth, RectangleSize);
 
-    for (nBox = nBoxInit, pBox = pBoxInit; nBox > 0; nBox--, pBox++) {
-	rectWidth = pBox->x2 - pBox->x1;
-	rectHeight = pBox->y2 - pBox->y1;
-
-	if ((rectWidth > 0) && (rectHeight > 0)) {
-	    xoffset = (pBox->x1 - (pGC->patOrg.x + pDrawable->x))
-	        % pPixmap->drawable.width;
-	    if (xoffset < 0)
-	        xoffset += pPixmap->drawable.width;
-	    yoffset = (pBox->y1 - (pGC->patOrg.y + pDrawable->y))
-	        % pPixmap->drawable.height;
-	    if (yoffset < 0)
-	        yoffset += pPixmap->drawable.height;
-
-	    GLINT_WAIT(2);
-  	    GLINT_WRITE_REG((pBox->y1<<16)|pBox->x1, RectangleOrigin);
-  	    GLINT_WRITE_REG((rectHeight<<16)|rectWidth, RectangleSize);
-
-	    switch(StippleType) {
+    if ((rectWidth > 0) && (rectHeight > 0)) {
+	switch(StippleType) {
 	      case 0:
-		color = pGC->fgPixel; REPLICATE(color);
-		/* >>>>>>>>>>>>>>>>>  Set fg  <<<<<<<<<<<<<<<<<< */
-		GLINT_WAIT(1);
-		if (pGC->alu == GXcopy) {
-		    GLINT_WRITE_REG(color, FBBlockColor);
+		REPLICATE(fg);
+		if (rop == GXcopy) {
+		    GLINT_WRITE_REG(fg, FBBlockColor);
 		} else {
-		    GLINT_WRITE_REG(color, ConstantColor);
+		    GLINT_WRITE_REG(fg, ConstantColor);
 		}
-		Permedia2StippleCPUToScreen(
+		Permedia2StippleCPUToScreen(pScrn,
 	        	pBox->x1, pBox->y1, rectWidth, rectHeight,
 	       	 	pPixmap->devPrivate.ptr, pPixmap->devKind,
 	        	pPixmap->drawable.width, pPixmap->drawable.height,
-	        	xoffset, yoffset);
+	        	xorg, yorg);
 		break;
-	      case 2:
-		/* >>>>>>>>>>>  Set bg and draw rect <<<<<<<<<<<<<< */
-		color = pGC->bgPixel; REPLICATE(color);
-		GLINT_WAIT(3);
+	      case 1:
+		REPLICATE(bg);
+		GLINT_WAIT(4);
 		GLINT_WRITE_REG(0, RasterizerMode);
-		GLINT_WRITE_REG(color, FBBlockColor);
+		GLINT_WRITE_REG(bg, FBBlockColor);
 		GLINT_WRITE_REG(PrimitiveRectangle|XPositive|YPositive|
 							FastFillEnable,Render);
-		/* >>>>>>>>>>  Set fg <<<<<<<<<<<<<< */
-		color = pGC->fgPixel; REPLICATE(color);
-		GLINT_WAIT(2);
-		if (pGC->alu == GXcopy) {
+		REPLICATE(fg);
+		if (rop == GXcopy) {
 		    GLINT_WRITE_REG(0, RasterizerMode);
-		    GLINT_WRITE_REG(color, FBBlockColor);
+		    GLINT_WRITE_REG(fg, FBBlockColor);
 		} else {
 		    GLINT_WRITE_REG(BitMaskPackingEachScanline, RasterizerMode);
-		    GLINT_WRITE_REG(color, ConstantColor);
+		    GLINT_WRITE_REG(fg, ConstantColor);
 		}
-		Permedia2StippleCPUToScreen(
+		Permedia2StippleCPUToScreen(pScrn,
 	        	pBox->x1, pBox->y1, rectWidth, rectHeight,
 	       	 	pPixmap->devPrivate.ptr, pPixmap->devKind,
 	        	pPixmap->drawable.width, pPixmap->drawable.height,
-	        	xoffset, yoffset);
+	        	xorg, yorg);
 		break;
-	      case 4:
-    		/* >>>>> Make sure our bitmask is not inverted <<<<<< */
-		/* >>>>>>>>>>  Set fg <<<<<<<<<<<<<< */
-		color = pGC->fgPixel; REPLICATE(color);
-		GLINT_WAIT(1);
-		if (pGC->alu == GXcopy) {
-		    GLINT_WRITE_REG(color, FBBlockColor);
+	      case 2:
+		REPLICATE(fg);
+		GLINT_WAIT(3);
+		if (rop == GXcopy) {
+		    GLINT_WRITE_REG(fg, FBBlockColor);
 		} else {
-		    GLINT_WRITE_REG(color, ConstantColor);
+		    GLINT_WRITE_REG(fg, ConstantColor);
 		}
-		Permedia2StippleCPUToScreen(
+		Permedia2StippleCPUToScreen(pScrn,
 	        	pBox->x1, pBox->y1, rectWidth, rectHeight,
 	       	 	pPixmap->devPrivate.ptr, pPixmap->devKind,
 	        	pPixmap->drawable.width, pPixmap->drawable.height,
-	        	xoffset, yoffset);
-	/*	>>>>>>>>>>  Invert Mask <<<<<<<<< */
-	/*	>>>>>>>>>>  Set bg <<<<<<<<<<<<<< */
-		color = pGC->bgPixel; REPLICATE(color);
-		GLINT_WAIT(2);
-		if (pGC->alu == GXcopy) {
+	        	xorg, yorg);
+		REPLICATE(bg);
+		if (rop == GXcopy) {
 		    GLINT_WRITE_REG(InvertBitMask, RasterizerMode);
-		    GLINT_WRITE_REG(color, FBBlockColor);
+		    GLINT_WRITE_REG(bg, FBBlockColor);
 		} else {
 		    GLINT_WRITE_REG(InvertBitMask|
 				BitMaskPackingEachScanline,RasterizerMode);
-		    GLINT_WRITE_REG(color, ConstantColor);
+		    GLINT_WRITE_REG(bg, ConstantColor);
 		}
-		Permedia2StippleCPUToScreen(
+		Permedia2StippleCPUToScreen(pScrn,
 	        	pBox->x1, pBox->y1, rectWidth, rectHeight,
 	       	 	pPixmap->devPrivate.ptr, pPixmap->devKind,
 	        	pPixmap->drawable.width, pPixmap->drawable.height,
-	        	xoffset, yoffset);
+	        	xorg, yorg);
 		break;
-	    }
 	}
     }
-
-    GLINT_WAIT(1);
     GLINT_WRITE_REG(0, RasterizerMode);
-    SET_SYNC_FLAG;
 }
 
 static void
-Permedia2WriteBitmap(x, y, w, h, src, srcwidth, srcx, srcy, 
-	bg, fg, rop, planemask)
-    int x, y, w, h;
-    unsigned char *src;
-    int srcwidth;
-    int srcx, srcy;
-    int bg, fg;
-    int rop;
-    unsigned int planemask;
+Permedia2WriteBitmap(ScrnInfoPtr pScrn,
+    int x, int y, int w, int h,
+    unsigned char *src,
+    int srcwidth,
+    int skipleft,
+    int fg, int bg,
+    int rop,
+    unsigned int planemask
+)
 {
-    unsigned char *srcp;
+    GLINTPtr pGlint = GLINTPTR(pScrn);
     unsigned char *srcpntr;
-    int dwords, skipleft, height;
+    int dwords, height, mode;
     Bool SecondPass = FALSE;
-
-    srcp = (srcwidth * srcy) + (srcx >> 3) + src; 
-    srcx &= 0x07;
-    if(skipleft = (long)srcp & 0x03) { 
-	skipleft = (skipleft << 3) + srcx;
-	srcp = (unsigned char *)((long)srcp & ~0x03);
-    } else
-	skipleft = srcx;    
 
     w += skipleft;
     x -= skipleft;
@@ -1086,7 +937,7 @@ Permedia2WriteBitmap(x, y, w, h, src, srcwidth, srcx, srcy,
     /* >>>>> Set rop, planemask, left edge clip skipleft pixels right
 	of x (skipleft is sometimes 0 and clipping isn't needed). <<<<<< */
     if (skipleft)
-	Permedia2SetClippingRectangle(x+skipleft,y,x+w,y+h);
+	Permedia2SetClippingRectangle(pScrn,x+skipleft,y,x+w,y+h);
  
     GLINT_WAIT(10);
     DO_PLANEMASK(planemask);
@@ -1097,12 +948,12 @@ Permedia2WriteBitmap(x, y, w, h, src, srcwidth, srcx, srcy,
 	mode = FastFillEnable;
     	GLINT_WRITE_REG(0, RasterizerMode);
 	GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
-    	GLINT_WRITE_REG(pprod, FBReadMode);
+    	GLINT_WRITE_REG(pGlint->pprod, FBReadMode);
     } else {
 	mode = 0;
 	GLINT_WRITE_REG(BitMaskPackingEachScanline,RasterizerMode);
 	GLINT_WRITE_REG(UNIT_ENABLE, ColorDDAMode);
-	GLINT_WRITE_REG(pprod | pGlint->BlitMode, FBReadMode);
+	GLINT_WRITE_REG(pGlint->pprod | pGlint->BlitMode, FBReadMode);
     }
 
     if(bg == -1) {
@@ -1148,7 +999,7 @@ SECOND_PASS:
     GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive | mode | SyncOnBitMask, Render);
     
     height = h;
-    srcpntr = srcp;
+    srcpntr = src;
     while(height--) {
     	GLINT_WAIT(dwords);
     	/* 0x0D is the TAG value for BitMaskPattern */
@@ -1177,9 +1028,9 @@ SECOND_PASS:
     GLINT_WAIT(2);
     GLINT_WRITE_REG(0, ScissorMode);
     GLINT_WRITE_REG(0, RasterizerMode);
-    SET_SYNC_FLAG;	
 }
 
+#if 0
 #define MAX_GLYPHS	1024			/* that's gotta be enough */
 static unsigned int* Glyphs[MAX_GLYPHS]; 
 
@@ -1345,83 +1196,66 @@ Permedia2PolyTextTECPUToScreenColorExpand(pDrawable, pGC, xInit, yInit,
 #endif
     SET_SYNC_FLAG;	
 }
+#endif
 
 #define MAX_FIFO_ENTRIES 256
 
 static void
-Permedia2DoImageWrite8bpp(pSrc, pDst, alu, prgnDst, pptSrc, planemask, bitPlane)
-    DrawablePtr	    pSrc, pDst;
-    int		    alu;
-    RegionPtr	    prgnDst;
-    DDXPointPtr	    pptSrc;
-    unsigned int    planemask;
-    int		    bitPlane;
+Permedia2WritePixmap8bpp(
+    ScrnInfoPtr pScrn,
+    int x, int y, int w, int h,
+    unsigned char *src,
+    int srcwidth,
+    int rop,
+    unsigned int planemask,
+    int transparency_color,
+    int bpp, int depth
+)
 {
-    int srcwidth, skipleft, dwords, count;
-    int x,y,w,h;
-    unsigned char* psrcBase;			/* start of image */
-    unsigned char* srcPntr;			/* index into the image */
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    int skipleft, dwords, count;
     CARD32* srcp;
     unsigned char *srcpbyte;
-    int Bpp = pScrn->bitsPerPixel >> 3; 
-    BoxPtr pbox = REGION_RECTS(prgnDst);
-    int nbox = REGION_NUM_RECTS(prgnDst);
-    Bool FastTexLoad;
-
-    cfbGetByteWidthAndPointer(pSrc, srcwidth, psrcBase);
+    Bool FastTexLoad = FALSE;
 
     GLINT_WAIT(3);
     DO_PLANEMASK(planemask);
     GLINT_WRITE_REG(0, RasterizerMode);
-    if (alu == GXcopy) {      
-	GLINT_WRITE_REG(pprod | FBRM_Packed, FBReadMode);
+    if (rop == GXcopy) {      
+	GLINT_WRITE_REG(pGlint->pprod | FBRM_Packed, FBReadMode);
     } else {
-	GLINT_WRITE_REG(pprod | pGlint->BlitMode, FBReadMode);
+	GLINT_WRITE_REG(pGlint->pprod | pGlint->BlitMode, FBReadMode);
     }
 
-    for(; nbox; pbox++, pptSrc++, nbox--) {
-	x = pbox->x1;
-	y = pbox->y1;
-	w = pbox->x2 - pbox->x1;
-	h = pbox->y2 - pbox->y1;
-
-        srcPntr = psrcBase + (pptSrc->y * srcwidth) + (pptSrc->x * Bpp);
-
+    dwords = (w + 3) >> 2;
+    if((!(x&3)) && (!(w&3))) FastTexLoad = TRUE;	
+    if((rop != GXcopy) || (planemask != ~0))
 	FastTexLoad = FALSE;
-	dwords = (w + 3) >> 2;
-	if((!(x&3)) && (!(w&3))) FastTexLoad = TRUE;	
-	if((alu != GXcopy) || (planemask != ~0))
-		FastTexLoad = FALSE;
 
-	if (alu == GXcopy) {
-	  skipleft = 0;
-	} else {
-	  if((skipleft = (long)srcPntr & 0x03)) {
-	 	if(Bpp == 3)
-			skipleft = 4 - skipleft;
-	    	else
-	    		skipleft /= Bpp;
+    if (rop == GXcopy) {
+	skipleft = 0;
+    } else {
+	if((skipleft = (long)src & 0x03)) {
+	    	skipleft /= (bpp>>3);
 
-	    	x -= skipleft;	     
-	    	w += skipleft;
+	    x -= skipleft;	     
+	    w += skipleft;
 	
-	    	if(Bpp == 3)
-	    	   srcPntr = (unsigned char*)(srcPntr - (3*skipleft));  
-	    	else   
-	    	   srcPntr = (unsigned char*)((long)srcPntr & ~0x03); 
-	  }
+	       src = (unsigned char*)((long)src & ~0x03); 
 	}
+    }
 	
+
         if(FastTexLoad) {
 	  int address;
 
 	  GLINT_WAIT(1);
 	  GLINT_WRITE_REG(UNIT_DISABLE, FBWriteMode);
-	  Permedia2Sync();	/* we are not using the rasterizer */
+	  Permedia2Sync(pScrn);	/* we are not using the rasterizer */
 	  while(h--) {
 	      count = dwords;
 	      address = ((y * pScrn->displayWidth) + x) >> 2;
-	      srcp = (CARD32*)srcPntr;
+	      srcp = (CARD32*)src;
 	      GLINT_WRITE_REG(address, TextureDownloadOffset);
 	      while(count >= MAX_FIFO_ENTRIES) {
     	    	GLINT_WAIT(MAX_FIFO_ENTRIES);
@@ -1442,22 +1276,21 @@ Permedia2DoImageWrite8bpp(pSrc, pDst, alu, prgnDst, pptSrc, planemask, bitPlane)
 		MoveDWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(CARD32*)srcp, count);
 	      }
-	      srcPntr += srcwidth;
+	      src += srcwidth;
 	      y++;
 	  }
 	  GLINT_WAIT(1);
 	  GLINT_WRITE_REG(UNIT_ENABLE, FBWriteMode);
 	} else {
-  	   int lowerbits = bppand[(pScrn->bitsPerPixel>>3)-1];
-  	   char align = (x & lowerbits);
+  	   char align = (x & pGlint->bppalign);
 		
     	   if (skipleft)
-		Permedia2SetClippingRectangle(x+skipleft,y,x+w,y+h);
+		Permedia2SetClippingRectangle(pScrn,x+skipleft,y,x+w,y+h);
 
-	   if (alu == GXcopy) {
+	   if (rop == GXcopy) {
 	     GLINT_WAIT(6);
-	     GLINT_WRITE_REG((y<<16)|(x&0xFFFF)>>Bppshift, RectangleOrigin);
-	     GLINT_WRITE_REG((h<<16)|(w+lowerbits)>>Bppshift, RectangleSize);
+	     GLINT_WRITE_REG((y<<16)|(x&0xFFFF)>>pGlint->BppShift, RectangleOrigin);
+	     GLINT_WRITE_REG((h<<16)|(w+pGlint->bppalign)>>pGlint->BppShift, RectangleSize);
   	     GLINT_WRITE_REG(align<<29|x<<16|(x+w), PackedDataLimits);
 	   } else {
 	     GLINT_WAIT(5);
@@ -1465,14 +1298,14 @@ Permedia2DoImageWrite8bpp(pSrc, pDst, alu, prgnDst, pptSrc, planemask, bitPlane)
 	     GLINT_WRITE_REG((h<<16)|w, RectangleSize);
 	   }
 	   GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
-	   GLINT_WRITE_REG(alu<<1|UNIT_ENABLE, LogicalOpMode);
+	   GLINT_WRITE_REG(rop<<1|UNIT_ENABLE, LogicalOpMode);
   	   GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive |
 				SyncOnHostData, Render);
 
-	   if (alu == GXcopy) {
+	   if (rop == GXcopy) {
 	    while(h--) {
 	      count = dwords;
-	      srcp = (CARD32*)srcPntr;
+	      srcp = (CARD32*)src;
 	      while(count >= MAX_FIFO_ENTRIES) {
     	    	GLINT_WAIT(MAX_FIFO_ENTRIES);
 		/* (0x15 << 4) | 0x05 is the TAG for FBSourceData */
@@ -1491,12 +1324,12 @@ Permedia2DoImageWrite8bpp(pSrc, pDst, alu, prgnDst, pptSrc, planemask, bitPlane)
 		MoveDWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(CARD32*)srcp, count);
 	      }
-	      srcPntr += srcwidth;
+	      src += srcwidth;
 	    }  
 	   } else {
 	    while(h--) {
 	      count = w;
-	      srcpbyte = (unsigned char *)srcPntr;
+	      srcpbyte = (unsigned char *)src;
 	      while(count >= MAX_FIFO_ENTRIES) {
     	    	GLINT_WAIT(MAX_FIFO_ENTRIES);
 		/* (0x15 << 4) | 0x05 is the TAG for FBSourceData */
@@ -1515,79 +1348,59 @@ Permedia2DoImageWrite8bpp(pSrc, pDst, alu, prgnDst, pptSrc, planemask, bitPlane)
 		MoveBYTE((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(unsigned char *)srcpbyte, count);
 	      }
-	      srcPntr += srcwidth;
+	      src += srcwidth;
 	    }  
 	   }
 	}
-    }
 
     GLINT_WAIT(2);
     GLINT_WRITE_REG(0, ScissorMode);
     GLINT_WRITE_REG(0, RasterizerMode);
-    SET_SYNC_FLAG;
 }
 
 static void
-Permedia2DoImageWrite16bpp(pSrc,pDst,alu,prgnDst, pptSrc, planemask, bitPlane)
-    DrawablePtr	    pSrc, pDst;
-    int		    alu;
-    RegionPtr	    prgnDst;
-    DDXPointPtr	    pptSrc;
-    unsigned int    planemask;
-    int		    bitPlane;
+Permedia2WritePixmap16bpp(
+    ScrnInfoPtr pScrn,
+    int x, int y, int w, int h,
+    unsigned char *src,
+    int srcwidth,
+    int rop,
+    unsigned int planemask,
+    int transparency_color,
+    int bpp, int depth
+)
 {
-    int srcwidth, skipleft, dwords, count;
-    int x,y,w,h;
-    unsigned char* psrcBase;			/* start of image */
-    unsigned char* srcPntr;			/* index into the image */
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    int skipleft, dwords, count;
     CARD32* srcp;
     unsigned short* srcpword;
-    int Bpp = pScrn->bitsPerPixel >> 3; 
-    BoxPtr pbox = REGION_RECTS(prgnDst);
-    int nbox = REGION_NUM_RECTS(prgnDst);
     Bool FastTexLoad;
-
-    cfbGetByteWidthAndPointer(pSrc, srcwidth, psrcBase);
 
     GLINT_WAIT(3);
     DO_PLANEMASK(planemask);
     GLINT_WRITE_REG(0, RasterizerMode);
-    if (alu == GXcopy) {      
-	GLINT_WRITE_REG(pprod | FBRM_Packed, FBReadMode);
+    if (rop == GXcopy) {      
+	GLINT_WRITE_REG(pGlint->pprod | FBRM_Packed, FBReadMode);
     } else {
-	GLINT_WRITE_REG(pprod | pGlint->BlitMode, FBReadMode);
+	GLINT_WRITE_REG(pGlint->pprod | pGlint->BlitMode, FBReadMode);
     }
-
-    for(; nbox; pbox++, pptSrc++, nbox--) {
-	x = pbox->x1;
-	y = pbox->y1;
-	w = pbox->x2 - pbox->x1;
-	h = pbox->y2 - pbox->y1;
-
-        srcPntr = psrcBase + (pptSrc->y * srcwidth) + (pptSrc->x * Bpp);
 
 	FastTexLoad = FALSE;
 	dwords = (w + 1) >> 1;
 	if((!(x&1)) && (!(w&1))) FastTexLoad = TRUE;
-	if((alu != GXcopy) || (planemask != ~0))
+	if((rop != GXcopy) || (planemask != ~0))
 		FastTexLoad = FALSE;
 
-	if (alu == GXcopy) {
+	if (rop == GXcopy) {
 	  skipleft = 0;
 	} else {
-	  if((skipleft = (long)srcPntr & 0x03)) {
-	   	if(Bpp == 3)
-			skipleft = 4 - skipleft;
-	    	else
-	    		skipleft /= Bpp;
+	  if((skipleft = (long)src & 0x03L)) {
+	    		skipleft /= (bpp>>3);
 
 	    	x -= skipleft;	     
 	    	w += skipleft;
 	
-	    	if(Bpp == 3)
-	    	   srcPntr = (unsigned char*)(srcPntr - (3*skipleft));  
-	    	else   
-	    	   srcPntr = (unsigned char*)((long)srcPntr & ~0x03); 
+	    	   src = (unsigned char*)((long)src & ~0x03L); 
 	  }
 	}
 	
@@ -1596,11 +1409,11 @@ Permedia2DoImageWrite16bpp(pSrc,pDst,alu,prgnDst, pptSrc, planemask, bitPlane)
 
 	  GLINT_WAIT(1);
 	  GLINT_WRITE_REG(UNIT_DISABLE, FBWriteMode);
-	  Permedia2Sync();	/* we are not using the rasterizer */
+	  Permedia2Sync(pScrn);	/* we are not using the rasterizer */
 	  while(h--) {
 	      count = dwords;
 	      address = ((y * pScrn->displayWidth) + x) >> 1;
-	      srcp = (CARD32*)srcPntr;
+	      srcp = (CARD32*)src;
 	      GLINT_WRITE_REG(address, TextureDownloadOffset);
 	      while(count >= MAX_FIFO_ENTRIES) {
     	    	GLINT_WAIT(MAX_FIFO_ENTRIES);
@@ -1621,23 +1434,22 @@ Permedia2DoImageWrite16bpp(pSrc,pDst,alu,prgnDst, pptSrc, planemask, bitPlane)
 		MoveDWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(CARD32*)srcp, count);
 	      }
-	      srcPntr += srcwidth;
+	      src += srcwidth;
 	      y++;
 	  }
 	  GLINT_WAIT(1);
 	  GLINT_WRITE_REG(UNIT_ENABLE, FBWriteMode);
 	} else {
-  	   int lowerbits = bppand[(pScrn->bitsPerPixel>>3)-1];
-  	   char align = (x & lowerbits);
+  	   char align = (x & pGlint->bppalign);
 		
     	   if (skipleft)
-		Permedia2SetClippingRectangle(x+skipleft,y,x+w,y+h);
+		Permedia2SetClippingRectangle(pScrn,x+skipleft,y,x+w,y+h);
 
 	   GLINT_WAIT(6);
-	   if (alu == GXcopy) {
+	   if (rop == GXcopy) {
 	     GLINT_WAIT(6);
-	     GLINT_WRITE_REG((y<<16)|(x&0xFFFF)>>Bppshift, RectangleOrigin);
-	     GLINT_WRITE_REG((h<<16)|(w+lowerbits)>>Bppshift, RectangleSize);
+	     GLINT_WRITE_REG((y<<16)|(x&0xFFFF)>>pGlint->BppShift, RectangleOrigin);
+	     GLINT_WRITE_REG((h<<16)|(w+pGlint->bppalign)>>pGlint->BppShift, RectangleSize);
   	     GLINT_WRITE_REG(align<<29|x<<16|(x+w), PackedDataLimits);
 	   } else {
 	     GLINT_WAIT(5);
@@ -1645,14 +1457,14 @@ Permedia2DoImageWrite16bpp(pSrc,pDst,alu,prgnDst, pptSrc, planemask, bitPlane)
 	     GLINT_WRITE_REG((h<<16)|w, RectangleSize);
 	   }
 	   GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
-	   GLINT_WRITE_REG(alu<<1|UNIT_ENABLE, LogicalOpMode);
+	   GLINT_WRITE_REG(rop<<1|UNIT_ENABLE, LogicalOpMode);
   	   GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive |
 				SyncOnHostData, Render);
 
-	   if (alu == GXcopy) {
+	   if (rop == GXcopy) {
 	    while(h--) {
 	      count = dwords;
-	      srcp = (CARD32*)srcPntr;
+	      srcp = (CARD32*)src;
 	      while(count >= MAX_FIFO_ENTRIES) {
     	    	GLINT_WAIT(MAX_FIFO_ENTRIES);
 		/* (0x15 << 4) | 0x05 is the TAG for FBSourceData */
@@ -1671,12 +1483,12 @@ Permedia2DoImageWrite16bpp(pSrc,pDst,alu,prgnDst, pptSrc, planemask, bitPlane)
 		MoveDWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(CARD32*)srcp, count);
 	      }
-	      srcPntr += srcwidth;
+	      src += srcwidth;
 	    }  
 	   } else {
 	    while(h--) {
 	      count = w;
-	      srcpword = (unsigned short *)srcPntr;
+	      srcpword = (unsigned short *)src;
 	      while(count >= MAX_FIFO_ENTRIES) {
     	    	GLINT_WAIT(MAX_FIFO_ENTRIES);
 		/* (0x15 << 4) | 0x05 is the TAG for FBSourceData */
@@ -1695,75 +1507,159 @@ Permedia2DoImageWrite16bpp(pSrc,pDst,alu,prgnDst, pptSrc, planemask, bitPlane)
 		MoveWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(unsigned short *)srcpword, count);
 	      }
-	      srcPntr += srcwidth;
+	      src += srcwidth;
 	    }  
 	   }
 	}
-    }
 
     GLINT_WAIT(2);
     GLINT_WRITE_REG(0, ScissorMode);
     GLINT_WRITE_REG(0, RasterizerMode);
-    SET_SYNC_FLAG;
 }
 
 static void
-Permedia2DoImageWrite32bpp(pSrc,pDst,alu,prgnDst, pptSrc, planemask, bitPlane)
-    DrawablePtr	    pSrc, pDst;
-    int		    alu;
-    RegionPtr	    prgnDst;
-    DDXPointPtr	    pptSrc;
-    unsigned int    planemask;
-    int		    bitPlane;
+Permedia2WritePixmap24bpp(
+    ScrnInfoPtr pScrn,
+    int x, int y, int w, int h,
+    unsigned char *src,
+    int srcwidth,
+    int rop,
+    unsigned int planemask,
+    int transparency_color,
+    int bpp, int depth
+)
 {
-    int srcwidth, skipleft, dwords, count;
-    int x,y,w,h;
-    unsigned char* psrcBase;			/* start of image */
-    unsigned char* srcPntr;			/* index into the image */
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    int skipleft = 0, dwords, count;
+    unsigned char* srcpbyte;
     CARD32* srcp;
-    int Bpp = pScrn->bitsPerPixel >> 3; 
-    BoxPtr pbox = REGION_RECTS(prgnDst);
-    int nbox = REGION_NUM_RECTS(prgnDst);
-    Bool FastTexLoad;
-
-    cfbGetByteWidthAndPointer(pSrc, srcwidth, psrcBase);
 
     GLINT_WAIT(3);
     DO_PLANEMASK(planemask);
     GLINT_WRITE_REG(0, RasterizerMode);
-    if (alu == GXcopy) {      
-	GLINT_WRITE_REG(pprod, FBReadMode);
+    if (rop == GXcopy) {      
+	GLINT_WRITE_REG(pGlint->pprod, FBReadMode);
     } else {
-	GLINT_WRITE_REG(pprod | pGlint->BlitMode, FBReadMode);
+	GLINT_WRITE_REG(pGlint->pprod | pGlint->BlitMode, FBReadMode);
     }
 
-    for(; nbox; pbox++, pptSrc++, nbox--) {
-	x = pbox->x1;
-	y = pbox->y1;
-	w = pbox->x2 - pbox->x1;
-	h = pbox->y2 - pbox->y1;
-
-        srcPntr = psrcBase + (pptSrc->y * srcwidth) + (pptSrc->x * Bpp);
-
-	FastTexLoad = TRUE;
-	dwords = w;
-	if((alu != GXcopy) || (planemask != ~0))
-		FastTexLoad = FALSE;
-	
-	if (!FastTexLoad) {
-	  if((skipleft = (long)srcPntr & 0x03)) {
-	   	if(Bpp == 3)
+	dwords = ((w+1)*3)>>2;
+	  if((skipleft = (long)src & 0x03L)) {
 			skipleft = 4 - skipleft;
-	    	else
-	    		skipleft /= Bpp;
 
 	    	x -= skipleft;	     
 	    	w += skipleft;
 	
-	    	if(Bpp == 3)
-	    	   srcPntr = (unsigned char*)(srcPntr - (3*skipleft));  
-	    	else   
-	    	   srcPntr = (unsigned char*)((long)srcPntr & ~0x03); 
+	    	   src = (unsigned char*)(src - (3*skipleft));  
+	}
+	
+	{
+    	   if (skipleft)
+		Permedia2SetClippingRectangle(pScrn,x+skipleft,y,x+w,y+h);
+
+	   GLINT_WAIT(5);
+	   GLINT_WRITE_REG((y<<16)|(x&0xFFFF), RectangleOrigin);
+	   GLINT_WRITE_REG((h<<16)|w, RectangleSize);
+	   GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
+	   GLINT_WRITE_REG(rop<<1|UNIT_ENABLE, LogicalOpMode);
+  	   GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive |
+				SyncOnHostData, Render);
+
+#if 0
+	    while(h--) {
+	      count = w;
+	      srcpbyte = (unsigned char *)src;
+	      while(count >= MAX_FIFO_ENTRIES) {
+    	    	GLINT_WAIT(MAX_FIFO_ENTRIES);
+		/* (0x15 << 4) | 0x05 is the TAG for FBSourceData */
+        	GLINT_WRITE_REG(((MAX_FIFO_ENTRIES - 2) << 16) | (0x15 << 4) | 
+					0x05, OutputFIFO);
+		MoveBYTE((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+	 		(unsigned char *)srcpbyte, MAX_FIFO_ENTRIES - 1);
+		count -= MAX_FIFO_ENTRIES - 1;
+		srcpbyte += MAX_FIFO_ENTRIES - 1;
+	      }
+	      if(count) {
+    	    	GLINT_WAIT(count + 1);
+		/* (0x15 << 4) | 0x05 is the TAG for FBSourceData */
+        	GLINT_WRITE_REG(((count - 1) << 16) | (0x15 << 4) | 
+					0x05, OutputFIFO);
+		MoveBYTE((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+	 		(unsigned char *)srcpbyte, count);
+	      }
+	      src += srcwidth;
+#else
+	   while(h--) {
+	      count = dwords;
+	      srcp = (CARD32*)src;
+	      while(count >= MAX_FIFO_ENTRIES) {
+    	    	GLINT_WAIT(MAX_FIFO_ENTRIES);
+		/* (0x15 << 4) | 0x05 is the TAG for FBSourceData */
+        	GLINT_WRITE_REG(((MAX_FIFO_ENTRIES - 2) << 16) | (0x15 << 4) | 
+					0x05, OutputFIFO);
+		MoveDWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+	 		(CARD32*)srcp, MAX_FIFO_ENTRIES - 1);
+		count -= MAX_FIFO_ENTRIES - 1;
+		srcp += MAX_FIFO_ENTRIES - 1;
+	      }
+	      if(count) {
+    	    	GLINT_WAIT(count + 1);
+		/* (0x15 << 4) | 0x05 is the TAG for FBSourceData */
+        	GLINT_WRITE_REG(((count - 1) << 16) | (0x15 << 4) | 
+					0x05, OutputFIFO);
+		MoveDWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+	 		(CARD32*)srcp, count);
+	      }
+	      src += srcwidth;
+#endif
+	   }  
+	}
+
+    GLINT_WAIT(2);
+    GLINT_WRITE_REG(0, ScissorMode);
+    GLINT_WRITE_REG(0, RasterizerMode);
+}
+
+
+static void
+Permedia2WritePixmap32bpp(
+    ScrnInfoPtr pScrn,
+    int x, int y, int w, int h,
+    unsigned char *src,
+    int srcwidth,
+    int rop,
+    unsigned int planemask,
+    int transparency_color,
+    int bpp, int depth
+)
+{
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    int skipleft, dwords, count;
+    CARD32* srcp;
+    Bool FastTexLoad;
+
+    GLINT_WAIT(3);
+    DO_PLANEMASK(planemask);
+    GLINT_WRITE_REG(0, RasterizerMode);
+    if (rop == GXcopy) {      
+	GLINT_WRITE_REG(pGlint->pprod, FBReadMode);
+    } else {
+	GLINT_WRITE_REG(pGlint->pprod | pGlint->BlitMode, FBReadMode);
+    }
+
+	FastTexLoad = TRUE;
+	dwords = w;
+	if((rop != GXcopy) || (planemask != ~0))
+		FastTexLoad = FALSE;
+	
+	if (!FastTexLoad) {
+	  if((skipleft = (long)src & 0x03L)) {
+	    		skipleft /= (bpp>>3);
+
+	    	x -= skipleft;	     
+	    	w += skipleft;
+	
+	    	   src = (unsigned char*)((long)src & ~0x03L); 
 	  }
 	}
 	
@@ -1772,11 +1668,11 @@ Permedia2DoImageWrite32bpp(pSrc,pDst,alu,prgnDst, pptSrc, planemask, bitPlane)
 
 	  GLINT_WAIT(1);
 	  GLINT_WRITE_REG(UNIT_DISABLE, FBWriteMode);
-	  Permedia2Sync();	/* we are not using the rasterizer */
+	  Permedia2Sync(pScrn);	/* we are not using the rasterizer */
 	  while(h--) {
 	      count = dwords;
 	      address = (y * pScrn->displayWidth) + x;
-	      srcp = (CARD32*)srcPntr;
+	      srcp = (CARD32*)src;
 	      GLINT_WRITE_REG(address, TextureDownloadOffset);
 	      while(count >= MAX_FIFO_ENTRIES) {
     	    	GLINT_WAIT(MAX_FIFO_ENTRIES);
@@ -1797,26 +1693,26 @@ Permedia2DoImageWrite32bpp(pSrc,pDst,alu,prgnDst, pptSrc, planemask, bitPlane)
 		MoveDWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(CARD32*)srcp, count);
 	      }
-	      srcPntr += srcwidth;
+	      src += srcwidth;
 	      y++;
 	  }
 	  GLINT_WAIT(1);
 	  GLINT_WRITE_REG(UNIT_ENABLE, FBWriteMode);
 	} else {
     	   if (skipleft)
-		Permedia2SetClippingRectangle(x+skipleft,y,x+w,y+h);
+		Permedia2SetClippingRectangle(pScrn,x+skipleft,y,x+w,y+h);
 
 	   GLINT_WAIT(6);
 	   GLINT_WRITE_REG((y<<16)|(x&0xFFFF), RectangleOrigin);
 	   GLINT_WRITE_REG((h<<16)|w, RectangleSize);
 	   GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
-	   GLINT_WRITE_REG(alu<<1|UNIT_ENABLE, LogicalOpMode);
+	   GLINT_WRITE_REG(rop<<1|UNIT_ENABLE, LogicalOpMode);
   	   GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive |
 				SyncOnHostData, Render);
 
 	   while(h--) {
 	      count = dwords;
-	      srcp = (CARD32*)srcPntr;
+	      srcp = (CARD32*)src;
 	      while(count >= MAX_FIFO_ENTRIES) {
     	    	GLINT_WAIT(MAX_FIFO_ENTRIES);
 		/* (0x15 << 4) | 0x05 is the TAG for FBSourceData */
@@ -1835,14 +1731,12 @@ Permedia2DoImageWrite32bpp(pSrc,pDst,alu,prgnDst, pptSrc, planemask, bitPlane)
 		MoveDWORDS((CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(CARD32*)srcp, count);
 	      }
-	      srcPntr += srcwidth;
+	      src += srcwidth;
 	   }  
 	}
-    }
 
     GLINT_WAIT(2);
     GLINT_WRITE_REG(0, ScissorMode);
     GLINT_WRITE_REG(0, RasterizerMode);
-    SET_SYNC_FLAG;
 }
-#endif
+

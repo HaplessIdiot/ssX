@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillRect.c,v 1.1.2.7 1998/07/24 11:36:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillRect.c,v 1.2 1998/07/25 16:58:45 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -478,11 +478,11 @@ XAAPolyFillRectCacheBlt(
 			pGC->fillStyle);
 	     return;
 	}
-	xorg += pGC->patOrg.x;
-	yorg += pGC->patOrg.y;
 
 	(*infoRec->FillCacheBltRects) (infoRec->pScrn, pGC->alu, 
-		pGC->planemask, nboxes, pClipBoxes, xorg, yorg, pCache);
+		pGC->planemask, nboxes, pClipBoxes, 
+		(xorg + pGC->patOrg.x), (yorg + pGC->patOrg.y), 
+		pCache);
    }
    
     if(pClipBoxes != infoRec->PreAllocBoxes)
@@ -514,6 +514,7 @@ XAAFillCacheBltRects(
 	height = pBox->y2 - y;
 	width = pBox->x2 - pBox->x1;
 	
+#if 0
 	if (rop == GXcopy) {
 	    while(1) {
 		w = width; skipleft = phaseX; x = pBox->x1;
@@ -559,7 +560,7 @@ XAAFillCacheBltRects(
 	    /* Expand vertically */
 	    if (height) {
 		blit_w = pBox->x2 - pBox->x1;
-		phaseY -= (y - yorg) % pCache->orig_h;
+		phaseY -= (pBox->y1 - yorg) % pCache->orig_h;
 		if (phaseY < 0) phaseY += pCache->orig_h;
 		blit_h = y - pBox->y1  + phaseY;
 		while(height) {
@@ -571,7 +572,9 @@ XAAFillCacheBltRects(
 		    blit_h <<= 1;
 		}
 	    }
-	} else {
+	} else 
+#endif
+	{
 	    while(1) {
 		w = width; skipleft = phaseX; x = pBox->x1;
 		blit_h = pCache->h - phaseY;
@@ -643,17 +646,129 @@ XAAPolyFillRectColorExpand(
 					nrectFill, prectInit);
 
     if(nboxes) {
-	xorg += pGC->patOrg.x;
-	yorg += pGC->patOrg.y;
-
 	(*infoRec->FillColorExpandRects) (infoRec->pScrn, pGC->fgPixel,
-		(pGC->fillStyle == FillStippled) ? -1 : pGC->bgPixel, pGC->alu,
-		pGC->planemask, nboxes, pClipBoxes, xorg, yorg, pGC->stipple);
+		(pGC->fillStyle == FillStippled) ? -1 : pGC->bgPixel, 
+		pGC->alu, pGC->planemask, nboxes, pClipBoxes, 
+		(xorg + pGC->patOrg.x), (yorg + pGC->patOrg.y), 
+		pGC->stipple);
     }
    
     if(pClipBoxes != infoRec->PreAllocBoxes)
 	DEALLOCATE_LOCAL(pClipBoxes);
 }
+
+	/*******************\
+	|  Cache Expansion  |
+	\*******************/
+
+void
+XAAPolyFillRectCacheExpand(
+    DrawablePtr pDraw,
+    GCPtr pGC,
+    int		nrectFill, 	/* number of rectangles to fill */
+    xRectangle	*prectInit   	/* Pointer to first rectangle to fill */
+)
+{
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+    int 	MaxBoxes = nrectFill * REGION_NUM_RECTS(pGC->pCompositeClip);
+    BoxPtr	pClipBoxes;
+    int		nboxes;
+    int		xorg = pDraw->x;
+    int		yorg = pDraw->y;
+
+    if(nrectFill <= 0)
+        return;
+
+    if(xorg | yorg) {
+	int n = nrectFill;
+	xRectangle *prect = prectInit;
+
+	while(n--) {
+	    prect->x += xorg;
+	    prect->y += yorg;
+	    prect++;
+	}
+    }
+
+    if(MaxBoxes > infoRec->NumPreAllocBoxes) {
+	pClipBoxes = (BoxPtr)ALLOCATE_LOCAL(MaxBoxes * sizeof(BoxRec));
+	if(!pClipBoxes) return;	
+    } else pClipBoxes = infoRec->PreAllocBoxes;
+    
+    nboxes = XAAGetRectClipBoxes(pGC->pCompositeClip, pClipBoxes, 
+					nrectFill, prectInit);
+
+    if(nboxes) {
+	(*infoRec->FillCacheExpandRects) (infoRec->pScrn, pGC->fgPixel,
+		(pGC->fillStyle == FillStippled) ? -1 : pGC->bgPixel, 
+		pGC->alu, pGC->planemask, nboxes, pClipBoxes, 
+		(xorg + pGC->patOrg.x), (yorg + pGC->patOrg.y), 
+		pGC->stipple);
+    }
+   
+    if(pClipBoxes != infoRec->PreAllocBoxes)
+	DEALLOCATE_LOCAL(pClipBoxes);
+}
+
+
+void 
+XAAFillCacheExpandRects(
+   ScrnInfoPtr pScrn,
+   int fg, int bg, int rop,
+   unsigned int planemask,
+   int nBox,
+   BoxPtr pBox,
+   int xorg, int yorg,
+   PixmapPtr pPix
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+    int x, y, phaseY, phaseX, skipleft, height, width, w, blit_w, blit_h;
+    int cacheWidth;
+    XAACacheInfoPtr pCache;
+
+    pCache = (*infoRec->CacheMonoStipple)(pScrn, pPix);
+
+    cacheWidth = pCache->w * pScrn->bitsPerPixel;
+
+    (*infoRec->SetupForScreenToScreenColorExpandCopy)(pScrn, fg, bg, rop, 
+							planemask);
+
+    while(nBox--) {
+	y = pBox->y1;
+	phaseY = (y - yorg) % pCache->orig_h;
+	if(phaseY < 0) phaseY += pCache->orig_h;
+	phaseX = (pBox->x1 - xorg) % pCache->orig_w;
+	if(phaseX < 0) phaseX += pCache->orig_w;
+	height = pBox->y2 - y;
+	width = pBox->x2 - pBox->x1;
+	
+	while(1) {
+	    w = width; skipleft = phaseX; x = pBox->x1;
+	    blit_h = pCache->h - phaseY;
+	    if(blit_h > height) blit_h = height;
+	
+	    while(1) {
+		blit_w = cacheWidth - skipleft;
+		if(blit_w > w) blit_w = w;
+		(*infoRec->SubsequentScreenToScreenColorExpandCopy)(
+			pScrn, x, y, blit_w, blit_h,
+			pCache->x, pCache->y + phaseY, skipleft);
+		w -= blit_w;
+		if(!w) break;
+		x += blit_w;
+		skipleft = (skipleft + blit_w) % pCache->orig_w;
+	    }
+	    height -= blit_h;
+	    if(!height) break;
+	    y += blit_h;
+	    phaseY = (phaseY + blit_h) % pCache->orig_h;
+	}
+	pBox++;
+    }
+    
+    SET_SYNC_FLAG(infoRec);
+}
+
 
 
 

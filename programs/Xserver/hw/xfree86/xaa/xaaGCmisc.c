@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.1.2.8 1998/07/24 11:36:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.2 1998/07/25 16:58:45 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -75,11 +75,12 @@ XAAValidatePushPixels(
 }
 
 
-/* We make the assumption that the FillSpans and PolyFillRect functions
-   are linked in a way that they all have the same rop/color/planemask
-   restrictions. If the driver provides a GC level replacement for
-   these, it will need to supply a new Validate functions if it breaks
-   this assumption */
+/* We make the assumption that the FillSpans, PolyFillRect, FillPolygon
+   and PolyFillArc functions are linked in a way that they all have 
+   the same rop/color/planemask restrictions. If the driver provides 
+   a GC level replacement for these, it will need to supply a new 
+   Validate functions if it breaks this assumption */
+
 
 void
 XAAValidateFillSpans(
@@ -98,6 +99,8 @@ XAAValidateFillSpans(
 
    pGC->ops->FillSpans = XAAFallbackOps.FillSpans;
    pGC->ops->PolyFillRect = XAAFallbackOps.PolyFillRect;
+   pGC->ops->FillPolygon = XAAFallbackOps.FillPolygon;
+   pGC->ops->PolyFillArc = XAAFallbackOps.PolyFillArc;
 
    switch(pGC->fillStyle){
    case FillSolid:
@@ -108,6 +111,8 @@ XAAValidateFillSpans(
 		) {
 	     pGC->ops->FillSpans = infoRec->FillSpansSolid;
 	     pGC->ops->PolyFillRect = infoRec->PolyFillRectSolid;
+	     pGC->ops->FillPolygon = infoRec->FillPolygonSolid;
+	     pGC->ops->PolyFillArc = infoRec->PolyFillArcSolid;
 	} else return;
 	break;
    case FillStippled:
@@ -132,17 +137,29 @@ XAAValidateFillSpans(
    case DO_MONO_8x8:
 	pGC->ops->FillSpans = infoRec->FillSpansMono8x8Pattern;
 	pGC->ops->PolyFillRect = infoRec->PolyFillRectMono8x8Pattern;
+	pGC->ops->FillPolygon = infoRec->FillPolygonMono8x8Pattern;
 	break;
    case DO_CACHE_BLT:
 	pGC->ops->FillSpans = infoRec->FillSpansCacheBlt;
 	pGC->ops->PolyFillRect = infoRec->PolyFillRectCacheBlt;
+	pGC->ops->FillPolygon = infoRec->FillPolygonCacheBlt;
 	break;
    case DO_COLOR_EXPAND:
 	pGC->ops->FillSpans = infoRec->FillSpansColorExpand;
 	pGC->ops->PolyFillRect = infoRec->PolyFillRectColorExpand;
 	break;
+   case DO_CACHE_EXPAND:
+	pGC->ops->FillSpans = infoRec->FillSpansCacheExpand;
+	pGC->ops->PolyFillRect = infoRec->PolyFillRectCacheExpand;
+	pGC->ops->FillPolygon = infoRec->FillPolygonCacheExpand;
+	break;
    default: return;
    }
+
+   if(pGC->ops->FillPolygon == XAAFallbackOps.FillPolygon)
+	pGC->ops->FillPolygon = miFillPolygon;
+   if(pGC->ops->PolyFillArc == XAAFallbackOps.PolyFillArc)
+	pGC->ops->PolyFillArc = miPolyFillArc;
 
 }
 
@@ -264,47 +281,6 @@ XAAValidateImageGlyphBlt(
 	}
    }
 }
-
-
-void
-XAAValidateFillPolygon(
-   GCPtr         pGC,
-   unsigned long changes,
-   DrawablePtr   pDraw )
-{
-   XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
-   pGC->ops->FillPolygon = XAAFallbackOps.FillPolygon;
-
-   if((pGC->fillStyle == FillSolid) &&
-	infoRec->FillPolygonSolid &&
-	CHECK_ROP(pGC,infoRec->FillPolygonSolidFlags) &&
-	CHECK_PLANEMASK(pGC,infoRec->FillPolygonSolidFlags) &&
-	CHECK_FG(pGC,infoRec->FillPolygonSolidFlags))
-	pGC->ops->FillPolygon = infoRec->FillPolygonSolid;
-   else if(pGC->ops->FillSpans != XAAFallbackOps.FillSpans)
-	pGC->ops->FillPolygon = miFillPolygon;
-}
-
-
-void
-XAAValidatePolyFillArc(
-   GCPtr         pGC,
-   unsigned long changes,
-   DrawablePtr   pDraw )
-{
-   XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
-   pGC->ops->PolyFillArc = XAAFallbackOps.PolyFillArc;
-
-   if((pGC->fillStyle == FillSolid) &&
-	infoRec->PolyFillArcSolid &&
-	CHECK_ROP(pGC,infoRec->PolyFillArcSolidFlags) &&
-	CHECK_PLANEMASK(pGC,infoRec->PolyFillArcSolidFlags) &&
-	CHECK_FG(pGC,infoRec->PolyFillArcSolidFlags))
-	pGC->ops->PolyFillArc = infoRec->PolyFillArcSolid;
-   else if(pGC->ops->FillSpans != XAAFallbackOps.FillSpans)
-	pGC->ops->PolyFillArc = miPolyFillArc;
-}
-
 
 
 void

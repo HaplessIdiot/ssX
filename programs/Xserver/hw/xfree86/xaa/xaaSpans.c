@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaSpans.c,v 1.1.2.5 1998/07/24 11:36:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaSpans.c,v 1.2 1998/07/25 16:58:51 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -592,4 +592,113 @@ XAAFillSpansColorExpand(
 	DEALLOCATE_LOCAL(ppt);
     if(pwidth != infoRec->PreAllocInts)
     	DEALLOCATE_LOCAL(pwidth);
+}
+
+
+	/****************\
+	|  Cache Expand  |
+	\****************/
+
+void
+XAAFillSpansCacheExpand(
+    DrawablePtr pDraw,
+    GC		*pGC,
+    int		nInit,		/* number of spans to fill */
+    DDXPointPtr pptInit,	/* pointer to list of start points */
+    int *pwidthInit,		/* pointer to list of n widths */
+    int fSorted )
+{
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+    int n;			/* number of spans to fill */
+    DDXPointPtr ppt;		/* pointer to list of start points */
+    int *pwidth;		/* pointer to list of n widths */
+
+    if (!(pGC->planemask))
+	return;
+
+    n = nInit * miFindMaxBand(pGC->pCompositeClip);
+    if(!n) return;
+
+    if(n > infoRec->NumPreAllocDDXPointRecs) {
+	ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+	if(!ppt) return;	
+    } else ppt = infoRec->PreAllocDDXPointRecs;
+
+
+    if(n > infoRec->NumPreAllocInts) {
+    	pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+	if(!pwidth) {
+	   if(ppt != infoRec->PreAllocDDXPointRecs)
+		DEALLOCATE_LOCAL(ppt);
+	   return;
+	}	
+    } else pwidth = infoRec->PreAllocInts;
+
+    n = miClipSpans( pGC->pCompositeClip,
+		     pptInit, pwidthInit, nInit, 
+		     ppt, pwidth, fSorted);
+
+    if (n) {
+	(*infoRec->FillCacheExpandSpans) (infoRec->pScrn, pGC->fgPixel,
+		(pGC->fillStyle == FillStippled) ? -1 : pGC->bgPixel, 
+		pGC->alu, pGC->planemask, n, ppt, pwidth, fSorted,   
+		(pDraw->x + pGC->patOrg.x), (pDraw->y + pGC->patOrg.y),
+		pGC->stipple); 
+    }
+
+    if(ppt != infoRec->PreAllocDDXPointRecs)
+	DEALLOCATE_LOCAL(ppt);
+    if(pwidth != infoRec->PreAllocInts)
+    	DEALLOCATE_LOCAL(pwidth);
+}
+
+
+
+void 
+XAAFillCacheExpandSpans(
+   ScrnInfoPtr pScrn,
+   int fg, int bg, int rop,
+   unsigned int planemask,
+   int n,
+   DDXPointPtr ppt,
+   int *pwidth,
+   int fSorted,
+   int xorg, int yorg,
+   PixmapPtr pPix
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+    int x, w, phaseX, phaseY, blit_w, cacheWidth;  
+    XAACacheInfoPtr pCache;
+
+    pCache = (*infoRec->CacheMonoStipple)(pScrn, pPix);
+
+    cacheWidth = pCache->w * pScrn->bitsPerPixel;
+
+    (*infoRec->SetupForScreenToScreenColorExpandCopy)(pScrn, fg, bg, rop, 
+							planemask);
+
+     while(n--) {
+	x = ppt->x;
+	w = *pwidth; 
+	phaseX = (x - xorg) % pCache->orig_w;
+	if(phaseX < 0) phaseX += pCache->orig_w;
+	phaseY = (ppt->y - yorg) % pCache->orig_h;
+	if(phaseY < 0) phaseY += pCache->orig_h;
+
+	while(1) {
+	    blit_w = cacheWidth - phaseX;
+	    if(blit_w > w) blit_w = w;
+
+	    (*infoRec->SubsequentScreenToScreenColorExpandCopy)(
+			pScrn, x, ppt->y, blit_w, 1,
+			pCache->x, pCache->y + phaseY, phaseX);
+
+	    w -= blit_w;
+	    if(!w) break;
+	    x += blit_w;
+	    phaseX = (phaseX + blit_w) % pCache->orig_w;
+	}
+	ppt++; pwidth++;
+     }
+     SET_SYNC_FLAG(infoRec);
 }

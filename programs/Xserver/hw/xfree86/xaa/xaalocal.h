@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.1.2.10 1998/07/24 11:36:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.2 1998/07/25 16:58:55 dawes Exp $ */
 
 #ifndef _XAALOCAL_H
 #define _XAALOCAL_H
@@ -17,6 +17,7 @@
 #define DO_MONO_8x8		0x00000002
 #define DO_CACHE_BLT		0x00000003
 #define DO_COLOR_EXPAND		0x00000004
+#define DO_CACHE_EXPAND		0x00000005
 
 
 typedef CARD32 * (*GlyphScanlineFuncPtr)(
@@ -24,6 +25,12 @@ typedef CARD32 * (*GlyphScanlineFuncPtr)(
 );
 
 typedef CARD32 *(*StippleScanlineProcPtr)(CARD32*, CARD32*, int, int, int); 
+
+typedef void (*RectFuncPtr) (ScrnInfoPtr, int, int, int, int, int, int,
+					  XAACacheInfoPtr);
+typedef void (*TrapFuncPtr) (ScrnInfoPtr, int, int, int, int, int, int,
+					  int, int, int, int, int, int,
+					  XAACacheInfoPtr);
 
 
 
@@ -178,20 +185,6 @@ XAAValidatePolyGlyphBlt(
 
 void
 XAAValidateImageGlyphBlt(
-   GCPtr         pGC,
-   unsigned long changes,
-   DrawablePtr   pDraw
-);
-
-void
-XAAValidateFillPolygon(
-   GCPtr         pGC,
-   unsigned long changes,
-   DrawablePtr   pDraw
-);
-
-void
-XAAValidatePolyFillArc(
    GCPtr         pGC,
    unsigned long changes,
    DrawablePtr   pDraw
@@ -560,6 +553,25 @@ XAAPolyFillRectColorExpand(
     GCPtr pGC,
     int	nrectFill,
     xRectangle *prectInit
+);
+
+void
+XAAPolyFillRectCacheExpand(
+    DrawablePtr pDraw,
+    GCPtr pGC,
+    int	nrectFill,
+    xRectangle *prectInit
+);
+
+void 
+XAAFillCacheExpandRects(
+   ScrnInfoPtr pScrn,
+   int fg, int bg, int rop,
+   unsigned int planemask,
+   int nBox,
+   BoxPtr pBox,
+   int xorg, int yorg,
+   PixmapPtr pPix
 );
 
 void
@@ -1216,6 +1228,18 @@ XAAFillCacheBltSpans(
    int xorg, int yorg
 );
 
+void 
+XAAFillCacheExpandSpans(
+   ScrnInfoPtr pScrn,
+   int fg, int bg, int rop,
+   unsigned int planemask,
+   int n,
+   DDXPointPtr ppt,
+   int *pwidth,
+   int fSorted,
+   int xorg, int yorg,
+   PixmapPtr pPix
+);
 
 void
 XAAFillSpansSolid(
@@ -1260,6 +1284,16 @@ XAAFillSpansCacheBlt(
 
 void
 XAAFillSpansColorExpand(
+    DrawablePtr pDrawable,
+    GC		*pGC,
+    int		nInit,
+    DDXPointPtr pptInit,
+    int *pwidth,
+    int fSorted 
+);
+
+void
+XAAFillSpansCacheExpand(
     DrawablePtr pDrawable,
     GC		*pGC,
     int		nInit,
@@ -1328,6 +1362,16 @@ XAAPolyRectangleThinSolid(
     xRectangle  *pRectsInit 
 );
 
+
+void
+XAAPolylinesWideSolid (
+   DrawablePtr	pDrawable,
+   GCPtr	pGC,
+   int		mode,
+   int 		npt,
+   DDXPointPtr	pPts
+);
+
 void
 XAAFillPolygonSolid(
     DrawablePtr	pDrawable,
@@ -1339,13 +1383,62 @@ XAAFillPolygonSolid(
 );
 
 void
-XAAPolylinesWideSolid (
-   DrawablePtr	pDrawable,
-   GCPtr	pGC,
-   int		mode,
-   int 		npt,
-   DDXPointPtr	pPts
+XAAFillPolygonMono8x8Pattern(
+    DrawablePtr	pDrawable,
+    GCPtr	pGC,
+    int		shape,
+    int		mode,
+    int		count,
+    DDXPointPtr	ptsIn 
 );
+
+void
+XAAFillPolygonCacheExpand(
+    DrawablePtr	pDrawable,
+    GCPtr	pGC,
+    int		shape,
+    int		mode,
+    int		count,
+    DDXPointPtr	ptsIn 
+);
+
+void
+XAAFillPolygonCacheBlt(
+    DrawablePtr	pDrawable,
+    GCPtr	pGC,
+    int		shape,
+    int		mode,
+    int		count,
+    DDXPointPtr	ptsIn 
+);
+
+int
+XAAIsEasyPolygon(
+   DDXPointPtr ptsIn,
+   int count, 
+   BoxPtr extents,
+   int origin,		
+   DDXPointPtr *topPoint, 
+   int *topY, int *bottomY,
+   int shape
+);
+
+void
+XAAFillPolygonHelper(
+    ScrnInfoPtr pScrn,
+    DDXPointPtr	ptsIn,
+    int 	count,
+    DDXPointPtr topPoint,
+    int 	y,
+    int		maxy,
+    int		origin,
+    RectFuncPtr RectFunc,
+    TrapFuncPtr TrapFunc,
+    int 	xorg,
+    int		yorg,
+    XAACacheInfoPtr pCache
+);
+
  
 void 
 XAAWriteMono8x8PatternToCache(ScrnInfoPtr pScrn, XAACacheInfoPtr pCache);
@@ -1369,6 +1462,9 @@ XAAPolyFillArcSolid(DrawablePtr pDraw, GCPtr pGC, int narcs, xArc *parcs);
  
 XAACacheInfoPtr
 XAACacheTile(ScrnInfoPtr Scrn, PixmapPtr pPix);
+
+XAACacheInfoPtr
+XAACacheMonoStipple(ScrnInfoPtr Scrn, PixmapPtr pPix);
 
 XAACacheInfoPtr
 XAACacheStipple(ScrnInfoPtr Scrn, PixmapPtr pPix, int fg, int bg);

@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.1.2.5 1998/07/18 17:53:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.2 1998/07/25 16:55:47 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -140,6 +140,7 @@ Permedia2Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     if (pGlint->UseBlockWrite)
 	pReg->glintRegs[0x06] = GLINT_READ_REG(PMMemConfig) | 1<<21;
+
 
     pReg->glintRegs[0x50] = mode->CrtcHSyncStart - mode->CrtcHDisplay;
     pReg->glintRegs[0x51] = mode->CrtcVSyncStart - mode->CrtcVDisplay;

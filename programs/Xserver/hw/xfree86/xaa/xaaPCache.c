@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.1.2.11 1998/07/25 10:32:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.2 1998/07/25 16:58:50 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -660,6 +660,7 @@ XAAInitPixmapCache(
     RegionPtr areas,
     pointer data
 ) {
+   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
    XAAInfoRecPtr infoRec = (XAAInfoRecPtr)data;
    XAAPixmapCachePrivatePtr pCachePriv;
    Bool FirstTime = TRUE;
@@ -676,6 +677,8 @@ XAAInitPixmapCache(
    oldMaxH = infoRec->MaxCacheableTileHeight;
    infoRec->MaxCacheableTileWidth = 0;
    infoRec->MaxCacheableTileHeight = 0;
+   infoRec->MaxCacheableStippleHeight = 0;
+   infoRec->MaxCacheableStippleWidth = 0;
    infoRec->UsingPixmapCache = FALSE;
 
 
@@ -1092,6 +1095,13 @@ XAAInitPixmapCache(
 	infoRec->MaxCacheableTileWidth = infoRec->MaxCacheableTileHeight = 256;
     if(Num512) 
 	infoRec->MaxCacheableTileWidth = infoRec->MaxCacheableTileHeight = 512;
+
+     
+    infoRec->MaxCacheableStippleHeight = infoRec->MaxCacheableTileHeight;
+    infoRec->MaxCacheableStippleWidth = 
+		infoRec->MaxCacheableTileWidth * pScrn->bitsPerPixel;
+    if(infoRec->ScreenToScreenColorExpandCopyFlags & TRIPLE_BITS_24BPP) 
+	infoRec->MaxCacheableStippleWidth /= 3;
 
     if(NumMono)  {
         if(!(infoRec->Mono8x8PatternFillFlags & 
@@ -1537,14 +1547,112 @@ XAACacheTile(ScrnInfoPtr pScrn, PixmapPtr pPix)
    pCache->serialNumber = pPix->drawable.serialNumber;
    pCache->trans_color = pCache->bg = pCache->fg = -1;
    pCache->orig_w = w;  pCache->orig_h = h;
-   (*infoRec->WritePixmapToCache)(pScrn, pCache->x, pCache->y, 
-	pPix->drawable.width, pPix->drawable.height, pPix->devPrivate.ptr,
+   (*infoRec->WritePixmapToCache)(
+	pScrn, pCache->x, pCache->y, w, h, pPix->devPrivate.ptr,
 	pPix->devKind, pPix->drawable.bitsPerPixel, pPix->drawable.depth);
-   if((w != pCache->w) || (h != pCache->h))
+   if(!(infoRec->PixmapCacheFlags & DO_NOT_TILE_COLOR_DATA) && 
+	((w != pCache->w) || (h != pCache->h)))
 	XAATileCache(pScrn, pCache, w, h);
 
    return pCache;
 }
+
+XAACacheInfoPtr
+XAACacheMonoStipple(ScrnInfoPtr pScrn, PixmapPtr pPix)
+{
+   int w = pPix->drawable.width;
+   int h = pPix->drawable.height;
+   XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+   XAAPixmapCachePrivatePtr pCachePriv = 
+	(XAAPixmapCachePrivatePtr)infoRec->PixmapCachePrivate;
+   XAACacheInfoPtr pCache, cacheRoot = NULL;
+   int i, max = 0, funcNo, pad, dwords, bpp = pScrn->bitsPerPixel;
+   int *current;
+   StippleScanlineProcPtr StippleFunc;
+   unsigned char *data, *srcPtr, *dstPtr;
+
+   if((h <= 128) && (w <= 128 * bpp)) {
+	if(pCachePriv->Info128) {
+	    cacheRoot = pCachePriv->Info128; 
+	    max = pCachePriv->Num128x128;
+	    current = &pCachePriv->Current128;
+	} else {     
+	    cacheRoot = pCachePriv->InfoPartial;
+	    max = pCachePriv->NumPartial;
+	    current = &pCachePriv->CurrentPartial;
+	}
+   } else if((h <= 256) && (w <= 256 * bpp)){
+	cacheRoot = pCachePriv->Info256;      
+	max = pCachePriv->Num256x256;
+	current = &pCachePriv->Current256;
+   } else if((h <= 512) && (w <= 526 * bpp)){
+	cacheRoot = pCachePriv->Info512;      
+	max = pCachePriv->Num512x512;
+	current = &pCachePriv->Current512;
+   } else { /* something's wrong */ 
+	ErrorF("Something's wrong in XAACacheMonoStipple()\n");
+	return pCachePriv->Info128; 
+   }
+
+   pCache = cacheRoot;
+
+   /* lets look for it */
+   for(i = 0; i < max; i++, pCache++) {
+	if((pCache->serialNumber == pPix->drawable.serialNumber) &&
+	    (pCache->fg == -1) && (pCache->bg == -1)) {
+	    pCache->trans_color = -1;
+	    return pCache;
+	}
+   }
+
+   pCache = &cacheRoot[(*current)++];
+   if(*current >= max) *current = 0;
+
+   pCache->serialNumber = pPix->drawable.serialNumber;
+   pCache->trans_color = pCache->bg = pCache->fg = -1;
+   pCache->orig_w = w;  pCache->orig_h = h;
+
+   if(w <= 32) {
+        if(w & (w - 1))	funcNo = 1;
+        else    	funcNo = 0;
+   } else 		funcNo = 2;
+
+   pad = (((pCache->w * bpp) + 31) >> 5) << 2;
+   dstPtr = data = (unsigned char*)ALLOCATE_LOCAL(pad * pCache->h);
+   srcPtr = (unsigned char*)pPix->devPrivate.ptr;
+
+   if(infoRec->ScreenToScreenColorExpandCopyFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
+	StippleFunc = XAAStippleScanlineFuncMSBFirst[funcNo];
+   else
+	StippleFunc = XAAStippleScanlineFuncLSBFirst[funcNo];
+
+   dwords = pad << 2;
+   if(dwords > ((pScrn->virtualX + 62) >> 5))
+	dwords = (pScrn->virtualX + 62) >> 5;
+
+   for(i = 0; i < h; i++) {
+	(*StippleFunc)((CARD32*)dstPtr, (CARD32*)srcPtr, 0, w, dwords);
+	srcPtr += pPix->devKind;
+	dstPtr += pad;
+   }
+
+   while((h<<1) <= pCache->h) {
+	memcpy(data + (pad * h), data, pad * h);
+	h <<= 1;
+   }
+ 
+   if(h < pCache->h)   
+	memcpy(data + (pad * h), data, pad * (pCache->h - h));
+
+   (*infoRec->WritePixmapToCache)(
+	pScrn, pCache->x, pCache->y, pCache->w, pCache->h, data,
+	pad, bpp, pScrn->depth);
+
+   DEALLOCATE_LOCAL(data);
+
+   return pCache;
+}
+
 
 
 XAACacheInfoPtr
@@ -1617,7 +1725,8 @@ XAACacheStipple(ScrnInfoPtr pScrn, PixmapPtr pPix, int fg, int bg)
    (*infoRec->WriteBitmapToCache)(pScrn, pCache->x, pCache->y, 
 	pPix->drawable.width, pPix->drawable.height, pPix->devPrivate.ptr,
 	pPix->devKind, fg, bg);
-   if((w != pCache->w) || (h != pCache->h))
+   if(!(infoRec->PixmapCacheFlags & DO_NOT_TILE_COLOR_DATA) && 
+	((w != pCache->w) || (h != pCache->h)))
 	XAATileCache(pScrn, pCache, w, h);
 
    return pCache;
@@ -1940,6 +2049,19 @@ XAAStippledFillChooser(GCPtr pGC)
 	}
     }
 
+    if(infoRec->UsingPixmapCache && infoRec->FillSpansCacheExpand && 
+	(pPixmap->drawable.height <= infoRec->MaxCacheableStippleHeight) &&
+	(pPixmap->drawable.width <= infoRec->MaxCacheableStippleWidth) &&
+	!(infoRec->FillSpansCacheExpandFlags & NO_TRANSPARENCY) && 
+	((pGC->alu == GXcopy) || !(infoRec->FillSpansCacheExpandFlags & 
+		TRANSPARENCY_GXCOPY_ONLY)) &&
+	CHECK_ROP(pGC,infoRec->FillSpansCacheExpandFlags) &&
+	CHECK_FG(pGC,infoRec->FillSpansCacheExpandFlags) &&
+	CHECK_PLANEMASK(pGC,infoRec->FillSpansCacheExpandFlags)) {
+
+	      return DO_CACHE_EXPAND;
+    }
+
 
     if(infoRec->UsingPixmapCache && 
 	!(infoRec->PixmapCacheFlags & DO_NOT_BLIT_STIPPLES) && 
@@ -2002,6 +2124,16 @@ XAAOpaqueStippledFillChooser(GCPtr pGC)
 	}
     }
 
+    if(infoRec->UsingPixmapCache && infoRec->FillSpansCacheExpand && 
+	(pPixmap->drawable.height <= infoRec->MaxCacheableStippleHeight) &&
+	(pPixmap->drawable.width <= infoRec->MaxCacheableStippleWidth) &&
+	!(infoRec->FillSpansCacheExpandFlags & TRANSPARENCY_ONLY) && 
+	CHECK_ROP(pGC,infoRec->FillSpansCacheExpandFlags) &&
+	CHECK_COLORS(pGC,infoRec->FillSpansCacheExpandFlags) &&
+	CHECK_PLANEMASK(pGC,infoRec->FillSpansCacheExpandFlags)) {
+
+	      return DO_CACHE_EXPAND;
+    } 
 
     if(infoRec->UsingPixmapCache &&
 	!(infoRec->PixmapCacheFlags & DO_NOT_BLIT_STIPPLES) && 
@@ -2012,7 +2144,7 @@ XAAOpaqueStippledFillChooser(GCPtr pGC)
 	CHECK_PLANEMASK(pGC,infoRec->FillSpansCacheBltFlags)) {
 
 	      return DO_CACHE_BLT;
-    }
+    } 
 
     if(infoRec->FillSpansColorExpand && 
 	!(infoRec->FillSpansColorExpandFlags & TRANSPARENCY_ONLY) && 
