@@ -77,6 +77,7 @@
 				F58D65DF018F79B101000001,
 				F533213D0193CBE001000001,
 				43B962E200617B93416877C2,
+				F5ACD25CC5B5E96601000001,
 				F587E16401924C6901000001,
 			);
 			isa = PBXVariantGroup;
@@ -185,6 +186,7 @@
 				F58D65E0018F79C001000001,
 				F533213E0193CBF401000001,
 				43B962E300617B93416877C2,
+				F5ACD261C5B5EA2001000001,
 				F587E16501924C7401000001,
 			);
 			isa = PBXVariantGroup;
@@ -282,6 +284,7 @@
 				F58D65DD018F798F01000001,
 				F533213A0193CBA201000001,
 				43B962E100617B49416877C2,
+				F5ACD262C5B5EA4D01000001,
 				F587E16101924C2F01000001,
 			);
 			isa = PBXVariantGroup;
@@ -498,6 +501,7 @@
 				F58D65DE018F79A001000001,
 				F533213C0193CBC901000001,
 				1220774600712D75416877C2,
+				F5ACD25FC5B5E9AA01000001,
 				F587E16301924C5E01000001,
 			);
 			isa = PBXVariantGroup;
@@ -585,6 +589,7 @@
 				F58D65DC018F794D01000001,
 				F533213B0193CBB401000001,
 				1BD8DE4700B8A3C77F000001,
+				F5ACD25DC5B5E97701000001,
 				F587E16201924C5301000001,
 			);
 			isa = PBXVariantGroup;
@@ -605,6 +610,7 @@
 				F58D65E1018F79E001000001,
 				F533213F0193CC2501000001,
 				1BD8DE4800B8A4167F000001,
+				F5ACD260C5B5E9DF01000001,
 				F587E16601924C9D01000001,
 			);
 			isa = PBXVariantGroup;
@@ -712,6 +718,7 @@
 				German,
 				Swedish,
 				Dutch,
+				Spanish,
 			);
 			mainGroup = 29B97314FDCFA39411CA2CEA;
 			projectDirPath = "";
@@ -771,6 +778,7 @@
 				F58D65DB018F793801000001,
 				F53321390193CB6A01000001,
 				43B962E000617B49416877C2,
+				F5ACD25EC5B5E98D01000001,
 				F587E16001924C1D01000001,
 			);
 			isa = PBXVariantGroup;
@@ -1191,6 +1199,48 @@
 			isa = PBXFileReference;
 			name = French;
 			path = French.lproj/XDarwinHelp.html.cpp;
+			refType = 4;
+		};
+		F5ACD25CC5B5E96601000001 = {
+			isa = PBXFileReference;
+			name = Spanish;
+			path = Spanish.lproj/Credits.rtf;
+			refType = 4;
+		};
+		F5ACD25DC5B5E97701000001 = {
+			isa = PBXFileReference;
+			name = Spanish;
+			path = Spanish.lproj/InfoPlist.strings.cpp;
+			refType = 4;
+		};
+		F5ACD25EC5B5E98D01000001 = {
+			isa = PBXFileReference;
+			name = Spanish;
+			path = Spanish.lproj/MainMenu.nib;
+			refType = 4;
+		};
+		F5ACD25FC5B5E9AA01000001 = {
+			isa = PBXFileReference;
+			name = Spanish;
+			path = Spanish.lproj/Localizable.strings;
+			refType = 4;
+		};
+		F5ACD260C5B5E9DF01000001 = {
+			isa = PBXFileReference;
+			name = Spanish;
+			path = Spanish.lproj/XDarwinHelp.html.cpp;
+			refType = 4;
+		};
+		F5ACD261C5B5EA2001000001 = {
+			isa = PBXFileReference;
+			name = Spanish;
+			path = Spanish.lproj/XDarwinHelp.html;
+			refType = 4;
+		};
+		F5ACD262C5B5EA4D01000001 = {
+			isa = PBXFileReference;
+			name = Spanish;
+			path = Spanish.lproj/InfoPlist.strings;
 			refType = 4;
 		};
 	};
