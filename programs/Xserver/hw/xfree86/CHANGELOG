@@ -1,4 +1,5 @@
 XFree86 4.0.99.3 (11 April 2001)
+ 376. Update Japanese localization for XDarwin application (Toshimitsu Tanaka).
  375. Fix byte ordering and static colormap issues with XDarwin server
       on x86 hardware (Rob Braun).
  374. Fix problems with XDarwin hardware cursor support in Quartz mode
@@ -12933,4 +12934,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1683 2001/04/11 08:34:17 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1684 2001/04/12 20:09:54 torrey Exp $
