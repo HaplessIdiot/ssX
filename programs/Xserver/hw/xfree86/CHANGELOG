@@ -1,4 +1,6 @@
 XFree86 4.3.99.4 (xx April 2003)
+ 149. Fix programming error in ix86 motherboard chipset determination
+      (Marc La France).
  148. Ansi prototypes cleanup in Xserver/include and Xserver/os 
       (Matthieu Herrb).
  147. Fix shared libXp dependencies on *BSD and Darwin (Dale Rahn). 
@@ -16902,7 +16904,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2670 2003/04/26 19:25:02 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2671 2003/04/27 21:30:59 herrb Exp $
 
 
 
