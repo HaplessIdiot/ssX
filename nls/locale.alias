@@ -5,7 +5,7 @@ XCOMM	Each alias name is described within one line.
 XCOMM	The first word is the alias name (simplified locale name)
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM	$XFree86: xc/nls/locale.alias,v 1.57 2002/12/12 04:13:40 dawes Exp $
+XCOMM	$XFree86: xc/nls/locale.alias,v 1.58 2002/12/14 04:46:03 dawes Exp $
 XCOMM
 
 POSIX:						C
@@ -92,12 +92,18 @@ de_AT@euro:					de_AT.ISO8859-15
 de_BE:						de_BE.ISO8859-1
 de_BE.iso88591:					de_BE.ISO8859-1
 de_BE.ISO_8859-1:				de_BE.ISO8859-1
+de_BE.ISO-8859-1:				de_BE.ISO8859-1
 de_BE.iso885915:				de_BE.ISO8859-15
+de_BE.ISO_8859-15:				de_BE.ISO8859-15
+de_BE.ISO-8859-15:				de_BE.ISO8859-15
 de_BE@euro:					de_BE.ISO8859-15
 de_CH:						de_CH.ISO8859-1
 de_CH.iso88591:					de_CH.ISO8859-1
 de_CH.ISO_8859-1:				de_CH.ISO8859-1
+de_CH.ISO-8859-1:				de_CH.ISO8859-1
 de_CH.iso885915:				de_CH.ISO8859-15
+de_CH.ISO_8859-15:				de_CH.ISO8859-15
+de_CH.ISO-8859-15:				de_CH.ISO8859-15
 de_DE:						de_DE.ISO8859-1
 de_DE.88591:					de_DE.ISO8859-1
 de_DE.88591.en:					de_DE.ISO8859-1
@@ -105,11 +111,16 @@ de_DE.iso88591:					de_DE.ISO8859-1
 de_DE.ISO-8859-1:				de_DE.ISO8859-1
 de_DE.ISO_8859-1:				de_DE.ISO8859-1
 de_DE.iso885915:				de_DE.ISO8859-15
+de_DE.ISO-8859-15:				de_DE.ISO8859-15
+de_DE.ISO_8859-15:				de_DE.ISO8859-15
 de_DE@euro:					de_DE.ISO8859-15
 de_LU:						de_LU.ISO8859-1
 de_LU.iso88591:					de_LU.ISO8859-1
 de_LU.ISO_8859-1:				de_LU.ISO8859-1
+de_LU.ISO-8859-1:				de_LU.ISO8859-1
 de_LU.iso885915:				de_LU.ISO8859-15
+de_LU.ISO_8859-15:				de_LU.ISO8859-15
+de_LU.ISO-8859-15:				de_LU.ISO8859-15
 de_LU@euro:					de_LU.ISO8859-15
 GER_DE.8859:					de_DE.ISO8859-1
 GER_DE.8859.in:					de_DE.ISO8859-1
