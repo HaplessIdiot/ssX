@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftlist.c,v 1.2 2000/12/07 23:57:28 keithp Exp $
+ * $XFree86: xc/lib/Xft1/xftlist.c,v 1.2 2002/03/01 01:00:53 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -87,10 +87,18 @@ XftListFontsPatternObjects (Display	    *dpy,
     Bool	core, render;
     XftResult	result;
 #endif
-
+    XftPattern	*pattern_trim;
+    XftFontSet	*ret;
+    
     if (!XftInit (0))
 	return 0;
 
+    pattern_trim = XftPatternDuplicate (pattern);
+    if (!pattern_trim)
+	return 0;
+    
+    XftPatternDel (pattern_trim, XFT_CORE);
+    XftPatternDel (pattern_trim, XFT_RENDER);
 #ifdef FREETYPE2
     render = core = False;
     result = XftPatternGetBool (pattern, XFT_CORE, 0, &core);
@@ -104,6 +112,14 @@ XftListFontsPatternObjects (Display	    *dpy,
 				    XftDefaultHasRender (dpy));
     if (render)
     {
+	/*
+	 * fontconfig fonts never include encoding values.
+	 * deleting it is something of a kludge as it eliminates the
+	 * ability to list core fonts and render fonts of a specific
+	 * encoding.  Fortunately, Xft1 apps generally don't want core
+	 * fonts in any case.
+	 */
+	XftPatternDel (pattern_trim, XFT_ENCODING);
 	if (XftInitFtLibrary())
 	{
 	    sets[nsets] = _XftFontSet;
@@ -118,7 +134,9 @@ XftListFontsPatternObjects (Display	    *dpy,
 	if (sets[nsets])
 	    nsets++;
     }
-    return XftListFontSets (sets, nsets, pattern, os);
+    ret = XftListFontSets (sets, nsets, pattern, os);
+    XftPatternDestroy (pattern_trim);
+    return ret;
 }
 
 XftFontSet *
