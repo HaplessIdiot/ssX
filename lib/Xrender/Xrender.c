@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Xrender.c,v 1.3 2000/12/01 21:32:00 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Xrender.c,v 1.4 2001/05/16 10:33:16 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -129,20 +129,7 @@ _XRenderFindFormat (XRenderInfo *xri, PictFormat format)
 static Visual *
 _XRenderFindVisual (Display *dpy, VisualID vid)
 {
-    XVisualInfo	temp, *vi;
-    Visual	*v;
-    int		nvi;
-
-    temp.visualid = vid;
-    vi = XGetVisualInfo (dpy, VisualIDMask, &temp, &nvi);
-    if (vi)
-    {
-	v = vi->visual;
-	XFree (vi);
-    }
-    else
-	v = 0;
-    return v;
+    return _XVIDtoVisual (dpy, vid);
 }
 
 Status
@@ -166,6 +153,11 @@ XRenderQueryFormats (Display *dpy)
     
     RenderCheckExtension (dpy, info, 0);
     LockDisplay (dpy);
+    if (info->data)
+    {
+	UnlockDisplay (dpy);
+	return 1;
+    }
     GetReq (RenderQueryPictFormats, req);
     req->reqType = info->codes->major_opcode;
     req->renderReqType = X_RenderQueryPictFormats;
@@ -193,7 +185,7 @@ XRenderQueryFormats (Display *dpy)
 	       rep.numVisuals * sizeof (xPictVisual));
     xData = (void *) Xmalloc (rlength);
     
-    if (!xri || !xFormat)
+    if (!xri)
     {
 	if (xri) Xfree (xri);
 	if (xData) Xfree (xData);
@@ -250,8 +242,9 @@ XRenderQueryFormats (Display *dpy)
 	}
 	xScreen = (xPictScreen *) xDepth;	    
     }
-    Xfree (xData);
     info->data = (XPointer) xri;
+    UnlockDisplay (dpy);
+    Xfree (xData);
     return 1;
 }
 
@@ -264,11 +257,8 @@ XRenderFindVisualFormat (Display *dpy, Visual *visual)
     XRenderVisual   *xrv;
     
     RenderCheckExtension (dpy, info, 0);
-    if (!info->data)
-    {
-	if (!XRenderQueryFormats (dpy))
-	    return 0;
-    }
+    if (!XRenderQueryFormats (dpy))
+        return 0;
     xri = (XRenderInfo *) info->data;
     for (nv = 0, xrv = xri->visual; nv < xri->nvisual; nv++, xrv++)
 	if (xrv->visual == visual)
@@ -287,11 +277,8 @@ XRenderFindFormat (Display		*dpy,
     XRenderInfo     *xri;
     
     RenderCheckExtension (dpy, info, 0);
-    if (!info->data)
-    {
-	if (!XRenderQueryFormats (dpy))
-	    return 0;
-    }
+    if (!XRenderQueryFormats (dpy))
+	return 0;
     xri = (XRenderInfo *) info->data;
     for (nf = 0; nf < xri->nformat; nf++)
     {
