@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Xrender.c,v 1.9 2002/05/15 06:42:49 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Xrender.c,v 1.10 2002/05/17 23:54:57 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -92,26 +92,17 @@ Status XRenderQueryVersion (Display *dpy,
 			    int	    *minor_versionp)
 {
     XExtDisplayInfo *info = XRenderFindDisplay (dpy);
-    xRenderQueryVersionReply rep;
-    xRenderQueryVersionReq  *req;
+    XRenderInfo	    *xri;
 
-    RenderCheckExtension (dpy, info, 0);
-
-    LockDisplay (dpy);
-    GetReq (RenderQueryVersion, req);
-    req->reqType = info->codes->major_opcode;
-    req->renderReqType = X_RenderQueryVersion;
-    req->majorVersion = RENDER_MAJOR;
-    req->minorVersion = RENDER_MINOR;
-    if (!_XReply (dpy, (xReply *) &rep, 0, xTrue)) {
-	UnlockDisplay (dpy);
-	SyncHandle ();
+    if (!XextHasExtension (info))
 	return 0;
-    }
-    *major_versionp = rep.majorVersion;
-    *minor_versionp = rep.minorVersion;
-    UnlockDisplay (dpy);
-    SyncHandle ();
+
+    if (!XRenderQueryFormats (dpy))
+	return 0;
+    
+    xri = (XRenderInfo *) info->data; 
+    *major_versionp = xri->major_version;
+    *minor_versionp = xri->minor_version;
     return 1;
 }
 
@@ -132,10 +123,48 @@ _XRenderFindVisual (Display *dpy, VisualID vid)
     return _XVIDtoVisual (dpy, vid);
 }
 
+typedef struct _renderVersionState {
+    unsigned long   version_seq;
+    Bool	    error;
+    int		    major_version;
+    int		    minor_version;
+    
+} _XrenderVersionState;
+
+static Bool
+_XRenderVersionHandler (Display	    *dpy,
+			xReply	    *rep,
+			char	    *buf,
+			int	    len,
+			XPointer    data)
+{
+    xRenderQueryVersionReply	replbuf;
+    xRenderQueryVersionReply	*repl;
+    _XrenderVersionState	*state = (_XrenderVersionState *) data;
+
+    if (dpy->last_request_read != state->version_seq)
+	return False;
+    if (rep->generic.type == X_Error)
+    {
+	state->error = True;
+	return False;
+    }
+    repl = (xRenderQueryVersionReply *)
+	_XGetAsyncReply(dpy, (char *)&replbuf, rep, buf, len,
+		     (SIZEOF(xRenderQueryVersionReply) - SIZEOF(xReply)) >> 2,
+			True);
+    state->major_version = repl->majorVersion;
+    state->minor_version = repl->minorVersion;
+    return True;
+}
+
 Status
 XRenderQueryFormats (Display *dpy)
 {
-    XExtDisplayInfo *info = XRenderFindDisplay (dpy);
+    XExtDisplayInfo		*info = XRenderFindDisplay (dpy);
+    _XAsyncHandler		async;
+    _XrenderVersionState	async_state;
+    xRenderQueryVersionReq	*vreq;
     xRenderQueryPictFormatsReply rep;
     xRenderQueryPictFormatsReq  *req;
     XRenderInfo			*xri;
@@ -147,6 +176,7 @@ XRenderQueryFormats (Display *dpy)
     xPictScreen			*xScreen;
     xPictDepth			*xDepth;
     xPictVisual			*xVisual;
+    CARD32			*xSubpixel;
     void			*xData;
     int				nf, ns, nd, nv;
     int				rlength;
@@ -158,19 +188,50 @@ XRenderQueryFormats (Display *dpy)
 	UnlockDisplay (dpy);
 	return 1;
     }
+    GetReq (RenderQueryVersion, vreq);
+    vreq->reqType = info->codes->major_opcode;
+    vreq->renderReqType = X_RenderQueryVersion;
+    vreq->majorVersion = RENDER_MAJOR;
+    vreq->minorVersion = RENDER_MINOR;
+    
+    async_state.version_seq = dpy->request;
+    async_state.error = False;
+    async.next = dpy->async_handlers;
+    async.handler = _XRenderVersionHandler;
+    async.data = (XPointer) &async_state;
+    dpy->async_handlers = &async;
+    
     GetReq (RenderQueryPictFormats, req);
     req->reqType = info->codes->major_opcode;
     req->renderReqType = X_RenderQueryPictFormats;
-    if (!_XReply (dpy, (xReply *) &rep, 0, xFalse)) {
+    
+    if (!_XReply (dpy, (xReply *) &rep, 0, xFalse)) 
+    {
+	DeqAsyncHandler (dpy, &async);
 	UnlockDisplay (dpy);
 	SyncHandle ();
 	return 0;
     }
+    DeqAsyncHandler (dpy, &async);
+    if (async_state.error)
+    {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return 0;
+    }
+    /*
+     * Check for the lack of sub-pixel data
+     */
+    if (async_state.major_version == 0 && async_state.minor_version < 6)
+	rep.numSubpixel = 0;
+	
     xri = (XRenderInfo *) Xmalloc (sizeof (XRenderInfo) +
-				  rep.numFormats * sizeof (XRenderPictFormat) +
-				  rep.numScreens * sizeof (XRenderScreen) +
-				  rep.numDepths * sizeof (XRenderDepth) +
-				  rep.numVisuals * sizeof (XRenderVisual));
+				   rep.numFormats * sizeof (XRenderPictFormat) +
+				   rep.numScreens * sizeof (XRenderScreen) +
+				   rep.numDepths * sizeof (XRenderDepth) +
+				   rep.numVisuals * sizeof (XRenderVisual));
+    xri->major_version = async_state.major_version;
+    xri->minor_version = async_state.minor_version;
     xri->format = (XRenderPictFormat *) (xri + 1);
     xri->nformat = rep.numFormats;
     xri->screen = (XRenderScreen *) (xri->format + rep.numFormats);
@@ -182,7 +243,8 @@ XRenderQueryFormats (Display *dpy)
     rlength = (rep.numFormats * sizeof (xPictFormInfo) +
 	       rep.numScreens * sizeof (xPictScreen) +
 	       rep.numDepths * sizeof (xPictDepth) +
-	       rep.numVisuals * sizeof (xPictVisual));
+	       rep.numVisuals * sizeof (xPictVisual) +
+	       rep.numSubpixel * 4);
     xData = (void *) Xmalloc (rlength);
     
     if (!xri || !xData)
@@ -223,6 +285,7 @@ XRenderQueryFormats (Display *dpy)
 	screen->depths = depth;
 	screen->ndepths = xScreen->nDepth;
 	screen->fallback = _XRenderFindFormat (xri, xScreen->fallback);
+	screen->subpixel = SubPixelUnknown;
 	xDepth = (xPictDepth *) (xScreen + 1);
 	for (nd = 0; nd < screen->ndepths; nd++)
 	{
@@ -240,13 +303,38 @@ XRenderQueryFormats (Display *dpy)
 	    depth++;
 	    xDepth = (xPictDepth *) xVisual;
 	}
+	screen++;
 	xScreen = (xPictScreen *) xDepth;	    
+    }
+    xSubpixel = (CARD32 *) xScreen;
+    screen = xri->screen;
+    for (ns = 0; ns < rep.numSubpixel; ns++)
+    {
+	screen->subpixel = *xSubpixel;
+	xSubpixel++;
+	screen++;
     }
     info->data = (XPointer) xri;
     UnlockDisplay (dpy);
     SyncHandle ();
     Xfree (xData);
     return 1;
+}
+
+int
+XRenderQuerySubpixelOrder (Display *dpy, int screen)
+{
+    XExtDisplayInfo *info = XRenderFindDisplay (dpy);
+    XRenderInfo	    *xri;
+
+    if (!XextHasExtension (info))
+	return SubPixelUnknown;
+
+    if (!XRenderQueryFormats (dpy))
+	return SubPixelUnknown;
+
+    xri = (XRenderInfo *) info->data;
+    return xri->screen[screen].subpixel;
 }
 
 XRenderPictFormat *

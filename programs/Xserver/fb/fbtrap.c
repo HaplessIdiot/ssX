@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbtrap.c,v 1.7 2002/05/22 19:53:09 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbtrap.c,v 1.8 2002/05/31 16:48:52 keithp Exp $
  *
  * Copyright © 2000 University of Southern California
  *
@@ -979,7 +979,7 @@ PixelAlpha(xFixed	pixel_x,
 #define INCREMENT_X_AND_PIXEL		\
 {					\
     pixel_x += xFixed1;			\
-    mask.offset += mask.bpp;		\
+    (*mask.over) (&mask);		\
 }
 
 /* XXX: What do we really want this prototype to look like? Do we want
@@ -1055,7 +1055,7 @@ fbRasterizeTrapezoid (PicturePtr    pMask,
        of the loop). So, for sake of maintenance, I'm putting off this
        optimization at least until this code is more stable.. */
 
-    if (!fbBuildCompositeOperand (pMask, &mask, 0, xFixedToInt (trap.top)))
+    if (!fbBuildCompositeOperand (pMask, &mask, 0, xFixedToInt (trap.top), FALSE, FALSE))
 	return;
     
     for (y = trap.top; y < trap.bottom; y = y_next)
@@ -1090,7 +1090,7 @@ fbRasterizeTrapezoid (PicturePtr    pMask,
 	    first_right_x += xFixed1;
 	}
 
-	mask.offset = xFixedToInt (pixel_x) * mask.bpp;
+	(*mask.set) (&mask, pixel_x, y);
 	
 	/* 
 	 * Walk pixels on this row intersected by only trap.left
@@ -1191,7 +1191,7 @@ fbRasterizeTrapezoid (PicturePtr    pMask,
 	/*
 	 * Step down the mask
 	 */
-	mask.line += mask.stride;
+	(*mask.down) (&mask);
     }
 }
 

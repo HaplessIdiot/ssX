@@ -111,6 +111,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
                 Picture.c \
                 FillRect.c \
                 FillRects.c \
+                Filter.c \
                 Poly.c \
                 Trap.c \
                 Tri.c
@@ -123,6 +124,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
                 Picture.o \
                 FillRect.o \
                 FillRects.o \
+                Filter.o \
                 Poly.o \
                 Trap.o \
                 Tri.o

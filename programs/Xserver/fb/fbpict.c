@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.13 2002/05/13 05:25:59 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.14 2002/05/17 23:53:57 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -915,6 +915,7 @@ fbComposite (CARD8      op,
 	return;
 				   
     func = fbCompositeGeneral;
+    if (!pSrc->transform && !(pMask && pMask->transform))
     if (!maskAlphaMap && !srcAlphaMap && !dstAlphaMap)
     switch (op) {
     case PictOpOver:

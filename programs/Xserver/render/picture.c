@@ -76,6 +76,7 @@ PictureCloseScreen (int index, ScreenPtr pScreen)
 
     pScreen->CloseScreen = ps->CloseScreen;
     ret = (*pScreen->CloseScreen) (index, pScreen);
+    PictureResetFilters (pScreen);
     for (n = 0; n < ps->nformats; n++)
 	if (ps->formats[n].type == PictTypeIndexed)
 	    (*ps->CloseIndexed) (pScreen, &ps->formats[n]);
@@ -419,6 +420,17 @@ PictureFinishInit (void)
     return TRUE;
 }
 
+Bool
+PictureSetSubpixelOrder (ScreenPtr pScreen, int subpixel)
+{
+    PictureScreenPtr    ps = GetPictureScreenIfSet(pScreen);
+
+    if (!ps)
+	return FALSE;
+    ps->subpixel = subpixel;
+    return TRUE;
+    
+}
 PictFormatPtr
 PictureMatchVisual (ScreenPtr pScreen, int depth, VisualPtr pVisual)
 {
@@ -585,12 +597,26 @@ PictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats)
     ps->fallback = formats;
     ps->nformats = nformats;
     
+    ps->filters = 0;
+    ps->nfilters = 0;
+    ps->filterAliases = 0;
+    ps->nfilterAliases = 0;
+
     ps->CloseScreen = pScreen->CloseScreen;
     ps->DestroyWindow = pScreen->DestroyWindow;
     ps->StoreColors = pScreen->StoreColors;
     pScreen->DestroyWindow = PictureDestroyWindow;
     pScreen->CloseScreen = PictureCloseScreen;
     pScreen->StoreColors = PictureStoreColors;
+
+    if (!PictureSetDefaultFilters (pScreen))
+    {
+	PictureResetFilters (pScreen);
+	SetPictureScreen(pScreen, 0);
+	xfree (formats);
+	xfree (ps);
+	return FALSE;
+    }
 
     return TRUE;
 }
@@ -616,7 +642,13 @@ SetPictureToDefaults (PicturePtr    pPicture)
     pPicture->clipOrigin.y = 0;
     pPicture->clientClip = 0;
 
+    pPicture->transform = 0;
+
     pPicture->dither = None;
+    pPicture->filter = PictureGetFilterId (FilterNearest, -1, TRUE);
+    pPicture->filter_params = 0;
+    pPicture->filter_nparams = 0;
+
     pPicture->serialNumber = GC_CHANGE_SERIAL_BIT;
     pPicture->stateChanges = (1 << (CPLastBit+1)) - 1;
 }
@@ -958,6 +990,40 @@ SetPictureClipRects (PicturePtr	pPicture,
     return result;
 }
 
+int
+SetPictureTransform (PicturePtr	    pPicture,
+		     PictTransform  *transform)
+{
+    static const PictTransform	identity = { {
+	{ xFixed1, 0x00000, 0x00000 },
+	{ 0x00000, xFixed1, 0x00000 },
+	{ 0x00000, 0x00000, xFixed1 },
+    } };
+
+    if (transform && memcmp (transform, &identity, sizeof (PictTransform)) == 0)
+	transform = 0;
+    
+    if (transform)
+    {
+	if (!pPicture->transform)
+	{
+	    pPicture->transform = (PictTransform *) xalloc (sizeof (PictTransform));
+	    if (!pPicture->transform)
+		return BadAlloc;
+	}
+	*pPicture->transform = *transform;
+    }
+    else
+    {
+	if (pPicture->transform)
+	{
+	    xfree (pPicture->transform);
+	    pPicture->transform = 0;
+	}
+    }
+    return Success;
+}
+
 static void
 ValidateOnePicture (PicturePtr pPicture)
 {
@@ -993,6 +1059,9 @@ FreePicture (pointer	value,
 	if (pPicture->alphaMap)
 	    FreePicture ((pointer) pPicture->alphaMap, (XID) 0);
 	(*ps->DestroyPicture) (pPicture);
+	(*ps->DestroyPictureClip) (pPicture);
+	if (pPicture->transform)
+	    xfree (pPicture->transform);
 	if (pPicture->pDrawable->type == DRAWABLE_WINDOW)
 	{
 	    WindowPtr	pWindow = (WindowPtr) pPicture->pDrawable;
@@ -1156,4 +1225,45 @@ CompositeTriFan (CARD8		op,
     ValidatePicture (pSrc);
     ValidatePicture (pDst);
     (*ps->TriFan) (op, pSrc, pDst, maskFormat, xSrc, ySrc, npoints, points);
+}
+
+typedef xFixed_32_32	xFixed_48_16;
+
+#define MAX_FIXED_48_16	    ((xFixed_48_16) 0x7fffffff)
+#define MIN_FIXED_48_16	    (-((xFixed_48_16) 1 << 31))
+
+Bool
+PictureTransformPoint (PictTransformPtr transform,
+		       PictVectorPtr	vector)
+{
+    PictVector	    result;
+    int		    i, j;
+    xFixed_32_32    partial;
+    xFixed_48_16    v;
+
+    for (j = 0; j < 3; j++)
+    {
+	v = 0;
+	for (i = 0; i < 3; i++)
+	{
+	    partial = ((xFixed_48_16) transform->matrix[j][i] * 
+		       (xFixed_48_16) vector->vector[i]);
+	    v += partial >> 16;
+	}
+	if (v > MAX_FIXED_48_16 || v < MIN_FIXED_48_16)
+	    return FALSE;
+	result.vector[j] = (xFixed) v;
+    }
+    if (!result.vector[2])
+	return FALSE;
+    for (j = 0; j < 2; j++)
+    {
+	partial = (xFixed_48_16) result.vector[j] << 16;
+	v = partial / result.vector[2];
+	if (v > MAX_FIXED_48_16 || v < MIN_FIXED_48_16)
+	    return FALSE;
+	vector->vector[j] = (xFixed) v;
+    }
+    vector->vector[2] = xFixed1;
+    return TRUE;
 }

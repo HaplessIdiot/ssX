@@ -167,7 +167,7 @@ OFILES = \
 		-I$(XF86SRC) -I$(XF86PARSERSRC) \
 		-I$(XF86SRC)/loader $(VGAINCLUDES) -I$(XF86SRC)/rac \
 	        -I$(XF86SRC)/scanpci -I$(XF86OSSRC)/vbe -I$(XF86SRC)/int10 \
-		-I$(XF86SRC)/ddc
+		-I$(XF86SRC)/ddc -I$(SERVERSRC)/render
 
      OSNAME = OSName
    OSVENDOR = OSVendor
