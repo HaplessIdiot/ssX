@@ -1,4 +1,8 @@
 XFree86 4.0.1e (3 November 2000)
+ 853. Combine the ATI, Rage128 and Radeon drivers into one with multiple
+      sub-modules (Marc La France).
+ 852. Make BIOS accesses in the Rage128 and Radeon drivers independent of
+      endianess and alignment (Marc La France).
  851. Fix the claiming of XF86Config device sections by drivers, and change
       MatchDevices() to only return unclaimed sections (Marc La France).
  850. Fixed build problem in s3virge when XvExtension is not set (Stuart
@@ -11398,4 +11402,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1369 2000/11/02 16:29:09 anderson Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1370 2000/11/02 16:46:14 tsi Exp $
