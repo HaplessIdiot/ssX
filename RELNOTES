@@ -1,13 +1,13 @@
-                  Release Notes for XFree86[tm] 4.3.99.901
+                  Release Notes for XFree86[tm] 4.3.99.902
 
                           The XFree86 Project, Inc
 
-                              23 November 2003
+                              18 December 2003
 
                                   Abstract
 
      This document contains some information about features present in
-     XFree86 4.3.99.901 and their status.
+     XFree86 4.3.99.902 and their status.
 
 1.  Introduction to the 4.x Release Series
 
@@ -16,8 +16,8 @@ XFree86 4 represents a significant redesign of the XFree86 X server.  Not all
 of the hardware drivers from 3.3.x have been ported to 4.x yet, but con-
 versely, 4.x has support for a lot of hardware that is not supported in
 3.3.x.  Our Driver Status document summarizes how the hardware driver support
-compares between 3.3.6 and 4.3.99.901.  Please check there first before down-
-loading 4.3.99.901.
+compares between 3.3.6 and 4.3.99.902.  Please check there first before down-
+loading 4.3.99.902.
 
 XFree86 4.4 introduces an automatic configuration mechanism for the XFree86
 server.  This makes it possible to start XFree86 in a usable way without
@@ -71,16 +71,10 @@ don't have enough space to cover them all here.
 
 2.1  Video Driver Enhancements
 
-   o [OLD] ATI Radeon 9x00 2D support added, and 3D support added for the
-     Radeon 8500, 9000, 9100, and M9.  The 3D support for the Radeon now
-     includes hardware TCL.
-
-   o [OLD] Support added to the i810 driver for Intel 845G, 852GM, 855GM and
-     865G integrated graphics chipsets, including 2D, 3D (DRI) and XVideo.
-     Support for the 830M has been improved, and XVideo support added.
-
-   o [OLD] National Semiconductor SC1x00, GX1, and GX2 chipset support added
-     with the "nsc" driver.
+   o Several stability issues with the support for the Intel 830M, 845G,
+     852GM, 855GM and 865G integrated graphics chipsets have been fixed.
+     Some limitations related to the driver's use of the video BIOS remain,
+     especially for some laptops.
 
    o The nv driver for NVIDIA cards has been updated as follows:
 
@@ -108,16 +102,8 @@ don't have enough space to cover them all here.
 
         o DRI for 300 series (300/305, 540, 630, 730) is supported again.
 
-   o [OLD] The s3virge driver now has support for double scan modes on the DX
-     (with XVideo disabled).
-
-   o [OLD] Updates to the savage driver, including fixing problems with the
-     TwisterK, and problems with incorrect memory size detection.
-
-   o [OLD] 2D acceleration added for the Trident CyberBladeXP/Ai1 chipsets.
-
-   o [OLD] Support for big endian architectures has been added to the C&T
-     driver.
+   o A new driver for several VIA integrated graphics chipsets has been
+     added.
 
    o Various updates and bug fixes have been made to most other drivers.
 
@@ -126,9 +112,6 @@ don't have enough space to cover them all here.
    o The mouse driver has some support on Linux and FreeBSD for auto-detect-
      ing the device node to use, making it unnecessary to supply this infor-
      mation in the XF86Config file in most cases.
-
-   o [OLD] Several new input drivers have been added, including tek4957, jam-
-     studio (js_x), fpit, palmax, and ur98 (Linux only).
 
 2.3  IPv6 support
 
@@ -291,51 +274,33 @@ Modified terminfo/termcap entries:
 
    o FreeType2 updated to version 2.1.4.
 
-   o [OLD] The "freetype" X server font backend has undergone a partial
-     rewrite.  The new version is based on FreeType 2, and handles TrueType
-     (including OpenType/TTF), OpenType/CFF and Type 1 fonts.  The old
-     "type1" backend is now deprecated, and is only used for CIDFonts by
-     default.
-
-   o [OLD] A new utility called "mkfontscale", which builds fonts.scale
-     files, has been added.
-
-   o [OLD] There has been a significant reworking of the XKB support to allow
-     multi-layout configurations.  Multi-layout configurations provide a
-     flexible way of supporting multiple language layouts and switching
-     between them.
+   o The "freetype" X server font backend has been updated by the After X-TT
+     Project <URL:http://x-tt.sourceforge.jp/> to include the functionality
+     previously provided by the "xtt" backend, and to fix some bugs.  The
+     "xtt" backend will be dropped in the next release in favour of the
+     updated unified "freetype" backend.
 
 2.7  OS Support Updates
 
-   o [OLD] Updates for Darwin/Mac OS X, including:
+   o On Mac OS X, the appropriate backend drawing code is now dynamically
+     loaded at runtime. This reduces the X server's memory footprint.  In
+     rootless mode, Apple's Xplugin library is used where available.  (Xplu-
+     gin is included as part of Mac OS X on Panther.) With Xplugin, XDarwin
+     provides identical performance to Apple's X11, including the following
+     improvements over 4.3:
 
-        o Indirect GLX acceleration added.
+        o Added direct GLX rendering with thread support.
 
-        o Smaller memory footprint and faster 2-D drawing in rootless mode.
+        o Faster 2-D drawing.
 
-        o Full screen mode now uses shadowfb for much faster 2-D drawing.
+        o Added support for the Apple-WM extension so XDarwin interoperates
+          with quartz-wm.
 
-        o Native fonts can be used on MacOS X.
+   o On Darwin, IOKit mode now uses shadowfb for much faster drawing.
 
    o Various GNU/Hurd support updates.
 
    o Experimental support added for GNU/KFreeBSD and GNU/KNetBSD systems.
-
-   o [OLD] Various Cygwin support updates, including an experimental rootless
-     X server for Cygwin/XFree86.
-
-   o [OLD] AMD AMD64 support (primarily for Linux so far) has been added.
-
-   o [OLD] Support added for OpenBSD/sparc64.
-
-   o [OLD] Major OS/2 support updates.
-
-   o [OLD] Major SCO OpenServer updates.
-
-   o [OLD] Multi-head support has been added for 460GX-based Itanium systems,
-     and for ZX1-based Itanium2 systems.
-
-   o [OLD] Experimental support for SunOS/Solaris on UltraSPARC systems.
 
 A more complete list of changes can be found in the CHANGELOG that is part of
 the XFree86 source tree.  It can also be viewed online at our CVSweb server
@@ -346,7 +311,7 @@ grams/Xserver/hw/xfree86/CHANGELOG?rev=HEAD>.
 
 3.1  Video Drivers
 
-XFree86 4.3.99.901 includes the following video drivers:
+XFree86 4.3.99.902 includes the following video drivers:
 
 +--------------+--------------------------+---------------------------------------------+
 |Driver Name   | Description              | Further Information                         |
@@ -386,6 +351,7 @@ XFree86 4.3.99.901 includes the following video drivers:
 |tga           | DEC TGA                  | README.DECtga                               |
 |trident       | Trident                  | trident(4)                                  |
 |tseng         | Tseng Labs               |                                             |
+|via           | VIA                      | via(4)                                      |
 |vesa          | VESA                     | vesa(4)                                     |
 |vga           | Generic VGA              | vga(4)                                      |
 |vmware        | VMWare guest OS          | vmware(4)                                   |
@@ -401,22 +367,22 @@ Drivers marked with (-) are for Linux/mips only.
 Darwin/Mac OS X uses IOKit drivers and does not use the module loader drivers
 listed above. Further information can be found in README.Darwin.
 
-XFree86 4.3.99.901 includes the following input drivers:
+XFree86 4.3.99.902 includes the following input drivers:
 
 3.2  Input Drivers
 
    +------------+----------------------------------+---------------------+
    |Driver Name | Description                      | Further Information |
    +------------+----------------------------------+---------------------+
+   |aiptek(*)   | Aiptek USB tablet                | aiptek(4)           |
    |calcomp     | Calcomp                          |                     |
    |citron      | Citron                           | citron(4)           |
    |digitaledge | DigitalEdge                      |                     |
    |dmc         | DMC                              | dmc(4)              |
    |dynapro     | Dynapro                          |                     |
    |elographics | EloGraphics                      |                     |
-   |elographics | EloGraphics                      |                     |
    |fpit        | Fujitsu Stylistic Tablet PCs     | fpit(4)             |
-   |hyperpen    | HyperPen                         |                     |
+   |hyperpen    | Aiptek HyperPen 6000             |                     |
    |js_x        | JamStudio pentablet              | js_x(4)             |
    |kbd         | generic keyboards (alternate)    | kbd(4)              |
    |keyboard    | generic keyboards                | keyboard(4)         |
@@ -437,45 +403,45 @@ Drivers marked with (*) are available for Linux only.
 
 4.  Overview of XFree86 4.x.
 
-Unlike XFree86 3.3.x where there are multiple X server binaries, each of
-which drive different hardware, XFree86 4.3.99.901 has a single X server
-binary called XFree86.  This binary can either have one or more video drivers
-linked in statically, or, more usually, dynamically load the video drivers
-and other modules that are needed.
+XFree86 4.x has a single X server binary called XFree86.  This binary can
+either have one or more video and input drivers linked in statically, or,
+more usually, dynamically load the video drivers, input drivers, and other
+modules that are needed.
 
-XFree86 4.3.99.901 has X server support for most UNIX® and UNIX-like operat-
-ing systems on Intel/x86 platforms, plus support for Linux on Alpha, PowerPC,
-IA-64, Sparc, and Mips platforms, and for Darwin on PowerPC.  Work on support
-for additional architectures and operating systems is in progress, and is
-planned for future releases.
+XFree86 4.3.99.902 has X server support for most UNIX® and UNIX-like operat-
+ing systems on Intel/x86 platforms, plus support for Linux and some BSD OSs
+on Alpha, PowerPC, IA-64, AMD64, Sparc, and Mips platforms, and for Darwin on
+PowerPC.  Work on support for additional architectures and operating systems
+is in progress, and is planned for future releases.
 
 4.1  Loader and Modules
 
-The XFree86 X server has a built-in run-time loader, donated by Metro Link
-<URL:http://www.metrolink.com>.  This loader can load normal object files and
-libraries in most of the commonly used formats.  Since the loader doesn't
-rely on an operating system's native dynamic loader support, it works on
-platforms that don't provide this feature, and makes it possible for the mod-
-ules to be operating system independent (although not, of course, independent
-of CPU architecture).  This means that a module compiled on Linux/x86 can be
-loaded by an X server running on Solaris/x86, or FreeBSD, or even OS/2.
+The XFree86 X server has a built-in run-time loader developed from code
+donated by Metro Link <URL:http://www.metrolink.com>.  This loader can load
+normal object files and libraries in most of the commonly used formats.
+Since the loader doesn't rely on an operating system's native dynamic loader
+support, it works on platforms that don't provide this feature, and makes it
+possible for the modules to be operating system independent (although not, of
+course, independent of CPU architecture).  This means that a module compiled
+on Linux/x86 can be loaded by an X server running on Solaris/x86, or FreeBSD,
+or even OS/2.
 
 One of the main benefits of this loader is that when modules are updated,
-they do not need to be recompiled for every different operating system.  In
-the future we plan to take advantage of this to provide more frequent driver
-module updates in between major releases.
+they do not need to be recompiled for every different operating system.
 
-The loader in version 4.3.99.901 has support for Intel (x86), Alpha and Pow-
+The loader in version 4.3.99.902 has support for Intel (x86), Alpha and Pow-
 erPC platforms.  It also has preliminary support for Sparc platforms.
 
 The X server makes use of modules for video drivers, X server extensions,
 font rasterisers, input device drivers, framebuffer layers (like mfb, cfb,
 etc), and internal components used by some drivers (like XAA),
 
-The module interfaces (API and ABI) used in this release is still subject to
-change without notice.  While we will attempt to provide backward compatibil-
-ity for the module interfaces as of the 4.0 release (meaning that 4.0 modules
-will work with future core X server binaries), we cannot guarantee this.
+The module interfaces (API and ABI) used in this release is subject to change
+without notice.  While we will attempt to provide backward compatibility for
+the module interfaces as of the 4.0 release (meaning that 4.0 modules will
+work with future core X server binaries), we cannot guarantee this.  Compati-
+bility in the other direction is explicitly not guaranteed because new mod-
+ules may rely on interfaces added in new releases.
 
 Note about module security
 
@@ -489,297 +455,30 @@ Note about module security
 
 4.2  Configuration File
 
-The X server configuration file format has been extended to handle some of
-the new functionality.  The xf86config utility can be used to generate a
-basic config file, that may require some manual editing.  The X server also
-has preliminary support for generating a basic config file.  This is done by
-running (as root) "XFree86 -configure".  Alternatively, the sample config
-file XF86Config.eg that is installed in /usr/X11R6/lib/X11 may be used as a
-starting point.  The xf86cfg utility can also be used to create a new config-
-uration file or to edit an existing one.  The XF86Setup utility is currently
-not usable, but work is continuing in this area.
+The XFree86 server uses a configuration file as the primary mechanism for
+providing configuration and run-time parameters.  The configuration file for-
+mat is described in detail in the XF86Config(5) manual page.
 
-The main changes are covered here, but please refer to the XF86Config(5) man-
-ual page for more comprehensive information:
-
-   o The Module section is used to load server extension modules and font
-     modules, but not XInput drivers.  The .so suffix should no longer be
-     specified with module names.  Options may be supplied for modules by
-     loading the module via a SubSection instead of the usual Load keyword.
-     The bitmap module is the only font module that is loaded by default.  No
-     server extensions are loaded by default, but some are built-in to the
-     server.  It is strongly recommended that the extension module containing
-     a range of small miscellaneous extensions (extmod) be loaded because
-     some commonly used things won't work correctly without it.  The follow-
-     ing example shows how to load all the server extensions plus the Type1
-     and TrueType fonts support, and a commented example that shows how to
-     pass options to an extension (this one is for loading the misc exten-
-     sions (extmod) with the XFree86-VidModeExtension disabled):
-
-               Section "Module"
-
-                   Load "dbe"
-                   Load "record"
-                   Load "glx"
-                   Load "extmod"
-
-                   Load "type1"
-                   Load "freetype"
-
-                 # SubSection "extmod"
-                 #     Option "Omit XFree86-VidModeExtension"
-                 # EndSubSection
-
-               EndSection
-
-   o Option flags have been extended and are now used more widely in the con-
-     fig file.  Options flags come in two main types.  The first type is
-     exactly like the old form:
-
-                   Option "name"
-
-     where the option just has a name specified.  The name is case insensi-
-     tive, and white space and underscore characters are ignored.  The second
-     type consists of a name and a value:
-
-                   Option "name" "value"
-
-     The value is passed transparently as a string to the code that uses the
-     option.  Common value formats are integer, boolean, real, string and
-     frequency.  The following boolean option values are recognised as mean-
-     ing TRUE: "true", "yes", "on", "1", and no value.  The values recognised
-     as FALSE are "false", "no", "off", "0".  In addition to this, "no" may
-     be prepended to the name of a boolean option to indicate that it is
-     false.  Frequency options can have the strings Hz, kHz, or MHz appended
-     to the numerical value specified.
-
-     Note: the value must always be enclosed in double quotes ("), even when
-     it is numerical.
-
-   o The ServerFlags section now accepts its parameters as Options instead of
-     as special keywords.  The older keyword format is still recognised for
-     compatibility purposes, but is deprecated and support for it will likely
-     be dropped in a future release.  The DPMS and screen save timeout values
-     are now specified in the ServerFlags section rather than elsewhere
-     (because they are global parameters, not screen-specific).  This example
-     shows the defaults for these:
-
-                   Option "blank time"    "10"
-                   Option "standby time"  "20"
-                   Option "suspend time"  "30"
-                   Option "off time"      "40"
-
-     The new option AllowDeactivateGrabs allows deactivating any active grab
-     with the key sequence Ctrl+Alt+Keypad-Divide and the new option Allow-
-     ClosedownGrabs allows closing the connection to the grabbing client with
-     the key sequence Ctrl+Alt+Keypad-Multiply. Note that these options are
-     off by default as they allow users to remove the grab used by screen
-     saver/locker programs.
-
-   o The Keyboard, Pointer and XInput sections have been replaced by a more
-     general InputDevice section.  The old Keyboard and Pointer sections are
-     still recognised for compatibility purposes, but they are discommended
-     and support for them may be dropped in future releases.  The old XInput
-     sections are no longer recognised.  The keywords from the old sections
-     are expressed as Options in the InputDevice sections.  The following
-     example shows typical InputDevice sections for the core mouse and key-
-     board.
-
-               Section "InputDevice"
-                   Identifier  "Keyboard 1"
-                   Driver      "keyboard"
-                   Option      "AutoRepeat" "500 5"
-                   Option      "XkbModel"   "pc104"
-                   Option      "XkbLayout"  "us"
-               EndSection
-
-               Section "InputDevice"
-                   Identifier  "Mouse 1"
-                   Driver      "mouse"
-                   Option      "Protocol"   "PS/2"
-                   Option      "Device"     "/dev/mouse"
-                   Option     "SampleRate" "80"
-               EndSection
-
-   o The Monitor section is mostly unchanged.  The main difference is that a
-     set of VESA modes is defined internally in the server, and so for most
-     monitors, it isn't necessary to specify any modes explicitly in the Mon-
-     itor section.  There is also a new Modes section that can be used to
-     define a set of modes separately from the Monitor section, and the Moni-
-     tor section may "include" them with the "UseModes" keyword.  The Monitor
-     section may also include Options.  Options that are monitor-specific,
-     like the "DPMS" and "Sync on Green" options are best specified in the
-     Monitor sections.
-
-   o The Device sections are mostly unchanged.  The main difference is the
-     new (and mandatory) Driver keyword that specifies which video driver
-     should be loaded to drive the video card.  Another difference is the
-     BusID keyword that is used to specify which of possibly multiple video
-     cards the Device section is for.  The following is an example for a
-     Matrox card:
-
-               Section "Device"
-                   Identifier "MGA 1"
-                   Driver     "mga"
-                   BusID      "PCI:1:0:0"
-               EndSection
-
-   o The Screen sections are mostly unchanged.  The old Driver keyword is no
-     longer used, and a mandatory Identifier keyword has been added.  The
-     DefaultColorDepth keyword has been renamed to DefaultDepth.
-
-   o A new section called ServerLayout has been added to allow the layout of
-     the screens and the selection of input devices to be specified.  The
-     ServerLayout sections may also include options that are normally found
-     in the ServerFlags section.  Multiple ServerLayout sections may be
-     present, and selected from the command line.  The following example
-     shows a ServerLayout section for a dual-headed configuration with two
-     Matrox cards, and two mice:
-
-               Section "ServerLayout"
-                   Identifier  "Layout 1"
-                   Screen      "MGA 1"
-                   Screen      "MGA 2" RightOf "MGA 1"
-                   InputDevice "Keyboard 1" "CoreKeyboard"
-                   InputDevice "Mouse 1"    "CorePointer"
-                   InputDevice "Mouse 2"    "SendCoreEvents"
-                   Option      "BlankTime"  "5"
-               EndSection
-
-     See the XF86Config(5) man page for a more detailed explanation of the
-     format of the new ServerLayout section.
-
-The config file search patch has been extended, with the directories /etc/X11
-and /usr/X11R6/etc/X11 being added.  The full search path details are docu-
-mented in the XF86Config manual page.
+The XFree86 server has support for automatically determining an initial con-
+figuration on most platforms, as well as support or generating a basic ini-
+tial configuration file.
 
 4.3  Command Line Options
 
-The following new X server command line options have been added:
-
-     -depth n
-
-          This specifies the colour depth that the server is run-
-          ning at.  The default is 8 for most drivers.  Most
-          drivers support the values 8, 15, 16 and 24.  Some
-          drivers also support the values 1 and 4.  Some drivers
-          may also support other depths.  Note that the depth is
-          different from the ``bpp'' that was specified with previ-
-          ous versions.  The depth is the number of bits in each
-          pixel that are significant in determining the pixel's
-          value.  The bpp is the total size occupied by each pixel,
-          including bits that are not used.  The old -bpp option is
-          no longer recognised because it isn't a good way of spec-
-          ifying the server behaviour.
-
-     -fbbpp n
-
-          This specifies the bpp format to use for the framebuffer.
-          This may be used in 24-bit mode to force a framebuffer
-          format that is different from what the driver chooses by
-          default.  In most cases there should be no need to use
-          this option.
-
-     -pixmap24
-
-          This specifies that the client-side pixmap format should
-          be the packed 24-bit format that was often used by the
-          3.3.x servers.  The default is the more common 32-bit
-          format.  There should normally be no need to use this
-          option.
-
-     -pixmap32
-
-          This specifies that the client-side pixmap format should
-          be the sparse 32-bit format.  This is the default, so
-          there should normally be no need to use this option.
-
-     -layout name
-
-          This specifies which ServerLayout section in the config
-          file to use.  When this option is not specified, the
-          first ServerLayout section is used.  When there is no
-          ServerLayout section, the first Screen section is used.
-
-     -screen name
-
-          This specifies which Screen section in the config file to
-          use.  When this option is not specified, the first
-          ServerLayout section is used.  When there is no Server-
-          Layout section, the first Screen section is used.
-
-     -keyboard name
-
-          This specifies which InputDevice section in the config
-          file to use for the core keyboard.  This option may be
-          used in conjunction with the -screen option.
-
-     -pointer name
-
-          This specifies which InputDevice section in the config
-          file to use for the core pointer.  This option may be
-          used in conjunction with the -screen option.
-
-     -modulepath path
-
-          This specifies the module search path.  The path should
-          be a comma-separated list of absolute directory paths to
-          search for server modules.  When specified here, it over-
-          rides the value specified in the config file.  This
-          option is only available when the server is started by
-          the root user.
-
-     -logfile file
-
-          This specifies the log file name.  When specified here,
-          it overrides the default value.  This option is only
-          available when the server is started by the root user.
-
-     -scanpci
-
-          This specifies that the scanpci module should be loaded
-          and executed.  This does a scan of the PCI bus.
-
-     -logverbose [n]
-
-          This options specifies the verbosity level to use for the
-          log file.  The default is 3.
-
-The following X server command line options have been changed since 3.3.x:
-
-     -verbose [n]
-
-          This option specifies the verbosity level to use for the
-          server messages that get written to stderr.  It may be
-          specified multiple times to increase the verbosity level
-          (as with 3.3.x), or the verbosity level may be specified
-          explicitly as a number.  The default verbosity level is
-          0.
-
-     -xf86config filename
-
-          This option has been extended to allow non-root users to
-          specify a relative config file name.  The config file
-          search path will be used to locate the file in this case.
-          This makes it possible for users to choose from multiple
-          config files that the the sysadmin has provided.
-
-A more complete list of XFree86 X server command line options can be found in
-the XFree86(1) manual page.
+Command line options can be used to override some default parameters and
+parameters provided in the configuration file.  These command line options
+are described in the XFree86(1) manual page.
 
 4.4  XAA
 
-The XFree86 Acceleration Architecture (XAA) has been completely rewritten
-from scratch for XFree86 4.x.  Most drivers implement acceleration by making
-use of the XAA module.
+The XFree86 Acceleration Architecture (XAA) was completely rewritten from
+scratch for XFree86 4.x.  Most drivers implement acceleration by making use
+of the XAA module.
 
 4.5  Multi-head
 
 Some multi-head configurations are supported in XFree86 4.x, primarily with
-multiple PCI/AGP cards.  However, this is an area that is still being worked
-on, and we expect that the range of configurations for which it works well
-will increase in future releases.  A configuration that is known to work well
-in most cases is multiple (supported) Matrox cards.
+multiple PCI/AGP cards.
 
 One of the main problems is with drivers not sufficiently initialising cards
 that were not initialised at boot time.  This has been improved somewhat with
@@ -813,7 +512,7 @@ Known problems:
 
 4.7  DGA version 2
 
-DGA 2.0 is included in 4.3.99.901.  Documentation for the client libraries
+DGA 2.0 is included in 4.3.99.902.  Documentation for the client libraries
 can be found in the XDGA(3) man page.  A good degree of backwards compatibil-
 ity with version 1.0 is provided.
 
@@ -829,9 +528,9 @@ Option "NoDDC".  We have support for DDC versions 1 and 2; these can be dis-
 abled independently with Option "NoDDC1" and Option "NoDDC2".
 
 At startup the server prints out DDC information from the display, and can
-use this information to set or warn about monitor sync limits (but not mode-
-lines yet).  For some drivers, the X server's new -configure option uses the
-DDC information when generating the config file.
+use this information to set the default monitor parameters, or to warn about
+monitor sync limits if those provided in the configuration file don't match
+those that are detected.
 
 4.8.1  Changed behavior caused by DDC.
 
@@ -843,23 +542,10 @@ section of the config file.
 
 4.9  GLX and the Direct Rendering Infrastructure (DRI)
 
-Precision Insight <URL:http://www.precisioninsight.com> was provided with
-funding and support from Red Hat <URL:http://www.redhat.com>, SGI
-<URL:http://www.sgi.com>, 3Dfx <URL:http://www.3dfx.com>, Intel
-<URL:http://www.intel.com>, ATI <URL:http://www.ati.com>, and Matrox
-<URL:http://www.matrox.com> to integrate the GLX extension for 3D rendering
-in an X11 window.  The 3D core rendering component is the Mesa
-<URL:http://www.mesa3d.org> library.  SGI has released the sources to the GLX
-extension framework under an open license, which essentially provides the
-glue between the 3D library and this windowing system.  Precision Insight has
-integrated these components into the XFree86 X Server and added a Direct Ren-
-dering Infrastructure (DRI).  Direct Rendering provides a highly optimized
-path for sending 3D data directly to the graphics hardware.  This release
-provides a complete implementation of direct rendering support for the 3Dfx
-Banshee, Voodoo3 and Voodoo5 graphics cards, as well as the Intel i810/i815
-cards, ATI Rage 128, and Matrox G400.  Updated information on DRI compatible
-drivers can be found at the DRI Project <URL:http://dri.sourceforge.net> on
-SourceForge <URL:http://www.sourceforge.net>.
+Direct rendered OpenGL® support is provided for several hardware platforms by
+the Direct Rendering Infrastructure (DRI).  Further information about DRI can
+be found at the DRI Project's web site <URL:http://dri.sf.net/>.  The 3D core
+rendering component is provided by Mesa <URL:http://www.mesa3d.org>.
 
 4.10  XVideo Extension (Xv)
 
@@ -881,7 +567,7 @@ anti-aliased text and geometric objects as well as perform translucent image
 overlays and other image operations not possible with the core X rendering
 system.
 
-XFree86 4.3.99.901 provides a partial implementation of Render sufficient for
+XFree86 4.3.99.902 provides a partial implementation of Render sufficient for
 drawing anti-aliased text and image composition.  Still to be implemented are
 geometric primitives and affine transformation of images.
 
@@ -916,12 +602,12 @@ the Xft(3) man page.
 
 4.11.2  FreeType support in Xft
 
-XFree86 4.3.99.901 includes sources for FreeType version 2.1.1, and, by
+XFree86 4.3.99.902 includes sources for FreeType version 2.1.4, and, by
 default, they are built and installed automatically.
 
 4.11.3  Application Support For Anti-Aliased Text
 
-Only three applications have been modified in XFree86 4.3.99.901 to work with
+Only three applications have been modified in XFree86 4.3.99.902 to work with
 the Render extension and the Xft and FreeType libraries to provide anti-
 aliased text.  Xterm, xditview and x11perf.  Migration of other applications
 may occur in future releases.
@@ -970,9 +656,12 @@ README.fonts document.
 
 4.15  TrueType support
 
-XFree86 4.x comes with two TrueType backends, known as `xfsft' (the
-"freetype" module) and `X-TrueType' (the "xtt" module).  Both of these back-
-ends are based on the FreeType library.
+XFree86 4.x comes with two TrueType backends, known as "FreeType" backend
+(the "freetype" module) and `X-TrueType' (the "xtt" module).  Both of these
+backends are based on the FreeType library.  The functionality of X-TrueType
+has been merged into the FreeType backend by the After X-TT Project for
+XFree86 4.4.  Consequently, the old X-TrueType backend will be dropped as of
+XFree86 4.5.
 
 4.16  CID font support
 
@@ -1056,18 +745,7 @@ as well as in the License document.  For further information, please contact
 <design@bigelowandholmes.com> or <info@urwpp.de>, or consult the URW++ web
 site <URL:http://www.urwpp.de>.
 
-4.21  Directory rearrangements
-
-Some changes to the installed XFree86 directory structure have been imple-
-mented for 4.x.  One important change is a modified search path for the X
-server's XF86Config file.  The details of this can be found in the XF86Config
-manual page.  The other main change is moving most of the run-time configura-
-tion files to /etc/X11, with symbolic links in the old /usr/X11R6/lib/X11
-location pointing to the new location.  Some run-time generated files are now
-located under the appropriate subdirectories of /var, again with the relevant
-symbolic links in the old location.
-
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.87 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.89 dawes Exp $
 
 
 $XFree86: $
