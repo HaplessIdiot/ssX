@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/27 11:06:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.45 2000/08/16 01:45:29 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.47 2001/02/15 19:34:20 eich Exp $
 
 #include <Server.tmpl>
 
@@ -58,6 +58,10 @@ MOUSEOBJ = bsd_mouse.o
 MTRRDEFINES = -DHAS_MTRR_SUPPORT
 #endif
 
+#if defined(NetBSDArchitecture) && defined(HasMTRRBuiltin)
+MTRRDEFINES = -DHAS_MTRR_BUILTIN
+#endif
+
 #if UsbMouseSupport
 USBMOUSEDEFINES = -DUSBMOUSE_SUPPORT
 #if !HasLibUsb
@@ -98,7 +102,7 @@ AXP_SRC=bsd_ev56.c xf86Axp.c bsd_axp.c
 AXP_OBJ=bsd_ev56.o xf86Axp.o bsd_axp.o
 #endif
 
-#if defined(FreeBSDArchitecture) && HasAgpGart
+#if (defined(FreeBSDArchitecture) || defined(NetBSDArchitecture)) && HasAgpGart
 AGP_SRC=lnx_agp.c
 AGP_OBJ=lnx_agp.o
 #else
@@ -171,7 +175,7 @@ LinkSourceFile(stdPci.c,../shared)
 LinkSourceFile(vidmem.c,../shared)
 LinkSourceFile(sigio.c,../shared)
 LinkSourceFile(kmod_noop.c,../shared)
-#if defined(FreeBSDArchitecture) && HasAgpGart
+#if (defined(FreeBSDArchitecture) || defined(NetBSDArchitecture)) && HasAgpGart
 LinkSourceFile(lnx_agp.c,../linux)
 #else
 LinkSourceFile(agp_noop.c,../shared)

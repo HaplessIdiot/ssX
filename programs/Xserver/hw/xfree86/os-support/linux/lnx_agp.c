@@ -6,7 +6,7 @@
  * Copyright © 2000 VA Linux Systems, Inc.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_agp.c,v 3.4 2000/08/28 18:12:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_agp.c,v 3.5 2001/05/19 00:26:45 dawes Exp $ */
 
 #include "X.h"
 #include "xf86.h"
@@ -17,7 +17,7 @@
 #if defined(linux)
 #include <asm/ioctl.h>
 #include <linux/agpgart.h>
-#elif defined(__FreeBSD__)
+#elif defined(__FreeBSD__) || defined(__NetBSD__)
 #include <sys/ioctl.h>
 #include <sys/agpio.h>
 #endif

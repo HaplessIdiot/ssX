@@ -2,7 +2,7 @@ XCOMM platform:  $Xorg: NetBSD.cf,v 1.3 2000/08/17 19:41:46 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.95 2001/04/22 08:54:03 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.96 2001/08/26 16:21:29 herrb Exp $
 
 
 #ifndef OSName
@@ -187,12 +187,12 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # define OptimizedCDebugFlags 	-O2
 # if defined(SparcArchitecture) || defined(AlphaArchitecture)
 #  define ServerOSDefines 	-DDDXOSINIT
-# else
-#  ifdef Arm32Architecture
+# elif defined(Arm32Architecture)
 #   define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME
-#  else
+# elif defined(PpcArchitecture)
+#  define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DDDXOSINIT
+# else
 #  define ServerOSDefines 	/**/
-# endif
 # endif
 # define ServerExtraSysLibs	/**/
 #endif
@@ -207,23 +207,22 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #   define XFree86ConsoleDefines -DPCCONS_SUPPORT -DPCVT_SUPPORT
 #  endif
 # endif
-#else
-# if defined(SparcArchitecture)
+#elif defined(SparcArchitecture)
 #  define ServerExtraDefines XFree86ServerDefines
-# else
-#  if defined(AlphaArchitecture)
+#elif defined(AlphaArchitecture)
 #   define ServerExtraDefines GccGasOption -D_XSERVER64
-#  else
-#   ifdef Arm32Architecture
-#    define ServerExtraDefines GccGasOption XFree86ServerDefines
-#    ifndef XFree86ConsoleDefines
-#     define XFree86ConsoleDefines -DPCCONS_SUPPORT
-#    endif
-#   else
-#   define ServerExtraDefines GccGasOption
+#elif defined(Arm32Architecture)
+#  define ServerExtraDefines GccGasOption XFree86ServerDefines
+#  ifndef XFree86ConsoleDefines
+#    define XFree86ConsoleDefines -DPCCONS_SUPPORT
 #  endif
-# endif
-#endif
+#elif defined(PpcArchitecture)
+#  define ServerExtraDefines	GccGasOption XFree86ServerDefines
+#  ifndef XFree86ConsoleDefines
+#    define XFree86ConsoleDefines	-DWSCONS_SUPPORT
+#  endif
+#else
+#  define ServerExtraDefines GccGasOption
 #endif
 
 #define StandardDefines	-DCSRG_BASED
@@ -278,6 +277,14 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 
 /*
+ * NetBSD doesn't have gperf in default system
+ * you may override this in host.def if you installed perl from the packages
+ */
+#ifndef HasGperf
+#define HasGperf		NO
+#endif
+
+/*
  * Make & install Features
  */
 #define HasBsdMake		YES
@@ -315,15 +322,37 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #  endif
 # endif
 
+/*
+ * Builtin MTRR support (NetBSD 1.5Y and up)
+ */
+# if ((OSMajorVersion > 1) || \
+      (OSMajorVersion == 1 && OSMinorVersion >= 6) || \
+      (OSMajorVersion == 1 && OSMinorVersion == 5 && \
+       OSTeenyVersion >= 25))
+#  define HasMTRRBuiltin        YES
+# else
  /*
-  * MTRR support is provided by the Aperture driver
+  * MTRR support  provided by the Aperture driver
   */
-# if HasNetBSDApertureDriver
-#  ifndef HasMTRRSupport
-#   define HasMTRRSupport	YES
+#  if HasNetBSDApertureDriver
+#   ifndef HasMTRRSupport
+#    define HasMTRRSupport	YES
+#   endif
 #  endif
-# endif
+# endif /* MTRRBuiltin */
 #endif /* i386Architecture */
+
+/*
+ * agpgart support (NetBSD 1.5Y and up)
+ */
+#if ((OSMajorVersion > 1) || \
+     (OSMajorVersion == 1 && OSMinorVersion >= 6) || \
+     (OSMajorVersion == 1 && OSMinorVersion == 5 && \
+      OSTeenyVersion >= 25))
+# ifndef HasAgpGart
+#  define HasAgpGart   YES
+# endif
+#endif
 
 #ifndef HasCookieMaker
 # if OSMajorVersion == 1 && OSMinorVersion >= 5 || OSMajorVersion >= 2
@@ -335,6 +364,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #  define HasCookieMaker	NO
 # endif
 #endif
+
 
 /*
  * ForceSubdirs - force make to build subdirectories
@@ -470,7 +500,7 @@ InstallManPageAliasesBase(file,destdir,aliases)
 #include <bsdLib.rules>
 #endif /* HasSharedLibraries */
 
-#if defined(i386Architecture) || defined(Arm32Architecture)
+#if defined(i386Architecture) || defined(Arm32Architecture) || defined(PpcArchitecture) 
 # include <xfree86.cf>
 #endif
 
@@ -523,6 +553,22 @@ sed 's/\.[0-9]*$$//'`
 #define	BuildServer	NO
 /* Build the shared XDM greeter on Alph if it supports shared libs */
 #define SharedLibXdmGreet HasSharedLibraries
+#endif
+
+/*
+ * Definition for compile on macppc machines
+ */
+#ifdef PpcArchitecture
+
+# define OptimizedCDebugFlags 	-O2
+# define XkbServerDefines	-DXKB_ALWAYS_USES_SOFT_REPEAT
+
+# ifndef DoLoadableServer
+#   define DoLoadableServer	YES
+# endif
+
+# define UseElfFormat		YES
+
 #endif
 
 /*
