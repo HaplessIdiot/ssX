@@ -1,4 +1,5 @@
 XFree86 4.2.99.903 (xx February 2003)
+ 954. Xterm patch #174 (Thomas Dickey).
  953. Fix atimisc bug in restoring colourmaps after a VT switch
       (Marc La France).
  952. A more complete set of dead accent/space compose sequences, add
@@ -16514,4 +16515,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2582 2003/02/25 05:35:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2583 2003/02/25 17:58:10 tsi Exp $
