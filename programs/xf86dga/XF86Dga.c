@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xf86dga/XF86Dga.c,v 3.2 1995/12/16 08:22:36 dawes Exp $ */
+/* $XFree86: xc/programs/xf86dga/XF86Dga.c,v 3.3 1995/12/17 05:04:34 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
@@ -73,7 +73,7 @@ int enable;
 }
 
 
-static void cleanup()
+static void cleanup(int sig)
 {
         Display *disp;
 	disp = XOpenDisplay(NULL);
@@ -164,7 +164,7 @@ int *width, *bank, *ram;
 #ifdef linux
     on_exit(cleanup, 0);
 #else
-    atexit(cleanup);
+    atexit((void(*)(void))cleanup);
 #endif
     /* one shot cleanup attempts */
     signal(SIGSEGV, cleanup);
