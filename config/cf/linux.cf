@@ -4,7 +4,7 @@ XCOMM platform:  $Xorg: linux.cf,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.159 2001/01/17 16:22:32 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.160 2001/01/30 22:06:14 tsi Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -588,21 +588,27 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #endif
 
 #ifdef i386Architecture
-# define OptimizedCDebugFlags	DefaultGcc2i386Opt
+# ifndef OptimizedCDebugFlags
+#  define OptimizedCDebugFlags	DefaultGcc2i386Opt
+# endif
 # define LinuxMachineDefines	-D__i386__
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
 # define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
 #endif /* i386Architecture */
 
 #ifdef s390Architecture
-#define OptimizedCDebugFlags	-O2
-#define LinuxMachineDefines	-D__s390__
-#define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DPART_NET
-#define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
+# ifndef OptimizedCDebugFlags
+#  define OptimizedCDebugFlags	-O2
+# endif
+# define LinuxMachineDefines	-D__s390__
+# define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
+# define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
 #endif /* s390Architecture */
 
 #ifdef AlphaArchitecture
-# define OptimizedCDebugFlags	DefaultGcc2AxpOpt
+# ifndef OptimizedCDebugFlags
+#  define OptimizedCDebugFlags	DefaultGcc2AxpOpt
+# endif
 # define LinuxMachineDefines	-D__alpha__
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
 # define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines -D_XSERVER64
@@ -613,21 +619,27 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 
 #ifdef Arm32Architecture
 # define DefaultCCOptions	-fsigned-char
-# define OptimizedCDebugFlags  	-O3
+# ifndef OptimizedCDebugFlags
+#  define OptimizedCDebugFlags 	-O3
+# endif
 # define LinuxMachineDefines	-D__arm__ -U__arm -Uarm
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
 # define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
 #endif /* Arm32Achitecture */
 
 #ifdef ia64Architecture
-# define OptimizedCDebugFlags  -O2
+# ifndef OptimizedCDebugFlags
+#  define OptimizedCDebugFlags  -O2
+# endif
 # define LinuxMachineDefines   -D__ia64__
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
 # define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines -D_XSERVER64
 #endif /* ia64Architecture */
 
 #ifdef Mc68020Architecture
-# define OptimizedCDebugFlags	-O2
+# ifndef OptimizedCDebugFlags
+#  define OptimizedCDebugFlags	-O2
+# endif
 # define LinuxMachineDefines 	-D__mc68000__
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
 # define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
@@ -637,14 +649,18 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 
 #ifdef PpcArchitecture
 # define DefaultCCOptions	-fsigned-char
-# define OptimizedCDebugFlags	-O2
+# ifndef OptimizedCDebugFlags
+#  define OptimizedCDebugFlags	-O2
+# endif
 # define LinuxMachineDefines	-D__powerpc__
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
 # define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
 #endif /* PpcArchitecture */
 
 #ifdef SparcArchitecture
-# define OptimizedCDebugFlags	-O2
+# ifndef OptimizedCDebugFlags
+#  define OptimizedCDebugFlags	-O2
+# endif
 # define LinuxMachineDefines	-D__sparc__
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
 # define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
@@ -657,7 +673,9 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #endif
 
 #ifdef MipsArchitecture
-# define OptimizedCDebugFlags	-O2
+# ifndef OptimizedCDebugFlags
+#  define OptimizedCDebugFlags	-O2
+# endif
 # define LinuxMachineDefines	-D__mips__
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
 # define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
