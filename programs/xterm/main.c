@@ -89,7 +89,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.171 2003/11/02 16:44:25 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.172 2003/11/13 01:16:38 dickey Exp $ */
 
 /* main.c */
 
@@ -183,7 +183,7 @@ static Bool IsPts = False;
 #define _SVID3
 #endif
 
-#ifdef __GNU__
+#if defined(__GLIBC__) && !defined(linux)
 #define USE_SYSV_PGRP
 #define WTMP
 #define HAS_BSD_GROUPS
