@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.57tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.58 2003/11/03 05:11:26 tsi Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -74,6 +74,22 @@
 #define RENDITION_PATCHLEVEL      0
 #define RENDITION_VERSION_CURRENT ((RENDITION_VERSION_MAJOR << 24) | \
                  (RENDITION_VERSION_MINOR << 16) | RENDITION_PATCHLEVEL)
+
+/*
+ * Constants for the (theoretical) maximum width and height that can
+ * be used to display data on the CRT.  These were calculated from 
+ * the HORZ and VERT macors, respectively, in vmodes.c.
+ */
+static const int MAX_HDISPLAY = 2048;
+static const int MAX_VDISPLAY = 2048;
+
+/*
+ * Constants for the (theoretical) maximum line length of a scan line
+ * and scan lines per screen (including overdraw).  These were 
+ * calculated from the HORZ and VERT macors, respectively, in vmodes.c.
+ */
+static const int MAX_HTOTAL   = 2880;
+static const int MAX_VTOTAL   = 2184;
 
 /* 
  * local function prototypes
@@ -533,15 +549,40 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     if (!xf86SetDepthBpp(pScreenInfo, 0, 0, 0, Support32bppFb))
         return FALSE;
 
-    if (pScreenInfo->depth == 15)
-    {
-        if (PCI_CHIP_V1000 != pRendition->PciInfo->chipType) {
-	    xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
-		       "Given depth (%d) is not supported by this chipset.\n",
-		       pScreenInfo->depth);
-	    return FALSE;
-	}
-    }
+    /* Verify that the color depth is supported. */
+    switch( pScreenInfo->depth ) {
+
+        case 8:
+        case 16:
+        case 24:
+        {
+            break;
+        }
+
+        case 15:
+        {
+            if (PCI_CHIP_V1000 != pRendition->PciInfo->chipType) {
+                xf86DrvMsg( pScreenInfo->scrnIndex, X_ERROR,
+                        "Given depth (%d) is not supported by this chipset.\n",
+                        pScreenInfo->depth);
+                return FALSE;
+            }
+        }
+
+        default:
+        {
+            xf86DrvMsg( pScreenInfo->scrnIndex, X_ERROR,
+                    "Given depth (%d) is not supported by this driver\n",
+                    pScreenInfo->depth );
+            return FALSE;
+        }
+
+    } /* End of switch( pScreenInfo->depth ) {*/
+
+
+    /* Print the color depth and frame buffer bits per pixel. */
+    xf86PrintDepthBpp( pScreenInfo );
+
 
     /* collect all of the options flags and process them */
 
@@ -788,12 +829,13 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
      * Validate the modes.  Note that the limits passed to
      * xf86ValidateModes() are VGA CRTC architectural limits.
      */
-    pScreenInfo->maxHValue = 2080;
-    pScreenInfo->maxVValue = 1025;
+    pScreenInfo->maxHValue = MAX_HTOTAL;
+    pScreenInfo->maxVValue = MAX_VTOTAL;
     nModes = xf86ValidateModes(pScreenInfo,
             pScreenInfo->monitor->Modes, pScreenInfo->display->modes,
-            &renditionClockRange, NULL, 8, 2040, Rounding, 1, 1024,
-            pScreenInfo->display->virtualX, pScreenInfo->display->virtualY,
+            &renditionClockRange, NULL, 8, MAX_HDISPLAY, Rounding,
+            1, MAX_VDISPLAY, pScreenInfo->display->virtualX,
+            pScreenInfo->display->virtualY,
             0x10000, LOOKUP_CLOSEST_CLOCK | LOOKUP_CLKDIV2);
 
     if (nModes < 0)
@@ -1039,17 +1081,17 @@ renditionCloseScreen(int scrnIndex, ScreenPtr pScreen)
     if (prenditionPriv->board.accel)
 	RENDITIONAccelNone(pScreenInfo);
 
+    if (pScreenInfo->vtSema)
+	renditionLeaveGraphics(pScreenInfo);
+
+    pScreenInfo->vtSema = FALSE;
+
     if (prenditionPriv 
 	&& (pScreen->CloseScreen = prenditionPriv->CloseScreen)) {
         prenditionPriv->CloseScreen = NULL;
         Closed = (*pScreen->CloseScreen)(scrnIndex, pScreen);
     }
     
-    if (pScreenInfo->vtSema)
-	renditionLeaveGraphics(pScreenInfo);
-
-    pScreenInfo->vtSema = FALSE;
-
 #ifdef DEBUG
     ErrorF("Closescreen OK...!!!!\n");
     sleep(1);
@@ -1103,6 +1145,8 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     vgaHWUnlock(pvgaHW);
 
     verite_save(pScreenInfo);
+
+    pScreenInfo->vtSema = TRUE;
 
     if (!renditionSetMode(pScreenInfo, pScreenInfo->currentMode))
         return FALSE;
@@ -1225,7 +1269,6 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (pScreenInfo->depth > 1)
 	if (!xf86HandleColormaps(pScreen, 256, pScreenInfo->rgbBits,
 				 renditionLoadPalette, NULL,
-				 CMAP_LOAD_EVEN_IF_OFFSCREEN|
 				 CMAP_RELOAD_ON_MODE_SWITCH)) {
 	    xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR, 
 		       "Colormap initialization failed\n");

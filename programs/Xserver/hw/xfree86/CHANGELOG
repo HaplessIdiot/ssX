@@ -1,4 +1,12 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 753. Rendition driver fixes:
+       - Fix the mode size limits so that the set of modes that the driver
+         accepts isn't unnecessarily restricted.
+       - Fix color palette refreshing after VT switching.
+       - Fix a core dump at server exit with the hardware cursor was enabled.
+       - Add checking for supported depths.  Without this the server could
+         crash if an unsupported depth was specified.
+      (Eric Wittry)
  752. Update XKB registry file rules/xfree86.xml (Sergey Oudaltsov).
  751. Fix some rules in en_US.UTF-8 Compose file (Bugzilla #1071,
       Matthew Fischer).
@@ -18529,7 +18537,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3096 2004/01/09 15:04:34 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3097 2004/01/10 21:45:23 herrb Exp $
 
 
 
