@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.28 2001/01/17 17:53:23 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.29 2001/05/06 00:47:35 mvojkovi Exp $ */
 /*
 
 Copyright 1995  Kaleb S. KEITHLEY
@@ -299,7 +299,7 @@ Bool XF86VidModeGetGammaRamp(
     unsigned short*             /* blue array */
 );
 
-Bool XF86VidModeSetGammaRampSize(
+Bool XF86VidModeGetGammaRampSize(
     Display*                    /* dpy */,
     int                         /* screen */,
     int*                        /* size */
