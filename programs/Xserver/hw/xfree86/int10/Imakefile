@@ -1,18 +1,16 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/int10/Imakefile,v 1.2 2000/02/08 13:13:22 eich Exp $
 
 /* An OS-independent INT10 module/library */
 
 #define IHaveModules
 #include <Server.tmpl>
 
-#if XF86Int10 == NO
-#define BUILD_INT10
+#if !UseX86Emu
 
-SRCS = xf86int10module.c stub.c
-OBJS = xf86int10module.o stub.o
+SRCS = stub.c
+OBJS = stub.o
 
-#elif XF86INT10_BUILD == XF86EMU_GENERIC
-#define BUILD_INT10
+#else
 
 X86TOPDIR = $(TOP)/extras/x86emu
 X86SRCDIR = $(X86TOPDIR)/src/x86emu
@@ -49,13 +47,9 @@ INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
 
 DEFINES = $(X86EMUDEFINES) $(INT10DEFINES)
 
-#ifdef BUILD_INT10
-
 LibraryModuleTarget(int10,$(OBJS))
 
 InstallLibraryModule(int10,$(MODULEDIR),.)
-
-#endif
 
 DependTarget()
 
