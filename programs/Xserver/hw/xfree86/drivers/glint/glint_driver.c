@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.119 2001/02/26 21:47:51 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.120 2001/03/19 22:50:28 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -574,14 +574,13 @@ GLINTIdentify(int flags)
     xf86PrintChipsets(GLINT_NAME, "driver for 3Dlabs chipsets", GLINTChipsets);
 }
 
-static
-OptionInfoPtr
+static OptionInfoPtr
 GLINTAvailableOptions(int chipid, int busid)
 {
     return GLINTOptions;
 }
 
-void
+static void
 GLINTProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
@@ -3223,7 +3222,9 @@ GLINTCloseScreen(int scrnIndex, ScreenPtr pScreen)
 static void
 GLINTFreeScreen(int scrnIndex, int flags)
 {
+#if DEBUG
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+#endif
     TRACE_ENTER("GLINTFreeScreen");
     if (xf86LoaderCheckSymbol("fbdevHWFreeRec"))
 	fbdevHWFreeRec(xf86Screens[scrnIndex]);

@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dga.c,v 1.1 2000/05/10 18:55:29 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dga.c,v 1.2 2001/01/31 16:14:54 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -42,8 +42,10 @@ static int  GLINT_GetViewport(ScrnInfoPtr);
 static void GLINT_SetViewport(ScrnInfoPtr, int, int, int);
 static void GLINT_FillRect(ScrnInfoPtr, int, int, int, int, unsigned long);
 static void GLINT_BlitRect(ScrnInfoPtr, int, int, int, int, int, int);
+#if 0
 static void GLINT_BlitTransRect(ScrnInfoPtr, int, int, int, int, int, int, 
 					unsigned long);
+#endif
 
 static
 DGAFunctionRec GLINTDGAFuncs = {
@@ -259,6 +261,7 @@ GLINT_BlitRect(
 }
 
 
+#if 0
 static void 
 GLINT_BlitTransRect(
    ScrnInfoPtr pScrn, 
@@ -270,6 +273,7 @@ GLINT_BlitTransRect(
   /* this one should be separate since the XAA function would
      prohibit usage of ~0 as the key */
 }
+#endif
 
 
 static Bool 
