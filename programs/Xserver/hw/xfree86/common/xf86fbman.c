@@ -395,7 +395,7 @@ xf86ResizeOffscreenArea(
    BoxRec OrigArea;
    RegionRec FreedReg;
    FBAreaPtr area = NULL;
-   FBLinkPtr pLink, pLinkPrev = NULL;
+   FBLinkPtr pLink, newLink, pLinkPrev = NULL;
 
    if(!resize || !xf86FBManagerRunning(resize->pScreen)) 
 	return FALSE;
@@ -460,7 +460,25 @@ xf86ResizeOffscreenArea(
 		resize->MoveAreaCallback, resize->RemoveAreaCallback,
 		resize->devPrivate.ptr))) {
 
-	xfree(pLink); 
+        /* copy data over to our link and replace the new with old */
+	memcpy(resize, area, sizeof(FBArea));
+
+        pLinkPrev = NULL;
+ 	newLink = offman->UsedAreas;
+
+        while(&(newLink->area) != area) {
+	    pLinkPrev = newLink;
+	    newLink = newLink->next;
+        }
+
+	if(pLinkPrev)
+	    pLinkPrev->next = newLink->next;
+	else offman->UsedAreas = newLink->next;
+
+        pLink->next = offman->UsedAreas;
+        offman->UsedAreas = pLink;
+
+	xfree(newLink);
 
 	/* AllocateArea added one but we really only exchanged one */
 	offman->NumUsedAreas--;  
