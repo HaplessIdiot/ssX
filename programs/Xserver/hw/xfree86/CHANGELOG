@@ -1,4 +1,7 @@
 XFree86 3.9.18Z (3 March 2000)
+3927. Modify the parser's xf86WriteConfigFile() function to write the
+      file using the real user id when the real and effective ids are
+      different (David Dawes).
 3926. Fix a problem with VT switching disabling direct rendering 3D apps
       (Kevin Martin).
 3925. Add an imake parameter called XFree86Devel that can be set in host.def
@@ -9954,4 +9957,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1061 2000/03/03 23:12:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1062 2000/03/04 01:52:54 martin Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/write.c,v 1.7 1999/06/27 14:08:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/write.c,v 1.8 1999/09/04 13:04:54 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -33,8 +33,37 @@
 #include "xf86tokens.h"
 #include "Configint.h"
 
-int
-xf86WriteConfigFile (const char *filename, XF86ConfigPtr cptr)
+#include <sys/wait.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <signal.h>
+#include <errno.h>
+
+#if (defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4)) || defined(macII)) && !defined(__GLIBC__)
+#ifndef strerror
+extern char *sys_errlist[];
+extern int sys_nerr;
+#define strerror(n) \
+    (((n) >= 0 && (n) < sys_nerr) ? sys_errlist[n] : "unknown error")
+#endif
+#endif
+
+#if defined(SVR4) || defined(__linux__) || defined(CSRG_BASED)
+#define HAS_SAVED_IDS_AND_SETEUID
+#endif
+#if defined(__EMX__) || defined(WIN32)
+#define HAS_NO_UIDS
+#endif
+
+#ifdef HAS_NO_UIDS
+#define doWriteConfigFile xf86WriteConfigFile
+#define Local /**/
+#else
+#define Local static
+#endif
+
+Local int
+doWriteConfigFile (const char *filename, XF86ConfigPtr cptr)
 {
 	FILE *cf;
 
@@ -74,3 +103,82 @@ xf86WriteConfigFile (const char *filename, XF86ConfigPtr cptr)
 	fclose(cf);
 	return 1;
 }
+
+#ifndef HAS_NO_UIDS
+
+int
+xf86WriteConfigFile (const char *filename, XF86ConfigPtr cptr)
+{
+	int ret;
+
+#if !defined(HAS_SAVED_IDS_AND_SETEUID)
+	int pid, p;
+	int status;
+	void (*csig)(int);
+#else
+	int ruid, euid;
+#endif
+
+	if (getuid() != geteuid())
+	{
+
+#if !defined(HAS_SAVED_IDS_AND_SETEUID)
+		/* Need to fork to change ruid without loosing euid */
+#ifdef SIGCHLD
+		csig = signal(SIGCHLD, SIG_DFL);
+#endif
+		switch ((pid = fork()))
+		{
+		case -1:
+			ErrorF("xf86WriteConfigFile(): fork failed (%s)\n",
+					strerror(errno));
+			return 0;
+		case 0: /* child */
+			setuid(getuid());
+			ret = doWriteConfigFile(filename, cptr);
+			exit(ret);
+			break;
+		default: /* parent */
+			do
+			{
+				p = waitpid(pid, &status, 0);
+			} while (p == -1 && errno == EINTR);
+		}
+#ifdef SIGCHLD
+		signal(SIGCHLD, csig);
+#endif
+		if (p != -1 && WIFEXITED(status) && WEXITSTATUS(status) == 0)
+			return 1;	/* success */
+		else
+			return 0;
+
+#else /* HAS_SAVED_IDS_AND_SETEUID */
+
+		ruid = getuid();
+		euid = geteuid();
+
+		if (seteuid(ruid) == -1)
+		{
+			ErrorF("xf86WriteConfigFile(): seteuid(%d) failed (%s)\n",
+					ruid, strerror(errno));
+			return 0;
+		}
+		ret = doWriteConfigFile(filename, cptr);
+
+		if (seteuid(euid) == -1)
+		{
+			ErrorF("xf86WriteConfigFile(): seteuid(%d) failed (%s)\n",
+					euid, strerror(errno));
+		}
+		return ret;
+
+#endif /* HAS_SAVED_IDS_AND_SETEUID */
+
+	}
+	else
+	{
+		return doWriteConfigFile(filename, cptr);
+	}
+}
+
+#endif /* !HAS_NO_UIDS */
