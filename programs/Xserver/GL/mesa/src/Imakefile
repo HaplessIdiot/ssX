@@ -1,9 +1,11 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.20 2002/02/25 00:45:42 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.21 2002/05/31 18:12:37 dawes Exp $
 
+#if DoLoadableServer
 #if !BuildModuleInSubdir
 #define IHaveModules
-#elif !defined(IHaveModules) && DoLoadableServer
+#elif !defined(IHaveModules)
     MODSUBDIR = module
+#endif
 #endif
 
 #if !BuildModuleInSubdir || !defined(IHaveModules)
