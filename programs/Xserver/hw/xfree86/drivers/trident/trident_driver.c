@@ -37,8 +37,9 @@
 #include "cfb24.h"
 #include "cfb32.h"
 #include "cfb24_32.h"
-#include "xf1bpp.h"
-#include "xf4bpp.h"
+
+#include "fb.h"
+
 #include "mibank.h"
 #include "micmap.h"
 #include "xf86.h"
@@ -1759,31 +1760,22 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     /* Load bpp-specific modules */
     switch (pScrn->bitsPerPixel) {
     case 1:
-	pTrident->EngineOperation |= 0x00;
-	mod = "xf1bpp";
-	Sym = "xf1bppScreenInit";
-	break;
     case 4:
-	pTrident->EngineOperation |= 0x00;
-	mod = "xf4bpp";
-	Sym = "xf4bppScreenInit";
-	break;
     case 8:
 	pTrident->EngineOperation |= 0x00;
-	mod = "cfb";
-	Sym = "cfbScreenInit";
-	break;
+	mod = "fb";
+	Sym = "fbScreenInit";
 	break;
     case 16:
 	pTrident->EngineOperation |= 0x01;
-	mod = "cfb16";
-	Sym = "cfb16ScreenInit";
+	mod = "fb";
+	Sym = "fbScreenInit";
 	break;
     case 24:
 	pTrident->EngineOperation |= 0x03;
 	if (pix24bpp == 24) {
-	    mod = "cfb24";
-	    Sym = "cfb24ScreenInit";
+	    mod = "fb";
+	    Sym = "fbScreenInit";
 	} else {
 	    mod = "xf24_32bpp";
 	    Sym = "cfb24_32ScreenInit";
@@ -1791,8 +1783,8 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	break;
     case 32:
 	pTrident->EngineOperation |= 0x02;
-	mod = "cfb32";
-	Sym = "cfb32ScreenInit";
+	mod = "fb";
+	Sym = "fbScreenInit";
 	break;
     }
 
@@ -1868,11 +1860,11 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     }
     xf86LoaderReqSymLists(ddcSymbols, NULL);
 
-#if 0
     /* Initialize DDC1 if possible */
-    if (pTrident->ddc1Read) 
-	xf86PrintEDID(xf86DoEDID_DDC1(pScrn->scrnIndex,vgaHWddc1SetSpeed,pTrident->ddc1Read ) );
-#endif
+    if (IsPrimaryCard) {
+       if (pTrident->ddc1Read) 
+	    xf86PrintEDID(xf86DoEDID_DDC1(pScrn->scrnIndex,vgaHWddc1SetSpeed,pTrident->ddc1Read ) );
+    }
 
     if (IsPciCard && UseMMIO) {
         TRIDENTDisableMMIO(pScrn);
@@ -2194,37 +2186,21 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     switch (pScrn->bitsPerPixel) {
     case 1:
-	ret = xf1bppScreenInit(pScreen, FBStart, pScrn->virtualX,
-			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
-			pScrn->displayWidth);
-	break;
     case 4:
-	ret = xf4bppScreenInit(pScreen, FBStart, pScrn->virtualX,
-			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
-			pScrn->displayWidth);
-	break;
     case 8:
-	ret = cfbScreenInit(pScreen, FBStart, pScrn->virtualX,
-			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
-			pScrn->displayWidth);
-	break;
     case 16:
-	ret = cfb16ScreenInit(pScreen, FBStart, pScrn->virtualX,
+    case 32:
+	ret = fbScreenInit(pScreen, FBStart, pScrn->virtualX,
 			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
-			pScrn->displayWidth);
+			pScrn->displayWidth, pScrn->bitsPerPixel);
 	break;
     case 24:
 	if (pix24bpp == 24)
-	    ret = cfb24ScreenInit(pScreen, FBStart, pScrn->virtualX,
+	    ret = fbScreenInit(pScreen, FBStart, pScrn->virtualX,
 			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
-			pScrn->displayWidth);
+			pScrn->displayWidth, pScrn->bitsPerPixel);
 	else
 	    ret = cfb24_32ScreenInit(pScreen, FBStart, pScrn->virtualX,
-			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
-			pScrn->displayWidth);
-	break;
-    case 32:
-	ret = cfb32ScreenInit(pScreen, FBStart, pScrn->virtualX,
 			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
 			pScrn->displayWidth);
 	break;
