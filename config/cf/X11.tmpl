@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.224 2003/10/03 14:57:35 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.225 2003/10/15 21:23:37 herrb Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -3955,12 +3955,14 @@ clean::									@@\
 #endif
 
 #ifndef ConvertPsToPdf
+#ifdef PsToPdfCmd
 #define ConvertPsToPdf(file)						@@\
 file.pdf: file.ps							@@\
 	RemoveFile(file.pdf)						@@\
 	$(PSTOPDFCMD) < file.ps > file.pdf
 #else
 #define ConvertPsToPdf(file) /**/
+#endif
 #endif
 
 #ifndef MakeDepSimpleHtmlDoc

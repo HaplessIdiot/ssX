@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.461 2003/10/02 13:29:36 eich Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.462 2003/10/11 10:07:10 herrb Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1817,6 +1817,7 @@ DRIVERSDKINCLUDEDIR = DriverSDKIncludeDir
 
         XFREE86DOCDIR = $(DOCDIR)
       XFREE86PSDOCDIR = $(DOCPSDIR)
+     XFREE86PDFDOCDIR = $(DOCPDFDIR)
     XFREE86HTMLDOCDIR = $(DOCHTMLDIR)
 XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 
