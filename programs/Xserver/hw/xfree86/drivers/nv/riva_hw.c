@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.8 2000/02/08 17:19:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.9 2001/01/22 21:32:36 dawes Exp $ */
 
 #include "nv_local.h"
 #include "riva_hw.h"
@@ -1195,7 +1195,7 @@ static void CalcStateExt
             state->config   = ((width + 31)/32)
                             | (((pixelDepth > 2) ? 3 : pixelDepth) << 8)
                             | 0x1000;
-            state->general  = 0x00000100;
+            state->general  = 0x00100100;
             state->repaint1 = hDisplaySize < 1280 ? 0x06 : 0x02;
             break;
         case NV_ARCH_04:
