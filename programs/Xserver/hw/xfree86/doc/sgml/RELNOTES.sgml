@@ -9,7 +9,7 @@
 <date>28 January 2004
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.103 2004/01/27 17:31:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.104 2004/01/29 02:19:22 dawes Exp $
 </ident>
 
 <abstract>
@@ -379,6 +379,17 @@ scroll-back(1, page-2)
 	include the functionality previously provided by the "xtt" backend,
 	and to fix some bugs.  The "xtt" backend will be dropped in the
 	next release in favour of the updated unified "freetype" backend.
+
+	<itemize>
+	<item>The new "freetype" backend has the improved "very lazy" metric
+		calculation method which enables super-fast loading of
+		proportional CJKV fonts.
+
+	<item>All of the servers, including xfs, Xnest, Xprt, Xvfb, the
+		Cygwin-XFree86 server (as well as the XFree86 server)
+		can handle the perfect TTCap options.
+
+	</itemize>
 
 <item>The Compose file processing mechanism has been improved and made
 	more flexible.  See the <ref id="compose" name="Xlib Compose
