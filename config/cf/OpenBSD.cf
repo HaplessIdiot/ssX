@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.49 2001/02/03 19:33:04 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.50 2001/02/20 20:41:32 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -76,6 +76,14 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 #ifndef HasLibPthread
 #define HasLibPthread		NO
+#endif
+
+#ifndef HasMktemp
+# if (OSMajorVersion > 2) || (OSMajorVersion == 2 && OSMinorVersion >= 1)
+#  define HasMktemp		YES
+# else
+#  define HasMktemp		NO
+# endif
 #endif
 
 /*
