@@ -33,7 +33,7 @@ void
 XRenderFillRectangle (Display	    *dpy,
 		      int	    op,
 		      Picture	    dst,
-		      XRenderColor  *color,
+		      _Xconst XRenderColor  *color,
 		      int	    x,
 		      int	    y,
 		      unsigned int  width,

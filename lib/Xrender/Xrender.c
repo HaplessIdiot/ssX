@@ -250,7 +250,7 @@ XRenderQueryFormats (Display *dpy)
 }
 
 XRenderPictFormat *
-XRenderFindVisualFormat (Display *dpy, Visual *visual)
+XRenderFindVisualFormat (Display *dpy, _Xconst Visual *visual)
 {
     XExtDisplayInfo *info = XRenderFindDisplay (dpy);
     int		    nv;
@@ -270,7 +270,7 @@ XRenderFindVisualFormat (Display *dpy, Visual *visual)
 XRenderPictFormat *
 XRenderFindFormat (Display		*dpy,
 		   unsigned long	mask,
-		   XRenderPictFormat	*template,
+		   _Xconst XRenderPictFormat	*template,
 		   int			count)
 {
     XExtDisplayInfo *info = XRenderFindDisplay (dpy);

@@ -30,12 +30,12 @@
 #define size (SIZEOF(xRenderFillRectanglesReq) + FRCTSPERBATCH * SIZEOF(xRectangle))
 
 void
-XRenderFillRectangles (Display	    *dpy,
-		       int	    op,
-		       Picture	    dst,
-		       XRenderColor *color,
-		       XRectangle   *rectangles,
-		       int	    n_rects)
+XRenderFillRectangles (Display		    *dpy,
+		       int		    op,
+		       Picture		    dst,
+		       _Xconst XRenderColor *color,
+		       _Xconst XRectangle   *rectangles,
+		       int		    n_rects)
 {
     XExtDisplayInfo		*info = XRenderFindDisplay (dpy);
     xRenderFillRectanglesReq	*req;
