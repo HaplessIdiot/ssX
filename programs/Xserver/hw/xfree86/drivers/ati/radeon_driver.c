@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.109 2003/10/11 00:29:57 daenzer Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.110 2003/10/30 17:36:58 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -138,7 +138,8 @@ typedef enum {
     OPTION_FBDEV,
     OPTION_VIDEO_KEY,
     OPTION_DISP_PRIORITY,
-    OPTION_PANEL_SIZE
+    OPTION_PANEL_SIZE,
+    OPTION_MIN_DOTCLOCK
 } RADEONOpts;
 
 const OptionInfoRec RADEONOptions[] = {
@@ -173,6 +174,7 @@ const OptionInfoRec RADEONOptions[] = {
     { OPTION_VIDEO_KEY,      "VideoKey",         OPTV_INTEGER, {0}, FALSE },
     { OPTION_DISP_PRIORITY,  "DisplayPriority",  OPTV_ANYSTR,  {0}, FALSE },
     { OPTION_PANEL_SIZE,     "PanelSize",        OPTV_ANYSTR,  {0}, FALSE },
+    { OPTION_MIN_DOTCLOCK,   "ForceMinDotClock", OPTV_FREQ,    {0}, FALSE },
     { -1,                    NULL,               OPTV_NONE,    {0}, FALSE }
 };
 
@@ -1774,6 +1776,7 @@ static Bool RADEONGetPLLParameters(ScrnInfoPtr pScrn)
     RADEONPLLPtr   pll  = &info->pll;
     CARD16         bios_header;
     CARD16         pll_info_block;
+    double         min_dotclock;
 
     if (!info->VBIOS) {
 
@@ -1825,6 +1828,26 @@ static Bool RADEONGetPLLParameters(ScrnInfoPtr pScrn)
 	pll->min_pll_freq   = RADEON_BIOS32(pll_info_block + 0x12);
 	pll->max_pll_freq   = RADEON_BIOS32(pll_info_block + 0x16);
 	pll->xclk           = RADEON_BIOS16(pll_info_block + 0x08);
+    }
+
+    /* (Some?) Radeon BIOSes seem too lie about their minimum dot
+     * clocks.  Allow users to override the detected minimum dot clock
+     * value (e.g., and allow it to be suitable for TV sets).
+     */
+    if (xf86GetOptValFreq(info->Options, OPTION_MIN_DOTCLOCK,
+			  OPTUNITS_MHZ, &min_dotclock)) {
+	if (min_dotclock < 12 || min_dotclock*100 >= pll->max_pll_freq) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		       "Illegal minimum dotclock specified %.2f MHz "
+		       "(option ignored)\n",
+		       min_dotclock);
+	} else {
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		       "Forced minimum dotclock to %.2f MHz "
+		       "(instead of detected %.2f MHz)\n",
+		       min_dotclock, ((double)pll->min_pll_freq/1000));
+	    pll->min_pll_freq = min_dotclock * 1000;
+	}
     }
 
     return TRUE;

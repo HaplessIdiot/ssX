@@ -1,4 +1,6 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 544. Add option to Radeon driver to allow minimum dot clock to be
+      overridden (Bugzilla #831, Nils Philippsen).
  543. Add shared libraries run-path information to pkg-config datafiles
       provided for some libraries. (Bugzilla #832, Frederick Bruckman, 
       Matthieu Herrb).
@@ -18075,7 +18077,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2921 2003/10/31 15:49:19 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2922 2003/10/31 20:49:05 herrb Exp $
 
 
 

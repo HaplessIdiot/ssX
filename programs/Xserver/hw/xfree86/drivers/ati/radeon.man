@@ -298,6 +298,17 @@ Enable page flipping for 3D acceleration. This will increase performance
 but not work correctly in some rare cases, hence the default is
 .B off.
 
+.TP
+.BI "Option \*qForceMinDotClock\*q \*q" frequency \*q
+Override minimum dot clock. Some Radeon BIOSes report a minimum dot
+clock unsuitable (too high) for use with television sets even when they
+actually can produce lower dot clocks. If this is the case you can
+override the value here.
+.B Note that using this option may damage your hardware.
+You have been warned. The
+.B frequency
+parameter may be specified as a float value with standard suffixes like
+"k", "kHz", "M", "MHz".
 
 .SH SEE ALSO
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
