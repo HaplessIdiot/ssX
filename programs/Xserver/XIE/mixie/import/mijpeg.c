@@ -1,4 +1,5 @@
 /* $XConsortium: mijpeg.c,v 1.4 94/04/17 20:34:54 rws Exp $ */
+/* $XFree86$ */
 /**** module mijpeg.c ****/
 /******************************************************************************
 Copyright (c) 1993, 1994  X Consortium
@@ -114,7 +115,7 @@ terms and conditions:
 
 /*
  *  routines referenced by other DDXIE modules
-/*
+ */
 int CreateIPhotoJpegBase();
 int InitializeIPhotoJpegBase();
 int InitializeICPhotoJpegBase();

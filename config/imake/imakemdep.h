@@ -1,5 +1,5 @@
 /* $XConsortium: imakemdep.h /main/91 1995/12/05 16:44:18 mor $ */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.12 1995/07/08 10:22:17 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.13 1996/01/05 13:07:10 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -41,6 +41,10 @@ in this Software without prior written authorization from the X Consortium.
  *     These will be passed to the compile along with the contents of the
  *     make variable BOOTSTRAPCFLAGS.
  */
+#if defined(clipper) || defined(__clipper__)
+#define imake_ccflags "-O -DSYSV -DBOOTSTRAPCFLAGS=-DSYSV"
+#endif
+
 #ifdef hpux
 #ifdef hp9000s800
 #define imake_ccflags "-DSYSV"
@@ -222,6 +226,9 @@ in this Software without prior written authorization from the X Consortium.
 #define DEFAULT_CC "cl"
 #endif
 #ifdef apollo
+#define DEFAULT_CPP "/usr/lib/cpp"
+#endif
+#if defined(clipper) || defined(__clipper__)
 #define DEFAULT_CPP "/usr/lib/cpp"
 #endif
 #if defined(_IBMR2) && !defined(DEFAULT_CPP)
@@ -529,6 +536,12 @@ char *cpp_argv[ARGUMENTS] = {
 struct symtab	predefs[] = {
 #ifdef apollo
 	{"apollo", "1"},
+#endif
+#if defined(clipper) || defined(__clipper__)
+	{"clipper", "1"},
+	{"__clipper__", "1"},
+	{"clix", "1"},
+	{"__clix__", "1"},
 #endif
 #ifdef ibm032
 	{"ibm032", "1"},

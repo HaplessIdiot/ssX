@@ -431,7 +431,9 @@ static int stat_device(ptr, fd) HIL_Device *ptr;
     return FALSE;
 
   id = describe[0];
-/* printf("fd is %d errno is %d id is %x\n", fd, errno, id);	/*  */
+#if 0
+  printf("fd is %d errno is %d id is %x\n", fd, errno, id);	/*  */
+#endif
 
   num_axes = (describe[1] & HIL_NUM_AXES);
   if (id == NINE_KNOB_ID && num_axes != 3) id = QUAD_ID;

@@ -1,8 +1,5 @@
-/* $Header$
- *
- * $Log$
- * Revision 1.1  1994-04-27 07:36:24  dawes
- * Initial revision
+/* oldHeader: pch.c,v 2.0.1.7 88/06/03 15:13:28 lwall Locked $
+ * $XConsortium: pch.c,v 3.3 94/09/14 21:22:55 gildea Exp $
  *
  * Revision 2.0.2.0  90/05/01  22:17:51  davison
  * patch12u: unidiff support added
@@ -190,12 +187,17 @@ there_is_another_patch()
 	    filearg[0] = fetchname(buf, 0, FALSE);
 	}
 	if (filearg[0] == Nullch) {
+#ifndef WIN32
 	    ask1("No file found--skip this patch? [n] ");
 	    if (*buf != 'y') {
 		continue;
 	    }
 	    if (verbose)
 		say1("Skipping patch...\n");
+#else
+	    if (verbose)
+		say1("File not found--skipping patch...\n");
+#endif
 	    filearg[0] = fetchname(bestguess, 0, TRUE);
 	    skip_rest_of_patch = TRUE;
 	    return TRUE;
@@ -1246,6 +1248,7 @@ pch_hunk_beg()
 
 /* Apply an ed script by feeding ed itself. */
 
+#ifndef WIN32
 void
 do_ed_script()
 {
@@ -1306,3 +1309,4 @@ do_ed_script()
 	chmod(outname, filemode);
     set_signals(1);
 }
+#endif

@@ -1,5 +1,5 @@
 /* $XConsortium: xinit.c,v 11.61 95/01/09 21:20:29 kaleb Exp $ */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.7 1996/02/19 09:52:23 dawes Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.8 1996/02/19 12:20:36 dawes Exp $ */
 
 /*
 
@@ -75,6 +75,16 @@ char **newenviron = NULL;
    Per Posix, only setsid should do that. */
 #if !defined(X_NOT_POSIX) && !defined(macII)
 #define setpgrp setpgid
+#endif
+
+#ifdef __EMX__
+#define HAS_EXECVPE
+#endif
+
+#ifdef HAS_EXECVPE
+#define Execvpe(path, argv, envp) execvpe(path, argv, envp)
+#else
+#define Execvpe(path, argv, envp) execvp(path, argv)
 #endif
 
 char *bindir = BINDIR;
@@ -193,12 +203,12 @@ static void Execute (vec, envp)
     char **vec;				/* has room from up above */
     char **envp;
 {
-    execve (vec[0], vec, envp);
+    Execvpe (vec[0], vec, envp);
 #ifndef __EMX__
     if (access (vec[0], R_OK) == 0) {
 	vec--;				/* back it up to stuff shell in */
 	vec[0] = SHELL;
-	execve (vec[0], vec, envp);
+	Execvpe (vec[0], vec, envp);
     }
 #endif
     return;

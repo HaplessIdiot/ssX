@@ -1,4 +1,6 @@
-/* $XConsortium: mpgeomnn.c,v 1.7 94/04/17 20:35:19 rws Exp $ */
+/* $XConsortium: mpgeomnn.c /main/8 1995/12/02 16:56:06 dpw $ */
+/* $XFree86$ */
+/* AGE Logic - Oct 15 1995 - Larry Hare */
 /**** module mpgeomnn.c ****/
 /******************************************************************************
 
@@ -138,7 +140,7 @@ static ddElemVecRec NearestNeighborVec = {
 /*
  * private
  */
-#define	PIX0	((double)(0.0001))
+#define	PIX0	((double)(0.0000))
 
 typedef struct _mpgeombanddef {
 
@@ -258,7 +260,7 @@ static int FreeBandData(flo,ped)
 }
 
 /*------------------------------------------------------------------------
-/*------------------------------------------------------------------------
+--------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
 static int InitializeGeomNN(flo,ped)
@@ -846,7 +848,7 @@ register int 	srcwidth  = pvtband->in_width - 1;
 	if (M != LOGLEFT) *outp = val;
 }
 
-#define BI_SL(funcname, iotype, CONST)					\
+#define BI_SL(funcname, iotype, CONST, ROUND)				\
 static void funcname (OUTP,srcimg,width,sline,pedpvt,pvtband)		\
 pointer		OUTP;							\
 pointer		*srcimg;						\
@@ -879,16 +881,16 @@ register iotype val;							\
 		val = src[j]   * ((float)1. - s - t + st) +		\
 		      src[j+1] * (s - st) +				\
 		      trc[j]   * (t - st) +				\
-		      trc[j+1] * (st);					\
+		      trc[j+1] * (st) + ROUND;				\
 	    }								\
 	    *outp++ = val;						\
 	}								\
 }
 
-BI_SL	(BiSL_R, RealPixel, flt_constant)
-BI_SL	(BiSL_B, BytePixel, int_constant)
-BI_SL	(BiSL_P, PairPixel, int_constant)
-BI_SL	(BiSL_Q, QuadPixel, int_constant)
+BI_SL	(BiSL_R, RealPixel, flt_constant, (float)0.0)
+BI_SL	(BiSL_B, BytePixel, int_constant, (float)0.5)
+BI_SL	(BiSL_P, PairPixel, int_constant, (float)0.5)
+BI_SL	(BiSL_Q, QuadPixel, int_constant, (float)0.5)
 #endif
 
 /**********************************************************************
@@ -1010,7 +1012,7 @@ int sline;
 pGeomDefPtr pedpvt; 
 mpGeometryBandPtr pvtband;
 {
-register double s, t, st, result;
+register float s, t, st, result;
 register double a  = pedpvt->coeffs[0];
 register double c  = pedpvt->coeffs[2];
 register double srcpix  = a * PIX0 +
@@ -1022,7 +1024,7 @@ register double srcline = c * PIX0 +
 register int 	isrcline,isrcpix;
 register LogInt constant, val, M, *ptrIn, *ptrJn;
 register LogInt *outp	= (LogInt *) OUTP;
-register int 	srcwidth  = pvtband->in_width;
+register int 	srcwidth  = pvtband->in_width - 1;
 register int 	minline  = pvtband->lo_src_available;
 register int 	maxline  = pvtband->hi_src_available;
 
@@ -1031,7 +1033,7 @@ register int 	maxline  = pvtband->hi_src_available;
 	while ( width > 0 ) { 
 	    isrcline = srcline;
 	    isrcpix  = srcpix;
-	    if ( (isrcline >= minline) && (isrcline <= maxline) ) { 
+	    if ( (isrcline >= minline) && (isrcline < maxline) ) { 
 		s = srcpix - isrcpix;
 		t = srcline - isrcline;
 		ptrIn = (LogInt *) srcimg[isrcline];
@@ -1040,11 +1042,11 @@ register int 	maxline  = pvtband->hi_src_available;
 		    st = s * t;
 		    result = 0.;
 		    if (LOG_tstbit(ptrIn,isrcpix))   result  =
-					      ((double)1. - s - t + st);
+					      ((float)1. - s - t + st);
 		    if (LOG_tstbit(ptrIn,isrcpix+1)) result += (s - st);
 		    if (LOG_tstbit(ptrJn,isrcpix))   result += (t - st);
 		    if (LOG_tstbit(ptrJn,isrcpix+1)) result += st;
-		    if (result > 0.5) val |= M;
+		    if (result > (float) 0.5) val |= M;
 		} else if (constant) val |= M;
 	    } else if (constant) val |= M;
 	    LOGRIGHT(M); if (!M) { *outp++ = val; M=LOGLEFT; val = 0; }
@@ -1055,7 +1057,7 @@ register int 	maxline  = pvtband->hi_src_available;
 	if (M != LOGLEFT) *outp = val;
 }
 
-#define BI_GL(funcname, iotype, CONST)					\
+#define BI_GL(funcname, iotype, CONST, ROUND)				\
 static void funcname (OUTP,srcimg,width,sline,pedpvt,pvtband)		\
 pointer OUTP;								\
 pointer *srcimg;							\
@@ -1064,7 +1066,7 @@ int sline;								\
 pGeomDefPtr pedpvt; 							\
 mpGeometryBandPtr pvtband;						\
 {									\
-register double s, t, st;						\
+register float s, t, st;						\
 register double a  = pedpvt->coeffs[0];					\
 register double c  = pedpvt->coeffs[2];					\
 register double srcpix  = a * PIX0 +					\
@@ -1099,7 +1101,7 @@ register int 	maxline  = pvtband->hi_src_available;			\
 			    ptrIn[isrcpix]   * ((float)1. - s - t + st) + \
 			    ptrIn[isrcpix+1] * (s - st) +		\
 			    ptrJn[isrcpix]   * (t - st) +		\
-			    ptrJn[isrcpix+1] * (st);			\
+			    ptrJn[isrcpix+1] * (st) + ROUND;		\
 		}							\
 		/* prepare for next loop */				\
 		width--; 						\
@@ -1109,10 +1111,10 @@ register int 	maxline  = pvtband->hi_src_available;			\
 	}								\
 }
 
-BI_GL	(BiGL_R, RealPixel, flt_constant)
-BI_GL	(BiGL_B, BytePixel, int_constant)
-BI_GL	(BiGL_P, PairPixel, int_constant)
-BI_GL	(BiGL_Q, QuadPixel, int_constant)
+BI_GL	(BiGL_R, RealPixel, flt_constant, (float)0.0)
+BI_GL	(BiGL_B, BytePixel, int_constant, (float)0.5)
+BI_GL	(BiGL_P, PairPixel, int_constant, (float)0.5)
+BI_GL	(BiGL_Q, QuadPixel, int_constant, (float)0.5)
 #endif
 /**********************************************************************/
 

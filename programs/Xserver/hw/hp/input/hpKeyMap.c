@@ -1,4 +1,4 @@
-/* $XConsortium: hpKeyMap.c,v 1.2 94/04/17 20:30:13 rws Exp $ */
+/* $XConsortium: hpKeyMap.c,v 1.3 95/01/24 02:46:58 dpw Exp $ */
 /*
 
 Copyright (c) 1986, 1987  X Consortium
@@ -58,9 +58,6 @@ University of California.
 #include	"keysym.h"
 #include	"X.h"			/* MUST come after above includes */
 #include	"input.h"
-/*  The following two lines wer added to let this compile
- *  in the pure MIT tree
- */
 #include      "HPkeysym.h"
 #include      "ap_keysym.h"
 
@@ -71,6 +68,7 @@ University of California.
  * Jack Palevich, HP-Labs
  */
 
+static int try_and_load_maps();
 
     /* A keymap filled with NoSymbol is all (1) columns.
      * This will be used when the keyboard is unknown and is not in a
@@ -87,7 +85,7 @@ static KeySym USASCIIMap[4*0x82] = {
  /* code values in comments at line end are actual value reported on HIL.
     REMEMBER, there is an offset of MIN_KEYCODE+2 applied to this table!
     The PS2 keyboard table begins at offset 0, the 46021A table begins with
-    the third row. *./
+    the third row. */
 	/* Extend Char Right -- a.k.a. Kanji? */	
 	XK_Control_R,		NoSymbol,		NoSymbol,	NoSymbol,	/* 0x00 */
 	NoSymbol,		NoSymbol,		NoSymbol,	NoSymbol,	/* 0x01 */
@@ -781,13 +779,16 @@ int HPKget_maps_by_id(keydevice_id, keysyms_rec, modmap)
   return TRUE;
 }
 
-static int try_and_load_maps();
+
+extern char *getenv();
 
     /* 
      * Input:
      *   keymap_file:  Name of the file that contains keymaps.  If NULL,
      *		       only look in /usr/lib/X11/XHPKeymaps (the
-     *		       default) (can be overridden, see HPKsetup()).
+     *		       default) (can be overridden, see HPKsetup()).  This
+     *		       can be filled in by the device driver if it (for some
+     *		       reason) doesn't want to use the default.
      *   keymap_name:  Name of the keymap to load.  Sometime like
      *		       "button-box".
      *   keysyms_rec:  Pointer to a KeySymsRec to fill in.
@@ -798,14 +799,51 @@ static int try_and_load_maps();
      * Returns:
      *   TRUE : everything went as expected
      *   FALSE: Something went screwie, using null maps.
+     * Notes:
+     *   There are four possible keymap files:
+     *     - /usr/lib/X11/XHPKeymaps.  This is the system default.  It is
+     *       supposed to remain untouched so that it can be overwritten by
+     *       the system updates.
+     *     - A file specified by the environment variable XHPKEYMAPFILE.
+     *       This overrides XHPKeymaps.
+     *     - A file specified by the device driver.  For example, if a
+     *       company writes a driver for xyz keyboard, they can ship a
+     *       keymap without having to have the user modify XHPKeymaps.
+     *     - /usr/lib/X11/XHPKeymaps.usr.  This is the users "personal"
+     *       keymap file.  If they want to make changes to keymaps in
+     *       XHPKeymaps, they should put the changed keymaps in
+     *       XHPKeymaps.usr and leave XHPKeymaps unchanged.
+     *   Here is the order in which keymap files are tried:
+     *     If XHPKEYMAPFILE exists, use this load order:
+     *       - The file specified by XHPKEYMAPFILE.
+     *       - The user modifiable keymap file (XHPKeymaps.usr).
+     *       - The drivers keymap file (if not NULL).
+     *     If XHPKEYMAPFILE doesn't exist, use this order:
+     *       - The user modifiable keymap file (XHPKeymaps.usr).
+     *       - The drivers keymap file (if not NULL).
+     *       - The default (system) keymap (/usr/lib/X11/XHPKeymaps).
      */
+#define KEYMAP_ENV_VAR	"XHPKEYMAPFILE"
+#define USERS_KEYMAP	"XHPKeymaps.usr"
 int HPKget_kb_info_by_name(keymap_file, keymap_name, keysyms_rec, modmap)
   char *keymap_file, *keymap_name; KeySymsRec *keysyms_rec; CARD8 **modmap;
 {
-  if (try_and_load_maps((char *)NULL, keymap_name, keysyms_rec, modmap) ||
-      (keymap_file &&
-       try_and_load_maps(keymap_file, keymap_name, keysyms_rec, modmap)))
+  if (getenv(KEYMAP_ENV_VAR))
+  {
+    if (try_and_load_maps((char *)NULL, keymap_name, keysyms_rec, modmap)  ||
+	try_and_load_maps(USERS_KEYMAP, keymap_name, keysyms_rec, modmap)  ||
+	(keymap_file &&
+         try_and_load_maps(keymap_file, keymap_name, keysyms_rec, modmap)))
     return TRUE;
+  }
+  else
+  {
+    if (try_and_load_maps(USERS_KEYMAP, keymap_name, keysyms_rec, modmap)  ||
+	(keymap_file &&
+         try_and_load_maps(keymap_file, keymap_name, keysyms_rec, modmap)) ||
+	try_and_load_maps((char *)NULL, keymap_name, keysyms_rec, modmap))
+    return TRUE;
+  }
 
   ErrorF("Unable to load keymap \"%s\" - using defaults (NULL maps).\n",
       keymap_name);
