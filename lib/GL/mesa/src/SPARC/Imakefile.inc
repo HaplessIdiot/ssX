@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/GL/mesa/src/SPARC/Imakefile.inc,v 1.1tsi Exp $
 
 #ifndef MesaSPARCBuildDir
 #define MesaSPARCBuildDir $(GLXLIBSRC)/mesa/src/SPARC/
@@ -23,7 +23,7 @@ MESA_SPARC_OBJS = $(MESASPARCBUILDDIR)sparc.o \
 		  $(MESASPARCBUILDDIR)clip.o \
 		  $(MESASPARCBUILDDIR)norm.o
 
-#if DoSharedLib
+#if defined(DoSharedLib) && DoSharedLib
 MESA_SPARC_UOBJS = $(MESASPARCBUILDDIR)unshared/sparc.o \
 		   $(MESASPARCBUILDDIR)xform.o \
 		   $(MESASPARCBUILDDIR)clip.o \

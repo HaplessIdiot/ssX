@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.21 2002/05/31 06:52:46 keithp Exp $
+XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.22tsi Exp $
 
 #define DoNormalLib NormalLibXft
 #define DoSharedLib SharedLibXft
@@ -22,7 +22,7 @@ XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.21 2002/05/31 06:52:46 keithp Exp $
 #define XftType1Dir $(LIBDIR)/fonts/Type1
 #endif
 
-#if UseInstalled
+#ifdef UseInstalled
 /* when using xmkmf, make sure the needed definitions for the fontconfig
  * library are available
  */
@@ -55,7 +55,7 @@ XRENDER_CFLAGS=$(XRENDERINCLUDES)
 FONTCONFIG_CFLAGS=$(FONTCONFIGINCLUDES)
 FONTCONFIG_LIBS=$(FONTCONFIGLIB)
 
-#if !UseInstalled
+#if !defined(UseInstalled)
 
 /* these must always be computed using the installed location,
  * when building inside the tree that means extra work

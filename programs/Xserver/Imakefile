@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.4 2001/03/14 18:42:02 pookie Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.267 2002/10/18 19:38:03 keithp Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.268tsi Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -326,7 +326,7 @@ XCOMM
 LMFCFBDIR = lmfcfb
 #endif
 
-#if XdecServer
+#if defined(XdecServer) && XdecServer
 XCOMM
 XCOMM Digital MIPS based WS server (ultrix 4.2 and beyond)
 XCOMM
@@ -352,7 +352,7 @@ ServerTarget(Xdec,$(DECDIRS),$(DECOBJS), \
 #endif /* XdecServer */
 
 
-#if XdecMultiDepthServer
+#if defined(XdecMultiDepthServer) && XdecMultiDepthServer
 XCOMM
 XCOMM Digital MIPS based WS server (ultrix 4.2 and beyond)
 XCOMM Supports 8, 12, and 24 bit pixmaps
@@ -376,7 +376,7 @@ ServerTarget(Xdec_md,$(DECDIRS1),$(DECOBJS1), \
 #endif /* XdecMultiDepthServer */
 
 
-#if XsunServer
+#if defined(XsunServer) && XsunServer
 XCOMM
 XCOMM Sun server
 XCOMM
@@ -406,7 +406,7 @@ SetUIDServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS), \
 #endif /* XsunServer */
 
 
-#if Xsun24Server
+#if defined(Xsun24Server) && Xsun24Server
 XCOMM
 XCOMM Sun multiple pixmap depth (8, 12, 24) server
 XCOMM
@@ -435,7 +435,7 @@ SetUIDServerTarget(Xsun24,$(SUN24DIRS),$(SUN24OBJS), \
 #endif /* Xsun24Server */
 
 
-#if XsunMonoServer
+#if defined(XsunMonoServer) && XsunMonoServer
 XCOMM
 XCOMM Sun monochrome server
 XCOMM
@@ -456,7 +456,7 @@ SetUIDServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS), \
 #endif /* XsunMonoServer */
 
 
-#if XsunLynxServer
+#if defined(XsunLynxServer) && XsunLynxServer
 XCOMM
 XCOMM Sun server for LynxOS microSPARC 2.4.0
 XCOMM
@@ -474,7 +474,7 @@ ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS), \
 #endif /* XsunLynxServer */
 
 
-#if XsunLynxMonoServer
+#if defined(XsunLynxMonoServer) && XsunLynxMonoServer
 XCOMM
 XCOMM Sun monochrome server for LynxOS microSPARC 2.4.0
 XCOMM
@@ -491,7 +491,7 @@ ServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS), \
 #endif /* XsunLynxMonoServer */
 
 
-#if XhpServer
+#if defined(XhpServer) && XhpServer
 XCOMM
 XCOMM Hewlett Packard CFB Server
 XCOMM
@@ -520,29 +520,29 @@ ServerTarget(Xhp,$(HPSUBDIRS),$(HPOBJS), \
 XCOMM
 XCOMM force non-parallel build of XF86 servers to prevent MUTEX overrides
 XCOMM
-#if XF86Server
+#if defined(XF86Server) && XF86Server
 XF86SERVER = XFree86
 #endif
-#if XnestServer
+#if defined(XnestServer) && XnestServer
 XNEST = Xnest
 #endif
-#if XVirtualFramebufferServer
+#if defined(XVirtualFramebufferServer) && XVirtualFramebufferServer
 XVFB = Xvfb
 #endif
-#if XWinServer && !MakeDllModules
+#if defined(XWinServer) && XWinServer && !MakeDllModules
 XWIN = XWin
 #endif
-#if defined(XF86Server) || \
-    defined(XnestServer) || \
-    defined(XVirtualFramebufferServer) || \
-    (!MakeDllModules && defined(XWinServer))
+#if (defined(XF86Server) && XF86Server) || \
+    (defined(XnestServer) && XnestServer) || \
+    (defined(XVirtualFramebufferServer) && XVirtualFramebufferServer) || \
+    (!MakeDllModules && defined(XWinServer) && XWinServer)
 MakeMutex($(XF86SERVER) $(XNEST) $(XVFB) $(XWIN))
 #endif
 MakeMutex($(STDDIRS) mfb fb cfb cfb16 cfb24 cfb32)
 #endif
 
 
-#if XF86Server
+#if defined(XF86Server) && XF86Server
 XCOMM
 XCOMM XFree86 Server
 XCOMM
@@ -608,9 +608,7 @@ XF86I2CLIB = $(XF86SRC)/i2c/LibraryTargetName(i2c)
 #if XF86DDC
 XF86DDCLIB = $(XF86SRC)/ddc/LibraryTargetName(ddc)
 #endif
-#if XF86VBE
 XF86VBELIB = $(XF86OSSRC)/vbe/vbe.o
-#endif
 #if XF86RAC
 XF86RACLIB = $(XF86SRC)/rac/LibraryTargetName(rac)
 #endif
@@ -672,7 +670,7 @@ ServerDriverSDKTarget(XFree86)
 #endif
 #endif        /* XF86Server */
 
-#ifdef KDriveXServer
+#if defined(KDriveXServer) && KDriveXServer
 XCOMM
 XCOMM Tiny X server section
 XCOMM
@@ -705,7 +703,7 @@ XCOMM
 #define StdKdSysLibs $(FONTLIBS) $(SYSLIBS)
 #define KdLibs $(KD) $(KDOS) $(PSEUDO8) MiExtLibs $(RANDRLIB) $(RENDERLIB)
 
-#if XfbdevServer
+#if defined(XfbdevServer) && XfbdevServer
 XCOMM
 XCOMM server with Keith's fbdev driver only
 XCOMM
@@ -731,7 +729,7 @@ ServerTarget(Xfbdev,$(FBDEVDIRS),$(FBDEVOBJS), \
 	$(FBDEVLIBS),$(FBDEVSYSLIBS))
 #endif /* XfbdevServer */
 
-#if XSavageServer
+#if defined(XSavageServer) && XSavageServer
 XCOMM
 XCOMM server with Keith's S3 Savage driver
 XCOMM
@@ -757,7 +755,7 @@ ServerTarget(Xsavage,$(SAVAGEDIRS),$(SAVAGEOBJS), \
 	$(SAVAGELIBS),$(SAVAGESYSLIBS))
 #endif /* XSavageServer */
 
-#if XIgsServer
+#if defined(XIgsServer) && XIgsServer
 XCOMM
 XCOMM server with Keith's S3 Igs driver
 XCOMM
@@ -783,7 +781,7 @@ ServerTarget(Xigs,$(IGSDIRS),$(IGSOBJS), \
 	$(IGSLIBS),$(IGSSYSLIBS))
 #endif /* XIgsServer */
 
-#if XTridentServer
+#if defined(XTridentServer) && XTridentServer
 XCOMM
 XCOMM server with Keith's TRIDENT Cyber9525 driver
 XCOMM
@@ -814,7 +812,7 @@ ServerTarget(Xtrident,$(TRIDENTDIRS),$(TRIDENTOBJS), \
 	$(TRIDENTLIBS),$(TRIDENTSYSLIBS))
 #endif /* XTridentServer */
 
-#if XchipsServer
+#if defined(XchipsServer) && XchipsServer
 XCOMM
 XCOMM server with Keith's C&T driver
 XCOMM
@@ -843,7 +841,7 @@ ServerTarget(Xchips,$(CHIPSDIRS),$(CHIPSOBJS), \
 	$(CHIPSLIBS),$(CHIPSSYSLIBS))
 #endif /* XchipsServer */
 
-#if Xmach64Server
+#if defined(Xmach64Server) && Xmach64Server
 XCOMM
 XCOMM server with Keith's Mach64 driver (for Mobility 1 machines)
 XCOMM
@@ -872,7 +870,7 @@ ServerTarget(Xmach64,$(MACH64DIRS),$(MACH64OBJS), \
 	$(MACH64LIBS),$(MACH64SYSLIBS))
 #endif /* Xmach64Server */
 
-#if Xi810Server
+#if defined(Xi810Server) && Xi810Server
 XCOMM
 XCOMM server with Intel i810 driver
 XCOMM
@@ -903,7 +901,7 @@ ServerTarget(Xi810,$(I810DIRS),$(I810OBJS), \
 #endif /* Xi810Server */
 
 
-#if XSis530Server
+#if defined(XSis530Server) && XSis530Server
 XCOMM
 XCOMM server with Keith's SiS 530 driver
 XCOMM
@@ -929,7 +927,7 @@ ServerTarget(Xsis530,$(SIS530DIRS),$(SIS530OBJS), \
 	$(SIS530LIBS),$(SIS530SYSLIBS))
 #endif /* XSis530Server */
 
-#if XTrioServer
+#if defined(XTrioServer) && XTrioServer
 XCOMM
 XCOMM server with Keith's S3 Trio driver
 XCOMM
@@ -955,7 +953,7 @@ ServerTarget(Xtrio,$(TRIODIRS),$(TRIOOBJS), \
 	$(TRIOLIBS),$(TRIOSYSLIBS))
 #endif /* XTrioServer */
 
-#if XipaqServer
+#if defined(XipaqServer) && XipaqServer
 XCOMM
 XCOMM server with Alan's HP VGA Out PCMCIA driver & fbdev
 XCOMM
@@ -989,7 +987,7 @@ ServerTarget(Xipaq,$(IPAQDIRS),$(IPAQOBJS), \
 	$(IPAQLIBS),$(IPAQSYSLIBS))
 #endif /* XIPAQServer */
 
-#if XTS300Server
+#if defined(XTS300Server) && XTS300Server
 XCOMM
 XCOMM server with Keith's S3 Trio and SiS530 driver for the TS300/TS400
 XCOMM
@@ -1021,7 +1019,7 @@ ServerTarget(Xts300,$(TS300DIRS),$(TS300OBJS), \
 	$(TS300LIBS),$(TS300SYSLIBS))
 #endif /* XTS300Server */
 
-#if XItsyServer
+#if defined(XItsyServer) && XItsyServer
 XCOMM
 XCOMM server with Keith's FB driver only
 XCOMM
@@ -1046,7 +1044,7 @@ ServerTarget(Xitsy,$(ITSYDIRS),$(ITSYOBJS), \
 	$(ITSYLIBS),$(ITSYSYSLIBS))
 #endif /* XItsyServer */
 
-#if XvesaServer
+#if defined(XvesaServer) && XvesaServer
 XCOMM
 XCOMM server with vesa driver only based on Keith's server
 XCOMM
@@ -1077,7 +1075,7 @@ KDRIVEDIRS=$(KDDIRS) $(FBDEVDIR) $(SAVAGEDIR) $(TRIDENTDIR) $(I810DIR) \
 	   $(VESADIR) $(PCMCIADIR) $(IPAQDIR) $(MACH64DIR) $(CHIPSDIR)
 #endif	/* KDriveXServer */
 
-#if XprtServer
+#if defined(XprtServer) && XprtServer
 XCOMM
 XCOMM Print Server
 XCOMM
@@ -1112,7 +1110,7 @@ ServerTarget(Xprt,$(XPSUBDIRS),$(XPOBJS), \
 	$(XPLIBS) $(LOADABLEEXTS) $(LIBCWRAPPER),$(XPSYSLIBS))
 #endif	/* XprtServer */
 
-#if XnestServer
+#if defined(XnestServer) && XnestServer
 XCOMM
 XCOMM Server with Xlib-based ddx
 XCOMM
@@ -1144,7 +1142,7 @@ ServerTarget(Xnest,$(XNESTDIRS),$(XNESTOBJS), \
 #endif /* XnestServer */
 
 
-#if XnonServer
+#if defined(XnonServer) && XnonServer
 XCOMM
 XCOMM non server, just compile sources for build test
 XCOMM
@@ -1159,7 +1157,7 @@ Xnon: $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DEPDIRS)
 #endif /* XnonServer */
 
 
-#if XVirtualFramebufferServer
+#if defined(XVirtualFramebufferServer) && XVirtualFramebufferServer
 XCOMM
 XCOMM server with Virtual (malloced) framebuffer
 XCOMM
@@ -1194,7 +1192,7 @@ ServerTarget(Xvfb,$(XVFBDIRS),$(XVFBOBJS), \
 #endif /* XVirtualFramebufferServer */
 
 
-#if XWinServer
+#if defined(XWinServer) && XWinServer
 XCOMM
 XCOMM X Server for MS Windows
 XCOMM
@@ -1259,7 +1257,7 @@ ServerTarget(XWin,$(XWINDIRS),$(XWINOBJS), \
 VPATH = $(BUILDLIBDIR):$(USRLIBDIR)
 #endif
 
-#if XDarwinServer
+#if defined(XDarwinServer) && XDarwinServer
 XCOMM
 XCOMM X Darwin server for Mac OS X / Darwin
 XCOMM
@@ -1351,8 +1349,7 @@ SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFBDIRS) $(IPLANDIRS) $(ILBMDIR) $(AFBDIR) \
           $(LMFCFBDIR) $(DDXDIRS) $(FBDIR) $(KDRIVEDIRS) $(MIEXTDIRS) \
 	  $(XWINPARSERDIR)
 
-#if  defined(ServerToInstall) && \
-    !defined(OS2Architecture)
+#if  defined(ServerToInstall) && !defined(OS2Architecture)
 install::
 	-(cd $(DESTDIR)$(BINDIR); $(RM) X; $(LN) ServerToInstall X)
 #endif

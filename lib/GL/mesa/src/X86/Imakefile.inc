@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile.inc,v 1.3 2002/02/22 21:32:57 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile.inc,v 1.4tsi Exp $
 
 #ifndef MesaX86BuildDir
 #define MesaX86BuildDir $(GLXLIBSRC)/mesa/src/X86/
@@ -37,7 +37,7 @@ MESA_X86_OBJS = $(MESAX86BUILDDIR)common_x86.o \
 		$(MESAX86BUILDDIR)x86_xform3.o \
 		$(MESAX86BUILDDIR)x86_xform4.o
 
-#if DoSharedLib
+#if defined(DoSharedLib) && DoSharedLib
 MESA_X86_UOBJS = $(MESAX86BUILDDIR)unshared/common_x86.o \
 		$(MESAX86BUILDDIR)common_x86_asm.o \
 		$(MESAX86BUILDDIR)unshared/x86.o \
@@ -113,7 +113,7 @@ MESA_3DNOW_OBJS = $(MESAX86BUILDDIR)3dnow.o \
 		$(MESAX86BUILDDIR)3dnow_xform3.o \
 		$(MESAX86BUILDDIR)3dnow_xform4.o
 
-#ifdef DoSharedLib
+#if defined(DoSharedLib) && DoSharedLib
 MESA_3DNOW_UOBJS = $(MESAX86BUILDDIR)unshared/3dnow.o \
 		$(MESAX86BUILDDIR)3dnow_normal.o \
 		$(MESAX86BUILDDIR)3dnow_vertex.o \
@@ -171,7 +171,7 @@ MESA_SSE_OBJS = $(MESAX86BUILDDIR)sse.o \
 		$(MESAX86BUILDDIR)sse_xform3.o \
 		$(MESAX86BUILDDIR)sse_xform4.o
 
-#if DoSharedLib
+#if defined(DoSharedLib) && DoSharedLib
 MESA_SSE_UOBJS = $(MESAX86BUILDDIR)unshared/sse.o \
 		$(MESAX86BUILDDIR)sse_normal.o \
 		$(MESAX86BUILDDIR)sse_vertex.o \

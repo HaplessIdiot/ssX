@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/swrast_setup/Imakefile,v 1.1 2002/02/22 21:45:06 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/swrast_setup/Imakefile.inc,v 1.1tsi Exp $
 
 #ifndef MesaSwrastSetupBuildDir
 #define MesaSwrastSetupBuildDir $(GLXLIBSRC)/mesa/src/swrast_setup/
@@ -20,7 +20,7 @@ LinkSourceFile(ss_vb.c, $(MESASRCDIR)/src/swrast_setup)
 		       $(MESASWRSETUPDIR)ss_triangle.o \
 		       $(MESASWRSETUPDIR)ss_vb.o
 
-#if DoSharedLib
+#if defined(DoSharedLib) && DoSharedLib
 MESA_SWR_SETUP_UOBJS = $(MESASWRSETUPDIR)unshared/ss_context.o \
 		       $(MESASWRSETUPDIR)unshared/ss_triangle.o \
 		       $(MESASWRSETUPDIR)unshared/ss_vb.o

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.132tsi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.133tsi Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -118,6 +118,13 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef UseEtcX11
 #define UseEtcX11		YES
+#endif
+#ifndef UseInstalledX11
+# define UseInstalledX11        NO
+#endif
+#ifdef UseInstalled
+# undef UseInstalledX11
+# define UseInstalledX11        YES
 #endif
 #if NothingOutsideProjectRoot
 #undef UseEtcX11
@@ -258,6 +265,10 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #endif
 
+#ifndef CompressManPages
+#define CompressManPages NO
+#endif
+
 #ifndef HasGroff
 #define HasGroff NO
 #endif
@@ -323,6 +334,13 @@ XCOMM the platform-specific parameters - edit site.def to change
 
 #ifndef HasLargeTmp
 #define HasLargeTmp		NO	/* be paranoid */
+#endif
+
+#ifndef HasMotif
+#define HasMotif		NO
+#endif
+#ifndef HasBSDAuth
+#define HasBSDAuth		NO
 #endif
 
 #ifndef HasBSD44Sockets
@@ -408,6 +426,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef HasGetpeereid
 #define HasGetpeereid		NO
+#endif
+#ifndef NoStrstr
+#define NoStrstr		NO
 #endif
 /* byte-order defaults */
 #ifndef ByteOrder
@@ -845,11 +866,6 @@ TCLIBDIR = TclLibDir
 #define ProjectManDefs -D__projectroot__=$(PROJECTROOT)
 #endif
 
-
-#ifndef CompressManPages
-#define CompressManPages NO
-#endif
-
 #ifndef CompressManCmd
 #define CompressManCmd gzip -n
 #endif
@@ -1257,6 +1273,9 @@ TCLIBDIR = TclLibDir
 #define NdbmDefines /**/
 #endif
 #endif
+#ifndef HasLdRunPath
+#define HasLdRunPath NO
+#endif
 #ifndef LdPreLib
 # if !defined(UseInstalled)
 #  define LdPreLib -L$(BUILDLIBDIR)
@@ -1349,7 +1368,7 @@ TCLIBDIR = TclLibDir
 #endif
 #endif
 #ifndef DependDefines
-# if UseCCMakedepend || UseGccMakedepend
+# if UseCCMakeDepend || UseGccMakeDepend
 #  define DependDefines /**/
 # else
 #  define DependDefines -DUSE_MAKEDEPEND
@@ -2073,11 +2092,17 @@ CleanSubdirs($(SUBDIRS))
 #endif
 
 /* must be after all install.man rules that install anything */
+#ifndef MakeManKeywords
+#define MakeManKeywords		NO
+#endif
 #if MakeManKeywords		/* typically only at top level */
 install.man:: man_keywords
 #endif
 
 /* must be after all install.man rules that install anything */
+#ifndef MakeHtmlManIndex
+#define MakeHtmlManIndex	NO
+#endif
 #if MakeHtmlManIndex		/* typically only at top level */
 install.man:: html_index
 #endif

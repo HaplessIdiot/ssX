@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/array_cache/Imakefile,v 1.1 2002/02/22 21:32:57 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/array_cache/Imakefile.inc,v 1.1tsi Exp $
 
 #ifndef MesaACBuildDir
 #define MesaACBuildDir $(GLXLIBSRC)/mesa/src/array_cache/
@@ -17,7 +17,7 @@ LinkSourceFile(ac_import.c, $(MESASRCDIR)/src/array_cache)
   MESA_AC_OBJS = $(MESAACBUILDDIR)ac_context.o \
 		 $(MESAACBUILDDIR)ac_import.o
 
-#if DoSharedLib
+#if defined(DoSharedLib) && DoSharedLib
  MESA_AC_UOBJS = $(MESAACBUILDDIR)unshared/ac_context.o \
 		 $(MESAACBUILDDIR)unshared/ac_import.o
 #else

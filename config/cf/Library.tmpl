@@ -19,7 +19,30 @@ XCOMM $Xorg: Library.tmpl,v 1.3 2000/08/17 19:41:46 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/config/cf/Library.tmpl,v 3.14 2001/07/25 14:30:03 alanh Exp $
+XCOMM $XFree86: xc/config/cf/Library.tmpl,v 3.17tsi Exp $
+
+#ifndef DoNormalLib
+#define DoNormalLib NO
+#endif
+#ifndef DoSharedLib
+#define DoSharedLib NO
+#endif
+#ifndef DoDebugLib
+#define DoDebugLib NO
+#endif
+#ifndef DoProfileLib
+#define DoProfileLib NO
+#endif
+#ifndef DoExtraLib
+#define DoExtraLib NO
+#endif
+
+#ifndef HasSharedData
+#define HasSharedData NO
+#endif
+#ifndef HugeLibrary
+#define HugeLibrary NO
+#endif
 
 #ifndef LibraryCplusplusOptions
 # if DoSharedLib && defined(SharedLibraryCplusplusOptions)
@@ -199,10 +222,6 @@ LIB_MT_DEFINES = LibraryMTDefines
 # define _SharedObjCompile(options) NormalLibObjCompile(options)
 # define _SharedObjCplusplusCompile(options) NormalLibObjCplusplusCompile(options)
 #endif
-#endif
-
-#ifndef DoExtraLib
-#define DoExtraLib NO
 #endif
 
 #ifndef LibInstallBuild
