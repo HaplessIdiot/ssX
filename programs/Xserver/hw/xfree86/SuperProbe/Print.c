@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.67 1999/09/25 14:37:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.69 1999/11/19 13:54:15 hohndel Exp $ */
 
 #include "Probe.h"
 
@@ -206,6 +206,9 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "Silicon Integrated Systems 5597/5598",
 		  "Silicon Integrated Systems 530/620",
 		  "Silicon Integrated Systems 6326 AGP",
+		  "Silicon Integrated Systems 300 AGP",
+		  "Silicon Integrated Systems 630 AGP",
+		  "Silicon Integrated Systems 540 AGP",
 		},
 /* ARK */	{ "ARK Logic (chipset unknown)",
 		  "ARK Logic ARK1000VL",

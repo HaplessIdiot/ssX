@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/14 1996/10/27 11:03:56 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.33 1999/12/27 00:39:40 robin Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.34 2000/01/21 02:29:58 dawes Exp $
 
 #if (defined(SVR3Architecture) || defined(SVR4Architecture) || defined(SCOArchitecture)) && !defined(DguxArchitecture)
 # define OSModule OS_SYSV
@@ -52,6 +52,10 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.33 1999/
 #endif
 #if defined(i386BsdArchitecture)
 # define OSModule OS_386BSD
+#endif
+#if defined(AlphaBsdArchitecture)
+# define OSModule OS_386BSD
+  SYS_LIBRARIES = -lio
 #endif
 #if defined(MinixArchitecture)
 # define OSModule OS_Minix

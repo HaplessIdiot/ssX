@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.31 1999/12/27 03:35:59 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.32 2000/02/11 22:36:01 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -109,6 +109,13 @@ struct memAccess ioMemInfo = { CONSOLE_GET_IO_INFO, NULL, NULL,
 #define MAP_FAILED ((caddr_t)-1)
 #endif
 
+#ifdef __alpha__
+extern u_int64_t dense_base(void);
+#define BUS_BASE	dense_base()
+#else
+#define BUS_BASE	0L
+#endif
+
 /***************************************************************************/
 /* Video Memory Mapping section                                            */
 /***************************************************************************/
@@ -123,6 +130,10 @@ static int  devMemFd = -1;
 
 static pointer mapVidMem(int, unsigned long, unsigned long);
 static void unmapVidMem(int, pointer, unsigned long);
+#ifdef __alpha__
+static pointer mapVidMemSparse(int, unsigned long, unsigned long);
+static void unmapVidMemSparse(int, pointer, unsigned long);
+#endif
 #ifdef HAS_MTRR_SUPPORT
 static pointer setWC(int, unsigned long, unsigned long, Bool, MessageType);
 static void undoWC(int, pointer);
@@ -148,7 +159,7 @@ checkDevMem(Bool warn)
 	{
 	    /* Try to map a page at the VGA address */
 	    base = mmap((caddr_t)0, 4096, PROT_READ|PROT_WRITE,
-				 MAP_FLAGS, fd, (off_t)0xA0000);
+				 MAP_FLAGS, fd, (off_t)0xA0000 + BUS_BASE);
 	
 	    if (base != MAP_FAILED)
 	    {
@@ -231,6 +242,10 @@ xf86OSInitVidMem(VidMemInfoPtr pVidMem)
 	pVidMem->mapMem = armMapVidMem;
 	pVidMem->unmapVidMem = armUnmapVidMem;
 #endif
+#ifdef __alpha__
+	pVidMem->mapMemSparse = mapVidMemSparse;
+	pVidMem->unmapMemSparse = unmapVidMemSparse;
+#endif
 #ifdef HAS_MTRR_SUPPORT
 	if (useDevMem) {
 		if (cleanMTRR()) {
@@ -249,6 +264,10 @@ mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
 
 	checkDevMem(FALSE);
 
+#ifdef __alpha__
+	Base = Base & ((1L<<32) - 1);
+#endif
+
 	if (useDevMem)
 	{
 	    if (devMemFd < 0) 
@@ -257,7 +276,7 @@ mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
 			   DEV_MEM, strerror(errno));
 	    }
 	    base = mmap((caddr_t)0, Size, PROT_READ|PROT_WRITE,
-				 MAP_FLAGS, devMemFd, (off_t)Base);
+				 MAP_FLAGS, devMemFd, (off_t)Base + BUS_BASE);
 	    if (base == MAP_FAILED)
 	    {
 		FatalError("%s: could not mmap %s [s=%x,a=%x] (%s)\n",
@@ -279,11 +298,14 @@ mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
 	}
 	base = mmap(0, Size, PROT_READ|PROT_WRITE, MAP_FLAGS,
 			     xf86Info.screenFd,
-#ifdef __mips__
-			     (unsigned long)Base);
+#if defined(__alpha__)
+			     (unsigned long)Base + BUS_BASE
+#elif defined(__mips__)
+			     (unsigned long)Base
 #else
-			     (unsigned long)Base - 0xA0000);
+			     (unsigned long)Base - 0xA0000
 #endif
+	    );
 	if (base == MAP_FAILED)
 	{
 	    FatalError("xf86MapVidMem: Could not mmap /dev/vga (%s)\n",
@@ -319,8 +341,8 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 	mlen = (Offset + Len + psize - 1) & ~(psize - 1);
 	/* Base is assumed to be page-aligned. */
 	ptr = (unsigned char *)mmap((caddr_t)0, mlen, PROT_READ,
-					MAP_SHARED, devMemFd, (off_t)Base);
-	if ((int)ptr == -1)
+					MAP_SHARED, devMemFd, (off_t)Base+BUS_BASE);
+	if ((long)ptr == -1)
 	{
 		xf86Msg(X_WARNING, "xf86ReadBIOS: %s mmap failed (%s)\n",
 			DEV_MEM, strerror(errno));
@@ -620,6 +642,25 @@ xf86DisableIO()
 
 #endif /* USE_ARC_MMAP */
 
+#if defined(__FreeBSD__) && defined(__alpha__)
+
+extern int ioperm(unsigned long from, unsigned long num, int on);
+
+void
+xf86EnableIO()
+{
+	ioperm(0, 65536, TRUE);
+	return;
+}
+
+void
+xf86DisableIO()
+{
+	return;
+}
+
+#endif /* __FreeBSD__ && __alpha__ */
+
 /***************************************************************************/
 /* Interrupt Handling section                                              */
 /***************************************************************************/
@@ -628,7 +669,7 @@ Bool
 xf86DisableInterrupts()
 {
 
-#if !defined(__mips__) && !defined(__arm32__)
+#if !defined(__mips__) && !defined(__arm32__) && !defined(__alpha__)
 #ifdef __GNUC__
 	__asm__ __volatile__("cli");
 #else 
@@ -643,7 +684,7 @@ void
 xf86EnableInterrupts()
 {
 
-#if !defined(__mips__) && !defined(__arm32__)
+#if !defined(__mips__) && !defined(__arm32__) && !defined(__alpha__)
 #ifdef __GNUC__
 	__asm__ __volatile__("sti");
 #else 
@@ -1205,3 +1246,104 @@ undoWC(int screenNum, pointer list)
 }
 
 #endif /* HAS_MTRR_SUPPORT */
+
+#if defined(__FreeBSD__) && defined(__alpha__)
+
+extern void *map_memory(u_int32_t address, u_int32_t size);
+extern void unmap_memory(void *handle, u_int32_t size);
+extern u_int8_t readb(void *handle, u_int32_t offset);
+extern u_int16_t readw(void *handle, u_int32_t offset);
+extern u_int32_t readl(void *handle, u_int32_t offset);
+extern void writeb(void *handle, u_int32_t offset, u_int8_t val);
+extern void writew(void *handle, u_int32_t offset, u_int16_t val);
+extern void writel(void *handle, u_int32_t offset, u_int32_t val);
+extern void writeb_nb(void *handle, u_int32_t offset, u_int8_t val);
+extern void writew_nb(void *handle, u_int32_t offset, u_int16_t val);
+extern void writel_nb(void *handle, u_int32_t offset, u_int32_t val);
+
+static pointer
+mapVidMemSparse(int ScreenNum, unsigned long Base, unsigned long Size)
+{
+	return (pointer) map_memory((u_int32_t) (u_int64_t) Base, Size);
+}
+
+static void
+unmapVidMemSparse(int ScreenNum, pointer Base, unsigned long Size)
+{
+	unmap_memory(Base, Size);
+}
+
+static int
+readMmio8(pointer Base, unsigned long Offset)
+{
+	return readb(Base, Offset);
+}
+
+static int
+readMmio16(pointer Base, unsigned long Offset)
+{
+	return readw(Base, Offset);
+}
+
+static int
+readMmio32(pointer Base, unsigned long Offset)
+{
+	return readl(Base, Offset);
+}
+
+static void
+writeMmio8(int Value, pointer Base, unsigned long Offset)
+{
+	writeb(Base, Offset, Value);
+}
+
+static void
+writeMmio16(int Value, pointer Base, unsigned long Offset)
+{
+	writew(Base, Offset, Value);
+}
+
+static void
+writeMmio32(int Value, pointer Base, unsigned long Offset)
+{
+	writel(Base, Offset, Value);
+}
+
+static void
+writeMmioNB8(int Value, pointer Base, unsigned long Offset)
+{
+	writeb_nb(Base, Offset, Value);
+}
+
+static void
+writeMmioNB16(int Value, pointer Base, unsigned long Offset)
+{
+	writew_nb(Base, Offset, Value);
+}
+
+static void
+writeMmioNB32(int Value, pointer Base, unsigned long Offset)
+{
+	writel_nb(Base, Offset, Value);
+}
+
+void (*xf86WriteMmio8)(int Value, pointer Base, unsigned long Offset) 
+     = writeMmio8;
+void (*xf86WriteMmio16)(int Value, pointer Base, unsigned long Offset)
+     = writeMmio16;
+void (*xf86WriteMmio32)(int Value, pointer Base, unsigned long Offset)
+     = writeMmio32;
+void (*xf86WriteMmioNB8)(int Value, pointer Base, unsigned long Offset) 
+     = writeMmioNB8;
+void (*xf86WriteMmioNB16)(int Value, pointer Base, unsigned long Offset)
+     = writeMmioNB16;
+void (*xf86WriteMmioNB32)(int Value, pointer Base, unsigned long Offset)
+     = writeMmioNB32;
+int  (*xf86ReadMmio8)(pointer Base, unsigned long Offset) 
+     = readMmio8;
+int  (*xf86ReadMmio16)(pointer Base, unsigned long Offset)
+     = readMmio16;
+int  (*xf86ReadMmio32)(pointer Base, unsigned long Offset)
+     = readMmio32;
+
+#endif /* __FreeBSD__ && __alpha__ */

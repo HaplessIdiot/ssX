@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.49 2000/02/08 13:13:03 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.50 2000/02/08 17:19:06 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -135,7 +135,9 @@ extern int testinx(unsigned short, unsigned char);
 
 #ifdef __GNUC__
 
-#if defined(linux) && defined(__alpha__)
+#if (defined(linux) || defined(__FreeBSD__)) && defined(__alpha__)
+
+#ifdef linux
 /* for Linux on Alpha, we use the LIBC _inx/_outx routines */
 /* note that the appropriate setup via "ioperm" needs to be done */
 /*  *before* any inx/outx is done. */
@@ -182,6 +184,22 @@ inl(unsigned short port)
   return _inl(port);
 }
 
+#endif /* linux */
+
+#if defined(__FreeBSD__) && !defined(DO_PROTOTYPES)
+
+/* for FreeBSD on Alpha, we use the libio inx/outx routines */
+/* note that the appropriate setup via "ioperm" needs to be done */
+/*  *before* any inx/outx is done. */
+
+extern void outb(unsigned int port, unsigned char val);
+extern void outw(unsigned int port, unsigned short val);
+extern void outl(unsigned int port, unsigned int val);
+extern unsigned char inb(unsigned int port);
+extern unsigned short inw(unsigned int port);
+extern unsigned int inl(unsigned int port);
+
+#endif /* __FreeBSD__ && !DO_PROTOTYPES */
 
 /*
  * inline functions to do unaligned accesses

@@ -4,7 +4,7 @@
   for Alpha Linux
 *******************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/SlowBcopy.c,v 1.2 1998/07/25 16:56:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/SlowBcopy.c,v 1.3 1999/03/28 15:32:59 dawes Exp $ */
  
 /* 
  *   Create a dependency that should be immune from the effect of register
@@ -44,6 +44,8 @@ xf86SlowBcopy(unsigned char *src, unsigned char *dst, int len)
  * Martin Ostermann (ost@comnets.rwth-aachen.de) - Apr.-Sep. 1996
  */
 
+#ifdef linux
+
 unsigned long _bus_base(void);
 
 #ifdef TEST_JENSEN_CODE /* define to test the Sparse addressing on a non-Jensen */
@@ -52,10 +54,19 @@ unsigned long _bus_base(void);
 #define SPARSE (7)
 #endif
 
+#define isJensen() (!_bus_base())
+
+#else
+
+#define isJensen() 0
+#define SPARSE 0
+
+#endif
+
 void
 xf86SlowBCopyFromBus(unsigned char *src, unsigned char *dst, int count)
 {
-    if (!_bus_base()) /* Jensen */
+    if (isJensen())
     {
 	unsigned long addr;
 	long result;
@@ -77,7 +88,7 @@ xf86SlowBCopyFromBus(unsigned char *src, unsigned char *dst, int count)
 void
 xf86SlowBCopyToBus(unsigned char *src, unsigned char *dst, int count)
 {
-    if (!_bus_base()) /* Jensen */
+    if (isJensen())
     {
 	unsigned long addr;
 

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel2.c,v 1.1 1999/03/21 07:35:19 dawes Exp $ */
 
 /*
  *
@@ -11,12 +11,7 @@
  *	Xavier Ducoin <x.ducoin@lectra.com>
  */
 
-#if 0
-#define PDEBUG(arg)  arg 
-#else
-#define PDEBUG(arg) 
-#endif
-
+/*#define DEBUG*/
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
@@ -28,6 +23,7 @@
 
 #include "sis_regs2.h"
 #include "sis.h"
+
 
 static void SiS2Sync(ScrnInfoPtr pScrn);
 static void SiS2SetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
@@ -61,13 +57,14 @@ static void SiS2SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno);
 
 
 
+
 static void
 SiS2InitializeAccelerator(ScrnInfoPtr pScrn)
 {
 }
 
 Bool
-SiS2AccelInit(ScreenPtr pScreen)
+SiS530AccelInit(ScreenPtr pScreen)
 {
     XAAInfoRecPtr infoPtr;
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
@@ -76,7 +73,7 @@ SiS2AccelInit(ScreenPtr pScreen)
     int offset=0;
     int OffscreenAvailable, BLTPatternOffscreenSize;
 
-    pSiS->AccelInfoRec = infoPtr = XAACreateInfoRec();
+    pSiS->AccelInfoPtr = infoPtr = XAACreateInfoRec();
     if (!infoPtr) return FALSE;
 
     SiS2InitializeAccelerator(pScrn);
@@ -461,6 +458,7 @@ SiS2SubsequentColorExpandScanline(ScrnInfoPtr pScrn,
     sisBLTWAIT;
     pSiS->DstY++;
 }
+
 
 
 

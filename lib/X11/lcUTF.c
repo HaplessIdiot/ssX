@@ -25,7 +25,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
   Author: Hiromu Inukai (inukai@Japan.Sun.COM) SunSoft, inc.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/lcUTF.c,v 3.12 1999/06/07 07:33:21 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUTF.c,v 3.13 2000/02/12 02:54:14 dawes Exp $ */
 
 /*
  * An UTF-1 locale loader.
@@ -36,6 +36,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
 
 #ifdef X_LOCALE
 
+#include "Xlibint.h"
 #include "XlcPubI.h"
 #include "XlcUTF.h"
 

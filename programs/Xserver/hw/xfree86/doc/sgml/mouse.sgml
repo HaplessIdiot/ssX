@@ -8,7 +8,7 @@
 <date>9 February 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/mouse.sgml,v 1.7 1999/08/28 10:43:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/mouse.sgml,v 1.8 2000/02/10 22:33:36 dawes Exp $
 </ident>
 
 <toc>
@@ -98,23 +98,23 @@ of buttons (see below).
                                 Protocol Types
                 serial     PnP     BusMouse    PS/2   Extended PS/2
 OS platforms   protocols  serial   protocol  protocol  protocols
-                          "Auto"  "BusMouse"  "PS/2"   "xxxPS/2"
---------------------------------------------------------------------
-BSD/OS            Ok        ?         ?         ?         ?
-FreeBSD           Ok        Ok        Ok        Ok        SP*1
-FreeBSD(98)       Ok        ?         Ok        NA        NA
-Interactive Unix  Ok        NA        ?*1       ?*1       NA
-Linux             Ok        Ok        Ok        Ok        Ok
-Linux/98          Ok        ?         Ok        NA        NA
-LynxOS            Ok        NA        Ok        Ok        NA
-NetBSD            Ok        Ok        Ok        SP*1      SP*1
-NetBSD/pc98       Ok        ?         Ok        NA        NA
-OpenBSD           Ok        Ok        Ok        Ok*1      OK*1
-OS/2              SP*2      SP*2      SP*2      SP*2      SP*2
-SCO               Ok        ?         SP*1      SP*1      NA
-Solaris 2.x       Ok        NA*1      ?*1       Ok        Ok
-SVR4              Ok        NA*1      SP*1      SP*1      NA
-PANIX             Ok        ?         SP*1      SP*1      NA
+                          "Auto"  "BusMouse"  "PS/2"   "xxxPS/2"    USB
+-------------------------------------------------------------------------
+BSD/OS            Ok        ?         ?         ?         ?          ?
+FreeBSD           Ok        Ok        Ok        Ok        SP*1       SP*1
+FreeBSD(98)       Ok        ?         Ok        NA        NA         ?
+Interactive Unix  Ok        NA        ?*1       ?*1       NA         ?
+Linux             Ok        Ok        Ok        Ok        Ok         ?
+Linux/98          Ok        ?         Ok        NA        NA         ?
+LynxOS            Ok        NA        Ok        Ok        NA         ?
+NetBSD            Ok        Ok        Ok        SP*1      SP*1       SP*1
+NetBSD/pc98       Ok        ?         Ok        NA        NA         NA
+OpenBSD           Ok        Ok        Ok        Ok*1      Ok*1       Ok*1
+OS/2              SP*2      SP*2      SP*2      SP*2      SP*2       ?
+SCO               Ok        ?         SP*1      SP*1      NA         ?
+Solaris 2.x       Ok        NA*1      ?*1       Ok        Ok         ?
+SVR4              Ok        NA*1      SP*1      SP*1      NA         ?
+PANIX             Ok        ?         SP*1      SP*1      NA         ?
 
 Ok: support is available,  NA: not available, ?: untested or unknown.
 SP: support is available in a different form
@@ -197,6 +197,9 @@ The <tt>"wsmouse"</tt> protocol introduced in NetBSD
 compiled on NetBSD 1.4 to have support 
 for it though. Use <tt>"/dev/wsmouse0"</tt> for the device. Refer to the 
 <em>wsmouse(4)</em> manual page for kernel configuration informations.
+<p>
+This driver also provides support for USB mices. See the
+<em>ums(4)</em> manual page for details. 
 
 <sect1>NetBSD/pc98 <p>
 The PS/2 mouse is not supported.
@@ -219,6 +222,11 @@ There is also a cooked PS/2 mouse device driver <tt>/dev/pms0</tt>
 which emulates the bus mouse.  Specify the <tt>"BusMouse"</tt>
 protocol for any PS/2 mouse regardless of the brand of the mouse when
 using this device.
+<p>
+XFree86 3.3.6 support USB mices on OpenBSD 2.6 and later though the
+generic Human Interface Device (hid) <tt>/dev/uhid*</tt>. Select the
+<tt>"usb"</tt> protocol and the <tt>/dev/uhid*</tt> instance
+corresponding to your mouse as the device name.
 
 <sect1>OS/2 <p>
 XFree86/OS2 always uses the native mouse driver of the operating system
@@ -538,6 +546,18 @@ PS/2 mouse detection:
 	Option	"Protocol"	"Auto"
 </verb>
 
+To use this mouse as the USB device and the OS supports the generic
+HID protocol:
+<verb>
+	Option	"Protocol"	"usb"
+</verb>
+
+To use this mouse as the USB device and the OS supports automatic
+mouse detection:
+<verb>
+	Option	"Protocol"	"Auto"
+</verb>
+
 <sect1>Kensington Thinking Mouse (serial, PS/2) <p>
 This mouse has four buttons.
 Thinking Mouse supports the PnP COM device specification.
@@ -647,6 +667,18 @@ initialization (the wheel and the side buttons won't work):
 
 To use this mouse as the PS/2 device and the OS supports automatic
 PS/2 mouse detection:
+<verb>
+	Option	"Protocol"	"Auto"
+</verb>
+
+To use this mouse as the USB device and the OS supports the generic
+HID protocol:
+<verb>
+	Option	"Protocol"	"usb"
+</verb>
+
+To use this mouse as the USB device and the OS supports automatic
+mouse detection:
 <verb>
 	Option	"Protocol"	"Auto"
 </verb>
@@ -852,6 +884,18 @@ initialization (the wheels won't work):
 
 To use this mouse as the PS/2 device and the OS supports automatic
 PS/2 mouse detection:
+<verb>
+	Option	"Protocol"	"Auto"
+</verb>
+
+To use this mouse as the USB device and the OS supports the generic
+HID protocol:
+<verb>
+	Option	"Protocol"	"usb"
+</verb>
+
+To use this mouse as the USB device and the OS supports automatic
+mouse detection:
 <verb>
 	Option	"Protocol"	"Auto"
 </verb>

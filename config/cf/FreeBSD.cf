@@ -2,7 +2,7 @@ XCOMM platform:  $TOG: FreeBSD.cf /main/21 1997/10/05 20:42:34 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.87 2000/01/25 18:37:28 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.88 2000/01/31 19:33:15 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		DefaultToElfFormat
@@ -302,7 +302,12 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # define AsmDefines		AsmElfDefines
 #endif
 
+#ifdef i386Architecture
 #define ServerExtraDefines GccGasOption XFree86ServerDefines
+#endif
+#ifdef AlphaArchitecture
+#define ServerExtraDefines GccGasOption XFree86ServerDefines -D_XSERVER64
+#endif
 
 #define StandardDefines	-DCSRG_BASED
 
@@ -334,7 +339,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #ifdef i386Architecture
 # define OptimizedCDebugFlags DefaultGcc2i386Opt
 #else
-# define OptimizedCDebugFlags -O2
+# define OptimizedCDebugFlags -O
 #endif
 
 #ifndef PreIncDir
@@ -443,7 +448,14 @@ install.man::								@@\
 #define DlLibrary		/**/
 #endif
 
+#ifdef AlphaArchitecture
+#define IoLibrary		-lio
+#else
+#define IoLibrary		/**/
+#endif
 
+#define ServerExtraSysLibs	IoLibrary
+ 
 /*
  * A hack to work around an optimisation problem with the compiler on
  * FreeBSD 4.0-current in late 1999/early 2000.
@@ -454,6 +466,4 @@ install.man::								@@\
 
 #include <bsdLib.rules>
 
-#ifdef i386Architecture
 #include <xfree86.cf>
-#endif

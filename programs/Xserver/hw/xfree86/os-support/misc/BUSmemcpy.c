@@ -12,7 +12,7 @@ Thanks to Linus Torvalds for contributing this code.
 
 ****************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/BUSmemcpy.c,v 1.1.2.2 1998/07/18 17:53:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/BUSmemcpy.c,v 1.3 1999/12/03 19:17:44 eich Exp $ */
 
 #include "X.h"
 #include "xf86.h"
@@ -295,8 +295,6 @@ xf86MemToBus(unsigned char *dst, unsigned char *src, int len)
  * explicit compare against 0 (instead of just using the proper "blt reg, xx" or
  * "bge reg, xx"). I hope alpha-gcc will be fixed to notice this eventually..
  */
-
-#include <linux/types.h>
 
 /*
  * This should be done in one go with ldq_u*2/mask/stq_u. Do it

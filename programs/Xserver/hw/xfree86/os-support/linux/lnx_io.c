@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.12 1999/12/15 02:08:01 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.14 2000/02/08 13:13:30 eich Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
@@ -174,6 +174,8 @@ char rad;
   if(KIOCSRATE_ioctl_ok(rate, delay))	/* sparc? */
     return;
 
+  if (xf86IsPc98())
+    return;
 
 #if defined(__alpha__) || defined (__i386__) /* only these arches have an ISA bus */
   /* The ioport way */

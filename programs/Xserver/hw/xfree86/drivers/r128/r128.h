@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.h,v 1.2 2000/01/22 21:35:52 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.h,v 1.3 2000/02/12 03:39:55 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -37,7 +37,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _R128_H_
 #define _R128_H_
 
-#define R128_DEBUG    0		/* Turn on debugging output                */
+#define R128_DEBUG    1		/* Turn on debugging output                */
 #define R128_TIMEOUT  2000000	/* Fall out of wait loops after this count */
 #define R128_MMIOSIZE 0x80000
 
@@ -146,6 +146,8 @@ typedef struct {
     PCITAG            PciTag;
     int               Chipset;
     Bool              Primary;
+
+    Bool              FBDev;
     
     unsigned long     LinearAddr; /* Frame buffer physical address           */
     unsigned long     MMIOAddr;	  /* MMIO region physical address            */
@@ -205,6 +207,7 @@ extern int         INPLL(ScrnInfoPtr pScrn, int addr);
 extern void        R128WaitForVerticalSync(ScrnInfoPtr pScrn);
 
 extern Bool        R128AccelInit(ScreenPtr pScreen);
+extern void        R128EngineInit(ScrnInfoPtr pScrn);
 extern Bool        R128CursorInit(ScreenPtr pScreen);
 
 #endif

@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.70 1999/11/19 14:46:51 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.71 1999/12/27 00:39:40 robin Exp $ */
 
 /*
  * Includes
@@ -651,6 +651,9 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_SIS5597	SVGA_TYPE(V_SIS,6)	/* SiS 5597/5598	*/
 #define CHIP_SIS530	SVGA_TYPE(V_SIS,7)	/* SiS 530/620		*/
 #define CHIP_SIS6326	SVGA_TYPE(V_SIS,8)	/* SiS 6326		*/
+#define CHIP_SIS300	SVGA_TYPE(V_SIS,9)	/* SiS 300    		*/
+#define CHIP_SIS630	SVGA_TYPE(V_SIS,10)	/* SiS 630    		*/
+#define CHIP_SIS540	SVGA_TYPE(V_SIS,11)	/* SiS 540    		*/
 #define CHIP_MATROX_UNK	SVGA_TYPE(V_MATROX,0)	/* Matrox unknown	*/
 #define CHIP_MGA2085PX	SVGA_TYPE(V_MATROX,1)	/* Matrox Atlas		*/
 #define CHIP_MGA2064W	SVGA_TYPE(V_MATROX,2)	/* Matrox Millennium	*/

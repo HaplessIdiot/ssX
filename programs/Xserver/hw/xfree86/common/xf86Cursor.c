@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.21 1999/11/25 22:20:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.23 1999/11/26 02:26:09 mvojkovi Exp $ */
 /* $XConsortium: xf86Cursor.c /main/10 1996/10/19 17:58:23 kaleb $ */
 
 #define NEED_EVENTS
@@ -184,6 +184,7 @@ xf86ZoomViewport (ScreenPtr pScreen, int zoom)
 {
   ScrnInfoPtr   pScr = XF86SCRNINFO(pScreen);
   Bool tmp;
+  int px, py;
   
   if (pScr->zoomLocked)
     return;
@@ -231,6 +232,9 @@ xf86ZoomViewport (ScreenPtr pScreen, int zoom)
 
   if (pScr->AdjustFrame != NULL)
     (pScr->AdjustFrame)(pScr->scrnIndex, pScr->frameX0, pScr->frameY0, 0);
+
+  miPointerPosition(&px, &py);
+  xf86WarpCursor(pScr, px - pScr->frameX0, py - pScr->frameY0);
 }
 
 

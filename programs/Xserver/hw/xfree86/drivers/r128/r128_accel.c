@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_accel.c,v 1.3 2000/02/05 19:20:58 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_accel.c,v 1.4 2000/02/12 03:39:55 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -76,6 +76,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define R128_TRAPEZOIDS 0	/* Trapezoids don't work               */
 
 				/* X and server generic header files */
+#include "Xarch.h"
 #include "xf86.h"
 #include "xf86_ansic.h"
 #include "xf86_OSproc.h"
@@ -937,7 +938,7 @@ static void R128SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 #endif
 
 /* Initialize the acceleration hardware. */
-static void R128EngineInit(ScrnInfoPtr pScrn)
+void R128EngineInit(ScrnInfoPtr pScrn)
 {
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
@@ -1032,7 +1033,11 @@ Bool R128AccelInit(ScreenPtr pScreen)
 					   | BIT_ORDER_IN_BYTE_LSBFIRST);
 
 				/* Indirect CPU-To-Screen Color Expand */
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
     a->ScanlineCPUToScreenColorExpandFillFlags = 0;
+#else
+    a->ScanlineCPUToScreenColorExpandFillFlags = BIT_ORDER_IN_BYTE_MSBFIRST;
+#endif
     a->NumScanlineColorExpandBuffers   = 1;
     a->ScanlineColorExpandBuffers      = info->scratch_buffer;
 #if R128_IMAGEWRITE

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.48 2000/02/08 13:13:05 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.49 2000/02/11 22:35:53 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -351,6 +351,9 @@
 #define PCI_CHIP_SIS530		0x6306
 #define PCI_CHIP_SIS6326	0x6326
 #define PCI_CHIP_SIS7001	0x7001
+#define PCI_CHIP_SIS300		0x0300
+#define PCI_CHIP_SIS630		0x6300
+#define PCI_CHIP_SIS540		0x5300
 
 /* HP */
 #define PCI_CHIP_J2585A		0x1030
@@ -854,6 +857,9 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_SIS5597,	"5597",0},
 				{PCI_CHIP_SIS530,	"530",0},
 				{PCI_CHIP_SIS6326,	"6326",0},
+				{PCI_CHIP_SIS300,	"300",0},
+				{PCI_CHIP_SIS630,	"630",0},
+				{PCI_CHIP_SIS540,	"540",0},
 				{0x0000,		NULL,0}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
      {PCI_VENDOR_HP, {

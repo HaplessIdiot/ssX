@@ -23,10 +23,9 @@
  * used in advertising or otherwise to promote the sale, use or other dealings
  * in this Software without prior written authorization from Alan Hourihane.
  *
- * added SiS 6326/530/620 Dirk Hohndel <hohndel@XFree86.Org>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/SiS.c,v 3.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/SiS.c,v 3.5 1999/06/06 08:48:44 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -54,7 +53,7 @@ int *Chipset;
 	if (!NoPCI)
 	{
 	    while ((pcrp = pci_devp[i]) != (struct pci_config_reg *)NULL) {
-		if (pcrp->_vendor == PCI_VENDOR_SIS && pcrp->_status_command & 7)
+		if (pcrp->_vendor == PCI_VENDOR_SIS)
 		{
 			switch (pcrp->_device)
 			{
@@ -81,6 +80,15 @@ int *Chipset;
 				break;
 			case PCI_CHIP_SIS530:		/* 530/620 */
 				*Chipset = CHIP_SIS530;
+				break;
+			case PCI_CHIP_SIS300:		/* 300 */
+				*Chipset = CHIP_SIS300;
+				break;
+			case PCI_CHIP_SIS630:		/* 630 */
+				*Chipset = CHIP_SIS630;
+				break;
+			case PCI_CHIP_SIS540:		/* 540 */
+				*Chipset = CHIP_SIS540;
 				break;
 			default:
 				*Chipset = CHIP_SIS_UNK;
@@ -175,7 +183,11 @@ int Chipset;
 			Mem = 8192;
 			break;
 		}
-
+	case CHIP_SIS300:
+	case CHIP_SIS630:
+	case CHIP_SIS540:
+		Mem = ((rdinx(SEQ_IDX, 0x14) & 0x3F) + 1) * 1024;
+		break;
 	}
 	/* lock registers again */
 	wrinx(SEQ_IDX,0x05,save);

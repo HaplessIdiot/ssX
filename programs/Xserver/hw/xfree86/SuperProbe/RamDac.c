@@ -30,7 +30,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.34 1999/03/14 03:21:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.35 1999/03/21 07:34:54 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -1206,7 +1206,7 @@ int *RamDac;
 	}
 	else if (SVGA_VENDOR(Chipset) == V_SIS)
 	{
-	  if ((Chipset >= CHIP_SIS86C201) && (Chipset <= CHIP_SIS6326))
+	  if ((Chipset >= CHIP_SIS86C201) && (Chipset <= CHIP_SIS540))
 	    *RamDac = DAC_SIS;
 	}
 	/*

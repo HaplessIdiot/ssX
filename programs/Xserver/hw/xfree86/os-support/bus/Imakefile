@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/27 18:07:43 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Imakefile,v 1.6 1999/04/17 09:08:42 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Imakefile,v 1.7 2000/01/29 17:17:06 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -34,6 +34,13 @@ XCOMM PowerPC PCI drivers
 
 PCIDRVRSRC = ppcPci.c
 PCIDRVROBJ = ppcPci.o
+
+#elif defined(FreeBSDArchitecture) && defined(AlphaArchitecture)
+
+XCOMM generic FreeBSD PCI driver (using /dev/pci)
+
+PCIDRVRSRC = freebsdPci.c
+PCIDRVROBJ = freebsdPci.o
 
 #elif defined(i386Architecture)
 

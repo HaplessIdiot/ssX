@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/bios_mmap.c,v 1.5 2000/02/11 22:36:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/bios_mmap.c,v 1.6 2000/02/12 04:16:42 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -95,6 +95,8 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
  * Martin Ostermann (ost@comnets.rwth-aachen.de) - Apr.-Sep. 1996
  */
 
+#ifdef linux
+
 #ifdef TEST_JENSEN_CODE /* define to test the Sparse addressing on a non-Jensen */
 #define SPARSE (5)
 #define isJensen (1)
@@ -107,6 +109,14 @@ extern unsigned long _bus_base(void);
 extern unsigned long _bus_base_sparse(void);
 #define BUS_BASE (isJensen ? _bus_base_sparse() : _bus_base())
 #define JENSEN_SHIFT(x) (isJensen ? ((long)x<<SPARSE) : (long)x)
+
+#else
+
+extern u_int64_t dense_base(void);
+#define BUS_BASE dense_base()
+#define JENSEN_SHIFT(x) ((long) x)
+
+#endif
 
 int
 xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
