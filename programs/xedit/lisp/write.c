@@ -1060,14 +1060,8 @@ write_again:
 					      5, info->print_case);
 		}
 	    }
-	    length += LispWriteChar(stream, ' ');
-	    if (object->data.stream.type == LispStreamString) {
-		int size;
-		char *string = LispGetSstring(SSTREAMP(object), &size);
-
-		length += LispWriteCString(stream, string, size, info);
-	    }
-	    else {
+	    if (object->data.stream.type != LispStreamString) {
+		length += LispWriteChar(stream, ' ');
 		length += LispDoWriteObject(stream,
 					    object->data.stream.pathname,
 					    info, 1);
