@@ -33,7 +33,7 @@ extern "C" {
 ** not been independently verified as being compliant with the OpenGL(R)
 ** version 1.2.1 Specification.
 */
-/* $XFree86: xc/extras/Mesa/include/GL/glxext.h,v 1.8tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/include/GL/glxext.h,v 1.9 2004/04/22 13:58:35 tsi Exp $ */
 
 #if defined(_WIN32) && !defined(APIENTRY) && !defined(__CYGWIN__)
 #define WIN32_LEAN_AND_MEAN 1
@@ -311,15 +311,6 @@ typedef struct {
     int width, height;
     int count;		  /* if nonzero, at least this many more */
 } GLXBufferClobberEventSGIX;
-#endif
-
-#if defined(__UNIXOS2__) || defined(__SOL64__)
-typedef long int int32_t;
-typedef long long int int64_t;
-#endif
-
-#if defined(__SCO__) || defined(__USLC__)
-#include <stdint.h>
 #endif
 
 #if defined(__UNIXOS2__) || defined(__SOL64__)
