@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imake.cf /main/22 1995/12/05 16:39:53 mor $
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.27 1996/10/06 13:09:30 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.28 1996/10/16 14:28:24 dawes Exp $
 /*
  * To add support for another platform:
  * 
@@ -525,15 +525,18 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.27 1996/10/06 13:09:30 dawes Exp $
 # endif /* mc68000 */
 #endif /* linux */
 
-#if defined(Lynx) && (defined(i386) || defined(__powerpc__) || defined(__sparc__) || defined(sparc))
+#if (defined(__Lynx__) || defined(Lynx)) && (defined(i386) || defined(__i386__) || defined(__x86__) || defined(__powerpc__) || defined(__sparc__) || defined(sparc))
 # define MacroIncludeFile <lynx.cf>
 # define MacroFile lynx.cf
 # define LynxOSArchitecture
+# undef __Lynx__
 # undef Lynx
 # undef lynx
-# ifdef i386
+# if defined(i386) || defined(__i386__) || defined(__x86__)
 #  define i386Architecture
 #  undef i386
+#  undef __i386__
+#  undef __x86__
 # endif
 # ifdef __powerpc__
 #  define ppcArchitecture
