@@ -11,7 +11,7 @@
 ! suitability of this software for any purpose.  It is provided "as is"
 ! without express or implied warranty.
 !
-! $XFree86: xc/lib/X11/XKeysymDB,v 3.9 2001/04/03 17:00:08 dawes Exp $
+! $XFree86: xc/lib/X11/XKeysymDB,v 3.10 2001/04/04 02:00:28 dawes Exp $
 
 hpmute_acute		:100000A8
 hpmute_grave		:100000A9
@@ -242,11 +242,25 @@ XF86History		:1008FF37
 XF86OpenURL		:1008FF38
 XF86AddFavorite		:1008FF39
 XF86HotLinks		:1008FF3A
-XF86Launch1		:1008FF3B
-XF86Launch2		:1008FF3C
-XF86Launch3		:1008FF3D
-XF86Launch4		:1008FF3E
-XF86Launch5		:1008FF3F
+XF86BrightnessAdjust	:1008FF3B
+! Allocate 1008FF3C-F next
+
+XF86Launch0		:1008FF40
+XF86Launch1		:1008FF41
+XF86Launch2		:1008FF42
+XF86Launch3		:1008FF43
+XF86Launch4		:1008FF44
+XF86Launch5		:1008FF45
+XF86Launch6		:1008FF46
+XF86Launch7		:1008FF47
+XF86Launch8		:1008FF48
+XF86Launch9		:1008FF49
+XF86LaunchA		:1008FF4A
+XF86LaunchB		:1008FF4B
+XF86LaunchC		:1008FF4C
+XF86LaunchD		:1008FF4D
+XF86LaunchE		:1008FF4E
+XF86LaunchF		:1008FF4F
 
 
 usldead_acute		:100000A8
