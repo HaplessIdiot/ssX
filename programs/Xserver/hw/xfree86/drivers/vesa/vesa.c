@@ -27,7 +27,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.25 2002/01/23 17:10:53 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.26 2002/01/25 21:56:13 tsi Exp $
  */
 
 #include "vesa.h"
@@ -959,6 +959,10 @@ VESAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	else
 	    return (FALSE);
     }
+
+    /* Set bpp to 8 for depth 4 when using shadowfb. */
+    if (pVesa->shadowFB && pScrn->bitsPerPixel == 4)
+	pScrn->bitsPerPixel = 8;
 
     if (pVesa->shadowFB && (pVesa->shadowPtr =
 	shadowAlloc(pScrn->virtualX, pScrn->virtualY,
