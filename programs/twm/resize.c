@@ -61,6 +61,8 @@ in this Software without prior written authorization from the X Consortium.
  *
  ***********************************************************************/
 
+/* $XFree86: $ */
+
 #include <stdio.h>
 #include "twm.h"
 #include "parse.h"
