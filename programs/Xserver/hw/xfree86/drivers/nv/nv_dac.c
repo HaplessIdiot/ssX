@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.26 2002/04/04 14:05:45 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.27 2002/10/09 22:24:12 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -190,8 +190,24 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     if(mode->Flags & V_DBLSCAN)
        nvReg->cursorConfig |= (1 << 4);
     if(pNv->alphaCursor) {
-        nvReg->cursorConfig |= (1 << 28) | (1 << 12);
+        nvReg->cursorConfig |= (1 << 12);
         nvReg->general |= (1 << 29);
+
+        if((pNv->Chipset & 0x0ff0) == 0x0110) {
+            nvReg->dither = pNv->riva.PRAMDAC[0x0528/4] & ~0x00010000;
+            if(pNv->riva.flatPanel & FP_DITHER)
+               nvReg->dither |= 0x00010000;
+            else
+               nvReg->cursorConfig |= (1 << 28);
+        } else 
+        if((pNv->riva.Chipset & 0x0ff0) >= 0x0170) {
+           nvReg->dither = pNv->riva.PRAMDAC[0x083C/4] & ~1;
+           nvReg->cursorConfig |= (1 << 28);
+           if(pNv->riva.flatPanel & FP_DITHER)
+              nvReg->dither |= 1;
+        } else {
+           nvReg->cursorConfig |= (1 << 28);
+        }
     }
 
     return (TRUE);

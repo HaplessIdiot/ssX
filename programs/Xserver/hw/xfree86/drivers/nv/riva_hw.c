@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.33 2002/08/05 20:47:06 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.34 2002/10/09 22:24:12 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -1604,13 +1604,13 @@ static void LoadStateExt
             chip->PCRTC[0x00000810/4] = state->cursorConfig;
 
             if(chip->flatPanel) {
-#if 0
-               switch(chip->Chipset & 0x0ff0) {
-               case 0x0170: 
-                   chip->PRAMDAC[0x083C/4] |= 1;
-               default: break;
+               if((chip->Chipset & 0x0ff0) == 0x0110) {
+                   chip->PRAMDAC[0x0528/4] = state->dither;
+               } else 
+               if((chip->Chipset & 0x0ff0) >= 0x0170) {
+                   chip->PRAMDAC[0x083C/4] = state->dither;
                }
-#endif
+
 
                VGA_WR08(chip->PCIO, 0x03D4, 0x53);
                VGA_WR08(chip->PCIO, 0x03D5, 0);
@@ -1763,6 +1763,14 @@ static void UnloadStateExt
             VGA_WR08(chip->PCIO, 0x03D4, 0x41);
             state->extra = VGA_RD08(chip->PCIO, 0x03D5);
             state->cursorConfig = chip->PCRTC[0x00000810/4];
+
+            if((chip->Chipset & 0x0ff0) == 0x0110) {
+               state->dither = chip->PRAMDAC[0x0528/4];
+            } else 
+            if((chip->Chipset & 0x0ff0) >= 0x0170) {
+               state->dither = chip->PRAMDAC[0x083C/4];
+            }
+
             break;
     }
 }

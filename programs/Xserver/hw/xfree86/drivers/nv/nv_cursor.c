@@ -24,7 +24,7 @@
 /* Rewritten with reference from mga driver and 3.3.4 NVIDIA driver by
    Jarno Paananen <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_cursor.c,v 1.7 2002/02/06 01:33:06 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_cursor.c,v 1.8 2002/10/09 22:24:12 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -210,6 +210,19 @@ NVUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
 {
     return TRUE;
 }
+
+
+/* A 32x32 8:8:8:8 ARGB cursor is available in the following conditions:
+
+    if(pNv->alphaCursor && 
+       (((pNv->Chipset & 0x0ff0) != 0x0110) ||
+        !(pNv->riva.flatPanel & FP_DITHER)))
+    {
+        ARGB cursor is available.  Just dump the data to: 
+           pNv->riva.CURSOR[32*32]
+    }
+
+*/
 
 Bool 
 NVCursorInit(ScreenPtr pScreen)

@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv.man,v 1.10 2002/02/19 23:39:50 mvojkovi Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv.man,v 1.11 2002/08/05 20:47:06 mvojkovi Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH NV __drivermansuffix__ __vendorversion__
@@ -48,7 +48,7 @@ NV20
 NV1A, NV1F
 .TP 22
 .B GeForce4, QUADRO4
-NV17, NV18, NV25
+NV17, NV18, NV25, NV28
 .SH CONFIGURATION DETAILS
 Please refer to XF86Config(__filemansuffix__) for general configuration
 details.  This section only covers configuration details specific to this
@@ -83,6 +83,13 @@ Default: autodetected.
 This driver has experimental flat panel support.  The driver
 cannot autodetect the presence of a flat panel so this option must be set
 when used with a flat panel.
+Default: off.
+.TP
+.BI "Option \*qFPDither\*q \*q" boolean \*q
+Most digital flat panels have only 6 bits per component color resolution.
+This option tells the driver to dither from 8 bits per component to 6 before
+the flat panel truncates it. This is only suported in depth 24 on NV11, 
+nForce2 and GeForce4.
 Default: off.
 .TP
 .BI "Option \*qRotate\*q \*qCW\*q"
