@@ -1,4 +1,6 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 522. Fix generic rootless code bug which tests CopyWindow instead of CopyBytes
+      (Kensuke Matsuzaki).
  521. Update libfreetype-xtt2 to version 1.0c.  This consists of some minor
       fixes and cleanups (Chisato Yamauchi, After-XTT Project).
  520. Add accelerated rootless drawing support and fix bug in rootless
@@ -18026,7 +18028,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2900 2003/10/24 00:33:11 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2901 2003/10/24 16:34:18 dawes Exp $
 
 
 
