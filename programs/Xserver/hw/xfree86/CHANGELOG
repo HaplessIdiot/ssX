@@ -1,4 +1,6 @@
 XFree86 4.0.1f (xx November 2000)
+ 959. Modify item no. 949 - only reset clipping for Cyber9382, Cyber9385 and
+      ProVidia9682 (Alan Hourihane).
  958. Added messages about modes rejected on lookup (Egbert Eich).
  957. Attempt to fix DDC1 support on Neomagic (Egbert Eich).
  956. Added Block/UnblockSIGIO() to DDC1 readout code (Egbert Eich).
@@ -11588,4 +11590,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1396 2000/11/15 00:22:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1398 2000/11/16 19:44:52 eich Exp $
