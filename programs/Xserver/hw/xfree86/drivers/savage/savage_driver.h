@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.h,v 1.11 2001/08/09 19:14:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.h,v 1.14 2002/10/02 20:39:55 alanh Exp $ */
 
 #ifndef SAVAGE_VGAHWMMIO_H
 #define SAVAGE_VGAHWMMIO_H
@@ -211,6 +211,15 @@ typedef struct _Savage {
 #define VF_STREAMS_ON	0x0001
 
 #define SAVPTR(p)	((SavagePtr)((p)->driverPrivate))
+
+/* Make the names of these externals driver-unique */
+#define gpScrn savagegpScrn
+#define myOUTREG savageOUTREG
+#define readdw savagereaddw
+#define readfb savagereadfb
+#define writedw savagewritedw
+#define writefb savagewritefb
+#define writescan savagewritescan
 
 /* Prototypes. */
 
