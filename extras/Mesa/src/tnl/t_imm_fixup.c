@@ -1,10 +1,9 @@
-/* $Id: t_imm_fixup.c,v 1.1 2002/02/22 17:14:14 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.3
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -357,6 +356,7 @@ void _tnl_fixup_input( GLcontext *ctx, struct immediate *IM )
 				    vulnerable );
 
 
+	++i;
       } while (vulnerable);
    }
 }
@@ -368,6 +368,8 @@ static void copy_material( struct immediate *next,
 			   struct immediate *prev,
 			   GLuint dst, GLuint src )
 {
+/*     fprintf(stderr, "%s\n", __FUNCTION__); */
+
    if (next->Material == 0) {
       next->Material = (GLmaterial (*)[2]) MALLOC( sizeof(GLmaterial) *
 						   IMM_SIZE * 2 );
@@ -430,6 +432,7 @@ void _tnl_copy_immediate_vertices( GLcontext *ctx, struct immediate *next )
 	 GLuint dst = next->CopyStart+i;
 	 next->Elt[dst] = prev->Elt[src];
 	 next->Flag[dst] = VERT_ELT;
+	 elts[i+offset] = dst;
       }
 /*        fprintf(stderr, "ADDING VERT_ELT!\n"); */
       next->CopyOrFlag |= VERT_ELT;
@@ -517,14 +520,14 @@ void _tnl_copy_immediate_vertices( GLcontext *ctx, struct immediate *next )
 	 next->CopyOrFlag |= prev->Flag[src] & (VERT_FIXUP|
 						VERT_MATERIAL|
 						VERT_OBJ);
+	 elts[i+offset] = dst;
       }
    }
 
-   if (--tnl->ExecCopySource->ref_count == 0)
-      _tnl_free_immediate( tnl->ExecCopySource );
+   if (--tnl->ExecCopySource->ref_count == 0) 
+      _tnl_free_immediate( ctx, tnl->ExecCopySource );
 
-   tnl->ExecCopySource = 0;
-   tnl->ExecCopyCount = 0;
+   tnl->ExecCopySource = next; next->ref_count++;
 }
 
 
@@ -633,6 +636,7 @@ void _tnl_fixup_compiled_cassette( GLcontext *ctx, struct immediate *IM )
 				    vulnerable );
 
 
+	 ++i;
       } while (vulnerable);
    }
 }
@@ -722,20 +726,26 @@ _tnl_get_exec_copy_verts( GLcontext *ctx, struct immediate *IM )
 /*     fprintf(stderr, "_tnl_get_exec_copy_verts %s\n",  */
 /*  	   _mesa_lookup_enum_by_nr(prim)); */
 
-   ASSERT(tnl->ExecCopySource == 0);
+   if (tnl->ExecCopySource)
+      if (--tnl->ExecCopySource->ref_count == 0) 
+	 _tnl_free_immediate( ctx, tnl->ExecCopySource );
 
    if (prim == GL_POLYGON+1) {
+      tnl->ExecCopySource = 0;
       tnl->ExecCopyCount = 0;
       tnl->ExecCopyTexSize = 0;
       tnl->ExecParity = 0;
    } else {
       /* Remember this immediate as the one to copy from.
        */
-      IM->ref_count++;
-      tnl->ExecCopySource = IM;
+      tnl->ExecCopySource = IM; IM->ref_count++;
       tnl->ExecCopyCount = 0;
       tnl->ExecCopyTexSize = IM->CopyTexSize;
-      tnl->ExecParity = IM->PrimitiveLength[IM->LastPrimitive] & 1;
+
+      if (IM->LastPrimitive != IM->CopyStart)
+	 tnl->ExecParity = 0;
+	 
+      tnl->ExecParity ^= IM->PrimitiveLength[IM->LastPrimitive] & 1;
 
       if (pincr != 1 && (IM->Count - last - pintro))
 	 ovf = (IM->Count - last - pintro) % pincr;
@@ -761,7 +771,10 @@ _tnl_get_purged_copy_verts( GLcontext *ctx, struct immediate *IM )
       GLuint ovf = 0, i;
 
       tnl->ExecCopyCount = 0;
-      tnl->ExecParity = IM->PrimitiveLength[last] & 1;
+      if (IM->LastPrimitive != IM->CopyStart)
+	 tnl->ExecParity = 0;
+	 
+      tnl->ExecParity ^= IM->PrimitiveLength[IM->LastPrimitive] & 1;
 
       if (pincr != 1 && (IM->Count - last - pintro))
 	 ovf = (IM->Count - last - pintro) % pincr;

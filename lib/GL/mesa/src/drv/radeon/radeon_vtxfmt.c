@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_vtxfmt.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_vtxfmt.c,v 1.4 2002/11/05 17:46:10 tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -485,15 +485,21 @@ static void wrap_buffer( void )
 
    /* Copy vertices out of dma:
     */
-   nrverts = copy_dma_verts( rmesa, tmp );
+   if (rmesa->vb.prim[0] == GL_POLYGON+1) 
+      nrverts = 0;
+   else {
+      nrverts = copy_dma_verts( rmesa, tmp );
 
-   if (RADEON_DEBUG & DEBUG_VFMT)
-      fprintf(stderr, "%d vertices to copy\n", nrverts);
+      if (RADEON_DEBUG & DEBUG_VFMT)
+	 fprintf(stderr, "%d vertices to copy\n", nrverts);
    
+      /* Finish the prim at this point:
+       */
+      note_last_prim( rmesa, 0 );
+   }
 
-   /* Finish the prim at this point:
+   /* Fire any buffered primitives
     */
-   note_last_prim( rmesa, 0 );
    flush_prims( rmesa );
 
    /* Get new buffer
@@ -510,8 +516,11 @@ static void wrap_buffer( void )
    vb.notify = wrap_buffer;
 
    rmesa->dma.flush = flush_prims;
-   start_prim( rmesa, rmesa->vb.prim[0] );
 
+   /* Restart wrapped primitive:
+    */
+   if (rmesa->vb.prim[0] != GL_POLYGON+1)
+      start_prim( rmesa, rmesa->vb.prim[0] );
 
    /* Reemit saved vertices
     */
@@ -613,6 +622,8 @@ static GLboolean check_vtx_fmt( GLcontext *ctx )
    vb.normalptr = ctx->Current.Normal;
    vb.colorptr = NULL;
    vb.floatcolorptr = ctx->Current.Color;
+   vb.specptr = NULL;
+   vb.floatspecptr = ctx->Current.SecondaryColor;
    vb.texcoordptr[0] = ctx->Current.Texcoord[0];
    vb.texcoordptr[1] = ctx->Current.Texcoord[1];
 

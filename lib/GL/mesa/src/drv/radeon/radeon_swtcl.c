@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_swtcl.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_swtcl.c,v 1.2 2002/11/05 17:46:09 tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -377,7 +377,7 @@ static void flush_last_swtcl_prim( radeonContextPtr rmesa  )
 
    if (rmesa->dma.current.buf) {
       struct radeon_dma_region *current = &rmesa->dma.current;
-      GLuint current_offset = (rmesa->dri.agp_buffer_offset +
+      GLuint current_offset = (rmesa->radeonScreen->agp_buffer_offset +
 			       current->buf->buf->idx * RADEON_BUFFER_SIZE + 
 			       current->start);
 
@@ -620,7 +620,7 @@ do {									\
 									\
       radeonEmitVertexAOS( rmesa,					\
 			   rmesa->swtcl.vertex_size,			\
-			   (rmesa->dri.agp_buffer_offset +		\
+			   (rmesa->radeonScreen->agp_buffer_offset +		\
 			    rmesa->swtcl.indexed_verts.buf->buf->idx * 	\
 			    RADEON_BUFFER_SIZE +			\
 			    rmesa->swtcl.indexed_verts.start));		\

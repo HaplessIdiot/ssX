@@ -1,6 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.19 2002/10/30 12:52:14 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.20 2002/11/01 06:08:36 keithp Exp $ */
 
 #include "radeon.h"
+#include "radeon_macros.h"
 #include "radeon_reg.h"
 
 #include "xf86.h"

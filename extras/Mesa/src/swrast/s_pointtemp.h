@@ -1,10 +1,9 @@
-/* $Id: s_pointtemp.h,v 1.1 2002/02/22 17:14:13 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.5
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -36,7 +35,6 @@
  *   SPECULAR = do separate specular color
  *   LARGE = do points with diameter > 1 pixel
  *   ATTENUATE = compute point size attenuation
- *   SPRITE = GL_MESA_sprite_point
  *
  * Notes: LARGE and ATTENUATE are exclusive of each other.
  *        TEXTURE requires RGBA
@@ -64,7 +62,7 @@ NAME ( GLcontext *ctx, const SWvertex *vert )
    SWcontext *swrast = SWRAST_CONTEXT(ctx);
    struct pixel_buffer *PB = swrast->PB;
 
-   const GLint z = (GLint) (vert->win[2]);
+   const GLint z = (GLint) (vert->win[2] + 0.5F);
 
 #if FLAGS & RGBA
    const GLchan red   = vert->color[0];
@@ -119,62 +117,15 @@ NAME ( GLcontext *ctx, const SWvertex *vert )
    size = ctx->Point._Size;
 #endif
 
-#if FLAGS & SPRITE
+   /* Cull primitives with malformed coordinates.
+    */
    {
-      SWcontext *swctx = SWRAST_CONTEXT(ctx);
-      const GLfloat radius = 0.5F * vert->pointSize; /* XXX threshold, alpha */
-      SWvertex v0, v1, v2, v3;
-      GLuint unit;
-
-      (void) red;
-      (void) green;
-      (void) blue;
-      (void) alpha;
-      (void) z;
-
-      /* lower left corner */
-      v0 = *vert;
-      v0.win[0] -= radius;
-      v0.win[1] -= radius;
-
-      /* lower right corner */
-      v1 = *vert;
-      v1.win[0] += radius;
-      v1.win[1] -= radius;
-
-      /* upper right corner */
-      v2 = *vert;
-      v2.win[0] += radius;
-      v2.win[1] += radius;
-
-      /* upper left corner */
-      v3 = *vert;
-      v3.win[0] -= radius;
-      v3.win[1] += radius;
-
-      for (unit = 0; unit < ctx->Const.MaxTextureUnits; unit++) {
-         if (ctx->Texture.Unit[unit]._ReallyEnabled) {
-            v0.texcoord[unit][0] = 0.0;
-            v0.texcoord[unit][1] = 0.0;
-            v1.texcoord[unit][0] = 1.0;
-            v1.texcoord[unit][1] = 0.0;
-            v2.texcoord[unit][0] = 1.0;
-            v2.texcoord[unit][1] = 1.0;
-            v3.texcoord[unit][0] = 0.0;
-            v3.texcoord[unit][1] = 1.0;
-         }
-      }
-
-      /* XXX if radius < threshold, attenuate alpha? */
-
-      /* XXX need to implement clipping!!! */
-
-      /* render */
-      swctx->Triangle(ctx, &v0, &v1, &v2);
-      swctx->Triangle(ctx, &v0, &v2, &v3);
+      float tmp = vert->win[0] + vert->win[1];
+      if (IS_INF_OR_NAN(tmp))
+	 return;
    }
 
-#elif FLAGS & (LARGE | ATTENUATE | SMOOTH)
+#if FLAGS & (LARGE | ATTENUATE | SMOOTH)
 
    {
       GLint x, y;

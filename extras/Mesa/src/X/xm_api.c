@@ -1,3 +1,4 @@
+
 /*
  * Mesa 3-D graphics library
  * Version:  4.0.3
@@ -21,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/X/xm_api.c,v 1.4 2002/09/09 21:29:58 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/X/xm_api.c,v 1.5 2002/09/09 21:52:12 dawes Exp $ */
 
 /*
  * This file contains the implementations of all the XMesa* functions.

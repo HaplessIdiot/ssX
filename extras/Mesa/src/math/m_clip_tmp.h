@@ -1,10 +1,9 @@
-/* $Id: m_clip_tmp.h,v 1.1 2002/02/22 17:14:11 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.3
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -54,7 +53,7 @@ static GLvector4f * _XFORMAPI TAG(cliptest_points4)( GLvector4f *clip_vec,
       const GLfloat cy = from[1];
       const GLfloat cz = from[2];
       const GLfloat cw = from[3];
-#if defined(macintosh)
+#if defined(macintosh) || defined(__powerpc__)
       /* on powerpc cliptest is 17% faster in this way. */
       GLuint mask;
       mask = (((cw < cx) << CLIP_RIGHT_SHIFT));
@@ -120,7 +119,7 @@ static GLvector4f * _XFORMAPI TAG(cliptest_np_points4)( GLvector4f *clip_vec,
       const GLfloat cy = from[1];
       const GLfloat cz = from[2];
       const GLfloat cw = from[3];
-#if defined(macintosh)
+#if defined(macintosh) || defined(__powerpc__)
       /* on powerpc cliptest is 17% faster in this way. */
       GLuint mask;
       mask = (((cw < cx) << CLIP_RIGHT_SHIFT));

@@ -1,4 +1,3 @@
-/* $Id: realglx.h,v 1.6 2002/10/29 18:19:41 alanh Exp $ */
 
 /*
  * Mesa 3-D graphics library

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_vtxfmt_x86.c,v 1.1 2002/10/30 12:51:53 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -225,7 +225,7 @@ struct dynfn *r200_makeX86Color4ubv( GLcontext *ctx, const int *key )
 
    if (VTX_COLOR(key[0],0) == R200_VTX_PK_RGBA) {
       DFN ( _x86_Color4ubv_ub, rmesa->vb.dfn_cache.Color4ubv);
-      FIXUP(dfn->code, 5, 0x12345678, (int)vb.ubytecolorptr); 
+      FIXUP(dfn->code, 5, 0x12345678, (int)vb.colorptr); 
       return dfn;
    } 
    else {
@@ -250,10 +250,10 @@ struct dynfn *r200_makeX86Color4ub( GLcontext *ctx, const int *key )
       r200ContextPtr rmesa = R200_CONTEXT(ctx);
 
       DFN ( _x86_Color4ub_ub, rmesa->vb.dfn_cache.Color4ub );
-      FIXUP(dfn->code, 18, 0x0, (int)vb.ubytecolorptr); 
-      FIXUP(dfn->code, 24, 0x0, (int)vb.ubytecolorptr+1); 
-      FIXUP(dfn->code, 30, 0x0, (int)vb.ubytecolorptr+2); 
-      FIXUP(dfn->code, 36, 0x0, (int)vb.ubytecolorptr+3); 
+      FIXUP(dfn->code, 18, 0x0, (int)vb.colorptr); 
+      FIXUP(dfn->code, 24, 0x0, (int)vb.colorptr+1); 
+      FIXUP(dfn->code, 30, 0x0, (int)vb.colorptr+2); 
+      FIXUP(dfn->code, 36, 0x0, (int)vb.colorptr+3); 
       return dfn;
    }
    else

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.c,v 1.16 2002/09/15 21:07:49 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.c,v 1.17 2002/10/30 12:51:35 alanh Exp $ */
 /*
  * Copyright 2000-2001 VA Linux Systems, Inc.
  * All Rights Reserved.
@@ -120,6 +120,24 @@ mgaInitDriver(__DRIscreenPrivate *sPriv)
 
    mgaScreen->sPriv = sPriv;
    sPriv->private = (void *)mgaScreen;
+
+   if (sPriv->drmMinor >= 1) {
+      int ret;
+      drmMGAGetParam gp;
+
+      gp.param = MGA_PARAM_IRQ_NR;
+      gp.value = &mgaScreen->irq;
+
+      ret = drmCommandWriteRead( sPriv->fd, DRM_MGA_GETPARAM,
+				    &gp, sizeof(gp));
+      if (ret) {
+	    fprintf(stderr, "drmMgaGetParam (MGA_PARAM_IRQ_NR): %d\n", ret);
+	    XFree(mgaScreen);
+	    sPriv->private = NULL;
+	    return GL_FALSE;
+      }
+   }
+   
 
    if (serverInfo->chipset != MGA_CARD_TYPE_G200 &&
        serverInfo->chipset != MGA_CARD_TYPE_G400) {

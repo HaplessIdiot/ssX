@@ -1,4 +1,3 @@
-/* $Id: ss_triangle.c,v 1.1 2002/02/22 17:14:13 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

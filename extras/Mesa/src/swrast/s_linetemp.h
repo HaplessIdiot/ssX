@@ -1,10 +1,9 @@
-/* $Id: s_linetemp.h,v 1.1 2002/02/22 17:14:13 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.5
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -180,6 +179,13 @@
    }
 #endif
 
+   /* Cull primitives with malformed coordinates.
+    */
+   {
+      float tmp = vert0->win[0] + vert0->win[1] + vert1->win[0] + vert1->win[1];
+      if (IS_INF_OR_NAN(tmp))
+	 return;
+   }
 
 /*
  * Despite being clipped to the view volume, the line's window coordinates
@@ -224,8 +230,8 @@
      zPtr = (DEPTH_TYPE *) _mesa_zbuffer_address(ctx, x0, y0);
 #  endif
    if (depthBits <= 16) {
-      z0 = FloatToFixed(vert0->win[2]);
-      z1 = FloatToFixed(vert1->win[2]);
+      z0 = FloatToFixed(vert0->win[2]) + FIXED_HALF;
+      z1 = FloatToFixed(vert1->win[2]) + FIXED_HALF;
    }
    else {
       z0 = (int) vert0->win[2];
@@ -266,7 +272,7 @@
       ystep = -1;
 #endif
 #if defined(INTERP_Z) && defined(DEPTH_TYPE)
-      zPtrYstep = -ctx->DrawBuffer->Width * ((GLint)sizeof(DEPTH_TYPE));
+      zPtrYstep = -((GLint) (ctx->DrawBuffer->Width * sizeof(DEPTH_TYPE)));
 #endif
 #ifdef PIXEL_ADDRESS
       pixelYstep = BYTES_PER_ROW;
@@ -277,7 +283,7 @@
       ystep = 1;
 #endif
 #if defined(INTERP_Z) && defined(DEPTH_TYPE)
-      zPtrYstep = ctx->DrawBuffer->Width * ((GLint)sizeof(DEPTH_TYPE));
+      zPtrYstep = (GLint) (ctx->DrawBuffer->Width * sizeof(DEPTH_TYPE));
 #endif
 #ifdef PIXEL_ADDRESS
       pixelYstep = -(BYTES_PER_ROW);

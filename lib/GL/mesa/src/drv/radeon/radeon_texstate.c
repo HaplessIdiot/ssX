@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_texstate.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_texstate.c,v 1.5 2002/11/05 17:46:09 tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -41,13 +41,9 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "radeon_tex.h"
 #include "radeon_tcl.h"
 
-#include "colormac.h"
 #include "context.h"
 #include "enums.h"
-#include "macros.h"
 #include "mem.h"
-#include "mmath.h"
-#include "simple_list.h"
 #include "texformat.h"
 
 

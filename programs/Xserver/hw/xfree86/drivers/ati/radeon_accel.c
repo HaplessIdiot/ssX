@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.29 2002/10/12 01:38:07 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.30 2002/10/30 12:52:12 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -72,6 +72,7 @@
 
 				/* Driver data structures */
 #include "radeon.h"
+#include "radeon_macros.h"
 #include "radeon_probe.h"
 #include "radeon_reg.h"
 #include "radeon_version.h"

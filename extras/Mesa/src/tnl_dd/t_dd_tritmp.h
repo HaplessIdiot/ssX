@@ -1,4 +1,3 @@
-/* $Id: t_dd_tritmp.h,v 1.1 2002/02/22 17:14:15 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_swtcl.c,v 1.1 2002/10/30 12:51:53 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -266,81 +266,11 @@ void r200PrintSetupFlags(char *msg, GLuint flags )
 }
 
 
-static void r200RenderStart( GLcontext *ctx )
-{
-   TNLcontext *tnl = TNL_CONTEXT(ctx);
-   r200ContextPtr rmesa = R200_CONTEXT( ctx );
 
-   if (!setup_tab[rmesa->swtcl.SetupIndex].check_tex_sizes(ctx)) {
-      GLuint ind = rmesa->swtcl.SetupIndex |= (R200_PTEX_BIT|R200_RGBA_BIT);
-
-      /* R200 handles projective textures nicely; just have to change
-       * up to the new vertex format.
-       */
-      if (setup_tab[ind].vertex_format != rmesa->swtcl.vertex_format) {
-	 int i;
-	 R200_NEWPRIM(rmesa);
-	 i = rmesa->swtcl.vertex_format = setup_tab[ind].vertex_format;
-	 rmesa->swtcl.vertex_size = setup_tab[ind].vertex_size;
-	 rmesa->swtcl.vertex_stride_shift = setup_tab[ind].vertex_stride_shift;
-	 
-/* 	 fprintf(stderr, "%s: set vertex_format %d\n", __FUNCTION__, */
-/* 		 rmesa->swtcl.vertex_format); */
-/* 	 r200PrintSetupFlags( "setup flags", rmesa->swtcl.SetupIndex); */
-
-	 R200_STATECHANGE( rmesa, vtx );
-	 rmesa->hw.vtx.cmd[VTX_VTXFMT_0] = se_vtx_fmt_0[i];
-	 rmesa->hw.vtx.cmd[VTX_VTXFMT_1] = se_vtx_fmt_1[i];
-      }
-
-      if (!(ctx->_TriangleCaps & (DD_TRI_LIGHT_TWOSIDE|DD_TRI_UNFILLED))) {
-	 tnl->Driver.Render.Interp = setup_tab[rmesa->swtcl.SetupIndex].interp;
-	 tnl->Driver.Render.CopyPV = setup_tab[rmesa->swtcl.SetupIndex].copy_pv;
-      }
-   }
-   
-   if (rmesa->dma.flush != 0 && 
-       rmesa->dma.flush != flush_last_swtcl_prim)
-      rmesa->dma.flush( rmesa );
-}
-
-
-void r200BuildVertices( GLcontext *ctx, GLuint start, GLuint count,
-			   GLuint newinputs )
-{
-   r200ContextPtr rmesa = R200_CONTEXT( ctx );
-   GLubyte *v = ((GLubyte *)rmesa->swtcl.verts + 
-		 (start << rmesa->swtcl.vertex_stride_shift));
-   GLuint stride = 1 << rmesa->swtcl.vertex_stride_shift;
-
-   newinputs |= rmesa->swtcl.SetupNewInputs;
-   rmesa->swtcl.SetupNewInputs = 0;
-
-/*    fprintf(stderr, "%s: vertex_format %d\n", __FUNCTION__, */
-/* 	   rmesa->swtcl.vertex_format); */
-
-   if (!newinputs)
-      return;
-
-   setup_tab[rmesa->swtcl.SetupIndex].emit( ctx, start, count, v, stride );
-}
-
-void r200ChooseVertexState( GLcontext *ctx )
+static void r200SetVertexFormat( GLcontext *ctx, GLuint ind ) 
 {
    r200ContextPtr rmesa = R200_CONTEXT( ctx );
    TNLcontext *tnl = TNL_CONTEXT(ctx);
-   GLuint ind = (R200_XYZW_BIT | R200_RGBA_BIT);
-
-   if (!rmesa->TclFallback || rmesa->Fallback)
-      return;
-
-   if (ctx->Fog.Enabled || (ctx->_TriangleCaps & DD_SEPARATE_SPECULAR))
-      ind |= R200_SPEC_BIT;
-
-   if (ctx->Texture._ReallyEnabled & TEXTURE1_ANY)
-      ind |= R200_TEX0_BIT|R200_TEX1_BIT;
-   else if (ctx->Texture._ReallyEnabled & TEXTURE0_ANY)
-      ind |= R200_TEX0_BIT;
 
    rmesa->swtcl.SetupIndex = ind;
       
@@ -359,10 +289,6 @@ void r200ChooseVertexState( GLcontext *ctx )
       i = rmesa->swtcl.vertex_format = setup_tab[ind].vertex_format;
       rmesa->swtcl.vertex_size = setup_tab[ind].vertex_size;
       rmesa->swtcl.vertex_stride_shift = setup_tab[ind].vertex_stride_shift;
-
-/*       fprintf(stderr, "%s: set vertex_format %d\n", __FUNCTION__,  */
-/* 	      rmesa->swtcl.vertex_format); */
-/*       r200PrintSetupFlags( "setup flags", rmesa->swtcl.SetupIndex); */
 
       R200_STATECHANGE( rmesa, vtx );
       rmesa->hw.vtx.cmd[VTX_VTXFMT_0] = se_vtx_fmt_0[i];
@@ -401,6 +327,57 @@ void r200ChooseVertexState( GLcontext *ctx )
 	 rmesa->hw.vap.cmd[VAP_SE_VAP_CNTL] = vap;
       }
    }
+}
+
+static void r200RenderStart( GLcontext *ctx )
+{
+   r200ContextPtr rmesa = R200_CONTEXT( ctx );
+
+   if (!setup_tab[rmesa->swtcl.SetupIndex].check_tex_sizes(ctx)) {
+      r200SetVertexFormat( ctx, rmesa->swtcl.SetupIndex | R200_PTEX_BIT);
+   }
+   
+   if (rmesa->dma.flush != 0 && 
+       rmesa->dma.flush != flush_last_swtcl_prim)
+      rmesa->dma.flush( rmesa );
+}
+
+
+void r200BuildVertices( GLcontext *ctx, GLuint start, GLuint count,
+			   GLuint newinputs )
+{
+   r200ContextPtr rmesa = R200_CONTEXT( ctx );
+   GLubyte *v = ((GLubyte *)rmesa->swtcl.verts + 
+		 (start << rmesa->swtcl.vertex_stride_shift));
+   GLuint stride = 1 << rmesa->swtcl.vertex_stride_shift;
+
+   newinputs |= rmesa->swtcl.SetupNewInputs;
+   rmesa->swtcl.SetupNewInputs = 0;
+
+   if (!newinputs)
+      return;
+
+   setup_tab[rmesa->swtcl.SetupIndex].emit( ctx, start, count, v, stride );
+}
+
+
+void r200ChooseVertexState( GLcontext *ctx )
+{
+   r200ContextPtr rmesa = R200_CONTEXT( ctx );
+   GLuint ind = (R200_XYZW_BIT | R200_RGBA_BIT);
+
+   if (!rmesa->TclFallback || rmesa->Fallback)
+      return;
+
+   if (ctx->Fog.Enabled || (ctx->_TriangleCaps & DD_SEPARATE_SPECULAR))
+      ind |= R200_SPEC_BIT;
+
+   if (ctx->Texture._ReallyEnabled & TEXTURE1_ANY)
+      ind |= R200_TEX0_BIT|R200_TEX1_BIT;
+   else if (ctx->Texture._ReallyEnabled & TEXTURE0_ANY)
+      ind |= R200_TEX0_BIT;
+
+   r200SetVertexFormat( ctx, ind );
 }
 
 
@@ -455,11 +432,11 @@ static __inline void *r200AllocDmaLowVerts( r200ContextPtr rmesa,
       rmesa->dma.flush = flush_last_swtcl_prim;
    }
 
-   assert( vsize == rmesa->swtcl.vertex_size * 4 );
-   assert( rmesa->dma.flush == flush_last_swtcl_prim );
-   assert (rmesa->dma.current.start + 
+   ASSERT( vsize == rmesa->swtcl.vertex_size * 4 );
+   ASSERT( rmesa->dma.flush == flush_last_swtcl_prim );
+   ASSERT( rmesa->dma.current.start + 
 	   rmesa->swtcl.numverts * rmesa->swtcl.vertex_size * 4 ==
-	   rmesa->dma.current.ptr);
+	   rmesa->dma.current.ptr );
 
 
    {
@@ -620,10 +597,16 @@ do {									\
 
 #define ALLOC_ELTS_NEW_PRIMITIVE(nr) ALLOC_ELTS( nr )
 
+#ifdef MESA_BIG_ENDIAN
+/* We could do without (most of) this ugliness if dest was always 32 bit word aligned... */
+#define EMIT_ELT(offset, x) do {                                \
+        int off = offset + ( ( (GLuint)dest & 0x2 ) >> 1 );     \
+        GLushort *des = (GLushort *)( (GLuint)dest & ~0x2 );    \
+        (des)[ off + 1 - 2 * ( off & 1 ) ] = (GLushort)(x); } while (0)
+#else
 #define EMIT_ELT(offset, x) (dest)[offset] = (GLushort) (x)
-#if defined(__i386__)
-#define EMIT_TWO_ELTS(offset, x, y)  *(GLuint *)(dest+offset) = ((y)<<16)|(x);
 #endif
+#define EMIT_TWO_ELTS(offset, x, y)  *(GLuint *)(dest+offset) = ((y)<<16)|(x);
 #define INCR_ELTS( nr ) dest += nr
 #define RELEASE_ELT_VERTS() \
   r200ReleaseDmaRegion( rmesa, &rmesa->swtcl.indexed_verts, __FUNCTION__ )
@@ -840,15 +823,21 @@ static struct {
 #define AREA_IS_CCW( a ) (a < 0)
 #define GET_VERTEX(e) (rmesa->swtcl.verts + (e<<rmesa->swtcl.vertex_stride_shift))
 
-#define VERT_SET_RGBA( v, c )    v->ui[coloroffset] = *(GLuint *)c
+#define VERT_SET_RGBA( v, c )    v->ui[coloroffset] = LE32_TO_CPU(*(GLuint *)c)
 #define VERT_COPY_RGBA( v0, v1 ) v0->ui[coloroffset] = v1->ui[coloroffset]
-#define VERT_SAVE_RGBA( idx )    color[idx] = v[idx]->ui[coloroffset]
-#define VERT_RESTORE_RGBA( idx ) v[idx]->ui[coloroffset] = color[idx]
+#define VERT_SAVE_RGBA( idx )    color[idx] = CPU_TO_LE32(v[idx]->ui[coloroffset])
+#define VERT_RESTORE_RGBA( idx ) v[idx]->ui[coloroffset] = LE32_TO_CPU(color[idx])
 
-#define VERT_SET_SPEC( v, c )    if (havespec) COPY_3V(v->ub4[5], c )
-#define VERT_COPY_SPEC( v0, v1 ) if (havespec) COPY_3V(v0->ub4[5], v1->ub4[5])
-#define VERT_SAVE_SPEC( idx )    if (havespec) spec[idx] = v[idx]->ui[5]
-#define VERT_RESTORE_SPEC( idx ) if (havespec) v[idx]->ui[5] = spec[idx]
+#define VERT_SET_SPEC( v0, c )   if (havespec) {			\
+					v0->v.specular.red   = (c)[0];	\
+					v0->v.specular.green = (c)[1];	\
+					v0->v.specular.blue  = (c)[2]; }
+#define VERT_COPY_SPEC( v0, v1 ) if (havespec) {					\
+					v0->v.specular.red   = v1->v.specular.red;	\
+					v0->v.specular.green = v1->v.specular.green;	\
+					v0->v.specular.blue  = v1->v.specular.blue; }
+#define VERT_SAVE_SPEC( idx )    if (havespec) spec[idx] = CPU_TO_LE32(v[idx]->ui[5])
+#define VERT_RESTORE_SPEC( idx ) if (havespec) v[idx]->ui[5] = LE32_TO_CPU(spec[idx])
 
 #undef LOCAL_VARS
 #undef TAG
@@ -1084,6 +1073,151 @@ void r200Fallback( GLcontext *ctx, GLuint bit, GLboolean mode )
          }
       }
    }
+}
+
+
+
+
+/* Cope with depth operations by drawing individual pixels as points??? 
+ */
+void
+r200PointsBitmap( GLcontext *ctx, GLint px, GLint py,
+		  GLsizei width, GLsizei height,
+		  const struct gl_pixelstore_attrib *unpack,
+		  const GLubyte *bitmap )
+{
+   r200ContextPtr rmesa = R200_CONTEXT(ctx);
+   const GLfloat *rc = ctx->Current.RasterColor; 
+   GLint row, col;
+   r200Vertex vert;
+   GLuint orig_vte;
+   GLuint h;
+
+
+   /* Turn off tcl.  
+    */
+   TCL_FALLBACK( ctx, R200_TCL_FALLBACK_BITMAP, 1 );
+
+   /* Choose tiny vertex format
+    */
+   r200SetVertexFormat( ctx, R200_XYZW_BIT | R200_RGBA_BIT );
+
+   /* Ready for point primitives:
+    */
+   r200RenderPrimitive( ctx, GL_POINTS );
+
+   /* Turn off the hw viewport transformation:
+    */
+   R200_STATECHANGE( rmesa, vte );
+   orig_vte = rmesa->hw.vte.cmd[VTE_SE_VTE_CNTL];
+   rmesa->hw.vte.cmd[VTE_SE_VTE_CNTL] &= ~(R200_VPORT_X_SCALE_ENA |
+					   R200_VPORT_Y_SCALE_ENA |
+					   R200_VPORT_Z_SCALE_ENA |
+					   R200_VPORT_X_OFFSET_ENA |
+					   R200_VPORT_Y_OFFSET_ENA |
+					   R200_VPORT_Z_OFFSET_ENA); 
+
+   /* Turn off other stuff:  Stipple?, texture?, blending?, etc.
+    */
+
+
+   /* Populate the vertex
+    *
+    * Incorporate FOG into RGBA
+    */
+   if (ctx->Fog.Enabled) {
+      const GLfloat *fc = ctx->Fog.Color;
+      GLfloat color[4];
+      GLfloat f;
+
+      if (ctx->Fog.FogCoordinateSource == GL_FOG_COORDINATE_EXT)
+         f = _mesa_z_to_fogfactor(ctx, ctx->Current.FogCoord);
+      else
+         f = _mesa_z_to_fogfactor(ctx, ctx->Current.RasterDistance);
+
+      color[0] = f * rc[0] + (1.F - f) * fc[0];
+      color[1] = f * rc[1] + (1.F - f) * fc[1];
+      color[2] = f * rc[2] + (1.F - f) * fc[2];
+      color[3] = rc[3];
+
+      UNCLAMPED_FLOAT_TO_CHAN(vert.tv.color.red,   color[0]);
+      UNCLAMPED_FLOAT_TO_CHAN(vert.tv.color.green, color[1]);
+      UNCLAMPED_FLOAT_TO_CHAN(vert.tv.color.blue,  color[2]);
+      UNCLAMPED_FLOAT_TO_CHAN(vert.tv.color.alpha, color[3]);
+   }
+   else {
+      UNCLAMPED_FLOAT_TO_CHAN(vert.tv.color.red,   rc[0]);
+      UNCLAMPED_FLOAT_TO_CHAN(vert.tv.color.green, rc[1]);
+      UNCLAMPED_FLOAT_TO_CHAN(vert.tv.color.blue,  rc[2]);
+      UNCLAMPED_FLOAT_TO_CHAN(vert.tv.color.alpha, rc[3]);
+   }
+
+
+   vert.tv.z = ctx->Current.RasterPos[2];
+
+
+   /* Update window height
+    */
+   LOCK_HARDWARE( rmesa );
+   UNLOCK_HARDWARE( rmesa );
+   h = rmesa->dri.drawable->h + rmesa->dri.drawable->y;
+   px += rmesa->dri.drawable->x;
+
+   /* Clipping handled by existing mechansims in r200_ioctl.c?
+    */
+   for (row=0; row<height; row++) {
+      const GLubyte *src = (const GLubyte *) 
+	 _mesa_image_address( unpack, bitmap, width, height, 
+			      GL_COLOR_INDEX, GL_BITMAP, 0, row, 0 );
+
+      if (unpack->LsbFirst) {
+         /* Lsb first */
+         GLubyte mask = 1U << (unpack->SkipPixels & 0x7);
+         for (col=0; col<width; col++) {
+            if (*src & mask) {
+	       vert.tv.x = px+col;
+	       vert.tv.y = h - (py+row) - 1;
+	       r200_point( rmesa, &vert );
+            }
+	    src += (mask >> 7);
+	    mask = ((mask << 1) & 0xff) | (mask >> 7);
+         }
+
+         /* get ready for next row */
+         if (mask != 1)
+            src++;
+      }
+      else {
+         /* Msb first */
+         GLubyte mask = 128U >> (unpack->SkipPixels & 0x7);
+         for (col=0; col<width; col++) {
+            if (*src & mask) {
+	       vert.tv.x = px+col;
+	       vert.tv.y = h - (py+row) - 1;
+	       r200_point( rmesa, &vert );
+            }
+	    src += mask & 1;
+	    mask = ((mask << 7) & 0xff) | (mask >> 1);
+         }
+         /* get ready for next row */
+         if (mask != 128)
+            src++;
+      }
+   }
+
+   /* Fire outstanding vertices, restore state
+    */
+   R200_STATECHANGE( rmesa, vte );
+   rmesa->hw.vte.cmd[VTE_SE_VTE_CNTL] = orig_vte;
+
+   /* Unfallback
+    */
+   TCL_FALLBACK( ctx, R200_TCL_FALLBACK_BITMAP, 0 );
+
+   /* Need to restore vertexformat?
+    */
+   if (rmesa->TclFallback)
+      r200ChooseVertexState( ctx );
 }
 
 

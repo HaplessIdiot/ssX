@@ -1,4 +1,5 @@
 XFree86 4.2.99.3 (xx December 2002)
+ 648. Resync with DRI (mesa-4-0-4-branch).
  647. Update XDarwin's IOKit mode to work with new event handling code
       (Torrey T. Lyons).
  646. Add some more aliases for some German locales (#A.1263, Thomas Koeller).
@@ -15819,4 +15820,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2448 2002/12/15 01:53:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2449 2002/12/15 06:10:12 torrey Exp $

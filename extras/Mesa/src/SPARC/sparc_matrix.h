@@ -1,4 +1,3 @@
-/* $Id: sparc_matrix.h,v 1.1 2002/02/22 17:14:03 dawes Exp $ */
 
 #ifndef _SPARC_MATRIX_H
 #define _SPARC_MATRIX_H

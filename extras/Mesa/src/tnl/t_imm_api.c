@@ -1,4 +1,3 @@
-/* $Id: t_imm_api.c,v 1.2 2002/12/11 21:28:39 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.31 2002/10/31 05:49:58 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.32 2002/10/31 18:06:59 anderson Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -430,6 +430,7 @@ typedef struct {
 
     CARD32            pciCommand;
 
+    Bool              CPRuns;           /* CP is running */
     Bool              CPInUse;          /* CP has been used by X server */
     Bool              CPStarted;        /* CP has started */
     int               CPMode;           /* CP mode that server/clients use */
@@ -599,6 +600,7 @@ do {									\
     }									\
     info->CPStarted = FALSE;                                            \
     RADEONEngineRestore(pScrn);						\
+    info->CPRuns = FALSE;						\
 } while (0)
 
 #define RADEONCP_RESET(pScrn, info)					\

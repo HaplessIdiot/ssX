@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_texmem.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_texmem.c,v 1.6 2002/11/05 17:46:09 tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -35,17 +35,10 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include "radeon_context.h"
-#include "radeon_state.h"
-#include "radeon_ioctl.h"
-#include "radeon_swtcl.h"
 #include "radeon_tex.h"
 
 #include "context.h"
-#include "colormac.h"
-#include "mmath.h"
-#include "macros.h"
 #include "simple_list.h"
-#include "enums.h"
 #include "mem.h"
 
 

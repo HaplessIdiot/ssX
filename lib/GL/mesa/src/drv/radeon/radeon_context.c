@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_context.c,v 1.4 2002/09/10 00:39:39 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_context.c,v 1.5 2002/10/30 12:51:54 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -35,7 +35,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
 
-#include <stdlib.h>
 
 #include "radeon_context.h"
 #include "radeon_ioctl.h"
@@ -54,7 +53,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "tnl/tnl.h"
 #include "tnl/t_pipeline.h"
 
-#include "attrib.h"
 #include "api_arrayelt.h"
 #include "context.h"
 #include "simple_list.h"
@@ -574,8 +572,10 @@ radeonDestroyContext( __DRIcontextPrivate *driContextPriv )
       radeonDestroySwtcl( rmesa->glCtx );
 
       radeonReleaseArrays( rmesa->glCtx, ~0 );
-      if (rmesa->dma.current.buf)
+      if (rmesa->dma.current.buf) {
 	 radeonReleaseDmaRegion( rmesa, &rmesa->dma.current, __FUNCTION__ );
+	 radeonFlushCmdBuf( rmesa, __FUNCTION__ );
+      }
 
       if (!rmesa->TclFallback & RADEON_TCL_FALLBACK_TCL_DISABLE)
 	 if (!getenv("RADEON_NO_VTXFMT"))

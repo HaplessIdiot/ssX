@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_state.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_state.c,v 1.2 2002/11/05 17:46:08 tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -889,6 +889,7 @@ static void r200ColorMaterial( GLcontext *ctx, GLenum face, GLenum mode )
 
 	 for (p = 0 ; p < MAX_LIGHTS; p++) 
 	    update_light_colors( ctx, p );
+	 update_global_ambient( ctx );
       }
    }
    

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_vtxfmt_c.c,v 1.1 2002/10/30 12:51:53 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -113,72 +113,71 @@ static void r200_Vertex2fv( const GLfloat *v )
  */
 static void r200_Color3ub_ub( GLubyte r, GLubyte g, GLubyte b )
 {
-   GLubyte *dest = vb.ubytecolorptr;
-   dest[0] = r;
-   dest[1] = g;
-   dest[2] = b;
-   dest[3] = 0xff;
+   r200_color_t *dest = vb.colorptr;
+   dest->red	= r;
+   dest->green	= g;
+   dest->blue	= b;
+   dest->alpha	= 0xff;
 }
 
 static void r200_Color3ubv_ub( const GLubyte *v )
 {
-   GLubyte *dest = vb.ubytecolorptr;
-   dest[0] = v[0];
-   dest[1] = v[1];
-   dest[2] = v[2];
-   dest[3] = 0xff;
+   r200_color_t *dest = vb.colorptr;
+   dest->red	= v[0];
+   dest->green	= v[1];
+   dest->blue	= v[2];
+   dest->alpha	= 0xff;
 }
 
 static void r200_Color4ub_ub( GLubyte r, GLubyte g, GLubyte b, GLubyte a )
 {
-   GLubyte *dest = vb.ubytecolorptr;
-   dest[0] = r;
-   dest[1] = g;
-   dest[2] = b;
-   dest[3] = a;
+   r200_color_t *dest = vb.colorptr;
+   dest->red	= r;
+   dest->green	= g;
+   dest->blue	= b;
+   dest->alpha	= a;
 }
 
 static void r200_Color4ubv_ub( const GLubyte *v )
 {
-   GLubyte *dest = vb.ubytecolorptr;
-   *(int *)dest = *(int *)v;
+   *(GLuint *)vb.colorptr = LE32_TO_CPU(*(GLuint *)v);
 }
 
 
 static void r200_Color3f_ub( GLfloat r, GLfloat g, GLfloat b )
 {
-   GLubyte *dest = vb.ubytecolorptr;
-   UNCLAMPED_FLOAT_TO_UBYTE( dest[0], r );
-   UNCLAMPED_FLOAT_TO_UBYTE( dest[1], g );
-   UNCLAMPED_FLOAT_TO_UBYTE( dest[2], b );
-   dest[3] = 255;
+   r200_color_t *dest = vb.colorptr;
+   UNCLAMPED_FLOAT_TO_UBYTE( dest->red,   r );
+   UNCLAMPED_FLOAT_TO_UBYTE( dest->green, g );
+   UNCLAMPED_FLOAT_TO_UBYTE( dest->blue,  b );
+   dest->alpha = 255;
 }
 
 static void r200_Color3fv_ub( const GLfloat *v )
 {
-   GLubyte *dest = vb.ubytecolorptr;
-   UNCLAMPED_FLOAT_TO_UBYTE( dest[0], v[0] );
-   UNCLAMPED_FLOAT_TO_UBYTE( dest[1], v[1] );
-   UNCLAMPED_FLOAT_TO_UBYTE( dest[2], v[2] );
-   dest[3] = 255;
+   r200_color_t *dest = vb.colorptr;
+   UNCLAMPED_FLOAT_TO_UBYTE( dest->red,   v[0] );
+   UNCLAMPED_FLOAT_TO_UBYTE( dest->green, v[1] );
+   UNCLAMPED_FLOAT_TO_UBYTE( dest->blue,  v[2] );
+   dest->alpha = 255;
 }
 
 static void r200_Color4f_ub( GLfloat r, GLfloat g, GLfloat b, GLfloat a )
 {
-   GLubyte *dest = vb.ubytecolorptr;
-   UNCLAMPED_FLOAT_TO_UBYTE( dest[0], r );
-   UNCLAMPED_FLOAT_TO_UBYTE( dest[1], g );
-   UNCLAMPED_FLOAT_TO_UBYTE( dest[2], b );
-   UNCLAMPED_FLOAT_TO_UBYTE( dest[3], a );
+   r200_color_t *dest = vb.colorptr;
+   UNCLAMPED_FLOAT_TO_UBYTE( dest->red,   r );
+   UNCLAMPED_FLOAT_TO_UBYTE( dest->green, g );
+   UNCLAMPED_FLOAT_TO_UBYTE( dest->blue,  b );
+   UNCLAMPED_FLOAT_TO_UBYTE( dest->alpha, a );
 }
 
 static void r200_Color4fv_ub( const GLfloat *v )
 {
-   GLubyte *dest = vb.ubytecolorptr;
-   UNCLAMPED_FLOAT_TO_UBYTE( dest[0], v[0] );
-   UNCLAMPED_FLOAT_TO_UBYTE( dest[1], v[1] );
-   UNCLAMPED_FLOAT_TO_UBYTE( dest[2], v[2] );
-   UNCLAMPED_FLOAT_TO_UBYTE( dest[3], v[3] );
+   r200_color_t *dest = vb.colorptr;
+   UNCLAMPED_FLOAT_TO_UBYTE( dest->red,	  v[0] );
+   UNCLAMPED_FLOAT_TO_UBYTE( dest->green, v[1] );
+   UNCLAMPED_FLOAT_TO_UBYTE( dest->blue,  v[2] );
+   UNCLAMPED_FLOAT_TO_UBYTE( dest->alpha, v[3] );
 }
 
 
@@ -332,40 +331,76 @@ static void r200_Color4fv_3f( const GLfloat *v )
 
 /* Secondary Color:
  */
-static void r200_SecondaryColor3ubEXT( GLubyte r, GLubyte g, GLubyte b )
+static void r200_SecondaryColor3ubEXT_ub( GLubyte r, GLubyte g, GLubyte b )
 {
-   GLubyte *dest = vb.ubytespecptr;
+   r200_color_t *dest = vb.specptr;
+   dest->red	= r;
+   dest->green	= g;
+   dest->blue	= b;
+   dest->alpha	= 0xff;
+}
+
+static void r200_SecondaryColor3ubvEXT_ub( const GLubyte *v )
+{
+   r200_color_t *dest = vb.specptr;
+   dest->red	= v[0];
+   dest->green	= v[1];
+   dest->blue	= v[2];
+   dest->alpha	= 0xff;
+}
+
+static void r200_SecondaryColor3fEXT_ub( GLfloat r, GLfloat g, GLfloat b )
+{
+   r200_color_t *dest = vb.specptr;
+   UNCLAMPED_FLOAT_TO_UBYTE( dest->red,	  r );
+   UNCLAMPED_FLOAT_TO_UBYTE( dest->green, g );
+   UNCLAMPED_FLOAT_TO_UBYTE( dest->blue,  b );
+   dest->alpha = 255;
+}
+
+static void r200_SecondaryColor3fvEXT_ub( const GLfloat *v )
+{
+   r200_color_t *dest = vb.specptr;
+   UNCLAMPED_FLOAT_TO_UBYTE( dest->red,	  v[0] );
+   UNCLAMPED_FLOAT_TO_UBYTE( dest->green, v[1] );
+   UNCLAMPED_FLOAT_TO_UBYTE( dest->blue,  v[2] );
+   dest->alpha = 255;
+}
+
+static void r200_SecondaryColor3ubEXT_3f( GLubyte r, GLubyte g, GLubyte b )
+{
+   GLfloat *dest = vb.floatspecptr;
+   dest[0] = UBYTE_TO_FLOAT(r);
+   dest[1] = UBYTE_TO_FLOAT(g);
+   dest[2] = UBYTE_TO_FLOAT(b);
+   dest[3] = 1.0;
+}
+
+static void r200_SecondaryColor3ubvEXT_3f( const GLubyte *v )
+{
+   GLfloat *dest = vb.floatspecptr;
+   dest[0] = UBYTE_TO_FLOAT(v[0]);
+   dest[1] = UBYTE_TO_FLOAT(v[1]);
+   dest[2] = UBYTE_TO_FLOAT(v[2]);
+   dest[3] = 1.0;
+}
+
+static void r200_SecondaryColor3fEXT_3f( GLfloat r, GLfloat g, GLfloat b )
+{
+   GLfloat *dest = vb.floatspecptr;
    dest[0] = r;
    dest[1] = g;
    dest[2] = b;
-   dest[3] = 0xff;
+   dest[3] = 1.0;
 }
 
-static void r200_SecondaryColor3ubvEXT( const GLubyte *v )
+static void r200_SecondaryColor3fvEXT_3f( const GLfloat *v )
 {
-   GLubyte *dest = vb.ubytespecptr;
+   GLfloat *dest = vb.floatspecptr;
    dest[0] = v[0];
    dest[1] = v[1];
    dest[2] = v[2];
-   dest[3] = 0xff;
-}
-
-static void r200_SecondaryColor3fEXT( GLfloat r, GLfloat g, GLfloat b )
-{
-   GLubyte *dest = vb.ubytespecptr;
-   UNCLAMPED_FLOAT_TO_UBYTE( dest[0], r );
-   UNCLAMPED_FLOAT_TO_UBYTE( dest[1], g );
-   UNCLAMPED_FLOAT_TO_UBYTE( dest[2], b );
-   dest[3] = 255;
-}
-
-static void r200_SecondaryColor3fvEXT( const GLfloat *v )
-{
-   GLubyte *dest = vb.ubytespecptr;
-   UNCLAMPED_FLOAT_TO_UBYTE( dest[0], v[0] );
-   UNCLAMPED_FLOAT_TO_UBYTE( dest[1], v[1] );
-   UNCLAMPED_FLOAT_TO_UBYTE( dest[2], v[2] );
-   dest[3] = 255;
+   dest[3] = 1.0;
 }
 
 
@@ -553,6 +588,43 @@ static void choose_##FN ARGS1						\
 
 
 
+/* Right now there are both _ub and _3f versions of the secondary color
+ * functions.  Currently, we only set-up the hardware to use the _ub versions.
+ * The _3f versions are needed for the cases where secondary color isn't used
+ * in the vertex format, but it still needs to be stored in the context
+ * state vector.
+ */
+#define CHOOSE_SECONDARY_COLOR(FN, FNTYPE, MASK0, MASK1, ARGS1, ARGS2 )	\
+static void choose_##FN ARGS1						\
+{									\
+   r200ContextPtr rmesa = R200_CONTEXT(vb.context);			\
+   int key[2];								\
+   struct dynfn *dfn;							\
+									\
+   key[0] = rmesa->vb.vtxfmt_0 & MASK0;					\
+   key[1] = rmesa->vb.vtxfmt_1 & MASK1;					\
+									\
+   dfn = lookup( &rmesa->vb.dfn_cache.FN, key );			\
+   if (dfn == 0)							\
+      dfn = rmesa->vb.codegen.FN( vb.context, key );			\
+   else  if (R200_DEBUG & DEBUG_CODEGEN)				\
+      fprintf(stderr, "%s -- cached version\n", __FUNCTION__ );		\
+									\
+   if (dfn)								\
+      vb.context->Exec->FN = (FNTYPE)(dfn->code);			\
+   else {								\
+      if (R200_DEBUG & DEBUG_CODEGEN)					\
+         fprintf(stderr, "%s -- generic version\n", __FUNCTION__ );	\
+      vb.context->Exec->FN = (VTX_COLOR(rmesa->vb.vtxfmt_0,1) == R200_VTX_PK_RGBA) \
+	  ? r200_##FN##_ub : r200_##FN##_3f;				\
+   }									\
+									\
+   vb.context->Driver.NeedFlush |= FLUSH_UPDATE_CURRENT;		\
+   vb.context->Exec->FN ARGS2;						\
+}
+
+
+
 
 
 /* VTXFMT_0
@@ -605,13 +677,13 @@ CHOOSE_COLOR(Color3fv, pfv, 3, MASK_COLOR, 0,
 	(const GLfloat *v), (v))
 
 
-CHOOSE(SecondaryColor3ubEXT, p3ub, MASK_SPEC, 0, 
+CHOOSE_SECONDARY_COLOR(SecondaryColor3ubEXT, p3ub, MASK_SPEC, 0, 
 	(GLubyte a,GLubyte b, GLubyte c), (a,b,c))
-CHOOSE(SecondaryColor3ubvEXT, pubv, MASK_SPEC, 0, 
+CHOOSE_SECONDARY_COLOR(SecondaryColor3ubvEXT, pubv, MASK_SPEC, 0, 
 	(const GLubyte *v), (v))
-CHOOSE(SecondaryColor3fEXT, p3f, MASK_SPEC, 0,
+CHOOSE_SECONDARY_COLOR(SecondaryColor3fEXT, p3f, MASK_SPEC, 0,
 	(GLfloat a,GLfloat b, GLfloat c), (a,b,c))
-CHOOSE(SecondaryColor3fvEXT, pfv, MASK_SPEC, 0,
+CHOOSE_SECONDARY_COLOR(SecondaryColor3fvEXT, pfv, MASK_SPEC, 0,
 	(const GLfloat *v), (v))
 
 CHOOSE(TexCoord2f, p2f, ~0, MASK_ST0, 

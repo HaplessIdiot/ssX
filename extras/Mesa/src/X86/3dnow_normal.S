@@ -1,4 +1,3 @@
-/* $Id: 3dnow_normal.S,v 1.1 2002/02/22 17:14:08 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

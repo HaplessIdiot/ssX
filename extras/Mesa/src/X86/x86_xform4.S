@@ -1,4 +1,3 @@
-/* $Id: x86_xform4.S,v 1.3 2002/09/09 21:07:33 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -23,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/X86/x86_xform4.S,v 1.2 2002/03/05 20:27:24 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/X86/x86_xform4.S,v 1.3 2002/09/09 21:07:33 dawes Exp $ */
 
 /*
  * NOTE: Avoid using spaces in between '(' ')' and arguments, especially

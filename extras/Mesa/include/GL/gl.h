@@ -1,3 +1,5 @@
+/* $Id: gl.h,v 1.16 2002/12/16 16:18:25 dawes Exp $ */
+
 /*
  * Mesa 3-D graphics library
  * Version:  4.0.4

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.24 2002/10/08 22:14:08 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.26 2002/11/29 11:06:42 eich Exp $ */
 
 /*
  * Copyright 2000 VA Linux Systems Inc., Fremont, California.
@@ -919,6 +919,38 @@ static Bool MGADRIKernelInit( ScreenPtr pScreen )
    return TRUE;
 }
 
+static void MGADRIIrqInit(MGAPtr pMga, ScreenPtr pScreen)
+{
+   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+
+   /*   version = drmGetVersion(pMga->drmFD);
+      if ( version ) {
+         if ( version->version_major != 3 ||
+	      version->version_minor < 0 ) {*/
+   if (!pMga->irq) {
+      pMga->irq = drmGetInterruptFromBusID(
+	 pMga->drmFD,
+	 ((pciConfigPtr)pMga->PciInfo->thisCard)->busnum,
+	 ((pciConfigPtr)pMga->PciInfo->thisCard)->devnum,
+	 ((pciConfigPtr)pMga->PciInfo->thisCard)->funcnum);
+
+      if((drmCtlInstHandler(pMga->drmFD, pMga->irq)) != 0) {
+	 xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		    "[drm] failure adding irq handler, "
+		    "there is a device already using that irq\n"
+		    "[drm] falling back to irq-free operation\n");
+	 pMga->irq = 0;
+      } else {
+          pMga->reg_ien = INREG( MGAREG_IEN );
+      }
+   }
+
+   if (pMga->irq)
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		 "[drm] dma control initialized, using IRQ %d\n",
+		 pMga->irq);
+}
+
 static Bool MGADRIBuffersInit( ScreenPtr pScreen )
 {
    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
@@ -1254,6 +1286,8 @@ Bool MGADRIFinishScreenInit( ScreenPtr pScreen )
       return FALSE;
    }
 
+   MGADRIIrqInit(pMga, pScreen);
+
    switch(pMga->Chipset) {
    case PCI_CHIP_MGAG550:
    case PCI_CHIP_MGAG400:
@@ -1320,6 +1354,11 @@ void MGADRICloseScreen( ScreenPtr pScreen )
    if ( pMGADRIServer->drmBuffers ) {
       drmUnmapBufs( pMGADRIServer->drmBuffers );
       pMGADRIServer->drmBuffers = NULL;
+   }
+
+   if (pMga->irq) {
+      drmCtlUninstHandler(pMga->drmFD);
+      pMga->irq = 0;
    }
 
    /* Cleanup DMA */

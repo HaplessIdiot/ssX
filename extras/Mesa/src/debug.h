@@ -1,4 +1,3 @@
-/* $Id: debug.h,v 1.1 2002/02/22 17:13:35 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

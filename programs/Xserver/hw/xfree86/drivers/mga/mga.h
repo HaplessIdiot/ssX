@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.83 2002/09/16 18:05:55 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.84 2002/10/30 12:52:19 alanh Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -403,6 +403,8 @@ typedef struct {
     int 		agpMode;
     int                 agpSize;
 
+    int                 irq;
+    CARD32              reg_ien;
 #endif
     XF86VideoAdaptorPtr adaptor;
     Bool		DualHeadEnabled;

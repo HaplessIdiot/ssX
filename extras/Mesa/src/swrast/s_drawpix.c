@@ -1,10 +1,9 @@
-/* $Id: s_drawpix.c,v 1.1 2002/02/22 17:14:12 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.3
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -560,6 +559,11 @@ draw_stencil_pixels( GLcontext *ctx, GLint x, GLint y,
       return;
    }
 
+   if (ctx->Visual.stencilBits == 0) {
+      _mesa_error( ctx, GL_INVALID_OPERATION, "glDrawPixels(no stencil buffer)");
+      return;
+   }
+
    drawWidth = (width > MAX_WIDTH) ? MAX_WIDTH : width;
 
    for (row = 0; row < height; row++, y++) {
@@ -638,7 +642,7 @@ draw_depth_pixels( GLcontext *ctx, GLint x, GLint y,
       }
    }
 
-   if (type==GL_UNSIGNED_SHORT && sizeof(GLdepth)==sizeof(GLushort)
+   if (type==GL_UNSIGNED_SHORT && ctx->Visual.depthBits == 16
        && !bias_or_scale && !zoom && ctx->Visual.rgbMode) {
       /* Special case: directly write 16-bit depth values */
       GLint row;
@@ -681,7 +685,7 @@ draw_depth_pixels( GLcontext *ctx, GLint x, GLint y,
             const GLfloat zs = ctx->DepthMaxF;
             GLint i;
             for (i = 0; i < drawWidth; i++) {
-               zspan[i] = (GLdepth) (fspan[i] * zs);
+               zspan[i] = (GLdepth) (fspan[i] * zs + 0.5F);
             }
          }
 
@@ -758,8 +762,8 @@ draw_rgba_pixels( GLcontext *ctx, GLint x, GLint y,
 
 
    if (SWRAST_CONTEXT(ctx)->_RasterMask == 0 && !zoom && x >= 0 && y >= 0
-       && x + width <= ctx->DrawBuffer->Width
-       && y + height <= ctx->DrawBuffer->Height) {
+       && x + width <= (GLint) ctx->DrawBuffer->Width
+       && y + height <= (GLint) ctx->DrawBuffer->Height) {
       quickDraw = GL_TRUE;
    }
    else {

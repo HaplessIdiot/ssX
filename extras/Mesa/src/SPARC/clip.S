@@ -1,4 +1,3 @@
-/* $Id: clip.S,v 1.1 2002/02/22 17:14:02 dawes Exp $ */
 
 #ifdef __sparc_v9__
 #define LDPTR		ldx

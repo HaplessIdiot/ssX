@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.20 2002/10/30 12:52:13 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.22 2002/11/25 14:04:57 eich Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -38,6 +38,7 @@
 
 				/* Driver data structures */
 #include "radeon.h"
+#include "radeon_macros.h"
 #include "radeon_dri.h"
 #include "radeon_reg.h"
 #include "radeon_version.h"
@@ -94,7 +95,9 @@ static Bool RADEONInitVisualConfigs(ScreenPtr pScreen)
     __GLXvisualConfig   *pConfigs          = 0;
     RADEONConfigPrivPtr  pRADEONConfigs    = 0;
     RADEONConfigPrivPtr *pRADEONConfigPtrs = 0;
-    int                  i, accum, stencil;
+    int                  i, accum, stencil, db, use_db;
+
+    use_db = !info->noBackBuffer ? 1 : 0;
 
     switch (info->CurrentLayout.pixel_code) {
     case 8:  /* 8bpp mode is not support */
@@ -113,6 +116,7 @@ static Bool RADEONInitVisualConfigs(ScreenPtr pScreen)
 	numConfigs = 1;
 	if (RADEON_USE_ACCUM)   numConfigs *= 2;
 	if (RADEON_USE_STENCIL) numConfigs *= 2;
+	if (use_db)             numConfigs *= 2;
 
 	if (!(pConfigs
 	      = (__GLXvisualConfig *)xcalloc(sizeof(__GLXvisualConfig),
@@ -134,7 +138,8 @@ static Bool RADEONInitVisualConfigs(ScreenPtr pScreen)
 	}
 
 	i = 0;
-	for (accum = 0; accum <= RADEON_USE_ACCUM; accum++) {
+	for (db = 0; db <= use_db; db++) {
+	  for (accum = 0; accum <= RADEON_USE_ACCUM; accum++) {
 	    for (stencil = 0; stencil <= RADEON_USE_STENCIL; stencil++) {
 		pRADEONConfigPtrs[i] = &pRADEONConfigs[i];
 
@@ -160,7 +165,10 @@ static Bool RADEONInitVisualConfigs(ScreenPtr pScreen)
 		    pConfigs[i].accumBlueSize  = 0;
 		    pConfigs[i].accumAlphaSize = 0;
 		}
-		pConfigs[i].doubleBuffer       = !info->noBackBuffer;
+		if (db)
+		    pConfigs[i].doubleBuffer   = TRUE;
+		else
+		    pConfigs[i].doubleBuffer   = FALSE;
 		pConfigs[i].stereo             = FALSE;
 		pConfigs[i].bufferSize         = 16;
 		pConfigs[i].depthSize          = 16;
@@ -183,6 +191,7 @@ static Bool RADEONInitVisualConfigs(ScreenPtr pScreen)
 		pConfigs[i].transparentIndex   = 0;
 		i++;
 	    }
+	  }
 	}
 	break;
 
@@ -190,6 +199,7 @@ static Bool RADEONInitVisualConfigs(ScreenPtr pScreen)
 	numConfigs = 1;
 	if (RADEON_USE_ACCUM)   numConfigs *= 2;
 	if (RADEON_USE_STENCIL) numConfigs *= 2;
+	if (use_db)             numConfigs *= 2;
 
 	if (!(pConfigs
 	      = (__GLXvisualConfig *)xcalloc(sizeof(__GLXvisualConfig),
@@ -211,7 +221,8 @@ static Bool RADEONInitVisualConfigs(ScreenPtr pScreen)
 	}
 
 	i = 0;
-	for (accum = 0; accum <= RADEON_USE_ACCUM; accum++) {
+	for (db = 0; db <= use_db; db++) {
+	  for (accum = 0; accum <= RADEON_USE_ACCUM; accum++) {
 	    for (stencil = 0; stencil <= RADEON_USE_STENCIL; stencil++) {
 		pRADEONConfigPtrs[i] = &pRADEONConfigs[i];
 
@@ -237,7 +248,10 @@ static Bool RADEONInitVisualConfigs(ScreenPtr pScreen)
 		    pConfigs[i].accumBlueSize  = 0;
 		    pConfigs[i].accumAlphaSize = 0;
 		}
-		pConfigs[i].doubleBuffer       = !info->noBackBuffer;
+		if (db)
+		    pConfigs[i].doubleBuffer   = TRUE;
+		else
+		    pConfigs[i].doubleBuffer   = FALSE;
 		pConfigs[i].stereo             = FALSE;
 		pConfigs[i].bufferSize         = 24;
 		if (stencil) {
@@ -262,6 +276,7 @@ static Bool RADEONInitVisualConfigs(ScreenPtr pScreen)
 		pConfigs[i].transparentIndex   = 0;
 		i++;
 	    }
+	  }
 	}
 	break;
     }

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_pixel.c,v 1.1 2002/10/30 12:51:52 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -39,6 +39,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "r200_context.h"
 #include "r200_ioctl.h"
 #include "r200_pixel.h"
+#include "r200_swtcl.h"
 
 #include "xf86drm.h"
 #include "swrast/swrast.h"
@@ -460,6 +461,20 @@ r200DrawPixels( GLcontext *ctx,
 }
 
 
+static void
+r200Bitmap( GLcontext *ctx, GLint px, GLint py,
+		  GLsizei width, GLsizei height,
+		  const struct gl_pixelstore_attrib *unpack,
+		  const GLubyte *bitmap )
+{
+   r200ContextPtr rmesa = R200_CONTEXT(ctx);
+
+   if (rmesa->Fallback)
+      _swrast_Bitmap( ctx, px, py, width, height, unpack, bitmap );
+   else
+      r200PointsBitmap( ctx, px, py, width, height, unpack, bitmap );
+}
+
 
 
 void r200InitPixelFuncs( GLcontext *ctx )
@@ -475,5 +490,7 @@ void r200InitPixelFuncs( GLcontext *ctx )
    if (!getenv("R200_NO_BLITS") && R200_CONTEXT(ctx)->dri.drmMinor >= 6) {
       ctx->Driver.ReadPixels = r200ReadPixels;  
       ctx->Driver.DrawPixels = r200DrawPixels; 
+      if (getenv("R200_HW_BITMAP")) 
+	 ctx->Driver.Bitmap = r200Bitmap;
    }
 }

@@ -1,4 +1,3 @@
-/* $Id: s_buffers.c,v 1.1 2002/02/22 17:14:12 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -242,19 +241,19 @@ _swrast_Clear( GLcontext *ctx, GLbitfield mask,
 
 
 void
-_swrast_alloc_buffers( GLcontext *ctx )
+_swrast_alloc_buffers( GLframebuffer *buffer )
 {
    /* Reallocate other buffers if needed. */
-   if (ctx->DrawBuffer->UseSoftwareDepthBuffer) {
-      _mesa_alloc_depth_buffer( ctx );
+   if (buffer->UseSoftwareDepthBuffer) {
+      _mesa_alloc_depth_buffer( buffer );
    }
-   if (ctx->DrawBuffer->UseSoftwareStencilBuffer) {
-      _mesa_alloc_stencil_buffer( ctx );
+   if (buffer->UseSoftwareStencilBuffer) {
+      _mesa_alloc_stencil_buffer( buffer );
    }
-   if (ctx->DrawBuffer->UseSoftwareAccumBuffer) {
-      _mesa_alloc_accum_buffer( ctx );
+   if (buffer->UseSoftwareAccumBuffer) {
+      _mesa_alloc_accum_buffer( buffer );
    }
-   if (ctx->DrawBuffer->UseSoftwareAlphaBuffers) {
-      _mesa_alloc_alpha_buffers( ctx );
+   if (buffer->UseSoftwareAlphaBuffers) {
+      _mesa_alloc_alpha_buffers( buffer );
    }
 }

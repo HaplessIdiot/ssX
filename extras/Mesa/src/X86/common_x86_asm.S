@@ -1,3 +1,4 @@
+
 /*
  * Mesa 3-D graphics library
  * Version:  4.0.3
@@ -21,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/X86/common_x86_asm.S,v 1.14 2002/10/29 18:19:43 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/X86/common_x86_asm.S,v 1.15 2002/11/18 18:11:43 dawes Exp $ */
 
 /*
  * Check extended CPU capabilities.  Now justs returns the raw CPUID

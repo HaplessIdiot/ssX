@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_context.h,v 1.4tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_context.h,v 1.5 2002/11/05 17:46:07 tsi Exp $ */
 /*
  * Copyright 2001 by Alan Hourihane.
  *
@@ -299,11 +299,11 @@ struct gamma_context {
 
 	memHeap_t *texHeap;
 
-   	int lastSwap;
+   	unsigned int lastSwap;
    	int texAge;
    	int ctxAge;
    	int dirtyAge;
-        int lastStamp;
+   	unsigned int lastStamp;
    
 
     	CARD32 			ClearColor;

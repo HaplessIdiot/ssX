@@ -1,10 +1,9 @@
-/* $Id: s_copypix.c,v 1.1 2002/02/22 17:14:12 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.3
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -128,7 +127,7 @@ copy_conv_rgba_pixels(GLcontext *ctx, GLint srcx, GLint srcy,
    if (SWRAST_CONTEXT(ctx)->_RasterMask == 0
        && !zoom
        && destx >= 0
-       && destx + width <= ctx->DrawBuffer->Width) {
+       && destx + width <= (GLint) ctx->DrawBuffer->Width) {
       quick_draw = GL_TRUE;
    }
    else {
@@ -286,7 +285,7 @@ copy_conv_rgba_pixels(GLcontext *ctx, GLint srcx, GLint srcy,
       /* write row to framebuffer */
 
       dy = desty + row;
-      if (quick_draw && dy >= 0 && dy < ctx->DrawBuffer->Height) {
+      if (quick_draw && dy >= 0 && dy < (GLint) ctx->DrawBuffer->Height) {
          (*swrast->Driver.WriteRGBASpan)( ctx, width, destx, dy,
 				       (const GLchan (*)[4])rgba, NULL );
       }
@@ -366,7 +365,7 @@ copy_rgba_pixels(GLcontext *ctx, GLint srcx, GLint srcy,
    if (SWRAST_CONTEXT(ctx)->_RasterMask == 0
        && !zoom
        && destx >= 0
-       && destx + width <= ctx->DrawBuffer->Width) {
+       && destx + width <= (GLint) ctx->DrawBuffer->Width) {
       quick_draw = GL_TRUE;
    }
    else {
@@ -404,7 +403,7 @@ copy_rgba_pixels(GLcontext *ctx, GLint srcx, GLint srcy,
       for (j = 0; j < height; j++, ssy += stepy) {
          _mesa_read_rgba_span( ctx, ctx->ReadBuffer, width, srcx, ssy,
                             (GLchan (*)[4]) p );
-         p += (width * sizeof(GLchan) * 4);
+         p += width * 4;
       }
       p = tmpImage;
    }
@@ -418,7 +417,7 @@ copy_rgba_pixels(GLcontext *ctx, GLint srcx, GLint srcy,
       if (overlapping) {
          /* get from buffered image */
          MEMCPY(rgba, p, width * sizeof(GLchan) * 4);
-         p += (width * sizeof(GLchan) * 4);
+         p += width * 4;
       }
       else {
          /* get from framebuffer */
@@ -556,7 +555,7 @@ copy_rgba_pixels(GLcontext *ctx, GLint srcx, GLint srcy,
          UNDEFARRAY(q);
       }
 
-      if (quick_draw && dy >= 0 && dy < ctx->DrawBuffer->Height) {
+      if (quick_draw && dy >= 0 && dy < (GLint) ctx->DrawBuffer->Height) {
          (*swrast->Driver.WriteRGBASpan)( ctx, width, destx, dy,
 				       (const GLchan (*)[4])rgba, NULL );
       }

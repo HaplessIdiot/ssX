@@ -25,7 +25,7 @@
 /* Adapted for use in the I830M driver: 
  *   Jeff Hartmann <jhartmann@2d3d.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_context.h,v 1.2 2002/09/11 00:29:25 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_context.h,v 1.3 2002/12/10 01:26:53 dawes Exp $ */
 
 #ifndef I830CONTEXT_INC
 #define I830CONTEXT_INC
@@ -168,7 +168,7 @@ struct i830_context_t
    GLuint StippleSetup[I830_STP_SETUP_SIZE];
    int vertex_size;
    int vertex_stride_shift;
-   GLint lastStamp;
+   unsigned int lastStamp;
    GLboolean hw_stipple;
 
    GLenum TexEnvImageFmt[2];

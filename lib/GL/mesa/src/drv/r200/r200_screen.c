@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_screen.c,v 1.1 2002/10/30 12:51:52 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -146,6 +146,7 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
       ret = drmCommandWriteRead( sPriv->fd, DRM_RADEON_GETPARAM,
 				 &gp, sizeof(gp));
       if (ret) {
+	 FREE( r200Screen );
 	 fprintf(stderr, "drmR200GetParam: %d\n", ret);
 	 return NULL;
       }
@@ -161,7 +162,10 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
 	 ret = drmCommandWriteRead( sPriv->fd, DRM_RADEON_GETPARAM,
 				    &gp, sizeof(gp));
 	 if (ret) {
-	    fprintf(stderr, "drmR200GetParam: %d\n", ret);
+	    FREE( r200Screen );
+	    fprintf(stderr,
+		    "drmR200GetParam (RADEON_PARAM_AGP_BUFFER_OFFSET): %d\n",
+		    ret);
 	    return NULL;
 	 }
       }
@@ -173,7 +177,8 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
 	 ret = drmCommandWriteRead( sPriv->fd, DRM_RADEON_GETPARAM,
 				    &gp, sizeof(gp));
 	 if (ret) {
-	    fprintf(stderr, "drmR200GetParam: %d\n", ret);
+	    FREE( r200Screen );
+	    fprintf(stderr, "drmR200GetParam (RADEON_PARAM_IRQ_NR): %d\n", ret);
 	    return NULL;
 	 }
       }

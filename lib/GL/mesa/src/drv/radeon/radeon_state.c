@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_state.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_state.c,v 1.7 2002/11/05 17:46:09 tsi Exp $ */
 /*
  * Copyright 2000, 2001 VA Linux Systems Inc., Fremont, California.
  *
@@ -883,6 +883,7 @@ static void radeonColorMaterial( GLcontext *ctx, GLenum face, GLenum mode )
 
 	 for (p = 0 ; p < MAX_LIGHTS; p++) 
 	    update_light_colors( ctx, p );
+	 update_global_ambient( ctx );
       }
    }
    

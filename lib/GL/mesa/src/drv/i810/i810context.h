@@ -21,7 +21,7 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810context.h,v 1.7 2002/02/22 21:33:03 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810context.h,v 1.8 2002/10/30 12:51:33 alanh Exp $ */
 
 #ifndef I810CONTEXT_INC
 #define I810CONTEXT_INC
@@ -133,7 +133,7 @@ struct i810_context_t {
    GLuint BufferSetup[I810_DEST_SETUP_SIZE];
    int vertex_size;
    int vertex_stride_shift;
-   GLint lastStamp;
+   unsigned int lastStamp;
    GLboolean stipple_in_hw;
 
    GLenum TexEnvImageFmt[2];

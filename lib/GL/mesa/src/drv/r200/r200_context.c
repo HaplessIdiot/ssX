@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_context.c,v 1.1 2002/10/30 12:51:51 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -420,9 +420,6 @@ GLboolean r200CreateContext( Display *dpy, const __GLcontextModes *glVisual,
    r200InitState( rmesa );
    r200InitSwtcl( ctx );
 
-   if (rmesa->r200Screen->irq && getenv("LIBGL_THROTTLE_REFRESH"))
-      rmesa->vblwait = GL_TRUE;
-
    rmesa->iw.irq_seq = -1;
    rmesa->irqsEmitted = 0;
    rmesa->do_irqs = (rmesa->dri.drmMinor >= 6 && 
@@ -515,8 +512,10 @@ void r200DestroyContext( __DRIcontextPrivate *driContextPriv )
 
       r200ReleaseArrays( rmesa->glCtx, ~0 );
 
-      if (rmesa->dma.current.buf)
+      if (rmesa->dma.current.buf) {
 	 r200ReleaseDmaRegion( rmesa, &rmesa->dma.current, __FUNCTION__ );
+	 r200FlushCmdBuf( rmesa, __FUNCTION__ );
+      }
 
       if (!rmesa->TclFallback & R200_TCL_FALLBACK_TCL_DISABLE)
 	 if (!getenv("R200_NO_VTXFMT"))
@@ -551,10 +550,6 @@ r200SwapBuffers(Display *dpy, void *drawablePrivate)
       ctx = rmesa->glCtx;
       if (ctx->Visual.doubleBufferMode) {
          _mesa_swapbuffers( ctx );  /* flush pending rendering comands */
-
-	 if ( rmesa->vblwait ) {
-	    r200WaitForVBlank( rmesa );
-	 }
 
          if ( rmesa->doPageFlip ) {
             r200PageFlip( dPriv );

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_context.h,v 1.1 2002/10/30 12:51:52 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -722,12 +722,24 @@ struct r200_vb {
    GLint *dmaptr;
    void (*notify)( void );
    GLint vertex_size;
-   union { float f; int i; GLubyte ub4[4]; } vertex[15];
+
+   /* A maximum total of 15 elements per vertex:  3 floats for position, 3
+    * floats for normal, 4 floats for color, 4 bytes for secondary color,
+    * 2 floats for each texture unit (4 floats total).
+    * 
+    * As soon as the 3rd TMU is supported or cube maps (or 3D textures) are
+    * supported, this value will grow.
+    * 
+    * The position data is never actually stored here, so 3 elements could be
+    * trimmed out of the buffer.
+    */
+   union { float f; int i; r200_color_t color; } vertex[15];
 
    GLfloat *normalptr;
    GLfloat *floatcolorptr;
-   GLubyte *ubytecolorptr;
-   GLubyte *ubytespecptr;
+   r200_color_t *colorptr;
+   GLfloat *floatspecptr;
+   r200_color_t *specptr;
    GLfloat *texcoordptr[2];
 
    GLcontext *context;		/* current context : Single thread only! */
@@ -814,7 +826,7 @@ struct r200_context {
     */
    GLuint numClipRects;			/* Cliprects for the draw buffer */
    XF86DRIClipRectPtr pClipRects;
-   GLuint lastStamp;
+   unsigned int lastStamp;
    GLboolean lost_context;
    r200ScreenPtr r200Screen;	/* Screen private DRI data */
    RADEONSAREAPrivPtr sarea;		/* Private SAREA data */
@@ -834,7 +846,6 @@ struct r200_context {
    /* VBI
     */
    GLuint vbl_seq;
-   GLboolean vblwait;
 
    /* r200_tcl.c
     */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_ioctl.c,v 1.1 2002/10/30 12:51:52 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_ioctl.c,v 1.2 2002/12/11 02:59:49 dawes Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -412,6 +412,8 @@ void r200CopyBuffer( const __DRIdrawablePrivate *dPriv )
     */
    r200WaitForFrameCompletion( rmesa );
 
+   r200WaitForVBlank( rmesa );
+
    nbox = rmesa->dri.drawable->numClipRects; /* must be in locked region */
 
    for ( i = 0 ; i < nbox ; ) {
@@ -477,6 +479,8 @@ void r200PageFlip( const __DRIdrawablePrivate *dPriv )
     * request at a time.
     */
    r200WaitForFrameCompletion( rmesa );
+
+   r200WaitForVBlank( rmesa );
 
    ret = drmCommandNone( rmesa->dri.fd, DRM_RADEON_FLIP );
 
@@ -699,17 +703,33 @@ void r200WaitForVBlank( r200ContextPtr rmesa )
    drmVBlank vbl;
    int ret;
 
-   assert( rmesa->r200Screen->irq );
+   if ( !rmesa->r200Screen->irq )
+      return;
 
-   /* Wait for at least one vertical blank since the last call */
-   vbl.request.type = DRM_VBLANK_ABSOLUTE;
-   vbl.request.sequence = rmesa->vbl_seq + 1;
+   if ( getenv("LIBGL_SYNC_REFRESH") ) {
+      /* Wait for until the next vertical blank */
+      vbl.request.type = DRM_VBLANK_RELATIVE;
+      vbl.request.sequence = 1;
+   } else if ( getenv("LIBGL_THROTTLE_REFRESH") ) {
+      /* Wait for at least one vertical blank since the last call */
+      vbl.request.type = DRM_VBLANK_ABSOLUTE;
+      vbl.request.sequence = rmesa->vbl_seq + 1;
+   } else {
+      return;
+   }
 
-   if ((ret = drmWaitVBlank( rmesa->dri.fd, &vbl )) &&
-       (R200_DEBUG & DEBUG_IOCTL) )
+   UNLOCK_HARDWARE( rmesa );
+
+   if ((ret = drmWaitVBlank( rmesa->dri.fd, &vbl ))) {
+      fprintf(stderr, "%s: drmWaitVBlank returned %d, IRQs don't seem to be"
+	      " working correctly.\nTry running with LIBGL_THROTTLE_REFRESH"
+	      " and LIBL_SYNC_REFRESH unset.\n", __FUNCTION__, ret);
+      exit(1);
+   } else if (R200_DEBUG & DEBUG_IOCTL)
       fprintf(stderr, "%s: drmWaitVBlank returned %d\n", __FUNCTION__, ret);
-
    rmesa->vbl_seq = vbl.reply.sequence;
+
+   LOCK_HARDWARE( rmesa );
 }
 
 

@@ -25,7 +25,7 @@
  *    Keith Whitwell <keith@tungstengraphics.com>
  *    Gareth Hughes <gareth@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaioctl.c,v 1.14 2002/09/18 17:11:40 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaioctl.c,v 1.15 2002/10/30 12:51:35 alanh Exp $ */
 
 #include <stdio.h>
 
@@ -280,6 +280,36 @@ mgaDDClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
 int nrswaps;
 
 
+void mgaWaitForVBlank( mgaContextPtr mmesa )
+{
+    drmVBlank vbl;
+    int ret;
+
+    if ( !mmesa->mgaScreen->irq )
+	return;
+
+    if ( getenv("LIBGL_SYNC_REFRESH") ) {
+	/* Wait for until the next vertical blank */
+	vbl.request.type = DRM_VBLANK_RELATIVE;
+	vbl.request.sequence = 1;
+    } else if ( getenv("LIBGL_THROTTLE_REFRESH") ) {
+	/* Wait for at least one vertical blank since the last call */
+	vbl.request.type = DRM_VBLANK_ABSOLUTE;
+	vbl.request.sequence = mmesa->vbl_seq + 1;
+    } else {
+	return;
+    }
+
+    if ((ret = drmWaitVBlank( mmesa->driFd, &vbl ))) {
+	fprintf(stderr, "%s: drmWaitVBlank returned %d, IRQs don't seem to be"
+		" working correctly.\nTry running with LIBGL_THROTTLE_REFRESH"
+		" and LIBL_SYNC_REFRESH unset.\n", __FUNCTION__, ret);
+	exit(1);
+    }
+
+    mmesa->vbl_seq = vbl.reply.sequence;
+}
+
 
 /*
  * Copy the back buffer to the front buffer.
@@ -301,6 +331,8 @@ void mgaSwapBuffers(Display *dpy, void *drawablePrivate)
    mmesa = (mgaContextPtr) dPriv->driContextPriv->driverPrivate;
 
    FLUSH_BATCH( mmesa );
+
+   mgaWaitForVBlank( mmesa );
 
    LOCK_HARDWARE( mmesa );
 

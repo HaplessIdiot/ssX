@@ -1,10 +1,9 @@
-/* $Id: m_trans_tmp.h,v 1.1 2002/02/22 17:14:12 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.2
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -132,8 +131,8 @@ static void DEST_4US( GLushort (*t)[4],
                       GLuint stride,
                       ARGS )
 {
-   const GLushort *f = (GLushort *) ptr + SRC_START * stride;
-   const GLushort *first = f;
+   const GLubyte *f = (GLubyte *) ((GLubyte *) ptr + SRC_START * stride);
+   const GLubyte *first = f;
    GLuint i;
    (void) start;
    (void) first;
