@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.12 2002/03/10 04:57:47 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.13 2002/03/12 23:28:55 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -44,7 +44,8 @@ static LispObj *LispReadCommaquote(LispMac*);
 static LispObj *LispReadObject(LispMac*);
 static LispObj *LispParseAtom(LispMac*, char*, char*, int, int);
 static LispObj *LispParseNumber(LispMac*, char*, int);
-static int StringInRadix(char*, int);
+static int StringInRadix(char*, int, int);
+static int AtomSeparator(int, int, int);
 static LispObj *LispReadVector(LispMac*);
 static LispObj *LispReadMacro(LispMac*);
 static LispObj *LispReadFunction(LispMac*);
@@ -463,10 +464,7 @@ LispReadObject(LispMac *mac)
 		ch = toupper(ch);
 	    else if (isspace(ch))
 		break;
-	    /* don't include any of these characters in an atom name */
-	    else if (ch == ')' || ch == '"' || ch == ';' || ch == '(' ||
-		     ch == '\'' || ch == '`' || ch == '#' || ch == '|' ||
-		     ch == ',' || ch == '@') {
+	    else if (AtomSeparator(ch, 0, 0)) {
 		LispUnget(mac, ch);
 		break;
 	    }
@@ -738,10 +736,13 @@ LispParseNumber(LispMac *mac, char *str, int radix)
 	str[len] = '\0';
 
     if (ratio || radix != 10) {
-	if (!StringInRadix(str, radix))
+	if (!StringInRadix(str, radix, 1)) {
+	    if (ratio)
+		ratio[-1] = '/';
 	    return (ATOM(str));
-	if (ratio && !StringInRadix(ratio, radix)) {
-	    *ratio = '/';
+	}
+	if (ratio && !StringInRadix(ratio, radix, 0)) {
+	    ratio[-1] = '/';
 	    return (ATOM(str));
 	}
     }
@@ -830,15 +831,17 @@ LispParseNumber(LispMac *mac, char *str, int radix)
 }
 
 static int
-StringInRadix(char *str, int radix)
+StringInRadix(char *str, int radix, int skip_sign)
 {
+    if (skip_sign && (*str == '-' || *str == '+'))
+	++str;
     while (*str) {
 	if (*str >= '0' && *str <= '9') {
 	    if (*str - '0' >= radix)
 		return (0);
 	}
 	else if (*str >= 'A' && *str <= 'Z') {
-	    if (radix <= 10 || *str - 'A' >= radix)
+	    if (radix <= 10 || *str - 'A' + 10 >= radix)
 		return (0);
 	}
 	else
@@ -847,6 +850,16 @@ StringInRadix(char *str, int radix)
     }
 
     return (1);
+}
+
+static int
+AtomSeparator(int ch, int check_space, int check_backslash)
+{
+    if (check_space && isspace(ch))
+	return (1);
+    if (check_backslash && ch == '\\')
+	return (1);
+    return (strchr("(),\";'`#|,@", ch) != NULL);
 }
 
 static LispObj *
@@ -907,6 +920,10 @@ LispReadRational(LispMac *mac, int radix)
 	ch = LispGet(mac);
 	if (ch == EOF || isspace(ch))
 	    break;
+	else if (AtomSeparator(ch, 0, 1)) {
+	    LispUnget(mac, ch);
+	    break;
+	}
 	else if (islower(ch))
 	    ch = toupper(ch);
 	if ((ch < '0' || ch > '9') && (ch < 'A' || ch > 'Z') &&
