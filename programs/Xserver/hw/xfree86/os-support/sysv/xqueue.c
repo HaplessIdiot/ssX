@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 1.1.1.2 1996/01/03 07:21:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.0 1996/02/19 09:51:07 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  *
@@ -54,11 +54,13 @@ xf86XqueRequest()
       switch(XqueEvents[XqueHead].xq_type) {
 	
       case XQ_BUTTON:
-	xf86PostMseEvent(~(XqueEvents[XqueHead].xq_code) & 0x07, 0, 0);
+	xf86PostMseEvent(xf86Info.pMouse,
+			~(XqueEvents[XqueHead].xq_code) & 0x07, 0, 0);
 	break;
 
       case XQ_MOTION:
-	xf86PostMseEvent(~(XqueEvents[XqueHead].xq_code) & 0x07,
+	xf86PostMseEvent(xf86Info.pMouse,
+			~(XqueEvents[XqueHead].xq_code) & 0x07,
 		       XqueEvents[XqueHead].xq_x,
 		       XqueEvents[XqueHead].xq_y);
 	break;
@@ -95,7 +97,7 @@ xf86XqueEnable()
   static Bool              was_here = FALSE;
 
   if (!was_here) {
-    if ((xf86Info.xqueFd = open("/dev/mouse", O_RDONLY|O_NDELAY)) < 0)
+    if ((xf86Info.mouseDev.xqueFd = open("/dev/mouse", O_RDONLY|O_NDELAY)) < 0)
       {
 	Error ("Cannot open /dev/mouse");
 	return (!Success);
@@ -103,7 +105,7 @@ xf86XqueEnable()
     was_here = TRUE;
   }
 
-  if (xf86Info.xqueSema++ == 0) 
+  if (xf86Info.mouseDev.xqueSema++ == 0) 
     {
       (void) signal(SIGUSR2, (void (*)()) xf86XqueRequest);
       xqueMode.qsize = 64;    /* max events */
@@ -133,7 +135,7 @@ xf86XqueEnable()
 static int
 xf86XqueDisable()
 {
-  if (xf86Info.xqueSema-- == 1)
+  if (xf86Info.mouseDev.xqueSema-- == 1)
     {
       
       XqueQaddr->xq_sigenable = 0; /* LOCK */
@@ -160,7 +162,10 @@ xf86XqueMseProc(pPointer, what)
      DeviceIntPtr	pPointer;
      int        what;
 {
+  MouseDevPtr	mouse = (MouseDevPtr) pPointer->public.devicePrivate;
   unchar        map[4];
+ 
+  mouse->device = pPointer;
 
   switch (what)
     {
@@ -180,8 +185,8 @@ xf86XqueMseProc(pPointer, what)
       break;
       
     case DEVICE_ON:
-      xf86Info.lastButtons = 0;
-      xf86Info.emulateState = 0;
+      mouse->lastButtons = 0;
+      mouse->emulateState = 0;
       pPointer->public.on = TRUE;
       return(xf86XqueEnable());
       

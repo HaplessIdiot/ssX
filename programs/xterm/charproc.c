@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/191 1996/01/23 11:34:26 kaleb $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.23 1996/02/24 10:22:25 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.24 1996/03/10 12:15:21 dawes Exp $
  */
 
 /*
@@ -841,7 +841,7 @@ static void VTparse()
 			Index(screen, 1);
 			if (term->flags & LINEFEED)
 				CarriageReturn(screen);
-			if (QLength(screen->display) ||
+			if (XtAppPending(app_con) ||
 			    GetBytesAvailable (ConnectionNumber(screen->display)) > 0)
 			  xevents();
 			parsestate = groundtable;
@@ -1306,7 +1306,7 @@ static void VTparse()
 		 case CASE_IND:
 			/* IND */
 			Index(screen, 1);
-			if (QLength(screen->display) ||
+			if (XtAppPending(app_con) ||
 			    GetBytesAvailable (ConnectionNumber(screen->display)) > 0)
 			  xevents();
 			parsestate = groundtable;
@@ -1317,7 +1317,7 @@ static void VTparse()
 			Index(screen, 1);
 			CarriageReturn(screen);
 			
-			if (QLength(screen->display) ||
+			if (XtAppPending(app_con) ||
 			    GetBytesAvailable (ConnectionNumber(screen->display)) > 0)
 			  xevents();
 			parsestate = groundtable;
@@ -1681,9 +1681,18 @@ in_put()
 	} else
 	    FD_ZERO (&write_mask);
 	select_timeout.tv_sec = 0;
+	/*
+	 * if there's either an XEvent or an XtTimeout pending, just take
+	 * a quick peek, i.e. timeout from the select() immediately.  If
+	 * there's nothing pending, let select() block a little while, but
+	 * for a shorter interval than the arrow-style scrollbar timeout.
+	 */
+	if (XtAppPending(app_con))
 	select_timeout.tv_usec = 0;
-	i = Select(max_plus1, &select_mask, &write_mask, NULL,
-		   QLength(screen->display) ? &select_timeout : NULL);
+	else
+		select_timeout.tv_usec = 50000;
+	i = select(max_plus1, &select_mask, &write_mask, NULL,
+		   &select_timeout);
 	if (i < 0) {
 	    if (errno != EINTR)
 		SysError(ERROR_SELECT);
@@ -1697,7 +1706,7 @@ in_put()
 
 	/* if there are X events already in our queue, it
 	   counts as being readable */
-	if (QLength(screen->display) || 
+	if (XtAppPending(app_con) || 
 	    FD_ISSET (ConnectionNumber(screen->display), &select_mask)) {
 	    xevents();
 	}
@@ -1705,7 +1714,7 @@ in_put()
 	i = _X11TransAmSelect(ConnectionNumber(screen->display), 1);
 	/* if there are X events already in our queue,
 	   it counts as being readable */
-	if (QLength(screen->display) || i > 0) {
+	if (XtAppPending(app_con) || i > 0) {
 	    xevents();
 	    continue;
 	} else if (i < 0) {
@@ -3220,7 +3229,7 @@ VTReset(full)
 			        * (screen->max_row + 1) + 2 * screen->border,
 			    &junk, &junk);
 			XSync(screen->display, FALSE);	/* synchronize */
-			if(QLength(screen->display))
+			if(XtAppPending(app_con))
 				xevents();
 		}
 		CursorSet(screen, 0, 0, term->flags);
@@ -3632,8 +3641,20 @@ LoadNewFont (screen, nfontname, bfontname, doresize, fontnum)
     screen->normalboldGC = new_normalboldGC;
     screen->reverseGC = new_reverseGC;
     screen->reverseboldGC = new_reverseboldGC;
+
+    /* If we're switching fonts, free the old ones.  Otherwise we'll leak the
+     * memory that is associated with the old fonts. The XLoadQueryFont call
+     * allocates a new XFontStruct.
+     */
+    if (screen->fnt_bold != 0
+     && screen->fnt_bold != screen->fnt_norm)
+    	XFreeFont(screen->display, screen->fnt_bold);
+    if (screen->fnt_norm != 0)
+    	XFreeFont(screen->display, screen->fnt_norm);
+
     screen->fnt_norm = nfs;
     screen->fnt_bold = bfs;
+
     screen->enbolden = (nfs == bfs);
     set_menu_font (False);
     screen->menu_font_number = fontnum;

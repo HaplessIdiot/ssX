@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Tekproc.c /main/118 1996/01/14 16:52:29 kaleb $
- * $XFree86: xc/programs/xterm/Tekproc.c,v 3.9 1996/01/30 15:28:22 dawes Exp $
+ * $XFree86: xc/programs/xterm/Tekproc.c,v 3.10 1996/02/12 11:16:39 dawes Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -193,6 +193,8 @@ extern int Tipltable[];
 extern int Tplttable[];
 extern int Tpttable[];
 extern int Tspttable[];
+
+extern XtAppContext app_con;
 
 static int *curstate = Talptable;
 static int *Tparsestate = Talptable;
@@ -648,7 +650,7 @@ static void Tekparse()
 				TekGINoff();
 			TCursorDown();
 			if (!TekRefresh &&
-			    (QLength(screen->display) > 0 ||
+			    (XtAppPending(app_con) ||
 			     GetBytesAvailable (ConnectionNumber(screen->display)) > 0))
 			  xevents();
 			break;
@@ -770,7 +772,7 @@ again:
 				Ttoggled = FALSE;
 			}
 #ifndef AMOEBA
-			if(QLength(screen->display)) {
+			if(XtAppPending(app_con) & XtIMXEvent) {
 				XFD_COPYSET (&X_mask, &Tselect_mask);
 			} else {
 				XFlush(screen->display);
@@ -789,7 +791,7 @@ again:
 					      1);
 			/* if there are X events already in our queue,
                            it counts as being readable */
-			if (QLength(screen->display) || i > 0) {
+			if (XtAppPending(app_con) || i > 0) {
 				xevents();
 				continue;
 			} else if (i < 0) {
