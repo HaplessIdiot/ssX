@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elf.h,v 1.7 1999/03/21 07:35:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elf.h,v 1.9 2000/09/07 14:40:26 anderson Exp $ */
 
 
 typedef unsigned long	Elf32_Addr;
@@ -50,6 +50,7 @@ typedef long            Elf64_Sxword;
 #define EM_SPARC32PLUS 18
 #define EM_PPC	       20
 #define EM_SPARCV9     43
+#define EM_IA_64       50
 #define EM_ALPHA       0x9026
 
 /* This is the info that is needed to parse the dynamic section of the file */
@@ -233,6 +234,63 @@ extern Elf32_Dyn _DYNAMIC [];
 #define R_ALPHA_GLOB_DAT	25	/* Create GOT entry */
 #define R_ALPHA_JMP_SLOT	26	/* Create PLT entry */
 #define R_ALPHA_RELATIVE	27	/* Adjust by program base */
+
+/* IA-64 relocations.  */
+#define R_IA64_NONE		0x00	/* none */
+#define R_IA64_IMM14		0x21	/* symbol + addend, add imm14 */
+#define R_IA64_IMM22		0x22	/* symbol + addend, add imm22 */
+#define R_IA64_IMM64		0x23	/* symbol + addend, mov imm64 */
+#define R_IA64_DIR32MSB		0x24	/* symbol + addend, data4 MSB */
+#define R_IA64_DIR32LSB		0x25	/* symbol + addend, data4 LSB */
+#define R_IA64_DIR64MSB		0x26	/* symbol + addend, data8 MSB */
+#define R_IA64_DIR64LSB		0x27	/* symbol + addend, data8 LSB */
+#define R_IA64_GPREL22		0x2a	/* @gprel(sym + add), add imm22 */
+#define R_IA64_GPREL64I		0x2b	/* @gprel(sym + add), mov imm64 */
+#define R_IA64_GPREL64MSB	0x2e	/* @gprel(sym + add), data8 MSB */
+#define R_IA64_GPREL64LSB	0x2f	/* @gprel(sym + add), data8 LSB */
+#define R_IA64_LTOFF22		0x32	/* @ltoff(sym + add), add imm22 */
+#define R_IA64_LTOFF64I		0x33	/* @ltoff(sym + add), mov imm64 */
+#define R_IA64_PLTOFF22		0x3a	/* @pltoff(sym + add), add imm22 */
+#define R_IA64_PLTOFF64I	0x3b	/* @pltoff(sym + add), mov imm64 */
+#define R_IA64_PLTOFF64MSB	0x3e	/* @pltoff(sym + add), data8 MSB */
+#define R_IA64_PLTOFF64LSB	0x3f	/* @pltoff(sym + add), data8 LSB */
+#define R_IA64_FPTR64I		0x43	/* @fptr(sym + add), mov imm64 */
+#define R_IA64_FPTR32MSB	0x44	/* @fptr(sym + add), data4 MSB */
+#define R_IA64_FPTR32LSB	0x45	/* @fptr(sym + add), data4 LSB */
+#define R_IA64_FPTR64MSB	0x46	/* @fptr(sym + add), data8 MSB */
+#define R_IA64_FPTR64LSB	0x47	/* @fptr(sym + add), data8 LSB */
+#define R_IA64_PCREL21B		0x49	/* @pcrel(sym + add), ptb, call */
+#define R_IA64_PCREL21M		0x4a	/* @pcrel(sym + add), chk.s */
+#define R_IA64_PCREL21F		0x4b	/* @pcrel(sym + add), fchkf */
+#define R_IA64_PCREL32MSB	0x4c	/* @pcrel(sym + add), data4 MSB */
+#define R_IA64_PCREL32LSB	0x4d	/* @pcrel(sym + add), data4 LSB */
+#define R_IA64_PCREL64MSB	0x4e	/* @pcrel(sym + add), data8 MSB */
+#define R_IA64_PCREL64LSB	0x4f	/* @pcrel(sym + add), data8 LSB */
+#define R_IA64_LTOFF_FPTR22	0x52	/* @ltoff(@fptr(s+a)), imm22 */
+#define R_IA64_LTOFF_FPTR64I	0x53	/* @ltoff(@fptr(s+a)), imm64 */
+#define R_IA64_SEGREL32MSB	0x5c	/* @segrel(sym + add), data4 MSB */
+#define R_IA64_SEGREL32LSB	0x5d	/* @segrel(sym + add), data4 LSB */
+#define R_IA64_SEGREL64MSB	0x5e	/* @segrel(sym + add), data8 MSB */
+#define R_IA64_SEGREL64LSB	0x5f	/* @segrel(sym + add), data8 LSB */
+#define R_IA64_SECREL32MSB	0x64	/* @secrel(sym + add), data4 MSB */
+#define R_IA64_SECREL32LSB	0x65	/* @secrel(sym + add), data4 LSB */
+#define R_IA64_SECREL64MSB	0x66	/* @secrel(sym + add), data8 MSB */
+#define R_IA64_SECREL64LSB	0x67	/* @secrel(sym + add), data8 LSB */
+#define R_IA64_REL32MSB		0x6c	/* data 4 + REL */
+#define R_IA64_REL32LSB		0x6d	/* data 4 + REL */
+#define R_IA64_REL64MSB		0x6e	/* data 8 + REL */
+#define R_IA64_REL64LSB		0x6f	/* data 8 + REL */
+#define R_IA64_LTV32MSB		0x70	/* symbol + addend, data4 MSB */
+#define R_IA64_LTV32LSB		0x71	/* symbol + addend, data4 LSB */
+#define R_IA64_LTV64MSB		0x72	/* symbol + addend, data8 MSB */
+#define R_IA64_LTV64LSB		0x73	/* symbol + addend, data8 LSB */
+#define R_IA64_IPLTMSB		0x80	/* dynamic reloc, imported PLT, MSB */
+#define R_IA64_IPLTLSB		0x81	/* dynamic reloc, imported PLT, LSB */
+#define R_IA64_LTOFF22X		0x86	/* LTOFF22, relaxable.  */
+#define R_IA64_LDXMOV		0x87	/* Use of LTOFF22X.  */
+
+#define R_IA64_TYPE(R)		((R) & -8)
+#define R_IA64_FORMAT(R)	((R) & 7)
 
 /*
  * Apparantly, Linux and PowerMAXOS use different version of ELF as the

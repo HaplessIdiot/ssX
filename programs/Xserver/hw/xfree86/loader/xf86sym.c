@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.159 2000/08/08 08:58:08 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.161 2000/09/07 14:40:27 anderson Exp $ */
 
 /*
  *
@@ -107,6 +107,12 @@ extern void* __divq(long, long);
 extern void* __divqu(long, long);
 extern void* __remq(long, long);
 extern void* __remqu(long, long);
+#endif
+
+#if defined(__ia64__)
+extern long __divdi3(long, long);
+extern long __moddi3(long, long);
+extern long __divdf3(long, long);
 #endif
 
 #if defined(__sparc__) && defined(__GNUC__)
@@ -772,16 +778,16 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86memchr)
    SYMFUNC(xf86memcmp)
    SYMFUNC(xf86memcpy)
-#if (defined(__powerpc__) && (defined(Lynx) || defined(linux))) || defined(__sparc__)
+#if (defined(__powerpc__) && (defined(Lynx) || defined(linux))) || defined(__sparc__) || defined(__ia64__)
    /*
-    * Some PPC and SPARC compilers generate calls to memcpy to handle
+    * Some PPC, SPARC, and IA64 compilers generate calls to memcpy to handle
     * structure copies.  This causes a problem both here and in shared
     * libraries as there is no way to map the name of the call to the
     * correct function.
     */
    SYMFUNC(memcpy)
    /*
-    * Some PPC and SPARC compilers generate calls to memset to handle 
+    * Some PPC, SPARC, and IA64 compilers generate calls to memset to handle 
     * aggregate initializations.
     */
    SYMFUNC(memset)
@@ -982,6 +988,11 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(debug_outw)
    SYMFUNC(debug_outl)
 #endif
+#endif
+#if defined(__ia64__)
+   SYMFUNC(__divdi3)
+   SYMFUNC(__moddi3)
+   SYMFUNC(__divdf3)
 #endif
 
 #ifdef __FreeBSD__
