@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.34 2001/08/17 13:27:58 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.35 2001/08/17 16:31:24 dawes Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -128,6 +128,7 @@
   altwin:menu		Add the standard behavior to Menu key.
   altwin:meta_alt	Alt and Meta on the Alt keys (default).
   altwin:meta_win	Meta is mapped to the Win-keys.
+  altwin:left_meta_win	Meta is mapped to the left Win-key.
   altwin:meta_super	Super is mapped to the Win-keys (default).
   altwin:meta_hyper	Hyper is mapped to the Win-keys.
 

@@ -4,7 +4,7 @@
 //  Rules for resolving XKB components for use with XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.37 2001/10/02 19:57:00 alanh Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.38 2001/10/03 07:44:23 alanh Exp $
 //
 
 ! model 	=	keycodes	geometry
@@ -165,6 +165,7 @@
   altwin:menu		=	+altwin(menu)
   altwin:meta_alt	=	+altwin(meta_alt)
   altwin:meta_win	=	+altwin(meta_win)
+  altwin:left_meta_win	=	+altwin(left_meta_win)
   altwin:super_win	=	+altwin(super_win)
   altwin:hyper_win	=	+altwin(hyper_win)
   compose:ralt		=	+compose(ralt)
