@@ -22,7 +22,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_ger.h,v 3.3 1996/11/18 13:18:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_ger.h,v 3.4 1996/12/23 06:58:49 dawes Exp $ */
 
 /* Graphics Engine for 9400/9420/9430 */
 
@@ -75,8 +75,10 @@
 #define GER_PATTERN	0x80		/* from 0x2180 to 0x21FF */
 
 /* Additional - Graphics Engine for 96xx */
+#define GER_SRCCLIP_XY	0x48
 #define GER_SRCCLIP_X	0x48		/* Word */
 #define GER_SRCCLIP_Y	0x4A		/* Word */
+#define GER_DSTCLIP_XY	0x4C
 #define GER_DSTCLIP_X	0x4C		/* Word */
 #define GER_DSTCLIP_Y	0x4E		/* Word */
 
@@ -97,23 +99,3 @@
 #define TGUIROP_NAND		0x11		/* Dson */
 #define TGUIROP_XOR		0x66		/* DSx */
 #define TGUIROP_XNOR		0x99		/* SDxn */
-
-/* MMIO */
-#define TGUI_OPERMODE(c) \
-		*(unsigned int *)(tguiMMIOBase + GER_OPERMODE) = c;
-#define TGUI_FCOLOUR(c) \
-		*(unsigned int *)(tguiMMIOBase + GER_FCOLOUR) = c;
-#define TGUI_BCOLOUR(c) \
-		*(unsigned int *)(tguiMMIOBase + GER_BCOLOUR) = c;
-#define TGUI_DRAWFLAG(c) \
-		*(unsigned int *)(tguiMMIOBase + GER_DRAWFLAG) = c;
-#define TGUI_FMIX(c) \
-		*(unsigned int *)(tguiMMIOBase + GER_FMIX) = c;
-#define TGUI_DIM_XY(w,h) \
-		*(unsigned int *)(tguiMMIOBase + GER_DIM_XY) = ((h-1)<<16) + (w-1);
-#define TGUI_SRC_XY(x,y) \
-		*(unsigned int *)(tguiMMIOBase + GER_SRC_XY) = (y << 16) + x;
-#define TGUI_DEST_XY(x,y) \
-		*(unsigned int *)(tguiMMIOBase + GER_DEST_XY) = (y << 16) + x;
-#define TGUI_COMMAND(c) \
-		*(unsigned int *)(tguiMMIOBase + GER_COMMAND) = c;
