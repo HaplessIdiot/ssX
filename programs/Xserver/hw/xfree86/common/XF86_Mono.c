@@ -1,4 +1,5 @@
 /* $XConsortium: XF86_Mono.c,v 1.1 94/03/28 21:21:58 dpw Exp $ */
+/* $XFree86$ */
 #include "X.h"
 #include "os.h"
 
