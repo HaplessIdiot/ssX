@@ -1,4 +1,5 @@
 XFree86 4.0b (?? April 2000)
+ 124. Make a recent shm pixmap fix Xinerama aware (Mark Vojkovich).
  123. Fix mode setting bug in ATI driver (Marc La France).
  122. Add int10, DDC & VBE support to ATI driver
       (Andrew C Aitchison, Marc La France).
