@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/63 1997/11/24 16:48:40 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.24 1998/11/15 04:30:09 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.25 1999/02/01 11:55:51 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -43,8 +43,8 @@ XF86MISCOBJS = xf86misc.o
 #endif
 
 #if BuildXF86DGA
- XF86DGASRCS = xf86dga.c
- XF86DGAOBJS = xf86dga.o
+ XF86DGASRCS = xf86dga.c xf86dga2.c
+ XF86DGAOBJS = xf86dga.o xf86dga2.o
 #endif
 
 #if BuildXvExt

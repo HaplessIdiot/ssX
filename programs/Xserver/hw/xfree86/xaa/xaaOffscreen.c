@@ -1,4 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaOffscreen.c,v 1.2 1998/12/06 13:30:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaOffscreen.c,v 1.3 1999/01/14 13:05:28 dawes Exp $ */
+
+/*
+   Copyright (c) 1999 -  The XFree86 Project Inc.
+
+   Written by Mark Vojkovich
+
+*/ 
 
 #include "misc.h"
 #include "xf86.h"
@@ -40,8 +47,10 @@ XAAMoveInOffscreenPixmaps(ScreenPtr pScreen)
 {
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCREEN(pScreen);
     PixmapLinkPtr pLink = infoRec->OffscreenPixmaps;
-    PixmapPtr pPix, pScreenPix;
+    PixmapPtr pPix, pScreenPix, tmpPix;
+    pointer data;
     XAAPixmapPtr pPriv;
+    GCPtr pGC;
     FBAreaPtr area;
 
     pScreenPix = (*pScreen->GetScreenPixmap)(pScreen);
@@ -49,16 +58,43 @@ XAAMoveInOffscreenPixmaps(ScreenPtr pScreen)
     while(pLink) {
 	pPix = pLink->pPix;
     	pPriv = XAA_GET_PIXMAP_PRIVATE(pPix);
-	area = pPriv->offscreenArea = pLink->area;
+	area = pLink->area;
 
-	xfree(pPix->devPrivate.ptr);
+	data = pPix->devPrivate.ptr;
+	tmpPix = GetScratchPixmapHeader(pScreen, 
+		pPix->drawable.width, pPix->drawable.height, 
+		pPix->drawable.depth, pPix->drawable.bitsPerPixel, 
+		pPix->devKind, data);
+
 
 	pPix->drawable.x = area->box.x1;
 	pPix->drawable.y = area->box.y1;
 	pPix->devKind = pScreenPix->devKind;
 	pPix->devPrivate.ptr = pScreenPix->devPrivate.ptr;
+	pPix->drawable.bitsPerPixel = infoRec->pScrn->bitsPerPixel;
 	pPix->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 
+	if(!tmpPix) {
+	    pPriv->offscreenArea = area;
+	    xfree(data);
+	    pLink = pLink->next;
+	    continue;
+	}
+	
+	pGC = GetScratchGC(pPix->drawable.depth, pScreen);
+	ValidateGC((DrawablePtr)pPix, pGC);
+
+	(*pGC->ops->CopyArea)((DrawablePtr)tmpPix, (DrawablePtr)pPix, pGC, 
+		0, 0, pPix->drawable.width, pPix->drawable.height, 0, 0);	
+
+	xfree(data);
+	tmpPix->devPrivate.ptr = NULL;
+
+	FreeScratchGC(pGC);
+	FreeScratchPixmapHeader(tmpPix);
+
+	pPriv->offscreenArea = area;
+	pLink->area = NULL;
 	pLink = pLink->next;
     }    
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.39 1999/02/25 09:32:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.40 1999/02/26 02:35:04 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -115,8 +115,8 @@ const static unsigned char MGADACbpp32[DACREGSIZE] = {
 	0x00
 };
 const static unsigned char MGADACbpp8plus24[DACREGSIZE] = {
-	0x07, 0x06, 0x58, 0x05, 0x00,   0x00, 0x3C, 0x00, 0x1E, TRANSPARENCY_KEY,
-	TRANSPARENCY_KEY, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0x00, 0x01,    0, 0x00,
+	0x07, 0x06, 0x58, 0x05, 0x00,   0x00, 0x3C, 0x00, 0x1E, 0xFF, 
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0x00, 0x01, 0x00, 0x00, 
 	0x00
 };
     
@@ -511,6 +511,11 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    pReg->DacRegs[i] = initDAC[i]; 
 	    if (MGADACregs[i] == 0x1D)
 		index_1d = i;
+	}
+
+        if((pScrn->bitsPerPixel == 32) && pMga->Overlay8Plus24) {
+	    pReg->DacRegs[9] = pMga->colorKey;
+	    pReg->DacRegs[10] = pMga->colorKey;
 	}
 
 	if ( (pScrn->bitsPerPixel == 16) && (pScrn->weight.red == 5)

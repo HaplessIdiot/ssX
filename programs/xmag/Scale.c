@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xmag/Scale.c,v 3.4 1998/10/04 09:41:41 dawes Exp $ */
+/* $XFree86: xc/programs/xmag/Scale.c,v 3.5 1999/03/07 11:41:12 dawes Exp $ */
 
 /*
  * Author:  Davor Matic, MIT X Consortium
@@ -802,7 +802,7 @@ SetValues(Widget current, Widget request, Widget new,
     /* ScaleWidget req_sw = (ScaleWidget) request; */
     ScaleWidget new_sw = (ScaleWidget) new;
     Boolean redisplay = False;
-    int i;
+    Cardinal i;
     
     for (i = 0; i < *num_args; i++) {
 	if (streq(XtNbackground, args[i].name)) {

@@ -24,7 +24,7 @@ in this Software without prior written authorization from The Open Group.
  * Updated for R4:  Chris D. Peterson,  MIT X Consortium.
  * Reauthored by: Keith Packard, MIT X Consortium.
  */
-/* $XFree86: xc/programs/xclipboard/xclipboard.c,v 1.3 1999/01/31 12:22:25 dawes Exp $ */
+/* $XFree86: xc/programs/xclipboard/xclipboard.c,v 1.4 1999/02/28 11:20:07 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -363,7 +363,7 @@ WMProtocols(Widget w, XEvent *ev, String *params, Cardinal *n)
 {
     if (ev->type == ClientMessage &&
 	ev->xclient.message_type == wm_protocols &&
-	ev->xclient.data.l[0] == wm_delete_window) {
+	ev->xclient.data.l[0] == (long) wm_delete_window) {
 	while (w && !XtIsShell(w))
 	    w = XtParent(w);
 	if (w == top)
@@ -491,7 +491,7 @@ ConvertSelection(Widget w, Atom *selection, Atom *target,
 	Atom* std_targets;
 	unsigned long std_length;
 	XmuConvertStandardSelection(w, req->time, selection, target, type,
-				    (XtPointer*)&std_targets, &std_length,
+				    (XPointer*)&std_targets, &std_length,
 				    format);
 	*value = XtMalloc(sizeof(Atom)*(std_length + 5));
 	targetP = *(Atom**)value;
@@ -555,7 +555,7 @@ ConvertSelection(Widget w, Atom *selection, Atom *target,
     }
     
     if (XmuConvertStandardSelection(w, req->time, selection, target, type,
-				    value, length, format))
+				    (XPointer *) value, length, format))
 	return True;
 
     return False;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.16 1999/01/14 13:04:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.17 1999/03/14 11:18:06 dawes Exp $ */
 
 /*
  *
@@ -114,9 +114,12 @@ typedef	struct {
 	unsigned char *data;	/* Start address of the .data section */
 	int	datndx;		/* index of the .data section */
 	int	datsize;	/* size of the .data section */
-	unsigned char *data1;	/* Start address of the .data section */
-	int	dat1ndx;	/* index of the .data section */
-	int	dat1size;	/* size of the .data section */
+	unsigned char *data1;	/* Start address of the .data1 section */
+	int	dat1ndx;	/* index of the .data1 section */
+	int	dat1size;	/* size of the .data1 section */
+	unsigned char *sdata;	/* Start address of the .sdata section */
+	int	sdatndx;	/* index of the .sdata section */
+	int	sdatsize;	/* size of the .sdata section */
 	unsigned char *bss;	/* Start address of the .bss section */
 	int	bssndx;		/* index of the .bss section */
 	int	bsssize;	/* size of the .bss section */
@@ -141,6 +144,9 @@ typedef	struct {
 	unsigned char *reldata;	/* Start address of the .rel.data section */
 	int	reldatndx;	/* index of the .rel.data section */
 	int	reldatsize;	/* size of the .rel.data section */
+	unsigned char *relsdata;/* Start address of the .rel.sdata section */
+	int	relsdatndx;	/* index of the .rel.sdata section */
+	int	relsdatsize;	/* size of the .rel.sdata section */
 	unsigned char *relrodata;/* Start address of the .rel.rodata section */
 	int	relrodatndx;	/* index of the .rel.rodata section */
 	int	relrodatsize;	/* size of the .rel.rodata section */
@@ -1076,6 +1082,7 @@ ELFDEBUG( "*dest32=%8.8x\n", *dest32 );
 		break;
 #endif /* __mc68000__ */
 #if defined(__powerpc__)
+#if defined(PowerMAX_OS)
 	case R_PPC_DISP24: /* 11 */
 	    dest32=(unsigned long *)(secp+rel->r_offset);
 	    symval=ElfGetSymbolValue(elffile,ELF_R_SYM(rel->r_info));
@@ -1334,6 +1341,218 @@ ELFDEBUG( "*dest32=%8.8x\n", *dest32 );
 	    ELFDEBUG( "*dest32=%8.8x\n", *dest32 );
 #endif
 	    break;
+#else
+ /* Linux PPC */
+	case R_PPC_ADDR32: /* 1 */
+	    dest32=(unsigned long *)(secp+rel->r_offset);
+	    symval=ElfGetSymbolValue(elffile,ELF_R_SYM(rel->r_info));
+	    if( symval == 0 ) {
+#ifdef ELFDEBUG
+		char *namestr;
+		ELFDEBUG( "***Unable to resolve symbol %s\n",
+		  namestr=ElfGetSymbolName(elffile,ELF_R_SYM(rel->r_info)) );
+		xf86loaderfree(namestr);
+#endif
+		return ElfDelayRelocation(elffile,secp,rel);
+	    }
+#ifdef ELFDEBUG
+	    ELFDEBUG( "R_PPC_ADDR32\t" );
+	    ELFDEBUG( "secp=%x\t", secp );
+	    ELFDEBUG( "symval=%x\t", symval );
+	    ELFDEBUG( "r_addend=%x\t", rel->r_addend );
+	    ELFDEBUG( "dest32=%8.8x\t", dest32 );
+	    ELFDEBUG( "*dest32=%8.8x\n", *dest32 );
+#endif
+	    {
+		unsigned long val;
+		/* S + A */
+		val=symval+(rel->r_addend);
+#ifdef ELFDEBUG
+		ELFDEBUG("S+A=%x\t",val);
+#endif
+		*dest32=val; /* S + A */
+		ppc_flush_icache(dest32);
+	    }
+#ifdef ELFDEBUG
+	    ELFDEBUG( "*dest32=%8.8x\n", *dest32 );
+#endif
+	    break;
+	case R_PPC_ADDR16_LO: /* 4 */
+	    dest16=(unsigned short *)(secp+rel->r_offset);
+#ifdef ELFDEBUG
+	    dest32=(unsigned long *)(dest16-1);
+#endif
+	    symval=ElfGetSymbolValue(elffile,ELF_R_SYM(rel->r_info));
+	    if( symval == 0 ) {
+#ifdef ELFDEBUG
+		char *namestr;
+		ELFDEBUG( "***Unable to resolve symbol %s\n",
+		  namestr=ElfGetSymbolName(elffile,ELF_R_SYM(rel->r_info)) );
+		xf86loaderfree(namestr);
+#endif
+		return ElfDelayRelocation(elffile,secp,rel);
+	    }
+#ifdef ELFDEBUG
+	    ELFDEBUG( "R_PPC_ADDR16_LO\t" );
+	    ELFDEBUG( "secp=%x\t", secp );
+	    ELFDEBUG( "symval=%x\t", symval );
+	    ELFDEBUG( "r_addend=%x\t", rel->r_addend );
+	    ELFDEBUG( "dest16=%x\t", dest16 );
+	    ELFDEBUG( "*dest16=%8.8x\t", *dest16 );
+#endif
+	    {
+		unsigned short val;
+		/* S + A */
+		val=(symval+(rel->r_addend))&0xffff;
+#ifdef ELFDEBUG
+		ELFDEBUG("lo16(S+A)=%x\t",val);
+#endif
+		*dest16=val; /* S + A */
+		ppc_flush_icache(dest16);
+	    }
+#ifdef ELFDEBUG
+	    ELFDEBUG( "*dest16=%8.8x\t", *dest16 );
+	    ELFDEBUG( "*dest32=%8.8x\n", *dest32 );
+#endif
+	    break;
+	case R_PPC_ADDR16_HA: /* 6 */
+	    dest16=(unsigned short *)(secp+rel->r_offset);
+#ifdef ELFDEBUG
+	    dest32=(unsigned long *)(dest16-1);
+#endif
+	    symval=ElfGetSymbolValue(elffile,ELF_R_SYM(rel->r_info));
+	    if( symval == 0 ) {
+#ifdef ELFDEBUG
+		char *namestr;
+		ELFDEBUG( "***Unable to resolve symbol %s\n",
+		  namestr=ElfGetSymbolName(elffile,ELF_R_SYM(rel->r_info)) );
+		xf86loaderfree(namestr);
+#endif
+		return ElfDelayRelocation(elffile,secp,rel);
+	    }
+#ifdef ELFDEBUG
+	    ELFDEBUG( "R_PPC_ADDR16_HA\t" );
+	    ELFDEBUG( "secp=%x\t", secp );
+	    ELFDEBUG( "symval=%x\t", symval );
+	    ELFDEBUG( "r_addend=%x\t", rel->r_addend );
+	    ELFDEBUG( "dest16=%x\t", dest16 );
+	    ELFDEBUG( "*dest16=%8.8x\t", *dest16 );
+#endif
+	    {
+		unsigned short val;
+		unsigned short loval;
+		/* S + A */
+		val=((symval+(rel->r_addend))&0xffff0000)>>16;
+		loval=(symval+(rel->r_addend))&0xffff;
+		if( loval & 0x8000 ) {
+		    /*
+		     * This is hi16(), instead of uhi16(). Because of this,
+		     * if the lo16() will produce a negative offset, then
+		     * we have to increment this part of the address to get
+		     * the correct final result.
+		     */
+		    val++;
+		}
+#ifdef ELFDEBUG
+		ELFDEBUG("hi16(S+A)=%x\t",val);
+#endif
+		*dest16=val; /* S + A */
+		ppc_flush_icache(dest16);
+	    }
+#ifdef ELFDEBUG
+	    ELFDEBUG( "*dest16=%8.8x\t", *dest16 );
+	    ELFDEBUG( "*dest32=%8.8x\n", *dest32 );
+#endif
+	    break;
+	case R_PPC_REL24: /* 10 */
+	    dest32=(unsigned long *)(secp+rel->r_offset);
+	    symval=ElfGetSymbolValue(elffile,ELF_R_SYM(rel->r_info));
+	    if( symval == 0 ) {
+#ifdef ELFDEBUG
+		char *namestr;
+		ELFDEBUG( "***Unable to resolve symbol %s\n",
+		  namestr=ElfGetSymbolName(elffile,ELF_R_SYM(rel->r_info)) );
+		xf86loaderfree(namestr);
+#endif
+		return ElfDelayRelocation(elffile,secp,rel);
+	    }
+
+#ifdef ELFDEBUG
+	    ELFDEBUG( "R_PPC_REL24 %s\t", ElfGetSymbolName(elffile,ELF_R_SYM(rel->r_info)) );
+	    ELFDEBUG( "secp=%x\t", secp );
+	    ELFDEBUG( "symval=%x\t", symval );
+	    ELFDEBUG( "dest32=%x\t", dest32 );
+	    ELFDEBUG( "*dest32=%8.8x\t", *dest32 );
+#endif
+
+	    {
+		unsigned long val;
+		
+		/* S + A - P >> 2 */
+		val=((symval+(rel->r_addend)-(Elf_Addr)dest32));
+#ifdef ELFDEBUG
+		ELFDEBUG("S+A-P=%x\t",val);
+#endif
+		val = val>>2;
+		if( (val & 0x3f000000) != 0x3f000000 &&
+		    (val & 0x3f000000) != 0x00000000 )  {
+#ifdef ELFDEBUG
+		    ELFDEBUG("R_PPC_REL24 offset %x too large\n", val<<2);
+#endif
+		    symval = ElfGetPltAddr(elffile,ELF_R_SYM(rel->r_info));
+		    val=((symval+(rel->r_addend)-(Elf_Addr)dest32));
+#ifdef ELFDEBUG
+		    ELFDEBUG("PLT offset is %x\n", val);
+#endif
+		    val=val>>2;
+		    if( (val & 0x3f000000) != 0x3f000000 &&
+		         (val & 0x3f000000) != 0x00000000 )
+			   FatalError("R_PPC_REL24 PLT offset %x too large\n", val<<2);
+		}
+		val &= 0x00ffffff;
+		(*dest32)|=(val<<2);	/* The address part is always 0 */
+		ppc_flush_icache(dest32);
+	    }
+#ifdef ELFDEBUG
+	    ELFDEBUG( "*dest32=%8.8x\n", *dest32 );
+#endif
+	    break;
+	case R_PPC_REL32: /* 26 */
+	    dest32=(unsigned long *)(secp+rel->r_offset);
+	    symval=ElfGetSymbolValue(elffile,ELF_R_SYM(rel->r_info));
+	    if( symval == 0 ) {
+#ifdef ELFDEBUG
+		char *namestr;
+		ELFDEBUG( "***Unable to resolve symbol %s\n",
+		  namestr=ElfGetSymbolName(elffile,ELF_R_SYM(rel->r_info)) );
+		xf86loaderfree(namestr);
+#endif
+		return ElfDelayRelocation(elffile,secp,rel);
+	    }
+#ifdef ELFDEBUG
+	    ELFDEBUG( "R_PPC_REL32\t" );
+	    ELFDEBUG( "secp=%x\t", secp );
+	    ELFDEBUG( "symval=%x\t", symval );
+	    ELFDEBUG( "r_addend=%x\t", rel->r_addend );
+	    ELFDEBUG( "dest32=%8.8x\t", dest32 );
+	    ELFDEBUG( "*dest32=%8.8x\n", *dest32 );
+#endif
+	    {
+		unsigned long val;
+		/* S + A - P */
+		val=symval+(rel->r_addend);
+#ifdef ELFDEBUG
+		ELFDEBUG("S+A=%x\t",val);
+		ELFDEBUG("S+A-P=%x\t",val+(*dest32)-(Elf_Addr)dest32);
+#endif
+	        *dest32=val+(*dest32)-(Elf_Addr)dest32; /* S + A - P */
+		ppc_flush_icache(dest32);
+	    }
+#ifdef ELFDEBUG
+	    ELFDEBUG( "*dest32=%8.8x\n", *dest32 );
+#endif
+	    break;
+#endif /* PowerMAX_OS */
 #endif /* __powerpc__ */
 	default:
 	    ErrorF(
@@ -1573,6 +1792,19 @@ ELFDEBUG(".data1 starts at %lx\n", elffile->data1 );
 #endif
 		continue;
 		}
+	/* .sdata */
+	if( strcmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),
+		   ".sdata" ) == 0 ) {
+	    elffile->sdata=_LoaderFileToMem(elffile->fd,
+					     SecOffset(i),SecSize(i),".sdata");
+	    elffile->saddr[i]=elffile->sdata;
+	    elffile->sdatndx=i;
+	    elffile->sdatsize=SecSize(i);
+#ifdef ELFDEBUG
+	    ELFDEBUG(".sdata starts at %lx\n", elffile->sdata );
+#endif
+		continue;
+		}
 	/* .bss */
 	if( strcmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),
 		   ".bss" ) == 0 ) {
@@ -1707,6 +1939,19 @@ ELFDEBUG(".rodata1 starts at %lx\n", elffile->rodata1 );
 #endif
 	    continue;
 	}
+	/* .rela.sdata */
+	if( strcmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),
+		   ".rela.sdata" ) == 0 ) {
+	    elffile->relsdata=_LoaderFileToMem(elffile->fd,
+						SecOffset(i),SecSize(i),".rela.sdata");
+	    elffile->saddr[i]=(unsigned char *)elffile->relsdata;
+	    elffile->relsdatndx=i;
+	    elffile->relsdatsize=SecSize(i);
+#ifdef ELFDEBUG
+	    ELFDEBUG(".rela.sdata starts at %x\n", elffile->relsdata );
+#endif
+	    continue;
+	}
 	/* .rela.rodata */
 	if( strcmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),
 		   ".rela.rodata" ) == 0 ) {
@@ -1764,6 +2009,11 @@ ELFDEBUG(".rodata1 starts at %lx\n", elffile->rodata1 );
 	/* .rel.stab */
 	if( strcmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),
 		   ".rel.stab" ) == 0 ) {
+	    continue;
+	}
+	/* .rela.stab */
+	if( strcmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),
+		   ".rela.stab" ) == 0 ) {
 	    continue;
 	}
 	/* .stabstr */
@@ -1946,6 +2196,15 @@ LOOKUP **ppLookup;
 	    _LoaderGetRelocations(v)->elf_reloc = elf_reloc;
 	}
     }
+    if (elffile->relsdatndx) {
+	elf_reloc = ELFCollectRelocations(elffile,elffile->relsdatndx);
+	if (elf_reloc) {
+	    for (tail = elf_reloc; tail->next; tail = tail->next)
+		;
+	    tail->next = _LoaderGetRelocations(v)->elf_reloc;
+	    _LoaderGetRelocations(v)->elf_reloc = elf_reloc;
+	}
+    }
 
 #if defined(__alpha__)
     ELFCreateGOT(elffile);
@@ -2068,11 +2327,14 @@ void *modptr;
     CheckandFree(elffile->symtab,elffile->symsize);
     CheckandFree(elffile->text,elffile->txtsize);
     CheckandFree(elffile->data,elffile->datsize);
+    CheckandFree(elffile->data1,elffile->dat1size);
+    CheckandFree(elffile->sdata,elffile->sdatsize);
     CheckandFree(elffile->bss,elffile->bsssize);
     CheckandFree(elffile->rodata,elffile->rodatsize);
     CheckandFree(elffile->reltext,elffile->reltxtsize);
     CheckandFree(elffile->reldata,elffile->reldatsize);
     CheckandFree(elffile->relrodata,elffile->relrodatsize);
+    CheckandFree(elffile->relsdata,elffile->relsdatsize);
 #if defined(__alpha__)
     CheckandFree(elffile->got,elffile->gotsize);
 #endif

@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.61tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.62 1999/03/14 03:21:44 dawes Exp $ */
 
 /*
  * Includes
@@ -352,7 +352,9 @@ extern Chip_Descriptor GLINT_Descriptor;
 #define DAC_MGAG100	55	/* Matrox G100 integrated DAC */
 #define DAC_MGAG200	56	/* Matrox G200 integrated DAC */
 
-#define DAC_MAX		DAC_MGAG200	/* UPDATE THIS! */
+#define DAC_SIS		57	/* SiS integrated DAC */
+
+#define DAC_MAX		DAC_SIS	/* UPDATE THIS! */
 
 #define DAC_6_8_PROGRAM	0x40	/* RAMDAC programmable for 6/8-bit tables */
 #define DAC_8BIT	0x80	/* RAMDAC with 8-bit wide lookup tables */
@@ -424,7 +426,7 @@ extern struct RamDac_Name RamDac_Names[];
 #define V_EPSON		29
 
 #define NUM_VENDORS	29
-#define CHPS_PER_VENDOR	36
+#define CHPS_PER_VENDOR	40
 
 #define CHIP_AHEAD_UNK	SVGA_TYPE(V_AHEAD,0)	/* Ahead unknown	*/
 #define CHIP_AHEAD_A	SVGA_TYPE(V_AHEAD,1)	/* Ahead V5000 Version A*/
@@ -597,6 +599,10 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_S3_ViRGE_GX2 SVGA_TYPE(V_S3,33)	/* S3 ViRGE/GX2		*/
 #define CHIP_S3_ViRGE_MX SVGA_TYPE(V_S3,34)	/* S3 ViRGE/MX		*/
 #define CHIP_S3_ViRGE_MXP SVGA_TYPE(V_S3,35)	/* S3 ViRGE/MX+		*/
+#define CHIP_S3_Trio3D_B SVGA_TYPE(V_S3,36)	/* S3 TRIO3D Business	*/
+#define CHIP_S3_Trio3D	SVGA_TYPE(V_S3,37)	/* S3 TRIO3D		*/
+#define CHIP_S3_Savage3D SVGA_TYPE(V_S3,38)	/* S3 SAVAGE3D		*/
+#define CHIP_S3_Savage3D_M SVGA_TYPE(V_S3,39)	/* S3 SAVAGE3D Macro	*/
 #define CHIP_TVGA_UNK	SVGA_TYPE(V_TRIDENT,0)	/* Trident unknown	*/
 #define CHIP_TVGA8200	SVGA_TYPE(V_TRIDENT,1)	/* Trident LX8200	*/
 #define CHIP_TVGA8800BR	SVGA_TYPE(V_TRIDENT,2)	/* Trident 8800BR	*/
@@ -631,6 +637,11 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_SIS86C201	SVGA_TYPE(V_SIS,1)	/* SiS SG86C201		*/
 #define CHIP_SIS86C202	SVGA_TYPE(V_SIS,2)	/* SiS SG86C202		*/
 #define CHIP_SIS86C205	SVGA_TYPE(V_SIS,3)	/* SiS SG86C205		*/
+#define CHIP_SIS86C215	SVGA_TYPE(V_SIS,4)	/* SiS SG86C215		*/
+#define CHIP_SIS86C225	SVGA_TYPE(V_SIS,5)	/* SiS SG86C225		*/
+#define CHIP_SIS5597	SVGA_TYPE(V_SIS,6)	/* SiS 5597/98		*/
+#define CHIP_SIS530	SVGA_TYPE(V_SIS,7)	/* SiS 530/620		*/
+#define CHIP_SIS6326	SVGA_TYPE(V_SIS,8)	/* SiS 6326		*/
 #define CHIP_MATROX_UNK	SVGA_TYPE(V_MATROX,0)	/* Matrox unknown	*/
 #define CHIP_MGA2085PX	SVGA_TYPE(V_MATROX,1)	/* Matrox Atlas		*/
 #define CHIP_MGA2064W	SVGA_TYPE(V_MATROX,2)	/* Matrox Millennium	*/

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.19 1999/01/03 03:58:10 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.20 1999/03/21 01:44:58 dawes Exp $
 XCOMM
 XCOMM $OpenBSD: OpenBSD.cf,v 1.33 1998/09/27 04:52:48 rahnds Exp $
 XCOMM
@@ -203,19 +203,32 @@ clean::									@@\
 #define InstallGenManPageLong(file,destdir,dest,suffix)			@@\
 	InstallManPageLong(file,destdir,dest)
 
+#define InstallMultipleMan(list,dest)                                   @@\
+install.man:: 								@@\
+	MakeDir($(DESTDIR)dest)						@@\
+	case '${MFLAGS}' in *[i]*) set +e;; esac; \			@@\
+	for i in list; do \                                             @@\
+	  (set -x; \							@@\
+	   MNAME=`echo $$i | cut -f1 -d.`; \				@@\
+	  cat $$i | $(NEQN) | $(TBL) | $(NROFF) $(MANMACROS) \		@@\
+		| $(COL) > $${MNAME}.0; \				@@\
+	  $(INSTALL) -c $(INSTMANFLAGS) $${MNAME}.0 \			@@\
+			$(DESTDIR)dest/$${MNAME}.0; \			@@\
+	  $(RM) $${MNAME}.0); \						@@\
+	done
+
 #define InstallMultipleManSuffix(list,dest,suff)                        @@\
 install.man:: 								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	case '${MFLAGS}' in *[i]*) set +e;; esac; \			@@\
 	for i in list; do \                                             @@\
 	  (set -x; \							@@\
-	  cat $$i.suff | $(NEQN) | $(TBL) | $(NROFF) $(MANMACROS) | $(COL) >/tmp/$$$$.suff; \	@@\
-	  $(INSTALL) -c $(INSTMANFLAGS) /tmp/$$$$.suff $(DESTDIR)dest/$$i.0; \	@@\
-	  $(RM) /tmp/$$$$.suff); \						@@\
+	  cat $$i.suff | $(NEQN) | $(TBL) | $(NROFF) $(MANMACROS) \	@@\
+		| $(COL) > $$i.0; \					@@\
+	  $(INSTALL) -c $(INSTMANFLAGS) $$i.0	 \			@@\
+		$(DESTDIR)dest/$$i.0; \					@@\
+	  $(RM) $$i.0 ); \						@@\
 	done
-
-#define InstallMultipleMan(list,dest)                                   @@\
-	InstallMultipleManSuffix(list,dest,man)
 
 #define InstallManPageAliases(file,destdir,aliases)                     @@\
 install.man:: 								@@\

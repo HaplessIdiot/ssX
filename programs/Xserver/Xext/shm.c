@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.12 1999/01/31 12:21:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.13 1999/02/01 11:55:52 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -104,7 +104,7 @@ static DISPATCH_PROC(SProcShmQueryVersion);
 static unsigned char ShmReqCode;
 static int ShmCompletionCode;
 static int BadShmSegCode;
-static RESTYPE ShmSegType, ShmPixType;
+RESTYPE ShmSegType, ShmPixType;
 static ShmDescPtr Shmsegs;
 static Bool sharedPixmaps;
 static int pixmapFormat;

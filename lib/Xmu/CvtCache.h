@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/CvtCache.h,v 1.3 1998/08/20 13:59:33 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CvtCache.h,v 1.4 1998/10/03 09:06:24 dawes Exp $ */
 
 /*
  *			       Public Interfaces
@@ -49,6 +49,9 @@ XmuCvtCache *_XmuCCLookupDisplay
 (
  Display	*dpy
  );
+
+extern void _XmuStringToBitmapInitCache(XmuCvtCache *c);
+extern void _XmuStringToBitmapFreeCache(XmuCvtCache *c);
 
 _XFUNCPROTOEND
 

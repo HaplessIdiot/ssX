@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/connect.c,v 3.3 1998/06/28 08:41:28 dawes Exp $ */
+/* $XFree86: xc/lib/ICE/connect.c,v 3.4 1998/10/03 08:41:09 dawes Exp $ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
@@ -473,6 +473,7 @@ char **actualConnectionRet;
     int  madeConnection = 0;
     int  len, retry;
     int  connect_stat;
+    int  address_size;
     XtransConnInfo trans_conn = NULL;
 
     *actualConnectionRet = NULL;
@@ -481,8 +482,16 @@ char **actualConnectionRet;
     len = strlen (networkIdsList);
     endptr = networkIdsList + len;
 
-    if (len < sizeof addrbuf) address = addrbuf;
-    else address = malloc (len + 1);
+    if (len < sizeof addrbuf)
+    {
+       address = addrbuf;
+       address_size = 256;
+    }
+    else
+    {
+       address = malloc (len + 1);
+       address_size = len;
+    }    
 
     while (ptr < endptr && !madeConnection)
     {
@@ -490,8 +499,8 @@ char **actualConnectionRet;
 	    delim = endptr;
 
 	len = delim - ptr;
-	if (len > sizeof(address) - 1)
-	    len = sizeof(address) - 1;
+	if (len > address_size - 1)
+	    len = address_size - 1;
 	strncpy (address, ptr, len);
 	address[len] = '\0';
 

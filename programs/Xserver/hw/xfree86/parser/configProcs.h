@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/configProcs.h,v 1.2 1998/07/25 16:57:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/configProcs.h,v 1.3 1999/03/07 11:40:43 dawes Exp $ */
 
 /* Private procs.  Public procs are in xf86Parser.h and xf86Optrec.h */
 
@@ -42,8 +42,11 @@ XF86ConfVideoAdaptorPtr xf86FindVideoAdaptor(const char *ident, XF86ConfVideoAda
 XF86ConfModeLinePtr parseModeLine(void);
 XF86ConfModeLinePtr parseVerboseMode(void);
 XF86ConfMonitorPtr parseMonitorSection(void);
+XF86ConfModesPtr parseModesSection(void);
 void printMonitorSection(FILE *cf, XF86ConfMonitorPtr ptr);
+void printModesSection(FILE *cf, XF86ConfModesPtr ptr);
 void freeMonitorList(XF86ConfMonitorPtr ptr);
+void freeModesList(XF86ConfModesPtr ptr);
 void freeModeLineList(XF86ConfModeLinePtr ptr);
 /* Pointer.c */
 XF86ConfPointerPtr parsePointerSection(void);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.3 1999/01/14 13:05:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.4 1999/03/07 11:40:43 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -95,6 +95,11 @@ xf86ReadConfigFile (void)
 			{
 				HANDLE_LIST (conf_monitor_lst, parseMonitorSection,
 							 XF86ConfMonitorPtr);
+			}
+			else if (NameCompare (val.str, "modes") == 0)
+			{
+				HANDLE_LIST (conf_modes_lst, parseModesSection,
+							 XF86ConfModesPtr);
 			}
 			else if (NameCompare (val.str, "screen") == 0)
 			{

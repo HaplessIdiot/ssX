@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.208 1999/03/07 08:29:25 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.209 1999/03/14 05:50:52 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -102,7 +102,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 /* Pure PCI drivers should go first */
 #ifndef XF86CardDrivers
 #define XF86CardDrivers		mga glint tga s3virge sis cirrus tseng \
-				trident chips fbdev vga
+				trident chips apm fbdev vga
 #endif
 #endif
 
@@ -125,6 +125,18 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 /* 8/32bpp overlay module */
 #ifndef XF8_32Bpp
 #define XF8_32Bpp		YES
+#endif
+/* 8/16bpp dual fb module */
+#ifndef XF8_16Bpp
+#define XF8_16Bpp		YES
+#endif
+/* 24/32bpp conversion module */
+#ifndef XF24_32Bpp
+#define XF24_32Bpp		YES
+#endif
+/* shadow fb module */
+#ifndef XFShadowFB
+#define XFShadowFB		YES
 #endif
 /* vgahw module */
 #ifndef XF86VgaHw

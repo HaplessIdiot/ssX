@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xmu/WidgetNode.c,v 1.4 1998/08/16 10:25:22 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/WidgetNode.c,v 1.5 1998/10/03 09:06:37 dawes Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -115,7 +115,7 @@ find_resource(XmuWidgetNode *node, char *name, Bool cons)
 static void
 mark_resource_owner(register XmuWidgetNode *node)
 {
-    register int i;
+    register Cardinal i;
     XtResourceList childres;
 
     childres = node->resources;

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.18 1999/03/14 03:21:12 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.19 1999/03/14 11:17:39 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -381,7 +381,7 @@ _SelectionReceived(Widget w, XtPointer client_data, Atom *selection,
      other client is evil */
 
   StartAction(ctx, NULL);
-  if (_XawTextFormat(ctx) == XawFmtWide)
+  if (XawTextFormat(ctx, XawFmtWide))
     {
       XTextProperty textprop;
       Display *d = XtDisplay((Widget)ctx);
@@ -689,7 +689,7 @@ MoveLine(TextWidget ctx, XEvent *event, XawTextScanDirection dir)
       XawTextSourceRead(ctx->text.source, ctx->text.insertPos, &block, 1);
       if (block.length)
 	{
-	  if (_XawTextFormat(ctx) == XawFmtWide)
+	  if (XawTextFormat(ctx, XawFmtWide))
 	    {
 	      if (*(wchar_t *)block.ptr == _Xaw_atowc(XawTAB))
 		++ctx->text.insertPos;
@@ -880,7 +880,7 @@ ConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type,
 	return (True);
 
       XmuConvertStandardSelection(w, ctx->text.time, selection,
-				  target, type, (XtPointer *)&std_targets,
+				  target, type, (XPointer *)&std_targets,
 				  &std_length, format);
 
       *value = XtMalloc((unsigned)sizeof(Atom) * (std_length + 7));
@@ -924,7 +924,7 @@ ConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type,
     {
       if (*target == XA_TEXT(d))
 	{
-	  if (_XawTextFormat(ctx) == XawFmtWide)
+	  if (XawTextFormat(ctx, XawFmtWide))
 	    *type = XA_COMPOUND_TEXT(d);
 	  else
 	    *type = XA_STRING;
@@ -942,7 +942,7 @@ ConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type,
       if (!salt)
 	{
 	  *value = (char *)_XawTextGetSTRING(ctx, s->left, s->right);
-	  if (_XawTextFormat(ctx) == XawFmtWide)
+	  if (XawTextFormat(ctx, XawFmtWide))
 	    {
 	      XTextProperty textprop;
 	      if (XwcTextListToTextProperty(d, (wchar_t**)value, 1,
@@ -965,7 +965,7 @@ ConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type,
 	  strcpy (*value, salt->contents);
 	  *length = salt->length;
 	}
-      if (_XawTextFormat(ctx) == XawFmtWide && *type == XA_STRING)
+      if (XawTextFormat(ctx, XawFmtWide) && *type == XA_STRING)
 	{
 	  XTextProperty textprop;
 	  wchar_t **wlist;
@@ -1039,7 +1039,7 @@ ConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type,
     }
 
   if (XmuConvertStandardSelection(w, ctx->text.time, selection, target, type,
-				  (XtPointer *)value, length, format))
+				  (XPointer *)value, length, format))
     return (True);
   
   return (False);
@@ -1167,7 +1167,7 @@ _DeleteOrKill(TextWidget ctx, XawTextPosition from, XawTextPosition to,
 
 	string = (char *)_XawTextGetSTRING(ctx, from, to);
 
-	if (_XawTextFormat(ctx) == XawFmtWide) {
+	if (XawTextFormat(ctx, XawFmtWide)) {
 	    XTextProperty textprop;
 
 	    if (XwcTextListToTextProperty(XtDisplay((Widget)ctx),
@@ -1855,7 +1855,7 @@ AutoFill(TextWidget ctx)
 
   XawTextSourceRead(ctx->text.source, ret_pos - 1, &text, 1);
 
-  if (_XawTextFormat(ctx) == XawFmtWide)
+  if (XawTextFormat(ctx, XawFmtWide))
     {
       wc_buf[0] = *(wchar_t *)text.ptr;
       if (wc_buf[0] != _Xaw_atowc(XawSP) && wc_buf[0] != _Xaw_atowc(XawTAB))
@@ -2103,7 +2103,7 @@ InsertString(Widget w, XEvent *event, String *params, Cardinal *num_params)
       if (text.length == 0)
 	continue;
 
-      if (_XawTextFormat(ctx) == XawFmtWide)	/* convert to WC */
+      if (XawTextFormat(ctx, XawFmtWide))	/* convert to WC */
 	{
           int temp_len;
 
@@ -2543,7 +2543,7 @@ FormParagraph(Widget w, XEvent *event, String *params, Cardinal *num_params)
     TextSrcObject src = (TextSrcObject)ctx->text.source;
     XawTextPosition from, to, endPos = 0, buf[32], *pos;
     char *lbuf = NULL, *rbuf;
-    int i;
+    Cardinal i;
 
     StartAction(ctx, event);
 
@@ -2581,7 +2581,7 @@ FormParagraph(Widget w, XEvent *event, String *params, Cardinal *num_params)
 
 	rbuf = _XawTextGetText(ctx, from, from + rlen);
 
-	size = _XawTextFormat(ctx) == XawFmtWide ? sizeof(wchar_t) : sizeof(char);
+	size = XawTextFormat(ctx, XawFmtWide) ? sizeof(wchar_t) : sizeof(char);
 	if (llen != rlen || memcmp(lbuf, rbuf, llen * size)) {
 	    block.ptr = lbuf;
 	    block.length = llen;

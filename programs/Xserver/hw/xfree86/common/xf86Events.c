@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.59 1999/02/28 11:19:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.60 1999/03/02 10:41:55 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1252,7 +1252,7 @@ xf86VTSwitch()
 #endif
 
 #ifdef XFreeXDGA
-  if(!DGAVTSwitch(i))
+  if(!DGAVTSwitch())
 	return;
 #endif
 

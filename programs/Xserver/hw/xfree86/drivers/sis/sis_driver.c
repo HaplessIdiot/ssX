@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.17 1999/03/07 11:40:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.18 1999/03/20 08:59:25 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -167,6 +167,10 @@ static OptionInfoRec SISOptions[] = {
 
 int sisReg32MMIO[]={0x8280,0x8284,0x8288,0x828C,0x8290,0x8294,0x8298,0x829C,
 		    0x82A0,0x82A4,0x82A8,0x82AC};
+/* Engine Register for the 2nd Generation Graphics Engine */
+int sis2Reg32MMIO[]={0x8200,0x8204,0x8208,0x820C,0x8210,0x8214,0x8218,0x821C,
+		    0x8220,0x8224,0x8228,0x822C,0x8230,0x8234,0x8238,0x823C,
+		     0x8240, 0x8300};
 
 static const char *xaaSymbols[] = {
     "XAADestroyInfoRec",
@@ -918,7 +922,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
         case PCI_CHIP_SG86C215:
         case PCI_CHIP_SG86C225:
  	    outb(0x3C4, RAMSize); /* Memory configuration register */
-  	    switch ((temp>>1) & 0x03) {
+	    temp = inb(0x3C5);
+  	    switch (temp & 0x03) {
 	    case 0: 
 		pScrn->videoRam = 1024;
 		break;
@@ -1545,9 +1550,12 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	SIS1bppColorMap(pScrn);
     }
 
-    if (!pSiS->NoAccel)
-	SiSAccelInit(pScreen);
-
+    if (!pSiS->NoAccel) {
+        if ( pSiS->Chipset == PCI_CHIP_SIS530 )
+	    SiS2AccelInit(pScreen);
+	else
+	    SiSAccelInit(pScreen);
+    }
     miInitializeBackingStore(pScreen);
     xf86SetBackingStore(pScreen);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbscrinit.c,v 1.1 1999/01/03 03:58:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbscrinit.c,v 1.2 1999/01/14 13:05:34 dawes Exp $ */
 
 
 #include "X.h"
@@ -20,6 +20,8 @@
 #include "mistruct.h"
 #include "dix.h"
 #include "mibstore.h"
+#include "xf86.h"
+#include "xf86str.h"
 
 /* CAUTION:  We require that cfb8 and cfb32 were NOT 
 	compiled with CFB_NEED_SCREEN_PRIVATE */
@@ -195,16 +197,16 @@ cfb8_32ScreenInit(
     pointer pbits,		/* pointer to screen bitmap */
     int xsize, int ysize,	/* in pixels */
     int dpix, int dpiy,		/* dots per inch */
-    int width,			/* pixel width of frame buffer */
-    unsigned char key
+    int width			/* pixel width of frame buffer */
 ){
     cfb8_32ScreenPtr pScreenPriv;
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
 
     if (!cfb8_32SetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width))
 	return FALSE;
 
     pScreenPriv = CFB8_32_GET_SCREEN_PRIVATE(pScreen);
-    pScreenPriv->key = key;
+    pScreenPriv->key = pScrn->colorKey;
 
     return cfb8_32FinishScreenInit(
 		pScreen, pbits, xsize, ysize, dpix, dpiy, width);

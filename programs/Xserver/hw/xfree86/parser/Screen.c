@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.4 1999/01/14 13:05:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.5 1999/03/07 11:40:43 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -480,7 +480,11 @@ validateScreen (XF86ConfigPtr p)
 			return (FALSE);
 		}
 		else
+		{
 			screen->scrn_monitor = monitor;
+			if (!validateMonitor(p, screen))
+				return (FALSE);
+		}
 
 		device = xf86FindDevice (screen->scrn_device_str, p->conf_device_lst);
 		if (!device)

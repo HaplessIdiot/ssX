@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/dgaproc.h,v 1.5 1999/03/02 11:49:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/dgaproc.h,v 1.6 1999/03/14 11:17:50 dawes Exp $ */
 
 #ifndef __DGAPROC_H
 #define __DGAPROC_H
@@ -119,8 +119,14 @@ int DGAGetOldDGAMode(int index);
 
 int DGAGetDeviceInfo(int index, XDGADevicePtr dev, int mode);
 
-Bool DGAVTSwitch(int index);
-Bool DGAStealEvent(int index, xEvent *event);
+Bool DGAVTSwitch(void);
+Bool DGAStealMouseEvent(int index, xEvent *e, int dx, int dy);
+Bool DGAStealKeyEvent(int index, xEvent *e);
+
+
+
+unsigned char DGAReqCode;
+int DGAErrorBase;
 
 
 

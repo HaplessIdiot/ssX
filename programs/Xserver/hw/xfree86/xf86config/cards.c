@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.11 1996/12/23 07:04:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.12 1997/12/14 10:04:04 hohndel Exp $ */
 
 /*
  *  Functions to manipulate card database.
@@ -50,7 +50,7 @@ Card card[MAX_CARDS];
 void sort_database();
 
 
-static int getline(f, l)
+static int getnextline(f, l)
 FILE *f;
 char *l;
 {
@@ -122,7 +122,7 @@ int parse_database() {
 	lineno = 0;
 
 	for (;;) {
-		if (getline(f, buf))
+		if (getnextline(f, buf))
 			break;
 		lineno++;
 		if (buf[0] == '#')

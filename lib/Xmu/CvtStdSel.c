@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.11 1998/08/16 10:25:08 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.12 1998/10/03 09:06:25 dawes Exp $ */
 
 /*
  * This file contains routines to handle common selection targets.
@@ -188,7 +188,7 @@ isApplicationShell(Widget w)
 
 Boolean
 XmuConvertStandardSelection(Widget w, Time time, Atom *selection, Atom *target,
-			    Atom *type, XtPointer *value,
+			    Atom *type, XPointer *value,
 			    unsigned long *length, int *format)
 {
     Display *d = XtDisplay(w);

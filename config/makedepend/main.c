@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/main.c,v 3.14 1998/10/05 13:21:49 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.15 1998/10/06 06:08:25 dawes Exp $ */
 
 #include "def.h"
 #ifdef hpux
@@ -539,7 +539,7 @@ match(char *str, char **list)
  * Get the next line.  We only return lines beginning with '#' since that
  * is all this program is ever interested in.
  */
-char *getline(struct filepointer *filep)
+char *getnextline(struct filepointer *filep)
 {
 	char	*p,	/* walking pointer */
 		*eof,	/* end of file pointer */

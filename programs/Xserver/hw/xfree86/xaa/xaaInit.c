@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.16 1999/03/07 11:40:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.17 1999/03/14 11:18:09 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -183,11 +183,12 @@ XAAInit(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     pScrn->SaveRestoreImage = XAASaveRestoreImage;
 
     pScreenPriv->WindowExposures = pScreen->WindowExposures;
-    if(infoRec->Flags & OVERLAY_8_32) {
+    if(pScrn->overlayFlags & OVERLAY_8_32_PLANAR) {
 	pScreen->PaintWindowBackground = XAAPaintWindow8_32;
 	pScreen->PaintWindowBorder = XAAPaintWindow8_32;
 	pScreen->CopyWindow = XAACopyWindow8_32;
 	pScreen->WindowExposures = XAAWindowExposures8_32;
+	infoRec->FullPlanemask = ~0;
     }
 
     infoRec->PreAllocMem = xalloc(MAX_PREALLOC_MEM);
@@ -355,7 +356,8 @@ XAARestoreAreas (
 	int nboxes = REGION_NUM_RECTS(prgnRestore);
 	int pm = ~0;
 
-	if((infoRec->Flags & OVERLAY_8_32) && (pWin->drawable.depth == 24))
+	if((pScrn->overlayFlags & OVERLAY_8_32_PLANAR) && 
+					(pWin->drawable.depth == 24))
 	   pm = 0x00ffffff;
 
 	(*infoRec->SetupForScreenToScreenCopy)(pScrn, 1, 1, GXcopy, pm, -1);
@@ -382,7 +384,8 @@ XAARestoreAreas (
 	unsigned char *srcp = (unsigned char*)pPixmap->devPrivate.ptr;
 	int pm = ~0;
 
-	if((infoRec->Flags & OVERLAY_8_32) && (pWin->drawable.depth == 24))
+	if((pScrn->overlayFlags & OVERLAY_8_32_PLANAR) && 
+					(pWin->drawable.depth == 24))
 	   pm = 0x00ffffff;
  
 	while(nboxes--) {
@@ -420,7 +423,7 @@ XAACreatePixmap(ScreenPtr pScreen, int w, int h, int depth)
     
     if((infoRec->Flags & OFFSCREEN_PIXMAPS) && pScrn->vtSema && (depth != 1) &&
 	((BitsPerPixel(depth) == pScrn->bitsPerPixel) || 
-		!(infoRec->Flags & OVERLAY_8_32)) && 
+		!(pScrn->overlayFlags & OVERLAY_8_32_PLANAR)) && 
 	(size >= MIN_OFFPIX_SIZE) && 
 	(!infoRec->maxOffPixWidth || (w <= infoRec->maxOffPixWidth)) &&
 	(!infoRec->maxOffPixHeight || (h <= infoRec->maxOffPixHeight)) )

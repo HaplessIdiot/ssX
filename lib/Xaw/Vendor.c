@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Vendor.c,v 1.4 1998/08/16 10:24:44 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Vendor.c,v 1.5 1998/10/03 08:42:30 dawes Exp $ */
 
 /*
  * This is a copy of Xt/Vendor.c with an additional ClassInitialize
@@ -409,7 +409,7 @@ XawVendorShellExtResize(Widget w)
 {
 	ShellWidget sw = (ShellWidget) w;
 	Widget childwid;
-	int i;
+	Cardinal i;
 	int core_height;
 
 	_XawImResizeVendorShell( w );

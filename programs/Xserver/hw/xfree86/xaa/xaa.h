@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.20 1999/02/13 08:00:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.21 1999/03/07 11:40:46 dawes Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -110,7 +110,6 @@
 #define MICROSOFT_ZERO_LINE_BIAS	0x00000002
 #define OFFSCREEN_PIXMAPS		0x00000004
 #define LINEAR_FRAMEBUFFER		0x00000008
-#define OVERLAY_8_32			0x00000010
 
 
 /* GC fg, bg, and planemask restrictions */
@@ -1188,9 +1187,6 @@ typedef struct _XAAInfoRec {
    );
    
    char* PixmapCachePrivate;
-
-   /* Overlays */
-   unsigned int OverlayKey;
 
    /* Miscellaneous */
 

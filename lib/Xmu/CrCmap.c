@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/CrCmap.c,v 3.3 1998/09/05 06:36:11 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CrCmap.c,v 3.4 1998/10/03 09:06:23 dawes Exp $ */
 
 /*
  * Author:  Donna Converse, MIT X Consortium
@@ -135,7 +135,7 @@ XmuCreateColormap(Display *dpy, XStandardColormap *colormap)
 			break;
 	    }
 	} else {
-	    unsigned int	maxdepth = 0;
+	    int			maxdepth = 0;
 	    XVisualInfo		*v = NULL;
 
 	    for (i=0; i < n; i++, vinfo++)
@@ -166,7 +166,7 @@ static Status
 readwrite_map(Display *dpy, XVisualInfo *vinfo, XStandardColormap *colormap)
 {
     register unsigned long i, n;	/* index counters */
-    int			ncolors;	/* number of colors to be defined */
+    unsigned long	ncolors;	/* number of colors to be defined */
     int			npixels;	/* number of pixels allocated R/W */
     int			first_index;	/* first index of pixels to use */
     int			remainder;	/* first index of remainder */
@@ -194,7 +194,7 @@ readwrite_map(Display *dpy, XVisualInfo *vinfo, XStandardColormap *colormap)
 		  colormap->blue_max * colormap->blue_mult + 1;
 	delta = 1;
     }
-    if (ncolors <= 1 || ncolors > vinfo->colormap_size)	return 0;
+    if (ncolors <= 1 || (int) ncolors > vinfo->colormap_size)	return 0;
 
     /* Allocate Read/Write as much of the colormap as we can possibly get.
      * Then insure that the pixels we were allocated are given in 

@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.6 1998/10/03 08:42:26 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.7 1998/12/06 06:08:13 dawes Exp $ */
 
 /*
  * This file is broken up into three sections one dealing with
@@ -554,7 +554,7 @@ _XawTextSearch(Widget w, XEvent *event, String *params, Cardinal *num_params)
   if (*num_params == 2)
       ptr = params[1];
   else
-    if (_XawTextFormat(ctx) == XawFmtWide)
+    if (XawTextFormat(ctx, XawFmtWide))
       {
 	/* This just does the equivalent of
 	   ptr = ""L, a waste because params[1] isnt W aligned */
@@ -707,7 +707,7 @@ AddSearchChildren(Widget form, char *ptr, Widget tw)
     XtOverrideTranslations(search->right_toggle, radio_translations);
   }
 
-  if (_XawTextFormat((TextWidget)tw) == XawFmt8Bit) {
+  if (XawTextFormat((TextWidget)tw, XawFmt8Bit)) {
       num_args = 0;
       XtSetArg(args[num_args], XtNlabel, "Case Sensitive"); num_args++;
       XtSetArg(args[num_args], XtNfromVert, search->label2); num_args++;

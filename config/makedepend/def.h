@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/def.h,v 3.4 1998/10/02 06:15:21 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/def.h,v 3.5 1998/10/05 13:21:48 dawes Exp $ */
 
 #include "Xos.h"
 #include "Xfuncproto.h"
@@ -135,7 +135,7 @@ char			*realloc();
 char			*copy(char *str);
 int                     match(char *str, char **list);
 char			*base_name(char *file);
-char			*getline(struct filepointer *fp);
+char			*getnextline(struct filepointer *fp);
 struct symtab		**slookup(char *symbol, struct inclist *file);
 struct symtab		**isdefined(char *symbol, struct inclist *file,
 				    struct inclist **srcfile);

@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/fontfile/encparse.c,v 1.4 1999/02/07 06:18:25 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/encparse.c,v 1.5 1999/02/07 10:38:33 dawes Exp $ */
 
 /* Parser for encoding files */
 
@@ -179,7 +179,7 @@ gettoken(FontFilePtr f, int c, int *cp)
 /* Parse a line.
  * Always skips to the beginning of a new line, even if an error occurs */
 static int
-getline(FontFilePtr f)
+getnextline(FontFilePtr f)
 {
   int c, token, i;
   c=FontFileGetc(f);
@@ -354,7 +354,7 @@ parseEncodingFile(FontFilePtr f)
   int numaliases=0;
 
 no_encoding:
-  line=getline(f);
+  line=getnextline(f);
   switch(line) {
   case EOF_LINE:
     goto done;
@@ -375,7 +375,7 @@ no_encoding:
   }
 
 no_mapping:
-  line=getline(f);
+  line=getnextline(f);
   switch(line) {
   case EOF_LINE: goto done;
   case ALIAS_LINE:
@@ -428,7 +428,7 @@ no_mapping:
   }
 
 skipmapping:
-  line=getline(f);
+  line=getnextline(f);
   switch(line) {
   case ENDMAPPING_LINE:
     goto no_mapping;
@@ -440,7 +440,7 @@ skipmapping:
     
 
 mapping:
-  line=getline(f);
+  line=getnextline(f);
   switch(line) {
   case EOF_LINE: goto error;
   case ENDMAPPING_LINE:
@@ -533,7 +533,7 @@ mapping:
   }
 
 string_mapping:
-  line=getline(f);
+  line=getnextline(f);
   switch(line) {
   case EOF_LINE: goto error;
   case ENDMAPPING_LINE:

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.13 1999/03/07 11:40:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.14 1999/03/14 11:17:51 dawes Exp $ */
 
 /*
 
@@ -23,11 +23,9 @@ Copyright (c) 1995, 1996, 1999  XFree86 Inc
 #include "swaprep.h"
 #include "dgaproc.h"
 
-static int DGAErrorBase;
 
 static DISPATCH_PROC(ProcXF86DGAQueryVersion);
 static DISPATCH_PROC(ProcXF86DGADirectVideo);
-static DISPATCH_PROC(ProcXF86DGADispatch);
 static DISPATCH_PROC(ProcXF86DGAGetVidPage);
 static DISPATCH_PROC(ProcXF86DGAGetVideoLL);
 static DISPATCH_PROC(ProcXF86DGAGetViewPortSize);
@@ -36,57 +34,6 @@ static DISPATCH_PROC(ProcXF86DGASetViewPort);
 static DISPATCH_PROC(ProcXF86DGAInstallColormap);
 static DISPATCH_PROC(ProcXF86DGAQueryDirectVideo);
 static DISPATCH_PROC(ProcXF86DGAViewPortChanged);
-
-/*
- * SProcs should probably be deleted, a local connection can never
- * be byte flipped!? - Jon.
- */
-static DISPATCH_PROC(SProcXF86DGADirectVideo);
-static DISPATCH_PROC(SProcXF86DGADispatch);
-static DISPATCH_PROC(SProcXF86DGAQueryVersion);
-
-static void XF86DGAResetProc(ExtensionEntry *extEntry);
-
-static unsigned char DGAReqCode = 0;
-
-void
-XFree86DGAExtensionInit(void)
-{
-    ExtensionEntry* extEntry;
-#ifdef XF86DGA_EVENTS
-    int		    i;
-    ScreenPtr	    pScreen;
-
-    EventType = CreateNewResourceType(XF86DGAFreeEvents);
-    ScreenPrivateIndex = AllocateScreenPrivateIndex ();
-    for (i = 0; i < screenInfo.numScreens; i++)
-    {
-	pScreen = screenInfo.screens[i];
-	SetScreenPrivate (pScreen, NULL);
-    }
-#endif
-
-    if (
-#ifdef XF86DGA_EVENTS
-        EventType && ScreenPrivateIndex != -1 &&
-#endif
-	(extEntry = AddExtension(XF86DGANAME,
-				XF86DGANumberEvents,
-				XF86DGANumberErrors,
-				ProcXF86DGADispatch,
-				SProcXF86DGADispatch,
-				XF86DGAResetProc,
-				StandardMinorOpcode))) {
-	DGAReqCode = (unsigned char)extEntry->base;
-	DGAErrorBase = extEntry->errorBase;
-    }
-}
-
-/*ARGSUSED*/
-static void
-XF86DGAResetProc (ExtensionEntry *extEntry)
-{
-}
 
 static int
 ProcXF86DGAQueryVersion(ClientPtr client)
@@ -229,7 +176,8 @@ ProcXF86DGASetViewPort(ClientPtr client)
     if (!DGAActive(stuff->screen))
 	return (DGAErrorBase + XF86DGADirectNotActivated);
 
-    if (!DGASetViewport(stuff->screen, stuff->x, stuff->y, DGA_FLIP_RETRACE))
+    if (DGASetViewport(stuff->screen, stuff->x, stuff->y, DGA_FLIP_RETRACE)
+		!= Success)
 	return DGAErrorBase + XF86DGADirectNotActivated;
 
     return (client->noClientException);
@@ -354,14 +302,11 @@ ProcXF86DGAViewPortChanged(ClientPtr client)
     return (client->noClientException);
 }
 
-static int
+int
 ProcXF86DGADispatch (client)
     register ClientPtr	client;
 {
     REQUEST(xReq);
-
-    if (!LocalClient(client))
-	return DGAErrorBase + XF86DGAClientNotLocal;
 
     switch (stuff->data)
     {
@@ -385,50 +330,6 @@ ProcXF86DGADispatch (client)
 	return ProcXF86DGAQueryDirectVideo(client);
     case X_XF86DGAViewPortChanged:
 	return ProcXF86DGAViewPortChanged(client);
-    default:
-	return BadRequest;
-    }
-}
-
-static int
-SProcXF86DGAQueryVersion(client)
-    register ClientPtr	client;
-{
-    register int n;
-    REQUEST(xXF86DGAQueryVersionReq);
-    swaps(&stuff->length, n);
-    return ProcXF86DGAQueryVersion(client);
-}
-
-static int
-SProcXF86DGADirectVideo(client)
-    ClientPtr client;
-{
-    register int n;
-    REQUEST(xXF86DGADirectVideoReq);
-    swaps(&stuff->length, n);
-    REQUEST_SIZE_MATCH(xXF86DGADirectVideoReq);
-    swaps(&stuff->screen, n);
-    swaps(&stuff->enable, n);
-    return ProcXF86DGADirectVideo(client);
-}
-
-static int
-SProcXF86DGADispatch (client)
-    register ClientPtr	client;
-{
-    REQUEST(xReq);
-
-    /* It is bound to be non-local when there is byte swapping */
-    if (!LocalClient(client))
-	return DGAErrorBase + XF86DGAClientNotLocal;
-
-    switch (stuff->data)
-    {
-    case X_XF86DGAQueryVersion:
-	return SProcXF86DGAQueryVersion(client);
-    case X_XF86DGADirectVideo:
-	return SProcXF86DGADirectVideo(client);
     default:
 	return BadRequest;
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaOverlay.c,v 1.5 1999/01/03 08:06:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaOverlay.c,v 1.6 1999/01/11 12:09:39 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -135,7 +135,7 @@ XAAPaintWindow8_32(
 	break;
     case PW_BORDER:
 	if(depth == 24)
-	   key = infoRec->OverlayKey << 24;
+	   key = infoRec->pScrn->colorKey << 24;
 	if (pWin->borderIsPixel) 
 	    fg = pWin->border.pixel;
 	else 	/* pixmap */ 
@@ -291,7 +291,7 @@ XAAWindowExposures8_32(
 	XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCREEN(pScreen);
 	if(REGION_NUM_RECTS(pReg) && infoRec->FillSolidRects) {
 	    (*infoRec->FillSolidRects)(infoRec->pScrn, 
-			(infoRec->OverlayKey << 24), GXcopy, 0xff000000,
+		(infoRec->pScrn->colorKey << 24), GXcopy, 0xff000000,
 			REGION_NUM_RECTS(pReg), REGION_RECTS(pReg));
 	    miWindowExposures(pWin, pReg, pOtherReg);
 	    return;

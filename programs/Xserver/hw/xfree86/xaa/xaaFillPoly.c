@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillPoly.c,v 1.7 1998/12/06 06:08:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillPoly.c,v 1.8 1999/03/06 13:12:46 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -685,7 +685,7 @@ XAAFillPolygonStippled(
 
 
     if(pGC->fillStyle == FillStippled) {
-    	type = (*infoRec->OpaqueStippledFillChooser)(pGC);
+    	type = (*infoRec->StippledFillChooser)(pGC);
 	fg = pGC->fgPixel;  bg = -1;
     } else {
     	type = (*infoRec->OpaqueStippledFillChooser)(pGC);

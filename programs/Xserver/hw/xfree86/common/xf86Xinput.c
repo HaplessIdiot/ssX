@@ -24,7 +24,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.38 1999/03/02 10:41:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.39 1999/03/07 11:40:33 dawes Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -633,6 +633,13 @@ xf86eqEnqueue( xEvent *e )
 	{
 	case KeyPress:
 	case KeyRelease:
+#ifdef XFreeXDGA
+	/* we do this here, because nobody seems to be calling xf86PostKeyEvent().
+	   We can't steal MotionNotify events here because the motion-relative
+	   information has been lost already. */
+	    if(DGAStealKeyEvent(xf86EventQueue.pEnqueueScreen->myNum, e))
+		return;
+#endif
 	case ButtonPress:
 	case ButtonRelease:
 	case MotionNotify:
@@ -649,11 +656,6 @@ xf86eqEnqueue( xEvent *e )
 		}
 		break;
 	}
-#endif
-
-#ifdef XFreeXDGA
-	if(DGAStealEvent(xf86EventQueue.pEnqueueScreen->myNum, e))
-	    return;
 #endif
 
 	oldtail = xf86EventQueue.tail;
@@ -930,11 +932,15 @@ xf86PostMotionEvent( DeviceIntPtr device,
 				/* FL [Sat Jun 14 14:32:01 1997] * needs to integrate with
 				 * DGA and XTEST event posting */
 
-				if( is_absolute )
+#ifdef XFreeXDGA
+				if(!DGAStealMouseEvent(xf86EventQueue.pEnqueueScreen->myNum, xE, x, y))
+#endif
+				{
+				   if( is_absolute )
 					miPointerAbsoluteCursor (x, y, xf86Info.lastEventTime);
-				else
+				   else
 					miPointerDeltaCursor (x, y, xf86Info.lastEventTime);
-
+				}
 			}
 		}
 	}
@@ -1139,7 +1145,10 @@ xf86PostButtonEvent( DeviceIntPtr device,
 		xE->u.keyButtonPointer.rootY = cx;
 		xE->u.keyButtonPointer.rootX = cy;
 		xf86Info.lastEventTime = xE->u.keyButtonPointer.time = GetTimeInMillis ();
-		xf86eqEnqueue (xE);
+#ifdef XFreeXDGA
+		if(!DGAStealMouseEvent(xf86EventQueue.pEnqueueScreen->myNum, xE, 0, 0))
+#endif
+		    xf86eqEnqueue (xE);
 	}
 }
 

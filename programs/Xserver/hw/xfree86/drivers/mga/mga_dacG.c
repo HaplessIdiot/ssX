@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.16 1999/02/19 21:27:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.17 1999/02/24 17:18:23 hohndel Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -350,7 +350,7 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		if(pMga->Overlay8Plus24) {
 		   pReg->DacRegs[ MGA1064_MUL_CTL ] = MGA1064_MUL_CTL_32bits;
 		   pReg->DacRegs[ MGA1064_COL_KEY_MSK_LSB ] = 0xFF;
-		   pReg->DacRegs[ MGA1064_COL_KEY_LSB ] = TRANSPARENCY_KEY;
+		   pReg->DacRegs[ MGA1064_COL_KEY_LSB ] = pMga->colorKey;
 		} else 
 		   pReg->DacRegs[ MGA1064_MUL_CTL ] = MGA1064_MUL_CTL_32_24bits;
 		break;

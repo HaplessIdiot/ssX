@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.9 1999/03/07 13:38:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.10 1999/03/14 11:17:56 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -324,10 +324,6 @@ DGASetViewport(
 ){
    DGAScreenPtr pScreenPriv = DGA_GET_SCREEN_PRIV(screenInfo.screens[index]);
 
-   /* We rely on the extension to check that DGA is active */ 
-   if(pScreenPriv->current->mode->viewportFlags & mode)
-	return BadMatch;
-
    (*pScreenPriv->funcs->SetViewport)(pScreenPriv->pScrn, x, y, mode);
    return Success;
 }
@@ -491,7 +487,7 @@ DGACopyDeviceInfo(
 
 
 Bool 
-DGAVTSwitch(int index)
+DGAVTSwitch(void)
 {
     ScreenPtr pScreen;
     int i;
@@ -516,7 +512,7 @@ DGAVTSwitch(int index)
 /* We have the power to steal or modify events that are about to get queued */
 
 Bool
-DGAStealEvent(int index, xEvent *e)
+DGAStealKeyEvent(int index, xEvent *e)
 {
    DGAScreenPtr pScreenPriv;
 
@@ -541,37 +537,76 @@ DGAStealEvent(int index, xEvent *e)
       DGA 1.0 compatibility.  Hopefully, we can remove this
       some day */
 
-   switch(e->u.u.type) { 
-   case MotionNotify:
-   case ButtonPress:
-   case ButtonRelease:
-	if(((DeviceIntPtr)(xf86Info.pMouse))->grab) {
-	    deviceKeyButtonPointer *xev = (deviceKeyButtonPointer *) e;
-	    deviceValuator *xv = (deviceValuator*) xev + 1;
-	    /* somebody should fix this up for more exotic devices */
-	    e->u.keyButtonPointer.eventX =  xv->valuator0;
-	    e->u.keyButtonPointer.eventY =  xv->valuator1;
-	    e->u.keyButtonPointer.rootX =   xv->valuator0;
-	    e->u.keyButtonPointer.rootY =   xv->valuator1;
-	    DeliverGrabbedEvent(e, (xf86Info.pMouse), FALSE, 1);
-	}
-	break;
-   case KeyPress:
-   case KeyRelease:
-	if(((DeviceIntPtr)(xf86Info.pKeyboard))->grab){
-	    DeviceIntPtr keybd = (DeviceIntPtr)xf86Info.pKeyboard;
-	    KeyClassPtr keyc = keybd->key;
-	    int keycode = e->u.u.detail;
-	    BYTE *kptr;
+   if(((DeviceIntPtr)(xf86Info.pKeyboard))->grab){
+	DeviceIntPtr keybd = (DeviceIntPtr)xf86Info.pKeyboard;
+	KeyClassPtr keyc = keybd->key;
+	int keycode = e->u.u.detail;
+	BYTE *kptr;
 
-	    kptr = &keyc->down[keycode >> 3];
+	kptr = &keyc->down[keycode >> 3];
 
-	    /* clear the keypress state */
-	    if (e->u.u.type == KeyPress) 
-		*kptr &= ~(1 << (keycode & 7));
-	    keybd->public.processInputProc(e, keybd, 1);
+	/* these would be non-sense otherwise */
+	e->u.keyButtonPointer.eventX =  0;
+	e->u.keyButtonPointer.eventY =  0;
+	e->u.keyButtonPointer.rootX =   0;
+	e->u.keyButtonPointer.rootY =   0;
+
+	/* clear the keypress state */
+	if (e->u.u.type == KeyPress) 
+	    *kptr &= ~(1 << (keycode & 7));
+	keybd->public.processInputProc(e, keybd, 1);
+   }
+
+   /* Direct mode but the client doesn't want the events.
+      We have to keep them from hitting the other windows. 
+    */
+
+   return TRUE;
+}
+
+
+Bool
+DGAStealMouseEvent(int index, xEvent *e, int dx, int dy)
+{
+   DGAScreenPtr pScreenPriv;
+
+   if(DGAScreenIndex < 0) /* no DGA */
+	return FALSE;
+
+   pScreenPriv = DGA_GET_SCREEN_PRIV(screenInfo.screens[index]);
+
+   if(!pScreenPriv || !pScreenPriv->current) /* no direct mode */
+	return FALSE;
+
+   /* I hope this part is correct.  Motion events are different
+	in the sense that the mipointer code is relied on to fill 
+	out the rest of the event info.  We steal the event before 
+	then so we need to fill that info out here */
+
+   if(dx | dy) { 
+	e->u.u.type = MotionNotify;
+	e->u.keyButtonPointer.time = GetTimeInMillis();
+   }
+
+   if(pScreenPriv->input) { /* steal this event */
+	if(pScreenPriv->input & e->u.u.type) {
+
+	    /* send to the DGA 2.0 client */
+
 	}
-	break;
+	return TRUE;
+   } 
+
+   /* Not sure how best to handle this stuff. It's only for
+      DGA 1.0 compatibility.  Hopefully, we can remove this
+      some day */
+
+   if(((DeviceIntPtr)(xf86Info.pMouse))->grab) {
+	e->u.keyButtonPointer.eventX =  dx;
+	e->u.keyButtonPointer.eventY =  dy;
+	e->u.keyButtonPointer.rootX =   dx;
+	e->u.keyButtonPointer.rootY =   dy;
+	DeliverGrabbedEvent(e, (xf86Info.pMouse), FALSE, 1);
    }
 
    /* Direct mode but the client doesn't want the events.
@@ -595,10 +630,10 @@ DGAGetOldDGAMode(int index)
 
    w = pScrn->currentMode->HDisplay;
    h = pScrn->currentMode->VDisplay;
-   p = pScrn->displayWidth / (pScrn->bitsPerPixel >> 3);
+   p = ((pScrn->displayWidth * (pScrn->bitsPerPixel >> 3)) + 3) & ~3L;
 
    for(i = 0; i < pScreenPriv->numModes; i++) {
-	mode = &(pScreenPriv->modes[i - 1]);
+	mode = &(pScreenPriv->modes[i]);
   	      
 	if((mode->viewportWidth == w) && (mode->viewportHeight == h) &&
 		(mode->bytesPerScanline == p) && 
@@ -610,5 +645,4 @@ DGAGetOldDGAMode(int index)
 
    return 0;
 }
-
 

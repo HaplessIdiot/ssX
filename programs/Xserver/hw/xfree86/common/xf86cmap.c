@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.9 1999/02/28 11:19:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.10 1999/03/14 11:17:59 dawes Exp $ */
 
 #ifdef _XOPEN_SOURCE
 #include <math.h>
@@ -451,7 +451,7 @@ CMapSetDGAMode(int index, int num, DGADevicePtr dev)
 
     ret = (*pScreenPriv->SetDGAMode)(index, num, dev);
 
-    if(!num && miInstalledMaps[index])
+    if(miInstalledMaps[index])
 	CMapReinstallMap(miInstalledMaps[index]);
 
     return ret;

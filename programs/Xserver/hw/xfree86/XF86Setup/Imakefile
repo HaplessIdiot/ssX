@@ -4,30 +4,28 @@ XCOMM $XConsortium: Imakefile /main/4 1996/10/24 10:16:33 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.23 1998/03/27 23:23:04 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.24 1998/04/05 16:15:49 robin Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
-#if !BuildXKB || !BuildXF86MiscExt || !BuildXF86VidModeExt
+#if !BuildXKBlib || !BuildXF86MiscLibrary || !BuildXF86VidModeLibrary
 all::
-	@echo This program requires that you build with XKB, XF86MiscExt, and XF86VidModeExt
+	@echo This program requires that you build with XKB, XF86Misc, and XF86VidMode
 	@exit 1
 
 depend::
-	@echo This program requires that you build with XKB, XF86MiscExt, and XF86VidModeExt
+	@echo This program requires that you build with XKB, XF86Misc, and XF86VidMode
 	@exit 1
 
 includes::
-	@echo This program requires that you build with XKB, XF86MiscExt, and XF86VidModeExt
+	@echo This program requires that you build with XKB, XF86Misc, and XF86VidMode
 	@exit 1
 
 #else
             SRCS = main.c tclmisc.c tclvidmode.c tclcards.c tclother.c \
-		   tclkbd.c tclxfconf.c cards.c tclxkbui.c \
-		   tkother.c 
+		   tclkbd.c tclxfconf.c cards.c tclxkbui.c tkother.c
             OBJS = main.o tclmisc.o tclvidmode.o tclcards.o tclother.o \
-		   tclkbd.o tclxfconf.o cards.o tclxkbui.o \
-		   tkother.o 
+		   tclkbd.o tclxfconf.o cards.o tclxkbui.o tkother.o
        TCL_FILES = phase1.tcl phase2.tcl phase3.tcl phase4.tcl phase5.tcl \
 		   setuplib.tcl srvflags.tcl carddata.tcl \
 		   card.tcl done.tcl filelist.tcl keyboard.tcl \
@@ -68,12 +66,16 @@ includes::
 #if XF86SetupUsesStaticTcl
       TCLLIBRARY = StaticLibrary($(TCLLIBDIR),$(TCLLIBNAME))
 #endif
+
  TCLTK_LIBRARIES = $(TKLIBRARY) $(TCLLIBRARY)
 
-     XF86CONFLIB = $(XF86SRC)/config/LibraryTargetName(xf86config)
+     XF86CONFLIB = $(XF86SRC)/parser/LibraryTargetName(xf86config)
+      XF86COMLIB = $(XF86COMSRC)/LibraryTargetName(xf86)
 
  LOCAL_LIBRARIES = $(USEBUILTLIB) $(XKBUILIB) $(XKBFILELIB) \
-		   $(XF86CONFLIB) \
+		   $(XF86CONFLIB) $(SERVERSRC)/os/xalloc.o \
+		   $(SERVERSRC)/dix/globals.o \
+		   $(XF86OSSRC)/LibraryTargetName(xf86_os) $(XF86COMLIB) \
 		   $(TCLTK_LIBRARIES) $(XXF86VMLIB) $(XXF86MISCLIB) \
 		   $(USEINSTALLEDLIB) XawClientLibs MathLibrary
          DEPLIBS = XawClientDepLibs $(DEPXXF86VMLIB)
@@ -83,14 +85,15 @@ includes::
  XCONFIG_DEFINES = $(EXT_DEFINES) -DXF86SETUP \
 		   '-DPROJECTROOT="$(PROJECTROOT)"' \
 		   '-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"' \
-		   -UXFree86LOADER -DNO_WRAPPERS
+		   -DNO_WRAPPERS
 
  XF86SETUPLIBDIR = $(LIBDIR)/XF86Setup
          DEFINES = -DCARD_DATABASE_FILE='"$(CARDDBFILE)"' \
 		   $(XCONFIG_DEFINES) $(MODULEDEFINES)
-        INCLUDES = -I../os-support -I../common \
+        INCLUDES = -I../os-support -I../common -I../vgahw \
+		   -I$(FONTLIBSRC)/include -I$(SERVERSRC)/mi -I../parser \
 		   -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(INCLUDESRC) \
-		   -I$(EXTINCSRC) $(USEINSTALLEDINC) \
+		   -I$(EXTINCSRC) $(USEINSTALLEDINC) -I$(SERVERSRC)/Xext \
 		   -I$(TCLINCDIR) -I$(TKINCDIR)
 
     MSEPROTODEFS = $(STD_DEFINES)
@@ -105,7 +108,6 @@ AllTarget(ProgramTargetName(XF86Setup))
 LinkSourceFile(Cards,../xf86config)
 LinkSourceFile(cards.h,../xf86config)
 LinkSourceFile(cards.c,../xf86config)
-LinkSourceFile(xf86_Config.h,../common)
 
 CppFileTarget(mseproto.tcl, mseproto.cpp, $(MSEPROTODEFS), NullParameter)
 

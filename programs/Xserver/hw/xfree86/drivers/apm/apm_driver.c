@@ -1,1042 +1,1113 @@
-/* $XConsortium: apm_driver.c /main/5 1996/10/25 10:27:55 kaleb $ */
+/* $XFree86$ */
 
 
-
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.9 1997/10/25 13:50:19 hohndel Exp $ */
-
-/* 
-   This is the Alliance Promotion driver. It can be used with
-   6422, AT24 and AT3D. Currently, it seems accelerated support 
-   and hardware cursor only works on AT3D.
-   Using this driver requires no chipset, clocks or videoram line
-   in the device section, all that is automatically set up.
-
-   History:
-   --------
-
-   Created by Kent Hamilton for Xfree86 from source from Alliance
-
-   Modified 1997-06 by Henrik Harmsen (hch@cd.chalmers.se or 
-                                       Henrik.Harmsen@erv.ericsson.se)
-     - Added support for AT3D
-     - Acceleration added for 8,16,32bpp: (for AT3D and AT24)
-       - Filled rectangles
-       - Screen-screen bitblts
-       - Host-screen color expansion bitblts for text
-     - DPMS support
-     - Enabled hardware cursor code (also in 8bpp)
-     - Set to programmable VCLK clock
-     - Set MCLK to 57.3 MHz on AT3D.
-     - Various bugfixes and cleanups
-   
-   Modified 1997-07-06 by Henrik Harmsen
-     - Fixed bug that made the HW cursor screw up on VT switches
-     - Probably fixed bug that screwed up the screen when using
-       screen-screen bitblts. This forced me to put an ApmSync() at 
-       the end of ApmSubsequentScreenToScreenCopy() which makes
-       me unhappy... But: Better it works than not...
-
-   Modified 1997-10-19 by Henrik Harmsen
-     - HW line drawing.
-     - HW clipping.
-     - Added support for ROP's.
-     - Text acceleration now lots faster and support for accelerated
-       proportional text. (Uses SCANLINE_PAD_DWORD + clipping).
-     - Combined write for many register writes gives good 
-       general speedup. (write x+y as a single 32 bit entity, rather
-       obvious, really...:-)
-     - Now waits for correct number of free slots in FIFO before
-       issuing writes to the card.
-       This seems to have eliminated the last instances of dropped
-       interrupts from serial IO and no more lost packets in PPP :-)
-     - Converted cursor support to use XAA interface.
-     - Fixed ApmSync(). Finally removed call to ApmSync at end of
-       ApmSubsequentScreenToScreenCopy() :-)
-
-   TODO
-     - 24 bpp support
-     - AT24 clock programming needs improvement
-     - pci retry?
-     - New code for max dotclock?
-       Hercules says: Do not let the video dot clock * bytes per pixel
-       go above the available memory bandwidth which is around 200MB/s.
-       Then how come the manual says it is OK to use a 144MHz vclk in 16
-       bit for 1280x1024? That is something like 290MB/s...? Hmm...
-       It can't be double indexed mode either, since that doesn't exist 
-       for anything but 8 bit...
-*/
-
-#include <math.h>
-#include "X.h"
-#include "input.h"
-#include "screenint.h"
-#include "dix.h"
-#include "compiler.h"
-#include "xf86.h"
-#include "xf86Version.h"
-#include "xf86Priv.h"
-#include "xf86Procs.h"
-#include "xf86_HWlib.h"
-#define XCONFIG_FLAGS_ONLY
-#include "xf86_Config.h"
-#include "vga.h"
-#include "vgaPCI.h"
-#include "vga256.h"
 #include "apm.h"
+#include "xf86cmap.h"
 
-
-/* Driver data structures. */
-typedef struct {
-  /*
-   * This structure defines all of the register-level information
-   * that must be stored to define a video mode for this chipset.
-   * The 'vgaHWRec' member must be first, and contains all of the
-   * standard VGA register information, as well as saved text and
-   * font data.
-   */
-  vgaHWRec std;               /* good old IBM VGA */
-  /* 
-   * Any other registers or other data that the new chipset needs
-   * to be saved should be defined here.  The Init/Save/Restore
-   * functions will manipulate theses fields.  Examples of things
-   * that would go here are registers that contain bank select
-   * registers, or extended clock select bits, or extensions to 
-   * the timing registers.  Use 'unsigned char' as the type for
-   * these registers.
-   */
-  unsigned char SR1B;
-  unsigned char SR1C;
-  unsigned char CR19;
-  unsigned char CR1A;
-  unsigned char CR1B;
-  unsigned char CR1C;
-  unsigned char CR1D;
-  unsigned char CR1E;
-  unsigned char XR80;
-  unsigned char XRC0;
-  unsigned long XRE8;
-  unsigned long XREC;
-  unsigned long XRF0;
-  unsigned long XRF4;
-  unsigned long XR140;
-  unsigned short XR144;
-  unsigned long XR148;
-  unsigned short XR14C;
-} vgaApmRec, *vgaApmPtr;
-
-
-/* Driver functions */
-static char* ApmIdent(int n);
-static Bool  ApmProbe(void);
-static void  ApmFbInit(void);
-static void  ApmEnterLeave(Bool enter);
-static void  ApmRestore(vgaApmPtr restore);
-static void* ApmSave(vgaApmPtr save);
-static Bool  ApmInit(DisplayModePtr mode);
-static void  ApmAdjust(int x, int y);
-static int   ApmValidMode(DisplayModePtr mode, Bool verbose, int flag);
-#ifdef DPMSExtension
-static void  ApmDisplayPowerManagementSet(int PowerManagementMode);
+#if 0
+#ifdef XFreeXDGA
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 #endif
 
-/* Helper functions */
-static unsigned comp_lmn(unsigned clock);
+#ifdef DPMSExtension
+#include "opaque.h"
+#include "extensions/dpms.h"
+#endif
 
-/* Bank select functions. These are defined in apm_bank.s */
-void ApmSetRead();
-void ApmSetWrite();
-void ApmSetReadWrite();
+#define VERSION			4000
+#define APM_NAME		"APM"
+#define APM_DRIVER_NAME		"apm"
+#define APM_MAJOR_VERSION       1
+#define APM_MINOR_VERSION       0
+#define APM_PATCHLEVEL          0
+#ifndef PCI_CHIP_AT3D
+#define PCI_CHIP_AT3D	0x643D
+#endif
 
-/*
- * This data structure defines the driver itself.  The data structure is
- * initialized with the functions that make up the driver and some data 
- * that defines how the driver operates.
- */
-vgaVideoChipRec APM = {
-  /* 
-   * Function pointers
-   */
-  ApmProbe,
-  ApmIdent,
-  ApmEnterLeave,
-  ApmInit,
-  ApmValidMode,
-  (void*(*)())ApmSave,
-  (void(*)())ApmRestore,
-  ApmAdjust,
-  vgaHWSaveScreen,
-  (void (*)())NoopDDA,
-  ApmFbInit,
-  ApmSetRead,
-  ApmSetWrite,
-  ApmSetReadWrite,
-  /*
-   * This is the size of the mapped memory window, usually 64k.
-   */
-  0x10000,		
-  /*
-   * This is the size of a video memory bank for this chipset.
-   */
-  0x10000,
-  /*
-   * This is the number of bits by which an address is shifted
-   * right to determine the bank number for that address.
-   */
-  16,
-  /*
-   * This is the bitmask used to determine the address within a
-   * specific bank.
-   */
-  0xFFFF,
-  /*
-   * These are the bottom and top addresses for reads inside a
-   * given bank.
-   */
-  0x00000, 0x10000,
-  /*
-   * And corresponding limits for writes.
-   */
-  0x00000, 0x10000,
-  /*
-   * Whether this chipset supports a single bank register or
-   * separate read and write bank registers.
-   */
-  FALSE,
-  /*
-   * If the chipset requires vertical timing numbers to be divided
-   * by two for interlaced modes, set this to VGA_DIVIDE_VERT.
-   */
-  VGA_DIVIDE_VERT,
-  /*
-   * This is a dummy initialization for the set of option flags
-   * that this driver supports.  It gets filled in properly in the
-   * probe function, if the probe succeeds (assuming the driver
-   * supports any such flags).
-   */
-  {{0,}},
-  /*
-   * This determines the multiple to which the virtual width of
-   * the display must be rounded for the 256-color server.  This
-   * will normally be 8, but may be 4 or 16 for some servers.
-   */
-  8,
-  /*
-   * If the driver includes support for a linear-mapped frame buffer
-   * for the detected configuration this should be set to TRUE in the
-   * Probe or FbInit function.  In most cases it should be FALSE.
-   */
-  FALSE,
-  /*
-   * This is the physical base address of the linear-mapped frame
-   * buffer (when used).  Set it to 0 when not in use.
-   */
-  0,
-  /*
-   * This is the size  of the linear-mapped frame buffer (when used).
-   * Set it to 0 when not in use.
-   */
-  0,
-  /*
-   * This is TRUE if the driver has support for the given depth for 
-   * the detected configuration. It must be set in the Probe function.
-   * It most cases it should be FALSE.
-   */
-  FALSE,	/* 1bpp */
-  FALSE,	/* 4bpp */
-  TRUE,	        /* 8bpp */
-  FALSE,	/* 15bpp */
-  FALSE,	/* 16bpp */
-  FALSE,	/* 24bpp */
-  FALSE,	/* 32bpp */
-  /*
-   * This is a pointer to a list of builtin driver modes.
-   * This is rarely used, and in must cases, set it to NULL
-   */
-  NULL,
-  /*
-   * This is a factor that can be used to scale the raw clocks
-   * to pixel clocks.  This is rarely used, and in most cases, set
-   * it to 1.
-   */
-  1,       /* ClockMulFactor */
-  1        /* ClockDivFactor */
+/* bytes to save for text/font data */
+#define TEXT_AMOUNT 32768
+
+/* Mandatory functions */
+static void     ApmIdentify(int flags);
+static Bool     ApmProbe(DriverPtr drv, int flags);
+static Bool     ApmPreInit(ScrnInfoPtr pScrn, int flags);
+static Bool     ApmScreenInit(int Index, ScreenPtr pScreen, int argc,
+                                  char **argv);
+static Bool     ApmSwitchMode(int scrnIndex, DisplayModePtr mode,
+                                  int flags);
+static Bool     ApmAdjustFrame(int scrnIndex, int x, int y, int flags);
+static Bool     ApmEnterVT(int scrnIndex, int flags);
+static void     ApmLeaveVT(int scrnIndex, int flags);
+static Bool     ApmCloseScreen(int scrnIndex, ScreenPtr pScreen);
+static void     ApmFreeScreen(int scrnIndex, int flags);
+static int      ApmValidMode(int scrnIndex, DisplayModePtr mode,
+                                 Bool verbose, int flags);
+static Bool	ApmSaveScreen(ScreenPtr pScreen, Bool unblank);
+static void	ApmUnlock(ApmPtr pApm);
+static void	ApmLock(ApmPtr pApm);
+static void	ApmRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg,
+			    ApmRegPtr ApmReg);
+static void	ApmLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
+				LOCO *colors, short visualclass);
+#ifdef DPMSExtension
+static void	ApmDisplayPowerManagementSet(ScrnInfoPtr pScrn,
+					     int PowerManagementMode,
+					     int flags);
+#endif
+#if 0
+static Bool	ApmDGAInit(ScreenPtr pScreen);
+#endif
+
+DriverRec APM = {
+	VERSION,
+	"Driver for the Alliance chipsets",
+	ApmIdentify,
+	ApmProbe,
+	NULL,
+	0
 };
 
+enum ApmChipId {
+    AP6422	= 0x6422,
+    AT24	= 0x6424,
+    AT3D	= 0x643D
+};
 
+static SymTabRec ApmChipsets[] = {
+    { AP6422,	"AP6422"	},
+    { AT24,	"AT24"		},
+    { AT3D,	"AT3D"		},
+    { -1,	NULL		}
+};
 
-/*
- * This is a convenience macro, so that entries in the driver structure
- * can simply be dereferenced with 'new->xxx'.
- */
-#define new ((vgaApmPtr)vgaNewVideoState)
-
-/*
- * If your chipset uses non-standard I/O ports, you need to define an
- * array of ports, and an integer containing the array size.  The
- * generic VGA ports are defined in vgaHW.c.
- */
-/* This will allow access to all I/O ports */
-static unsigned Apm_ExtPorts[] = { 0x400 };
-static int Num_Apm_ExtPorts = (sizeof(Apm_ExtPorts)/sizeof(Apm_ExtPorts[0]));
-
-#define VESA	0
-#define PCI	1
-
-static int apmChip, apmBus;
-static int apmDPMS;
-static int apmAccelSupported;
-u32 apm_xbase;
-
-#define AP6422  0
-#define AT24    1
-#define AT3D    2
-
-static SymTabRec chipsets[] = {
-  { AP6422,  "AP6422"},
-  { AT24,    "AT24" },
-  { AT3D,    "AT3D" },
-  { -1,		"" },
+static PciChipsets ApmPciChipsets[] = {
+    { PCI_CHIP_AP6422,	PCI_CHIP_AP6422,	RES_NONE },
+    { PCI_CHIP_AT24,	PCI_CHIP_AT24,		RES_NONE },
+    { PCI_CHIP_AT3D,	PCI_CHIP_AT3D,		RES_NONE },
+    { -1,			-1,		RES_UNDEFINED }
 };
 
 #ifdef XFree86LOADER
-XF86ModuleVersionInfo apmVersRec =
-{
-  "apm_drv.o",
-  MODULEVENDORSTRING,
-  MODINFOSTRING1,
-  MODINFOSTRING2,
-  XF86_VERSION_CURRENT,
-  0x00010001,
-  {0,0,0,0}
-};
-/*
- * this function returns the vgaVideoChipPtr for this driver
- *
- * its name has to be ModuleInit()
- */
-void
-ModuleInit(pointer* data, INT32* magic)
-{
-  static int cnt = 0;
-
-  switch(cnt++)
-  {
-    /* MAGIC_VERSION must be first in ModuleInit */
-    case 0:
-         * data = (pointer) &apmVersRec;
-         * magic= MAGIC_VERSION;
-         break;
-    case 1:
-         * data = (pointer)&APM;
-         * magic= MAGIC_ADD_VIDEO_CHIP_REC;
-         break;
-    default:
-         xf86issvgatype = TRUE; /* later load the correct libvgaxx.a */
-         * magic= MAGIC_DONE;
-         break;
-  }
-
-  return;
-}
-#endif /* XFree86LOADER */
-
-
-
-
-
-/*
- * ApmIdent --
- *
- * Returns the string name for supported chipset 'n'.  Most drivers only
- * support one chipset, but multiple version may require that the driver
- * identify them individually (e.g. the Trident driver).  The Ident function
- * should return a string if 'n' is valid, or NULL otherwise.  The
- * server will call this function when listing supported chipsets, with 'n' 
- * incrementing from 0, until the function returns NULL.  The 'Probe'
- * function should call this function to get the string name for a chipset
- * and when comparing against an XF86Config-supplied chipset value.  This
- * cuts down on the number of places errors can creep in.
- */
-static char *
-ApmIdent(int n)
-{
-  if (chipsets[n].token < 0)
-    return NULL;
-  else
-    return chipsets[n].name;
-}
-
-
-
-/*
- * ApmProbe --
- *
- * This is the function that makes a yes/no decision about whether or not
- * a chipset supported by this driver is present or not.  The server will
- * call each driver's probe function in sequence, until one returns TRUE
- * or they all fail.
- *
- */
-static Bool
-ApmProbe(void)
-{
-
-  /*
-   * First we attempt to figure out if one of the supported chipsets
-   * is present.
-   */
-  if (vga256InfoRec.chipset)
-  {
-    /*
-     * This is the easy case.  The user has specified the
-     * chipset in the XF86Config file.  All we need to do here
-     * is a string comparison against each of the supported
-     * names available from the Ident() function.  If this
-     * driver supports more than one chipset, there would be
-     * nested conditionals here (see the Trident and WD drivers
-     * for examples).
-     */
-    apmChip = xf86StringToToken(chipsets, vga256InfoRec.chipset);
-    if (apmChip >= 0)
-      ApmEnterLeave(ENTER);
-    else
-      return FALSE;
-    if (apmChip >= AT24)
-    {
-      apmDPMS = TRUE;
-      apmAccelSupported = TRUE;
-    }
-  }
-  else
-  {
-    /*
-     * OK.  We have to actually test the hardware.  The
-     * EnterLeave() function (described below) unlocks access
-     * to registers that may be locked, and for OSs that require
-     * it, enables I/O access.  So we do this before we probe,
-     * even though we don't know for sure that this chipset
-     * is present.
-     */
-    int     i;
-    char    id_ap6420[] = "Pro6420";
-    char    id_ap6422[] = "Pro6422";
-    char    id_at24[]   = "Pro6424";
-    char    id_at3d[]   = "ProAT3D"; /* Yeah, the manual could have been 
-                                        correct... */
-    char    idstring[]  = "       ";
-
-    ApmEnterLeave(ENTER);
-    for (i = 0; i < 7; i++)
-      idstring[i] = rdinx(0x3c4, 0x11 + i);
-    if (!memcmp(id_ap6420, idstring, 7))
-    {
-      apmChip = AP6422;
-      apmDPMS = FALSE;
-      apmAccelSupported = FALSE;
-    }
-    else if (!memcmp(id_ap6422, idstring, 7))
-    {
-      apmChip = AP6422;
-      apmDPMS = FALSE;
-      apmAccelSupported = FALSE;
-    }
-    else if (!memcmp(id_at24, idstring, 7))
-    {
-      apmChip = AT24;
-      apmDPMS = TRUE;
-      apmAccelSupported = TRUE;
-    }
-    else if (!memcmp(id_at3d, idstring, 7))
-    {
-      apmChip = AT3D;
-      apmDPMS = TRUE;
-      apmAccelSupported = TRUE;
-    }
-    else
-    {
-      ApmEnterLeave(LEAVE);
-      return(FALSE);
-    }
-    vga256InfoRec.chipset = ApmIdent(apmChip);
-  }
-
-
-#ifdef DPMSExtension
-  if (apmDPMS)
-    vga256InfoRec.DPMSSet = ApmDisplayPowerManagementSet;
 #endif
 
+typedef enum {
+    OPTION_SW_CURSOR,
+    OPTION_HW_CURSOR,
+    OPTION_PCI_BURST,
+    OPTION_NOACCEL,
+    OPTION_NOCLOCKCHIP,
+    OPTION_NOLINEAR,
+    OPTION_PCI_RETRY
+} ApmOpts;
+
+static OptionInfoRec ApmOptions[] =
+{
+    {OPTION_SW_CURSOR, "SWcursor", OPTV_BOOLEAN,
+	{0}, FALSE},
+    {OPTION_HW_CURSOR, "HWcursor", OPTV_BOOLEAN,
+	{0}, FALSE},
+    {OPTION_PCI_BURST, "pci_burst", OPTV_BOOLEAN,
+	{0}, FALSE},
+    {OPTION_NOACCEL, "NoAccel", OPTV_BOOLEAN,
+	{0}, FALSE},
+    {OPTION_NOCLOCKCHIP, "NoClockchip", OPTV_BOOLEAN,
+	{0}, FALSE},
+    {OPTION_NOLINEAR, "NoLinear", OPTV_BOOLEAN,
+	{0}, FALSE},
+    {OPTION_PCI_RETRY, "PciRetry", OPTV_BOOLEAN,
+	{0}, FALSE},
+    {-1, NULL, OPTV_NONE,
+	{0}, FALSE}
+};
+
+#ifdef XFree86LOADER
+
+/*
+ * List of symbols from other modules that this module references.  This
+ * list is used to tell the loader that it is OK for symbols here to be
+ * unresolved providing that it hasn't been told that they haven't been
+ * told that they are essential via a call to xf86LoaderReqSymbols() or
+ * xf86LoaderReqSymLists().  The purpose is this is to avoid warnings about
+ * unresolved symbols that are not required.
+ */
+
+static const char *vgahwSymbols[] = {
+    "vgaHWGetHWRec",
+    "vgaHWUnlock",
+    "vgaHWInit",
+    "vgaHWProtect",
+    "vgaHWSetMmioFuncs",
+    "vgaHWGetIOBase",
+    "vgaHWMapMem",
+    "vgaHWLock",
+    "vgaHWFreeHWRec",
+    "vgaHWSaveScreen",
+    "vgaHWddc1SetSpeed",
+    NULL
+};
+
+static const char *cfbSymbols[] = {
+    "cfbScreenInit",
+    "cfb16ScreenInit",
+    "cfb24ScreenInit",
+    "cfb32ScreenInit",
+    "cfb8_32ScreenInit",
+    "cfb24_32ScreenInit",
+    NULL
+};
+
+static const char *xf8_32bppSymbols[] = {
+    "xf86Overlay8Plus32Init",
+    NULL
+};
+
+static const char *xaaSymbols[] = {
+    "XAADestroyInfoRec",
+    "XAACreateInfoRec",
+    "XAAInit",
+    "XAAStippleScanlineFuncLSBFirst",
+    "XAAOverlayFBfuncs",
+    "XAACachePlanarMonoStipple",
+    "XAAScreenIndex",
+    NULL
+};
+
+static const char *ramdacSymbols[] = {
+    "xf86InitCursor",
+    "xf86CreateCursorInfoRec",
+    "xf86DestroyCursorInfoRec",
+    NULL
+};
+
+static const char *ddcSymbols[] = {
+    "xf86PrintEDID",
+    "xf86DoEDID_DDC1",
+    "xf86DoEDID_DDC2",
+    NULL
+};
+
+static const char *i2cSymbols[] = {
+    "xf86CreateI2CBusRec",
+    "xf86I2CBusInit",
+    NULL
+};
+
+static const char *shadowSymbols[] = {
+    "ShadowFBInit",
+    NULL
+};
 
 
-  if (RDXB_IOP(0xca) & 1)
-    apmBus = PCI;
-  else
-    apmBus = VESA;
+static XF86ModuleVersionInfo apmVersRec = {
+    "Alliance Promotion",
+    MODULEVENDORSTRING,
+    MODINFOSTRING1,
+    MODINFOSTRING2,
+    XF86_VERSION_CURRENT,
+    APM_MAJOR_VERSION, APM_MINOR_VERSION, APM_PATCHLEVEL,
+    ABI_CLASS_VIDEODRV,			/* This is a video driver */
+    ABI_VIDEODRV_VERSION,
+    MOD_CLASS_VIDEODRV,
+    {0,0,0,0}
+};
+
+static MODULESETUPPROTO(apmSetup);
+
+/*
+ * This is the module init data.
+ * Its name has to be the driver name followed by ModuleData.
+ */
+XF86ModuleData apmModuleData = { &apmVersRec, apmSetup, NULL };
+
+static pointer
+apmSetup(pointer module, pointer opts, int *errmaj, int *errmain)
+{
+    static Bool setupDone = FALSE;
+
+    if (!setupDone) {
+	setupDone = TRUE;
+	xf86AddDriver(&APM, module, 0);
+
+	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols, 
+			  xf8_32bppSymbols, ramdacSymbols,
+			  ddcSymbols, i2cSymbols, shadowSymbols, NULL);
+
+	return (pointer)1;
+    }
+    else {
+	if (errmaj) *errmaj = LDR_ONCEONLY;
+	return NULL;
+    }
+}
+#endif
+
+static Bool
+ApmGetRec(ScrnInfoPtr pScrn)
+{
+    if (pScrn->driverPrivate)
+	return TRUE;
+    pScrn->driverPrivate = xnfcalloc(sizeof(ApmRec), 1);
+    /* pScrn->driverPrivate != NULL at this point */
+
+    return TRUE;
+}
+
+static void
+ApmFreeRec(ScrnInfoPtr pScrn)
+{
+    if (pScrn->driverPrivate) {
+	xfree(pScrn->driverPrivate);
+	pScrn->driverPrivate = NULL;
+    }
+}
 
 
-  switch(apmChip)
-  {
-    /* These values come from the Manual for AT24 and AT3D 
-       in the overview of various modes. I've taken the largest
-       number for the different modes. Alliance wouldn't 
-       tell me what the maximum frequency was, so...
-     */
-    case AT24:
-         switch(vgaBitsPerPixel)
-         {
-           case 8:
-                vga256InfoRec.maxClock = 160000;
-                break;
-           case 15:
-           case 16:
-                vga256InfoRec.maxClock = 144000;
-                break;
-           case 24:
-                vga256InfoRec.maxClock = 75000; /* Hmm. */
-                break;
-           case 32:
-                vga256InfoRec.maxClock = 94500;
-                break;
-           default:
-                return FALSE;
-         }
-         break;
-    case AT3D:
-         switch(vgaBitsPerPixel)
-         {
-           case 8:
-                vga256InfoRec.maxClock = 175500;
-                break;
-           case 15:
-           case 16:
-                vga256InfoRec.maxClock = 144000;
-                break;
-           case 24:
-                vga256InfoRec.maxClock = 75000; /* Hmm. */
-                break;
-           case 32:
-                vga256InfoRec.maxClock = 94500;
-                break;
-           default:
-                return FALSE;
-         }
-         break;
-    default:
-         vga256InfoRec.maxClock = 135000;
-         break;
-  }
-
-
-  /*
-   * If the user has specified the amount of memory in the XF86Config
-   * file, we respect that setting.
-   */
-  if (!vga256InfoRec.videoRam)
-  {
-    /*
-     * Otherwise, do whatever chipset-specific things are 
-     * necessary to figure out how much memory (in kBytes) is 
-     * available.
-     */
-    vga256InfoRec.videoRam = rdinx(0x3c4, 0x20) * 64;
-  }
-
-  /* Use always use linear addressing */
-  APM.ChipUseLinearAddressing = TRUE;
-
-  if (vga256InfoRec.MemBase != 0)
-    APM.ChipLinearBase = vga256InfoRec.MemBase;
-  else
-    if (apmBus == PCI)
-      APM.ChipLinearBase = RDXB_IOP(0x193) << 24;
+/* unlock Alliance registers */
+static void
+ApmUnlock(ApmPtr pApm)
+{
+    if (!pApm->UnlockCalled) {
+	if (!pApm->noLinear) {
+	    pApm->savedSR10 = ApmReadSeq(0x10);
+	    pApm->xbase = (ApmReadSeq(0x1F) << 8) | ApmReadSeq(0x1E);
+	    pApm->UnlockCalled = TRUE;
+	}
+	else {
+	    pApm->savedSR10 = rdinx(0x3C4, 0x10);
+	    pApm->xbase = (rdinx(0x3C4, 0x1F) << 8) | rdinx(0x3C4, 0x1E);
+	    pApm->UnlockCalled = TRUE;
+	}
+    }
+    if (!pApm->noLinear)
+	ApmWriteSeq(0x10, 0x12);
     else
-      /* VESA local bus. */
-      /* Pray that 2048MB works. */
-      APM.ChipLinearBase = 0x80000000;
+	wrinx(0x3C4, 0x10, 0x12);
+}
 
-  APM.ChipLinearSize = vga256InfoRec.videoRam * 1024;
-  APM.ChipHas16bpp = TRUE;
-  APM.ChipHas32bpp = TRUE;
+/* lock Alliance registers */
+static void
+ApmLock(ApmPtr pApm)
+{
+    if (pApm->UnlockCalled) {
+	if (!pApm->noLinear)
+	    ApmWriteSeq(0x10, pApm->savedSR10);
+	else
+	    wrinx(0x3C4, 0x10, pApm->savedSR10);
+    }
+}
 
-  vga256InfoRec.videoRam -= 34; /* We're going to use the last 34 kilobytes 
-                                   for memory mapped registers, host->screen 
-                                   bitblts and HW cursor */
- 
-  /*
-   * Last we fill in the remaining data structures.  We specify
-   * the chipset name, using the Ident() function and an appropriate
-   * index.  We set a boolean for whether or not this driver supports
-   * banking for the Monochrome server.  And we set up a list of all
-   * the option flags that this driver can make use of.
-   */
+static void
+ApmIdentify(int flags)
+{
+    xf86PrintChipsets(APM_NAME, "driver for the Alliance chipsets",
+		      ApmChipsets);
+}
 
-  vga256InfoRec.bankedMono = FALSE;
-  OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
-  OFLG_SET(OPTION_NOACCEL, &APM.ChipOptionFlags);
-  OFLG_SET(OPTION_SW_CURSOR, &APM.ChipOptionFlags);
-  return TRUE;
+static Bool
+ApmProbe(DriverPtr drv, int flags)
+{
+    int		numDevSections, numUsed, i;
+    GDevPtr	*DevSections, *usedDevs;
+    int		*usedChips;
+    pciVideoPtr	*usedPci, pPci;
+    BusResource resource;
+    int		foundScreen = FALSE;
+    int		master_VGA = FALSE;
+
+    /*
+     * Check if there is a chipset override in the config file
+     */
+    if ((numDevSections = xf86MatchDevice(APM_DRIVER_NAME,
+					   &DevSections)) <= 0)
+	return FALSE;
+
+    /*
+     * We need to probe the hardware first. We then need to see how this
+     * fits in with what is given in the config file, and allow the config
+     * file info to override any contradictions.
+     */
+
+    if (xf86GetPciVideoInfo()) {
+	if ((numUsed = xf86MatchPciInstances(APM_NAME, PCI_VENDOR_ALLIANCE,
+			ApmChipsets, ApmPciChipsets, DevSections,numDevSections,
+			&usedDevs, &usedPci, &usedChips)) > 0) {
+	    for (i = 0; i < numUsed; i++) {
+		pPci = usedPci[i];
+		resource = xf86FindPciResource(usedChips[i], ApmPciChipsets);
+
+		/*
+		 * Check that nothing else has claimed the slots.
+		 */
+		if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func,
+				     resource)) {
+		    ScrnInfoPtr	pScrn;
+
+		    pScrn = xf86AllocateScreen(drv, 0);
+		    if (!xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func,
+					  resource, &APM, usedChips[i],
+					  pScrn->scrnIndex)) {
+			/* This can't happen */
+			FatalError("APM: someone claimed the free slot !\n");
+		    }
+
+		    /*
+		     * Fill in what we can of the ScrnInfoRec
+		     */
+		    pScrn->driverVersion	= VERSION;
+		    pScrn->driverName		= APM_DRIVER_NAME;
+		    pScrn->name			= APM_NAME;
+		    pScrn->Probe		= ApmProbe;
+		    pScrn->PreInit		= ApmPreInit;
+		    pScrn->ScreenInit		= ApmScreenInit;
+		    pScrn->SwitchMode		= ApmSwitchMode;
+		    pScrn->AdjustFrame		= (void(*)(int,int,int,int))ApmAdjustFrame;
+		    pScrn->EnterVT		= ApmEnterVT;
+		    pScrn->LeaveVT		= ApmLeaveVT;
+		    pScrn->FreeScreen		= ApmFreeScreen;
+		    pScrn->ValidMode		= ApmValidMode;
+		    pScrn->device		= usedDevs[i];
+		    foundScreen = TRUE;
+
+		    master_VGA = xf86IsPrimaryPci(pPci);
+		}
+	    }
+	    xfree(usedDevs);
+	    xfree(usedPci);
+	}
+    }
+    if (!master_VGA) {
+	char save = rdinx(0x3C4, 0x10);
+
+	/*
+	 * Start by probing the VGA chipset.
+	 */
+	outw(0x3C4, 0x1210);
+	if (rdinx(0x3C4, 0x11) == 'P' && rdinx(0x3C4, 0x12) == 'r' &&
+	    rdinx(0x3C4, 0x13) == 'o') {
+	    char	id_ap6420[] = "6420";
+	    char	id_ap6422[] = "6422";
+	    char	id_at24[]   = "6424";
+	    char	id_at3d[]   = "AT3D";
+	    char	idstring[]  = "    ";
+	    int		apmChip = -1;
+
+	    /*
+	     * Must be an Alliance !!!
+	     */
+	    for (i = 0; i < 4; i++)
+		idstring[i] = rdinx(0x3C4, 0x14 + i);
+	    if (!memcmp(id_ap6420, idstring, 4) ||
+		!memcmp(id_ap6422, idstring, 4))
+		apmChip = AP6422;
+	    else if (!memcmp(id_at24, idstring, 4))
+		apmChip = AT24;
+	    else if (!memcmp(id_at3d, idstring, 4))
+		apmChip = AT3D;
+	    if (apmChip >= 0) {
+		int	apm_xbase;
+
+		apm_xbase = (rdinx(0x3C4, 0x1F) << 8) | rdinx(0x3C4, 0x1E);
+
+		if (!(wrinx(0x3c4, 0x1d, 0xCA >> 2), inb(apm_xbase + 2))) {
+		    /*
+		     * TODO Not PCI
+		     */
+		}
+
+
+		if (!xf86CheckIsaSlot(RES_VGA)) {
+		    xf86DrvMsg(-1, X_NOTICE, "someone claimed the slot !\n");
+		}
+		else {
+		    ScrnInfoPtr	pScrn;
+
+		    pScrn = xf86AllocateScreen(drv, 0);
+
+		    xf86ClaimIsaSlot(RES_VGA, &APM, apmChip, pScrn->scrnIndex);
+		    /*
+		     * Fill in what we can of the ScrnInfoRec
+		     */
+		    pScrn->driverVersion	= VERSION;
+		    pScrn->driverName		= APM_DRIVER_NAME;
+		    pScrn->name			= APM_NAME;
+		    pScrn->Probe		= ApmProbe;
+		    pScrn->PreInit		= ApmPreInit;
+		    pScrn->ScreenInit		= ApmScreenInit;
+		    pScrn->SwitchMode		= ApmSwitchMode;
+		    pScrn->AdjustFrame		= (void(*)(int,int,int,int))ApmAdjustFrame;
+		    pScrn->EnterVT		= ApmEnterVT;
+		    pScrn->LeaveVT		= ApmLeaveVT;
+		    pScrn->FreeScreen		= ApmFreeScreen;
+		    pScrn->ValidMode		= ApmValidMode;
+		    pScrn->device		= usedDevs[i];
+		    foundScreen = TRUE;
+		}
+	    }
+	}
+	wrinx(0x3C4, 0x10, save);
+    }
+    return foundScreen;
 }
 
 /*
- * ApmFbInit --
- *      enable speedups for the chips that support it
+ * GetAccelPitchValues -
+ *
+ * This function returns a list of display width (pitch) values that can
+ * be used in accelerated mode.
+ */
+static int *
+GetAccelPitchValues(ScrnInfoPtr pScrn)
+{
+    int *linePitches = NULL;
+    int linep[] = {640, 800, 1024, 1152, 1280, 1600, 0};
+
+    if (sizeof linep > 0) {
+	linePitches = (int *)xnfalloc(sizeof linep);
+	memcpy(linePitches, linep, sizeof linep);
+    }
+
+    return linePitches;
+}
+
+static Bool
+ApmPreInit(ScrnInfoPtr pScrn, int flags)
+{
+    APMDECL(pScrn);
+    pciVideoPtr	*pciList = NULL;
+    MessageType	from;
+    char	*mod = NULL;
+    ClockRangePtr	clockRanges;
+    int		i;
+
+    /*
+     * Note: This function is only called once at server startup, and
+     * not at the start of each server generation.  This means that
+     * only things that are persistent across server generations can
+     * be initialised here.  xf86Screens[] is (pScrn is a pointer to one
+     * of these).  Privates allocated using xf86AllocateScrnInfoPrivateIndex()
+     * are too, and should be used for data that must persist across
+     * server generations.
+     *
+     * Per-generation data should be allocated with
+     * AllocateScreenPrivateIndex() from the ScreenInit() function.
+     */
+
+    /* The vgahw module should be allocated here when needed */
+    if (!xf86LoadSubModule(pScrn, "vgahw"))
+	return FALSE;
+
+    /*
+     * Allocate a vgaHWRec
+     */
+    if (!vgaHWGetHWRec(pScrn))
+	return FALSE;
+
+    vgaHWGetIOBase(VGAHWPTR(pScrn));
+
+    /* Set pScrn->monitor */
+    pScrn->monitor = pScrn->confScreen->monitor;
+
+    /*
+     * The first thing we should figure out is the depth, bpp, etc.
+     */
+    if (!xf86SetDepthBpp(pScrn, 0, 0, 0, Support24bppFb | Support32bppFb)) {
+	return FALSE;
+    } else {
+	/* Check that the returned depth is one we support */
+	switch (pScrn->depth) {
+	case 4:
+	case 8:
+	case 15:
+	case 16:
+	case 24:
+	    /* OK */
+	    break;
+	default:
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		       "Given depth (%d) is not supported by this driver\n",
+		       pScrn->depth);
+	    return FALSE;
+	}
+    }
+
+    /*
+     * This must happen after pScrn->display has been set because
+     * xf86SetWeight references it.
+     */
+    if (pScrn->depth > 8) {
+	/* The defaults are OK for us */
+	rgb zeros = {0, 0, 0};
+
+	if (!xf86SetWeight(pScrn, zeros, zeros)) {
+	    return FALSE;
+	} else {
+	    /* XXX check that weight returned is supported */
+            ;
+        }
+    }
+
+    if (!xf86SetDefaultVisual(pScrn, -1)) {
+	return FALSE;
+    } else {
+	if (pScrn->depth > 8 && pScrn->defaultVisual != TrueColor) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Given default visual"
+		       " (%s) is not supported at depth %d\n",
+		       xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
+	    return FALSE;
+	}
+    }
+
+    /* The gamma fields must be initialised when using the new cmap code */
+    if (pScrn->depth > 1) {
+	Gamma zeros = {0.0, 0.0, 0.0};
+
+	if (!xf86SetGamma(pScrn, zeros)) {
+	    return FALSE;
+	}
+    }
+
+    /* We use a programamble clock */
+    pScrn->progClock = TRUE;
+
+    /* Allocate the ApmRec driverPrivate */
+    if (!ApmGetRec(pScrn)) {
+	return FALSE;
+    }
+    pApm = APMPTR(pScrn);
+
+    /* Collect all of the relevant option flags (fill in pScrn->options) */
+    xf86CollectOptions(pScrn, NULL);
+
+    /* Process the options */
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, ApmOptions);
+
+    pApm->scrnIndex = pScrn->scrnIndex;
+    /* Set the bits per RGB for 8bpp mode */
+    if (pScrn->depth > 1 && pScrn->depth <= 8) {
+	/* Default to 8 */
+	pScrn->rgbBits = 8;
+    }
+    if (xf86ReturnOptValBool(ApmOptions, OPTION_NOLINEAR, FALSE)) {
+	pApm->noLinear = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "No linear framebuffer\n");
+    }
+    from = X_DEFAULT;
+    pApm->hwCursor = FALSE;
+    if (xf86GetOptValBool(ApmOptions, OPTION_HW_CURSOR, &pApm->hwCursor))
+	from = X_CONFIG;
+    if (pApm->noLinear ||
+	xf86ReturnOptValBool(ApmOptions, OPTION_SW_CURSOR, FALSE)) {
+	from = X_CONFIG;
+	pApm->hwCursor = FALSE;
+    }
+    xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
+		pApm->hwCursor ? "HW" : "SW");
+    from = X_DEFAULT;
+    if (pScrn->bitsPerPixel < 8)
+	pApm->NoAccel = TRUE;
+    if (xf86ReturnOptValBool(ApmOptions, OPTION_NOACCEL, FALSE)) {
+	from = X_CONFIG;
+	pApm->NoAccel = TRUE;
+    }
+    if (pApm->NoAccel)
+	xf86DrvMsg(pScrn->scrnIndex, from, "Acceleration disabled\n");
+    if (xf86ReturnOptValBool(ApmOptions, OPTION_PCI_RETRY, FALSE)) {
+	if (xf86ReturnOptValBool(ApmOptions, OPTION_PCI_BURST, FALSE)) {
+	  pApm->UsePCIRetry = TRUE;
+	  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
+	}
+	else
+	  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "\"pci_retry\" option requires pci_burst \"on\".\n");
+    }
+
+    /* Find the PCI slot for this screen */
+    if ((i = xf86GetPciInfoForScreen(pScrn->scrnIndex, &pciList, NULL)) != 1) {
+	/* This shouldn't happen */
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   "Expected one PCI card, but found %d\n", i);
+	ApmFreeRec(pScrn);
+	return FALSE;
+    }
+
+    pApm->PciInfo = *pciList;
+    /*
+     * Set the Chipset and ChipRev, allowing config file entries to
+     * override.
+     */
+    if (pScrn->device->chipset && *pScrn->device->chipset) {
+	pScrn->chipset = pScrn->device->chipset;
+        pApm->Chipset = xf86StringToToken(ApmChipsets, pScrn->chipset);
+        from = X_CONFIG;
+    } else if (pScrn->device->chipID >= 0) {
+	pApm->Chipset = pScrn->device->chipID;
+	pScrn->chipset = (char *)xf86TokenToString(ApmChipsets, pApm->Chipset);
+
+	from = X_CONFIG;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipID override: 0x%04X\n",
+		   pApm->Chipset);
+    } else {
+	from = X_PROBED;
+	pApm->Chipset = pApm->PciInfo->chipType;
+	pScrn->chipset = (char *)xf86TokenToString(ApmChipsets, pApm->Chipset);
+    }
+    if (pScrn->device->chipRev >= 0) {
+	pApm->ChipRev = pScrn->device->chipRev;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipRev override: %d\n",
+		   pApm->ChipRev);
+    } else {
+	pApm->ChipRev = pApm->PciInfo->chipRev;
+    }
+
+    /*
+     * This shouldn't happen because such problems should be caught in
+     * ApmProbe(), but check it just in case.
+     */
+    if (pScrn->chipset == NULL) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   "ChipID 0x%04X is not recognised\n", pApm->Chipset);
+	return FALSE;
+    }
+    if (pApm->Chipset < 0) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   "Chipset \"%s\" is not recognised\n", pScrn->chipset);
+	return FALSE;
+    }
+
+    xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
+
+    pApm->PciTag = pciTag(pApm->PciInfo->bus, pApm->PciInfo->device,
+			  pApm->PciInfo->func);
+
+    if (pScrn->device->MemBase != 0) {
+	pApm->LinAddress = pScrn->device->MemBase;
+	from = X_CONFIG;
+    } else {
+	pApm->LinAddress = pApm->PciInfo->memBase[0] & 0xFF800000;
+    }
+
+    xf86DrvMsg(pScrn->scrnIndex, from, "Linear framebuffer at 0x%lX\n",
+	       (unsigned long)pApm->LinAddress);
+
+    if (pApm->noLinear) {
+	pApm->LinMapSize  =  4 * 1024 * 1024 /* 0x10000 */;
+	pApm->FbMapSize   =  4 * 1024 * 1024 /* 0x10000 */;
+	pApm->LinAddress +=  8 * 1024 * 1024 /* 0xA0000 */;
+    }
+    else {
+	pApm->LinMapSize  = 16 * 1024 * 1024;
+	pApm->FbMapSize   =  4 * 1024 * 1024;
+    }
+
+    if (pScrn->device->videoRam != 0) {
+	pScrn->videoRam = pScrn->device->videoRam;
+	from = X_CONFIG;
+    } else if (!pApm->noLinear) {
+	unsigned char		d9, db, uc;
+	unsigned long		save;
+	volatile unsigned char	*LinMap;
+
+	LinMap = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
+				     pApm->PciTag, (pointer)pApm->LinAddress,
+				     pApm->LinMapSize);
+	save = pciReadLong(pApm->PciTag, PCI_CMD_STAT_REG);
+	pciWriteLong(pApm->PciTag, PCI_CMD_STAT_REG, save | PCI_CMD_MEM_ENABLE);
+	d9 = LinMap[0xFFECD9];
+	db = LinMap[0xFFECDB];
+	LinMap[0xFFECDB] = (db & 0xF0) | 0x0A;
+	LinMap[0xFFECD9] = (d9 & 0xCF) | 0x20;
+	LinMap[0xFFF3C4] = 0x1C;
+	uc = LinMap[0xFFF3C5];
+	LinMap[0xFFF3C5] = 0x3F;
+	LinMap[0xFFF3C4] = 0x20;
+	pScrn->videoRam = LinMap[0xFFF3C5] * 64;
+	LinMap[0xFFF3C4] = 0x1C;
+	LinMap[0xFFF3C5] = uc;
+	LinMap[0xFFECDB] = db;
+	LinMap[0xFFECD9] = d9;
+	pciWriteLong(pApm->PciTag, PCI_CMD_STAT_REG, save);
+	xf86UnMapVidMem(pScrn->scrnIndex, (pointer)LinMap, pApm->LinMapSize);
+    }
+    else {
+	unsigned long		save;
+
+	save = pciReadLong(pApm->PciTag, PCI_CMD_STAT_REG);
+	pciWriteLong(pApm->PciTag, PCI_CMD_STAT_REG, save | PCI_CMD_IO_ENABLE);
+	pScrn->videoRam = rdinx(0x3C4, 0x20) * 64;
+	pciWriteLong(pApm->PciTag, PCI_CMD_STAT_REG, save);
+    }
+
+    xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
+               pScrn->videoRam);
+
+    pApm->MinClock = 23125;
+    xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, "Min pixel clock set to %d MHz\n",
+	       pApm->MinClock / 1000);
+
+    /*
+     * If the user has specified ramdac speed in the XF86Config
+     * file, we respect that setting.
+     */
+    if (pScrn->device->dacSpeeds[0]) {
+	int speed = 0;
+
+	switch (pScrn->bitsPerPixel) {
+	case 4:
+	case 8:
+	   speed = pScrn->device->dacSpeeds[DAC_BPP8];
+	   break;
+	case 16:
+	   speed = pScrn->device->dacSpeeds[DAC_BPP16];
+	   break;
+	case 24:
+	   speed = pScrn->device->dacSpeeds[DAC_BPP24];
+	   break;
+	case 32:
+	   speed = pScrn->device->dacSpeeds[DAC_BPP32];
+	   break;
+	}
+	if (speed == 0)
+	    pApm->MaxClock = pScrn->device->dacSpeeds[0];
+	else
+	    pApm->MaxClock = speed;
+	from = X_CONFIG;
+    } else {
+	switch(pApm->Chipset)
+	{
+	  /* These values come from the Manual for AT24 and AT3D 
+	     in the overview of various modes. I've taken the largest
+	     number for the different modes. Alliance wouldn't 
+	     tell me what the maximum frequency was, so...
+	   */
+	  case AT24:
+	       switch(pScrn->bitsPerPixel)
+	       {
+		 case 4:
+		 case 8:
+		      pApm->MaxClock = 160000;
+		      break;
+		 case 16:
+		      pApm->MaxClock = 144000;
+		      break;
+		 case 24:
+		      pApm->MaxClock = 75000; /* Hmm. */
+		      break;
+		 case 32:
+		      pApm->MaxClock = 94500;
+		      break;
+		 default:
+		      return FALSE;
+	       }
+	       break;
+	  case AT3D:
+	       switch(pScrn->bitsPerPixel)
+	       {
+		 case 4:
+		 case 8:
+		      pApm->MaxClock = 175500;
+		      break;
+		 case 16:
+		      pApm->MaxClock = 144000;
+		      break;
+		 case 24:
+		      pApm->MaxClock = 94000;
+		      break;
+		 case 32:
+		      pApm->MaxClock = 94500;
+		      break;
+		 default:
+		      return FALSE;
+	       }
+	       break;
+	  default:
+	       pApm->MaxClock = 135000;
+	       break;
+	}
+    }
+    xf86DrvMsg(pScrn->scrnIndex, from, "Max pixel clock is %d MHz\n",
+	       pApm->MaxClock / 1000);
+
+    /*
+     * Setup the ClockRanges, which describe what clock ranges are available,
+     * and what sort of modes they can be used for.
+     */
+    clockRanges = (ClockRangePtr)xnfalloc(sizeof(ClockRange));
+    clockRanges->next = NULL;
+    clockRanges->minClock = pApm->MinClock;
+    clockRanges->maxClock = pApm->MaxClock;
+    clockRanges->clockIndex = -1;		/* programmable */
+    clockRanges->interlaceAllowed = FALSE;	/* XXX change this */
+    clockRanges->doubleScanAllowed = FALSE;	/* XXX check this */
+
+    /* Select valid modes from those available */
+    if (pApm->NoAccel) {
+	/*
+	 * XXX Assuming min pitch 256, max 2048
+	 * XXX Assuming min height 128, max 2048
+	 */
+	i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
+			      pScrn->display->modes, clockRanges,
+			      NULL, 256, 2048,
+			      pScrn->bitsPerPixel, 128, 2048,
+			      pScrn->display->virtualX,
+			      pScrn->display->virtualY,
+			      pApm->FbMapSize,
+			      LOOKUP_BEST_REFRESH);
+    } else {
+	/*
+	 * XXX Assuming min height 128, max 2048
+	 */
+	i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
+			      pScrn->display->modes, clockRanges,
+			      GetAccelPitchValues(pScrn), 0, 0,
+			      pScrn->bitsPerPixel, 128, 2048,
+			      pScrn->display->virtualX,
+			      pScrn->display->virtualY,
+			      pApm->FbMapSize,
+			      LOOKUP_BEST_REFRESH);
+    }
+
+    if (i == -1) {
+	ApmFreeRec(pScrn);
+	return FALSE;
+    }
+
+    /* Prune the modes marked as invalid */
+    xf86PruneDriverModes(pScrn);
+
+    if (i == 0 || pScrn->modes == NULL) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No valid modes found\n");
+	ApmFreeRec(pScrn);
+	return FALSE;
+    }
+
+    xf86SetCrtcForModes(pScrn, INTERLACE_HALVE_V);
+
+    /* Set the current mode to the first in the list */
+    pScrn->currentMode = pScrn->modes;
+
+    /* Print the list of modes being used */
+    xf86PrintModes(pScrn);
+
+    /* Set display resolution */
+    xf86SetDpi(pScrn, 0, 0);
+
+    /* Load bpp-specific modules */
+    switch (pScrn->bitsPerPixel) {
+    case 4:
+	mod = "xf4bpp";
+	break;
+    case 8:
+	mod = "cfb";
+	break;
+    case 16:
+	mod = "cfb16";
+	break;
+    case 24:
+	mod = "cfb24";
+	break;
+    case 32:
+	mod = "cfb32";
+	break;
+    }
+
+    if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
+	ApmFreeRec(pScrn);
+	return FALSE;
+    }
+
+    /* Load XAA if needed */
+    if (!pApm->NoAccel)
+	if (!xf86LoadSubModule(pScrn, "xaa")) {
+	    ApmFreeRec(pScrn);
+	    return FALSE;
+	}
+
+    return TRUE;
+}
+
+/*
+ * Map the framebuffer and MMIO memory.
+ */
+
+static Bool
+ApmMapMem(ScrnInfoPtr pScrn)
+{
+    APMDECL(pScrn);
+
+    /*
+     * Disable memory and I/O before mapping the MMIO area.  This avoids
+     * the MMIO area being read during the mapping (which happens on
+     * some SVR4 versions), which will cause a lockup.
+     */
+
+    pApm->saveCmd = pciReadLong(pApm->PciTag, PCI_CMD_STAT_REG);
+    pciWriteLong(pApm->PciTag, PCI_CMD_STAT_REG,
+		 pApm->saveCmd & ~(PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
+
+    pApm->LinMap = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
+				 pApm->PciTag,
+				 (pointer)((unsigned long)pApm->LinAddress),
+				 pApm->LinMapSize);
+    if (pApm->LinMap == NULL)
+	return FALSE;
+
+    if (!pApm->noLinear) {
+	pApm->FbBase = (void *)(((char *)pApm->LinMap) + 0x800000);
+	pApm->VGAMap = ((char *)pApm->LinMap) + 0xFFF000;
+	pApm->MemMap = ((char *)pApm->LinMap) + 0xFFEC00;
+	pApm->BltMap = (void *)(((char *)pApm->LinMap) + 0x3F8000);
+
+	/* Re-enable memory */
+	pciWriteLong(pApm->PciTag, PCI_CMD_STAT_REG,
+		     pApm->saveCmd | PCI_CMD_MEM_ENABLE);
+
+	/*
+	 * Initialize chipset
+	 */
+	pApm->d9 = RDXB(0xD9);
+	pApm->db = RDXB(0xDB);
+	WRXB(0xDB, (pApm->db & 0xF0) | 0x0A);
+	WRXB(0xD9, (pApm->d9 & 0xCF) | 0x20);
+	vgaHWSetMmioFuncs(VGAHWPTR(pScrn), (CARD8 *)pApm->LinMap, 0xFFF000);
+    }
+    else {
+	pApm->FbBase = pApm->LinMap;
+
+	/* Re-enable memory  and I/O */
+	pciWriteLong(pApm->PciTag, PCI_CMD_STAT_REG,
+		     pApm->saveCmd | PCI_CMD_MEM_ENABLE | PCI_CMD_IO_ENABLE);
+
+	/*
+	 * Initialize chipset
+	 */
+	pApm->d9 = RDXB_IOP(0xD9);
+	pApm->db = RDXB_IOP(0xDB);
+	WRXB_IOP(0xDB, (pApm->db & 0xF0) | 0x08);
+    }
+
+    return TRUE;
+}
+
+/*
+ * Unmap the framebuffer and MMIO memory
+ */
+
+static Bool
+ApmUnmapMem(ScrnInfoPtr pScrn)
+{
+    APMDECL(pScrn);
+
+    if (pApm->LinMap) {
+	if (!pApm->noLinear) {
+	    WRXB(0xD9, pApm->d9);
+	    WRXB(0xDB, pApm->db);
+	}
+	else {
+	    WRXB_IOP(0xD9, pApm->d9);
+	    WRXB_IOP(0xDB, pApm->db);
+	}
+	xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pApm->LinMap, pApm->LinMapSize);
+	pApm->LinMap = NULL;
+    }
+    else if (pApm->FbBase)
+	xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pApm->LinMap, 0x10000);
+    pciWriteLong(pApm->PciTag, PCI_CMD_STAT_REG, pApm->saveCmd);
+
+    return TRUE;
+}
+
+/*
+ * This function saves the video state.
  */
 static void
-ApmFbInit(void)
+ApmSave(ScrnInfoPtr pScrn)
 {
-  int offscreen_available;
+    APMDECL(pScrn);
+    ApmRegPtr	ApmReg = &pApm->SavedReg;
+    vgaHWPtr	vgaHWP = VGAHWPTR(pScrn);
 
-  if (xf86Verbose && APM.ChipUseLinearAddressing)
-    ErrorF("%s %s: %s: Using linear framebuffer at 0x%08X (%s)\n",
-           XCONFIG_PROBED, vga256InfoRec.name,
-           vga256InfoRec.chipset, APM.ChipLinearBase,
-           apmBus == PCI ? "PCI bus" : "VL bus");
+    if (!pApm->noLinear) {
+	ApmReg->SEQ[0x1B] = ApmReadSeq(0x1B);
+	ApmReg->SEQ[0x1C] = ApmReadSeq(0x1C);
 
-  if (apmAccelSupported && !OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
-    ApmAccelInit();
+	/*
+	 * Save fonts
+	 */
+	if (!(vgaHWP->SavedReg.Attribute[0x10] & 1)) {
+	    if (pApm->FontInfo || (pApm->FontInfo = (pointer)xalloc(TEXT_AMOUNT))) {
+		ApmWriteSeq(0x1C, 0x3F);
+		memcpy(pApm->FontInfo, pApm->FbBase, TEXT_AMOUNT);
+		ApmWriteSeq(0x1C, ApmReg->SEQ[0x1C]);
+	    }
+	}
+	/*
+	 * This function will handle creating the data structure and filling
+	 * in the generic VGA portion.
+	 */
+	vgaHWSave(pScrn, &vgaHWP->SavedReg, VGA_SR_MODE | VGA_SR_CMAP);
 
-  if (apmAccelSupported && !OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) 
-    ApmCursorInit();
-}
+	/* Hardware cursor registers. */
+	ApmReg->EX[XR140] = RDXL(0x140);
+	ApmReg->EX[XR144] = RDXW(0x144);
+	ApmReg->EX[XR148] = RDXL(0x148);
+	ApmReg->EX[XR14C] = RDXW(0x14C);
 
+	ApmReg->CRT[0x19] = ApmReadCrtc(0x19);
+	ApmReg->CRT[0x1A] = ApmReadCrtc(0x1A);
+	ApmReg->CRT[0x1B] = ApmReadCrtc(0x1B);
+	ApmReg->CRT[0x1C] = ApmReadCrtc(0x1C);
+	ApmReg->CRT[0x1D] = ApmReadCrtc(0x1D);
+	ApmReg->CRT[0x1E] = ApmReadCrtc(0x1E);
 
-/*
- * ApmEnterLeave --
- *
- * This function is called when the virtual terminal on which the server
- * is running is entered or left, as well as when the server starts up
- * and is shut down.  Its function is to obtain and relinquish I/O 
- * permissions for the SVGA device.  This includes unlocking access to
- * any registers that may be protected on the chipset, and locking those
- * registers again on exit.
- */
-static void 
-ApmEnterLeave(Bool enter)
-{
-  /*
-   * The value of the lock register is saved at the first
-   * "Enter" call, restored at a "Leave". This reduces the
-   * risk of messing up the registers of another chipset.
-   */
-  static int enterCalled = FALSE;
-  static int savedSR10;
-  unsigned char temp;
+	/* RAMDAC registers. */
+	ApmReg->EX[XRE8] = RDXL(0xE8);
+	ApmReg->EX[XREC] = RDXL(0xEC);
 
-  if (enter)
-  {
-    xf86EnableIOPorts(vga256InfoRec.scrnIndex);
+	/* Color correction */
+	ApmReg->EX[XRE0] = RDXL(0xE0);
 
-    /* 
-     * This is a global.  The CRTC base address depends on
-     * whether the VGA is functioning in color or mono mode.
-     * This is just a convenient place to initialize this
-     * variable.
-     */
-    vgaIOBase = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
-
-    /*
-     * Here we deal with register-level access locks.  This
-     * is a generic VGA protection; most SVGA chipsets have
-     * similar register locks for their extended registers
-     * as well.
-     */
-    /* Unprotect CRTC[0-7] */
-    outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
-    outb(vgaIOBase + 5, temp & 0x7F);
-    if (enterCalled == FALSE) {
-      savedSR10 = rdinx(0x3C4, 0x10);
-      apm_xbase = (rdinx(0x3c4, 0x1f) << 8)
-        | rdinx(0x3c4, 0x1e);
-      enterCalled = TRUE;
+	ApmReg->EX[XR80] = RDXB(0x80);
     }
-    outw(0x3C4, 0x1210);
-  }
-  else
-  {
-    /*
-     * Here undo what was done above.
-     */
+    else {
+	/*
+	 * This function will handle creating the data structure and filling
+	 * in the generic VGA portion.
+	 */
+	vgaHWSave(pScrn, &vgaHWP->SavedReg, VGA_SR_ALL);
 
-    /* Protect CRTC[0-7] */
-    outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
-    outb(vgaIOBase + 5, (temp & 0x7F) | 0x80);
+	ApmReg->SEQ[0x1B] = rdinx(0x3C4, 0x1B);
+	ApmReg->SEQ[0x1C] = rdinx(0x3C4, 0x1C);
 
-    wrinx(0x3C4, 0x10, savedSR10);
+	/* Hardware cursor registers. */
+	ApmReg->EX[XR140] = RDXL_IOP(0x140);
+	ApmReg->EX[XR144] = RDXW_IOP(0x144);
+	ApmReg->EX[XR148] = RDXL_IOP(0x148);
+	ApmReg->EX[XR14C] = RDXW_IOP(0x14C);
 
-    xf86DisableIOPorts(vga256InfoRec.scrnIndex);
-  }
-}
+	ApmReg->CRT[0x19] = rdinx(0x3D4, 0x19);
+	ApmReg->CRT[0x1A] = rdinx(0x3D4, 0x1A);
+	ApmReg->CRT[0x1B] = rdinx(0x3D4, 0x1B);
+	ApmReg->CRT[0x1C] = rdinx(0x3D4, 0x1C);
+	ApmReg->CRT[0x1D] = rdinx(0x3D4, 0x1D);
+	ApmReg->CRT[0x1E] = rdinx(0x3D4, 0x1E);
 
-/*
- * ApmRestore --
- *
- * This function restores a video mode.  It basically writes out all of
- * the registers that have previously been saved in the vgaApmRec data 
- * structure.
- *
- * Note that "Restore" is a little bit incorrect.  This function is also
- * used when the server enters/changes video modes.  The mode definitions 
- * have previously been initialized by the Init() function, below.
- */
+	/* RAMDAC registers. */
+	ApmReg->EX[XRE8] = RDXL_IOP(0xE8);
+	ApmReg->EX[XREC] = RDXL_IOP(0xEC);
 
-static void 
-ApmRestore(vgaApmPtr restore)
-{
-  vgaProtect(TRUE);
+	/* Color correction */
+	ApmReg->EX[XRE0] = RDXL_IOP(0xE0);
 
-  /*
-   * Whatever code is needed to get things back to bank zero should be
-   * placed here.  Things should be in the same state as when the
-   * Save/Init was done.
-   */
-
-  /* Set aperture index to 0. */
-  WRXW_IOP(0xC0, 0);
-
-  /*
-   * Write the extended registers first
-   */
-  wrinx(0x3C4, 0x1b, restore->SR1B);
-  wrinx(0x3C4, 0x1c, restore->SR1C);
-
-  apmMMIO_Init = FALSE;
-
-  /* Hardware cursor registers. */
-  WRXL_IOP(0x140, restore->XR140);
-  WRXW_IOP(0x144, restore->XR144);
-  WRXL_IOP(0x148, restore->XR148);
-  WRXW_IOP(0x14C, restore->XR14C);
-
-  wrinx(vgaIOBase + 4, 0x19, restore->CR19); /* vgaIOBase == 3d0 */
-  wrinx(vgaIOBase + 4, 0x1a, restore->CR1A);
-  wrinx(vgaIOBase + 4, 0x1b, restore->CR1B);
-  wrinx(vgaIOBase + 4, 0x1c, restore->CR1C);
-  wrinx(vgaIOBase + 4, 0x1d, restore->CR1D);
-  wrinx(vgaIOBase + 4, 0x1e, restore->CR1E);
-
-  /* RAMDAC registers. */
-  WRXL_IOP(0xe8, restore->XRE8);
-  WRXL_IOP(0xec, restore->XREC & ~(1 << 7));
-  WRXL_IOP(0xec, restore->XREC | (1 << 7)); /* Do a PLL resync */
-
-  WRXB_IOP(0x80, restore->XR80);
-
-  /*
-   * This function handles restoring the generic VGA registers.
-   */
-  vgaHWRestore((vgaHWPtr)restore);
-
-  vgaProtect(FALSE);
-
-}
-
-/*
- * ApmSave --
- *
- * This function saves the video state.  It reads all of the SVGA registers
- * into the vgaApmRec data structure.  There is in general no need to
- * mask out bits here - just read the registers.
- */
-static void *
-ApmSave(vgaApmPtr save)
-{
-  /*
-   * Whatever code is needed to get back to bank zero goes here.
-   */
-
-  /* Set aperture index to 0. */
-  WRXW_IOP(0xC0, 0);
-
-  /*
-   * This function will handle creating the data structure and filling
-   * in the generic VGA portion.
-   */
-  save = (vgaApmPtr)vgaHWSave((vgaHWPtr)save, sizeof(vgaApmRec));
-
-  save->SR1B = rdinx(0x3C4, 0x1b);
-  save->SR1C = rdinx(0x3C4, 0x1c);
-
-  /* Hardware cursor registers. */
-  save->XR140 = RDXL_IOP(0x140);
-  save->XR144 = RDXW_IOP(0x144);
-  save->XR148 = RDXL_IOP(0x148);
-  save->XR14C = RDXW_IOP(0x14C);
-
-  save->CR19 = rdinx(vgaIOBase + 4,  0x19);
-  save->CR1A = rdinx(vgaIOBase + 4,  0x1A);
-  save->CR1B = rdinx(vgaIOBase + 4,  0x1B);
-  save->CR1C = rdinx(vgaIOBase + 4,  0x1C);
-  save->CR1D = rdinx(vgaIOBase + 4,  0x1D);
-  save->CR1E = rdinx(vgaIOBase + 4,  0x1E);
-
-  /* RAMDAC registers. */
-  save->XRE8 = RDXL_IOP(0xe8);
-  save->XREC = RDXL_IOP(0xec);
-
-  save->XR80 = RDXB_IOP(0x80);
-
-  return ((void *) save);
-}
-
-/*
- * ApmInit --
- *
- * This is the most important function (after the Probe) function.  This
- * function fills in the vgaApmRec with all of the register values needed
- * to enable either a 256-color mode (for the color server) or a 16-color
- * mode (for the monochrome server).
- *
- * The 'mode' parameter describes the video mode.  The 'mode' structure 
- * as well as the 'vga256InfoRec' structure can be dereferenced for
- * information that is needed to initialize the mode.  The 'new' macro
- * (see definition above) is used to simply fill in the structure.
- */
-static Bool
-ApmInit(DisplayModePtr mode)
-{
-  /*
-   * This will allocate the datastructure and initialize all of the
-   * generic VGA registers.
-   */
-  if (!vgaHWInit(mode,sizeof(vgaApmRec)))
-    return(FALSE);
-
-  /*
-   * Here all of the other fields of 'new' get filled in, to
-   * handle the SVGA extended registers.  It is also allowable
-   * to override generic registers whenever necessary.
-   *
-   */
-
-  /*
-   * The APM chips have a scale factor of 8 for the 
-   * scanline offset. There are four extended bit in addition
-   * to the 8 VGA bits.
-   */
-  {
-    int offset;
-    offset = (vga256InfoRec.displayWidth *
-              vga256InfoRec.bitsPerPixel / 8)	>> 3;
-    new->std.CRTC[0x13] = offset;
-    /* Bit 8 resides at CR1C bits 7:4. */
-    new->CR1C = (offset & 0xf00) >> 4;
-  }
-
-  /* Set pixel depth. */
-  switch(vga256InfoRec.bitsPerPixel)
-  {
-    case 8:
-         new->XR80 = 0x02;
-         break;
-    case 16:
-         new->XR80 = 0x0d;
-         break;
-    case 32:
-         new->XR80 = 0x0f;
-         break;
-    default:
-         FatalError("Unsupported bit depth %d\n", vga256InfoRec.bitsPerPixel);
-         break;
-  }
-
-  /*
-   * Enable VESA Super VGA memory organisation.
-   * Also enable Linear Addressing.
-   */
-  if (APM.ChipUseLinearAddressing) {
-    u8 size;
-    new->SR1B = 0x00; /* For some reason it doesn't work to enable memory mapped registers here,
-                         so that is done in apm_accel.c:CheckMMIO_Init() */
-    switch (APM.ChipLinearSize)
-    {
-      case 0x100000:
-           size = 0x00;
-           break;
-      case 0x200000:
-           size = 0x02;
-           break;
-      case 0x400000:
-           size = 0x04;
-           break;
-      case 0x600000:
-           size = 0x06;
-           break;
-      default:
-           ErrorF("AT3D: Cannot find aperture size for configured amount of video ram\n");
-           return FALSE;
+	ApmReg->EX[XR80] = RDXB_IOP(0x80);
     }
-    new->SR1C = size | 0x29; /* 2 means simultaneous access to video ram */
-    /* new->SR1C = size | 0x09; */
-  }
-  else {
-    /* Banking; Map aperture at 0xA0000. */
-    new->SR1B = 0;
-    new->SR1C = 0;
-  }
-  /* Set banking register to zero. */
-  new->XRC0 = 0;
-
-  /* Handle the CRTC overflow bits. */
-  {
-    unsigned char val;
-    /* Vertical Overflow. */
-    val = 0;
-    if ((mode->CrtcVTotal - 2) & 0x400)
-      val |= 0x01;
-    if ((mode->CrtcVDisplay - 1) & 0x400)
-      val |= 0x02;
-    /* VBlankStart is equal to VSyncStart + 1. */
-    if (mode->CrtcVSyncStart & 0x400)
-      val |= 0x04;
-    /* VRetraceStart is equal to VSyncStart + 1. */
-    if (mode->CrtcVSyncStart & 0x400)
-      val |= 0x08;
-    new->CR1A = val;
-
-    /* Horizontal Overflow. */
-    val = 0;
-    if ((mode->CrtcHTotal / 8 - 5) & 0x100)
-      val |= 1;
-    if ((mode->CrtcHDisplay / 8 - 1) & 0x100)
-      val |= 2;
-    /* HBlankStart is equal to HSyncStart - 1. */
-    if ((mode->CrtcHSyncStart / 8 - 1) & 0x100)
-      val |= 4;
-    /* HRetraceStart is equal to HSyncStart. */
-    if ((mode->CrtcHSyncStart / 8) & 0x100)
-      val |= 8;
-    new->CR1B = val;
-  }
-  new->CR1E = 1;          /* disable autoreset feature */
-
-  /*
-   * A special case - when using an external clock-setting program,
-   * this function must not change bits associated with the clock
-   * selection.  This condition can be checked by the condition:
-   *
-   *	if (new->std.NoClock >= 0)
-   *		initialize clock-select bits.
-   */
-
-  if (new->std.NoClock >= 0) {
-    /* Program clock select. */
-    new->XREC = comp_lmn(vga256InfoRec.clock[mode->Clock]);
-    if (!new->XREC)
-      return FALSE;
-    new->std.MiscOutReg |= 0xc;
-  }
-
-  /* Set up the RAMDAC registers. */
-
-  if (vgaBitsPerPixel > 8)
-    /* Get rid of white border. */
-    new->std.Attribute[0x11] = 0x00;
-
-
-  if (apmChip >= AT3D)
-    new->XRE8 = 0x071f01e8; /* Enable 58MHz MCLK (actually 57.3 MHz) 
-                               This is what is used in the Windows drivers.
-                               The BIOS sets it to 50MHz. */
-  else
-    new->XRE8 = RDXL_IOP(0xe8); /* No change */
-
-  /*
-   * Hardware cursor registers.
-   * Generally the SVGA server will take care of enabling the
-   * cursor after a mode switch.
-   */
-
-  return TRUE;
 }
-
-/*
- * ApmAdjust --
- *
- * This function is used to initialize the SVGA Start Address - the first
- * displayed location in the video memory.  This is used to implement the
- * virtual window.
- */
-static void 
-ApmAdjust(int x, int y)
-{
-  int Base = ((y * vga256InfoRec.displayWidth + x)
-              * (vgaBitsPerPixel / 8)) >> 2;
-
-  /*
-   * These are the generic starting address registers.
-   */
-  outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
-  outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
-
-  /*
-   * Here the high-order bits are masked and shifted, and put into
-   * the appropriate extended registers.
-   */
-  modinx(vgaIOBase + 4, 0x1c, 0x0f, (Base & 0x0f0000) >> 16);
-
-}
-
-/*
- * ApmValidMode --
- *
- */
-static int
-ApmValidMode(DisplayModePtr mode, Bool verbose, int flag)
-{
-  /* Check for CRTC timing bits overflow. */
-  if (mode->VTotal > 2047) {
-    if (verbose)
-      ErrorF("%s %s: %s: Vertical mode timing overflow (%d)\n",
-             XCONFIG_PROBED, vga256InfoRec.name,
-             vga256InfoRec.chipset, mode->VTotal);
-    return MODE_BAD;
-  }
-
-  return MODE_OK;
-}
-
-
-#ifdef DPMSExtension
-/*
- * DPMS Control registers
- *
- */
-
-static void 
-ApmDisplayPowerManagementSet(int PowerManagementMode)
-{
-  unsigned char dpmsreg, tmp;
-
-  dpmsreg = 0;
-  if (!xf86VTSema) return;
-  switch (PowerManagementMode) {
-    case DPMSModeOn:
-         /* Screen: On; HSync: On, VSync: On */
-         dpmsreg = 0x00;
-         break;
-    case DPMSModeStandby:
-         /* Screen: Off; HSync: Off, VSync: On */
-         dpmsreg = 0x01;
-         break;
-    case DPMSModeSuspend:
-         /* Screen: Off; HSync: On, VSync: Off */
-         dpmsreg = 0x02;
-         break;
-    case DPMSModeOff:
-         /* Screen: Off; HSync: Off, VSync: Off */
-         dpmsreg = 0x03;
-         break;
-  }
-  tmp = RDXB_IOP(0xD0);
-  tmp = (tmp & 0xfc) | dpmsreg;
-  WRXB_IOP(0xD0, tmp);
-}
-#endif
 
 #define WITHIN(v,c1,c2) (((v) >= (c1)) && ((v) <= (c2)))
 
 static unsigned
-comp_lmn(unsigned clock)
+comp_lmn(ApmPtr pApm, long clock)
 {
   int     n, m, l, f;
   double  fvco;
@@ -1045,8 +1116,8 @@ comp_lmn(unsigned clock)
   double  fref;
   double  fvco_goal;
   double  k, c;
-  
-  if (apmChip >= AT3D)
+
+  if (pApm->Chipset >= AT3D)
     fmax = 400000.0;
   else
     fmax = 250000.0;
@@ -1073,47 +1144,824 @@ comp_lmn(unsigned clock)
 
         /* The following formula was empirically derived by
            matching a number of fvco values with acceptable
-           values of f. It was tuned for AT3D only.
+           values of f.
+
+           (fvco can be 125MHz - 400MHz on AT3D)
+           (fvco can be 125MHz - 250MHz on AT24/AP6422)
 
            The table that was measured up follows:
-           (fvco can be 125MHz - 400MHz on AT3D)
+
+           AT3D
+
            fvco       f
-           (125)     (x-7)
+           (125)     (x-7) guess
            200       5-7
            219       4-7
            253       3-6
            289       2-5
            320       0-4
-           (400)     (0-x)
+           (400)     (0-x) guess
 
-           From this, a function "f = k*fvco + c" was derived.
+           AT24
 
-           This table was measured with MCLK == 50MHz.
-           The driver has since been set to use MCLK == 57.3MHz for
-           AT3D, but I don't think that makes a difference here.
+           fvco       f
+           126       7
+           200       5-7
+           211       4-7
+
+           AP6422
+
+           fvco       f
+           126       7
+           169       5-7
+           200       4-5
+           211       4-5
+
+           From this, a function "f = k * fvco + c" was derived.
+
+           For AT3D, this table was measured with MCLK == 50MHz.
+           The driver has since been set to use MCLK == 57.3MHz for,
+           but I don't think that makes a difference here.
          */
 
-        k = 7.0 / (175.0 - 380.0);
-        c = -k * 380.0;
-        f = (int)(k * fvco/1000.0 + c + 0.5);
-        if (f > 7) f = 7;
-        if (f < 0) f = 0;
+        if (pApm->Chipset >= AT24)
+        {
+          k = 7.0 / (175.0 - 380.0);
+          c = -k * 380.0;
+          f = (int)(k * fvco/1000.0 + c + 0.5);
+          if (f > 7) f = 7;
+          if (f < 0) f = 0;
+        }
 
-        if (apmChip < AT3D)
-          f = 4; /* Default according to manual */
-
-/*        ErrorF("%6.2f\t%6.2f\t%d\t%d\t%d\t%.2f\t%d\n", (double)clock, fout,
-          n, m, l, fvco, f);*/
+        if (pApm->Chipset < AT24) /* i.e AP6422 */
+        {
+          c = (211.0*6.0-169.0*4.5)/(211.0-169.0);
+          k = (4.5-c)/211.0;
+          f = (int)(k * fvco/1000.0 + c + 0.5);
+          if (f > 7) f = 7;
+          if (f < 0) f = 0;
+        }
 
         return (n << 16) | (m << 8) | (l << 2) | (f << 4);
       }
     }
   }
-  ErrorF("%s %s: %s: Cannot find register values for clock %6.2f MHz. "
-         "Please use a (slightly) different clock.\n", 
-         XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset, 
-         (double)clock / 1000.0);
+  xf86DrvMsg(pApm->scrnIndex, X_PROBED,
+		"Cannot find register values for clock %6.2f MHz. "
+		"Please use a (slightly) different clock.\n",
+		 (double)clock / 1000.0);
   return 0;
 }
 
+/*
+ * Initialise a new mode.  This is currently still using the old
+ * "initialise struct, restore/write struct to HW" model.  That could
+ * be changed.
+ */
 
+static Bool
+ApmModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
+{
+    APMDECL(pScrn);
+    ApmRegPtr	ApmReg = &pApm->ModeReg;
+    vgaHWPtr	hwp;
+
+    /* set clockIndex to "2" for programmable clocks */
+    if (pScrn->progClock)
+	mode->ClockIndex = 2;
+
+    /* prepare standard VGA register contents */
+    if (!vgaHWInit(pScrn, mode))
+	return FALSE;
+    pScrn->vtSema = TRUE;
+    hwp = VGAHWPTR(pScrn);
+
+    memcpy(ApmReg, &pApm->SavedReg, sizeof pApm->SavedReg);
+
+    /*
+     * The APM chips have a scale factor of 8 for the
+     * scanline offset. There are four extended bit in addition
+     * to the 8 VGA bits.
+     */
+    {
+	int offset;
+
+	offset = (pScrn->displayWidth *
+		  pScrn->bitsPerPixel / 8)	>> 3;
+	hwp->ModeReg.CRTC[0x13] = offset;
+	/* Bit 8 resides at CR1C bits 7:4. */
+	ApmReg->CRT[0x1C] = (offset & 0xf00) >> 4;
+    }
+
+    /* Set pixel depth. */
+    switch(pScrn->bitsPerPixel)
+    {
+    case 4:
+	 ApmReg->EX[XR80] = 0x01;
+	 break;
+    case 8:
+	 ApmReg->EX[XR80] = 0x02;
+	 break;
+    case 15:
+	 ApmReg->EX[XR80] = 0x0C;
+	 break;
+    case 16:
+	 ApmReg->EX[XR80] = 0x0D;
+	 break;
+    case 24:
+	 ApmReg->EX[XR80] = 0x0E;
+	 break;
+    case 32:
+	 ApmReg->EX[XR80] = 0x0F;
+	 break;
+    default:
+	 FatalError("Unsupported bit depth %d\n", pScrn->bitsPerPixel);
+	 break;
+    }
+
+    /* Set banking register to zero. */
+    ApmReg->EX[XRC0] = 0;
+
+    /* Handle the CRTC overflow bits. */
+    {
+	unsigned char val;
+	/* Vertical Overflow. */
+	val = 0;
+	if ((mode->CrtcVTotal - 2) & 0x400)
+	    val |= 0x01;
+	if ((mode->CrtcVDisplay - 1) & 0x400)
+	    val |= 0x02;
+	/* VBlankStart is equal to VSyncStart + 1. */
+	if (mode->CrtcVSyncStart & 0x400)
+	    val |= 0x04;
+	/* VRetraceStart is equal to VSyncStart + 1. */
+	if (mode->CrtcVSyncStart & 0x400)
+	    val |= 0x08;
+	ApmReg->CRT[0x1A] = val;
+
+	/* Horizontal Overflow. */
+	val = 0;
+	if ((mode->CrtcHTotal / 8 - 5) & 0x100)
+	    val |= 1;
+	if ((mode->CrtcHDisplay / 8 - 1) & 0x100)
+	    val |= 2;
+	/* HBlankStart is equal to HSyncStart - 1. */
+	if ((mode->CrtcHSyncStart / 8 - 1) & 0x100)
+	    val |= 4;
+	/* HRetraceStart is equal to HSyncStart. */
+	if ((mode->CrtcHSyncStart / 8) & 0x100)
+	    val |= 8;
+	ApmReg->CRT[0x1B] = val;
+    }
+    ApmReg->CRT[0x1E] = 1;          /* disable autoreset feature */
+
+    /* Program clock select. */
+    ApmReg->EX[XREC] = comp_lmn(pApm, mode->Clock);
+    if (!ApmReg->EX[XREC])
+      return FALSE;
+    hwp->ModeReg.MiscOutReg |= 0x0C;
+
+    /* Set up the RAMDAC registers. */
+
+    if (pScrn->bitsPerPixel > 8)
+	/* Get rid of white border. */
+	hwp->ModeReg.Attribute[0x11] = 0x00;
+    else
+	hwp->ModeReg.Attribute[0x11] = 0xFF;
+    if (pApm->Chipset >= AT3D)
+	ApmReg->EX[XRE8] = 0x071F01E8; /* Enable 58MHz MCLK (actually 57.3 MHz)
+				       This is what is used in the Windows
+				       drivers. The BIOS sets it to 50MHz. */
+    else if (!pApm->noLinear)
+	ApmReg->EX[XRE8] = RDXL(0xE8); /* No change */
+    else
+	ApmReg->EX[XRE8] = RDXL_IOP(0xE8); /* No change */
+
+    ApmReg->EX[XRE0] = 0x10;
+
+    ApmReg->SEQ[0x1B] = 0x20;
+    ApmReg->SEQ[0x1C] = 0x3F;
+
+    /* ICICICICI */
+    ApmRestore(pScrn, &hwp->ModeReg, ApmReg);
+
+    return TRUE;
+}
+
+/*
+ * Restore the initial mode.
+ */
+static void
+ApmRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, ApmRegPtr ApmReg)
+{
+    APMDECL(pScrn);
+
+    vgaHWProtect(pScrn, TRUE);
+    ApmUnlock(pApm);
+
+    /* Set aperture index to 0. */
+    if (pApm->LinMap) {
+	/*
+	 * Restore fonts
+	 */
+	if (!(vgaReg->Attribute[0x10] & 1) && pApm->FontInfo) {
+	    ApmWriteSeq(0x1C, 0x3F);
+	    memcpy(pApm->FbBase, pApm->FontInfo, TEXT_AMOUNT);
+	}
+
+	WRXW(0xC0, 0);
+
+	/*
+	 * Write the extended registers first
+	 */
+	ApmWriteSeq(0x1B, ApmReg->SEQ[0x1B]);
+	ApmWriteSeq(0x1C, ApmReg->SEQ[0x1C]);
+
+	/* Hardware cursor registers. */
+	WRXL(0x140, ApmReg->EX[XR140]);
+	WRXW(0x144, ApmReg->EX[XR144]);
+	WRXL(0x148, ApmReg->EX[XR148]);
+	WRXW(0x14C, ApmReg->EX[XR14C]);
+
+	ApmWriteCrtc(0x19, ApmReg->CRT[0x19]);
+	ApmWriteCrtc(0x1A, ApmReg->CRT[0x1A]);
+	ApmWriteCrtc(0x1B, ApmReg->CRT[0x1B]);
+	ApmWriteCrtc(0x1C, ApmReg->CRT[0x1C]);
+	ApmWriteCrtc(0x1D, ApmReg->CRT[0x1D]);
+	ApmWriteCrtc(0x1E, ApmReg->CRT[0x1E]);
+
+	/* RAMDAC registers. */
+	WRXL(0xE8, ApmReg->EX[XRE8]);
+	WRXL(0xEC, ApmReg->EX[XREC] & ~(1 << 7));
+	WRXL(0xEC, ApmReg->EX[XREC] | (1 << 7)); /* Do a PLL resync */
+
+	/* Color correction */
+	WRXL(0xE0, ApmReg->EX[XRE0]);
+
+	WRXB(0x80, ApmReg->EX[XR80]);
+
+	/*
+	 * This function handles restoring the generic VGA registers.
+	 */
+	vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE | VGA_SR_CMAP);
+    }
+    else {
+	WRXW_IOP(0xC0, 0);
+
+	/*
+	 * Write the extended registers first
+	 */
+	wrinx(0x3C4, 0x1B, ApmReg->SEQ[0x1B]);
+	wrinx(0x3C4, 0x1C, ApmReg->SEQ[0x1C]);
+
+	/* Hardware cursor registers. */
+	WRXL_IOP(0x140, ApmReg->EX[XR140]);
+	WRXW_IOP(0x144, ApmReg->EX[XR144]);
+	WRXL_IOP(0x148, ApmReg->EX[XR148]);
+	WRXW_IOP(0x14C, ApmReg->EX[XR14C]);
+
+	wrinx(0x3D4, 0x19, ApmReg->CRT[0x19]);
+	wrinx(0x3D4, 0x1A, ApmReg->CRT[0x1A]);
+	wrinx(0x3D4, 0x1B, ApmReg->CRT[0x1B]);
+	wrinx(0x3D4, 0x1C, ApmReg->CRT[0x1C]);
+	wrinx(0x3D4, 0x1D, ApmReg->CRT[0x1D]);
+	wrinx(0x3D4, 0x1E, ApmReg->CRT[0x1E]);
+
+	/* RAMDAC registers. */
+	WRXL_IOP(0xE8, ApmReg->EX[XRE8]);
+	WRXL_IOP(0xEC, ApmReg->EX[XREC] & ~(1 << 7));
+	WRXL_IOP(0xEC, ApmReg->EX[XREC] | (1 << 7)); /* Do a PLL resync */
+
+	/* Color correction */
+	WRXL_IOP(0xE0, ApmReg->EX[XRE0]);
+
+	WRXB_IOP(0x80, ApmReg->EX[XR80]);
+
+	/*
+	 * This function handles restoring the generic VGA registers.
+	 */
+	vgaHWRestore(pScrn, vgaReg, VGA_SR_ALL);
+    }
+
+    vgaHWProtect(pScrn, FALSE);
+}
+
+/* Mandatory */
+
+/* This gets called at the start of each server generation */
+
+static Bool
+ApmScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
+{
+    ScrnInfoPtr	pScrn = xf86Screens[pScreen->myNum];
+    APMDECL(pScrn);
+    int ret;
+
+    /* Map the chip memory and MMIO areas */
+    if (pApm->noLinear) {
+	pApm->saveCmd = pciReadLong(pApm->PciTag, PCI_CMD_STAT_REG);
+	pciWriteLong(pApm->PciTag, PCI_CMD_STAT_REG, pApm->saveCmd | (PCI_CMD_IO_ENABLE|PCI_CMD_MEM_ENABLE));
+	pApm->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
+				 pApm->PciTag, (pointer)0xA0000, 0x10000);
+    }
+    else
+	if (!ApmMapMem(pScrn))
+	    return FALSE;
+
+    /* No memory reserved yet */
+    pApm->OffscreenReserved = 0;
+
+    /* Save the current state */
+    ApmSave(pScrn);
+
+    /* Initialise the first mode */
+    ApmModeInit(pScrn, pScrn->currentMode);
+
+    /* Darken the screen for aesthetic reasons and set the viewport */
+    ApmSaveScreen(pScreen, FALSE);
+    ApmAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
+
+    /*
+     * The next step is to setup the screen's visuals, and initialise the
+     * framebuffer code.  In cases where the framebuffer's default
+     * choices for things like visual layouts and bits per RGB are OK,
+     * this may be as simple as calling the framebuffer's ScreenInit()
+     * function.  If not, the visuals will need to be setup before calling
+     * a fb ScreenInit() function and fixed up after.
+     *
+     * XXX NOTE: cfbScreenInit() will not result in the default visual
+     * being set correctly when there is a screen-specific value given
+     * in the config file as opposed to a global value given on the
+     * command line.  Saving and restoring 'defaultColorVisualClass'
+     * around the fb's ScreenInit() solves this problem.
+     *
+     * For most PC hardware at depths >= 8, the defaults that cfb uses
+     * are not appropriate.  In this driver, we fixup the visuals after.
+     */
+
+    /*
+     * Reset cfb's visual list.
+     */
+    miClearVisualTypes();
+
+    /* Setup the visuals we support. */
+
+    /*
+     * For bpp > 8, the default visuals are not acceptable because we only
+     * support TrueColor and not DirectColor.  To deal with this, call
+     * miSetVisualTypes for each visual supported.
+     */
+
+    if (pScrn->bitsPerPixel > 8) {
+	if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
+				pScrn->defaultVisual))
+	    return FALSE;
+    } else {
+	if (!miSetVisualTypes(pScrn->depth,
+			      miGetDefaultVisualMask(pScrn->depth),
+			      pScrn->rgbBits, pScrn->defaultVisual))
+	    return FALSE;
+    }
+
+    /*
+     * Call the framebuffer layer's ScreenInit function, and fill in other
+     * pScreen fields.
+     */
+
+    switch (pScrn->bitsPerPixel) {
+    case 1:
+	ret = xf1bppScreenInit(pScreen, pApm->FbBase,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth);
+	break;
+    case 4:
+	ret = xf4bppScreenInit(pScreen, pApm->FbBase,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth);
+	break;
+    case 8:
+	ret = cfbScreenInit(pScreen, pApm->FbBase, pScrn->virtualX,
+	    pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
+	    pScrn->displayWidth);
+	break;
+    case 16:
+	ret = cfb16ScreenInit(pScreen, pApm->FbBase, pScrn->virtualX,
+	    pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
+	    pScrn->displayWidth);
+	break;
+    case 24:
+	ret = cfb24ScreenInit(pScreen, pApm->FbBase, pScrn->virtualX,
+	    pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
+	    pScrn->displayWidth);
+	break;
+    case 32:
+	ret = cfb32ScreenInit(pScreen, pApm->FbBase, pScrn->virtualX,
+	    pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
+	    pScrn->displayWidth);
+	break;
+    default:
+	xf86DrvMsg(scrnIndex, X_ERROR,
+	    "Internal error: invalid bpp (%d) in ApmScrnInit\n",
+	    pScrn->bitsPerPixel);
+	ret = FALSE;
+	break;
+    }
+    if (!ret)
+	return FALSE;
+
+    miInitializeBackingStore(pScreen);
+
+    xf86SetBlackWhitePixels(pScreen);
+
+    if (pScrn->bitsPerPixel > 8) {
+	VisualPtr	visual;
+
+	/* Fixup RGB ordering */
+	visual = pScreen->visuals + pScreen->numVisuals;
+	while (--visual >= pScreen->visuals) {
+	    if ((visual->class | DynamicClass) == DirectColor) {
+		visual->offsetRed = pScrn->offset.red;
+		visual->offsetGreen = pScrn->offset.green;
+		visual->offsetBlue = pScrn->offset.blue;
+		visual->redMask = pScrn->mask.red;
+		visual->greenMask = pScrn->mask.green;
+		visual->blueMask = pScrn->mask.blue;
+	    }
+	}
+    }
+
+    /* Initialise cursor functions */
+    miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
+
+    if (pApm->hwCursor) { /* Initialize HW cursor layer */
+	if (!ApmHWCursorInit(pScreen))
+            xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+                "Hardware cursor initialization failed\n");
+    }
+
+#if 0
+    if(!ApmDGAInit(pScreen)) {
+        xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "DGA initialization failed\n");
+    }
+#endif
+
+    if (!ApmI2CInit(pScreen)) {
+        xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "I2C initialization failed\n");
+    }
+    else
+	xf86PrintEDID(xf86DoEDID_DDC2(pScrn->scrnIndex,pApm->I2CPtr));
+
+    /*
+     * Initialize the acceleration interface.
+     */
+    if (!pApm->NoAccel) {
+	if (!ApmAccelInit(pScreen)) {	/* set up XAA interface */
+	    return FALSE;
+	}
+    }
+
+    /* Initialise default colourmap */
+    if (!miCreateDefColormap(pScreen))
+	return FALSE;
+
+    /*
+     * Initialize colormap layer.
+     * Must follow initialization of the default colormap.
+     */
+    if (!xf86HandleColormaps(pScreen, 256, 8, ApmLoadPalette, NULL,
+				CMAP_RELOAD_ON_MODE_SWITCH)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Colormap initialization failed\n");
+	return FALSE;
+    }
+
+#ifdef DPMSExtension
+    xf86DPMSInit(pScreen, ApmDisplayPowerManagementSet, 0);
+#endif
+
+    pScreen->SaveScreen  = ApmSaveScreen;
+
+    pApm->CloseScreen = pScreen->CloseScreen;
+    pScreen->CloseScreen = ApmCloseScreen;
+
+    /* Report any unused options (only for the first generation) */
+    if (serverGeneration == 1) {
+	xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
+    }
+
+    /* Done */
+    return TRUE;
+}
+
+/* mandatory */
+static void
+ApmLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
+	       short visualclass)
+{
+    APMDECL(pScrn);
+    int i, index, last = -1;
+
+    for (i = 0; i < numColors; i++) {
+	index = indices[i];
+	if (index != last) 
+	    ApmWriteDacWriteAddr(index);
+	last = index + 1;
+	ApmWriteDacData(colors[index].red);
+	ApmWriteDacData(colors[index].green);
+	ApmWriteDacData(colors[index].blue);
+    }
+}
+
+/* Usually mandatory */
+static Bool
+ApmSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
+{
+    return ApmModeInit(xf86Screens[scrnIndex], mode);
+}
+
+/*
+ * This function is used to initialize the Start Address - the first
+ * displayed location in the video memory.
+ */
+/* Usually mandatory */
+static Bool
+ApmAdjustFrame(int scrnIndex, int x, int y, int flags)
+{
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    APMDECL(pScrn);
+    int Base;
+
+    if (pScrn->bitsPerPixel == 24)
+	x = (x + 3) & ~3;
+    Base = ((y * pScrn->displayWidth + x) * (pScrn->bitsPerPixel / 8)) >> 2;
+    /*
+     * These are the generic starting address registers.
+     */
+    if (pApm->VGAMap) {
+	ApmWriteCrtc(0x0C, Base >> 8);
+	ApmWriteCrtc(0x0D, Base);
+
+	/*
+	 * Here the high-order bits are masked and shifted, and put into
+	 * the appropriate extended registers.
+	 */
+	ApmWriteCrtc(0x1C, (ApmReadCrtc(0x1C) & 0xF0) | ((Base & 0x0F0000) >> 16));
+    }
+    else {
+	outw(0x3D4, (Base & 0x00FF00) | 0x0C);
+	outw(0x3D4, ((Base & 0x00FF) << 8) | 0x0D);
+
+	/*
+	 * Here the high-order bits are masked and shifted, and put into
+	 * the appropriate extended registers.
+	 */
+	modinx(0x3D4, 0x1C, 0x0F, (Base & 0x0F0000) >> 16);
+    }
+    return TRUE;
+}
+
+#if 0
+static Bool
+ApmDGAGetParams(int scrnIndex, unsigned long *offset,
+		int *banksize, int *memsize)
+{
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    APMDECL(pScrn);
+
+    *offset = (unsigned long)pApm->FbBase;
+    *banksize = pApm->FbMapSize;
+    *memsize = pScrn->device->videoRam * 1024;
+    return TRUE;
+}
+
+static Bool
+ApmDGASetDirect(int scrnIndex, Bool enable)
+{
+    return TRUE;
+}
+
+static Bool
+ApmDGASetBank(int scrnIndex, int bank, int flags)
+{
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    APMDECL(pScrn);
+    int Base = (bank * pApm->FbMapSize) / 4096;
+
+    if (!pApm->noLinear)
+	WRXW(0xC0, Base);
+    else
+	WRXW_IOP(0xC0, Base);
+    return TRUE;
+}
+
+static  Bool
+ApmDGAViewportChanged(int scrnIndex, int n, int flags)
+{
+    return TRUE;
+}
+
+static Bool
+ApmDGAInit(ScreenPtr pScreen)
+{
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    APMDECL(pScrn);
+    DGAInfoPtr pDGAInfo;
+
+    pDGAInfo = DGACreateInfoRec();
+    if(pDGAInfo == NULL)
+        return FALSE;
+
+    pApm->DGAInfo = pDGAInfo;
+
+    pDGAInfo->GetParams = ApmDGAGetParams;
+    pDGAInfo->SetDirectMode = ApmDGASetDirect;
+    pDGAInfo->SetBank = ApmDGASetBank;
+    pDGAInfo->SetViewport = ApmAdjustFrame;
+    pDGAInfo->ViewportChanged = ApmDGAViewportChanged;;
+
+    return DGAInit(pScreen, pDGAInfo, 0);
+}
+#endif
+
+/*
+ * This is called when VT switching back to the X server.  Its job is
+ * to reinitialise the video mode.
+ *
+ * We may wish to unmap video/MMIO memory too.
+ */
+
+/* Mandatory */
+static Bool
+ApmEnterVT(int scrnIndex, int flags)
+{
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+
+    vgaHWUnlock(VGAHWPTR(pScrn));
+    ApmUnlock(APMPTR(pScrn));
+    /* Should we re-save the text mode on each VT enter? */
+    if (!ApmModeInit(pScrn, pScrn->currentMode))
+	return FALSE;
+
+    return TRUE;
+}
+
+/* Mandatory */
+static void
+ApmLeaveVT(int scrnIndex, int flags)
+{
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    APMDECL(pScrn);
+
+    ApmRestore(pScrn, &VGAHWPTR(pScrn)->SavedReg, &pApm->SavedReg);
+    ApmLock(pApm);
+    vgaHWLock(VGAHWPTR(pScrn));
+}
+
+/*
+ * This is called at the end of each server generation.  It restores the
+ * original (text) mode.  It should really also unmap the video memory too.
+ */
+
+/* Mandatory */
+static Bool
+ApmCloseScreen(int scrnIndex, ScreenPtr pScreen)
+{
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    APMDECL(pScrn);
+
+    ApmRestore(pScrn, &VGAHWPTR(pScrn)->SavedReg, &pApm->SavedReg);
+    if(pApm->AccelInfoRec)
+	XAADestroyInfoRec(pApm->AccelInfoRec);
+    pApm->AccelInfoRec = NULL;
+    if(pApm->CursorInfoRec)
+	xf86DestroyCursorInfoRec(pApm->CursorInfoRec);
+    pApm->CursorInfoRec = NULL;
+#if 0
+    if (pApm->DGAInfo)
+        DGADestroyInfoRec(pApm->DGAInfo);
+    pApm->DGAInfo = NULL;
+#endif
+    if (pApm->I2CPtr)
+	xf86DestroyI2CBusRec(pApm->I2CPtr, TRUE, TRUE);
+    pApm->I2CPtr = NULL;
+
+    pScrn->vtSema = FALSE;
+
+    pScreen->CloseScreen = pApm->CloseScreen;
+    ApmUnmapMem(pScrn);
+    return (*pScreen->CloseScreen)(scrnIndex, pScreen);
+}
+
+/* Free up any per-generation data structures */
+
+/* Optional */
+static void
+ApmFreeScreen(int scrnIndex, int flags)
+{
+    vgaHWFreeHWRec(xf86Screens[scrnIndex]);
+    ApmFreeRec(xf86Screens[scrnIndex]);
+}
+
+/* Checks if a mode is suitable for the selected chipset. */
+
+/* Optional */
+static int
+ApmValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
+{
+    if (mode->Flags & V_INTERLACE)
+	return(MODE_BAD);
+
+    return(MODE_OK);
+}
+
+
+/*
+ * ApmDisplayPowerManagementSet --
+ *
+ * Sets VESA Display Power Management Signaling (DPMS) Mode.
+ */
+#ifdef DPMSExtension
+static void
+ApmDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
+			     int flags)
+{
+    APMDECL(pScrn);
+    unsigned char dpmsreg;
+
+    switch (PowerManagementMode)
+    {
+    case DPMSModeOn:
+	/* Screen: On; HSync: On, VSync: On */
+	dpmsreg = 0x00;
+	break;
+    case DPMSModeStandby:
+	/* Screen: Off; HSync: Off, VSync: On */
+	dpmsreg = 0x01;
+	break;
+    case DPMSModeSuspend:
+	/* Screen: Off; HSync: On, VSync: Off */
+	dpmsreg = 0x02;
+	break;
+    case DPMSModeOff:
+	/* Screen: Off; HSync: Off, VSync: Off */
+	dpmsreg = 0x03;
+	break;
+    default:
+	dpmsreg = 0;
+    }
+    if (pApm->noLinear)
+	WRXB_IOP(0xD0, (RDXB_IOP(0xD0) & 0xFC) | dpmsreg);
+    else
+	WRXB(0xD0, (RDXB(0xD0) & 0xFC) | dpmsreg);
+}
+#endif
+
+static Bool
+ApmSaveScreen(ScreenPtr pScreen, Bool unblank)
+{
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+
+   if (unblank)
+      SetTimeSinceLastInputEvent();
+
+   if (pScrn->vtSema)
+       vgaHWBlankScreen(pScrn, unblank);
+   return TRUE;
+}
+
+unsigned char _L_ACR(unsigned char *x);
+unsigned char _L_ACR(unsigned char *x)
+{
+    return *x;
+}
+
+unsigned short _L_ASR(unsigned short *x);
+unsigned short _L_ASR(unsigned short *x)
+{
+    return *x;
+}
+
+unsigned int _L_AIR(unsigned int *x);
+unsigned int _L_AIR(unsigned int *x)
+{
+    return *x;
+}
+
+void _L_ACW(char *x, char y);
+void _L_ACW(char *x, char y)
+{
+    *x = y;
+}
+
+void _L_ASW(short *x, short y);
+void _L_ASW(short *x, short y)
+{
+    *x = y;
+}
+
+void _L_AIW(int *x, int y);
+void _L_AIW(int *x, int y)
+{
+    *x = y;
+}

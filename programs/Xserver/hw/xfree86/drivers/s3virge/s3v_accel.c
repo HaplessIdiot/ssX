@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.7 1999/03/07 11:40:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.8 1999/03/14 03:22:03 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -28,12 +28,12 @@ in this Software without prior written authorization from the XFree86 Project.
 #define COMPMACROS3X
 #include "s3v.h"
 #undef COMPMACROS3X
-#include "s3v_rop.h"
 #include "s3v_macros.h"
 
 #include "miline.h"
 	/* cfb includes are in s3v.h */
 #include "xaalocal.h"
+#include "xaarop.h"
 
 
 static void S3VWriteMask(CARD32*, int);
@@ -100,10 +100,12 @@ S3VAccelInit(ScreenPtr pScreen)
 		     LINEAR_FRAMEBUFFER |
 		     OFFSCREEN_PIXMAPS;
 
+    infoPtr->Flags = LINEAR_FRAMEBUFFER;
+
+
     infoPtr->Sync = S3VAccelSync;
 
     /* Solid filled rects */
-    infoPtr->SolidFillFlags = ROP_NEEDS_SOURCE;
     infoPtr->SetupForSolidFill = 
         S3VSetupForSolidFill;
     infoPtr->SubsequentSolidFillRect = 
@@ -121,23 +123,29 @@ S3VAccelInit(ScreenPtr pScreen)
         S3VSetupForMono8x8PatternFill;
     infoPtr->SubsequentMono8x8PatternFillRect =
         S3VSubsequentMono8x8PatternFillRect;
-    infoPtr->Mono8x8PatternFillFlags = NO_TRANSPARENCY | ROP_NEEDS_SOURCE |
+    infoPtr->Mono8x8PatternFillFlags = NO_TRANSPARENCY |
 				HARDWARE_PATTERN_PROGRAMMED_BITS |
 				HARDWARE_PATTERN_SCREEN_ORIGIN |
 				BIT_ORDER_IN_BYTE_LSBFIRST;
 
+
+#ifndef __alpha__    
     /* CPU to screen color expansion */
     infoPtr->CPUToScreenColorExpandFillFlags =  ROP_NEEDS_SOURCE |
 					CPU_TRANSFER_PAD_DWORD |
                                         SCANLINE_PAD_DWORD |
                                         BIT_ORDER_IN_BYTE_MSBFIRST |
-                                  	LEFT_EDGE_CLIPPING; 
+                                  	LEFT_EDGE_CLIPPING;
 
     if(ps3v->AccelFlags & MONO_TRANS_BUG)
 	infoPtr->CPUToScreenColorExpandFillFlags |=  NO_TRANSPARENCY;
 
     infoPtr->ColorExpandRange = 0x8000;
+#ifdef __alpha__
+    infoPtr->ColorExpandBase = ps3v->MapBaseDense;
+#else
     infoPtr->ColorExpandBase = ps3v->MapBase;
+#endif /* __alpha__ */
     infoPtr->SetupForCPUToScreenColorExpandFill =
                 S3VSetupForCPUToScreenColorExpand;
     infoPtr->SubsequentCPUToScreenColorExpandFill =
@@ -145,24 +153,30 @@ S3VAccelInit(ScreenPtr pScreen)
 
 
 
-    /* CPU to screen color expansion */
+    /* this won't work as long as ImageWriteBase is in sparse mem,
+       need to map a dense base as well */
+    /* Image Writes */
     infoPtr->ImageWriteFlags =  	ROP_NEEDS_SOURCE |
+					NO_TRANSPARENCY |
 					CPU_TRANSFER_PAD_DWORD |
                                         SCANLINE_PAD_DWORD |
                                   	LEFT_EDGE_CLIPPING; 
 
     infoPtr->ImageWriteRange = 0x8000;
+#ifdef __alpha__
+    infoPtr->ImageWriteBase = ps3v->MapBaseDense;
+#else
     infoPtr->ImageWriteBase = ps3v->MapBase;
+#endif /* __alpha__ */
     infoPtr->SetupForImageWrite = S3VSetupForImageWrite;
     infoPtr->SubsequentImageWriteRect = S3VSubsequentImageWriteRect;
-
+    
+#endif /* !__alpha__ */
+    
     /* Lines */
-    infoPtr->SolidLineFlags = ROP_NEEDS_SOURCE;
     infoPtr->SetupForSolidLine = S3VSetupForSolidFill;
     infoPtr->SubsequentSolidHorVertLine = S3VSubsequentSolidHorVertLine;
     infoPtr->SubsequentSolidBresenhamLine = S3VSubsequentSolidBresenhamLine;
-    infoPtr->PolySegmentThinSolidFlags = ROP_NEEDS_SOURCE;
-    infoPtr->PolylinesThinSolidFlags = ROP_NEEDS_SOURCE;
     infoPtr->PolySegmentThinSolid = S3VPolySegmentThinSolidWrapper;
     infoPtr->PolylinesThinSolid = S3VPolylinesThinSolidWrapper;
 
@@ -184,7 +198,7 @@ S3VAccelInit(ScreenPtr pScreen)
 
     S3VEngineReset(pScrn);
 
- 
+
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
@@ -192,7 +206,10 @@ S3VAccelInit(ScreenPtr pScreen)
 		     (pScrn->displayWidth * pScrn->bitsPerPixel/8);
 
     xf86InitFBManager(pScreen, &AvailFBArea);
-        
+
+
+
+    
     return (XAAInit(pScreen, infoPtr));
 } 
 
@@ -219,13 +236,12 @@ S3VGEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file)
       WaitIdleEmpty();
 
 
-    if (from_timeout && (ps3v->Chipset == S3_ViRGE || ps3v->Chipset == S3_ViRGE_VX
-			 || ps3v->Chipset == S3_ViRGE_DXGX)) {
+    if (from_timeout && (ps3v->Chipset == S3_ViRGE || ps3v->Chipset == S3_ViRGE_VX || ps3v->Chipset == S3_ViRGE_DXGX)) {
       /* reset will trash these registers, so save them */
-      fifo_control    = ((mmtr)s3vMmioMem)->memport_regs.regs.fifo_control;
-      miu_control     = ((mmtr)s3vMmioMem)->memport_regs.regs.miu_control;
-      streams_timeout = ((mmtr)s3vMmioMem)->memport_regs.regs.streams_timeout;
-      misc_timeout    = ((mmtr)s3vMmioMem)->memport_regs.regs.misc_timeout;
+      fifo_control    = INREG(FIFO_CONTROL_REG);
+      miu_control     = INREG(MIU_CONTROL_REG);
+      streams_timeout = INREG(STREAMS_TIMEOUT_REG);
+      misc_timeout    = INREG(MISC_TIMEOUT_REG);
     }
 
     if(ps3v->Chipset == S3_ViRGE_VX){
@@ -250,7 +266,7 @@ S3VGEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file)
       if (!from_timeout) 
         WaitIdleEmpty();
 
-      SETB_DEST_SRC_STR(ps3v->Bpl, ps3v->Bpl); 
+      OUTREG(DEST_SRC_STR, ps3v->Bpl << 16 | ps3v->Bpl);
       
       usleep(10000);
       if (((IN_SUBSYS_STAT() & 0x3f00) != 0x3000)) 
@@ -262,15 +278,17 @@ S3VGEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file)
     if (from_timeout && (ps3v->Chipset == S3_ViRGE || ps3v->Chipset == S3_ViRGE_VX
 			 || ps3v->Chipset == S3_ViRGE_DXGX)) {
       /* restore trashed registers */
-      ((mmtr)s3vMmioMem)->memport_regs.regs.fifo_control    = fifo_control;
-      ((mmtr)s3vMmioMem)->memport_regs.regs.miu_control     = miu_control;
-      ((mmtr)s3vMmioMem)->memport_regs.regs.streams_timeout = streams_timeout;
-      ((mmtr)s3vMmioMem)->memport_regs.regs.misc_timeout    = misc_timeout;
+      OUTREG(FIFO_CONTROL_REG, fifo_control);
+      OUTREG(MIU_CONTROL_REG, miu_control);
+      OUTREG(STREAMS_TIMEOUT_REG, streams_timeout);
+      OUTREG(MISC_TIMEOUT_REG, misc_timeout);
     }
 
     WAITFIFO(2);
-    SETB_SRC_BASE(0);
-    SETB_DEST_BASE(0);   
+/*      SETB_SRC_BASE(0); */
+/*      SETB_DEST_BASE(0);    */
+    OUTREG(SRC_BASE, 0);
+    OUTREG(DEST_BASE, 0);
 
   	WAITFIFO(4);
     OUTREG(CLIP_L_R, ((0) << 16) | ps3v->Width);
@@ -339,26 +357,52 @@ S3VWriteMask(
    while(dwords >= 8192) {
 	numLeft = 8192;
 	while(numLeft) {
-	    dst[0] = ~0; dst[1] = ~0;
-	    dst[2] = ~0; dst[3] = ~0;
-	    dst += 4;
-	    numLeft -= 4;
+#ifdef __alpha__
+	  xf86WriteSparse32(~0, dst, 0);
+	  xf86WriteSparse32(~0, dst, 1);
+	  xf86WriteSparse32(~0, dst, 2);
+	  xf86WriteSparse32(~0, dst, 3);
+#else
+	  dst[0] = ~0; dst[1] = ~0;
+	  dst[2] = ~0; dst[3] = ~0;
+#endif /* __alpha__ */
+	  dst += 4;
+	  numLeft -= 4;
 	}
 	dwords -= 8192;
 	dst = dstBase;
    }
    while(dwords >= 4) {
+#ifdef __alpha__
+     	  xf86WriteSparse32(~0, dst, 0);
+	  xf86WriteSparse32(~0, dst, 1);
+	  xf86WriteSparse32(~0, dst, 2);
+	  xf86WriteSparse32(~0, dst, 3);
+#else
 	dst[0] = ~0; dst[1] = ~0;
 	dst[2] = ~0; dst[3] = ~0;
+#endif /* __alpha__ */
 	dst += 4;
 	dwords -= 4;
    }
    if(!dwords) return;
+#ifdef __alpha__
+   xf86WriteSparse32(~0, dst, 0);
+#else
    dst[0] = ~0;
+#endif
    if(dwords == 1) return;
+#ifdef __alpha__
+   xf86WriteSparse32(~0, dst, 1);
+#else
    dst[1] = ~0;
+#endif
    if(dwords == 2) return;
+#ifdef __alpha__
+   xf86WriteSparse32(~0, dst, 2);
+#else
    dst[2] = ~0;
+#endif
 }
 
 
@@ -373,32 +417,36 @@ S3VSetupForSolidFill(
    unsigned int planemask
 ){
     S3VPtr ps3v = S3VPTR(pScrn);
+    int mix;
 
-    planemask &= ps3v->FullPlaneMask;
-    ps3v->AccelCmd = ps3v->CommonCmd | MIX_MONO_PATT |
+    mix = XAAHelpSolidROP(pScrn, &color, planemask, &rop);
+
+    ps3v->AccelCmd = ps3v->CommonCmd | (rop << 17) |
 			CMD_XP | CMD_YP | CMD_AUTOEXEC | CMD_BITBLT;
-
-    if(planemask == ps3v->FullPlaneMask) {
- 	ps3v->AccelCmd |= s3vAlu_sp[rop];
-	ps3v->AccelInfoRec->SubsequentSolidFillRect =
-		S3VSubsequentSolidFillRect;	
-	ps3v->AccelInfoRec->SubsequentSolidHorVertLine =
-		S3VSubsequentSolidHorVertLine;	
-	WAITFIFO(4);
-    } else {
- 	ps3v->AccelCmd |= s3vAlu_MonoTrans[rop] |
-			MIX_CPUDATA | CMD_ITA_DWORD | MIX_MONO_SRC;
+ 
+    if(mix & ROP_SRC) {
+	ps3v->AccelCmd |= MIX_CPUDATA | CMD_ITA_DWORD | MIX_MONO_SRC;
 	ps3v->AccelInfoRec->SubsequentSolidFillRect = 
 		S3VSubsequentSolidFillRectPlaneMask;
 	ps3v->AccelInfoRec->SubsequentSolidHorVertLine =
 		S3VSubsequentSolidHorVertLinePlaneMask;	
 	WAITFIFO(5);
 	OUTREG(SRC_FG_CLR, planemask);
+    } else {
+	ps3v->AccelInfoRec->SubsequentSolidFillRect =
+		S3VSubsequentSolidFillRect;	
+	ps3v->AccelInfoRec->SubsequentSolidHorVertLine =
+		S3VSubsequentSolidHorVertLine;	
+	WAITFIFO(4);
     }
 
-    OUTREG(PAT_FG_CLR, color);
-    OUTREG(MONO_PAT_0, ~0);
-    OUTREG(MONO_PAT_1, ~0);
+    if(mix & ROP_PAT) {
+	ps3v->AccelCmd |= MIX_MONO_PATT;
+	OUTREG(PAT_FG_CLR, color);
+	OUTREG(MONO_PAT_0, ~0);
+	OUTREG(MONO_PAT_1, ~0);
+    }
+
     OUTREG(CMD_SET, ps3v->AccelCmd);
 }
 
@@ -458,14 +506,14 @@ S3VSetupForScreenToScreenCopy(
     ps3v->AccelCmd = ps3v->CommonCmd | CMD_AUTOEXEC | CMD_BITBLT;
  
     if(planemask != ps3v->FullPlaneMask) {     
-        ps3v->AccelCmd |= s3vAlu_pat[rop] | MIX_MONO_PATT;
+        ps3v->AccelCmd |= (XAACopyROP_PM[rop] << 17) | MIX_MONO_PATT;
 	WAITFIFO(4);
 	OUTREG(PAT_FG_CLR, planemask);
 	OUTREG(MONO_PAT_0, ~0);
 	OUTREG(MONO_PAT_1, ~0);
         }
     else {
-        ps3v->AccelCmd |= s3vAlu[rop];
+        ps3v->AccelCmd |= XAACopyROP[rop] << 17;
 	WAITFIFO(1);
         }
     if(xdir == 1) ps3v->AccelCmd |= CMD_XP;
@@ -514,29 +562,33 @@ S3VSetupForMono8x8PatternFill(
     int rop, unsigned int planemask
 ){
     S3VPtr ps3v = S3VPTR(pScrn);
+    int mix;
 
-    planemask &= ps3v->FullPlaneMask;
-    ps3v->AccelCmd = ps3v->CommonCmd | MIX_MONO_PATT |
+    mix = XAAHelpPatternROP(pScrn, &fg, &bg, planemask, &rop);
+
+    ps3v->AccelCmd = ps3v->CommonCmd | (rop << 17) |
 			CMD_XP | CMD_YP | CMD_AUTOEXEC | CMD_BITBLT;
 
-    if(planemask == ps3v->FullPlaneMask) {
- 	ps3v->AccelCmd |=  s3vAlu_sp[rop];
-	ps3v->AccelInfoRec->SubsequentMono8x8PatternFillRect =
-		S3VSubsequentMono8x8PatternFillRect;	
-	WAITFIFO(5);
-    } else {
- 	ps3v->AccelCmd |= s3vAlu_MonoTrans[rop] | 
-		MIX_CPUDATA | CMD_ITA_DWORD | MIX_MONO_SRC;
+    if(mix & ROP_SRC) {
+ 	ps3v->AccelCmd |= MIX_CPUDATA | CMD_ITA_DWORD | MIX_MONO_SRC;
 	ps3v->AccelInfoRec->SubsequentMono8x8PatternFillRect = 
 		S3VSubsequentMono8x8PatternFillRectPlaneMask;
 	WAITFIFO(6);
 	OUTREG(SRC_FG_CLR, planemask);
+    } else {
+	ps3v->AccelInfoRec->SubsequentMono8x8PatternFillRect =
+		S3VSubsequentMono8x8PatternFillRect;	
+	WAITFIFO(5);
     }
 
-    OUTREG(PAT_FG_CLR, fg);
-    OUTREG(PAT_BG_CLR, bg);
-    OUTREG(MONO_PAT_0, patx);
-    OUTREG(MONO_PAT_1, paty);
+    if(mix & ROP_PAT) {
+	ps3v->AccelCmd |= MIX_MONO_PATT;
+	OUTREG(PAT_FG_CLR, fg);
+	OUTREG(PAT_BG_CLR, bg);
+	OUTREG(MONO_PAT_0, patx);
+	OUTREG(MONO_PAT_1, paty);
+    }
+
     OUTREG(CMD_SET, ps3v->AccelCmd);
 }
 
@@ -598,10 +650,10 @@ S3VSetupForCPUToScreenColorExpand(
 
 
     if(planemask == ps3v->FullPlaneMask) { 
-	ps3v->AccelCmd |= s3vAlu[rop];
+        ps3v->AccelCmd |= XAACopyROP[rop] << 17;
 	WAITFIFO(3);
     } else {
-	ps3v->AccelCmd |= s3vAlu_pat[rop] | MIX_MONO_PATT;
+        ps3v->AccelCmd |= (XAACopyROP_PM[rop] << 17) | MIX_MONO_PATT;
 	WAITFIFO(6);
 	OUTREG(MONO_PAT_0, ~0);
 	OUTREG(MONO_PAT_1, ~0);
@@ -654,16 +706,15 @@ S3VSetupForImageWrite(
 		MIX_CPUDATA | CMD_ITA_DWORD | CMD_HWCLIP | CMD_XP | CMD_YP;
  
     if(planemask != ps3v->FullPlaneMask) {     
-        ps3v->AccelCmd |= s3vAlu_pat[rop] | MIX_MONO_PATT;
+        ps3v->AccelCmd |= (XAACopyROP_PM[rop] << 17) | MIX_MONO_PATT;
 	WAITFIFO(4);
 	OUTREG(PAT_FG_CLR, planemask);
 	OUTREG(MONO_PAT_0, ~0);
 	OUTREG(MONO_PAT_1, ~0);
-        }
-    else {
-        ps3v->AccelCmd |= s3vAlu[rop];
+    } else {
+        ps3v->AccelCmd |= XAACopyROP[rop] << 17;
 	WAITFIFO(1);
-        }
+    }
    
     OUTREG(CMD_SET, ps3v->AccelCmd);
 }
@@ -789,11 +840,20 @@ S3VSubsequentSolidBresenhamLine(
 
     devPriv = cfbGetGCPrivate(ps3v->CurrentGC);
 
+    /* we need to know how far to shift over pScrn->displayWidth * Bpp to
+       get the width of the screen in machine words */
+#ifdef _XSERVER64
+#define S3V_SHIFT 3
+#else
+#define S3V_SHIFT 2
+#endif
+
     /* you could trap for lines you could do here and accelerate them */
 
     (*LineFuncs[Bpp - 1])
 		(devPriv->rop, devPriv->and, devPriv->xor, 
-                (unsigned long*)ps3v->FBBase, (pScrn->displayWidth * Bpp) >> 2, 
+                (unsigned long*)ps3v->FBBase,
+		 (pScrn->displayWidth * Bpp) >> S3V_SHIFT, 
                 (octant & XDECREASING) ? -1 : 1, 
                 (octant & YDECREASING) ? -1 : 1, 
                 (octant & YMAJOR) ? Y_AXIS : X_AXIS,

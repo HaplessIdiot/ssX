@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.20tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.21 1999/03/14 03:21:45 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -165,6 +165,22 @@ int *Chipset;
 				   *Chipset = CHIP_S3_Trio64V2_GX;
 				else
 				   *Chipset = CHIP_S3_Trio64V2_DX;
+				break;
+			case PCI_CHIP_TRIO3D_B:
+			        PCIProbed = TRUE;
+				*Chipset = CHIP_S3_Trio3D_B;
+				break;
+			case PCI_CHIP_TRIO3D:
+			        PCIProbed = TRUE;
+				*Chipset = CHIP_S3_Trio3D;
+				break;
+			case PCI_CHIP_SAVAGE3D:
+			        PCIProbed = TRUE;
+				*Chipset = CHIP_S3_Savage3D;
+				break;
+			case PCI_CHIP_SAVAGE3D_M:
+			        PCIProbed = TRUE;
+				*Chipset = CHIP_S3_Savage3D_M;
 				break;
 #if 0  /* use port probing then... */
 			default:
@@ -385,7 +401,27 @@ int *Chipset;
 			     Chip_data = (Chip_data <<  8) | chip_rev;
 			     *Chipset = CHIP_S3_UNKNOWN;
 			   }
-			   break;				 
+			case 0xE1: {
+                           int chip_id, chip_rev;
+                           chip_id  = rdinx(CRTC_IDX, 0x2d) << 8;
+                           chip_id |= rdinx(CRTC_IDX, 0x2e);
+                           chip_rev = rdinx(CRTC_IDX, 0x2f);
+                           if (chip_id == PCI_CHIP_TRIO3D_B)
+                              *Chipset = CHIP_S3_Trio3D_B;
+                           else if (chip_id == PCI_CHIP_TRIO3D)
+                              *Chipset = CHIP_S3_Trio3D;
+                           else if (chip_id == PCI_CHIP_SAVAGE3D)
+                              *Chipset = CHIP_S3_Savage3D;
+                           else if (chip_id == PCI_CHIP_SAVAGE3D_M)
+                              *Chipset = CHIP_S3_Savage3D_M;
+                           else {
+                              Chip_data = rev;
+                              Chip_data = (Chip_data << 16) | chip_id;
+                              Chip_data = (Chip_data <<  8) | chip_rev;
+                              *Chipset = CHIP_S3_UNKNOWN;
+                              }
+                           }
+                           break;
 			}
 			default:
 				Chip_data = rev;

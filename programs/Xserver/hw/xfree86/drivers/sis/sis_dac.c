@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.4 1999/01/31 12:21:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.5 1999/03/06 13:12:37 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -40,9 +40,10 @@
 #include "sis_regs.h"
 
 static void
-SiSCalcClock(int clock, int max_VLD, unsigned int *vclk)
+SiSCalcClock(ScrnInfoPtr pScrn, int clock, int max_VLD, unsigned int *vclk)
 {
-    int M, N, P /*, PSN*/, VLD /*, PSNx */;
+    SISPtr pSiS = SISPTR(pScrn);
+    int M, N, P , PSN, VLD , PSNx ;
     int bestM, bestN, bestP, bestPSN, bestVLD;
     double bestError, abest = 42.0, bestFout;
     double target;
@@ -74,17 +75,15 @@ SiSCalcClock(int clock, int max_VLD, unsigned int *vclk)
 #define MAX_PSN 0 /* no pre scaler for this chip */
 #define TOLERANCE 0.01	/* search smallest M and N in this tolerance */
   
-/*  int M_min = 2; */
+  int M_min = 2; 
   int M_max = 128;
   
 /*  abest=10000.0; */
  
   target = clock * 1000;
  
-#if 0 /* Implied at the moment */
-     if (SISchipset == SIS5597 || SISchipset == SIS6326){
-#endif
-    {
+
+  if (pSiS->Chipset == PCI_CHIP_SIS5597 || pSiS->Chipset == PCI_CHIP_SIS6326){
  	int low_N = 2;
  	int high_N = 5;
  	int PSN = 1;
@@ -133,7 +132,6 @@ SiSCalcClock(int clock, int max_VLD, unsigned int *vclk)
  	    }
  	}
      }
-#if 0
      else {
          for (PSNx = 0; PSNx <= MAX_PSN ; PSNx++) {
  	    int low_N, high_N;
@@ -201,7 +199,7 @@ SiSCalcClock(int clock, int max_VLD, unsigned int *vclk)
  	    }
          }
   }
-#endif
+
   vclk[Midx]    = bestM;
   vclk[Nidx]    = bestN;
   vclk[VLDidx]  = bestVLD;
@@ -280,7 +278,7 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     	unsigned int vclk[5];
     	unsigned char xr2a, xr2b;
 
-    	SiSCalcClock(clock, 2, vclk);
+    	SiSCalcClock(pScrn, clock, 2, vclk);
 
 	xr2a = (vclk[Midx] - 1) & 0x7f ;
 	xr2a |= ((vclk[VLDidx] == 2 ) ? 1 : 0 ) << 7 ;

@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.17 1998/04/05 16:15:51 robin Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.18 1998/04/26 16:04:35 robin Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -177,6 +177,29 @@ proc set_xf86config_defaults {} {
     }
 }
 
+proc parray {a {pattern *}} {
+    upvar 1 $a array
+    if ![array exists array] {
+        error "\"$a\" isn't an array"
+    }
+    set maxl 0
+    foreach name [lsort [array names array $pattern]] {
+        if {[string length $name] > $maxl} {
+            set maxl [string length $name]
+        }
+    }
+    set maxl [expr {$maxl + [string length $a] + 2}]
+    foreach name [lsort [array names array $pattern]] {
+        set nameString [format %s(%s) $a $name]
+        puts stdout [format "%-*s = %s" $maxl $nameString $array($name)]
+    }
+}
+
+set vlist [xf86config_readfile /home/X11R6/lib/X11/XF86Config /home/X11R6 Cfg]
+foreach arr [lsort [info vars Cfg*]] {
+	parray $arr
+}
+exit 0
 if $NoDialog {
 	set Dialog ""
 } else {
@@ -238,6 +261,7 @@ if { [string length $ConfigFile] > 0 } {
 	# initialize the configuration variables
 	initconfig $Xwinhome
 
+	set UseConfigFile 0
 	if { $UseConfigFile } {
 		set_xf86config_defaults
 	}

@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/texts/generic/messages.tcl,v 1.2 1998/04/05 15:30:30 robin Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/texts/generic/messages.tcl,v 1.3 1998/04/05 16:15:55 robin Exp $
 #
 # messages in done.tcl :
 set messages(done.1)	"\n\n\
@@ -161,7 +161,7 @@ set messages(phase4.11) "Abort - Don't save the configuration"
 set messages(phase4.12) "Aborted"
 set messages(phase4.13) "Congratulations, you've got a running server!\n\n"
 set messages(phase4.14) "Just a moment..."
-set messages(phase4.15) 
+set messages(phase4.15) ""
 set messages(phase4.16) "The program is running on a different\
 			virtual terminal\n\n\
 			Please switch to the correct virtual terminal"

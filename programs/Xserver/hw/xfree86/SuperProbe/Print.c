@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.62tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.63 1999/03/14 03:21:43 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -140,6 +140,10 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "S3 ViRGE/GX2",
 		  "S3 ViRGE/MX",
 		  "S3 ViRGE/MXP",
+		  "S3 TRIO3D Business",
+		  "S3 TRIO3D",
+		  "S3 SAVAGE3D",
+		  "S3 SAVAGE3D (Macrovision Support)",
 	       },
 /* Trident */	{ "Trident (chipset unknown)",
 		  "Trident LX8200",
@@ -188,7 +192,12 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 /* SiS */	{ "Silicon Integrated Systems (chipset unknown)",
                   "Silicon Integrated Systems SG86C201",
 		  "Silicon Integrated Systems SG86C202",
-		  "Silicon Integrated Systems SG86C205" },
+		  "Silicon Integrated Systems SG86C205",
+		  "Silicon Integrated Systems SG86C215",
+		  "Silicon Integrated Systems SG86C225",
+		  "Silicon Integrated Systems 5597/5598",
+		  "Silicon Integrated Systems 530/620",
+		  "Silicon Integrated Systems 6326 AGP" },
 /* ARK */	{ "ARK Logic (chipset unknown)",
 		  "ARK Logic ARK1000VL",
 		  "ARK Logic ARK1000PV",
@@ -301,6 +310,8 @@ struct RamDac_Name RamDac_Names[] =
 	  "Matrox G100 built-in DAC w/clock" },
 	{ "MGAG200",
 	  "Matrox G200 built-in DAC w/clock" },
+	{ "SiS",
+	  "SiS built-in DAC w/clock" },
 };
 
 static CONST char *CoProc_Names[NUM_CP_TYPES][CHPS_PER_CPTYPE] = 

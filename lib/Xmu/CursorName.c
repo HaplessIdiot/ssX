@@ -21,24 +21,18 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/CursorName.c,v 3.2 1998/08/20 13:59:33 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CursorName.c,v 3.3 1998/10/03 09:06:24 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/Xmu/CharSet.h>
 #include <X11/Xmu/CurUtil.h>
 #include <X11/cursorfont.h>
 
-#ifdef __STDC__
-#define Const const
-#else
-#define Const /**/
-#endif
-
 int
 XmuCursorNameToIndex(_Xconst char *name)
 {
-    static Const struct _CursorName {
-	Const char	*name;
+    static _Xconst struct _CursorName {
+	_Xconst char	*name;
 	unsigned int	shape;
     } cursor_names[] = {
 			{"x_cursor",		XC_X_cursor},
@@ -119,8 +113,8 @@ XmuCursorNameToIndex(_Xconst char *name)
 			{"watch",		XC_watch},
 			{"xterm",		XC_xterm},
     };
-    register Const struct _CursorName *table;
-    register int i;
+    register _Xconst struct _CursorName *table;
+    register Cardinal i;
     char tmp[40];
     
     if (strlen (name) >= sizeof tmp) return -1;

@@ -66,7 +66,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/MultiSink.c,v 1.11 1998/10/25 07:11:13 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSink.c,v 1.12 1999/03/14 03:21:11 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -362,7 +362,7 @@ DisplayText(Widget w, int x, int y,
       pos1 = XawTextSourceRead(source, pos1, &blk, (int) pos2 - pos1);
       for (k = 0; k < blk.length; k++)
 	{
-	  if (j >= (sizeof(buf) / sizeof(wchar_t)) - 1)
+	  if ((unsigned) j >= (sizeof(buf) / sizeof(wchar_t)) - 1)
 	      /* buffer full, dump the text */
 	    {
 	      if ((x += PaintText(w, gc, x, y, buf, j, clear_bg)) >= max_x)

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/StdCmap.h,v 1.4 1998/09/05 06:36:15 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/StdCmap.h,v 1.5 1998/10/03 09:06:33 dawes Exp $ */
 
 /*
  * The interfaces described by this header file are for miscellaneous utilities
@@ -99,6 +99,14 @@ Status XmuVisualStandardColormaps
 Bool XmuDistinguishableColors
 (
  XColor			*colors,
+ int			count
+ );
+
+Bool XmuDistinguishablePixels
+(
+ Display		*dpy,
+ Colormap		cmap,
+ unsigned long		*pixels,
  int			count
  );
 

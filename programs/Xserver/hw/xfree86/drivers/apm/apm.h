@@ -1,144 +1,164 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.3 1997/07/29 12:07:55 hohndel Exp $ */
+/* $XFree86$ */
 
 
+/* Everything using inb/outb, etc needs "compiler.h" */
+#include "compiler.h"
 
-#ifndef APM_H_
-#define APM_H_
+/* All drivers should typically include these */
+#include "xf86.h"
+#include "xf86_OSproc.h"
 
-typedef unsigned char u8;
-typedef unsigned short u16;
-typedef unsigned long u32;
+/* All drivers need this */
+#include "xf86_ansic.h"
 
-/* Memory mapped access to extended registers */
-#define RDXB(addr)     (*(u8*)(apmRegBase+(addr)))
-#define RDXW(addr)     (*(u16*)(apmRegBase+(addr)))
-#define RDXL(addr)     (*(u32*)(apmRegBase+(addr)))
-#define WRXB(addr,val) (void)(*(u8*)(apmRegBase+(addr)) = (val))
-#define WRXW(addr,val) (void)(*(u16*)(apmRegBase+(addr)) = (val))
-#define WRXL(addr,val) (void)(*(u32*)(apmRegBase+(addr)) = (val))
+/* This is used for module versioning */
+#include "xf86Version.h"
 
-/* IO port access to extended registers */
-#define RDXB_IOP(addr)     (wrinx(0x3c4, 0x1d, (addr) >> 2),inb(apm_xbase + ((addr) & 3)))
-#define RDXW_IOP(addr)     (wrinx(0x3c4, 0x1d, (addr) >> 2),inw(apm_xbase + ((addr) & 2)))
-#define RDXL_IOP(addr)     (wrinx(0x3c4, 0x1d, (addr) >> 2),inl(apm_xbase))
-#define WRXB_IOP(addr,val) (wrinx(0x3c4, 0x1d, (addr) >> 2),outb(apm_xbase + ((addr) & 3), (val)))
-#define WRXW_IOP(addr,val) (wrinx(0x3c4, 0x1d, (addr) >> 2),outw(apm_xbase + ((addr) & 2), (val)))
-#define WRXL_IOP(addr,val) (wrinx(0x3c4, 0x1d, (addr) >> 2),outl(apm_xbase, (val)))
+/* Drivers for PCI hardware need this */
+#include "xf86PciInfo.h"
 
+/* Drivers that need to access the PCI config space directly need this */
+#include "xf86Pci.h"
 
-#define STATUS()           (RDXL(0x1fc))
-#define STATUS_HOSTBLTBUSY (1 << 8)
-#define STATUS_ENGINEBUSY  (1 << 10)
-#define STATUS_FIFO        (0x0f)
+/* All drivers using the vgahw module need this */
+#include "vgaHW.h"
 
-#define SETFOREGROUNDCOLOR(c) WRXL(0x60,c)
-#define SETBACKGROUNDCOLOR(c) WRXL(0x64,c)
+/* Drivers using the mi banking wrapper need this */
+#include "mibank.h"
 
-#define SETSOURCEX(x)  WRXW(0x50, x)
-#define SETSOURCEY(y)  WRXW(0x52, y)
-#define SETSOURCEXY(x,y) WRXL(0x50, (y) << 16 | (x) & 0xffff)
+/* All drivers using the mi colormap manipulation need this */
+#include "micmap.h"
 
-#define SETDESTX(x)    WRXW(0x54, x)
-#define SETDESTY(y)    WRXW(0x56, y)
-#define SETDESTXY(x,y) WRXL(0x54, (y) << 16 | (x) & 0xffff)
+/* Needed for the 1 and 4 bpp framebuffers */
+#include "xf1bpp.h"
+#include "xf4bpp.h"
 
-#define SETWIDTH(w)    WRXW(0x58, w)
-#define SETHEIGHT(h)   WRXW(0x5A, h)
-#define SETWIDTHHEIGHT(w,h) WRXL(0x58, (h) << 16 | (w) & 0xffff)
+/* Drivers using cfb need this */
 
-#define SETBYTEMASK(mask) WRXB(0x47, mask)
+#define PSZ 8
+#include "cfb.h"
+#undef PSZ
 
-#define SETDDA_AXIALSTEP(step)    WRXW(0x70, step)
-#define SETDDA_DIAGONALSTEP(step) WRXW(0x72, step)
-#define SETDDA_ERRORTERM(eterm)   WRXW(0x74, eterm)
-#define SETDDA_ADSTEP(s1,s2) WRXL(0x70, (s2) << 16 | (s1) & 0xffff)
+/* Drivers supporting bpp 16, 24 or 32 with cfb need these */
 
-#define SETCLIP_CTRL(ctrl) WRXB(0x30, ctrl)
-#define SETCLIP_LEFT(x)    WRXW(0x38, x)
-#define SETCLIP_TOP(y)     WRXW(0x3A, y)
-#define SETCLIP_LEFTTOP(x,y) WRXL(0x38, (y) << 16 | (x) & 0xffff)
-#define SETCLIP_RIGHT(x)   WRXW(0x3C, x)
-#define SETCLIP_BOT(y)     WRXW(0x3E, y)
-#define SETCLIP_RIGHTBOT(x,y) WRXL(0x3C, (y) << 16 | (x) & 0xffff)
+#include "cfb16.h"
+#include "cfb24.h"
+#include "cfb32.h"
 
-/* RASTER OPERATION REGISTER */
-/* P = pattern   S = source   D = destination */
-#define SETROP(rop)        WRXB(0x46, rop)
-#define ROP_P_and_S_and_D  0x80
-#define ROP_S_xor_D        0x66
-#define ROP_S              0xCC
-#define ROP_P              0xF0
-/* Then there are about 252 more operations ... */
+/* Drivers using the XAA interface ... */
+#include "xaa.h"
+#include "xaalocal.h"
+#include "xf86Cursor.h"
+#include "xf86fbman.h"
 
+/* All drivers initialising the SW cursor need this */
+#include "mipointer.h"
 
-/* DRAWING ENGINE CONTROL REGISTER */
-#define SETDEC(control)             WRXL(0x40, control)
-#define DEC_OP_VECT_NOENDP          0x0000000D
-#define DEC_OP_VECT_ENDP            0x0000000C
-#define DEC_OP_HOSTBLT_SCREEN2HOST  0x00000009
-#define DEC_OP_HOSTBLT_HOST2SCREEN  0x00000008
-#define DEC_OP_STRIP                0x00000004
-#define DEC_OP_BLT_STRETCH          0x00000003
-#define DEC_OP_RECT                 0x00000002
-#define DEC_OP_BLT                  0x00000001
-#define DEC_OP_NOOP                 0x00000000
-#define DEC_DIR_X_NEG               (1 << 6)
-#define DEC_DIR_X_POS               (0 << 6)
-#define DEC_DIR_Y_NEG               (1 << 7)
-#define DEC_DIR_Y_POS               (0 << 7)
-#define DEC_MAJORAXIS_X             (0 << 8) /* Looks like an error in the docs ...*/
-#define DEC_MAJORAXIS_Y             (1 << 8)
-#define DEC_SOURCE_LINEAR           (1 << 9) 
-#define DEC_SOURCE_XY               (0 << 9)
-#define DEC_SOURCE_CONTIG           (1 << 11)
-#define DEC_SOURCE_RECTANGULAR      (0 << 11)
-#define DEC_SOURCE_MONOCHROME       (1 << 12)
-#define DEC_SOURCE_COLOR            (0 << 12)
-#define DEC_SOURCE_TRANSPARENCY     (1 << 13)
-#define DEC_SOURCE_NO_TRANSPARENCY  (0 << 13)
-#define DEC_BITDEPTH_24             (4 << 14)
-#define DEC_BITDEPTH_32             (3 << 14)
-#define DEC_BITDEPTH_16             (2 << 14)
-#define DEC_BITDEPTH_8              (1 << 14)
-#define DEC_DEST_LINEAR             (1 << 18)
-#define DEC_DEST_XY                 (0 << 18)
-#define DEC_DEST_RECTANGULAR        (1 << 19)
-#define DEC_DEST_OTHER              (0 << 19)
-#define DEC_DEST_TRANSPARENCY       (1 << 20)
-#define DEC_DEST_NO_TRANSPARENCY    (0 << 20)
-#define DEC_DEST_TRANSP_POLARITY    (1 << 21)
-#define DEC_DEST_TRANSP_POLARITYINV (0 << 21)
-#define DEC_PATTERN_88_8bCOLOR      (3 << 22)
-#define DEC_PATTERN_88_1bMONO       (2 << 22)
-#define DEC_PATTERN_44_4bDITHER     (1 << 22)
-#define DEC_PATTERN_NONE            (0 << 22)
-#define DEC_WIDTH_1600              (7 << 24)
-#define DEC_WIDTH_1280              (6 << 24)
-#define DEC_WIDTH_1152              (5 << 24)
-#define DEC_WIDTH_1024              (4 << 24)
-#define DEC_WIDTH_800               (2 << 24)
-#define DEC_WIDTH_640               (1 << 24)
-#define DEC_WIDTH_LINEAR            (0 << 24)
-#define DEC_DEST_UPD_LASTPIX        (3 << 27)
-#define DEC_DEST_UPD_BLCORNER       (2 << 27)
-#define DEC_DEST_UPD_TRCORNER       (1 << 27)
-#define DEC_DEST_UPD_NONE           (0 << 27)
-#define DEC_QUICKSTART_ONDEST       (3 << 29)
-#define DEC_QUICKSTART_ONSOURCE     (2 << 29)
-#define DEC_QUICKSTART_ONDIMX       (1 << 29)
-#define DEC_QUICKSTART_NONE         (0 << 29)
-#define DEC_START                   (1 << 31)
-#define DEC_START_NO                (0 << 31)
+/* All drivers implementing backing store need this */
+#include "mibstore.h"
 
-extern volatile u8* apmRegBase;
-extern vgaVideoChipRec APM;
-extern vgaHWCursorRec  vgaHWCursor;
-extern int apmMMIO_Init;
-extern u32 apm_xbase;
+/* I2C support */
+#include "xf86i2c.h"
 
-void ApmAccelInit(void);
-void ApmCheckMMIO_Init(void);
-void ApmCursorInit(void);
+/* DDC support */
+#include "xf86DDC.h"
 
+typedef unsigned char	u8;
+typedef unsigned short	u16;
+typedef unsigned long	u32;
 
+#define NoSEQRegs	0x20
+#define NoCRTRegs	0x1F
+#define NoGRCRegs	0x09
+#define	NoATCRegs	0x15
+
+enum {
+    XR80, XRC0, XRD0, XRE0, XRE8, XREC, XR140, XR144, XR148, XR14C, NoEXRegs
+};
+
+#if 0
+static unsigned short XR_addr[NoEXRegs] = {
+    0x80, 0xC0, 0xD0, 0xE0, 0xE8, 0xEC, 0x140, 0x144, 0x148, 0x14C
+};
 #endif
+
+typedef struct {
+	unsigned char	MISC;
+	unsigned char	FCTRL;
+	unsigned char	SEQ[NoSEQRegs];
+	unsigned char	CRT[NoCRTRegs];
+	unsigned char	GRC[NoGRCRegs];
+	unsigned char	ATC[NoATCRegs];
+	unsigned int	EX[NoEXRegs];
+} ApmRegStr, *ApmRegPtr;
+
+typedef struct {
+    pciVideoPtr	PciInfo;
+    PCITAG	PciTag;
+    int		scrnIndex;
+    int		Chipset;
+    int		ChipRev;
+    CARD32	LinAddress;
+    unsigned long	LinMapSize;
+    CARD32	FbMapSize;
+    pointer	LinMap;
+    pointer	FbBase;
+    char	*VGAMap;
+    char	*MemMap;
+    pointer	BltMap;
+    Bool	UnlockCalled;
+    int		xbase;
+    unsigned char	savedSR10;
+    unsigned char	d9, db;
+    unsigned long	saveCmd;
+    pointer	FontInfo;
+    Bool	hwCursor;
+    Bool	noLinear;
+    ApmRegStr	ModeReg, SavedReg;
+    CloseScreenProcPtr	CloseScreen;
+    Bool	UsePCIRetry;          /* Do we use PCI-retry or busy-waiting */
+    Bool	NoAccel;      /* Do we use the XAA acceleration architecture */
+    int		MinClock;                                /* Min ramdac clock */
+    int		MaxClock;                                /* Max ramdac clock */
+    int		apmMMIO_Init;
+    XAAInfoRecPtr	AccelInfoRec;
+    xf86CursorInfoPtr	CursorInfoRec;
+#if 0
+    DGAInfoPtr		DGAInfo;
+#endif
+    int		BaseCursorAddress, CursorAddress, DisplayedCursorAddress;
+    int		OffscreenReserved;
+    unsigned int	Setup_DEC;
+    int			blitxdir, blitydir;
+    Bool		apmTransparency, apmClip;
+    I2CBusPtr		I2CPtr;
+} ApmRec, *ApmPtr;
+
+typedef struct {
+    u16		ca;
+    u8		font;
+    u8		pad;
+} ApmFontBuf;
+
+typedef struct {
+    u16		ca;
+    u8		font;
+    u8		pad;
+    u16		ca2;
+    u8		font2;
+    u8		pad2;
+} ApmTextBuf;
+
+#define APMDECL(p)	ApmPtr pApm = ((ApmPtr)(((ScrnInfoPtr)(p))->driverPrivate))
+#define APMPTR(p)	((ApmPtr)(((ScrnInfoPtr)(p))->driverPrivate))
+
+extern int	ApmHWCursorInit(ScreenPtr pScreen);
+extern int	ApmAccelInit(ScreenPtr pScreen);
+extern Bool	ApmI2CInit(ScreenPtr pScreen);
+extern void	ApmCheckMMIO_Init(ScrnInfoPtr pScrn);
+extern void	ApmCheckMMIO_Init_IOP(ScrnInfoPtr pScrn);
+extern void	ApmCheckMMIO_Init24(ScrnInfoPtr pScrn);
+extern void	ApmCheckMMIO_Init24_IOP(ScrnInfoPtr pScrn);
+extern unsigned char curr[0x54];
+
+#include "apm_regs.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.16 1999/03/14 03:22:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.17 1999/03/20 08:59:22 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -615,7 +615,6 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
      * here. (from MGA, no ViRGE gamma support yet, but needed for 
      * xf86HandleColormaps support.)
      */
-
     {
 	Gamma zeros = {0.0, 0.0, 0.0};
 
@@ -623,7 +622,6 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 	}
     }
-
     /* We use a programamble clock */
     pScrn->progClock = TRUE;
 
@@ -655,7 +653,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 					/* default */
     ps3v->NoPCIRetry = 1;
    					/* Set option */
-    if (xf86ReturnOptValBool(S3VOptions, OPTION_PCI_RETRY, FALSE))
+    if (xf86ReturnOptValBool(S3VOptions, OPTION_PCI_RETRY, FALSE)) {
       if (xf86ReturnOptValBool(S3VOptions, OPTION_PCI_BURST, FALSE)) {
       	ps3v->NoPCIRetry = 0;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: pci_retry\n");
@@ -663,7 +661,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
       else {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "\"pci_retry\" option requires \"pci_burst_on\".\n");
 	}
-
+    }
     if (xf86IsOptionSet(S3VOptions, OPTION_FIFO_CONSERV)) {
 	ps3v->fifo_conservative = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: fifo_conservative set\n");
@@ -817,9 +815,17 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     					/* Map the ViRGE register space */
 					/* Starts with PCI registers */
 					/* around 0x18000 from MemBase */
+#ifdef __alpha__ 
+    ps3v->IOBase = xf86MapPciMemSparse(pScrn->scrnIndex, VIDMEM_MMIO,
+				       ps3v->PciTag,
+				       (pointer)(ps3v->PciInfo->memBase[0] +
+						 S3_NEWMMIO_VGABASE),
+				       S3V_MMIO_REGSIZE);
+#else
     ps3v->IOBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, ps3v->PciTag,
 			(pointer) (ps3v->PciInfo->memBase[0] + S3_NEWMMIO_VGABASE),
 			S3V_MMIO_REGSIZE );
+#endif /* __alpha__ */
   		   
 					/* Add me to resource management */
     xf86AddControlledResource(pScrn, MEM_IO);
@@ -1024,7 +1030,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
       if (pScrn->clock[3] <= 0) pScrn->clock[3] =  57000;
    }
    
-   if (ps3v->dacSpeedBpp <= 0)
+   if (ps3v->dacSpeedBpp <= 0) {
       if (pScrn->bitsPerPixel > 24 && pScrn->clock[3] > 0)
 	 ps3v->dacSpeedBpp = pScrn->clock[3];
       else if (pScrn->bitsPerPixel >= 24 && pScrn->clock[2] > 0)
@@ -1033,7 +1039,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	 ps3v->dacSpeedBpp = pScrn->clock[1];
       else if (pScrn->bitsPerPixel <= 8 && pScrn->clock[0] > 0)
 	 ps3v->dacSpeedBpp = pScrn->clock[0];
-	 
+   } 
 /*cep*/
 #if 0
    if (xf86Verbosity()) {
@@ -1104,8 +1110,12 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
    }
 
    S3VDisableMmio(pScrn);
-  
+#ifdef __alpha__
+   xf86UnMapVidMemSparse(pScrn->scrnIndex, (pointer)ps3v->IOBase,
+			 S3V_MMIO_REGSIZE);
+#else
    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)ps3v->IOBase, S3V_MMIO_REGSIZE);
+#endif
    
 
    /* Set scale factors for mode timings */
@@ -1334,7 +1344,7 @@ static Bool
 S3VEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-    ScreenPtr pScreen = xf86Screens[scrnIndex]->pScreen;
+/*      ScreenPtr pScreen = xf86Screens[scrnIndex]->pScreen; */
     /*vgaHWPtr hwp = VGAHWPTR(pScrn);*/
 
     PVERB5("	S3VEnterVT\n");
@@ -1406,12 +1416,15 @@ S3VSave (ScrnInfoPtr pScrn)
   vgaRegPtr vgaSavePtr = &hwp->SavedReg;
   S3VPtr ps3v = S3VPTR(pScrn);
   S3VRegPtr save = &ps3v->SavedReg;
-  void *s3vMmioMem = ps3v->MapBase;
+/*    void *s3vMmioMem = ps3v->MapBase; */
   int vgaCRIndex, vgaCRReg, vgaIOBase;
   vgaIOBase = hwp->IOBase;
-  vgaCRIndex = vgaIOBase + 4;
-  vgaCRReg = vgaIOBase + 5;
+  vgaCRIndex = 0;
+  
+  vgaCRReg = 0;
 
+  vgaCRReg = vgaIOBase + 5;
+  vgaCRIndex = vgaIOBase + 4;
 
     PVERB5("	S3VSave\n");
 
@@ -1553,18 +1566,18 @@ S3VSave (ScrnInfoPtr pScrn)
       }
 
    /* Now save Memory Interface Unit registers */
-   save->MMPR0 = ((mmtr)s3vMmioMem)->memport_regs.regs.fifo_control;
-   save->MMPR1 = ((mmtr)s3vMmioMem)->memport_regs.regs.miu_control;
-   save->MMPR2 = ((mmtr)s3vMmioMem)->memport_regs.regs.streams_timeout;
-   save->MMPR3 = ((mmtr)s3vMmioMem)->memport_regs.regs.misc_timeout;
+   save->MMPR0 = INREG(FIFO_CONTROL_REG);
+   save->MMPR1 = INREG(MIU_CONTROL_REG);
+   save->MMPR2 = INREG(STREAMS_TIMEOUT_REG);
+   save->MMPR3 = INREG(MISC_TIMEOUT_REG);
 
    if (xf86GetVerbosity() > 1) {
       /* Debug */
       ErrorF("MMPR regs: %08x %08x %08x %08x\n",
-         ((mmtr)s3vMmioMem)->memport_regs.regs.fifo_control,
-         ((mmtr)s3vMmioMem)->memport_regs.regs.miu_control,
-         ((mmtr)s3vMmioMem)->memport_regs.regs.streams_timeout,
-         ((mmtr)s3vMmioMem)->memport_regs.regs.misc_timeout );
+	     INREG(FIFO_CONTROL_REG), 
+	     INREG(MIU_CONTROL_REG), 
+	     INREG(STREAMS_TIMEOUT_REG), 
+	     INREG(MISC_TIMEOUT_REG));
 
       PVERB5("\n\nViRGE driver: saved current video mode. Register dump:\n\n");
    }
@@ -1593,30 +1606,30 @@ static void
 S3VSaveSTREAMS(ScrnInfoPtr pScrn, unsigned int *streams)
 {
   S3VPtr ps3v = S3VPTR(pScrn);
-  void *s3vMmioMem = ps3v->MapBase;
+/*    void *s3vMmioMem = ps3v->MapBase; */
 
-   streams[0] = ((mmtr)s3vMmioMem)->streams_regs.regs.prim_stream_cntl;
-   streams[1] = ((mmtr)s3vMmioMem)->streams_regs.regs.col_chroma_key_cntl;
-   streams[2] = ((mmtr)s3vMmioMem)->streams_regs.regs.second_stream_cntl;
-   streams[3] = ((mmtr)s3vMmioMem)->streams_regs.regs.chroma_key_upper_bound;
-   streams[4] = ((mmtr)s3vMmioMem)->streams_regs.regs.second_stream_stretch;
-   streams[5] = ((mmtr)s3vMmioMem)->streams_regs.regs.blend_cntl;
-   streams[6] = ((mmtr)s3vMmioMem)->streams_regs.regs.prim_fbaddr0;
-   streams[7] = ((mmtr)s3vMmioMem)->streams_regs.regs.prim_fbaddr1;
-   streams[8] = ((mmtr)s3vMmioMem)->streams_regs.regs.prim_stream_stride;
-   streams[9] = ((mmtr)s3vMmioMem)->streams_regs.regs.double_buffer;
-   streams[10] = ((mmtr)s3vMmioMem)->streams_regs.regs.second_fbaddr0;
-   streams[11] = ((mmtr)s3vMmioMem)->streams_regs.regs.second_fbaddr1;
-   streams[12] = ((mmtr)s3vMmioMem)->streams_regs.regs.second_stream_stride;
-   streams[13] = ((mmtr)s3vMmioMem)->streams_regs.regs.opaq_overlay_cntl;
-   streams[14] = ((mmtr)s3vMmioMem)->streams_regs.regs.k1;
-   streams[15] = ((mmtr)s3vMmioMem)->streams_regs.regs.k2;
-   streams[16] = ((mmtr)s3vMmioMem)->streams_regs.regs.dda_vert;
-   streams[17] = ((mmtr)s3vMmioMem)->streams_regs.regs.streams_fifo;
-   streams[18] = ((mmtr)s3vMmioMem)->streams_regs.regs.prim_start_coord;
-   streams[19] = ((mmtr)s3vMmioMem)->streams_regs.regs.prim_window_size;
-   streams[20] = ((mmtr)s3vMmioMem)->streams_regs.regs.second_start_coord;
-   streams[21] = ((mmtr)s3vMmioMem)->streams_regs.regs.second_window_size;
+   streams[0] = INREG(PSTREAM_CONTROL_REG);
+   streams[1] = INREG(COL_CHROMA_KEY_CONTROL_REG);
+   streams[2] = INREG(SSTREAM_CONTROL_REG);
+   streams[3] = INREG(CHROMA_KEY_UPPER_BOUND_REG);
+   streams[4] = INREG(SSTREAM_STRETCH_REG);
+   streams[5] = INREG(BLEND_CONTROL_REG);
+   streams[6] = INREG(PSTREAM_FBADDR0_REG);
+   streams[7] = INREG(PSTREAM_FBADDR1_REG);
+   streams[8] = INREG(PSTREAM_STRIDE_REG);
+   streams[9] = INREG(DOUBLE_BUFFER_REG);
+   streams[10] = INREG(SSTREAM_FBADDR0_REG);
+   streams[11] = INREG(SSTREAM_FBADDR1_REG);
+   streams[12] = INREG(SSTREAM_STRIDE_REG);
+   streams[13] = INREG(OPAQUE_OVERLAY_CONTROL_REG);
+   streams[14] = INREG(K1_VSCALE_REG);
+   streams[15] = INREG(K2_VSCALE_REG);
+   streams[16] = INREG(DDA_VERT_REG);
+   streams[17] = INREG(STREAMS_FIFO_REG);
+   streams[18] = INREG(PSTREAM_START_REG);
+   streams[19] = INREG(PSTREAM_WINDOW_SIZE_REG);
+   streams[20] = INREG(SSTREAM_START_REG);
+   streams[21] = INREG(SSTREAM_WINDOW_SIZE_REG);
 
 }
        
@@ -1631,7 +1644,7 @@ S3VSaveSTREAMS(ScrnInfoPtr pScrn, unsigned int *streams)
  * before we switch video modes, or we risk locking up the machine. 
  * We also have to follow a certain order when reenabling it. 
  */
-
+/* let's try restoring in the same order as in the 3.3.2.3 driver */
 static void
 S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
 {
@@ -1639,7 +1652,7 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
   
   vgaHWPtr hwp = VGAHWPTR(pScrn);
   S3VPtr ps3v = S3VPTR(pScrn);
-  void *s3vMmioMem = ps3v->MapBase;
+/*    void *s3vMmioMem = ps3v->MapBase; */
   int vgaCRIndex, vgaCRReg, vgaIOBase;
   vgaIOBase = hwp->IOBase;
   vgaCRIndex = vgaIOBase + 4;
@@ -1835,13 +1848,13 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
 #endif
 
    VerticalRetraceWait();
-   ((mmtr)s3vMmioMem)->memport_regs.regs.fifo_control = restore->MMPR0;
+   OUTREG(FIFO_CONTROL_REG, restore->MMPR0);
    WaitIdle();                  /* Don't ask... */
-   ((mmtr)s3vMmioMem)->memport_regs.regs.miu_control = restore->MMPR1;
+   OUTREG(MIU_CONTROL_REG, restore->MMPR1);
    WaitIdle();                  
-   ((mmtr)s3vMmioMem)->memport_regs.regs.streams_timeout = restore->MMPR2;
+   OUTREG(STREAMS_TIMEOUT_REG, restore->MMPR2);
    WaitIdle();
-   ((mmtr)s3vMmioMem)->memport_regs.regs.misc_timeout = restore->MMPR3;
+   OUTREG(MISC_TIMEOUT_REG, restore->MMPR3);
 
  
    /* Restore the standard VGA registers */
@@ -1877,7 +1890,7 @@ static void
 S3VRestoreSTREAMS(ScrnInfoPtr pScrn, unsigned int *streams)
 {
   S3VPtr ps3v = S3VPTR(pScrn);
-  void *s3vMmioMem = ps3v->MapBase;
+/*    void *s3vMmioMem = ps3v->MapBase; */
 
 
 /* For now, set most regs to their default values for 24bpp 
@@ -1886,30 +1899,27 @@ S3VRestoreSTREAMS(ScrnInfoPtr pScrn, unsigned int *streams)
  * when saved have some reserved bits set.
  */
 
-   ((mmtr)s3vMmioMem)->streams_regs.regs.prim_stream_cntl = 
-         streams[0] & 0x77000000;
-   ((mmtr)s3vMmioMem)->streams_regs.regs.col_chroma_key_cntl = 0x00;
-   ((mmtr)s3vMmioMem)->streams_regs.regs.second_stream_cntl = 0x03000000;
-   ((mmtr)s3vMmioMem)->streams_regs.regs.chroma_key_upper_bound = 0x00;
-   ((mmtr)s3vMmioMem)->streams_regs.regs.second_stream_stretch = 0x00;
-   ((mmtr)s3vMmioMem)->streams_regs.regs.blend_cntl = 0x01000000;
-   ((mmtr)s3vMmioMem)->streams_regs.regs.prim_fbaddr0 = 0x00;
-   ((mmtr)s3vMmioMem)->streams_regs.regs.prim_fbaddr1 = 0x00;
-   ((mmtr)s3vMmioMem)->streams_regs.regs.prim_stream_stride = 
-         streams[8] & 0x0fff;
-   ((mmtr)s3vMmioMem)->streams_regs.regs.double_buffer = 0x00;
-   ((mmtr)s3vMmioMem)->streams_regs.regs.second_fbaddr0 = 0x00;
-   ((mmtr)s3vMmioMem)->streams_regs.regs.second_fbaddr1 = 0x00;
-   ((mmtr)s3vMmioMem)->streams_regs.regs.second_stream_stride = 0x01;
-   ((mmtr)s3vMmioMem)->streams_regs.regs.opaq_overlay_cntl = 0x40000000;
-   ((mmtr)s3vMmioMem)->streams_regs.regs.k1 = 0x00;
-   ((mmtr)s3vMmioMem)->streams_regs.regs.k2 = 0x00;
-   ((mmtr)s3vMmioMem)->streams_regs.regs.dda_vert = 0x00;
-   ((mmtr)s3vMmioMem)->streams_regs.regs.prim_start_coord = 0x00010001;
-   ((mmtr)s3vMmioMem)->streams_regs.regs.prim_window_size = 
-         streams[19] & 0x07ff07ff;
-   ((mmtr)s3vMmioMem)->streams_regs.regs.second_start_coord = 0x07ff07ff;
-   ((mmtr)s3vMmioMem)->streams_regs.regs.second_window_size = 0x00010001;
+  OUTREG(PSTREAM_CONTROL_REG, streams[0] & 0x77000000);
+  OUTREG(COL_CHROMA_KEY_CONTROL_REG, 0x00);
+  OUTREG(SSTREAM_CONTROL_REG, 0x03000000);
+  OUTREG(CHROMA_KEY_UPPER_BOUND_REG, 0x00);
+  OUTREG(SSTREAM_STRETCH_REG, 0x00);
+  OUTREG(BLEND_CONTROL_REG, 0x01000000);
+  OUTREG(PSTREAM_FBADDR0_REG, 0x00);
+  OUTREG(PSTREAM_FBADDR1_REG, 0x00);
+  OUTREG(PSTREAM_STRIDE_REG, 0x0fff);
+  OUTREG(DOUBLE_BUFFER_REG, 0x00);
+  OUTREG(SSTREAM_FBADDR0_REG, 0x00);
+  OUTREG(SSTREAM_FBADDR1_REG, 0x00);
+  OUTREG(SSTREAM_STRIDE_REG, 0x01);
+  OUTREG(OPAQUE_OVERLAY_CONTROL_REG, 0x40000000);
+  OUTREG(K1_VSCALE_REG, 0x00);
+  OUTREG(K2_VSCALE_REG, 0x00);
+  OUTREG(DDA_VERT_REG, 0x00);
+  OUTREG(PSTREAM_START_REG, 0x00010001);
+  OUTREG(PSTREAM_WINDOW_SIZE_REG, streams[19] & 0x07ff07ff);
+  OUTREG(SSTREAM_START_REG, 0x07ff07ff);
+  OUTREG(SSTREAM_WINDOW_SIZE_REG, 0x00010001);
 
 
 }
@@ -1927,14 +1937,14 @@ S3VDisableSTREAMS(ScrnInfoPtr pScrn)
 unsigned char tmp;
   vgaHWPtr hwp = VGAHWPTR(pScrn);
   S3VPtr ps3v = S3VPTR(pScrn);
-  void *s3vMmioMem = ps3v->MapBase;
+/*    void *s3vMmioMem = ps3v->MapBase; */
   int vgaCRIndex, vgaCRReg, vgaIOBase;
   vgaIOBase = hwp->IOBase;
   vgaCRIndex = vgaIOBase + 4;
   vgaCRReg = vgaIOBase + 5;
 
    VerticalRetraceWait();
-   ((mmtr)s3vMmioMem)->memport_regs.regs.fifo_control = 0xC000;
+   OUTREG(FIFO_CONTROL_REG, 0xC000);
    VGAOUT8(vgaCRIndex, 0x67);
    tmp = VGAIN8(vgaCRReg);
                          /* Disable STREAMS processor */
@@ -1963,11 +1973,31 @@ S3VMapMem(ScrnInfoPtr pScrn)
 					/* so that we can use registers map */
 					/* structure - see newmmio.h */
 					/* around 0x10000 from MemBase */
-  ps3v->MapBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, ps3v->PciTag,
-			(pointer) (ps3v->PciInfo->memBase[0] + S3_NEWMMIO_REGBASE),
+#ifdef __alpha__
+  ps3v->MapBase = xf86MapPciMemSparse(pScrn->scrnIndex, VIDMEM_MMIO,
+				      ps3v->PciTag,
+				      (pointer) (ps3v->PciInfo->memBase[0] +
+						 S3_NEWMMIO_REGBASE),
 			S3_NEWMMIO_REGSIZE );
-					/* IOBase starts at PCI registers */
+  
+  ps3v->MapBaseDense = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
+				     ps3v->PciTag,
+				     (pointer) (ps3v->PciInfo->memBase[0] +
+						S3_NEWMMIO_REGBASE),
+				     0x8000);
+  
+  ps3v->IOBase = ps3v->MapBase + (S3V_MMIO_REGSIZE << 5);
+#else
+  ps3v->MapBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, ps3v->PciTag,
+			(pointer) (ps3v->PciInfo->memBase[0] +
+				   S3_NEWMMIO_REGBASE),
+			S3_NEWMMIO_REGSIZE );
+  /* IOBase starts at PCI registers */
   ps3v->IOBase = ps3v->MapBase + S3V_MMIO_REGSIZE;
+
+#endif /* __alpha__ */
+
+
   
   if( !ps3v->MapBase ) {
     xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -1979,13 +2009,14 @@ S3VMapMem(ScrnInfoPtr pScrn)
 			ps3v->PciTag,
 			(pointer) ps3v->PciInfo->memBase[0],
 			ps3v->videoRambytes );
+
   if( !ps3v->FBBase ) {
     xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 	"Internal error: could not map framebuffer.\n");
     return FALSE;
   }
-  			       		/* Initially the visual display start */
-					/* is the same as the mapped start. */
+  		       		/* Initially the visual display start */
+				/* is the same as the mapped start. */
   ps3v->FBStart = ps3v->FBBase;
   
   S3VEnableMmio( pScrn);
@@ -2028,12 +2059,23 @@ S3VUnmapMem(ScrnInfoPtr pScrn)
   }
 
   S3VDisableMmio(pScrn);
-  xf86UnMapVidMem(pScrn->scrnIndex, (pointer)ps3v->MapBase, S3_NEWMMIO_REGSIZE);
-  xf86UnMapVidMem(pScrn->scrnIndex, (pointer)ps3v->FBBase, ps3v->videoRambytes);
+
+#ifdef __alpha__
+  xf86UnMapVidMemSparse(pScrn->scrnIndex, (pointer)ps3v->MapBase,
+			S3_NEWMMIO_REGSIZE);
+  xf86UnMapVidMem(pScrn->scrnIndex, (pointer)ps3v->FBBase,
+		  ps3v->videoRambytes);
+  xf86UnMapVidMem(pScrn->scrnIndex, (pointer)ps3v->MapBaseDense,
+		  0x8000);
+#else
+  xf86UnMapVidMem(pScrn->scrnIndex, (pointer)ps3v->MapBase,
+		  S3_NEWMMIO_REGSIZE);
+  xf86UnMapVidMem(pScrn->scrnIndex, (pointer)ps3v->FBBase,
+		  ps3v->videoRambytes);
+#endif /* __alpha__ */
 
   return;
 }
-
 
 
 
@@ -2560,12 +2602,12 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
    j = (  vganew->CRTC[0] + ((i&0x01)<<8)
         + vganew->CRTC[4] + ((i&0x10)<<4) + 1) / 2;
 
-   if (j-(vganew->CRTC[4] + ((i&0x10)<<4)) < 4)
+   if (j-(vganew->CRTC[4] + ((i&0x10)<<4)) < 4) {
       if (vganew->CRTC[4] + ((i&0x10)<<4) + 4 <= vganew->CRTC[0]+ ((i&0x01)<<8))
          j = vganew->CRTC[4] + ((i&0x10)<<4) + 4;
       else
          j = vganew->CRTC[0]+ ((i&0x01)<<8) + 1;
-
+   }
    new->CR3B = j & 0xFF;
    i |= (j & 0x100) >> 2;
    new->CR3C = (vganew->CRTC[0] + ((i&0x01)<<8))/2;
@@ -2830,7 +2872,7 @@ S3VAdjustFrame(int scrnIndex, int x, int y, int flags)
    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
    vgaHWPtr hwp = VGAHWPTR(pScrn);
    S3VPtr ps3v = S3VPTR(pScrn);
-   void *s3vMmioMem = ps3v->MapBase;
+/*     void *s3vMmioMem = ps3v->MapBase; */
    int Base;
    int vgaCRIndex, vgaCRReg, vgaIOBase;
    vgaIOBase = hwp->IOBase;
@@ -2856,11 +2898,13 @@ S3VAdjustFrame(int scrnIndex, int x, int y, int flags)
    else {          /* Change start address for STREAMS case */
       VerticalRetraceWait();
       if(ps3v->Chipset == S3_ViRGE_VX)
-	((mmtr)s3vMmioMem)->streams_regs.regs.prim_fbaddr0 =
-	  ((y * pScrn->displayWidth + (x & ~7)) * pScrn->bitsPerPixel / 8);
+	OUTREG(PSTREAM_FBADDR0_REG,
+		   ((y * pScrn->displayWidth + (x & ~7)) *
+		    pScrn->bitsPerPixel / 8));
       else
-	((mmtr)s3vMmioMem)->streams_regs.regs.prim_fbaddr0 =
-	((y * pScrn->displayWidth + (x & ~3)) * pScrn->bitsPerPixel / 8);
+	OUTREG(PSTREAM_FBADDR0_REG,
+		   ((y * pScrn->displayWidth + (x & ~3)) *
+		    pScrn->bitsPerPixel / 8));
       }
 
    return;
@@ -3006,6 +3050,18 @@ S3VPrintRegs(ScrnInfoPtr pScrn)
     ErrorF("\n\n");
  #endif
 }
+
+/* this is just a debugger hook */
+/*
+void print_subsys_stat(void *s3vMmioMem);
+void
+print_subsys_stat(void *s3vMmioMem)
+{
+  ErrorF("IN_SUBSYS_STAT() = %x\n", IN_SUBSYS_STAT());
+  return;
+}
+*/
+
 
 /*EOF*/
 

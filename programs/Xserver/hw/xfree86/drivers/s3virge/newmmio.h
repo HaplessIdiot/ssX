@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/newmmio.h,v 1.3 1999/03/02 10:41:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/newmmio.h,v 1.4 1999/03/14 03:22:02 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -42,6 +42,9 @@ in this Software without prior written authorization from the XFree86 Project.
  *	KJB	9/98	0.3   Added S3V_MMIO_REGSIZE
  ***************************************************************************/
 
+#ifndef _NEWMMIO_H
+#define _NEWMMIO_H
+
 /* base for S3_OUTW macro  */
 #define S3_NEWMMIO_REGBASE	0x1000000  /* 16MB */
 #define S3_NEWMMIO_REGSIZE	  0x10000  /* 64KB */
@@ -56,6 +59,7 @@ in this Software without prior written authorization from the XFree86 Project.
 
 #define S3_NEWMMIO_VGABASE	(S3_NEWMMIO_REGBASE + 0x8000)
 
+#if 0
 typedef struct { int16 vendor_ID; int16 device_ID; } pci_id;
 typedef struct { int16 cmd; int16 devsel; } cmd_devsel;
 
@@ -383,6 +387,8 @@ typedef struct {
         } lbp_regs;
 } mm_virge_regs ;
 
+
+
 #define mmtr	volatile mm_virge_regs *
 
 #define SET_WRT_MASK(msk)	/*  */
@@ -409,17 +415,23 @@ typedef struct {
 #define SET_PIX_TRANS_L(val)	/*  */
 #define SET_MIX(fmix,bmix) 	/*  */
 
+#endif /* 0 */
 
 /*
  * reads from SUBSYS_STAT
  */
-#define IN_SUBSYS_STAT() 	((((mmtr)s3vMmioMem)->subsys_regs.regs.subsystem_csr))
-#define SET_SUBSYS_CRTL(val) 	do { write_mem_barrier(); ((((mmtr)s3vMmioMem)->subsys_regs.regs.subsystem_csr)) = (val); write_mem_barrier(); } while (0)
+#define IN_SUBSYS_STAT() (INREG(SUBSYS_STAT_REG))
+#define SET_SUBSYS_CRTL(val) do { write_mem_barrier();\
+OUTREG((val), SUBSYS_STAT_REG);\
+write_mem_barrier(); } while (0)
+
 
 #if 0
 #define SET_DAC_W_INDEX(index)  OUTREG8(DAC_W_INDEX, index)
 #define SET_DAC_DATA(val) 	OUTREG8(DAC_DATA,val)
 #endif
+
+#if 0
 
 #define IMG_TRANS		(((mmtr)s3vMmioMem)->img)
 #define SET_PIXTRANS(a,v)	IMG_TRANS[a] = (v)
@@ -434,7 +446,10 @@ typedef struct {
 #define SETB_DEST_BASE(val)	((mmtr)s3vMmioMem)->bltfill_regs.regs.dest_base = (val)
 #define SETB_CLIP_L_R(l,r)	((mmtr)s3vMmioMem)->bltfill_regs.regs.clip_l_r = ((l)<<16 | (r))
 #define SETB_CLIP_T_B(t,b)	((mmtr)s3vMmioMem)->bltfill_regs.regs.clip_t_b = ((t)<<16 | (b))
-#define SETB_DEST_SRC_STR(d,s)	((mmtr)s3vMmioMem)->bltfill_regs.regs.dest_src_str = ((d)<<16 | (s))
+/*  #define SETB_DEST_SRC_STR(d,s)	((mmtr)s3vMmioMem)->bltfill_regs.regs.dest_src_str = ((d)<<16 | (s)) */
+
+#define SETB_DEST_SRC_STR(d, s) (OUTREG(DEST_SRC_STR, ((d) << 16 | (s))))
+
 #define SETB_MONO_PAT0(val)	((mmtr)s3vMmioMem)->bltfill_regs.regs.mono_pat0 = (val)
 #define SETB_MONO_PAT1(val)	((mmtr)s3vMmioMem)->bltfill_regs.regs.mono_pat1 = (val)
 #define SETB_PAT_BG_CLR(val)	((mmtr)s3vMmioMem)->bltfill_regs.regs.pat_bg_clr = (val)
@@ -598,3 +613,7 @@ typedef struct {
 
 
 #define DBGOUT(p) /* OUTREG8(0x3bc,p) */
+
+#endif /* 0 */
+
+#endif /* _NEWMMIO_H */

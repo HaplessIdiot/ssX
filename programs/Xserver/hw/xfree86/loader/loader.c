@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.33 1999/03/14 03:22:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.34 1999/03/14 14:10:49 dawes Exp $ */
 
 /*
  *
@@ -33,7 +33,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
-#if defined(linux) && defined(__alpha__)
+#if defined(linux) && (defined(__alpha__) || defined(__powerpc__))
 #include <malloc.h>
 #endif
 #include <stdarg.h>
@@ -234,7 +234,7 @@ LoaderInit(void)
     if (osname)
 	xf86MsgVerb(X_INFO, 2, "Loader running on %s\n", osname);
 
-#if defined(linux) && defined(__alpha__)
+#if defined(linux) && (defined(__alpha__) || defined(__powerpc__))
     /*
      * The glibc malloc uses mmap for large allocations anyway. This breaks
      * some relocation types because the offset overflow. See loader.h for more

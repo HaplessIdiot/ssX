@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/StdSel.h,v 1.3 1998/08/20 13:59:38 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/StdSel.h,v 1.4 1998/10/03 09:06:33 dawes Exp $ */
 
 /*
  * The interfaces described by this header file are for miscellaneous utilities
@@ -42,7 +42,7 @@ Boolean XmuConvertStandardSelection
  Atom			*selection,
  Atom			*target,
  Atom			*type_return,
- XtPointer		*value_return,
+ XPointer		*value_return,
  unsigned long		*length_return,
  int			*format_return
  );

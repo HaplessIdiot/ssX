@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.12 1999/01/31 12:22:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.13 1999/03/06 13:12:47 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -479,7 +479,8 @@ XAAPutImage(
  	    i = 1 << (depth - 1);
 	    mask = ~0;
 
-	    if((infoRec->Flags & OVERLAY_8_32) && (pGC->depth == 8)){
+	    if((infoRec->pScrn->overlayFlags & OVERLAY_8_32_PLANAR) &&
+							 (pGC->depth == 8)){
 		i = 0x80000000;  mask = 0xff000000;
 	    }
 

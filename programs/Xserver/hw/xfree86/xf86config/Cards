@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.61 1997/12/05 22:01:53 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.62 1998/03/20 21:07:34 hohndel Exp $
 
 #Chips & Technologies
 
@@ -1108,6 +1108,9 @@ NAME STB Systems Velocity 3D
 SEE S3 ViRGE/VX (generic)
 
 NAME MELCO WGP-VX8
+SEE S3 ViRGE/VX (generic)
+
+NAME Number Nine FX Reality 772
 SEE S3 ViRGE/VX (generic)
 
 

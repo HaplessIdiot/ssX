@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/parse.c,v 1.4 1998/10/02 06:15:23 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/parse.c,v 1.5 1998/10/05 13:21:49 dawes Exp $ */
 
 #include "def.h"
 
@@ -41,7 +41,7 @@ gobble(struct filepointer *filep, struct inclist *file,
 	char	*line;
 	int	type;
 
-	while ((line = getline(filep))) {
+	while ((line = getnextline(filep))) {
 		switch(type = deftype(line, filep, file_red, file, FALSE)) {
 		case IF:
 		case IFFALSE:
@@ -510,7 +510,7 @@ find_includes(struct filepointer *filep, struct inclist *file,
 	register int	type;
 	boolean recfailOK;
 
-	while ((line = getline(filep))) {
+	while ((line = getnextline(filep))) {
 		switch(type = deftype(line, filep, file_red, file, TRUE)) {
 		case IF:
 		doif:
