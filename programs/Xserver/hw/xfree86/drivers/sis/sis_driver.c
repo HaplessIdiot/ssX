@@ -6053,7 +6053,11 @@ SISBlockHandler(int i, pointer blockData, pointer pTimeout, pointer pReadmask)
     pScreen->BlockHandler = SISBlockHandler;
 
     if(pSiS->VideoTimerCallback) {
-        (*pSiS->VideoTimerCallback)(pScrn, currentTime.milliseconds);
+       (*pSiS->VideoTimerCallback)(pScrn, currentTime.milliseconds);
+    }
+
+    if(pSiS->RenderCallback) {
+       (*pSiS->RenderCallback)(pScrn);
     }
 }
 
@@ -6146,7 +6150,7 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * This is done on 300 and 315 series only.
      */
     if(pSiS->UseVESA) {
-	SiSEnableTurboQueue(pScrn);
+       SiSEnableTurboQueue(pScrn);
     }
 
     /* Save the current state */
@@ -7252,7 +7256,7 @@ SISEnterVT(int scrnIndex, int flags)
 #ifdef XF86DRI
     /* this is to be done AFTER switching the mode */
     if(pSiS->directRenderingEnabled)
-        DRIUnlock(screenInfo.screens[scrnIndex]);
+       DRIUnlock(screenInfo.screens[scrnIndex]);
 #endif
 
     return TRUE;
@@ -7808,6 +7812,14 @@ SiSEnableTurboQueue(ScrnInfoPtr pScrn)
 	      /* We use VRAM Cmd Queue, not MMIO or AGP */
 	      unsigned char tempCR55;
 
+#ifdef SISDUALHEAD
+	      if(pSiS->DualHeadMode) {
+	         SISEntPtr pSiSEnt = pSiS->entityPrivate;
+	         pSiS->cmdQ_SharedWritePort = &(pSiSEnt->cmdQ_SharedWritePort_2D);
+	      } else
+#endif
+	      pSiS->cmdQ_SharedWritePort = &(pSiS->cmdQ_SharedWritePort_2D);
+
 	      /* Set Command Queue Threshold to max value 11111b (?) */
 	      outSISIDXREG(SISSR, 0x27, 0x1F);
 	      /* No idea what this does */
@@ -7826,7 +7838,6 @@ SiSEnableTurboQueue(ScrnInfoPtr pScrn)
 	      }
     	      outSISIDXREG(SISSR, 0x26, SR26);
 	      pSiS->cmdQ_SharedWritePort_2D = (unsigned long)(MMIO_IN32(pSiS->IOBase, 0x85c8));
-    	      pSiS->cmdQ_SharedWritePort = &(pSiS->cmdQ_SharedWritePort_2D);
               *(pSiS->cmdQ_SharedWritePort) = pSiS->cmdQ_SharedWritePort_2D;
               MMIO_OUT32(pSiS->IOBase, 0x85c4, pSiS->cmdQ_SharedWritePort_2D);
 	      MMIO_OUT32(pSiS->IOBase, 0x85C0, pSiS->cmdQueueOffset);

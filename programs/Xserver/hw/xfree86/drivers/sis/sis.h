@@ -490,6 +490,7 @@ typedef struct {
     int			UsePanelScaler;
     int			AllowHotkey;
     BOOLEAN		enablesisctrl;
+    unsigned long	cmdQ_SharedWritePort_2D;
 #ifdef SIS_CP
     SIS_CP_H_ENT
 #endif
@@ -595,6 +596,7 @@ typedef struct {
     Bool                ClipEnabled;
     Bool                DoColorExpand;
     Bool                ColorExpandBusy;
+    Bool                alphaBlitBusy;
     SISRegRec           SavedReg;
     SISRegRec           ModeReg;
     xf86CursorInfoPtr   CursorInfoPtr;
@@ -648,6 +650,9 @@ typedef struct {
     Bool		AGPInitOK;
     Bool 		irqEnabled;
     int 		irq;
+
+    void		(*RenderCallback)(ScrnInfoPtr);
+    Time		RenderTime;
 
     int 		ColorExpandRingHead;
     int 		ColorExpandRingTail;
