@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.95 2000/09/13 07:57:54 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.97 2000/09/25 19:06:09 eich Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -1300,7 +1300,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 		 * than a J2000, as memory timings will surely change.
 		*/
         	GLINTMapMem(pScrn);
-		Permedia3PreInit(pScrn, pGlint);
+		Permedia3PreInit(pScrn);
         	GLINTUnmapMem(pScrn);
 		pScrn->videoRam = Permedia3MemorySizeDetect(pScrn);
         } else if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V) {
@@ -2039,7 +2039,6 @@ GLINTUnmapMem(ScrnInfoPtr pScrn)
     return TRUE;
 }
 
-
 /*
  * This function saves the video state.
  */
@@ -2306,6 +2305,7 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     	    if (!vgaHWMapMem(pScrn))
 	   	 return FALSE;
 	}
+
 	/* Timing problem with PM3 & PM2V chips dont like being blasted */
 	/* This solves the dual head problem but trahses the console font. */
 
@@ -2318,12 +2318,8 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     	    vgaHWSetMmioFuncs(hwp, pGlint->IOBaseVGA, 0);
 	    hwp->writeGr = writeGr;
 	    hwp->readGr = readGr;
-	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		"SVEN : Permedia 3 don't use mmio for VGA Graphics Index.\n");
-	}
-	else if (pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V)
+	} else if (pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V)
     	    vgaHWSetMmioFuncs(hwp, pGlint->IOBaseVGA, 0);
-
     	vgaHWGetIOBase(hwp);
     }
 
@@ -2634,6 +2630,7 @@ GLINTSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 
     pScrn = xf86Screens[scrnIndex];
     pGlint = GLINTPTR(pScrn);
+    TRACE_ENTER("GLINTSwitchMode");
 	
     if (pGlint->FBDev) {
 	Bool ret = fbdevHWSwitchMode(scrnIndex, mode, flags);
@@ -2666,9 +2663,11 @@ GLINTSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
     	    }
 	}
 
+	TRACE_EXIT("GLINTSwitchMode (fbdev ?)");
 	return ret;
     }
 
+    TRACE_EXIT("GLINTSwitchMode (normal)");
     return GLINTModeInit(xf86Screens[scrnIndex], mode);
 }
 
@@ -2687,9 +2686,11 @@ GLINTAdjustFrame(int scrnIndex, int x, int y, int flags)
 
     pScrn = xf86Screens[scrnIndex];
     pGlint = GLINTPTR(pScrn);
+    TRACE_ENTER("GLINTAdjustFrame");
     
     if (pGlint->FBDev) {
     	fbdevHWAdjustFrame(scrnIndex, x, y, flags);
+	TRACE_EXIT("GLINTAdjustFrame (fbdev)");
 	return;
     }
 
@@ -2708,6 +2709,7 @@ GLINTAdjustFrame(int scrnIndex, int x, int y, int flags)
 	GLINT_SLOW_WRITE_REG(base, PMScreenBase);
 	break;
     }
+    TRACE_EXIT("GLINTAdjustFrame (normal)");
 }
 
 

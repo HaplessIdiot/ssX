@@ -1,4 +1,5 @@
 XFree86 4.0.1d (xx October 2000)
+ 754. Permedia3 updates (#4177, #4183 Sven Luther).
  753. Add Xv support to the r128 driver (Stuart Anderson/Vladmir Dergacheb)
  752. Make VBE module log a message when the BIOS doesn't support any VESA
       extensions (Marc La France).
@@ -11215,4 +11216,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1341 2000/10/12 11:21:41 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1342 2000/10/13 05:23:28 anderson Exp $

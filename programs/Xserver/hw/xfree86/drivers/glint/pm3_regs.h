@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_regs.h,v 1.2 2000/09/19 14:39:15 alanh Exp $ */
 
 /*
  * glint register file 
@@ -435,7 +435,8 @@
 #define PM3AntialiasMode					0x8808
 #define PM3AntialiasModeAnd					0xac00
 #define PM3AntialiasModeOr					0xac08
-
+/* ... */
+#define PM3BackgroundColor					0xb0c8
 /* ... */
 #define PM3ColorDDAMode						0x87e0
 #define PM3ColorDDAModeAnd					0xabe0
@@ -470,6 +471,17 @@
 #define PM3dXSub						0x8018
 #define PM3dY							0x8028
 /* ... */
+#define PM3FBBlockColor						0x8ac8
+#define PM3FBBlockColor0					0xb060
+#define PM3FBBlockColor1					0xb068
+#define PM3FBBlockColor2					0xb070
+#define PM3FBBlockColor3					0xb078
+#define PM3FBBlockColorBack					0xb0a0
+#define PM3FBBlockColorBack0					0xb080
+#define PM3FBBlockColorBack1					0xb088
+#define PM3FBBlockColorBack2					0xb090
+#define PM3FBBlockColorBack3					0xb098
+#define PM3FBColor						0x8a98
 #define PM3FBDestReadBufferAddr0				0xae80
 #define PM3FBDestReadBufferAddr1				0xae88
 #define PM3FBDestReadBufferAddr2				0xae90
@@ -534,6 +546,7 @@
 
 #define PM3FBHardwareWriteMask					0x8ac0
 #define PM3FBSoftwareWriteMask					0x8820
+#define PM3FBData						0x8aa0
 #define PM3FBSourceData						0x8aa8
 #define PM3FBSourceReadBufferAddr				0xaf08
 #define PM3FBSourceReadBufferOffset				0xaf10
@@ -659,6 +672,11 @@
 	#define PM3LBWriteMode_Origin				1<<10
 	#define PM3LBWriteMode_Packed16				1<<11
 	#define PM3LBWriteMode_Width(w)				(((w)&0xfff)<<12)
+/* ... */
+#define PM3LineStippleMode					0x81a8
+#define PM3LineStippleModeAnd					0xabc0
+#define PM3LineStippleModeOr					0xabc8
+#define PM3LoadLineStippleCounters				0x81b0
 /* ... */
 #define PM3LogicalOpMode					0x8828
 #define PM3LogicalOpModeAnd					0xace0
@@ -880,7 +898,7 @@
 	#define PM3Render2D_Width(w)			((w)&0x0fff)
 	#define PM3Render2D_Operation_Normal			0<<12
 	#define PM3Render2D_Operation_SyncOnHostData		1<<12
-	#define PM3Render2D_Operation_SyncOnbitMask		2<<12
+	#define PM3Render2D_Operation_SyncOnBitMask		2<<12
 	#define PM3Render2D_Operation_PatchOrderRendering	3<<12
 	#define PM3Render2D_FBSourceReadEnable			1<<14
 	#define PM3Render2D_SpanOperation			1<<15
