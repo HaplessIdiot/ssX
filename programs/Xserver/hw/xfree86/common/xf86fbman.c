@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.17 2000/10/19 22:25:31 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.18 2000/10/25 06:14:24 keithp Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -10,31 +10,6 @@
 
 static int xf86FBMangerIndex = -1;
 static unsigned long xf86ManagerGeneration = 0;
-
-typedef struct _FBLink {
-  FBArea area;
-  struct _FBLink *next;  
-} FBLink, *FBLinkPtr;
-
-typedef struct _FBLinearLink {
-  FBLinear  linear;
-  FBAreaPtr area;
-  struct _FBLinearLink *next;  
-} FBLinearLink, *FBLinearLinkPtr;
-
-
-typedef struct {
-   ScreenPtr	pScreen;
-   RegionPtr	InitialBoxes;
-   RegionPtr	FreeBoxes;
-   FBLinkPtr 	UsedAreas;
-   int		NumUsedAreas;
-   FBLinearLinkPtr		LinearAreas;
-   CloseScreenProcPtr 		CloseScreen;
-   int				NumCallbacks;
-   FreeBoxCallbackProcPtr	*FreeBoxesUpdateCallback;
-   DevUnion			*devPrivates;
-} FBManager, *FBManagerPtr;
 
 Bool xf86RegisterOffscreenManager(
     ScreenPtr pScreen, 
@@ -208,6 +183,9 @@ xf86QueryLargestOffscreenArea(
 ){
    FBManagerFuncsPtr funcs;
 
+   *w = 0;
+   *h = 0;
+
    if(xf86FBMangerIndex < 0) 
 	return FALSE;
    if(!(funcs = (FBManagerFuncsPtr)pScreen->devPrivates[xf86FBMangerIndex].ptr))
@@ -225,6 +203,8 @@ xf86QueryLargestOffscreenLinear(
     int severity
 ){
    FBManagerFuncsPtr funcs;
+
+   *size = 0;
 
    if(xf86FBMangerIndex < 0) 
 	return FALSE;
@@ -257,6 +237,31 @@ xf86PurgeUnlockedOffscreenAreas(ScreenPtr pScreen)
 
 static unsigned long xf86FBGeneration = 0;
 static int xf86FBScreenIndex = -1;
+
+typedef struct _FBLink {
+  FBArea area;
+  struct _FBLink *next;  
+} FBLink, *FBLinkPtr;
+
+typedef struct _FBLinearLink {
+  FBLinear  linear;
+  FBAreaPtr area;
+  struct _FBLinearLink *next;  
+} FBLinearLink, *FBLinearLinkPtr;
+
+
+typedef struct {
+   ScreenPtr    pScreen;
+   RegionPtr    InitialBoxes;
+   RegionPtr    FreeBoxes;
+   FBLinkPtr    UsedAreas;
+   int          NumUsedAreas;
+   FBLinearLinkPtr              LinearAreas;
+   CloseScreenProcPtr           CloseScreen;
+   int                          NumCallbacks;
+   FreeBoxCallbackProcPtr       *FreeBoxesUpdateCallback;
+   DevUnion                     *devPrivates;
+} FBManager, *FBManagerPtr;
 
 
 static void
