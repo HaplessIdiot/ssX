@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/PutImage.c,v 3.8 2001/10/28 03:32:31 tsi Exp $ */
+/* $XFree86: xc/lib/X11/PutImage.c,v 3.10tsi Exp $ */
 
 #include "Xlibint.h"
 #include "Xutil.h"
@@ -343,6 +343,7 @@ SwapBitsAndTwoBytes (src, dest, srclen, srcinc, destinc, height, half_order)
     register unsigned char *src, *dest;
     long srclen, srcinc, destinc;
     unsigned int height;
+    int half_order;
 {
     long length = ROUNDUP(srclen, 2);
     register long h, n;
