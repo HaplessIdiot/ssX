@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.14 2000/07/06 23:39:04 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.15 2000/12/09 22:22:01 herrb Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000 by VA Linux Systems, Inc.
@@ -336,6 +336,23 @@ DoOsChecks()
 FindDistName()
 {
 	case "$OsName" in
+	Darwin)
+		case "$OsArch" in
+		Power*)
+			case "$OsVersion" in
+			1.[2-9])
+				DistName="Darwin"
+				;;
+			*)
+				Message="No Darwin binaries available for this OS version"
+				;;
+			esac
+			;;
+		*)
+			Message="Darwin binaries are only available for Power Mac platforms"
+			;;
+		esac
+		;;
 	DGUX)	# Check this string
 		case "$OsArch" in
 		i*86)
