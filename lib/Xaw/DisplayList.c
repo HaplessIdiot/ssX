@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.5 1998/06/28 11:30:05 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.6 1998/06/28 12:32:18 dawes Exp $ */
 
 #include <ctype.h>
 #include <string.h>
@@ -34,6 +34,7 @@
 #include <X11/IntrinsicP.h>
 #include <X11/CoreP.h>
 #include <X11/Xmu/SysUtil.h>
+#include <X11/Xfuncs.h>
 #include "Private.h"
 
 /*
@@ -260,7 +261,7 @@ XawDisplayList *XawCreateDisplayList(String string, Screen *screen,
       if (fp)
 	{
 	  XmuSnprintf(cname, fp - fname + 1, fname);
-	  bcopy(fp + 1, fname, strlen(fp));
+	  memmove(fname, fp + 1, strlen(fp));
 	  lc = cname[0] ? XawGetDisplayListClass(cname) : xlibc;
 	  if (!lc)
 	    {

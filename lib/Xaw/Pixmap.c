@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.2 1998/06/28 11:30:06 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.3 1998/06/28 12:32:20 dawes Exp $ */
 
 #if DO_SYSLOG
 #include <sys/types.h>
@@ -148,7 +148,7 @@ XawParseParamsString(String name)
     {
       if (tok == str || tok[-1] != '\\')
 	break;
-      bcopy(tok, &tok[-1], strlen(tok) + 1);
+      memmove(&tok[-1], tok, strlen(tok) + 1);
     }
   if (tok)
     {
@@ -161,7 +161,7 @@ XawParseParamsString(String name)
 	{
 	  ++tok;
 	  type = XtNewString(str);
-	  bcopy(tok, str, strlen(tok) + 1);
+	  memmove(str, tok, strlen(tok) + 1);
 	}
     }
 
@@ -172,7 +172,7 @@ XawParseParamsString(String name)
       if (tok == str || tok[-1] != '\\')
 	params = tok;
       if (tok != str && tok[-1] == '\\')
-	bcopy(tok, &tok[-1], strlen(tok) + 1);
+	memmove(&tok[-1], tok, strlen(tok) + 1);
       else
 	break;
     }
@@ -189,7 +189,7 @@ XawParseParamsString(String name)
       if (tok == str || tok[-1] != '\\')
 	ext = tok;
       if (tok != str && tok[-1] == '\\')
-	bcopy(tok, &tok[-1], strlen(tok) + 1);
+	memmove(&tok[-1], tok, strlen(tok) + 1);
       else
 	break;
     }

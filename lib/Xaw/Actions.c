@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Actions.c,v 3.5 1998/06/28 11:30:04 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Actions.c,v 3.6 1998/06/28 12:32:16 dawes Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -1094,7 +1094,7 @@ _XawDestroyActionVarList(Widget w, XtPointer client_data, XtPointer call_data)
     }
   if (--num_variable_list > 0)
     {
-      bcopy(&variable_list[i + 1], &variable_list[i],
+      memmove(&variable_list[i], &variable_list[i + 1],
 	    (num_variable_list - i) * sizeof(XawActionVarList *));
       variable_list = (XawActionVarList **)
 	XtRealloc((char *)variable_list, sizeof(XawActionVarList *) *

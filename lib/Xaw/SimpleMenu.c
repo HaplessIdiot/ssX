@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
  */
 
-/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.4 1998/06/28 11:23:49 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.5 1998/06/28 12:32:20 dawes Exp $ */
 
 /*
  * SimpleMenu.c - Source code file for SimpleMenu widget.
@@ -1401,7 +1401,7 @@ CalculateNewSize(w, width_return, height_return)
   int width_kid, height_kid;
   int width, height, tmp_w, tmp_h, max_dim;
   short vadd, hadd;
-  int n, columns, insert_pos, test_h;
+  int n, columns, test_h;
   Boolean try_layout = False;
 
   hadd = xaw->simple_menu.left_margin + xaw->simple_menu.right_margin;
@@ -1456,7 +1456,6 @@ CalculateNewSize(w, width_return, height_return)
       ++n;
     }
 
-  insert_pos = height + vadd;
   height = tmp_h + vadd;
   width += tmp_w + hadd;
 
@@ -1470,12 +1469,18 @@ CalculateNewSize(w, width_return, height_return)
     {
       int space;
 
-      space = height - insert_pos - vadd;
-      space -= (space % test_h) * columns;
+      height = test_h * (xaw->simple_menu.label ?
+			 xaw->composite.num_children - 1 :
+			 xaw->composite.num_children);
 
-      if (space > test_h * columns)
+      max_dim -= max_dim % test_h;
+      space = max_dim - (height % max_dim);
+      if (space >= test_h * columns)
 	{
-	  *height_return -= space / columns;
+	  height = max_dim - space / columns;
+	  if (height % test_h)
+	    height += test_h - (height % test_h);
+	  *height_return = height + vadd;
 	  CalculateNewSize(w, width_return, height_return);
 	}
     }

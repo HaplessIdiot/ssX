@@ -99,7 +99,7 @@ typedef enum {XawAsciiFile, XawAsciiString} XawAsciiType;
 
 /************************************************************
  *
- * Public routines 
+ * Public routines
  *
  ************************************************************/
 
@@ -107,15 +107,12 @@ _XFUNCPROTOBEGIN
 
 /*	Function Name: XawAsciiSourceFreeString
  *	Description: Frees the string returned by a get values call
- *                   on the string when the source is of type string.
+ *		     on the string when the source is of type string.
  *	Arguments: w - the AsciiSrc object.
  *	Returns: none.
  */
-
-extern void XawAsciiSourceFreeString(
-#if NeedFunctionPrototypes
+void XawAsciiSourceFreeString(
     Widget		/* w */
-#endif
 );
 
 /*	Function Name: XawAsciiSave
@@ -123,25 +120,19 @@ extern void XawAsciiSourceFreeString(
  *	Arguments: w - the asciiSrc Object.
  *	Returns: TRUE if the save was successful.
  */
-
-extern Boolean XawAsciiSave(
-#if NeedFunctionPrototypes
+Bool XawAsciiSave(
     Widget		/* w */
-#endif
 );
 
 /*	Function Name: XawAsciiSaveAsFile
  *	Description: Save the current buffer as a file.
  *	Arguments: w - the asciiSrc object.
- *                 name - name of the file to save this file into.
+ *		   name - name of the file to save this file into.
  *	Returns: True if the save was successful.
  */
-
-extern Boolean XawAsciiSaveAsFile(
-#if NeedFunctionPrototypes
+Bool XawAsciiSaveAsFile(
     Widget		/* w */,
     _Xconst char*	/* name */
-#endif 
 );
 
 /*	Function Name: XawAsciiSourceChanged
@@ -149,11 +140,8 @@ extern Boolean XawAsciiSaveAsFile(
  *	Arguments: w - the asciiSource object.
  *	Returns: a Boolean (see description).
  */
-
-extern Boolean XawAsciiSourceChanged(
-#if NeedFunctionPrototypes
+Bool XawAsciiSourceChanged(
     Widget		/* w */
-#endif
 );
 
 _XFUNCPROTOEND

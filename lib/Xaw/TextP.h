@@ -220,6 +220,10 @@ typedef struct _TextPart {
     /* private state, shared w/Source and Sink */
     Boolean	    redisplay_needed; /* in SetValues */
     XawTextSelectionSalt    *salt2;	     /* salted away selections */
+    int			from_left;	/* Cursor position */
+
+    /* more resources */
+    Boolean adjust_scrollbars;
 } TextPart;
 
 /*************************************************************
@@ -227,6 +231,9 @@ typedef struct _TextPart {
  * Resource types private to Text widget.
  *
  *************************************************************/
+
+#define XtNadjustScrollbars "adjustScrollbars"
+#define XtCAdjust "Adjust"
 
 #define XtRScrollMode "ScrollMode"
 #define XtRWrapMode "WrapMode"
