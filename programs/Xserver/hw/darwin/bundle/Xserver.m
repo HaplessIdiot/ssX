@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.30 2001/10/18 04:59:46 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.31 2001/10/26 06:13:59 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -146,9 +146,8 @@ static NSRect aquaMenuBarBox;
         }
     }
 
-    // Give the X server thread some time to quit
-    if (![serverLock lockBeforeDate:[NSDate dateWithTimeIntervalSinceNow:5]])
-        NSLog(@"X server thread never quit.");
+    // Wait until the X server thread quits
+    [serverLock lock];
 }
 
 // returns YES when event was handled
@@ -505,8 +504,8 @@ static NSRect aquaMenuBarBox;
     [serverLock lock];
     main(argcGlobal, argvGlobal, envpGlobal);
     serverVisible = NO;
-    [serverLock unlock];
     [pool release];
+    [serverLock unlock];
     QuartzMessageMainThread(kQuartzServerDied);
 }
 
