@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.h,v 1.1 94/03/28 21:06:49 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.h,v 3.0 1994/05/08 05:19:12 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -291,7 +291,7 @@ void mach32InitAperture(
 );
 void mach32SetRamdac(
 #if NeedFunctionPrototypes
-    int *clock
+    unsigned short *clock
 #endif
 );
 void mach32InitDisplay(
