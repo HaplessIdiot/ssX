@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.6 2000/02/18 12:19:37 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.7 2000/03/22 03:08:24 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -73,7 +73,7 @@ ATIRefreshArea
 
         while (h-- > 0)
         {
-            memcpy(pDst, pSrc, w);
+            (void)memcpy(pDst, pSrc, w);
             pSrc = (char *)pSrc + pATI->FBPitch;
             pDst = (char *)pDst + pATI->FBPitch;
         }

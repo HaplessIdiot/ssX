@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.30 1998/06/28 03:52:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.32 2000/04/17 16:29:48 eich Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -76,7 +76,6 @@ static DISPATCH_PROC(SProcXF86MiscSetSaver);
 
 static unsigned char XF86MiscReqCode = 0;
 
-#define DEBUG
 #ifdef DEBUG
 # define DEBUG_P(x) ErrorF(x"\n");
 #else

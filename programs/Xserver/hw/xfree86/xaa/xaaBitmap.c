@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaBitmap.c,v 1.4 1998/10/05 13:23:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaBitmap.c,v 1.6 2000/03/03 18:49:55 mvojkovi Exp $ */
 
 
 #include "xaa.h"
@@ -35,15 +35,20 @@ BitmapScanline(
    CARD32 *src, CARD32 *base,
    int count, int skipleft )
 {
+     CARD32 bits;
+
      while(count >= 3) {
-	WRITE_BITS3(*src);
+	bits = *src;
+	WRITE_BITS3(bits);
 	src++;
 	count -= 3;
      }
      if (count == 2) {
-	WRITE_BITS2(*src);
+	bits = *src;
+	WRITE_BITS2(bits);
      } else if (count == 1) {
-	WRITE_BITS1(*src);
+	bits = *src;
+	WRITE_BITS1(bits);
      }
      
      return base;
@@ -54,15 +59,20 @@ BitmapScanline_Inverted(
    CARD32 *src, CARD32 *base,
    int count, int skipleft )
 {
+     CARD32 bits;
+
      while(count >= 3) {
-	WRITE_BITS3(~(*src));
+	bits = ~(*src);
+	WRITE_BITS3(bits);
 	src++;
 	count -= 3;
      }
      if (count == 2) {
-	WRITE_BITS2(~(*src));
+	bits = ~(*src);
+	WRITE_BITS2(bits);
      } else if (count == 1) {
-	WRITE_BITS1(~(*src));
+	bits = ~(*src);
+	WRITE_BITS1(bits);
      }
      
      return base;
@@ -71,21 +81,23 @@ BitmapScanline_Inverted(
 
 static CARD32*
 BitmapScanline_Shifted(
-   CARD32 *bits, CARD32 *base,
+   CARD32 *src, CARD32 *base,
    int count, int skipleft )
 {
+     CARD32 bits;
+
      while(count >= 3) {
-	WRITE_BITS3((SHIFT_R(*bits,skipleft) | 
-		SHIFT_L(*(bits + 1),(32 - skipleft))));
-	bits++;
+	bits = SHIFT_R(*src,skipleft) | SHIFT_L(*(src + 1),(32 - skipleft));
+	WRITE_BITS3(bits);
+	src++;
 	count -= 3;
      }
      if (count == 2) {
-	WRITE_BITS2((SHIFT_R(*bits,skipleft) | 
-		SHIFT_L(*(bits + 1),(32 - skipleft))));
+	bits = SHIFT_R(*src,skipleft) | SHIFT_L(*(src + 1),(32 - skipleft));
+	WRITE_BITS2(bits);
      } else if (count == 1) {
-	WRITE_BITS1((SHIFT_R(*bits,skipleft) | 
-		SHIFT_L(*(bits + 1),(32 - skipleft))));
+	bits = SHIFT_R(*src,skipleft) | SHIFT_L(*(src + 1),(32 - skipleft));
+	WRITE_BITS1(bits);
      }
      
      return base;
@@ -93,21 +105,23 @@ BitmapScanline_Shifted(
 
 static CARD32*
 BitmapScanline_Shifted_Inverted(
-   CARD32 *bits, CARD32 *base,
+   CARD32 *src, CARD32 *base,
    int count, int skipleft )
 {
+     CARD32 bits;
+
      while(count >= 3) {
-	WRITE_BITS3(~(SHIFT_R(*bits,skipleft) | 
-		SHIFT_L(*(bits + 1),(32 - skipleft))));
-	bits++;
+	bits = ~(SHIFT_R(*src,skipleft) | SHIFT_L(*(src + 1),(32 - skipleft)));
+	WRITE_BITS3(bits);
+	src++;
 	count -= 3;
      }
      if (count == 2) {
-	WRITE_BITS2(~(SHIFT_R(*bits,skipleft) | 
-		SHIFT_L(*(bits + 1),(32 - skipleft))));
+	bits = ~(SHIFT_R(*src,skipleft) | SHIFT_L(*(src + 1),(32 - skipleft)));
+	WRITE_BITS2(bits);
      } else if (count == 1) {
-	WRITE_BITS1(~(SHIFT_R(*bits,skipleft) | 
-		SHIFT_L(*(bits + 1),(32 - skipleft))));
+	bits = ~(SHIFT_R(*src,skipleft) | SHIFT_L(*(src + 1),(32 - skipleft)));
+	WRITE_BITS1(bits);
      }
      
      return base;
@@ -268,7 +282,7 @@ EXPNAME(XAAWriteBitmapColorExpand)(
     if((bg != -1) && 
 	(infoRec->CPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY)) {
 #endif
-	if(rop == GXcopy) {
+	if((rop == GXcopy) && infoRec->SetupForSolidFill) {
     	    (*infoRec->SetupForSolidFill)(pScrn, bg, rop, planemask);
             (*infoRec->SubsequentSolidFillRect)(pScrn, x, y, w, h);
 	} else SecondPassColor = bg;
@@ -383,7 +397,7 @@ EXPNAME(XAAWriteBitmapScanlineColorExpand)(
     if((bg != -1) && 
 	(infoRec->ScanlineCPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY)){
 #endif
-	if(rop == GXcopy) {
+	if((rop == GXcopy) && infoRec->SetupForSolidFill) {
     	    (*infoRec->SetupForSolidFill)(pScrn, bg, rop, planemask);
             (*infoRec->SubsequentSolidFillRect)(pScrn, x, y, w, h);
 	} else SecondPassColor = bg;

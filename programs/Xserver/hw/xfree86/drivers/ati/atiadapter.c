@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadapter.c,v 1.8 2000/04/07 03:57:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadapter.c,v 1.9 2000/04/12 14:44:37 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -600,7 +600,7 @@ ATIAdapterCalculate
 )
 {
     CARD32 lcd_index;
-    int Index;
+    int Index, ECPClock;
 
     /* Clobber mode timings */
     if ((pATI->LCDPanelID >= 0) && !pATI->OptionCRT &&
@@ -792,7 +792,21 @@ ATIAdapterCalculate
     }
 
     /* Fill in clock data */
-    return ATIClockCalculate(pScreenInfo, pATI, pATIHW, pMode);
+    if (!ATIClockCalculate(pScreenInfo, pATI, pATIHW, pMode))
+        return FALSE;
+
+    /* Setup ECP clock divider */
+    if (pATI->Chip >= ATI_CHIP_264VT)
+    {
+        pATIHW->pll_vclk_cntl &= ~PLL_ECP_DIV;
+        /* XXX Don't do this for TVOut! */
+        ECPClock = pMode->SynthClock;
+        for (Index = 0;  (ECPClock > 125000) && (Index < 2);  Index++)
+            ECPClock >>= 1;
+        pATIHW->pll_vclk_cntl |= SetBits(Index, PLL_ECP_DIV);
+    }
+
+    return TRUE;
 }
 
 /*

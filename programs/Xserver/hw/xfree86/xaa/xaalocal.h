@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.20 1999/09/06 11:27:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.23 2000/04/01 22:42:04 mvojkovi Exp $ */
 
 #ifndef _XAALOCAL_H
 #define _XAALOCAL_H
@@ -731,6 +731,17 @@ XAAFillColorExpandRectsLSBFirst(
 );
 
 void
+XAAFillColorExpandRects3LSBFirst(
+   ScrnInfoPtr pScrn,
+   int fg, int bg, int rop,
+   unsigned int planemask,
+   int nBox,
+   BoxPtr pBox,
+   int xorg, int yorg,
+   PixmapPtr pPix
+);
+
+void
 XAAFillColorExpandRectsLSBFirstFixedBase(
    ScrnInfoPtr pScrn,
    int fg, int bg, int rop,
@@ -741,6 +752,16 @@ XAAFillColorExpandRectsLSBFirstFixedBase(
    PixmapPtr pPix
 );
 
+void
+XAAFillColorExpandRects3LSBFirstFixedBase(
+   ScrnInfoPtr pScrn,
+   int fg, int bg, int rop,
+   unsigned int planemask,
+   int nBox,
+   BoxPtr pBox,
+   int xorg, int yorg,
+   PixmapPtr pPix
+);
 
 void
 XAAFillColorExpandRectsMSBFirst(
@@ -753,6 +774,16 @@ XAAFillColorExpandRectsMSBFirst(
    PixmapPtr pPix
 );
 
+void
+XAAFillColorExpandRects3MSBFirst(
+   ScrnInfoPtr pScrn,
+   int fg, int bg, int rop,
+   unsigned int planemask,
+   int nBox,
+   BoxPtr pBox,
+   int xorg, int yorg,
+   PixmapPtr pPix
+);
 
 void
 XAAFillColorExpandRectsMSBFirstFixedBase(
@@ -765,7 +796,16 @@ XAAFillColorExpandRectsMSBFirstFixedBase(
    PixmapPtr pPix
 );
 
-
+void
+XAAFillColorExpandRects3MSBFirstFixedBase(
+   ScrnInfoPtr pScrn,
+   int fg, int bg, int rop,
+   unsigned int planemask,
+   int nBox,
+   BoxPtr pBox,
+   int xorg, int yorg,
+   PixmapPtr pPix
+);
 
 void
 XAAFillScanlineColorExpandRectsLSBFirst(
@@ -778,6 +818,16 @@ XAAFillScanlineColorExpandRectsLSBFirst(
    PixmapPtr pPix
 );
 
+void
+XAAFillScanlineColorExpandRects3LSBFirst(
+   ScrnInfoPtr pScrn,
+   int fg, int bg, int rop,
+   unsigned int planemask,
+   int nBox,
+   BoxPtr pBox,
+   int xorg, int yorg,
+   PixmapPtr pPix
+);
 
 void
 XAAFillScanlineColorExpandRectsMSBFirst(
@@ -790,9 +840,32 @@ XAAFillScanlineColorExpandRectsMSBFirst(
    PixmapPtr pPix
 );
 
+void
+XAAFillScanlineColorExpandRects3MSBFirst(
+   ScrnInfoPtr pScrn,
+   int fg, int bg, int rop,
+   unsigned int planemask,
+   int nBox,
+   BoxPtr pBox,
+   int xorg, int yorg,
+   PixmapPtr pPix
+);
 
 void
 XAAFillColorExpandSpansLSBFirst(
+   ScrnInfoPtr pScrn,
+   int fg, int bg, int rop,
+   unsigned int planemask,
+   int n,
+   DDXPointPtr ppt,
+   int *pwidth,
+   int fSorted,
+   int xorg, int yorg,
+   PixmapPtr pPix
+);
+
+void
+XAAFillColorExpandSpans3LSBFirst(
    ScrnInfoPtr pScrn,
    int fg, int bg, int rop,
    unsigned int planemask,
@@ -817,6 +890,18 @@ XAAFillColorExpandSpansLSBFirstFixedBase(
    PixmapPtr pPix
 );
 
+void
+XAAFillColorExpandSpans3LSBFirstFixedBase(
+   ScrnInfoPtr pScrn,
+   int fg, int bg, int rop,
+   unsigned int planemask,
+   int n,
+   DDXPointPtr ppt,
+   int *pwidth,
+   int fSorted,
+   int xorg, int yorg,
+   PixmapPtr pPix
+);
 
 void
 XAAFillColorExpandSpansMSBFirst(
@@ -831,6 +916,18 @@ XAAFillColorExpandSpansMSBFirst(
    PixmapPtr pPix
 );
 
+void
+XAAFillColorExpandSpans3MSBFirst(
+   ScrnInfoPtr pScrn,
+   int fg, int bg, int rop,
+   unsigned int planemask,
+   int n,
+   DDXPointPtr ppt,
+   int *pwidth,
+   int fSorted,
+   int xorg, int yorg,
+   PixmapPtr pPix
+);
 
 void
 XAAFillColorExpandSpansMSBFirstFixedBase(
@@ -845,9 +942,34 @@ XAAFillColorExpandSpansMSBFirstFixedBase(
    PixmapPtr pPix
 );
 
+void
+XAAFillColorExpandSpans3MSBFirstFixedBase(
+   ScrnInfoPtr pScrn,
+   int fg, int bg, int rop,
+   unsigned int planemask,
+   int n,
+   DDXPointPtr ppt,
+   int *pwidth,
+   int fSorted,
+   int xorg, int yorg,
+   PixmapPtr pPix
+);
 
 void
 XAAFillScanlineColorExpandSpansLSBFirst(
+   ScrnInfoPtr pScrn,
+   int fg, int bg, int rop,
+   unsigned int planemask,
+   int n,
+   DDXPointPtr ppt,
+   int *pwidth,
+   int fSorted,
+   int xorg, int yorg,
+   PixmapPtr pPix
+);
+
+void
+XAAFillScanlineColorExpandSpans3LSBFirst(
    ScrnInfoPtr pScrn,
    int fg, int bg, int rop,
    unsigned int planemask,
@@ -875,6 +997,19 @@ XAAPutImage(
 
 void
 XAAFillScanlineColorExpandSpansMSBFirst(
+   ScrnInfoPtr pScrn,
+   int fg, int bg, int rop,
+   unsigned int planemask,
+   int n,
+   DDXPointPtr ppt,
+   int *pwidth,
+   int fSorted,
+   int xorg, int yorg,
+   PixmapPtr pPix
+);
+
+void
+XAAFillScanlineColorExpandSpans3MSBFirst(
    ScrnInfoPtr pScrn,
    int fg, int bg, int rop,
    unsigned int planemask,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEGlyph.c,v 1.5 1999/01/26 10:40:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEGlyph.c,v 1.7 1999/11/06 23:14:46 mvojkovi Exp $ */
 
 
 #include "xaa.h"
@@ -151,8 +151,7 @@ EXPNAME(XAATEGlyphRenderer)(
     GlyphScanlineFuncPtr GlyphFunc = glyph_scanline_func[glyphWidth - 1];
     int dwords = 0;
 
-    if((bg != -1) && 
-	(infoRec->CPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY)) {
+    if((bg != -1) && (infoRec->TEGlyphRendererFlags & TRANSPARENCY_ONLY)) {
     	(*infoRec->SetupForSolidFill)(pScrn, bg, rop, planemask);
         (*infoRec->SubsequentSolidFillRect)(pScrn, x, y, w, h);
 	bg = -1;
@@ -162,9 +161,8 @@ EXPNAME(XAATEGlyphRenderer)(
 				pScrn, fg, bg, rop, planemask);
 
     if(skipleft && 
-	 (!(infoRec->CPUToScreenColorExpandFillFlags & LEFT_EDGE_CLIPPING) || 
-	 (!(infoRec->CPUToScreenColorExpandFillFlags & 
-					LEFT_EDGE_CLIPPING_NEGATIVE_X) && 
+	 (!(infoRec->TEGlyphRendererFlags & LEFT_EDGE_CLIPPING) || 
+	 (!(infoRec->TEGlyphRendererFlags & LEFT_EDGE_CLIPPING_NEGATIVE_X) && 
 		(skipleft > x)))) {
 	    /* draw the first character only */
 
@@ -183,8 +181,7 @@ EXPNAME(XAATEGlyphRenderer)(
 	    }
     
 	    w -= width;
-	    if((infoRec->CPUToScreenColorExpandFillFlags & 
-						CPU_TRANSFER_PAD_QWORD) &&
+	    if((infoRec->TEGlyphRendererFlags & CPU_TRANSFER_PAD_QWORD) &&
 			((((width + 31) >> 5) * h) & 1)) {
 		base = (CARD32*)infoRec->ColorExpandBase;
 		base[0] = 0x00000000;
@@ -215,7 +212,7 @@ EXPNAME(XAATEGlyphRenderer)(
 	    (*GlyphFunc)(base, glyphs, startline++, w, glyphWidth);
 	}
 
-    if((infoRec->CPUToScreenColorExpandFillFlags & CPU_TRANSFER_PAD_QWORD) &&
+    if((infoRec->TEGlyphRendererFlags & CPU_TRANSFER_PAD_QWORD) &&
 			(dwords & 1)) {
 	base = (CARD32*)infoRec->ColorExpandBase;
 	base[0] = 0x00000000;
@@ -223,7 +220,7 @@ EXPNAME(XAATEGlyphRenderer)(
 
 THE_END:
 
-    if(infoRec->CPUToScreenColorExpandFillFlags & SYNC_AFTER_COLOR_EXPAND) 
+    if(infoRec->TEGlyphRendererFlags & SYNC_AFTER_COLOR_EXPAND) 
 	(*infoRec->Sync)(pScrn);
     else SET_SYNC_FLAG(infoRec);
 }
@@ -250,8 +247,8 @@ EXPNAME(XAATEGlyphRenderer3)(
     int dwords = 0;
 
     if((bg != -1) && 
-	((infoRec->CPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY) ||
-	((infoRec->CPUToScreenColorExpandFillFlags & RGB_EQUAL) && 
+	((infoRec->TEGlyphRendererFlags & TRANSPARENCY_ONLY) ||
+	((infoRec->TEGlyphRendererFlags & RGB_EQUAL) && 
 	(!CHECK_RGB_EQUAL(bg))))) {
     	(*infoRec->SetupForSolidFill)(pScrn, bg, rop, planemask);
         (*infoRec->SubsequentSolidFillRect)(pScrn, x, y, w, h);
@@ -286,8 +283,7 @@ EXPNAME(XAATEGlyphRenderer3)(
 	    }
 
 	    w -= width;
-	    if((infoRec->CPUToScreenColorExpandFillFlags & 
-						CPU_TRANSFER_PAD_QWORD) &&
+	    if((infoRec->TEGlyphRendererFlags & CPU_TRANSFER_PAD_QWORD) &&
 			((((3 * width + 31) >> 5) * h) & 1)) {
 		base = (CARD32*)infoRec->ColorExpandBase;
 		base[0] = 0x00000000;
@@ -321,7 +317,7 @@ EXPNAME(XAATEGlyphRenderer3)(
 
     DEALLOCATE_LOCAL(mem);
 
-    if((infoRec->CPUToScreenColorExpandFillFlags & CPU_TRANSFER_PAD_QWORD) &&
+    if((infoRec->TEGlyphRendererFlags & CPU_TRANSFER_PAD_QWORD) &&
 			(dwords & 1)) {
 	base = (CARD32*)infoRec->ColorExpandBase;
 	base[0] = 0x00000000;
@@ -329,7 +325,7 @@ EXPNAME(XAATEGlyphRenderer3)(
 
 THE_END:
 
-    if(infoRec->CPUToScreenColorExpandFillFlags & SYNC_AFTER_COLOR_EXPAND) 
+    if(infoRec->TEGlyphRendererFlags & SYNC_AFTER_COLOR_EXPAND) 
 	(*infoRec->Sync)(pScrn);
     else SET_SYNC_FLAG(infoRec);
 }
@@ -351,8 +347,7 @@ EXPNAME(XAATEGlyphRendererScanline)(
     CARD32* base;
     GlyphScanlineFuncPtr GlyphFunc = glyph_scanline_func[glyphWidth - 1];
 
-    if((bg != -1) && 
-	(infoRec->ScanlineCPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY)) {
+    if((bg != -1) && (infoRec->TEGlyphRendererFlags & TRANSPARENCY_ONLY)) {
     	(*infoRec->SetupForSolidFill)(pScrn, bg, rop, planemask);
         (*infoRec->SubsequentSolidFillRect)(pScrn, x, y, w, h);
 	bg = -1;
@@ -362,10 +357,9 @@ EXPNAME(XAATEGlyphRendererScanline)(
 				pScrn, fg, bg, rop, planemask);
 
     if(skipleft && 
-	(!(infoRec->ScanlineCPUToScreenColorExpandFillFlags & 
-						LEFT_EDGE_CLIPPING) || 
-	(!(infoRec->ScanlineCPUToScreenColorExpandFillFlags & 
-		LEFT_EDGE_CLIPPING_NEGATIVE_X) && (skipleft > x)))) {
+	(!(infoRec->TEGlyphRendererFlags & LEFT_EDGE_CLIPPING) || 
+	(!(infoRec->TEGlyphRendererFlags & LEFT_EDGE_CLIPPING_NEGATIVE_X) &&
+	(skipleft > x)))) {
 	/* draw the first character only */
 
 	int count = h, line = startline;
@@ -428,8 +422,8 @@ EXPNAME(XAATEGlyphRendererScanline3)(
     GlyphScanlineFuncPtr GlyphFunc = XAAGlyphScanlineFuncLSBFirst[glyphWidth - 1];
 
     if((bg != -1) && 
-	((infoRec->CPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY) ||
-	((infoRec->CPUToScreenColorExpandFillFlags & RGB_EQUAL) && 
+	((infoRec->TEGlyphRendererFlags & TRANSPARENCY_ONLY) ||
+	((infoRec->TEGlyphRendererFlags & RGB_EQUAL) && 
 	(!CHECK_RGB_EQUAL(bg))))) {
     	(*infoRec->SetupForSolidFill)(pScrn, bg, rop, planemask);
         (*infoRec->SubsequentSolidFillRect)(pScrn, x, y, w, h);

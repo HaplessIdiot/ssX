@@ -27,7 +27,7 @@
 
 <title>XFree86 X server ``New Design'' (DRAFT)
 <author>The XFree86 Project, Inc
-<date>Last modified 19 April 2000
+<date>Last modified 1 May 2000
 
 
 
@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.27 2000/04/17 16:29:56 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.28 2000/04/19 15:48:31 tsi Exp $
 </ident>
 
 
@@ -2479,6 +2479,12 @@ Next, the higher level functions that most drivers would use.
       &s.code;scrnIndex&e.code; value of &s.code;-1&e.code; should be
       used.
 
+      NOTE 2: Given that this function stores into the
+      &s.code;OptionInfoRecs&e.code; pointed to by &s.code;optinfo&e.code,
+      the caller should ensure the &s.code;OptionInfoRecs&e.code; are
+      (re-)initialised before the call, especially if the caller expects
+      to use the predefined option values as defaults.
+
       The &s.code;OptionInfoRec&e.code; is defined as follows:
 
         <verb>
@@ -2529,9 +2535,8 @@ Next, the higher level functions that most drivers would use.
       &s.code;freq.units&e.code; is set to &s.code;0&e.code;, and
       &s.code;freq.freq&e.code; is unscaled.
 
-      Typical usage is to setup a static array of
-      &s.code;OptionInfoRecs&e.code; with the &s.code;token&e.code;,
-      &s.code;name&e.code;, and &s.code;type&e.code; fields initialised.
+      Typical usage is to setup an array of
+      &s.code;OptionInfoRecs&e.code; with all fields initialised.
       The &s.code;value&e.code; and &s.code;found&e.code; fields get
       set by &s.code;xf86ProcessOptions()&e.code;.  For cases where the
       value parsing is more complex, the driver should specify
@@ -6415,6 +6420,8 @@ static OptionInfoRec ZZZOptions[] = {
   { OPTION_NOACCEL,   "NoAccel",   OPTV_BOOLEAN, {0}, FALSE },
   { -1,               NULL,        OPTV_NONE,    {0}, FALSE }
 };
+
+#define nZZZOptions (sizeof(ZZZOptions) / sizeof(ZZZOptions[0]))
     </code>
 <p>
 </itemize>
@@ -6697,6 +6704,8 @@ ZZZProbe(DriverPtr drv, int flags)
 static Bool
 ZZZPreInit(ScrnInfoPtr pScrn, int flags)
 {
+    OptionInfoRec options[nZZZOptions];
+
     /* Fill in the monitor field */
     pScrn->monitor = pScrn->confScreen->monitor;
 
@@ -6775,9 +6784,10 @@ ZZZPreInit(ScrnInfoPtr pScrn, int flags)
 
     /*
      * Process the options based on the information in ZZZOptions.
-     * The results are written to ZZZOptions.
+     * The results are written to options.
      */
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, ZZZOptions);
+    (void)memcpy(options, ZZZOptions, sizeof(ZZZOptions));
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, options);
 
     /*
      * Set various fields of ScrnInfoRec and/or ZZZRec based on
@@ -6785,25 +6795,25 @@ ZZZPreInit(ScrnInfoPtr pScrn, int flags)
      */
     from = X_DEFAULT;
     pZzz->hwCursor = FALSE;
-    if (xf86IsOptionSet(ZZZOptions, OPTION_HW_CURSOR)) {
+    if (xf86IsOptionSet(options, OPTION_HW_CURSOR)) {
         from = X_CONFIG;
         pZzz->hwCursor = TRUE;
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
                pZzz->hwCursor ? "HW" : "SW");
-    if (xf86IsOptionSet(ZZZOptions, OPTION_NOACCEL)) {
+    if (xf86IsOptionSet(options, OPTION_NOACCEL)) {
         pZzz->noAccel = TRUE;
         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
                    "Acceleration disabled\n");
     } else {
         pZzz->noAccel = FALSE;
     }
-    if (xf86IsOptionSet(ZZZOptions, OPTION_PCI_RETRY)) {
+    if (xf86IsOptionSet(options, OPTION_PCI_RETRY)) {
         pZzz->UsePCIRetry = TRUE;
         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
     }
     pZzz->fooHack = 0;
-    if (xf86GetOptValInteger(ZZZOptions, OPTION_FOO_HACK,
+    if (xf86GetOptValInteger(options, OPTION_FOO_HACK,
                              &amp;pZzz->fooHack)) {
         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Foo Hack set to %d\n",
                    pZzz->fooHack);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.h,v 1.5 1999/12/03 19:17:26 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.h,v 1.7 2000/04/17 16:29:56 eich Exp $ */
 
 /* xf86DDC.h
  *
@@ -23,14 +23,6 @@ typedef enum {
   DDC_SLOW,
   DDC_FAST
 } xf86ddcSpeed;
-
-typedef enum {
-    DDCOPT_NODDC1,
-    DDCOPT_NODDC2,
-    DDCOPT_NODDC
-} DDCOpts;
-
-extern OptionInfoRec DDCOptions[];
 
 extern xf86MonPtr xf86DoEDID_DDC1(
     int scrnIndex, 

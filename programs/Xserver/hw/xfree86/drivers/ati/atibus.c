@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.c,v 1.6 2000/02/18 12:19:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.c,v 1.7 2000/04/23 19:26:59 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -93,7 +93,8 @@ ATIClaimResources
 
             xf86ClaimFixedResources(Resources, pATI->iEntity);
 
-            memcpy(pATI->VGAWonderResources, Resources, SizeOf(Resources));
+            (void)memcpy(pATI->VGAWonderResources,
+                Resources, SizeOf(Resources));
         }
     }
 
@@ -132,6 +133,7 @@ ATIClaimResources
                     ATI_NAME ":  Unable to register the following resources"
                     " for inactive adapter:\n");
                 xf86PrintResList(1, pResources);
+                xf86FreeResList(pResources);
             }
         }
     }

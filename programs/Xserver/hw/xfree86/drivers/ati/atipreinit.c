@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.23 2000/04/20 21:28:29 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.24 2000/04/23 19:27:00 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -446,6 +446,7 @@ ATIPreInit
         xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
             "Unable to register the following bus resources:\n");
         xf86PrintResList(0, pResources);
+        xf86FreeResList(pResources);
         return FALSE;
     }
 
@@ -1198,6 +1199,9 @@ ATIPreInit
     {
         pATI->NewHW.crtc = ATI_CRTC_MACH64;
 
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
+            "Using Mach64 accelerator CRTC.\n");
+
         if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
         {
             /*
@@ -1228,7 +1232,12 @@ ATIPreInit
         }
     }
     else
+    {
         pATI->NewHW.crtc = ATI_CRTC_VGA;
+
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
+            "Using VGA CRTC.\n");
+    }
 
     /* Complain if VGA is needed but not there */
     if ((pATI->NewHW.crtc == ATI_CRTC_VGA) || !pATI->OptionLinear)
@@ -1609,7 +1618,7 @@ ATIPreInit
 
     if (pATI->OptionAccel)
     {
-        if (!pATI->Block0Base)
+        if (!pATI->Block0Base || (pATI->NewHW.crtc == ATI_CRTC_VGA))
         {
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "Acceleration not supported in this configuration.\n");

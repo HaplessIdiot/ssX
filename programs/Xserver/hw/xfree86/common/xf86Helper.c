@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.87 2000/04/17 16:29:53 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.90 2000/04/28 18:19:21 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1528,22 +1528,20 @@ xf86MatchDevice(const char *drivername, GDevPtr **driversectlist)
     }
     /* Then handle the inactive devices */
     j = 0;
-    if (xf86ConfigLayout.inactives)
-	while (xf86ConfigLayout.inactives[j].identifier) {
-	    gdp = &xf86ConfigLayout.inactives[j];
-	    if (gdp->driver != NULL
-		&& (xf86NameCmp(gdp->driver,drivername) == 0)
-		&& (! gdp->claimed)) {
-		/*
-		 * we have a matching driver that wasn't claimed, yet
-		 */
-		gdp->claimed = TRUE;
-		devices[i] = xnfrealloc(devices[i],
-					(count[i] + 2) * sizeof(GDevPtr));
-		devices[i][count[i]++] = gdp;
-	    }
-	    j++;
-	}
+    while (xf86ConfigLayout.inactives[j].identifier) {
+	gdp = &xf86ConfigLayout.inactives[j];
+	if (gdp->driver != NULL && (xf86NameCmp(gdp->driver,drivername) == 0)
+	    && (! gdp->claimed)) {
+            /*
+             * we have a matching driver that wasn't claimed, yet
+             */
+            gdp->claimed = TRUE;
+            devices[i] = xnfrealloc(devices[i],
+                                    (count[i] + 2) * sizeof(GDevPtr));
+            devices[i][count[i]++] = gdp;
+        }
+	j++;
+    }
     
 #if 0
     /*
@@ -2374,14 +2372,18 @@ static OptionInfoRec BSOptions[] = {
    { -1,                   NULL,           OPTV_NONE,    {0}, FALSE }
 };
 
+#define nBSOptions (sizeof(BSOptions) / sizeof(BSOptions[0]))
+
 void 
 xf86SetBackingStore(ScreenPtr pScreen)
 {
     Bool useBS = FALSE;
     MessageType from = X_DEFAULT;
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    OptionInfoRec options[nBSOptions];
 
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, BSOptions);
+    (void)memcpy(options, BSOptions, sizeof(BSOptions));
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, options);
 
     /* check for commandline option here */
     if (xf86bsEnableFlag) {
@@ -2391,7 +2393,7 @@ xf86SetBackingStore(ScreenPtr pScreen)
 	from = X_CMDLINE;
 	useBS = FALSE;
     } else {
-	if (xf86GetOptValBool(BSOptions, OPTION_BACKING_STORE, &useBS))
+	if (xf86GetOptValBool(options, OPTION_BACKING_STORE, &useBS))
 	    from = X_CONFIG;
     }
     pScreen->backingStoreSupport = useBS ? Always : NotUseful;
@@ -2410,14 +2412,18 @@ static OptionInfoRec SMOptions[] = {
    { -1,                   NULL,           OPTV_NONE,    {0}, FALSE }
 };
 
+#define nSMOptions (sizeof(SMOptions) / sizeof(SMOptions[0]))
+
 void 
 xf86SetSilkenMouse (ScreenPtr pScreen)
 {
     Bool useSM = TRUE;
     MessageType from = X_DEFAULT;
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    OptionInfoRec options[nSMOptions];
 
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, SMOptions);
+    (void)memcpy(options, SMOptions, sizeof(SMOptions));
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, options);
     
     /* check for commandline option here */
     /* disable if screen shares resources */
@@ -2431,7 +2437,7 @@ xf86SetSilkenMouse (ScreenPtr pScreen)
         from = X_CMDLINE;
 	useSM = FALSE;
     } else {
-	if (xf86GetOptValBool(SMOptions, OPTION_SILKEN_MOUSE, &useSM))
+	if (xf86GetOptValBool(options, OPTION_SILKEN_MOUSE, &useSM))
 	    from = X_CONFIG;
     }
     /*

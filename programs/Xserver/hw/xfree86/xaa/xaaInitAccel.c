@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.20 2000/04/01 22:42:04 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.21 2000/04/12 14:44:43 tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -82,6 +82,8 @@ static OptionInfoRec XAAOptions[] = {
 				OPTV_NONE,	{0}, FALSE }
 };
 
+#define nXAAOptions (sizeof(XAAOptions) / sizeof(XAAOptions[0]))
+
 Bool
 XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 {
@@ -104,8 +106,10 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     Bool HaveImageWriteRect = FALSE;
     Bool HaveScanlineImageWriteRect = FALSE;
     Bool HaveScreenToScreenColorExpandFill = FALSE;
+    OptionInfoRec options[nXAAOptions];
 
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, XAAOptions);
+    (void)memcpy(options, XAAOptions, sizeof(XAAOptions));
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, options);
 
     infoRec->pScrn = pScrn;
     infoRec->NeedToSync = FALSE;
@@ -123,33 +127,49 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 
     /************** Low Level *************/
 
-    if(!infoRec->SetClippingRectangle || !infoRec->DisableClipping)
+    if(!infoRec->SetClippingRectangle || !infoRec->DisableClipping) {
 	infoRec->ClippingFlags = 0;
+	infoRec->SetClippingRectangle = NULL;
+	infoRec->DisableClipping = NULL;
+    }
 
     /**** CopyArea ****/
 
     if(infoRec->SetupForScreenToScreenCopy &&
        infoRec->SubsequentScreenToScreenCopy &&
-       !xf86IsOptionSet(XAAOptions, XAAOPT_SCREEN_TO_SCREEN_COPY))
+       !xf86IsOptionSet(options, XAAOPT_SCREEN_TO_SCREEN_COPY)) {
 	HaveScreenToScreenCopy = TRUE;
+    } else {
+	infoRec->ScreenToScreenCopyFlags = 0;
+	infoRec->SetupForScreenToScreenCopy = NULL;
+	infoRec->SubsequentScreenToScreenCopy = NULL;
+    }
 
     /**** Solid Filled Rects ****/
 
     if(infoRec->SetupForSolidFill && infoRec->SubsequentSolidFillRect &&
-       !xf86IsOptionSet(XAAOptions, XAAOPT_SOLID_FILL_RECT)) {
+       !xf86IsOptionSet(options, XAAOPT_SOLID_FILL_RECT)) {
 		HaveSolidFillRect = TRUE;
 	if(infoRec->SubsequentSolidFillTrap &&
-	   !xf86IsOptionSet(XAAOptions, XAAOPT_SOLID_FILL_TRAP))
+	   !xf86IsOptionSet(options, XAAOPT_SOLID_FILL_TRAP))
 		HaveSolidFillTrap = TRUE;
+	else
+		infoRec->SubsequentSolidFillTrap = NULL;
+    } else {
+	infoRec->SolidFillFlags = 0;
+	infoRec->SetupForSolidFill = NULL;
+	infoRec->SubsequentSolidFillRect = NULL;
+	infoRec->SubsequentSolidFillTrap = NULL;
     }
 
     /**** Solid lines ****/
+
     if(infoRec->SetupForSolidLine) {
 	if(infoRec->SubsequentSolidTwoPointLine &&
-		!xf86IsOptionSet(XAAOptions, XAAOPT_SOLID_TWO_POINT_LINE))
+		!xf86IsOptionSet(options, XAAOPT_SOLID_TWO_POINT_LINE))
 	    HaveSolidTwoPointLine = TRUE;
 	if(infoRec->SubsequentSolidBresenhamLine &&
-		!xf86IsOptionSet(XAAOptions, XAAOPT_SOLID_BRESENHAM_LINE)) {
+		!xf86IsOptionSet(options, XAAOPT_SOLID_BRESENHAM_LINE)) {
 	    HaveSolidBresenhamLine = TRUE;
 
 	    if(infoRec->SolidBresenhamLineErrorTermBits)
@@ -158,7 +178,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	}
 
 	if(infoRec->SubsequentSolidHorVertLine &&
-		!xf86IsOptionSet(XAAOptions, XAAOPT_SOLID_HORVERT_LINE))
+		!xf86IsOptionSet(options, XAAOPT_SOLID_HORVERT_LINE))
 	    HaveSolidHorVertLine = TRUE;
 	else if(HaveSolidTwoPointLine) {
 	    infoRec->SubsequentSolidHorVertLine = 
@@ -169,24 +189,42 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 			XAASolidHorVertLineAsBresenham;
 	    HaveSolidHorVertLine = TRUE;
 	}
-    } else if(HaveSolidFillRect) {
+    }
+
+    /* XXX Should this also check for XAAOPT_SOLID_HORVERT_LINE? */
+    if (!HaveSolidTwoPointLine &&
+	!HaveSolidBresenhamLine &&
+	!HaveSolidHorVertLine &&
+	HaveSolidFillRect) {
 	infoRec->SetupForSolidLine = infoRec->SetupForSolidFill;
 	infoRec->SubsequentSolidHorVertLine = XAASolidHorVertLineAsRects;
 	infoRec->SolidLineFlags = infoRec->SolidFillFlags;
 	HaveSolidHorVertLine = TRUE;
     }
 
+    if (!HaveSolidTwoPointLine)
+	infoRec->SubsequentSolidTwoPointLine = NULL;
+    if (!HaveSolidBresenhamLine)
+	infoRec->SubsequentSolidBresenhamLine = NULL;
+    if (!HaveSolidHorVertLine)
+	infoRec->SubsequentSolidHorVertLine = NULL;
 
-
+    /* Disable all if nothing left over */
+    if (!HaveSolidTwoPointLine &&
+	!HaveSolidBresenhamLine &&
+	!HaveSolidHorVertLine) {
+	infoRec->SolidLineFlags = 0;
+	infoRec->SetupForSolidLine = NULL;
+    }
 
     /**** 8x8 Mono Pattern Filled Rects ****/
 
    if(infoRec->SetupForMono8x8PatternFill &&
 		infoRec->SubsequentMono8x8PatternFillRect &&
-		!xf86IsOptionSet(XAAOptions, XAAOPT_MONO_8x8_PATTERN_FILL_RECT)) {
+		!xf86IsOptionSet(options, XAAOPT_MONO_8x8_PATTERN_FILL_RECT)) {
 	HaveMono8x8PatternFillRect = TRUE;
 	if(infoRec->SubsequentMono8x8PatternFillTrap &&
-		!xf86IsOptionSet(XAAOptions, XAAOPT_MONO_8x8_PATTERN_FILL_TRAP))
+		!xf86IsOptionSet(options, XAAOPT_MONO_8x8_PATTERN_FILL_TRAP))
 		HaveMono8x8PatternFillTrap = TRUE;
 
         if(infoRec->Mono8x8PatternFillFlags & 
@@ -226,17 +264,20 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 		}
 	   }
 	}
+   } else {
+	infoRec->Mono8x8PatternFillFlags = 0;
+	infoRec->SetupForMono8x8PatternFill = NULL;
+	infoRec->SubsequentMono8x8PatternFillRect = NULL;
    }
-
 
     /**** Dashed lines ****/
 
     if(infoRec->SetupForDashedLine && infoRec->DashPatternMaxLength) {
 	if(infoRec->SubsequentDashedTwoPointLine &&
-		!xf86IsOptionSet(XAAOptions, XAAOPT_DASHED_TWO_POINT_LINE))
+		!xf86IsOptionSet(options, XAAOPT_DASHED_TWO_POINT_LINE))
 	    HaveDashedTwoPointLine = TRUE;
 	if(infoRec->SubsequentDashedBresenhamLine &&
-		!xf86IsOptionSet(XAAOptions, XAAOPT_DASHED_BRESENHAM_LINE)) {
+		!xf86IsOptionSet(options, XAAOPT_DASHED_BRESENHAM_LINE)) {
 	    HaveDashedBresenhamLine = TRUE;
 
 	    if(infoRec->DashedBresenhamLineErrorTermBits)
@@ -245,15 +286,28 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	}
     }
 
+    if (!HaveDashedTwoPointLine)
+	infoRec->SubsequentDashedTwoPointLine = NULL;
+    if (!HaveDashedBresenhamLine)
+	infoRec->SubsequentDashedBresenhamLine = NULL;
+
+    /* Disable all if nothing left over */
+    if (!HaveDashedTwoPointLine && !HaveDashedBresenhamLine) {
+	infoRec->DashedLineFlags = 0;
+	infoRec->SetupForDashedLine = NULL;
+    }
+
     /**** 8x8 Color Pattern Filled Rects ****/
 
    if(infoRec->SetupForColor8x8PatternFill &&
       infoRec->SubsequentColor8x8PatternFillRect &&
-      !xf86IsOptionSet(XAAOptions, XAAOPT_COL_8x8_PATTERN_FILL_RECT)) {
+      !xf86IsOptionSet(options, XAAOPT_COL_8x8_PATTERN_FILL_RECT)) {
 	HaveColor8x8PatternFillRect = TRUE;
 	if(infoRec->SubsequentColor8x8PatternFillTrap &&
-	   !xf86IsOptionSet(XAAOptions, XAAOPT_COL_8x8_PATTERN_FILL_TRAP))
+	   !xf86IsOptionSet(options, XAAOPT_COL_8x8_PATTERN_FILL_TRAP))
 		HaveColor8x8PatternFillTrap = TRUE;
+	else
+		infoRec->SubsequentColor8x8PatternFillTrap = NULL;
 
 	infoRec->PixmapCacheFlags |= CACHE_COLOR_8x8;
 
@@ -271,15 +325,19 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 		infoRec->CacheHeightColor8x8Pattern = 8;
 	    }
 	}
+   } else {
+	infoRec->Color8x8PatternFillFlags = 0;
+	infoRec->SetupForColor8x8PatternFill = NULL;
+	infoRec->SubsequentColor8x8PatternFillRect = NULL;
+	infoRec->SubsequentColor8x8PatternFillTrap = NULL;
    }
 
     /**** Color Expansion ****/
 
-
     if(infoRec->SetupForCPUToScreenColorExpandFill && 
 	infoRec->ColorExpandBase &&
        	infoRec->SubsequentCPUToScreenColorExpandFill &&
-        !xf86IsOptionSet(XAAOptions, XAAOPT_CPU_TO_SCREEN_COL_EXP_FILL)) {
+        !xf86IsOptionSet(options, XAAOPT_CPU_TO_SCREEN_COL_EXP_FILL)) {
 	int dwordsNeeded = pScrn->virtualX;
 
 	infoRec->ColorExpandRange >>= 2;	/* convert to DWORDS */
@@ -291,6 +349,10 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	dwordsNeeded = (dwordsNeeded + 31) >> 5;
 	if(dwordsNeeded > infoRec->ColorExpandRange)
 	   infoRec->CPUToScreenColorExpandFillFlags |= CPU_TRANSFER_BASE_FIXED;	
+    } else {
+	infoRec->CPUToScreenColorExpandFillFlags = 0;
+	infoRec->SetupForCPUToScreenColorExpandFill = NULL;
+	infoRec->SubsequentCPUToScreenColorExpandFill = NULL;
     } 
 
     /**** Scanline Color Expansion ****/
@@ -300,30 +362,43 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
        infoRec->SubsequentColorExpandScanline &&
        infoRec->ScanlineColorExpandBuffers && 
        (infoRec->NumScanlineColorExpandBuffers > 0) &&
-       !xf86IsOptionSet(XAAOptions, XAAOPT_SCANLINE_CPU_TO_SCREEN_COL_EXP_FILL))
+       !xf86IsOptionSet(options, XAAOPT_SCANLINE_CPU_TO_SCREEN_COL_EXP_FILL)) {
 	HaveScanlineColorExpansion = TRUE;
-
+    } else {
+	infoRec->ScanlineCPUToScreenColorExpandFillFlags = 0;
+	infoRec->SetupForScanlineCPUToScreenColorExpandFill = NULL;
+	infoRec->SubsequentScanlineCPUToScreenColorExpandFill = NULL;
+	infoRec->SubsequentColorExpandScanline = NULL;
+    }
 
     /**** Screen to Screen Color Expansion ****/
 
     if(infoRec->SetupForScreenToScreenColorExpandFill &&
        infoRec->SubsequentScreenToScreenColorExpandFill &&
-       !xf86IsOptionSet(XAAOptions, XAAOPT_SCREEN_TO_SCREEN_COL_EXP_FILL)) {
+       !xf86IsOptionSet(options, XAAOPT_SCREEN_TO_SCREEN_COL_EXP_FILL)) {
 	HaveScreenToScreenColorExpandFill = TRUE;
 	if (!infoRec->CacheColorExpandDensity)
 	    infoRec->CacheColorExpandDensity = 1;
+    } else {
+	infoRec->ScreenToScreenColorExpandFillFlags = 0;
+	infoRec->SetupForScreenToScreenColorExpandFill = NULL;
+	infoRec->SubsequentScreenToScreenColorExpandFill = NULL;
     }
     
     /**** Image Writes ****/
 
     if(infoRec->SetupForImageWrite && infoRec->ImageWriteBase &&
        infoRec->SubsequentImageWriteRect &&
-       !xf86IsOptionSet(XAAOptions, XAAOPT_IMAGE_WRITE_RECT)) {
+       !xf86IsOptionSet(options, XAAOPT_IMAGE_WRITE_RECT)) {
 
 	infoRec->ImageWriteRange >>= 2;	/* convert to DWORDS */
 	if(infoRec->ImageWriteFlags & CPU_TRANSFER_BASE_FIXED)
 	   infoRec->ImageWriteRange = 0;
 	HaveImageWriteRect = TRUE;	
+    } else {
+	infoRec->ImageWriteFlags = 0;
+	infoRec->SetupForImageWrite = NULL;
+	infoRec->SubsequentImageWriteRect = NULL;
     } 
 
     /**** Scanline Image Writes ****/
@@ -333,8 +408,14 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
        infoRec->SubsequentImageWriteScanline &&
        infoRec->ScanlineImageWriteBuffers && 
        (infoRec->NumScanlineImageWriteBuffers > 0) &&
-       !xf86IsOptionSet(XAAOptions, XAAOPT_SCANLINE_IMAGE_WRITE_RECT))
+       !xf86IsOptionSet(options, XAAOPT_SCANLINE_IMAGE_WRITE_RECT)) {
 	HaveScanlineImageWriteRect = TRUE;
+    } else {
+	infoRec->ScanlineImageWriteFlags = 0;
+	infoRec->SetupForScanlineImageWrite = NULL;
+	infoRec->SubsequentScanlineImageWriteRect = NULL;
+	infoRec->SubsequentImageWriteScanline = NULL;
+    }
 
 
     if (serverGeneration == 1) {
@@ -379,7 +460,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 #define XAAMSG(s) do { if (serverGeneration == 1) xf86ErrorF(s); } while (0)
 
     if((infoRec->Flags & OFFSCREEN_PIXMAPS) && HaveScreenToScreenCopy &&
-		!xf86IsOptionSet(XAAOptions, XAAOPT_OFFSCREEN_PIXMAPS)) {
+		!xf86IsOptionSet(options, XAAOPT_OFFSCREEN_PIXMAPS)) {
 	XAAMSG("\tOffscreen Pixmaps\n");
     } else {
 	infoRec->Flags &= ~OFFSCREEN_PIXMAPS;
@@ -406,7 +487,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	infoRec->FillSolidRectsFlags = infoRec->SolidFillFlags;
     }
 
-
     /**** FillSolidSpans ****/
 
     if(infoRec->FillSolidSpans) {
@@ -415,7 +495,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	infoRec->FillSolidSpans = XAAFillSolidSpans;
 	infoRec->FillSolidSpansFlags = infoRec->SolidFillFlags;
     }
-
 
     /**** FillMono8x8PatternRects ****/
 
@@ -473,7 +552,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 		infoRec->Color8x8PatternFillFlags;      
     }
 
-
     /**** FillCacheBltRects ****/
 
     if(infoRec->FillCacheBltRects) {
@@ -491,7 +569,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	infoRec->FillCacheBltSpans = XAAFillCacheBltSpans;
 	infoRec->FillCacheBltSpansFlags = infoRec->ScreenToScreenCopyFlags;     
     }
-
 
     /**** FillCacheExpandRects ****/
 
@@ -513,14 +590,12 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 		infoRec->ScreenToScreenColorExpandFillFlags;     
     }
 
-
     /**** FillColorExpandRects ****/
 
     if(infoRec->FillColorExpandRects) {
 	XAAMSG("\tDriver provided FillColorExpandRects replacement\n");
     } else if(HaveColorExpansion) {
 	if (infoRec->CPUToScreenColorExpandFillFlags & TRIPLE_BITS_24BPP) {
-#if 0
 	    if(infoRec->CPUToScreenColorExpandFillFlags & 
 					BIT_ORDER_IN_BYTE_MSBFIRST) {
 		if(infoRec->CPUToScreenColorExpandFillFlags & 
@@ -539,7 +614,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 		    infoRec->FillColorExpandRects = 
 			XAAFillColorExpandRects3LSBFirst;
 	    }
-#endif
 	} else {
 	    if(infoRec->CPUToScreenColorExpandFillFlags & 
 					BIT_ORDER_IN_BYTE_MSBFIRST) {
@@ -561,11 +635,10 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	    }
 	}
 	infoRec->FillColorExpandRectsFlags = 
-	    infoRec->CPUToScreenColorExpandFillFlags & ~TRANSPARENCY_ONLY;
+	    infoRec->CPUToScreenColorExpandFillFlags;
     } else if(HaveScanlineColorExpansion) {
 	if (infoRec->ScanlineCPUToScreenColorExpandFillFlags & 
 					TRIPLE_BITS_24BPP) {
-#if 0
 	    if(infoRec->ScanlineCPUToScreenColorExpandFillFlags & 
 					BIT_ORDER_IN_BYTE_MSBFIRST)
 		infoRec->FillColorExpandRects = 
@@ -573,7 +646,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	    else
 		infoRec->FillColorExpandRects = 
 		    XAAFillScanlineColorExpandRects3LSBFirst;
-#endif
 	} else {
 	    if(infoRec->ScanlineCPUToScreenColorExpandFillFlags & 
 					BIT_ORDER_IN_BYTE_MSBFIRST)
@@ -583,7 +655,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 		infoRec->FillColorExpandRects = 
 		    XAAFillScanlineColorExpandRectsLSBFirst;
 	}
-	infoRec->FillColorExpandRectsFlags = ~TRANSPARENCY_ONLY &
+	infoRec->FillColorExpandRectsFlags =
 	    infoRec->ScanlineCPUToScreenColorExpandFillFlags;
     }
 
@@ -593,7 +665,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	XAAMSG("\tDriver provided FillColorExpandSpans replacement\n");
     } else if(HaveColorExpansion) {
 	if (infoRec->CPUToScreenColorExpandFillFlags & TRIPLE_BITS_24BPP) {
-#if 0
 	    if(infoRec->CPUToScreenColorExpandFillFlags & 
 					BIT_ORDER_IN_BYTE_MSBFIRST) {
 		if(infoRec->CPUToScreenColorExpandFillFlags & 
@@ -612,7 +683,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 		    infoRec->FillColorExpandSpans = 
 			XAAFillColorExpandSpans3LSBFirst;
 	    }
-#endif
 	} else {
 	    if(infoRec->CPUToScreenColorExpandFillFlags & 
 					BIT_ORDER_IN_BYTE_MSBFIRST) {
@@ -634,11 +704,10 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	    }
 	}
 	infoRec->FillColorExpandSpansFlags = 
-	    infoRec->CPUToScreenColorExpandFillFlags & ~TRANSPARENCY_ONLY;
+	    infoRec->CPUToScreenColorExpandFillFlags;
     } else if(HaveScanlineColorExpansion) {
 	if (infoRec->ScanlineCPUToScreenColorExpandFillFlags & 
 					TRIPLE_BITS_24BPP) {
-#if 0
 	    if(infoRec->ScanlineCPUToScreenColorExpandFillFlags & 
 					BIT_ORDER_IN_BYTE_MSBFIRST)
 		infoRec->FillColorExpandSpans = 
@@ -646,7 +715,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	    else
 		infoRec->FillColorExpandSpans = 
 		    XAAFillScanlineColorExpandSpans3LSBFirst;
-#endif
 	} else {
 	    if(infoRec->ScanlineCPUToScreenColorExpandFillFlags & 
 					BIT_ORDER_IN_BYTE_MSBFIRST)
@@ -656,10 +724,9 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 		infoRec->FillColorExpandSpans = 
 		    XAAFillScanlineColorExpandSpansLSBFirst;
 	}
-	infoRec->FillColorExpandSpansFlags = ~TRANSPARENCY_ONLY &
+	infoRec->FillColorExpandSpansFlags =
 	    infoRec->ScanlineCPUToScreenColorExpandFillFlags;
     }
-
 
     /**** FillImageWriteRects ****/
 
@@ -712,8 +779,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 		    infoRec->WriteBitmap = XAAWriteBitmapColorExpandLSBFirst;
 	    }
 	}
-	infoRec->WriteBitmapFlags = 
-	  infoRec->CPUToScreenColorExpandFillFlags & ~TRANSPARENCY_ONLY;
+	infoRec->WriteBitmapFlags = infoRec->CPUToScreenColorExpandFillFlags;
     } else if(HaveScanlineColorExpansion) {
 	if (infoRec->ScanlineCPUToScreenColorExpandFillFlags &
 					TRIPLE_BITS_24BPP) {
@@ -733,17 +799,18 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 		infoRec->WriteBitmap = 
 		    XAAWriteBitmapScanlineColorExpandLSBFirst;
 	}
-	infoRec->WriteBitmapFlags = ~TRANSPARENCY_ONLY &
+	infoRec->WriteBitmapFlags =
 		infoRec->ScanlineCPUToScreenColorExpandFillFlags;
     }
-
-
     
     /**** TE Glyphs ****/
 
     if(infoRec->TEGlyphRenderer) {
 	XAAMSG("\tDriver provided TEGlyphRenderer replacement\n");
     } else if(HaveColorExpansion) {
+	infoRec->TEGlyphRendererFlags = 
+			infoRec->CPUToScreenColorExpandFillFlags;
+
         if (infoRec->CPUToScreenColorExpandFillFlags & TRIPLE_BITS_24BPP) {
 	    if(infoRec->CPUToScreenColorExpandFillFlags & 
 					BIT_ORDER_IN_BYTE_MSBFIRST) {
@@ -760,6 +827,13 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 			XAATEGlyphRenderer3LSBFirstFixedBase;
 		else
 		    infoRec->TEGlyphRenderer = XAATEGlyphRenderer3LSBFirst;
+	    }
+
+	    if (!HaveSolidFillRect &&
+		(infoRec->TEGlyphRendererFlags & RGB_EQUAL)) {
+		infoRec->TEGlyphRendererFlags &= ~RGB_EQUAL;
+		XAAMSG("WARNING:  TEGlyphRenderer cannot support RGB_EQUAL"
+		       " without solid fills\n");
 	    }
 	} else {
 	    if(infoRec->CPUToScreenColorExpandFillFlags & 
@@ -779,13 +853,18 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 		    infoRec->TEGlyphRenderer = XAATEGlyphRendererLSBFirst;
 	    }
 	}
-	infoRec->TEGlyphRendererFlags = 
-			infoRec->CPUToScreenColorExpandFillFlags;
 
-	if(HaveSolidFillRect)
+	if(!HaveSolidFillRect &&
+	   (infoRec->TEGlyphRendererFlags & TRANSPARENCY_ONLY)) {
 	   infoRec->TEGlyphRendererFlags &= ~TRANSPARENCY_ONLY;
+	    XAAMSG("WARNING:  TEGlyphRenderer cannot support TRANPARENCY_ONLY"
+		   " without solid fills\n");
+	}
 
     } else if(HaveScanlineColorExpansion) {
+	infoRec->TEGlyphRendererFlags = 
+		infoRec->ScanlineCPUToScreenColorExpandFillFlags;
+
         if (infoRec->ScanlineCPUToScreenColorExpandFillFlags &
 					TRIPLE_BITS_24BPP) {
 	    if(infoRec->ScanlineCPUToScreenColorExpandFillFlags & 
@@ -795,6 +874,13 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	    else
 		infoRec->TEGlyphRenderer = 
 		    XAATEGlyphRendererScanline3LSBFirst;
+
+	    if (!HaveSolidFillRect &&
+		(infoRec->TEGlyphRendererFlags & RGB_EQUAL)) {
+		infoRec->TEGlyphRendererFlags &= ~RGB_EQUAL;
+		XAAMSG("WARNING:  TEGlyphRenderer cannot support RGB_EQUAL"
+		       " without solid fills\n");
+	    }
 	} else {
 	    if(infoRec->ScanlineCPUToScreenColorExpandFillFlags & 
 					BIT_ORDER_IN_BYTE_MSBFIRST)
@@ -805,13 +891,13 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 		    XAATEGlyphRendererScanlineLSBFirst;
 	}
 
-	infoRec->TEGlyphRendererFlags = 
-		infoRec->ScanlineCPUToScreenColorExpandFillFlags;
-
-	if(HaveSolidFillRect)
+	if(!HaveSolidFillRect &&
+	   (infoRec->TEGlyphRendererFlags & TRANSPARENCY_ONLY)) {
 	   infoRec->TEGlyphRendererFlags &= ~TRANSPARENCY_ONLY;
+	    XAAMSG("WARNING:  TEGlyphRenderer cannot support TRANPARENCY_ONLY"
+		   " without solid fills\n");
+	}
     }
-
 
     /**** NonTE Glyphs ****/
 
@@ -822,7 +908,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	infoRec->NonTEGlyphRenderer = XAANonTEGlyphRenderer;
 	infoRec->NonTEGlyphRendererFlags = infoRec->WriteBitmapFlags;
     }
-    
 
     /**** WritePixmap ****/
 
@@ -837,12 +922,12 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	infoRec->WritePixmapFlags = infoRec->ScanlineImageWriteFlags;
     }
 
-
     /**** ReadPixmap ****/
 
     if(infoRec->ReadPixmap) {
 	XAAMSG("\tDriver provided ReadPixmap replacement\n");
     } 
+
 
     /************** GC Level *************/
 
@@ -895,7 +980,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	}
     }
 
-
     if(infoRec->FillMono8x8PatternRects || infoRec->FillColor8x8PatternRects ||
 	infoRec->FillCacheBltRects || infoRec->FillColorExpandRects ||
 	infoRec->FillCacheExpandRects) {
@@ -905,6 +989,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	    infoRec->PolyFillRectStippledFlags = 0;
 	}
     }
+
     if(infoRec->FillMono8x8PatternSpans || infoRec->FillColor8x8PatternSpans ||
 	infoRec->FillCacheBltSpans || infoRec->FillColorExpandSpans ||
 	infoRec->FillCacheExpandSpans) {
@@ -924,6 +1009,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	    infoRec->PolyFillRectOpaqueStippledFlags = 0;
 	}
     }
+
     if(infoRec->FillMono8x8PatternSpans || infoRec->FillColor8x8PatternSpans ||
 	infoRec->FillCacheBltSpans || infoRec->FillColorExpandSpans ||
 	infoRec->FillCacheExpandSpans) {
@@ -934,7 +1020,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	}
     }
 
-
     if(infoRec->FillMono8x8PatternRects || infoRec->FillColor8x8PatternRects ||
 	infoRec->FillCacheBltRects || infoRec->FillImageWriteRects) {
 	if(!infoRec->PolyFillRectTiled) {
@@ -943,6 +1028,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	    infoRec->PolyFillRectTiledFlags = 0;
 	}
     }
+
     if(infoRec->FillMono8x8PatternSpans || infoRec->FillColor8x8PatternSpans ||
 	infoRec->FillCacheBltSpans) {
 	if(!infoRec->FillSpansTiled) {
@@ -951,7 +1037,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	    infoRec->FillSpansTiledFlags = 0;
 	}
     }
-
 
     if(infoRec->TEGlyphRenderer &&
 	!(infoRec->TEGlyphRendererFlags & NO_TRANSPARENCY)) {
@@ -1006,7 +1091,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	    infoRec->PolyGlyphBltNonTEFlags = infoRec->NonTEGlyphRendererFlags;
 	}
     }
-
 
     if(infoRec->NonTEGlyphRenderer && HaveSolidFillRect) {
 	if(!infoRec->ImageText8NonTE) {
@@ -1104,6 +1188,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	if(!infoRec->ComputeDash)
 	   infoRec->ComputeDash = XAAComputeDash;
     }
+
 
     /************  Validation Functions **************/
 
@@ -1248,7 +1333,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     }
 
 
-
+    /**** Fill choosers ****/
 
     if(!infoRec->StippledFillChooser)
 	infoRec->StippledFillChooser = XAAStippledFillChooser;
@@ -1262,7 +1347,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 
     /**** Setup the pixmap cache ****/
 
-
     if(infoRec->WriteBitmapToCache) {}
     else if(infoRec->WriteBitmap && 
 	!(infoRec->WriteBitmapFlags & TRANSPARENCY_ONLY))
@@ -1272,7 +1356,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     else
 	infoRec->PixmapCacheFlags |= DO_NOT_BLIT_STIPPLES;
 
-
     if(infoRec->WritePixmapToCache) {}
     else if(infoRec->WritePixmap && !(infoRec->WritePixmapFlags & NO_GXCOPY))
 	infoRec->WritePixmapToCache = XAAWritePixmapToCache;
@@ -1281,9 +1364,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     else
 	infoRec->Flags &= ~PIXMAP_CACHE;
 
-    if (xf86IsOptionSet(XAAOptions, XAAOPT_PIXMAP_CACHE))
+    if (xf86IsOptionSet(options, XAAOPT_PIXMAP_CACHE))
 	infoRec->Flags &= ~PIXMAP_CACHE;
-
 
     if(infoRec->WriteMono8x8PatternToCache) {}
     else if(infoRec->PixmapCacheFlags & CACHE_MONO_8x8) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaStipple.c,v 1.6 2000/02/24 19:54:24 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaStipple.c,v 1.7 2000/02/29 17:38:32 tsi Exp $ */
 
 #include "xaa.h"
 #include "xaalocal.h"
@@ -13,7 +13,11 @@ static CARD32* StippleUpTo32_Inverted(CARD32*, CARD32*, int, int, int);
 static CARD32* StippleOver32(CARD32*, CARD32*, int, int, int);
 static CARD32* StippleOver32_Inverted(CARD32*, CARD32*, int, int, int);
 
+#ifdef TRIPLE_BITS
+#define stipple_scanline_func EXPNAME(XAAStippleScanlineFunc3)
+#else
 #define stipple_scanline_func EXPNAME(XAAStippleScanlineFunc)
+#endif
 
 StippleScanlineProcPtr stipple_scanline_func[6] = {
    StipplePowerOfTwo,
@@ -34,7 +38,43 @@ StippleScanlineProcPtr stipple_scanline_func[6] = {
 #endif
 
 
-#if defined(FIXEDBASE) && defined(MSBFIRST)
+/* TRIPLE_BITS pattern expansion */
+#ifdef TRIPLE_BITS
+#define EXPAND_PAT \
+	CARD32 pat1 = byte_expand3[pat & 0xFF], \
+	       pat2 = byte_expand3[(pat & 0xFF00) >> 8], \
+	       pat3 = byte_expand3[(pat & 0xFF0000) >> 16], \
+	       pat4 = byte_expand3[(pat & 0xFF000000) >> 24], \
+	       patA = pat1 | (pat2 << 24), \
+	       patB = (pat2 >> 8) | (pat3 << 16), \
+	       patC = (pat3 >> 16) | (pat4 << 8)
+#ifdef FIXED_BASE
+#define WRITE_PAT1 { \
+	*dest = patA; }
+#define WRITE_PAT2 { \
+	*dest = patA; \
+	*dest = patB; }
+#define WRITE_PAT3 { \
+	*dest = patA; \
+	*dest = patB; \
+	*dest = patC; }
+#else
+#define WRITE_PAT1 { \
+	*(dest++) = patA; }
+#define WRITE_PAT2 { \
+	*(dest) = patA; \
+	*(dest + 1) = patB; \
+	dest += 2; }
+#define WRITE_PAT3 { \
+	*(dest) = patA; \
+	*(dest + 1) = patB; \
+	*(dest + 2) = patC; \
+	dest += 3; }
+#endif
+#endif
+
+
+#if !defined(FIXEDBASE) && !defined(MSBFIRST) && !defined(TRIPLE_BITS)
 
 unsigned int XAAShiftMasks[32] = {
   /* gcc is rather pedantic about SHIFT_R(0xFFFFFFFF,32) */
@@ -59,7 +99,11 @@ unsigned int XAAShiftMasks[32] = {
 #endif
 
 void 
+#ifdef TRIPLE_BITS
+EXPNAME(XAAFillColorExpandRects3)(
+#else
 EXPNAME(XAAFillColorExpandRects)(
+#endif
    ScrnInfoPtr pScrn,
    int fg, int bg, int rop,
    unsigned int planemask,
@@ -88,8 +132,15 @@ EXPNAME(XAAFillColorExpandRects)(
     } 
     StippleFunc = stipple_scanline_func[funcNo];
 
+#ifdef TRIPLE_BITS
+    if((bg == -1) || 
+	(!(infoRec->CPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY) &&
+	(!(infoRec->CPUToScreenColorExpandFillFlags & RGB_EQUAL) ||
+	(CHECK_RGB_EQUAL(bg))))) {
+#else
     if((bg == -1) || 
 	!(infoRec->CPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY)) {
+#endif
 	/* one pass */
     } else if((rop == GXcopy) && infoRec->FillSolidRects) {
 	/* one pass but we fill background rects first */
@@ -107,7 +158,11 @@ EXPNAME(XAAFillColorExpandRects)(
 					pScrn, fg, bg, rop, planemask);
 
     while(nBox--) {
+#ifdef TRIPLE_BITS
+	dwords = (3 * (pBox->x2 - pBox->x1) + 31) >> 5;
+#else
 	dwords = (pBox->x2 - pBox->x1 + 31) >> 5;
+#endif
 
 SECOND_PASS:
 	if(TwoPass) {
@@ -180,7 +235,11 @@ SECOND_PASS:
 
 
 void 
+#ifdef TRIPLE_BITS
+EXPNAME(XAAFillColorExpandSpans3)(
+#else
 EXPNAME(XAAFillColorExpandSpans)(
+#endif
    ScrnInfoPtr pScrn,
    int fg, int bg, int rop,
    unsigned int planemask,
@@ -208,8 +267,15 @@ EXPNAME(XAAFillColorExpandSpans)(
     } 
     StippleFunc = stipple_scanline_func[funcNo];
 
+#ifdef TRIPLE_BITS
+    if((bg == -1) || 
+	(!(infoRec->CPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY) &&
+	(!(infoRec->CPUToScreenColorExpandFillFlags & RGB_EQUAL) ||
+	(CHECK_RGB_EQUAL(bg))))) {
+#else
     if((bg == -1) || 
 	!(infoRec->CPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY)) {
+#endif
 	/* one pass */
     } else if((rop == GXcopy) && infoRec->FillSolidSpans) {
 	/* one pass but we fill background rects first */
@@ -228,7 +294,11 @@ EXPNAME(XAAFillColorExpandSpans)(
 				pScrn, fg, bg, rop, planemask);
 
     while(n--) {
+#ifdef TRIPLE_BITS
+	dwords = (3 * *pwidth + 31) >> 5;
+#else
 	dwords = (*pwidth + 31) >> 5;
+#endif
 
 	srcy = (ppt->y - yorg) % stippleheight;
 	if(srcy < 0) srcy += stippleheight;
@@ -276,7 +346,11 @@ SECOND_PASS:
 #ifndef FIXEDBASE
 
 void 
+#ifdef TRIPLE_BITS
+EXPNAME(XAAFillScanlineColorExpandRects3)(
+#else
 EXPNAME(XAAFillScanlineColorExpandRects)(
+#endif
    ScrnInfoPtr pScrn,
    int fg, int bg, int rop,
    unsigned int planemask,
@@ -304,8 +378,15 @@ EXPNAME(XAAFillScanlineColorExpandRects)(
     } 
     StippleFunc = stipple_scanline_func[funcNo];
 
+#ifdef TRIPLE_BITS
+    if((bg == -1) || 
+      (!(infoRec->ScanlineCPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY) &&
+      (!(infoRec->ScanlineCPUToScreenColorExpandFillFlags & RGB_EQUAL) ||
+      (CHECK_RGB_EQUAL(bg))))) {
+#else
     if((bg == -1) || 
       !(infoRec->ScanlineCPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY)) {
+#endif
 	/* one pass */
     } else if((rop == GXcopy) && infoRec->FillSolidRects) {
 	/* one pass but we fill background rects first */
@@ -323,7 +404,12 @@ EXPNAME(XAAFillScanlineColorExpandRects)(
 				pScrn, fg, bg, rop, planemask);
 
     while(nBox--) {
+#ifdef TRIPLE_BITS
+	dwords = (3 * (pBox->x2 - pBox->x1) + 31) >> 5;
+#else
 	dwords = (pBox->x2 - pBox->x1 + 31) >> 5;
+#endif
+
 SECOND_PASS:
 	if(TwoPass) {
 	    (*infoRec->SetupForScanlineCPUToScreenColorExpandFill)(pScrn, 
@@ -373,7 +459,11 @@ SECOND_PASS:
 }
 
 void 
+#ifdef TRIPLE_BITS
+EXPNAME(XAAFillScanlineColorExpandSpans3)(
+#else
 EXPNAME(XAAFillScanlineColorExpandSpans)(
+#endif
    ScrnInfoPtr pScrn,
    int fg, int bg, int rop,
    unsigned int planemask,
@@ -401,8 +491,15 @@ EXPNAME(XAAFillScanlineColorExpandSpans)(
     } 
     StippleFunc = stipple_scanline_func[funcNo];
 
+#ifdef TRIPLE_BITS
+    if((bg == -1) || 
+      (!(infoRec->ScanlineCPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY) &&
+      (!(infoRec->ScanlineCPUToScreenColorExpandFillFlags & RGB_EQUAL) ||
+      (CHECK_RGB_EQUAL(bg))))) {
+#else
     if((bg == -1) || 
       !(infoRec->ScanlineCPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY)) {
+#endif
 	/* one pass */
     } else if((rop == GXcopy) && infoRec->FillSolidSpans) {
 	/* one pass but we fill background rects first */
@@ -422,7 +519,11 @@ EXPNAME(XAAFillScanlineColorExpandSpans)(
 
 
     while(n--) {
+#ifdef TRIPLE_BITS
+	dwords = (3 * *pwidth + 31) >> 5;
+#else
 	dwords = (*pwidth + 31) >> 5;
+#endif
 
 	srcy = (ppt->y - yorg) % stippleheight;
 	if(srcy < 0) srcy += stippleheight;
@@ -482,6 +583,23 @@ StipplePowerOfTwo(
     pat = XAAReverseBitOrder(pat);    
 #endif
 
+#ifdef TRIPLE_BITS
+    {
+	EXPAND_PAT;
+
+	while(dwords >= 3) {
+	    WRITE_PAT3;
+	    dwords -= 3;
+	}
+	if (dwords == 2) {
+	    WRITE_PAT2;
+	} else if (dwords == 1) {
+	    WRITE_PAT1;
+	}
+
+	return dest;
+    }
+#else /* TRIPLE_BITS */
    while(dwords >= 4) {
 	DEST(0) = pat;
 	DEST(1) = pat;
@@ -500,6 +618,7 @@ StipplePowerOfTwo(
    if(dwords == 2) RETURN(2);
    DEST(2) = pat;
    RETURN(3);
+#endif /* TRIPLE_BITS */
 }
 
 static CARD32 *
@@ -525,6 +644,23 @@ StipplePowerOfTwo_Inverted(
 
    pat = ~pat;
 
+#ifdef TRIPLE_BITS
+    {
+	EXPAND_PAT;
+
+	while(dwords >= 3) {
+	    WRITE_PAT3;
+	    dwords -= 3;
+	}
+	if (dwords == 2) {
+	    WRITE_PAT2;
+	} else if (dwords == 1) {
+	    WRITE_PAT1;
+	}
+
+	return dest;
+    }
+#else /* TRIPLE_BITS */
    while(dwords >= 4) {
 	DEST(0) = pat;
 	DEST(1) = pat;
@@ -543,6 +679,7 @@ StipplePowerOfTwo_Inverted(
    if(dwords == 2) RETURN(2);
    DEST(2) = pat;
    RETURN(3);
+#endif /* TRIPLE_BITS */
 }
 
 
@@ -551,7 +688,6 @@ StippleUpTo32(
    CARD32* base, CARD32* src, 
    int shift, int width, int dwords
 ){
-    int offset = shift;
     CARD32 pat = *src & XAAShiftMasks[width];
 
     while(width <= 15) {
@@ -561,9 +697,24 @@ StippleUpTo32(
     pat |= SHIFT_L(pat,width);
 
     while(dwords--) {
-	WRITE_BITS(SHIFT_R(pat,offset) | SHIFT_L(pat,width-offset));
-	offset += 32;
-	while(offset >= width) offset -= width;
+#ifdef TRIPLE_BITS
+	CARD32 bits = SHIFT_R(pat,shift) | SHIFT_L(pat,width-shift);
+
+	if(dwords >= 2) {
+	    WRITE_BITS3(bits);
+	    dwords -= 2;
+	} else if(dwords > 0) {
+	    WRITE_BITS2(bits);
+	    dwords--;
+	} else {
+	    WRITE_BITS1(bits);
+	}
+#else
+	WRITE_BITS(SHIFT_R(pat,shift) | SHIFT_L(pat,width-shift));
+#endif
+
+	shift += 32;
+	shift %= width;
     }
     return base;
 }
@@ -583,9 +734,24 @@ StippleUpTo32_Inverted(
     pat |= SHIFT_L(pat,width);
 
     while(dwords--) {
+#ifdef TRIPLE_BITS
+	CARD32 bits = ~(SHIFT_R(pat,shift) | SHIFT_L(pat,width-shift));
+
+	if(dwords >= 2) {
+	    WRITE_BITS3(bits);
+	    dwords -= 2;
+	} else if(dwords > 0) {
+	    WRITE_BITS2(bits);
+	    dwords--;
+	} else {
+	    WRITE_BITS1(bits);
+	}
+#else
 	WRITE_BITS(~(SHIFT_R(pat,shift) | SHIFT_L(pat,width-shift)));
+#endif
+
 	shift += 32;
-	while(shift >= width) shift -= width;
+	shift %= width;
     }
     return base;
 }
@@ -597,25 +763,38 @@ StippleOver32(
    int offset, int width, int dwords
 ){
    CARD32* srcp;
+   CARD32 bits;
    int bitsleft, shift;   
 
    while(dwords--) {
 	bitsleft = width - offset;
-	srcp = (CARD32*)(src + (offset >> 5));
+	srcp = src + (offset >> 5);
 	shift = offset & 31;
 
-	if(bitsleft >= 32) {
-	    if(shift)
-		WRITE_BITS(SHIFT_R(*srcp,shift) | 
-			   SHIFT_L(srcp[1],32-shift));
-	    else
-		WRITE_BITS(*srcp);
+	if(bitsleft < 32)
+	    bits = SHIFT_L(*src,bitsleft) | 
+		      (SHIFT_R(*srcp,shift) & XAAShiftMasks[bitsleft]);
+	else if(shift)
+	    bits = SHIFT_R(*srcp,shift) | SHIFT_L(srcp[1],32-shift);
+	else
+	    bits = *srcp;
+
+#ifdef TRIPLE_BITS
+	if(dwords >= 2) {
+	    WRITE_BITS3(bits);
+	    dwords -= 2;
+	} else if(dwords > 0) {
+	    WRITE_BITS2(bits);
+	    dwords--;
 	} else {
-	    WRITE_BITS(SHIFT_L(*src,bitsleft) | 
-		      (SHIFT_R(*srcp,shift) & XAAShiftMasks[bitsleft]));
+	    WRITE_BITS1(bits);
 	}
+#else
+	WRITE_BITS(bits);
+#endif
+
 	offset += 32;
-	while(offset >= width) offset -= width;
+	offset %= width;
    }
    return base;
 }
@@ -627,25 +806,40 @@ StippleOver32_Inverted(
    int offset, int width, int dwords
 ){
    CARD32* srcp;
+   CARD32 bits;
    int bitsleft, shift;   
 
    while(dwords--) {
 	bitsleft = width - offset;
-	srcp = (CARD32*)(src + (offset >> 5));
+	srcp = src + (offset >> 5);
 	shift = offset & 31;
 
-	if(bitsleft >= 32) {
-	    if(shift)
-		WRITE_BITS(~(SHIFT_R(*srcp,shift) | 
-			   SHIFT_L(srcp[1],32-shift)));
-	    else
-		WRITE_BITS(~(*srcp));
+	if(bitsleft < 32)
+	    bits = SHIFT_L(*src,bitsleft) | 
+		      (SHIFT_R(*srcp,shift) & XAAShiftMasks[bitsleft]);
+	else if(shift)
+	    bits = SHIFT_R(*srcp,shift) | SHIFT_L(srcp[1],32-shift);
+	else
+	    bits = *srcp;
+
+	bits = ~bits;
+
+#ifdef TRIPLE_BITS
+	if(dwords >= 2) {
+	    WRITE_BITS3(bits);
+	    dwords -= 2;
+	} else if(dwords > 0) {
+	    WRITE_BITS2(bits);
+	    dwords--;
 	} else {
-	    WRITE_BITS(~(SHIFT_L(*src,bitsleft) | 
-		      (SHIFT_R(*srcp,shift) & XAAShiftMasks[bitsleft])));
+	    WRITE_BITS1(bits);
 	}
+#else
+	WRITE_BITS(bits);
+#endif
+
 	offset += 32;
-	while(offset >= width) offset -= width;
+	offset %= width;
    }
    return base;
 }

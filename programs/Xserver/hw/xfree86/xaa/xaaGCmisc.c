@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.12 1998/12/06 06:08:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.13 1999/09/25 14:38:14 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -265,7 +265,7 @@ XAAValidateImageGlyphBlt(
 	if(infoRec->ImageGlyphBltNonTE &&
 		CHECK_PLANEMASK(pGC,infoRec->ImageGlyphBltNonTEFlags) &&
 		CHECK_FG(pGC,infoRec->ImageGlyphBltNonTEFlags) &&
-	   infoRec->SetupForSolidFill && infoRec->SubsequentSolidFillRect &&
+	   infoRec->SetupForSolidFill &&
 		CHECK_PLANEMASK(pGC,infoRec->SolidFillFlags) &&
 		CHECK_BG(pGC,infoRec->SolidFillFlags))
 	{
@@ -283,7 +283,7 @@ XAAValidateImageGlyphBlt(
 		pGC->ops->ImageGlyphBlt = infoRec->ImageGlyphBltTE;
 	} else {
 	   if(CHECK_FG(pGC,infoRec->ImageGlyphBltTEFlags) &&
-	      infoRec->SetupForSolidFill && infoRec->SubsequentSolidFillRect &&
+	      infoRec->SetupForSolidFill &&
 	      CHECK_PLANEMASK(pGC,infoRec->SolidFillFlags) &&
 	      CHECK_BG(pGC,infoRec->SolidFillFlags)) 
 	   {

@@ -1,4 +1,21 @@
-XFree86 4.0b (?? April 2000)
+XFree86 4.0b (?? May 2000)
+ 150. Disable debugging messages from XF86-Misc extension (Marc La France).
+ 149. Ensure XAA always respects user options that disable subsets of its
+      primitives (Marc La France).
+ 148. Bug fix in XAA's CPU-to-screen colour expansion (Marc La France).
+ 147. Finish off XAA's CPU-to-screen colour expansion for 24bpp
+      (Marc La France).
+ 146. When matching adapters to XF86Config sections, the ATI driver will now
+      look at the primary adapter before any other non-primary PCI adapters
+      (Marc La France).
+ 145. Ensure Mach64 acceleration is disabled when using the VGA CRTC
+      (Marc La France).
+ 144. Set a Mach64's scaler/overlay clock divider in preparation for a GATOS
+      merge (Marc La France).
+ 143. Make VBE use its own option instead of DDC's (a consequence of
+      re-entrancy) (Marc La France).
+ 142. Make option processing re-entrant in DDC, int10, VBE and XAA modules, and
+      in the common layer (Marc La France).
  141. Add Permedia3 support to the glint driver (Sven Luther).
  140. Fix XvPutImage in the client libs so that it can use the BIG-REQUESTS
       extension (Mark Vojkovich).
@@ -10287,4 +10304,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1134 2000/04/22 21:49:38 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1140 2000/05/02 17:22:00 alanh Exp $

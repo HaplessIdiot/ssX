@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillPoly.c,v 1.10 1999/04/25 10:02:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillPoly.c,v 1.12 2000/03/28 01:21:04 mvojkovi Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -723,8 +723,7 @@ XAAFillPolygonStippled(
     yorg = (pDraw->y + pGC->patOrg.y);
 
 
-    if((fg == bg) && (bg != -1) &&
-	infoRec->SubsequentSolidFillRect && infoRec->SetupForSolidFill) {
+    if((fg == bg) && (bg != -1) && infoRec->SetupForSolidFill) {
 
 	(*infoRec->SetupForSolidFill)(infoRec->pScrn, fg,
 				pGC->alu, pGC->planemask);
