@@ -1,6 +1,7 @@
 XFree86 3.0Aa (22 May 1994)
- 57. Merge in XC public fix-01.
- 56. Updates to FreeBSD.cf.
+ 58. Merge in XC public fix-01.
+ 57. Updates to FreeBSD.cf.
+ 56. Add xf86site.def which can optionally be included from site.def.
  55. SCO support and some bug fixes (David McCullough).
  54. Some initial untested S3 864/964 code (Harald Koenig).
  53. Fix for bsdLib.tmpl.
