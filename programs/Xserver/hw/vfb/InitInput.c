@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitInput.c,v 3.6 2001/01/17 22:36:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitInput.c,v 3.7 2001/05/16 08:01:09 alanh Exp $ */
 
 #include "X11/X.h"
 #define NEED_EVENTS
@@ -36,15 +36,6 @@ from The Open Group.
 #include "lk201kbd.h"
 #include "keysym.h"
 
-#ifdef XFree86Server
-/*
- * when building the loader, we add some code that tries to 
- * switch bit ordering based on xf86bpp; since Xvfb doesn't
- * use that, we have to add this dummy here
- */
-int xf86bpp = 8;
-#endif
- 
 Bool
 LegalModifier(key, pDev)
     unsigned int key;
