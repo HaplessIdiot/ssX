@@ -1116,12 +1116,6 @@ extern	Bool	XkbInitKeyboardDeviceStruct(
 #endif
 );
 
-extern	void	XkbInitDevice(
-#if NeedFunctionPrototypes
-	DeviceIntPtr 		/* pXDev */
-#endif
-);
-
 extern	int SProcXkbDispatch(
 #if NeedFunctionPrototypes
 	ClientPtr		/* client */

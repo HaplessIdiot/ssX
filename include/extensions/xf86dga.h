@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86dga.h,v 3.4 1996/10/17 15:10:55 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dga.h,v 3.5.6.1 1997/07/17 03:06:13 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -35,7 +35,8 @@ Copyright (c) 1995  XFree86 Inc
 #define XF86DGANoDirectVideoMode	1
 #define XF86DGAScreenNotActive		2
 #define XF86DGADirectNotActivated	3
-#define XF86DGANumberErrors		(XF86DGADirectNotActivated + 1)
+#define XF86DGAOperationNotSupported	4
+#define XF86DGANumberErrors		(XF86DGAOperationNotSupported + 1)
 
 #ifndef _XF86DGA_SERVER_
 
