@@ -833,18 +833,18 @@ source files.
             II, Ricardo Y. Igarashi, Mutsumi ISHIKAWA , Tsuyoshi ITO, Kean
             Johnston, Nicolas JOLY, Phil Jones, Roman Kagan, Theppitak
             Karoonboonyanan, Etsushi Kato, Koike Kazuhiko, Aidan Kehoe, Juer-
-            gen Keil, Andreas Kies, Thomas Klausner, Egmont Koblinger, Vlatko
-            Kosturjak, Kusanagi Kouichi, Peter Kunzmann, Nick Kurshev,
-            Mashrab Kuvatov, Marc La France, maxim, Nolan Leake, Michel
-            Lespinasse, Noah Levitt, Dave Love, H.J. Lu, Lubos Lunak, Sven
-            Luther, Torrey T. Lyons, Calum Mackay, Roland Mainz, Kevin Mar-
-            tin, Michal Maruska, Kensuke Matsuzaki, Stephen McCamant, Ferris
-            McCormick, Nicholas Miell, Robert Millan, Hisashi MIYASHITA,
-            Patrik Montgomery, Joe Moss, Josselin Mouette, Frank Murphy,
-            Reiko Nakajima, Dan Nelson, Bastien Nocera, Alexandre Oliva,
-            Hideki ONO, Peter Osterlund, Sergey V. Oudaltsov, Séamus Ó Cia-
-            rdhuáin, Bob Paauwe, Paul Pacheco, Tom Pala, Ivan Pascal, T. M.
-            Pederson, Earle F. Philhower III, Nils Philippsen, Manfred
+            gen Keil, Andreas Kies, Thomas Klausner, Mario Klebsch, Egmont
+            Koblinger, Vlatko Kosturjak, Kusanagi Kouichi, Peter Kunzmann,
+            Nick Kurshev, Mashrab Kuvatov, Marc La France, maxim, Nolan
+            Leake, Michel Lespinasse, Noah Levitt, Dave Love, H.J. Lu, Lubos
+            Lunak, Sven Luther, Torrey T. Lyons, Calum Mackay, Roland Mainz,
+            Kevin Martin, Michal Maruska, Kensuke Matsuzaki, Stephen McCa-
+            mant, Ferris McCormick, Nicholas Miell, Robert Millan, Hisashi
+            MIYASHITA, Patrik Montgomery, Joe Moss, Josselin Mouette, Frank
+            Murphy, Reiko Nakajima, Dan Nelson, Bastien Nocera, Alexandre
+            Oliva, Hideki ONO, Peter Osterlund, Sergey V. Oudaltsov, Séamus Ó
+            Ciardhuáin, Bob Paauwe, Paul Pacheco, Tom Pala, Ivan Pascal, T.
+            M. Pederson, Earle F. Philhower III, Nils Philippsen, Manfred
             Pohler, Alexander Pohoyda, Arnaud Quette, Jim Radford, Dale Rahn,
             Lucas Correia Villa Real, René Rebe, Sebastian Rittau, Tim
             Roberts, Alastair M. Robinson, Branden Robinson, Daniel Rock, Ian
@@ -865,7 +865,7 @@ source files.
       Webmaster:
             Georgina O. Economou
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.92 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.93 herrb Exp $
 
 
 $XFree86: $
