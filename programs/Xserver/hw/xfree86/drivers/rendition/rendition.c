@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.6 1999/06/27 09:20:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.7 1999/10/13 04:21:20 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -180,15 +180,6 @@ static XF86ModuleVersionInfo renditionVersionRec = {
 XF86ModuleData renditionModuleData = 
                { &renditionVersionRec, renditionSetup, NULL };
 
-static OptionInfoRec renditionOptions[]={
-    { OPTION_FBWC,      "FramebufferWC", OPTV_BOOLEAN, {0}, FALSE },
-    { OPTION_SW_CURSOR, "SW_Cursor", OPTV_BOOLEAN, {0}, FALSE },
-    { OPTION_NOACCEL,   "NoAccel",  OPTV_BOOLEAN, {0}, FALSE },
-    { OPTION_OVERCLOCK_MEM,"Overclock_Mem",  OPTV_BOOLEAN, {0}, FALSE },
-    { OPTION_NO_DDC,    "NoDDC",    OPTV_BOOLEAN, {0}, FALSE },    
-    { -1,                NULL,      OPTV_NONE,    {0}, FALSE }
-};
-
 static pointer
 renditionSetup(pointer Module, pointer Options, int *ErrorMajor, 
                int *ErrorMinor)
@@ -210,6 +201,14 @@ renditionSetup(pointer Module, pointer Options, int *ErrorMajor,
 
 #endif
 
+static OptionInfoRec renditionOptions[]={
+    { OPTION_FBWC,      "FramebufferWC", OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_SW_CURSOR, "SW_Cursor", OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_NOACCEL,   "NoAccel",  OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_OVERCLOCK_MEM,"Overclock_Mem",  OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_NO_DDC,    "NoDDC",    OPTV_BOOLEAN, {0}, FALSE },    
+    { -1,                NULL,      OPTV_NONE,    {0}, FALSE }
+};
 
 enum renditionTypes {
     CHIP_RENDITION_V1000,
