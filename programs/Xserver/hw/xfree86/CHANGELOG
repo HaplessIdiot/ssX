@@ -1,4 +1,5 @@
 XFree86 4.0.1h (xx December 2000)
+1071. Add Xft support to xditview with #ifdefs (Keith Packard)
 1070. Add a MIT-MAGIC-COOKIE-1 generator to startx for OpenBSD and make
       mkcookie support more generic (Matthieu Herrb).
 1069. Update OpenBSD and NetBSD docs (Matthieu Herrb).
@@ -11801,4 +11802,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1436 2000/12/02 15:58:34 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1437 2000/12/02 19:06:58 herrb Exp $

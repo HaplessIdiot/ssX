@@ -9,6 +9,10 @@
 #ifndef _XtDviP_h
 #define _XtDviP_h
 
+#ifdef USE_XFT
+#include <X11/Xft/Xft.h>
+#endif
+
 #include "Dvi.h"
 #include <X11/Xaw/SimpleP.h>
 #include "DviChar.h"
@@ -59,7 +63,12 @@ typedef struct _dviFontSizeList {
 	struct _dviFontSizeList	*next;
 	int			size;
 	char			*x_name;
+#ifdef USE_XFT
+	XftFont			*font;
+	Bool			core;
+#else
 	XFontStruct		*font;
+#endif
 	int			doesnt_exist;
 } DviFontSizeList;
 
@@ -83,15 +92,32 @@ typedef struct _dviFontMap {
 #define DVI_TEXT_CACHE_SIZE	256
 #define DVI_CHAR_CACHE_SIZE	1024
 
+#ifdef USE_XFT
+typedef struct _dviTextItem {
+	char		*chars;
+	int		nchars;
+	int		x;
+	XftFont		*font;
+} DviTextItem;
+#endif
+
 typedef struct _dviCharCache {
+#ifdef USE_XFT
+	DviTextItem	cache[DVI_TEXT_CACHE_SIZE];
+#else
 	XTextItem	cache[DVI_TEXT_CACHE_SIZE];
+#endif
 	char		char_cache[DVI_CHAR_CACHE_SIZE];
 	int		index;
 	int		max;
 	int		char_index;
 	int		font_size;
 	int		font_number;
+#ifdef USE_XFT
+	XftFont		*font;
+#else
 	XFontStruct	*font;
+#endif
 	int		start_x, start_y;
 	int		x, y;
 } DviCharCache;
@@ -127,12 +153,17 @@ typedef struct {
 	int		last_page;
 	FILE		*file;
 	Boolean		seek;		/* file is "seekable" */
+#ifdef USE_XFT
+	XftFont		*default_font;
+#else
 	XFontStruct	*default_font;
+#endif
 	int		backing_store;
 	Boolean		noPolyText;
 	int		screen_resolution;
 	float		page_width;
 	float		page_height;
+	int		size_scale_set;
 	/*
  	 * private state
  	 */
@@ -140,6 +171,10 @@ typedef struct {
 	char		readingTmp;	/* reading now from tmp */
 	char		ungot;		/* have ungetc'd a char */
 	GC		normal_GC;
+#ifdef USE_XFT
+	XftDraw		*draw;
+	XftColor	black;
+#endif
 	DviFileMap	*file_map;
 	DviFontList	*fonts;
 	DviFontMap	*font_map;
@@ -151,7 +186,12 @@ typedef struct {
 	int		line_style;
 	int		desired_width;
 	int		desired_height;
+	int		size_scale;	/* font size scale */
+#ifdef USE_XFT
+	XftFont		*font;
+#else
 	XFontStruct	*font;
+#endif
 	int		display_enable;
 	double		scale;		/* device coordinates to pixels */
 	struct ExposedExtents {
@@ -191,8 +231,8 @@ typedef struct {
 
 #define ToX(dw,device)		    ((int) ((device) * (dw)->dvi.scale + 0.5))
 #define ToDevice(dw,x)		    ((int) ((x) / (dw)->dvi.scale + 0.5))
-#define FontSizeInPixels(dw,size)   ((int) ((size) * (dw)->dvi.screen_resolution / 72))
-#define FontSizeInDevice(dw,size)   ((int) ((size) * (dw)->dvi.device_resolution / 72))
+#define FontSizeInPixels(dw,size)   ((int) ((size) * (dw)->dvi.screen_resolution / ((dw)->dvi.size_scale * 72)))
+#define FontSizeInDevice(dw,size)   ((int) ((size) * (dw)->dvi.device_resolution / ((dw)->dvi.size_scale * 72)))
 
 /*
  * Full widget declaration
@@ -204,7 +244,11 @@ typedef struct _DviRec {
     DviPart	dvi;
 } DviRec;
 
+#ifdef USE_XFT
+extern XftFont		*QueryFont ();
+#else
 extern XFontStruct	*QueryFont ();
+#endif
 
 extern DviCharNameMap	*QueryFontMap ();
 #endif /* _XtDviP_h */

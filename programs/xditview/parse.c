@@ -50,12 +50,24 @@ extern char *GetWord(), *GetLine ();
 
 #define HorizontalMove(dw, delta)	((dw)->dvi.state->x += (delta))
 
-#define charWidth(fi,c) (\
+#ifdef USE_XFT
+int
+charWidth (DviWidget dw, XftFont *font, char c)
+{
+    XGlyphInfo	extents;
+
+    XftTextExtents8 (XtDisplay (dw), font, 
+		     (unsigned char *) &c, 1, &extents);
+    return extents.xOff;
+}
+#else
+#define charWidth(dw,fi,c) (\
     (fi)->per_char ?\
 	(fi)->per_char[(c) - (fi)->min_char_or_byte2].width\
     :\
 	(fi)->max_bounds.width\
 )
+#endif
     
 ParseInput(dw)
     register DviWidget	dw;
@@ -151,8 +163,21 @@ ParseInput(dw)
 			break;
 		case 's':	/* ignore fractional sizes */
 			n = GetNumber(dw);
+			if (!dw->dvi.size_scale)
+			{
+			    static int	guesses[] = { 1, 4, 100, 1000, 1 };
+			    int		i;
+
+			    for (i = 0; i < 4; i++)
+				if (8 <= n/guesses[i] && n/guesses[i] <= 24)
+				{
+				    break;
+				}
+    			    dw->dvi.size_scale = guesses[i];
+			}
 			dw->dvi.state->font_size = n;
-			dw->dvi.state->line_width = FontSizeInDevice(dw, n / 10.0);
+			dw->dvi.state->line_width = n * (dw->dvi.device_resolution / 
+							 (720 * dw->dvi.size_scale));
 			break;
 		case 'f':
 			n = GetNumber(dw);
@@ -190,7 +215,13 @@ ParseInput(dw)
 			HorizontalGoto(dw, 0);
 			break;
 		case '#':	/* comment */
+		case 'F':	/* file info */
 			GetLine(dw, NULL, 0);
+			break;
+		case 't':	/* text */
+			GetLine(dw, Buffer, BUFSIZ);
+			PutCharacters (dw, Buffer, strlen (Buffer));
+			dw->dvi.state->x = ToDevice (dw, dw->dvi.cache.x);
 			break;
 		case 'x':	/* device control */
 			ParseDeviceControl(dw);
@@ -200,6 +231,8 @@ ParseInput(dw)
 			FlushCharCache (dw);
 			return dw->dvi.current_page;
 		default:
+			GetLine (dw, Buffer, BUFSIZ);
+			fprintf (stderr, "Unknown command %c%s\n", Buffer);
 			break;
 		}
 	}
@@ -215,10 +248,10 @@ push_env(dw)
 	if (dw->dvi.state)
 		*new = *(dw->dvi.state);
 	else {
-		new->font_size = 10;
+		new->font_size = 10 * dw->dvi.size_scale;
 		new->font_number = 1;
 		new->line_style = 0;
-		new->line_width = FontSizeInDevice(dw, 10/10);
+		new->line_width = 10;
 		new->x = 0;
 		new->y = 0;
 	}
@@ -243,6 +276,7 @@ InitTypesetter (dw)
 {
 	while (dw->dvi.state)
 		pop_env (dw);
+	dw->dvi.size_scale = dw->dvi.size_scale_set;
 	push_env (dw);
 	FlushCharCache (dw);
 }
@@ -279,8 +313,13 @@ PutCharacters (dw, src, len)
 	xx + fx >= dw->dvi.extents.x1 &&
 	xx - fx <= dw->dvi.extents.x2)
     {
+#ifdef USE_XFT
+	XftFont	    *font;
+	DviTextItem *text;
+#else
 	register XFontStruct	*font;
 	register XTextItem		*text;
+#endif
 
 	if (!dw->dvi.display_enable)
 	    return FALSE;
@@ -311,18 +350,32 @@ PutCharacters (dw, src, len)
 		dw->dvi.cache.cache[dw->dvi.cache.index].nchars = 0;
 	    }
 	}
+	if (!dw->dvi.cache.font)
+	    SetFont (dw);
 	text = &dw->dvi.cache.cache[dw->dvi.cache.index];
 	font = dw->dvi.cache.font;
 	dst = &dw->dvi.cache.char_cache[dw->dvi.cache.char_index];
 	if (text->nchars == 0) {
 	    text->chars = dst;
+#ifdef USE_XFT
+	    text->x = xx;
+#else
 	    text->delta = xx - dw->dvi.cache.x;
+#endif
+#ifdef USE_XFT
+	    text->font = font;
+#endif
 	    if (font != dw->dvi.font) {
+#ifndef USE_XFT
 		text->font = font->fid;
+#endif
 		dw->dvi.font = font;
-	    } else
+	    }
+#ifndef USE_XFT
+	    else
 		text->font = None;
-	    dw->dvi.cache.x += text->delta;
+#endif
+	    dw->dvi.cache.x = xx;
 	}
 	dw->dvi.cache.char_index += len;
 	text->nchars += len;
@@ -330,7 +383,8 @@ PutCharacters (dw, src, len)
 	{
 	    c = *src++;
 	    *dst++ = c;
-	    dw->dvi.cache.x += charWidth(font,c);
+	    if (font)
+		dw->dvi.cache.x += charWidth(dw,font,c);
 	}
 	return TRUE;
     }
@@ -379,13 +433,14 @@ ParseDrawFunction(dw, buf)
     }
 } 
 
+extern int LastPage, CurrentPage;
+
 static
 ParseDeviceControl(dw)				/* Parse the x commands */
 	DviWidget	dw;
 {
     char str[20], str1[50];
     int c, n;
-    extern int LastPage, CurrentPage;
 
     GetWord (dw, str, 20);
     switch (str[0]) {			/* crude for now */

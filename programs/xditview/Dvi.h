@@ -29,6 +29,7 @@
 #define XtNscreenResolution "screenResolution"
 #define XtNpageWidth	"pageWidth"
 #define XtNpageHeight	"pageHeight"
+#define XtNsizeScale	"sizeScale"
 
 #define XtCFontMap	"FontMap"
 #define XtCPageNumber	"PageNumber"
@@ -38,6 +39,7 @@
 #define XtCScreenResolution "ScreenResolution"
 #define XtCPageWidth	"PageWidth"
 #define XtCPageHeight	"PageHeight"
+#define XtCSizeScale	"SizeScale"
 
 typedef struct _DviRec *DviWidget;  /* completely defined in DviPrivate.h */
 typedef struct _DviClassRec *DviWidgetClass;    /* completely defined in DviPrivate.h */
