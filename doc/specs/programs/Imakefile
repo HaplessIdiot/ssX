@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:42:50 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/doc/specs/programs/Imakefile,v 1.15 2003/01/15 15:24:28 dawes Exp $
+XCOMM $XFree86: xc/doc/specs/programs/Imakefile,v 1.16 2003/02/17 18:52:45 dawes Exp $
 
 /* does not include manual pages under util (not X programs)
    or any of the library function manual pages under doc/man */
@@ -93,15 +93,21 @@ MANUALS = \
   $(TOP)/doc/man/general/security.man \
   $(TOP)/programs/appres/appres.man \
   $(TOP)/programs/bdftopcf/bdftopcf.man \
+  $(TOP)/fonts/util/bdftruncate.man \
   $(TOP)/programs/beforelight/b4light.man \
   $(TOP)/programs/bitmap/bitmap.man \
   $(TOP)/config/util/ccmakedep.man \
   $(TOP)/config/util/cleanlinks.man \
   $(TOP)/programs/Xserver/hw/sun/constype.man \
+  $(TOP)/programs/cxpm/cxpm.man \
   $(TOP)/programs/xf86dga/dga.man \
   $(TOP)/programs/dpsexec/dpsexec.man \
   $(TOP)/programs/dpsinfo/dpsinfo.man \
   $(TOP)/programs/editres/editres.man \
+  $(TOP)/lib/fontconfig/fc-cache/fc-cache.man \
+  $(TOP)/lib/fontconfig/fc-lang/fc-lang.man \
+  $(TOP)/lib/fontconfig/fc-list/fc-list.man \
+  $(TOP)/lib/fontconfig/src/fontconfig.man \
   $(TOP)/programs/fslsfonts/fslsfonts.man \
   $(TOP)/programs/fstobdf/fstobdf.man \
   $(TOP)/config/util/gccmakedep.man \
@@ -119,6 +125,7 @@ MANUALS = \
   $(TOP)/config/util/makeg.man \
   $(TOP)/programs/makepsres/makepsres.man \
   $(TOP)/config/util/makestrs.man \
+  $(TOP)/config/util/mergelib.man \
   $(TOP)/config/makedepend/mkdepend.man \
   $(TOP)/programs/mkcfm/mkcfm.man \
   $(TOP)/config/util/mkdirhier.man \
@@ -128,18 +135,22 @@ MANUALS = \
   $(TOP)/programs/oclock/oclock.man \
   $(TOP)/programs/proxymngr/proxymngr.man \
   $(TOP)/config/pswrap/pswrap.man \
-  $(TOP)/config/util/revpath.man \
   $(TOP)/programs/xterm/resize.man \
+  $(TOP)/config/util/revpath.man \
+  $(TOP)/config/util/rman.man \
   $(TOP)/programs/rstart/rstart.man \
   $(TOP)/programs/rstart/rstartd.man \
   $(TOP)/programs/xdm/sessreg.man \
   $(TOP)/programs/setxkbmap/setxkbmap.man \
+  $(TOP)/programs/showfont/showfont.man \
   $(TOP)/programs/rgb/showrgb.man \
   $(TOP)/programs/smproxy/smproxy.man \
   $(TOP)/programs/xinit/startx.man \
+  $(TOP)/programs/sxpm/sxpm.man \
   $(TOP)/programs/xrx/testplugin/testplugin.man \
   $(TOP)/programs/texteroids/texteroids.man \
   $(TOP)/programs/twm/twm.man \
+  $(TOP)/fonts/util/ucs2any.man \
   $(TOP)/programs/viewres/viewres.man \
   $(TOP)/programs/x11perf/x11perf.man \
   $(TOP)/programs/x11perf/x11pcomp.man \
