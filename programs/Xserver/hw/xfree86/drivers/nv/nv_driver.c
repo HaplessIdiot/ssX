@@ -1659,7 +1659,6 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	   switch(pScrn->bitsPerPixel) {
                case 8:	refreshArea = NVRefreshArea8;	break;
                case 16:	refreshArea = NVRefreshArea16;	break;
-               case 24:	refreshArea = NVRefreshArea24;	break;
                case 32:	refreshArea = NVRefreshArea32;	break;
 	   }
 	}
