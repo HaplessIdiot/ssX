@@ -15,6 +15,8 @@ extern Bool PanoramiXCreateConnectionBlock(void);
 extern PanoramiXRes * PanoramiXFindIDByScrnum(RESTYPE, XID, int);
 extern PanoramiXRes * PanoramiXFindIDOnAnyScreen(RESTYPE, XID);
 extern WindowPtr PanoramiXChangeWindow(int, WindowPtr);
+extern Bool XineramaRegisterConnectionBlockCallback(void (*func)(void));
+
 extern RegionRec XineramaScreenRegions[MAXSCREENS];
 
 extern unsigned long XRC_DRAWABLE;

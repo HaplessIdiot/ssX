@@ -405,6 +405,27 @@ PanoramiXChangeWindow(int ScrnNum, WindowPtr pWin)
     return pWin;
 }
 
+typedef struct _connect_callback_list {
+    void (*func)(void);
+    struct _connect_callback_list *next;
+} XineramaConnectionCallbackList;
+
+static XineramaConnectionCallbackList *ConnectionCallbackList = NULL;
+
+Bool
+XineramaRegisterConnectionBlockCallback(void (*func)(void))
+{
+    XineramaConnectionCallbackList *newlist;
+
+    if(!(newlist = xalloc(sizeof(XineramaConnectionCallbackList))))
+	return FALSE;
+
+    newlist->next = ConnectionCallbackList;
+    newlist->func = func;
+    ConnectionCallbackList = newlist;
+
+    return TRUE;
+}
 
 /*
  *	PanoramiXExtensionInit():
@@ -698,6 +719,16 @@ Bool PanoramiXCreateConnectionBlock(void)
     height_mult = root->pixHeight / old_height;
     root->mmWidth *= width_mult;
     root->mmHeight *= height_mult;
+
+    while(ConnectionCallbackList) {
+	pointer tmp;
+
+	tmp = (pointer)ConnectionCallbackList;
+	(*ConnectionCallbackList->func)();
+	ConnectionCallbackList = ConnectionCallbackList->next;
+	xfree(tmp);
+    }
+
     return TRUE;
 }
 
