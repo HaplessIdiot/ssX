@@ -1176,8 +1176,8 @@ XAACheckStippleReducibility(PixmapPtr pPixmap)
     }
 
     if(infoRec->Mono8x8PatternFillFlags & BIT_ORDER_IN_BYTE_MSBFIRST) {
-	pPriv->pattern0 = XAAReverseBitOrder(pPriv->pattern0);
-	pPriv->pattern1 = XAAReverseBitOrder(pPriv->pattern1);
+	pPriv->pattern0 = SWAP_BITS_IN_BYTES(pPriv->pattern0);
+	pPriv->pattern1 = SWAP_BITS_IN_BYTES(pPriv->pattern1);
     }
 
 
@@ -1381,8 +1381,8 @@ XAACheckTileReducibility(PixmapPtr pPixmap, Bool checkMono)
 	pPriv->flags |= REDUCIBLE_TO_2_COLOR;
 
 	if(infoRec->Mono8x8PatternFillFlags & BIT_ORDER_IN_BYTE_MSBFIRST) {
-	    pPriv->pattern0 = XAAReverseBitOrder(pPriv->pattern0);
-	    pPriv->pattern1 = XAAReverseBitOrder(pPriv->pattern1);
+	    pPriv->pattern0 = SWAP_BITS_IN_BYTES(pPriv->pattern0);
+	    pPriv->pattern1 = SWAP_BITS_IN_BYTES(pPriv->pattern1);
 	}
 
     }

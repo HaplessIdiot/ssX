@@ -25,15 +25,15 @@
 # endif
 #else	
 # ifdef FIXEDBASE
-#   define WRITE_IN_BITORDER(dest, offset, data) *(dest) = XAAReverseBitOrder(data);
+#   define WRITE_IN_BITORDER(dest, offset, data) *(dest) = SWAP_BITS_IN_BYTES(data);
 # else  
-#   define WRITE_IN_BITORDER(dest, offset, data) *(dest + offset) = XAAReverseBitOrder(data)
+#   define WRITE_IN_BITORDER(dest, offset, data) *(dest + offset) = SWAP_BITS_IN_BYTES(data)
 # endif
 #endif
 
 #ifdef FIXEDBASE
 # ifdef MSBFIRST
-#  define WRITE_BITS(b)   *base = XAAReverseBitOrder(b)
+#  define WRITE_BITS(b)   *base = SWAP_BITS_IN_BYTES(b)
 #  define WRITE_BITS1(b) { \
 	*base = byte_reversed_expand3[(b) & 0xFF] | \
 		byte_reversed_expand3[((b) & 0xFF00) >> 8] << 24; }
@@ -69,7 +69,7 @@
 # endif
 #else
 # ifdef MSBFIRST
-#  define WRITE_BITS(b)   *(base++) = XAAReverseBitOrder(b)
+#  define WRITE_BITS(b)   *(base++) = SWAP_BITS_IN_BYTES(b)
 #  define WRITE_BITS1(b) { \
 	*(base++) = byte_reversed_expand3[(b) & 0xFF] | \
 		byte_reversed_expand3[((b) & 0xFF00) >> 8] << 24; }

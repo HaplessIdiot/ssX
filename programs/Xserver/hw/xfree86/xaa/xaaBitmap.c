@@ -21,7 +21,7 @@
 #endif
 
 #ifdef MSBFIRST
-# define SOURCE(i)	XAAReverseBitOrder(src[i])
+# define SOURCE(i)	SWAP_BITS_IN_BYTES(src[i])
 #else
 # define SOURCE(i)	src[i]
 #endif

@@ -580,7 +580,7 @@ StipplePowerOfTwo(
 	pat = SHIFT_R(pat,shift) | SHIFT_L(pat,32 - shift);
 
 #ifdef MSBFIRST
-    pat = XAAReverseBitOrder(pat);    
+    pat = SWAP_BITS_IN_BYTES(pat);    
 #endif
 
 #ifdef TRIPLE_BITS
@@ -639,7 +639,7 @@ StipplePowerOfTwo_Inverted(
 	pat = SHIFT_R(pat,shift) | SHIFT_L(pat,32 - shift);
 
 #ifdef MSBFIRST
-    pat = XAAReverseBitOrder(pat);    
+    pat = SWAP_BITS_IN_BYTES(pat);    
 #endif
 
    pat = ~pat;
