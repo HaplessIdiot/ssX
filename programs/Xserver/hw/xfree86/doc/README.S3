@@ -24,9 +24,9 @@
 
         8 and 15/16 bpp
 
-        Note: the AT&T20C490 RAMDAC is not automatically detected by the
-        server.  You need to provide a `Ramdac "att20c490"' entry in
-        your XF86Config.
+        Note: Real AT&T20C490 RAMDACs should be automatically detected
+        by the server.  For others which are compatible, you need to
+        provide a `Ramdac "att20c490"' entry in your XF86Config.
 
         Real AT&T 20C490 or 20C491 RAMDACs work with the "dac_8_bit"
         option.  Some clones (like the Winbond 82C490) do not.
@@ -55,9 +55,9 @@
 
         8 and 15/16 bpp
 
-        Note: the AT&T20C490 RAMDAC is not automatically detected by the
-        server.  You need to provide a `Ramdac "att20c490"' entry in
-        your XF86Config.
+        Note: Real AT&T20C490 RAMDACs should be automatically detected
+        by the server.  For others which are compatible, you need to
+        provide a `Ramdac "att20c490"' entry in your XF86Config.
 
 
 
@@ -78,9 +78,14 @@
         o  Diamond Stealth 24 VLB
 
 
-        8 bpp only.
+        8 and 15bpp(*) only.
 
         requires `Option "nolinear"'
+
+        (*) The SS2410 RAMDAC is reportedly compatible with the
+        AT&T20C490 in 15bpp mode.  To make the server treat it as an
+        AT&T20C490, you need to provide a `Ramdac "att20c490"' entry in
+        your XF86Config.
 
 
 
@@ -111,11 +116,12 @@
 
         8 and 15/16 bpp
 
-        Note: the AT&T20C490 RAMDAC is not automatically detected by the
-        server.  You need to provide a `Ramdac "att20c490"' entry in
-        your XF86Config.  Also, the server's RAMDAC probe reportedly
-        causes problems with some of these boards, and a RamDac entry
-        should be used to avoid the probe.
+        Note: Real AT&T20C490 RAMDACs should be automatically detected
+        by the server.  For others which are compatible, you need to
+        provide a `Ramdac "att20c490"' entry in your XF86Config.  Also,
+        the server's RAMDAC probe reportedly causes problems with some
+        of these boards, and a RamDac entry should be used to avoid the
+        probe.
 
         Real AT&T 20C490 or 20C491 RAMDACs work with the "dac_8_bit"
         option.  Some clones (like the Winbond 82C490) do not.
@@ -190,14 +196,11 @@
 
         o  #9 GXE Level 10, 11, 12
 
-
         8, 15/16 and 24(32) bpp
 
 
-
-
-      ClockChip "icd2061a"
-      Option    "number_nine"
+           ClockChip "icd2061a"
+           Option    "number_nine"
 
 
 
@@ -325,11 +328,8 @@
         o  Miro Crystal 20SV
 
         8, 15/16, 24(32) bpp
-
-
-
-      ClockChip "icd2061a"
-      Ramdac    "att20c505"
+           ClockChip "icd2061a"
+           Ramdac    "att20c505"
 
 
 
@@ -633,7 +633,7 @@
 
 
   $XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.22 1995/07/13 14:14:57 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.23 1995/07/17 13:52:35 dawes Exp $
 
 
 

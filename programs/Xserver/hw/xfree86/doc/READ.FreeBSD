@@ -1,6 +1,6 @@
-  README for XFree86 3.1.1 on FreeBSD 2.0
+  README for XFree86 3.1.2 on FreeBSD 2.0.5
   Rich Murphey, David Dawes
-  20 January 1995
+  17 July 1995
 
   1.  What and Where is XFree86?
 
@@ -21,11 +21,11 @@
 
   Binaries for XFree86 on FreeBSD are available from:
 
-  ftp.XFree86.org:/pub/XFree86/current/binaries/FreeBSD-2.0
-  <ftp://ftp.XFree86.org/pub/XFree86/current/binaries/FreeBSD-2.0>
+  ftp.XFree86.org:/pub/XFree86/current/binaries/FreeBSD-2.0.5
+  <ftp://ftp.XFree86.org/pub/XFree86/current/binaries/FreeBSD-2.0.5>
 
-  XFree86.cdrom.com:/pub/XFree86/current/binaries/FreeBSD-2.0
-  <ftp://XFree86.cdrom.com/pub/XFree86/current/binaries/FreeBSD-2.0>
+  XFree86.cdrom.com:/pub/XFree86/current/binaries/FreeBSD-2.0.5
+  <ftp://XFree86.cdrom.com/pub/XFree86/current/binaries/FreeBSD-2.0.5>
 
   Send email to Rich-Murphey@Rice.edu or XFree86@XFree86.org if you have
   comments or suggestions about this file and we'll revise it.
@@ -38,81 +38,85 @@
   unpack.  If you can't decide what to pick and you have 52Mb of disk
   space, it's safe to unpack everything.
 
-  At a minimum you need to unpack the 'required' X311*.tgz archives plus
+  At a minimum you need to unpack the 'required' X312*.tgz archives plus
   at least one server that matches your vga card.  You'll need 9Mb for
   the minimum required run-time binaries only.
 
 
      Required (6.7Mb):
 
-        X311bin.tgz
+        X312bin.tgz
            all the executable X client applications and shared libs
 
 
-        X311fnts.tgz
+        X312fnts.tgz
            the misc and 75 dpi fonts
 
 
-        X311lib.tgz
+        X312lib.tgz
            data files needed at runtime
 
 
      Required unless you have already customized your configuration
         files:
 
-        X311xicf.tgz
+        X312xicf.tgz
            customizable xinit runtime configuration file
 
 
-        X311xdcf.tgz
+        X312xdcf.tgz
            customizable xdm runtime configuration file
 
 
      Choose at least one server ( 2.3Mb):
 
-        X3118514.tgz
+        X3128514.tgz
            8-bit color for IBM 8514 and true compatibles.
 
 
-        X311AGX.tgz
-           8-bit color for AGX boards.
+        X312AGX.tgz
+           8 and 16-bit color for AGX and XGA boards.
 
 
-        X311Mch3.tgz
+        X312Ma32.tgz
            8 and 16-bit color for ATI Mach32 boards.
 
 
-        X311Mch8.tgz
+        X312Ma64.tgz
+           8, 16 and 24-bit color for ATI Mach64 boards.
+
+
+        X312Ma8.tgz
            8-bit color for ATI Mach8 boards.
 
 
-        X311Mono.tgz
+        X312Mono.tgz
            1-bit monochrome for VGA, Super-VGA, Hercules, and others.
 
 
-        X311P9K.tgz
+        X312P9K.tgz
            8, 16, and 24-bit color for Weitek P9000 boards (Diamond
            Viper).
 
 
-        X311S3.tgz
+        X312S3.tgz
            8, 16 and 24-bit color for S3 boards (#9 GXE, Actix GE32,
            SPEA Mercury, STB Pegasus)
 
 
-        X311SVGA.tgz
+        X312SVGA.tgz
            8-bit color for Super-VGA cards.
 
 
-        X311VG16.tgz
+        X312VG16.tgz
            4-bit color for VGA and Super-VGA cards
 
 
-        X311W32.tgz
+        X312W32.tgz
            8-bit Color for ET4000/W32, /W32i and /W32p cards.
 
 
-        X311nest.tgz
+        X312nest.tgz
            A nested server running as a client window on another
            display.
 
@@ -120,48 +124,48 @@
      Optional:
 
 
-        X311doc.tgz
+        X312doc.tgz
            (.5Mb) READMEs and XFree86 specific man pages
 
 
-        X311man.tgz
+        X312man.tgz
            (1.7Mb) man pages except XFree86 specific ones in etc archive
-
-
-        X311f100.tgz
+        X312f100.tgz
            (1.8Mb) 100dpi fonts
-        X311fscl.tgz
+
+
+        X312fscl.tgz
            (1.6Mb) Speedo and Type1 fonts
 
 
-        X311fnon.tgz
+        X312fnon.tgz
            (3.3Mb) Japanese, Chinese and other non-english fonts
 
 
-        X311fsrv.tgz
+        X312fsrv.tgz
            (.3Mb) the font server and it's man page
 
 
-        X311prog.tgz
+        X312prog.tgz
            (3.9Mb) config, lib*.a and *.h files needed only for
            compiling
 
 
-        X311link.tgz
+        X312link.tgz
            (7.8Mb) X server reconfiguration kit
 
 
-        X311pex.tgz
+        X312pex.tgz
            (.5Mb) PEX fonts and shared libs needed by PEX applications.
 
 
-        X311lbx.tgz
+        X312lbx.tgz
            (.2Mb) low bandwidth X proxy server and libraries.
 
-  Note that there is no longer a separate xdm archive.  FreeBSD 2.0
-  handles this in shared libraries now, so that the xdm binary does not
-  itself contain des and there is no more need for us to provide
-  separate tar balls.
+  Note that there is no longer a separate xdm archive.  FreeBSD 2.0 and
+  later handles this in shared libraries now, so that the xdm binary
+  does not itself contain des and there is no more need for us to
+  provide separate tar balls.
 
 
 
@@ -196,7 +200,8 @@
 
         If you are using sh (as root usually does):
 
-           # for i in X311*.tgz; do
+
+           # for i in X312*.tgz; do
            #   tar -xzf $i
            # done
 
@@ -205,7 +210,7 @@
 
      Else, if you are using csh:
 
-           % foreach i (X311*.tgz)
+           % foreach i (X312*.tgz)
            %   tar -xzf $i
            % end
 
@@ -229,7 +234,7 @@
 
 
         # for i in bin fnts lib xicf; do
-        #   tar -xzf  X311$i.tgz
+        #   tar -xzf  X312$i.tgz
         # done
 
 
@@ -240,7 +245,7 @@
   card you will use the XF86_SVGA server:
 
 
-        # tar -xzf X311SVGA.tgz
+        # tar -xzf X312SVGA.tgz
         # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
 
 
@@ -262,6 +267,8 @@
 
   Next either reboot or invoke ldconfig as root to put the shared
   libraries in ld.so's cache:
+
+
         # ldconfig /usr/lib /usr/local/lib /usr/X11R6/lib
 
 
@@ -328,6 +335,8 @@
 
         ttyv4  "/usr/X11R6/bin/xdm -nodaemon" xterm    on secure
 
+
+
   You should also make sure that /usr/X11R6/bin/X is a symbolic link to
   the Xserver that matches your video card or edit the file Xservers in
   /usr/X11R6/lib/X11/xdm to specify the pathname of the X server.
@@ -349,16 +358,19 @@
   XF86Config man page and the general INSTALL <INSTALL.html> file for
   instructions.
 
-  If you have a Xconfig file for XFree86 2.x, use reconfig to translate
-  part of it into the new format:
+  It is strongly recommended that you use the `xf86config' utility to
+  generate an XF86Config file.
+
+  If you have a Xconfig file for XFree86 2.x, you can use reconfig to
+  translate part of it into the new format:
 
 
         # reconfig <Xconfig >XF86Config
 
 
 
-  and complete the rest according to the XF86Config man page and the
-  XF86Config.sample file as a template.
+  and complete the rest manually according to the XF86Config(4) man page
+  and the XF86Config.eg file as a template.
 
   In order to protect your hardware from damage, the server no longer
   will read XF86Config files from a user's home directory, but requires
@@ -381,8 +393,6 @@
 
 
         % cat < /dev/tty00
-
-
 
   If you can't find the right mouse device then use ``dmesg|grep sio''
   to get a list of devices that were detected upon booting:
@@ -433,7 +443,7 @@
   6.  Rebuilding Kernels for X
 
 
-  The GENERIC FreeBSD 2.0 kernel supports XFree86 without any
+  The GENERIC FreeBSD 2.0 and 2.0.5 kernels support XFree86 without any
   modifications required.  You do not need to make any changes to the
   GENERIC kernel or any kernel configuration which is a superset.
 
@@ -448,17 +458,21 @@
   required for X support:
 
 
-        options                XSERVER                 #Xserver
-        options                UCONSOLE                #X Console support
+
+
+   options                XSERVER                 #Xserver
+   options                UCONSOLE                #X Console support
 
 
 
-  The generic FreeBSD 2.0 kernel is configured by default with the
-  syscons driver.  To configure your kernel similarly it should have a
-  line like this in /usr/src/sys/i386/conf/GENERIC:
+  The generic FreeBSD 2.0 and 2.0.5 kernels are configured by default
+  with the syscons driver.  To configure your kernel similarly it should
+  have a line like this in /usr/src/sys/i386/conf/GENERIC:
 
 
         device         sc0     at isa? port "IO_KBD" tty irq 1 vector scintr
+
+
 
   The number of virtual consoles can be set using the NCONS option:
 
@@ -513,7 +527,7 @@
 
   The server link kit allows you to build an X server using a minimum
   amount of disk space.  Just unpack it, make the appropriate changes to
-  site.def, type ``./mkmf' and ``make'' to link the server.  See
+  xf86site.def, type ``./mkmf' and ``make'' to link the server.  See
   README.LinkKit <LinkKit.html> for more info.
 
   The source tree takes about 114Mb before compiling and an additional
@@ -526,6 +540,8 @@
 
         #define BuildBsdSharedLibs             NO
 
+
+
   If your system doesn't have support or SYSV shared memory (for
   example, if you don't have the <sys/shm.h> header), you should disable
   the MIT-SHM extension by adding the following line to site.def:
@@ -535,7 +551,9 @@
 
 
 
-  To compile the sources on FreeBSD 1.1 and later, type:
+  To compile the sources on FreeBSD 1.1 and later, edit
+  xc/config/cf/FreeBSD.cf to set the OS version parameters correctly,
+  and then type:
 
 
         make World
@@ -574,7 +592,6 @@
   of the symbol can be used to distinguish different BSD releases.  For
   example, code specific to the Net-2 and later releases can use:
 
-
        #if (BSD >= 199103)
 
 
@@ -586,9 +603,6 @@
   For code that really is specific to a particular i386 BSD port, use
   __FreeBSD__ for FreeBSD, __NetBSD__ for NetBSD, __386BSD__ for 386BSD,
   and __bsdi__ for BSD/386.
-
-
-
 
 
 
@@ -610,21 +624,7 @@
         the Linux distribution.
 
   $XConsortium: FreeBSD.sgml,v 1.3 95/01/23 15:34:41 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.10 1995/01/28 16:01:28 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.11 1995/07/17 13:52:31 dawes Exp $
 
 
 

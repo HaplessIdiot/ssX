@@ -1,11 +1,11 @@
   Information for Solaris for x86 Users
   David Holland
-  13 December 1994
+  17 July 1995
 
-  1.  What is XFree86 3.1.1
+  1.  What is XFree86 3.1.2
 
 
-  XFree86 3.1.1 is a port of X11R6 that supports several versions of
+  XFree86 3.1.2 is a port of X11R6 that supports several versions of
   Intel-based Unix.  It is derived from X386 1.2 which was the X server
   distributed with X11R5.  this release consists of many new features
   and performance improvements as well as many bug fixes.  The release
@@ -31,10 +31,10 @@
   binaries.
 
 
-  2.  Solaris for x86, versions on which XFree86 3.1.1 has been tested
+  2.  Solaris for x86, versions on which XFree86 3.1.2 has been tested
 
 
-  XFree86 3.1.1 has been actively tested on:
+  XFree86 3.1.2 has been actively tested on:
 
      o  Solaris 2.1 for x86
 
@@ -342,7 +342,7 @@
 
 
   $XConsortium: SOLX86.sgml,v 1.2 95/01/16 13:17:48 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.4 1995/06/21 11:53:23 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.5 1995/07/17 13:52:36 dawes Exp $
 
 
 
