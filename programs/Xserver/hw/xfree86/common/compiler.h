@@ -363,6 +363,40 @@ static __inline__ void stw_u(unsigned long r5, unsigned short * r11)
 #define write_mem_barrier()  mem_barrier()
 #endif
 
+
+#elif defined(linux) && defined(__ia64__) 
+#define inline __inline__
+ 
+#include <stdlib.h>
+#include <asm/types.h>
+#include <asm/system.h>
+#include <asm/io.h>
+#include <asm/unaligned.h>
+  
+#define ldq_u(p)        __uldq(p)
+#define ldl_u(p)        __uldl(p)
+#define ldw_u(p)        __uldw(p) 
+#define stq_u(v,p)      __ustq(v,p)
+#define stl_u(v,p)      __ustl(v,p)
+#define stw_u(v,p)      __ustw(v,p)
+  
+#define mem_barrier()        __asm__ __volatile__ ("mf" ::: "memory")
+#define write_mem_barrier()  __asm__ __volatile__ ("mf" ::: "memory")
+
+#undef inb
+#undef inw
+#undef inl
+#undef outb
+#undef outw
+#undef outl
+ 
+#define inb(a)		_inb(a)
+#define inw(a)		_inw(a)
+#define inl(a)		_inl(a)
+#define outb(a,b)	_outb(b,a)
+#define outw(a,b)	_outw(b,a)
+#define outl(a,b)	_outl(b,a) 
+
 #elif (defined(linux) || defined(Lynx)) && defined(__sparc__)
 
 #if !defined(Lynx)
