@@ -45,11 +45,16 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c /main/82 1996/09/28 17:12:09 rws $ */
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.11 1997/06/11 12:24:32 dawes Exp $ */
+/* $TOG: main.c /main/84 1997/10/08 11:43:43 sekhar $ */
+
+
+
+
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.12 1997/07/10 08:17:15 hohndel Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
+#include "Xos.h"	/* for unistd.h  */
 #include "Xproto.h"
 #include "scrnintstr.h"
 #include "misc.h"
@@ -234,6 +239,9 @@ static int indexForScanlinePad[ 65 ] = {
 	 3		/* 64 bits per scanline pad unit */
 };
 
+#ifndef MIN
+#define MIN(a,b) (((a) < (b)) ? (a) : (b))
+#endif
 
 int
 main(argc, argv)
@@ -250,7 +258,16 @@ main(argc, argv)
     else
 	restart = 1;
 
+#ifdef COMMANDLINE_CHALLENGED_OPERATING_SYSTEMS
     ExpandCommandLine(&argc, &argv);
+#endif
+
+#ifdef _SC_OPEN_MAX
+    /* if sysconf(_SC_OPEN_MAX) is supported, at runtime MaxClients will be
+     * reassigned instead of using MAXSOCKS */
+    if (MaxClients == 0)
+        MaxClients = MIN(MAXCLIENTS, sysconf(_SC_OPEN_MAX));
+#endif
 
     /* These are needed by some routines which are called from interrupt
      * handlers, thus have no direct calling path back to main and thus

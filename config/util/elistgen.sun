@@ -1,5 +1,5 @@
 XCOMM!/bin/sh -f
-XCOMM $TOG: elistgen.sun /main/6 1997/08/20 17:45:27 kaleb $
+XCOMM $TOG: elistgen.sun /main/7 1997/10/24 15:16:44 bill $
 XCOMM
 XCOMM ########################################################################
 XCOMM Construct shared-library scoping mapfile for Solaris based on standardized
@@ -50,7 +50,7 @@ XCOMM Extract the globally visible symbols from target library
 XCOMM The NMLIST generated here is later used to cross-check the symbols in the
 XCOMM nm stopped working on Solaris 2.5, use dump instead.
 XCOMM nm -p $1 | $AWK '/ [ TDBS] /{print $3}' > $NMLIST
-/usr/ccs/bin/dump -t -v $1 | $AWK '/(FUNC|OBJT).GLOB/{print $8}' > $NMLIST
+/usr/ccs/bin/dump -t -v $1 | $AWK '/(FUNC|OBJT).(GLOB|WEAK)/{print $8}' > $NMLIST
 
 XCOMM Extract the globally visible symbols from target library
 XCOMM The NMLIST generated here is later used to cross-check the symbols in the

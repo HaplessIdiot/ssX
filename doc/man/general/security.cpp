@@ -1,36 +1,38 @@
-.\" $XConsortium: security.man,v 1.7 94/04/17 20:07:46 gildea Exp $
+.\" $TOG: security.cpp /main/13 1997/10/13 14:20:52 kaleb $
 .\" Copyright (c) 1993, 1994  X Consortium
 .\" 
-.\" Permission is hereby granted, free of charge, to any person obtaining a
-.\" copy of this software and associated documentation files (the "Software"), 
-.\" to deal in the Software without restriction, including without limitation 
-.\" the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-.\" and/or sell copies of the Software, and to permit persons to whom the 
-.\" Software furnished to do so, subject to the following conditions:
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
 .\" 
-.\" The above copyright notice and this permission notice shall be included in
-.\" all copies or substantial portions of the Software.
+.\" The above copyright notice and this permission notice shall be
+.\" included in all copies or substantial portions of the Software.
 .\" 
-.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
-.\" THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
-.\" WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF 
-.\" OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
-.\" SOFTWARE.
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+.\" EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
 .\" 
-.\" Except as contained in this notice, the name of the X Consortium shall not 
-.\" be used in advertising or otherwise to promote the sale, use or other 
-.\" dealing in this Software without prior written authorization from the 
-.\" X Consortium.
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
+.\"
 .nr )S 12
-.TH XSECURITY 1 "Release 6" "X Version 11"
+.TH XSECURITY __miscmansuffix__ "Release 6.3" "X Version 11"
 .SH NAME
-X security \- X display access control
+Xsecurity \- X display access control
 .SH SYNOPSIS
 .PP
 X provides mechanism for implementing many access control systems.
-Release 6 includes five mechanisms:
+The sample implementation includes five mechanisms:
 .nf
 .br
 .ta 3.4i
@@ -212,8 +214,19 @@ authorization information using the secure RPC library.
 .IP "MIT-KERBEROS-5"
 Kerberos reads tickets from the cache pointed to by the
 \fIKRB5CCNAME\fP environment variable, so does not use any data from
-the \fI.Xauthority\fP file.  An empty entry must still exist to tell
+the \fI.Xauthority\fP file.  An entry with no data must still exist to tell
 clients that MIT-KERBEROS-5 is available.
+.IP
+Unlike the \fI.Xauthority\fP file for clients, the authority file
+passed by xdm to 
+a local X server (with ``\fB\-auth\fP \fIfilename\fP'', see xdm(1))
+does contain the name of the credentials cache, since 
+the X server will not have the 
+\fIKRB5CCNAME\fP environment variable set.
+The data of the MIT-KERBEROS-5 entry is the credentials cache name and
+has the form ``UU:FILE:\fIfilename\fP'', where \fIfilename\fP is the
+name of the credentials cache file created by xdm.  Note again that
+this form is \fInot\fP used by clients.
 .SH FILES
 \&.Xauthority
 .SH "SEE ALSO"

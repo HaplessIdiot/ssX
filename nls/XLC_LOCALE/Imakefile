@@ -1,8 +1,8 @@
-XCOMM $TOG: Imakefile /main/14 1997/06/11 06:46:23 kaleb $
+XCOMM $TOG: Imakefile /main/15 1997/09/29 11:34:18 kaleb $
 
 
 
-XCOMM $XFree86: xc/nls/XLC_LOCALE/Imakefile,v 1.6 1997/06/11 12:24:30 dawes Exp $
+XCOMM $XFree86: xc/nls/XLC_LOCALE/Imakefile,v 1.7 1997/06/15 07:12:10 dawes Exp $
 
   WCHAR32 = HasWChar32
    TBLDIR = $(XLOCALEDIR)/tbl_data
@@ -62,11 +62,11 @@ LTarget(ja)
 LTarget(ja.JIS)
 LTarget(ja.SJIS)
 LTarget(ko)
+LTarget(koi8-r)
 LTarget(zh)
 LTarget(zh_TW)
 LTarget(th_TH.TACTIS)
 LTarget(en_US.utf)
-LTarget(koi8-r)
 #ifdef UXPArchitecture
 LTarget(ja.U90)
 LTarget(ja.S90)

@@ -1,5 +1,4 @@
-/* $XConsortium: window.c /main/210 1996/10/28 07:24:59 kaleb $ */
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.5 1996/12/24 02:23:47 dawes Exp $ */
+/* $TOG: window.c /main/213 1997/10/17 20:17:36 kaleb $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -50,6 +49,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.6 1997/01/18 06:53:16 dawes Exp $ */
 
 #include "misc.h"
 #include "scrnintstr.h"
@@ -281,11 +281,11 @@ MakeRootTile(pWin)
     ScreenPtr pScreen = pWin->drawable.pScreen;
     GCPtr pGC;
     unsigned char back[128];
-    int len = BitmapBytePad(4);
+    int len = BitmapBytePad(sizeof(long));
     register unsigned char *from, *to;
     register int i, j;
 
-    pWin->background.pixmap = (*pScreen->CreatePixmap)(pScreen, 4, 4,
+    pWin->background.pixmap = (*pScreen->CreatePixmap)(pScreen, len, 4,
 						    pScreen->rootDepth);
 
     pWin->backgroundState = BackgroundPixmap;
@@ -312,7 +312,7 @@ MakeRootTile(pWin)
 	    *to++ = *from;
 
    (*pGC->ops->PutImage)((DrawablePtr)pWin->background.pixmap, pGC, 1,
-		    0, 0, 4, 4, 0, XYBitmap, (char *)back);
+		    0, 0, len, 4, 0, XYBitmap, (char *)back);
 
    FreeScratchGC(pGC);
 
@@ -1284,7 +1284,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		 * win_owner == client for CreateWindow, other clients
 		 * can ChangeWindowAttributes
 		 */
-		win_owner = LookupClient (pWin->drawable.id, client);
+		win_owner = clients[CLIENT_ID(pWin->drawable.id)];
 
 		if ( win_owner && win_owner->appgroup &&
 		    !pWin->parent->parent &&
@@ -3607,13 +3607,9 @@ DisposeWindowOptional (pWin)
      * everything is peachy.  Delete the optional record
      * and clean up
      */
-    if (pWin->optional->cursor)
-    {
+    if (pWin->cursorIsNone == FALSE)
 	FreeCursor (pWin->optional->cursor, (Cursor)0);
-	pWin->cursorIsNone = FALSE;
-    }
-    else
-	pWin->cursorIsNone = TRUE;
+    pWin->cursorIsNone = TRUE;
     xfree (pWin->optional);
     pWin->optional = NULL;
 }

@@ -1,5 +1,8 @@
-XCOMM $XConsortium: Imakefile /main/83 1996/12/18 16:29:30 lehors $
-XCOMM $XFree86: xc/programs/Imakefile,v 3.15 1996/12/23 06:25:44 dawes Exp $
+XCOMM $TOG: Imakefile /main/84 1997/10/14 16:18:23 kaleb $
+XCOMM
+XCOMM
+XCOMM
+XCOMM $XFree86: xc/programs/Imakefile,v 3.16 1997/02/12 08:54:59 hohndel Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -41,7 +44,6 @@ SCREENSAVESRCDIR = beforelight
 XFINDPROXYSRCDIR = xfindproxy
       XFWPSRCDIR = xfwp
      XHOSTSRCDIR = xhost
-       XMHSRCDIR = xmh
        XRXSRCDIR = xrx
        XSMSRCDIR = xsm
      XTERMSRCDIR = xterm
@@ -60,7 +62,7 @@ SUBDIRS = \
 	xdpyinfo $(XF86DGASRCDIR) xfd $(XFSSRCDIR) $(XFINDPROXYSRCDIR) \
 	$(XFWPSRCDIR) \
 	$(XHOSTSRCDIR) xieperf $(XINITSRCDIR) $(XKBSRCDIRS) xkill xlogo \
-	xlsatoms xlsclients xlsfonts xmag $(XMHSRCDIR) xmodmap xprop \
+	xlsatoms xlsclients xlsfonts xmag xmodmap xprop \
 	xrdb xrefresh $(XRXSRCDIR) xset xsetroot $(XSMSRCDIR) xstdcmap \
 	xsetmode xsetpointer \
 	$(XTERMSRCDIR) $(XVIDTUNESRCDIR) xwd xwininfo xwud \

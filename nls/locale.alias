@@ -1,11 +1,11 @@
-XCOMM $TOG: locale.alias /main/23 1997/07/31 10:17:56 kaleb $
+XCOMM $TOG: locale.alias /main/25 1997/10/08 15:25:04 kaleb $
 XCOMM
 XCOMM	This file contains alias name of locale.
 XCOMM	Each alias name is described within one line.
 XCOMM	The first word is the alias name (simplified locale name)
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM	$XFree86: xc/nls/locale.alias,v 1.6 1997/07/31 13:47:06 dawes Exp $
+XCOMM	$XFree86: xc/nls/locale.alias,v 1.7 1997/10/26 13:24:57 dawes Exp $
 XCOMM
 POSIX			C
 POSIX-UTF2		C
@@ -19,7 +19,7 @@ XCOMM
 ar			ar_AA.ISO8859-6
 ar_AA			ar_AA.ISO8859-6
 ar_AA.ISO_8859-6	ar_AA.ISO8859-6
-ar_SA.iso88596		ar_AA.ISO8859-6
+ar_SA.iso88596		ar_SA.ISO8859-6
 bg			bg_BG.ISO8859-5
 bg_BG			bg_BG.ISO8859-5
 bg_BG.ISO_8859-5	bg_BG.ISO8859-5
@@ -50,6 +50,7 @@ de_DE.iso88591		de_DE.ISO8859-1
 de_DE.ISO_8859-1	de_DE.ISO8859-1
 GER_DE.8859		de_DE.ISO8859-1
 GER_DE.8859.in		de_DE.ISO8859-1
+ee			ee_EE.ISO8859-4
 el			el_GR.ISO8859-7
 el_GR			el_GR.ISO8859-7
 el_GR.iso88597		el_GR.ISO8859-7
@@ -95,6 +96,14 @@ es_PY			es_PY.ISO8859-1
 es_SV			es_SV.ISO8859-1
 es_UY			es_UY.ISO8859-1
 es_VE			es_VE.ISO8859-1
+#if defined(SVR4) && defined(sun)
+XCOMM Sun Solaris 2.6 erroneously has uses the country code "et" for
+XCOMM Estonia. "Et" is Ethiopia, Estonia should be "ee". Sun also has
+XCOMM erroneously specified Estonia as a Latin-1 using country in their
+XCOMM Xlocale database, however this is clearly incorrect according to
+XCOMM ISO8859.
+et			ee_EE.ISO8859-4
+#endif
 fi			fi_FI.ISO8859-1
 fi_FI			fi_FI.ISO8859-1
 fi_FI.88591		fi_FI.ISO8859-1
@@ -168,8 +177,15 @@ ko			ko_KR.eucKR
 ko_KR			ko_KR.eucKR
 ko_KR.EUC		ko_KR.eucKR
 ko_KR.euc		ko_KR.eucKR
-XCOMM most locales in FreeBSD 2.1.[56] do not work, allow use of generic latin-1
+#if defined(__FreeBSD__)
+XCOMM most locales in FreeBSD 2.1.[56] do not work, allow use of FreeBSD's
+XCOMM generic latin-1 locale name. N.B. "lt" is a bad code to use for a
+XCOMM generic Latin-1 locale anyway because it is the country code for
+XCOMM Lithuania, which by default uses Latin-4.
 lt_LN.ISO_8859-1	lt_LN.ISO8859-1
+#endif
+lt			lt_LT.ISO8859-4
+lv			lv_LV.ISO8859-4
 mk			mk_MK.ISO8859-5
 mk_MK			mk_MK.ISO8859-5
 mk_MK.ISO_8859-5	mk_MK.ISO8859-5
@@ -213,6 +229,7 @@ ru_SU.ISO8859-5		ru_RU.ISO8859-5
 ru_SU.ISO_8859-5	ru_RU.ISO8859-5
 ru_SU.KOI8-R		ru_RU.KOI8-R
 sh			sh_YU.ISO8859-2
+sh_HR.iso88592		sh_HR.ISO8859-2
 sh_YU			sh_YU.ISO8859-2
 sh_YU.ISO_8859-2	sh_YU.ISO8859-2
 sh_SP			sh_YU.ISO8859-2
@@ -237,6 +254,7 @@ sv_SE.88591.en		sv_SE.ISO8859-1
 sv_SE.iso88591		sv_SE.ISO8859-1
 sv_SE.ISO_8859-1	sv_SE.ISO8859-1
 th_TH			th_TH.TACTIS
+th_TH.tis620		th_TH.TACTIS
 tr			tr_TR.ISO8859-9
 tr_TR			tr_TR.ISO8859-9
 tr_TR.iso88599		tr_TR.ISO8859-9
@@ -246,6 +264,7 @@ zh_CN			zh_CN.eucCN
 zh_CN.EUC		zh_CN.eucCN
 zh_TW			zh_TW.eucTW
 zh_TW.EUC		zh_TW.eucTW
+zh_CN.big5		zh_TW.eucTW
 XCOMM The following locale names are used in SCO 3.0
 english_uk.8859		en_GB.ISO8859-1
 english_us.8859		en_US.ISO8859-1

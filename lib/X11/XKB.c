@@ -1,4 +1,4 @@
-/* $XConsortium: XKB.c,v 1.13 94/04/02 15:53:28 rws Exp $ */
+/* $TOG: XKB.c /main/23 1997/11/10 15:13:33 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -32,17 +32,29 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/extensions/XKBproto.h>
 #include "XKBlibint.h"
 
+XkbInternAtomFunc	_XkbInternAtomFunc= XInternAtom;
+XkbGetAtomNameFunc	_XkbGetAtomNameFunc= XGetAtomName;
 
 Bool 
-XkbQueryExtension(dpy,opcodeReturn,eventBaseReturn,errorBaseReturn,majorReturn,minorReturn)
+#if NeedFunctionPrototypes
+XkbQueryExtension(	Display *dpy,
+			int *	opcodeReturn,
+			int *	eventBaseReturn,
+			int *	errorBaseReturn,
+			int *	majorReturn,
+			int *	minorReturn)
+#else
+XkbQueryExtension(dpy,opcodeReturn,eventBaseReturn,errorBaseReturn,
+						majorReturn,minorReturn)
     Display *dpy;
     int *opcodeReturn;
     int *eventBaseReturn;
     int *errorBaseReturn;
     int *majorReturn;
     int *minorReturn;
+#endif
 {
-    if (!XkbUseExtension(dpy))
+    if (!XkbUseExtension(dpy,majorReturn,minorReturn))
 	return False;
     if (opcodeReturn)
 	*opcodeReturn = dpy->xkb_info->codes->major_opcode;
@@ -57,19 +69,26 @@ XkbQueryExtension(dpy,opcodeReturn,eventBaseReturn,errorBaseReturn,majorReturn,m
     return True;
 }
 
-Status XkbLibraryVersion(libMajorRtrn,libMinorRtrn)
+Bool 
+#if NeedFunctionPrototypes
+XkbLibraryVersion(int *libMajorRtrn,int *libMinorRtrn)
+#else
+XkbLibraryVersion(libMajorRtrn,libMinorRtrn)
     int *libMajorRtrn;
     int *libMinorRtrn;
+#endif
 {
 int supported;
 
-    if (*libMajorRtrn != XkbMajorVersion)
-	supported = False;
-#if XkbMajorVersion==0
-    else if (*libMinorRtrn != XkbMinorVersion)
-	supported = False;
-#endif
-    else supported = True;
+    if (*libMajorRtrn != XkbMajorVersion) {
+	/* version 0.65 is (almost) compatible with 1.00 */
+	if ((XkbMajorVersion==1)&&(((*libMajorRtrn)==0)&&((*libMinorRtrn)==65)))
+	     supported= True;
+	else supported= False;
+    }
+    else { 
+	supported = True;
+    }
 
     *libMajorRtrn = XkbMajorVersion;
     *libMinorRtrn = XkbMinorVersion;
@@ -77,106 +96,24 @@ int supported;
 }
 
 Bool
-XkbDeviceBell(dpy,window,deviceID,bellClass,bellID,percent,name)
-    Display *dpy;
-    Window window;
-    int deviceID;
-    int bellClass;
-    int bellID;
-    int percent;
-    Atom name;
-{
-    register xkbBellReq *req;
-    XkbInfoPtr xkbi;
-
-    if ((dpy->flags & XlibDisplayNoXkb) ||
-	(!dpy->xkb_info && !XkbUseExtension(dpy)))
-	return False;
-    LockDisplay(dpy);
-    xkbi = dpy->xkb_info;
-    GetReq(kbBell,req);
-    req->reqType = xkbi->codes->major_opcode;
-    req->xkbReqType = X_kbBell;
-    req->deviceSpec = deviceID;
-    req->window = window;
-    req->bellClass = bellClass;
-    req->bellID = bellID;
-    req->percent = percent;
-    req->override = False;
-    req->name = name;
-    UnlockDisplay(dpy);
-    SyncHandle();
-    return True;
-}
-
-Bool
-XkbForceDeviceBell(dpy,deviceID,bellClass,bellID,percent)
-    Display *dpy;
-    int	deviceID;
-    int	bellClass;
-    int	bellID;
-    int	percent;
-{
-    register xkbBellReq *req;
-    XkbInfoPtr xkbi;
-
-    if ((dpy->flags & XlibDisplayNoXkb) ||
-	(!dpy->xkb_info && !XkbUseExtension(dpy)))
-	return False;
-    LockDisplay(dpy);
-    xkbi = dpy->xkb_info;
-    GetReq(kbBell,req);
-    req->reqType = xkbi->codes->major_opcode;
-    req->xkbReqType = X_kbBell;
-    req->deviceSpec = deviceID;
-    req->window = None;
-    req->bellClass = bellClass;
-    req->bellID = bellID;
-    req->percent = percent;
-    req->override = True;
-    req->name = None;
-    UnlockDisplay(dpy);
-    SyncHandle();
-    return True;
-}
-
-Bool
-XkbBell(dpy,window,percent,name)
-    Display *dpy;
-    Window   window;
-    int percent;
-    Atom name;
-{
-    /* class 0 = KbdFeedbackClass (X Input Extension) */
-    return XkbDeviceBell(dpy,window,XkbUseCoreKbd,0,0,percent,name);
-}
-
-Bool
-XkbForceBell(dpy,percent)
-    Display *dpy;
-    int      percent;
-{
-    return XkbForceDeviceBell(dpy,XkbUseCoreKbd,0,0,percent);
-}
-
-Bool
+#if NeedFunctionPrototypes
+XkbSelectEvents(	Display *	dpy,
+			unsigned int 	deviceSpec,
+			unsigned int 	affect,
+			unsigned int 	selectAll)
+#else
 XkbSelectEvents(dpy,deviceSpec,affect,selectAll)
     Display *dpy;
     unsigned int deviceSpec;
-    unsigned long int affect;
-    unsigned long int selectAll;
+    unsigned int affect;
+    unsigned int selectAll;
+#endif
 {
     register xkbSelectEventsReq *req;
-    union {
-	BOOL	*b;
-	CARD8	*c8;
-	CARD16	*c16;
-	CARD32	*c32;
-    } to,start;
     XkbInfoPtr xkbi;
 
     if ((dpy->flags & XlibDisplayNoXkb) ||
-	(!dpy->xkb_info && !XkbUseExtension(dpy)))
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
 	return False;
     LockDisplay(dpy);
     xkbi = dpy->xkb_info;
@@ -186,14 +123,30 @@ XkbSelectEvents(dpy,deviceSpec,affect,selectAll)
     req->reqType = xkbi->codes->major_opcode;
     req->xkbReqType = X_kbSelectEvents;
     req->deviceSpec = deviceSpec;
-    req->affectWhich = affect;
+    req->affectWhich = (CARD16)affect;
     req->clear = affect&(~selectAll);
     req->selectAll = affect&selectAll;
     if (affect&XkbMapNotifyMask) {
 	req->affectMap= XkbAllMapComponentsMask;
+	/* the implicit support needs the client info */
+	/* even if the client itself doesn't want it */
 	if (selectAll&XkbMapNotifyMask)
-	     req->map= ~0;
-	else req->map= 0;
+	     req->map= XkbAllMapEventsMask;
+	else req->map= XkbAllClientInfoMask;
+	if (selectAll&XkbMapNotifyMask)
+	     xkbi->selected_map_details= XkbAllMapEventsMask;
+	else xkbi->selected_map_details= 0;
+    }
+    if (affect&XkbNewKeyboardNotifyMask) {
+	if (selectAll&XkbNewKeyboardNotifyMask) 
+	     xkbi->selected_nkn_details= XkbAllNewKeyboardEventsMask;
+	else xkbi->selected_nkn_details= 0;
+	if (!(xkbi->xlib_ctrls&XkbLC_IgnoreNewKeyboards)) {
+	    /* we want it, even if the client doesn't.  Don't mess */
+	    /* around with details -- ask for all of them and throw */
+	    /* away the ones we don't need */
+	    req->selectAll|= XkbNewKeyboardNotifyMask;
+	}
     }
     UnlockDisplay(dpy);
     SyncHandle();
@@ -201,12 +154,20 @@ XkbSelectEvents(dpy,deviceSpec,affect,selectAll)
 }
 
 Bool
+#if NeedFunctionPrototypes
+XkbSelectEventDetails(	Display *		dpy,
+			unsigned 		deviceSpec,
+			unsigned 		eventType,
+			unsigned long int 	affect,
+			unsigned long int 	details)
+#else
 XkbSelectEventDetails(dpy,deviceSpec,eventType,affect,details)
     Display *dpy;
     unsigned deviceSpec;
     unsigned eventType;
     unsigned long int affect;
     unsigned long int details;
+#endif
 {
     register xkbSelectEventsReq *req;
     XkbInfoPtr xkbi;
@@ -219,30 +180,44 @@ XkbSelectEventDetails(dpy,deviceSpec,eventType,affect,details)
     } u;
 
     if ((dpy->flags & XlibDisplayNoXkb) ||
-	(!dpy->xkb_info && !XkbUseExtension(dpy)))
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
 	return False;
     LockDisplay(dpy);
     xkbi = dpy->xkb_info;
+    if (affect&details)	xkbi->selected_events|= (1<<eventType);
+    else		xkbi->selected_events&= ~(1<<eventType);
     GetReq(kbSelectEvents, req);
     req->reqType = xkbi->codes->major_opcode;
     req->xkbReqType = X_kbSelectEvents;
     req->deviceSpec = deviceSpec;
     req->clear= req->selectAll= 0;
     if (eventType==XkbMapNotify) {
+	/* we need all of the client info, even if the application */
+	/* doesn't.   Make sure that we always request the stuff */
+	/* that the implicit support needs, and just filter out anything */
+	/* the client doesn't want later */
 	req->affectWhich = 0;
 	req->selectAll = 0;
 	req->clear = 0;
-	req->affectMap = affect;
-	req->map = details;
+	req->affectMap = (CARD16)affect;
+	req->map = (CARD16)details|(XkbAllClientInfoMask&affect);
 	req->affectWhich = XkbMapNotifyMask;
+	xkbi->selected_map_details&= ~affect;
+	xkbi->selected_map_details|=  (details&affect);
     }
     else {
 	req->affectMap = req->map = 0;
 	req->affectWhich= (1<<eventType);
 	switch (eventType) {
+	    case XkbNewKeyboardNotify:
+		xkbi->selected_nkn_details&= ~affect;
+		xkbi->selected_nkn_details|= (details&affect);
+		if (!(xkbi->xlib_ctrls&XkbLC_IgnoreNewKeyboards))
+		    details= (affect&XkbAllNewKeyboardEventsMask);
 	    case XkbStateNotify:
 	    case XkbNamesNotify:
-	    case XkbAlternateSymsNotify:
+	    case XkbAccessXNotify:
+	    case XkbExtensionDeviceNotify:
 		size= 2;
 		req->length+= 1;
 		break;
@@ -254,9 +229,6 @@ XkbSelectEventDetails(dpy,deviceSpec,eventType,affect,details)
 		break;
 	    case XkbBellNotify:
 	    case XkbActionMessage:
-		if (affect)	affect= 1;  /* force "true" boolean values */
-		if (details)	details= 1;
-	    case XkbSlowKeyNotify:
 	    case XkbCompatMapNotify:
 		size= 1;
 		req->length+= 1;
@@ -265,37 +237,42 @@ XkbSelectEventDetails(dpy,deviceSpec,eventType,affect,details)
 	BufAlloc(char *,out,(((size*2)+(unsigned)3)/4)*4);
 	u.c8= (CARD8 *)out;
 	if (size==2) {
-	    u.c16[0]= affect;
-	    u.c16[1]= details;
+	    u.c16[0]= (CARD16)affect;
+	    u.c16[1]= (CARD16)details;
 	}
 	else if (size==4) {
-	    u.c32[0]= affect;
-	    u.c32[1]= details;
+	    u.c32[0]= (CARD32)affect;
+	    u.c32[1]= (CARD32)details;
 	}
 	else {
-	    u.c8[0]= affect;
-	    u.c8[1]= details;
+	    u.c8[0]= (CARD8)affect;
+	    u.c8[1]= (CARD8)details;
 	}
     }
-    if (affect&details)	xkbi->selected_events|= (1<<eventType);
-    else		xkbi->selected_events&= ~(1<<eventType);
     UnlockDisplay(dpy);
     SyncHandle();
     return True;
 }
 
-Status
+Bool
+#if NeedFunctionPrototypes
+XkbLockModifiers(	Display *	dpy,
+			unsigned int 	deviceSpec,
+			unsigned int 	affect,
+			unsigned int 	values)
+#else
 XkbLockModifiers(dpy,deviceSpec,affect,values)
     Display *dpy;
     unsigned int deviceSpec;
     unsigned int affect;
     unsigned int values;
+#endif
 {
     register xkbLatchLockStateReq *req;
     XkbInfoPtr xkbi;
 
     if ((dpy->flags & XlibDisplayNoXkb) ||
-	(!dpy->xkb_info && !XkbUseExtension(dpy)))
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
 	return False;
     LockDisplay(dpy);
     xkbi = dpy->xkb_info;
@@ -313,21 +290,28 @@ XkbLockModifiers(dpy,deviceSpec,affect,values)
     req->groupLatch = 0;
     UnlockDisplay(dpy);
     SyncHandle();
-    return 1;
+    return True;
 }
 
-Status
+Bool
+#if NeedFunctionPrototypes
+XkbLatchModifiers(	Display *	dpy,
+			unsigned int	deviceSpec,
+			unsigned int	affect,
+			unsigned int	values)
+#else
 XkbLatchModifiers(dpy,deviceSpec,affect,values)
     Display *dpy;
     unsigned int deviceSpec;
     unsigned int affect;
     unsigned int values;
+#endif
 {
     register xkbLatchLockStateReq *req;
     XkbInfoPtr xkbi;
 
     if ((dpy->flags & XlibDisplayNoXkb) ||
-	(!dpy->xkb_info && !XkbUseExtension(dpy)))
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
 	return False;
     LockDisplay(dpy);
     xkbi = dpy->xkb_info;
@@ -347,148 +331,170 @@ XkbLatchModifiers(dpy,deviceSpec,affect,values)
 
     UnlockDisplay(dpy);
     SyncHandle();
-    return 1;
-}
-
-Status
-XkbVirtualModsToReal(xkb,virtual_mask,mask_rtrn)
-    XkbDescPtr	xkb;
-    unsigned	virtual_mask;
-    unsigned *	mask_rtrn;
-{
-register int i,bit;
-register unsigned mask;
-
-    if (xkb==NULL)
-	return False;
-    if (virtual_mask==0) {
-	*mask_rtrn= 0;
-	return True;
-    }
-    if (xkb->server==NULL)
-	return False;
-    for (i=mask=0,bit=1;i<XkbNumVirtualMods;i++,bit<<=1) {
-	if (virtual_mask&bit) {
-	    if (xkb->server->vmods[i]!=XkbNoModifier)
-		mask|= (1<<xkb->server->vmods[i]);
-	}
-    }
-    *mask_rtrn= mask;
     return True;
 }
 
-static  XkbKTMapEntryRec map2Level[1]= { 
-	{ True, ShiftMask, 0, ShiftMask, 0 }
-};
-#define	NL_VMOD_MASK	0
-static  XkbKTMapEntryRec mapKeypad[2]= { 
-	{ True,	ShiftMask, 0, ShiftMask,            0 },
-	{ False,        0, 0,         0, NL_VMOD_MASK }
-};
-
-static	XkbKeyTypeRec	canonicalTypes[XkbNumRequiredTypes] = {
-	{ 0,		0,		0, 
-	  1,
-	  XkbNoFreeKTMap|XkbNoFreeKTStruct, 
-	  0,
-	  NULL,		NULL,
-	  None,		NULL
-	},
-	{ ShiftMask, 	ShiftMask, 	0, 
-	  2,
-	  XkbNoFreeKTMap|XkbNoFreeKTStruct,
-	  1,
-	  map2Level,	NULL,
-	  None,		NULL
-	},
-	{ ShiftMask,	ShiftMask,	NL_VMOD_MASK,
-	  2,
-	  XkbNoFreeKTMap|XkbNoFreeKTStruct,
-	  2,
-	  mapKeypad,	NULL,
-	  None,		NULL
-	}
-};
-
-Status
-XkbInitCanonicalKeyTypes(xkb,which,keypadVMod)
-    XkbDescPtr		xkb;
-    unsigned		which;
-    int			keypadVMod;
-{
-XkbClientMapPtr	map;
-
-    if ((!xkb)||(!XkbAllocClientMap(xkb,XkbKeyTypesMask,XkbNumRequiredTypes)))
-	return False;
-    map= xkb->map;
-    if ((which&XkbAllRequiredTypes)==0)
-	return True;
-    if (which&XkbOneLevelMask) {
-	int	shouldFree; 
-	shouldFree= (!(map->types[XkbOneLevelIndex].free&XkbNoFreeKTStruct));
-	map->types[XkbOneLevelIndex]= canonicalTypes[XkbOneLevelIndex];
-	if (shouldFree)
-	    map->types[XkbOneLevelIndex].free&= ~XkbNoFreeKTStruct;
-    }
-    if (which&XkbTwoLevelMask) {
-	map->types[XkbTwoLevelIndex]= canonicalTypes[XkbTwoLevelIndex];
-    }
-    if (which&XkbKeypadMask) {
-	XkbKeyTypePtr type= &map->types[XkbKeypadIndex];
-
-	map->types[XkbKeypadIndex]= canonicalTypes[XkbKeypadIndex];
-	if ((keypadVMod>=0)&&(keypadVMod<XkbNumVirtualMods)) {
-	    type->vmods= (1<<keypadVMod);
-	    type->map= (XkbKTMapEntryPtr)Xcalloc(2,sizeof(XkbKTMapEntryPtr));
-	    if (type->map==NULL) {
-		type->map_count= 0;
-		return False;
-	    }
-	    type->map[0].active= True;
-	    type->map[0].mask= ShiftMask;
-	    type->map[0].vmods= 0;
-	    type->map[0].real_mods= ShiftMask;
-	    type->map[0].level= 1;
-	    type->map[1].active= False;
-	    type->map[1].mask= 0;
-	    type->map[1].vmods= (1<<keypadVMod);
-	    type->map[1].real_mods= 0;
-	    type->map[1].level= 1;
-	    type->free&= ~XkbNoFreeKTMap;
-	}
-    }
-    return True;
-}
-
-Status
-XkbSetDebuggingFlags(dpy,mask,flags,msg,rtrnFlags,disableLocks)
+Bool
+#if NeedFunctionPrototypes
+XkbLockGroup(Display *dpy,unsigned int deviceSpec,unsigned int group)
+#else
+XkbLockGroup(dpy,deviceSpec,group)
     Display *dpy;
-    unsigned int mask;
-    unsigned int flags;
-    char *msg;
-    unsigned int *rtrnFlags;
-    Bool *disableLocks;
+    unsigned int deviceSpec;
+    unsigned int group;
+#endif
+{
+    register xkbLatchLockStateReq *req;
+    XkbInfoPtr xkbi;
+
+    if ((dpy->flags & XlibDisplayNoXkb) ||
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
+	return False;
+    LockDisplay(dpy);
+    xkbi = dpy->xkb_info;
+    GetReq(kbLatchLockState, req);
+    req->reqType = xkbi->codes->major_opcode;
+    req->xkbReqType = X_kbLatchLockState;
+    req->deviceSpec = deviceSpec;
+    req->affectModLocks= 0;
+    req->modLocks = 0;
+    req->lockGroup = True;
+    req->groupLock = group;
+
+    req->affectModLatches = req->modLatches = 0;
+    req->latchGroup = False;
+    req->groupLatch = 0;
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+
+Bool
+#if NeedFunctionPrototypes
+XkbLatchGroup(Display *dpy,unsigned int deviceSpec,unsigned int group)
+#else
+XkbLatchGroup(dpy,deviceSpec,group)
+    Display *dpy;
+    unsigned int deviceSpec;
+    unsigned int group;
+#endif
+{
+    register xkbLatchLockStateReq *req;
+    XkbInfoPtr xkbi;
+
+    if ((dpy->flags & XlibDisplayNoXkb) ||
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
+	return False;
+    LockDisplay(dpy);
+    xkbi = dpy->xkb_info;
+    GetReq(kbLatchLockState, req);
+    req->reqType = xkbi->codes->major_opcode;
+    req->xkbReqType = X_kbLatchLockState;
+    req->deviceSpec = deviceSpec;
+
+    req->affectModLatches= 0;
+    req->modLatches = 0;
+    req->latchGroup = True;
+    req->groupLatch = group;
+
+    req->affectModLocks = req->modLocks = 0;
+    req->lockGroup = False;
+    req->groupLock = 0;
+
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+
+unsigned
+#if NeedFunctionPrototypes
+XkbSetXlibControls(Display *dpy,unsigned affect,unsigned values)
+#else
+XkbSetXlibControls(dpy,affect,values)
+    Display *	dpy;
+    unsigned	affect;
+    unsigned	values;
+#endif
+{
+    if ((dpy->flags & XlibDisplayNoXkb) ||
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
+	return False;
+    affect&= XkbLC_AllControls;
+    dpy->xkb_info->xlib_ctrls&= ~affect;
+    dpy->xkb_info->xlib_ctrls|= (affect&values);
+    return dpy->xkb_info->xlib_ctrls;
+}
+
+unsigned
+#if NeedFunctionPrototypes
+XkbGetXlibControls(Display *dpy)
+#else
+XkbGetXlibControls(dpy)
+    Display *	dpy;
+#endif
+{
+    if ((dpy->flags & XlibDisplayNoXkb) ||
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
+	return 0;
+    return dpy->xkb_info->xlib_ctrls;
+}
+
+unsigned int
+#if NeedFunctionPrototypes
+XkbXlibControlsImplemented(void)
+#else
+XkbXlibControlsImplemented()
+#endif
+{
+#ifdef __sgi
+    return XkbLC_AllControls;
+#else
+    return XkbLC_AllControls&~XkbLC_AllComposeControls;
+#endif
+}
+
+Bool
+#if NeedFunctionPrototypes
+XkbSetDebuggingFlags(	Display *	dpy,
+			unsigned int 	mask,
+			unsigned int 	flags,
+			char *		msg,
+			unsigned int	ctrls_mask,
+			unsigned int	ctrls,
+			unsigned int *	rtrn_flags,
+			unsigned int *	rtrn_ctrls)
+#else
+XkbSetDebuggingFlags(dpy,mask,flags,msg,ctrls_mask,ctrls,rtrn_flags,rtrn_ctrls)
+    Display *		dpy;
+    unsigned int 	mask;
+    unsigned int 	flags;
+    char *		msg;
+    unsigned int 	ctrls_mask;
+    unsigned int 	ctrls;
+    unsigned int *	rtrn_flags;
+    unsigned int *	rtrn_ctrls;
+#endif
 {
     register xkbSetDebuggingFlagsReq *req;
     xkbSetDebuggingFlagsReply rep;
     XkbInfoPtr xkbi;
 
     if ((dpy->flags & XlibDisplayNoXkb) ||
-	(!dpy->xkb_info && !XkbUseExtension(dpy)))
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
 	return False;
     LockDisplay(dpy);
     xkbi = dpy->xkb_info;
     GetReq(kbSetDebuggingFlags, req);
-    req->reqType = xkbi->codes->major_opcode;
-    req->xkbReqType = X_kbSetDebuggingFlags;
-    req->flags = flags;
-    req->mask = mask;
-    if (disableLocks)	req->disableLocks = *disableLocks;
-    else 		req->disableLocks = XkbLeaveLocks;
+    req->reqType= 	xkbi->codes->major_opcode;
+    req->xkbReqType=	X_kbSetDebuggingFlags;
+    req->affectFlags=	mask;
+    req->flags= 	flags;
+    req->affectCtrls=	ctrls_mask;
+    req->ctrls= 	ctrls;
 
     if (msg) {
 	char *out;
-	req->msgLength= strlen(msg)+1;
+	req->msgLength= (unsigned short)strlen(msg)+1;
 	req->length+= (req->msgLength+(unsigned)3)>>2;
 	BufAlloc(char *,out,((req->msgLength+(unsigned)3)/4)*4);
 	memcpy(out,msg,req->msgLength);
@@ -499,260 +505,26 @@ XkbSetDebuggingFlags(dpy,mask,flags,msg,rtrnFlags,disableLocks)
 	SyncHandle();
 	return False;
     }
-    if (rtrnFlags)
-	*rtrnFlags= rep.currentFlags;
-    if (disableLocks)
-	*disableLocks= rep.disableLocks;
+    if (rtrn_flags)
+	*rtrn_flags= rep.currentFlags;
+    if (rtrn_ctrls)
+	*rtrn_ctrls= rep.currentCtrls;
     UnlockDisplay(dpy);
     SyncHandle();
-    return 1;
-}
-
-/***====================================================================***/
-
-KeySym *
-XkbEnlargeKeySyms(xkb,key,needed)
-    XkbDescRec *xkb;
-    int key;
-    int needed;
-{
-register int i,nSyms,nKeySyms;
-unsigned nOldSyms;
-KeySym	*newSyms;
-
-    if (needed==0) {
-	xkb->map->key_sym_map[key].offset= 0;
-	return xkb->map->syms;
-    }
-    nOldSyms= XkbKeyNumSyms(xkb,key);
-    if (nOldSyms>=(unsigned)needed) {
-	return XkbKeySymsPtr(xkb,key);
-    }
-    if (xkb->map->size_syms-xkb->map->num_syms>=(unsigned)needed) {
-	int nOldSyms= XkbKeyNumSyms(xkb,key);
-
-	if (nOldSyms>0) {
-	    memcpy(&xkb->map->syms[xkb->map->num_syms],XkbKeySymsPtr(xkb,key),
-						nOldSyms*sizeof(KeySym));
-	}
-	if ((needed-nOldSyms)>0) {
-	    bzero(&xkb->map->syms[xkb->map->num_syms+XkbKeyNumSyms(xkb,key)],
-					(needed-nOldSyms)*sizeof(KeySym));
-	}
-	xkb->map->key_sym_map[key].offset = xkb->map->num_syms;
-	xkb->map->num_syms+= needed;
-	return &xkb->map->syms[xkb->map->key_sym_map[key].offset];
-    }
-    xkb->map->size_syms+= 32;
-    newSyms = (KeySym *)Xmalloc(xkb->map->size_syms*sizeof(KeySym));
-    if (newSyms==NULL)
-	return NULL;
-    newSyms[0]= NoSymbol;
-    nSyms = 1;
-    for (i=xkb->min_key_code;i<=(int)xkb->max_key_code;i++) {
-	nKeySyms= XkbKeyNumSyms(xkb,i);
-	if (nKeySyms!=0)
-	   memcpy(&newSyms[nSyms],XkbKeySymsPtr(xkb,i),nKeySyms*sizeof(KeySym));
-	xkb->map->key_sym_map[i].offset = nSyms;
-	if (i!=key)
-	    nSyms+= nKeySyms;
-	else {
-	    int nExtra;
-	    nExtra= needed-nKeySyms;
-	    if (nExtra>0)
-		bzero(&newSyms[nSyms+nKeySyms],nExtra*sizeof(KeySym));
-	    nSyms+= needed;
-	}
-    }
-    free(xkb->map->syms);
-    xkb->map->syms = newSyms;
-    xkb->map->num_syms = nSyms;
-    return &xkb->map->syms[xkb->map->key_sym_map[key].offset];
-}
-
-XkbAction *
-XkbEnlargeKeyActions(xkb,key,needed)
-    XkbDescRec *xkb;
-    int key;
-    int needed;
-{
-register int i,nActs;
-XkbAction *newActs;
-
-    if ((xkb->server->key_acts[key]!=0)&&
-				(XkbKeyNumSyms(xkb,key)>=(unsigned)needed)) {
-	return XkbKeyActionsPtr(xkb,key);
-    }
-    if (xkb->server->size_acts-xkb->server->num_acts>=(unsigned)needed) {
-	xkb->server->key_acts[key]= xkb->server->num_acts;
-	xkb->server->num_acts+= needed;
-	return &xkb->server->acts[xkb->server->key_acts[key]];
-    }
-    xkb->server->size_acts+= 8;
-    newActs = (XkbAction *)Xmalloc(xkb->server->size_acts*sizeof(XkbAction));
-    if (newActs==NULL)
-	return NULL;
-    newActs[0].type = XkbSA_NoAction;
-    nActs = 1;
-    for (i=xkb->min_key_code;i<=(int)xkb->max_key_code;i++) {
-	int nKeyActs;
-
-	nKeyActs= XkbKeyNumActions(xkb,i);
-	if (xkb->server->key_acts[i]!=0) {
-	    memcpy(&newActs[nActs],XkbKeyActionsPtr(xkb,i),
-						nKeyActs*sizeof(XkbAction));
-	}
-	xkb->server->key_acts[i]= nActs;
-	if (i!=key)
-	    nActs+= nKeyActs;
-	else {
-	    int nExtra;
-	    nExtra= needed-nKeyActs;
-	    if (nExtra>0)
-		bzero(&newActs[nActs+nKeyActs],nExtra*sizeof(XkbAction));
-	    nActs+= needed;
-	}
-    }
-    free(xkb->server->acts);
-    xkb->server->acts = newActs;
-    xkb->server->num_acts= nActs;
-    return &xkb->server->acts[xkb->server->key_acts[key]];
-}
-
-Status
-XkbChangeTypeOfKey(xkb,key,newType,pChanges)
-    XkbDescRec		*xkb;
-    unsigned	 	 key;
-    unsigned	 	 newType;
-    XkbMapChangesRec	*pChanges;
-{
-XkbKeyTypeRec	*pOldType,*pNewType;
-
-    if ((!xkb) || (key<xkb->min_key_code) || (key>xkb->max_key_code) ||
-	(!xkb->map)||(!xkb->map->types)||(newType>=xkb->map->num_types)) {
-	return 0;
-    }
-
-    pOldType = XkbKeyKeyType(xkb,key);
-    pNewType = &xkb->map->types[newType];
-    if (newType==xkb->map->key_sym_map[key].kt_index) {
-	return 1;
-    }
-    else if (pOldType->group_width==pNewType->group_width) {
-	xkb->map->key_sym_map[key].kt_index= newType;
-    }
-    else if (pOldType->group_width>pNewType->group_width) {
-	int g,l,nGroups;
-	int oldWidth,newWidth;
-	KeySym	*pSyms;
-
-	xkb->map->key_sym_map[key].kt_index= newType;
-	pSyms = XkbKeySymsPtr(xkb,key);
-	oldWidth = pOldType->group_width;
-	newWidth = pNewType->group_width;
-	nGroups= XkbKeyNumGroups(xkb,key);
-	for (g=1;g<nGroups;g++) {
-	    for (l=0;l<newWidth;l++) {
-		pSyms[g*newWidth+l]= pSyms[g*oldWidth+l];
-	    }
-	}
-    }
-    else {
-	int g,l,nGroups;
-	int oldWidth,newWidth;
-	KeySym	*pSyms;
-
-	xkb->map->key_sym_map[key].kt_index= newType;
-	oldWidth = pOldType->group_width;
-	newWidth = pNewType->group_width;
-	nGroups= XkbKeyNumGroups(xkb,key);
-	pSyms = XkbEnlargeKeySyms(xkb,key,newWidth*nGroups);
-	for (g=nGroups-1;g>=0;g--) {
-	    for (l=newWidth-1;l>=oldWidth;l--) {
-		pSyms[g*newWidth+l]= NoSymbol;
-	    }
-	    for (l=oldWidth-1;l>=0;l--) {
-		pSyms[g*newWidth+l]= pSyms[g*oldWidth+l];
-	    }
-	}
-    }
-    if (pChanges!=NULL) {
-	if (pChanges->changed&XkbKeySymsMask) {
-	    int first,last;
-	    first= pChanges->first_key_sym;
-	    last= pChanges->first_key_sym+pChanges->num_key_syms-1;
-	    if (key<first)	first= key;
-	    if (key>last)	last= key;
-	    pChanges->first_key_sym = first;
-	    pChanges->num_key_syms = (last-first)+1;
-	}
-	else {
-	    pChanges->changed|= XkbKeySymsMask;
-	    pChanges->first_key_sym= key;
-	    pChanges->num_key_syms= 1;
-	}
-    }
-    return 1;
-}
-
-Status
-XkbChangeSymsForKey(xkb,key,count,syms,pChanges)
-    XkbDescRec		*xkb;
-    unsigned	 	 key;
-    unsigned	 	 count;
-    KeySym 		*syms;
-    XkbMapChangesRec	*pChanges;
-{
-XkbKeyTypeRec	*pType;
-KeySym *pSyms;
-int nGroups,nSyms;
-
-    if ((!xkb) || (key<xkb->min_key_code) || (key>xkb->max_key_code) ||
-	(!xkb->map)||(!xkb->map->types)||(!xkb->map->key_sym_map) ||
-	(count<1))
-	return 0;
-
-    pType = XkbKeyKeyType(xkb,key);
-    nGroups = ((count+pType->group_width-1)/pType->group_width);
-    if ((nGroups<1)||(nGroups>8))
-	return 0;
-    
-    nSyms= nGroups*pType->group_width;
-    pSyms= XkbEnlargeKeySyms(xkb,key,nSyms);
-    if (!pSyms) 
-	return 0;
-
-    memcpy(pSyms,syms,count*sizeof(KeySym));
-    while (count<nSyms) {
-	pSyms[count++]= NoSymbol;
-    }
-    xkb->map->key_sym_map[key].group_info= 
-		XkbSetNumGroups(xkb->map->key_sym_map[key].group_info,nGroups);
-
-    if (pChanges!=NULL) {
-	if (pChanges->changed&XkbKeySymsMask) {
-	    int first,last;
-	    first= pChanges->first_key_sym;
-	    last= pChanges->first_key_sym+pChanges->num_key_syms-1;
-	    if (key<first)	first= key;
-	    if (key>last)	last= key;
-	    pChanges->first_key_sym = first;
-	    pChanges->num_key_syms = (last-first)+1;
-	}
-	else {
-	    pChanges->changed|= XkbKeySymsMask;
-	    pChanges->first_key_sym= key;
-	    pChanges->num_key_syms= 1;
-	}
-    }
-    return 1;
+    return True;
 }
 
 Bool
+#if NeedFunctionPrototypes
+XkbComputeEffectiveMap(	XkbDescPtr 	xkb,
+			XkbKeyTypePtr 	type,
+			unsigned char *	map_rtrn)
+#else
 XkbComputeEffectiveMap(xkb,type,map_rtrn)
     XkbDescPtr		xkb;
     XkbKeyTypePtr	type;
     unsigned char *	map_rtrn;
+#endif
 {
 register int 		i;
 unsigned     		tmp;
@@ -761,16 +533,16 @@ XkbKTMapEntryPtr	entry;
     if ((!xkb)||(!type)||(!xkb->server))
 	return False;
 
-    if (type->vmods!=0) {
-	if (!XkbVirtualModsToReal(xkb,type->vmods,&tmp))
+    if (type->mods.vmods!=0) {
+	if (!XkbVirtualModsToReal(xkb,type->mods.vmods,&tmp))
 	    return False;
 
-	type->mask= tmp|type->real_mods;
+	type->mods.mask= tmp|type->mods.real_mods;
 	entry= type->map;
 	for (i=0;i<type->map_count;i++,entry++) {
 	    tmp= 0;
-	    if (entry->vmods!=0) {
-		if (!XkbVirtualModsToReal(xkb,entry->vmods,&tmp))
+	    if (entry->mods.vmods!=0) {
+		if (!XkbVirtualModsToReal(xkb,entry->mods.vmods,&tmp))
 		    return False;
 		if (tmp==0) {
 		    entry->active= False;
@@ -778,17 +550,17 @@ XkbKTMapEntryPtr	entry;
 		}
 	    }
 	    entry->active= True;
-	    entry->mask= (entry->real_mods|tmp)&type->mask;
+	    entry->mods.mask= (entry->mods.real_mods|tmp)&type->mods.mask;
 	}
     }
     else {
-	type->mask= type->real_mods;
+	type->mods.mask= type->mods.real_mods;
     }
     if (map_rtrn!=NULL) {
-	bzero(map_rtrn,type->mask+1);
+	bzero(map_rtrn,type->mods.mask+1);
 	for (i=0;i<type->map_count;i++) {
 	    if (entry->active) {
-		map_rtrn[type->map[i].mask]= type->map[i].level;
+		map_rtrn[type->map[i].mods.mask]= type->map[i].level;
 	    }
 	}
     }
@@ -796,18 +568,22 @@ XkbKTMapEntryPtr	entry;
 }
 
 Status
+#if NeedFunctionPrototypes
+XkbGetState(Display *dpy,unsigned deviceSpec,XkbStatePtr rtrn)
+#else
 XkbGetState(dpy,deviceSpec,rtrn)
-    Display *dpy;
-    unsigned deviceSpec;
-    XkbStateRec *rtrn;
+    Display *	dpy;
+    unsigned 	deviceSpec;
+    XkbStatePtr	rtrn;
+#endif
 {
     register xkbGetStateReq	*req;
     xkbGetStateReply rep;
     XkbInfoPtr xkbi;
 
     if ((dpy->flags & XlibDisplayNoXkb) ||
-	(!dpy->xkb_info && !XkbUseExtension(dpy)))
-	return False;
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
+	return BadAccess;
     LockDisplay(dpy);
     xkbi = dpy->xkb_info;
     GetReq(kbGetState, req);
@@ -817,19 +593,334 @@ XkbGetState(dpy,deviceSpec,rtrn)
     if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
-	return False;
+	return BadImplementation;
     }
-    rtrn->mods= rep.mods;
-    rtrn->base_mods= rep.baseMods;
-    rtrn->latched_mods= rep.latchedMods;
-    rtrn->locked_mods= rep.lockedMods;
-    rtrn->group= rep.group;
-    rtrn->base_group = rep.baseGroup;
-    rtrn->latched_group= rep.latchedGroup;
-    rtrn->locked_group = rep.lockedGroup;
-    rtrn->compat_state= rep.compatState;
+    rtrn->mods= 		rep.mods;
+    rtrn->base_mods= 		rep.baseMods;
+    rtrn->latched_mods= 	rep.latchedMods;
+    rtrn->locked_mods= 		rep.lockedMods;
+    rtrn->group= 		rep.group;
+    rtrn->base_group= 		rep.baseGroup;
+    rtrn->latched_group= 	rep.latchedGroup;
+    rtrn->locked_group= 	rep.lockedGroup;
+    rtrn->compat_state= 	rep.compatState;
+    rtrn->grab_mods=		rep.grabMods;
+    rtrn->compat_grab_mods=	rep.compatGrabMods;
+    rtrn->lookup_mods=		rep.lookupMods;
+    rtrn->compat_lookup_mods=	rep.compatLookupMods;
+    rtrn->ptr_buttons=		rep.ptrBtnState;
     UnlockDisplay(dpy);
     SyncHandle();
-    return True;
+    return Success;
 }
 
+Bool
+#if NeedFunctionPrototypes
+XkbSetDetectableAutoRepeat(Display *dpy,Bool detectable,Bool *supported)
+#else
+XkbSetDetectableAutoRepeat(dpy,detectable,supported)
+    Display *		dpy;
+    Bool		detectable;
+    Bool *		supported;
+#endif
+{
+register xkbPerClientFlagsReq *	req;
+xkbPerClientFlagsReply 		rep;
+XkbInfoPtr 			xkbi;
+
+    if ((dpy->flags & XlibDisplayNoXkb) ||
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
+	return False;
+    LockDisplay(dpy);
+    xkbi = dpy->xkb_info;
+    GetReq(kbPerClientFlags, req);
+    req->reqType = xkbi->codes->major_opcode;
+    req->xkbReqType = X_kbPerClientFlags;
+    req->deviceSpec = XkbUseCoreKbd;
+    req->change = XkbPCF_DetectableAutoRepeatMask;
+    if (detectable)
+	 req->value = XkbPCF_DetectableAutoRepeatMask;
+    else req->value = 0;
+    req->ctrlsToChange = req->autoCtrls= req->autoCtrlValues= 0;
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return False;
+    }
+    UnlockDisplay(dpy);
+    SyncHandle();
+    if (supported!=NULL)
+	*supported= ((rep.supported&XkbPCF_DetectableAutoRepeatMask)!=0);
+    return ((rep.value&XkbPCF_DetectableAutoRepeatMask)!=0);
+}
+
+Bool
+#if NeedFunctionPrototypes
+XkbGetDetectableAutoRepeat(Display *dpy,Bool *supported)
+#else
+XkbGetDetectableAutoRepeat(dpy,supported)
+    Display *		dpy;
+    Bool *		supported;
+#endif
+{
+register xkbPerClientFlagsReq *	req;
+xkbPerClientFlagsReply 		rep;
+XkbInfoPtr 			xkbi;
+
+    if ((dpy->flags & XlibDisplayNoXkb) ||
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
+	return False;
+    LockDisplay(dpy);
+    xkbi = dpy->xkb_info;
+    GetReq(kbPerClientFlags, req);
+    req->reqType = xkbi->codes->major_opcode;
+    req->xkbReqType = X_kbPerClientFlags;
+    req->deviceSpec = XkbUseCoreKbd;
+    req->change = 0;
+    req->value = 0;
+    req->ctrlsToChange = req->autoCtrls= req->autoCtrlValues= 0;
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return False;
+    }
+    UnlockDisplay(dpy);
+    SyncHandle();
+    if (supported!=NULL)
+	*supported= ((rep.supported&XkbPCF_DetectableAutoRepeatMask)!=0);
+    return ((rep.value&XkbPCF_DetectableAutoRepeatMask)!=0);
+}
+
+Bool
+#if NeedFunctionPrototypes
+XkbSetAutoResetControls(	Display *	dpy,
+				unsigned 	changes,
+				unsigned *	auto_ctrls,
+				unsigned *	auto_values)
+#else
+XkbSetAutoResetControls(dpy,changes,auto_ctrls,auto_values)
+    Display *		dpy;
+    unsigned 		changes;
+    unsigned *		auto_ctrls;
+    unsigned *		auto_values;
+#endif
+{
+register xkbPerClientFlagsReq *	req;
+xkbPerClientFlagsReply 		rep;
+XkbInfoPtr 			xkbi;
+
+    if ((dpy->flags & XlibDisplayNoXkb) ||
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
+	return False;
+    LockDisplay(dpy);
+    xkbi = dpy->xkb_info;
+    GetReq(kbPerClientFlags, req);
+    req->reqType = xkbi->codes->major_opcode;
+    req->xkbReqType = X_kbPerClientFlags;
+    req->change = XkbPCF_AutoResetControlsMask;
+    req->deviceSpec = XkbUseCoreKbd;
+    req->value = XkbPCF_AutoResetControlsMask;
+    req->ctrlsToChange= changes;
+    req->autoCtrls= *auto_ctrls;
+    req->autoCtrlValues= *auto_values;
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return False;
+    }
+    UnlockDisplay(dpy);
+    SyncHandle();
+    *auto_ctrls= rep.autoCtrls;
+    *auto_values= rep.autoCtrlValues;
+    return ((rep.value&XkbPCF_AutoResetControlsMask)!=0);
+}
+
+Bool
+#if NeedFunctionPrototypes
+XkbGetAutoResetControls(	Display *	dpy,
+				unsigned *	auto_ctrls,
+				unsigned *	auto_ctrl_values)
+#else
+XkbGetAutoResetControls(dpy,auto_ctrls,auto_ctrl_values)
+    Display *		dpy;
+    unsigned *		auto_ctrls;
+    unsigned *		auto_ctrl_values;
+#endif
+{
+register xkbPerClientFlagsReq *	req;
+xkbPerClientFlagsReply 		rep;
+XkbInfoPtr 			xkbi;
+
+    if ((dpy->flags & XlibDisplayNoXkb) ||
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
+	return False;
+    LockDisplay(dpy);
+    xkbi = dpy->xkb_info;
+    GetReq(kbPerClientFlags, req);
+    req->reqType = xkbi->codes->major_opcode;
+    req->xkbReqType = X_kbPerClientFlags;
+    req->deviceSpec = XkbUseCoreKbd;
+    req->change = 0;
+    req->value = 0;
+    req->ctrlsToChange = req->autoCtrls= req->autoCtrlValues= 0;
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return False;
+    }
+    UnlockDisplay(dpy);
+    SyncHandle();
+    if (auto_ctrls)
+	*auto_ctrls= rep.autoCtrls;
+    if (auto_ctrl_values)
+	*auto_ctrl_values= rep.autoCtrlValues;
+    return ((rep.value&XkbPCF_AutoResetControlsMask)!=0);
+}
+
+Bool
+#if NeedFunctionPrototypes
+XkbSetPerClientControls(	Display *	dpy,
+				unsigned 	change,
+				unsigned *	values)
+#else
+XkbSetPerClientControls(dpy,change,values)
+    Display *		dpy;
+    unsigned 		change;
+    unsigned *		values;
+#endif
+{
+register xkbPerClientFlagsReq *	req;
+xkbPerClientFlagsReply 		rep;
+XkbInfoPtr 			xkbi;
+unsigned			value_hold = *values;
+
+    if ((dpy->flags & XlibDisplayNoXkb) ||
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)) ||
+	(change & ~(XkbPCF_GrabsUseXKBStateMask|XkbPCF_LookupStateWhenGrabbed|XkbPCF_SendEventUsesXKBState)))
+	return False;
+    LockDisplay(dpy);
+    xkbi = dpy->xkb_info;
+    GetReq(kbPerClientFlags, req);
+    req->reqType = xkbi->codes->major_opcode;
+    req->xkbReqType = X_kbPerClientFlags;
+    req->change = change;
+    req->deviceSpec = XkbUseCoreKbd;
+    req->value = *values;
+    req->ctrlsToChange = req->autoCtrls = req->autoCtrlValues= 0;
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return False;
+    }
+    UnlockDisplay(dpy);
+    SyncHandle();
+    *values = rep.value;
+    return ((rep.value&value_hold)!=0);
+}
+
+Bool
+#if NeedFunctionPrototypes
+XkbGetPerClientControls(	Display *	dpy,
+				unsigned *	ctrls)
+#else
+XkbGetPerClientControls(dpy,ctrls)
+    Display *		dpy;
+    unsigned *		ctrls;
+#endif
+{
+register xkbPerClientFlagsReq *	req;
+xkbPerClientFlagsReply 		rep;
+XkbInfoPtr 			xkbi;
+
+    if ((dpy->flags & XlibDisplayNoXkb) ||
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)) ||
+	(*ctrls & ~(XkbPCF_GrabsUseXKBStateMask|XkbPCF_LookupStateWhenGrabbed|XkbPCF_SendEventUsesXKBState)))
+	return False;
+    LockDisplay(dpy);
+    xkbi = dpy->xkb_info;
+    GetReq(kbPerClientFlags, req);
+    req->reqType = xkbi->codes->major_opcode;
+    req->xkbReqType = X_kbPerClientFlags;
+    req->deviceSpec = XkbUseCoreKbd;
+    req->change = 0;
+    req->value = 0;
+    req->ctrlsToChange = req->autoCtrls= req->autoCtrlValues= 0;
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return False;
+    }
+    UnlockDisplay(dpy);
+    SyncHandle();
+    if (ctrls)
+	*ctrls= (rep.value&XkbPCF_GrabsUseXKBStateMask|XkbPCF_LookupStateWhenGrabbed|XkbPCF_SendEventUsesXKBState);
+    return (True);
+}
+
+Display *
+#if NeedFunctionPrototypes
+XkbOpenDisplay(	char *	name,
+		int *	ev_rtrn,
+		int *	err_rtrn,
+		int *	major_rtrn,
+		int *	minor_rtrn,
+		int *	reason)
+#else
+XkbOpenDisplay(name,ev_rtrn,err_rtrn,major_rtrn,minor_rtrn,reason)
+    char *	name;
+    int *	ev_rtrn;
+    int *	err_rtrn;
+    int *	major_rtrn;
+    int *	minor_rtrn;
+    int *	reason;
+#endif
+{
+    Display* dpy;
+    int	 major_num,minor_num;
+
+    if ((major_rtrn!=NULL) && (minor_rtrn!=NULL)) {
+	if (!XkbLibraryVersion(major_rtrn,minor_rtrn)) {
+	    if (reason!=NULL)
+		*reason= XkbOD_BadLibraryVersion;
+	    return NULL;
+	}
+    }
+    else {
+	major_num= XkbMajorVersion;
+	minor_num= XkbMinorVersion;
+	major_rtrn= &major_num;
+	minor_rtrn= &minor_num;
+    }
+    dpy= XOpenDisplay(name);
+    if (dpy==NULL) {
+	if (reason!=NULL)
+	    *reason= XkbOD_ConnectionRefused;
+	return NULL;
+    }
+    if (!XkbQueryExtension(dpy,NULL,ev_rtrn,err_rtrn,major_rtrn,minor_rtrn)) {
+	if (reason!=NULL) {
+	    if ((*major_rtrn!=0)||(*minor_rtrn!=0))
+		 *reason= XkbOD_BadServerVersion;
+	    else *reason= XkbOD_NonXkbServer;
+	}
+	XCloseDisplay(dpy);
+	return NULL;
+    }
+    if (reason!=NULL)
+	*reason= XkbOD_Success;
+    return dpy;
+}
+
+void
+#if NeedFunctionPrototypes
+XkbSetAtomFuncs(XkbInternAtomFunc getAtom,XkbGetAtomNameFunc getName)
+#else
+XkbSetAtomFuncs(getAtom,getName)
+    XkbInternAtomFunc	getAtom;
+    XkbGetAtomNameFunc	getName;
+#endif
+{
+    _XkbInternAtomFunc= (getAtom?getAtom:XInternAtom);
+    _XkbGetAtomNameFunc= (getName?getName:XGetAtomName);
+    return;
+}

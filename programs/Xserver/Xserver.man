@@ -1,5 +1,5 @@
-.\" $XConsortium: Xserver.man /main/62 1996/12/09 17:06:18 kaleb $
-.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.6 1997/06/15 07:12:10 dawes Exp $
+.\" $TOG: Xserver.man /main/67 1997/11/08 19:26:20 barstow $
+.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.7 1997/09/14 13:15:03 dawes Exp $
 .\" Copyright (c) 1984 - 1991, 1993, 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -25,7 +25,7 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
-.TH XSERVER 1 "Release 6.3"  "X Version 11"
+.TH XSERVER 1 "Release 6.4"  "X Version 11"
 .SH NAME
 Xserver \- X Window System display server
 .SH SYNOPSIS
@@ -218,6 +218,9 @@ the client that it is doing so.
 .B \-x \fIextension\fP
 loads the specified extension at init.
 This is a no-op for most implementations.
+.TP 8
+.B [+-]xinerama
+enable(+) or disable(-) XINERAMA extension. Default is disabled.
 .SH SERVER DEPENDENT OPTIONS
 Some X servers accept the following options:
 .TP 8
@@ -566,6 +569,15 @@ bigcpu::
 Users can add or remove hosts from this list and enable or disable access
 control using the \fIxhost\fP command from the same machine as the server.
 .PP
+If the X FireWall Proxy (\fIxfwp\fP) is being used without a sitepolicy,
+host-based authorization must be turned on for clients to be able to 
+connect to the X server via the \fIxfwp\fP.  If \fIxfwp\fP is run without 
+a configuration file and thus no sitepolicy is defined, if \fIxfwp\fP 
+is using an X server where xhost + has been run to turn off host-based 
+authorization checks, when a client tries to connect to this X server 
+via \fIxfwp\fP, the X server will deny the connection.  See \fIxfwp(1)\fP
+for more information about this proxy.
+.PP
 The X protocol intrinsically does not have any notion of window operation
 permissions or place any restrictions on what a client can do; if a program can
 connect to a display, it has full run of the screen.  
@@ -657,7 +669,7 @@ Protocols:
 Fonts: bdftopcf(1), mkfontdir(1), xfs(1), xlsfonts(1), xfontsel(1), xfd(1),
 .I "X Logical Font Description Conventions"
 .PP
-Security: Xsecurity(1), xauth(1), Xau(1), xdm(1), xhost(1),
+Security: Xsecurity(1), xauth(1), Xau(1), xdm(1), xhost(1), xfwp(1)
 .I "Security Extension Specification"
 .PP
 Starting the server: xdm(1), xinit(1)

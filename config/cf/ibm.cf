@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ibm.cf /main/80 1996/12/26 08:52:31 kaleb $
+XCOMM platform:  $TOG: ibm.cf /main/81 1997/10/16 11:27:45 kaleb $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -101,8 +101,6 @@ baseobj.Osuf:	basedep.CCsuf						@@\
 #define CppCmd			/usr/ccs/lib/cpp
 #define ExpandManNames		YES
 #define ExtensionOSDefines	-DXTESTEXT1
-#define XibmServer		YES
-#define ibmIncludeSKYWAY	YES
 
 /* IBM cpp has slightly non-standard line directives, but supports -P */
 #define CppNoLineInfoOption	-P

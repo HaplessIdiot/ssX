@@ -1,5 +1,4 @@
-/* $XConsortium: Xtrans.h,v 1.29 95/06/08 23:20:39 gildea Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtrans.h,v 3.8 1996/11/24 09:51:12 dawes Exp $ */
+/* $TOG: Xtrans.h /main/30 1997/10/16 13:03:13 barstow $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -29,6 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86: xc/lib/xtrans/Xtrans.h,v 3.9 1997/01/18 06:52:39 dawes Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -107,7 +107,7 @@ static char* __xtransname = "_FSTrans";
 #else
 #define TRANS(func) _FontTrans/**/func
 #endif
-static char* __xtransname = "_FontTrans";
+static char* __transname = "_FontTrans";
 #endif /* FONT_t */
 
 #ifdef ICE_t
@@ -127,6 +127,16 @@ static char* __xtransname = "_IceTrans";
 #endif
 static char* __xtransname = "_TESTTrans";
 #endif /* TEST_t */
+
+#ifdef LBXPROXY_t
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
+#define TRANS(func) _LBXPROXYTrans##func
+#else
+#define TRANS(func) _LBXPROXYTrans/**/func
+#endif
+#define X11_t		/* The server defines this - so should the LBX proxy */
+static char* __xtransname = "_LBXPROXYTrans";
+#endif /* LBXPROXY_t */
 
 #if !defined(TRANS)
 #if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
