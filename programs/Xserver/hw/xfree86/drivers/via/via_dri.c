@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_dri.c,v 1.6 2004/01/05 00:34:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_dri.c,v 1.7 2004/02/04 04:17:56 dawes Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -493,8 +493,14 @@ VIADRICloseScreen(ScreenPtr pScreen)
 	pVia->pDRIInfo=0;
     }
     
-    if (pVia->pVisualConfigs) xfree(pVia->pVisualConfigs);
-    if (pVia->pVisualConfigsPriv) xfree(pVia->pVisualConfigsPriv);
+    if (pVia->pVisualConfigs) {
+	xfree(pVia->pVisualConfigs);
+	pVia->pVisualConfigs = NULL;
+    }
+    if (pVia->pVisualConfigsPriv) {
+	xfree(pVia->pVisualConfigsPriv);
+	pVia->pVisualConfigsPriv = NULL;
+    }
 }
 
 /* TODO: xserver receives driver's swapping event and does something
