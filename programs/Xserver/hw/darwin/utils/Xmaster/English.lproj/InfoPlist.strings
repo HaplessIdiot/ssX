@@ -1,6 +1,6 @@
 /* Localized versions of Info.plist keys */
 
 CFBundleName = "Xmaster";
-CFBundleShortVersionString = "Xmaster version 0.1";
-CFBundleGetInfoString = "Xmaster version 0.1";
+CFBundleShortVersionString = "Xmaster version 0.2";
+CFBundleGetInfoString = "Xmaster version 0.2";
 NSHumanReadableCopyright = "";

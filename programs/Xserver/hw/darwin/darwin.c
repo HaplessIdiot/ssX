@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.5 2001/01/23 21:14:26 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.6 2001/01/27 18:20:39 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -355,7 +355,7 @@ void DarwinSimulateMouseClick(
     int whichButton,    // mouse button to be pressed
     int whichEvent,     // ButtonPress or ButtonRelease
     int keycodesUsed[], // list of keycodes of the modifiers used
-                        // to create the fake click
+                        // to create the fake click + MIN_KEYCODE
     int numKeycodes )   // number of keycodes in list
 {  
     int i;
@@ -363,21 +363,21 @@ void DarwinSimulateMouseClick(
     // first fool X into forgetting about the keys
     for (i = 0; i < numKeycodes; i++) {
     xe.u.u.type = KeyRelease;
-    xe.u.u.detail = keycodesUsed[i] + MIN_KEYCODE;
+    xe.u.u.detail = keycodesUsed[i];
     (darwinKeyboard->public.processInputProc)
         ( &xe, darwinKeyboard, 1 );
     }
 
     // push the mouse button
     xe.u.u.type = whichEvent;
-    xe.u.u.detail = whichButton;			// de.key = button n
+    xe.u.u.detail = whichButton;
     (darwinPointer->public.processInputProc)
-    ( &xe, darwinPointer, 1 );
+	( &xe, darwinPointer, 1 );
 
     // reset the keys
     for (i = 0; i < numKeycodes; i++) {
     xe.u.u.type = KeyPress;
-    xe.u.u.detail = keycodesUsed[i] + MIN_KEYCODE;
+    xe.u.u.detail = keycodesUsed[i];
     (darwinKeyboard->public.processInputProc)
         ( &xe, darwinKeyboard, 1 );
     }

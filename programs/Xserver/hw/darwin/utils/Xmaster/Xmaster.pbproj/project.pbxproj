@@ -116,6 +116,22 @@
 			isa = PBXRezBuildPhase;
 			name = "ResourceManager Resources";
 		};
+		05835BC70026835FCE6F79C2 = {
+			isa = PBXFileReference;
+			path = Xmaster.icns;
+			refType = 4;
+		};
+		05835BC80026835FCE6F79C2 = {
+			fileRef = 05835BC70026835FCE6F79C2;
+			isa = PBXBuildFile;
+			settings = {
+				INCLUDED_OSS = (
+					MACOS,
+					WINDOWS,
+					PDOUNIX,
+				);
+			};
+		};
 		080E96DCFE201CFB7F000001 = {
 			fileRef = 29B97318FDCFA39411CA2CEA;
 			isa = PBXBuildFile;
@@ -268,6 +284,7 @@
 			children = (
 				29B97318FDCFA39411CA2CEA,
 				089C165CFE840E0CC02AAC07,
+				05835BC70026835FCE6F79C2,
 			);
 			isa = PBXGroup;
 			name = Resources;
@@ -356,7 +373,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>0.1</string>
+	<string>0.2</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
@@ -381,6 +398,7 @@
 			files = (
 				080E96DCFE201CFB7F000001,
 				089C165EFE840E0CC02AAC07,
+				05835BC80026835FCE6F79C2,
 			);
 			isa = PBXResourcesBuildPhase;
 			name = "Bundle Resources";
