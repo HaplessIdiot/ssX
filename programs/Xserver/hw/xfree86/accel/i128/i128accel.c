@@ -403,6 +403,9 @@ i128AccelInit()
 				 PIXMAP_CACHE |
 				 DELAYED_SYNC;
 
+	if (i128DeviceType == I128_DEVICE_ID3)
+		xf86AccelInfoRec.Flags |= ONLY_LEFT_TO_RIGHT_BITBLT;
+
 	xf86AccelInfoRec.ServerInfoRec = &i128InfoRec;
 
 	xf86AccelInfoRec.Sync = i128EngineDone;
