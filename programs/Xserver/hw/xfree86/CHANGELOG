@@ -1,4 +1,5 @@
 XFree86 4.4.99.904 (xx March 2005)
+ 361. Fix bugs in the Kyrgyz XKB map (based on Bugzilla #1555, Ilyas Bakirov).
  361. First cut at libXpm fix for CAN-2005-0605 (David Dawes).
  360. Append '.txt' to top-level document files to avoid problems with the
       install target on case-insensitive platforms (reported by
@@ -19451,7 +19452,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3466 2005/03/08 17:44:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3467 2005/03/12 23:15:46 dawes Exp $
 
 
 

@@ -9,7 +9,7 @@
 <date>12 March 2005
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.131 2005/03/10 17:18:38 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.132 2005/03/12 23:15:47 dawes Exp $
 </ident>
 
 <abstract>
@@ -1711,6 +1711,7 @@ Andrew Aitchison,
 Raoul Arranz,
 Zaeem Arshad,
 Dwayne Bailey,
+Ilyas Bakirov,
 Denis Barbier,
 Kyle Bateman,
 J. Scott Berg,

@@ -14,7 +14,7 @@
 // equal (key <AE12>) with Cyrillic_en_with_descender (U04a3),
 // bksl (key <BKSL>) with Cyrillic_straight_u (U04af)
 //
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/symbols/pc/ky,v 1.1 2005/02/25 18:25:36 dawes Exp $
 
 partial default alphanumeric_keys 
 xkb_symbols "basic" {
@@ -81,7 +81,7 @@ key.type[group2]="TWO_LEVEL";
 
 partial alphanumeric_keys
 xkb_symbols "winkeys" {
-    include "pc/kg(basic)"
+    include "pc/ky(basic)"
     key <AE03> {        [               3,      numerosign      ]       };
     key <AE04> {        [               4,       semicolon      ]       };
     key <AE05> {        [               5,         percent      ]       };
@@ -93,7 +93,7 @@ xkb_symbols "winkeys" {
 
 partial alphanumeric_keys
 xkb_symbols "alternative" {
-    include "pc/kg(basic)"
+    include "pc/ky(basic)"
  
 key.type[group1]="TWO_LEVEL";   
 
@@ -115,7 +115,7 @@ key.type[group2]="TWO_LEVEL";
 
 partial alphanumeric_keys
 xkb_symbols "alt_winkeys" {
-    include "pc/kg(alternative)"
+    include "pc/ky(alternative)"
     key <AE03> {        [               3,      numerosign      ]       };
     key <AE04> {        [               4,       semicolon      ]       };
     key <AE05> {        [               5,         percent      ]       };

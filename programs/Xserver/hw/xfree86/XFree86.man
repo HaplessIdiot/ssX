@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.70 2005/01/26 06:17:56 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.71 2005/03/13 00:32:37 dawes Exp $
 .\"
 .\" Copyright (c) 1994-2005 by The XFree86 Project, Inc.
 .\" All rights reserved.
@@ -1026,6 +1026,7 @@ Andrew Aitchison,
 Raoul Arranz,
 Zaeem Arshad,
 Dwayne Bailey,
+Ilyas Bakirov,
 Denis Barbier,
 Kyle Bateman,
 J. Scott Berg,
