@@ -35,5 +35,6 @@ EXPORTS
  XpmWriteFileFromImage
  XpmWriteFileFromPixmap
  XpmWriteFileFromXpmImage
+ s_popen
 
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xpm/Xpm-def.cpp,v 1.1tsi Exp $ */

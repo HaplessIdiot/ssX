@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/dmx/config/Imakefile,v 1.1tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/dmx/config/Imakefile,v 1.2tsi Exp $
 
 #include <Server.tmpl>
 
@@ -42,14 +42,17 @@ NormalProgramTarget(xdmxconfig,$(CONFIGOBJS),\
 	 	    libdmxconfig.a XawClientDepLibs $(DEPXTOOLLIB),\
 	            $(LOCAL_LIBRARIES) XawClientLibs $(XTOOLLIB),NullParameter)
 AllTarget(ProgramTargetName(xdmxconfig))
+InstallProgram(xdmxconfig,$(BINDIR))
 
 NormalProgramTarget(vdltodmx,$(COMPATOBJS),libdmxconfig.a,\
                     $(LOCAL_LIBRARIES),NullParameter)
 AllTarget(ProgramTargetName(vdltodmx))
+InstallProgram(vdltodmx,$(BINDIR))
 
 NormalProgramTarget(dmxtodmx,$(TESTOBJS),libdmxconfig.a,\
                     $(LOCAL_LIBRARIES),NullParameter)
 AllTarget(ProgramTargetName(dmxtodmx))
+InstallProgram(dmxtodmx,$(BINDIR))
 
 LinkSourceFile(dmxlog.c,..)
 

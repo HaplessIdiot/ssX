@@ -1,6 +1,5 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/Imakefile,v 1.2tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/Imakefile,v 1.3tsi Exp $
 
-#define IHaveModules
 #include <Server.tmpl>
 
 #include <dmx.cf>
@@ -25,7 +24,6 @@ XCOMM $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/Imakefile,v 1.2tsi Exp $
 XCOMM If you add "-DDEBUG" in DEFINES, then make sure you also
 XCOMM add DEBUG to the define in ../mesa/src/X/xf86glx.c
       DEFINES = $(GLX_DEFINES) $(DMX_DEFINES) -DGLXPROXY
-
 
 #if DoLoadableServer
 ModuleObjectRule()

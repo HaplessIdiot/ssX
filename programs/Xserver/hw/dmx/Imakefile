@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/dmx/Imakefile,v 1.7 2005/02/01 18:08:51 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/dmx/Imakefile,v 1.8tsi Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -32,6 +32,11 @@ RENDER_SRCS = dmxpict.c
 RENDER_OBJS = dmxpict.o
 #endif
 
+#ifdef OS2Architecture
+SRCS1 = os2_stubs.c
+OBJS1 = os2_stubs.o
+#endif
+
 SRCS =	dmxinit.c \
 	dmxscrinit.c \
 	dmxshadow.c \
@@ -53,7 +58,8 @@ SRCS =	dmxinit.c \
 	dmxextension.c \
 	miinitext.c \
 	$(GLX_SRCS) \
-	$(RENDER_SRCS)
+	$(RENDER_SRCS) \
+	$(SRCS1)
 
 OBJS =	dmxinit.o \
 	dmxscrinit.o \
@@ -76,7 +82,8 @@ OBJS =	dmxinit.o \
 	dmxextension.o \
 	miinitext.o \
 	$(GLX_OBJS) \
-	$(RENDER_OBJS)
+	$(RENDER_OBJS) \
+	$(OBJS1)
 
 #include <dmx.cf>
 
@@ -118,8 +125,13 @@ LinkSourceFile(panoramiX.c,$(SERVERSRC)/Xext)
 SpecialCObjectRule(panoramiX,$(ICONFIGFILES),$(_NOOP_))
 #endif
 
+#ifdef OS2Architecture
+LinkSourceFile(os2_stubs.c,$(SERVERSRC)/hw/xfree86/os-support/os2)
+SpecialCObjectRule(os2_stubs,$(ICONFIGFILES),-DOS2NULLSELECT)
+#endif
+
 NormalLibraryObjectRule()
-NormalLibraryTarget(dmx,$(OBJS))
+NormalLibraryTarget(dmxlib,$(OBJS))
 
 InstallManPage(Xdmx,$(MANDIR))
 

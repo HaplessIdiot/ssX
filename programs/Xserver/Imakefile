@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.307tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.308tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -588,6 +588,7 @@ CFB32SUBDIR = cfb32
 SERVERDEFFILE = XFree86.def
 XNESTDEFFILE = Xnest.def
 XVFBDEFFILE = Xvfb.def
+XDMXDEFFILE = Xdmx.def
 #endif
 #if XF86AFB
 AFBSUBDIR = afb
@@ -1263,7 +1264,7 @@ XDMXOBJS = hw/dmx/miinitext.o $(GLXPROXY_EXTRAOBJS) dix/main.o
 #endif
 XDMXINPUT  = hw/dmx/input/LibraryTargetName(dmxinput)
 XDMXCONFIG = hw/dmx/config/LibraryTargetName(dmxconfig)
-XDMX = hw/dmx/LibraryTargetName(dmx) $(XDMXCONFIG) $(GLXPROXYLIB)
+XDMX = hw/dmx/LibraryTargetName(dmxlib) $(XDMXCONFIG) $(GLXPROXYLIB)
 XDMXLIBS = PreFbLibs $(XDMX) MiExtLibs $(FB) $(MI) $(DMXEXTENSIONS) $(XDMXINPUT)
 #if BuildRender
 XDMXRENDERLIB = $(XRENDERLIB)
@@ -1277,7 +1278,7 @@ MakeMutex($(XDMXDIRS) $(XDMXOBJS) $(XDMXLIBS) $(XDMXSYSLIBS))
 $(XDMXOBJS) $(XDMXLIBS) $(XDMXSYSLIBS):: $(XDMXDIRS)
 	@if [ -f $@ ]; then touch $@ >/dev/null 2>&1 || exit 0; fi
 #endif
-ServerTarget(Xdmx,$(XDMXDIRS),$(XDMXOBJS), \
+ServerTarget(Xdmx,$(XDMXDIRS),$(XDMXOBJS) $(XDMXDEFFILE), \
        $(LIBCWRAPPER) $(XDMXLIBS),$(XDMXSYSLIBS))
 #endif /* XdmxServer */
 
