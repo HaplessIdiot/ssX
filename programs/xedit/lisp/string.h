@@ -27,51 +27,56 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/string.h,v 1.1 2001/10/15 07:05:52 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/string.h,v 1.2 2001/10/18 03:15:22 paulo Exp $ */
 
 #ifndef Lisp_string_h
 #define Lisp_string_h
 
 #include "internal.h"
 
-LispObj *Lisp_Char(LispMac*, LispObj*, char*);		   /* char */
-LispObj *Lisp_CharLess(LispMac*, LispObj*, char*);	   /* char< */
-LispObj *Lisp_CharLessEqual(LispMac*, LispObj*, char*);	   /* char<= */
-LispObj *Lisp_CharEqual_(LispMac*, LispObj*, char*);	   /* char= */
-LispObj *Lisp_CharGreater(LispMac*, LispObj*, char*);	   /* char> */
-LispObj *Lisp_CharGreaterEqual(LispMac*, LispObj*, char*); /* char>= */
-LispObj *Lisp_CharNotEqual_(LispMac*, LispObj*, char*);	   /* char/= */
-LispObj *Lisp_CharLessp(LispMac*, LispObj*, char*);	   /* char-lessp */
-LispObj *Lisp_CharNotGreaterp(LispMac*, LispObj*, char*);  /* char-not-greaterp */
-LispObj *Lisp_CharEqual(LispMac*, LispObj*, char*);	   /* char-equal */
-LispObj *Lisp_CharGreaterp(LispMac*, LispObj*, char*);	   /* char-greaterp */
-LispObj *Lisp_CharNotLessp(LispMac*, LispObj*, char*);	   /* char-not-lessp */
-LispObj *Lisp_CharNotEqual(LispMac*, LispObj*, char*);	   /* char-not-equal */
-LispObj *Lisp_Character(LispMac*, LispObj*, char*);	    /* character */
-LispObj *Lisp_CharDowncase(LispMac*, LispObj*, char*);	    /* char-downcase */
-LispObj *Lisp_CharInt(LispMac*, LispObj*, char*);	    /* char-int */
-LispObj *Lisp_CharUpcase(LispMac*, LispObj*, char*);	    /* char-upcase */
-LispObj *Lisp_IntChar(LispMac*, LispObj*, char*);	    /* int-char */
-LispObj *Lisp_ReadFromString(LispMac*, LispObj*, char*);    /* read-from-string */
-LispObj *Lisp_String(LispMac*, LispObj*, char*);	    /* string */
-LispObj *Lisp_StringTrim(LispMac*, LispObj*, char*);	    /* string-trim */
-LispObj *Lisp_StringLeftTrim(LispMac*, LispObj*, char*);    /* string-left-trim */
-LispObj *Lisp_StringRightTrim(LispMac*, LispObj*, char*);   /* string-right-trim */
-LispObj *Lisp_StringEqual_(LispMac*, LispObj*, char*);	    /* string= */
-LispObj *Lisp_StringLess(LispMac*, LispObj*, char*);	    /* string< */
-LispObj *Lisp_StringGreater(LispMac*, LispObj*, char*);	    /* string> */
-LispObj *Lisp_StringLessEqual(LispMac*, LispObj*, char*);   /* string<= */
-LispObj *Lisp_StringGreaterEqual(LispMac*, LispObj*, char*);/* string>= */
-LispObj *Lisp_StringNotEqual_(LispMac*, LispObj*, char*);   /* string/= */
-LispObj *Lisp_StringEqual(LispMac*, LispObj*, char*);	    /* string-equal */
-LispObj *Lisp_StringGreaterp(LispMac*, LispObj*, char*);    /* string-greaterp */
-LispObj *Lisp_StringLessp(LispMac*, LispObj*, char*);	    /* string-lessp */
-LispObj *Lisp_StringNotLessp(LispMac*, LispObj*, char*);    /* string-not-lessp */
-LispObj *Lisp_StringNotGreaterp(LispMac*, LispObj*, char*); /* string-not-greaterp */
-LispObj *Lisp_StringNotEqual(LispMac*, LispObj*, char*);    /* string-not-equal */
-LispObj *Lisp_StringUpcase(LispMac*, LispObj*, char*);	    /* string-upcase */
-LispObj *Lisp_StringDowncase(LispMac*, LispObj*, char*);    /* string-downcase */
-LispObj *Lisp_StringCapitalize(LispMac*, LispObj*, char*);  /* string-capitalize */
-LispObj *Lisp_XeditCharStore(LispMac*, LispObj*, char*);    /* xedit::char-store */
+LispObj *Lisp_AlphaCharP(LispMac*, LispBuiltin*);	  /* alpha-char-p */
+LispObj *Lisp_Char(LispMac*, LispBuiltin*);		  /* char */
+LispObj *Lisp_CharLess(LispMac*, LispBuiltin*);		  /* char< */
+LispObj *Lisp_CharLessEqual(LispMac*, LispBuiltin*);	  /* char<= */
+LispObj *Lisp_CharEqual_(LispMac*, LispBuiltin*);	  /* char= */
+LispObj *Lisp_CharGreater(LispMac*, LispBuiltin*);	  /* char> */
+LispObj *Lisp_CharGreaterEqual(LispMac*, LispBuiltin*);	  /* char>= */
+LispObj *Lisp_CharNotEqual_(LispMac*, LispBuiltin*);	  /* char/= */
+LispObj *Lisp_CharLessp(LispMac*, LispBuiltin*);	  /* char-lessp */
+LispObj *Lisp_CharNotGreaterp(LispMac*, LispBuiltin*);	  /* char-not-greaterp */
+LispObj *Lisp_CharEqual(LispMac*, LispBuiltin*);	  /* char-equal */
+LispObj *Lisp_CharGreaterp(LispMac*, LispBuiltin*);	  /* char-greaterp */
+LispObj *Lisp_CharNotLessp(LispMac*, LispBuiltin*);	  /* char-not-lessp */
+LispObj *Lisp_CharNotEqual(LispMac*, LispBuiltin*);	  /* char-not-equal */
+LispObj *Lisp_Character(LispMac*, LispBuiltin*);	  /* character */
+LispObj *Lisp_Characterp(LispMac*, LispBuiltin*);	  /* characterp */
+LispObj *Lisp_CharDowncase(LispMac*, LispBuiltin*);	  /* char-downcase */
+LispObj *Lisp_CharInt(LispMac*, LispBuiltin*);		  /* char-int */
+LispObj *Lisp_CharUpcase(LispMac*, LispBuiltin*);	  /* char-upcase */
+LispObj *Lisp_DigitCharP(LispMac*, LispBuiltin*);	  /* digit-char-p */
+LispObj *Lisp_IntChar(LispMac*, LispBuiltin*);		  /* int-char */
+LispObj *Lisp_ParseInteger(LispMac*, LispBuiltin*);	  /* parse-integer */
+LispObj *Lisp_ReadFromString(LispMac*, LispBuiltin*);	  /* read-from-string */
+LispObj *Lisp_String(LispMac*, LispBuiltin*);		  /* string */
+LispObj *Lisp_StringTrim(LispMac*, LispBuiltin*);	  /* string-trim */
+LispObj *Lisp_StringLeftTrim(LispMac*, LispBuiltin*);	  /* string-left-trim */
+LispObj *Lisp_StringRightTrim(LispMac*, LispBuiltin*);	  /* string-right-trim */
+LispObj *Lisp_StringEqual_(LispMac*, LispBuiltin*);	  /* string= */
+LispObj *Lisp_StringLess(LispMac*, LispBuiltin*);	  /* string< */
+LispObj *Lisp_StringGreater(LispMac*, LispBuiltin*);	  /* string> */
+LispObj *Lisp_StringLessEqual(LispMac*, LispBuiltin*);	  /* string<= */
+LispObj *Lisp_StringGreaterEqual(LispMac*, LispBuiltin*); /* string>= */
+LispObj *Lisp_StringNotEqual_(LispMac*, LispBuiltin*);	  /* string/= */
+LispObj *Lisp_StringEqual(LispMac*, LispBuiltin*);	  /* string-equal */
+LispObj *Lisp_StringGreaterp(LispMac*, LispBuiltin*);	  /* string-greaterp */
+LispObj *Lisp_StringLessp(LispMac*, LispBuiltin*);	  /* string-lessp */
+LispObj *Lisp_StringNotLessp(LispMac*, LispBuiltin*);	  /* string-not-lessp */
+LispObj *Lisp_StringNotGreaterp(LispMac*, LispBuiltin*);  /* string-not-greaterp */
+LispObj *Lisp_StringNotEqual(LispMac*, LispBuiltin*);	  /* string-not-equal */
+LispObj *Lisp_StringUpcase(LispMac*, LispBuiltin*);	  /* string-upcase */
+LispObj *Lisp_StringDowncase(LispMac*, LispBuiltin*);	  /* string-downcase */
+LispObj *Lisp_StringCapitalize(LispMac*, LispBuiltin*);	  /* string-capitalize */
+LispObj *Lisp_StringConcat(LispMac*, LispBuiltin*);	  /* string-concat */
+LispObj *Lisp_XeditCharStore(LispMac*, LispBuiltin*);	  /* xedit::char-store */
 
 #endif /* Lisp_String_h */

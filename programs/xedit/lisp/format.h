@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/format.h,v 1.1 2001/09/09 23:03:47 paulo Exp $ */
 
 #ifndef Lisp_format_h
 #define Lisp_format_h
@@ -37,6 +37,6 @@
 /*
  * Prototypes
  */
-LispObj *Lisp_Format(LispMac*, LispObj*, char*);	/* format */
+LispObj *Lisp_Format(LispMac*, LispBuiltin*);		/* format */
 
 #endif /* Lisp_format_h */

@@ -1,10 +1,8 @@
-/* $XFree86$ */
-
 #include "xedit.h"
 #include <stdlib.h>
 #include <ctype.h>
 
-#define BUFFERFMT	"\"<#0x%lx-BUFFER>\""
+#define BUFFERFMT	"\"#<XEDIT-BUFFER@0x%lx>\""
 
 /*
  * Types
@@ -247,6 +245,7 @@ static char *ExpectingString = "%s: expecting string, near %s";
 static char *ErrorParsingString = "%s: error parsing string, near %s";
 static char *BadBuffer = "%s: bad buffer spec or buffer does not exist, %s";
 static char buffer[512];
+static char errstr[80];
 
 /*
  * Implementation
@@ -267,7 +266,7 @@ XeditProto(char *input, char **result)
     char fun[64], *ptr, *str, *desc, *fmt;
     int i, len;
 
-    *result = "NIL";
+    *result = "T";
 
     /* get function name */
     ptr = input;
@@ -409,7 +408,7 @@ XeditProto(char *input, char **result)
 		while (*ptr && !isspace(*ptr))
 		    ++ptr;
 		len = ptr - str;
-		strncpy(buffer, ptr, sizeof(buffer));
+		strncpy(buffer, str, sizeof(buffer));
 		buffer[len] = '\0';
 
 		item = StringToFlistItem(buffer);
@@ -443,12 +442,16 @@ XeditProto(char *input, char **result)
 	    XtFree((XtPointer)args.args);
 	}
 
+	if (!retval) {
+	    XmuSnprintf(buffer, sizeof(buffer), "%s: %s\n", fun, errstr);
+	    *result = buffer;
+	}
+
 	return (retval);
 
 proto_error:
 	XmuSnprintf(buffer, sizeof(buffer), fmt, fun, ptr);
-	XeditPrintf(buffer);
-	*result = input;
+	*result = buffer;
 	if (req->args_desc) {
 	    for (ptr = req->args_desc, i = 0; *ptr; ptr++, i++) {
 		if (*ptr == 's')
@@ -460,8 +463,7 @@ proto_error:
     }
 
     XmuSnprintf(buffer, sizeof(buffer), "unknown request %s", fun);
-    XeditPrintf(buffer);
-    *result = input;
+    *result = buffer;
 
     return (False);
 }
@@ -582,7 +584,11 @@ SetForeground(XeditReqInfo *info, XeditReqArgs *args, char **result)
     to.size = sizeof(pixel);
     to.addr = (XtPointer)&pixel;
 
-    XtConvertAndStore(info->sink, XtRString, &from, XtRPixel, &to);
+    if (!XtConvertAndStore(info->sink, XtRString, &from, XtRPixel, &to)) {
+	XmuSnprintf(errstr, sizeof(errstr), "cannot convert \"%s\" to Pixel",
+		    from.addr);
+	return (False);
+    }
     XtSetArg(arg[0], XtNforeground, pixel);
     XtSetValues(info->text, arg, 1);
 
@@ -625,7 +631,11 @@ SetBackground(XeditReqInfo *info, XeditReqArgs *args, char **result)
     to.size = sizeof(pixel);
     to.addr = (XtPointer)&pixel;
 
-    XtConvertAndStore(info->sink, XtRString, &from, XtRPixel, &to);
+    if (!XtConvertAndStore(info->sink, XtRString, &from, XtRPixel, &to)) {
+	XmuSnprintf(errstr, sizeof(errstr), "cannot convert \"%s\" to Pixel",
+		    from.addr);
+	return (False);
+    }
     XtSetArg(arg[0], XtNbackground, pixel);
     XtSetValues(info->text, arg, 1);
 
@@ -668,7 +678,11 @@ SetFont(XeditReqInfo *info, XeditReqArgs *args, char **result)
     to.size = sizeof(font);
     to.addr = (XtPointer)&font;
 
-    XtConvertAndStore(info->sink, XtRString, &from, XtRFontStruct, &to);
+    if (!XtConvertAndStore(info->sink, XtRString, &from, XtRFontStruct, &to)) {
+	XmuSnprintf(errstr, sizeof(errstr),
+		    "cannot convert \"%s\" to FontStruct", from.addr);
+	return (False);
+    }
     XtSetArg(arg[0], XtNfont, font);
     XtSetValues(info->text, arg, 1);
 
@@ -711,7 +725,11 @@ SetWrapMode(XeditReqInfo *info, XeditReqArgs *args, char **result)
     to.size = sizeof(wrap);
     to.addr = (XtPointer)&wrap;
 
-    XtConvertAndStore(info->text, XtRString, &from, XtRWrapMode, &to);
+    if (!XtConvertAndStore(info->text, XtRString, &from, XtRWrapMode, &to)) {
+	XmuSnprintf(errstr, sizeof(errstr),
+		    "cannot convert \"%s\" to WrapMode", from.addr);
+	return (False);
+    }
     XtSetArg(arg[0], XtNwrap, wrap);
     XtSetValues(info->text, arg, 1);
 
@@ -754,7 +772,11 @@ SetAutoFill(XeditReqInfo *info, XeditReqArgs *args, char **result)
     to.size = sizeof(fill);
     to.addr = (XtPointer)&fill;
 
-    XtConvertAndStore(info->text, XtRString, &from, XtRBoolean, &to);
+    if (!XtConvertAndStore(info->text, XtRString, &from, XtRBoolean, &to)) {
+	XmuSnprintf(errstr, sizeof(errstr),
+		    "cannot convert \"%s\" to Boolean", from.addr);
+	return (False);
+    }
     XtSetArg(arg[0], XtNautoFill, fill);
     XtSetValues(info->text, arg, 1);
 
@@ -852,7 +874,11 @@ SetJustification(XeditReqInfo *info, XeditReqArgs *args, char **result)
     to.size = sizeof(justify);
     to.addr = (XtPointer)&justify;
 
-    XtConvertAndStore(info->text, XtRString, &from, XtRJustifyMode, &to);
+    if (!XtConvertAndStore(info->text, XtRString, &from, XtRJustifyMode, &to)) {
+	XmuSnprintf(errstr, sizeof(errstr),
+		    "cannot convert \"%s\" to JustifyMode", from.addr);
+	return (False);
+    }
     XtSetArg(arg[0], XtNjustifyMode, justify);
     XtVaSetValues(info->text, arg, 1);
 
@@ -894,7 +920,11 @@ SetVertScrollbar(XeditReqInfo *info, XeditReqArgs *args, char **result)
     to.size = sizeof(scroll);
     to.addr = (XtPointer)&scroll;
 
-    XtConvertAndStore(info->text, XtRString, &from, XtRScrollMode, &to);
+    if (!XtConvertAndStore(info->text, XtRString, &from, XtRScrollMode, &to)) {
+	XmuSnprintf(errstr, sizeof(errstr),
+		    "cannot convert \"%s\" to ScrollMode", from.addr);
+	return (False);
+    }
     XtSetArg(arg[0], XtNscrollVertical, scroll);
     XtSetValues(info->text, arg, 1);
 
@@ -936,7 +966,11 @@ SetHorizScrollbar(XeditReqInfo *info, XeditReqArgs *args, char **result)
     to.size = sizeof(scroll);
     to.addr = (XtPointer)&scroll;
 
-    XtConvertAndStore(info->text, XtRString, &from, XtRScrollMode, &to);
+    if (!XtConvertAndStore(info->text, XtRString, &from, XtRScrollMode, &to)) {
+	XmuSnprintf(errstr, sizeof(errstr),
+		    "cannot convert \"%s\" to ScrollMode", from.addr);
+	return (False);
+    }
     XtSetArg(arg[0], XtNscrollHorizontal, scroll);
     XtSetValues(info->text, arg, 1);
 
@@ -1018,7 +1052,8 @@ SetOtherBuffer(XeditReqInfo *info, XeditReqArgs *args, char **result)
 static Bool
 GetBufferName(XeditReqInfo *info, XeditReqArgs *args, char **result)
 {
-    *result = args->args[0].item->name;
+    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"", args->args[0].item->name);
+    *result = buffer;
 
     return (True);
 }
@@ -1027,7 +1062,7 @@ static Bool
 SetBufferName(XeditReqInfo *info, XeditReqArgs *args, char **result)
 {
     XtFree(args->args[0].item->name);
-    args->args[0].item->name = XtNewString(args->args[0].string);
+    args->args[0].item->name = XtNewString(args->args[1].string);
 
     return (True);
 }
@@ -1035,7 +1070,8 @@ SetBufferName(XeditReqInfo *info, XeditReqArgs *args, char **result)
 static Bool
 GetBufferFileName(XeditReqInfo *info, XeditReqArgs *args, char **result)
 {
-    *result = args->args[0].item->filename;
+    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"", args->args[0].item->filename);
+    *result = buffer;
 
     return (True);
 }
@@ -1044,8 +1080,8 @@ GetBufferFileName(XeditReqInfo *info, XeditReqArgs *args, char **result)
 static Bool
 SetBufferFileName(XeditReqInfo *info, XeditReqArgs *args, char **result)
 {
-    XtFree(args->args[0].item->name);
-    args->args[0].item->filename = XtNewString(args->args[0].string);
+    XtFree(args->args[0].item->filename);
+    args->args[0].item->filename = XtNewString(args->args[1].string);
 
     return (True);
 }

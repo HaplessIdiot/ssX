@@ -1,5 +1,3 @@
-XCOMM $XFree86: xc/programs/xedit/lisp/Imakefile,v 1.9 2001/10/28 03:34:29 tsi Exp $
-
 #include "lisp.cf"
 #include "lisp.rules"
 
@@ -20,6 +18,26 @@ SNPRINTF_DEFS  = -DNEED_SNPRINTF
   MISC_INCLUDES = -I$(LIBSRC)/misc
 #endif
 
+#if defined(LynxOSArchitecture) || defined(SVR3Architecture) || defined(LinuxArchitecture)
+#ifndef UseInstalled
+LinkSourceFile(realpath.c, $(TOP)/programs/xedit)
+#endif
+        RP_SRCS = realpath.c
+        RP_OBJS = realpath.o
+     RP_DEFINES = -DNEED_REALPATH
+#endif
+#if !HasStrcasecmp
+#ifndef UseInstalled
+LinkSourceFile(strcasecmp.c, $(TOP)/programs/xedit)
+#endif
+   STRCCMP_SRCS = strcasecmp.c
+   STRCCMP_OBJS = strcasecmp.o
+STRCCMP_DEFINES = -DNEED_STRCASECMP
+#endif
+       SYS_SRCS = $(RP_SRCS) $(STRCCMP_SRCS)
+       SYS_OBJS = $(RP_OBJS) $(STRCCMP_OBJS)
+    SYS_DEFINES = $(RP_DEFINES) $(STRCCMP_DEFINES)
+
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -28,27 +46,37 @@ SAMP		= lsp
 SAMPSRC		= lsp.c
 SAMPOBJ		= lsp.o
 
-SUBDIRS		= modules
+SUBDIRS		= mp modules
 
-SRCS		=\
+SRCS		= $(SYS_SRCS) \
 		core.c \
 		debugger.c \
 		format.c \
 		helper.c \
+		io.c \
 		lisp.c \
+		math.c \
+		pathname.c \
+		read.c \
+		require.c \
 		string.c \
 		struct.c \
-		require.c \
+		stream.c \
 		time.c
-OBJS		=\
+OBJS		= $(SYS_OBJS) \
 		core.o \
 		debugger.o \
 		format.o \
 		helper.o \
+		io.o \
 		lisp.o \
+		math.o \
+		pathname.o \
+		read.o \
+		require.o \
 		string.o \
 		struct.o \
-		require.o \
+		stream.o \
 		time.o
 
 #include <Library.tmpl>
@@ -59,19 +87,20 @@ AllTarget(ProgramTargetName($(SAMP)))
 CCOPTIONS	= -fpic
 DLLIB		= DlLibrary
 LOCAL_LDFLAGS	= -Xlinker -E
-DEFINES		= -DSHARED_MODULES -DLISPDIR='"$(LISPDIR)"' $(SNPRINTF_DEFS)
+DEFINES		= -DLISP -DSHARED_MODULES -DLISPDIR='"$(LISPDIR)"' $(SNPRINTF_DEFS) $(SYS_DEFINES) $(SIGNAL_DEFINES)
 #else
-DEFINES		= -DLISPDIR='"$(LISPDIR)"' $(SNPRINTF_DEFS)
+DEFINES		= -DLISP -DLISPDIR='"$(LISPDIR)"' $(SNPRINTF_DEFS) $(SYS_DEFINES) $(SIGNAL_DEFINES)
 #endif
 
-       INCLUDES = $(MISC_INCLUDES)
-LOCAL_LIBRARIES = -L. -llisp -lm $(DLLIB)
+        DEPLIBS = mp
+       INCLUDES = -I. -Imp -I- $(MISC_INCLUDES)
+LOCAL_LIBRARIES = -L. -llisp -Lmp -lmp -lm $(DLLIB)
 
-NormalProgramTarget($(SAMP),$(SAMPOBJ),,$(LOCAL_LIBRARIES),)
+#ifdef IHaveSubdirs
+ForceSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+#endif
 
 DependTarget()
 
-#ifdef IHaveSubdirs
-MakeSubdirs($(SUBDIRS))
-DependSubdirs($(SUBDIRS))
-#endif
+NormalProgramTarget($(SAMP),$(SAMPOBJ),$(DEPLIBS),$(LOCAL_LIBRARIES),)

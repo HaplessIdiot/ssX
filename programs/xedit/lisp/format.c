@@ -29,6 +29,7 @@
 
 /* $XFree86: xc/programs/xedit/lisp/format.c,v 1.10 2001/10/18 03:15:22 paulo Exp $ */
 
+#include "io.h"
 #include "format.h"
 #include <ctype.h>
 #include <math.h>
@@ -36,7 +37,7 @@
 /*
  * Initialization
  */
-static char *BadArgument = "bad argument to directive, at %s";
+static char *BadArgument = "%s: bad argument to directive";
 /* not very descriptive... */
 
 extern char *LispCharNames[];
@@ -45,7 +46,10 @@ extern char *LispCharNames[];
  * Implementation
  */
 LispObj *
-Lisp_Format(LispMac *mac, LispObj *list, char *fname)
+Lisp_Format(LispMac *mac, LispBuiltin *builtin)
+/*
+ format destination control-string &rest arguments
+ */
 {
     int len, princ = mac->princ, newline = mac->newline, tmp, nindirection = 0;
     int num_args, cur_arg, iteration = -1;
@@ -54,31 +58,28 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 	    *alist;
     unsigned char *uptr;
 
+    arguments = ARGUMENT(2);
+    format = ARGUMENT(1);
+    stream = ARGUMENT(0);
+
     sargs = NIL;  /* place to temporarily save arguments, num_args and cur_arg */
-    stream = CAR(list);
-    list = CDR(list);
-    if ((format = CAR(list))->type != LispString_t)
-	LispDestroy(mac, "expecting string, at %s", fname);
-    list = CDR(list);
-    arg = arguments = list;
+    if (!STRING_P(format))
+	LispDestroy(mac, "%s: %s is not a string",
+		    STRFUN(builtin), STROBJ(format));
 
     /* count number of arguments */
-    for (num_args = cur_arg = 0; arg->type == LispCons_t; arg = CDR(arg))
+    arg = arguments;
+    for (num_args = cur_arg = 0; CONS_P(arg); arg = CDR(arg))
 	++num_args;
     arg = arguments;
 
-    if (stream == NIL) {
-	stream = LispNew(mac, NIL, NIL);
-	stream->type = LispStream_t;
-	stream->data.stream.source.str = NULL;
-	stream->data.stream.size = 0;
-	stream->data.stream.idx = 0;
-    }
+    if (stream == NIL)
+	stream = STRINGSTREAM("", STREAM_READ | STREAM_WRITE);
     else if (stream == T)
 	stream = NIL;
-    else if (stream->type != LispStream_t)
-	LispDestroy(mac, "%s is not a stream, at %s",
-		    LispStrObj(mac, stream), fname);
+    else if (!STREAM_P(stream))
+	LispDestroy(mac, "%s: %s is not a stream",
+		    STRFUN(builtin), STROBJ(stream));
 
     /* ilist is used to store the previous/original stream and a description
      * of the formating directive.
@@ -101,18 +102,18 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    iteration = -1;
 		    done = 1;
 		}
-		fmt = indirection[(int)CAR(alist)->data.real + 1];
+		fmt = indirection[(int)CAR(alist)->data.integer + 1];
 		if (STRPTR(CAR(CAR(ilist)))[1] == '@') {
 		    /* using normal arguments */
 		    if (STRPTR(CAR(CAR(ilist)))[2] == ':') {
-			if (CDR(CAR(alist))->type == LispCons_t) {
+			if (CONS_P(CDR(CAR(alist)))) {
 			    CAR(alist) = CDR(CAR(alist));
 			    plural = NIL;
 			    arg = CAR(CAR(alist));
-			    if (arg->type != LispCons_t)
-				LispDestroy(mac, BadArgument, fname);
+			    if (!CONS_P(arg))
+				LispDestroy(mac, BadArgument, STRFUN(builtin));
 			    arguments = obj = arg;
-			    for (num_args = cur_arg = 0; obj->type == LispCons_t;
+			    for (num_args = cur_arg = 0; CONS_P(obj);
 				 obj = CDR(obj))
 				++num_args;
 			}
@@ -126,13 +127,13 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		}
 		else {
 		    if (STRPTR(CAR(CAR(ilist)))[1] == ':') {
-			if (CDR(CAR(CAR(alist)))->type == LispCons_t) {
+			if (CONS_P(CDR(CAR(CAR(alist))))) {
 			    CAR(CAR(alist)) = CDR(CAR(CAR(alist)));
 			    arg = CAR(CAR(CAR(alist)));
-			    if (arg->type != LispCons_t)
-				LispDestroy(mac, BadArgument, fname);
+			    if (!CONS_P(arg))
+				LispDestroy(mac, BadArgument, STRFUN(builtin));
 			    arguments = obj = arg;
-			    for (num_args = cur_arg = 0; obj->type == LispCons_t;
+			    for (num_args = cur_arg = 0; CONS_P(obj);
 				 obj = CDR(obj))
 				++num_args;
 			}
@@ -141,24 +142,24 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 			else
 			    done = 1;
 		    }
-		    else if (arg->type != LispCons_t) {
+		    else if (!CONS_P(arg)) {
 			arg = CAR(ilist);
 			done = 1;
 		    }
-		    if (arg->type != LispCons_t)
+		    if (!CONS_P(arg))
 			done = 1;	/* no more arguments */
 		}
 		if (done) {
 		    iteration = -1;
-		    nindirection = (int)CAR(alist)->data.real;
+		    nindirection = (int)CAR(alist)->data.integer;
 		    fmt = indirection[nindirection];
 		    if (STRPTR(CAR(CAR(ilist)))[1] == ':' ||
 			STRPTR(CAR(CAR(ilist)))[2] == ':') {
 			arg = CDR(CDR(CAR(ilist)));
 			plural = NIL;
 			arguments = CAR(CAR(sargs));
-			num_args = (int)CAR(CDR(CAR(sargs)))->data.real;
-			cur_arg = (int)CDR(CDR(CAR(sargs)))->data.real;
+			num_args = (int)CAR(CDR(CAR(sargs)))->data.integer;
+			cur_arg = (int)CDR(CDR(CAR(sargs)))->data.integer;
 			sargs = CDR(sargs);
 		    }
 		    ilist = CDR(ilist);
@@ -237,8 +238,8 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		else
 		    break;
 		if (++argc > sizeof(nargs) / sizeof(nargs[0]))
-		    LispDestroy(mac, "too many arguments to directive, at %s",
-				fname);
+		    LispDestroy(mac, "%s: too many arguments to directive",
+				STRFUN(builtin));
 	    }
 
 	    switch (*fmt) {
@@ -284,16 +285,16 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 			    arg = plural;
 			else
 			    plural = arg;
-			if (plural->type != LispCons_t)
+			if (!CONS_P(plural))
 			    goto not_enough_args;
 		    }
 		    else {
-			if (arg->type != LispCons_t)
+			if (!CONS_P(arg))
 			    goto not_enough_args;
 			plural = arg;
 		    }
-		    if (!NUMBER_P(CAR(plural)) ||
-			NUMBER_VALUE(CAR(plural)) != 1) {
+		    if (!FIXNUM_P(CAR(plural)) ||
+			FIXNUM_VALUE(CAR(plural)) != 1) {
 			if (atsign)
 			    mac->column += LispPrintf(mac, stream, "ies");
 			else
@@ -306,10 +307,11 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    break;
 		case 'c':	/* Character */
 		case 'C':
-		    if (arg->type != LispCons_t)
+		    if (!CONS_P(arg))
 			goto not_enough_args;
 		    if (CAR(arg)->type != LispCharacter_t)
-			LispDestroy(mac, "expecting character, at %s", fname);
+			LispDestroy(mac, "%s: %s is not a character",
+				    STRFUN(builtin), STROBJ(CAR(arg)));
 		    mac->newline = atsign || collon ||
 				   CAR(arg)->data.integer != '\n';
 		    if (atsign && !collon)
@@ -351,7 +353,7 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    else
 			len += 1;
 		    if (padidx >= 0)
-			LispDestroy(mac, BadArgument, fname);
+			LispDestroy(mac, BadArgument, STRFUN(builtin));
 		    if (len > 0) {
 			mac->newline = 1;
 			mac->column = 0;
@@ -370,7 +372,7 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    else
 			len = 1;
 		    if (padidx >= 0)
-			LispDestroy(mac, BadArgument, fname);
+			LispDestroy(mac, BadArgument, STRFUN(builtin));
 		    while (len) {
 			mac->column += LispPrintf(mac, stream, "~");
 			--len;
@@ -384,7 +386,7 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    else
 			len = 1;
 		    if (padidx >= 0)
-			LispDestroy(mac, BadArgument, fname);
+			LispDestroy(mac, BadArgument, STRFUN(builtin));
 		    if (len > 0) {
 			mac->newline = 1;
 			mac->column = 0;
@@ -453,11 +455,11 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 			len = nargs[0];
 
 		    if (len < 0 || argc > 1)
-			LispDestroy(mac, BadArgument, fname);
+			LispDestroy(mac, BadArgument, STRFUN(builtin));
 
 		    if (!collon && !atsign) {
 			/* forward */
-			if (arg->type != LispCons_t)
+			if (!CONS_P(arg))
 			    goto not_enough_args;
 			while (len) {
 			    plural = arg;
@@ -494,10 +496,11 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 			 * recursively, as we don't know how many arguments
 			 * will be (un)consumed */
 
-			if (arg->type != LispCons_t)
+			if (!CONS_P(arg))
 			    goto not_enough_args;
 			if (!STRING_P(CAR(arg)))
-			    LispDestroy(mac, "expecting string, at %s", fname);
+			    LispDestroy(mac, "%s: %s is not a string",
+					STRFUN(builtin), STROBJ(CAR(arg)));
 			indirection = LispRealloc(mac, indirection,
 						  sizeof(char*) *
 						  (nindirection + 1));
@@ -510,18 +513,28 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 			continue;
 		    }
 		    else {
-			LispObj *fmt, *lst;
+			int length = mac->protect.length;
+			LispObj *fmt, *lst, *eval;
 
-			if (arg->type != LispCons_t)
+			if (!CONS_P(arg))
 			    goto not_enough_args;
 			fmt = CAR(arg);
 			arg = CDR(arg);
 			++cur_arg;
-			if (arg->type != LispCons_t)
+			if (!CONS_P(arg))
 			    goto not_enough_args;
 			lst = CAR(arg);
+
+			/* XXX needs review, it is not wise to run with
+			 * gc disabled... */
 			GCProtect();
-			Lisp_Format(mac, CONS(stream, CONS(fmt, lst)), fname);
+			if (length + 1 >= mac->protect.space)
+			    LispMoreProtects(mac);
+			eval = CONS(SYMBOL(mac->format_atom),
+				    CONS(stream, CONS(fmt, lst)));
+			mac->protect.objects[mac->protect.length++] = eval;
+			(void)EVAL(eval);
+			mac->protect.length = length;
 			GCUProtect();
 		    }
 		    break;
@@ -529,14 +542,10 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		/* Here start the "complex" format directives */
 		case '(':	/* Case-conversion start */
 		    if (argc)
-			LispDestroy(mac, BadArgument, fname);
+			LispDestroy(mac, BadArgument, STRFUN(builtin));
 		    /* format the data in a temporary stream */
 		    GCProtect();
-		    obj = LispNew(mac, NIL, NIL);
-		    obj->type = LispStream_t;
-		    obj->data.stream.source.str = NULL;
-		    obj->data.stream.size = 0;
-		    obj->data.stream.idx = 0;
+		    obj = STRINGSTREAM("", STREAM_READ | STREAM_WRITE);
 		    stk[len++] = '(';
 		    if (atsign)
 			stk[len++] = '@';
@@ -553,10 +562,10 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    continue;
 		case ')':	/* Case-conversion end */
 		    if (argc)
-			LispDestroy(mac, BadArgument, fname);
+			LispDestroy(mac, BadArgument, STRFUN(builtin));
 		    if (CAR(CAR(ilist)) == NIL ||
 			STRPTR(CAR(CAR(ilist)))[0] != '(')
-			LispDestroy(mac, "mismatched ~), at %s", fname);
+			LispDestroy(mac, "%s: mismatched ~)", STRFUN(builtin));
 		    /* remember if atsign and/or collon was set */
 		    strcpy(stk, STRPTR(CAR(CAR(ilist))));
 		    len = 1;
@@ -571,47 +580,47 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    else
 			collon = 0;
 
-		    if ((uptr = stream->data.stream.source.str) != NULL) {
-			if (atsign && collon) {     /* uppercase everything */
-			    while (*uptr) {
-				*uptr = toupper(*uptr);
-				++uptr;
-			    }
+		    uptr = SSTREAMP(stream)->string;
+		    if (atsign && collon) {	/* uppercase everything */
+			while (*uptr) {
+			    *uptr = toupper(*uptr);
+			    ++uptr;
 			}
-			else if (atsign) {	    /* capitalizes the first word */
+		    }
+		    else if (atsign) {		/* capitalizes the first word */
+			while (*uptr && !isalpha(*uptr))
+			    ++uptr;
+			if (*uptr) {
+			    *uptr = toupper(*uptr);
+			    ++uptr;
+			}
+			while (*uptr) {
+			    *uptr = tolower(*uptr);
+			    ++uptr;
+			}
+		    }
+		    else if (collon) {		/* capitalizes all words */
+			while (*uptr) {
 			    while (*uptr && !isalpha(*uptr))
 				++uptr;
 			    if (*uptr) {
 				*uptr = toupper(*uptr);
 				++uptr;
 			    }
-			    while (*uptr) {
+			    while (*uptr && isalpha(*uptr)) {
 				*uptr = tolower(*uptr);
 				++uptr;
 			    }
 			}
-			else if (collon) {	    /* capitalizes all words */
-			    while (*uptr) {
-				while (*uptr && !isalpha(*uptr))
-				    ++uptr;
-				if (*uptr) {
-				    *uptr = toupper(*uptr);
-				    ++uptr;
-				}
-				while (*uptr && isalpha(*uptr)) {
-				    *uptr = tolower(*uptr);
-				    ++uptr;
-				}
-			    }
-			}
-			else {			    /* lowercase everything */
-			    while (*uptr) {
-				*uptr = tolower(*uptr);
-				++uptr;
-			    }
-			}
-			uptr = stream->data.stream.source.str;
 		    }
+		    else {			/* lowercase everything */
+			while (*uptr) {
+			    *uptr = tolower(*uptr);
+			    ++uptr;
+			}
+		    }
+		    uptr = SSTREAMP(stream)->string;
+
 		    ilist = CDR(ilist);
 		    alist = CDR(alist);
 		    stream = CDR(CAR(ilist));
@@ -623,11 +632,10 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    continue;
 		case '[': {	/* Conditional-expression start */
 		    char *end, **fields;
-		    int field, nfields, obrack, oless, def;
-		    int done = 0, scollon = 0;
+		    int field, nfields, obrack, oless, def, done = 0, scollon;
 
 		    if (argc > 1)
-			LispDestroy(mac, BadArgument, fname);
+			LispDestroy(mac, BadArgument, STRFUN(builtin));
 
 		    def = field = -1;
 		    obrack = 1;
@@ -699,7 +707,7 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    fmt = ptr;
 
 		    if (collon) {
-			if (arg->type != LispCons_t)
+			if (!CONS_P(arg))
 			    goto not_enough_args;
 			if (CAR(arg) == NIL) {
 			    if (nfields && fields[0][0])
@@ -712,7 +720,7 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 			++cur_arg;
 		    }
 		    else if (atsign) {
-			if (arg->type != LispCons_t)
+			if (!CONS_P(arg))
 			    goto not_enough_args;
 			if (CAR(arg) == NIL) {
 			    plural = arg;
@@ -729,14 +737,14 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 			    field = def;
 		    }
 		    else {
-			if (arg->type != LispCons_t)
+			if (!CONS_P(arg))
 			    goto not_enough_args;
-			if (!INTEGER_P(CAR(arg)))
-			    LispDestroy(mac, "%s is not an index, at %s",
-					LispStrObj(mac, CAR(arg)), fname);
-			if (NUMBER_VALUE(CAR(arg)) < nfields &&
-			    NUMBER_VALUE(CAR(arg)) >= 0)
-			    field = NUMBER_VALUE(CAR(arg));
+			if (!INTEGRAL_P(CAR(arg)))
+			    LispDestroy(mac, "%s: %s is not an index",
+					STRFUN(builtin), STROBJ(CAR(arg)));
+			if (FIXNUM_VALUE(CAR(arg)) < nfields &&
+			    FIXNUM_VALUE(CAR(arg)) >= 0)
+			    field = FIXNUM_VALUE(CAR(arg));
 			else if (def >= 0)
 			    field = def;
 			plural = arg;
@@ -759,13 +767,13 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    /* if any argument used, already updated arg */
 		}   continue;
 		case ']':	/* Conditional-expression end */
-		    LispDestroy(mac, "mismatched ~], at %s", fname);
+		    LispDestroy(mac, "%s: mismatched ~]", STRFUN(builtin));
 		case '{': {	/* Iteration start */
 		    int op = 1, scollon = 0, done = 0;
 		    char *end;
 
 		    if (argc > 1)
-			LispDestroy(mac, BadArgument, fname);
+			LispDestroy(mac, BadArgument, STRFUN(builtin));
 
 		    /* how many iterations, 0 means until all arguments are
 		     * consumed */
@@ -831,7 +839,7 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 			/* if no iterations were requested */
 			if (!atsign) {
 			    /* consume one element even if no iterations */
-			    if (arg->type != LispCons_t)
+			    if (!CONS_P(arg))
 				goto not_enough_args;
 			    plural = arg;
 			    arg = CDR(arg);
@@ -842,7 +850,7 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 			    /* don't need to do anything more... */
 			    continue;
 			}
-			else if (arg->type != LispCons_t) {
+			else if (!CONS_P(arg)) {
 			    /* no arguments left, don't even start iteration */
 			    fmt = ptr;
 			    iteration = -1;
@@ -852,10 +860,10 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    }
 
 		    if (!atsign) {	/* need to check for errors later */
-			if (arg->type != LispCons_t)
-			    LispDestroy(mac, BadArgument, fname);
-			if (collon && CAR(arg)->type != LispCons_t)
-			    LispDestroy(mac, BadArgument, fname);
+			if (!CONS_P(arg))
+			    LispDestroy(mac, BadArgument, STRFUN(builtin));
+			if (collon && !CONS_P(CAR(arg)))
+			    LispDestroy(mac, BadArgument, STRFUN(builtin));
 		    }
 
 		    end = ptr;
@@ -864,10 +872,11 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 			/* if string is empty, use next argument as control
 			 * string */
 			LispFree(mac, str);
-			if (arg->type != LispCons_t)
+			if (!CONS_P(arg))
 			    goto not_enough_args;
 			else if (!STRING_P(CAR(arg)))
-			    LispDestroy(mac, "expecting string, at %s", fname);
+			    LispDestroy(mac, "%s: %s is not a string",
+					STRFUN(builtin), STROBJ(CAR(arg)));
 			ptr = STRPTR(CAR(arg));
 			plural = arg;
 			arg = CDR(arg);
@@ -889,30 +898,28 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    stk[len] = '\0';
 		    GCProtect();
 		    ilist = CONS(CONS(STRING(stk), stream), ilist);
-		    alist = CONS(REAL((double)nindirection), alist);
+		    alist = CONS(INTEGER(nindirection), alist);
 		    if (!atsign) {
 			CAR(alist) = collon ?
 			    CONS(CAR(arg), CDR(arg)) : CDR(arg);
 			plural = NIL;
 			arg = collon ? CAR(CAR(arg)) : CAR(arg);
 			sargs = CONS(CONS(arguments,
-					  CONS(REAL((double)num_args),
-					       REAL((double)cur_arg))), sargs);
+					  CONS(INTEGER(num_args),
+					       INTEGER(cur_arg))), sargs);
 			arguments = obj = arg;
-			for (num_args = cur_arg = 0; obj->type == LispCons_t;
-			     obj = CDR(obj))
+			for (num_args = cur_arg = 0; CONS_P(obj); obj = CDR(obj))
 			    ++num_args;
 		    }
-		    else if (collon && arg->type == LispCons_t) {
+		    else if (collon && CONS_P(arg)) {
 			CAR(alist) = arg;
 			plural = NIL;
 			arg = CAR(arg);
 			sargs = CONS(CONS(arguments,
-					  CONS(REAL((double)num_args),
-					       REAL((double)cur_arg))), sargs);
+					  CONS(INTEGER(num_args),
+					       INTEGER(cur_arg))), sargs);
 			arguments = obj = arg;
-			for (num_args = cur_arg = 0; obj->type == LispCons_t;
-			     obj = CDR(obj))
+			for (num_args = cur_arg = 0; CONS_P(obj); obj = CDR(obj))
 			    ++num_args;
 		    }
 		    GCUProtect();
@@ -925,7 +932,7 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    fmt = ptr;
 		}   continue;
 		case '}':	/* Iteration end */
-		    LispDestroy(mac, "mismatched ~}, at %s", fname);
+		    LispDestroy(mac, "%s: mismatched ~}", STRFUN(builtin));
 		case '<':	/* Justification start */
 		    len = 0;
 		    stk[len++] = '<';
@@ -943,23 +950,19 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    if (argc > 3 && !defs[3])
 			padchar = nargs[3];
 		    if (argc > 4 || (padidx != -1 && padidx != 3))
-			LispDestroy(mac, BadArgument, fname);
+			LispDestroy(mac, BadArgument, STRFUN(builtin));
 		    GCProtect();
-		    obj = LispNew(mac, NIL, NIL);
-		    obj->type = LispStream_t;
-		    obj->data.stream.source.str = NULL;
-		    obj->data.stream.size = 0;
-		    obj->data.stream.idx = 0;
+		    obj = STRINGSTREAM("", STREAM_READ | STREAM_WRITE);
 		    stream = obj;
 		    ilist = CONS(CONS(STRING(stk), obj), ilist);
 		    alist = CONS(CONS(NIL, CONS(obj, NIL)), alist);
-		    obj = CONS(REAL((double)mincol),
-			       CONS(REAL((double)colinc),
-				    CONS(REAL((double)minpad),
-					 CONS(REAL((double)padchar),
+		    obj = CONS(INTEGER(mincol),
+			       CONS(INTEGER(colinc),
+				    CONS(INTEGER(minpad),
+					 CONS(INTEGER(padchar),
 					      CONS(NIL,
 						   CONS(NIL,
-							REAL((double)mac->column)))))));
+							INTEGER(mac->column)))))));
 					      /* chars after and line width,
 					       * i.e. defaults for first
 					       * parameter, if any.
@@ -974,7 +977,8 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 				 * only used for ~< */
 		    if (!STRING_P(CAR(CAR(ilist))) ||
 			STRPTR(CAR(CAR(ilist)))[0] != '<')
-			LispDestroy(mac, "~; not allowed here, at %s", fname);
+			LispDestroy(mac, "%s: ~; not allowed here",
+				    STRFUN(builtin));
 
 		    GCProtect();
 		    if (collon && CDR(CDR(CAR(alist))) == NIL) {
@@ -983,19 +987,15 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 			if (argc && !defs[0]) {		/* chars after */
 			    dtmp = nargs[0];
 			    CAR(CDR(CDR(CDR(CDR(CAR(CAR(alist))))))) =
-				REAL(dtmp);
+				INTEGER(dtmp);
 			}
 			if (argc > 1 && !defs[1]) {	/* line width */
 			    dtmp = nargs[1];
 			    CAR(CDR(CDR(CDR(CDR(CDR(CAR(CAR(alist)))))))) =
-				REAL(dtmp);
+				INTEGER(dtmp);
 			}
 		    }
-		    obj = LispNew(mac, NIL, NIL);
-		    obj->type = LispStream_t;
-		    obj->data.stream.source.str = NULL;
-		    obj->data.stream.size = 0;
-		    obj->data.stream.idx = 0;
+		    obj = STRINGSTREAM("", STREAM_READ | STREAM_WRITE);
 		    CDR(CAR(alist)) = CONS(obj, CDR(CAR(alist)));
 		    stream = CDR(CAR(ilist)) = obj;
 		    GCUProtect();
@@ -1008,10 +1008,10 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    LispObj *charsafter, *linewidth, *pad, *otmp;
 
     		    if (argc)
-			LispDestroy(mac, BadArgument, fname);
+			LispDestroy(mac, BadArgument, STRFUN(builtin));
 		    if (CAR(CAR(ilist)) == NIL ||
 			STRPTR(CAR(CAR(ilist)))[0] != '<')
-			LispDestroy(mac, "mismatched ~>, at %s", fname);
+			LispDestroy(mac, "%s: mismatched ~>", STRFUN(builtin));
 
 		    /* remember if atsign and/or collon was set */
 		    strcpy(stk, STRPTR(CAR(CAR(ilist))));
@@ -1029,29 +1029,29 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 
 		    /* restore parameters */
 		    obj = CAR(CAR(alist));
-		    mincol = (int)CAR(obj)->data.real;
-		    colinc = (int)CAR(CDR(obj))->data.real;
-		    minpad = (int)CAR(CDR(CDR(obj)))->data.real;
-		    padchar = (int)CAR(CDR(CDR(CDR(obj))))->data.real;
+		    mincol = (int)CAR(obj)->data.integer;
+		    colinc = (int)CAR(CDR(obj))->data.integer;
+		    minpad = (int)CAR(CDR(CDR(obj)))->data.integer;
+		    padchar = (int)CAR(CDR(CDR(CDR(obj))))->data.integer;
 		    charsafter = CAR(CDR(CDR(CDR(CDR(obj)))));
 		    linewidth = CAR(CDR(CDR(CDR(CDR(CDR(obj))))));
 		    mac->column = (int)CDR(CDR(CDR(CDR(CDR(CDR(obj))))))->
-				       data.real;
+				       data.integer;
 
 		    /* if use default for either charsafter or linewidth */
 		    GCProtect();
 		    if (charsafter != NIL && linewidth == NIL)
-			linewidth = REAL(72.0);
+			linewidth = INTEGER(72);
 		    else if (charsafter == NIL && linewidth != NIL)
-			charsafter = REAL(0.0);
+			charsafter = INTEGER(0);
 		    GCUProtect();
 
 		    /* count number of fields and set pad variable */
 		    for (argc = bytes = 0, pad = obj = CDR(CAR(alist));
 			 obj != NIL; argc++, pad = obj, obj = CDR(obj)) {
-			if (CAR(obj)->data.stream.source.str)
+			if (SSTREAMP(CAR(obj))->string)
 			    bytes += strlen((char*)
-					    CAR(obj)->data.stream.source.str);
+					    SSTREAMP(CAR(obj))->string);
 		    }
 		    if (charsafter == NIL)
 			pad = NIL;
@@ -1062,8 +1062,8 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    if (pad != NIL) {
 			obj = CDR(obj);
 			pad = CAR(pad);
-			if (pad->data.stream.source.str)
-			    str = (char*)pad->data.stream.source.str;
+			if (SSTREAMP(pad)->string)
+			    str = (char*)SSTREAMP(pad)->string;
 			else
 			    str = "";
 			bytes -= strlen(str);
@@ -1074,22 +1074,21 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 			for (otmp = pad || collon ? obj : CDR(obj), tmp = 1;
 			     otmp != NIL;
 			     otmp = CDR(otmp), tmp++) {
-			    len = CAR(obj)->data.stream.source.str ?
-				  strlen((char*)
-					 CAR(obj)->data.stream.source.str) : 0;
+			    len = strlen((char*)SSTREAMP(CAR(obj))->string);
 			    len += minpad + 1;
-			    if (len > CAR(obj)->data.stream.size) {
-				ptr = realloc(CAR(obj)->data.stream.source.str,
-					      len);
+			    if (len > SSTREAMP(CAR(obj))->space) {
+				ptr = realloc(SSTREAMP(CAR(obj))->string, len);
 				if (ptr == NULL)
-				    LispDestroy(mac, "out of memory");
-				CAR(obj)->data.stream.source.str =
-				    (unsigned char*)ptr;
-				CAR(obj)->data.stream.size = len;
+				    LispDestroy(mac, "%s: out of memory",
+						STRFUN(builtin));
+				SSTREAMP(CAR(obj))->string = (unsigned char*)ptr;
+				SSTREAMP(CAR(obj))->space = len;
 			    }
 			    else
-				ptr = (char*)CAR(obj)->data.stream.source.str;
-			    CAR(obj)->data.stream.idx = len;
+				ptr = (char*)SSTREAMP(CAR(obj))->string;
+			    SSTREAMP(CAR(obj))->output = len;
+			    if (SSTREAMP(CAR(obj))->length < len)
+				SSTREAMP(CAR(obj))->length = len;
 			    if (len > minpad + 1 && (tmp < argc || !atsign))
 				memmove(ptr + minpad, ptr, len - minpad);
 			    if (tmp == argc && atsign) {	/* right pad */
@@ -1134,14 +1133,11 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    stream = CDR(CAR(ilist));
 		    /* format strings in the output stream */
 		    for (tmp = pos = 0; obj != NIL; tmp++, obj = CDR(obj)) {
-			if (CAR(obj)->data.stream.source.str)
-			    ptr = (char*)CAR(obj)->data.stream.source.str;
-			else
-			    ptr = "";
+			ptr = (char*)SSTREAMP(CAR(obj))->string;
 			count = len = strlen(ptr);
 			if (pad != NIL &&
-			    mac->column + len + charsafter->data.real >
-			    linewidth->data.real) {
+			    mac->column + len + charsafter->data.integer >
+			    linewidth->data.integer) {
 			    char *nl;
 
 			    mac->column += LispPrintf(mac, stream, "%s", str);
@@ -1197,7 +1193,7 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		}   continue;
 		case '^':	/* Up and out */
 		    if (argc > 3 || padidx != -1)
-			LispDestroy(mac, BadArgument, fname);
+			LispDestroy(mac, BadArgument, STRFUN(builtin));
 		    tmp = -1;
 		    if (argc && !defs[0])	/* terminate if tmp == 0 */
 			tmp = nargs[0];
@@ -1226,19 +1222,19 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 
 			if (hash != -1 || next == NIL) {
 			    if (next == NIL ||
-				(hash != -1 && arg->type != LispCons_t)) {
+				(hash != -1 && !CONS_P(arg))) {
 				while (*fmt)
 				    ++fmt;
 			    }
 			    else
 				++fmt;
-			    if ((hash != -1 && arg->type != LispCons_t))
+			    if ((hash != -1 && !CONS_P(arg)))
 				iteration = 1;	/* force finalization */
 			    continue;
 			}
 		    }
 
-		    if (tmp == 0 || (tmp == -1 && arg->type != LispCons_t)) {
+		    if (tmp == 0 || (tmp == -1 && !CONS_P(arg))) {
 			if (CAR(CAR(ilist)) != NIL) {
 			    if (STRPTR(CAR(CAR(ilist)))[0] == '{') {
 				if (collon) {
@@ -1269,8 +1265,8 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    /* no arguments used */
 		    continue;
 		default:
-		    LispDestroy(mac, "unknown directive ~%c, at %s",
-				*fmt, fname);
+		    LispDestroy(mac, "%s: unknown directive ~%c",
+				STRFUN(builtin), *fmt);
 	    }
 	    ++fmt;
 	    plural = arg;
@@ -1280,17 +1276,17 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 
 print_number:
 	    mac->newline = 0;
-	    if (arg->type != LispCons_t)
+	    if (!CONS_P(arg))
 		goto not_enough_args;
 	    /* if not an integer */
-	    if (!INTEGER_P(CAR(arg))) {
+	    if (!INTEGRAL_P(CAR(arg))) {
 		/* print just as 'A' */
 		isprinc = 1;
 		goto print_object;
 	    }
 	    else {
 		int sign;
-		long num = (long)NUMBER_VALUE(CAR(arg));
+		long num = (long)FIXNUM_VALUE(CAR(arg));
 
 		len = 0;
 		if ((sign = num < 0) != 0)
@@ -1307,8 +1303,8 @@ print_number:
 		    ++len;
 		}
 		if (radix < 2 || radix > 32)
-		    LispDestroy(mac, "radix must be in the range 2 to 32,"
-				" at %s", fname);
+		    LispDestroy(mac, "%s: radix must be in the range 2 to 32",
+				STRFUN(builtin));
 
 print_number_args:
 		/* get print arguments */
@@ -1319,7 +1315,7 @@ print_number_args:
 		    padchar = nargs[len];
 
 		if (padidx >= 0 && padidx != len)
-		    LispDestroy(mac, BadArgument, fname);
+		    LispDestroy(mac, BadArgument, STRFUN(builtin));
 
 		if (radix) {
 		    len = 0;
@@ -1341,11 +1337,11 @@ print_number_args:
 		    }
 		}
 		else if (atsign) {	/* roman */
-		    long num = (long)NUMBER_VALUE(CAR(arg));
+		    long num = (long)FIXNUM_VALUE(CAR(arg));
 
-		if ((double)num != NUMBER_VALUE(CAR(arg)) ||
+		if ((double)num != FIXNUM_VALUE(CAR(arg)) ||
 		    num <= 0 || num > (3999 + (collon ? 1000 : 0)))
-		    LispDestroy(mac, BadArgument, fname);
+		    LispDestroy(mac, BadArgument, STRFUN(builtin));
 
 		    /* if collon, print in old roman format */
 		    len = 0;
@@ -1475,8 +1471,8 @@ print_number_args:
 			    ++count;
 			}
 			if (count > sizeof(ts) / sizeof(ts[0]))
-			    LispDestroy(mac, "format is too large, at %s",
-					fname);
+			    LispDestroy(mac, "%s: format too large",
+					STRFUN(builtin));
 
 			t = ds[val / 100];
 			if (collon && !count && (val % 10) == 0)
@@ -1579,9 +1575,9 @@ print_number_args:
 
 print_float_number:
 	    mac->newline = 0;
-	    if (arg->type != LispCons_t)
+	    if (!CONS_P(arg))
 		goto not_enough_args;
-	    if (CAR(arg)->type != LispReal_t) {
+	    if (FLOAT_P(CAR(arg))) {
 		/* print just as 'A' */
 		isprinc = 1;
 		goto print_object;
@@ -1613,7 +1609,7 @@ print_float_number:
 		    if (argc > 4 || d < 0 || n < 0 ||
 			(argc > 2 && !defs[2] && w < 2) ||
 			(padidx != -1 && (padidx != 3)))
-			LispDestroy(mac, BadArgument, fname);
+			LispDestroy(mac, BadArgument, STRFUN(builtin));
 		    kset = 1;
 		}
 		else {
@@ -1654,7 +1650,7 @@ print_float_number:
 			(argc > 1 && !defs[1] && d < 0) ||
 			(overidx != -1 && (overidx != 3 + ise)) ||
 			(padidx != -1 && (padidx != 4 + ise)))
-			LispDestroy(mac, BadArgument, fname);
+			LispDestroy(mac, BadArgument, STRFUN(builtin));
 		}
 
 		sign = num < 0.0;
@@ -1709,10 +1705,10 @@ print_float_number:
 		if (ise) {
 		    if (k > 0 && d) {
 			if ((d -= (k - 1)) < 0)
-			    LispDestroy(mac, BadArgument, fname);
+			    LispDestroy(mac, BadArgument, STRFUN(builtin));
 		    }
 		    else if (k < 0 && -k > d)
-			LispDestroy(mac, BadArgument, fname);
+			LispDestroy(mac, BadArgument, STRFUN(builtin));
 		}
 
 		len = 0;
@@ -1918,11 +1914,11 @@ print_float_number:
 
 print_object:
 	    mac->newline = 0;
-	    if (arg->type != LispCons_t)
+	    if (!CONS_P(arg))
 		goto not_enough_args;
 
 	    if (padidx >= 0 && padidx != 3)
-		LispDestroy(mac, BadArgument, fname);
+		LispDestroy(mac, BadArgument, STRFUN(builtin));
 
 	    /* get print arguments */
 	    if (argc && !defs[0])
@@ -1950,8 +1946,12 @@ print_object:
 		mac->princ = 1;
 	    if (collon && toupper(*fmt) == 'A' && CAR(arg) == NIL)
 		len = LispPrintf(mac, stream, "%s", "()");
-	    else
-		len = LispPrintObj(mac, stream, CAR(arg), 1);
+	    else {
+		if (CAR(arg)->type == LispCharacter_t)
+		    len = LispPrintf(mac, stream, "%c", CAR(arg)->data.integer);
+		else
+		    len = LispPrintObj(mac, stream, CAR(arg), 1);
+	    }
 	    mac->column += len;	/* XXX maybe should look if the object has
 				 * newlines, and adjust mac->column in
 				 * that case */
@@ -1971,9 +1971,9 @@ print_object:
 	    continue;
 
 not_enough_args:
-	    LispDestroy(mac, "no arguments left, at %s", fname);
+	    LispDestroy(mac, "%s: no arguments left", STRFUN(builtin));
 error_parsing:
-	    LispDestroy(mac, "error parsing directive, at %s", fname);
+	    LispDestroy(mac, "%s: error parsing directive", STRFUN(builtin));
 	}
 	else {
 	    mac->newline = 0;
@@ -1993,11 +1993,11 @@ format_done:
 	mac->column += LispPrintf(mac, stream, "%s", stk);
     }
 
-    if (stream != NIL && (stream->data.stream.size >= 0 ||
-	stream->data.stream.source.fp != lisp_stdout))
+    if (stream != NIL && (stream->data.stream.type == LispStreamString ||
+	stream->data.stream.source.file != Stdout))
 	mac->newline = newline;
     else
-	fflush(lisp_stdout);
+	LispFflush(Stdout);
 
     LispFree(mac, indirection);
 
@@ -2018,13 +2018,13 @@ format_done:
 		c = '?';
 		break;
 	}
-	LispDestroy(mac, "expecting ~%c, at %s", c, fname);
+	LispDestroy(mac, "%s: expecting ~%c", STRFUN(builtin), c);
     }
 
-    if (stream != NIL && stream->data.stream.size >= 0) {
-	if (stream->data.stream.source.str == NULL)
+    if (stream != NIL && stream->data.stream.type == LispStreamString) {
+	if (SSTREAMP(stream)->string == NULL)
 	    return (STRING(""));
-	return (STRING((char*)stream->data.stream.source.str));
+	return (STRING((char*)SSTREAMP(stream)->string));
     }
 
     return (stream);

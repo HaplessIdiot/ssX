@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001 by The XFree86 Project, Inc.
+ * Copyright (c) 2002 by The XFree86 Project, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -27,20 +27,16 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.h,v 1.2 2001/10/03 07:46:02 paulo Exp $ */
+/* $XFree86$ */
 
-#ifndef Lisp_lisp_h
-#define Lisp_lisp_h
+#ifndef Lisp_read_h
+#define Lisp_read_h
 
-typedef struct _LispMac LispMac;
+#include "io.h"
 
-LispMac *LispBegin(int argc, char *argv[]);
-void LispEnd(LispMac*);
-void *LispExecute(LispMac*, char*);
-void LispMachine(LispMac*);
-void LispSetPrompt(LispMac*, char*);
-void LispSetInteractive(LispMac*, int);
-void LispSetExitOnError(LispMac*, int);
-void LispDebug(LispMac*, int);	/* argument is boolean to enable/disable */
+/*
+ * Prototypes
+ */
+LispObj *LispRead(LispMac*);
 
-#endif /* Lisp_lisp_h */
+#endif /* Lisp_read_h */

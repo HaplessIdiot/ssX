@@ -1,4 +1,4 @@
-$XFree86: xc/programs/xedit/lisp/README,v 1.4 2001/10/11 06:34:50 paulo Exp $
+$XFree86: xc/programs/xedit/lisp/README,v 1.5 2001/10/18 03:15:21 paulo Exp $
 
 LAST UPDATED:	$Date$
 
@@ -53,37 +53,12 @@ is/are:
     the Common Lisp equivalent ones.
 
 
-  The currently implemented function names are in table.gperf. There are also
-functions in modules/fun.lsp, that are inplicitly loaded by xedit and the
-sample program lsp.
-
-
-    BUGS
-
-  If (print) is called with a circular list as argument, the lisp interpreter
-will crash. A code for circular list detection was written, but removed as
-it was buggy.
-  The (gc) code was slightly changed to avoid circular lists, but the code
-is not correct, so (gc) may need to be called several times to get deep enough
-on some more complex data structures, and free it. But calling (gc) explicitly
-is not required, as it will be called every time there are not enough available
-cells.
-
-
     WHY?
 
   I have used Emacs for a long time, and since I was working as volunteer to
 make of Xaw a better user interface, xedit seemed to need some work. For at
 least 3 years now, I don't use any other text editor than xedit, unless I
-need for some reason to work on the text console (like when debugging the
-xserver or xfs).
-
-  The lisp code was mostly written for some years, but not incorporated in
-xedit. Since the Lisp language is unlikely to change from day to night, it
-can be safely incorporated in xedit. Contrarily to this is an html
-viewer/editor to xedit I have been writing for some years. I wish I could add
-it to Xaw/xedit soon, but unfortunately it is still unstable, and not
-functional.
+need for some reason to work on the text console.
 
 
     NOTE

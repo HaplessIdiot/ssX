@@ -1,0 +1,80 @@
+$XFree86$
+
+LAST UPDATED:	$Date$
+
+  Small todo list
+
+o Forgive about the possibility of more than one instance of the lisp
+  interpreter in the same application. Have just one instance of the
+  LispMac structure, to avoid name clashes.
+o Cleanup the LispMac structure. All atoms/objects that must be alive
+  during the interpreter execution (mostly for speed or avoiding the risk
+  of gc while recreating it) should be static to the file needing it, and/or
+  created in a Init function.
+o When an Init function is present in every file, call LispAddBuiltin from
+  that initialization function.
+o Cleanup the code, make it optional to build some uncommon features (as well
+  as the entire interpreter?). Implement more functions directly in lisp.
+o Finish an "specification" for loadable modules. Write a FFI interface.
+  Without the possibility of using already existing libraries, the interpreter
+  won't be too much useful due to a poor library. It is very desirable to
+  "auto-generate" directly from C header files the interface to the lisp
+  code, and from that, dlload a shared library. In some cases, it is required
+  to link statically with a new interpreter binary, make it easy.
+o Remove LispSnprintObj. Printing of objects should be done only with
+  LispPrint/LispPrintObj.
+o Fix (format). It does not understand bignums as integers, and float handling
+  is poorly implemented. Modularize it, instead of a huge function, maybe
+  have a read/write function for every object type.
+o Implement a better string type. That should support characters larger than
+  8 bits, and that should allow embeded nuls.
+o It does not seen to be very smart to have two functions that do almost the
+  same thing, LispEval and LispApply. They should be merged someway.
+o Implement a richer set of math functions. This, if properly done can be
+  made a loadable module.
+o Optmize mathimp.c, comparing a double with a bignum should never cause an
+  error. Implement mp?_initsetXXX functions?
+o Finish missing features in read.c, and simplify it.
+o (close) probably should not send a signal when closing a pipe.
+o Implement "real" vectors, they exist to make access to field elements
+  at constant time, implementing vectors as lists may be very slow.
+o Use float and double as floating points formats.
+o Implement support for vectors of "atomic" types. Vectors of floats would
+  be useful for example if a OpenGL binding is done.
+o Implement a multiple precision floating point format. Either a 128 bits
+  (or configurable length?) IEEE 754 like number, or some format using
+  ratios, a epsilon for rouding, rounding modes, exact/inexact flag, a good
+  amount of guard digits, etc.
+o Write more functions and optimization for bignums. Try to make the code
+  as reusable as possible, either by other software or at least by the
+  different number types.
+o Instead of using mathimp.c for a large amount of functions, implement a
+  "generic number" type and implement the calculations directly in the
+  mp library.
+o Finish the interface/protocol with xedit. It is taking a bit long to have
+  have programable text buffers, easily implementable color-syntax modes, etc.
+o Implement a package system for the interpreter.
+o Make more optimizations to get faster execution. Implement byte-code
+  compilation? Implement a simple optimizer, not very effective for common
+  code, but almost mandatory for loops.
+o Add more missing Common Lisp features, like &allow-other-keys for function
+  definitions, the missing structure features, CLOS etc.
+o Fix the Postgresql module, make it compile everywhere.
+o Readd support for gpm as the math library. This must be optional, gpm is
+  not present in all systems.
+o Add support for multi-threaded applications?
+o Make it possible to know if a object has only one reference, this is
+  required to make "inplace" changes of variables. Very useful for things
+  like (incf) and (decf), and also when dealing with bignums.
+o Maybe have a freelist for objects depending on the type. Bignums can be
+  reused, and having some large ones expecting to be freed by the gc can
+  consume a lot of memory.
+o Internationalization. Support ',' in floats? Correctly treat characters
+  for {up,down}-casing.
+o Synch the Xaw text code for supporting tables, text alignment/paragraphs,
+  etc, and add bindings to the interpreter. Add support for incremental
+  changes of those properties, currently it is "read-only".
+o Write some type of "hyperlinks", this is the only feature missing to even
+  allow writting a web browser inside xedit.
+o Write some "demos" (maybe a file manager or a simple mail reader) using the
+  Xt/Xaw bindings (needs modules working in all systems).

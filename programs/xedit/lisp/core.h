@@ -27,122 +27,110 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.6 2001/10/18 03:15:22 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.7 2001/10/20 00:19:34 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
 
 #include "internal.h"
 
-LispObj *Lisp_Mul(LispMac*, LispObj*, char*);		/* * */
-LispObj *Lisp_Plus(LispMac*, LispObj*, char*);		/* + */
-LispObj *Lisp_Minus(LispMac*, LispObj*, char*);		/* - */
-LispObj *Lisp_Div(LispMac*, LispObj*, char*);		/* / */
-LispObj *Lisp_OnePlus(LispMac*, LispObj*, char*);	/* 1+ */
-LispObj *Lisp_OneMinus(LispMac*, LispObj*, char*);	/* 1- */
-LispObj *Lisp_Less(LispMac*, LispObj*, char*);		/* < */
-LispObj *Lisp_LessEqual(LispMac*, LispObj*, char*);	/* <= */
-LispObj *Lisp_Equal_(LispMac*, LispObj*, char*);	/* = */
-LispObj *Lisp_Greater(LispMac*, LispObj*, char*);	/* > */
-LispObj *Lisp_GreaterEqual(LispMac*, LispObj*, char*);	/* >= */
-LispObj *Lisp_NotEqual(LispMac*, LispObj*, char*);	/* /= */
-LispObj *Lisp_Aref(LispMac*, LispObj*, char*);		/* aref */
-LispObj *Lisp_Assoc(LispMac*, LispObj*, char*);		/* assoc */
-LispObj *Lisp_And(LispMac*, LispObj*, char*);		/* and */
-LispObj *Lisp_Append(LispMac*, LispObj*, char*);	/* append */
-LispObj *Lisp_Apply(LispMac*, LispObj*, char*);		/* apply */
-LispObj *Lisp_Atom(LispMac*, LispObj*, char*);		/* attom */
-LispObj *Lisp_Block(LispMac*, LispObj*, char*);		/* block */
-LispObj *Lisp_Butlast(LispMac*, LispObj*, char*);	/* butlast */
-LispObj *Lisp_Car(LispMac*, LispObj*, char*);		/* car */
-LispObj *Lisp_Case(LispMac*, LispObj*, char*);		/* case */
-LispObj *Lisp_Catch(LispMac*, LispObj*, char*);		/* catch */
-LispObj *Lisp_Cdr(LispMac*, LispObj*, char*);		/* cdr */
-LispObj *Lisp_Coerce(LispMac*, LispObj*, char*);	/* coerce */
-LispObj *Lisp_Cond(LispMac*, LispObj*, char*);		/* cond */
-LispObj *Lisp_Cons(LispMac*, LispObj*, char*);		/* cons */
-LispObj *Lisp_Decf(LispMac*, LispObj*, char*);		/* decf */
-LispObj *Lisp_Defmacro(LispMac*, LispObj*, char*);	/* defmacro */
-LispObj *Lisp_Defun(LispMac*, LispObj*, char*);		/* defun */
-LispObj *Lisp_Defsetf(LispMac*, LispObj*, char*);	/* defsetf */
-LispObj *Lisp_Do(LispMac*, LispObj*, char*);		/* do */
-LispObj *Lisp_DoP(LispMac*, LispObj*, char*);		/* do* */
-LispObj *Lisp_DoList(LispMac*, LispObj*, char*);	/* dolist */
-LispObj *Lisp_DoTimes(LispMac*, LispObj*, char*);	/* dotimes */
-LispObj *Lisp_Elt(LispMac*, LispObj*, char*);		/* elt */
-LispObj *Lisp_Equal(LispMac*, LispObj*, char*);		/* equal */
-LispObj *Lisp_Error(LispMac*, LispObj*, char*);		/* error */
-LispObj *Lisp_Eval(LispMac*, LispObj*, char*);		/* eval */
-LispObj *Lisp_Evenp(LispMac*, LispObj*, char*);		/* evenp */
-LispObj *Lisp_FMakunbound(LispMac*, LispObj*, char*);	/* fmakunbound */
-LispObj *Lisp_Funcall(LispMac*, LispObj*, char*);	/* funcall */
-LispObj *Lisp_Gc(LispMac*, LispObj*, char*);		/* gc */
-LispObj *Lisp_Get(LispMac*, LispObj*, char*);		/* get */
-LispObj *Lisp_Go(LispMac*, LispObj*, char*);		/* go */
-LispObj *Lisp_If(LispMac*, LispObj*, char*);		/* if */
-LispObj *Lisp_Incf(LispMac*, LispObj*, char*);		/* incf */
-LispObj *Lisp_Integerp(LispMac*, LispObj*, char*);	/* integerp */
-LispObj *Lisp_Lambda(LispMac*, LispObj*, char*);	/* lambda */
-LispObj *Lisp_Last(LispMac*, LispObj*, char*);		/* last */
-LispObj *Lisp_Length(LispMac*, LispObj*, char*);	/* length */
-LispObj *Lisp_Let(LispMac*, LispObj*, char*);		/* let */
-LispObj *Lisp_LetP(LispMac*, LispObj*, char*);		/* let* */
-LispObj *Lisp_List(LispMac*, LispObj*, char*);		/* list */
-LispObj *Lisp_ListP(LispMac*, LispObj*, char*);		/* list* */
-LispObj *Lisp_Listp(LispMac*, LispObj*, char*);		/* listp */
-LispObj *Lisp_Loop(LispMac*, LispObj*, char*);		/* loop */
-LispObj *Lisp_Makearray(LispMac*, LispObj*, char*);	/* make-array */
-LispObj *Lisp_Makelist(LispMac*, LispObj*, char*);	/* make-list */
-LispObj *Lisp_Makunbound(LispMac*, LispObj*, char*);	/* makunbound */
-LispObj *Lisp_Mapcar(LispMac*, LispObj*, char*);	/* mapcar */
-LispObj *Lisp_Max(LispMac*, LispObj*, char*);		/* max */
-LispObj *Lisp_Member(LispMac*, LispObj*, char*);	/* member */
-LispObj *Lisp_Min(LispMac*, LispObj*, char*);		/* min */
-LispObj *Lisp_Minusp(LispMac*, LispObj*, char*);	/* minusp */
-LispObj *Lisp_Nth(LispMac*, LispObj*, char*);		/* nth */
-LispObj *Lisp_Nthcdr(LispMac*, LispObj*, char*);	/* nthcdr */
-LispObj *Lisp_Null(LispMac*, LispObj*, char*);		/* null */
-LispObj *Lisp_Numberp(LispMac*, LispObj*, char*);	/* numberp */
-LispObj *Lisp_Oddp(LispMac*, LispObj*, char*);		/* oddp */
-LispObj *Lisp_Or(LispMac*, LispObj*, char*);		/* or */
-LispObj *Lisp_Plusp(LispMac*, LispObj*, char*);		/* plusp */
-LispObj *Lisp_Prin1(LispMac*, LispObj*, char*);		/* prin1 */
-LispObj *Lisp_Princ(LispMac*, LispObj*, char*);		/* princ */
-LispObj *Lisp_Print(LispMac*, LispObj*, char*);		/* print */
-LispObj *Lisp_Prog1(LispMac*, LispObj*, char*);		/* prog1 */
-LispObj *Lisp_Prog2(LispMac*, LispObj*, char*);		/* prog2 */
-LispObj *Lisp_Progn(LispMac*, LispObj*, char*);		/* progn */
-LispObj *Lisp_Progv(LispMac*, LispObj*, char*);		/* progv */
-LispObj *Lisp_Provide(LispMac*, LispObj*, char*);	/* provide */
-LispObj *Lisp_Quit(LispMac*, LispObj*, char*);		/* quit */
-LispObj *Lisp_Quote(LispMac*, LispObj*, char*);		/* quote */
-LispObj *Lisp_Read(LispMac*, LispObj*, char*);		/* read */
-LispObj *Lisp_Replace(LispMac*, LispObj*, char*);	/* replace */
-LispObj *Lisp_Return(LispMac*, LispObj*, char*);	/* return */
-LispObj *Lisp_ReturnFrom(LispMac*, LispObj*, char*);	/* return-from */
-LispObj *Lisp_Reverse(LispMac*, LispObj*, char*);	/* reverse */
-LispObj *Lisp_Rplaca(LispMac*, LispObj*, char*);	/* rplaca */
-LispObj *Lisp_Rplacd(LispMac*, LispObj*, char*);	/* rplaca */
-LispObj *Lisp_Set(LispMac*, LispObj*, char*);		/* set */
-LispObj *Lisp_Setf(LispMac*, LispObj*, char*);		/* setf */
-LispObj *Lisp_SetQ(LispMac*, LispObj*, char*);		/* setq */
-LispObj *Lisp_Stringp(LispMac*, LispObj*, char*);	/* stringp */
-LispObj *Lisp_Subseq(LispMac*, LispObj*, char*);	/* subseq */
-LispObj *Lisp_Symbolp(LispMac*, LispObj*, char*);	/* symbolp */
-LispObj *Lisp_SymbolPlist(LispMac*, LispObj*, char*);	/* symbol-plist */
-LispObj *Lisp_Tagbody(LispMac*, LispObj*, char*);	/* tagbody */
-LispObj *Lisp_Terpri(LispMac*, LispObj*, char*);	/* terpri */
-LispObj *Lisp_Throw(LispMac*, LispObj*, char*);		/* throw */
-LispObj *Lisp_Typep(LispMac*, LispObj*, char*);		/* typep */
-LispObj *Lisp_Unless(LispMac*, LispObj*, char*);	/* unless */
-LispObj *Lisp_Until(LispMac*, LispObj*, char*);		/* until */
-LispObj *Lisp_UnwindProtect(LispMac*, LispObj*, char*);	/* unwind-protect */
-LispObj *Lisp_Vector(LispMac*, LispObj*, char*);	/* vector */
-LispObj *Lisp_When(LispMac*, LispObj*, char*);		/* when */
-LispObj *Lisp_While(LispMac*, LispObj*, char*);		/* while */
-LispObj *Lisp_XeditEltStore(LispMac*, LispObj*, char*);	    /* xedit::elt-store */
-LispObj *Lisp_XeditPut(LispMac*, LispObj*, char*);	    /* xedit::put */
-LispObj *Lisp_XeditVectorStore(LispMac*, LispObj*, char*);  /* xedit::vector-store */
-LispObj *Lisp_Zerop(LispMac*, LispObj*, char*);		/* zerop */
+LispObj *Lisp_Acons(LispMac*, LispBuiltin*);		/* acons */
+LispObj *Lisp_Append(LispMac*, LispBuiltin*);		/* append */
+LispObj *Lisp_Aref(LispMac*, LispBuiltin*);		/* aref */
+LispObj *Lisp_Assoc(LispMac*, LispBuiltin*);		/* assoc */
+LispObj *Lisp_And(LispMac*, LispBuiltin*);		/* and */
+LispObj *Lisp_Apply(LispMac*, LispBuiltin*);		/* apply */
+LispObj *Lisp_Atom(LispMac*, LispBuiltin*);		/* attom */
+LispObj *Lisp_Block(LispMac*, LispBuiltin*);		/* block */
+LispObj *Lisp_Butlast(LispMac*, LispBuiltin*);		/* butlast */
+LispObj *Lisp_Car(LispMac*, LispBuiltin*);		/* car */
+LispObj *Lisp_Case(LispMac*, LispBuiltin*);		/* case */
+LispObj *Lisp_Catch(LispMac*, LispBuiltin*);		/* catch */
+LispObj *Lisp_Cdr(LispMac*, LispBuiltin*);		/* cdr */
+LispObj *Lisp_Coerce(LispMac*, LispBuiltin*);		/* coerce */
+LispObj *Lisp_Cond(LispMac*, LispBuiltin*);		/* cond */
+LispObj *Lisp_Cons(LispMac*, LispBuiltin*);		/* cons */
+LispObj *Lisp_Defmacro(LispMac*, LispBuiltin*);		/* defmacro */
+LispObj *Lisp_Defun(LispMac*, LispBuiltin*);		/* defun */
+LispObj *Lisp_Defsetf(LispMac*, LispBuiltin*);		/* defsetf */
+LispObj *Lisp_Defvar(LispMac*, LispBuiltin*);		/* defvar */
+LispObj *Lisp_Do(LispMac*, LispBuiltin*);		/* do */
+LispObj *Lisp_DoP(LispMac*, LispBuiltin*);		/* do* */
+LispObj *Lisp_Documentation(LispMac*, LispBuiltin*);	/* documentation */
+LispObj *Lisp_DoList(LispMac*, LispBuiltin*);		/* dolist */
+LispObj *Lisp_DoTimes(LispMac*, LispBuiltin*);		/* dotimes */
+LispObj *Lisp_Elt(LispMac*, LispBuiltin*);		/* elt */
+LispObj *Lisp_Eq(LispMac*, LispBuiltin*);		/* eq */
+LispObj *Lisp_Eql(LispMac*, LispBuiltin*);		/* eql */
+LispObj *Lisp_Equal(LispMac*, LispBuiltin*);		/* equal */
+LispObj *Lisp_Error(LispMac*, LispBuiltin*);		/* error */
+LispObj *Lisp_Eval(LispMac*, LispBuiltin*);		/* eval */
+LispObj *Lisp_Fmakunbound(LispMac*, LispBuiltin*);	/* fmakunbound */
+LispObj *Lisp_Funcall(LispMac*, LispBuiltin*);		/* funcall */
+LispObj *Lisp_Gc(LispMac*, LispBuiltin*);		/* gc */
+LispObj *Lisp_Get(LispMac*, LispBuiltin*);		/* get */
+LispObj *Lisp_Getenv(LispMac*, LispBuiltin*);		/* getenv */
+LispObj *Lisp_Go(LispMac*, LispBuiltin*);		/* go */
+LispObj *Lisp_If(LispMac*, LispBuiltin*);		/* if */
+LispObj *Lisp_Keywordp(LispMac*, LispBuiltin*);		/* keywordp */
+LispObj *Lisp_Lambda(LispMac*, LispBuiltin*);		/* lambda */
+LispObj *Lisp_Last(LispMac*, LispBuiltin*);		/* last */
+LispObj *Lisp_Length(LispMac*, LispBuiltin*);		/* length */
+LispObj *Lisp_Let(LispMac*, LispBuiltin*);		/* let */
+LispObj *Lisp_LetP(LispMac*, LispBuiltin*);		/* let* */
+LispObj *Lisp_List(LispMac*, LispBuiltin*);		/* list */
+LispObj *Lisp_ListP(LispMac*, LispBuiltin*);		/* list* */
+LispObj *Lisp_Listp(LispMac*, LispBuiltin*);		/* listp */
+LispObj *Lisp_Loop(LispMac*, LispBuiltin*);		/* loop */
+LispObj *Lisp_MakeArray(LispMac*, LispBuiltin*);	/* make-array */
+LispObj *Lisp_MakeList(LispMac*, LispBuiltin*);		/* make-list */
+LispObj *Lisp_Makunbound(LispMac*, LispBuiltin*);	/* makunbound */
+LispObj *Lisp_Mapcar(LispMac*, LispBuiltin*);		/* mapcar */
+LispObj *Lisp_Maplist(LispMac*, LispBuiltin*);		/* maplist */
+LispObj *Lisp_Member(LispMac*, LispBuiltin*);		/* member */
+LispObj *Lisp_Nconc(LispMac*, LispBuiltin*);		/* nconc */
+LispObj *Lisp_Nth(LispMac*, LispBuiltin*);		/* nth */
+LispObj *Lisp_Nthcdr(LispMac*, LispBuiltin*);		/* nthcdr */
+LispObj *Lisp_Null(LispMac*, LispBuiltin*);		/* null */
+LispObj *Lisp_Or(LispMac*, LispBuiltin*);		/* or */
+LispObj *Lisp_Prin1(LispMac*, LispBuiltin*);		/* prin1 */
+LispObj *Lisp_Princ(LispMac*, LispBuiltin*);		/* princ */
+LispObj *Lisp_Print(LispMac*, LispBuiltin*);		/* print */
+LispObj *Lisp_Proclaim(LispMac*, LispBuiltin*);		/* proclaim */
+LispObj *Lisp_Prog1(LispMac*, LispBuiltin*);		/* prog1 */
+LispObj *Lisp_Prog2(LispMac*, LispBuiltin*);		/* prog2 */
+LispObj *Lisp_Progn(LispMac*, LispBuiltin*);		/* progn */
+LispObj *Lisp_Progv(LispMac*, LispBuiltin*);		/* progv */
+LispObj *Lisp_Provide(LispMac*, LispBuiltin*);		/* provide */
+LispObj *Lisp_Quit(LispMac*, LispBuiltin*);		/* quit */
+LispObj *Lisp_Quote(LispMac*, LispBuiltin*);		/* quote */
+LispObj *Lisp_Replace(LispMac*, LispBuiltin*);		/* replace */
+LispObj *Lisp_Return(LispMac*, LispBuiltin*);		/* return */
+LispObj *Lisp_ReturnFrom(LispMac*, LispBuiltin*);	/* return-from */
+LispObj *Lisp_Reverse(LispMac*, LispBuiltin*);		/* reverse */
+LispObj *Lisp_Rplaca(LispMac*, LispBuiltin*);		/* rplaca */
+LispObj *Lisp_Rplacd(LispMac*, LispBuiltin*);		/* rplaca */
+LispObj *Lisp_Setenv(LispMac*, LispBuiltin*);		/* setenv */
+LispObj *Lisp_Set(LispMac*, LispBuiltin*);		/* set */
+LispObj *Lisp_Setf(LispMac*, LispBuiltin*);		/* setf */
+LispObj *Lisp_SetQ(LispMac*, LispBuiltin*);		/* setq */
+LispObj *Lisp_Stringp(LispMac*, LispBuiltin*);		/* stringp */
+LispObj *Lisp_Subseq(LispMac*, LispBuiltin*);		/* subseq */
+LispObj *Lisp_Symbolp(LispMac*, LispBuiltin*);		/* symbolp */
+LispObj *Lisp_SymbolPlist(LispMac*, LispBuiltin*);	/* symbol-plist */
+LispObj *Lisp_Tagbody(LispMac*, LispBuiltin*);		/* tagbody */
+LispObj *Lisp_Terpri(LispMac*, LispBuiltin*);		/* terpri */
+LispObj *Lisp_Throw(LispMac*, LispBuiltin*);		/* throw */
+LispObj *Lisp_Typep(LispMac*, LispBuiltin*);		/* typep */
+LispObj *Lisp_Unless(LispMac*, LispBuiltin*);		/* unless */
+LispObj *Lisp_Until(LispMac*, LispBuiltin*);		/* unless */
+LispObj *Lisp_Unsetenv(LispMac*, LispBuiltin*);		/* unsetenv */
+LispObj *Lisp_UnwindProtect(LispMac*, LispBuiltin*);	/* unwind-protect */
+LispObj *Lisp_Vector(LispMac*, LispBuiltin*);		/* vector */
+LispObj *Lisp_When(LispMac*, LispBuiltin*);		/* when */
+LispObj *Lisp_While(LispMac*, LispBuiltin*);		/* while */
+LispObj *Lisp_XeditEltStore(LispMac*, LispBuiltin*);    /* xedit::elt-store */
+LispObj *Lisp_XeditPut(LispMac*, LispBuiltin*);		/* xedit::put */
+LispObj *Lisp_XeditVectorStore(LispMac*, LispBuiltin*);	/* xedit::vector-store */
 
 #endif /* Lisp_core_h */

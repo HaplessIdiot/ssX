@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp.c,v 1.2 2001/08/31 19:00:03 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp.c,v 1.3 2001/09/11 06:42:54 paulo Exp $ */
 
 #include "xedit.h"
 #include "lisp/lisp.h"
@@ -47,7 +47,15 @@ static void XeditRunLisp(void);
 static void LispInputCallback(XtPointer, int*, XtInputId*);
 static void LispErrorInputCallback(XtPointer, int*, XtInputId*);
 static void XeditDoLispEval(Widget, XEvent*, String*, Cardinal*);
-static int XeditCheckLispChild(void);
+static void XeditCheckLispChild(void);
+
+#ifndef SIGNALRETURNSINT
+static void child_signal(int);
+static void (*old_child)(int);
+#else
+static int child_signal(int);
+static int (*old_child)(int);
+#endif
 
 /*
  * Initialization
@@ -61,8 +69,7 @@ static struct {
     XtInputId eid;
     XtAppContext appcon;
     Widget output;
-    Bool expect;
-    Bool running;
+    Bool sigchld;
 } lisp;
 
 extern XtAppContext appcon;
@@ -71,6 +78,23 @@ extern Widget scratch;
 /*
  * Implementation
  */
+/*ARGSUSED*/
+#ifndef SIGNALRETURNSINT
+static void
+child_signal(int unused)
+{
+    lisp.sigchld = True;
+}
+#else
+static int
+child_signal(int unused)
+{
+    lisp.sigchld = True;
+
+    return (0);
+}
+#endif
+
 void
 XeditLispEval(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
@@ -93,14 +117,9 @@ XeditPrintLispEval(Widget w, XEvent *event, String *params, Cardinal *num_params
 void
 XeditKeyboardReset(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-    (void)XeditCheckLispChild();
-    if (lisp.running) {
+    if (lisp.pid) {
+	XeditCheckLispChild();
 	kill(lisp.pid, SIGINT);
-	lisp.running = False;
-
-	/* redisplay */
-	XtUnmapWidget(XtParent(messwidget));
-	XtMapWidget(XtParent(messwidget));
     }
     XtCallActionProc(w, "keyboard-reset", event, params, *num_params);
 }
@@ -156,7 +175,7 @@ XeditDoLispEval(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	    Feep();
 	    return;
 	}
-	if (block.ptr[0] == '\'' && position > 0)
+	if ((block.ptr[0] == '\'' || block.ptr[0] == '`') && position > 0)
 	    --position;
     }
     else {
@@ -192,7 +211,7 @@ XeditDoLispEval(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	/* check for quoted expression */
 	if (position) {
 	    (void)XawTextSourceRead(src, position - 1, &block, 1);
-	    if (block.ptr[0] == '\'')
+	    if (block.ptr[0] == '\'' || block.ptr[0] == '`')
 		--position;
 	}
     }
@@ -203,36 +222,6 @@ XeditDoLispEval(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	position += block.length;
     }
     write(lisp.ofd[1], "\n", 1);
-    lisp.running = lisp.expect = True;
-
-    /* block waiting for lisp process to finish, need to block or
-     * user won't know if it is stalled.
-     */
-    while (lisp.running) {
-	mask = XtAppPending(lisp.appcon);
-	if (mask & XtIMAlternateInput)
-	    XtAppProcessEvent(lisp.appcon, XtIMAlternateInput);
-	else if (mask & XtIMXEvent) {
-	    /* only keyboard events allowed */
-	    XEvent key;
-
-	    XtAppNextEvent(lisp.appcon, &key);
-	    if (key.type == KeyPress ||
-		key.type == KeyRelease) {
-		/* XXX Ctrl<G> harcoded */
-		if (key.xkey.state & ControlMask) {
-		    char buffer[2];
-
-		    XLookupString((XKeyEvent*)&key, &buffer[0],
-				  sizeof(buffer), NULL, NULL);
-		    if (*buffer == '\a')
-			XtDispatchEvent(&key);
-		}
-	    }
-	}
-	if (XeditCheckLispChild())
-	    break;
-    }
 }
 
 void
@@ -247,9 +236,14 @@ XeditLispCleanUp(void)
 static void
 XeditLispInitialize(void)
 {
+    XeditCheckLispChild();
+
     if (lisp.pid)
 	return;
 
+    XeditPrintf("Notice: starting lisp process.\n");
+
+    lisp.sigchld = False;
     pipe(lisp.ifd);
     pipe(lisp.ofd);
     pipe(lisp.efd);
@@ -275,7 +269,11 @@ XeditLispInitialize(void)
 	fprintf(stderr, "Cannot fork\n");
 	exit(1);
     }
+    close(lisp.ifd[1]);
+    close(lisp.ofd[0]);
+    close(lisp.efd[1]);
 
+    old_child = signal(SIGCHLD, child_signal);
     lisp.appcon = XtWidgetToApplicationContext(topwindow);
     lisp.id = XtAppAddInput(lisp.appcon, lisp.ifd[0],
 			    (XtPointer)XtInputReadMask,
@@ -299,11 +297,12 @@ LispInputCallback(XtPointer closure, int *source, XtInputId *id)
 
 	str[len] = '\0';
 	len = 0;
-	lisp.expect = 0;
 
 	if (XeditProto(str + 1, &res) == False) {
+	    Feep();
 	    if (res)
 		XeditPrintf(res);
+	    write(lisp.ofd[1], "NIL\n", 4);
 	}
 	else {
 	    write(lisp.ofd[1], res, strlen(res));
@@ -327,11 +326,7 @@ LispInputCallback(XtPointer closure, int *source, XtInputId *id)
 	    pos += len;
 	    XawTextSetInsertionPoint(lisp.output, pos);
 	}
-	lisp.expect = 0;
     }
-    /* If anything was printed, than it is not busy anymore */
-    lisp.running = 0;
-    XeditCheckLispChild();
 }
 
 static void
@@ -346,12 +341,9 @@ LispErrorInputCallback(XtPointer closure, int *source, XtInputId *id)
 	str[len] = '\0';
 	XeditPrintf(str);
     }
-    /* If anything was printed, than it is not busy anymore */
-    lisp.running = 0;
-    XeditCheckLispChild();
 }
 
-static int
+static void
 XeditCheckLispChild(void)
 {
     int status;
@@ -359,28 +351,16 @@ XeditCheckLispChild(void)
     if (lisp.pid) {
 	waitpid(lisp.pid, &status, WNOHANG);
 	if (WIFEXITED(status) || errno == ECHILD) {
-	    Feep();
-	    /* redisplay */
-	    XtUnmapWidget(XtParent(messwidget));
-	    XtMapWidget(XtParent(messwidget));
-
-	    XeditPrintf("Warning: lisp child process exited.\n");
 	    lisp.pid = 0;
 	    XtRemoveInput(lisp.id);
 	    XtRemoveInput(lisp.eid);
 	    close(lisp.ifd[0]);
-	    close(lisp.ifd[1]);
-	    close(lisp.ofd[0]);
 	    close(lisp.ofd[1]);
 	    close(lisp.efd[0]);
-	    close(lisp.efd[1]);
-	    lisp.running = lisp.expect = 0;
-
-	    return (1);
+	    signal(SIGCHLD, old_child);
 	}
     }
-
-    return (0);
+    lisp.sigchld = False;
 }
 
 static void
