@@ -1,4 +1,6 @@
 XFree86 4.4.99.4 (xx April 2004)
+  87. Change imake to produce a warning when it needs to clean Imakefile input;
+      See changed source for rationale (Marc La France).
   86. FreeType 2.1.8 import/merge (FreeType Project, imported and merged
       by Chisato Yamauchi and David Dawes).
   85. Fix for Xv resolution loss problem with Matrox cards (Michael Lampe).
@@ -18877,7 +18879,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3235 2004/04/25 14:26:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3236 2004/04/26 16:15:56 dawes Exp $
 
 
 
