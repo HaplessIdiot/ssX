@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.23 2001/04/05 17:42:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.24 2001/04/25 14:23:00 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -688,8 +688,6 @@ MGADisplayVideoOverlay(
 
     /* enable accelerated 2x horizontal zoom when pixelclock >135MHz */
     hzoom = (pScrn->currentMode->Clock > 135000) ? 1 : 0;
-    intrep = (((drw_w >= src_w) && !hzoom) || (drw_w == src_w) ||
-		(drw_w < 2)) ? 0 : 1;
 
     switch(id) {
     case FOURCC_UYVY:
@@ -720,11 +718,13 @@ MGADisplayVideoOverlay(
     OUTREG(MGAREG_BESV1WGHT, y1 & 0x0000fffc);
     OUTREG(MGAREG_BESV1SRCLST, height - 1 - (y1 >> 16));
 
-    tmp = ((src_h - 1) << 16)/drw_h;
+    intrep = ((drw_h == src_h) || (drw_h < 2)) ? 0 : 1;
+    tmp = ((src_h - intrep) << 16)/(drw_h - intrep);
     if(tmp >= (32 << 16))
 	tmp = (32 << 16) - 1;
     OUTREG(MGAREG_BESVISCAL, tmp & 0x001ffffc);
 
+    intrep = ((drw_w == src_w) || (drw_w < 2)) ? 0 : 1;
     tmp = (((src_w - intrep) << 16)/(drw_w - intrep)) << hzoom;
     if(tmp >= (32 << 16))
 	tmp = (32 << 16) - 1;

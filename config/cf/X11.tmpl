@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.117 2001/05/23 03:29:36 keithp Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.118 2001/05/29 18:14:11 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1842,18 +1842,6 @@ ProjectUnsharedLibReferences(XXF86RUSH,Xxf86rush,$(XXF86RUSHLIBSRC),XBuildLibDir
 SharedLibReferences(XV,Xv,$(XVLIBSRC),SOXVREV,SharedXvRev)
 #else
 ProjectUnsharedLibReferences(XV,Xv,$(XVLIBSRC),XBuildLibDir)
-#endif
-#endif
-
-#if BuildXineramaLibrary
-    XINERAMALIBSRC = $(LIBSRC)/Xinerama
-#if SharedLibXinerama
-#ifndef SharedXineramaRev
-#define SharedXineramaRev 1.0
-#endif
-SharedLibReferences(XINERAMA,Xinerama,$(XINERAMALIBSRC),SOXINERAMAREV,SharedXineramaRev)
-#else
-ProjectUnsharedLibReferences(XINERAMA,Xinerama,$(XINERAMALIBSRC),XBuildLibDir)
 #endif
 #endif
 
