@@ -27,7 +27,7 @@
  *
  * Authors: David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbeModes.c,v 1.1 2002/08/06 13:46:28 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbeModes.c,v 1.2 2002/08/24 16:06:43 dawes Exp $
  */
 
 #include "xf86.h"
@@ -68,7 +68,7 @@ GetDepthFlag(vbeInfoPtr pVbe, int id)
 	case 16:
 	    return V_DEPTH_16;
 	case 24:
-	    switch (mode->BitsPerPixel) {
+	    switch (bpp) {
 	    case 24:
 		return V_DEPTH_24_24;
 	    case 32:
