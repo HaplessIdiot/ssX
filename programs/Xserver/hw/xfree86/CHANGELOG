@@ -1,4 +1,6 @@
 XFree86 4.3.99.902 (xx December 2003)
+ 667. Fix server crash when passing >32767 into srcX/Y parameters to
+      XShmPutImage (Bugzilla #978, Mark Vojkovich, Alan Hourihane).
  666. Via driver updates:
        - Fix pixmap caches and Xv. The blitter has a 2048 pixel limit so we
          must constrain the pixmap cache.
@@ -18371,7 +18373,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3035 2003/12/17 18:14:43 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3036 2003/12/17 18:57:14 dawes Exp $
 
 
 
