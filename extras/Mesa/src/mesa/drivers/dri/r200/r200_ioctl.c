@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_ioctl.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_ioctl.c,v 1.4tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -877,7 +877,7 @@ void r200FreeMemoryMESA(__DRInativeDisplay *dpy, int scrn, GLvoid *pointer)
 
    if (region_offset < 0 || 
        region_offset > rmesa->r200Screen->gartTextures.size) {
-      fprintf(stderr, "offset %d outside range 0..%d\n", region_offset,
+      fprintf(stderr, "offset %ld outside range 0..%d\n", (long)region_offset,
 	      rmesa->r200Screen->gartTextures.size);
       return;
    }

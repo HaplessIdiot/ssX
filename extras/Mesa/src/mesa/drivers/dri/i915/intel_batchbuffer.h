@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /**************************************************************************
  * 
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
@@ -43,8 +44,8 @@ extern int VERBOSE;
 #define BEGIN_BATCH(n)							\
 do {									\
    if (VERBOSE) fprintf(stderr, 					\
-			"BEGIN_BATCH(%d) in %s, %d dwords free\n",	\
-			(n), __FUNCTION__, intel->batch.space/4);	\
+			"BEGIN_BATCH(%ld) in %s, %d dwords free\n",	\
+			(long)(n), __FUNCTION__, intel->batch.space/4);	\
    if (intel->batch.space < (n)*4)					\
       intelFlushBatch(intel, GL_TRUE);					\
    batch_ptr = intel->batch.ptr;					\

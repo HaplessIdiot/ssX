@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include "glheader.h"
 #include "macros.h"
 #include "mtypes.h"
@@ -12,8 +14,10 @@
 
 
 #define DBG 0
+#define NO_MONO
 
 #define LOCAL_VARS					\
+   i810ContextPtr imesa = I810_CONTEXT(ctx);	        \
    __DRIdrawablePrivate *dPriv = imesa->driDrawable;	\
    i810ScreenPrivate *i810Screen = imesa->i810Screen;	\
    GLuint pitch = i810Screen->backPitch;		\
@@ -28,6 +32,7 @@
    (void) read_buf; (void) buf; (void) p
 
 #define LOCAL_DEPTH_VARS				\
+   i810ContextPtr imesa = I810_CONTEXT(ctx);	        \
    __DRIdrawablePrivate *dPriv = imesa->driDrawable;	\
    i810ScreenPrivate *i810Screen = imesa->i810Screen;	\
    GLuint pitch = i810Screen->backPitch;		\
@@ -55,11 +60,7 @@
 
 #define Y_FLIP(_y) (height - _y - 1)
 
-#define HW_LOCK()				\
-   i810ContextPtr imesa = I810_CONTEXT(ctx);	\
-   I810_FIREVERTICES(imesa);			\
-   i810DmaFinish(imesa);			\
-   LOCK_HARDWARE_QUIESCENT(imesa);
+#define HW_LOCK()
 
 #define HW_CLIPLOOP()						\
   do {								\
@@ -76,11 +77,7 @@
     }						\
   } while (0)
 
-#define HW_UNLOCK()				\
-    UNLOCK_HARDWARE(imesa);
-
-
-
+#define HW_UNLOCK()
 
 /* 16 bit, 565 rgb color spanline and pixel functions
  */
@@ -129,13 +126,13 @@ static void i810SetBuffer(GLcontext *ctx, GLframebuffer *buffer,
    (void) buffer;
 
    switch(bufferBit) {
-    case FRONT_LEFT_BIT:
+    case DD_FRONT_LEFT_BIT:
       if ( imesa->sarea->pf_current_page == 1)
         imesa->readMap = imesa->i810Screen->back.map;
       else
         imesa->readMap = (char*)imesa->driScreen->pFB;
       break;
-    case BACK_LEFT_BIT:
+    case DD_BACK_LEFT_BIT:
       if ( imesa->sarea->pf_current_page == 1)
         imesa->readMap =  (char*)imesa->driScreen->pFB;
       else
@@ -148,6 +145,22 @@ static void i810SetBuffer(GLcontext *ctx, GLframebuffer *buffer,
    imesa->drawMap = imesa->readMap;
 }
 
+/* Move locking out to get reasonable span performance.
+ */
+void i810SpanRenderStart( GLcontext *ctx )
+{
+   i810ContextPtr imesa = I810_CONTEXT(ctx);
+   I810_FIREVERTICES(imesa);
+   LOCK_HARDWARE(imesa);
+   i810RegetLockQuiescent( imesa );
+}
+
+void i810SpanRenderFinish( GLcontext *ctx )
+{
+   i810ContextPtr imesa = I810_CONTEXT( ctx );
+   _swrast_flush( ctx );
+   UNLOCK_HARDWARE( imesa );
+}
 
 void i810InitSpanFuncs( GLcontext *ctx )
 {
@@ -167,4 +180,7 @@ void i810InitSpanFuncs( GLcontext *ctx )
    swdd->WriteDepthSpan = i810WriteDepthSpan_16;
    swdd->ReadDepthPixels = i810ReadDepthPixels_16;
    swdd->WriteDepthPixels = i810WriteDepthPixels_16;
+
+   swdd->SpanRenderStart = i810SpanRenderStart;
+   swdd->SpanRenderFinish = i810SpanRenderFinish; 
 }

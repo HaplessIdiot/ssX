@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/main/texstore.c,v 1.3 2004/06/10 14:43:40 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/main/texstore.c,v 1.4tsi Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  6.1
@@ -1831,7 +1831,7 @@ validate_pbo_compressed_teximage(GLsizei imageSize, const GLvoid *pixels,
    else {
       /* using a PBO */
       if ((const GLubyte *) pixels + imageSize >
-          (const GLubyte *) packing->BufferObj->Size) {
+          (const GLubyte *)(long) packing->BufferObj->Size) {
          /* out of bounds read! */
          return NULL;
       }
