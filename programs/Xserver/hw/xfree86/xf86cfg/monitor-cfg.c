@@ -69,6 +69,10 @@ static char *hmodes[] = {
     "Monitor that can do 1280x1024 @ 60 Hz",
     "Monitor that can do 1280x1024 @ 74 Hz",
     "Monitor that can do 1280x1024 @ 76 Hz",
+    "Monitor that can do 1280x1024 @ 85 Hz",
+    "Monitor that can do 1600x1200 @ 85 Hz",
+    "Monitor that can do 1920x1440 @ 85 Hz",
+    "Monitor that can do 2048x1536 @ 85 Hz"
 };
 
 static char *hmodes_trans[] = {
@@ -82,6 +86,10 @@ static char *hmodes_trans[] = {
     "31.5 - 64.3",
     "31.5 - 79.0",
     "31.5 - 82.0",
+    "31.5 - 92.0",
+    "31.5 - 108.0",
+    "31.5 - 128.5",
+    "31.5 - 137.0"
 };
 
 static char *vmodes [] = { "50 - 70", "50 - 90", "50 - 100", "40 - 150", };

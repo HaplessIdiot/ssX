@@ -1,4 +1,16 @@
 XFree86 4.3.99.13 (xx September 2003)
+ 442. VIA driver:
+      Fixed video memory detection. (Bugzilla #525, Alan Cox).
+      Fixed TV and FP initialization problems (Bugzilla #525, Frederic Crozat,
+       Alan Cox).
+      Removed remaining globals (Egbert Eich).
+ 441. Fixed memory leaks in the loader (Bugzilla #682 and #683, Juergen Keil).
+ 440. Fixed erronous freeing of DisplayModeRec in xf86DeleteMode() when
+      deleting the modePool in xf86PruneDriverModes() the 'prev' member has
+      a different meaning for modePool modes than for ScrnInfoPtr->modes modes
+      where it creates a doubly linked list (Bugzilla #678, Juergen Keil).
+ 439. Fixed SDK for VIA driver (Bugzilla #674, Bernhard Rosenkraenzer).
+ 438. Extended list of monitor ranges and modes in xf86cfg (Egbert Eich).
 
 XFree86 4.3.99.12 (10 September 2003)
  437. Move the X server log file handling from the XFree86 DDX to the DIX,
@@ -17710,7 +17722,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2851 2003/09/09 03:20:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2852 2003/09/10 11:07:03 dawes Exp $
 
 
 

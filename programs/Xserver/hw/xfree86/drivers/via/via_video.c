@@ -1114,7 +1114,6 @@ viaPutImageG(
                 int dstYSize, dstUVSize;
                 unsigned long dwUseExtendedFIFO=0;
                 unsigned long dwStartAddr = 0;   /* for startaddr select */
-                static unsigned long old_dwUseExtendedFIFO=0;
 
                 DBG_DD(ErrorF(" via_video.c :              : S/W Overlay! \n"));
 
@@ -1212,7 +1211,7 @@ viaPutImageG(
                 if ( (pPriv->old_drw_x == drw_x) && (pPriv->old_drw_y == drw_y)
                      && (pPriv->old_drw_w == drw_w) && (pPriv->old_drw_h == drw_h)
                      && (pPriv->old_src_w == src_w) && (pPriv->old_src_h == src_h)
-                     && (old_dwUseExtendedFIFO == dwUseExtendedFIFO)
+                     && (pVia->old_dwUseExtendedFIFO == dwUseExtendedFIFO)
                      && (pVia->Video.VideoStatus & SW_VIDEO_ON) &&
                      RegionsEqual(&pPriv->clip, clipBoxes))
                 {
@@ -1223,7 +1222,7 @@ viaPutImageG(
                 pPriv->old_drw_y = drw_y;
                 pPriv->old_drw_w = drw_w;
                 pPriv->old_drw_h = drw_h;
-                old_dwUseExtendedFIFO = dwUseExtendedFIFO;
+                pVia->old_dwUseExtendedFIFO = dwUseExtendedFIFO;
 
                 /* add to judge if need to re-create surface */
                 pPriv->old_src_w = src_w;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.68 2002/07/30 18:36:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.69 2003/08/24 17:37:01 dawes Exp $ */
 
 /*
  *
@@ -293,6 +293,7 @@ static const char **
 InitSubdirs(const char **subdirlist)
 {
 	int i;
+	char **tmp_subdirlist = NULL;
 	char **subdirs = NULL;
 	const char **s, **stmp = NULL;
     const char *osname;
@@ -301,7 +302,7 @@ InitSubdirs(const char **subdirlist)
     Bool indefault;
 
     if (subdirlist == NULL) {
-	    subdirlist = xalloc(2 * sizeof(char *));
+	    subdirlist = tmp_subdirlist = xalloc(2 * sizeof(char *));
 	    if (subdirlist == NULL)
 			return NULL;
 		subdirlist[0] = DEFAULT_LIST;
@@ -326,13 +327,16 @@ InitSubdirs(const char **subdirlist)
 				if (**s == '/' || **s == '\\' || strchr(*s, ':') ||
 					strstr(*s, "..")) {
 					xf86Msg(X_ERROR, "InitSubdirs: Bad subdir: \"%s\"\n", *s);
+					if (tmp_subdirlist) xfree(tmp_subdirlist);
 					return NULL;
 				}
 			}
 		}
 		subdirs = xalloc((i * 2 + 1) * sizeof(char *));
-		if (!subdirs)
+		if (!subdirs) {
+			if (tmp_subdirlist) xfree(tmp_subdirlist);
 			return NULL;
+		}
 		i = 0;
 		s = subdirlist;
 		indefault = FALSE;
@@ -350,8 +354,12 @@ InitSubdirs(const char **subdirlist)
 			} else
 				slash = "";
 			len += oslen + 2;
-			if (!(subdirs[i] = xalloc(len)))
+			if (!(subdirs[i] = xalloc(len))) {
+				while (--i >= 0) xfree(subdirs[i]);
+				xfree(subdirs);
+				if (tmp_subdirlist) xfree(tmp_subdirlist);
 				return NULL;
+			}
 			/* tack on the OS name */
 			sprintf(subdirs[i], "%s%s%s/", *s, slash, osname);
 			i++;
@@ -367,6 +375,7 @@ InitSubdirs(const char **subdirlist)
 		}
 		subdirs[i] = NULL;
 	}
+	if (tmp_subdirlist) xfree(tmp_subdirlist);
 	return (const char **)subdirs;
 }
 

@@ -349,6 +349,12 @@
     </model>
     <model>
       <configItem>
+        <name>hp5185</name>
+        <description>Hewlett-Packard 5185 Internet Keyboard</description>
+      </configItem>
+    </model>
+    <model>
+      <configItem>
         <name>honeywell_euroboard</name>
         <description>Honeywell Euroboard</description>
       </configItem>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.66 2003/04/26 19:10:22 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.67 2003/08/24 17:36:53 dawes Exp $ */
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
  *
@@ -1868,8 +1868,16 @@ xf86PruneDriverModes(ScrnInfoPtr scrp)
     } while (p != NULL && p != first);
 
     /* modePool is no longer needed, turf it */
-    while (scrp->modePool)
+    while (scrp->modePool) {
+	/*
+	 * A modePool mode's prev field is used to hold a pointer to the
+	 * member of the scrp->modes list for which a match was considered.
+	 * Clear that pointer first, otherwise xf86DeleteMode might get 
+	 * confused 
+	 */
+	scrp->modePool->prev = NULL;
 	xf86DeleteMode(&scrp->modePool, scrp->modePool);
+    }
 }
 
 

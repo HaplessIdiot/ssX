@@ -185,6 +185,13 @@ typedef struct _WaitHWINFO
     unsigned long dwVideoFlag;				/*Video Flag*/
 }WaitHWINFO, * LPWaitHWINFO;
 
+/*
+ * varables that need to be shared among different screens.
+ */
+typedef struct {
+    Bool b3DRegsInitialized;
+} ViaSharedRec, *ViaSharedPtr;
+
 
 typedef struct _VIA {
     VIARegRec           SavedReg;
@@ -316,8 +323,13 @@ typedef struct _VIA {
     unsigned long	OverlaySupported;
     unsigned long	dwFrameNum;
 
+    pointer		VidReg;
+    unsigned long	gdwVidRegCounter;
+    unsigned long old_dwUseExtendedFIFO;
+    
     /* Global 2D state block - needs to slowly die */
     ViaGraphicRec	graphicInfo;    
+    ViaSharedPtr	sharedData;
 } VIARec, *VIAPtr;
 
 
