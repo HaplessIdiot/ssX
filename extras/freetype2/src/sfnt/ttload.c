@@ -15,7 +15,7 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
-/* $XFree86: xc/extras/freetype2/src/sfnt/ttload.c,v 1.2 2003/10/22 17:26:30 tsi Exp $ */
+/* $XFree86: xc/extras/freetype2/src/sfnt/ttload.c,v 1.3 2004/04/26 16:15:55 dawes Exp $ */
 
 #include <ft2build.h>
 #include FT_INTERNAL_DEBUG_H
@@ -183,8 +183,6 @@
            FT_READ_USHORT( num_tables ) ||
            FT_STREAM_SKIP( 6 )          )
         goto Bad_Format;
-
-      (void) format_tag;
 
       if ( offset + 12 + num_tables*16 > stream->size )
         goto Bad_Format;

@@ -14,7 +14,7 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
-/* $XFree86: xc/extras/freetype2/include/freetype/internal/internal.h,v 1.10 2003/10/22 18:51:24 tsi Exp $ */
+/* $XFree86: xc/extras/freetype2/include/freetype/internal/internal.h,v 1.11 2004/04/26 16:15:53 dawes Exp $ */
 
   /*************************************************************************/
   /*                                                                       */
@@ -41,6 +41,7 @@
 
 #define FT_INTERNAL_POSTSCRIPT_AUX_H      <freetype/internal/psaux.h>
 #define FT_INTERNAL_POSTSCRIPT_HINTS_H    <freetype/internal/pshints.h>
+#define FT_INTERNAL_POSTSCRIPT_GLOBALS_H  <freetype/internal/psglobal.h>
 
 #define FT_INTERNAL_AUTOHINT_H            <freetype/internal/autohint.h>
 
