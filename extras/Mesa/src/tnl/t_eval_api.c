@@ -1,10 +1,9 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.3
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -100,16 +99,22 @@ _tnl_exec_EvalMesh1( GLenum mode, GLint i1, GLint i2 )
     */
    {
       GLboolean compiling = ctx->CompileFlag;
+      TNLcontext *tnl = TNL_CONTEXT(ctx);
       struct immediate *im = TNL_CURRENT_IM(ctx);
+      GLboolean (*NotifyBegin)(GLcontext *ctx, GLenum p);
+
+      NotifyBegin = tnl->Driver.NotifyBegin;
+      tnl->Driver.NotifyBegin = 0;
 
       if (compiling) {
+	 struct immediate *IM = _tnl_alloc_immediate( ctx );
 	 FLUSH_VERTICES( ctx, 0 );
-	 SET_IMMEDIATE( ctx, _tnl_alloc_immediate( ctx ) );
-	 TNL_CURRENT_IM(ctx)->ref_count++;	 
+	 SET_IMMEDIATE( ctx, IM );
+	 IM->ref_count++;	 
 	 ctx->CompileFlag = GL_FALSE;
       }
 
-      _tnl_hard_begin( ctx, prim );
+      _tnl_Begin( prim );
       for (i=i1;i<=i2;i++,u+=du) {
 	 _tnl_eval_coord1f( ctx, u );
       }
@@ -118,11 +123,12 @@ _tnl_exec_EvalMesh1( GLenum mode, GLint i1, GLint i2 )
       /* Need this for replay *and* compile:
        */
       FLUSH_VERTICES( ctx, 0 );
+      tnl->Driver.NotifyBegin = NotifyBegin;
 
       if (compiling) {
 	 TNL_CURRENT_IM(ctx)->ref_count--;
 	 ASSERT( TNL_CURRENT_IM(ctx)->ref_count == 0 );
-	 _tnl_free_immediate( TNL_CURRENT_IM(ctx) );
+	 _tnl_free_immediate( ctx, TNL_CURRENT_IM(ctx) );
 	 SET_IMMEDIATE( ctx, im );
 	 ctx->CompileFlag = GL_TRUE;
       }
@@ -159,17 +165,23 @@ _tnl_exec_EvalMesh2( GLenum mode, GLint i1, GLint i2, GLint j1, GLint j2 )
    {
       GLboolean compiling = ctx->CompileFlag;
       struct immediate *im = TNL_CURRENT_IM(ctx);
+      TNLcontext *tnl = TNL_CONTEXT(ctx);
+      GLboolean (*NotifyBegin)(GLcontext *ctx, GLenum p);
+
+      NotifyBegin = tnl->Driver.NotifyBegin;
+      tnl->Driver.NotifyBegin = 0;
 
       if (compiling) {
+	 struct immediate *IM =  _tnl_alloc_immediate( ctx );
 	 FLUSH_VERTICES( ctx, 0 );
-	 SET_IMMEDIATE( ctx, _tnl_alloc_immediate( ctx ) );
-	 TNL_CURRENT_IM(ctx)->ref_count++;	 
+	 SET_IMMEDIATE( ctx, IM );
+	 IM->ref_count++;	 
 	 ctx->CompileFlag = GL_FALSE;
       }
 
       switch (mode) {
       case GL_POINT:
-	 _tnl_hard_begin( ctx, GL_POINTS );
+	 _tnl_Begin( GL_POINTS );
 	 for (v=v1,j=j1;j<=j2;j++,v+=dv) {
 	    for (u=u1,i=i1;i<=i2;i++,u+=du) {
 	       _tnl_eval_coord2f( ctx, u, v );
@@ -179,14 +191,14 @@ _tnl_exec_EvalMesh2( GLenum mode, GLint i1, GLint i2, GLint j1, GLint j2 )
 	 break;
       case GL_LINE:
 	 for (v=v1,j=j1;j<=j2;j++,v+=dv) {
-	    _tnl_hard_begin( ctx, GL_LINE_STRIP );
+	    _tnl_Begin( GL_LINE_STRIP );
 	    for (u=u1,i=i1;i<=i2;i++,u+=du) {
 	       _tnl_eval_coord2f( ctx, u, v );
 	    }
 	    _tnl_end(ctx);
 	 }
 	 for (u=u1,i=i1;i<=i2;i++,u+=du) {
-	    _tnl_hard_begin( ctx, GL_LINE_STRIP );
+	    _tnl_Begin( GL_LINE_STRIP );
 	    for (v=v1,j=j1;j<=j2;j++,v+=dv) {
 	       _tnl_eval_coord2f( ctx, u, v );
 	    }
@@ -195,7 +207,7 @@ _tnl_exec_EvalMesh2( GLenum mode, GLint i1, GLint i2, GLint j1, GLint j2 )
 	 break;
       case GL_FILL:
 	 for (v=v1,j=j1;j<j2;j++,v+=dv) {
-	    _tnl_hard_begin( ctx, GL_TRIANGLE_STRIP );
+	    _tnl_Begin( GL_TRIANGLE_STRIP );
 	    for (u=u1,i=i1;i<=i2;i++,u+=du) {
 	       _tnl_eval_coord2f( ctx, u, v );
 	       _tnl_eval_coord2f( ctx, u, v+dv );
@@ -211,10 +223,11 @@ _tnl_exec_EvalMesh2( GLenum mode, GLint i1, GLint i2, GLint j1, GLint j2 )
       /* Need this for replay *and* compile:
        */
       FLUSH_VERTICES( ctx, 0 );
+      tnl->Driver.NotifyBegin = NotifyBegin;
 	 
       if (compiling) {
 	 TNL_CURRENT_IM(ctx)->ref_count--;
-	 _tnl_free_immediate( TNL_CURRENT_IM( ctx ) );
+	 _tnl_free_immediate( ctx, TNL_CURRENT_IM( ctx ) );
 	 SET_IMMEDIATE( ctx, im );
 	 ctx->CompileFlag = GL_TRUE;
       }

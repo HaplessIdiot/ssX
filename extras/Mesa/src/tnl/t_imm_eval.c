@@ -1,4 +1,3 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
@@ -242,7 +241,6 @@ static void eval2_4f( GLvector4f *dest,
       if (flags[i] & (VERT_EVAL_C2|VERT_EVAL_P2)) {
 	 GLfloat u = (coord[i][0] - u1) * du;
 	 GLfloat v = (coord[i][1] - v1) * dv;
-/*  	 fprintf(stderr, "coord %d: %f %f\n", i, coord[i][0], coord[i][1]); */
 
 	 _math_horner_bezier_surf(map->Points, to[i], u, v, dimension,
 				  map->Uorder, map->Vorder);
@@ -344,8 +342,6 @@ static void copy_4f_stride( GLfloat to[][4], GLfloat *from,
       MEMCPY( to, from, count * sizeof(to[0]));
    else {
       GLuint i;
-/*        fprintf(stderr, "%s stride %d count %d\n", __FUNCTION__, */
-/*  	      stride, count); */
       for (i = 0 ; i < count ; i++, STRIDE_F(from, stride))
 	 COPY_4FV( to[i], from );
    }
@@ -354,11 +350,7 @@ static void copy_4f_stride( GLfloat to[][4], GLfloat *from,
 static void copy_3f( GLfloat to[][3], GLfloat from[][3], GLuint count )
 {
    GLuint i;
-/*     MEMCPY( to, from, (count) * sizeof(to[0])); */
    for (i = 0 ; i < count ; i++) {
-/*        fprintf(stderr, "copy norm %d from %p: %f %f %f\n", i, */
-/*  	      from[i], */
-/*  	      from[i][0], from[i][1], from[i][2]); */
       COPY_3FV(to[i], from[i]);
    }
 }
@@ -458,9 +450,6 @@ void _tnl_eval_immediate( GLcontext *ctx, struct immediate *IM )
       copycount = IM->Start - IM->CopyStart; /* just copy copied vertices */
    else
       copycount = IM->Count - IM->CopyStart; /* copy all vertices */
-
-/*       fprintf(stderr, "%s copystart %d start %d count %d copycount %d\n", */
-/*    	   __FUNCTION__, IM->CopyStart, IM->Start, IM->Count, copycount);  */
 
    if (!store)
       store = tnl->eval.im = _tnl_alloc_immediate( ctx );
@@ -621,7 +610,6 @@ void _tnl_eval_immediate( GLcontext *ctx, struct immediate *IM )
       GLuint generated = 0;
 
       if (copycount) {
-/*    	 fprintf(stderr, "%s: Copy normals\n", __FUNCTION__);  */
 	 copy_3f( store->Normal + IM->CopyStart, tmp->Normal.data, 
 		  copycount );
       }
@@ -710,8 +698,6 @@ void _tnl_eval_immediate( GLcontext *ctx, struct immediate *IM )
       GLuint next_old_prim = 0;
       struct vertex_buffer *VB = &tnl->vb;
       GLuint i,j,count = VB->Count;
-
-/*        fprintf(stderr, "PURGING\n"); */
 
       for (i = 0, j = 0 ; i < count ; i++) {
 	 if (flags[i] & vertex) {

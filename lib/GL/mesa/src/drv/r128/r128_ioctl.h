@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_ioctl.h,v 1.4 2002/02/22 21:44:58 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_ioctl.h,v 1.5 2002/10/30 12:51:38 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -89,6 +89,7 @@ extern void r128ReadDepthPixelsLocked( r128ContextPtr rmesa, GLuint n,
 
 extern void r128CopyBuffer( const __DRIdrawablePrivate *dPriv );
 extern void r128PageFlip( const __DRIdrawablePrivate *dPriv );
+void r128WaitForVBlank( r128ContextPtr rmesa );
 
 extern void r128WaitForIdleLocked( r128ContextPtr rmesa );
 

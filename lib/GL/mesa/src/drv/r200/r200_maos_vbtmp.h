@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_maos_vbtmp.h,v 1.1 2002/10/30 12:51:52 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -226,7 +226,7 @@ static void TAG(emit)( GLcontext *ctx,
 	    norm =  (GLuint (*)[3])((GLubyte *)norm +  norm_stride);
 	 }
 	 if (DO_RGBA) {
-	    v[0].ui = *(GLuint *)&col[0];
+	    v[0].ui = LE32_TO_CPU(*(GLuint *)&col[0]);
 	    STRIDE_4UB(col, col_stride);
 	    if (TCL_DEBUG) fprintf(stderr, "%x ", v[0].ui);
 	    v++;
@@ -303,7 +303,7 @@ static void TAG(emit)( GLcontext *ctx,
 	    v += 3;
 	 }
 	 if (DO_RGBA) {
-	    v[0].ui = *(GLuint *)&col[i];
+	    v[0].ui = LE32_TO_CPU(*(GLuint *)&col[i]);
 	    v++;
 	 }
 	 if (DO_SPEC || DO_FOG) {

@@ -1,10 +1,9 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.4
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -149,7 +148,7 @@ _mesa_test_proxy_teximage(GLcontext *ctx, GLenum target, GLint level,
 
 
 extern void
-_mesa_generate_mipmap(GLcontext *ctx,
+_mesa_generate_mipmap(GLcontext *ctx, GLenum target,
                       const struct gl_texture_unit *texUnit,
                       struct gl_texture_object *texObj);
 

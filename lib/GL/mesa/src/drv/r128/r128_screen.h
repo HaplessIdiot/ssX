@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_screen.h,v 1.4 2001/01/08 01:07:21 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_screen.h,v 1.6 2002/02/22 21:44:58 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -52,6 +52,7 @@ typedef struct {
    GLint cpp;
    GLint IsPCI;				/* Current card is a PCI card */
    GLint AGPMode;
+   unsigned int irq;			/* IRQ number (0 means none) */
 
    GLuint frontOffset;
    GLuint frontPitch;

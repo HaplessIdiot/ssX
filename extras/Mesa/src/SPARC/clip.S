@@ -1,4 +1,3 @@
-/* $Id$ */
 
 #ifdef __sparc_v9__
 #define LDPTR		ldx

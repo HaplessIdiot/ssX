@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_reg.h,v 1.1 2002/10/30 12:51:52 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -445,6 +445,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define R200_SE_VF_MIN_VTX_INDX           0x2110
 /* gap */
 #define R200_SE_VAP_CNTL_STATUS           0x2140
+#define     R200_VC_NO_SWAP                  (0 << 0)
+#define     R200_VC_16BIT_SWAP               (1 << 0)
+#define     R200_VC_32BIT_SWAP               (2 << 0)
 /* gap */
 #define R200_SE_VTX_STATE_CNTL                     0x2180
 #define     R200_VSC_COLOR_0_ASSEMBLY_CNTL_SHIFT    0x00000000

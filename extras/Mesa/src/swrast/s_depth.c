@@ -1,10 +1,9 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.3
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -1338,8 +1337,8 @@ _mesa_read_depth_span( GLcontext *ctx,
 {
    SWcontext *swrast = SWRAST_CONTEXT(ctx);
 
-   if (y < 0 || y >= ctx->DrawBuffer->Height ||
-       x + (GLint) n <= 0 || x >= ctx->DrawBuffer->Width) {
+   if (y < 0 || y >= (GLint) ctx->DrawBuffer->Height ||
+       x + n <= 0 || x >= (GLint) ctx->DrawBuffer->Width) {
       /* span is completely outside framebuffer */
       GLint i;
       for (i = 0; i < n; i++)
@@ -1356,8 +1355,8 @@ _mesa_read_depth_span( GLcontext *ctx,
       n -= dx;
       depth += dx;
    }
-   if (x + n > ctx->DrawBuffer->Width) {
-      GLint dx = x + n - ctx->DrawBuffer->Width;
+   if (x + n > (GLint) ctx->DrawBuffer->Width) {
+      GLint dx = x + n - (GLint) ctx->DrawBuffer->Width;
       GLint i;
       for (i = 0; i < dx; i++)
          depth[n - i - 1] = 0;
@@ -1412,8 +1411,8 @@ _mesa_read_depth_span_float( GLcontext *ctx,
    SWcontext *swrast = SWRAST_CONTEXT(ctx);
    const GLfloat scale = 1.0F / ctx->DepthMaxF;
 
-   if (y < 0 || y >= ctx->DrawBuffer->Height ||
-       x + (GLint) n <= 0 || x >= ctx->DrawBuffer->Width) {
+   if (y < 0 || y >= (GLint) ctx->DrawBuffer->Height ||
+       x + n <= 0 || x >= (GLint) ctx->DrawBuffer->Width) {
       /* span is completely outside framebuffer */
       GLint i;
       for (i = 0; i < n; i++)
@@ -1429,8 +1428,8 @@ _mesa_read_depth_span_float( GLcontext *ctx,
       n -= dx;
       x = 0;
    }
-   if (x + n > ctx->DrawBuffer->Width) {
-      GLint dx = x + n - ctx->DrawBuffer->Width;
+   if (x + n > (GLint) ctx->DrawBuffer->Width) {
+      GLint dx = x + n - (GLint) ctx->DrawBuffer->Width;
       GLint i;
       for (i = 0; i < dx; i++)
          depth[n - i - 1] = 0.0F;
@@ -1484,35 +1483,35 @@ _mesa_read_depth_span_float( GLcontext *ctx,
 /*
  * Allocate a new depth buffer.  If there's already a depth buffer allocated
  * it will be free()'d.  The new depth buffer will be uniniitalized.
- * This function is only called through Driver.alloc_depth_buffer.
  */
 void
-_mesa_alloc_depth_buffer( GLcontext *ctx )
+_mesa_alloc_depth_buffer( GLframebuffer *buffer )
 {
+   GLint bytesPerValue;
+
+   ASSERT(buffer->UseSoftwareDepthBuffer);
+
    /* deallocate current depth buffer if present */
-   if (ctx->DrawBuffer->UseSoftwareDepthBuffer) {
-      GLint bytesPerValue;
+   if (buffer->DepthBuffer) {
+      MESA_PBUFFER_FREE(buffer->DepthBuffer);
+      buffer->DepthBuffer = NULL;
+   }
 
-      if (ctx->DrawBuffer->DepthBuffer) {
-         FREE(ctx->DrawBuffer->DepthBuffer);
-         ctx->DrawBuffer->DepthBuffer = NULL;
-      }
+   /* allocate new depth buffer, but don't initialize it */
+   if (buffer->Visual.depthBits <= 16)
+      bytesPerValue = sizeof(GLushort);
+   else
+      bytesPerValue = sizeof(GLuint);
 
-      /* allocate new depth buffer, but don't initialize it */
-      if (ctx->Visual.depthBits <= 16)
-         bytesPerValue = sizeof(GLushort);
-      else
-         bytesPerValue = sizeof(GLuint);
+   buffer->DepthBuffer = MESA_PBUFFER_ALLOC(buffer->Width * buffer->Height * bytesPerValue);
 
-      ctx->DrawBuffer->DepthBuffer = MALLOC( ctx->DrawBuffer->Width
-                                             * ctx->DrawBuffer->Height
-                                             * bytesPerValue );
-
-      if (!ctx->DrawBuffer->DepthBuffer) {
-         /* out of memory */
+   if (!buffer->DepthBuffer) {
+      /* out of memory */
+      GET_CURRENT_CONTEXT(ctx);
+      if (ctx) {
          ctx->Depth.Test = GL_FALSE;
          ctx->NewState |= _NEW_DEPTH;
-         _mesa_error( ctx, GL_OUT_OF_MEMORY, "Couldn't allocate depth buffer" );
+         _mesa_error(ctx, GL_OUT_OF_MEMORY, "Couldn't allocate depth buffer");
       }
    }
 }

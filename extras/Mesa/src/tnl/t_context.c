@@ -1,10 +1,9 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.3
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -33,6 +32,7 @@
 #include "mtypes.h"
 #include "mem.h"
 #include "dlist.h"
+#include "light.h"
 #include "vtxfmt.h"
 
 #include "t_context.h"
@@ -109,12 +109,15 @@ _tnl_CreateContext( GLcontext *ctx )
    /* Hook our functions into exec and compile dispatch tables.
     */
    _mesa_install_exec_vtxfmt( ctx, &tnl->vtxfmt );
-   _mesa_install_save_vtxfmt( ctx, &tnl->vtxfmt );
-   ctx->Save->CallList = _mesa_save_CallList;	
-   ctx->Save->CallLists = _mesa_save_CallLists;
-   ctx->Save->EvalMesh1 = _mesa_save_EvalMesh1;	
-   ctx->Save->EvalMesh2 = _mesa_save_EvalMesh2;
-   ctx->Save->Begin = _tnl_save_Begin;
+
+   tnl->save_vtxfmt = tnl->vtxfmt;
+   tnl->save_vtxfmt.CallList = _mesa_save_CallList;	
+   tnl->save_vtxfmt.EvalMesh1 = _mesa_save_EvalMesh1;	
+   tnl->save_vtxfmt.EvalMesh2 = _mesa_save_EvalMesh2;
+   tnl->save_vtxfmt.Begin = _tnl_save_Begin;
+
+   _mesa_install_save_vtxfmt( ctx, &tnl->save_vtxfmt );
+
 
    /* Set a few default values in the driver struct.
     */
@@ -125,6 +128,8 @@ _tnl_CreateContext( GLcontext *ctx )
 
    tnl->Driver.Render.PrimTabElts = _tnl_render_tab_elts;
    tnl->Driver.Render.PrimTabVerts = _tnl_render_tab_verts;
+   tnl->Driver.NotifyMaterialChange = _mesa_validate_all_lighting_tables;
+
 
    
    return GL_TRUE;
@@ -139,7 +144,7 @@ _tnl_DestroyContext( GLcontext *ctx )
    _tnl_array_destroy( ctx );
    _tnl_imm_destroy( ctx );
    _tnl_destroy_pipeline( ctx );
-   _tnl_free_immediate( tnl->freed_immediate );
+   _tnl_free_immediate( ctx, tnl->freed_immediate );
 
    FREE(tnl);
    ctx->swtnl_context = 0;
@@ -188,6 +193,11 @@ _tnl_wakeup_exec( GLcontext *ctx )
     */
    _tnl_InvalidateState( ctx, ~0 );
    tnl->pipeline.run_input_changes = ~0;
+
+   if (ctx->Light.ColorMaterialEnabled) {
+      _mesa_update_color_material( ctx, ctx->Current.Color );
+   }
+
 }
 
 
@@ -197,12 +207,7 @@ _tnl_wakeup_save_exec( GLcontext *ctx )
    TNLcontext *tnl = TNL_CONTEXT(ctx);
 
    _tnl_wakeup_exec( ctx );
-   _mesa_install_save_vtxfmt( ctx, &tnl->vtxfmt );
-   ctx->Save->CallList = _mesa_save_CallList;	/* fixme */
-   ctx->Save->CallLists = _mesa_save_CallLists;
-   ctx->Save->EvalMesh1 = _mesa_save_EvalMesh1;	/* fixme */
-   ctx->Save->EvalMesh2 = _mesa_save_EvalMesh2;
-   ctx->Save->Begin = _tnl_save_Begin;
+   _mesa_install_save_vtxfmt( ctx, &tnl->save_vtxfmt );
 }
 
 
@@ -220,16 +225,19 @@ void
 _tnl_need_dlist_loopback( GLcontext *ctx, GLboolean mode )
 {
    TNLcontext *tnl = TNL_CONTEXT(ctx);
-   if (tnl->LoopbackDListCassettes != mode) {
-      tnl->LoopbackDListCassettes = mode;
-   }
+   tnl->LoopbackDListCassettes = mode;
 }
 
 void
 _tnl_need_dlist_norm_lengths( GLcontext *ctx, GLboolean mode )
 {
    TNLcontext *tnl = TNL_CONTEXT(ctx);
-   if (tnl->CalcDListNormalLengths != mode) {
-      tnl->CalcDListNormalLengths = mode;
-   }
+   tnl->CalcDListNormalLengths = mode;
+}
+
+void
+_tnl_isolate_materials( GLcontext *ctx, GLboolean mode )
+{
+   TNLcontext *tnl = TNL_CONTEXT(ctx);
+   tnl->IsolateMaterials = mode;
 }

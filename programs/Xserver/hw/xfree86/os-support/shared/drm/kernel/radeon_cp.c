@@ -904,9 +904,9 @@ static void radeon_cp_init_ring_buffer( drm_device_t *dev,
 
 		RADEON_WRITE( RADEON_CP_RB_RPTR_ADDR,
 			     entry->busaddr[page_ofs]);
-		DRM_DEBUG( "ring rptr: offset=0x%08lx handle=0x%08lx\n",
-			   (long)entry->busaddr[page_ofs],
-			   (unsigned long)entry->handle + tmp_ofs );
+		DRM_DEBUG( "ring rptr: offset=0x%08x handle=0x%08lx\n",
+			   entry->busaddr[page_ofs],
+			   entry->handle + tmp_ofs );
 	}
 
 	/* Initialize the scratch register pointer.  This will cause
@@ -1497,7 +1497,7 @@ drm_buf_t *radeon_freelist_get( drm_device_t *dev )
 		}
 	}
 
-	DRM_ERROR( "returning NULL!\n" );
+	DRM_DEBUG( "returning NULL!\n" );
 	return NULL;
 }
 #if 0

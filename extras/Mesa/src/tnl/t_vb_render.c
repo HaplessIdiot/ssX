@@ -1,8 +1,7 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.1
  *
  * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
  *
@@ -42,6 +41,7 @@
 
 #include "glheader.h"
 #include "context.h"
+#include "enums.h"
 #include "macros.h"
 #include "mem.h"
 #include "mtypes.h"
@@ -225,10 +225,11 @@ static void clip_elt_triangles( GLcontext *ctx,
    const line_func LineFunc = tnl->Driver.Render.Line;		\
    const triangle_func TriangleFunc = tnl->Driver.Render.Triangle;	\
    const quad_func QuadFunc = tnl->Driver.Render.Quad;		\
+   const GLboolean stipple = ctx->Line.StippleFlag;		\
    (void) (LineFunc && TriangleFunc && QuadFunc);		\
-   (void) elt;
+   (void) elt; (void) stipple;
 
-#define RESET_STIPPLE tnl->Driver.Render.ResetLineStipple( ctx )
+#define RESET_STIPPLE if (stipple) tnl->Driver.Render.ResetLineStipple( ctx )
 #define RESET_OCCLUSION ctx->OcclusionResult = GL_TRUE
 #define INIT(x) tnl->Driver.Render.PrimitiveNotify( ctx, x )
 #define RENDER_TAB_QUALIFIER
@@ -318,12 +319,18 @@ static GLboolean run_render( GLcontext *ctx,
    do
    {
       GLuint i, length, flags = 0;
-      for (i = 0 ; !(flags & PRIM_LAST) ; i += length)
+      for (i = VB->FirstPrimitive ; !(flags & PRIM_LAST) ; i += length)
       {
 	 flags = VB->Primitive[i];
 	 length= VB->PrimitiveLength[i];
 	 ASSERT(length || (flags & PRIM_LAST));
 	 ASSERT((flags & PRIM_MODE_MASK) <= GL_POLYGON+1);
+
+	 if (MESA_VERBOSE & VERBOSE_PRIMS)
+	    fprintf(stderr, "MESA prim %s %d..%d\n", 
+		    _mesa_lookup_enum_by_nr(flags & PRIM_MODE_MASK), 
+		    i, i+length);
+
 	 if (length)
 	    tab[flags & PRIM_MODE_MASK]( ctx, i, i + length, flags );
       }

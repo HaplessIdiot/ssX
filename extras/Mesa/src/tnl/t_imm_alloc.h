@@ -1,10 +1,9 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.3
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -34,7 +33,7 @@
 
 extern struct immediate *_tnl_alloc_immediate( GLcontext *ctx );
 
-extern void _tnl_free_immediate( struct immediate *im );
+extern void _tnl_free_immediate( GLcontext *ctx, struct immediate *im );
 
 
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_tcl.c,v 1.1 2002/10/30 12:51:53 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -212,10 +212,16 @@ static void EMIT_PRIM( GLcontext *ctx,
 			        R200_VF_PRIM_WALK_IND)))
 #endif
 
+#ifdef MESA_BIG_ENDIAN
+/* We could do without (most of) this ugliness if dest was always 32 bit word aligned... */
+#define EMIT_ELT(offset, x) do {                                \
+        int off = offset + ( ( (GLuint)dest & 0x2 ) >> 1 );     \
+        GLushort *des = (GLushort *)( (GLuint)dest & ~0x2 );    \
+        (des)[ off + 1 - 2 * ( off & 1 ) ] = (GLushort)(x); } while (0)
+#else
 #define EMIT_ELT(offset, x) (dest)[offset] = (GLushort) (x)
-#if defined(__i386__)
-#define EMIT_TWO_ELTS(offset, x, y)  *(GLuint *)(dest+offset) = ((y)<<16)|(x);
 #endif
+#define EMIT_TWO_ELTS(offset, x, y)  *(GLuint *)(dest+offset) = ((y)<<16)|(x);
 #define INCR_ELTS( nr ) dest += nr
 #define RELEASE_ELT_VERTS() \
    r200ReleaseArrays( ctx, ~0 )

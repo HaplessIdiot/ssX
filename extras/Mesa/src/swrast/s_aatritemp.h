@@ -1,4 +1,3 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
@@ -149,7 +148,7 @@
       const GLfloat area = majDx * botDy - botDx * majDy;
       ltor = (GLboolean) (area < 0.0F);
       /* Do backface culling */
-      if (area * bf < 0 || area * area < .0025)
+      if (area * bf < 0 || area == 0 || IS_INF_OR_NAN(area))
 	 return;
    }
 

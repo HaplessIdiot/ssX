@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_ioctl.c,v 1.8 2002/02/22 21:44:58 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_ioctl.c,v 1.9 2002/10/30 12:51:38 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -276,6 +276,8 @@ void r128CopyBuffer( const __DRIdrawablePrivate *dPriv )
       rmesa->hardwareWentIdle = 0;
    }
 
+   r128WaitForVBlank( rmesa );
+
    nbox = dPriv->numClipRects;
 
    for ( i = 0 ; i < nbox ; ) {
@@ -347,6 +349,8 @@ void r128PageFlip( const __DRIdrawablePrivate *dPriv )
    } else {
       rmesa->hardwareWentIdle = 0;
    }
+
+   r128WaitForVBlank( rmesa );
 
    /* The kernel will have been initialized to perform page flipping
     * on a swapbuffers ioctl.
@@ -796,6 +800,39 @@ void r128WaitForIdleLocked( r128ContextPtr rmesa )
     }
 }
 
+void r128WaitForVBlank( r128ContextPtr rmesa )
+{
+    drmVBlank vbl;
+    int ret;
+
+    if ( !rmesa->r128Screen->irq )
+	return;
+
+    if ( getenv("LIBGL_SYNC_REFRESH") ) {
+	/* Wait for until the next vertical blank */
+	vbl.request.type = DRM_VBLANK_RELATIVE;
+	vbl.request.sequence = 1;
+    } else if ( getenv("LIBGL_THROTTLE_REFRESH") ) {
+	/* Wait for at least one vertical blank since the last call */
+	vbl.request.type = DRM_VBLANK_ABSOLUTE;
+	vbl.request.sequence = rmesa->vbl_seq + 1;
+    } else {
+	return;
+    }
+
+    UNLOCK_HARDWARE( rmesa );
+
+    if ((ret = drmWaitVBlank( rmesa->driFd, &vbl ))) {
+	fprintf(stderr, "%s: drmWaitVBlank returned %d, IRQs don't seem to be"
+		" working correctly.\nTry running with LIBGL_THROTTLE_REFRESH"
+		" and LIBL_SYNC_REFRESH unset.\n", __FUNCTION__, ret);
+	exit(1);
+    }
+
+    rmesa->vbl_seq = vbl.reply.sequence;
+
+    LOCK_HARDWARE( rmesa );
+}
 
 void r128DDInitIoctlFuncs( GLcontext *ctx )
 {

@@ -1,10 +1,9 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.3
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -25,7 +24,6 @@
  */
 
 
-
 #include "glheader.h"
 #include "context.h"
 #include "macros.h"
@@ -44,6 +42,48 @@
 #else
 #define _BLENDAPI
 #endif
+
+
+/*
+ * Special case for glBlendFunc(GL_ZERO, GL_ONE)
+ */
+static void _BLENDAPI
+blend_noop( GLcontext *ctx, GLuint n, const GLubyte mask[],
+            GLchan rgba[][4], CONST GLchan dest[][4] )
+{
+   GLuint i;
+   ASSERT(ctx->Color.BlendEquation==GL_FUNC_ADD_EXT);
+   ASSERT(ctx->Color.BlendSrcRGB==GL_ZERO);
+   ASSERT(ctx->Color.BlendDstRGB==GL_ONE);
+   (void) ctx;
+
+   for (i = 0; i < n; i++) {
+      if (mask[i]) {
+         rgba[i][RCOMP] = dest[i][RCOMP];
+         rgba[i][GCOMP] = dest[i][GCOMP];
+         rgba[i][BCOMP] = dest[i][BCOMP];
+         rgba[i][ACOMP] = dest[i][ACOMP];
+      }
+   }
+}
+
+
+/*
+ * Special case for glBlendFunc(GL_ONE, GL_ZERO)
+ */
+static void _BLENDAPI
+blend_replace( GLcontext *ctx, GLuint n, const GLubyte mask[],
+               GLchan rgba[][4], CONST GLchan dest[][4] )
+{
+   ASSERT(ctx->Color.BlendEquation==GL_FUNC_ADD_EXT);
+   ASSERT(ctx->Color.BlendSrcRGB==GL_ONE);
+   ASSERT(ctx->Color.BlendDstRGB==GL_ZERO);
+   (void) ctx;
+   (void) n;
+   (void) mask;
+   (void) rgba;
+   (void) dest;
+}
 
 
 /*
@@ -144,10 +184,17 @@ blend_add( GLcontext *ctx, GLuint n, const GLubyte mask[],
 
    for (i=0;i<n;i++) {
       if (mask[i]) {
+#if CHAN_TYPE == GL_FLOAT
+         GLfloat r = rgba[i][RCOMP] + dest[i][RCOMP];
+         GLfloat g = rgba[i][GCOMP] + dest[i][GCOMP];
+         GLfloat b = rgba[i][BCOMP] + dest[i][BCOMP];
+         GLfloat a = rgba[i][ACOMP] + dest[i][ACOMP];
+#else
          GLint r = rgba[i][RCOMP] + dest[i][RCOMP];
          GLint g = rgba[i][GCOMP] + dest[i][GCOMP];
          GLint b = rgba[i][BCOMP] + dest[i][BCOMP];
          GLint a = rgba[i][ACOMP] + dest[i][ACOMP];
+#endif
          rgba[i][RCOMP] = (GLchan) MIN2( r, CHAN_MAX );
          rgba[i][GCOMP] = (GLchan) MIN2( g, CHAN_MAX );
          rgba[i][BCOMP] = (GLchan) MIN2( b, CHAN_MAX );
@@ -256,8 +303,13 @@ blend_general( GLcontext *ctx, GLuint n, const GLubyte mask[],
 
    for (i=0;i<n;i++) {
       if (mask[i]) {
+#if CHAN_TYPE == GL_FLOAT
+         GLfloat Rs, Gs, Bs, As;  /* Source colors */
+         GLfloat Rd, Gd, Bd, Ad;  /* Dest colors */
+#else
          GLint Rs, Gs, Bs, As;  /* Source colors */
          GLint Rd, Gd, Bd, Ad;  /* Dest colors */
+#endif
          GLfloat sR, sG, sB, sA;  /* Source scaling */
          GLfloat dR, dG, dB, dA;  /* Dest scaling */
          GLfloat r, g, b, a;
@@ -341,7 +393,7 @@ blend_general( GLcontext *ctx, GLuint n, const GLubyte mask[],
             default:
                /* this should never happen */
                _mesa_problem(ctx, "Bad blend source RGB factor in do_blend");
-	       return;
+               return;
          }
 
          /* Source Alpha factor */
@@ -531,6 +583,37 @@ blend_general( GLcontext *ctx, GLuint n, const GLubyte mask[],
          ASSERT( dA <= 1.0 );
 
          /* compute blended color */
+#if CHAN_TYPE == GL_FLOAT
+         if (ctx->Color.BlendEquation==GL_FUNC_ADD_EXT) {
+            r = Rs * sR + Rd * dR;
+            g = Gs * sG + Gd * dG;
+            b = Bs * sB + Bd * dB;
+            a = As * sA + Ad * dA;
+         }
+         else if (ctx->Color.BlendEquation==GL_FUNC_SUBTRACT_EXT) {
+            r = Rs * sR - Rd * dR;
+            g = Gs * sG - Gd * dG;
+            b = Bs * sB - Bd * dB;
+            a = As * sA - Ad * dA;
+         }
+         else if (ctx->Color.BlendEquation==GL_FUNC_REVERSE_SUBTRACT_EXT) {
+            r = Rd * dR - Rs * sR;
+            g = Gd * dG - Gs * sG;
+            b = Bd * dB - Bs * sB;
+            a = Ad * dA - As * sA;
+         }
+         else {
+            /* should never get here */
+            r = g = b = a = 0.0F;  /* silence uninitialized var warning */
+            _mesa_problem(ctx, "unexpected BlendEquation in blend_general()");
+         }
+
+         /* final clamping */
+         rgba[i][RCOMP] = CLAMP( r, 0.0F, CHAN_MAXF );
+         rgba[i][GCOMP] = CLAMP( g, 0.0F, CHAN_MAXF );
+         rgba[i][BCOMP] = CLAMP( b, 0.0F, CHAN_MAXF );
+         rgba[i][ACOMP] = CLAMP( a, 0.0F, CHAN_MAXF );
+#else
          if (ctx->Color.BlendEquation==GL_FUNC_ADD_EXT) {
             r = Rs * sR + Rd * dR + 0.5F;
             g = Gs * sG + Gd * dG + 0.5F;
@@ -560,6 +643,7 @@ blend_general( GLcontext *ctx, GLuint n, const GLubyte mask[],
          rgba[i][GCOMP] = (GLchan) (GLint) CLAMP( g, 0.0F, CHAN_MAXF );
          rgba[i][BCOMP] = (GLchan) (GLint) CLAMP( b, 0.0F, CHAN_MAXF );
          rgba[i][ACOMP] = (GLchan) (GLint) CLAMP( a, 0.0F, CHAN_MAXF );
+#endif
       }
    }
 }
@@ -584,10 +668,8 @@ void _swrast_choose_blend_func( GLcontext *ctx )
       SWRAST_CONTEXT(ctx)->BlendFunc = blend_general;
    }
    else if (eq==GL_FUNC_ADD_EXT && srcRGB==GL_SRC_ALPHA
-	    && dstRGB==GL_ONE_MINUS_SRC_ALPHA)
-   {
-      /* XXX It looks like the MMX blend code is broken.  Disable for now. */
-#if 0 && defined(USE_MMX_ASM)
+	    && dstRGB==GL_ONE_MINUS_SRC_ALPHA) {
+#if defined(USE_MMX_ASM)
       if ( cpu_has_mmx ) {
 	 SWRAST_CONTEXT(ctx)->BlendFunc = _mesa_mmx_blend_transparency;
       }
@@ -610,6 +692,12 @@ void _swrast_choose_blend_func( GLcontext *ctx )
    }
    else if (eq==GL_MAX_EXT) {
       SWRAST_CONTEXT(ctx)->BlendFunc = blend_max;
+   }
+   else if (eq==GL_FUNC_ADD_EXT && srcRGB == GL_ZERO && dstRGB == GL_ONE) {
+      SWRAST_CONTEXT(ctx)->BlendFunc = blend_noop;
+   }
+   else if (eq==GL_FUNC_ADD_EXT && srcRGB == GL_ONE && dstRGB == GL_ZERO) {
+      SWRAST_CONTEXT(ctx)->BlendFunc = blend_replace;
    }
    else {
       SWRAST_CONTEXT(ctx)->BlendFunc = blend_general;

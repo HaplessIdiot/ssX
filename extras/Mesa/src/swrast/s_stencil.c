@@ -1,10 +1,9 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.3
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -1014,8 +1013,8 @@ _mesa_read_stencil_span( GLcontext *ctx,
                          GLint n, GLint x, GLint y, GLstencil stencil[] )
 {
    SWcontext *swrast = SWRAST_CONTEXT(ctx);
-   if (y < 0 || y >= ctx->DrawBuffer->Height ||
-       x + n <= 0 || x >= ctx->DrawBuffer->Width) {
+   if (y < 0 || y >= (GLint) ctx->DrawBuffer->Height ||
+       x + n <= 0 || x >= (GLint) ctx->DrawBuffer->Width) {
       /* span is completely outside framebuffer */
       return; /* undefined values OK */
    }
@@ -1026,8 +1025,8 @@ _mesa_read_stencil_span( GLcontext *ctx,
       n -= dx;
       stencil += dx;
    }
-   if (x + n > ctx->DrawBuffer->Width) {
-      GLint dx = x + n - ctx->DrawBuffer->Width;
+   if (x + n > (GLint) ctx->DrawBuffer->Width) {
+      GLint dx = x + n - (GLint) ctx->DrawBuffer->Width;
       n -= dx;
    }
    if (n <= 0) {
@@ -1065,8 +1064,10 @@ _mesa_write_stencil_span( GLcontext *ctx, GLint n, GLint x, GLint y,
                           const GLstencil stencil[] )
 {
    SWcontext *swrast = SWRAST_CONTEXT(ctx);
-   if (y < 0 || y >= ctx->DrawBuffer->Height ||
-       x + n <= 0 || x >= ctx->DrawBuffer->Width) {
+   const GLstencil *ssrc = stencil;
+
+   if (y < 0 || y >= (GLint) ctx->DrawBuffer->Height ||
+       x + n <= 0 || x >= (GLint) ctx->DrawBuffer->Width) {
       /* span is completely outside framebuffer */
       return; /* undefined values OK */
    }
@@ -1075,10 +1076,10 @@ _mesa_write_stencil_span( GLcontext *ctx, GLint n, GLint x, GLint y,
       GLint dx = -x;
       x = 0;
       n -= dx;
-      stencil += dx;
+      ssrc += dx;
    }
-   if (x + n > ctx->DrawBuffer->Width) {
-      GLint dx = x + n - ctx->DrawBuffer->Width;
+   if (x + n > (GLint) ctx->DrawBuffer->Width) {
+      GLint dx = x + n - (GLint) ctx->DrawBuffer->Width;
       n -= dx;
    }
    if (n <= 0) {
@@ -1086,16 +1087,16 @@ _mesa_write_stencil_span( GLcontext *ctx, GLint n, GLint x, GLint y,
    }
 
    if (swrast->Driver.WriteStencilSpan) {
-      (*swrast->Driver.WriteStencilSpan)( ctx, n, x, y, stencil, NULL );
+      (*swrast->Driver.WriteStencilSpan)( ctx, n, x, y, ssrc, NULL );
    }
    else if (ctx->DrawBuffer->Stencil) {
       GLstencil *s = STENCIL_ADDRESS( x, y );
 #if STENCIL_BITS == 8
-      MEMCPY( s, stencil, n * sizeof(GLstencil) );
+      MEMCPY( s, ssrc, n * sizeof(GLstencil) );
 #else
       GLuint i;
       for (i=0;i<n;i++)
-         s[i] = stencil[i];
+         s[i] = ssrc[i];
 #endif
    }
 }
@@ -1107,22 +1108,20 @@ _mesa_write_stencil_span( GLcontext *ctx, GLint n, GLint x, GLint y,
  * deallocated first.  The new stencil buffer will be uninitialized.
  */
 void
-_mesa_alloc_stencil_buffer( GLcontext *ctx )
+_mesa_alloc_stencil_buffer( GLframebuffer *buffer )
 {
-   GLuint buffersize = ctx->DrawBuffer->Width * ctx->DrawBuffer->Height;
-
    /* deallocate current stencil buffer if present */
-   if (ctx->DrawBuffer->Stencil) {
-      FREE(ctx->DrawBuffer->Stencil);
-      ctx->DrawBuffer->Stencil = NULL;
+   if (buffer->Stencil) {
+      MESA_PBUFFER_FREE(buffer->Stencil);
+      buffer->Stencil = NULL;
    }
 
    /* allocate new stencil buffer */
-   ctx->DrawBuffer->Stencil = (GLstencil *) MALLOC(buffersize * sizeof(GLstencil));
-   if (!ctx->DrawBuffer->Stencil) {
+   buffer->Stencil = (GLstencil *) MESA_PBUFFER_ALLOC(buffer->Width * buffer->Height
+                                          * sizeof(GLstencil));
+   if (!buffer->Stencil) {
       /* out of memory */
-/*        _mesa_set_enable( ctx, GL_STENCIL_TEST, GL_FALSE ); */
-      _mesa_error( ctx, GL_OUT_OF_MEMORY, "_mesa_alloc_stencil_buffer" );
+      _mesa_error( NULL, GL_OUT_OF_MEMORY, "_mesa_alloc_stencil_buffer" );
    }
 }
 

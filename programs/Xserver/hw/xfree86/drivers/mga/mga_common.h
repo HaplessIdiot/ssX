@@ -25,7 +25,7 @@
  * Converted to common header format:
  *   Jens Owen <jens@tungstengraphics.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmMga.h,v 3.6 2001/04/16 15:02:13 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_common.h,v 1.1 2002/10/30 12:52:19 alanh Exp $
  *
  */
 
@@ -58,6 +58,7 @@ typedef struct {
 #define DRM_MGA_INDICES           0x06
 #define DRM_MGA_ILOAD             0x07
 #define DRM_MGA_BLIT              0x08
+#define DRM_MGA_GETPARAM          0x09
 
 typedef struct {
    enum {
@@ -137,5 +138,15 @@ typedef struct {
         int height, ydir;               /* flip image vertically */
         int source_pitch, dest_pitch;
 } drmMGABlit;
+
+/* 3.1: An ioctl to get parameters that aren't available to the 3d
+ * client any other way.  
+ */
+#define MGA_PARAM_IRQ_NR            1
+
+typedef struct {
+	int param;
+	int *value;
+} drmMGAGetParam;
 
 #endif

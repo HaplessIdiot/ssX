@@ -31,7 +31,7 @@
  * Converted to common header format:
  *   Jens Owen <jens@tungstengraphics.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmR128.h,v 3.11 2001/04/16 15:02:13 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_common.h,v 1.1 2002/10/30 12:52:11 alanh Exp $
  *
  */
 
@@ -66,6 +66,7 @@
 #define DRM_R128_INDIRECT       0x0f
 #define DRM_R128_FULLSCREEN     0x10
 #define DRM_R128_CLEAR2         0x11
+#define DRM_R128_GETPARAM       0x12
 
 #define DRM_R128_FRONT_BUFFER	0x1
 #define DRM_R128_BACK_BUFFER	0x2
@@ -158,5 +159,12 @@ typedef struct {
       DRM_R128_CLEANUP_FULLSCREEN = 0x02
    } func;
 } drmR128Fullscreen;
+
+typedef struct drm_r128_getparam {
+	int param;
+	int *value;
+} drmR128GetParam;
+
+#define R128_PARAM_IRQ_NR            1
 
 #endif

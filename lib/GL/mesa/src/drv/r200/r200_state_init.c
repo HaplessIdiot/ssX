@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_state_init.c,v 1.1 2002/10/30 12:51:52 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -390,6 +390,7 @@ void r200InitState( r200ContextPtr rmesa )
  				     | R200_TEX_BLEND_0_ENABLE);
 
    rmesa->hw.ctx.cmd[CTX_RB3D_CNTL] = color_fmt;
+   rmesa->hw.ctx.cmd[CTX_RB3D_CNTL] |=  R200_DITHER_ENABLE;
 
    rmesa->hw.ctx.cmd[CTX_RB3D_COLOROFFSET] = (rmesa->state.color.drawOffset &
 					      R200_COLOROFFSET_MASK);
@@ -446,7 +447,12 @@ void r200InitState( r200ContextPtr rmesa )
    rmesa->hw.cst.cmd[CST_RE_AUX_SCISSOR_CNTL] = 0x0;
    rmesa->hw.cst.cmd[CST_RE_SCISSOR_TL_0] = 0;
    rmesa->hw.cst.cmd[CST_RE_SCISSOR_BR_0] = 0;
-   rmesa->hw.cst.cmd[CST_SE_VAP_CNTL_STATUS] = 0;
+   rmesa->hw.cst.cmd[CST_SE_VAP_CNTL_STATUS] =
+#ifdef MESA_BIG_ENDIAN
+						R200_VC_32BIT_SWAP;
+#else
+						R200_VC_NO_SWAP;
+#endif
    rmesa->hw.cst.cmd[CST_RE_POINTSIZE] = 0x100010;
    rmesa->hw.cst.cmd[CST_SE_TCL_INPUT_VTX_0] =
       (0x0 << R200_VERTEX_POSITION_ADDR__SHIFT);

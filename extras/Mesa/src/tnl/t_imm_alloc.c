@@ -1,10 +1,9 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.3
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -34,7 +33,7 @@
 #include "t_imm_alloc.h"
 
 
-   static int id = 0;
+static int id = 0;  /* give each struct immediate a unique ID number */
 
 static struct immediate *real_alloc_immediate( GLcontext *ctx )
 {
@@ -124,11 +123,16 @@ struct immediate *_tnl_alloc_immediate( GLcontext *ctx )
 
 /* May be called after tnl is destroyed.
  */
-void _tnl_free_immediate( struct immediate *IM )
+void _tnl_free_immediate( GLcontext *ctx, struct immediate *IM )
 {
-   TNLcontext *tnl = TNL_CONTEXT(IM->backref);
+   TNLcontext *tnl = TNL_CONTEXT(ctx);
 
    ASSERT(IM->ref_count == 0);
+
+   if (IM->NormalLengthPtr) {
+      ALIGN_FREE(IM->NormalLengthPtr);
+      IM->NormalLengthPtr = NULL;
+   }
 
    if (!tnl) {
       real_free_immediate( IM );

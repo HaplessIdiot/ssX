@@ -1,10 +1,9 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.3
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -61,7 +60,10 @@
  *    unsigned char ub4[4][16];
  * }
  *
-
+ 
+ * VERTEX:   hw vertex type as above
+ * VERTEX_COLOR: hw color struct type in VERTEX
+ *
  * DO_XYZW:  Emit xyz and maybe w coordinates.
  * DO_RGBA:  Emit color.
  * DO_SPEC:  Emit specular color.
@@ -136,6 +138,9 @@ static void TAG(emit)( GLcontext *ctx,
    const GLubyte *mask = VB->ClipMask;
    int i;
 
+/*     fprintf(stderr, "%s(big) importable %d %d..%d\n",  */
+/*  	   __FUNCTION__, VB->importable_data, start, end); */
+
    if (HAVE_HW_VIEWPORT && HAVE_HW_DIVIDE && CHECK_HW_DIVIDE) {
       (void) s;
       coord = VB->ClipPtr->data;
@@ -186,15 +191,28 @@ static void TAG(emit)( GLcontext *ctx,
    }
 
    if (DO_SPEC) {
-      if (VB->SecondaryColorPtr[0]->Type != GL_UNSIGNED_BYTE)
-	 IMPORT_FLOAT_SPEC_COLORS( ctx );
-      spec = (GLubyte (*)[4])VB->SecondaryColorPtr[0]->Ptr;
-      spec_stride = VB->SecondaryColorPtr[0]->StrideB;
+      if (VB->SecondaryColorPtr[0]) {
+	 if (VB->SecondaryColorPtr[0]->Type != GL_UNSIGNED_BYTE)
+	    IMPORT_FLOAT_SPEC_COLORS( ctx );
+	 spec = (GLubyte (*)[4])VB->SecondaryColorPtr[0]->Ptr;
+	 spec_stride = VB->SecondaryColorPtr[0]->StrideB;
+      } else {
+	 GLubyte tmp[4];
+	 spec = &tmp;
+	 spec_stride = 0;
+      }
    }
 
    if (DO_FOG) {
-      fog = VB->FogCoordPtr->data;
-      fog_stride = VB->FogCoordPtr->stride;
+      if (VB->FogCoordPtr) {
+	 fog = VB->FogCoordPtr->data;
+	 fog_stride = VB->FogCoordPtr->stride;
+      }
+      else {
+	 GLfloat tmp = 0;
+	 fog = &tmp;
+	 fog_stride = 0;
+      }
    }
 
    if (VB->importable_data) {
@@ -226,11 +244,13 @@ static void TAG(emit)( GLcontext *ctx,
 	       VIEWPORT_Z(v->v.z, coord[0][2]);
 	       v->v.w = coord[0][3];
 	    }
+/*  	    fprintf(stderr, "vert %d: %.2f %.2f %.2f %.2f\n",  */
+/*  		    i, v->v.x, v->v.y, v->v.z, v->v.w); */
 	    coord =  (GLfloat (*)[4])((GLubyte *)coord +  coord_stride);
 	 }
 	 if (DO_RGBA) {
 	    if (HAVE_RGBA_COLOR) {
-	       *(GLuint *)&v->v.color = *(GLuint *)&col[0];
+	       *(GLuint *)&v->v.color = LE32_TO_CPU(*(GLuint *)&col[0]);
 	       STRIDE_4UB(col, col_stride);
 	    } else {
 	       v->v.color.blue  = col[0][2];
@@ -331,7 +351,7 @@ static void TAG(emit)( GLcontext *ctx,
 	 }
 	 if (DO_RGBA) {
 	    if (HAVE_RGBA_COLOR) {
-	       *(GLuint *)&v->v.color = *(GLuint *)&col[i];
+	       *(GLuint *)&v->v.color = LE32_TO_CPU(*(GLuint *)&col[i]);
 	    }
 	    else {
 	       v->v.color.blue  = col[i][2];
@@ -417,8 +437,8 @@ static void TAG(emit)( GLcontext *ctx, GLuint start, GLuint end,
    col_stride = VB->ColorPtr[0]->StrideB;
    ASSERT(VB->ColorPtr[0]->Type == GL_UNSIGNED_BYTE);
 
-/*     fprintf(stderr, "%s stride %d importable %d\n",  */
-/*  	   __FUNCTION__, col_stride, VB->importable_data); */
+/*     fprintf(stderr, "%s(small) importable %x\n",  */
+/*  	   __FUNCTION__, VB->importable_data); */
 
    /* Pack what's left into a 4-dword vertex.  Color is in a different
     * place, and there is no 'w' coordinate.
@@ -438,17 +458,19 @@ static void TAG(emit)( GLcontext *ctx, GLuint start, GLuint end,
 	 coord =  (GLfloat (*)[4])((GLubyte *)coord +  coord_stride);
 	 if (DO_RGBA) {
 	    if (HAVE_RGBA_COLOR) {
-	       *(GLuint *)&v[3] = *(GLuint *)col;
+	       *(GLuint *)&v[3] = LE32_TO_CPU(*(GLuint *)col);
 	    }
 	    else {
-	       GLubyte *b = (GLubyte *)&v[3];
-	       b[0] = col[0][2];
-	       b[1] = col[0][1];
-	       b[2] = col[0][0];
-	       b[3] = col[0][3];
+	       VERTEX_COLOR *c = (VERTEX_COLOR *)&v[3];
+	       c->blue  = col[0][2];
+	       c->green = col[0][1];
+	       c->red   = col[0][0];
+	       c->alpha = col[0][3];
 	    }
 	    STRIDE_4UB( col, col_stride );
 	 }
+/*  	 fprintf(stderr, "vert %d: %.2f %.2f %.2f %x\n",  */
+/*  		 i, v[0], v[1], v[2], *(int *)&v[3]); */
       }
    }
    else {
@@ -460,16 +482,19 @@ static void TAG(emit)( GLcontext *ctx, GLuint start, GLuint end,
 	 }
 	 if (DO_RGBA) {
 	    if (HAVE_RGBA_COLOR) {
-	       *(GLuint *)&v[3] = *(GLuint *)&col[i];
+	       *(GLuint *)&v[3] = LE32_TO_CPU(*(GLuint *)&col[i]);
 	    }
 	    else {
-	       GLubyte *b = (GLubyte *)&v[3];
-	       b[0] = col[i][2];
-	       b[1] = col[i][1];
-	       b[2] = col[i][0];
-	       b[3] = col[i][3];
+	       VERTEX_COLOR *c = (VERTEX_COLOR *)&v[3];
+	       c->blue  = col[i][2];
+	       c->green = col[i][1];
+	       c->red   = col[i][0];
+	       c->alpha = col[i][3];
 	    }
 	 }
+/*  	 fprintf(stderr, "vert %d: %.2f %.2f %.2f %x\n",  */
+/*  		 i, v[0], v[1], v[2], *(int *)&v[3]); */
+
       }
    }
 }
@@ -502,14 +527,14 @@ static void TAG(emit)( GLcontext *ctx, GLuint start, GLuint end,
 
    for (i=start; i < end; i++, STRIDE_F(v, stride)) {
       if (HAVE_RGBA_COLOR) {
-	 *(GLuint *)v = *(GLuint *)col[0];
+	 *(GLuint *)v = LE32_TO_CPU(*(GLuint *)col[0]);
       }
       else {
-	 GLubyte *b = (GLubyte *)v;
-	 b[0] = col[0][2];
-	 b[1] = col[0][1];
-	 b[2] = col[0][0];
-	 b[3] = col[0][3];
+	 VERTEX_COLOR *c = (VERTEX_COLOR *)v;
+	 c->blue  = col[0][2];
+	 c->green = col[0][1];
+	 c->red   = col[0][0];
+	 c->alpha = col[0][3];
       }
       STRIDE_4UB( col, col_stride );
    }
@@ -624,7 +649,7 @@ static void TAG(interp)( GLcontext *ctx,
 
    if ((HAVE_HW_DIVIDE && CHECK_HW_DIVIDE) || 
        DO_FOG || DO_SPEC || DO_TEX0 || DO_TEX1 ||
-       DO_TEX2 || DO_TEX3) {
+       DO_TEX2 || DO_TEX3 || !HAVE_TINY_VERTICES) {
 
       dst->v.w = w;
 
@@ -634,12 +659,12 @@ static void TAG(interp)( GLcontext *ctx,
       INTERP_UB( t, dst->ub4[4][3], out->ub4[4][3], in->ub4[4][3] );
 
       if (DO_SPEC) {
-	 INTERP_UB( t, dst->ub4[5][0], out->ub4[5][0], in->ub4[5][0] );
-	 INTERP_UB( t, dst->ub4[5][1], out->ub4[5][1], in->ub4[5][1] );
-	 INTERP_UB( t, dst->ub4[5][2], out->ub4[5][2], in->ub4[5][2] );
+	 INTERP_UB( t, dst->v.specular.red,   out->v.specular.red,   in->v.specular.red );
+	 INTERP_UB( t, dst->v.specular.green, out->v.specular.green, in->v.specular.green );
+	 INTERP_UB( t, dst->v.specular.blue,  out->v.specular.blue,  in->v.specular.blue );
       }
       if (DO_FOG) {
-	 INTERP_UB( t, dst->ub4[5][3], out->ub4[5][3], in->ub4[5][3] );
+	 INTERP_UB( t, dst->v.specular.alpha, out->v.specular.alpha, in->v.specular.alpha );
       }
       if (DO_TEX0) {
 	 if (DO_PTEX) {
@@ -682,7 +707,7 @@ static void TAG(interp)( GLcontext *ctx,
 	 }
       }
       else if (DO_PTEX) {
-	 dst->pv.q0 = 0.0;	/* must be a valid float on radeon */
+	 dst->pv.q1 = 0.0;	/* must be a valid float on radeon */
       }
       if (DO_TEX2) {
 	 if (DO_PTEX) {
@@ -729,7 +754,7 @@ static void TAG(init)( void )
    if (DO_SPEC)
       setup_tab[IND].copy_pv = copy_pv_rgba4_spec5;
    else if (HAVE_HW_DIVIDE || DO_SPEC || DO_FOG || DO_TEX0 || DO_TEX1 ||
-	    DO_TEX2 || DO_TEX3)
+	    DO_TEX2 || DO_TEX3 || !HAVE_TINY_VERTICES)
       setup_tab[IND].copy_pv = copy_pv_rgba4;
    else
       setup_tab[IND].copy_pv = copy_pv_rgba3;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_screen.c,v 1.4 2002/02/22 21:45:00 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_screen.c,v 1.5 2002/10/30 12:51:55 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -35,10 +35,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include "radeon_screen.h"
-#include "radeon_context.h"
-#include "radeon_ioctl.h"
-
 #include "mem.h"
+
 
 #if 1
 /* Including xf86PciInfo.h introduces a bunch of errors...
@@ -90,9 +88,13 @@ radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv )
    }
 
    /* Check that the DRM driver version is compatible */
-   if ( sPriv->drmMajor != 1 ) {
-      __driUtilMessage( "Radeon DRI driver expected DRM driver version 1.x.x "
-			"but got version %d.%d.%d", 
+   /* KW:  Check minor number here too -- compatibility mode is broken
+    * atm. 
+    */
+   if ( sPriv->drmMajor != 1 ||
+	sPriv->drmMinor < 3) {
+      __driUtilMessage( "Radeon DRI driver expected DRM driver version 1.3.x "
+			"or newer but got version %d.%d.%d", 
 			sPriv->drmMajor, sPriv->drmMinor, sPriv->drmPatch );
       return NULL;
    }
@@ -120,6 +122,36 @@ radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv )
     * not we are using a PCI card.
     */
    radeonScreen->IsPCI = radeonDRIPriv->IsPCI;
+
+   if (sPriv->drmMinor >= 3) {
+      int ret;
+      drmRadeonGetParam gp;
+
+      gp.param = RADEON_PARAM_AGP_BUFFER_OFFSET;
+      gp.value = &radeonScreen->agp_buffer_offset;
+
+      ret = drmCommandWriteRead( sPriv->fd, DRM_RADEON_GETPARAM,
+				 &gp, sizeof(gp));
+      if (ret) {
+	 FREE( radeonScreen );
+	 fprintf(stderr, "drmRadeonGetParam (RADEON_PARAM_AGP_BUFFER_OFFSET): %d\n", ret);
+	 return NULL;
+      }
+
+      if (sPriv->drmMinor >= 6) {
+	 gp.param = RADEON_PARAM_IRQ_NR;
+	 gp.value = &radeonScreen->irq;
+
+	 ret = drmCommandWriteRead( sPriv->fd, DRM_RADEON_GETPARAM,
+				    &gp, sizeof(gp));
+	 if (ret) {
+	    FREE( radeonScreen );
+	    fprintf(stderr, "drmRadeonGetParam (RADEON_PARAM_IRQ_NR): %d\n", ret);
+	    return NULL;
+	 }
+      }
+
+   }
 
    radeonScreen->mmio.handle = radeonDRIPriv->registerHandle;
    radeonScreen->mmio.size   = radeonDRIPriv->registerSize;

@@ -1,10 +1,9 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.3
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -186,9 +185,11 @@ compute_fog_factors_from_z( const GLcontext *ctx,
                for (i=0;i<n;i++) {
                   GLfloat ndcz = ((GLfloat) z[i] - tz) * szInv;
                   GLfloat eyez = (ndcz - p14) / p10;
+                  GLfloat f;
                   if (eyez < 0.0)
                      eyez = -eyez;
-                  fogFact[i] = (fogEnd - eyez) * fogScale;
+                  f = (fogEnd - eyez) * fogScale;
+                  fogFact[i] = CLAMP(f, 0.0F, 1.0F);
                }
             }
             else {
@@ -196,9 +197,11 @@ compute_fog_factors_from_z( const GLcontext *ctx,
                for (i=0;i<n;i++) {
                   GLfloat ndcz = ((GLfloat) z[i] - tz) * szInv;
                   GLfloat eyez = p14 / (ndcz + p10);
+                  GLfloat f;
                   if (eyez < 0.0)
                      eyez = -eyez;
-                  fogFact[i] = (fogEnd - eyez) * fogScale;
+                  f = (fogEnd - eyez) * fogScale;
+                  fogFact[i] = CLAMP(f, 0.0F, 1.0F);
                }
             }
          }

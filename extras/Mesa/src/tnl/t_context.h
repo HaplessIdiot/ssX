@@ -1,4 +1,3 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
@@ -393,6 +392,16 @@ struct tnl_device_driver {
     * and grab/release hardware locks.  
     */
 
+   void (*NotifyMaterialChange)(GLcontext *ctx);
+   /* Alert tnl-aware drivers of changes to material.
+    */
+
+   GLboolean (*NotifyBegin)(GLcontext *ctx, GLenum p);
+   /* Allow drivers to hook in optimized begin/end engines.
+    * Return value:  GL_TRUE - driver handled the begin
+    *                GL_FALSE - driver didn't handle the begin
+    */
+
    /***
     *** Rendering -- These functions called only from t_vb_render.c
     ***/
@@ -531,6 +540,7 @@ typedef struct {
    GLboolean NeedProjCoords;
    GLboolean LoopbackDListCassettes;
    GLboolean CalcDListNormalLengths;
+   GLboolean IsolateMaterials;
 
    /* Derived state and storage for _tnl_eval_vb:
     */
@@ -539,6 +549,7 @@ typedef struct {
    /* Functions to be plugged into dispatch when tnl is active.
     */
    GLvertexformat vtxfmt;
+   GLvertexformat save_vtxfmt;
 
 } TNLcontext;
 

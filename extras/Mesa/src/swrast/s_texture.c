@@ -1,10 +1,9 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.5
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -98,6 +97,7 @@
          U = 1.0F - (S - (GLfloat) flr);	/* flr is odd */	\
       else								\
          U = S - (GLfloat) flr;		/* flr is even */		\
+      U = (U * SIZE) - 0.5;						\
       I0 = IFLOOR(U);							\
       I1 = I0 + 1;							\
       if (I0 < 0)							\
@@ -883,7 +883,8 @@ sample_linear_2d( GLcontext *ctx, GLuint texUnit,
  * Optimized 2-D texture sampling:
  *    S and T wrap mode == GL_REPEAT
  *    GL_NEAREST min/mag filter
- *    No border
+ *    No border, 
+ *    RowStride == Width,
  *    Format = GL_RGB
  */
 static void
@@ -924,6 +925,7 @@ opt_sample_rgb_2d( GLcontext *ctx, GLuint texUnit,
  *    S and T wrap mode == GL_REPEAT
  *    GL_NEAREST min/mag filter
  *    No border
+ *    RowStride == Width,
  *    Format = GL_RGBA
  */
 static void
@@ -980,7 +982,7 @@ sample_lambda_2d( GLcontext *ctx, GLuint texUnit,
       switch (tObj->MagFilter) {
       case GL_NEAREST:
          if (tObj->WrapS == GL_REPEAT && tObj->WrapT == GL_REPEAT &&
-             img->Border == 0) {
+             img->Border == 0 && img->Width == img->RowStride) {
             switch (img->Format) {
             case GL_RGB:
                opt_sample_rgb_2d(ctx, texUnit, tObj, n, s, t, NULL,
@@ -1759,6 +1761,217 @@ sample_lambda_cube( GLcontext *ctx, GLuint texUnit,
 }
 
 
+
+/**********************************************************************/
+/*               Texture Rectangle Sampling Functions                 */
+/**********************************************************************/
+
+static void
+sample_nearest_rect(GLcontext *ctx, GLuint texUnit,
+		    const struct gl_texture_object *tObj, GLuint n,
+                    const GLfloat s[], const GLfloat t[],
+                    const GLfloat u[], const GLfloat lambda[],
+                    GLchan rgba[][4])
+{
+   const struct gl_texture_image *img = tObj->Image[0];
+   const GLfloat width = (GLfloat) img->Width;
+   const GLfloat height = (GLfloat) img->Height;
+   const GLint width_minus_1 = img->Width - 1;
+   const GLint height_minus_1 = img->Height - 1;
+   GLuint i;
+
+   (void) texUnit;
+   (void) lambda;
+
+   ASSERT(tObj->WrapS == GL_CLAMP ||
+          tObj->WrapS == GL_CLAMP_TO_EDGE ||
+          tObj->WrapS == GL_CLAMP_TO_BORDER_ARB);
+   ASSERT(tObj->WrapT == GL_CLAMP ||
+          tObj->WrapT == GL_CLAMP_TO_EDGE ||
+          tObj->WrapT == GL_CLAMP_TO_BORDER_ARB);
+   ASSERT(img->Format != GL_COLOR_INDEX);
+
+   /* XXX move Wrap mode tests outside of loops for common cases */
+   for (i = 0; i < n; i++) {
+      GLint row, col;
+      /* NOTE: we DO NOT use [0, 1] texture coordinates! */
+      if (tObj->WrapS == GL_CLAMP) {
+         col = IFLOOR( CLAMP(s[i], 0.0F, width) );
+      }
+      else if (tObj->WrapS == GL_CLAMP_TO_EDGE) {
+         col = IFLOOR( CLAMP(s[i], 0.5F, width - 0.5F) );
+      }
+      else {
+         col = IFLOOR( CLAMP(s[i], -0.5F, width + 0.5F) );
+      }
+      if (tObj->WrapT == GL_CLAMP) {
+         row = IFLOOR( CLAMP(t[i], 0.0F, height) );
+      }
+      else if (tObj->WrapT == GL_CLAMP_TO_EDGE) {
+         row = IFLOOR( CLAMP(t[i], 0.5F, height - 0.5F) );
+      }
+      else {
+         row = IFLOOR( CLAMP(t[i], -0.5F, height + 0.5F) );
+      }
+
+      col = CLAMP(col, 0, width_minus_1);
+      row = CLAMP(row, 0, height_minus_1);
+
+      (*img->FetchTexel)(img, col, row, 0, (GLvoid *) rgba[i]);
+   }
+}
+
+
+static void
+sample_linear_rect(GLcontext *ctx, GLuint texUnit,
+		   const struct gl_texture_object *tObj, GLuint n,
+                   const GLfloat s[], const GLfloat t[],
+                   const GLfloat u[], const GLfloat lambda[],
+		   GLchan rgba[][4])
+{
+   const struct gl_texture_image *img = tObj->Image[0];
+   const GLfloat width = (GLfloat) img->Width;
+   const GLfloat height = (GLfloat) img->Height;
+   const GLint width_minus_1 = img->Width - 1;
+   const GLint height_minus_1 = img->Height - 1;
+   GLuint i;
+
+   (void) texUnit;
+   (void) lambda;
+
+   ASSERT(tObj->WrapS == GL_CLAMP ||
+          tObj->WrapS == GL_CLAMP_TO_EDGE ||
+          tObj->WrapS == GL_CLAMP_TO_BORDER_ARB);
+   ASSERT(tObj->WrapT == GL_CLAMP ||
+          tObj->WrapT == GL_CLAMP_TO_EDGE ||
+          tObj->WrapT == GL_CLAMP_TO_BORDER_ARB);
+   ASSERT(img->Format != GL_COLOR_INDEX);
+
+   /* XXX lots of opportunity for optimization in this loop */
+   for (i = 0; i < n; i++) {
+      GLfloat frow, fcol;
+      GLint row0, col0, row1, col1;
+      GLchan t00[4], t01[4], t10[4], t11[4];
+      GLfloat a, b, w00, w01, w10, w11;
+
+      /* NOTE: we DO NOT use [0, 1] texture coordinates! */
+      if (tObj->WrapS == GL_CLAMP) {
+         fcol = CLAMP(s[i], 0.0F, width);
+      }
+      else if (tObj->WrapS == GL_CLAMP_TO_EDGE) {
+         fcol = CLAMP(s[i], 0.5F, width - 0.5F);
+      }
+      else {
+         fcol = CLAMP(s[i], -0.5F, width + 0.5F);
+      }
+      if (tObj->WrapT == GL_CLAMP) {
+         frow = CLAMP(t[i], 0.0F, height);
+      }
+      else if (tObj->WrapT == GL_CLAMP_TO_EDGE) {
+         frow = CLAMP(t[i], 0.5F, height - 0.5F);
+      }
+      else {
+         frow = CLAMP(t[i], -0.5F, height + 0.5F);
+      }
+
+      /* compute integer rows/columns */
+      col0 = IFLOOR(fcol);
+      col1 = col0 + 1;
+      col0 = CLAMP(col0, 0, width_minus_1);
+      col1 = CLAMP(col1, 0, width_minus_1);
+      row0 = IFLOOR(frow);
+      row1 = row0 + 1;
+      row0 = CLAMP(row0, 0, height_minus_1);
+      row1 = CLAMP(row1, 0, height_minus_1);
+
+      /* get four texel samples */
+      (*img->FetchTexel)(img, col0, row0, 0, (GLvoid *) t00);
+      (*img->FetchTexel)(img, col1, row0, 0, (GLvoid *) t10);
+      (*img->FetchTexel)(img, col0, row1, 0, (GLvoid *) t01);
+      (*img->FetchTexel)(img, col1, row1, 0, (GLvoid *) t11);
+
+      /* compute sample weights */
+      a = FRAC(fcol);
+      b = FRAC(frow);
+      w00 = (1.0F-a) * (1.0F-b);
+      w10 =       a  * (1.0F-b);
+      w01 = (1.0F-a) *       b ;
+      w11 =       a  *       b ;
+
+      /* compute weighted average of samples */
+      rgba[i][0] = (GLchan)
+	  (w00 * t00[0] + w10 * t10[0] + w01 * t01[0] + w11 * t11[0]);
+      rgba[i][1] = (GLchan)
+	  (w00 * t00[1] + w10 * t10[1] + w01 * t01[1] + w11 * t11[1]);
+      rgba[i][2] = (GLchan)
+	  (w00 * t00[2] + w10 * t10[2] + w01 * t01[2] + w11 * t11[2]);
+      rgba[i][3] = (GLchan)
+	  (w00 * t00[3] + w10 * t10[3] + w01 * t01[3] + w11 * t11[3]);
+   }
+}
+
+
+
+static void
+sample_lambda_rect( GLcontext *ctx, GLuint texUnit,
+		    const struct gl_texture_object *tObj, GLuint n,
+		    const GLfloat s[], const GLfloat t[],
+		    const GLfloat u[], const GLfloat lambda[],
+		    GLchan rgba[][4])
+{
+   const GLfloat minMagThresh = SWRAST_CONTEXT(ctx)->_MinMagThresh[texUnit];
+   GLuint i;
+
+   {
+      for (i = 0; i < n; i++) {
+         GLfloat coord[4];
+         coord[0] = s[i];
+         coord[1] = t[i];
+         coord[2] = u[i];
+         coord[3] = 1.0;
+         if (lambda[i] > minMagThresh) {
+            /* minification */
+            switch (tObj->MinFilter) {
+               case GL_NEAREST:
+                  sample_nearest_rect(ctx, texUnit, tObj, 1,
+                                      s + i, t + i, u + i, lambda + i,
+                                      rgba + i );
+                  break;
+               case GL_LINEAR:
+                  sample_linear_rect(ctx, texUnit, tObj, 1,
+                                      s + i, t + i, u + i, lambda + i,
+                                      rgba + i );
+                  break;
+               default:
+                  _mesa_problem(NULL, "Bad min filter in sample_lambda_rect");
+                  return;
+            }
+         }
+         else {
+            /* magnification */
+            switch (tObj->MagFilter) {
+               case GL_NEAREST:
+                  sample_nearest_rect(ctx, texUnit, tObj, 1,
+                                      s + i, t + i, u + i, lambda + i,
+                                      rgba + i );
+                  break;
+               case GL_LINEAR:
+                  sample_linear_rect(ctx, texUnit, tObj, 1,
+                                      s + i, t + i, u + i, lambda + i,
+                                      rgba + i );
+                  break;
+               default:
+                  _mesa_problem(NULL, "Bad mag filter in sample_lambda_rect");
+                  return;
+            }
+         }
+      }
+   }
+
+}
+
+
+
 static void
 null_sample_func( GLcontext *ctx, GLuint texUnit,
 		  const struct gl_texture_object *tObj, GLuint n,
@@ -1802,8 +2015,8 @@ _swrast_choose_texture_sample_func( GLcontext *ctx, GLuint texUnit,
          }
       }
 
-      switch (t->Dimensions) {
-         case 1:
+      switch (t->Target) {
+         case GL_TEXTURE_1D:
             if (needLambda) {
                swrast->TextureSample[texUnit] = sample_lambda_1d;
             }
@@ -1815,7 +2028,7 @@ _swrast_choose_texture_sample_func( GLcontext *ctx, GLuint texUnit,
                swrast->TextureSample[texUnit] = sample_nearest_1d;
             }
             break;
-         case 2:
+         case GL_TEXTURE_2D:
             if (needLambda) {
                swrast->TextureSample[texUnit] = sample_lambda_2d;
             }
@@ -1828,12 +2041,14 @@ _swrast_choose_texture_sample_func( GLcontext *ctx, GLuint texUnit,
                if (t->WrapS == GL_REPEAT &&
                    t->WrapT == GL_REPEAT &&
                    t->Image[baseLevel]->Border == 0 &&
+                   t->Image[baseLevel]->Width == t->Image[baseLevel]->RowStride &&
                    t->Image[baseLevel]->TexFormat->MesaFormat == MESA_FORMAT_RGB) {
                   swrast->TextureSample[texUnit] = opt_sample_rgb_2d;
                }
                else if (t->WrapS == GL_REPEAT &&
                         t->WrapT == GL_REPEAT &&
                         t->Image[baseLevel]->Border == 0 &&
+			t->Image[baseLevel]->Width == t->Image[baseLevel]->RowStride &&
                         t->Image[baseLevel]->TexFormat->MesaFormat == MESA_FORMAT_RGBA) {
                   swrast->TextureSample[texUnit] = opt_sample_rgba_2d;
                }
@@ -1841,7 +2056,7 @@ _swrast_choose_texture_sample_func( GLcontext *ctx, GLuint texUnit,
                   swrast->TextureSample[texUnit] = sample_nearest_2d;
             }
             break;
-         case 3:
+         case GL_TEXTURE_3D:
             if (needLambda) {
                swrast->TextureSample[texUnit] = sample_lambda_3d;
             }
@@ -1853,7 +2068,7 @@ _swrast_choose_texture_sample_func( GLcontext *ctx, GLuint texUnit,
                swrast->TextureSample[texUnit] = sample_nearest_3d;
             }
             break;
-         case 6: /* cube map */
+         case GL_TEXTURE_CUBE_MAP_ARB:
             if (needLambda) {
                swrast->TextureSample[texUnit] = sample_lambda_cube;
             }
@@ -1863,6 +2078,18 @@ _swrast_choose_texture_sample_func( GLcontext *ctx, GLuint texUnit,
             else {
                ASSERT(t->MinFilter==GL_NEAREST);
                swrast->TextureSample[texUnit] = sample_nearest_cube;
+            }
+            break;
+         case GL_TEXTURE_RECTANGLE_NV:
+            if (needLambda) {
+               swrast->TextureSample[texUnit] = sample_lambda_rect;
+            }
+            else if (t->MinFilter == GL_LINEAR) {
+               swrast->TextureSample[texUnit] = sample_linear_rect;
+            }
+            else {
+               ASSERT(t->MinFilter == GL_NEAREST);
+               swrast->TextureSample[texUnit] = sample_nearest_rect;
             }
             break;
          default:
@@ -1925,7 +2152,7 @@ texture_combine(const GLcontext *ctx,
             }
             break;
          default:
-            _mesa_problem(NULL, "invalid combine source");
+            _mesa_problem(ctx, "invalid combine source");
       }
 
       switch (textureUnit->CombineSourceRGB[j]) {
@@ -1956,7 +2183,7 @@ texture_combine(const GLcontext *ctx,
             }
             break;
          default:
-            _mesa_problem(NULL, "invalid combine source");
+            _mesa_problem(ctx, "invalid combine source");
       }
 
       if (textureUnit->CombineOperandRGB[j] != GL_SRC_COLOR) {
@@ -2048,7 +2275,7 @@ texture_combine(const GLcontext *ctx,
             const GLchan (*arg0)[4] = (const GLchan (*)[4]) argRGB[0];
             const GLchan (*arg1)[4] = (const GLchan (*)[4]) argRGB[1];
 #if CHAN_TYPE != GL_FLOAT
-            const GLint shift = 8 - RGBshift;
+            const GLint shift = CHAN_BITS - RGBshift;
 #endif
             for (i = 0; i < n; i++) {
 #if CHAN_TYPE == GL_FLOAT
@@ -2115,7 +2342,7 @@ texture_combine(const GLcontext *ctx,
             const GLchan (*arg1)[4] = (const GLchan (*)[4]) argRGB[1];
             const GLchan (*arg2)[4] = (const GLchan (*)[4]) argRGB[2];
 #if CHAN_TYPE != GL_FLOAT
-            const GLint shift = 8 - RGBshift;
+            const GLint shift = CHAN_BITS - RGBshift;
 #endif
             for (i = 0; i < n; i++) {
 #if CHAN_TYPE == GL_FLOAT
@@ -2162,21 +2389,19 @@ texture_combine(const GLcontext *ctx,
             }
          }
          break;
-      case GL_DOT3_RGB_ARB:
-      case GL_DOT3_RGBA_ARB:
+      case GL_DOT3_RGB_EXT:
+      case GL_DOT3_RGBA_EXT:
          {
+            /* Do not scale the result by 1 2 or 4 */
             const GLchan (*arg0)[4] = (const GLchan (*)[4]) argRGB[0];
             const GLchan (*arg1)[4] = (const GLchan (*)[4]) argRGB[1];
-	    /* ATI's EXT extension has a constant scale by 4.  The ARB
-	     * one will likely remove this restriction, and we should
-	     * drop the EXT extension in favour of the ARB one.
-	     */
             for (i = 0; i < n; i++) {
 #if CHAN_TYPE == GL_FLOAT
                GLchan dot = ((arg0[i][RCOMP]-0.5F) * (arg1[i][RCOMP]-0.5F) +
                              (arg0[i][GCOMP]-0.5F) * (arg1[i][GCOMP]-0.5F) +
                              (arg0[i][BCOMP]-0.5F) * (arg1[i][BCOMP]-0.5F))
                             * 4.0F;
+               dot = CLAMP(dot, 0.0F, CHAN_MAXF);
 #else
                GLint dot = (S_PROD((GLint)arg0[i][RCOMP] - half,
 				   (GLint)arg1[i][RCOMP] - half) +
@@ -2184,14 +2409,41 @@ texture_combine(const GLcontext *ctx,
 				   (GLint)arg1[i][GCOMP] - half) +
 			    S_PROD((GLint)arg0[i][BCOMP] - half,
 				   (GLint)arg1[i][BCOMP] - half)) >> 6;
-#endif
                dot = CLAMP(dot, 0, CHAN_MAX);
+#endif
+               rgba[i][RCOMP] = rgba[i][GCOMP] = rgba[i][BCOMP] = (GLchan) dot;
+            }
+         }
+         break;
+      case GL_DOT3_RGB_ARB:
+      case GL_DOT3_RGBA_ARB:
+         {
+            /* DO scale the result by 1 2 or 4 */
+            const GLchan (*arg0)[4] = (const GLchan (*)[4]) argRGB[0];
+            const GLchan (*arg1)[4] = (const GLchan (*)[4]) argRGB[1];
+            for (i = 0; i < n; i++) {
+#if CHAN_TYPE == GL_FLOAT
+               GLchan dot = ((arg0[i][RCOMP]-0.5F) * (arg1[i][RCOMP]-0.5F) +
+                             (arg0[i][GCOMP]-0.5F) * (arg1[i][GCOMP]-0.5F) +
+                             (arg0[i][BCOMP]-0.5F) * (arg1[i][BCOMP]-0.5F))
+                            * 4.0F * RGBmult;
+               dot = CLAMP(dot, 0.0, CHAN_MAXF);
+#else
+               GLint dot = (S_PROD((GLint)arg0[i][RCOMP] - half,
+				   (GLint)arg1[i][RCOMP] - half) +
+			    S_PROD((GLint)arg0[i][GCOMP] - half,
+				   (GLint)arg1[i][GCOMP] - half) +
+			    S_PROD((GLint)arg0[i][BCOMP] - half,
+				   (GLint)arg1[i][BCOMP] - half)) >> 6;
+               dot <<= RGBshift;
+               dot = CLAMP(dot, 0, CHAN_MAX);
+#endif
                rgba[i][RCOMP] = rgba[i][GCOMP] = rgba[i][BCOMP] = (GLchan) dot;
             }
          }
          break;
       default:
-         _mesa_problem(NULL, "invalid combine mode");
+         _mesa_problem(ctx, "invalid combine mode");
    }
 
    switch (textureUnit->CombineModeA) {
@@ -2220,7 +2472,7 @@ texture_combine(const GLcontext *ctx,
             const GLchan (*arg0)[4] = (const GLchan (*)[4]) argA[0];
             const GLchan (*arg1)[4] = (const GLchan (*)[4]) argA[1];
 #if CHAN_TYPE != GL_FLOAT
-            const GLint shift = 8 - Ashift;
+            const GLint shift = CHAN_BITS - Ashift;
 #endif
             for (i = 0; i < n; i++) {
 #if CHAN_TYPE == GL_FLOAT
@@ -2267,7 +2519,7 @@ texture_combine(const GLcontext *ctx,
             const GLchan (*arg1)[4] = (const GLchan (*)[4]) argA[1];
             const GLchan (*arg2)[4] = (const GLchan (*)[4]) argA[2];
 #if CHAN_TYPE != GL_FLOAT
-            const GLint shift = 8 - Ashift;
+            const GLint shift = CHAN_BITS - Ashift;
 #endif
             for (i=0; i<n; i++) {
 #if CHAN_TYPE == GL_FLOAT
@@ -2285,13 +2537,13 @@ texture_combine(const GLcontext *ctx,
          break;
       case GL_SUBTRACT_ARB:
          {
-            const GLchan (*arg0)[4] = (const GLchan (*)[4]) argRGB[0];
-            const GLchan (*arg1)[4] = (const GLchan (*)[4]) argRGB[1];
+            const GLchan (*arg0)[4] = (const GLchan (*)[4]) argA[0];
+            const GLchan (*arg1)[4] = (const GLchan (*)[4]) argA[1];
             for (i = 0; i < n; i++) {
 #if CHAN_TYPE == GL_FLOAT
                rgba[i][ACOMP] = (arg0[i][ACOMP] - arg1[i][ACOMP]) * Amult;
 #else
-               GLint a = ((GLint) arg0[i][ACOMP] - (GLint) arg1[i][ACOMP]) << RGBshift;
+               GLint a = ((GLint) arg0[i][ACOMP] - (GLint) arg1[i][ACOMP]) << Ashift;
                rgba[i][ACOMP] = (GLchan) CLAMP(a, 0, CHAN_MAX);
 #endif
             }
@@ -2299,10 +2551,13 @@ texture_combine(const GLcontext *ctx,
          break;
 
       default:
-         _mesa_problem(NULL, "invalid combine mode");
+         _mesa_problem(ctx, "invalid combine mode");
    }
 
-   /* Fix the alpha component for GL_DOT3_RGBA_EXT combining.
+   /* Fix the alpha component for GL_DOT3_RGBA_EXT/ARB combining.
+    * This is kind of a kludge.  It would have been better if the spec
+    * were written such that the GL_COMBINE_ALPHA value could be set to
+    * GL_DOT3.
     */
    if (textureUnit->CombineModeRGB == GL_DOT3_RGBA_EXT ||
        textureUnit->CombineModeRGB == GL_DOT3_RGBA_ARB) {
@@ -2351,7 +2606,7 @@ apply_texture( const GLcontext *ctx,
 
    format = texUnit->_Current->Image[baseLevel]->Format;
 
-   if (format==GL_COLOR_INDEX || format==GL_DEPTH_COMPONENT) {
+   if (format==GL_COLOR_INDEX || format==GL_DEPTH_COMPONENT || format==GL_YCBCR_MESA) {
       format = GL_RGBA;  /* XXXX a hack! */
    }
 
@@ -2697,7 +2952,7 @@ sample_depth_texture(const GLcontext *ctx,
    const GLchan ambient = texObj->ShadowAmbient;
    GLboolean lequal, gequal;
 
-   if (texObj->Dimensions != 2) {
+   if (texObj->Target != GL_TEXTURE_2D) {
       _mesa_problem(ctx, "only 2-D depth textures supported at this time");
       return;
    }
@@ -2958,7 +3213,7 @@ _swrast_texture_fragments( GLcontext *ctx, GLuint texUnit, GLuint n,
                            const GLfloat r[], GLfloat lambda[],
                            CONST GLchan primary_rgba[][4], GLchan rgba[][4] )
 {
-   const GLuint mask = TEXTURE0_ANY << (texUnit * 4);
+   const GLuint mask = TEXTURE0_ANY << (texUnit * NUM_TEXTURE_TARGETS);
 
    if (ctx->Texture._ReallyEnabled & mask) {
       const struct gl_texture_unit *textureUnit = &ctx->Texture.Unit[texUnit];
@@ -2966,24 +3221,25 @@ _swrast_texture_fragments( GLcontext *ctx, GLuint texUnit, GLuint n,
       if (textureUnit->_Current) {   /* XXX need this? */
          GLchan texel[PB_SIZE][4];
 
-	 if (textureUnit->LodBias != 0.0F) {
-	    /* apply LOD bias, but don't clamp yet */
-            GLuint i;
-	    for (i=0;i<n;i++) {
-	       lambda[i] += textureUnit->LodBias;
-	    }
-	 }
+         if (lambda) {
+            if (textureUnit->LodBias != 0.0F) {
+               /* apply LOD bias, but don't clamp yet */
+               GLuint i;
+               for (i=0;i<n;i++) {
+                  lambda[i] += textureUnit->LodBias;
+               }
+            }
 
-         if ((textureUnit->_Current->MinLod != -1000.0
-              || textureUnit->_Current->MaxLod != 1000.0)
-             && lambda) {
-            /* apply LOD clamping to lambda */
-            const GLfloat min = textureUnit->_Current->MinLod;
-            const GLfloat max = textureUnit->_Current->MaxLod;
-            GLuint i;
-            for (i=0;i<n;i++) {
-               GLfloat l = lambda[i];
-               lambda[i] = CLAMP(l, min, max);
+            if (textureUnit->_Current->MinLod != -1000.0 ||
+                textureUnit->_Current->MaxLod != 1000.0) {
+               /* apply LOD clamping to lambda */
+               const GLfloat min = textureUnit->_Current->MinLod;
+               const GLfloat max = textureUnit->_Current->MaxLod;
+               GLuint i;
+               for (i=0;i<n;i++) {
+                  GLfloat l = lambda[i];
+                  lambda[i] = CLAMP(l, min, max);
+               }
             }
          }
 

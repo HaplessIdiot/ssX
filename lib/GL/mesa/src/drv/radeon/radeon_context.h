@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_context.h,v 1.4 2002/09/10 00:39:39 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_context.h,v 1.5 2002/10/30 12:51:54 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -39,19 +39,11 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifdef GLX_DIRECT_RENDERING
 
-#include <X11/Xlibint.h>
-#include "dri_util.h"
-#include "xf86drm.h"
-#include "radeon_common.h"
-
-#include "macros.h"
-#include "mtypes.h"
-#include "radeon_reg.h"
-
 struct radeon_context;
 typedef struct radeon_context radeonContextRec;
 typedef struct radeon_context *radeonContextPtr;
 
+#include "mtypes.h"
 #include "radeon_lock.h"
 #include "radeon_screen.h"
 #include "mm.h"
@@ -452,7 +444,7 @@ struct radeon_dma_buffer {
    drmBufPtr buf;
 };
 
-#define GET_START(rvb) (rmesa->dri.agp_buffer_offset +			\
+#define GET_START(rvb) (rmesa->radeonScreen->agp_buffer_offset +			\
 			(rvb)->address - rmesa->dma.buf0_address +	\
 			(rvb)->start)
 
@@ -492,7 +484,6 @@ struct radeon_dri_mirror {
    drmLock *hwLock;
    int fd;
    int drmMinor;
-   int agp_buffer_offset;
 };
 
 
@@ -642,11 +633,23 @@ struct radeon_vb {
    GLint *dmaptr;
    void (*notify)( void );
    GLint vertex_size;
+
+   /* A maximum total of 15 elements per vertex:  3 floats for position, 3
+    * floats for normal, 4 floats for color, 4 bytes for secondary color,
+    * 2 floats for each texture unit (4 floats total).
+    * 
+    * As soon as the 3rd TMU is supported or cube maps (or 3D textures) are
+    * supported, this value will grow.
+    * 
+    * The position data is never actually stored here, so 3 elements could be
+    * trimmed out of the buffer.
+    */
    union { float f; int i; radeon_color_t color; } vertex[15];
 
    GLfloat *normalptr;
    GLfloat *floatcolorptr;
    radeon_color_t *colorptr;
+   GLfloat *floatspecptr;
    radeon_color_t *specptr;
    GLfloat *texcoordptr[2];
 
@@ -730,7 +733,7 @@ struct radeon_context {
     */
    GLuint numClipRects;			/* Cliprects for the draw buffer */
    XF86DRIClipRectPtr pClipRects;
-   GLuint lastStamp;
+   unsigned int lastStamp;
    GLboolean lost_context;
    radeonScreenPtr radeonScreen;	/* Screen private DRI data */
    RADEONSAREAPrivPtr sarea;		/* Private SAREA data */

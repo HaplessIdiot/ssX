@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_swtcl.h,v 1.1 2002/10/30 12:51:53 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -70,6 +70,10 @@ extern void r200_print_vertex( GLcontext *ctx, const r200Vertex *v );
 extern void r200_import_float_colors( GLcontext *ctx );
 extern void r200_import_float_spec_colors( GLcontext *ctx );
 
+extern void r200PointsBitmap( GLcontext *ctx, GLint px, GLint py,
+			      GLsizei width, GLsizei height,
+			      const struct gl_pixelstore_attrib *unpack,
+			      const GLubyte *bitmap );
 
 
 #endif

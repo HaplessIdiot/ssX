@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_vtxfmt_c.c,v 1.1 2002/10/30 12:51:58 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2002 ATI Technologies Inc., Ontario, Canada, and
@@ -330,7 +330,7 @@ static void radeon_Color4fv_3f( const GLfloat *v )
 
 /* Secondary Color:
  */
-static void radeon_SecondaryColor3ubEXT( GLubyte r, GLubyte g, GLubyte b )
+static void radeon_SecondaryColor3ubEXT_ub( GLubyte r, GLubyte g, GLubyte b )
 {
    radeon_color_t *dest = vb.specptr;
    dest->red	= r;
@@ -339,7 +339,7 @@ static void radeon_SecondaryColor3ubEXT( GLubyte r, GLubyte g, GLubyte b )
    dest->alpha	= 0xff;
 }
 
-static void radeon_SecondaryColor3ubvEXT( const GLubyte *v )
+static void radeon_SecondaryColor3ubvEXT_ub( const GLubyte *v )
 {
    radeon_color_t *dest = vb.specptr;
    dest->red	= v[0];
@@ -348,7 +348,7 @@ static void radeon_SecondaryColor3ubvEXT( const GLubyte *v )
    dest->alpha	= 0xff;
 }
 
-static void radeon_SecondaryColor3fEXT( GLfloat r, GLfloat g, GLfloat b )
+static void radeon_SecondaryColor3fEXT_ub( GLfloat r, GLfloat g, GLfloat b )
 {
    radeon_color_t *dest = vb.specptr;
    UNCLAMPED_FLOAT_TO_UBYTE( dest->red,	  r );
@@ -357,7 +357,7 @@ static void radeon_SecondaryColor3fEXT( GLfloat r, GLfloat g, GLfloat b )
    dest->alpha = 255;
 }
 
-static void radeon_SecondaryColor3fvEXT( const GLfloat *v )
+static void radeon_SecondaryColor3fvEXT_ub( const GLfloat *v )
 {
    radeon_color_t *dest = vb.specptr;
    UNCLAMPED_FLOAT_TO_UBYTE( dest->red,	  v[0] );
@@ -366,6 +366,41 @@ static void radeon_SecondaryColor3fvEXT( const GLfloat *v )
    dest->alpha = 255;
 }
 
+static void radeon_SecondaryColor3ubEXT_3f( GLubyte r, GLubyte g, GLubyte b )
+{
+   GLfloat *dest = vb.floatspecptr;
+   dest[0] = UBYTE_TO_FLOAT(r);
+   dest[1] = UBYTE_TO_FLOAT(g);
+   dest[2] = UBYTE_TO_FLOAT(b);
+   dest[3] = 1.0;
+}
+
+static void radeon_SecondaryColor3ubvEXT_3f( const GLubyte *v )
+{
+   GLfloat *dest = vb.floatspecptr;
+   dest[0] = UBYTE_TO_FLOAT(v[0]);
+   dest[1] = UBYTE_TO_FLOAT(v[1]);
+   dest[2] = UBYTE_TO_FLOAT(v[2]);
+   dest[3] = 1.0;
+}
+
+static void radeon_SecondaryColor3fEXT_3f( GLfloat r, GLfloat g, GLfloat b )
+{
+   GLfloat *dest = vb.floatspecptr;
+   dest[0] = r;
+   dest[1] = g;
+   dest[2] = b;
+   dest[3] = 1.0;
+}
+
+static void radeon_SecondaryColor3fvEXT_3f( const GLfloat *v )
+{
+   GLfloat *dest = vb.floatspecptr;
+   dest[0] = v[0];
+   dest[1] = v[1];
+   dest[2] = v[2];
+   dest[3] = 1.0;
+}
 
 
 /* Normal
@@ -545,17 +580,56 @@ static void choose_##FN ARGS1						\
 
 
 
+/* Right now there are both _ub and _3f versions of the secondary color
+ * functions.  Currently, we only set-up the hardware to use the _ub versions.
+ * The _3f versions are needed for the cases where secondary color isn't used
+ * in the vertex format, but it still needs to be stored in the context
+ * state vector.
+ */
+#define CHOOSE_SECONDARY_COLOR(FN, FNTYPE, MASK, ACTIVE, ARGS1, ARGS2 )	\
+static void choose_##FN ARGS1						\
+{									\
+   GLcontext *ctx = vb.context;						\
+   radeonContextPtr rmesa = RADEON_CONTEXT(vb.context);			\
+   int key = rmesa->vb.vertex_format & (MASK|ACTIVE);			\
+   struct dynfn *dfn = lookup( &rmesa->vb.dfn_cache.FN, key );		\
+									\
+   if (dfn == 0)							\
+      dfn = rmesa->vb.codegen.FN( vb.context, key );			\
+   else  if (RADEON_DEBUG & DEBUG_CODEGEN)				\
+      fprintf(stderr, "%s -- cached version\n", __FUNCTION__ );		\
+									\
+   if (dfn)								\
+      vb.context->Exec->FN = (FNTYPE)(dfn->code);			\
+   else {								\
+      if (RADEON_DEBUG & DEBUG_CODEGEN)					\
+         fprintf(stderr, "%s -- generic version\n", __FUNCTION__ );	\
+      vb.context->Exec->FN = ((rmesa->vb.vertex_format & ACTIVE_PKSPEC) != 0) \
+	  ? radeon_##FN##_ub : radeon_##FN##_3f;			\
+   }									\
+									\
+   ctx->Driver.NeedFlush |= FLUSH_UPDATE_CURRENT;			\
+   ctx->Exec->FN ARGS2;							\
+}
+
+
+
 
 
 /* Shorthands
  */
 #define ACTIVE_XYZW (RADEON_CP_VC_FRMT_W0|RADEON_CP_VC_FRMT_Z)
 #define ACTIVE_NORM RADEON_CP_VC_FRMT_N0
+
 #define ACTIVE_PKCOLOR RADEON_CP_VC_FRMT_PKCOLOR
 #define ACTIVE_FPCOLOR RADEON_CP_VC_FRMT_FPCOLOR
 #define ACTIVE_FPALPHA RADEON_CP_VC_FRMT_FPALPHA
 #define ACTIVE_COLOR (ACTIVE_FPCOLOR|ACTIVE_PKCOLOR)
-#define ACTIVE_SPEC RADEON_CP_VC_FRMT_PKSPEC
+
+#define ACTIVE_PKSPEC RADEON_CP_VC_FRMT_PKSPEC
+#define ACTIVE_FPSPEC RADEON_CP_VC_FRMT_FPSPEC
+#define ACTIVE_SPEC   (ACTIVE_FPSPEC|ACTIVE_PKSPEC)
+
 #define ACTIVE_ST0 RADEON_CP_VC_FRMT_ST0
 #define ACTIVE_ST1 RADEON_CP_VC_FRMT_ST1
 #define ACTIVE_ST_ALL (RADEON_CP_VC_FRMT_ST1|RADEON_CP_VC_FRMT_ST0)
@@ -609,13 +683,13 @@ CHOOSE_COLOR(Color3fv, pfv, 3, MASK_COLOR, ACTIVE_COLOR,
 	(const GLfloat *v), (v))
 
 
-CHOOSE(SecondaryColor3ubEXT, p3ub, MASK_SPEC, ACTIVE_SPEC, 
+CHOOSE_SECONDARY_COLOR(SecondaryColor3ubEXT, p3ub, MASK_SPEC, ACTIVE_SPEC,
 	(GLubyte a,GLubyte b, GLubyte c), (a,b,c))
-CHOOSE(SecondaryColor3ubvEXT, pubv, MASK_SPEC, ACTIVE_SPEC, 
+CHOOSE_SECONDARY_COLOR(SecondaryColor3ubvEXT, pubv, MASK_SPEC, ACTIVE_SPEC,
 	(const GLubyte *v), (v))
-CHOOSE(SecondaryColor3fEXT, p3f, MASK_SPEC, ACTIVE_SPEC,
+CHOOSE_SECONDARY_COLOR(SecondaryColor3fEXT, p3f, MASK_SPEC, ACTIVE_SPEC,
 	(GLfloat a,GLfloat b, GLfloat c), (a,b,c))
-CHOOSE(SecondaryColor3fvEXT, pfv, MASK_SPEC, ACTIVE_SPEC,
+CHOOSE_SECONDARY_COLOR(SecondaryColor3fvEXT, pfv, MASK_SPEC, ACTIVE_SPEC,
 	(const GLfloat *v), (v))
 
 CHOOSE(TexCoord2f, p2f, MASK_ST0, ACTIVE_ST0, 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgacontext.h,v 1.5 2002/02/22 21:33:06 dawes Exp $*/
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgacontext.h,v 1.6 2002/10/30 12:51:35 alanh Exp $*/
 /*
  * Copyright 2000-2001 VA Linux Systems, Inc.
  * All Rights Reserved.
@@ -120,7 +120,7 @@ typedef struct mga_texture_object_s
 struct mga_context_t {
 
    GLcontext *glCtx;
-   GLuint lastStamp;		/* fullscreen breaks dpriv->laststamp,
+   unsigned int lastStamp;	/* fullscreen breaks dpriv->laststamp,
 				 * need to shadow it here. */
 
    /* Bookkeeping for texturing
@@ -202,6 +202,9 @@ struct mga_context_t {
    drmBufPtr  vertex_dma_buffer;
    drmBufPtr  iload_buffer;
 
+   /* VBI
+    */
+   GLuint vbl_seq;
 
    /* Drawable, cliprect and scissor information
     */

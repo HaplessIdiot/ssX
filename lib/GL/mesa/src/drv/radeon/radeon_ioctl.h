@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_ioctl.h,v 1.4 2002/09/16 18:05:20 eich Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_ioctl.h,v 1.5 2002/10/30 12:51:55 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -40,11 +40,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifdef GLX_DIRECT_RENDERING
 
 #include "simple_list.h"
-#include "radeon_dri.h"
 #include "radeon_lock.h"
 
-#include "xf86drm.h"
-#include "radeon_common.h"
 
 extern void radeonEmitState( radeonContextPtr rmesa );
 extern void radeonEmitVertexAOS( radeonContextPtr rmesa,

@@ -1,4 +1,3 @@
-/* $Id$ */
 
 #ifndef _SPARC_MATRIX_H
 #define _SPARC_MATRIX_H

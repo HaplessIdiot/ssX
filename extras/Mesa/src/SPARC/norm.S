@@ -1,4 +1,3 @@
-/* $Id$ */
 
 #include "sparc_matrix.h"
 

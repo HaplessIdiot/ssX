@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_lock.c,v 1.3 2001/12/13 00:34:21 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_lock.c,v 1.4 2002/02/22 21:45:03 dawes Exp $ */
 
 /*
  * Original rewrite:
@@ -49,7 +49,7 @@ void tdfxGetLock( tdfxContextPtr fxMesa )
     __DRIscreenPrivate *sPriv = dPriv->driScreenPriv;
     TDFXSAREAPriv *saPriv = (TDFXSAREAPriv *) (((char *) sPriv->pSAREA) +
 					fxMesa->fxScreen->sarea_priv_offset);
-    int stamp = dPriv->lastStamp;
+    unsigned int stamp = dPriv->lastStamp;
 
     drmGetLock( fxMesa->driFd, fxMesa->hHWContext, 0 );
 

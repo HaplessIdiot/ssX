@@ -1,10 +1,9 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.3
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -76,7 +75,7 @@ static void build_normal_lengths( struct immediate *IM )
    GLuint count = IM->Count - IM->Start;
 
    if (!dest) {
-      dest = IM->NormalLengthPtr = ALIGN_MALLOC( IMM_SIZE*sizeof(GLfloat), 32 );
+      dest = IM->NormalLengthPtr = (GLfloat *) ALIGN_MALLOC( IMM_SIZE*sizeof(GLfloat), 32 );
       if (!dest) return;
    }
    dest += IM->Start;
@@ -127,6 +126,9 @@ _tnl_compile_cassette( GLcontext *ctx, struct immediate *IM )
    TNLcontext *tnl = TNL_CONTEXT(ctx);
    TNLvertexcassette *node;
    GLuint new_beginstate;
+
+   if (MESA_VERBOSE & VERBOSE_DISPLAY_LIST)
+      fprintf(stderr, "_tnl_compiled_cassette IM: %d\n", IM->id); 
 
    if (IM->FlushElt) {
       ASSERT (IM->FlushElt == FLUSH_ELT_LAZY); 
@@ -229,7 +231,7 @@ static void fixup_compiled_primitives( GLcontext *ctx, struct immediate *IM )
        * set copystart because it might skip materials?
        */
       ASSERT(IM->Start == IM->CopyStart);
-      if (i > IM->CopyStart) {
+      if (i > IM->CopyStart || !(IM->Flag[IM->Start] & VERT_BEGIN)) {
 	 IM->Primitive[IM->CopyStart] = GL_POLYGON+1;
 	 IM->PrimitiveLength[IM->CopyStart] = i - IM->CopyStart;
 	 if (IM->Flag[i] & VERT_END_VB) {
@@ -293,7 +295,8 @@ execute_compiled_cassette( GLcontext *ctx, void *data )
    TNLvertexcassette *node = (TNLvertexcassette *)data;
    struct immediate *IM = node->IM;
 
-/*     fprintf(stderr, "%s\n", __FUNCTION__); */
+   if (MESA_VERBOSE & VERBOSE_DISPLAY_LIST)
+      fprintf(stderr, "execute_compiled_cassette IM: %d\n", IM->id); 
 
    IM->Start = node->Start;
    IM->CopyStart = node->Start;
@@ -308,6 +311,7 @@ execute_compiled_cassette( GLcontext *ctx, void *data )
    IM->LastMaterial = node->LastMaterial;
    IM->MaterialOrMask = node->MaterialOrMask;
    IM->MaterialAndMask = node->MaterialAndMask;
+
 
    if ((MESA_VERBOSE & VERBOSE_DISPLAY_LIST) &&
        (MESA_VERBOSE & VERBOSE_IMMEDIATE))
@@ -339,6 +343,7 @@ execute_compiled_cassette( GLcontext *ctx, void *data )
    }
 
    if (tnl->LoopbackDListCassettes) {
+/*        (tnl->IsolateMaterials && (IM->OrFlag & VERT_MATERIAL)) ) { */
       fixup_compiled_primitives( ctx, IM );
       loopback_compiled_cassette( ctx, IM );
       restore_compiled_primitives( ctx, IM );
@@ -361,6 +366,12 @@ execute_compiled_cassette( GLcontext *ctx, void *data )
 	 ctx->Driver.CurrentExecPrimitive =
 	    IM->Primitive[IM->LastPrimitive] & PRIM_MODE_MASK;
       }
+
+/*        fprintf(stderr, "%s: IM->Primitive[%d]: %x, CurrExecPrim: %x\n", */
+/*  	      __FUNCTION__, */
+/*  	      IM->LastPrimitive, */
+/*  	      IM->Primitive[IM->LastPrimitive],  */
+/*  	      ctx->Driver.CurrentExecPrimitive); */
 
       _tnl_get_exec_copy_verts( ctx, IM );
 
@@ -387,7 +398,7 @@ destroy_compiled_cassette( GLcontext *ctx, void *data )
    TNLvertexcassette *node = (TNLvertexcassette *)data;
 
    if ( --node->IM->ref_count == 0 )
-      _tnl_free_immediate( node->IM );
+      _tnl_free_immediate( ctx, node->IM );
 }
 
 
@@ -421,16 +432,22 @@ _tnl_BeginCallList( GLcontext *ctx, GLuint list )
 {
    (void) ctx;
    (void) list;
-   FLUSH_CURRENT(ctx, 0);
+   FLUSH_CURRENT(ctx, 0);	/* Current immediate is emptied on CallList */
 }
 
 
-/* Called at the tail of a CallList.  Nothing to do.
+/* Called at the tail of a CallList.  Make current immediate aware of
+ * any new to-be-copied vertices.
  */
 void
 _tnl_EndCallList( GLcontext *ctx )
 {
-   (void) ctx;
+   GLuint beginstate = 0;
+
+   if (ctx->Driver.CurrentExecPrimitive != PRIM_OUTSIDE_BEGIN_END)
+      beginstate = VERT_BEGIN_0|VERT_BEGIN_1;
+
+   _tnl_reset_exec_input( ctx, TNL_CURRENT_IM(ctx)->Start, beginstate, 0 );
 }
 
 
@@ -563,7 +580,9 @@ static void loopback_compiled_cassette( GLcontext *ctx, struct immediate *IM )
    void (GLAPIENTRY *texcoordfv[MAX_TEXTURE_UNITS])( GLenum, const GLfloat * );
    GLuint maxtex = 0;
    GLuint p, length, prim = 0;
-   
+
+/*     _tnl_print_vert_flags(__FUNCTION__, orflag); */
+
    if (orflag & VERT_OBJ_234)
       vertex = (void (GLAPIENTRY *)(const GLfloat *)) glVertex4fv;
    else
@@ -591,7 +610,6 @@ static void loopback_compiled_cassette( GLcontext *ctx, struct immediate *IM )
       ASSERT((prim & PRIM_MODE_MASK) <= GL_POLYGON+1);
 
       if (prim & PRIM_BEGIN) {
-/*  	 fprintf(stderr, "begin %s\n", _mesa_prim_name[prim&PRIM_MODE_MASK]); */
 	 glBegin(prim & PRIM_MODE_MASK);
       }
 
@@ -606,22 +624,18 @@ static void loopback_compiled_cassette( GLcontext *ctx, struct immediate *IM )
 	 }
 
 	 if (flags[i] & VERT_NORM) {
-/*  	       fprintf(stderr, "normal %d: %f %f %f\n", i, */
-/*  		       IM->Normal[i][0], IM->Normal[i][1], IM->Normal[i][2]);  */
 	    glNormal3fv(IM->Normal[i]);
 	 }
 
 	 if (flags[i] & VERT_RGBA) {
-/*  	       fprintf(stderr, "color %d: %f %f %f\n", i, */
-/*  		       IM->Color[i][0], IM->Color[i][1], IM->Color[i][2]);  */
 	    glColor4fv( IM->Color[i] );
 	 }
 
 	 if (flags[i] & VERT_SPEC_RGB)
-	    glSecondaryColor3fvEXT( IM->SecondaryColor[i] );
+	    _glapi_Dispatch->SecondaryColor3fvEXT( IM->SecondaryColor[i] );
 
 	 if (flags[i] & VERT_FOG_COORD)
-	    glFogCoordfEXT( IM->FogCoord[i] );
+	    _glapi_Dispatch->FogCoordfEXT( IM->FogCoord[i] );
 
 	 if (flags[i] & VERT_INDEX)
 	    glIndexi( IM->Index[i] );
@@ -633,8 +647,6 @@ static void loopback_compiled_cassette( GLcontext *ctx, struct immediate *IM )
 	    emit_material( IM->Material[i], IM->MaterialMask[i] );
 
 	 if (flags[i]&VERT_OBJ_234) {
-/*  	       fprintf(stderr, "vertex %d: %f %f %f\n", i, */
-/*  		       IM->Obj[i][0], IM->Obj[i][1], IM->Obj[i][2]); */
 	    vertex( IM->Obj[i] );
 	 }
 	 else if (flags[i] & VERT_EVAL_C1)
@@ -648,7 +660,6 @@ static void loopback_compiled_cassette( GLcontext *ctx, struct immediate *IM )
       }
 
       if (prim & PRIM_END) {
-/*  	 fprintf(stderr, "end\n"); */
 	 glEnd();
       }
    }

@@ -1,10 +1,9 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.3
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -68,6 +67,10 @@ static void reset_input( GLcontext *ctx,
     */
    if (start < IM->Count+2)
       MEMSET(IM->Flag + start, 0, sizeof(GLuint) * (IM->Count+2-start));
+
+   if (MESA_VERBOSE & VERBOSE_IMMEDIATE)
+      fprintf(stderr, "reset_input: IM(%d) new %x\n", 
+	      IM->id, beginstate);
 
    IM->Start = start;
    IM->Count = start;
@@ -136,7 +139,7 @@ void _tnl_copy_to_current( GLcontext *ctx, struct immediate *IM,
       COPY_4FV(ctx->Current.Color, IM->Color[count]);
       if (ctx->Light.ColorMaterialEnabled) {
 	 _mesa_update_color_material( ctx, ctx->Current.Color );
-	 _mesa_validate_all_lighting_tables( ctx );
+	 TNL_CONTEXT(ctx)->Driver.NotifyMaterialChange( ctx );
       }
    }
 
@@ -160,7 +163,7 @@ void _tnl_copy_to_current( GLcontext *ctx, struct immediate *IM,
 			  IM->Material[IM->LastMaterial],
 			  IM->MaterialOrMask );
 
-      _mesa_validate_all_lighting_tables( ctx );
+      TNL_CONTEXT(ctx)->Driver.NotifyMaterialChange( ctx );
    }
 }
 
@@ -343,7 +346,7 @@ static void _tnl_vb_bind_immediate( GLcontext *ctx, struct immediate *IM )
       }
    }
 
-   if ((inputs & VERT_MATERIAL) && IM->Material) {
+   if ((inputs & IM->OrFlag & VERT_MATERIAL) && IM->Material) {
       VB->MaterialMask = IM->MaterialMask + start;
       VB->Material = IM->Material + start;
    }
@@ -359,7 +362,7 @@ void _tnl_run_cassette( GLcontext *ctx, struct immediate *IM )
 {
    TNLcontext *tnl = TNL_CONTEXT(ctx);
 
-/*     fprintf(stderr, "%s\n", __FUNCTION__); */
+/*      fprintf(stderr, "%s\n", __FUNCTION__);  */
 
    _tnl_vb_bind_immediate( ctx, IM );
 
@@ -407,7 +410,7 @@ static void exec_elt_cassette( GLcontext *ctx, struct immediate *IM )
    TNLcontext *tnl = TNL_CONTEXT(ctx);
    struct vertex_buffer *VB = &tnl->vb;
 
-/*     fprintf(stderr, "%s\n", __FUNCTION__); */
+/*     fprintf(stderr, "%s\n", __FUNCTION__);  */
 
    _tnl_vb_bind_arrays( ctx, ctx->Array.LockFirst, ctx->Array.LockCount );
 
@@ -488,6 +491,9 @@ void _tnl_execute_cassette( GLcontext *ctx, struct immediate *IM )
 
    if (ctx->Driver.CurrentExecPrimitive == GL_POLYGON+1)
       ctx->Driver.NeedFlush &= ~FLUSH_STORED_VERTICES;
+
+/*     fprintf(stderr, "%s: NeedFlush: %x\n", __FUNCTION__,  */
+/*  	   ctx->Driver.NeedFlush); */
 }
 
 
@@ -554,7 +560,14 @@ void _tnl_imm_destroy( GLcontext *ctx )
    if (TNL_CURRENT_IM(ctx)) {
       TNL_CURRENT_IM(ctx)->ref_count--;
       if (TNL_CURRENT_IM(ctx)->ref_count == 0)
-	 _tnl_free_immediate( TNL_CURRENT_IM(ctx) );
-      SET_IMMEDIATE(ctx, 0);
+	 _tnl_free_immediate( ctx, TNL_CURRENT_IM(ctx) );
+      /* 
+       * Don't use SET_IMMEDIATE here, or else we'll whack the
+       * _tnl_CurrentInput pointer - not good when another 
+       * context has already been made current.
+       * So we just set the context's own tnl immediate pointer
+       * to 0.
+       */
+      ctx->swtnl_im = 0;
    }
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_screen.h,v 1.3 2002/02/22 21:45:01 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_screen.h,v 1.4 2002/10/30 12:51:55 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -39,11 +39,16 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifdef GLX_DIRECT_RENDERING
 
-#include <X11/Xlibint.h>
+/*
+ * IMPORTS: these headers contain all the DRI, X and kernel-related
+ * definitions that we need.
+ */
 #include "dri_util.h"
-#include "xf86drm.h"
 #include "radeon_common.h"
+#include "radeon_dri.h"
+#include "radeon_reg.h"
 #include "radeon_sarea.h"
+
 
 typedef struct {
    drmHandle handle;			/* Handle to the DRM region */
@@ -86,6 +91,7 @@ typedef struct {
 
    __DRIscreenPrivate *driScreen;
    unsigned int sarea_priv_offset;
+   unsigned int agp_buffer_offset;	/* offset in card memory space */
 } radeonScreenRec, *radeonScreenPtr;
 
 extern radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv );

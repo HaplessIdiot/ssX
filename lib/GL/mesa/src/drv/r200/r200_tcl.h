@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_tcl.h,v 1.1 2002/10/30 12:51:53 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -55,6 +55,7 @@ extern void r200TclFallback( GLcontext *ctx, GLuint bit, GLboolean mode );
 #define R200_TCL_FALLBACK_TEXGEN_1          0x20 /* texgen, unit 1 */
 #define R200_TCL_FALLBACK_TEXGEN_2          0x40 /* texgen, unit 2 */
 #define R200_TCL_FALLBACK_TCL_DISABLE       0x80 /* user disable */
+#define R200_TCL_FALLBACK_BITMAP            0x100 /* draw bitmap with points */
 
 #define R200_MAX_TCL_VERTSIZE (4*4) /* using maos now... */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_vtxfmt.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_vtxfmt.c,v 1.2 2002/11/05 17:46:08 tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -118,10 +118,10 @@ void r200_copy_to_current( GLcontext *ctx )
 
    switch( VTX_COLOR(rmesa->vb.vtxfmt_0, 0) ) {
    case R200_VTX_PK_RGBA:
-      ctx->Current.Color[0] = UBYTE_TO_FLOAT( vb.ubytecolorptr[0] );
-      ctx->Current.Color[1] = UBYTE_TO_FLOAT( vb.ubytecolorptr[1] );
-      ctx->Current.Color[2] = UBYTE_TO_FLOAT( vb.ubytecolorptr[2] );
-      ctx->Current.Color[3] = UBYTE_TO_FLOAT( vb.ubytecolorptr[3] );
+      ctx->Current.Color[0] = UBYTE_TO_FLOAT( vb.colorptr->red );
+      ctx->Current.Color[1] = UBYTE_TO_FLOAT( vb.colorptr->green );
+      ctx->Current.Color[2] = UBYTE_TO_FLOAT( vb.colorptr->blue );
+      ctx->Current.Color[3] = UBYTE_TO_FLOAT( vb.colorptr->alpha );
       break;
 
    case R200_VTX_FP_RGB:
@@ -142,9 +142,9 @@ void r200_copy_to_current( GLcontext *ctx )
    }
       
    if (VTX_COLOR(rmesa->vb.vtxfmt_0, 1) == R200_VTX_PK_RGBA) {
-      ctx->Current.SecondaryColor[0] = UBYTE_TO_FLOAT( vb.ubytespecptr[0] );
-      ctx->Current.SecondaryColor[1] = UBYTE_TO_FLOAT( vb.ubytespecptr[1] );
-      ctx->Current.SecondaryColor[2] = UBYTE_TO_FLOAT( vb.ubytespecptr[2] );
+      ctx->Current.SecondaryColor[0] = UBYTE_TO_FLOAT( vb.specptr->red );
+      ctx->Current.SecondaryColor[1] = UBYTE_TO_FLOAT( vb.specptr->green );
+      ctx->Current.SecondaryColor[2] = UBYTE_TO_FLOAT( vb.specptr->blue );
    } 
 
    if (rmesa->vb.vtxfmt_1 & (7 << R200_VTX_TEX0_COMP_CNT_SHIFT)) {
@@ -460,7 +460,7 @@ static void VFMT_FALLBACK( const char *caller )
       glNormal3fv( vb.normalptr );
 
    if (VTX_COLOR(ind0, 0) == R200_VTX_PK_RGBA) 
-         glColor4ubv( vb.ubytecolorptr );
+         glColor4ub( vb.colorptr->red, vb.colorptr->green, vb.colorptr->blue, vb.colorptr->alpha );
    else if (VTX_COLOR(ind0, 0) == R200_VTX_FP_RGBA) 
       glColor4fv( vb.floatcolorptr );
    else if (VTX_COLOR(ind0, 0) == R200_VTX_FP_RGB) {
@@ -474,7 +474,7 @@ static void VFMT_FALLBACK( const char *caller )
    }
 
    if (VTX_COLOR(ind0, 1) == R200_VTX_PK_RGBA) 
-      _glapi_Dispatch->SecondaryColor3ubvEXT( vb.ubytespecptr ); 
+      _glapi_Dispatch->SecondaryColor3ubEXT( vb.specptr->red, vb.specptr->green, vb.specptr->blue ); 
 
    if (ind1 & (7 << R200_VTX_TEX0_COMP_CNT_SHIFT)) 
       glTexCoord2fv( vb.texcoordptr[0] );
@@ -506,15 +506,21 @@ static void wrap_buffer( void )
 
    /* Copy vertices out of dma:
     */
-   nrverts = copy_dma_verts( rmesa, tmp );
+   if (rmesa->vb.prim[0] == GL_POLYGON+1) 
+      nrverts = 0;
+   else {
+      nrverts = copy_dma_verts( rmesa, tmp );
 
-   if (R200_DEBUG & DEBUG_VFMT)
-      fprintf(stderr, "%d vertices to copy\n", nrverts);
+      if (R200_DEBUG & DEBUG_VFMT)
+	 fprintf(stderr, "%d vertices to copy\n", nrverts);
    
+      /* Finish the prim at this point:
+       */
+      note_last_prim( rmesa, 0 );
+   }
 
-   /* Finish the prim at this point:
+   /* Fire any buffered primitives
     */
-   note_last_prim( rmesa, 0 );
    flush_prims( rmesa );
 
    /* Get new buffer
@@ -531,7 +537,11 @@ static void wrap_buffer( void )
    vb.notify = wrap_buffer;
 
    rmesa->dma.flush = flush_prims;
-   start_prim( rmesa, rmesa->vb.prim[0] );
+
+   /* Restart wrapped primitive:
+    */
+   if (rmesa->vb.prim[0] != GL_POLYGON+1)
+      start_prim( rmesa, rmesa->vb.prim[0] );
 
 
    /* Reemit saved vertices
@@ -634,8 +644,10 @@ static GLboolean check_vtx_fmt( GLcontext *ctx )
 
    vb.vertex_size = 3;
    vb.normalptr = ctx->Current.Normal;
-   vb.ubytecolorptr = 0;
+   vb.colorptr = NULL;
    vb.floatcolorptr = ctx->Current.Color;
+   vb.specptr = NULL;
+   vb.floatspecptr = ctx->Current.SecondaryColor;
    vb.texcoordptr[0] = ctx->Current.Texcoord[0];
    vb.texcoordptr[1] = ctx->Current.Texcoord[1];
 
@@ -651,9 +663,12 @@ static GLboolean check_vtx_fmt( GLcontext *ctx )
    }
 
    if (VTX_COLOR(ind0, 0) == R200_VTX_PK_RGBA) {
-      vb.ubytecolorptr = &vb.vertex[vb.vertex_size].ub4[0];
+      vb.colorptr = &vb.vertex[vb.vertex_size].color;
       vb.vertex_size += 1;
-      UNCLAMPED_FLOAT_TO_RGBA_CHAN( vb.ubytecolorptr, ctx->Current.Color );
+      UNCLAMPED_FLOAT_TO_CHAN( vb.colorptr->red,   ctx->Current.Color[0] );
+      UNCLAMPED_FLOAT_TO_CHAN( vb.colorptr->green, ctx->Current.Color[1] );
+      UNCLAMPED_FLOAT_TO_CHAN( vb.colorptr->blue,  ctx->Current.Color[2] );
+      UNCLAMPED_FLOAT_TO_CHAN( vb.colorptr->alpha, ctx->Current.Color[3] );
    }
    else if (VTX_COLOR(ind0, 0) == R200_VTX_FP_RGBA) {
       vb.floatcolorptr = &vb.vertex[vb.vertex_size].f;
@@ -672,10 +687,11 @@ static GLboolean check_vtx_fmt( GLcontext *ctx )
    }   
    
    if (VTX_COLOR(ind0, 1) == R200_VTX_PK_RGBA) {
-      vb.ubytespecptr = &vb.vertex[vb.vertex_size].ub4[0];
+      vb.specptr = &vb.vertex[vb.vertex_size].color;
       vb.vertex_size += 1;
-      UNCLAMPED_FLOAT_TO_RGB_CHAN( vb.ubytespecptr, 
-				   ctx->Current.SecondaryColor );
+      UNCLAMPED_FLOAT_TO_CHAN( vb.specptr->red,   ctx->Current.SecondaryColor[0] );
+      UNCLAMPED_FLOAT_TO_CHAN( vb.specptr->green, ctx->Current.SecondaryColor[1] );
+      UNCLAMPED_FLOAT_TO_CHAN( vb.specptr->blue,  ctx->Current.SecondaryColor[2] );
    }
 
 

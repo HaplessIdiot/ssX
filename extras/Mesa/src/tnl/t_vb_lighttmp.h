@@ -1,4 +1,3 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
@@ -116,8 +115,8 @@ static void TAG(light_rgba_spec)( GLcontext *ctx,
    (void) vstride;
 
 
-
-/*     fprintf(stderr, "%s\n", __FUNCTION__ );   */
+   if (MESA_VERBOSE & VERBOSE_LIGHTING)
+      fprintf(stderr, "%s\n", __FUNCTION__ );   
 
    spec[0] = Fspec;
    spec[1] = Bspec;
@@ -160,7 +159,7 @@ static void TAG(light_rgba_spec)( GLcontext *ctx,
 	 _mesa_update_material( ctx, new_material[j], new_material_mask[j] );
 
       if ( CHECK_VALIDATE(j) ) {
-	 _mesa_validate_all_lighting_tables( ctx );
+	 TNL_CONTEXT(ctx)->Driver.NotifyMaterialChange( ctx );
 	 UNCLAMPED_FLOAT_TO_CHAN(sumA[0], ctx->Light.Material[0].Diffuse[3]);
 	 if (IDX & LIGHT_TWOSIDE) 
 	    UNCLAMPED_FLOAT_TO_CHAN(sumA[1], ctx->Light.Material[1].Diffuse[3]);
@@ -327,7 +326,9 @@ static void TAG(light_rgba)( GLcontext *ctx,
    GLuint *new_material_mask = VB->MaterialMask;
    GLuint nr = VB->Count;
 
-/*     fprintf(stderr, "%s\n", __FUNCTION__ );  */
+   if (MESA_VERBOSE & VERBOSE_LIGHTING)
+      fprintf(stderr, "%s\n", __FUNCTION__ );   
+
    (void) flags;
    (void) nstride;
    (void) vstride;
@@ -369,7 +370,7 @@ static void TAG(light_rgba)( GLcontext *ctx,
 	 _mesa_update_material( ctx, new_material[j], new_material_mask[j] );
 
       if ( CHECK_VALIDATE(j) ) {
-	 _mesa_validate_all_lighting_tables( ctx );
+	 TNL_CONTEXT(ctx)->Driver.NotifyMaterialChange( ctx );
 	 UNCLAMPED_FLOAT_TO_CHAN(sumA[0], ctx->Light.Material[0].Diffuse[3]);
 	 if (IDX & LIGHT_TWOSIDE)
 	    UNCLAMPED_FLOAT_TO_CHAN(sumA[1], ctx->Light.Material[1].Diffuse[3]);
@@ -535,7 +536,9 @@ static void TAG(light_fast_rgba_single)( GLcontext *ctx,
    GLfloat base[2][3];
    GLuint nr = VB->Count;
 
-/*     fprintf(stderr, "%s\n", __FUNCTION__ );  */
+   if (MESA_VERBOSE & VERBOSE_LIGHTING)
+      fprintf(stderr, "%s\n", __FUNCTION__ );   
+
    (void) input;		/* doesn't refer to Eye or Obj */
    (void) flags;
    (void) nr;
@@ -560,7 +563,6 @@ static void TAG(light_fast_rgba_single)( GLcontext *ctx,
    do {
       
       if ( CHECK_COLOR_MATERIAL(j) ) {
-/*  	 fprintf(stderr, "colormaterial at %d (%p)\n", j, CMcolor); */
 	 _mesa_update_color_material( ctx, CMcolor );
       }
 
@@ -568,7 +570,7 @@ static void TAG(light_fast_rgba_single)( GLcontext *ctx,
 	 _mesa_update_material( ctx, new_material[j], new_material_mask[j] );
 
       if ( CHECK_VALIDATE(j) )
-	 _mesa_validate_all_lighting_tables( ctx );
+	 TNL_CONTEXT(ctx)->Driver.NotifyMaterialChange( ctx );
 
 
       /* No attenuation, so incoporate _MatAmbient into base color.
@@ -589,13 +591,6 @@ static void TAG(light_fast_rgba_single)( GLcontext *ctx,
 
       do {
 	 GLfloat n_dot_VP = DOT3(normal, light->_VP_inf_norm);
-
-/*  	 if (j < 5) */
-/*  	    fprintf(stderr, "light normal %d: %f %f %f\n",  */
-/*  		    j,  */
-/*  		    normal[0], */
-/*  		    normal[1], */
-/*  		    normal[2]); */
 
 	 if (n_dot_VP < 0.0F) {
 	    if (IDX & LIGHT_TWOSIDE) {
@@ -639,14 +634,6 @@ static void TAG(light_fast_rgba_single)( GLcontext *ctx,
 	 COPY_CHAN4(Fcolor[j], Fcolor[j-1]);
 	 if (IDX & LIGHT_TWOSIDE)
 	    COPY_CHAN4(Bcolor[j], Bcolor[j-1]);
-
-/*  	 if (j < 5) */
-/*  	    fprintf(stderr, "skip normal %d: %f %f %f\n",  */
-/*  		    j,  */
-/*  		    normal[0], */
-/*  		    normal[1], */
-/*  		    normal[2]); */
-
       }
 
    } while (!CHECK_END_VB(j));
@@ -675,7 +662,10 @@ static void TAG(light_fast_rgba)( GLcontext *ctx,
    GLuint nr = VB->Count;
    struct gl_light *light;
 
-/*     fprintf(stderr, "%s\n", __FUNCTION__ );  */
+   if (MESA_VERBOSE & VERBOSE_LIGHTING)
+      fprintf(stderr, "%s\n", __FUNCTION__ );   
+
+
    (void) flags;
    (void) input;
    (void) nr;
@@ -711,7 +701,7 @@ static void TAG(light_fast_rgba)( GLcontext *ctx,
 	    _mesa_update_material( ctx, new_material[j], new_material_mask[j] );
 
 	 if ( CHECK_VALIDATE(j) ) {
-	    _mesa_validate_all_lighting_tables( ctx );
+	    TNL_CONTEXT(ctx)->Driver.NotifyMaterialChange( ctx );
 	    UNCLAMPED_FLOAT_TO_CHAN(sumA[0], ctx->Light.Material[0].Diffuse[3]);
 	    if (IDX & LIGHT_TWOSIDE)
 	       UNCLAMPED_FLOAT_TO_CHAN(sumA[1], 
@@ -812,7 +802,9 @@ static void TAG(light_ci)( GLcontext *ctx,
    GLuint *new_material_mask = VB->MaterialMask;
    GLuint nr = VB->Count;
 
-/*     fprintf(stderr, "%s\n", __FUNCTION__ );  */
+   if (MESA_VERBOSE & VERBOSE_LIGHTING)
+      fprintf(stderr, "%s\n", __FUNCTION__ );   
+
    (void) flags;
    (void) nstride;
    (void) vstride;
@@ -853,7 +845,7 @@ static void TAG(light_ci)( GLcontext *ctx,
 	 _mesa_update_material( ctx, new_material[j], new_material_mask[j] );
 
       if ( CHECK_VALIDATE(j) )
-	 _mesa_validate_all_lighting_tables( ctx );
+	 TNL_CONTEXT(ctx)->Driver.NotifyMaterialChange( ctx );
 
       diffuse[0] = specular[0] = 0.0F;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_screen.c,v 1.6 2002/02/22 21:44:58 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_screen.c,v 1.7 2002/10/30 12:51:38 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -74,6 +74,22 @@ r128CreateScreen( __DRIscreenPrivate *sPriv )
     */
    r128Screen->IsPCI = r128DRIPriv->IsPCI;
    r128Screen->sarea_priv_offset = r128DRIPriv->sarea_priv_offset;
+   
+   if (sPriv->drmMinor >= 3) {
+      drmR128GetParam gp;
+      int ret;
+
+      gp.param = R128_PARAM_IRQ_NR;
+      gp.value = &r128Screen->irq;
+
+      ret = drmCommandWriteRead( sPriv->fd, DRM_R128_GETPARAM,
+				    &gp, sizeof(gp));
+      if (ret) {
+         fprintf(stderr, "drmR128GetParam (R128_PARAM_IRQ_NR): %d\n", ret);
+         FREE( r128Screen );
+         return NULL;
+      }
+   }
 
    r128Screen->mmio.handle = r128DRIPriv->registerHandle;
    r128Screen->mmio.size   = r128DRIPriv->registerSize;
@@ -165,6 +181,9 @@ static void
 r128DestroyScreen( __DRIscreenPrivate *sPriv )
 {
    r128ScreenPtr r128Screen = (r128ScreenPtr)sPriv->private;
+
+   if ( !r128Screen )
+      return;
 
    if ( !r128Screen->IsPCI ) {
       drmUnmap( (drmAddress)r128Screen->agpTextures.map,
@@ -283,6 +302,7 @@ r128SwapBuffers(Display *dpy, void *drawablePrivate)
       ctx = rmesa->glCtx;
       if (ctx->Visual.doubleBufferMode) {
          _mesa_swapbuffers( ctx );  /* flush pending rendering comands */
+
          if ( rmesa->doPageFlip ) {
             r128PageFlip( dPriv );
          }

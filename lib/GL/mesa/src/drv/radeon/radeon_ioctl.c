@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_ioctl.c,v 1.8 2002/10/30 12:51:54 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_ioctl.c,v 1.9 2002/12/11 02:59:49 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -41,6 +41,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "radeon_tcl.h"
 #include "radeon_sanity.h"
 
+#include "radeon_macros.h"  /* for INREG() */
+
 #include "mem.h"
 #include "macros.h"
 #include "swrast/swrast.h"
@@ -49,7 +51,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define RADEON_TIMEOUT             512
 #define RADEON_IDLE_RETRY           16
 
-#undef usleep
+#include <unistd.h>  /* for usleep() */
 
 static void do_usleep( int nr, const char *caller )
 {
@@ -80,6 +82,25 @@ static void radeon_emit_state_list( radeonContextPtr rmesa,
 {
    struct radeon_state_atom *state, *tmp;
    char *dest;
+
+   /* From Felix Kuhling: similar to some other lockups, glaxium will
+    * lock with what we believe to be a normal command stream, but
+    * sprinkling some magic waits arounds allows it to run
+    * uninterrupted.  This has a slight effect on q3 framerates, but
+    * it might now be possible to remove the zbs hack, below.
+    *
+    * Felix reports that this can be narrowed down to just
+    * tcl,tex0,tex1 state, but that's pretty much every statechange,
+    * so let's just put the wait in always (unless Felix wants to
+    * narrow it down further...)
+    */
+   if (1) {
+      drmRadeonCmdHeader *cmd;
+      cmd = (drmRadeonCmdHeader *)radeonAllocCmdBuf( rmesa, sizeof(*cmd), 
+						     __FUNCTION__ );
+      cmd->wait.cmd_type = RADEON_CMD_WAIT;
+      cmd->wait.flags = RADEON_WAIT_3D;
+   }
 
    foreach_s( state, tmp, list ) {
       if (state->check( rmesa->glCtx )) {
@@ -1065,37 +1086,6 @@ void radeonWaitForVBlank( radeonContextPtr rmesa )
     LOCK_HARDWARE( rmesa );
 }
 
-
-void radeonGetAllParams( radeonContextPtr rmesa )
-{
-   int ret;
-   drmRadeonGetParam gp;
-
-   gp.param = RADEON_PARAM_AGP_BUFFER_OFFSET;
-   gp.value = &rmesa->dri.agp_buffer_offset;
-
-   ret = drmCommandWriteRead( rmesa->dri.fd,
-			      DRM_RADEON_GETPARAM,
-			      &gp, sizeof(gp));
-   if (ret) {
-      fprintf(stderr, "drmRadeonGetParam (RADEON_PARAM_AGP_BUFFER_OFFSET): %d\n", ret);
-      exit(1);
-   }
-
-   if ( rmesa->dri.drmMinor >= 6 ) {
-      gp.param = RADEON_PARAM_IRQ_NR;
-      gp.value = &rmesa->radeonScreen->irq;
-
-         ret = drmCommandWriteRead( rmesa->dri.fd,
-				    DRM_RADEON_GETPARAM,
-				    &gp, sizeof(gp));
-	 if (ret) {
-	    fprintf(stderr, "drmRadeonGetParam (RADEON_PARAM_IRQ): %d\n", ret);
-	    exit(1);
-	 }
-   }
-}
-
 void radeonFlush( GLcontext *ctx )
 {
    radeonContextPtr rmesa = RADEON_CONTEXT( ctx );
@@ -1139,9 +1129,5 @@ void radeonInitIoctlFuncs( GLcontext *ctx )
     ctx->Driver.Clear = radeonClear;
     ctx->Driver.Finish = radeonFinish;
     ctx->Driver.Flush = radeonFlush;
-    
-    if (RADEON_CONTEXT(ctx)->dri.drmMinor >= 3) {
-       radeonGetAllParams( RADEON_CONTEXT( ctx ) );
-    }
 }
 

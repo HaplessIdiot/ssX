@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_context.h,v 1.10 2002/02/22 21:44:57 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_context.h,v 1.11 2002/10/30 12:51:38 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -202,7 +202,7 @@ struct r128_context {
    __DRIscreenPrivate	*driScreen;	/* DRI screen */
    __DRIdrawablePrivate	*driDrawable;	/* DRI drawable bound to this ctx */
 
-   int lastStamp;		        /* mirror driDrawable->lastStamp */
+   unsigned int lastStamp;	        /* mirror driDrawable->lastStamp */
 
    drmContext hHWContext;
    drmLock *driHwLock;
@@ -220,6 +220,10 @@ struct r128_context {
    GLuint c_textureSwaps;
    GLuint c_textureBytes;
    GLuint c_vertexBuffers;
+
+   /* VBI
+    */
+   GLuint vbl_seq;
 };
 
 #define R128_CONTEXT(ctx)		((r128ContextPtr)(ctx->DriverCtx))

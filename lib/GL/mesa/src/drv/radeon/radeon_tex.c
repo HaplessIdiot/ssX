@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_tex.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_tex.c,v 1.8 2002/11/05 17:46:09 tsi Exp $ */
 /*
  * Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
  *                      VA Linux Systems Inc., Fremont, California.
@@ -40,11 +40,9 @@
 #include "enums.h"
 #include "image.h"
 #include "mem.h"
-#include "mmath.h"
 #include "simple_list.h"
 #include "texformat.h"
 #include "texstore.h"
-#include "texutil.h"
 
 
 /* =============================================================
