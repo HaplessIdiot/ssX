@@ -1,4 +1,6 @@
 XFree86 4.2.99.1 (XX March 2002)
+ 109. Fix bug that prevented the vesa driver from accessing VGA CRTC registers
+      (Marc La France).
  108. New pre-processor files for expat, fontconfig and rename of
       OSmesa-def.cpp to OSMesa-def.cpp (#5215-#5218, Alexander Gottwald).
  107. Rework ati, atimisc, r128 and radeon module versioning (Marc La France).
@@ -14755,4 +14757,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2197 2002/04/06 19:06:01 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2198 2002/04/07 15:21:38 alanh Exp $
