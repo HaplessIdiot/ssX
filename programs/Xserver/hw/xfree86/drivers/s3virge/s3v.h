@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.29 2001/11/21 22:43:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.30 2002/01/25 21:56:08 tsi Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -391,7 +391,8 @@ typedef struct tagS3VRec {
 
 /* prototypes */
 /* s3v_dac.c */
-extern void S3VCommonCalcClock(long freq, int min_m, int min_n1, int max_n1,
+extern void S3VCommonCalcClock(ScrnInfoPtr pScrn, DisplayModePtr mode, 
+			long freq, int min_m, int min_n1, int max_n1,
 			int min_n2, int max_n2, long freq_min, long freq_max,
 			unsigned char * mdiv, unsigned char * ndiv);
 
@@ -424,7 +425,7 @@ void s3vRefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 
 /* s3v_xv.c  X Video Extension support */
 void S3VInitVideo(ScreenPtr pScreen);
-
+int S3VQueryXvCapable(ScrnInfoPtr);
 
 #endif  /*_S3V_H*/
 
