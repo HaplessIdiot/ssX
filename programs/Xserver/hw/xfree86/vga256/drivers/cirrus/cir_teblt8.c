@@ -1,5 +1,5 @@
 /* $XConsortium: cir_teblt8.c,v 1.2 94/04/17 20:32:34 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.0 1994/04/29 14:10:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.1 1994/05/14 07:02:02 dawes Exp $ */
 /*
  * TEGblt - ImageText expanded glyph fonts only.  For
  * 8 bit displays, in Copy mode with no clipping.
@@ -311,7 +311,7 @@ void CirrusPolyGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	cfb8SetPixels (pGC->fgPixel, pGC->bgPixel);
 
 	/* Collect list of pointers to glyph bitmaps. */
-	glyphp = ALLOCATE_LOCAL(nglyph * sizeof(unsigned long *));
+	glyphp = (unsigned long **)ALLOCATE_LOCAL(nglyph * sizeof(unsigned long *));
 	for (i = 0; i < nglyph; i++ ) {
 		glyphp[i] = (unsigned long *)FONTGLYPHBITS(pglyphBase, *ppci++);
 	}

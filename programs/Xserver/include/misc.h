@@ -67,7 +67,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: misc.h,v 1.68 94/04/17 20:25:48 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.0 1994/04/28 12:41:45 dawes Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -176,7 +176,9 @@ typedef struct _Client *ClientPtr; /* also in dix.h */
  */
 #define lowbit(x) ((x) & (~(x) + 1))
 
+#undef MAXSHORT
 #define MAXSHORT 32767
+#undef MINSHORT
 #define MINSHORT -MAXSHORT 
 
 

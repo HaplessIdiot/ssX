@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_driver.c,v 3.1 1994/05/31 08:16:04 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -375,7 +375,7 @@ S3Restore (restore)
    outb (0x3d5, (i & 0xf0));
    outb(0x3CD, 0x00); /* segment select */
 
-   vgaHWRestore (restore);
+   vgaHWRestore ((vgaHWPtr)restore);
 
   i = inb(vgaIOBase + 0x0A); /* reset flip-flop */
   outb(0x3C0, 0x36);
@@ -430,7 +430,7 @@ S3Save (save)
 
    temp = inb(0x3CD); outb(0x3CD, 0x00); /* segment select */
 
-   save = (vgaS3Ptr) vgaHWSave (save, sizeof (vgaS3Rec));
+   save = (vgaS3Ptr) vgaHWSave ((vgaHWPtr)save, sizeof (vgaS3Rec));
 
 
    for (i = 0; i < 5; i++) {
