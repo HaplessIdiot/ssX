@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_xmesa.c,v 1.7 2000/12/21 14:06:57 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_xmesa.c,v 1.8 2000/12/21 14:10:27 alanh Exp $ */
 
 /*
  * Authors:
@@ -79,7 +79,7 @@ GLboolean XMesaInitDriver (__DRIscreenPrivate * driScrnPriv)
   /* Check the DRI version */
   {
       int major, minor, patch;
-      if (XF86DRIQueryVersion(priv->display, &major, &minor, &patch)) {
+      if (XF86DRIQueryVersion(driScrnPriv->display, &major, &minor, &patch)) {
          if (major != 3 || minor != 1 || patch < 0) {
             char msg[1000];
             sprintf(msg, "sis DRI driver expected DRI version 3.1.x but got version %d.%d.%d", major, minor, patch);
@@ -90,21 +90,21 @@ GLboolean XMesaInitDriver (__DRIscreenPrivate * driScrnPriv)
   }
 
   /* Check that the DDX driver version is compatible */
-  if (priv->ddxMajor != 1 ||
-       priv->ddxMinor != 0 ||
-       priv->ddxPatch < 0) {
+  if (driScrnPriv->ddxMajor != 1 ||
+       driScrnPriv->ddxMinor != 0 ||
+       driScrnPriv->ddxPatch < 0) {
       char msg[1000];
-      sprintf(msg, "sis DRI driver expected DDX driver version 1.0.x but got version %d.%d.%d", priv->ddxMajor, priv->ddxMinor, priv->ddxPatch);
+      sprintf(msg, "sis DRI driver expected DDX driver version 1.0.x but got version %d.%d.%d", driScrnPriv->ddxMajor, driScrnPriv->ddxMinor, driScrnPriv->ddxPatch);
       __driMesaMessage(msg);
       return GL_FALSE;
   }
 
   /* Check that the DRM driver version is compatible */
-  if (priv->drmMajor != 1 ||
-       priv->drmMinor != 0 ||
-       priv->drmPatch < 0) {
+  if (driScrnPriv->drmMajor != 1 ||
+       driScrnPriv->drmMinor != 0 ||
+       driScrnPriv->drmPatch < 0) {
       char msg[1000];
-      sprintf(msg, "sis DRI driver expected DRM driver version 1.0.x but got version %d.%d.%d", priv->drmMajor, priv->drmMinor, priv->drmPatch);
+      sprintf(msg, "sis DRI driver expected DRM driver version 1.0.x but got version %d.%d.%d", driScrnPriv->drmMajor, driScrnPriv->drmMinor, driScrnPriv->drmPatch);
       __driMesaMessage(msg);
       return GL_FALSE;
   }
