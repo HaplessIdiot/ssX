@@ -1,5 +1,5 @@
 /* $XConsortium: cfbgetsp.c,v 5.14 94/04/17 20:28:50 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfbgetsp.c,v 3.1 1997/07/19 05:43:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbgetsp.c,v 3.2 1997/12/20 14:20:45 hohndel Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -100,9 +100,6 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
 	    mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart);
 	    return;
 	case PSZ:
-#if PSZ == 24
-	case 32:
-#endif
 	    break;
 	default:
 	    FatalError("cfbGetSpans: invalid depth\n");

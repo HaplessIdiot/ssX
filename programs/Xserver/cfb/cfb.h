@@ -1,5 +1,4 @@
 /* $XConsortium: cfb.h,v 5.37 94/04/17 20:28:38 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.12 1998/03/21 14:23:15 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -28,8 +27,9 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-#ifndef __CFB_H__
-#define  __CFB_H__
+/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.7.2.11 1998/07/24 11:36:06 dawes Exp $ */
+
+#if !defined(__CFB_H__) || defined(CFB_PROTOTYPES_ONLY)
 
 #include "X.h"
 #include "pixmap.h"
@@ -44,6 +44,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include "cfbmap.h"
 
+#ifndef CFB_PROTOTYPES_ONLY
+#define __CFB_H__
 /*
    private filed of pixmap
    pixmap.devPrivate = (unsigned int *)pointer_to_bits
@@ -120,6 +122,7 @@ extern int cfbComputeClipMasks32(
     CARD32 * /*clips*/
 #endif
 );
+#endif /* !CFB_PROTOTYPES_ONLY */
 /* cfb8cppl.c */
 
 extern void cfbCopyImagePlane(
@@ -133,6 +136,7 @@ extern void cfbCopyImagePlane(
 #endif
 );
 
+#ifndef CFB_PROTOTYPES_ONLY
 extern void cfbCopyPlane8to1(
 #if NeedFunctionPrototypes
     DrawablePtr /*pSrcDrawable*/,
@@ -144,6 +148,7 @@ extern void cfbCopyPlane8to1(
     unsigned long /*bitPlane*/
 #endif
 );
+#endif
 /* cfb8lineCO.c */
 
 extern int cfb8LineSS1RectCopy(
@@ -369,6 +374,7 @@ extern RegionPtr cfbCopyArea(
 #endif
 );
 
+#ifndef CFB_PROTOTYPES_ONLY
 extern void cfbCopyPlane1to8(
 #if NeedFunctionPrototypes
     DrawablePtr /*pSrcDrawable*/,
@@ -380,6 +386,7 @@ extern void cfbCopyPlane1to8(
     unsigned long /*bitPlane*/
 #endif
 );
+#endif
 
 extern RegionPtr cfbCopyPlane(
 #if NeedFunctionPrototypes
@@ -509,6 +516,7 @@ extern void cfbRestoreAreas(
 );
 /* cfbcmap.c */
 
+#ifndef CFB_PROTOTYPES_ONLY
 extern int cfbListInstalledColormaps(
 #if NeedFunctionPrototypes
     ScreenPtr	/*pScreen*/,
@@ -566,6 +574,8 @@ extern Bool cfbSetVisualTypes(
 #endif
 );
 
+extern void cfbClearVisualTypes(void);
+
 extern Bool cfbInitVisuals(
 #if NeedFunctionPrototypes
     VisualPtr * /*visualp*/,
@@ -578,6 +588,7 @@ extern Bool cfbInitVisuals(
     int /*bitsPerRGB*/
 #endif
 );
+#endif
 /* cfbfillarcC.c */
 
 extern void cfbPolyFillArcSolidCopy(
@@ -652,6 +663,7 @@ extern void cfbUnnaturalStippleFS(
 #endif
 );
 
+#ifndef CFB_PROTOTYPES_ONLY
 extern void cfb8Stipple32FS(
 #if NeedFunctionPrototypes
     DrawablePtr /*pDrawable*/,
@@ -673,6 +685,7 @@ extern void cfb8OpaqueStipple32FS(
     int /*fSorted*/
 #endif
 );
+#endif
 /* cfbgc.c */
 
 extern GCOpsPtr cfbMatchCommon(
@@ -940,6 +953,7 @@ extern void cfbPolyPoint(
 );
 /* cfbpush8.c */
 
+#ifndef CFB_PROTOTYPES_ONLY
 extern void cfbPushPixels8(
 #if NeedFunctionPrototypes
     GCPtr /*pGC*/,
@@ -979,6 +993,7 @@ extern void cfb8FillRectStippledUnnatural(
     BoxPtr /*pBox*/
 #endif
 );
+#endif
 /* cfbrrop.c */
 
 extern int cfbReduceRasterOp(
@@ -1011,7 +1026,7 @@ extern Bool cfbSetupScreen(
 #endif
 );
 
-extern int cfbFinishScreenInit(
+extern Bool cfbFinishScreenInit(
 #if NeedFunctionPrototypes
     ScreenPtr /*pScreen*/,
     pointer /*pbits*/,
@@ -1158,6 +1173,7 @@ extern void cfbSolidSpansXor(
 );
 /* cfbteblt8.c */
 
+#ifndef CFB_PROTOTYPES_ONLY
 extern void cfbTEGlyphBlt8(
 #if NeedFunctionPrototypes
     DrawablePtr /*pDrawable*/,
@@ -1169,6 +1185,7 @@ extern void cfbTEGlyphBlt8(
     pointer /*pglyphBase*/
 #endif
 );
+#endif
 /* cfbtegblt.c */
 
 extern void cfbTEGlyphBlt(
@@ -1413,14 +1430,13 @@ extern void cfbZeroPolyArcSS8Xor(
 #endif
 );
 
+#ifndef CFB_PROTOTYPES_ONLY
 /*
  * This is the only completely portable way to
  * compute this info
  */
 
-#define BitsPerPixel(d) (\
-    (1 << PixmapWidthPaddingInfo[d].padBytesLog2) * 8 / \
-    (PixmapWidthPaddingInfo[d].padRoundUp+1))
+#define BitsPerPixel(d) PixmapWidthPaddingInfo[d].bitsPerPixel
 
 /* Common macros for extracting drawing information */
 
@@ -1509,10 +1525,10 @@ extern int cfbScreenPrivateIndex;
 #endif
 /*
  * if CFB is built as a module, it shouldn't call libc functions.
- * The following macros should wrap all calls in CFB
  */
-#if defined(XFree86LOADER) && !defined(NOXF86DEFS)
+#ifdef XFree86LOADER
 #include "xf86_ansic.h"
 #endif
+#endif /* !CFB_PROTOTYPES_ONLY */
 
-#endif /*  __CFB_H__ */
+#endif
