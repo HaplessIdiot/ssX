@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_maos_arrays.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_maos_arrays.c,v 1.2 2002/11/05 17:46:08 tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -66,18 +66,18 @@ static void emit_ubyte_rgba3( GLcontext *ctx,
 		       int count )
 {
    int i;
-   char *out = (char *)(rvb->start + rvb->address);
+   r200_color_t *out = (r200_color_t *)(rvb->start + rvb->address);
 
    if (R200_DEBUG & DEBUG_VERTS)
       fprintf(stderr, "%s count %d stride %d out %p\n",
 	      __FUNCTION__, count, stride, out);
 
    for (i = 0; i < count; i++) {
-      out[0] = *data;
-      out[1] = *(data+1);
-      out[2] = *(data+2);
-      out[3] = 0xFF;
-      out += 4;
+      out->red   = *data;
+      out->green = *(data+1);
+      out->blue  = *(data+2);
+      out->alpha = 0xFF;
+      out++;
       data += stride;
    }
 }
@@ -118,13 +118,15 @@ static void emit_ubyte_rgba4( GLcontext *ctx,
       fprintf(stderr, "%s count %d stride %d\n",
 	      __FUNCTION__, count, stride);
 
-   if (stride == 4)
-       COPY_DWORDS( out, data, count );
-   else
+   if (stride == 4) {
+      for (i = 0; i < count; i++)
+	 ((int *)out)[i] = LE32_TO_CPU(((int *)data)[i]);
+   } else {
       for (i = 0; i < count; i++) {
-	 *out++ = *(int *)data;
+	 *(int *)out++ = LE32_TO_CPU(*(int *)data);
 	 data += stride;
       }
+   }
 }
 
 
