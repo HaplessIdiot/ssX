@@ -67,7 +67,9 @@ SOFTWARE.
 
 /* New fields for the clock widget instance record */
 typedef struct {
+#ifndef RENDER
 	 Pixel	fgpixel;	/* color index for text */
+#endif
 	 Pixel	Hipixel;	/* color index for Highlighting */
 	 Pixel	Hdpixel;	/* color index for hands */
 	 XFontStruct	*font;	/* font for text */
@@ -101,19 +103,23 @@ typedef struct {
 	 XtIntervalId interval_id;
 	 char prev_time_string[ASCII_TIME_BUFLEN];
 #ifdef XRENDER
+	 XftColor	fg_color;
 	 XftColor	hour_color;
 	 XftColor	min_color;
 	 XftColor	sec_color;
 	 XftColor	major_color;
 	 XftColor	minor_color;
 	 XftFont	*face;
-    
 	 XRenderPictFormat  *mask_format;
+    
 	 Boolean    render;
 	 Boolean    sharp;
+	 Boolean    can_polygon;
+	 Boolean    buffer;
 	 XftDraw    *draw;
 	 Picture    picture;
 	 Picture    fill_picture;
+	 Pixmap	    pixmap;
 	 XRectangle damage;
 	 XDouble    x_scale;
 	 XDouble    x_off;
@@ -121,6 +127,12 @@ typedef struct {
 	 XDouble    y_off;
 #endif
    } ClockPart;
+
+#ifdef XRENDER
+#define ClockFgPixel(c)	((c)->clock.fg_color.pixel)
+#else
+#define ClockFgPixel(c)	((c)->clock.fgpixel)
+#endif
 
 /* Full instance record declaration */
 typedef struct _ClockRec {
