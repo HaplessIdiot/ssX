@@ -86,7 +86,7 @@ int     CmdQueLen;
 #define SiSIdle \
   while( (MMIO_IN16(pSiS->IOBase, BR(16)+2) & 0xE000) != 0xE000){}; \
   while( (MMIO_IN16(pSiS->IOBase, BR(16)+2) & 0xE000) != 0xE000){}; \
-  CmdQueLen=MMIO_IN16(pSiS->IOBase, 0x8240);    
+  CmdQueLen=MMIO_IN16(pSiS->IOBase, 0x8240);
         
 
 #define SiSSetupSRCBase(base) \
@@ -207,4 +207,3 @@ int     CmdQueLen;
                 if (CmdQueLen <= 0)  SiSIdle;\
                 MMIO_OUT32(pSiS->IOBase, BR(12), ls);\
                 CmdQueLen --;
-

@@ -27,7 +27,7 @@
  */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_cursor.h,v 1.8 1999/05/15 12:10:28 dawes Exp $ */
 
-#define CS(x)	(0x8500+(x<<2))
+#define CS(x)   (0x8500+(x<<2))
 
 #define sis300EnableHWCursor()\
   *(volatile CARD32 *)(pSiS->IOBase + CS(0)) |= 0x40000000;
