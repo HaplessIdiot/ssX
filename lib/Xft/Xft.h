@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/Xft.h,v 1.5 2000/11/30 06:59:45 keithp Exp $
+ * $XFree86: xc/lib/Xft/Xft.h,v 1.6 2000/11/30 10:42:22 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -134,6 +134,11 @@ typedef struct _XftFont {
 
 typedef struct _XftDraw XftDraw;
 
+typedef struct _XftColor {
+    unsigned long   pixel;
+    XRenderColor    color;
+} XftColor;
+
 typedef struct _XftObjectSet {
     int		nobject;
     int		sobject;
@@ -143,6 +148,28 @@ typedef struct _XftObjectSet {
 /* xftcfg.c */
 Bool
 XftConfigSubstitute (XftPattern *p);
+
+/* xftcolor.c */
+Bool
+XftColorAllocName (Display  *dpy,
+		   Visual   *visual,
+		   Colormap cmap,
+		   char	    *name,
+		   XftColor *result);
+
+Bool
+XftColorAllocValue (Display	    *dpy,
+		    Visual	    *visual,
+		    Colormap	    cmap,
+		    XRenderColor    *color,
+		    XftColor	    *result);
+
+void
+XftColorFree (Display	*dpy,
+	      Visual	*visual,
+	      Colormap	cmap,
+	      XftColor	*color);
+
 
 /* xftcore.c */
 /* xftdbg.c */
@@ -186,7 +213,7 @@ XftDrawDestroy (XftDraw	*draw);
 
 void
 XftDrawString8 (XftDraw		*d,
-		XRenderColor	*color,
+		XftColor	*color,
 		XftFont		*font,
 		int		x, 
 		int		y,
@@ -195,7 +222,7 @@ XftDrawString8 (XftDraw		*d,
 
 void
 XftDrawString16 (XftDraw	*draw,
-		 XRenderColor	*color,
+		 XftColor	*color,
 		 XftFont	*font,
 		 int		x,
 		 int		y,
@@ -204,7 +231,7 @@ XftDrawString16 (XftDraw	*draw,
 
 void
 XftDrawString32 (XftDraw	*draw,
-		 XRenderColor	*color,
+		 XftColor	*color,
 		 XftFont	*font,
 		 int		x,
 		 int		y,
@@ -212,7 +239,7 @@ XftDrawString32 (XftDraw	*draw,
 		 int		len);
 void
 XftDrawRect (XftDraw	    *d,
-	     XRenderColor   *color,
+	     XftColor	    *color,
 	     int	    x, 
 	     int	    y,
 	     unsigned int   width,
@@ -254,6 +281,9 @@ XftFontOpen (Display *dpy, int screen, ...);
 
 XftFont *
 XftFontOpenName (Display *dpy, int screen, const char *name);
+
+XftFont *
+XftFontOpenXlfd (Display *dpy, int screen, const char *xlfd);
 
 void
 XftFontClose (Display *dpy, XftFont *font);
@@ -390,8 +420,8 @@ XftPatternBuild (XftPattern *orig, ...);
 
 /* xftxlfd.c */
 XftPattern *
-XftXlfdParse (const char *xlfd_orig, Bool ignore_scalable);
-
+XftXlfdParse (const char *xlfd_orig, Bool ignore_scalable, Bool complete);
+    
 XFontStruct *
 XftCoreOpen (Display *dpy, XftPattern *pattern);
 

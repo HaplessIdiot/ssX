@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xft/xftdraw.c,v 1.2 2000/11/30 10:42:22 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -72,22 +72,14 @@ XftDrawDestroy (XftDraw	*draw)
 	XRenderFreePicture (draw->dpy, draw->render.fg_pict);
     }
     if (draw->core_set)
-    {
-	int	i;
-	
 	XFreeGC (draw->dpy, draw->core.draw_gc);
-	for (i = 0; i < CACHE_SIZE; i++)
-	    if (draw->core.u.cache[i].use >= 0)
-		XFreeColors (draw->dpy, draw->colormap,
-			     &draw->core.u.cache[i].pixel, 1, 0);
-    }
     free (draw);
 }
 
 Bool
-XftDrawRenderPrepare (XftDraw	    *draw,
-		      XRenderColor  *color,
-		      XftFont	    *font)
+XftDrawRenderPrepare (XftDraw	*draw,
+		      XftColor	*color,
+		      XftFont	*font)
 {
     if (!draw->render_set)
     {
@@ -117,129 +109,39 @@ XftDrawRenderPrepare (XftDraw	    *draw,
 							 draw->render.fg_pix,
 							 pix_format,
 							 CPRepeat, &pa);
-	    draw->render.fg_color.red = ~color->red;
+	    draw->render.fg_color.red = ~color->color.red;
 	}
     }
     if (!draw->render_able)
 	return False;
-    if (memcmp (color, &draw->render.fg_color, sizeof (XRenderColor)))
+    if (memcmp (&color->color, &draw->render.fg_color, sizeof (XRenderColor)))
     {
 	XRenderFillRectangle (draw->dpy, PictOpSrc, draw->render.fg_pict,
-			      color, 0, 0, 1, 1);
-	draw->render.fg_color = *color;
+			      &color->color, 0, 0, 1, 1);
+	draw->render.fg_color = color->color;
     }
     return True;
 }
 
-static short
-maskbase (unsigned long m)
-{
-    short        i;
-
-    if (!m)
-	return 0;
-    i = 0;
-    while (!(m&1))
-    {
-	m>>=1;
-	i++;
-    }
-    return i;
-}
-
-static short
-masklen (unsigned long m)
-{
-    unsigned long y;
-
-    y = (m >> 1) &033333333333;
-    y = m - y - ((y >>1) & 033333333333);
-    return (short) (((y + (y >> 3)) & 030707070707) % 077);
-}
-
 Bool
-XftDrawCorePrepare (XftDraw	    *draw,
-		    XRenderColor    *color,
-		    XftFont	    *font)
+XftDrawCorePrepare (XftDraw	*draw,
+		    XftColor	*color,
+		    XftFont	*font)
 {
-    int		    i;
-    unsigned long   pixel;
     XGCValues	    gcv;
 
     if (!draw->core_set)
     {
 	draw->core_set = True;
 
-	if (draw->visual->class == TrueColor)
-	{
-	    draw->core.u.truecolor.red_shift = maskbase (draw->visual->red_mask);
-	    draw->core.u.truecolor.red_len = masklen (draw->visual->red_mask);
-	    draw->core.u.truecolor.green_shift = maskbase (draw->visual->green_mask);
-	    draw->core.u.truecolor.green_len = masklen (draw->visual->green_mask);
-	    draw->core.u.truecolor.blue_shift = maskbase (draw->visual->blue_mask);
-	    draw->core.u.truecolor.blue_len = masklen (draw->visual->blue_mask);
-	}
-	else
-	{
-	    for (i = 0; i < CACHE_SIZE; i++)
-		draw->core.u.cache[i].use = -1;
-	}
-	draw->core.draw_gc = XCreateGC (draw->dpy, draw->drawable, 0, 0);
+	draw->core.fg = color->pixel;
+	gcv.foreground = draw->core.fg;
+	draw->core.draw_gc = XCreateGC (draw->dpy, draw->drawable, 
+					GCForeground, &gcv);
+	
     }
-    if (draw->visual->class == TrueColor)
-    {
-	pixel = (((color->red >> (16 - draw->core.u.truecolor.red_len)) <<
-		  draw->core.u.truecolor.red_shift) |
-		 ((color->green >> (16 - draw->core.u.truecolor.green_len)) <<
-		  draw->core.u.truecolor.green_shift) |
-		 ((color->blue >> (16 - draw->core.u.truecolor.blue_len)) <<
-		  draw->core.u.truecolor.blue_shift));
-    }
-    else
-    {
-	int	oldest, newest;
-	int	match;
-	XColor	xcolor;
-
-	oldest = newest = 0;
-	match = -1;
-	for (i = 1; i < CACHE_SIZE; i++)
-	{
-	    if (draw->core.u.cache[i].use < draw->core.u.cache[oldest].use)
-		oldest = i;
-	    if (draw->core.u.cache[i].use > draw->core.u.cache[newest].use)
-		newest = i;
-	    if (draw->core.u.cache[i].use >= 0 &&
-		!memcmp (&draw->core.u.cache[i].color, color, 
-			 sizeof (XRenderColor)))
-		match = i;
-	}
-	if (match < 0)
-	{
-	    match = oldest;
-	    if (draw->core.u.cache[match].use >= 0)
-	    {
-		XFreeColors (draw->dpy, draw->colormap, 
-			     &draw->core.u.cache[match].pixel, 1, 0);
-		draw->core.u.cache[match].use = -1;
-	    }
-	    xcolor.red = color->red;
-	    xcolor.green = color->green;
-	    xcolor.blue = color->blue;
-	    xcolor.flags = DoRed|DoGreen|DoBlue;
-	    if (!XAllocColor (draw->dpy, draw->colormap, &xcolor))
-		return False;
-	    draw->core.u.cache[match].pixel = xcolor.pixel;
-	    draw->core.u.cache[match].color = *color;
-	    draw->core.u.cache[match].use = draw->core.u.cache[newest].use + 1;
-	}
-	else if (match != newest)
-	    draw->core.u.cache[match].use = draw->core.u.cache[newest].use + 1;
-	pixel = draw->core.u.cache[match].pixel;
-    }
-    XGetGCValues (draw->dpy, draw->core.draw_gc, GCForeground|GCFont, &gcv);
-    if (gcv.foreground != pixel)
-	XSetForeground (draw->dpy, draw->core.draw_gc, pixel);
+    if (draw->core.fg != color->pixel)
+	XSetForeground (draw->dpy, draw->core.draw_gc, color->pixel);
     if (font && gcv.font != font->u.core.font->fid)
 	XSetFont (draw->dpy, draw->core.draw_gc, font->u.core.font->fid);
     return True;
@@ -247,7 +149,7 @@ XftDrawCorePrepare (XftDraw	    *draw,
 
 void
 XftDrawString8 (XftDraw		*draw,
-		XRenderColor	*color,
+		XftColor	*color,
 		XftFont		*font,
 		int		x,
 		int		y,
@@ -271,7 +173,7 @@ XftDrawString8 (XftDraw		*draw,
 
 void
 XftDrawString16 (XftDraw	*draw,
-		 XRenderColor	*color,
+		 XftColor	*color,
 		 XftFont	*font,
 		 int		x,
 		 int		y,
@@ -299,7 +201,7 @@ XftDrawString16 (XftDraw	*draw,
 
 void
 XftDrawString32 (XftDraw	*draw,
-		 XRenderColor	*color,
+		 XftColor	*color,
 		 XftFont	*font,
 		 int		x,
 		 int		y,
@@ -327,7 +229,7 @@ XftDrawString32 (XftDraw	*draw,
 
 void
 XftDrawRect (XftDraw	    *draw,
-	     XRenderColor   *color,
+	     XftColor	    *color,
 	     int	    x, 
 	     int	    y,
 	     unsigned int   width,
@@ -336,7 +238,7 @@ XftDrawRect (XftDraw	    *draw,
     if (XftDrawRenderPrepare (draw, color, 0))
     {
 	XRenderFillRectangle (draw->dpy, PictOpSrc, draw->render.pict,
-			      color, x, y, width, height);
+			      &color->color, x, y, width, height);
     }
     else
     {

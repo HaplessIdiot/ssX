@@ -402,15 +402,16 @@ EndText16(XParms xp, Parms p)
 #include <X11/extensions/Xrender.h>
 #include <X11/Xft/Xft.h>
 
-static XftFont	    *aafont;
-static XftDraw	    *aadraw;
-static XRenderColor aacolor = { 0, 0, 0, 0xffff };
+static XftFont	*aafont;
+static XftDraw	*aadraw;
+static XftColor	aacolor;
 
 int 
 InitAAText(XParms xp, Parms p, int reps)
 {
     int			i, j;
     char		ch;
+    XRenderColor	color;
 
     aafont = XftFontOpenName (xp->d, DefaultScreen (xp->d), p->font);
     
@@ -436,6 +437,22 @@ InitAAText(XParms xp, Parms p, int reps)
     {
 	printf ("Render extension not supported in window\n");
 	XftFontClose (xp->d, aafont);
+	return 0;
+    }
+    color.red = 0;
+    color.green = 0;
+    color.blue = 0;
+    color.alpha = 0xffff;
+    if (!XftColorAllocValue (xp->d,
+			     DefaultVisual (xp->d, DefaultScreen (xp->d)), 
+			     DefaultColormap (xp->d, DefaultScreen (xp->d)),
+			     &color, &aacolor))
+    {
+	printf ("Cannot allocate black\n");
+	XftFontClose (xp->d, aafont);
+	XftDrawDestroy (aadraw);
+	aafont = 0;
+	aadraw = 0;
 	return 0;
     }
     
@@ -495,6 +512,10 @@ EndAAText(XParms xp, Parms p)
     free(charBuf);
     XftDrawDestroy (aadraw);
     XftFontClose (xp->d, aafont);
+    XftColorFree (xp->d,
+		  DefaultVisual (xp->d, DefaultScreen (xp->d)), 
+		  DefaultColormap (xp->d, DefaultScreen (xp->d)),
+		  &aacolor);
 }
 
 #endif
