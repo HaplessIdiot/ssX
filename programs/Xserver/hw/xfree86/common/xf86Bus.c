@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.71 2002/07/27 16:41:16 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.73 2002/09/16 18:05:43 eich Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -356,35 +356,33 @@ xf86RemoveEntityFromScreen(ScrnInfoPtr pScrn, int entityIndex)
 void
 xf86ClearEntityListForScreen(int scrnIndex)
 {
-    int i;
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     EntityAccessPtr peacc;
+    int i, entityIndex;
     
-    if (xf86Screens[scrnIndex]->entityList == NULL
-	|| xf86Screens[scrnIndex]->numEntities == 0) return;
+    if (pScrn->entityList == NULL || pScrn->numEntities == 0) return;
 	
-    for (i=0; i<xf86Screens[scrnIndex]->numEntities; i++) {
-	xf86Entities[xf86Screens[scrnIndex]->entityList[i]]->inUse = FALSE;
+    for (i = 0; i < pScrn->numEntities; i++) {
+	entityIndex = pScrn->entityList[i];
+	xf86Entities[entityIndex]->inUse = FALSE;
 	/* disable resource: call the disable function */
-	peacc = xf86Entities[xf86Screens[scrnIndex]->entityList[i]]->access;
+	peacc = xf86Entities[entityIndex]->access;
 	if (peacc->pAccess && peacc->pAccess->AccessDisable)
 	    peacc->pAccess->AccessDisable(peacc->pAccess->arg);
 	/* and the fallback function */
 	if (peacc->fallback && peacc->fallback->AccessDisable)
 	    peacc->fallback->AccessDisable(peacc->fallback->arg);
 	/* shared resources are only needed when entity is active: remove */
-	xf86DeallocateResourcesForEntity(i, ResShared);
+	xf86DeallocateResourcesForEntity(entityIndex, ResShared);
     }
-    xfree(xf86Screens[scrnIndex]->entityList);
-    if (xf86Screens[scrnIndex]->entityInstanceList)
-       xfree(xf86Screens[scrnIndex]->entityInstanceList);
-    if (xf86Screens[scrnIndex]->CurrentAccess->pIoAccess
-	== (EntityAccessPtr) xf86Screens[scrnIndex]->access)
-	xf86Screens[scrnIndex]->CurrentAccess->pIoAccess = NULL;
-    if (xf86Screens[scrnIndex]->CurrentAccess->pMemAccess
-	== (EntityAccessPtr) xf86Screens[scrnIndex]->access)
-	xf86Screens[scrnIndex]->CurrentAccess->pMemAccess = NULL;
-    xf86Screens[scrnIndex]->entityList = NULL;
-    xf86Screens[scrnIndex]->entityInstanceList = NULL;
+    xfree(pScrn->entityList);
+    xfree(pScrn->entityInstanceList);
+    if (pScrn->CurrentAccess->pIoAccess == (EntityAccessPtr)pScrn->access)
+	pScrn->CurrentAccess->pIoAccess = NULL;
+    if (pScrn->CurrentAccess->pMemAccess == (EntityAccessPtr)pScrn->access)
+	pScrn->CurrentAccess->pMemAccess = NULL;
+    pScrn->entityList = NULL;
+    pScrn->entityInstanceList = NULL;
 }
 
 void
