@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.9 1997/09/25 07:31:11 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.10 1997/09/29 08:40:28 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -559,6 +559,10 @@ glintProbe()
     	}
     }
   }
+
+  if (pcrpglint == NULL)
+    FatalError("No GLINT/PERMEDIA based card found\n");
+
   /*
    * next, we should enable memory and I/O on the card, just to be sure that 
    * the BIOS didn't try to be smart and disabled that for anything except 

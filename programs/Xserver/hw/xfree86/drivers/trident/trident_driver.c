@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.16 1997/09/25 07:31:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.17 1997/09/29 08:40:31 hohndel Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -20,7 +20,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Author:  Alan Hourihane, alanh@logitek.co.uk, version 0.1beta
+ * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk, version 0.1beta
  * 	    David Wexelblat, added ClockSelect logic. version 0.2.
  *	    Alan Hourihane, tweaked Init code (5 reg hack). version 0.2.1.
  *	    Alan Hourihane, removed ugly tweak code. version 0.3
@@ -85,6 +85,9 @@
 
 #include "tgui_drv.h"
 #include "tgui_mmio.h"
+#if 0
+#include "tgui9685.h"
+#endif
 extern vgaHWCursorRec vgaHWCursor;
 
 typedef struct {
@@ -122,6 +125,8 @@ typedef struct {
 	unsigned char FIFOControl;	/* For 9400/9420/9430 FIFO 	*/
 	unsigned char Performance;	/* For 968x FIFO		*/
 	unsigned char ClockControl;	/* For 16bit/10bit Clocks	*/
+	unsigned char PCIRetry;		/* For 9685 PCI Retry		*/
+	unsigned char TVinterface;	/* For 9685 TVinterface 	*/
 	unsigned char TVMode;		/* For 9685 ClearTV		*/
 } vgaTVGA8900Rec, *vgaTVGA8900Ptr;
 
@@ -149,6 +154,7 @@ extern void TridentHideCursor();
 extern void TridentSetCursorPosition();
 extern void TridentSetCursorColors();
 extern void TridentLoadCursorImage();
+extern Bool TridentUseHWCursor();
 extern Bool XAACursorInit();
 extern void XAARestoreCursor();
 extern void XAAWarpCursor();
@@ -207,7 +213,7 @@ static int numClocks;
 int tridentHWCursorType = 0;
 int tridentDisplayWidth;
 int tridentDACtype = -1;
-int GE_OP;
+int GE_OP = 0;
 Bool tridentHasAcceleration = FALSE;
 Bool tridentUseLinear = FALSE;
 Bool tridentTGUIProgrammableClocks = FALSE;
@@ -222,6 +228,9 @@ static unsigned char DRAMspeed;
 static int TridentDisplayableMemory;
 unsigned char *tguiMMIOBase = NULL;
 int TridentCursorAddress;
+Bool ClipOn = FALSE;
+int dashdrawflag = 0;
+int dashsize;
 
 int TGUIRops_alu[16] = {
 	TGUIROP_0,
@@ -362,7 +371,7 @@ TGUISetClock(no)
 	}
 	else
 	{
-		startn = 1;
+		startn = 0;
 		endn = 121;
 		endm = 31;
 		endk = 1;
@@ -374,8 +383,10 @@ TGUISetClock(no)
 		freq *= 2; 
 	if (vgaBitsPerPixel == 32)
 		freq *= 2;
-	if (vgaBitsPerPixel == 24)
+	if ((TVGAchipset < TGUI96xx) && (vgaBitsPerPixel == 24))
 		freq *= 3;
+	if ((TVGAchipset >= TGUI96xx) && (vgaBitsPerPixel == 24))
+		freq *= 2;
 
 	for (k=0;k<=endk;k++)
 	  for (n=startn;n<=endn;n++)
@@ -424,6 +435,128 @@ TGUISetClock(no)
 		new->VCLK_A = ((1 & q) << 7) | p;
 		/* first 4bits are rest of M, 1bit for K value */
 		new->VCLK_B = (((q & 0xFE) >> 1) | (r << 4));
+	}
+}
+
+/*
+ * Calculate MCLK
+ */
+static void
+CalcMCLK()
+{
+	int a,b;
+	int m,n,k;
+	float freq;
+	int powerup[4] = { 1,2,4,8 };
+	float FREQUENCY;
+	unsigned char temp;
+
+	a = inb(0x43C6);
+	b = inb(0x43C7);
+
+	if (ClearTV)
+	{
+		outb(vgaIOBase + 4, 0xC0);
+		temp = inb(vgaIOBase + 5);
+		if (temp & 0x80)
+			FREQUENCY = PAL;
+		else
+			FREQUENCY = NTSC;
+	} else {
+		FREQUENCY = NTSC;
+	}
+
+	if (NewClockCode) {
+		m = b & 0x3F;
+		k = (b & 0xC0) >> 6;
+		n = a;
+	} else {
+		m = (a & 0x03);
+		k = (b & 0x02) >> 1;
+		n = ((a & 0xFC) >> 2) | ((b & 0x01) << 6);
+	}
+
+	freq = ((n+8)*FREQUENCY)/((m+2)*powerup[k]);
+
+	ErrorF("%s %s: Memory Clock is %3.2fMHz\n", XCONFIG_PROBED, vga256InfoRec.name,
+		freq);
+}
+
+/*
+ * Set MCLK
+ */
+static void
+SetMCLK()
+{
+	int m,n,k;
+	int p,q,r,s;
+	int freq, ffreq;
+	int startn, startm, endn, endm, endk;
+	int powerup[4] = { 1,2,4,8 };
+	float FREQUENCY;
+	int clock_diff = 750;
+	unsigned char temp;
+
+	if (ClearTV)
+	{
+		outb(vgaIOBase + 4, 0xC0);
+		temp = inb(vgaIOBase + 5);
+		if (temp & 0x80)
+			FREQUENCY = PAL;
+		else
+			FREQUENCY = NTSC;
+	} else {
+		FREQUENCY = NTSC;
+	}
+
+	if (NewClockCode)
+	{
+		startm = 0;
+		startn = 64;
+		endn = 255;
+		endm = 63;
+		endk = 3;
+	}
+	else
+	{
+		startn = 0;
+		endn = 121;
+		startm = 4;
+		endm = 7;
+		endk = 1;
+	}
+	
+	freq = vga256InfoRec.MemClk;
+
+	for(k=0;k<=endk;k++) 	
+	  for(n=startn;n<=endn;n++)
+	    for(m=0;m<=endm;m++)
+	    {
+		ffreq = ( ( ((n + 8) * FREQUENCY) / ((m + 2) * powerup[k]) ) * 1000);
+		if ((ffreq > freq - clock_diff) && (ffreq < freq + clock_diff)) 
+		{
+			clock_diff = (freq > ffreq) ? freq - ffreq : ffreq - freq;
+			p = n; q = m; r = k; s = ffreq;
+		}
+	    }
+		
+	/* Avoid the low MCLK's for a machine hang */
+	if (s < 40)
+		vga256InfoRec.MemClk = 0;
+
+	if (NewClockCode)
+	{
+		/* N is all 8bits */
+		new->MCLK_A = p;
+		/* M is first 6bits, with K last 2bits */
+		new->MCLK_B = (q & 0x3F) | (r << 6);
+	}
+	else
+	{
+		/* N is first 7bits, first M bit is 8th bit */
+		new->MCLK_A = ((1 & q) << 7) | p;
+		/* first 4bits are rest of M, 1bit for K value */
+		new->MCLK_B = (((q & 0xFE) >> 1) | (r << 4));
 	}
 }
 
@@ -806,7 +939,9 @@ TVGA8900Probe()
 			TRIDENT.ChipUse2Banks = TRUE;
 		break;
 	case TGUI9430DGi:
+#if 0
 		tridentHWCursorType = 2;		/* HW cursor */
+#endif
 		/* Fall through to 9420 - it is the same apart from cursor */
 	case TGUI9420:					/* CHECK ME ! */
 		TVGAchipset = TGUI9420DGi;
@@ -824,7 +959,9 @@ TVGA8900Probe()
 		tridentIsTGUI = TRUE;
 		tridentTGUIProgrammableClocks = TRUE;
 		tridentLinearOK = TRUE;
+#if 0
 		tridentHWCursorType = 1;
+#endif
 		tridentDACtype = TGUIDAC;
 		if (vgaBitsPerPixel == 24)
 			tridentHasAcceleration = FALSE;
@@ -839,7 +976,7 @@ TVGA8900Probe()
 		tridentHasAcceleration = TRUE;
 		TRIDENT.ChipHas16bpp = TRUE;
 		TRIDENT.ChipHas32bpp = TRUE;
-		TRIDENT.ChipHas24bpp = TRUE;
+		/* TRIDENT.ChipHas24bpp = TRUE; - not yet */
 		/* We've found a 96xx graphics engine */
 		/* Let's probe furthur */
 		switch (revision) {
@@ -856,6 +993,7 @@ TVGA8900Probe()
 				REV = "ProVidia 9685";
 				NewClockCode = TRUE;
 				ClearTV = TRUE;
+				OFLG_SET(OPTION_PCI_RETRY, &TRIDENT.ChipOptionFlags);
 				/* Disable for now, bugs ! */
 				/* Have to recode accel for linear mode */
 				if ( (vgaBitsPerPixel == 24) || (vgaBitsPerPixel == 32) )
@@ -883,9 +1021,6 @@ TVGA8900Probe()
 			default:
 				REV = "Unknown ID - Please report to trident@xfree86.org";
 				break;
-		}
-		if (!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) {
-			OFLG_SET(OPTION_HW_CURSOR, &vga256InfoRec.options);
 		}
 		ErrorF("%s %s: Detected a Trident %s.\n",
 			XCONFIG_PROBED, vga256InfoRec.name, REV);
@@ -951,6 +1086,8 @@ TVGA8900Probe()
 	if (ClearTV) {
 		unsigned char TVinterface;
 
+		OFLG_SET(OPTION_TGUI_TVOUT, &TRIDENT.ChipOptionFlags);
+
 		outb(vgaIOBase + 4, 0xC0);
 		TVinterface = inb(vgaIOBase + 5);
 
@@ -960,12 +1097,29 @@ TVGA8900Probe()
 		ErrorF("%s %s: DAC %s enabled for TV\n", XCONFIG_PROBED,
 			vga256InfoRec.name, (TVinterface & 0x08) ? "is" : "is not");
 
+		if (OFLG_ISSET(OPTION_TGUI_TVOUT, &vga256InfoRec.options)) {
+			TVconnected = TRUE;
+			ErrorF("%s %s: %s display is connected, but TV forced.\n", 
+			XCONFIG_PROBED,
+			vga256InfoRec.name, (TVinterface & 0x02) ? "TV" : "VGA");
+		} else {
 		ErrorF("%s %s: %s display is connected.\n", XCONFIG_PROBED,
 			vga256InfoRec.name, (TVinterface & 0x02) ? "TV" : "VGA");
+		}
 
 		if (TVinterface & 0x02) 
 			TVconnected = TRUE;
 	}
+
+#if 0
+	if (TVGAchipset >= TGUI9440AGi) {
+		CalcMCLK();
+		if (vga256InfoRec.MemClk != 0)
+		    ErrorF("%s %s: Forcing Memory Clock to %3.2fMHz\n", 
+			XCONFIG_GIVEN, vga256InfoRec.name, 
+			(float)vga256InfoRec.MemClk/1000);
+	}
+#endif
 
 	/* 
 	 * Set up 2 bank registers 
@@ -1035,11 +1189,6 @@ TVGA8900Probe()
 
 	if (tridentTGUIProgrammableClocks) 
 	{
-		OFLG_SET(OPTION_TGUI_MCLK_66, &TRIDENT.ChipOptionFlags);
-		if (OFLG_ISSET(OPTION_TGUI_MCLK_66, &vga256InfoRec.options))
-			ErrorF("%s %s: Forcing MCLK to 66MHz\n", XCONFIG_GIVEN,
-				vga256InfoRec.name);
-
 		OFLG_SET(OPTION_NO_PROGRAM_CLOCKS, &TRIDENT.ChipOptionFlags);
 
 		/* Do some sanity checking first ! */
@@ -1145,6 +1294,7 @@ TVGA8900Probe()
 
 	if (tridentHWCursorType)
 	{
+		OFLG_SET(OPTION_SW_CURSOR, &TRIDENT.ChipOptionFlags);
 		OFLG_SET(OPTION_HW_CURSOR, &TRIDENT.ChipOptionFlags);
 	}
 
@@ -1355,14 +1505,14 @@ TVGA8900FbInit()
 
 	if (tridentHWCursorType)
 	{
-	  if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options))
+	  if (!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options))
 	  {
 		if (offscreen_available < 4096)
 			ErrorF("%s %s: Not enough off-screen video"
 				" memory for hw cursor, using sw cursor.\n",
 				XCONFIG_PROBED, vga256InfoRec.name);
 		else {
-			TridentCursorAddress = ((vga256InfoRec.videoRam * 1024) - 4096);
+			TridentCursorAddress = ((vga256InfoRec.videoRam - 4) << 10);
 			XAACursorInfoRec.Flags = USE_HARDWARE_CURSOR |
 					      HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
 					      HARDWARE_CURSOR_LONG_BIT_FORMAT |
@@ -1382,12 +1532,12 @@ TVGA8900FbInit()
 			XAACursorInfoRec.LoadCursorImage = TridentLoadCursorImage;
 			XAACursorInfoRec.GetInstalledColormaps = vgaGetInstalledColormaps;
 			ErrorF("%s %s: Using hardware cursor\n",
-				XCONFIG_GIVEN, vga256InfoRec.name);
+				XCONFIG_PROBED, vga256InfoRec.name);
 		}
 	  }
 	  else
 	  {
-		ErrorF("%s %s: Using software cursor\n", XCONFIG_PROBED,
+		ErrorF("%s %s: Using software cursor\n", XCONFIG_GIVEN,
 							vga256InfoRec.name);
 	  }
 	}
@@ -1564,11 +1714,13 @@ TVGA8900Restore(restore)
 
 	if (tridentTGUIProgrammableClocks)
 	{
-		if (OFLG_ISSET(OPTION_TGUI_MCLK_66, &vga256InfoRec.options))
+#if 0
+		if (vga256InfoRec.MemClk != 0)
 		{
 			outb(0x43C6, restore->MCLK_A);
 			outb(0x43C7, restore->MCLK_B);
 		}
+#endif
 		outb(0x3C2, restore->VCLK_O);
 		outb(0x43C8, restore->VCLK_A);
 		outb(0x43C9, restore->VCLK_B);
@@ -1636,9 +1788,19 @@ TVGA8900Restore(restore)
 
 	outw(0x3C4, ((restore->NewMode1 ^ 0x02) << 8) | 0x0E);
 
-	if ((ClearTV) && (TVconnected)) {
-		outw(vgaIOBase + 4, ((restore->TVMode) << 8) | 0xC1);
+	if (ClearTV) {
+		if (OFLG_ISSET(OPTION_TGUI_TVOUT, &vga256InfoRec.options)) {
+			outw(vgaIOBase + 4, 
+				((restore->TVinterface) << 8) | 0xC0);
+		}
+		if (TVconnected) {
+			outw(vgaIOBase + 4, ((restore->TVMode) << 8) | 0xC1);
+		}
 	}
+
+	if ((TVGAchipset == TGUI96xx) && (revision == TGUI9685) &&
+	    (OFLG_ISSET(OPTION_PCI_RETRY, &vga256InfoRec.options)))
+		outw(vgaIOBase + 4, ((restore->PCIRetry) << 8) | 0x62);
 
 	if (TVGAchipset >= TGUI96xx) 
 		vgaHWRestore((vgaHWPtr)restore);
@@ -1767,8 +1929,10 @@ TVGA8900Save(save)
 			save->VCLK_O = inb(0x3CC);
 			save->VCLK_A = inb(0x43C8);
 			save->VCLK_B = inb(0x43C9);
+#if 0
 			save->MCLK_A = inb(0x43C6);
 			save->MCLK_B = inb(0x43C7);
+#endif
 		}
 
 		if (vgaBitsPerPixel >= 8) {
@@ -1811,9 +1975,21 @@ TVGA8900Save(save)
 			save->TRDReg = inb(0x3C7); 
 	}
 
-	if ((ClearTV) && (TVconnected)) {
-		outb(vgaIOBase + 4, 0xC1);
-		save->TVMode = inb(vgaIOBase + 5);
+	if (ClearTV) {
+		if (OFLG_ISSET(OPTION_TGUI_TVOUT, &vga256InfoRec.options)) {
+			outb(vgaIOBase + 4, 0xC0);
+			save->TVinterface = inb(vgaIOBase + 5);
+		}
+		if (TVconnected) {
+			outb(vgaIOBase + 4, 0xC1);
+			save->TVMode = inb(vgaIOBase + 5);
+		}
+	}
+
+	if ((TVGAchipset == TGUI96xx) && (revision == TGUI9685) &&
+	    (OFLG_ISSET(OPTION_PCI_RETRY, &vga256InfoRec.options))) {
+		outb(vgaIOBase + 4, 0x62);
+		save->PCIRetry = inb(vgaIOBase + 5);
 	}
 
   	return ((void *) save);
@@ -1922,31 +2098,37 @@ TVGA8900Init(mode)
 
 	new->CRTCModuleTest = (mode->Flags & V_INTERLACE ? 0x84 : 0x80); 
 
-	if ((TVconnected) && (ClearTV)) {
-		outb(vgaIOBase + 4, 0xC1);
-		new->TVMode = inb(vgaIOBase + 5);
-		if (mode->Flags & V_INTERLACE) 
-			new->TVMode &= 0xEF;
-		else
-			new->TVMode |= 0x10;
+	if (ClearTV) {
+		if (OFLG_ISSET(OPTION_TGUI_TVOUT, &vga256InfoRec.options)) {
+			outb(vgaIOBase + 4, 0xC0);
+			new->TVinterface = inb(vgaIOBase + 5) | 0x02;
+		}
+		if (TVconnected) {
+			outb(vgaIOBase + 4, 0xC1);
+			new->TVMode = inb(vgaIOBase + 5);
+			if (mode->Flags & V_INTERLACE) 
+				new->TVMode &= 0xEF;
+			else
+				new->TVMode |= 0x10;
 
-		new->TVMode &= 0xFC;
-		if (mode->HDisplay <= 320)
-			new->TVMode |= 0x00;
-		else
-		if (mode->HDisplay <= 640)
-			new->TVMode |= 0x01;
-		else
-		if (mode->HDisplay <= 720)
-			new->TVMode |= 0x02;
-		else
-		if (mode->HDisplay <= 800)
-			new->TVMode |= 0x03;
+			new->TVMode &= 0xF0;
+			if (mode->HDisplay <= 320)
+				new->TVMode |= 0x00;
+			else
+			if (mode->HDisplay <= 640)
+				new->TVMode |= 0x01;
+			else
+			if (mode->HDisplay <= 720)
+				new->TVMode |= 0x02;
+			else
+			if (mode->HDisplay <= 800)
+				new->TVMode |= 0x03;
 
-		if (vgaBitsPerPixel <= 16)
-			new->TVMode |= 0x08; /* Enable double display queue */
-		else
-			new->TVMode |= 0x04; /* Enable Underscan */
+			if (vgaBitsPerPixel <= 16)
+				new->TVMode |= 0x08; /* Enable double queue */
+			else
+				new->TVMode |= 0x04; /* Enable Underscan */
+		}
 	}
 
 	if (tridentUseLinear) 
@@ -1983,6 +2165,7 @@ TVGA8900Init(mode)
 	}
 	new->CommandReg = 0x00;		/* DAC Standard colourmap */
 
+	GE_OP = 0;
 	if (tridentHWCursorType)
 	  if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options))
 		new->std.Attribute[17] = 0x00; /* Black overscan */
@@ -2155,7 +2338,6 @@ TVGA8900Init(mode)
 				new->GraphEngReg = 0x80; /* Enable 0x21XX, GER */
 #endif /* PC98_TGUI */
 			      }
-			GE_OP = 0x0000;		/* Use XY */
 			switch (vga256InfoRec.displayWidth * vgaBitsPerPixel / 8) {
 				case 512:
 					GE_OP |= 0x00;
@@ -2174,6 +2356,8 @@ TVGA8900Init(mode)
 		outb(0x3CE, 0x2F);
 		new->MiscIntContReg = inb(0x3CF) | 0x04; /* double line width */
 		new->PixelBusReg = 0x00;
+		if (IsTGUI9682)
+			GE_OP |= 0x100; /* Disable Clip by default */
 		if (vgaBitsPerPixel == 16)
 		{
 			new->std.Attribute[17] = 0x00;
@@ -2189,8 +2373,13 @@ TVGA8900Init(mode)
 		{
 			new->std.Attribute[17] = 0x00;
 			new->CommandReg = 0xD0; /* 24bpp */
-			new->MiscExtFunc |= 0x40; /* Clock Division by 3 */
-			new->PixelBusReg |= 0x08;
+			if (TVGAchipset >= TGUI96xx) {
+				new->MiscExtFunc |= 0x08; /* Clock Div. by 2*/
+				new->PixelBusReg |= 0x28; /* Packed 24bit */
+			} else {
+				new->MiscExtFunc |= 0x40; /* Clock Div. by 3 */
+				new->PixelBusReg |= 0x08;
+			}
 			GE_OP |= 0x03; /* 24bpp in GE */
 		}
 		if (vgaBitsPerPixel == 32)
@@ -2204,24 +2393,20 @@ TVGA8900Init(mode)
 		}
 	}
 
+	if ((TVGAchipset == TGUI96xx) && (revision == TGUI9685) &&
+	    (OFLG_ISSET(OPTION_PCI_RETRY, &vga256InfoRec.options))) {
+		outb(vgaIOBase + 4, 0x62);
+		new->PCIRetry = inb(vgaIOBase + 5) | 0x70;
+	}
+
 	if (new->std.NoClock >= 0)
 	{
 		if (tridentTGUIProgrammableClocks)
 		{
+#if 0
+			SetMCLK();
+#endif
 			TGUISetClock(new->std.NoClock);
-			if (OFLG_ISSET(OPTION_TGUI_MCLK_66, &vga256InfoRec.options))
-			{
-				if (NewClockCode)
-				{
-					new->MCLK_A = 0xBD;
-					new->MCLK_B = 0x58;
-				}
-				else
-				{
-					new->MCLK_A = 0x8F;
-					new->MCLK_B = 0x00;
-				}
-			}
 		}
 		else
 		{
@@ -2380,18 +2565,34 @@ TGUIPitchAdjust()
 {
 	int pitch = 0;
 	int memory;
-	int X;
+	int X, i;
+	int width,depth;
 
 	X = vga256InfoRec.virtualX;
 
-	if (X <= 4096)
-		pitch = 4096;
-	if (X <= 2048)
-		pitch = 2048;
-	if (X <= 1024)
-		pitch = 1024;
-	if (X <= 512)
-		pitch = 512;
+#if 0
+	if ((TVGAchipset == TGUI96xx) && (revision == TGUI9685)) {
+		for (i=sizeof(TridentLinear);i>=0;i--) {
+			depth = TridentLinear[i].depth;
+			if (depth == vgaBitsPerPixel) {
+				if (X <= TridentLinear[i].width) {
+					pitch = TridentLinear[i].pitch;
+					GE_OP |= (TridentLinear[i].GEOP << 12);
+				}
+			}
+		}
+	} else 
+#endif
+	{
+		if (X <= 4096)
+			pitch = 4096;
+		if (X <= 2048)
+			pitch = 2048;
+		if (X <= 1024)
+			pitch = 1024;
+		if (X <= 512)
+			pitch = 512;
+	}
 
 	memory = ((pitch * vga256InfoRec.virtualY) / 1024) * vgaBitsPerPixel/8;
 

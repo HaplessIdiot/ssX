@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.15 1997/09/09 10:27:55 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.16 1997/09/19 09:01:19 hohndel Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -561,7 +561,6 @@ Section "Device"
     BoardName	"generic SVGA"
     Chipset	"clgd7555"
     Option	"no_bitblt"
-    MemBase	0xFE000000
 Endsection
 
 Section "Device"
@@ -737,7 +736,7 @@ XCOMM    Device	"GA98NB4"
 XCOMM    Device	"NECTrident"
 XCOMM    Device	"GA-DRV98"
 XCOMM    Device	"MGA"
-XCOMM    Device "SVGA"
+XCOMM    Device	"SVGA"
     Monitor	"Multi sync"
     Subsection "Display"
         Depth	    4

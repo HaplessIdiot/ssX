@@ -1,4 +1,32 @@
-XFree86 3.9s (30 September 1997)
+XFree86 3.9s (13 October 1997)
+1315. Fix segmentation fault in glint driver when server is started with a
+      card without GLINT/PERMEDIA chip (Stefan Dirsch).
+1314. Lots of fixes and additions to glint acceleration (Helmut Fahrion).
+1313. Fix problem with xterm hanging when opening a log file. Add
+      right-scrollbar to xterm (#1037, Thomas Dickey, Michael Rohleder).
+1312. Add GD7555 to vgaPCI.h and fix XF98_SVGA (#1036, Shuichi Ueno).
+1311. Fix a bug with Qword pad support in ImageWrite (#1033, Mark Vojkovich).
+1310. up the TV output for 9685 boards on PC98 and fix build problem on SVR4.0
+      (#1029, Takaaki Nomura, Isao Ohishi).
+1309. Fix SuperProbe to correctly detect memory on the Trident 9685 (#1023,
+      Alan Hourihane).
+1308. Add hardware clipping and transparency for the trident chips that 
+      support it. Partially implement the 'set_mclk' option, not yet
+      complete, remove the tgui_mclk_66 option, clean up the TV output for
+      9685 boards. Documentation updates (#1022, Alan Hourihane).
+1307. Add accelerated ImageWrite and a WriteBitmap replacement to the tseng 
+      driver (#1021, Mark Vojkovich, Koen Gadeyne).
+1306. Documentation update for tseng driver (#1020, Koen Gadeyne).
+1305. Clear disallowed flags in Options bitmap (#1019, Alan Hourihane).
+1304. Fix XAA hardware cursor for built-in S3 RAMDACs (#1018, Alan Hourihane).
+1303. Use trapezoid fills for some wide lines (#1017, Mark Vojkovich).
+1302. Fix colormap switching problem in svga/s3 (#1016, Mark Vojkovich).
+1301. Fix install problem with xkbcomp (#1014, Robin Cutshaw).
+1300. Fix lnx_jstk.c to work with 2.1.x joystick.h file (#1013, Robin Cutshaw).
+1299. Disable some HTotals in matrox driver that cause vertical stripes (#1010,
+      1015, Radek Kapitan).
+1298. Improve some bailout messages in tseng driver (#1009, Koen Gadeyne).
+1297. Suppress popen/pclose messages (#1008, Takaaki Nomura).
 1296. Inital support for Millennium II AGP (Dirk Hohndel).
 1295. Fixes to make glint server pass more of xtest (Alan Hourihane).
 
@@ -5410,4 +5438,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.535 1997/09/30 05:51:03 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.536 1997/10/01 05:51:28 hohndel Exp $

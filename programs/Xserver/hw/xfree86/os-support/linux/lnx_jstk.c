@@ -23,7 +23,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_jstk.c,v 3.10 1997/07/31 07:16:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_jstk.c,v 3.11 1997/09/09 10:27:51 hohndel Exp $ */
 
 static const char rcs_id[] = "Id: lnx_jstk.c,v 1.1 1995/12/20 14:06:09 lepied Exp";
 
@@ -43,6 +43,13 @@ static const char rcs_id[] = "Id: lnx_jstk.c,v 1.1 1995/12/20 14:06:09 lepied Ex
 #include "xf86_ansic.h"
 #endif
 
+#if !defined(JSIOCGTIMELIMIT)
+/* make 2.1.x joystick.h backward compatable */
+#define JSIOCGTIMELIMIT		JS_GET_TIMELIMIT
+#define JSIOCSTIMELIMIT		JS_SET_TIMELIMIT
+#define js_status		JS_DATA_TYPE
+#endif
+
 
 /***********************************************************************
  *
@@ -57,7 +64,7 @@ int
 xf86JoystickOn(char *name, int *timeout, int *centerX, int *centerY)
 {
   int			fd;
-  struct JS_DATA_TYPE   js;
+  struct js_status      js;
     
 #ifdef DEBUG
   ErrorF("xf86JoystickOn %s\n", name);
@@ -71,8 +78,8 @@ xf86JoystickOn(char *name, int *timeout, int *centerX, int *centerY)
     }
 
   if (*timeout == 0) {
-    if (ioctl (fd, JS_GET_TIMELIMIT, timeout) == -1) {
-      Error("joystick JS_GET_TIMELIMIT ioctl");
+    if (ioctl (fd, JSIOCGTIMELIMIT, timeout) == -1) {
+      Error("joystick JSIOCGTIMELIMIT ioctl");
     }
     else {
       if (xf86Verbose) {
@@ -81,8 +88,8 @@ xf86JoystickOn(char *name, int *timeout, int *centerX, int *centerY)
     }
   }
   else {
-    if (ioctl(fd, JS_SET_TIMELIMIT, timeout) == -1) {
-      Error("joystick JS_SET_TIMELIMIT ioctl");
+    if (ioctl(fd, JSIOCSTIMELIMIT, timeout) == -1) {
+      Error("joystick JSIOCSTIMELIMIT ioctl");
     }
   }
 
@@ -158,7 +165,7 @@ int     *x;
 int     *y;
 int     *buttons;
 {
-  struct JS_DATA_TYPE   js;
+  struct js_status      js;
   int                   status;
   
   status = read(fd, &js, JS_RETURN);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac1064.c,v 1.7 1997/08/26 10:01:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac1064.c,v 1.8 1997/09/09 10:27:45 hohndel Exp $ */
 
 
 /*
@@ -103,6 +103,29 @@ static unsigned char MGADACbpp32[] = {
 	0x00, 0x00, 0x0D, 0xCA, 0x33, 0x58, 0xC2
 };
 
+#ifdef	PC98_MGA
+static unsigned char PC98_MGADACbpp8[] = {
+	0xFE, 0x03, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF,
+	0x3F, 0x43, 0x50, 0x00, 0x05, 0x09, 0x20, 0x19, 
+	0x10, 0x3f, 0x40, 0x00, 0x07,
+	0x00, 0x00, 0x1C, 0xEE, 0x9A, 0x82, 0x5B
+};
+
+static unsigned char PC98_MGADACbpp16[] = {
+	0xFE, 0x07, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF,
+	0x3F, 0x43, 0x50, 0x00, 0x02, 0x09, 0x20, 0x19, 
+	0x10, 0x3f, 0x40, 0x00, 0x07,
+	0x00, 0x00, 0x1C, 0xEE, 0x9A, 0x82, 0x5B
+};
+
+static unsigned char PC98_MGADACbpp32[] = {
+	0xFE, 0x07, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF,
+	0x2A, 0x02, 0x10, 0x00, 0x07, 0x09, 0x20, 0x19, 
+	0x10, 0x3f, 0x40, 0x00, 0x07,
+	0x00, 0x00, 0x00, 0x0E, 0x9A, 0x80, 0x5A
+};
+#endif	/* PC98_MGA */
+
 /*
  * This is a convenience macro, so that entries in the driver structure
  * can simply be dereferenced with 'newVS->xxx'.
@@ -171,6 +194,78 @@ unsigned char reg, val;
 	OUTREG8(RAMDAC_OFFSET + reg, val);
 }
 
+/*
+ * MGA-1064SG for PC98
+ *
+ *	written by Isao OHISHI(X98 core team)
+ */
+static void MGA1064PC98Init()
+{
+	int i;
+	long option_reg;
+
+
+	outb(MGAREG_FIFOSTATUS, 0x6);
+	outb(MGAREG_VCOUNT, 0x6);
+	outb(MGAREG_Reset, 0x6);
+
+	switch(vgaBitsPerPixel)
+	{
+	case 8:
+		outb(MGAREG_IEN,0xe5);
+		outb(0x1e3c,0xe5);
+		outb(0x1fff,0x02);
+		pciWriteLong( MGAPciTag, PCI_OPTION_REG, 0x1f094e21 );
+		outMGA1064( MGA1064_SYS_PLL_M, 0x09 );
+		outMGA1064( MGA1064_SYS_PLL_N, 0x73 );
+		outMGA1064( MGA1064_SYS_PLL_P, 0x10 );
+		for(i=0; i<sizeof(MGADACregs); i++) {
+			outMGA1064( MGADACregs[i], PC98_MGADACbpp8[i] );
+		}
+		break;
+	case 16:
+		outb(MGAREG_IEN,0xd8);
+		outb(0x1e3c,0xd8);
+		outb(0x1fff,0x02);
+		pciWriteLong( MGAPciTag, PCI_OPTION_REG, 0x1f094e21 );
+		outMGA1064( MGA1064_SYS_PLL_M, 0x09 );
+		outMGA1064( MGA1064_SYS_PLL_N, 0x73 );
+		outMGA1064( MGA1064_SYS_PLL_P, 0x10 );
+		for(i=0; i<sizeof(MGADACregs); i++) {
+			outMGA1064( MGADACregs[i], PC98_MGADACbpp16[i] );
+		}
+		break;
+	case 24:
+		/* not yet at all*/
+/*
+option_reg = pciReadLong(MGAPciTag, PCI_OPTION_REG);
+ErrorF("pciReadLong = %x\n",option_reg);
+ErrorF("MGA1064_SYS_PLL_M = %x\n",inMGA1064( MGA1064_SYS_PLL_M ));
+ErrorF("MGA1064_SYS_PLL_N = %x\n",inMGA1064( MGA1064_SYS_PLL_N ));
+ErrorF("MGA1064_SYS_PLL_P = %x\n",inMGA1064( MGA1064_SYS_PLL_P ));
+for(i=0; i<sizeof(MGADACregs); i++) {
+	ErrorF("inMGA1064( %x ) = %x\n", MGADACregs[i], inMGA1064( MGADACregs[i] ));
+}
+*/
+		break;
+	case 32:
+		outb(MGAREG_IEN,0x75);
+		outb(0x1e3c,0x75);
+		outb(0x1fff,0x01);
+		pciWriteLong( MGAPciTag, PCI_OPTION_REG, 0x1f094e21 );
+		outMGA1064( MGA1064_SYS_PLL_M, 0x09 );
+		outMGA1064( MGA1064_SYS_PLL_N, 0x73 );
+		outMGA1064( MGA1064_SYS_PLL_P, 0x10 );
+		for(i=0; i<sizeof(MGADACregs); i++) {
+			outMGA1064( MGADACregs[i], PC98_MGADACbpp32[i] );
+		}
+		break;
+	default:
+		FatalError("MGA: unsupported depth\n");
+	}
+
+	outb(MGAREG_MISC_WRITE, 0xd);
+}
 
 /*
  * MGA1064SGCalcClock - Calculate the PLL settings (m, n, p, s).
@@ -586,6 +681,13 @@ DisplayModePtr mode;
 	vs = mode->CrtcVSyncStart		- 1;
 	ve = mode->CrtcVSyncEnd			- 1;
 	vt = mode->CrtcVTotal			- 2;
+	
+	/* HTOTAL & 0xF equal to 0xE in 8bpp or 0x4 in 24bpp causes strange
+	 * vertical stripes
+	 */  
+	if((ht & 0x0F) == 0x0E || (ht & 0x0F) == 0x04)
+		ht++;
+		
 	if (vgaBitsPerPixel == 24)
 		wd = (vga256InfoRec.displayWidth * 3) >> (4 - MGABppShft);
 	else
@@ -697,6 +799,10 @@ DisplayModePtr mode;
 		ErrorF("synchro dans le vert\n");
 	}
 	newVS->DAClong = 0x5F094F21;
+
+#ifdef	PC98_MGA
+	MGA1064PC98Init();
+#endif
 
 	MGA1064SGSetPCLK(
 		vga256InfoRec.clock[newVS->std.NoClock], 1 << MGABppShft

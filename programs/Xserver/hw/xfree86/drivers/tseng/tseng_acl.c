@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.8 1997/08/12 12:02:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.9 1997/08/26 10:01:28 hohndel Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -168,7 +168,7 @@ LongP MemW32Mix;    /* ping-ponging the MIX map is done by XAA */
 LongP CPU2ACLBase;
 
 long scratchVidBase; /* will be initialized in the Probe */
-
+int tsengImageWriteBase=0;  /* ImageWritebuffer adress -- initialized in the Probe() */
 
 /**********************************************************************/
 
@@ -214,9 +214,12 @@ void tseng_init_acl()
        * for the scratchpad (i.e. colors and scanline-colorexpand buffers)
        * we'll use the MMU aperture 0, which we'll make point at the last 1
        * KB of video memory.
+       *
+       * MMU 1 is used for the Imagewrite buffer.
        */
       scratchMemBase = (long)vgaBase + 0x18000L;
       *((LongP) (MMioBase + 0x00)) = scratchVidBase;
+      *((LongP) (MMioBase + 0x04)) = tsengImageWriteBase;
       /*
        * CPU2ACLBase is used for CPUtoSCreen...() operations on < ET6000 devices
        */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.101 1997/07/29 12:08:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.102 1997/09/19 08:30:06 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -534,7 +534,7 @@ vgaProbe()
 
 
 
-#if !defined(PC98) || defined(PC98_TGUI) || defined(PC98_MGA)
+#if !defined(PC98) || defined(PC98_TGUI) || defined(PC98_MGA) || defined(PC98_SVGA)
   /* First do a general PCI probe (unless disabled) */
   if (!OFLG_ISSET(OPTION_NO_PCI_PROBE, &vga256InfoRec.options)) {
     vgaPCIInfo = vgaGetPCIInfo();
@@ -1046,7 +1046,7 @@ vgaProbe()
 #endif /* PC98 */
 	}
 
-#if !defined(PC98) || defined(PC98_TGUI) || defined(PC98_MGA)
+#if !defined(PC98) || defined(PC98_TGUI) || defined(PC98_MGA) || defined(PC98_SVGA)
 	if (!OFLG_ISSET(OPTION_NO_PCI_PROBE, &vga256InfoRec.options)) {
 	  /* Free PCI information */
 	  xf86cleanpci();

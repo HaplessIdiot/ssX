@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86wline.c,v 1.2 1997/08/26 11:57:24 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86wline.c,v 1.3 1997/09/25 16:14:00 hohndel Exp $ */
 /*
 
 xf86WideLine does not maintain a span list and subsequently does not
@@ -98,6 +98,19 @@ static void xf86SpanHelper(x1, y, width)
 
 }
 
+#define FixError(x, dx, dy, e, sign, step, h)	{	\
+	   e += (h) * dx;				\
+	   x += (h) * step;				\
+	   if(e > 0) {					\
+		x += e * sign/dy;			\
+		e %= dy;				\
+	   	if(e) {					\
+		   x += sign;				\
+		   e -= dy;				\
+		}					\
+	   } 	 					\
+}
+
 
 void
 xf86FillPolyHelper (pDrawable, pGC, y, overall_height, left, right, 
@@ -129,24 +142,77 @@ xf86FillPolyHelper (pDrawable, pGC, y, overall_height, left, right,
 
 
     while ((left_count || left_height) && (right_count || right_height)) {
-	MIPOLYRELOADLEFT
-	MIPOLYRELOADRIGHT
+  	if (!left_height && left_count) { 
+	    left_height = left->height; 
+	    left_x = left->x + xorg; 
+	    left_stepx = left->stepx; 
+	    left_signdx = left->signdx; 
+	    left_e = left->e; 
+	    left_dy = left->dy; 
+	    left_dx = left->dx; 
+	    left_count--; 
+	    left++;
+	}
+	if (!right_height && right_count) { 
+	    right_height = right->height; 
+	    right_x = right->x + xorg + 1; 
+	    right_stepx = right->stepx; 
+	    right_signdx = right->signdx; 
+	    right_e = right->e; 
+	    right_dy = right->dy; 
+	    right_dx = right->dx; 
+	    right_count--; 
+	    right++; 
+	}
 
-	height = left_height;
-	if (height > right_height)
-	    height = right_height;
+	height = (left_height > right_height) ? right_height : left_height;
 
 	left_height -= height;
 	right_height -= height;
 
-	while (--height >= 0) {
-	    if((right_x >= left_x) && Y_IN_BOX(y))
-		xf86SpanHelper(left_x + xorg, y, right_x - left_x + 1);
+	if(xf86AccelInfoRec.SubsequentFillTrapezoidSolid) {
+    	    int right_DX = (right_dx * right_signdx) + 
+			   (right_stepx * right_dy);
+	    int left_DX = (left_dx * left_signdx) + 
+		 	  (left_stepx * left_dy);
+	    int left_box = (left_DX < 0) ? (left_x + left_DX) : left_x;
+	    int right_box = (right_DX < 0) ? right_x : (right_x + right_DX);
+
+	    if((left_box >= LeftClip) && (right_box <= RightClip) &&
+		(y >= TopClip) && ((y + height) <= BottomClip)){
+
+	    	xf86AccelInfoRec.SubsequentFillTrapezoidSolid(y, height, 
+			left_x, left_DX, left_dy, left_e, 
+			right_x - 1, right_DX, right_dy, right_e);
+
+	    	FixError(left_x, left_dx, left_dy, left_e, left_signdx, 
+			left_stepx, height);
+	    	FixError(right_x, right_dx, right_dy, right_e, right_signdx,
+			right_stepx, height);
+	    	y += height;
+	    	continue;
+	    }	
+	}
+
+	while (height--) {
+	    if((right_x > left_x) && Y_IN_BOX(y))
+		xf86SpanHelper(left_x, y, right_x - left_x);
 
     	    y++;
     	
-	    MIPOLYSTEPLEFT
-	    MIPOLYSTEPRIGHT
+ 	    left_x += left_stepx; 
+	    left_e += left_dx; 
+	    if (left_e > 0) { 
+		left_x += left_signdx; 
+		left_e -= left_dy; 
+	    }
+	    right_x += right_stepx; 
+	    right_e += right_dx; 
+	    if (right_e > 0) { 
+		right_x += right_signdx; 
+		right_e -= right_dy; 
+	    }
+
 	}
     }
 }

@@ -22,7 +22,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.h,v 1.3 1997/05/18 12:12:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.h,v 1.4 1997/08/26 10:01:26 hohndel Exp $ */
 
 /*
  * Trident Chipset Definitions
@@ -48,7 +48,17 @@
 #define CYBER938x	17
 
 /* Revisions */
+#define TGUI9660	0x00
+#define TGUI9680	0x01
+#define TGUI9682	0x10
 #define TGUI9685	0x21
+
+/* defines */
+#define IsTGUI9440	(TVGAchipset == TGUI9440AGi)
+#define IsTGUI9660	((TVGAchipset == TGUI96xx) && (revision == TGUI9660))
+#define IsTGUI9680	((TVGAchipset == TGUI96xx) && (revision == TGUI9680))
+#define IsTGUI9682	((TVGAchipset == TGUI96xx) && (revision == TGUI9682))
+#define IsTGUI9685	((TVGAchipset == TGUI96xx) && (revision == TGUI9685))
 
 #ifdef INITIALIZE_LIMITS
 /* Clock Limits */

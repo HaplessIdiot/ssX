@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.34 1997/08/15 07:19:22 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.35 1997/09/29 08:40:33 hohndel Exp $ */
 /*
  * PCI Probe
  *
@@ -67,6 +67,7 @@
 
 /* Cirrus Logic */
 #define PCI_CHIP_GD7548		0x0038
+#define PCI_CHIP_GD7555		0x0040
 #define PCI_CHIP_GD5430		0x00A0
 #define PCI_CHIP_GD5434_4	0x00A4
 #define PCI_CHIP_GD5434_8	0x00A8
@@ -244,6 +245,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_GD7542,	"GD7542"},
 				{PCI_CHIP_GD7543,	"GD7543"},
 				{PCI_CHIP_GD7548,	"GD7548"},
+				{PCI_CHIP_GD7555,	"GD7555"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_NCR_2,	"NCR",	{
 				{0x0000,		NULL}}},

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cparea.c,v 3.3 1997/08/15 07:19:23 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cparea.c,v 3.4 1997/09/09 10:27:53 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -404,8 +404,8 @@ void xf86ScreenToScreenBitBlt(nbox, pptSrc, pbox, xdir, ydir, alu, planemask)
 
 
 static void MoveDWORDS_FixedBase(dest, src, dwords)
-   register unsigned int* dest;
-   register unsigned int* src;
+   register CARD32* dest;
+   register CARD32* src;
    register int dwords;
 {
      while(dwords & ~0x03) {
@@ -431,8 +431,8 @@ static void MoveDWORDS_FixedBase(dest, src, dwords)
 }
 
 static void MoveDWORDS(dest, src, dwords)
-   register unsigned int* dest;
-   register unsigned int* src;
+   register CARD32* dest;
+   register CARD32* src;
    register int dwords;
 {
      while(dwords & ~0x03) {
@@ -473,7 +473,7 @@ xf86DoImageWrite(pSrc, pDst, alu, prgnDst, pptSrc, planemask, bitPlane)
     unsigned int    planemask;
     int		    bitPlane;
 {
-    int srcwidth, skipleft, dwords, dwordsTotal;
+    int srcwidth, skipleft, dwords;
     int x,w,h;
     unsigned char* psrcBase;			/* start of image */
     register unsigned char* srcPntr;		/* index into the image */
@@ -529,7 +529,6 @@ BAD_ALIGNMENT:
 	   default:	dwords = w;
 			break;
 	}
-	dwordsTotal = dwords * h;
 
 	xf86AccelInfoRec.SubsequentImageWrite(x,pbox->y1,w,h,skipleft);
 
@@ -539,33 +538,35 @@ BAD_ALIGNMENT:
 
 	   	while(h > decrement) {
 	    	    MoveDWORDS(xf86AccelInfoRec.ImageWriteBase,
-	 		(unsigned int*)srcPntr, dwords * decrement);
+	 		(CARD32*)srcPntr, dwords * decrement);
 	   	    srcPntr += (srcwidth * decrement);
 		    h -= decrement;
 	   	}
 	   	if(h) {
 	     	    MoveDWORDS(xf86AccelInfoRec.ImageWriteBase,
-	 		(unsigned int*)srcPntr, dwords * h);
+	 		(CARD32*)srcPntr, dwords * h);
 	   	}
 	    } else {
     	    	while(h--) {
 	    	    MoveDWORDS(xf86AccelInfoRec.ImageWriteBase,
-	 		(unsigned int*)srcPntr, dwords);
+	 		(CARD32*)srcPntr, dwords);
 	   	    srcPntr += srcwidth;
      	    	}
 	    }
 	} else {
     	    while(h--) {
 	   	MoveDWORDS_FixedBase(xf86AccelInfoRec.ImageWriteBase, 
-			(unsigned int*)srcPntr, dwords);
+			(CARD32*)srcPntr, dwords);
 	   	srcPntr += srcwidth;
 	    }
 	}
+
+        if((xf86AccelInfoRec.ImageWriteFlags & CPU_TRANSFER_PAD_QWORD) &&
+		((dwords * h) & 0x01))
+	    *(CARD32*)xf86AccelInfoRec.ImageWriteBase = 0;
+
     }
 
-    if (xf86AccelInfoRec.ImageWriteFlags & CPU_TRANSFER_PAD_QWORD)
-	if (dwordsTotal & 0x1) 
-	    *(unsigned int *)xf86AccelInfoRec.ImageWriteBase = 0;
     
     if(!(xf86AccelInfoRec.Flags & NO_SYNC_AFTER_CPU_COLOR_EXPAND))
     	xf86AccelInfoRec.Sync();

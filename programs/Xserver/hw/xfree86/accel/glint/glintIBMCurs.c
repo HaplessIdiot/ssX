@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glintIBMCurs.c,v 1.3 1997/09/19 08:29:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glintIBMCurs.c,v 1.4 1997/09/25 07:31:12 hohndel Exp $ */
 /*
  * Copyright 1996 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -27,6 +27,7 @@
 #include "glint.h"
 #define GLINT_SERVER
 #include "IBMRGB.h"
+
 
 void 
 glintIBMShowCursor()

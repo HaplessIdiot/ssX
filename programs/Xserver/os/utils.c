@@ -51,7 +51,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.30 1997/07/10 08:17:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.31 1997/09/14 13:15:08 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -1556,7 +1556,9 @@ Popen(command, type)
     cur->next = pidlist;
     pidlist = cur;
 
+#if 0
     ErrorF("Popen: `%s', fp = %p\n", command, iop);
+#endif
 
     return iop;
 }
@@ -1570,7 +1572,9 @@ Pclose(iop)
     int pstat;
     int pid;
 
+#if 0
     ErrorF("Pclose: fp = %p\n", iop);
+#endif
 
     fclose(iop);
 

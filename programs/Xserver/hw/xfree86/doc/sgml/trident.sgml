@@ -3,18 +3,25 @@
 
 <title> Information for Trident Chipset Users
 <author> The XFree86 Project, Inc.
-<date> 16 February 1996
+<date> 6 October 1997
 <toc>
 
 <sect> Supported chipsets <p>
-The Trident driver has undergone major work for XFree86 3.1.2B.
-Because of this work, all of the Trident SVGA chipsets, except
-the very first one, are supported by both the color and monochrome servers.
+All of the Trident SVGA chipsets, except the very first one, are supported
+are supported by both the color and monochrome servers. It must be noted
+that the LCD based chipsets (i.e. the Cyber series) are in preliminary
+stages and work for some but not others.
 <quote><bf>
-8800CS 8200LX
-8900B 8900C 8900CL/D 9000 9000i 9100B
-9200CXr 9320LCD 9400CXi 9420 9420DGi 9430DGi 9440AGi 9660XGi 9680
-9682 9685 Cyber9382 Cyber9385 Cyber9385-1
+ISA:
+TVGA8800CS TVGA8200LX
+TVGA8900B TVGA8900C TVGA8900CL/D TVGA9000 TVGA9000i TVGA9100B
+ISA/VLB/PCI:
+TVGA9200CXr TGUI9400CXi TGUI9420 TGUI9420DGi TGUI9430DGi TGUI9440AGi 
+TGUI9660XGi TGUI9680 TGUI9680-1 TGUI9682
+PCI:
+ProVidia9685 
+LCD:
+Cyber9320 Cyber9382 Cyber9385 Cyber9385-1
 </bf></quote>
 It must be noted that the 9000i chipset is treated as a 9000 by the server.
 Additionally the 9100B is treated 
@@ -26,18 +33,20 @@ but should work in this way according to the chipset documentation.
 
 <bf> NOTES: </bf>
 <itemize>
-<item>Acceleration is now supported for the 9320, 9440 and 96xx chips.
-<item>The Cyber 9382/5 chips that have started to appear, have preliminary
-support in XFree86 3.2 and appear to work at 800x600 on the LCD.
-<item>The TGUI9440 and TGUI96xx based cards are supported by the SVGA server.
-<item>16 bits per pixel is now supported for the 8900D, 9200CXr, 9400CXi,
-9420DGi, 9430DGi, 9440AGi, 96xx, but only the 9440AGi and 9400CXi
-have been tested.
+<item>Acceleration is supported for the all the TGUI based chips
+including the ProVidia and Cyber series, although the Cyber based chipsets
+may need the acceleration disabling. The 9420 acceleration has not 
+been tested.
+<item>The Cyber 938x chips have preliminary support in XFree86 3.9.
+<item>16 bits per pixel is supported for the 8900D, 9200CXr, 9400CXi,
+9420DGi, 9430DGi and all the accelerated chipsets. 24bpp is supported
+for the 9440, but is not accelerated. 32bpp is supported for the TGUI96xx,
+ProVidia and Cyber chipsets but has not been extensively tested.
 <item>Linear access has been implemented for chipsets that support it.
 It is enabled by default for PCI cards, and disabled by default for other
 cards.
-Additionally Hardware cursor is implemented for the 9430, 9440, 96xx,
-although only the 9440 and 9660 have been tested with the hardware cursor.
+<item>Hardware cursor is implemented for the 9430, 96xx, ProVidia
+and Cyber chipsets. NOTE: the 9440 hw_cursor is not supported.
 <item>The following options may be specified for the Trident driver:
 <descrip>
 <tag>Option &dquot;nolinear&dquot;</tag>
@@ -55,9 +64,8 @@ although only the 9440 and 9660 have been tested with the hardware cursor.
 	This option turns off Memory Mapped IO support.  MMIO is enabled
 	by default when acceleration is enabled.  Acceleration doesn't work
 	well when MMIO is disabled.
-<tag>Option &dquot;hw_cursor&dquot;</tag>
-	Turn on hardware cursor (NOTE: it is off by default)
-	This is known to be buggy.
+<tag>Option &dquot;sw_cursor&dquot;</tag>
+	Turn off hardware cursor (NOTE: it is on by default)
 <tag>Option &dquot;tgui_pci_read_on&dquot;</tag>
 	Turn on PCI burst read mode.
 <tag>Option &dquot;tgui_pci_write_on&dquot;</tag>
@@ -75,17 +83,21 @@ although only the 9440 and 9660 have been tested with the hardware cursor.
 <tag>Option &dquot;noaccel&dquot;</tag>
 	Turn off XAA acceleration.
 <tag>Option &dquot;xaa_no_color_exp&dquot;</tag>
-	Disable color expansion, which is needed for some 9440 cards
-	(and maybe others?).
+	Disable color expansion.
 <tag>Option &dquot;no_stretch&dquot;</tag>
 	Disable LCD stretching on Cyber 938x based chips.
 <tag>Option &dquot;lcd_center&dquot;</tag>
 	Enable LCD centering on Cyber 938x based chips.
-<tag>Option &dquot;tgui_mclk_66&quot;</tag>
-	Pushes the Memory Clock from its default value to 66MHz.
-	Increases graphics speed dramatically, but use entirely
-	at your own risk, as it may damage the video card. 
-	If snow appears, disable.
+<tag>Option &dquot;tgui_tvout&dquot;</tag>
+	Enable Television output for 9685 cards that support NTSC/PAL.
+	Maximum resolution with TV mode is 800 pixels wide.
+<tag>set_mclk xx</tag>
+	Sets the Memory Clock to XXMHz. The server displays the
+	default MCLK. It is not recommended to alter this value, but
+	in some circumstance it can dramatically increase performance.
+	Limit is 80MHz.
+	!!! NOT FULLY IMPLEMENTED YET !!!
+	USE ENTIRELY AT YOUR OWN RISK, AS IT MAY DAMAGE YOUR VIDEOCARD ! 
 </descrip>
 </itemize>
 
@@ -151,7 +163,7 @@ in the <tt>XF86Config</tt> file, these lockups are overcome. But it may
 be worth checking wait states etc. on the card and in the BIOS setup.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.21 1997/01/25 03:22:24 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.22 1997/01/28 10:54:26 dawes Exp $
 
 
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.135 1997/07/29 12:07:50 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.136 1997/07/31 13:02:17 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -3748,8 +3748,11 @@ xf86VerifyOptions(allowedOptions, driver)
 	         driver->name, xf86_OptionTab[j].name);
       }
       else
+      {
 	ErrorF("%s %s: Option flag \"%s\" is not defined for this driver\n",
 	       XCONFIG_GIVEN, driver->name, xf86_OptionTab[j].name);
+	OFLG_CLR(xf86_OptionTab[j].token, &driver->options);
+      }
 }
 
 /* Note: (To keep me [GJA] from getting confused)

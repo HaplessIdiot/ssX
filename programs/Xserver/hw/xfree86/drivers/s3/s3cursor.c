@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3cursor.c,v 1.4 1997/09/25 16:13:55 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3cursor.c,v 1.5 1997/09/30 04:51:02 hohndel Exp $
 *
 */
 
@@ -162,6 +162,7 @@ void S3CursorInit()
 	XAACursorInfoRec.SetCursorPosition = s3SetCursorPosition;
 	XAACursorInfoRec.HideCursor = s3HideCursor;
 	XAACursorInfoRec.ShowCursor = s3ShowCursor;
+	XAACursorInfoRec.GetInstalledColormaps = vgaGetInstalledColormaps;
 
       	ErrorF("%s %s: Using built-in S3 hardware cursor.\n", 
 			XCONFIG_PROBED, vga256InfoRec.name);    

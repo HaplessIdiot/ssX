@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Trident.c,v 3.11 1997/01/18 06:53:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Trident.c,v 3.12 1997/05/24 13:46:34 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -245,6 +245,29 @@ int Chipset;
 		else
 		{
 			Mem = 256;
+		}
+		break;
+	case CHIP_TVGA9685:
+		switch (rdinx(CRTC_IDX, 0x1F) & 0x0F)
+		{
+		case 0x00:
+			Mem = 256;
+			break;
+		case 0x01:
+			Mem = 512;
+			break;
+		case 0x02:
+			Mem = 768;
+			break;
+		case 0x03:
+			Mem = 1024;
+			break;
+		case 0x07:
+			Mem = 2048;
+			break;
+		case 0x0F:
+			Mem = 4096;
+			break;
 		}
 		break;
 	default:

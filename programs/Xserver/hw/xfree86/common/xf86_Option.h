@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.77 1997/07/29 12:07:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.78 1997/08/12 12:02:03 hohndel Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -214,7 +214,7 @@ typedef struct {
 
 #define OPTION_TGUI_PCI_READ_ON  211 /* Trident TGUI PCI burst read */
 #define OPTION_TGUI_PCI_WRITE_ON 212 /* Trident TGUI PCI burst write */
-#define OPTION_TGUI_MCLK_66	 213 /* Run the TGUI at 66MHz MCLK */
+#define OPTION_TGUI_TVOUT	 213 /* Trident TV output force */
 
 /* more Memory options */
 #define OPTION_FPM_VRAM		220 /* (s3v) */
@@ -316,7 +316,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "w32_interleave_off",OPTION_W32_INTERLEAVE_OFF },
   { "tgui_pci_read_on", OPTION_TGUI_PCI_READ_ON },
   { "tgui_pci_write_on",OPTION_TGUI_PCI_WRITE_ON },
-  { "tgui_mclk_66",	OPTION_TGUI_MCLK_66 },
+  { "tgui_tvout",	OPTION_TGUI_TVOUT },
 
   { "noaccel",		OPTION_NOACCEL },
   { "hw_cursor",	OPTION_HW_CURSOR },

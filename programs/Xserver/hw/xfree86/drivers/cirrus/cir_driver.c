@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.9 1997/08/26 10:01:14 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.10 1997/09/09 10:27:44 hohndel Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -731,6 +731,9 @@ ModuleInit(data,magic)
 #endif
 #ifdef PC98_WSNA
 	* data = (pointer)"libwsna.a";
+#endif
+#ifdef PC98_SVGA
+	* data = (pointer)"libvga256.a";
 #endif
 	* magic= MAGIC_LOAD;
 	break;
