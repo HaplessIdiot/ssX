@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/layer/layerinit.c,v 1.1 2001/05/29 04:54:13 keithp Exp $
+ * $XFree86: xc/programs/Xserver/miext/layer/layerinit.c,v 1.2 2001/06/04 09:45:41 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -231,6 +231,7 @@ LayerCreate (ScreenPtr		pScreen,
 	     PixmapPtr		pPixmap,
 	     ShadowUpdateProc	update,
 	     ShadowWindowProc	window,
+	     int		rotate,
 	     void		*closure)
 {
     layerScrPriv(pScreen);
@@ -254,6 +255,7 @@ LayerCreate (ScreenPtr		pScreen,
     pLay->pPixmap = pPixmap;
     pLay->update = update;
     pLay->window = window;
+    pLay->rotate = rotate;
     pLay->closure = closure;
     if (pPixmap == LAYER_SCREEN_PIXMAP)
 	pLay->freePixmap = FALSE;
