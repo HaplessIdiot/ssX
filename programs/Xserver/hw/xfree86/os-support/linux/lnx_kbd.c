@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_kbd.c,v 1.5 2003/11/04 03:14:39 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_kbd.c,v 1.6tsi Exp $ */
 
 /*
  * Copyright (c) 2002 by The XFree86 Project, Inc.
@@ -174,9 +174,6 @@ static void
 SetKbdRepeat(InputInfoPtr pInfo, char rad)
 {
   KbdDevPtr pKbd = (KbdDevPtr) pInfo->private;
-  int i;
-  int timeout;
-  int         value = 0x7f;    /* Maximum delay with slowest rate */
 
 #ifdef __sparc__
   int         rate  = 500;     /* Default rate */
@@ -184,16 +181,25 @@ SetKbdRepeat(InputInfoPtr pInfo, char rad)
 #else
   int         rate  = 300;     /* Default rate */
   int         delay = 250;     /* Default delay */
-#endif
+
+# if defined(__alpha__) || defined (__i386__) || defined(__ia64__)
+
+  int i;
+  int timeout;
+  int         value = 0x7f;    /* Maximum delay with slowest rate */
 
   static int valid_rates[] = { 300, 267, 240, 218, 200, 185, 171, 160, 150,
 			       133, 120, 109, 100, 92, 86, 80, 75, 67,
 			       60, 55, 50, 46, 43, 40, 37, 33, 30, 27,
 			       25, 23, 21, 20 };
-#define RATE_COUNT (sizeof( valid_rates ) / sizeof( int ))
+# define RATE_COUNT (sizeof( valid_rates ) / sizeof( int ))
 
   static int valid_delays[] = { 250, 500, 750, 1000 };
-#define DELAY_COUNT (sizeof( valid_delays ) / sizeof( int ))
+# define DELAY_COUNT (sizeof( valid_delays ) / sizeof( int ))
+
+# endif
+
+#endif
 
   if (pKbd->rate >= 0) 
     rate = pKbd->rate * 10;
@@ -206,10 +212,10 @@ SetKbdRepeat(InputInfoPtr pInfo, char rad)
   if(KIOCSRATE_ioctl_ok(rate, delay))	/* sparc? */
     return;
 
+#if defined(__alpha__) || defined (__i386__) || defined(__ia64__)
+
   if (xf86IsPc98())
     return;
-
-#if defined(__alpha__) || defined (__i386__) || defined(__ia64__)
 
   /* The ioport way */
 
