@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.435 2003/01/28 22:41:38 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.436 2003/02/17 17:07:32 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -514,6 +514,10 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 /* shadow fb module */
 # ifndef XFShadowFB
 #  define XFShadowFB		YES
+# endif
+/* vgahw module */
+# ifndef XF86VgaHw
+#  define XF86VgaHw		YES
 # endif
 /* fbdevhw module */
 # ifndef XF86FBDevHw
