@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xf86.rules /main/9 1996/10/31 14:54:26 kaleb $
-XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.21 1999/04/17 07:31:51 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.22 1999/04/17 09:08:05 dawes Exp $
 
 /*
  * These rules are needed to build the XFree86 X Servers
@@ -108,9 +108,13 @@ clean::									@@\
 list: $(ICONFIGFILES)							@@\
 	RemoveFile(list)						@@\
 	@echo Creating list for drivers; \				@@\
-	for i in drivers; do \						@@\
-	  echo $$i/$${i}_drv.o >> list; \				@@\
-	done								@@\
+	if [ x"drivers" != x ]; then \					@@\
+	  for i in drivers; do \					@@\
+	    echo $$i/$${i}_drv.o >> list; \				@@\
+	  done; \							@@\
+	else \								@@\
+	  echo "" > list; \						@@\
+	fi								@@\
 									@@\
 clean::									@@\
 	RemoveFile(list)

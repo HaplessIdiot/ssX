@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.2 1999/05/14 14:11:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.3 1999/05/15 14:31:22 dawes Exp $ */
 
 /*
  * Copyright 1999 by The XFree86 Project, Inc.
@@ -63,7 +63,11 @@ CheckProtocol(const char *protocol)
 static const char *
 DefaultProtocol(void)
 {
+#if defined(__FreeBSD__)
     return "Auto";
+#else
+    return NULL;
+#endif
 }
 
 #if defined(__FreeBSD__) && defined(MOUSE_PROTO_SYSMOUSE)

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/Imakefile,v 1.6 1999/05/09 12:31:09 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/Imakefile,v 1.7 1999/05/16 06:55:53 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -13,7 +13,11 @@ MOUSEDIR = mouse
 #endif
 
 SUBDIRS = $(MOUSEDIR) XInputDrivers $(JOYSTICKDIR)
+#ifndef NewInput
 DRIVERS = /*XInputDrivers $(JOYSTICKDIR)*/
+#else
+DRIVERS = mouse
+#endif
 
 #ifndef OS2Architecture
 OBJS = `cat idriver.list`

@@ -3,7 +3,7 @@ XCOMM platform:  $TOG: usl.cf /main/50 1997/04/17 14:11:39 barstow $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/usl.cf,v 3.14 1997/05/03 09:14:39 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/usl.cf,v 3.15 1999/05/16 06:55:39 dawes Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -59,10 +59,6 @@ XCOMM operating system: OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVer
 
 #ifndef UseExportLists
 # define UseExportLists YES
-#endif
-
-#ifndef LogDirectory
-#define LogDirectory		/var/log
 #endif
 
 #define GencatFlags		-m

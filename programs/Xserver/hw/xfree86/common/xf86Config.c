@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.177 1999/05/16 06:55:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.178 1999/05/16 10:12:58 dawes Exp $ */
 
 
 /*
@@ -112,8 +112,8 @@ xf86ValidateFontPath(char *path)
 	if (!S_ISDIR(stat_buf.st_mode))
 	  flag = -1;
       if (flag != 0) {
-        ErrorF("Warning: The directory \"%s\" does not exist.\n", dir_elem);
-	ErrorF("         Entry deleted from font path.\n");
+        xf86Msg(X_WARNING, "The directory \"%s\" does not exist.\n", dir_elem);
+	xf86ErrorF("\tEntry deleted from font path.\n");
 	continue;
       }
       else {
@@ -128,10 +128,11 @@ xf86ValidateFontPath(char *path)
 	xfree(p1);
 #endif
 	if (flag != 0) {
-	  ErrorF("Warning: 'fonts.dir' not found (or not valid) in \"%s\".\n", 
-		 dir_elem);
-	  ErrorF("          Entry deleted from font path.\n");
-	  ErrorF("          (Run 'mkfontdir' on \"%s\").\n", dir_elem);
+	  xf86Msg(X_WARNING,
+		  "`fonts.dir' not found (or not valid) in \"%s\".\n", 
+		  dir_elem);
+	  xf86ErrorF("\tEntry deleted from font path.\n");
+	  xf86ErrorF("\t(Run 'mkfontdir' on \"%s\").\n", dir_elem);
 	  continue;
 	}
       }
@@ -372,14 +373,14 @@ configFiles(XF86ConfFilesPtr fileconf)
       if (*f)
         defaultFontPath = f;
       else {
-	xf86Msg(X_WARNING, "FontPath is completely invalid.  Using "
-		"compiled-in default.\n");
+	xf86Msg(X_WARNING,
+	    "FontPath is completely invalid.  Using compiled-in default.\n");
         fontPath = NULL;
         pathFrom = X_DEFAULT;
       }
     } else {
-      xf86Msg(X_WARNING, "No FontPath specified.  Using compiled-in "
-	      "default.\n");
+      xf86Msg(X_WARNING,
+	    "No FontPath specified.  Using compiled-in default.\n");
       pathFrom = X_DEFAULT;
     }
   } else {

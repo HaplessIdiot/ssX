@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.117 1999/05/14 14:11:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.118 1999/05/16 06:55:49 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -105,6 +105,8 @@ InputDriverRec xf86KEYBOARD = {
 	NULL,
 	0
 };
+#undef MOUSE
+extern InputDriverRec MOUSE;
 #endif
 
 /*
@@ -167,7 +169,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 
     /* Read and parse the config file */
     if( ! xf86HandleConfigFile() ) {
-      ErrorF("Error from xf86HandleConfigFile()\n");
+      xf86Msg(X_ERROR, "Error from xf86HandleConfigFile()\n");
       return;
     }
     
@@ -246,7 +248,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 #ifdef NEW_INPUT
     /* Setup the builtin input drivers */
     xf86AddInputDriver(&xf86KEYBOARD, NULL, 0);
-    xf86AddInputDriver(&xf86MOUSE, NULL, 0);
+    xf86AddInputDriver(&MOUSE, NULL, 0);
 #endif
     /* Load all input driver modules specified in the config file. */
     if ((modulelist = xf86InputDriverlistFromConfig()))
@@ -268,7 +270,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
      */
 
     if (xf86NumDrivers == 0) {
-      ErrorF("No drivers available\n");
+      xf86Msg(X_ERROR, "No drivers available.\n");
       return;
     }
 
@@ -317,7 +319,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
      */
 
     if (xf86NumScreens == 0) {
-      ErrorF("No devices detected\n");
+      xf86Msg(X_ERROR, "No devices detected.\n");
       return;
     }
 
@@ -347,7 +349,8 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
       }
       if (layout->screen == NULL) {
 	/* No match found */
-	ErrorF("Screen %d deleted because of no matching config section\n", i);
+	xf86Msg(X_ERROR,
+	    "Screen %d deleted because of no matching config section.\n", i);
         xf86DeleteScreen(i--, 0);
       }
     }
@@ -357,7 +360,8 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
      */
 
     if (xf86NumScreens == 0) {
-      ErrorF("Device(s) detected, but none match those in the config file\n");
+      xf86Msg(X_ERROR,
+	      "Device(s) detected, but none match those in the config file.\n");
       return;
     }
 
@@ -408,7 +412,8 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
      */
 
     if (xf86NumScreens == 0) {
-      ErrorF("Screen(s) found, but none have a usable configuration\n");
+      xf86Msg(X_ERROR,
+	      "Screen(s) found, but none have a usable configuration.\n");
       return;
     }
 
@@ -420,7 +425,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
      */
 
 #define WARN_SCREEN(func) \
-    ErrorF("Warning: driver `%s' has no %s function, deleting\n", \
+    xf86Msg(X_ERROR, "Driver `%s' has no %s function, deleting.\n", \
 	   xf86Screens[i]->name, (warned++, func))
 
     for (i = 0; i < xf86NumScreens; i++) {
@@ -431,8 +436,9 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 	  sprintf(xf86Screens[i]->name, "screen%c", i + '0');
 	else
 	  sprintf(xf86Screens[i]->name, "screen%c", i - 10 + 'A');
-	ErrorF("Warning: screen driver %d has no name set, using `%s'\n",
-	       i, xf86Screens[i]->name);
+	xf86MsgVerb(X_WARNING, 0,
+		    "Screen driver %d has no name set, using `%s'.\n",
+		    i, xf86Screens[i]->name);
       }
       if (xf86Screens[i]->Probe == NULL)
 	WARN_SCREEN("Probe");
@@ -453,7 +459,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
      */
 
     if (xf86NumScreens == 0) {
-      ErrorF("Screen(s) found, but drivers were unusable\n");
+      xf86Msg(X_ERROR, "Screen(s) found, but drivers were unusable.\n");
       return;
     }
 
@@ -643,7 +649,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     if (once) {
       once = 0;
       if (ioctl(xf86Info.consoleFd, VT_RELDISP, VT_ACKACQ) < 0)
-        ErrorF("VT_ACKACQ failed");
+        xf86Msg(X_WARNING, "VT_ACKACQ failed");
     }
   }
 #endif /* SCO */
@@ -830,6 +836,7 @@ InitInput(argc, argv)
 void
 OsVendorInit()
 {
+  static Bool beenHere = FALSE;
 
   /* xf86WrapperInit() is called directly from OsInit() */
 #ifdef SIGCHLD
@@ -840,7 +847,10 @@ OsVendorInit()
   loadableFonts = TRUE;
 #endif
 
-  xf86LogInit();
+  if (!beenHere)
+    xf86LogInit();
+
+  beenHere = TRUE;
 }
 
 /*
@@ -1328,7 +1338,7 @@ xf86RunVtInit(void)
             }
           }
           execl("/bin/sh", "sh", "-c", xf86Info.vtinit, NULL);
-          ErrorF("Warning: exec of /bin/sh failed for VTInit (%s)\n",
+          xf86Msg(X_WARNING, "exec of /bin/sh failed for VTInit (%s)\n",
                  strerror(errno));
           exit(255);
           break;

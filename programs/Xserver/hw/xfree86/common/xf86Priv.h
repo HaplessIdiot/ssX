@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.41 1999/05/05 14:29:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.42 1999/05/09 06:06:21 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -81,11 +81,18 @@ extern int xf86Verbose;                 /* verbosity level */
 extern int xf86LogVerbose;		/* log file verbosity level */
 extern Bool xf86ProbeOnly;
 
+#ifndef DEFAULT_VERBOSE
 #define DEFAULT_VERBOSE		1
+#endif
+#ifndef DEFAULT_LOG_VERBOSE
 #define DEFAULT_LOG_VERBOSE	3
+#endif
+#ifndef DEFAULT_DPI
+#define DEFAULT_DPI		75
+#endif
+
 #define DEFAULT_UNRESOLVED	TRUE
 #define DEFAULT_BEST_REFRESH	FALSE
-#define DEFAULT_DPI		75
 
 /* Function Prototypes */
 #ifndef _NO_XF86_PROTOTYPES
