@@ -1,4 +1,13 @@
 XFree86 4.3.99.8 (xx June 2003)
+ 262. Changed resource registration in TDFX driver: VGA mem resources
+      are unused during OPERATING state, RAC isn't required for memory
+      resources (BugzillaR #357, Egbert Eich).
+ 261. Attempt to fix VIA driver lockups when moving windows:
+      assumed bug compatibility to previous S3 products 
+      (BugzillaR #435, Egbert Eich).
+ 260. Disabled mode writeback to client program from MGA driver (Egbert Eich).
+ 259. #ifdef'ed variables in os-support/bsd in cases they are not needed
+      (Bugzilla #430, Jason L. Wright).
  258. Fixes and updates for XKB keyboard maps:
       - add Faroese keyboard map (Bugzilla #401, Roi a Torkilsheyggi)
       - add missing KPPT key to ABNT2 keycodes list (Bugzilla #431, Christian
@@ -17184,7 +17193,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2758 2003/06/30 04:25:02 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2759 2003/06/30 13:24:08 pascal Exp $
 
 
 

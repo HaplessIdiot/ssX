@@ -359,12 +359,12 @@ VIAInitAccel(ScreenPtr pScreen)
     /* ScreenToScreen copies */
     xaaptr->SetupForScreenToScreenCopy = VIASetupForScreenToScreenCopy;
     xaaptr->SubsequentScreenToScreenCopy = VIASubsequentScreenToScreenCopy;
-    xaaptr->ScreenToScreenCopyFlags = NO_PLANEMASK;
+    xaaptr->ScreenToScreenCopyFlags = NO_PLANEMASK | ROP_NEEDS_SOURCE;
 
     /* Solid filled rectangles */
     xaaptr->SetupForSolidFill = VIASetupForSolidFill;
     xaaptr->SubsequentSolidFillRect = VIASubsequentSolidFillRect;
-    xaaptr->SolidFillFlags = NO_PLANEMASK;
+    xaaptr->SolidFillFlags = NO_PLANEMASK | ROP_NEEDS_SOURCE;
 
     /* Mono 8x8 pattern fills */
     xaaptr->SetupForMono8x8PatternFill = VIASetupForMono8x8PatternFill;
@@ -373,6 +373,7 @@ VIAInitAccel(ScreenPtr pScreen)
     xaaptr->Mono8x8PatternFillFlags = NO_PLANEMASK |
 				      HARDWARE_PATTERN_PROGRAMMED_BITS |
 				      HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
+				      ROP_NEEDS_SOURCE |
 				      BIT_ORDER_IN_BYTE_MSBFIRST |
 				      0;
 
@@ -384,6 +385,7 @@ VIAInitAccel(ScreenPtr pScreen)
 				       NO_TRANSPARENCY |
 				       HARDWARE_PATTERN_PROGRAMMED_BITS |
 				       HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
+				       ROP_NEEDS_SOURCE |
 				       0;
 
     /* setting the mono source linear address
@@ -400,20 +402,22 @@ VIAInitAccel(ScreenPtr pScreen)
 	    VIASubsequentScreenToScreenColorExpand;
     xaaptr->ScreenToScreenColorExpandFillFlags = NO_PLANEMASK |
 						 BIT_ORDER_IN_BYTE_MSBFIRST |
-						 0;
+						 ROP_NEEDS_SOURCE |
+					 	 0;
 
     /* Solid lines */
     xaaptr->SetupForSolidLine = VIASetupForSolidLine;
     xaaptr->SubsequentSolidTwoPointLine = VIASubsequentSolidTwoPointLine;
     xaaptr->SubsequentSolidHorVertLine = VIASubsequentSolidHorVertLine;
     xaaptr->SolidBresenhamLineErrorTermBits = 14;
-    xaaptr->SolidLineFlags = NO_PLANEMASK;
+    xaaptr->SolidLineFlags = NO_PLANEMASK | ROP_NEEDS_SOURCE;
 
     /* dashed line */
     xaaptr->SetupForDashedLine = VIASetupForDashedLine;
     xaaptr->SubsequentDashedTwoPointLine = VIASubsequentDashedTwoPointLine;
     xaaptr->DashPatternMaxLength = 8;
     xaaptr->DashedLineFlags = NO_PLANEMASK |
+			      ROP_NEEDS_SOURCE |
 			      LINE_PATTERN_POWER_OF_2_ONLY |
 			      LINE_PATTERN_MSBFIRST_LSBJUSTIFIED |
 			      0;
@@ -424,6 +428,7 @@ VIAInitAccel(ScreenPtr pScreen)
 						      SCANLINE_PAD_DWORD |
 						      BIT_ORDER_IN_BYTE_MSBFIRST |
 						      LEFT_EDGE_CLIPPING |
+						      ROP_NEEDS_SOURCE |
 						      0;
 
     xaaptr->SetupForScanlineCPUToScreenColorExpandFill =
@@ -439,6 +444,7 @@ VIAInitAccel(ScreenPtr pScreen)
 			      SCANLINE_PAD_DWORD |
 			      BIT_ORDER_IN_BYTE_MSBFIRST |
 			      LEFT_EDGE_CLIPPING |
+			      ROP_NEEDS_SOURCE |
 			      0;
 
     xaaptr->SetupForImageWrite = VIASetupForImageWrite;

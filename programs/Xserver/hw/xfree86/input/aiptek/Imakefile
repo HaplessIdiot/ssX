@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/hyperpen/Imakefile,v 1.2 2001/10/10 20:59:25 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/aiptek/Imakefile,v 1.1 2003/06/25 18:06:25 eich Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -24,6 +24,10 @@ ModuleObjectRule()
 ObjectModuleTarget($(DRIVER),$(OBJS))
 
 InstallObjectModule($(DRIVER),$(MODULEDIR),input)
+
+#if !defined(XF86DriverSDK)
+InstallModuleManPage($(DRIVER))
+#endif
 
 DependTarget()
 

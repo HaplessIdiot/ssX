@@ -143,8 +143,10 @@ static int
 KbdOn(InputInfoPtr pInfo, int what)
 {
     KbdDevPtr pKbd = (KbdDevPtr) pInfo->private;
+#if defined(SYSCONS_SUPPORT) || defined(PCCONS_SUPPORT) || defined(PCVT_SUPPORT)
     BsdKbdPrivPtr priv = (BsdKbdPrivPtr) pKbd->private;
     struct termios nTty;
+#endif
 #ifdef WSCONS_SUPPORT
     int option;
 #endif

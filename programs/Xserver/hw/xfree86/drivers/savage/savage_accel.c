@@ -478,7 +478,7 @@ SavageInitAccel(ScreenPtr pScreen)
     /* Solid lines */
 
 #if 1
-    xaaptr->SolidLineFlags = NO_PLANEMASK;
+    xaaptr->SolidLineFlags = NO_PLANEMASK | ROP_NEEDS_SOURCE;
     xaaptr->SetupForSolidLine = SavageSetupForSolidFill;
     xaaptr->SubsequentSolidBresenhamLine = SavageSubsequentSolidBresenhamLine;
     xaaptr->SubsequentSolidTwoPointLine = SavageSubsequentSolidTwoPointLine;
