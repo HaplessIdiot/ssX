@@ -1,4 +1,6 @@
 XFree86 4.3.99.6 (xx May 2003)
+ 204. Rework XDarwin's Cocoa rootless implementation to use new generic
+      rootless code in miext/rootless (Torrey T. Lyons).
  203. Fix repeated image problem when using a vesa video mode before starting
       the Xserver on the S3 Trio3D cards (Alan Hourihane).
  202. Import zlib 1.1.4 for systems that don't provide it (Matthieu Herrb).
@@ -17047,7 +17049,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2724 2003/06/01 21:05:47 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2725 2003/06/01 21:55:14 alanh Exp $
 
 
 

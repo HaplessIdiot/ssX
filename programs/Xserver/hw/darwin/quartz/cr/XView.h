@@ -1,7 +1,7 @@
 /*
- * XCarbonWindow category for Mac OS X rootless X server
+ * NSView subclass for Mac OS X rootless X server
  *
- * Copyright (c) 2002 Torrey T. Lyons. All Rights Reserved.
+ * Copyright (c) 2001 Greg Parker. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -25,17 +25,18 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XWindow.h,v 1.2 2001/09/17 03:08:40 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XView.h,v 1.2 2002/07/15 19:58:31 torrey Exp $ */
 
-#import <AppKit/NSWindow.h>
+#import <Cocoa/Cocoa.h>
 
-@interface NSCarbonWindow : NSWindow
+@interface XView : NSQuickDrawView
 
-@end
+- (BOOL)isFlipped;
+- (BOOL)isOpaque;
+- (BOOL)acceptsFirstResponder;
+- (BOOL)acceptsFirstMouse:(NSEvent *)theEvent;
+- (BOOL)shouldDelayWindowOrderingForEvent:(NSEvent *)theEvent;
 
-
-@interface NSCarbonWindow(XCarbonWindow)
-
-- (void)display;
+- (void)mouseDown:(NSEvent *)anEvent;
 
 @end

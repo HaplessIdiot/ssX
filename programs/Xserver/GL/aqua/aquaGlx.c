@@ -1,5 +1,5 @@
 /*
- * GLX implementation that uses Apple's OpenGL.framework
+ * GLX implementation that uses Apple's AGL.framework for OpenGL
  */
 /*
  * Copyright (c) 2002 Greg Parker. All Rights Reserved.
@@ -32,14 +32,16 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/GL/aqua/aquaGlx.c,v 1.1 2002/08/28 06:41:26 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/aqua/aquaGlx.c,v 1.2 2002/08/29 02:22:08 torrey Exp $ */
 
-
-#include "aquaCommon.h"
+#include "quartzCommon.h"
+#include "cr.h"
 #include <AGL/agl.h>
-#include "rootlessCommon.h"
 
 // X11 and X11's glx
+#undef BOOL
+#define BOOL xBOOL
+#include "rootless.h"
 #include <miscstruct.h>
 #include <windowstr.h>
 #include <resource.h>
@@ -54,7 +56,7 @@
 #include <glxutil.h>
 #include <glxscreens.h>
 #include <GL/internal/glcore.h>
-
+#undef BOOL
 
 // Write debugging output, or not
 #ifdef GLAQUA_DEBUG
@@ -191,7 +193,7 @@ struct __GLcontextRec {
 
   AGLContext ctx;
   AGLPixelFormat pixelFormat;
-  BOOL isAttached; // TRUE if ctx is really attached to a window
+  Bool isAttached; // TRUE if ctx is really attached to a window
 };
 
 
@@ -240,12 +242,12 @@ static void attach(__GLcontext *gc, __GLdrawablePrivate *glPriv,
     if (glxPriv->type == DRAWABLE_WINDOW) {
         WindowPtr pWin = (WindowPtr) glxPriv->pDraw;
         WindowPtr topWin = TopLevelParent(pWin);
-        RootlessFramePtr pFrame = RootlessFrameForWindow(pWin);
+        RootlessWindowPtr pFrame = RootlessFrameForWindow(pWin);
         AGLDrawable newPort;
 
         if (pFrame) {
-            AquaWindowRec *aquaWinRec = AQUA_WINREC(pFrame->devPrivate);
-            newPort = (AGLDrawable) aquaWinRec->port;
+            CRWindowPtr crWinPtr = (CRWindowPtr) pFrame->wid;
+            newPort = (AGLDrawable) crWinPtr->port;
         } else {
             newPort = NULL;
         }
