@@ -313,18 +313,18 @@ There are two ways to allow XFree86 to access linear memory:
    and building a new kernel. For more informations, see the comments
    in /usr/include/sys/systm.h.
 
-2. Install the NetBSD aperture driver: 
+2. Install the NetBSD aperture driver:
 
    a) add the following lines to the end of /etc/rc.local:
 
-	if [ -f /usr/X11R6/lib/X11/kernel/ap.o ]; then
-	    echo  'loading ap driver'
-    	    modload -o /usr/X11R6/lib/X11/kernel/ap -e ap \
-		/usr/X11R6/lib/X11/kernel/ap.o
-	fi
+      KERNDIR=/usr/X11R6/lib/X11/kernel
+      if [ -f ${KERNDIR}/ap.o ]; then
+        modload -o ${KERNDIR}/ap -e ap -p ${KERNDIR}/apinstall ${KERNDIR}/ap.o
+      fi
 
-   b) Since NetBSD modload does not execute post-install scripts, create
-      the device manually:
+   b) On pre 1.0 versions of NetBSD modload does not execute
+      post-install scripts. If you're running NetBSD 1.0 or later 
+      skip this. Else create the device manually:
   
       WARNING: be sure to understand what you'll do before proceeding
 
@@ -480,4 +480,4 @@ Mark  Weaver
 Matthieu Herrb
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.NetBSD,v 3.6 1994/10/03 03:14:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.NetBSD,v 3.7 1994/10/03 08:28:52 dawes Exp $

@@ -1,4 +1,5 @@
 /* $XConsortium: xf86Keymap.h,v 1.1 94/03/28 21:23:34 dpw Exp $ */
+/* $XFree86$ */
 /*
  * For Scancodes see notes in atKeynames.h  !!!!
  */
@@ -111,9 +112,9 @@ static KeySym map[NUM_KEYCODES * GLYPHS_PER_KEY] = {
     /* 0x68 */  XK_KP_Divide,	NoSymbol,	NoSymbol,	NoSymbol,
     /* 0x69 */  XK_Alt_R,	XK_Meta_R,	NoSymbol,	NoSymbol,
     /* 0x6a */  XK_Break,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x6b */  NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x6c */  NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
-    /* 0x6d */  NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x6b */  XK_Meta_L,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x6c */  XK_Meta_R,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x6d */  XK_Menu,	NoSymbol,	NoSymbol,	NoSymbol,
     /* 0x6e */  NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
     /* 0x6f */  NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
     /* 0x70 */  NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Events.c,v 1.2 94/03/31 11:11:56 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.0 1994/05/08 05:20:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.1 1994/10/23 12:58:44 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -401,6 +401,9 @@ xf86PostKbdEvent(key)
     case KEY_Slash:       scanCode = KEY_KP_Divide; break;  /* keyp divide */
     case KEY_Alt:         scanCode = KEY_AltLang;   break;  /* right alt */
     case KEY_ScrollLock:  scanCode = KEY_Break;     break;  /* curs break */
+    case 0x5b:            scanCode = KEY_LMeta;     break;
+    case 0x5c:            scanCode = KEY_RMeta;     break;
+    case 0x5d:            scanCode = KEY_Menu;      break;
       /*
        * Ignore virtual shifts (E0 2A, E0 AA, E0 36, E0 B6)
        */

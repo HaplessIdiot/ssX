@@ -1,7 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl,v 1.220 94/08/30 17:25:36 matt Exp $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.3 1994/09/17 13:38:27 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.4 1994/09/24 15:09:46 dawes Exp $
 XCOMM
 
 /*
@@ -231,6 +231,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef UseCCMakeDepend			/* use slow cc -E script */
 #define UseCCMakeDepend NO
 #endif
+#ifndef UseGccMakeDepend		/* use slowish but correct gcc -M */
+#define UseGccMakeDepend NO
+#endif
 
 /* DefaultUsrBin is independent of ProjectRoot.
    This is a directory where programs will be found even if PATH
@@ -312,7 +315,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define ConfigSrc $(TOP)/config
 #endif
 #ifndef DependDir
-#if UseCCMakeDepend
+#if UseCCMakeDepend || UseGccMakeDepend
 #define DependDir $(CONFIGSRC)/util
 #else
 #define DependDir $(CONFIGSRC)/makedepend
@@ -652,10 +655,18 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #endif
 #ifndef DependCmd
+#if UseGccMakeDepend
+#ifdef UseInstalled		/* assume BINDIR in path */
+#define DependCmd gccmakedep
+#else
+#define DependCmd $(DEPENDSRC)/gccmakedep
+#endif
+#else
 #ifdef UseInstalled		/* assume BINDIR in path */
 #define DependCmd makedepend
 #else
 #define DependCmd $(DEPENDSRC)/makedepend
+#endif
 #endif
 #endif
 #ifndef DependFlags
@@ -992,6 +1003,9 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
      LDSTRIPFLAGS = LdStripFlags
    LDCOMBINEFLAGS = LdCombineFlags
       DEPENDFLAGS = DependFlags
+#ifdef PostIncDir
+  DEPEND_INCLUDES = Concat(-I,PostIncDir)
+#endif
 
         MACROFILE = MacroFile
            RM_CMD = $(RM)
