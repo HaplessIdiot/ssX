@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/XExExt/XF86DGA.c,v 3.0 1995/12/09 11:04:33 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.1 1995/12/23 09:36:44 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -354,6 +354,10 @@ int enable;
 static void cleanup(int sig)
 {
         Display *disp;
+	static beenhere = 0;
+	if (beenhere)
+		_exit(3);
+	beenhere = 1;
 	disp = XOpenDisplay(NULL);
 	XF86DGADirectVideo(disp, 0, 0);
 	XSync(disp,False);

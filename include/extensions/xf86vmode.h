@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.12 1996/01/16 11:00:28 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.13 1996/01/16 15:00:35 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -43,7 +43,6 @@ from Kaleb S. KEITHLEY
 #define X_XF86VidModeSwitchMode		3
 #define X_XF86VidModeGetMonitor		4
 #define X_XF86VidModeLockModeSwitch	5
-#define X_XF86VidModeGetServerName	8
 
 #ifdef XF86VIDMODE_EVENTS
 #define XF86VidModeNotify		0
@@ -63,7 +62,8 @@ from Kaleb S. KEITHLEY
 #define XF86VidModeModeUnsuitable	3
 #define XF86VidModeExtensionDisabled	4
 #define XF86VidModeClientNotLocal	5
-#define XF86VidModeNumberErrors		(XF86VidModeClientNotLocal + 1)
+#define XF86VidModeZoomLocked		6
+#define XF86VidModeNumberErrors		(XF86VidModeZoomLocked + 1)
 
 #ifndef _XF86VIDMODE_SERVER_
 

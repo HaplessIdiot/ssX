@@ -1,4 +1,5 @@
-.\" $XConsortium: xset.man,v 1.27 94/04/17 20:24:17 gildea Exp $
+.\" $XConsortium: xset.man /main/28 1995/12/15 14:05:55 gildea $
+.\" $XFree86$
 .\" Copyright (c) 1988  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -24,7 +25,7 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
-.TH XSET 1 "Release 6" "X Version 11"
+.TH XSET 1 "Release 6.1" "X Version 11"
 .SH NAME
 xset - user preference utility for X
 .SH SYNOPSIS
@@ -40,6 +41,7 @@ xset - user preference utility for X
 [[-]r [keycode]] [r on/off]
 [s [\fIlength\fP [\fIperiod\fP]]] [s blank/noblank]
 [s expose/noexpose] [s on/off] [s default] [s activate] [s reset]
+[s power [\fIsuspend\fP [\fIoff\fP]]]
 [q]
 .SH DESCRIPTION
 This program is used to set various user preference options of the display.
@@ -199,6 +201,10 @@ server must be inactive for screen saving to activate, and the period
 to change the background pattern to avoid burn in.
 The arguments are specified in seconds.
 If only one numerical parameter is given, it will be used for the length.
+The 'power' flag allows the power saver paramters to be set on servers
+which have the XFree86-Misc server extension.  With no additional parameters
+the defaults are set.  The suspend time and off time can be specified in
+seconds.  If only one value is given it is used for the suspend time.
 .PP
 .TP 8
 .B q

@@ -1,5 +1,6 @@
 /* 
- * $XConsortium: xset.c,v 1.68 94/04/17 20:24:16 rws Exp $ 
+ * $XConsortium: xset.c,v 1.70 95/05/12 17:22:03 mor Exp $ 
+ * $XFree86$ 
  */
 
 /*
@@ -29,8 +30,6 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-/* $XConsortium: xset.c,v 1.68 94/04/17 20:24:16 rws Exp $ */
-
 #include <stdio.h>
 #include <ctype.h>
 
@@ -44,6 +43,9 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xmu/Error.h>
 #ifdef MITMISC
 #include <X11/extensions/MITMisc.h>
+#endif
+#ifdef XF86MISC
+#include <X11/extensions/xf86mscstr.h>
 #endif
 
 #define ON 1
@@ -61,12 +63,21 @@ in this Software without prior written authorization from the X Consortium.
 #define PREFER_BLANK 3
 #define ALLOW_EXP 4
 
+#ifdef XF86MISC
+#define POWER_SUSPEND 5
+#define POWER_OFF 6
+#define SUSPEND_DEFAULT 900
+#define OFF_DEFAULT 1800
+#endif
+
 #define	nextarg(i, argv) \
 	argv[i]; \
 	if (i >= argc) \
 		break; \
 
 char *progName;
+
+int error_status = 0;
 
 int local_xerror();
 
@@ -352,6 +363,41 @@ for (i = 1; i < argc; ) {
 	XResetScreenSaver(dpy);
 	i++;
     }
+#ifdef XF86MISC
+    else if (strcmp(arg, "power") == 0) { /* XFree86 power saver settings */
+	int miscpresent = 1;
+	int major, minor;
+
+	if (!XF86MiscQueryVersion(dpy, &major, &minor)) {
+	    miscpresent = 0;
+	    fprintf(stderr,
+		"server does not have extension for \"s power\" option\n");
+	}
+
+	i++;
+	if (i >= argc) {
+	  if (miscpresent) {
+	    set_saver(dpy, POWER_SUSPEND, SUSPEND_DEFAULT);
+	    set_saver(dpy, POWER_OFF, OFF_DEFAULT);
+	  }
+	  break;
+	}
+	arg = argv[i];
+	if (*arg >= '0' && *arg <= '9') {
+	  if (miscpresent)
+	    set_saver(dpy, POWER_SUSPEND, atoi(arg));
+	  i++;
+	  if (i >= argc)
+	    break;
+	  arg = argv[i];
+	  if (*arg >= '0' && *arg <= '9') {
+	    if (miscpresent)
+	      set_saver(dpy, POWER_OFF, atoi(arg));
+	    i++;
+	  }
+	}
+    }
+#endif
     else if (*arg >= '0' && *arg <= '9') {  /*  Set as user wishes.   */
       set_saver(dpy, TIMEOUT, atoi(arg));
       i++;
@@ -426,7 +472,7 @@ if (numpixels)
 
 XCloseDisplay (dpy);
 
-exit(0);    /*  Done.  We can go home now.  */
+exit(error_status);    /*  Done.  We can go home now.  */
 }
 
 
@@ -696,6 +742,9 @@ Display *dpy;
 int mask, value;
 {
   int timeout, interval, prefer_blank, allow_exp;
+#ifdef XF86MISC
+  int suspendtime, offtime;
+#endif
   XGetScreenSaver(dpy, &timeout, &interval, &prefer_blank, 
 		  &allow_exp);
   if (mask == TIMEOUT) timeout = value;
@@ -708,6 +757,14 @@ int mask, value;
     prefer_blank = DefaultBlanking;
     allow_exp = DefaultExposures;
   }
+#ifdef XF86MISC
+  if (mask == POWER_SUSPEND || mask == POWER_OFF)
+    XF86MiscGetSaver(dpy, DefaultScreen(dpy), &suspendtime, &offtime);
+  if (mask == POWER_SUSPEND) suspendtime = value;
+  if (mask == POWER_OFF) offtime = value;
+  if (mask == POWER_SUSPEND || mask == POWER_OFF)
+    XF86MiscSetSaver(dpy, DefaultScreen(dpy), suspendtime, offtime);
+#endif
   XSetScreenSaver(dpy, timeout, interval, prefer_blank, 
 		  allow_exp);
   if (mask == ALL && value == DEFAULT_TIMEOUT) {
@@ -846,6 +903,9 @@ int scr = DefaultScreen (dpy);
 XKeyboardState values;
 int acc_num, acc_denom, threshold;
 int timeout, interval, prefer_blank, allow_exp;
+#ifdef XF86MISC
+int suspendtime, offtime, miscpresent = 1;
+#endif
 char **font_path; int npaths;
 int i, j;
 char buf[20];				/* big enough for 16 bit number */
@@ -854,6 +914,10 @@ XGetKeyboardControl(dpy, &values);
 XGetPointerControl(dpy, &acc_num, &acc_denom, &threshold);
 XGetScreenSaver(dpy, &timeout, &interval, &prefer_blank, &allow_exp);
 font_path = XGetFontPath(dpy, &npaths);
+#ifdef XF86MISC
+if (!XF86MiscGetSaver(dpy, scr, &suspendtime, &offtime))
+  miscpresent = 0;
+#endif
 
 printf ("Keyboard Control:\n");
 printf ("  auto repeat:  %s    key click percent:  %d    LED mask:  %08lx\n", 
@@ -883,6 +947,10 @@ printf ("allow exposures:  %s\n",
 	on_or_off (allow_exp, AllowExposures, "yes",
 		   DontAllowExposures, "no", buf));
 printf ("  timeout:  %d    cycle:  %d\n", timeout, interval);
+#ifdef XF86MISC
+if (miscpresent)
+  printf ("  suspend time:  %d    off time:  %d\n", suspendtime, offtime);
+#endif
 
 printf ("Colors:\n");
 printf ("  default colormap:  0x%lx    BlackPixel:  %d    WhitePixel:  %d\n",
@@ -967,6 +1035,9 @@ usage (fmt, arg)
     fprintf (stderr, "\t s blank              s noblank    s off\n");
     fprintf (stderr, "\t s expose             s noexpose\n");
     fprintf (stderr, "\t s activate           s reset\n");
+#ifdef XF86MISC
+    fprintf (stderr, "\t s power [suspend [off]]\n");
+#endif
     fprintf (stderr, "    For status information:  q\n");
     exit(0);
 }
@@ -1006,5 +1077,8 @@ int local_xerror (dpy, rep)
 	}
     } else
 	XmuPrintDefaultErrorMessage (dpy, rep, stderr);
+
+    error_status = -1;
+
     return (0);
 }

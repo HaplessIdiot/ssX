@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.10 1996/01/16 11:00:30 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.11 1996/01/16 15:00:36 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -71,14 +71,13 @@ typedef struct {
 
 typedef struct _XF86VidModeGetModeLine {
     CARD8	reqType;		/* always XF86VidModeReqCode */
-    CARD8	xf86vidmodeReqType;
+    CARD8	xf86vidmodeReqType;	/* always X_XF86VidModeGetModeLine */
     CARD16	length B16;
     CARD16	screen B16;
     CARD16	pad B16;
-} xXF86VidModeGetModeLineReq, xXF86VidModeGetMonitorReq, xXF86VidModeGetSaverReq;
+} xXF86VidModeGetModeLineReq, xXF86VidModeGetMonitorReq;
 #define sz_xXF86VidModeGetModeLineReq	8
 #define sz_xXF86VidModeGetMonitorReq	8
-#define sz_xXF86VidModeGetSaverReq	8
 
 typedef struct {
     BYTE	type;			/* X_Reply */
@@ -103,7 +102,7 @@ typedef struct _XF86VidModeModModeLine {
     CARD8	reqType;		/* always XF86VidModeReqCode */
     CARD8	xf86vidmodeReqType;	/* always X_XF86VidModeModModeLine */
     CARD16	length B16;
-    CARD32	screen B32;
+    CARD32	screen B32;		/* could be CARD16 but need the pad */
     CARD16	hdisplay B16;
     CARD16	hsyncstart B16;
     CARD16	hsyncend B16;
@@ -135,17 +134,6 @@ typedef struct _XF86VidModeLockModeSwitch {
 } xXF86VidModeLockModeSwitchReq;
 #define sz_xXF86VidModeLockModeSwitchReq	8
 
-typedef struct _XF86VidModeSetSaver {
-    CARD8	reqType;		/* always XF86VidModeReqCode */
-    CARD8	xf86vidmodeReqType;	/* always X_XF86VidModeSetSaver */
-    CARD16	length B16;
-    CARD16	screen B16;
-    CARD16	pad B16;
-    CARD32	suspendTime B32;
-    CARD32	offTime B32;
-} xXF86VidModeSetSaverReq;
-#define sz_xXF86VidModeSetSaverReq	16
-
 typedef struct {
     BYTE	type;			/* X_Reply */
     BOOL	pad1;
@@ -162,19 +150,5 @@ typedef struct {
     CARD32	pad5 B32;
 } xXF86VidModeGetMonitorReply;
 #define sz_xXF86VidModeGetMonitorReply	32
-
-typedef struct {
-    BYTE	type;
-    BOOL	pad1;
-    CARD16	sequenceNumber B16;
-    CARD32	length B32;
-    CARD32	suspendTime B32;
-    CARD32	offTime B32;
-    CARD32	pad2 B32;
-    CARD32	pad3 B32;
-    CARD32	pad4 B32;
-    CARD32	pad5 B32;
-} xXF86VidModeGetSaverReply;
-#define sz_xXF86VidModeGetSaverReply	32
 
 #endif /* _XF86VIDMODESTR_H_ */

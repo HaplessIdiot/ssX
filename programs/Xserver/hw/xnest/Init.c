@@ -1,5 +1,5 @@
-/* $XConsortium: Init.c /main/4 1995/11/16 14:41:16 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.0 1995/03/11 14:18:57 dawes Exp $ */
+/* $XConsortium: Init.c /main/5 1996/01/15 21:05:07 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.1 1996/01/05 13:19:07 dawes Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -121,29 +121,4 @@ void OsVendorInit()
 {
     return;
 }
-
-#ifdef XF86VIDMODE
-int xf86ScreenIndex;
-
-int xf86CheckMode(scrp, dspmp, monp, verbose)
-    void* scrp;
-    void* dspmp;
-    void* monp;
-    int verbose;
-{
-    return 0;
-}
-
-void xf86ZoomViewport(pScreen, zoom)
-    ScreenPtr pScreen;
-    int zoom;
-{
-}
-
-void xf86LockZoom(pScreen, zoom)
-    ScreenPtr pScreen;
-    int zoom;
-{
-}
-#endif
 

@@ -1,5 +1,5 @@
 /* $XConsortium: XF86VMode.c /main/2 1995/11/14 18:17:58 kaleb $ */
-/* $XFree86: xc/lib/XExExt/XF86VMode.c,v 3.12 1995/12/09 11:04:35 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.13 1996/01/16 15:01:53 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -29,14 +29,23 @@ or other dealings in this Software without prior written authorization
 from Kaleb S. KEITHLEY.
 
 */
+/* $XConsortium: XF86VMode.c /main/4 1996/01/16 07:52:25 kaleb CHECKEDOUT $ */
+
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
+#ifndef XBUILD_IN_CLIENT
 #include "Xlibint.h"
 #include "xf86vmstr.h"
 #include "Xext.h"
 #include "extutil.h"
+#else
+#include "lib/X11/Xlibint.h"
+#include "include/extensions/xf86vmstr.h"
+#include "include/extensions/Xext.h"
+#include "include/extensions/extutil.h"
+#endif
 
 static XExtensionInfo _xf86vidmode_info_data;
 static XExtensionInfo *xf86vidmode_info = &_xf86vidmode_info_data;

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86vmode.c /main/2 1995/11/14 18:18:39 kaleb $ */
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.15 1996/01/16 11:00:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.16 1996/01/16 15:02:16 dawes Exp $ */
 
 /*
 
@@ -45,6 +45,7 @@ from Kaleb S. KEITHLEY
 #include "xf86vmstr.h"
 #include "Xfuncproto.h"
 #include "../hw/xfree86/common/xf86.h"
+#include "../hw/xfree86/common/xf86Priv.h"
 
 #include <X11/Xtrans.h>
 #include "../os/osdep.h"
@@ -520,6 +521,8 @@ ProcXF86VidModeSwitchMode(client)
 	return BadValue;
 
     vptr = screenInfo.screens[stuff->screen];
+    if (xf86Info.dontZoom)
+	return vidmodeErrorBase + XF86VidModeZoomLocked;
 
     REQUEST_SIZE_MATCH(xXF86VidModeSwitchModeReq);
 
@@ -538,6 +541,8 @@ ProcXF86VidModeLockModeSwitch(client)
 	return BadValue;
 
     vptr = screenInfo.screens[stuff->screen];
+    if (xf86Info.dontZoom)
+	return vidmodeErrorBase + XF86VidModeZoomLocked;
 
     REQUEST_SIZE_MATCH(xXF86VidModeLockModeSwitchReq);
 

@@ -1,5 +1,4 @@
-/* $XConsortium: xf86XKB.c /main/1 1995/11/30 19:24:49 kaleb $ */
-/* $XFree86$ */
+/* $XConsortium: xf86XKB.c /main/3 1996/01/16 07:15:56 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -62,11 +61,14 @@ xf86InitXkb()
 {
 }
 
-#if 0
 void
+#if NeedFunctionPrototypes
+XkbDDXUpdateIndicators(DeviceIntPtr pXDev,CARD32 new)
+#else
 XkbDDXUpdateIndicators(pXDev,new)
     DeviceIntPtr  pXDev;
     CARD32 new;
+#endif
 {
     CARD32 old;
 #ifdef DEBUG
@@ -83,4 +85,34 @@ XkbDDXUpdateIndicators(pXDev,new)
     xf86SetKbdLeds(new);
     return;
 }
+
+void
+#if NeedFunctionPrototypes
+XkbDDXUpdateDeviceIndicators(	DeviceIntPtr		dev,
+				XkbSrvLedInfoPtr 	sli,
+				CARD32 			new)
+#else
+XkbDDXUpdateDeviceIndicators(dev,sli,new)
+    DeviceIntPtr  	dev;
+    XkbSrvLedInfoPtr	sli;
+    CARD32 		new;
 #endif
+{
+    if (sli->fb.kf==dev->kbdfeed)
+	XkbDDXUpdateIndicators(dev,new);
+    else if (sli->class==KbdFeedbackClass) {
+	KbdFeedbackPtr	kf;
+	kf= sli->fb.kf;
+	if (kf && kf->CtrlProc) {
+	    (*kf->CtrlProc)(dev,&kf->ctrl);
+	}
+    }
+    else if (sli->class==LedFeedbackClass) {
+	LedFeedbackPtr	lf;
+	lf= sli->fb.lf;
+	if (lf && lf->CtrlProc) {
+	    (*lf->CtrlProc)(dev,&lf->ctrl);
+	}
+    }
+    return;
+}

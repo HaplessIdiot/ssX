@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xdpyinfo.c /main/34 1995/12/08 12:09:32 dpw $
- * $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.2 1996/01/13 12:23:37 dawes Exp $
+ * $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.3 1996/01/16 15:08:52 dawes Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -54,6 +54,10 @@ in this Software without prior written authorization from the X Consortium.
 #ifdef XFreeXDGA
 #include <X11/extensions/xf86dga.h>
 #include <X11/extensions/xf86dgastr.h>
+#endif
+#ifdef XF86MISC
+#include <X11/extensions/xf86misc.h>
+#include <X11/extensions/xf86mscstr.h>
 #endif
 #include <X11/Xos.h>
 #include <stdio.h>
@@ -611,7 +615,7 @@ print_XF86VidMode_info(dpy, extname)
     Display *dpy;
     char *extname;
 {
-    int majorrev, minorrev, dot_clock, i, suspendTime, offTime;
+    int majorrev, minorrev, dot_clock, i;
     XF86VidModeMonitor monitor;
     XF86VidModeModeLine mode_line;
 
@@ -654,14 +658,25 @@ print_XF86VidMode_info(dpy, extname)
     if (mode_line.flags & V_DBLSCAN)   printf(" doublescan");
     printf("\n");
 
-#if 0
-    if (!XF86VidModeGetSaver(dpy, DefaultScreen(dpy), &suspendTime, &offTime))
-	return 0;
-    printf("  Powersaver Settings:\n");
-    printf("    Suspend Time: %d,  Off Time: %d\n",
-        suspendTime/1000, offTime/1000);
+    return 1;
+}
 #endif
 
+#ifdef XF86MISC
+print_XF86Misc_info(dpy, extname)
+    Display *dpy;
+    char *extname;
+{
+    int majorrev, minorrev, suspendTime, offTime;
+
+    if (!XF86MiscQueryVersion(dpy, &majorrev, &minorrev))
+	return 0;
+    print_standard_extension_info(dpy, extname, majorrev, minorrev);
+
+    if (!XF86MiscGetSaver(dpy, DefaultScreen(dpy), &suspendTime, &offTime))
+	return 0;
+    printf("  Powersaver Settings-  Suspend Time: %d,  Off Time: %d\n",
+        suspendTime, offTime);
     return 1;
 }
 #endif
@@ -790,6 +805,9 @@ ExtensionPrintInfo known_extensions[] =
 #ifdef XF86VIDMODE
     {XF86VIDMODENAME, print_XF86VidMode_info, False},
 #endif /* XF86VIDMODE */
+#ifdef XF86MISC
+    {XF86MISCNAME, print_XF86Misc_info, False},
+#endif /* XF86MISC */
     {xieExtName, print_xie_info, False},
     {XTestExtensionName, print_xtest_info, False},
     {"DOUBLE-BUFFER", print_dbe_info, False},

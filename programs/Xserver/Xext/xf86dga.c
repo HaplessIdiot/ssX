@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.0 1995/12/09 11:05:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.1 1995/12/17 04:59:01 dawes Exp $ */
 
 /*
 
@@ -20,6 +20,15 @@ Copyright (c) 1995  XFree86 Inc
 #include "xf86dgastr.h"
 #include "Xfuncproto.h"
 #include "../hw/xfree86/common/xf86.h"
+
+#include <X11/Xtrans.h>
+#include "../os/osdep.h"
+#include <X11/Xauth.h>
+#ifndef ESIX
+#include <sys/socket.h>
+#else
+#include <lan/socket.h>
+#endif
 
 extern int xf86ScreenIndex;
 
@@ -94,7 +103,6 @@ ProcDGAQueryVersion(client)
     return (client->noClientException);
 }
 
-
 static int
 ProcXF86DGAGetVideoLL(client)
     register ClientPtr client;
@@ -106,7 +114,6 @@ ProcXF86DGAGetVideoLL(client)
 
     if (stuff->screen > screenInfo.numScreens)
 	return BadValue;
-
 
     vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
     REQUEST_SIZE_MATCH(xXF86DGAGetVideoLLReq);
@@ -149,10 +156,14 @@ ProcXF86DGADirectVideo(client)
     REQUEST_SIZE_MATCH(xXF86DGADirectVideoReq);
     if (!(vptr->directMode&XF86DGADirectPresent)) {
        /* chipset doesn't know about directVideoMode */
-       /* should generate a diffent error? */
-	return BadImplementation;
+	return DGAErrorBase + XF86DGANoDirectVideoMode;
     }
     
+    /* Check that the current screen is active. */
+    if (!xf86VTSema && !(vptr->directMode & XF86DGADirectGraphics)) {
+	return DGAErrorBase + XF86DGAScreenNotActive;
+    }
+
     if (stuff->enable&XF86DGADirectGraphics) {
        vptr->directMode = stuff->enable|XF86DGADirectPresent;
        if (xf86VTSema == TRUE) {
@@ -220,7 +231,7 @@ ProcXF86DGASetViewPort(client)
 	(xf86VTSema == TRUE || vptr->directMode&XF86DGADirectGraphics))
 	vptr->AdjustFrame(stuff->x, stuff->y);
     else
-	return BadAccess;
+	return DGAErrorBase + XF86DGAScreenNotActive;
 
     return (client->noClientException);
 }
@@ -258,8 +269,10 @@ ProcXF86DGASetVidPage(client)
     REQUEST_SIZE_MATCH(xXF86DGASetVidPageReq);
 
     if (xf86VTSema == TRUE) {/* only valid when switched away! */
-       /* should generate which error? */
-	return BadAccess;
+	return DGAErrorBase + XF86DGADirectNotActivated;
+    }
+    if (!xf86VTSema && !(vptr->directMode & XF86DGADirectGraphics)) {
+	return DGAErrorBase + XF86DGAScreenNotActive;
     }
 
     if (vptr->setBank) {
@@ -268,11 +281,37 @@ ProcXF86DGASetVidPage(client)
     return (client->noClientException);
 }
 
+/* 
+ * lifted from xc/programs/Xserver/os/access.c.
+ */
+static Bool
+LocalClient(client)
+    ClientPtr client;
+{
+    int    		alen, family, notused;
+    struct sockaddr	*from = NULL;
+
+    if (!_XSERVTransGetPeerAddr (((OsCommPtr)client->osPrivate)->trans_conn,
+	&notused, &alen, (Xtransaddr*)&from)) {
+	if (alen == 0 || 
+	    from->sa_family == AF_UNSPEC || from->sa_family == AF_UNIX) {
+	    xfree ((char *) from);
+	    return TRUE;
+	}
+	xfree ((char *) from);
+    }
+    return FALSE;
+}
+
 static int
 ProcXF86DGADispatch (client)
     register ClientPtr	client;
 {
     REQUEST(xReq);
+
+    if (!LocalClient(client))
+	return DGAErrorBase + XF86DGAClientNotLocal;
+
     switch (stuff->data)
     {
     case X_XF86DGAQueryVersion:
@@ -322,6 +361,11 @@ SProcXF86DGADispatch (client)
     register ClientPtr	client;
 {
     REQUEST(xReq);
+
+    /* It is bound to be non-local when there is byte swapping */
+    if (!LocalClient(client))
+	return DGAErrorBase + XF86DGAClientNotLocal;
+
     switch (stuff->data)
     {
     case X_XF86DGAQueryVersion:

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: input.c /main/20 1996/01/14 16:52:52 kaleb $
- *	$XFree86: xc/programs/xterm/input.c,v 3.3 1996/01/10 05:44:11 dawes Exp $
+ *	$XFree86: xc/programs/xterm/input.c,v 3.4 1996/01/16 15:09:41 dawes Exp $
  */
 
 /*
@@ -39,7 +39,7 @@
 
 static char *kypd_num = " XXXXXXXX\tXXX\rXXXxxxxXXXXXXXXXXXXXXXXXXXXX*+,-./0123456789XXX=";
 static char *kypd_apl = " ABCDEFGHIJKLMNOPQRSTUVWXYZ??????abcdefghijklmnopqrstuvwxyzXXX";
-static char *cur = "DACB";
+static char *cur = "HDACB  FE";
 
 static int funcvalue PROTO((KeySym keycode));
 static int sunfuncvalue PROTO((KeySym keycode));
@@ -111,10 +111,10 @@ Input (keyboard, screen, event, eightbit)
        		if (keyboard->flags & CURSOR_APL) {
 			reply.a_type = SS3;
 			unparseseq(&reply, pty);
-			unparseputc(cur[keysym-XK_Left], pty);
+			unparseputc(cur[keysym-XK_Home], pty);
 		} else {
 			reply.a_type = CSI;
-			reply.a_final = cur[keysym-XK_Left];
+			reply.a_final = cur[keysym-XK_Home];
 			unparseseq(&reply, pty);
 		}
 		key = TRUE;

@@ -1,5 +1,5 @@
 /* $XConsortium: XKBsrv.h /main/16 1996/01/14 16:42:21 kaleb $ */
-/* $XFree86: xc/include/extensions/XKBsrv.h,v 3.1 1996/01/10 12:12:14 dawes Exp $ */
+/* $XFree86: xc/include/extensions/XKBsrv.h,v 3.2 1996/01/16 11:00:27 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -58,6 +58,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define XkbLatchModifiers		SrvXkbLatchModifiers
 #define XkbLatchGroup			SrvXkbLatchGroup
 #define XkbVirtualModsToReal		SrvXkbVirtualModsToReal
+#define XkbAddKeyType			SrvXkbAddKeyType
 #endif
 
 #include <X11/extensions/XKBstr.h>

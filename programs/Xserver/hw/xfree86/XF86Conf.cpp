@@ -1,5 +1,5 @@
 XCOMM $XConsortium: XF86Conf.cpp,v 1.5 95/01/16 13:16:10 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.16 1996/01/16 11:01:18 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.17 1996/01/16 15:03:10 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -80,10 +80,10 @@ XCOMM sequences.  This allows clients to receive these key events.
 
 XCOMM    DontZoom
 
-XCOMM Uncomment this to disable tuning with the xvidtune client. With this,
-XCOMM the client can still run and fetch card and monitor attributes,
-XCOMM but it will not be allowed to change them and will exit with a
-XCOMM protocol error.
+XCOMM Uncomment this to disable tuning with the xvidtune client. With
+XCOMM it the client can still run and fetch card and monitor attributes,
+XCOMM but it will not be allowed to change them. If it tries it will
+XCOMM receive a protocol error.
 
 XCOMM	DisableVidModeExtension
 

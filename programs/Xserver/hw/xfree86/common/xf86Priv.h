@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Priv.h,v 1.5 95/01/16 13:17:01 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.11 1995/11/30 13:04:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.12 1995/12/23 09:38:55 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -26,8 +26,10 @@
 #ifndef _XF86PRIV_H
 #define _XF86PRIV_H
 
+#ifndef _XF86VIDMODE_SERVER_
 #include "Xproto.h"
 #include "xf86_OSlib.h"
+#endif
 
 typedef struct {
 
