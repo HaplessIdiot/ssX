@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.2 94/03/31 11:37:26 gildea Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.22 1994/09/21 10:40:04 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.23 1994/09/22 15:45:35 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -113,8 +113,8 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.22 1994/09/21 10:40:04 dawes Exp $
 /*
  * Driver list for several of the X Servers.
  */
-#ifndef XF86Vga256Drivers
-# define XF86Vga256Drivers	et4000 et3000 pvga1 gvga ati tvga8900 cirrus \
+#ifndef XF86SvgaDrivers
+# define XF86SvgaDrivers	et4000 et3000 pvga1 gvga ati tvga8900 cirrus \
 				ncr77c22 compaq oak mx al2101 cl6420 \
 				video7 generic
 #endif

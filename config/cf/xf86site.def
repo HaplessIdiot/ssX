@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.14 1994/09/17 04:03:32 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.15 1994/09/19 13:36:24 dawes Exp $
 /******************************************************************************/
 /*
  * This file is provide a quick method for most people to change the
@@ -46,10 +46,56 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.14 1994/09/17 04:03:32 dawes Exp $
 #define XnestServer             YES
 
 /*
+ * Set the default server (ie the one that gets the sym-link to "X")
+ *
+#define ServerToInstall		XF86_S3
+ */
+
+
+/*
  * To build Xvfb, uncomment this.
  *
 #define XVirtualFramebufferServer	YES
 */
+
+
+/*
+ * Server configuration parameters.  The defaults are shown here:
+ */
+
+/*
+ * SVGA server:
+ *
+#define XF86SvgaDrivers		et4000 et3000 pvga1 gvga ati tvga8900 cirrus \
+				ncr77c22 compaq oak mx al2101 cl6420 \
+				video7 generic
+ */
+
+/*
+ * VGA16 server:
+ *
+#define XF86Vga16Drivers	et4000 ncr77c22 ati tvga8900 oak cl6420 generic
+ */
+
+/*
+ * VGA2 driver in Mono server:
+ *
+#define XF86Vga2Drivers		et4000 et3000 pvga1 gvga ati tvga8900 cirrus \
+				ncr77c22 compaq oak cl6420 generic
+ */
+
+/*
+ * Mono driver in Mono or VGA16 server:
+ *
+#define XF86MonoDrivers		hgc1280 sigma apollo hercules
+ */
+
+/*
+ * ET4000/W32 server:
+ *
+#define XF86W32Drivers		et4000w32
+ */
+
 
 /*
  * To play with LBX, uncomment this.  Note, after doing this, you should
