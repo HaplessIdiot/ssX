@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.129 2002/07/15 14:22:39 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.130 2002/07/15 20:46:01 dawes Exp $ */
 /*
  * Copyright 1995-2002 by The XFree86 Project, Inc.
  *
@@ -36,8 +36,10 @@
 #define PCI_VENDOR_VIDEOLOGIC	0x1010
 #define PCI_VENDOR_DIGITAL	0x1011
 #define PCI_VENDOR_CIRRUS	0x1013
+#define PCI_VENDOR_AMD		0x1022
 #define PCI_VENDOR_TRIDENT	0x1023
 #define PCI_VENDOR_ALI		0x1025
+#define PCI_VENDOR_DELL		0x1028
 #define PCI_VENDOR_MATROX	0x102B
 #define PCI_VENDOR_CHIPSTECH	0x102C
 #define PCI_VENDOR_MIRO		0x1031
@@ -190,6 +192,9 @@
 #define PCI_CHIP_GD7542		0x1200
 #define PCI_CHIP_GD7543		0x1202
 #define PCI_CHIP_GD7541		0x1204
+
+/* AMD */
+#define PCI_CHIP_AMD761		0x700E
 
 /* Trident */
 #define PCI_CHIP_8400		0x8400

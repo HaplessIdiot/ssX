@@ -1,4 +1,6 @@
 XFree86 4.2.99.2 (xx July 2002)
+ 205. Fix Radeon DDC for non-Dell cards, and fix a radeon pci id-related
+      build problem (#5326, Andrew C Aitchison).
  204. Change the X server (and scanpci) to use the pci.ids file (from
       pciids.sf.net) for vendor/device descriptions (David Dawes).
  203. Change XDarwin to use NSQuickDrawView instead of Carbon windows to
@@ -14947,4 +14949,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2263 2002/07/15 19:58:28 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2264 2002/07/15 20:45:58 dawes Exp $
