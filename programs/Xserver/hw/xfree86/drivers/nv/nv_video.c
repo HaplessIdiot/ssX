@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.17 2003/08/05 20:58:24 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.18 2003/08/05 21:08:29 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -484,6 +484,12 @@ NVPutOverlayImage (
 	if(!pPriv->grabbedByV4L)
            REGION_COPY(pScrnInfo->pScreen, &pPriv->clip, clipBoxes);
         xf86XVFillKeyHelper(pScrnInfo->pScreen, pPriv->colorKey, clipBoxes);
+    }
+
+    if(pNv->CurrentLayout.mode->Flags & V_DBLSCAN) {
+        dstBox->y1 <<= 1;
+        dstBox->y2 <<= 1;
+        drw_h <<= 1;
     }
 
     pNv->PMC[(0x8900/4) + buffer] = offset;

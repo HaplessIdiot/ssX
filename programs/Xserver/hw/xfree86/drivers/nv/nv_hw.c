@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.49 2003/05/04 01:20:52 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_hw.c,v 1.1 2003/07/31 20:24:29 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -126,6 +126,83 @@ typedef struct {
   char mem_aligned;
   char enable_mp;
 } nv10_sim_state;
+
+
+static void nvGetClocks(NVPtr pNv, unsigned int *MClk, unsigned int *NVClk)
+{
+    unsigned int pll, N, M, MB, NB, P;
+
+    if(pNv->twoStagePLL) {
+       pll = pNv->PRAMDAC0[0x0504/4];
+       M = pll & 0xFF; 
+       N = (pll >> 8) & 0xFF; 
+       P = (pll >> 16) & 0x0F;
+       pll = pNv->PRAMDAC0[0x0574/4];
+       if(pll & 0x80000000) {
+           MB = pll & 0xFF; 
+           NB = (pll >> 8) & 0xFF;
+       } else {
+           MB = 1;
+           NB = 1;
+       }
+       *MClk = ((N * NB * pNv->CrystalFreqKHz) / (M * MB)) >> P;
+
+       pll = pNv->PRAMDAC0[0x0500/4];
+       M = pll & 0xFF; 
+       N = (pll >> 8) & 0xFF; 
+       P = (pll >> 16) & 0x0F;
+       pll = pNv->PRAMDAC0[0x0570/4];
+       if(pll & 0x80000000) {
+           MB = pll & 0xFF;
+           NB = (pll >> 8) & 0xFF;
+       } else {
+           MB = 1;
+           NB = 1;
+       }
+       *NVClk = ((N * NB * pNv->CrystalFreqKHz) / (M * MB)) >> P;
+    } else 
+    if(((pNv->Chipset & 0x0ff0) == 0x0300) ||
+       ((pNv->Chipset & 0x0ff0) == 0x0330))
+    {
+       pll = pNv->PRAMDAC0[0x0504/4];
+       M = pll & 0x0F; 
+       N = (pll >> 8) & 0xFF;
+       P = (pll >> 16) & 0x07;
+       if(pll & 0x00000080) {
+           MB = (pll >> 4) & 0x07;     
+           NB = (pll >> 19) & 0x1f;
+       } else {
+           MB = 1;
+           NB = 1;
+       }
+       *MClk = ((N * NB * pNv->CrystalFreqKHz) / (M * MB)) >> P;
+
+       pll = pNv->PRAMDAC0[0x0500/4];
+       M = pll & 0x0F;
+       N = (pll >> 8) & 0xFF;
+       P = (pll >> 16) & 0x07;
+       if(pll & 0x00000080) {
+           MB = (pll >> 4) & 0x07;
+           NB = (pll >> 19) & 0x1f;
+       } else {
+           MB = 1;
+           NB = 1;
+       }
+       *NVClk = ((N * NB * pNv->CrystalFreqKHz) / (M * MB)) >> P;
+    } else {
+       pll = pNv->PRAMDAC0[0x0504/4];
+       M = pll & 0xFF; 
+       N = (pll >> 8) & 0xFF; 
+       P = (pll >> 16) & 0x0F;
+       *MClk = (N * pNv->CrystalFreqKHz / M) >> P;
+
+       pll = pNv->PRAMDAC0[0x0500/4];
+       M = pll & 0xFF; 
+       N = (pll >> 8) & 0xFF; 
+       P = (pll >> 16) & 0x0F;
+       *NVClk = (N * pNv->CrystalFreqKHz / M) >> P;
+    }
+}
 
 
 static void nv4CalcArbitration (
@@ -282,14 +359,10 @@ static void nv4UpdateArbitrationSettings (
 {
     nv4_fifo_info fifo_data;
     nv4_sim_state sim_data;
-    unsigned int M, N, P, pll, MClk, NVClk, cfg1;
+    unsigned int MClk, NVClk, cfg1;
 
-    pll = pNv->PRAMDAC0[0x00000504/4];
-    M = (pll >> 0)  & 0xFF; N = (pll >> 8)  & 0xFF; P = (pll >> 16) & 0x0F;
-    MClk  = (N * pNv->CrystalFreqKHz / M) >> P;
-    pll = pNv->PRAMDAC0[0x00000500/4];
-    M = (pll >> 0)  & 0xFF; N = (pll >> 8)  & 0xFF; P = (pll >> 16) & 0x0F;
-    NVClk  = (N * pNv->CrystalFreqKHz / M) >> P;
+    nvGetClocks(pNv, &MClk, &NVClk);
+
     cfg1 = pNv->PFB[0x00000204/4];
     sim_data.pix_bpp        = (char)pixelDepth;
     sim_data.enable_video   = 0;
@@ -543,20 +616,16 @@ static void nv10UpdateArbitrationSettings (
 {
     nv10_fifo_info fifo_data;
     nv10_sim_state sim_data;
-    unsigned int M, N, P, pll, MClk, NVClk, cfg1;
+    unsigned int MClk, NVClk, cfg1;
 
-    pll = pNv->PRAMDAC0[0x0504/4];
-    M = (pll >> 0)  & 0xFF; N = (pll >> 8)  & 0xFF; P = (pll >> 16) & 0x0F;
-    MClk  = (N * pNv->CrystalFreqKHz / M) >> P;
-    pll = pNv->PRAMDAC0[0x0500/4];
-    M = (pll >> 0)  & 0xFF; N = (pll >> 8)  & 0xFF; P = (pll >> 16) & 0x0F;
-    NVClk  = (N * pNv->CrystalFreqKHz / M) >> P;
+    nvGetClocks(pNv, &MClk, &NVClk);
+
     cfg1 = pNv->PFB[0x0204/4];
     sim_data.pix_bpp        = (char)pixelDepth;
-    sim_data.enable_video   = 0;
+    sim_data.enable_video   = 1;
     sim_data.enable_mp      = 0;
-    sim_data.memory_type    = (pNv->PFB[0x00000200/4] & 0x01) ? 1 : 0;
-    sim_data.memory_width   = (pNv->PEXTDEV[0x00000000/4] & 0x10) ? 128 : 64;
+    sim_data.memory_type    = (pNv->PFB[0x0200/4] & 0x01) ? 1 : 0;
+    sim_data.memory_width   = (pNv->PEXTDEV[0x0000/4] & 0x10) ? 128 : 64;
     sim_data.mem_latency    = (char)cfg1 & 0x0F;
     sim_data.mem_aligned    = 1;
     sim_data.mem_page_miss  = (char)(((cfg1>>4) &0x0F) + ((cfg1>>31) & 0x01));
@@ -641,55 +710,43 @@ static void nForceUpdateArbitrationSettings (
 /*
  * Calculate the Video Clock parameters for the PLL.
  */
-static int CalcVClock (
+static void CalcVClock (
     int           clockIn,
     int          *clockOut,
-    int          *mOut,
-    int          *nOut,
-    int          *pOut,
+    U032         *pllOut,
     NVPtr        pNv
 )
 {
-    unsigned lowM, highM, highP;
+    unsigned lowM, highM;
     unsigned DeltaNew, DeltaOld;
     unsigned VClk, Freq;
     unsigned M, N, P;
     
     DeltaOld = 0xFFFFFFFF;
 
-    VClk     = (unsigned)clockIn;
+    VClk = (unsigned)clockIn;
     
-    if (pNv->CrystalFreqKHz == 13500)
-    {
+    if (pNv->CrystalFreqKHz == 13500) {
         lowM  = 7;
         highM = 13;
-    }                      
-    else
-    {
+    } else {
         lowM  = 8;
         highM = 14;
     }
 
-    highP = 4;
-    for (P = 0; P <= highP; P ++)
-    {
+    for (P = 0; P <= 4; P++) {
         Freq = VClk << P;
-        if ((Freq >= 128000) && (Freq <= pNv->MaxVClockFreqKHz))
-        {
-            for (M = lowM; M <= highM; M++)
-            {
-                N    = (VClk << P) * M / pNv->CrystalFreqKHz;
+        if ((Freq >= 128000) && (Freq <= 350000)) {
+            for (M = lowM; M <= highM; M++) {
+                N = ((VClk << P) * M) / pNv->CrystalFreqKHz;
                 if(N <= 255) {
-                    Freq = (pNv->CrystalFreqKHz * N / M) >> P;
+                    Freq = ((pNv->CrystalFreqKHz * N) / M) >> P;
                     if (Freq > VClk)
                         DeltaNew = Freq - VClk;
                     else
                         DeltaNew = VClk - Freq;
-                    if (DeltaNew < DeltaOld)
-                    {
-                        *mOut     = M;
-                        *nOut     = N;
-                        *pOut     = P;
+                    if (DeltaNew < DeltaOld) {
+                        *pllOut   = (P << 16) | (N << 8) | M;
                         *clockOut = Freq;
                         DeltaOld  = DeltaNew;
                     }
@@ -697,8 +754,48 @@ static int CalcVClock (
             }
         }
     }
-    return (DeltaOld != 0xFFFFFFFF);
 }
+
+static void CalcVClock2Stage (
+    int           clockIn,
+    int          *clockOut,
+    U032         *pllOut,
+    U032         *pllBOut,
+    NVPtr        pNv
+)
+{
+    unsigned DeltaNew, DeltaOld;
+    unsigned VClk, Freq;
+    unsigned M, N, P;
+
+    DeltaOld = 0xFFFFFFFF;
+
+    *pllBOut = 0x80000401;  /* fixed at x4 for now */
+
+    VClk = (unsigned)clockIn;
+
+    for (P = 0; P <= 6; P++) {
+        Freq = VClk << P;
+        if ((Freq >= 400000) && (Freq <= 1000000)) {
+            for (M = 1; M <= 13; M++) {
+                N = ((VClk << P) * M) / (pNv->CrystalFreqKHz << 2);
+                if((N >= 5) && (N <= 255)) {
+                    Freq = (((pNv->CrystalFreqKHz << 2) * N) / M) >> P;
+                    if (Freq > VClk)
+                        DeltaNew = Freq - VClk;
+                    else
+                        DeltaNew = VClk - Freq;
+                    if (DeltaNew < DeltaOld) {
+                        *pllOut   = (P << 16) | (N << 8) | M;
+                        *clockOut = Freq;
+                        DeltaOld  = DeltaNew;
+                    }
+                }
+            }
+        }
+    }
+}
+
 /*
  * Calculate extended mode parameters (SVGA) and save in a 
  * mode state structure.
@@ -714,7 +811,7 @@ void NVCalcStateExt (
     int		   flags 
 )
 {
-    int pixelDepth, VClk, m, n, p;
+    int pixelDepth, VClk;
     /*
      * Save mode parameters.
      */
@@ -725,7 +822,10 @@ void NVCalcStateExt (
      * Extended RIVA registers.
      */
     pixelDepth = (bpp + 1)/8;
-    CalcVClock(dotClock, &VClk, &m, &n, &p, pNv);
+    if(pNv->twoStagePLL)
+        CalcVClock2Stage(dotClock, &VClk, &state->pll, &state->pllB, pNv);
+    else
+        CalcVClock(dotClock, &VClk, &state->pll, pNv);
 
     switch (pNv->Architecture)
     {
@@ -779,7 +879,6 @@ void NVCalcStateExt (
     if(bpp != 8) /* DirectColor */
 	state->general |= 0x00000030;
 
-    state->vpll     = (p << 16) | (n << 8) | m;
     state->repaint0 = (((width / 8) * pixelDepth) & 0x700) >> 3;
     state->pixel    = (pixelDepth > 2) ? 3 : pixelDepth;
 }
@@ -1027,12 +1126,6 @@ void NVLoadStateExt (
     pNv->PFIFO[0x0140] = 0x00000001;
 
     if(pNv->Architecture >= NV_ARCH_10) {
-        if(pNv->Architecture >= NV_ARCH_30) {
-            if(!pNv->FlatPanel) {
-               pNv->PRAMDAC0[0x0578/4] = state->vpllB;
-               pNv->PRAMDAC0[0x057C/4] = state->vpll2B;
-            }
-        }
         if(pNv->twoHeads) {
            pNv->PCRTC0[0x0860/4] = state->head;
            pNv->PCRTC0[0x2860/4] = state->head2;
@@ -1093,10 +1186,14 @@ void NVLoadStateExt (
     VGA_WR08(pNv->PCIO, 0x03D5, state->interlace);
 
     if(!pNv->FlatPanel) {
-       pNv->PRAMDAC0[0x0508/4] = state->vpll;
        pNv->PRAMDAC0[0x050C/4] = state->pllsel;
+       pNv->PRAMDAC0[0x0508/4] = state->vpll;
        if(pNv->twoHeads)
           pNv->PRAMDAC0[0x0520/4] = state->vpll2;
+       if(pNv->twoStagePLL) {
+          pNv->PRAMDAC0[0x0578/4] = state->vpllB;
+          pNv->PRAMDAC0[0x057C/4] = state->vpll2B;
+       }
     } else {
        pNv->PRAMDAC[0x0848/4] = state->scale;
     }
@@ -1137,9 +1234,12 @@ void NVUnloadStateExt
     VGA_WR08(pNv->PCIO, 0x03D4, 0x39);
     state->interlace    = VGA_RD08(pNv->PCIO, 0x03D5);
     state->vpll         = pNv->PRAMDAC0[0x0508/4];
-    state->vpll2        = pNv->PRAMDAC0[0x0520/4];
-    state->vpllB        = pNv->PRAMDAC0[0x0578/4];
-    state->vpll2B       = pNv->PRAMDAC0[0x057C/4];
+    if(pNv->twoHeads)
+       state->vpll2     = pNv->PRAMDAC0[0x0520/4];
+    if(pNv->twoStagePLL) {
+        state->vpllB    = pNv->PRAMDAC0[0x0578/4];
+        state->vpll2B   = pNv->PRAMDAC0[0x057C/4];
+    }
     state->pllsel       = pNv->PRAMDAC0[0x050C/4];
     state->general      = pNv->PRAMDAC[0x0600/4];
     state->scale        = pNv->PRAMDAC[0x0848/4];

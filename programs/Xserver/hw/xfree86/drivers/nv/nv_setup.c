@@ -37,7 +37,7 @@
 |*                                                                           *|
  \***************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.35 2003/07/31 20:24:29 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.36 2003/08/18 21:40:04 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -316,7 +316,7 @@ static void nv10GetConfig (NVPtr pNv)
     pNv->CursorStart      = (pNv->RamAmountKBytes - 96) * 1024;
     pNv->CURSOR           = NULL;  /* can't set this here */
     pNv->MinVClockFreqKHz = 12000;
-    pNv->MaxVClockFreqKHz = 350000;
+    pNv->MaxVClockFreqKHz = pNv->twoStagePLL ? 400000 : 350000;
 }
 
 
@@ -385,6 +385,9 @@ NVCommonSetup(ScrnInfoPtr pScrn)
                      (implementation != 0x0150) &&
                      (implementation != 0x01A0) &&
                      (implementation != 0x0200);
+
+    pNv->twoStagePLL = (implementation == 0x0310) ||
+                       (implementation == 0x0340);
 
     /* look for known laptop chips */
     switch(pNv->Chipset & 0xffff) {
