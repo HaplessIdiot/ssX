@@ -67,8 +67,12 @@
 
 #ifdef XF86DRI
 #undef SISNEWDRI
+#undef SISNEWDRI2
 #if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,3,99,14,0)
 #define SISNEWDRI
+#if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,4,99,99,0)	/* Adapt this when the time has come */
+#define SISNEWDRI2
+#endif
 #endif
 #include "xf86drm.h"
 #include "sarea.h"

@@ -237,11 +237,20 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
 
   pDRIInfo->drmDriverName = SISKernelDriverName;
   pDRIInfo->clientDriverName = SISClientDriverName;
-  pDRIInfo->busIdString = xalloc(64);
-  sprintf(pDRIInfo->busIdString, "PCI:%d:%d:%d",
-      	((pciConfigPtr)pSIS->PciInfo->thisCard)->busnum,
-      	((pciConfigPtr)pSIS->PciInfo->thisCard)->devnum,
-      	((pciConfigPtr)pSIS->PciInfo->thisCard)->funcnum);
+#ifdef SISNEWDRI2
+  if(xf86LoaderCheckSymbol("DRICreatePCIBusID")) {
+     pDRIInfo->busIdString = DRICreatePCIBusID(pSiS->PciInfo);
+  } else {
+#endif
+     pDRIInfo->busIdString = xalloc(64);
+     sprintf(pDRIInfo->busIdString, "PCI:%d:%d:%d",
+             ((pciConfigPtr)pSIS->PciInfo->thisCard)->busnum,
+      	     ((pciConfigPtr)pSIS->PciInfo->thisCard)->devnum,
+      	     ((pciConfigPtr)pSIS->PciInfo->thisCard)->funcnum);
+#ifdef SISNEWDRI2
+  }
+#endif
+
   /* Hack to keep old DRI working -- checked for major==1 and
    * minor==1.
    */

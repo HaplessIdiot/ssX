@@ -296,6 +296,9 @@ static const char *driSymbols[] = {
     "DRIScreenInit",
     "DRIUnlock",
     "GlxSetVisualConfigs",
+#ifdef SISNEWDRI2
+    "DRICreatePCIBusID"
+#endif        
     NULL
 };
 #endif

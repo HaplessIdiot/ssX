@@ -931,13 +931,13 @@ SiS_GetModeID_LCD(int VGAEngine, ULONG VBFlags, int HDisplay, int VDisplay,
 	     break;
 	case 1400:
 	     if(VGAEngine == SIS_315_VGA) {
-	        if(VBFlags & (VB_302B | VB_302LV | VB_302ELV)) {
+	        if(VBFlags & (VB_301B | VB_301C | VB_302B | VB_302LV | VB_302ELV)) {
 	           if(VDisplay == 1050) ModeIndex = ModeIndex_1400x1050[Depth];
 		}
 	     }
 	     break;
 	case 1600:
-	     if(VBFlags & (VB_302B | VB_302LV | VB_302ELV)) {
+	     if(VBFlags & (VB_301C | VB_302B | VB_302LV | VB_302ELV)) {
 	        if(VDisplay == 1200) ModeIndex = ModeIndex_1600x1200[Depth];
 	     }
 	     break;
