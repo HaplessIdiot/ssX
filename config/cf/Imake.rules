@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.81 2000/11/02 02:51:05 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.82 2000/11/09 01:35:05 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -2186,6 +2186,24 @@ clean::									@@\
 	RemoveFile(dst.c)
 #endif /* ObjectFromSpecialSource */
 
+#ifndef SwitchYYPrefix
+#define SwitchYYPrefix(in,out,prefix) \
+	sed 's/yy/prefix/g' in > out && RemoveFile(in)
+#endif
+	
+#ifndef LexFilePrefix
+#define LexFilePrefix(file,prefix)					@@\
+file.c: file.l								@@\
+	ClearmakeOSName \
+	$(LEX) $(LFLAGS) file.l						@@\
+	SwitchYYPrefix(lex.yy.c,file.c,prefix)				@@\
+									@@\
+depend:: file.c								@@\
+									@@\
+clean::									@@\
+	RemoveFiles(lex.yy.c file.c)
+#endif
+
 #ifndef LexFileExplicit
 #if HasClearmake		/* provide a place to hang ClearmakeOSName */
 #define LexFileExplicit(file)						@@\
@@ -2220,6 +2238,38 @@ depend:: file 								@@\
 clean::									@@\
 	RemoveFile(file)
 #endif /* M4File */
+
+#ifndef YaccFilePrefix
+#if HasGnuMake
+#define YaccFilePrefix(file,flags,prefix)				@@\
+depend:: file.c								@@\
+									@@\
+file.h: file.c								@@\
+									@@\
+file.c: file.y								@@\
+	ClearmakeOSName \
+	$(YACC) flags file.y						@@\
+	SwitchYYPrefix(y.tab.c,file.c,prefix)				@@\
+	@if [ -f y.tab.h ]; then set -x; SwitchYYPrefix(y.tab.h,file.h,prefix); \@@\
+	else exit 0; fi							@@\
+									@@\
+clean::									@@\
+	RemoveFiles(y.tab.c y.tab.h file.h file.c)
+#else
+#define YaccFilePrefix(file,flags)					@@\
+depend:: file.c								@@\
+									@@\
+file.h file.c: file.y							@@\
+	ClearmakeOSName \
+	$(YACC) flags file.y						@@\
+	SwitchYYPrefix(y.tab.c,file.c,prefix)				@@\
+	@if [ -f y.tab.h ]; then set -x; SwitchYYPrefix(y.tab.h,file.h,prefix); \	@@\
+	else exit 0; fi							@@\
+									@@\
+clean::									@@\
+	RemoveFiles(y.tab.c y.tab.h file.h file.c)
+#endif
+#endif /* YaccFile */
 
 #ifndef YaccFile
 #if HasGnuMake
