@@ -240,7 +240,8 @@ NV_SetViewport(
    NVAdjustFrame(pScrn->pScreen->myNum, x, y, flags);
 
    if(pNv->riva.Architecture == 3) {
-	/* ???????? */
+	while(inb(0x3DA) & 0x08); 
+	while(!(inb(0x3DA) & 0x08)); 
    } else {
 	while(pNv->riva.PCRTC[0x202] & 0x00010000); 
 	while(!(pNv->riva.PCRTC[0x202] & 0x00010000));

@@ -337,6 +337,7 @@ NVSubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int x,
     {
         /* Using fifo writes, set it up */
         pNv->expandRows = h;
+	RIVA_FIFO_FREE(pNv->riva, Bitmap, pNv->expandWidth);
     }
 
     while (pNv->riva.Busy(&pNv->riva));
@@ -349,25 +350,43 @@ NVSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
     NVPtr pNv = NVPTR(pScrn);
 
     int t = pNv->expandWidth, i;
-    unsigned int *pbits = (unsigned int*)pNv->expandBuffer;
-    unsigned int *d = (unsigned int*)pNv->expandFifo;
+    CARD32 *pbits = (CARD32*)pNv->expandBuffer;
+    CARD32 *d = (CARD32*)pNv->expandFifo;
     
-    while(t >= 32) 
+    while(t >= 16) 
     {
-	RIVA_FIFO_FREE(pNv->riva, Bitmap, 32);
-        for( i = 0; i < 32; i++ )
-            d[i] = pbits[i];
-	t -= 32; pbits += 32;
+	RIVA_FIFO_FREE(pNv->riva, Bitmap, 16);
+	d[0]  = pbits[0];
+	d[1]  = pbits[1];
+	d[2]  = pbits[2];
+	d[3]  = pbits[3];
+	d[4]  = pbits[4];
+	d[5]  = pbits[5];
+	d[6]  = pbits[6];
+	d[7]  = pbits[7];
+	d[8]  = pbits[8];
+	d[9]  = pbits[9];
+	d[10] = pbits[10];
+	d[11] = pbits[11];
+	d[12] = pbits[12];
+	d[13] = pbits[13];
+	d[14] = pbits[14];
+	d[15] = pbits[15];
+	t -= 16; pbits += 16;
     }
-    if(t) RIVA_FIFO_FREE(pNv->riva, Bitmap, t); 
+    if(t) {
+	RIVA_FIFO_FREE(pNv->riva, Bitmap, t);
+    }
     while(t >= 4) 
     {
-        for( i = 0; i < 4; i++ )
-            d[i] = pbits[i];
+	d[0]  = pbits[0];
+	d[1]  = pbits[1];
+	d[2]  = pbits[2];
+	d[3]  = pbits[3];
 	t -= 4; pbits += 4;
     }
     while(t--) 
-	*d++ = *pbits++; 
+	*(d++) = *(pbits++); 
 }
 
 static void
@@ -375,8 +394,11 @@ NVSubsequentColorExpandScanlineFifo(ScrnInfoPtr pScrn, int bufno)
 {
     NVPtr pNv = NVPTR(pScrn);
 
-    if ( --pNv->expandRows ) 
+    if ( --pNv->expandRows ) {
        RIVA_FIFO_FREE(pNv->riva, Bitmap, pNv->expandWidth);
+    } else {
+	while (pNv->riva.Busy(&pNv->riva));
+    }
 }
 
 
@@ -415,22 +437,40 @@ NVSubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
     CARD32 *pbits = (CARD32*)pNv->expandBuffer;
     CARD32 *d = (CARD32*)&pNv->riva.Pixmap->Pixels;
 
-    while( t >= 32 )
+    while(t >= 16) 
     {
-        RIVA_FIFO_FREE( pNv->riva, Pixmap, 32 );
-        for( i = 0; i < 32; i++ )
-            d[i] = pbits[i];
-        t -= 32; pbits += 32;
+	RIVA_FIFO_FREE(pNv->riva, Pixmap, 16);
+	d[0]  = pbits[0];
+	d[1]  = pbits[1];
+	d[2]  = pbits[2];
+	d[3]  = pbits[3];
+	d[4]  = pbits[4];
+	d[5]  = pbits[5];
+	d[6]  = pbits[6];
+	d[7]  = pbits[7];
+	d[8]  = pbits[8];
+	d[9]  = pbits[9];
+	d[10] = pbits[10];
+	d[11] = pbits[11];
+	d[12] = pbits[12];
+	d[13] = pbits[13];
+	d[14] = pbits[14];
+	d[15] = pbits[15];
+	t -= 16; pbits += 16;
     }
-    if(t) RIVA_FIFO_FREE( pNv->riva, Pixmap, t );
-    while( t >= 4 )
+    if(t) {
+	RIVA_FIFO_FREE(pNv->riva, Pixmap, t);
+    }
+    while(t >= 4) 
     {
-        for( i = 0; i < 4; i++ )
-            d[i] = pbits[i];
-        t -= 4; pbits += 4;
+	d[0]  = pbits[0];
+	d[1]  = pbits[1];
+	d[2]  = pbits[2];
+	d[3]  = pbits[3];
+	t -= 4; pbits += 4;
     }
-    while( t-- )
-        *d = *pbits++; 
+    while(t--) 
+	*(d++) = *(pbits++); 
 }
 
 
@@ -559,13 +599,13 @@ NVSubsequentSolidBresenhamLine(
     /* you could trap for lines you could do here and accelerate them */
 
     (*LineFuncs[Bpp - 1])
-		(devPriv->rop, devPriv->and, devPriv->xor, 
-                (unsigned long*)pNv->FbStart,
-		 (pScrn->displayWidth * Bpp) >> LOG2_BYTES_PER_SCANLINE_PAD, 
-                (octant & XDECREASING) ? -1 : 1, 
-                (octant & YDECREASING) ? -1 : 1, 
-                (octant & YMAJOR) ? Y_AXIS : X_AXIS,
-                x, y, dmin + e, dmin, dmin - dmaj, len);
+	(devPriv->rop, devPriv->and, devPriv->xor, 
+        (unsigned long*)pNv->FbStart,
+	(pNv->CurrentLayout.displayWidth * Bpp) >> LOG2_BYTES_PER_SCANLINE_PAD,
+	(octant & XDECREASING) ? -1 : 1, 
+	(octant & YDECREASING) ? -1 : 1, 
+	(octant & YMAJOR) ? Y_AXIS : X_AXIS,
+	x, y, dmin + e, dmin, dmin - dmaj, len);
 }
 
 

@@ -1479,7 +1479,7 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if(!xf86HandleColormaps(pScreen, 256, 
 		(pNv->riva.Architecture == 3) ? 6 : 8,
 		(pNv->FBDev ? fbdevHWLoadPalette : NVdac->LoadPalette), 
-		NULL, CMAP_RELOAD_ON_MODE_SWITCH))    
+		NULL, CMAP_RELOAD_ON_MODE_SWITCH))
 	return FALSE;
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- Palette loaded\n"));
