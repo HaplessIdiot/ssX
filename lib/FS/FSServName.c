@@ -1,5 +1,3 @@
-/* $Xorg: FSServName.c,v 1.4 2001/02/09 02:03:25 xorgcvs Exp $ */
-
 /* @(#)FSServName.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation
@@ -24,7 +22,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS 
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/FS/FSServName.c,v 1.3 2001/07/29 05:01:11 tsi Exp $ */
+/* $XFree86: xc/lib/FS/FSServName.c,v 1.4 2001/12/14 19:53:33 dawes Exp $ */
 
 /*
 
@@ -56,9 +54,8 @@ in this Software without prior written authorization from The Open Group.
 #include	<X11/Xosdefs.h>
 #include	<stdlib.h>
 
-char       *
-FSServerName(server)
-    char       *server;
+char *
+FSServerName(char *server)
 {
     char       *s;
 

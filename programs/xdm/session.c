@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/session.c,v 3.38 2004/04/03 22:26:26 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.39 2004/07/25 20:17:04 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -535,7 +535,9 @@ StartClient (
 #endif
 #ifdef USE_PAM
     pam_handle_t *pamh = thepamh ();
+#ifndef HAS_SETUSERCONTEXT
     int	pam_error;
+#endif
 #endif
 
     if (verify->argv) {

@@ -1,5 +1,3 @@
-/* $Xorg: FSQXExt.c,v 1.4 2001/02/09 02:03:25 xorgcvs Exp $ */
-
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation
@@ -24,7 +22,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS 
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/FS/FSQXExt.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/lib/FS/FSQXExt.c,v 1.8 2003/12/22 17:48:02 tsi Exp $ */
 
 /*
 
@@ -66,13 +64,8 @@ _FS_convert_char_info(fsXCharInfo *src, FSXCharInfo *dst)
 }
 
 int
-FSQueryXExtents8(svr, fid, range_type, str, str_len, extents)
-    FSServer   *svr;
-    Font        fid;
-    Bool        range_type;
-    unsigned char *str;
-    unsigned long str_len;
-    FSXCharInfo **extents;
+FSQueryXExtents8(FSServer *svr, Font fid, Bool range_type, unsigned char *str,
+		 unsigned long str_len, FSXCharInfo **extents)
 {
     fsQueryXExtents8Req *req;
     fsQueryXExtents8Reply reply;
@@ -112,13 +105,8 @@ FSQueryXExtents8(svr, fid, range_type, str, str_len, extents)
 }
 
 int
-FSQueryXExtents16(svr, fid, range_type, str, str_len, extents)
-    FSServer   *svr;
-    Font        fid;
-    Bool        range_type;
-    FSChar2b   *str;
-    unsigned long str_len;
-    FSXCharInfo **extents;
+FSQueryXExtents16(FSServer *svr, Font fid, Bool range_type, FSChar2b *str,
+		  unsigned long str_len, FSXCharInfo **extents)
 {
     fsQueryXExtents16Req *req;
     fsQueryXExtents16Reply reply;

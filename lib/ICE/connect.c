@@ -1,4 +1,3 @@
-/* $Xorg: connect.c,v 1.4 2001/02/09 02:03:26 xorgcvs Exp $ */
 /******************************************************************************
 
 
@@ -26,28 +25,22 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/connect.c,v 3.9 2001/12/14 19:53:35 dawes Exp $ */
+/* $XFree86: xc/lib/ICE/connect.c,v 3.10 2002/12/02 21:50:29 tsi Exp $ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
 #include <X11/Xtrans.h>
 #include "globals.h"
 
-static XtransConnInfo ConnectToPeer();
+static XtransConnInfo ConnectToPeer(char *networkIdsList,
+				    char **actualConnectionRet);
 
 #define Strstr strstr
-
+
 IceConn
-IceOpenConnection (networkIdsList, context, mustAuthenticate, majorOpcodeCheck,
-    errorLength, errorStringRet)
-
-char 	   *networkIdsList;
-IcePointer context;
-Bool 	   mustAuthenticate;
-int  	   majorOpcodeCheck;
-int  	   errorLength;
-char 	   *errorStringRet;
-
+IceOpenConnection(char *networkIdsList, IcePointer context,
+		  Bool mustAuthenticate, int majorOpcodeCheck,
+		  int errorLength, char *errorStringRet)
 {
     IceConn			iceConn;
     int				extra, i, j;
@@ -426,18 +419,13 @@ char 	   *errorStringRet;
 }
 
 
-
 IcePointer
-IceGetConnectionContext (iceConn)
-
-IceConn    iceConn;
-
+IceGetConnectionContext(IceConn iceConn)
 {
     return (iceConn->context);
 }
 
 
-
 /* ------------------------------------------------------------------------- *
  *                            local routines                                 *
  * ------------------------------------------------------------------------- */
@@ -446,11 +434,7 @@ IceConn    iceConn;
 
 
 static XtransConnInfo
-ConnectToPeer (networkIdsList, actualConnectionRet)
-
-char *networkIdsList;
-char **actualConnectionRet;
-
+ConnectToPeer(char *networkIdsList, char **actualConnectionRet)
 {
     char addrbuf[256];
     char* address;

@@ -1,4 +1,5 @@
 XFree86 4.5.99.1 (xx March 2005)
+   8. Build and warning cleanups and fixes (David Dawes).
    7. Fix some bad alignment problems when allocating memory from
       the end of AGP space in the i830 driver (Alan Hourihane).
    6. Document pswrap's -f option (David Dawes, Bugzilla #1570, reported by
@@ -19475,7 +19476,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3476 2005/03/21 17:45:43 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3477 2005/03/21 19:00:07 alanh Exp $
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_vtxfmt_x86.c,v 1.2 2002/12/16 16:18:56 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_vtxfmt_x86.c,v 1.1.1.2 2004/12/10 15:05:59 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -38,6 +38,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "simple_list.h" 
 #include "r200_vtxfmt.h"
 
+/* Temporarily disabled as it is broken w/the new cubemap code. - idr */
+#ifndef TEXCOORD_BROKEN
+#define TEXCOORD_BROKEN 1
+#endif
+
 #if defined(USE_X86_ASM)
 
 #define EXTERN( FUNC )		\
@@ -57,10 +62,12 @@ EXTERN ( _x86_Vertex3f );
 EXTERN ( _x86_Color4ubv_ub );
 EXTERN ( _x86_Color4ubv_4f );
 EXTERN ( _x86_Color4ub_ub );
+#if !TEXCOORD_BROKEN
 EXTERN ( _x86_MultiTexCoord2fv );
 EXTERN ( _x86_MultiTexCoord2fv_2 );
 EXTERN ( _x86_MultiTexCoord2f );
 EXTERN ( _x86_MultiTexCoord2f_2 );
+#endif
 
 
 /* Build specialized versions of the immediate calls on the fly for
@@ -180,6 +187,7 @@ struct dynfn *r200_makeX86Vertex3fv( GLcontext *ctx, const int *key )
    return dfn;
 }
 
+#if !TEXCOORD_BROKEN
 static struct dynfn *
 r200_makeX86Attribute2fv( struct dynfn * cache, const int *key,
 			  const char * name, void * dest )
@@ -210,6 +218,7 @@ r200_makeX86Attribute2f( struct dynfn * cache, const int *key,
 
    return dfn;
 }
+#endif
 
 
 static struct dynfn *
@@ -337,6 +346,7 @@ struct dynfn *r200_makeX86Color3f( GLcontext *ctx, const int *key )
 
 
 
+#if !TEXCOORD_BROKEN
 struct dynfn *r200_makeX86TexCoord2fv( GLcontext *ctx, const int *key )
 {
    r200ContextPtr rmesa = R200_CONTEXT(ctx);
@@ -395,7 +405,7 @@ struct dynfn *r200_makeX86MultiTexCoord2fARB( GLcontext *ctx,
    }      
    return dfn;
 }
-
+#endif
 
 void r200InitX86Codegen( struct dfn_generators *gen )
 {
@@ -405,10 +415,12 @@ void r200InitX86Codegen( struct dfn_generators *gen )
    gen->Color4ubv = r200_makeX86Color4ubv; /* PKCOLOR only */
    gen->Normal3f = r200_makeX86Normal3f;
    gen->Normal3fv = r200_makeX86Normal3fv;
+#if !TEXCOORD_BROKEN
    gen->TexCoord2f = r200_makeX86TexCoord2f;
    gen->TexCoord2fv = r200_makeX86TexCoord2fv;
    gen->MultiTexCoord2fARB = r200_makeX86MultiTexCoord2fARB;
    gen->MultiTexCoord2fvARB = r200_makeX86MultiTexCoord2fvARB;
+#endif
    gen->Color3f = r200_makeX86Color3f;
    gen->Color3fv = r200_makeX86Color3fv;
 

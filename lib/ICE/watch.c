@@ -1,4 +1,3 @@
-/* $Xorg: watch.c,v 1.4 2001/02/09 02:03:26 xorgcvs Exp $ */
 /******************************************************************************
 
 
@@ -26,17 +25,14 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
+/* $XFree86$ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
 
 
 Status
-IceAddConnectionWatch (watchProc, clientData)
-
-IceWatchProc	watchProc;
-IcePointer	clientData;
-
+IceAddConnectionWatch(IceWatchProc watchProc, IcePointer clientData)
 {
     /*
      * watchProc will be called each time an ICE connection is
@@ -89,13 +85,8 @@ IcePointer	clientData;
 }
 
 
-
 void
-IceRemoveConnectionWatch (watchProc, clientData)
-
-IceWatchProc	watchProc;
-IcePointer	clientData;
-
+IceRemoveConnectionWatch(IceWatchProc watchProc, IcePointer clientData)
 {
     _IceWatchProc	*currWatchProc = _IceWatchProcs;
     _IceWatchProc	*prevWatchProc = NULL;
@@ -130,12 +121,8 @@ IcePointer	clientData;
 }
 
 
-
 void
-_IceConnectionOpened (iceConn)
-
-IceConn	iceConn;
-
+_IceConnectionOpened(IceConn iceConn)
 {
     _IceWatchProc *watchProc = _IceWatchProcs;
 
@@ -165,12 +152,8 @@ IceConn	iceConn;
 }
 
 
-
 void
-_IceConnectionClosed (iceConn)
-
-IceConn	iceConn;
-
+_IceConnectionClosed(IceConn iceConn)
 {
     _IceWatchProc *watchProc = _IceWatchProcs;
 

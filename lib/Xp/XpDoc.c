@@ -1,4 +1,3 @@
-/* $Xorg: XpDoc.c,v 1.3 2000/08/17 19:46:06 cpqbld Exp $ */
 /******************************************************************************
  ******************************************************************************
  **
@@ -34,7 +33,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86: xc/lib/Xp/XpDoc.c,v 1.3 2001/01/17 19:43:01 dawes Exp $ */
+/* $XFree86: xc/lib/Xp/XpDoc.c,v 1.4 2002/10/16 00:37:31 dawes Exp $ */
 
 #include <X11/extensions/Printstr.h>
 #include <X11/Xlibint.h>
@@ -45,7 +44,8 @@ typedef struct {
     XPContext context;
 } _XpDiscardDocRec;
 
-static Bool _XpDiscardDoc(Display *dpy, XEvent *event, XPointer arg)
+static Bool
+_XpDiscardDoc(Display *dpy, XEvent *event, XPointer arg)
 {
     _XpDiscardDocRec *disrec = (_XpDiscardDocRec *) arg;
 

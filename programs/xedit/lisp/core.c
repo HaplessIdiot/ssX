@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.71tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.72 2003/05/27 22:27:01 tsi Exp $ */
 
 #include "lisp/io.h"
 #include "lisp/core.h"
@@ -587,7 +587,7 @@ Lisp_Block(LispBuiltin *builtin)
     LispObj *res, **pres = &res;
     LispBlock *block;
 
-    LispObj *name, *body;
+    LispObj *name, * volatile body;
 
     body = ARGUMENT(1);
     name = ARGUMENT(0);
@@ -782,7 +782,7 @@ Lisp_Catch(LispBuiltin *builtin)
     LispObj *res, **pres = &res;
     LispBlock *block;
 
-    LispObj *tag, *body;
+    LispObj *tag, * volatile body;
 
     body = ARGUMENT(1);
     tag = ARGUMENT(0);
@@ -1937,8 +1937,9 @@ Lisp_IgnoreErrors(LispBuiltin *builtin)
  ignore-erros &rest body
  */
 {
-    LispObj *result;
-    int i, jumped;
+    LispObj * volatile result;
+    int i;
+    volatile int jumped;
     LispBlock *block;
 
     /* interpreter state */
@@ -1949,7 +1950,7 @@ Lisp_IgnoreErrors(LispBuiltin *builtin)
     int mem_level;
     void **mem;
 
-    LispObj *body;
+    LispObj * volatile body;
 
     body = ARGUMENT(0);
 
@@ -4044,14 +4045,15 @@ Lisp_Progv(LispBuiltin *builtin)
  */
 {
     GC_ENTER();
-    int head = lisp__data.env.length, i, count, ostk[32], *offsets;
-    LispObj *result, *list, *symbol, *value;
+    int head = lisp__data.env.length, i, ostk[32], * volatile offsets;
+    volatile int count;
+    LispObj * volatile result, *list, *symbol, *value;
     int jumped;
-    char fstk[32], *flags;
+    char fstk[32], * volatile flags;
     LispBlock *block;
     LispAtom *atom;
 
-    LispObj *symbols, *values, *body;
+    LispObj * volatile symbols, *values, * volatile body;
 
     /* Possible states */
 #define DYNAMIC_SYMBOL		1
@@ -6288,7 +6290,7 @@ Lisp_Tagbody(LispBuiltin *builtin)
 {
     GC_ENTER();
     int stack, lex, length;
-    LispObj *list, *body, *ptr, *tag, *labels, *map, **p_body;
+    LispObj *list, *body, *ptr, *tag, * volatile labels, *map, **p_body;
     LispBlock *block;
 
     body = ARGUMENT(0);

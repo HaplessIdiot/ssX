@@ -1,5 +1,3 @@
-/* $Xorg: listenwk.c,v 1.5 2001/02/09 02:03:26 xorgcvs Exp $ */
-
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -25,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/ICE/listenwk.c,v 1.3 2001/01/17 19:41:29 dawes Exp $ */
+/* $XFree86: xc/lib/ICE/listenwk.c,v 1.4 2001/12/14 19:53:36 dawes Exp $ */
 
 
 /* Author: Ralph Mor, X Consortium */
@@ -35,16 +33,10 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xtrans.h>
 #include <stdio.h>
 
-
 Status
-IceListenForWellKnownConnections (port, countRet, listenObjsRet, errorLength, errorStringRet)
-
-char		*port;
-int		*countRet;
-IceListenObj	**listenObjsRet;
-int		errorLength;
-char		*errorStringRet;
-
+IceListenForWellKnownConnections(char *port, int *countRet,
+				 IceListenObj **listenObjsRet,
+				 int errorLength, char *errorStringRet)
 {
     struct _IceListenObj	*listenObjs;
     char			*networkId;

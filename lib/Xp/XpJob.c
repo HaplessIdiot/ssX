@@ -1,4 +1,3 @@
-/* $Xorg: XpJob.c,v 1.4 2000/08/17 19:46:07 cpqbld Exp $ */
 /******************************************************************************
  ******************************************************************************
  **
@@ -34,7 +33,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86: xc/lib/Xp/XpJob.c,v 1.5 2002/04/10 16:20:07 tsi Exp $ */
+/* $XFree86: xc/lib/Xp/XpJob.c,v 1.6 2002/10/16 00:37:32 dawes Exp $ */
 
 #if defined(sun) && defined(i386) && defined(SVR4) && !defined(__EXTENSIONS__)
 #define __EXTENSIONS__
@@ -58,7 +57,8 @@ typedef struct {
     XPContext context;
 } _XpDiscardJobRec;
 
-static Bool _XpDiscardJob(Display *dpy, XEvent *event, XPointer arg)
+static Bool
+_XpDiscardJob(Display *dpy, XEvent *event, XPointer arg)
 {
     _XpDiscardJobRec *disrec = (_XpDiscardJobRec *) arg;
 

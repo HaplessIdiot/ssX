@@ -1,4 +1,3 @@
-/* $Xorg: XpNotifyPdm.c,v 1.4 2000/08/17 19:46:07 cpqbld Exp $ */
 /******************************************************************************
  ******************************************************************************
  **
@@ -41,7 +40,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86: xc/lib/Xp/XpNotifyPdm.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/lib/Xp/XpNotifyPdm.c,v 1.8 2003/12/22 17:48:04 tsi Exp $ */
 
 #include <X11/extensions/Print.h>
 #include <X11/Xlibint.h>
@@ -50,6 +49,7 @@
 #include <X11/Xauth.h>
 #include <stdlib.h>
 #include <X11/Xos.h>
+#include "Xpint.h"
 
 /*
  * Alternate selection environment variables.
@@ -65,7 +65,8 @@
 /*
  * str_dup using Xmalloc
  */
-char *_xpstrdup(char * str)
+char *
+_xpstrdup(char * str)
 {
     int len;
     char *newstr;
@@ -409,7 +410,8 @@ Status XpSendOneTicket(
     return( (Status) 1 );
 }
 
-Status XpSendAuth( Display *display, Window window )
+Status
+XpSendAuth( Display *display, Window window )
 {
 
     FILE    *auth_file;

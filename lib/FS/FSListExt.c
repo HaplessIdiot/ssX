@@ -1,5 +1,3 @@
-/* $Xorg: FSListExt.c,v 1.4 2001/02/09 02:03:25 xorgcvs Exp $ */
-
 /* @(#)FSListExt.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation
@@ -24,7 +22,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS 
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/FS/FSListExt.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/lib/FS/FSListExt.c,v 1.8 2004/12/31 02:56:03 tsi Exp $ */
 
 /*
 
@@ -54,10 +52,8 @@ in this Software without prior written authorization from The Open Group.
 
 #include	"FSlibint.h"
 
-char      **
-FSListExtensions(svr, next)
-    FSServer     *svr;
-    int        *next;
+char **
+FSListExtensions(FSServer *svr, int *next)
 {
     fsListExtensionsReply rep;
     char      **list;
@@ -113,8 +109,8 @@ FSListExtensions(svr, next)
 
 }
 
-int FSFreeExtensionList(list)
-    char      **list;
+int
+FSFreeExtensionList(char **list)
 {
     if (list != NULL) {
 	FSfree(list[0] - 1);

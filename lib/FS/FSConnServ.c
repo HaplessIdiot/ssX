@@ -1,5 +1,3 @@
-/* $Xorg: FSConnServ.c,v 1.4 2001/02/09 02:03:25 xorgcvs Exp $ */
-
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation
@@ -24,6 +22,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS 
  * SOFTWARE.
  */
+/* $XFree86$ */
 
 /*
 
@@ -50,7 +49,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/FS/FSConnServ.c,v 3.10 2001/10/28 03:32:27 tsi Exp $ */
+/* $XFree86: xc/lib/FS/FSConnServ.c,v 3.11 2001/12/14 19:53:32 dawes Exp $ */
 
 #include	<stdio.h>
 #include	"FSlibint.h"
@@ -76,8 +75,7 @@ in this Software without prior written authorization from The Open Group.
 #define FS_CONNECTION_RETRIES 5
 
 XtransConnInfo
-_FSConnectServer(server_name)
-    char       *server_name;
+_FSConnectServer(char *server_name)
 {
     XtransConnInfo trans_conn = NULL;	/* transport connection object */
     int retry, connect_stat;
@@ -132,9 +130,7 @@ _FSConnectServer(server_name)
  */
 
 void
-_FSDisconnectServer(trans_conn)
-    XtransConnInfo	trans_conn;
-
+_FSDisconnectServer(XtransConnInfo trans_conn)
 {
     (void) _FSTransClose(trans_conn);
 }
@@ -146,8 +142,8 @@ _FSDisconnectServer(trans_conn)
  * 2) if the connection can be read, must enqueue events and handle errors,
  * until the connection is writable.
  */
-void _FSWaitForWritable(svr)
-    FSServer     *svr;
+void
+_FSWaitForWritable(FSServer *svr)
 {
     fd_set	r_mask;
     fd_set	w_mask;
@@ -209,8 +205,8 @@ void _FSWaitForWritable(svr)
 }
 
 
-void _FSWaitForReadable(svr)
-    FSServer     *svr;
+void
+_FSWaitForReadable(FSServer *svr)
 {
     fd_set	r_mask;
     int         result;
@@ -224,9 +220,8 @@ void _FSWaitForReadable(svr)
     } while (result <= 0);
 }
 
-void _FSSendClientPrefix(svr, client)
-    FSServer     *svr;
-    fsConnClientPrefix *client;
+void
+_FSSendClientPrefix(FSServer *svr, fsConnClientPrefix *client)
 {
     struct iovec iovarray[5],
                *iov = iovarray;

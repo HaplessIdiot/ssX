@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/dps/dpsclient.c,v 1.3 2000/09/26 15:56:59 tsi Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -420,10 +420,10 @@ boolean DPSKnownSpace(DPSSpace space)
 
 void DPSclientPrintProc (
   DPSContext ctxt,
-  char	     *buf,
-  unsigned    nch)
+  char	     *volatile buf,
+  volatile unsigned    nch)
 {
-  DPSPrivContext cc = (DPSPrivContext) ctxt;
+  volatile DPSPrivContext cc = (DPSPrivContext) ctxt;
 
 #define DPS_SEQ_MIN 2
 
@@ -442,8 +442,8 @@ void DPSclientPrintProc (
       }
     }
   while (nch > 0) {
-    char *oldBuf = NIL;
-    unsigned oldNch = 0;
+    char * volatile oldBuf = NIL;
+    volatile unsigned oldNch = 0;
     unsigned n;
     if (cc->objBuf) { /* we're buffering */
       unsigned long int m;
@@ -2051,13 +2051,13 @@ static void textDestroyContext(DPSContext ctxt)
 }
 
 static void textInnerWritePostScript(
-  DPSContext ctxt, char *buf, unsigned int nch)
+  DPSContext ctxt, char * volatile buf, volatile unsigned int nch)
 {
   DPSPrivContext cc = (DPSPrivContext)ctxt;
   while (nch > 0) {
-    char *oldBuf = NIL;
-    integer oldNch = 0;
-    unsigned n;
+    char * volatile oldBuf = NIL;
+    volatile integer oldNch = 0;
+    volatile unsigned n;
     if (cc->outBuf) { /* we're buffering */
       unsigned m;
       integer bst;
@@ -2129,7 +2129,7 @@ static void textInnerWritePostScript(
 
     if (nch != 0) {
       /* here with the next binary object sequence or encoded token */
-      unsigned m = 0;
+      volatile unsigned m = 0;
       integer bst;
       if (!IsBinaryToken(buf[0]) && nch < DPS_SEQ_MIN) {
 	/* gotta buffer it */

@@ -1,5 +1,3 @@
-/* $Xorg: FSOpenFont.c,v 1.4 2001/02/09 02:03:25 xorgcvs Exp $ */
-
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation
@@ -24,7 +22,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS 
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/FS/FSOpenFont.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/lib/FS/FSOpenFont.c,v 1.7 2003/12/22 17:48:02 tsi Exp $ */
 
 /*
 
@@ -55,12 +53,8 @@ in this Software without prior written authorization from The Open Group.
 #include "FSlibint.h"
 
 Font
-FSOpenBitmapFont(svr, hint, fmask, name, otherid)
-    FSServer   *svr;
-    FSBitmapFormat hint;
-    FSBitmapFormatMask fmask;
-    char       *name;
-    Font       *otherid;
+FSOpenBitmapFont(FSServer *svr, FSBitmapFormat hint, FSBitmapFormatMask fmask,
+		 char *name, Font *otherid)
 {
     unsigned int nbytes;
     fsOpenBitmapFontReq *req;

@@ -1,4 +1,3 @@
-/* $Xorg: ICElib.h,v 1.5 2001/02/09 02:03:26 xorgcvs Exp $ */
 /******************************************************************************
 
 
@@ -26,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/ICElib.h,v 3.4 2001/12/14 19:53:35 dawes Exp $ */
+/* $XFree86: xc/lib/ICE/ICElib.h,v 3.5 2003/11/17 22:20:05 dawes Exp $ */
 
 #ifndef _ICELIB_H_
 #define _ICELIB_H_
@@ -424,6 +423,17 @@ extern void IceAppLockConn (
 extern void IceAppUnlockConn (
     IceConn		/* iceConn */
 );
+
+/* libSM uses these. */
+extern IcePoAuthStatus _IcePoMagicCookie1Proc(IceConn iceConn,
+	IcePointer *authStatePtr, Bool cleanUp, Bool swap, int authDataLen,
+	IcePointer authData, int *replyDataLenRet, IcePointer *replyDataRet,
+	char **errorStringRet);
+
+extern IcePaAuthStatus _IcePaMagicCookie1Proc(IceConn iceConn,
+	IcePointer *authStatePtr, Bool swap, int authDataLen,
+	IcePointer authData, int *replyDataLenRet, IcePointer *replyDataRet,
+	char **errorStringRet);
 
 _XFUNCPROTOEND
 

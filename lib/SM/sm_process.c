@@ -1,5 +1,3 @@
-/* $Xorg: sm_process.c,v 1.4 2001/02/09 02:03:30 xorgcvs Exp $ */
-
 /*
 
 Copyright 1993, 1998  The Open Group
@@ -25,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/SM/sm_process.c,v 1.3 2003/05/27 22:26:25 tsi Exp $ */
 
 /*
  * Author: Ralph Mor, X Consortium
@@ -63,19 +61,10 @@ in this Software without prior written authorization from The Open Group.
     }
 
 
-
 void
-_SmcProcessMessage (iceConn, clientData, opcode,
-    length, swap, replyWait, replyReadyRet)
-
-IceConn		 iceConn;
-IcePointer	 clientData;
-int		 opcode;
-unsigned long	 length;
-Bool		 swap;
-IceReplyWaitInfo *replyWait;
-Bool		 *replyReadyRet;
-
+_SmcProcessMessage(IceConn iceConn, IcePointer clientData, int opcode,
+		   unsigned long length, Bool swap,
+		   IceReplyWaitInfo *replyWait, Bool *replyReadyRet)
 {
     SmcConn	smcConn = (SmcConn) clientData;
 
@@ -418,16 +407,9 @@ Bool		 *replyReadyRet;
 }
 
 
-
 void
-_SmsProcessMessage (iceConn, clientData, opcode, length, swap)
-
-IceConn		 iceConn;
-IcePointer       clientData;
-int		 opcode;
-unsigned long	 length;
-Bool		 swap;
-
+_SmsProcessMessage(IceConn iceConn, IcePointer clientData, int opcode,
+		   unsigned long length, Bool swap)
 {
     SmsConn	smsConn = (SmsConn) clientData;
 

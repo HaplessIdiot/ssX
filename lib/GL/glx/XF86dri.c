@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/XF86dri.c,v 1.13 2002/10/30 12:51:25 alanh Exp $ */
+/* $XFree86: xc/lib/GL/glx/XF86dri.c,v 1.1 2004/12/10 16:06:56 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -588,26 +588,25 @@ Bool XF86DRIGetDeviceInfo(dpy, screen, hFrameBuffer,
     return True;
 }
 
-Bool XF86DRIOpenFullScreen(dpy, screen, drawable)
-    Display* dpy;
-    int screen;
-    Drawable drawable;
+/*
+ * These two functions and the underlying X protocol are deprecated.
+ */
+Bool XF86DRIOpenFullScreen(Display *dpy, int screen, Drawable drawable);
+
+Bool
+XF86DRIOpenFullScreen(Display *dpy, int screen, Drawable drawable)
 {
-    /* This function and the underlying X protocol are deprecated.
-     */
     (void) dpy;
     (void) screen;
     (void) drawable;
     return False;
 }
 
-Bool XF86DRICloseFullScreen(dpy, screen, drawable)
-    Display* dpy;
-    int screen;
-    Drawable drawable;
+Bool XF86DRICloseFullScreen(Display *dpy, int screen, Drawable drawable);
+
+Bool
+XF86DRICloseFullScreen(Display *dpy, int screen, Drawable drawable)
 {
-    /* This function and the underlying X protocol are deprecated.
-     */
     (void) dpy;
     (void) screen;
     (void) drawable;

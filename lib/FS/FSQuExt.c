@@ -1,5 +1,3 @@
-/* $Xorg: FSQuExt.c,v 1.4 2001/02/09 02:03:25 xorgcvs Exp $ */
-
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation
@@ -24,6 +22,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS 
  * SOFTWARE.
  */
+/* $XFree86$ */
 
 /*
 
@@ -54,12 +53,8 @@ in this Software without prior written authorization from The Open Group.
 #include	"FSlibint.h"
 
 Bool
-FSQueryExtension(svr, name, major_opcode, first_event, first_error)
-    FSServer   *svr;
-    char       *name;
-    int        *major_opcode;
-    int        *first_event;
-    int        *first_error;
+FSQueryExtension(FSServer *svr, char *name, int *major_opcode,
+		 int *first_event, int *first_error)
 {
     fsQueryExtensionReply rep;
     fsQueryExtensionReq *req;

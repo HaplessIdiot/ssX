@@ -34,7 +34,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86: xc/lib/Xp/XpGetData.c,v 1.4 2001/01/17 19:43:02 dawes Exp $ */
+/* $XFree86: xc/lib/Xp/XpGetData.c,v 1.5 2002/10/16 00:37:32 dawes Exp $ */
 
 #define NEED_REPLIES
 
@@ -63,12 +63,8 @@ typedef struct {
  * XpGetDocumentData().
  */
 static Bool
-_XpGetDocDataHandler(dpy, rep, buf, len, adata)
-    register Display *dpy;
-    register xReply *rep;
-    char *buf;
-    int len;
-    XPointer adata;
+_XpGetDocDataHandler(Display *dpy, xReply *rep, char *buf, int len,
+		     XPointer adata)
 {
     register _XpState            *state;
     xPrintGetDocumentDataReply   replbuf;

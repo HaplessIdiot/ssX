@@ -1,4 +1,3 @@
-/* $Xorg: shutdown.c,v 1.4 2001/02/09 02:03:26 xorgcvs Exp $ */
 /******************************************************************************
 
 
@@ -26,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/shutdown.c,v 3.3 2001/08/01 00:44:37 tsi Exp $ */
+/* $XFree86: xc/lib/ICE/shutdown.c,v 3.4 2001/12/14 19:53:36 dawes Exp $ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
@@ -34,11 +33,7 @@ Author: Ralph Mor, X Consortium
 
 
 Status
-IceProtocolShutdown (iceConn, majorOpcode)
-
-IceConn iceConn;
-int	majorOpcode;
-
+IceProtocolShutdown(IceConn iceConn, int majorOpcode)
 {
     if (iceConn->proto_ref_count == 0 || iceConn->process_msg_info == NULL ||
         majorOpcode < 1 || majorOpcode > _IceLastMajorOpcode)
@@ -82,35 +77,22 @@ int	majorOpcode;
 }
 
 
-
 void
-IceSetShutdownNegotiation (iceConn, negotiate)
-
-IceConn     	iceConn;
-Bool		negotiate;
-
+IceSetShutdownNegotiation(IceConn iceConn, Bool negotiate)
 {
     iceConn->skip_want_to_close = negotiate ? False : True;
 }
 
 
-
 Bool
-IceCheckShutdownNegotiation (iceConn)
-
-IceConn     iceConn;
-
+IceCheckShutdownNegotiation(IceConn iceConn)
 {
     return (iceConn->skip_want_to_close ? False : True);
 }
 
 
-
 IceCloseStatus
-IceCloseConnection (iceConn)
-
-IceConn     iceConn;
-
+IceCloseConnection(IceConn iceConn)
 {
     int refCountReachedZero;
     IceCloseStatus status;
@@ -248,12 +230,8 @@ IceConn     iceConn;
 }
 
 
-
 void
-_IceFreeConnection (iceConn)
-
-IceConn iceConn;
-
+_IceFreeConnection(IceConn iceConn)
 {
     if (iceConn->listen_obj == NULL)
     {

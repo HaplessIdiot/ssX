@@ -1,4 +1,3 @@
-/* $Xorg: process.c,v 1.4 2001/02/09 02:03:26 xorgcvs Exp $ */
 /******************************************************************************
 
 
@@ -26,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/process.c,v 3.10 2003/10/23 21:31:49 tsi Exp $ */
+/* $XFree86: xc/lib/ICE/process.c,v 3.11 2004/10/23 15:29:25 dawes Exp $ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
@@ -65,7 +64,6 @@ Author: Ralph Mor, X Consortium
     IceDisposeCompleteMessage (_iceConn, _pStart);\
     return (0)
 
-
 /*
  * IceProcessMessages:
  *
@@ -121,12 +119,8 @@ Author: Ralph Mor, X Consortium
  */
 
 IceProcessMessagesStatus
-IceProcessMessages (iceConn, replyWait, replyReadyRet)
-
-IceConn		 iceConn;
-IceReplyWaitInfo *replyWait;
-Bool		 *replyReadyRet;
-
+IceProcessMessages(IceConn iceConn, IceReplyWaitInfo *replyWait,
+		   Bool *replyReadyRet)
 {
     iceMsg		*header;
     Bool		replyReady = False;
@@ -368,15 +362,9 @@ Bool		 *replyReadyRet;
 }
 
 
-
 static void
-AuthRequired (iceConn, authIndex, authDataLen, authData)
-
-IceConn		iceConn;
-int  		authIndex;
-int  		authDataLen;
-IcePointer	authData;
-
+AuthRequired(IceConn iceConn, int authIndex, int authDataLen,
+	     IcePointer authData)
 {
     iceAuthRequiredMsg *pMsg;
 
@@ -396,14 +384,8 @@ IcePointer	authData;
 }
 
 
-
 static void
-AuthReply (iceConn, authDataLen, authData)
-
-IceConn		iceConn;
-int 		authDataLen;
-IcePointer	authData;
-
+AuthReply(IceConn iceConn, int authDataLen, IcePointer authData)
 {
     iceAuthReplyMsg *pMsg;
 
@@ -422,14 +404,8 @@ IcePointer	authData;
 }
 
 
-
 static void
-AuthNextPhase (iceConn, authDataLen, authData)
-
-IceConn		iceConn;
-int  		authDataLen;
-IcePointer	authData;
-
+AuthNextPhase(IceConn iceConn, int authDataLen, IcePointer authData)
 {
     iceAuthNextPhaseMsg *pMsg;
 
@@ -448,13 +424,8 @@ IcePointer	authData;
 }
 
 
-
 static void
-AcceptConnection (iceConn, versionIndex)
-
-IceConn iceConn;
-int 	versionIndex;
-
+AcceptConnection(IceConn iceConn, int versionIndex)
 {
     iceConnectionReplyMsg	*pMsg;
     char			*pData;
@@ -477,17 +448,9 @@ int 	versionIndex;
 }
 
 
-
 static void
-AcceptProtocol (iceConn, hisOpcode, myOpcode, versionIndex, vendor, release)
-
-IceConn iceConn;
-int  	hisOpcode;
-int  	myOpcode;
-int  	versionIndex;
-char 	*vendor;
-char 	*release;
-
+AcceptProtocol(IceConn iceConn, int hisOpcode, int myOpcode, int versionIndex,
+	       char *vendor, char *release)
 {
     iceProtocolReplyMsg	*pMsg;
     char		*pData;
@@ -518,27 +481,17 @@ char 	*release;
 }
 
 
-
 static void
-PingReply (iceConn)
-
-IceConn iceConn;
-
+PingReply(IceConn iceConn)
 {
     IceSimpleMessage (iceConn, 0, ICE_PingReply);
     IceFlush (iceConn);
 }
 
 
-
 static Bool
-ProcessError (iceConn, length, swap, replyWait)
-
-IceConn		 iceConn;
-unsigned long	 length;
-Bool		 swap;
-IceReplyWaitInfo *replyWait;
-
+ProcessError(IceConn iceConn, unsigned long length, Bool swap,
+	     IceReplyWaitInfo *replyWait)
 {
     int		invokeHandler = 0;
     Bool	errorReturned = False;
@@ -804,14 +757,8 @@ IceReplyWaitInfo *replyWait;
 }
 
 
-
 static int
-ProcessConnectionSetup (iceConn, length, swap)
-
-IceConn		iceConn;
-unsigned long	length;
-Bool		swap;
-
+ProcessConnectionSetup(IceConn iceConn, unsigned long length, Bool swap)
 {
     iceConnectionSetupMsg *message;
     int  myVersionCount, hisVersionCount;
@@ -1059,15 +1006,9 @@ Bool		swap;
 }
 
 
-
 static Bool
-ProcessAuthRequired (iceConn, length, swap, replyWait)
-
-IceConn			iceConn;
-unsigned long	 	length;
-Bool			swap;
-IceReplyWaitInfo	*replyWait;
-
+ProcessAuthRequired(IceConn iceConn, unsigned long length, Bool swap,
+		    IceReplyWaitInfo *replyWait)
 {
     iceAuthRequiredMsg  *message;
     int			authDataLen;
@@ -1254,14 +1195,8 @@ IceReplyWaitInfo	*replyWait;
 }
 
 
-
 static int
-ProcessAuthReply (iceConn, length, swap)
-
-IceConn		iceConn;
-unsigned long	length;
-Bool		swap;
-
+ProcessAuthReply(IceConn iceConn, unsigned long length, Bool swap)
 {
     iceAuthReplyMsg 	*message;
     int			replyDataLen;
@@ -1550,15 +1485,9 @@ Bool		swap;
 }
 
 
-
 static Bool
-ProcessAuthNextPhase (iceConn, length, swap, replyWait)
-
-IceConn		  	iceConn;
-unsigned long	 	length;
-Bool			swap;
-IceReplyWaitInfo	*replyWait;
-
+ProcessAuthNextPhase(IceConn iceConn, unsigned long length, Bool swap,
+		     IceReplyWaitInfo *replyWait)
 {
     iceAuthNextPhaseMsg *message;
     int 		authDataLen;
@@ -1683,15 +1612,9 @@ IceReplyWaitInfo	*replyWait;
 }
 
 
-
 static Bool
-ProcessConnectionReply (iceConn, length, swap, replyWait)
-
-IceConn			iceConn;
-unsigned long	 	length;
-Bool			swap;
-IceReplyWaitInfo 	*replyWait;
-
+ProcessConnectionReply(IceConn iceConn, unsigned long length, Bool swap,
+		       IceReplyWaitInfo *replyWait)
 {
     iceConnectionReplyMsg 	*message;
     char 			*pData, *pStart, *pEnd;
@@ -1786,14 +1709,8 @@ IceReplyWaitInfo 	*replyWait;
 }
 
 
-
 static int
-ProcessProtocolSetup (iceConn, length, swap)
-
-IceConn		iceConn;
-unsigned long	length;
-Bool		swap;
-
+ProcessProtocolSetup(IceConn iceConn, unsigned long length, Bool swap)
 {
     iceProtocolSetupMsg	*message;
     _IcePaProtocol 	*myProtocol;
@@ -2184,15 +2101,9 @@ Bool		swap;
 }
 
 
-
 static Bool
-ProcessProtocolReply (iceConn, length, swap, replyWait)
-
-IceConn		  	iceConn;
-unsigned long	 	length;
-Bool			swap;
-IceReplyWaitInfo 	*replyWait;
-
+ProcessProtocolReply(IceConn iceConn, unsigned long length, Bool swap,
+		     IceReplyWaitInfo *replyWait)
 {
     iceProtocolReplyMsg *message;
     char		*pData, *pStart, *pEnd;
@@ -2299,13 +2210,8 @@ IceReplyWaitInfo 	*replyWait;
 }
 
 
-
 static int
-ProcessPing (iceConn, length)
-
-IceConn 	iceConn;
-unsigned long	length;
-
+ProcessPing(IceConn iceConn, unsigned long length)
 {
     CHECK_SIZE_MATCH (iceConn, ICE_Ping,
 	length, SIZEOF (icePingMsg), IceFatalToConnection, 0);
@@ -2316,13 +2222,8 @@ unsigned long	length;
 }
 
 
-
 static int
-ProcessPingReply (iceConn, length)
-
-IceConn 	iceConn;
-unsigned long	length;
-
+ProcessPingReply(IceConn iceConn, unsigned long length)
 {
     CHECK_SIZE_MATCH (iceConn, ICE_PingReply,
 	length, SIZEOF (icePingReplyMsg), IceFatalToConnection, 0);
@@ -2346,14 +2247,9 @@ unsigned long	length;
 }
 
 
-
 static int
-ProcessWantToClose (iceConn, length, connectionClosedRet)
-
-IceConn 	iceConn;
-unsigned long	length;
-Bool		*connectionClosedRet;
-
+ProcessWantToClose(IceConn iceConn, unsigned long length,
+		   Bool *connectionClosedRet)
 {
     *connectionClosedRet = False;
 
@@ -2406,13 +2302,8 @@ Bool		*connectionClosedRet;
 }
 
 
-
 static int
-ProcessNoClose (iceConn, length)
-
-IceConn 	iceConn;
-unsigned long	length;
-
+ProcessNoClose(IceConn iceConn, unsigned long length)
 {
     CHECK_SIZE_MATCH (iceConn, ICE_NoClose,
 	length, SIZEOF (iceNoCloseMsg), IceFatalToConnection, 0);
@@ -2435,19 +2326,10 @@ unsigned long	length;
 }
 
 
-
 void
-_IceProcessCoreMessage (iceConn, opcode, length, swap,
-    replyWait, replyReadyRet, connectionClosedRet)
-
-IceConn 	 iceConn;
-int     	 opcode;
-unsigned long	 length;
-Bool    	 swap;
-IceReplyWaitInfo *replyWait;
-Bool		 *replyReadyRet;
-Bool		 *connectionClosedRet;
-
+_IceProcessCoreMessage(IceConn iceConn, int opcode, unsigned long length,
+		       Bool swap, IceReplyWaitInfo *replyWait,
+		       Bool *replyReadyRet, Bool *connectionClosedRet)
 {
     Bool replyReady = False;
 
