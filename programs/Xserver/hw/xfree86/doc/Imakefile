@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/33 1996/10/28 05:12:24 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.59 1999/08/26 08:16:15 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.60 2000/01/23 21:59:53 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -23,9 +23,7 @@ SUBDIRS = $(SGMLDIR) $(JAPANESEDIR) man
 
 all::
 
-#if XFree86Version % 10
-REPORTFORM = BetaReport
-#endif
+REPORTFORM = BugReport
 
 #if !BuildLinuxDocText
 OSREADMES = \

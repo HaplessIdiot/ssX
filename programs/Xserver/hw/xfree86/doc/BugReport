@@ -1,15 +1,15 @@
-                    XFree86 Beta Test Report Form
+                    XFree86 Bug/Test Report Form
 
 Please fill in as many of the fields a possible, and return this form to
-report@XFree86.org.  Replace the comments in [] with your own text.
+XFree86@XFree86.org.  Replace the comments in [] with your own text.
 
 VERSION:
 
-3.2A
+3.9.18
 
-XSERVER:
+VIDEO DRIVER:
 
-[e.g. XF86_S3]
+[e.g. mga]
 
 OPERATING SYSTEM:
 
@@ -27,17 +27,15 @@ VIDEO CARD:
 
     GRAPHICS CHIPSET:
 
-    [e.g. S3 968]
+    [e.g. Matrox G200]
 
     RAMDAC:
 
-    [e.g. AT&T 20C498  Note: visual inspection of the card is the most
-     reliable way to determine the RAMDAC type]
+    [Usually only relevant for old cards]
 
     CLOCKCHIP:
 
-    [e.g. ICD2061A  Note: visual inspection of the card is the most reliable
-     way to determine the ClockChip type]
+    [Usually only relevant for old cards]
 
     VIDEO MEMORY:
 
