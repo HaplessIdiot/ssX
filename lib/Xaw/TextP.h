@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextP.h,v 3.4 1998/09/05 06:36:08 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextP.h,v 3.5 1998/10/03 08:42:26 dawes Exp $ */
 
 #ifndef _XawTextP_h
 #define _XawTextP_h
@@ -115,6 +115,7 @@ typedef struct _XawTextMargin {
 } XawTextMargin;
 
 typedef struct _XmuScanline XmuTextUpdate;
+typedef struct _XawTextUndo XawTextUndo;
 
 #define VMargins(ctx)  ((ctx)->text.margin.top + (ctx)->text.margin.bottom)
 #define HMargins(ctx)  ((ctx)->text.margin.left + (ctx)->text.margin.right)
@@ -142,7 +143,7 @@ struct SearchAndReplace {
   Widget rep_one;		/* The Replace one button. */
   Widget rep_all;		/* The Replace all button. */
 };
-    
+
 /* New fields for the Text widget class record */
 typedef struct {
   XtPointer extension;
@@ -197,8 +198,12 @@ typedef struct _TextPart {
   Widget file_insert;		     /* The file insert popup widget */
 #ifndef notdef
   XmuTextUpdate *update;	     /* Position intervals to update */
-  XtPointer text3;
-  int text4;
+    XawTextUndo *undo;
+
+    Boolean undo_state;		     /* last action was undo/redo ? */
+    Boolean enable_undo;	     /* settable resource */
+    Boolean pad1, pad2;	  /* XXX 32 bit pad to undo_state and enable_undo */
+
   int text5;
 #else
   XmuTextUpdate *update;
@@ -211,7 +216,9 @@ typedef struct _TextPart {
   Boolean clear_to_eol;		     /* Clear to eol when painting text? */
     XawTextPosition  old_insert;    /* Last insertPos for batched updates */
   short mult;			     /* Multiplier */
-#ifndef notdef
+#ifndef NO_NUMERIC_HACK
+    int doing_numeric_hack;
+#else
   XtPointer text6;
 #endif
 

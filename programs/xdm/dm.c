@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.c,v 3.5 1998/08/16 10:25:56 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/dm.c,v 3.6 1998/10/04 09:40:54 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -32,6 +32,8 @@ from The Open Group.
  */
 
 # include	"dm.h"
+# include	"dm_auth.h"
+# include	"dm_error.h"
 
 # include	<stdio.h>
 #ifdef X_POSIX_C_SOURCE
@@ -55,13 +57,7 @@ from The Open Group.
 # include	<sys/stat.h>
 # include	<errno.h>
 # include	<X11/Xfuncproto.h>
-#if NeedVarargsPrototypes
-# include <stdarg.h>
-# define Va_start(a,b) va_start(a,b)
-#else
-# include <varargs.h>
-# define Va_start(a,b) va_start(a)
-#endif
+# include	<stdarg.h>
 
 #ifndef F_TLOCK
 #ifndef X_NOT_POSIX
@@ -78,14 +74,17 @@ extern int errno;
 extern FILE    *fdopen();
 #endif
 
-static void	RescanServers ();
-static void	ScanServers ();
+static SIGVAL	StopAll (int n), RescanNotify (int n);
+static void	RescanServers (void);
+static void	RestartDisplay (struct display *d, int forceReserver);
+static void	ScanServers (void);
+static void	SetAccessFileTime (void);
+static void	SetConfigFileTime (void);
+static void	StartDisplays (void);
+static void	TerminateProcess (int pid, int signal);
+
 int		Rescan;
 static long	ServersModTime, ConfigModTime, AccessFileModTime;
-static SIGVAL	StopAll (), RescanNotify ();
-void		StopDisplay ();
-static void	RestartDisplay ();
-static void	StartDisplays ();
 
 int nofork_session = 0;
 
@@ -95,14 +94,15 @@ static int TitleLen;
 #endif
 
 #ifndef UNRELIABLE_SIGNALS
-static SIGVAL ChildNotify ();
+static SIGVAL ChildNotify (int n);
 #endif
+
+static int StorePid (void);
 
 static int parent_pid = -1; 	/* PID of parent xdm process */
 
-main (argc, argv)
-int	argc;
-char	**argv;
+int
+main (int argc, char **argv)
 {
     int	oldpid, oldumask;
     char cmdbuf[1024];
@@ -136,7 +136,7 @@ char	**argv;
     if (debugLevel == 0 && daemonMode)
 	BecomeDaemon ();
     /* SUPPRESS 560 */
-    if (oldpid = StorePid ())
+    if ((oldpid = StorePid ()) != 0)
     {
 	if (oldpid == -1)
 	    LogError ("Can't create/lock pid file %s\n", pidFile);
@@ -208,8 +208,7 @@ char	**argv;
 
 /* ARGSUSED */
 static SIGVAL
-RescanNotify (n)
-    int n;
+RescanNotify (int n)
 {
     Debug ("Caught SIGHUP\n");
     Rescan = 1;
@@ -219,7 +218,7 @@ RescanNotify (n)
 }
 
 static void
-ScanServers ()
+ScanServers (void)
 {
     char	lineBuf[10240];
     int		len;
@@ -261,14 +260,13 @@ ScanServers ()
 }
 
 static void
-MarkDisplay (d)
-struct display	*d;
+MarkDisplay (struct display *d)
 {
     d->state = MissingEntry;
 }
 
 static void
-RescanServers ()
+RescanServers (void)
 {
     Debug ("rescanning servers\n");
     LogInfo ("Rescanning both config and servers files\n");
@@ -284,7 +282,8 @@ RescanServers ()
     StartDisplays ();
 }
 
-SetConfigFileTime ()
+static void
+SetConfigFileTime (void)
 {
     struct stat	statb;
 
@@ -292,7 +291,8 @@ SetConfigFileTime ()
 	ConfigModTime = statb.st_mtime;
 }
 
-SetAccessFileTime ()
+static void
+SetAccessFileTime (void)
 {
     struct stat	statb;
 
@@ -300,8 +300,8 @@ SetAccessFileTime ()
 	AccessFileModTime = statb.st_mtime;
 }
 
-static
-RescanIfMod ()
+static void
+RescanIfMod (void)
 {
     struct stat	statb;
 
@@ -347,8 +347,7 @@ RescanIfMod ()
 
 /* ARGSUSED */
 static SIGVAL
-StopAll (n)
-    int n;
+StopAll (int n)
 {
     if (parent_pid != getpid())
     {
@@ -386,8 +385,7 @@ int	ChildReady;
 #ifndef UNRELIABLE_SIGNALS
 /* ARGSUSED */
 static SIGVAL
-ChildNotify (n)
-    int n;
+ChildNotify (int n)
 {
     ChildReady = 1;
 #ifdef ISC
@@ -396,7 +394,8 @@ ChildNotify (n)
 }
 #endif
 
-WaitForChild ()
+void
+WaitForChild (void)
 {
     int		pid;
     struct display	*d;
@@ -419,7 +418,7 @@ WaitForChild ()
 #else
     omask = sigblock (sigmask (SIGCHLD) | sigmask (SIGHUP));
 #endif
-    Debug ("signals blocked, mask was 0x%x\n", omask);
+    Debug ("signals blocked, mask was 0x%x\n", (unsigned int) omask);
     if (!ChildReady && !Rescan)
 #ifndef X_NOT_POSIX
 	sigsuspend(&omask);
@@ -444,7 +443,7 @@ WaitForChild ()
 	if (autoRescan)
 	    RescanIfMod ();
 	/* SUPPRESS 560 */
-	if (d = FindDisplayByPid (pid)) {
+	if ((d = FindDisplayByPid (pid)) != 0) {
 	    d->pid = -1;
 	    switch (waitVal (status)) {
 	    case UNMANAGE_DISPLAY:
@@ -521,7 +520,7 @@ WaitForChild ()
 	    }
 	}
 	/* SUPPRESS 560 */
-	else if (d = FindDisplayByServerPid (pid))
+	else if ((d = FindDisplayByServerPid (pid)) != 0)
 	{
 	    d->serverPid = -1;
 	    switch (d->status)
@@ -557,8 +556,7 @@ WaitForChild ()
 }
 
 static void
-CheckDisplayStatus (d)
-struct display	*d;
+CheckDisplayStatus (struct display *d)
 {
     if (d->displayType.origin == FromFile)
     {
@@ -577,14 +575,13 @@ struct display	*d;
 }
 
 static void
-StartDisplays ()
+StartDisplays (void)
 {
     ForEachDisplay (CheckDisplayStatus);
 }
 
 void
-StartDisplay (d)
-struct display	*d;
+StartDisplay (struct display *d)
 {
     int	pid;
 
@@ -655,7 +652,8 @@ struct display	*d;
     }
 }
 
-TerminateProcess (pid, signal)
+static void
+TerminateProcess (int pid, int signal)
 {
     kill (pid, signal);
 #ifdef SIGCONT
@@ -668,8 +666,7 @@ TerminateProcess (pid, signal)
  */
 
 void
-StopDisplay (d)
-    struct display	*d;
+StopDisplay (struct display *d)
 {
     if (d->serverPid != -1)
 	d->status = zombie; /* be careful about race conditions */
@@ -686,9 +683,7 @@ StopDisplay (d)
  */
 
 static void
-RestartDisplay (d, forceReserver)
-    struct display  *d;
-    int		    forceReserver;
+RestartDisplay (struct display *d, int forceReserver)
 {
     if (d->serverPid != -1 && (forceReserver || d->terminateServer))
     {
@@ -704,16 +699,16 @@ RestartDisplay (d, forceReserver)
 static FD_TYPE	CloseMask;
 static int	max;
 
-RegisterCloseOnFork (fd)
-int	fd;
+void
+RegisterCloseOnFork (int fd)
 {
     FD_SET (fd, &CloseMask);
     if (fd > max)
 	max = fd;
 }
 
-ClearCloseOnFork (fd)
-int	fd;
+void
+ClearCloseOnFork (int fd)
 {
     FD_CLR (fd, &CloseMask);
     if (fd == max) {
@@ -724,7 +719,8 @@ int	fd;
     }
 }
 
-CloseOnFork ()
+void
+CloseOnFork (void)
 {
     int	fd;
 
@@ -746,7 +742,8 @@ CloseOnFork ()
 static int  pidFd;
 static FILE *pidFilePtr;
 
-StorePid ()
+static int
+StorePid (void)
 {
     int		oldpid;
 
@@ -807,7 +804,9 @@ StorePid ()
     return 0;
 }
 
-UnlockPidFile ()
+#if 0
+void
+UnlockPidFile (void)
 {
     if (lockPidFile)
 #ifdef F_SETLK
@@ -828,15 +827,9 @@ UnlockPidFile ()
     close (pidFd);
     fclose (pidFilePtr);
 }
-
-#if NeedVarargsPrototypes
-SetTitle (char *name, ...)
-#else
-/*VARARGS*/
-SetTitle (name, va_alist)
-char *name;
-va_dcl
 #endif
+
+void SetTitle (char *name, ...)
 {
 #ifndef NOXDMTITLE
     char	*p = Title;
@@ -844,7 +837,7 @@ va_dcl
     char	*s;
     va_list	args;
 
-    Va_start(args,name);
+    va_start(args,name);
     *p++ = '-';
     --left;
     s = name;

@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Text.h,v 1.4 1998/08/20 13:59:14 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.h,v 1.5 1998/10/03 08:42:25 dawes Exp $ */
 
 #ifndef _XawText_h
 #define _XawText_h
@@ -157,7 +157,9 @@ typedef struct {
 #define XtNselectTypes "selectTypes"
 #define XtNtopMargin "topMargin"
 #define XtNwrap "wrap"
+#define XtNenableUndo		"enableUndo"
 
+#define XtCUndo			"Undo"
 #define XtCAutoFill "AutoFill"
 #define XtCSelectTypes "SelectTypes"
 #define XtCWrap "Wrap"

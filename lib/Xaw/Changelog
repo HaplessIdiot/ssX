@@ -529,5 +529,43 @@ will not allways be displayed correctly.
    unecessary definitions.
 
 
+#2028, 2033, 7 Oct 1998
 
-$XFree86: xc/lib/Xaw/Changelog,v 3.7 1998/08/20 13:58:57 dawes Exp $
+-- Xaw -- 
++ Added a delete translation to the text widget, that deletes the current
+  selection if any, else the backwards char.
++ Corrected bug that would not update correctly the screen if page-up or
+  page-down was pressed while there was an selection.
++ Added a ^Q<any-char> translation to the text widget, to be able to insert
+  any char in the text.
++ Changed TextAction.c:Move() to set ctx->text.showposition, so that even
+  if the cursor did not change the position, it will become visible.
++ Corrected problem with the 'form-paragraph' translation, so that the
+  text will be always correclty shown.
++ Modified the automatic scrolling of the text to one line at a time, to
+  make it easier to see what is being selected.
++ Added a 'hack' to be able to type ^U<any-numeric-sequence> to be able
+  set the multiply of the text widget. Since it is a hack (besides seens
+  to work very well) it can be disabled with -DNO_NUMERIC_HACK
++ Corrected a nasty bug in Text.c:CvtStringToScrollMode(); XtConvertAndStore
+  can't be called from a type converter!
++ added UNDO/REDO to the text widget. Please try it, I think it is very nice.
+  Undo is enabled by the new resource 'enableUndo', and, by default is  
+  triggered with 'Ctrl+_'.
+
+-- editres --
++ Resubmitting a patch to editres/handler.c, to make editres work properly.
+
+-- xedit -- 
++ NOTE that with this patch, xedit probably will not work with Xaw3d, neXtaw...
+  this surelly can be fixed, or in the xedit side or the *Xaw* side, but
+  the patch seens to be necessary.
++ Changed the defaults file to be more user friendly and previsible.
+  Added some 'Emacs like' binding translations.
++ Added file completion in the filename prompt. This is a very nice
+  feature, but I'm not sure if the code is portable to all the XFree86  
+  supported platforms (surely it will not work 'as is' with OS/2).
+
+
+
+$XFree86: xc/lib/Xaw/Changelog,v 3.8 1998/09/05 06:36:06 dawes Exp $

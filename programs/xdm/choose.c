@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdm/choose.c,v 3.5 1997/08/13 05:32:14 hohndel Exp $ */
+/* $XFree86: xc/programs/xdm/choose.c,v 3.6 1998/10/04 09:40:53 dawes Exp $ */
 
 /*
  * choose.c
@@ -31,18 +31,16 @@ in this Software without prior written authorization from The Open Group.
  */
 
 #include "dm.h"
+#include "dm_error.h"
 
 #ifdef XDMCP
 
 #include <X11/X.h>
 #include <sys/types.h>
+
+#include "dm_socket.h"
+
 #ifndef MINIX
-#ifndef Lynx
-#include <sys/socket.h>
-#else
-#include <socket.h>
-#endif
-#include <netinet/in.h>
 #ifndef X_NO_SYS_UN
 #ifndef Lynx
 #include <sys/un.h>
@@ -57,8 +55,10 @@ in this Software without prior written authorization from The Open Group.
 #include <net/gen/tcp.h>
 #include <net/gen/tcp_io.h>
 #endif /* !MINIX */
+
 #include <ctype.h>
 #include <errno.h>
+
 #if defined(STREAMSCONN)
 # include       <tiuser.h>
 #endif
@@ -77,12 +77,12 @@ int listen_inprogress;
 int listen_completed;
 #endif
 
-static
-FormatBytes (data, length, buf, buflen)
-    unsigned char *data;
-    int	    length;
-    char    *buf;
-    int	    buflen;
+static int
+FormatBytes (
+    unsigned char *data,
+    int	    length,
+    char    *buf,
+    int	    buflen)
 {
     int	    i;
     static char	    HexChars[] = "0123456789abcdef";
@@ -98,11 +98,11 @@ FormatBytes (data, length, buf, buflen)
     return 1;
 }
 
-static
-FormatARRAY8 (a, buf, buflen)
-    ARRAY8Ptr	a;
-    char	*buf;
-    int		buflen;
+static int
+FormatARRAY8 (
+    ARRAY8Ptr	a,
+    char	*buf,
+    int		buflen)
 {
     return FormatBytes (a->data, a->length, buf, buflen);
 }
@@ -112,13 +112,11 @@ FormatARRAY8 (a, buf, buflen)
    Returns 1 if successful, 0 if not.
    */
 static int
-ARRAY8ToDottedDecimal (a, buf, buflen)
-    ARRAY8Ptr	a;
-    char	*buf;
-    int		buflen;
+ARRAY8ToDottedDecimal (
+    ARRAY8Ptr	a,
+    char	*buf,
+    int		buflen)
 {
-    int i;
-
     if (a->length != 4  ||  buflen < 20)
 	return 0;
     sprintf(buf, "%d.%d.%d.%d",
@@ -134,9 +132,10 @@ typedef struct _IndirectUsers {
 
 static IndirectUsersPtr	indirectUsers;
 
-RememberIndirectClient (clientAddress, connectionType)
-    ARRAY8Ptr	clientAddress;
-    CARD16	connectionType;
+int
+RememberIndirectClient (
+    ARRAY8Ptr	clientAddress,
+    CARD16	connectionType)
 {
     IndirectUsersPtr	i;
 
@@ -156,9 +155,10 @@ RememberIndirectClient (clientAddress, connectionType)
     return 1;
 }
 
-ForgetIndirectClient (clientAddress, connectionType)
-    ARRAY8Ptr	clientAddress;
-    CARD16	connectionType;
+void
+ForgetIndirectClient (
+    ARRAY8Ptr	clientAddress,
+    CARD16	connectionType)
 {
     IndirectUsersPtr	i, prev;
 
@@ -180,9 +180,10 @@ ForgetIndirectClient (clientAddress, connectionType)
     }
 }
 
-IsIndirectClient (clientAddress, connectionType)
-    ARRAY8Ptr	clientAddress;
-    CARD16	connectionType;
+int
+IsIndirectClient (
+    ARRAY8Ptr	clientAddress,
+    CARD16	connectionType)
 {
     IndirectUsersPtr	i;
 
@@ -193,12 +194,8 @@ IsIndirectClient (clientAddress, connectionType)
     return 0;
 }
 
-extern char *NetaddrPort();
-
-static
-FormatChooserArgument (buf, len)
-    char    *buf;
-    int	    len;
+static int
+FormatChooserArgument (char *buf, int len)
 {
     unsigned char   addr_buf[1024];
     int		    addr_len = sizeof (addr_buf);
@@ -206,7 +203,7 @@ FormatChooserArgument (buf, len)
     int		    result_len = 0;
     int		    netfamily;
 
-    if (GetChooserAddr (addr_buf, &addr_len) == -1)
+    if (GetChooserAddr ((char *)addr_buf, &addr_len) == -1)
     {
 	LogError ("Cannot get return address for chooser socket\n");
 	Debug ("Cannot get chooser socket address\n");
@@ -218,7 +215,7 @@ FormatChooserArgument (buf, len)
 	{
 	    char *port;
 	    int portlen;
-	    ARRAY8Ptr localAddress, getLocalAddress ();
+	    ARRAY8Ptr localAddress;
 
 	    port = NetaddrPort((XdmcpNetaddr)addr_buf, &portlen);
 	    result_buf[0] = netfamily >> 8;
@@ -253,9 +250,9 @@ typedef struct _Choices {
 static ChoicePtr   choices;
 
 ARRAY8Ptr
-IndirectChoice (clientAddress, connectionType)
-    ARRAY8Ptr	clientAddress;
-    CARD16	connectionType;
+IndirectChoice (
+    ARRAY8Ptr	clientAddress,
+    CARD16	connectionType)
 {
     ChoicePtr	c, next, prev;
     Time_t	now;
@@ -265,10 +262,12 @@ IndirectChoice (clientAddress, connectionType)
     for (c = choices; c; c = next)
     {
 	next = c->next;
-	Debug ("Choice checking timeout: %d >? %d\n", now - c->time, choiceTimeout);
+	Debug ("Choice checking timeout: %ld >? %d\n",
+	    (long)(now - c->time), choiceTimeout);
 	if (now - c->time > (Time_t)choiceTimeout)
 	{
-	    Debug ("Timeout choice %d > %d\n", now - c->time, choiceTimeout);
+	    Debug ("Timeout choice %ld > %d\n",
+		(long)(now - c->time), choiceTimeout);
 	    if (prev)
 		prev->next = next;
 	    else
@@ -289,9 +288,10 @@ IndirectChoice (clientAddress, connectionType)
 }
 
 static int
-RegisterIndirectChoice (clientAddress, connectionType, choice)
-    ARRAY8Ptr	clientAddress, choice;
-    CARD16 connectionType;
+RegisterIndirectChoice (
+    ARRAY8Ptr	clientAddress,
+    CARD16      connectionType,
+    ARRAY8Ptr	choice)
 {
     ChoicePtr	c;
     int		insert;
@@ -370,13 +370,13 @@ RemoveIndirectChoice (clientAddress, connectionType)
 #endif
 
 /*ARGSUSED*/
-static
-AddChooserHost (connectionType, addr, closure)
-    CARD16	connectionType;
-    ARRAY8Ptr	addr;
-    char	*closure;
+static void
+AddChooserHost (
+    CARD16	connectionType,
+    ARRAY8Ptr	addr,
+    char	*closure)
 {
-    char	***argp, **parseArgs();
+    char	***argp;
     char	hostbuf[1024];
 
     argp = (char ***) closure;
@@ -391,8 +391,8 @@ AddChooserHost (connectionType, addr, closure)
     }
 }
 
-ProcessChooserSocket (fd)
-    int fd;
+void
+ProcessChooserSocket (int fd)
 {
     int client_fd;
     char	buf[1024];
@@ -581,10 +581,10 @@ ProcessChooserSocket (fd)
 #endif
 }
 
-RunChooser (d)
-    struct display  *d;
+void
+RunChooser (struct display *d)
 {
-    char    **args, **parseArgs(), **systemEnv();
+    char    **args;
     char    buf[1024];
     char    **env;
 

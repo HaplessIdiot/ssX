@@ -1,15 +1,10 @@
-/* $XConsortium: Xauth.h,v 1.16 94/04/17 20:15:46 gildea Exp $ */
+/* $TOG: Xauth.h /main/19 1998/02/06 14:15:45 kaleb $ */
 
 /*
 
-Copyright (c) 1988  X Consortium
+Copyright 1988, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,28 +12,18 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
 
 #ifndef _Xauth_h
 #define _Xauth_h
-
-# include   <X11/Xfuncproto.h>
-
-# include   <stdio.h>
-
-# define FamilyLocal (256)	/* not part of X standard (i.e. X.h) */
-# define FamilyWild  (65535)
-# define FamilyNetname    (254)   /* not part of X standard */
-# define FamilyKrb5Principal (253) /* Kerberos 5 principal name */
-# define FamilyLocalHost (252)	/* for local non-net authentication */
 
 typedef struct xauth {
     unsigned short   family;
@@ -52,9 +37,23 @@ typedef struct xauth {
     char   	    *data;
 } Xauth;
 
+#ifndef _XAUTH_STRUCT_ONLY
+
+# include   <X11/Xfuncproto.h>
+# include   <X11/Xfuncs.h>
+
+# include   <stdio.h>
+
+# define FamilyLocal (256)	/* not part of X standard (i.e. X.h) */
+# define FamilyWild  (65535)
+# define FamilyNetname    (254)   /* not part of X standard */
+# define FamilyKrb5Principal (253) /* Kerberos 5 principal name */
+# define FamilyLocalHost (252)	/* for local non-net authentication */
+
+
 _XFUNCPROTOBEGIN
 
-char *XauFileName();
+char *XauFileName(void);
 
 Xauth *XauReadAuth(
 #if NeedFunctionPrototypes
@@ -171,5 +170,7 @@ _XFUNCPROTOEND
 # define LOCK_SUCCESS	0	/* lock succeeded */
 # define LOCK_ERROR	1	/* lock unexpectely failed, check errno */
 # define LOCK_TIMEOUT	2	/* lock failed, timeouts expired */
+
+#endif /* _XAUTH_STRUCT_ONLY */
 
 #endif /* _Xauth_h */

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/netaddr.c,v 3.2 1997/01/18 07:02:21 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/netaddr.c,v 3.3 1998/10/04 09:40:56 dawes Exp $ */
 
 /*
  * xdm - X display manager
@@ -31,19 +31,13 @@ from The Open Group.
  */
 
 #include "dm.h"
+#include "dm_error.h"
 
 #include <X11/X.h>		/* FamilyInternet, etc. */
 
 #ifdef XDMCP
 
-#ifndef MINIX
-#ifndef Lynx
-#include <sys/socket.h>		/* struct sockaddr */
-#else
-#include <socket.h>		/* struct sockaddr */
-#endif
-#include <netinet/in.h>		/* struct sockaddr_in */
-#endif
+#include "dm_socket.h"
 
 #ifdef UNIXCONN
 #ifndef X_NO_SYS_UN
@@ -61,8 +55,7 @@ from The Open Group.
 /* given an XdmcpNetaddr, returns the socket protocol family used,
    e.g., AF_INET */
 
-int NetaddrFamily(netaddrp)
-    XdmcpNetaddr netaddrp;
+int NetaddrFamily(XdmcpNetaddr netaddrp)
 {
 #ifdef STREAMSCONN
     short family = *(short *)netaddrp;
@@ -77,9 +70,7 @@ int NetaddrFamily(netaddrp)
    and sets *lenp to the length of the address
    or 0 if not using TCP or UDP. */
 
-char * NetaddrPort(netaddrp, lenp)
-    XdmcpNetaddr netaddrp;
-    int *lenp;			/* return */
+char * NetaddrPort(XdmcpNetaddr netaddrp, int *lenp)
 {
 #ifdef STREAMSCONN
     *lenp = 2;
@@ -101,9 +92,7 @@ char * NetaddrPort(netaddrp, lenp)
 /* given an XdmcpNetaddr, returns a pointer to the network address
    and sets *lenp to the length of the address */
 
-char * NetaddrAddress(netaddrp, lenp)
-    XdmcpNetaddr netaddrp;
-    int *lenp;			/* return */
+char * NetaddrAddress(XdmcpNetaddr netaddrp, int *lenp)
 {
 #ifdef STREAMSCONN
     *lenp = 4;
@@ -140,10 +129,7 @@ char * NetaddrAddress(netaddrp, lenp)
    sets *len to the number of bytes in addr.
    Returns the X protocol family used, e.g., FamilyInternet */
 
-int ConvertAddr (saddr, len, addr)
-    XdmcpNetaddr saddr;
-    int *len;			/* return */
-    char **addr;		/* return */
+int ConvertAddr (XdmcpNetaddr saddr, int *len, char **addr)
 {
     int retval;
 
@@ -194,9 +180,8 @@ int ConvertAddr (saddr, len, addr)
     return retval;
 }
 
-addressEqual (a1, len1, a2, len2)
-    XdmcpNetaddr a1, a2;
-    int		 len1, len2;
+int
+addressEqual (XdmcpNetaddr a1, int len1, XdmcpNetaddr a2, int len2)
 {
     int partlen1, partlen2;
     char *part1, *part2;
@@ -226,9 +211,8 @@ addressEqual (a1, len1, a2, len2)
 
 #ifdef DEBUG
 /*ARGSUSED*/
-PrintSockAddr (a, len)		/* Debugging routine */
-    struct sockaddr *a;
-    int		    len;
+void
+PrintSockAddr (struct sockaddr *a, int len)
 {
     unsigned char    *t, *p;
 

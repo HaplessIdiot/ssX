@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/daemon.c,v 3.7 1998/08/16 10:25:55 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/daemon.c,v 3.8 1998/10/04 09:40:54 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -53,12 +53,23 @@ extern int errno;
 #define Pid_t pid_t
 #endif
 
-extern void exit ();
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+extern void exit (int);
+#endif
 
-BecomeOrphan ()
+
+#include "dm.h"
+#include "dm_error.h"
+
+void
+BecomeOrphan (void)
 {
     Pid_t child_id;
+#ifndef CSRG_BASED
     int stat;
+#endif
 
     /*
      * fork so that the process goes into the background automatically. Also
@@ -103,17 +114,16 @@ BecomeOrphan ()
     }
 }
 
-BecomeDaemon ()
+void
+BecomeDaemon (void)
 {
+#ifndef CSRG_BASED
     register int i;
 
     /*
      * Close standard file descriptors and get rid of controlling tty
      */
 
-#ifdef CSRG_BASED
-    daemon (0, 0);
-#else
 #if defined(SYSV) || defined(SVR4) || defined(__GNU__)
     setpgrp ();
 #else
@@ -160,5 +170,7 @@ BecomeDaemon ()
     (void) open ("/", O_RDONLY);	/* root inode already in core */
     (void) dup2 (0, 1);
     (void) dup2 (0, 2);
+#else
+    daemon (0, 0);
 #endif /* CSRG_BASED */
 }

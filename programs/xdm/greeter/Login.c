@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/Login.c,v 3.1 1995/10/21 12:52:30 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/Login.c,v 3.2 1998/10/04 09:41:03 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -39,8 +39,13 @@ from The Open Group.
 # include <stdio.h>
 
 # include "dm.h"
+# include "dm_error.h"
 # include "greet.h"
 # include "LoginP.h"
+
+static void RedrawFail (LoginWidget w);
+static void ResetLogin (LoginWidget w);
+static void failTimeout (XtPointer client_data, XtIntervalId * id);
 
 #define offset(field) XtOffsetOf(LoginRec, login.field)
 #define goffset(field) XtOffsetOf(WidgetRec, core.field)
@@ -151,16 +156,10 @@ static XtResource resources[] = {
 # define PAD_Y(w)	(max (max (Y_INC(w), GREET_Y_INC(w)),\
 			     FAIL_Y_INC(w)))
 	
-static void Initialize(), Realize(), Destroy(), Redisplay();
-static Boolean SetValues();
-static void draw_it ();
-
-static int max (a,b) { return a > b ? a : b; }
+static int max (int a, int b) { return a > b ? a : b; }
 
 static void
-EraseName (w, cursor)
-    LoginWidget	w;
-    int		cursor;
+EraseName (LoginWidget w, int cursor)
 {
     int	x;
 
@@ -172,9 +171,7 @@ EraseName (w, cursor)
 }
 
 static void
-DrawName (w, cursor)
-    LoginWidget	w;
-    int		cursor;
+DrawName (LoginWidget w, int cursor)
 {
     int	x;
 
@@ -186,9 +183,7 @@ DrawName (w, cursor)
 }
 
 static void
-realizeCursor (w, gc)
-    LoginWidget	w;
-    GC		gc;
+realizeCursor (LoginWidget w, GC gc)
 {
     int	x, y;
     int height, width;
@@ -216,8 +211,7 @@ realizeCursor (w, gc)
 }
 
 static void
-EraseFail (w)
-    LoginWidget	w;
+EraseFail (LoginWidget w)
 {
     int x = FAIL_X(w);
     int y = FAIL_Y(w);
@@ -233,31 +227,26 @@ EraseFail (w)
 }
 
 static void
-XorCursor (w)
-    LoginWidget	w;
+XorCursor (LoginWidget w)
 {
     realizeCursor (w, w->login.xorGC);
 }
 
 static void
-RemoveFail (w)
-    LoginWidget	w;
+RemoveFail (LoginWidget w)
 {
     if (w->login.failUp)
 	EraseFail (w);
 }
 
 static void
-EraseCursor (w)
-    LoginWidget (w);
+EraseCursor (LoginWidget w)
 {
     realizeCursor (w, w->login.bgGC);
 }
 
 /*ARGSUSED*/
-void failTimeout (client_data, id)
-    XtPointer	client_data;
-    XtIntervalId *	id;
+static void failTimeout (XtPointer client_data, XtIntervalId * id)
 {
     LoginWidget	w = (LoginWidget)client_data;
 
@@ -265,8 +254,8 @@ void failTimeout (client_data, id)
     EraseFail (w);
 }
 
-DrawFail (ctx)
-    Widget	ctx;
+void
+DrawFail (Widget ctx)
 {
     LoginWidget	w;
 
@@ -284,8 +273,8 @@ DrawFail (ctx)
     }
 }
 
-RedrawFail (w)
-    LoginWidget w;
+static void
+RedrawFail (LoginWidget w)
 {
     int x = FAIL_X(w);
     int y = FAIL_Y(w);
@@ -297,8 +286,7 @@ RedrawFail (w)
 }
 
 static void
-draw_it (w)
-    LoginWidget	w;
+draw_it (LoginWidget w)
 {
     EraseCursor (w);
     if (GREETING(w)[0])
@@ -332,11 +320,7 @@ draw_it (w)
 
 /*ARGSUSED*/
 static void
-DeleteBackwardChar (ctxw, event, params, num_params)
-    Widget ctxw;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+DeleteBackwardChar (Widget ctxw, XEvent *event, String *params, Cardinal *num_params)
 {
     LoginWidget ctx = (LoginWidget)ctxw;
 
@@ -362,11 +346,7 @@ DeleteBackwardChar (ctxw, event, params, num_params)
 
 /*ARGSUSED*/
 static void
-DeleteForwardChar (ctxw, event, params, num_params)
-    Widget	ctxw;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+DeleteForwardChar (Widget ctxw, XEvent *event, String *params, Cardinal *num_params)
 {
     LoginWidget ctx = (LoginWidget)ctxw;
 
@@ -393,11 +373,11 @@ DeleteForwardChar (ctxw, event, params, num_params)
 
 /*ARGSUSED*/
 static void
-MoveBackwardChar (ctxw, event, params, num_params)
-    Widget	ctxw;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+MoveBackwardChar (
+    Widget	ctxw,
+    XEvent	*event,
+    String	*params,
+    Cardinal	*num_params)
 {
     LoginWidget	ctx = (LoginWidget)ctxw;
 
@@ -410,11 +390,11 @@ MoveBackwardChar (ctxw, event, params, num_params)
 
 /*ARGSUSED*/
 static void
-MoveForwardChar (ctxw, event, params, num_params)
-    Widget	ctxw;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+MoveForwardChar (
+    Widget	ctxw,
+    XEvent	*event,
+    String	*params,
+    Cardinal	*num_params)
 {
     LoginWidget ctx = (LoginWidget)ctxw;
 
@@ -435,11 +415,11 @@ MoveForwardChar (ctxw, event, params, num_params)
 
 /*ARGSUSED*/
 static void
-MoveToBegining (ctxw, event, params, num_params)
-    Widget	ctxw;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+MoveToBegining (
+    Widget	ctxw,
+    XEvent	*event,
+    String	*params,
+    Cardinal	*num_params)
 {
     LoginWidget ctx = (LoginWidget)ctxw;
 
@@ -451,11 +431,11 @@ MoveToBegining (ctxw, event, params, num_params)
 
 /*ARGSUSED*/
 static void
-MoveToEnd (ctxw, event, params, num_params)
-    Widget	ctxw;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+MoveToEnd (
+    Widget	ctxw,
+    XEvent	*event,
+    String	*params,
+    Cardinal	*num_params)
 {
     LoginWidget ctx = (LoginWidget)ctxw;
 
@@ -474,11 +454,11 @@ MoveToEnd (ctxw, event, params, num_params)
 
 /*ARGSUSED*/
 static void
-EraseToEndOfLine (ctxw, event, params, num_params)
-    Widget	ctxw;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+EraseToEndOfLine (
+    Widget	ctxw,
+    XEvent	*event,
+    String	*params,
+    Cardinal	*num_params)
 {
     LoginWidget ctx = (LoginWidget)ctxw;
 
@@ -498,11 +478,11 @@ EraseToEndOfLine (ctxw, event, params, num_params)
 
 /*ARGSUSED*/
 static void
-EraseLine (ctxw, event, params, num_params)
-    Widget	ctxw;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+EraseLine (
+    Widget	ctxw,
+    XEvent	*event,
+    String	*params,
+    Cardinal	*num_params)
 {
     MoveToBegining (ctxw, event, params, num_params);
     EraseToEndOfLine (ctxw, event, params, num_params);
@@ -510,11 +490,11 @@ EraseLine (ctxw, event, params, num_params)
 
 /*ARGSUSED*/
 static void
-FinishField (ctxw, event, params, num_params)
-    Widget	ctxw;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+FinishField (
+    Widget	ctxw,
+    XEvent	*event,
+    String	*params,
+    Cardinal	*num_params)
 {
     LoginWidget ctx = (LoginWidget)ctxw;
 
@@ -536,11 +516,11 @@ FinishField (ctxw, event, params, num_params)
 
 /*ARGSUSED*/
 static void
-AllowAccess (ctxw, event, params, num_params)
-    Widget	ctxw;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+AllowAccess (
+    Widget	ctxw,
+    XEvent	*event,
+    String	*params,
+    Cardinal	*num_params)
 {
     LoginWidget ctx = (LoginWidget)ctxw;
     Arg	arglist[1];
@@ -555,11 +535,11 @@ AllowAccess (ctxw, event, params, num_params)
 
 /*ARGSUSED*/
 static void
-SetSessionArgument (ctxw, event, params, num_params)
-    Widget	ctxw;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+SetSessionArgument (
+    Widget	ctxw,
+    XEvent	*event,
+    String	*params,
+    Cardinal	*num_params)
 {
     LoginWidget ctx = (LoginWidget)ctxw;
 
@@ -578,11 +558,11 @@ SetSessionArgument (ctxw, event, params, num_params)
 
 /*ARGSUSED*/
 static void
-RestartSession (ctxw, event, params, num_params)
-    Widget	ctxw;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+RestartSession (
+    Widget	ctxw,
+    XEvent	*event,
+    String	*params,
+    Cardinal	*num_params)
 {
     LoginWidget ctx = (LoginWidget)ctxw;
 
@@ -596,11 +576,11 @@ RestartSession (ctxw, event, params, num_params)
 
 /*ARGSUSED*/
 static void
-AbortSession (ctxw, event, params, num_params)
-    Widget	ctxw;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+AbortSession (
+    Widget	ctxw,
+    XEvent	*event,
+    String	*params,
+    Cardinal	*num_params)
 {
     LoginWidget ctx = (LoginWidget)ctxw;
 
@@ -614,11 +594,11 @@ AbortSession (ctxw, event, params, num_params)
 
 /*ARGSUSED*/
 static void
-AbortDisplay (ctxw, event, params, num_params)
-    Widget	ctxw;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+AbortDisplay (
+    Widget	ctxw,
+    XEvent	*event,
+    String	*params,
+    Cardinal	*num_params)
 {
     LoginWidget ctx = (LoginWidget)ctxw;
 
@@ -630,8 +610,8 @@ AbortDisplay (ctxw, event, params, num_params)
     XorCursor (ctx);
 }
 
-ResetLogin (w)
-    LoginWidget	w;
+static void
+ResetLogin (LoginWidget w)
 {
     EraseName (w, 0);
     w->login.cursor = 0;
@@ -642,11 +622,11 @@ ResetLogin (w)
 
 /* ARGSUSED */
 static void
-InsertChar (ctxw, event, params, num_params)
-    Widget	ctxw;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+InsertChar (
+    Widget	ctxw,
+    XEvent	*event,
+    String	*params,
+    Cardinal	*num_params)
 {
     LoginWidget ctx = (LoginWidget)ctxw;
 
@@ -689,10 +669,11 @@ InsertChar (ctxw, event, params, num_params)
 }
 
 /* ARGSUSED */
-static void Initialize (greq, gnew, args, num_args)
-    Widget greq, gnew;
-    ArgList args;
-    Cardinal *num_args;
+static void Initialize (
+    Widget greq,
+    Widget gnew,
+    ArgList args,
+    Cardinal *num_args)
 {
     LoginWidget w = (LoginWidget)gnew;
     XtGCMask	valuemask, xvaluemask;
@@ -778,17 +759,16 @@ static void Initialize (greq, gnew, args, num_args)
 }
 
  
-static void Realize (gw, valueMask, attrs)
-     Widget gw;
-     XtValueMask *valueMask;
-     XSetWindowAttributes *attrs;
+static void Realize (
+     Widget gw,
+     XtValueMask *valueMask,
+     XSetWindowAttributes *attrs)
 {
     XtCreateWindow( gw, (unsigned)InputOutput, (Visual *)CopyFromParent,
 		     *valueMask, attrs );
 }
 
-static void Destroy (gw)
-     Widget gw;
+static void Destroy (Widget gw)
 {
     LoginWidget w = (LoginWidget)gw;
     bzero (w->login.data.name, NAME_LEN);
@@ -802,19 +782,21 @@ static void Destroy (gw)
 }
 
 /* ARGSUSED */
-static void Redisplay(gw, event, region)
-     Widget gw;
-     XEvent *event;
-     Region region;
+static void Redisplay(
+     Widget gw,
+     XEvent *event,
+     Region region)
 {
     draw_it ((LoginWidget) gw);
 }
 
 /*ARGSUSED*/
-static Boolean SetValues (current, request, new, args, num_args)
-    Widget  current, request, new;
-    ArgList args;
-    Cardinal *num_args;
+static Boolean SetValues (
+    Widget  current,
+    Widget  request,
+    Widget  new,
+    ArgList args,
+    Cardinal *num_args)
 {
     LoginWidget currentL, newL;
     

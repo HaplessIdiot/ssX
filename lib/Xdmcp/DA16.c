@@ -23,14 +23,15 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
+/* $XFree86$ */
+
 #include <X11/Xos.h>
 #include <X11/X.h>
 #include <X11/Xmd.h>
 #include <X11/Xdmcp.h>
 
 void
-XdmcpDisposeARRAY16 (array)
-    ARRAY16Ptr	array;
+XdmcpDisposeARRAY16 (ARRAY16Ptr array)
 {
     if (array->data != NULL) Xfree (array->data);
     array->length = 0;

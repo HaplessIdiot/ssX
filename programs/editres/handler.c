@@ -1,14 +1,9 @@
 /*
- * $XConsortium: handler.c,v 1.29 94/04/17 20:38:56 dave Exp $
+ * $TOG: handler.c /main/31 1998/02/09 13:42:34 kaleb $
  *
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -16,13 +11,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
  */
 
 #include <X11/Intrinsic.h>
@@ -93,7 +88,7 @@ SendTree(w, value, call_data)
 Widget w;
 XtPointer value, call_data;
 {
-    if ((Boolean) value)
+    if ((Boolean)(long) value)
 	global_client.window = None;
 
     if (!XtIsWidget(w))     /* Make sure that we use a "Real" widget here. */
@@ -343,7 +338,7 @@ Widget w;
 XtPointer any_info_ptr, state_ptr;
 {
     AnyInfo * any_info = (AnyInfo *) any_info_ptr;
-    Boolean state = (Boolean) state_ptr;
+    Boolean state = (Boolean)(long) state_ptr;
     Arg args[1];
 
     if (state) {
@@ -474,7 +469,7 @@ XtPointer node_ptr, junk;
 	 * Only set resources when toggles are activated, not when they are
 	 * deactivated. 
 	 */
-	if (!((Boolean) junk))
+	if (!((Boolean)(long) junk))
 	    return;
     }
 
@@ -813,8 +808,7 @@ XtPointer node_ptr;
     /*CreateGetValuesCommand(node, (XtPointer)&info);  Inserts widget */
 
     /* Insert widget */
-    _XEditResPut16(stream, 1);
-    _XEditResPut32(stream, node->id);
+    InsertWidgetFromNode(stream, node);
 
     SetCommand(node->tree_info->tree_widget, LocalGetValues, NULL);
 }
@@ -958,7 +952,7 @@ XtPointer info_ptr;
 
     XtSetArg(args[0], XtNstate, state);
     XtSetValues(node->widget, args, ONE);
-    TreeToggle(node->widget, (XtPointer) node, (XtPointer) state);
+    TreeToggle(node->widget, (XtPointer) node, (XtPointer)(long) state);
 
     XtFree((char *)names);
     XtFree((char *)classes);

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/greet.c,v 3.2 1998/01/25 04:00:14 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/greet.c,v 3.3 1998/10/04 09:41:04 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -38,6 +38,7 @@ from The Open Group.
 #include <X11/XKBlib.h>
 
 #include "dm.h"
+#include "dm_error.h"
 #include "greet.h"
 #include "Login.h"
 
@@ -96,9 +97,9 @@ static XtIntervalId	pingTimeout;
 
 /*ARGSUSED*/
 static void
-GreetPingServer (closure, intervalId)
-    XtPointer	    closure;
-    XtIntervalId    *intervalId;
+GreetPingServer (
+    XtPointer	    closure,
+    XtIntervalId    *intervalId)
 {
     struct display *d;
 
@@ -111,10 +112,10 @@ GreetPingServer (closure, intervalId)
 
 /*ARGSUSED*/
 static void
-GreetDone (w, data, status)
-    Widget	w;
-    LoginData	*data;
-    int		status;
+GreetDone (
+    Widget	w,
+    LoginData	*data,
+    int		status)
 {
     Debug ("GreetDone: %s, (password is %d long)\n",
 	    data->name, strlen (data->passwd));
@@ -145,8 +146,7 @@ GreetDone (w, data, status)
 }
 
 static Display *
-InitGreet (d)
-    struct display	*d;
+InitGreet (struct display *d)
 {
     Arg		arglist[10];
     int		i;
@@ -210,9 +210,8 @@ InitGreet (d)
     return dpy;
 }
 
-static
-CloseGreet (d)
-    struct display	*d;
+static void
+CloseGreet (struct display *d)
 {
     Boolean	    allow;
     Arg	    arglist[1];
@@ -238,9 +237,7 @@ CloseGreet (d)
 }
 
 static int
-Greet (d, greet)
-    struct display *d;
-    struct greet_info *greet;
+Greet (struct display *d, struct greet_info *greet)
 {
     XEvent		event;
     Arg		arglist[2];
@@ -270,9 +267,7 @@ Greet (d, greet)
 
 
 static void
-FailedLogin (d, greet)
-    struct display	*d;
-    struct greet_info	*greet;
+FailedLogin (struct display *d, struct greet_info *greet)
 {
     DrawFail (login);
     bzero (greet->name, strlen(greet->name));
@@ -280,12 +275,12 @@ FailedLogin (d, greet)
 }
 
 
-greet_user_rtn GreetUser(d, dpy, verify, greet, dlfuncs)
-    struct display          *d;
-    Display                 ** dpy;
-    struct verify_info      *verify;
-    struct greet_info       *greet;
-    struct dlfuncs       *dlfuncs;
+greet_user_rtn GreetUser(
+    struct display          *d,
+    Display                 ** dpy,
+    struct verify_info      *verify,
+    struct greet_info       *greet,
+    struct dlfuncs        *dlfuncs)
 {
     int i;
 

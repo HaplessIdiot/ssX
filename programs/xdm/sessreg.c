@@ -26,7 +26,7 @@
  *   by Andreas Stolcke <stolcke@icsi.berkeley.edu>
  */
 
-/* $XFree86: xc/programs/xdm/sessreg.c,v 3.9 1997/01/18 07:02:23 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/sessreg.c,v 3.10 1998/10/04 09:40:57 dawes Exp $ */
 
 /*
  * sessreg
@@ -43,6 +43,8 @@
  * one of -a or -d must be specified
  */
 
+
+# include	"dm.h"
 
 # include	<X11/Xos.h>
 # include	<X11/Xfuncs.h>
@@ -118,6 +120,8 @@ extern long	lseek ();
 extern char	*ttyname ();
 #endif
 
+static void set_utmp (struct utmp *u, char *line, char *user, char *host, Time_t date, int addp);
+
 int	wflag, uflag, lflag;
 char	*wtmp_file, *utmp_file, *line;
 int	utmp_none, wtmp_none;
@@ -138,7 +142,14 @@ int	llog_none, Lflag;
 
 char	*program_name;
 
-usage (x)
+#ifndef SYSV
+static int findslot (char *line_name, char *host_name, int addp, int slot);
+static int Xslot (char *ttys_file, char *servers_file, char *tty_line,
+		  char *host_name, int addp);
+#endif
+
+static int
+usage (int x)
 {
 	if (x) {
 		fprintf (stderr, "%s: usage %s {-a -d} [-w wtmp-file] [-u utmp-file]", program_name, program_name);
@@ -153,10 +164,8 @@ usage (x)
 	return x;
 }
 
-char *
-getstring (avp, flagp)
-char	***avp;
-int	*flagp;
+static char *
+getstring (char ***avp, int *flagp)
 {
 	char	**a = *avp;
 
@@ -169,9 +178,9 @@ int	*flagp;
 	return *a;
 }
 
-syserr (x, s)
-int	x;
-char	*s;
+#ifndef SYSV
+static int
+syserr (int x, char *s)
 {
 	if (x == -1) {
 		perror (s);
@@ -179,10 +188,10 @@ char	*s;
 	}
 	return x;
 }
+#endif
 
-sysnerr (x, s)
-int	x;
-char	*s;
+static int
+sysnerr (int x, char *s)
 {
 	if (x == 0) {
 		perror (s);
@@ -191,9 +200,8 @@ char	*s;
 	return x;
 }
 
-main (argc, argv)
-int	argc;
-char	**argv;
+int
+main (int argc, char **argv)
 {
 #ifndef SYSV
 	int		utmp;
@@ -323,7 +331,6 @@ char	**argv;
 	        llog = open (llog_file, O_WRONLY);
 
 		if (llog != -1) {
-			int	user_id;
 			struct lastlog ll;
 
 			bzero((char *)&ll, sizeof(ll));
@@ -347,10 +354,8 @@ char	**argv;
  * fill in the appropriate records of the utmp entry
  */
 
-set_utmp (u, line, user, host, date, addp)
-struct utmp	*u;
-char		*line, *user, *host;
-Time_t		date;
+static void
+set_utmp (struct utmp *u, char *line, char *user, char *host, Time_t date, int addp)
 {
 	if (line)
 		(void) strncpy (u->ut_line, line, sizeof (u->ut_line));
@@ -405,12 +410,9 @@ Time_t		date;
  * otherwise use the tty_line argument (i.e., the tty name).
  */
 
-Xslot (ttys_file, servers_file, tty_line, host_name, addp)
-char	*ttys_file;
-char	*servers_file;
-char	*tty_line;
-char	*host_name;
-int	addp;
+static int
+Xslot (char *ttys_file, char *servers_file, char *tty_line, char *host_name,
+       int addp)
 {
 	FILE	*ttys, *servers;
 	int	c;
@@ -429,7 +431,7 @@ int	addp;
 	    if (pos)
 		*pos = '\0';
 	}
-	sysnerr (ttys = fopen (ttys_file, "r"), ttys_file);
+	sysnerr ((int)(long)(ttys = fopen (ttys_file, "r")), ttys_file);
 	while ((c = getc (ttys)) != EOF)
 		if (c == '\n') {
 			++slot;
@@ -439,7 +441,7 @@ int	addp;
 	if (!column0)
 		++slot;
 	(void) fclose (ttys);
-	sysnerr (servers = fopen (servers_file, "r"), servers_file);
+	sysnerr ((int)(long)(servers = fopen (servers_file, "r")), servers_file);
 
 	len = strlen (disp_name);
 	column0 = 1;
@@ -467,11 +469,8 @@ int	addp;
  * past the regular tty entries if necessary, reusing existing entries
  * (identified by (line,hostname)) if possible.
  */
-findslot (line_name, host_name, addp, slot)
-char	*line_name;
-char	*host_name;
-int	addp;
-int	slot;
+static int
+findslot (char *line_name, char *host_name, int addp, int slot)
 {
 	int	utmp;
 	struct	utmp entry;

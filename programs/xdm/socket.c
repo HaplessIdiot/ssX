@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/socket.c,v 3.3 1997/08/13 05:32:14 hohndel Exp $ */
+/* $XFree86: xc/programs/xdm/socket.c,v 3.4 1998/10/04 09:40:58 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -32,18 +32,15 @@ from The Open Group.
  */
 
 #include "dm.h"
+#include "dm_error.h"
 
 #ifdef XDMCP
 #ifndef STREAMSCONN
 
 #include <errno.h>
+#include "dm_socket.h"
+
 #ifndef MINIX
-#ifndef Lynx
-#include <sys/socket.h>
-#else
-#include <socket.h>
-#endif
-#include <netinet/in.h>
 #ifndef X_NO_SYS_UN
 #ifndef Lynx
 #include <sys/un.h>
@@ -75,7 +72,8 @@ extern int	chooserFd;
 extern FD_TYPE	WellKnownSocketsMask;
 extern int	WellKnownSocketsMax;
 
-CreateWellKnownSockets ()
+void
+CreateWellKnownSockets (void)
 {
 #ifndef MINIX
     struct sockaddr_in	sock_addr;
@@ -86,7 +84,7 @@ CreateWellKnownSockets ()
     int flags;
     nbio_ref_t ref;
 #endif /* !MINIX */
-    char		*name, *localHostname();
+    char *name;
 
     if (request_port == 0)
 	    return;
@@ -205,11 +203,12 @@ CreateWellKnownSockets ()
     FD_SET (chooserFd, &WellKnownSocketsMask);
 }
 
-#ifndef MINIX
-GetChooserAddr (addr, lenp)
-    char	*addr;
-    int		*lenp;
+int
+GetChooserAddr (
+    char	*addr,
+    int		*lenp)
 {
+#ifndef MINIX
     struct sockaddr_in	in_addr;
     int			len;
 
@@ -219,13 +218,9 @@ GetChooserAddr (addr, lenp)
     Debug ("Chooser socket port: %d\n", ntohs(in_addr.sin_port));
     memmove( addr, (char *) &in_addr, len);
     *lenp = len;
-    return 0;
-}
+
 #else /* MINIX */
-GetChooserAddr (addr, lenp)
-    char	*addr;
-    int		*lenp;
-{
+
     static struct sockaddr_in	in_addr;
     static int first_time= 1;
     int			len;
@@ -248,9 +243,9 @@ GetChooserAddr (addr, lenp)
     len = sizeof in_addr;
     memmove( addr, (char *) &in_addr, len);
     *lenp = len;
+#endif /* !MINIX */
     return 0;
 }
-#endif /* !MINIX */
 
 #endif /* !STREAMSCONN */
 #endif /* XDMCP */

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/util.c,v 3.8 1998/08/16 10:25:57 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/util.c,v 3.9 1998/10/04 09:40:58 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -34,6 +34,10 @@ from The Open Group.
  */
 
 # include   "dm.h"
+# include   "dm_error.h"
+
+#include <X11/Xmu/SysUtil.h>	/* for XmuGetHostname */
+
 #ifdef X_POSIX_C_SOURCE
 #define _POSIX_C_SOURCE X_POSIX_C_SOURCE
 #include <signal.h>
@@ -51,17 +55,15 @@ from The Open Group.
 #define setpgrp setpgid
 #endif
 
-printEnv (e)
-char	**e;
+void
+printEnv (char **e)
 {
 	while (*e)
 		Debug ("%s\n", *e++);
 }
 
 static char *
-makeEnv (name, value)
-char	*name;
-char	*value;
+makeEnv (char *name, char *value)
 {
 	char	*result;
 
@@ -75,9 +77,7 @@ char	*value;
 }
 
 char *
-getEnv (e, name)
-	char	**e;
-	char	*name;
+getEnv (char **e, char *name)
 {
 	int	l = strlen (name);
 
@@ -93,10 +93,7 @@ getEnv (e, name)
 }
 
 char **
-setEnv (e, name, value)
-	char	**e;
-	char	*name;
-	char	*value;
+setEnv (char **e, char *name, char *value)
 {
 	char	**new, **old;
 	char	*newe;
@@ -135,8 +132,8 @@ setEnv (e, name, value)
 	return new;
 }
 
-freeEnv (env)
-    char    **env;
+void
+freeEnv (char **env)
 {
     char    **e;
 
@@ -151,9 +148,7 @@ freeEnv (env)
 # define isblank(c)	((c) == ' ' || c == '\t')
 
 char **
-parseArgs (argv, string)
-char	**argv;
-char	*string;
+parseArgs (char **argv, char *string)
 {
 	char	*word;
 	char	*save;
@@ -198,8 +193,8 @@ char	*string;
 	return argv;
 }
 
-freeArgs (argv)
-    char    **argv;
+void
+freeArgs (char **argv)
 {
     char    **a;
 
@@ -211,7 +206,8 @@ freeArgs (argv)
     free ((char *) argv);
 }
 
-CleanUpChild ()
+void
+CleanUpChild (void)
 {
 #ifdef CSRG_BASED
 	setsid();
@@ -247,7 +243,7 @@ static char localHostbuf[256];
 static int  gotLocalHostname;
 
 char *
-localHostname ()
+localHostname (void)
 {
     if (!gotLocalHostname)
     {
@@ -257,9 +253,7 @@ localHostname ()
     return localHostbuf;
 }
 
-SIGVAL (*Signal (sig, handler))()
-    int sig;
-    SIGVAL (*handler)();
+SIGVAL (*Signal (int sig, SIGFUNC handler))(int)
 {
 #if !defined(X_NOT_POSIX) && !defined(__EMX__)
     struct sigaction sigact, osigact;
