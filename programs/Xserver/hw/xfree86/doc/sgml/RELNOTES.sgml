@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&reg; &relvers;
 <author>The XFree86 Project, Inc
-<date>8 March 2005
+<date>9 March 2005
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.128 2005/03/08 21:11:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.129 2005/03/09 03:38:57 dawes Exp $
 </ident>
 
 <abstract>
@@ -1187,24 +1187,19 @@ video drivers, input drivers, and other modules that are needed.
 XFree86 &relvers; has X server support for most UNIX&reg; and UNIX-like
 operating systems on Intel/x86 platforms, plus support for Linux and
 some BSD OSs on Alpha, PowerPC, IA-64, AMD64, Sparc, and Mips platforms,
-and for Darwin on PowerPC.  Support for additional architectures
-and operating systems is in progress and is planned for future releases.
+and for Darwin on PowerPC.  Support for additional architectures and
+operating systems is in progress and is planned for future releases.
 
 <sect1>Loader and Modules
 <p>
 The XFree86 X server has a built-in run-time loader, which can load
 normal object files and libraries in most of the commonly used formats.
-The loader does not rely on an operating system's native dynamic
-loader support and it works on platforms that do not provide this feature.
-This  allows  for the modules to be operating system independent (although
+The loader does not rely on an operating system's native dynamic loader
+support and it works on platforms that do not provide this feature.  This
+allows  for the modules to be operating system independent (although
 not, of course, CPU architecture independent) which means that a module
 compiled on Linux/x86 can be loaded by an X server running on Solaris/x86,
 or FreeBSD, or even OS/2.
-
-A main benefit of this, is that when modules are updated, they do not
-need to be recompiled for every different operating system.  The loader
-in version &relvers; has support for Intel (x86), Alpha and PowerPC
-platforms.  It also has preliminary support for Sparc platforms.
 
 The X server makes use of modules for video drivers, X server extensions,
 font rasterisers, input device drivers, framebuffer layers (like mfb,
@@ -1214,8 +1209,8 @@ The module interfaces (both API and ABI) used in this release are subject
 to change without notice.  While we will attempt to provide backward
 compatibility for the module interfaces as of the 4.0 release (meaning
 that 4.0 modules will work with future core X server binaries), we cannot
-guarantee this.  Compatibility in the other direction is explicitly
-not guaranteed because new modules may rely on interfaces added in new
+guarantee this.  Compatibility in the other direction is explicitly not
+guaranteed because new modules may rely on interfaces added in new
 releases.
 
 <bf>Note about module security</bf>
@@ -1231,7 +1226,7 @@ releases.
 
 </quote>
 
-<sect1>Configuration File <label id="config">
+<sect1>Configuration <label id="config">
 <p>
 
 The XFree86 server uses a configuration file as the primary mechanism
@@ -1289,7 +1284,7 @@ was completely rewritten for improved performance and correctness.
 
 Known problems:
 <itemize>
-  <item>Most window managers are not Xinerama-aware, and so some
+  <item>Not all window managers are Xinerama-aware, and so some
 	operations like window placement and resizing might not behave
 	in an ideal way.  This is an issue that needs to be dealt with
 	in the individual window managers, and isn't specifically an
@@ -1319,9 +1314,8 @@ and 2; these can be disabled independently with <tt>Option "NoDDC1"</tt>
 and <tt>Option "NoDDC2"</tt>.
 
 At startup the server prints out DDC information from the display, and
-can use this information to set the default monitor parameters, or to
-warn about monitor sync limits if those provided in the configuration file
-don't match those that are detected.
+will use this information to set the default monitor parameters and video
+mode when none are provided explicitly in the configuration file.
 
 <sect2>Changed behavior caused by DDC.
 <p>
@@ -1337,10 +1331,11 @@ of the config file.
 <p>
 
 Direct rendered OpenGL&reg; support is provided for several hardware
-platforms by the Direct Rendering Infrastructure (DRI).  Further information
-about DRI can be found at the <url name="DRI Project's web site"
-url="http://dri.sf.net/">.  The 3D core rendering component is provided by
-<url name="Mesa" url="http://www.mesa3d.org">.
+platforms by the Direct Rendering Infrastructure (DRI), which is part
+of Mesa.  Mesa also provides the 3D core rendering component of GLX.
+Further information can be found at the <url name="DRI Project's web
+site" url="http://dri.sf.net/"> and the <url name="Mesa web site"
+url="http://www.mesa3d.org">.
 
 <sect1>XVideo Extension (Xv)
 <p>
@@ -1411,8 +1406,8 @@ file is included in the <htmlurl name="Xft(3)" url="Xft.3.man"> man page.
 <sect2>FreeType support in Xft
 <p>
 
-XFree86 &relvers; includes sources for FreeType version 2.1.4, and, by
-default, they are built and installed automatically.
+XFree86 &relvers; includes sources for FreeType version &freetypevers;,
+and, by default, they are built and installed automatically.
 
 </sect2>
 
@@ -1445,7 +1440,7 @@ slower than core text.
 <p>
 
 The XFree86-Misc extension has not been fully ported to the new server
-architecture yet.  This should be completed in a future release.
+architecture yet.  This may be completed in a future release.
 
 The XFree86-VidModeExtension extension has been updated, and mostly ported
 to the new server architecture.  The area of mode validation needs further
@@ -1456,11 +1451,6 @@ Compatibility with the 3.3.x version of the extension is provided.
 The missing parts of this extension and some new features should be
 completed in a future release.
 
-
-<!--
-<sect>X libraries and clients
-<p>
--->
 
 <sect1>xedit
 <p>
@@ -1474,11 +1464,6 @@ Xedit has several new features, including:
 	for more details.
 </itemize>
 
-<!--
-<sect>Fonts and Internationalisation
-<p>
--->
-
 <sect1>Font support
 <p>
 
@@ -1488,13 +1473,11 @@ in the <htmlurl name="README.fonts" url="fonts.html"> document.
 <sect1>TrueType support
 <p>
 
-XFree86 4.x comes with two TrueType backends, known as
-"FreeType" backend (the <tt>"freetype"</tt> module) and `X-TrueType'
-(the <tt>"xtt"</tt> module).  Both of these backends are based on the
-FreeType library.  The functionality of X-TrueType has been merged into
-the FreeType backend by the After X-TT Project for XFree86 4.4.
-Consequently, the old X-TrueType backend will be dropped as of XFree86
-4.5.
+The XFree86 4.x server comes with a TrueType backend, known as the
+"FreeType" backend, based on the FreeType library.  The functionality
+of the former X-TrueType was merged into the FreeType backend by the
+After X-TT Project for the XFree86 4.4.0 releaes, and the old X-TrueType
+backend has been dropped as of XFree86 4.5.0.
 
 <sect1>CID font support
 <p>
@@ -1513,10 +1496,7 @@ License.
 XFree86 4.x has a ``fontenc'' layer to allow the scalable font backends
 to use a common method of font re-encoding.  This re-encoding makes it
 possible to uses fonts in encodings other than their their native
-encoding.  This layer is used by the Type1 and Speedo backends and the
-`xfsft' version of the TrueType backend.  The `X-TrueType' version of
-the TrueType backend uses a different re-encoding method based on loadable
-encoding modules.
+encoding.  This layer is used by the FreeType, Type1 and Speedo backends.
 
 <sect1>Large font optimisation
 <p>
@@ -1561,9 +1541,7 @@ What is included in 4.x:
   <item>ISO 10646/Unicode UTF-8 Level 1 support added to xterm
 	(enabled with the <tt>-u8</tt> option).
 
-  <item>Both the xfsft (the <tt>"freetype"</tt> module) and the X-TrueType
-	(the <tt>"xtt"</tt> module) TrueType font backends support
-	Unicode-encoded fonts.
+  <item>The FreeType font backend supports Unicode-encoded fonts.
 
 </itemize>
 
@@ -1660,11 +1638,6 @@ please contact
 <email>info@urwpp.de</email>, or consult the
 <url name="URW++ web site" url="http://www.urwpp.de">.
 
-
-<!--
-<sect>Miscellaneous
-<p>
--->
 
 <sect>Credits
 <p>

@@ -10,7 +10,7 @@
 <date>6 February 2005
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Versions.sgml,v 1.6 2005/02/06 22:41:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Versions.sgml,v 1.7 2005/03/04 03:23:52 dawes Exp $
 </ident>
 
 <abstract>
@@ -41,7 +41,7 @@ releases and the length of the release cycles may vary according to the
 resources available to The XFree86 Project, an entirely volunteer
 organisation.
 
-XFree86 consist of full source code tarballs, plus full binary
+XFree86 consists of full source code tarballs, plus full binary
 distributions for a broad range of supported platforms.  Update/bugfix
 releases may be made from time to time as required and as resource
 availability allows.  Such update releases typically consist of source
@@ -60,7 +60,7 @@ The current release candidate is &relvers; (&fullrelvers; RC&rcnum;).
 
 <![ %notsnapshot [
 The current release is &relvers;, and the next release will be
-&nextfullrelvers;.  No update release is schedules, but if one is needed
+&nextfullrelvers;.  No update release is scheduled, but if one is needed
 it will be version &nextupdrelvers;.
 ]]>
 

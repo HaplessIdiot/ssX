@@ -5,10 +5,10 @@
 <article>
 <title>Licenses</title>
 <author>Compiled by The XFree86 Project</author>
-<date>06 January 2005</date>
+<date>9 March 2005</date>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.39 2005/01/06 19:20:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.40 2005/02/06 22:41:40 dawes Exp $
 </ident>
 
 <sect>Introduction
@@ -745,8 +745,8 @@ by Ben Collver &lt;collver1@attbi.com&gt;
 <sect1>X-Oz Technologies
 <p>
 
-Copyright 2003 by David H. Dawes.<newline>
-Copyright 2003 by X-Oz Technologies.<newline>
+Copyright 2003, 2004, 2005 by David H. Dawes.<newline>
+Copyright 2003, 2004, 2005 by X-Oz Technologies.<newline>
 All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a

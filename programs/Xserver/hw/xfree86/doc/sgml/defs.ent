@@ -1,4 +1,4 @@
-<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.45 2005/03/05 17:59:52 dawes Exp $ -->
+<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.46 2005/03/08 21:11:15 dawes Exp $ -->
 
 <!-- shared entity definitions for the XFree86 documentation -->
 
@@ -31,6 +31,9 @@
 
 <!-- xtest version strings -->
 <!ENTITY xtestvers CDATA "4.0.11">
+
+<!-- FreeType version strings -->
+<!ENTITY freetypevers CDATA "2.1.8">
 
 <!-- These should be set according to which snapshot/release this is -->
 <!ENTITY % firstsnap 'INCLUDE'>
