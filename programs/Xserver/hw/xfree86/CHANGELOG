@@ -1,4 +1,7 @@
-
+XFree86 4.0.1e (x November 2000)
+ 831. Update the XFree86 -configure code to put the default font path
+      in the Files section of the config file it generates (#4202,
+      Paulo Cesar Pereira de Andrade).
  830. Add write-combine support for IA-64 (Mark Vojkovich).
 
 XFree86 4.0.1d (27 October 2000)
@@ -13,9 +16,7 @@ XFree86 4.0.1d (27 October 2000)
       on server resets (#4206, Joe Moss).
  825. Make xf86cfg use the same config file search path as the X server
       (#4203, Paulo Cesar Pereira de Andrade).
- 824. Update the XFree86 -configure code to put the default font path
-      in the Files section of the config file it generates (#4202,
-      Paulo Cesar Pereira de Andrade).
+ 824. -
  823. Fix a bug in the vesa driver when finding the linear address for the
       card, some compile time warnings, faster code for handling colormap
       changes, and add DGA support (#4201, Paulo Cesar Pereira de Andrade).
@@ -11359,4 +11360,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1359 2000/10/27 18:30:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1360 2000/10/28 01:44:57 mvojkovi Exp $
