@@ -2,7 +2,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/16 1996/10/31 14:47:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.62 1997/10/25 13:49:52 hohndel Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.63 1998/07/25 05:57:14 dawes Exp $
 
 
 #ifndef OSName
@@ -149,7 +149,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #  define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME
 # endif
 # if OSMajorVersion == 1 && OSMinorVersion >= 1 || OSMajorVersion >= 2
-   define ServerExtraSysLibs	-li386
+#  define ServerExtraSysLibs	-li386
 # endif
 #else
 # define OptimizedCDebugFlags 	-O2
