@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.81 1997/03/11 11:11:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.82 1997/03/11 13:07:49 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -56,12 +56,14 @@
 #include "extensions/xf86dgastr.h"
 #endif
 
+#if PSZ > 1
 #include "vga256.h"
 #include "cfb16.h"
 #include "cfb24.h"
 #include "cfb32.h"
 #include "xf86scrin.h"
 #include "xf86xaa.h"
+#endif
 #include "windowstr.h"
 
 #ifdef PC98_EGC
@@ -97,6 +99,7 @@ extern void OneBankvgaBitBlt();
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
 extern char *xf86VisualNames[];
 extern Bool miDCInitialize();
+extern int vga256ValidTokens[];
 
 ScrnInfoRec vga256InfoRec = {
   FALSE,		/* Bool configured */
@@ -1007,6 +1010,9 @@ vgaProbe()
                    vga256InfoRec.name, useSpeedUp);
 
             /* We deal with the generic speedups here */
+#if PSZ > 1 /* we can only compile this with PSZ > 1 as otherwise we
+	     * run into all kinds of problems
+	     */
 	    if (useSpeedUp & SPEEDUP_TEGBLT8)
 	    {
 #if !defined(__alpha__)
@@ -1039,7 +1045,7 @@ vgaProbe()
 	    {
 	      vga256LowlevFuncs.vgaBitblt = OneBankvgaBitBlt;
 	    }
-
+#endif
           } /* endif vgaBitsPerPixel == 8 */
 
 	  /* Initialise chip-specific enhanced fb functions */
