@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.89 2003/02/19 09:17:30 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.90 2003/02/21 21:44:22 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -3191,9 +3191,18 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
 			   info->PciInfo->device,
 			   info->PciInfo->func);
 
+#if !defined(__alpha__)
     if (xf86GetPciDomain(info->PciTag) ||
 	!xf86IsPrimaryPci(info->PciInfo))
 	RADEONPreInt10Save(pScrn, &int10_save);
+#else
+    /* [Alpha] On the primary, the console already ran the BIOS and we're
+     *         going to run it again - so make sure to "fix up" the card
+     *         so that (1) we can read the BIOS ROM and (2) the BIOS will
+     *         get the memory config right.
+     */         
+    RADEONPreInt10Save(pScrn, &int10_save);
+#endif
 
     if (xf86IsEntityShared(pScrn->entityList[0])) {
 	if (xf86IsPrimInitDone(pScrn->entityList[0])) {
