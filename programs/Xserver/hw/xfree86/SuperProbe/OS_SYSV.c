@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.16 1997/03/07 00:29:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.17 1997/03/12 11:19:25 hohndel Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -139,7 +139,7 @@ int OpenVideo()
 	if (geteuid() != 0)
 	{
 		fprintf(stderr,
-			"%s: Must be run as root or installed suid-root\n",
+			"%s: Must be run as root\n",
 			MyName);
 		return(-1);
 	}

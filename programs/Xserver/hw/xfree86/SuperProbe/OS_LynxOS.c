@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_LynxOS.c,v 3.4 1997/01/18 06:53:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_LynxOS.c,v 3.5 1997/03/07 00:28:56 hohndel Exp $ */
 /*
  * Copyright 1993 by Thomas Mueller
  *
@@ -50,7 +50,7 @@ int OpenVideo()
 	if (geteuid() != 0)
 	{
 		fprintf(stderr,
-			"%s: Must be run as root or installed suid-root\n",
+			"%s: Must be run as root\n",
 			MyName);
 		return(-1);
 	}

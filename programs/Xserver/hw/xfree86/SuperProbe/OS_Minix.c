@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Minix.c,v 3.4 1996/12/23 06:31:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Minix.c,v 3.5 1997/03/07 00:28:58 hohndel Exp $ */
 /*
  * (c) Copyright 1993,1994 by Philip Homburg <philip@cs.vu.nl>
  *
@@ -52,7 +52,7 @@ int OpenVideo()
 	if (geteuid() != 0)
 	{
 		fprintf(stderr, 
-			"%s: Must be run as root or installed suid-root\n", 
+			"%s: Must be run as root\n", 
 			MyName);
 		return(-1);
 	}

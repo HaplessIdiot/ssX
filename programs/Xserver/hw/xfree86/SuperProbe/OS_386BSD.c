@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.12 1997/03/07 00:28:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.13 1997/03/10 10:11:37 hohndel Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Dawes <dawes@xfree86.org>
  *
@@ -102,7 +102,7 @@ int OpenVideo()
 	if (geteuid() != 0)
 	{
 		fprintf(stderr, 
-			"%s: Must be run as root or installed suid-root\n", 
+			"%s: Must be run as root\n", 
 			MyName);
 		return(-1);
 	}
