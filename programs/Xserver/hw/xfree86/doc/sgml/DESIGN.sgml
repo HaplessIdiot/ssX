@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.29 2000/05/03 00:43:57 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.31 2000/08/04 16:13:27 eich Exp $
 </ident>
 
 
@@ -6497,7 +6497,7 @@ zzzSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 <p>
     NOTE:
     When allocating structures from inside the driver which are defined 
-    on the common level it is importand to initialize the structure to 
+    on the common level it is important to initialize the structure to 
     zero. 
     Only this guarantees that the server remains source compatible to 
     future changes in common level structures.

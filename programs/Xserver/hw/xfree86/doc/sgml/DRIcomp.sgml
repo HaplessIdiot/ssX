@@ -15,7 +15,7 @@
       <date>8 August 2000
         
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.3 2000/04/05 05:38:41 brianp Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.4 2000/08/25 13:42:36 dawes Exp $
     </ident>
 
     <toc>
@@ -269,12 +269,12 @@
 	      cvs -z3 update -dA xc
 	  </verb>
 	  The -d flag causes any new subdirectories to be created and -A causes
-	  most recent trunc sources to be fetched, not branch sources.
+	  most recent trunk sources to be fetched, not branch sources.
 
 
     <sect>Mesa <p>
 
-        Most of the DRI 3D drivers are based on Mesa (the free implmentation
+        Most of the DRI 3D drivers are based on Mesa (the free implementation
         of the OpenGL API).
         The relevant files from Mesa are already included in the XFree86/DRI
         source tree.
@@ -516,7 +516,7 @@
           Also, the <tt>ModulePath</tt> option in the <tt>Files</tt>
           section should be set to <tt>/usr/X11R6-DRI/lib/modules</tt>.
         <p>
-          On the DRI website, in the resources section, you'll find example
+          On the DRI web site, in the resources section, you'll find example
           XF86Config files for a number of graphics cards.
           These configuration files also setup DRI options so it's highly
           recommended that you look at these examples.
@@ -549,7 +549,7 @@
       <p>
 
       <sect1>Configuration <p>
-        As described in the preceeding section, you'll need to create a
+        As described in the preceding section, you'll need to create a
         configuration file for the new server.
         Put the <tt>XF86Config</tt> file in your
         <tt>~/DRI-CVS/build/xc/programs/Xserver</tt> directory.
