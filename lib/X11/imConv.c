@@ -31,7 +31,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                 fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imConv.c,v 1.23 2000/04/06 13:05:01 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imConv.c,v 1.24 2000/06/13 02:28:28 dawes Exp $ */
 
 #define NEED_EVENTS
 #include <stdio.h>
@@ -66,18 +66,18 @@ unsigned int Const _Xlatin1[128] = {
 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 
 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-0x990ee, 0x88000, 0x89000, 0x89084, 0x0902e, 0x89000, 0x09080, 0x9908e,
-0x0908e, 0x89080, 0x88000, 0x89080, 0x89080, 0x990ee, 0x89000, 0x89008,
-0x9908e, 0x89080, 0x89084, 0x89084, 0x0908e, 0x89004, 0x89000, 0x99084,
-0x0900c, 0x89000, 0x88000, 0x89080, 0x09000, 0x09084, 0x09000, 0x88000,
-0x88004, 0x9800e, 0x9800e, 0x98008, 0x9800e, 0x98008, 0x98008, 0x88006,
-0x88004, 0x9800e, 0x88004, 0x9800e, 0x88004, 0x9800e, 0x9800e, 0x98004,
-0x90000, 0x88004, 0x88004, 0x98006, 0x9800e, 0x98008, 0x9800e, 0x8800e,
-0x98008, 0x88004, 0x9800e, 0x9800c, 0x9800e, 0x90002, 0x90000, 0x9800e,
-0x88004, 0x9800e, 0x9800e, 0x98008, 0x9800e, 0x98008, 0x98008, 0x88004,
-0x88004, 0x9800e, 0x88004, 0x9800e, 0x88004, 0x9800e, 0x9800e, 0x98004,
-0x90000, 0x88004, 0x88004, 0x98006, 0x9800e, 0x98008, 0x9800e, 0x8800e,
-0x98008, 0x88004, 0x9800e, 0x9800c, 0x9800e, 0x90002, 0x90000, 0x88000
+0xb90ee, 0x88000, 0xa9000, 0xa9084, 0x2902e, 0x89000, 0x29080, 0xb908e,
+0x0908e, 0xa9080, 0x88000, 0xa9080, 0xa9080, 0xb90ee, 0xa9000, 0x89008,
+0xb908e, 0xa9080, 0xa9084, 0xa9084, 0x0908e, 0xa9004, 0xa9000, 0xb9084,
+0x0900c, 0xa9000, 0x88000, 0xa9080, 0x29000, 0x29084, 0x29000, 0x88000,
+0x88004, 0x9800e, 0x9800e, 0x98008, 0xb800e, 0xb8008, 0x98008, 0x88006,
+0x88004, 0xb800e, 0x88004, 0x9800e, 0x88004, 0x9800e, 0x9800e, 0x98004,
+0x90000, 0x88004, 0x88004, 0xb8006, 0x9800e, 0xb8008, 0xb800e, 0xa800e,
+0x98008, 0x88004, 0x9800e, 0x9800c, 0xb800e, 0x90002, 0x90000, 0xb800e,
+0x88004, 0x9800e, 0x9800e, 0x98008, 0xb800e, 0xb8008, 0x98008, 0x88004,
+0x88004, 0xb800e, 0x88004, 0x9800e, 0x88004, 0x9800e, 0x9800e, 0x98004,
+0x90000, 0x88004, 0x88004, 0xb8006, 0x9800e, 0xb8008, 0xb800e, 0xa800e,
+0x98008, 0x88004, 0x9800e, 0x9800c, 0xb800e, 0x90002, 0x90000, 0x88000
 };
 
 /* bit (1<<i) means character is in codeset i */
@@ -91,12 +91,12 @@ unsigned int Const _Xlatin2[128] = {
 0x1800c, 0x10008, 0x00008, 0x00000, 0x0800c, 0x00000, 0x00000, 0x00008,
 0x0800c, 0x00008, 0x00004, 0x00000, 0x00000, 0x00000, 0x00008, 0x00004,
 0x00000, 0x1800c, 0x1800c, 0x00000, 0x1800c, 0x00000, 0x00000, 0x08004,
-0x10008, 0x1800c, 0x10008, 0x1800c, 0x00000, 0x18008, 0x18008, 0x00000,
-0x00008, 0x00000, 0x00000, 0x18004, 0x1800c, 0x00000, 0x1800c, 0x0800c,
+0x30008, 0x1800c, 0x10008, 0x1800c, 0x00000, 0x18008, 0x18008, 0x00000,
+0x00008, 0x20000, 0x00000, 0x18004, 0x1800c, 0x00000, 0x1800c, 0x0800c,
 0x00000, 0x00000, 0x0800c, 0x00000, 0x0800c, 0x10000, 0x00000, 0x1800c,
 0x00000, 0x1800c, 0x1800c, 0x00000, 0x1800c, 0x00000, 0x00000, 0x08004,
-0x10008, 0x1800c, 0x10008, 0x1800c, 0x00000, 0x1800c, 0x1800c, 0x00000,
-0x00008, 0x00000, 0x00000, 0x18004, 0x1800c, 0x00000, 0x1800c, 0x0800c,
+0x30008, 0x1800c, 0x10008, 0x1800c, 0x00000, 0x1800c, 0x1800c, 0x00000,
+0x00008, 0x20000, 0x00000, 0x18004, 0x1800c, 0x00000, 0x1800c, 0x0800c,
 0x00000, 0x00000, 0x0800c, 0x00000, 0x0800c, 0x10000, 0x00000, 0x0000c
 };
 
@@ -452,9 +452,9 @@ static struct CodesetRec CodesetTable[] = {
     {sThai,	"TACTIS",	"TIS620.2533-1:GR" },
     {sThai,	"ISO8859-11",	"TIS620.2533-1:GR" },
     {sThai,	"TIS620.2533-1", NULL },
+    {sLatin7,	"ISO8859-13",NULL }, /* Baltic Rim */
 #if 0
     {sLatin8,	"ISO8859-12",	""},/* Celtic, superceded by -14 */
-    {sLatin7,	"ISO8859-13",	""},/* Baltic Rim */
     {sLatin8	"ISO8859-14",	""},/* Celtic */
 #endif
     {sUTF8,	"UTF-8",  "ISO10646-1"},
@@ -657,6 +657,16 @@ _XimGetCharCode (locale_code, keysym, buf, nbytes)
 		*buf = (unsigned char)0xfd;
 	    else if ((locale_code == sX0201) && (keysym == XK_yen))
 		*buf = (unsigned char)0x5c;
+	    else if (locale_code == sLatin7) {
+	        switch (keysym) {
+	        case XK_acute:	*buf = (unsigned char)0xff; break;
+	        case XK_AE:	*buf = (unsigned char)0xaf; break;
+	        case XK_ae:	*buf = (unsigned char)0xbf; break;
+	        case XK_Ooblique: *buf = (unsigned char)0xa8; break;
+	        case XK_oslash:	*buf = (unsigned char)0xb8; break;
+	        default: count = 0;
+                }
+            }
 	    else count = 0;
 	}
     } else if (isLatin1) {
@@ -687,6 +697,28 @@ _XimGetCharCode (locale_code, keysym, buf, nbytes)
 	    else if (keysym == XK_zcaron)
 		*buf = (unsigned char)0xb8;
 	    else count = 0;
+	} else if (locale_code == sLatin7) {
+	    switch (keysym) {
+	    case XK_Aogonek:	*buf = (unsigned char)0xc0; break;
+	    case XK_aogonek:	*buf = (unsigned char)0xe0; break;
+	    case XK_Cacute:	*buf = (unsigned char)0xc3; break;
+	    case XK_cacute:	*buf = (unsigned char)0xe3; break;
+	    case XK_Eogonek:	*buf = (unsigned char)0xc6; break;
+	    case XK_eogonek:	*buf = (unsigned char)0xe6; break;
+	    case XK_Zacute:	*buf = (unsigned char)0xca; break;
+	    case XK_zacute:	*buf = (unsigned char)0xea; break;
+	    case XK_Scaron:	*buf = (unsigned char)0xd0; break;
+	    case XK_scaron:	*buf = (unsigned char)0xf0; break;
+	    case XK_Lstroke:	*buf = (unsigned char)0xd9; break;
+	    case XK_lstroke:	*buf = (unsigned char)0xf9; break;
+	    case XK_Sacute:	*buf = (unsigned char)0xda; break;
+	    case XK_sacute:	*buf = (unsigned char)0xfa; break;
+	    case XK_Zabovedot:	*buf = (unsigned char)0xdd; break;
+	    case XK_zabovedot:	*buf = (unsigned char)0xfd; break;
+	    case XK_Zcaron:	*buf = (unsigned char)0xde; break;
+	    case XK_zcaron:	*buf = (unsigned char)0xfe; break;
+            default: count = 0;
+	    }
 	} else count = 0;
     } else if ((keysym >> 8) == sLatin3) {
 	if (locale_code == sLatin5) {
@@ -740,6 +772,37 @@ _XimGetCharCode (locale_code, keysym, buf, nbytes)
 	    case XK_ncedilla:
 	    case XK_omacron:
 	    case XK_uogonek:	*buf = (unsigned char)(keysym & 0xff); break;
+	    default: count = 0;
+	    }
+	} else if (locale_code == sLatin7) {
+	    count = 1;
+	    switch (keysym) {
+ 	    case XK_Emacron:	*buf = (unsigned char)0xc7; break;
+	    case XK_emacron:	*buf = (unsigned char)0xe7; break;
+	    case XK_Gcedilla:	*buf = (unsigned char)0xcc; break;
+	    case XK_gcedilla:	*buf = (unsigned char)0xec; break;
+	    case XK_Rcedilla:	*buf = (unsigned char)0xaa; break;
+	    case XK_rcedilla:	*buf = (unsigned char)0xba; break;
+	    case XK_Imacron:	*buf = (unsigned char)0xce; break;
+	    case XK_imacron:	*buf = (unsigned char)0xee; break;
+	    case XK_Lcedilla:	*buf = (unsigned char)0xcf; break;
+	    case XK_lcedilla:	*buf = (unsigned char)0xef; break;
+	    case XK_Umacron:	*buf = (unsigned char)0xdb; break;
+	    case XK_umacron:	*buf = (unsigned char)0xfb; break;
+ 	    case XK_Amacron:	*buf = (unsigned char)0xc2; break;
+	    case XK_amacron:	*buf = (unsigned char)0xe2; break;
+	    case XK_Kcedilla:	*buf = (unsigned char)0xcd; break;
+	    case XK_kcedilla:	*buf = (unsigned char)0xed; break;
+	    case XK_Iogonek:	*buf = (unsigned char)0xc1; break;
+	    case XK_iogonek:	*buf = (unsigned char)0xe1; break;
+	    case XK_Eabovedot:	*buf = (unsigned char)0xcb; break;
+	    case XK_eabovedot:	*buf = (unsigned char)0xeb; break;
+	    case XK_Ncedilla:	*buf = (unsigned char)0xd2; break;
+	    case XK_ncedilla:	*buf = (unsigned char)0xf2; break;
+	    case XK_Omacron:	*buf = (unsigned char)0xd4; break;
+	    case XK_omacron:	*buf = (unsigned char)0xf4; break;
+	    case XK_Uogonek:	*buf = (unsigned char)0xd8; break;
+	    case XK_uogonek:	*buf = (unsigned char)0xf8; break;
 	    default: count = 0;
 	    }
 	}

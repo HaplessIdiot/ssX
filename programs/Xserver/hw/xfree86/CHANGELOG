@@ -1,4 +1,17 @@
 XFree86 4.0f (23 June 2000)
+ 366. Add support for the iso8859-13 charset to Xlib (#4020, Bruno Haible).
+ 365. Add ISO-8859-13 support to the UTF-8 converters, which is needed for
+      Lithuanian UTF-8 locales (#4019, Bruno Haible).
+ 364. Fix three bugs in the UTF-8 converters:
+       - In an UTF-8 locale, keyboard input coming in as UTF-8 would not be
+         accepted.
+       - Incorrect handling of the "end of string" and "invalid byte sequence"
+         situations.
+       - A bug on platforms with sizeof(wchar_t) != sizeof(int).
+      (#4018, Bruno Haible).
+ 363. Enable building DRI support for FreeBSD 4.1 and higher.
+ 362. Don't try to use kldload() on FreeBSD versions prior to 3.0 (#4016,
+      Takaaki Nomura).
  361. Some sunffb cleanups (#4015, David S. Miller).
  360. Add DRI drawable index callback (#4015, David S. Miller).
  359. Fix -configure option to print out fatal message and abort gracefully
@@ -10696,4 +10709,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1204 2000/06/23 11:01:49 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1205 2000/06/23 19:29:42 dawes Exp $
