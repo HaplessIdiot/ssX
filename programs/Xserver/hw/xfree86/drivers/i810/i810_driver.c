@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.52 2001/06/13 23:34:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.53 2001/09/18 21:25:30 herrb Exp $ */
 
 /*
  * Authors:
@@ -121,7 +121,8 @@ typedef enum {
    OPTION_CACHE_LINES,
    OPTION_DAC_6BIT,
    OPTION_DRI,
-   OPTION_NO_DDC
+   OPTION_NO_DDC,
+   OPTION_XVMC_SURFACES
 } I810Opts;
 
 static const OptionInfoRec I810Options[] = {
@@ -132,6 +133,7 @@ static const OptionInfoRec I810Options[] = {
    { OPTION_DAC_6BIT, "Dac6Bit", OPTV_BOOLEAN, {0}, FALSE},
    { OPTION_DRI, "DRI", OPTV_BOOLEAN, {0}, FALSE},
    { OPTION_NO_DDC, "NoDDC", OPTV_BOOLEAN, {0}, FALSE},
+   { OPTION_XVMC_SURFACES, "XvMCSurfaces", OPTV_INTEGER, {0}, FALSE },
    { -1, NULL, OPTV_NONE, {0}, FALSE}
 };
 
@@ -814,6 +816,29 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
                           (1 << pScrn->offset.green) |
         (((pScrn->mask.blue >> pScrn->offset.blue) - 1) << pScrn->offset.blue);
    }
+
+
+   if (xf86GetOptValInteger(pI810->Options, OPTION_XVMC_SURFACES,
+                           &(pI810->numSurfaces)))
+   {
+      xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "%d XvMC Surfaces Requested.\n",
+                                                pI810->numSurfaces);
+      if(pI810->numSurfaces > 7) {
+         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+                    "Using 7 XvMC Surfaces (Maximum Allowed).\n");
+         pI810->numSurfaces = 7;
+      }
+      if(pI810->numSurfaces < 6) {
+         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+                    "Using 6 XvMC Surfaces (Minimum Allowed).\n");
+         pI810->numSurfaces = 6;
+      }
+   } else {
+         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+           "XvMC is Disabled: use XvMCSurfaces config option to enable.\n");
+      pI810->numSurfaces = 0;
+   }
+
 
    /*  We wont be using the VGA access after the probe */
    {
@@ -1914,6 +1939,12 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
        */
       pI810->directRenderingEnabled = I810DRIFinishScreenInit(pScreen);
    }
+#ifdef XvMCExtension
+   if (pI810->directRenderingEnabled) {
+      /* Initialize the hardware motion compensation code */
+      I810InitMC(pScreen);
+   }
+#endif
 #endif
    
    if (pI810->directRenderingEnabled) {

@@ -23,7 +23,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.17 2001/04/18 14:52:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.18 2001/06/15 21:22:52 dawes Exp $ */
 
 /*
  * i810_video.c: i810 Xv driver. Based on the mga Xv driver by Mark Vojkovich.
@@ -214,14 +214,15 @@ static XF86AttributeRec Attributes[NUM_ATTRIBUTES] =
    {XvSettable | XvGettable, 0, 255, "XV_CONTRAST"}
 };
 
-#define NUM_IMAGES 4
+#define NUM_IMAGES 5
 
 static XF86ImageRec Images[NUM_IMAGES] =
 {
 	XVIMAGE_YUY2,
 	XVIMAGE_YV12,
 	XVIMAGE_I420,
-	XVIMAGE_UYVY
+	XVIMAGE_UYVY,
+	XVIMAGE_IA44
 };
 
 typedef struct {
@@ -734,6 +735,10 @@ I810DisplayVideo(
     unsigned int swidth;
 
     switch(id) {
+    /* IA44 is for XvMC only */
+    case FOURCC_IA44:
+	return;
+	break;
     case FOURCC_YV12:
     case FOURCC_I420:
 	swidth = (width + 7) & ~7;
@@ -949,8 +954,13 @@ I810PutImage(
     I810PortPrivPtr pPriv = (I810PortPrivPtr)data;
     INT32 x1, x2, y1, y2;
     int srcPitch, dstPitch;
-    int top, left, npixels, nlines, size;
+    int top, left, npixels, nlines, size, loops;
     BoxRec dstBox;
+
+    /* IA44 is for XvMC only */
+    if(id == FOURCC_IA44) {
+	return BadValue;
+    }
 
     /* Clip */
     x1 = src_x;
@@ -1004,8 +1014,18 @@ I810PutImage(
     pPriv->VBuf1offset = pPriv->UBuf1offset + (dstPitch * height >> 1);
 
 
-    /* wait for the last rendered buffer to be flipped in */
-    while (((INREG(DOV0STA)&0x00100000)>>20) != pPriv->currentBuf);
+    /* Make sure this buffer isn't in use */
+    loops = 0;
+    while (loops < 1000000) {
+          if(((INREG(DOV0STA)&0x00100000)>>20) == pPriv->currentBuf) {
+            break;
+          }
+          loops++;
+    }
+    if(loops >= 1000000) {
+      pPriv->currentBuf = !pPriv->currentBuf;
+    }
+
 
     /* buffer swap */
     if (pPriv->currentBuf == 0)
@@ -1070,6 +1090,11 @@ I810QueryImageAttributes(
     if(offsets) offsets[0] = 0;
 
     switch(id) {
+      /* IA44 is for XvMC only */
+    case FOURCC_IA44:
+	if(pitches) pitches[0] = *w;
+	size = *w * *h;
+	break;
     case FOURCC_YV12:
     case FOURCC_I420:
 	*h = (*h + 1) & ~1;

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.20 2001/05/04 19:05:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.21 2001/05/19 00:26:44 dawes Exp $ */
 
 /*
  * Authors:
@@ -60,8 +60,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define I810_NAME "I810"
 #define I810_DRIVER_NAME "i810"
 #define I810_MAJOR_VERSION 1
-#define I810_MINOR_VERSION 0
+#define I810_MINOR_VERSION 1
 #define I810_PATCHLEVEL 0
+
+/* HWMC Surfaces */
+#define I810_MAX_SURFACES 7
+#define I810_MAX_SUBPICTURES 2
+#define I810_TOTAL_SURFACES 9
 
 /* Globals */
 
@@ -150,7 +155,7 @@ typedef struct _I810Rec {
    I810MemRange TexMem;
    I810MemRange Scratch;
    I810MemRange BufferMem;
- 
+   I810MemRange MC; 
 
    int auxPitch;
    int auxPitchBits;
@@ -161,6 +166,8 @@ typedef struct _I810Rec {
    unsigned long OverlayPhysical;
    unsigned long OverlayStart;
    int colorKey;
+   int surfaceAllocation[I810_TOTAL_SURFACES];
+   int numSurfaces;
 
    DGAModePtr DGAModes;
    int numDGAModes;
@@ -228,6 +235,8 @@ typedef struct _I810Rec {
    drmHandle buffer_map;
    drmHandle ring_map;
    drmHandle overlay_map;
+   drmHandle mc_map;
+   drmHandle xvmcContext;
 #endif
    Bool agpAcquired2d;
 
@@ -299,6 +308,8 @@ extern void I810EmitInvarientState(ScrnInfoPtr pScrn);
 extern Bool I810DGAInit(ScreenPtr pScreen);
 
 extern void I810InitVideo(ScreenPtr pScreen);
+extern void I810InitMC(ScreenPtr pScreen);
+
 
 #define minb(p) *(volatile CARD8 *)(pI810->MMIOBase + (p))
 #define moutb(p,v) *(volatile CARD8 *)(pI810->MMIOBase + (p)) = (v)
@@ -401,6 +412,27 @@ extern int I810_DEBUG;
 			pI810->PciInfo->chipType == PCI_CHIP_I810_E)
 #define IS_I815(pI810) (pI810->PciInfo->chipType == PCI_CHIP_I815)
 
+
+/* XvMC Subpicture surface definition */
+#define FOURCC_IA44 0x34344149
+#define XVIMAGE_IA44 \
+   { \
+        FOURCC_IA44, \
+        XvYUV, \
+        LSBFirst, \
+        {'I','A','4','4', \
+          0x00,0x00,0x00,0x10,0x80,0x00,0x00,0xAA,0x00,0x38,0x9B,0x71}, \
+        8, \
+        XvPacked, \
+        1, \
+        0, 0, 0, 0, \
+        8, 8, 8, \
+        1, 1, 1, \
+        1, 1, 1, \
+        {'I','A', \
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, \
+        XvTopToBottom \
+   }
 
 #endif
   
