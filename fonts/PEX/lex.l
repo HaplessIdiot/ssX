@@ -47,7 +47,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/fonts/PEX/lex.l,v 3.12 2001/04/01 13:59:58 tsi Exp $ */
+/* $XFree86: xc/fonts/PEX/lex.l,v 3.13 2001/12/14 19:53:24 dawes Exp $ */
 
 
 #include <ctype.h>
@@ -146,3 +146,21 @@ int	n;
 	else
 		return 0;
 }
+
+#ifdef QNX4
+
+int yywrap (void) {
+    if (!feof(yyin))
+        return (0);
+/* The following appears not to work with flex.  As it is error
+   handling code, we just comment it out. */
+#if !defined(FLEX_SCANNER)
+    if (yybgin != (yysvec+1)) { /* make sure we are in state 0 */
+        ErrIntro(yylineno);
+        fprintf(stderr,"end of input file/missing endps\n");
+    }
+#endif
+    return (1);
+}
+
+#endif /* QNX4 */
