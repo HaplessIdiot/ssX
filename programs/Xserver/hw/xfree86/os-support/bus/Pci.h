@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.17 2001/04/20 17:02:43 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.18 2001/05/06 02:09:15 tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -85,7 +85,7 @@
  */
 #define MAX_PCI_DEVICES 64	/* Max number of devices accomodated */
 				/* by xf86scanpci		     */
-#ifdef i386
+#if defined(i386) || defined(__i386__) || defined(__i386)
 /* Q&D stopgap to deal with mainboards whose PCI space is smaller */
 #define MAX_PCI_BUSES   128	/* Max number of PCI buses           */
 #else
