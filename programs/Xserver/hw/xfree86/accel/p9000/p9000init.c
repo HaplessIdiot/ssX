@@ -1,5 +1,5 @@
 /* $XConsortium: p9000init.c,v 1.6 95/01/16 13:16:42 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.7 1995/01/15 10:32:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.9 1995/01/28 15:54:59 dawes Exp $ */
 /*
  * Copyright 1994 Erik Nygren (nygren@mit.edu)
  *
@@ -340,14 +340,17 @@ void  p9000ClearScreen(void)
 {
   p9000NotBusy();         /* Wait for the P9000 to be free */
   /* Drawing a big black rectangle is probably a good way to clear things */
-  p9000Store(FGROUND, CtlBase, 1);
+  if (p9000CRTCRegs.BytesPerPixel == 1)
+    p9000Store(FGROUND, CtlBase, 1); /* 8 bit */
+  else
+    p9000Store(FGROUND, CtlBase, 0); /* 16 and 32 bit */
   p9000Store(RASTER, CtlBase, IGM_F_MASK);
   p9000Store(META_COORD | MC_QUAD | MC_YX, CtlBase,
 	     YX_PACK(0,0));
   p9000Store(META_COORD | MC_QUAD | MC_YX, CtlBase,
-	     YX_PACK(p9000CRTCRegs.XSize*p9000CRTCRegs.BytesPerPixel,0));
+	     YX_PACK((p9000CRTCRegs.XSize)*p9000CRTCRegs.BytesPerPixel,0));
   p9000Store(META_COORD | MC_QUAD | MC_YX, CtlBase,
-	     YX_PACK(p9000CRTCRegs.XSize*p9000CRTCRegs.BytesPerPixel,
+	     YX_PACK((p9000CRTCRegs.XSize)*p9000CRTCRegs.BytesPerPixel,
 		     p9000CRTCRegs.YSize));
   p9000Store(META_COORD | MC_QUAD | MC_YX, CtlBase,
 	     YX_PACK(0, p9000CRTCRegs.YSize));

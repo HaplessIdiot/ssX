@@ -1,5 +1,5 @@
 /* $XConsortium: p9000.c,v 1.6 95/01/16 13:16:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.24 1995/01/28 15:54:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.25 1995/03/19 10:15:55 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -213,6 +213,8 @@ short p9000WeightMask;
 /* Raster operation (alu) -> minterm mapping */
 unsigned int p9000alu[16];	/* alu src = p9000 src        */
 unsigned int p9000QuadAlu[16] ; /* alu src = p9000 foreground */
+unsigned int p9000PixOpAlu[16] ; /* use for pix1 opaque operations */
+unsigned int p9000PixAlu[16] ; /* use for pix1 transparent operations */
 
 /*
  * p9000Probe --

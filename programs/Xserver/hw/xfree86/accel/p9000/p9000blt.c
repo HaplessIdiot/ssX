@@ -1,5 +1,5 @@
 /* $XConsortium: p9000blt.c,v 1.6 95/01/16 13:16:40 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000blt.c,v 3.6 1995/01/15 10:31:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000blt.c,v 3.7 1995/01/28 15:54:50 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -27,21 +27,22 @@ in this Software without prior written authorization from the X Consortium.
 
 Author of cfbblt.c: Keith Packard
 
-ERIK NYGREN, KEVIN E. MARTIN, RICKARD E. FAITH, AND TIAGO GONS DISCLAIM
-ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
-ERIK NYGREN, KEVIN E. MARTIN, RICKARD E. FAITH, OR TIAGO GONS BE LIABLE
-FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
-RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
-CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
-CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ERIK NYGREN, KEVIN E. MARTIN, RICKARD E. FAITH, HENRIK HARMSEN AND
+TIAGO GONS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+EVENT SHALL ERIK NYGREN, KEVIN E. MARTIN, RICKARD E. FAITH, OR TIAGO
+GONS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+SOFTWARE.
 
 Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
 Further modifications by Tiago Gons (tiago@comosjn.hobby.nl)
 Modified for P9000 by Erik Nygren (nygren@mit.edu)
 Further modifications by Chris Mason (mason@mail.csh.rit.edu)
-
+Further modifications by Henrik Harmsen (harmsen@eritel.se)
 */
 
 
@@ -63,6 +64,8 @@ Further modifications by Chris Mason (mason@mail.csh.rit.edu)
 #include	"p9000.h"
 #include	"cfb16.h"
 #include	"cfb32.h"
+
+/* #define P9000_DEBUG_BLT 1 */
 
 #ifdef P9000_ACCEL
 
@@ -353,7 +356,9 @@ p9000CopyArea(pSrcDrawable, pDstDrawable,
 	      {
 		prect = &pbox[ordering[i]];
 #ifdef P9000_DEBUG_BLT
-		ErrorF("Moving rect: (%d,%d,%d,%d) -> (%d,%d,%d,%d) PM: 0x%x ALU: %d\n", prect->x1+dx, prect->y1+dy, prect->x2+dx, prect->y2+dy-1, prect->x1, prect->y1, prect->x2, prect->y2-1, pGC->planemask, pGC->alu);
+  ErrorF("Moving rect: (%d,%d,%d,%d) -> (%d,%d,%d,%d) PM: 0x%x ALU: %d\n", 
+          prect->x1+dx, prect->y1+dy, prect->x2+dx, prect->y2+dy-1, 
+          prect->x1, prect->y1, prect->x2, prect->y2-1, pGC->planemask, pGC->alu);
 #endif
 		/* Load the coordinates */
 		/* for blits, YX packing makes little difference */
@@ -373,6 +378,734 @@ p9000CopyArea(pSrcDrawable, pDstDrawable,
 			   CtlBase, prect->x2-1);
 		p9000Store(DEVICE_COORD | DC_ABS | DC_Y | DC_3,
 			   CtlBase, prect->y2-1);
+		/* wait for engine and blit */
+		do engstatus = p9000Fetch(CMD_BLIT, CtlBase);
+		while (engstatus & SR_ISSUE_QBN);
+	      }
+	    DEALLOCATE_LOCAL(ordering);
+	    /* wait for the quad/blit engine to finish */
+	    p9000QBNotBusy(); 
+	}
+	else if (pSrcDrawable->type == DRAWABLE_WINDOW
+		 && pDstDrawable->type != DRAWABLE_WINDOW)
+	  {
+	    /* THIS GETS PASSED TO CFB FUNCTIONS ABOVE. NEVER CALLED */
+	    /* Window --> Pixmap */
+	    int pixWidth = PixmapBytePad(pDstDrawable->width,
+					 pDstDrawable->depth);
+	    char *pdst = ((PixmapPtr)pDstDrawable)->devPrivate.ptr;
+	    
+#ifdef P9000_IM_ACCEL
+	    for (i = numRects; --i >= 0; pbox++)
+	      (p9000ImageReadFunc)(pbox->x1 + dx, pbox->y1 + dy,
+				   pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
+				   pdst, pixWidth,
+				   pbox->x1, pbox->y1,
+				   pGC->planemask);
+#else
+	    ErrorF("Don't know how to window->pixmap\n");
+#endif	  
+	  }
+	else if (pSrcDrawable->type != DRAWABLE_WINDOW
+		 && pDstDrawable->type == DRAWABLE_WINDOW) 
+	  {
+	    /* Pixmap --> Window */
+	    int pixWidth = PixmapBytePad(pSrcDrawable->width,
+					 pSrcDrawable->depth);
+	    char *psrc = ((PixmapPtr)pSrcDrawable)->devPrivate.ptr;
+	    for (i = numRects; --i >= 0; pbox++)
+	      (p9000ImageWriteFunc)(pbox->x1, pbox->y1,
+				    pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
+				    psrc, pixWidth,
+				    pbox->x1 + dx, pbox->y1 + dy,
+				    pGC->alu, pGC->planemask);
+	  } 
+	else
+	  {
+	    /* Pixmap --> Pixmap */
+	    ErrorF("p9000CopyArea:  Tried to do a Pixmap to Pixmap copy\n");
+	  }
+
+/*
+	(*localDoBitBlt) (pSrcDrawable, pDstDrawable, pGC->alu, &rgnDst, pptSrc, pGC->planemask);
+*/
+    }
+
+    prgnExposed = NULL;
+    if (((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->fExpose)
+    {
+	extern RegionPtr    miHandleExposures();
+
+        /* Pixmap sources generate a NoExposed (we return NULL to do this) */
+        if (!fastExpose)
+	    prgnExposed =
+		miHandleExposures(pSrcDrawable, pDstDrawable, pGC,
+				  origSource.x, origSource.y,
+				  (int)origSource.width,
+				  (int)origSource.height,
+				  origDest.x, origDest.y, 0);
+    }
+    (*pGC->pScreen->RegionUninit)(&rgnDst);
+    if (freeSrcClip)
+	(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+    return prgnExposed;
+}
+
+RegionPtr
+p9000CopyArea16(pSrcDrawable, pDstDrawable,
+		pGC, srcx, srcy, width, height, dstx, dsty)
+    DrawablePtr pSrcDrawable;
+    DrawablePtr pDstDrawable;
+    GC *pGC;
+    int srcx, srcy;
+    int width, height;
+    int dstx, dsty;
+{
+    RegionPtr prgnSrcClip;	/* may be a new region, or just a copy */
+    Bool freeSrcClip = FALSE;
+
+    RegionPtr prgnExposed;
+    RegionRec rgnDst;
+    register BoxPtr pbox;
+    int i;
+    register int dx; /* the offset from the dest to the src in screen coords */
+    register int dy;
+    register int x1_16, x2_16, y1_16, y2_16, dx_16, dy_16;
+    xRectangle origSource;
+    DDXPointRec origDest;
+    int numRects;
+    BoxRec fastBox;
+    int fastClip = 0;		/* for fast clipping with pixmap source */
+    int fastExpose = 0;		/* for fast exposures with pixmap source */
+    unsigned long engstatus;    /* the status of the drawing engine */
+
+    /* 11-jun-93 TCG : is VT visible */
+    /* Are the source and destination in video memory? */
+    if (!xf86VTSema
+	|| ((pSrcDrawable->type != DRAWABLE_WINDOW) && (pDstDrawable->type != DRAWABLE_WINDOW))
+	|| ((pSrcDrawable->type == DRAWABLE_WINDOW) && (pDstDrawable->type != DRAWABLE_WINDOW))
+	|| ((pSrcDrawable->type != DRAWABLE_WINDOW) && (pDstDrawable->type == DRAWABLE_WINDOW))
+        || (pGC->planemask != ~0) /* only all planes involved allowed */
+        || (pGC->alu != GXcopy) /* only COPY operations allowed */
+	)	
+      {
+	switch (max(pSrcDrawable->bitsPerPixel, pDstDrawable->bitsPerPixel)) 
+	  {
+	  case 8:
+	    return cfbCopyArea(pSrcDrawable, pDstDrawable, pGC,
+			       srcx, srcy, width, height, dstx, dsty);
+	  case 16:
+	    return cfb16CopyArea(pSrcDrawable, pDstDrawable, pGC,
+				 srcx, srcy, width, height, dstx, dsty);
+	  case 32:
+	    return cfb32CopyArea(pSrcDrawable, pDstDrawable, pGC,
+                                 srcx, srcy, width, height, dstx, dsty) ;
+	  }
+      }
+
+    origSource.x = srcx;
+    origSource.y = srcy;
+    origSource.width = width;
+    origSource.height = height;
+    origDest.x = dstx;
+    origDest.y = dsty;
+
+    if ((pSrcDrawable != pDstDrawable) &&
+	pSrcDrawable->pScreen->SourceValidate)
+    {
+	(*pSrcDrawable->pScreen->SourceValidate) (pSrcDrawable, srcx, srcy,
+						  width, height);
+    }
+
+    /* Put srcx and srcy into screen coords */
+    srcx += pSrcDrawable->x;
+    srcy += pSrcDrawable->y;
+
+    /* clip the source */
+
+    if (pSrcDrawable->type == DRAWABLE_PIXMAP)
+    {
+	if ((pSrcDrawable == pDstDrawable) &&
+	    (pGC->clientClipType == CT_NONE))
+	{
+	    prgnSrcClip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+	}
+	else
+	{
+	    fastClip = 1;
+	}
+    }
+    else /* Source is not a DRAWABLE_PIXMAP */
+    {
+	if (pGC->subWindowMode == IncludeInferiors)
+	{
+	    if (!((WindowPtr) pSrcDrawable)->parent) /* Root Window */
+	    {
+		/*
+		 * special case bitblt from root window in
+		 * IncludeInferiors mode; just like from a pixmap
+		 */
+		fastClip = 1;
+	    }
+	    else if ((pSrcDrawable == pDstDrawable) &&
+		(pGC->clientClipType == CT_NONE))
+	    {
+		prgnSrcClip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+	    }
+	    else
+	    {
+		prgnSrcClip = NotClippedByChildren((WindowPtr)pSrcDrawable);
+		freeSrcClip = TRUE;
+	    }
+	}
+	else /* subWindowMode == ClipByChildren */
+	{
+	    prgnSrcClip = &((WindowPtr)pSrcDrawable)->clipList;
+	}
+    }
+
+    fastBox.x1 = srcx;
+    fastBox.y1 = srcy;
+    fastBox.x2 = srcx + width;
+    fastBox.y2 = srcy + height;
+
+    /* Don't create a source region if we are doing a fast clip */
+    if (fastClip)
+    {
+	fastExpose = 1;
+	/*
+	 * clip the source; if regions extend beyond the source size,
+ 	 * make sure exposure events get sent
+	 */
+	if (fastBox.x1 < pSrcDrawable->x)
+	{
+	    fastBox.x1 = pSrcDrawable->x;
+	    fastExpose = 0;
+	}
+	if (fastBox.y1 < pSrcDrawable->y)
+	{
+	    fastBox.y1 = pSrcDrawable->y;
+	    fastExpose = 0;
+	}
+	if (fastBox.x2 > pSrcDrawable->x + (int) pSrcDrawable->width)
+	{
+	    fastBox.x2 = pSrcDrawable->x + (int) pSrcDrawable->width;
+	    fastExpose = 0;
+	}
+	if (fastBox.y2 > pSrcDrawable->y + (int) pSrcDrawable->height)
+	{
+	    fastBox.y2 = pSrcDrawable->y + (int) pSrcDrawable->height;
+	    fastExpose = 0;
+	}
+    }
+    else
+    {
+	(*pGC->pScreen->RegionInit)(&rgnDst, &fastBox, 1);
+	(*pGC->pScreen->Intersect)(&rgnDst, &rgnDst, prgnSrcClip);
+    }
+
+    /* Put dstx and dsty into screen coords */
+    dstx += pDstDrawable->x;
+    dsty += pDstDrawable->y;
+
+    /* Clean up and exit if the destination drawable is a drawable window
+     * and isn't realized */
+    if (pDstDrawable->type == DRAWABLE_WINDOW)
+    {
+	if (!((WindowPtr)pDstDrawable)->realized)
+	{
+	    if (!fastClip)
+		(*pGC->pScreen->RegionUninit)(&rgnDst);
+	    if (freeSrcClip)
+		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+	    return NULL;
+	}
+    }
+
+    /* Offset from dest to source in screen coords */
+    dx = srcx - dstx;
+    dy = srcy - dsty;
+
+    /* Translate and clip the dst to the destination composite clip */
+    if (fastClip)
+    {
+	RegionPtr cclip;
+
+        /* Translate the source region directly into the dest region */
+        fastBox.x1 -= dx;
+        fastBox.x2 -= dx;
+        fastBox.y1 -= dy;
+        fastBox.y2 -= dy;
+
+	/* If the destination composite clip is one rectangle we can
+	   do the clip directly.  Otherwise we have to create a full
+	   blown region and call intersect */
+
+	/* XXX because CopyPlane uses this routine for 8-to-1 bit
+	 * copies, this next line *must* also correctly fetch the
+	 * composite clip from an mfb gc
+	 */
+
+	cclip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+        if (REGION_NUM_RECTS(cclip) == 1)
+        {
+	    BoxPtr pBox = REGION_RECTS(cclip);
+
+	    if (fastBox.x1 < pBox->x1) fastBox.x1 = pBox->x1;
+	    if (fastBox.x2 > pBox->x2) fastBox.x2 = pBox->x2;
+	    if (fastBox.y1 < pBox->y1) fastBox.y1 = pBox->y1;
+	    if (fastBox.y2 > pBox->y2) fastBox.y2 = pBox->y2;
+
+	    /* Check to see if the region is empty */
+	    if (fastBox.x1 >= fastBox.x2 || fastBox.y1 >= fastBox.y2)
+		(*pGC->pScreen->RegionInit)(&rgnDst, NullBox, 0);
+	    else
+		(*pGC->pScreen->RegionInit)(&rgnDst, &fastBox, 1);
+	}
+        else
+	{
+	    /* We must turn off fastClip now, since we must create
+	       a full blown region.  It is intersected with the
+	       composite clip below. */
+	    fastClip = 0;
+	    (*pGC->pScreen->RegionInit)(&rgnDst, &fastBox,1);
+	}
+    }
+    else
+    {
+        (*pGC->pScreen->TranslateRegion)(&rgnDst, -dx, -dy);
+    }
+
+    if (!fastClip)
+    {
+	(*pGC->pScreen->Intersect)(&rgnDst,
+				   &rgnDst,
+				 ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+    }
+
+    /* Do bit blitting */
+    numRects = REGION_NUM_RECTS(&rgnDst);
+    if (numRects && width && height)
+    {
+	pbox = REGION_RECTS(&rgnDst);
+
+	if (pSrcDrawable->type == DRAWABLE_WINDOW
+	    && pDstDrawable->type == DRAWABLE_WINDOW)
+	  {
+	    /* Window --> Window */
+	    unsigned int *ordering;
+	    BoxPtr prect;
+	    short direction = 0;
+	    
+	    ordering = (unsigned int *) ALLOCATE_LOCAL(numRects * sizeof(unsigned int));
+	    if(!ordering)
+	      {
+		DEALLOCATE_LOCAL(ordering);
+		return (RegionPtr)NULL;
+	      }
+
+	    p9000FindOrdering(pSrcDrawable, pDstDrawable, pGC, numRects,
+			      pbox, srcx, srcy, dstx, dsty, ordering);
+
+	    p9000NotBusy();
+
+	    p9000Store(RASTER, CtlBase, p9000alu[pGC->alu]);
+	    p9000Store(PMASK, CtlBase, pGC->planemask);
+
+	    for (i = 0; i < numRects; i++)
+	      {
+		prect = &pbox[ordering[i]];
+#ifdef P9000_DEBUG_BLT
+		ErrorF("Moving rect: (%d,%d,%d,%d) -> (%d,%d,%d,%d) PM: 0x%x ALU: %d\n", prect->x1+dx, prect->y1+dy, prect->x2+dx, prect->y2+dy-1, prect->x1, prect->y1, prect->x2, prect->y2-1, pGC->planemask, pGC->alu);
+#endif
+		/* Load the coordinates */
+		/* for blits, YX packing makes little difference */
+		x1_16 = (prect->x1) << 1;
+		x2_16 = (prect->x2) << 1;
+		y1_16 = (prect->y1);
+		y2_16 = (prect->y2);
+		dx_16 = dx << 1;
+		dy_16 = dy;
+		p9000Store(DEVICE_COORD | DC_ABS | DC_X | DC_0, 
+			   CtlBase, x1_16 + dx_16);
+		p9000Store(DEVICE_COORD | DC_ABS | DC_Y | DC_0,
+			   CtlBase, y1_16 + dy_16);
+		p9000Store(DEVICE_COORD | DC_ABS | DC_X | DC_1,
+			   CtlBase, x2_16 + dx_16 - 1);
+		p9000Store(DEVICE_COORD | DC_ABS | DC_Y | DC_1,
+			   CtlBase, y2_16 + dy_16 - 1);
+		p9000Store(DEVICE_COORD | DC_ABS | DC_X | DC_2,
+			   CtlBase, x1_16);
+		p9000Store(DEVICE_COORD | DC_ABS | DC_Y | DC_2,
+			   CtlBase, y1_16);
+		p9000Store(DEVICE_COORD | DC_ABS | DC_X | DC_3,
+			   CtlBase, x2_16 - 1);
+		p9000Store(DEVICE_COORD | DC_ABS | DC_Y | DC_3,
+			   CtlBase, y2_16 - 1);
+		/* wait for engine and blit */
+		do engstatus = p9000Fetch(CMD_BLIT, CtlBase);
+		while (engstatus & SR_ISSUE_QBN);
+	      }
+	    DEALLOCATE_LOCAL(ordering);
+	    /* wait for the quad/blit engine to finish */
+	    p9000QBNotBusy(); 
+	}
+	else if (pSrcDrawable->type == DRAWABLE_WINDOW
+		 && pDstDrawable->type != DRAWABLE_WINDOW)
+	  {
+	    /* THIS GETS PASSED TO CFB FUNCTIONS ABOVE. NEVER CALLED */
+	    /* Window --> Pixmap */
+	    int pixWidth = PixmapBytePad(pDstDrawable->width,
+					 pDstDrawable->depth);
+	    char *pdst = ((PixmapPtr)pDstDrawable)->devPrivate.ptr;
+	    
+#ifdef P9000_IM_ACCEL
+	    for (i = numRects; --i >= 0; pbox++)
+	      (p9000ImageReadFunc)(pbox->x1 + dx, pbox->y1 + dy,
+				   pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
+				   pdst, pixWidth,
+				   pbox->x1, pbox->y1,
+				   pGC->planemask);
+#else
+	    ErrorF("Don't know how to window->pixmap\n");
+#endif	  
+	  }
+	else if (pSrcDrawable->type != DRAWABLE_WINDOW
+		 && pDstDrawable->type == DRAWABLE_WINDOW) 
+	  {
+	    /* Pixmap --> Window */
+	    int pixWidth = PixmapBytePad(pSrcDrawable->width,
+					 pSrcDrawable->depth);
+	    char *psrc = ((PixmapPtr)pSrcDrawable)->devPrivate.ptr;
+	    for (i = numRects; --i >= 0; pbox++)
+	      (p9000ImageWriteFunc)(pbox->x1, pbox->y1,
+				    pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
+				    psrc, pixWidth,
+				    pbox->x1 + dx, pbox->y1 + dy,
+				    pGC->alu, pGC->planemask);
+	  } 
+	else
+	  {
+	    /* Pixmap --> Pixmap */
+	    ErrorF("p9000CopyArea:  Tried to do a Pixmap to Pixmap copy\n");
+	  }
+
+/*
+	(*localDoBitBlt) (pSrcDrawable, pDstDrawable, pGC->alu, &rgnDst, pptSrc, pGC->planemask);
+*/
+    }
+
+    prgnExposed = NULL;
+    if (((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->fExpose)
+    {
+	extern RegionPtr    miHandleExposures();
+
+        /* Pixmap sources generate a NoExposed (we return NULL to do this) */
+        if (!fastExpose)
+	    prgnExposed =
+		miHandleExposures(pSrcDrawable, pDstDrawable, pGC,
+				  origSource.x, origSource.y,
+				  (int)origSource.width,
+				  (int)origSource.height,
+				  origDest.x, origDest.y, 0);
+    }
+    (*pGC->pScreen->RegionUninit)(&rgnDst);
+    if (freeSrcClip)
+	(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+    return prgnExposed;
+}
+
+RegionPtr
+p9000CopyArea32(pSrcDrawable, pDstDrawable,
+		pGC, srcx, srcy, width, height, dstx, dsty)
+    DrawablePtr pSrcDrawable;
+    DrawablePtr pDstDrawable;
+    GC *pGC;
+    int srcx, srcy;
+    int width, height;
+    int dstx, dsty;
+{
+    RegionPtr prgnSrcClip;	/* may be a new region, or just a copy */
+    Bool freeSrcClip = FALSE;
+
+    RegionPtr prgnExposed;
+    RegionRec rgnDst;
+    register BoxPtr pbox;
+    int i;
+    register int dx; /* the offset from the dest to the src in screen coords */
+    register int dy;
+    register int x1_32, x2_32, y1_32, y2_32, dx_32, dy_32;
+    xRectangle origSource;
+    DDXPointRec origDest;
+    int numRects;
+    BoxRec fastBox;
+    int fastClip = 0;		/* for fast clipping with pixmap source */
+    int fastExpose = 0;		/* for fast exposures with pixmap source */
+    unsigned long engstatus;    /* the status of the drawing engine */
+
+    /* 11-jun-93 TCG : is VT visible */
+    /* Are the source and destination in video memory? */
+    if (!xf86VTSema
+	|| ((pSrcDrawable->type != DRAWABLE_WINDOW) && (pDstDrawable->type != DRAWABLE_WINDOW))
+	|| ((pSrcDrawable->type == DRAWABLE_WINDOW) && (pDstDrawable->type != DRAWABLE_WINDOW))
+	|| ((pSrcDrawable->type != DRAWABLE_WINDOW) && (pDstDrawable->type == DRAWABLE_WINDOW))
+        || (pGC->planemask != ~0) /* only all planes involved allowed */
+        || (pGC->alu != GXcopy) /* only COPY operations allowed */
+	)	
+      {
+	switch (max(pSrcDrawable->bitsPerPixel, pDstDrawable->bitsPerPixel)) 
+	  {
+	  case 8:
+	    return cfbCopyArea(pSrcDrawable, pDstDrawable, pGC,
+			       srcx, srcy, width, height, dstx, dsty);
+	  case 16:
+	    return cfb16CopyArea(pSrcDrawable, pDstDrawable, pGC,
+				 srcx, srcy, width, height, dstx, dsty);
+	  case 32:
+	    return cfb32CopyArea(pSrcDrawable, pDstDrawable, pGC,
+                                 srcx, srcy, width, height, dstx, dsty) ;
+	  }
+      }
+
+    origSource.x = srcx;
+    origSource.y = srcy;
+    origSource.width = width;
+    origSource.height = height;
+    origDest.x = dstx;
+    origDest.y = dsty;
+
+    if ((pSrcDrawable != pDstDrawable) &&
+	pSrcDrawable->pScreen->SourceValidate)
+    {
+	(*pSrcDrawable->pScreen->SourceValidate) (pSrcDrawable, srcx, srcy,
+						  width, height);
+    }
+
+    /* Put srcx and srcy into screen coords */
+    srcx += pSrcDrawable->x;
+    srcy += pSrcDrawable->y;
+
+    /* clip the source */
+
+    if (pSrcDrawable->type == DRAWABLE_PIXMAP)
+    {
+	if ((pSrcDrawable == pDstDrawable) &&
+	    (pGC->clientClipType == CT_NONE))
+	{
+	    prgnSrcClip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+	}
+	else
+	{
+	    fastClip = 1;
+	}
+    }
+    else /* Source is not a DRAWABLE_PIXMAP */
+    {
+	if (pGC->subWindowMode == IncludeInferiors)
+	{
+	    if (!((WindowPtr) pSrcDrawable)->parent) /* Root Window */
+	    {
+		/*
+		 * special case bitblt from root window in
+		 * IncludeInferiors mode; just like from a pixmap
+		 */
+		fastClip = 1;
+	    }
+	    else if ((pSrcDrawable == pDstDrawable) &&
+		(pGC->clientClipType == CT_NONE))
+	    {
+		prgnSrcClip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+	    }
+	    else
+	    {
+		prgnSrcClip = NotClippedByChildren((WindowPtr)pSrcDrawable);
+		freeSrcClip = TRUE;
+	    }
+	}
+	else /* subWindowMode == ClipByChildren */
+	{
+	    prgnSrcClip = &((WindowPtr)pSrcDrawable)->clipList;
+	}
+    }
+
+    fastBox.x1 = srcx;
+    fastBox.y1 = srcy;
+    fastBox.x2 = srcx + width;
+    fastBox.y2 = srcy + height;
+
+    /* Don't create a source region if we are doing a fast clip */
+    if (fastClip)
+    {
+	fastExpose = 1;
+	/*
+	 * clip the source; if regions extend beyond the source size,
+ 	 * make sure exposure events get sent
+	 */
+	if (fastBox.x1 < pSrcDrawable->x)
+	{
+	    fastBox.x1 = pSrcDrawable->x;
+	    fastExpose = 0;
+	}
+	if (fastBox.y1 < pSrcDrawable->y)
+	{
+	    fastBox.y1 = pSrcDrawable->y;
+	    fastExpose = 0;
+	}
+	if (fastBox.x2 > pSrcDrawable->x + (int) pSrcDrawable->width)
+	{
+	    fastBox.x2 = pSrcDrawable->x + (int) pSrcDrawable->width;
+	    fastExpose = 0;
+	}
+	if (fastBox.y2 > pSrcDrawable->y + (int) pSrcDrawable->height)
+	{
+	    fastBox.y2 = pSrcDrawable->y + (int) pSrcDrawable->height;
+	    fastExpose = 0;
+	}
+    }
+    else
+    {
+	(*pGC->pScreen->RegionInit)(&rgnDst, &fastBox, 1);
+	(*pGC->pScreen->Intersect)(&rgnDst, &rgnDst, prgnSrcClip);
+    }
+
+    /* Put dstx and dsty into screen coords */
+    dstx += pDstDrawable->x;
+    dsty += pDstDrawable->y;
+
+    /* Clean up and exit if the destination drawable is a drawable window
+     * and isn't realized */
+    if (pDstDrawable->type == DRAWABLE_WINDOW)
+    {
+	if (!((WindowPtr)pDstDrawable)->realized)
+	{
+	    if (!fastClip)
+		(*pGC->pScreen->RegionUninit)(&rgnDst);
+	    if (freeSrcClip)
+		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+	    return NULL;
+	}
+    }
+
+    /* Offset from dest to source in screen coords */
+    dx = srcx - dstx;
+    dy = srcy - dsty;
+
+    /* Translate and clip the dst to the destination composite clip */
+    if (fastClip)
+    {
+	RegionPtr cclip;
+
+        /* Translate the source region directly into the dest region */
+        fastBox.x1 -= dx;
+        fastBox.x2 -= dx;
+        fastBox.y1 -= dy;
+        fastBox.y2 -= dy;
+
+	/* If the destination composite clip is one rectangle we can
+	   do the clip directly.  Otherwise we have to create a full
+	   blown region and call intersect */
+
+	/* XXX because CopyPlane uses this routine for 8-to-1 bit
+	 * copies, this next line *must* also correctly fetch the
+	 * composite clip from an mfb gc
+	 */
+
+	cclip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+        if (REGION_NUM_RECTS(cclip) == 1)
+        {
+	    BoxPtr pBox = REGION_RECTS(cclip);
+
+	    if (fastBox.x1 < pBox->x1) fastBox.x1 = pBox->x1;
+	    if (fastBox.x2 > pBox->x2) fastBox.x2 = pBox->x2;
+	    if (fastBox.y1 < pBox->y1) fastBox.y1 = pBox->y1;
+	    if (fastBox.y2 > pBox->y2) fastBox.y2 = pBox->y2;
+
+	    /* Check to see if the region is empty */
+	    if (fastBox.x1 >= fastBox.x2 || fastBox.y1 >= fastBox.y2)
+		(*pGC->pScreen->RegionInit)(&rgnDst, NullBox, 0);
+	    else
+		(*pGC->pScreen->RegionInit)(&rgnDst, &fastBox, 1);
+	}
+        else
+	{
+	    /* We must turn off fastClip now, since we must create
+	       a full blown region.  It is intersected with the
+	       composite clip below. */
+	    fastClip = 0;
+	    (*pGC->pScreen->RegionInit)(&rgnDst, &fastBox,1);
+	}
+    }
+    else
+    {
+        (*pGC->pScreen->TranslateRegion)(&rgnDst, -dx, -dy);
+    }
+
+    if (!fastClip)
+    {
+	(*pGC->pScreen->Intersect)(&rgnDst,
+				   &rgnDst,
+				 ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+    }
+
+    /* Do bit blitting */
+    numRects = REGION_NUM_RECTS(&rgnDst);
+    if (numRects && width && height)
+    {
+	pbox = REGION_RECTS(&rgnDst);
+
+	if (pSrcDrawable->type == DRAWABLE_WINDOW
+	    && pDstDrawable->type == DRAWABLE_WINDOW)
+	  {
+	    /* Window --> Window */
+	    unsigned int *ordering;
+	    BoxPtr prect;
+	    short direction = 0;
+	    
+	    ordering = (unsigned int *) ALLOCATE_LOCAL(numRects * sizeof(unsigned int));
+	    if(!ordering)
+	      {
+		DEALLOCATE_LOCAL(ordering);
+		return (RegionPtr)NULL;
+	      }
+
+	    p9000FindOrdering(pSrcDrawable, pDstDrawable, pGC, numRects,
+			      pbox, srcx, srcy, dstx, dsty, ordering);
+
+	    p9000NotBusy();
+
+	    p9000Store(RASTER, CtlBase, p9000alu[pGC->alu]);
+	    p9000Store(PMASK, CtlBase, pGC->planemask);
+
+	    for (i = 0; i < numRects; i++)
+	      {
+		prect = &pbox[ordering[i]];
+#ifdef P9000_DEBUG_BLT
+		ErrorF("Moving rect: (%d,%d,%d,%d) -> (%d,%d,%d,%d) PM: 0x%x ALU: %d\n", prect->x1+dx, prect->y1+dy, prect->x2+dx, prect->y2+dy-1, prect->x1, prect->y1, prect->x2, prect->y2-1, pGC->planemask, pGC->alu);
+#endif
+		/* Load the coordinates */
+		/* for blits, YX packing makes little difference */
+		x1_32 = (prect->x1) << 2;
+		x2_32 = (prect->x2) << 2;
+		y1_32 = (prect->y1);
+		y2_32 = (prect->y2);
+		dx_32 = dx << 2;
+		dy_32 = dy;
+		p9000Store(DEVICE_COORD | DC_ABS | DC_X | DC_0, 
+			   CtlBase, x1_32 + dx_32);
+		p9000Store(DEVICE_COORD | DC_ABS | DC_Y | DC_0,
+			   CtlBase, y1_32 + dy_32);
+		p9000Store(DEVICE_COORD | DC_ABS | DC_X | DC_1,
+			   CtlBase, x2_32 + dx_32 - 1);
+		p9000Store(DEVICE_COORD | DC_ABS | DC_Y | DC_1,
+			   CtlBase, y2_32 + dy_32 - 1);
+		p9000Store(DEVICE_COORD | DC_ABS | DC_X | DC_2,
+			   CtlBase, x1_32);
+		p9000Store(DEVICE_COORD | DC_ABS | DC_Y | DC_2,
+			   CtlBase, y1_32);
+		p9000Store(DEVICE_COORD | DC_ABS | DC_X | DC_3,
+			   CtlBase, x2_32 - 1);
+		p9000Store(DEVICE_COORD | DC_ABS | DC_Y | DC_3,
+			   CtlBase, y2_32 - 1);
 		/* wait for engine and blit */
 		do engstatus = p9000Fetch(CMD_BLIT, CtlBase);
 		while (engstatus & SR_ISSUE_QBN);
@@ -510,9 +1243,7 @@ p9000FindOrdering(pSrcDrawable, pDstDrawable, pGC, numRects, boxes, srcx, srcy, 
     }
 }
 
-/* I have not yet implemented this */
-#if 0
-
+/* still not quite right. - CLM 5/22/95 */
 RegionPtr
 p9000CopyPlane(pSrcDrawable, pDstDrawable,
 	       pGC, srcx, srcy, width, height, dstx, dsty, bitPlane)
@@ -542,8 +1273,9 @@ p9000CopyPlane(pSrcDrawable, pDstDrawable,
    int   fastExpose = 0;        /* for fast exposures with pixmap source */
 
     if (!xf86VTSema || 
-      ((pSrcDrawable->type != DRAWABLE_WINDOW) &&
-       (pDstDrawable->type != DRAWABLE_WINDOW)))
+       ! (OnScreenDrawable(pDstDrawable->type) && 
+          OnScreenDrawable(pSrcDrawable->type) )
+       )
     {
 	return cfbCopyPlane(pSrcDrawable, pDstDrawable, pGC,
 			    srcx, srcy, width, height, dstx, dsty, bitPlane);
@@ -785,84 +1517,43 @@ p9000CopyPlane(pSrcDrawable, pDstDrawable,
          p9000FindOrdering(pSrcDrawable, pDstDrawable, pGC, numRects, pbox, 
                            srcx, srcy, dstx, dsty, ordering);
 
-         if (dx > 0)
-            direction |= INC_X;
-         if (dy > 0)
-            direction |= INC_Y;
+	 p9000NotBusy();
 
-         WaitQueue(6);
-         outw(FRGD_MIX, FSS_FRGDCOL | p9000alu[pGC->alu]);
-         outw(RD_MASK, (unsigned short) (((bitPlane & 0x7f) << 1)
-                                       | ((bitPlane & 0x80) >> 7)));
-         outw(WRT_MASK, pGC->planemask);
-         outw(FRGD_COLOR, (short)pGC->fgPixel);
-         outw(BKGD_COLOR, (short)pGC->bgPixel);
-         outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT);
+	 p9000Store(RASTER, CtlBase, p9000alu[pGC->alu]);
+	 p9000Store(PMASK, CtlBase, pGC->planemask);
 
-         if (direction == (INC_X | INC_Y)) {
-            for (i = 0; i < numRects; i++) {
-               prect = &pbox[ordering[i]];
-
-               WaitQueue(7);
-               outw(CUR_X, (short)(prect->x1 + dx));
-               outw(CUR_Y, (short)(prect->y1 + dy));
-               outw(DESTX_DIASTP, (short)(prect->x1));
-               outw(DESTY_AXSTP, (short)(prect->y1));
-               outw(MAJ_AXIS_PCNT, (short)(prect->x2 - prect->x1 - 1));
-               outw(MULTIFUNC_CNTL, 
-                    MIN_AXIS_PCNT | (short)(prect->y2 - prect->y1 - 1));
-               outw(CMD, CMD_BITBLT | direction | DRAW | PLANAR | WRTDATA);
-            }
-         } else if (direction == INC_X) {
-            for (i = 0; i < numRects; i++) {
-               prect = &pbox[ordering[i]];
-
-               WaitQueue(7);
-               outw(CUR_X, (short)(prect->x1 + dx));
-               outw(CUR_Y, (short)(prect->y2 + dy - 1));
-               outw(DESTX_DIASTP, (short)(prect->x1));
-               outw(DESTY_AXSTP, (short)(prect->y2 - 1));
-               outw(MAJ_AXIS_PCNT, (short)(prect->x2 - prect->x1 - 1));
-               outw(MULTIFUNC_CNTL, 
-                    MIN_AXIS_PCNT | (short)(prect->y2 - prect->y1 - 1));
-               outw(CMD, CMD_BITBLT | direction | DRAW | PLANAR | WRTDATA);
-            }
-         } else if (direction == INC_Y) {
-            for (i = 0; i < numRects; i++) {
-               prect = &pbox[ordering[i]];
-
-               WaitQueue(7);
-               outw(CUR_X, (short)(prect->x2 + dx - 1));
-               outw(CUR_Y, (short)(prect->y1 + dy));
-               outw(DESTX_DIASTP, (short)(prect->x2 - 1));
-               outw(DESTY_AXSTP, (short)(prect->y1));
-               outw(MAJ_AXIS_PCNT, (short)(prect->x2 - prect->x1 - 1));
-               outw(MULTIFUNC_CNTL, 
-                    MIN_AXIS_PCNT | (short)(prect->y2 - prect->y1 - 1));
-               outw(CMD, CMD_BITBLT | direction | DRAW | PLANAR | WRTDATA);
-            }
-         } else {
-            for (i = 0; i < numRects; i++) {
-               prect = &pbox[ordering[i]];
-
-               WaitQueue(7);
-               outw(CUR_X, (short)(prect->x2 + dx - 1));
-               outw(CUR_Y, (short)(prect->y2 + dy - 1));
-               outw(DESTX_DIASTP, (short)(prect->x2 - 1));
-               outw(DESTY_AXSTP, (short)(prect->y2 - 1));
-               outw(MAJ_AXIS_PCNT, (short)(prect->x2 - prect->x1 - 1));
-               outw(MULTIFUNC_CNTL, 
-                    MIN_AXIS_PCNT | (short)(prect->y2 - prect->y1 - 1));
-               outw(CMD, CMD_BITBLT | direction | DRAW | PLANAR | WRTDATA);
-            }
+         for (i = 0; i < numRects; i++) {
+	     prect = &pbox[ordering[i]];
+#ifdef P9000_DEBUG_BLT
+  ErrorF("Moving rect: (%d,%d,%d,%d) -> (%d,%d,%d,%d) PM: 0x%x ALU: %d\n", 
+          prect->x1+dx, prect->y1+dy, prect->x2+dx, prect->y2+dy-1, 
+          prect->x1, prect->y1, prect->x2, prect->y2-1, pGC->planemask, pGC->alu);
+#endif
+	      /* Load the coordinates */
+	      /* for blits, YX packing makes little difference */
+	      p9000Store(DEVICE_COORD | DC_ABS | DC_X | DC_0, 
+			   CtlBase, prect->x1+dx);
+	      p9000Store(DEVICE_COORD | DC_ABS | DC_Y | DC_0,
+			   CtlBase, prect->y1+dy);
+	      p9000Store(DEVICE_COORD | DC_ABS | DC_X | DC_1,
+			   CtlBase, prect->x2+dx-1);
+	      p9000Store(DEVICE_COORD | DC_ABS | DC_Y | DC_1,
+			   CtlBase, prect->y2+dy-1);
+	      p9000Store(DEVICE_COORD | DC_ABS | DC_X | DC_2,
+			   CtlBase, prect->x1);
+	      p9000Store(DEVICE_COORD | DC_ABS | DC_Y | DC_2,
+			   CtlBase, prect->y1);
+	      p9000Store(DEVICE_COORD | DC_ABS | DC_X | DC_3,
+			   CtlBase, prect->x2-1);
+	      p9000Store(DEVICE_COORD | DC_ABS | DC_Y | DC_3,
+			   CtlBase, prect->y2-1);
+		/* wait for engine and blit */
+	      while(p9000Fetch(CMD_BLIT, CtlBase) & SR_ISSUE_QBN) ;
          }
-         DEALLOCATE_LOCAL(ordering);
+	 DEALLOCATE_LOCAL(ordering);
+	 /* wait for the quad/blit engine to finish */
+	 p9000QBNotBusy(); 
 
-         WaitQueue(4);
-         outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
-         outw(RD_MASK, 0xffff);
-         outw(WRT_MASK, 0xffff);
-         outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
       } else if (pSrcDrawable->type == DRAWABLE_WINDOW && 
                 pDstDrawable->type != DRAWABLE_WINDOW) {
          /* Window --> Pixmap */
@@ -872,19 +1563,19 @@ p9000CopyPlane(pSrcDrawable, pDstDrawable,
          /* Pixmap --> Window */
          PixmapPtr pix = (PixmapPtr) pSrcDrawable;
          int   pixWidth;
-         unsigned char *psrc;
+         char *psrc;
 
          pixWidth = PixmapBytePad(pSrcDrawable->width, pSrcDrawable->depth);
          psrc = pix->devPrivate.ptr;
 
          for (i = numRects; --i >= 0; pbox++) {
-            (p9000ImageStippleFunc)(pbox->x1, pbox->y1,
-				    pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
-				    psrc, pixWidth,
-				    pix->drawable.width, pix->drawable.height,
-				    -dx, -dy, pGC->fgPixel, pGC->bgPixel,
-				    p9000alu[pGC->alu],
-				    (short) pGC->planemask, 1);
+            p9000ImageOpStipple(pbox->x1, pbox->y1,
+				pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
+				psrc, pixWidth,
+				pix->drawable.width, pix->drawable.height,
+				-dx, -dy, pGC->fgPixel, pGC->bgPixel,
+				p9000alu[pGC->alu],
+				(short) pGC->planemask);
          }
       } else {
          /* Pixmap --> Pixmap */
@@ -911,7 +1602,5 @@ p9000CopyPlane(pSrcDrawable, pDstDrawable,
       (*pSrcDrawable->pScreen->DestroyPixmap)(pBitmap);
    return prgnExposed;
 }
-
-#endif /* 0 omitting CopyPlane */
 
 #endif /* P9000_ACCEL */

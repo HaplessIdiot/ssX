@@ -1,5 +1,4 @@
-/* $XConsortium: p9000gc.c,v 1.3 95/01/16 13:16:42 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000gc.c,v 3.3 1995/01/28 15:54:55 dawes Exp $ */
+/* $XFree86$ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -38,20 +37,22 @@ supporting documentation, and that the name of Digital not be
 used in advertising or publicity pertaining to distribution of the
 software without specific, written prior permission.  
 
-CHRIS MASON, ERIK NYGREN, AND DIGITAL DISCLAIM ALL WARRANTIES WITH
-REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL DIGITAL, CHRIS MASON,
-OR ERIK NYGREN BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
-DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
-PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
-TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+HENRIK HARMSEN, CHRIS MASON, ERIK NYGREN, AND DIGITAL DISCLAIM ALL
+WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL DIGITAL,
+CHRIS MASON, OR ERIK NYGREN BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 
 Support for P9000 added by Erik Nygren <nygren@mit.edu>
 Additional P9000 work by Chris Mason <mason@mail.csh.rit.edu>
+Modified for P9000 16 bit GC by Henrik Harmsen <harmsen@eritel.se>
 
 ******************************************************************/
 
+#define PSZ 16
 
 #include "X.h"
 #include "Xmd.h"
@@ -74,7 +75,6 @@ Additional P9000 work by Chris Mason <mason@mail.csh.rit.edu>
 
 #include "p9000.h"
 #include "p9000reg.h"
-
 #include "cfb16.h"
 #include "cfb32.h"
 
@@ -110,8 +110,9 @@ Additional P9000 work by Chris Mason <mason@mail.csh.rit.edu>
 # define ZeroPolyArc	miZeroPolyArc
 #endif
 
+
 static GCFuncs p9000GCFuncs = {
-    p9000ValidateGC,
+    p9000ValidateGC16,
     miChangeGC,
     miCopyGC,
     miDestroyGC,
@@ -121,124 +122,125 @@ static GCFuncs p9000GCFuncs = {
 };
 
 static GCOps	p9000TEOps1Rect = {
-    cfbSolidSpansCopy,
-    cfbSetSpans,
-    cfbPutImage,
-    p9000CopyArea,
-    cfbCopyPlane,
-    cfbPolyPoint,
+    cfb16SolidSpansCopy,
+    cfb16SetSpans,
+    cfb16PutImage,
+    p9000CopyArea16,
+    cfb16CopyPlane,
+    cfb16PolyPoint,
 #ifdef PIXEL_ADDR
-    p9000Line1Rect,
-    p9000Segment,
+    cfb16LineSS1Rect,
+    cfb16SegmentSS1Rect,
 #else
-    p9000Line,
-    p9000Segment,
+    cfb16LineSS,
+    cfb16SegmentSS,
 #endif
     miPolyRectangle,
-    ZeroPolyArc,
-    cfbFillPoly1RectCopy,
-    p9000PolyFillRect,
-    cfbPolyFillArcSolidCopy,
-    p9000PolyText8,
-    p9000PolyText16,
+    cfb16ZeroPolyArcSSCopy,
+    cfb16FillPoly1RectCopy,
+    p900016PolyFillRect,
+    cfb16PolyFillArcSolidCopy,
+    miPolyText8,
+    miPolyText16,
     miImageText8,
     miImageText16,
-    useTEGlyphBlt,
-    usePolyGlyphBlt,
-    usePushPixels
+    cfb16ImageGlyphBlt8,
+    cfb16PolyGlyphBlt8,
+    mfbPushPixels
 #ifdef NEED_LINEHELPER
     ,NULL
 #endif
 };
 
 static GCOps	p9000NonTEOps1Rect = {
-    cfbSolidSpansCopy,
-    cfbSetSpans,
-    cfbPutImage,
-    p9000CopyArea,
-    cfbCopyPlane,
-    cfbPolyPoint,
+    cfb16SolidSpansCopy,
+    cfb16SetSpans,
+    cfb16PutImage,
+    p9000CopyArea16,
+    cfb16CopyPlane,
+    cfb16PolyPoint,
 #ifdef PIXEL_ADDR
-    p9000Line1Rect,
-    p9000Segment,
+    cfb16LineSS1Rect,
+    cfb16SegmentSS1Rect,
 #else
-    p9000Line,
-    p9000Segment,
+    cfb16LineSS,
+    cfb16SegmentSS,
 #endif
     miPolyRectangle,
-    ZeroPolyArc,
-    cfbFillPoly1RectCopy,
-    p9000PolyFillRect,
-    cfbPolyFillArcSolidCopy,
-    p9000PolyText8,
-    p9000PolyText16,
+    cfb16ZeroPolyArcSSCopy,
+    cfb16FillPoly1RectCopy,
+    p900016PolyFillRect,
+    cfb16PolyFillArcSolidCopy,
+    miPolyText8,
+    miPolyText16,
     miImageText8,
     miImageText16,
-    useImageGlyphBlt,
-    usePolyGlyphBlt,
-    usePushPixels
+    cfb16ImageGlyphBlt8,
+    cfb16PolyGlyphBlt8,
+    mfbPushPixels
 #ifdef NEED_LINEHELPER
     ,NULL
 #endif
 };
 
 static GCOps	p9000TEOps = {
-    cfbSolidSpansCopy,
-    cfbSetSpans,
-    cfbPutImage,
-    p9000CopyArea,
-    cfbCopyPlane,
-    cfbPolyPoint,
-    p9000Line,
-    p9000Segment,
+    cfb16SolidSpansCopy,
+    cfb16SetSpans,
+    cfb16PutImage,
+    p9000CopyArea16,
+    cfb16CopyPlane,
+    cfb16PolyPoint,
+    cfb16LineSS,
+    cfb16SegmentSS,
     miPolyRectangle,
-    ZeroPolyArc,
+    cfb16ZeroPolyArcSSCopy,
     miFillPolygon,
-    p9000PolyFillRect,
-    cfbPolyFillArcSolidCopy,
-    p9000PolyText8,
-    p9000PolyText16,
+    p900016PolyFillRect,
+    cfb16PolyFillArcSolidCopy,
+    miPolyText8,
+    miPolyText16,
     miImageText8,
     miImageText16,
-    useTEGlyphBlt,
-    usePolyGlyphBlt,
-    usePushPixels
+    cfb16ImageGlyphBlt8,
+    cfb16PolyGlyphBlt8,
+    mfbPushPixels
 #ifdef NEED_LINEHELPER
     ,NULL
 #endif
 };
 
 static GCOps	p9000NonTEOps = {
-    cfbSolidSpansCopy,
-    cfbSetSpans,
-    cfbPutImage,
-    p9000CopyArea,
-    cfbCopyPlane,
-    cfbPolyPoint,
-    p9000Line,
-    p9000Segment,
+    cfb16SolidSpansCopy,
+    cfb16SetSpans,
+    cfb16PutImage,
+    p9000CopyArea16,
+    cfb16CopyPlane,
+    cfb16PolyPoint,
+    cfb16LineSS,
+    cfb16SegmentSS,
     miPolyRectangle,
 #ifdef PIXEL_ADDR
-    cfbZeroPolyArcSS8Copy,
+    cfb16ZeroPolyArcSSCopy,
 #else
     miZeroPolyArc,
 #endif
     miFillPolygon,
-    p9000PolyFillRect,
-    cfbPolyFillArcSolidCopy,
-    p9000PolyText8,
-    p9000PolyText16,
+    p900016PolyFillRect,
+    cfb16PolyFillArcSolidCopy,
+    miPolyText8,
+    miPolyText16,
     miImageText8,
     miImageText16,
-    useImageGlyphBlt,
-    usePolyGlyphBlt,
-    usePushPixels
+    cfb16ImageGlyphBlt8,
+    cfb16PolyGlyphBlt8,
+    mfbPushPixels
 #ifdef NEED_LINEHELPER
     ,NULL
 #endif
 };
 
 
+#ifdef 0
 /*
  * p9000InitGC --
  *    Performs initialization of private structures.
@@ -262,93 +264,11 @@ p9000InitGC()
   p9000alu[GXcopyInverted] = ~IGM_S_MASK;	      /* NOT src */
   p9000alu[GXorInverted] = ~IGM_S_MASK | IGM_D_MASK;  /* NOT src OR dst */
   p9000alu[GXnand] = ~IGM_S_MASK | ~IGM_D_MASK;	      /* NOT src OR NOT dst */
-  p9000alu[GXset] = ~0;                               /* 1 */
-
-/* for a quad, the source is actually the color of the foreground */
-  p9000QuadAlu[GXclear] = 0;                          /* 0 */
-  p9000QuadAlu[GXand] = IGM_F_MASK & IGM_D_MASK;      /* src AND dst */
-  p9000QuadAlu[GXandReverse] = IGM_F_MASK & ~IGM_D_MASK;  /* src AND NOT dst */
-  p9000QuadAlu[GXcopy] = IGM_F_MASK;                      /* src */
-  p9000QuadAlu[GXandInverted] = ~IGM_F_MASK & IGM_D_MASK; /* NOT src AND dst */
-  p9000QuadAlu[GXnoop] = IGM_D_MASK;                      /* dst */
-  p9000QuadAlu[GXxor] = IGM_F_MASK ^ IGM_D_MASK;          /* src XOR dst */
-  p9000QuadAlu[GXor] = IGM_F_MASK | IGM_D_MASK;           /* src OR dst */
-  p9000QuadAlu[GXnor] = ~IGM_F_MASK & ~IGM_D_MASK;     /* NOT src AND NOT dst */
-  p9000QuadAlu[GXequiv] = ~IGM_F_MASK ^ IGM_D_MASK;    /* NOT src XOR dst */
-  p9000QuadAlu[GXinvert] = ~IGM_D_MASK;                /* NOT dst */
-  p9000QuadAlu[GXorReverse] = IGM_F_MASK | ~IGM_D_MASK;   /* src OR NOT dst */
-  p9000QuadAlu[GXcopyInverted] = ~IGM_F_MASK;             /* NOT src */
-  p9000QuadAlu[GXorInverted] = ~IGM_F_MASK | IGM_D_MASK;  /* NOT src OR dst */
-  p9000QuadAlu[GXnand] = ~IGM_F_MASK | ~IGM_D_MASK;     /* NOT src OR NOT dst */
-  p9000QuadAlu[GXset] = ~0;                             /* 1 */
-
-/* this is the transparent version. */
-  p9000PixAlu[GXclear] = 0;                          /* 0 */
-  p9000PixAlu[GXand] = (IGM_S_MASK & IGM_F_MASK & IGM_D_MASK) |
-                       (~IGM_S_MASK & IGM_D_MASK) ;
-  p9000PixAlu[GXandReverse] = (IGM_S_MASK & IGM_F_MASK & ~IGM_D_MASK) |
-                              (~IGM_S_MASK & IGM_D_MASK) ;
-  p9000PixAlu[GXcopy] = (IGM_F_MASK & IGM_S_MASK ) |
-                        (~IGM_S_MASK & IGM_D_MASK) ;      /* src */
-  p9000PixAlu[GXandInverted] = ( (~IGM_F_MASK & IGM_S_MASK) & IGM_D_MASK ) |
-                               (~IGM_S_MASK & IGM_D_MASK); 
-  p9000PixAlu[GXnoop] = IGM_D_MASK;                      /* dst */
-  p9000PixAlu[GXxor] = ( (IGM_F_MASK & IGM_S_MASK) ^ IGM_D_MASK )|
-                         (~IGM_S_MASK & IGM_D_MASK);
-  p9000PixAlu[GXor] = ( (IGM_F_MASK & IGM_S_MASK) | IGM_D_MASK) |
-                        (~IGM_S_MASK & IGM_D_MASK);  
-  p9000PixAlu[GXnor] = ( (IGM_S_MASK & ~IGM_F_MASK) & ~IGM_D_MASK) |
-                         (~IGM_S_MASK & IGM_D_MASK); 
-  p9000PixAlu[GXequiv] = ( (IGM_S_MASK & ~IGM_F_MASK) ^ IGM_D_MASK ) |
-                           (~IGM_S_MASK & IGM_D_MASK);  
-  p9000PixAlu[GXinvert] = ~IGM_D_MASK;                /* NOT dst */
-  p9000PixAlu[GXorReverse] = ( (IGM_S_MASK & IGM_F_MASK) | ~IGM_D_MASK ) |
-                         (~IGM_S_MASK & IGM_D_MASK); 
-  p9000PixAlu[GXcopyInverted] = (IGM_S_MASK & ~IGM_F_MASK ) |
-                                (~IGM_S_MASK & IGM_D_MASK);  
-  p9000PixAlu[GXorInverted] = ((IGM_S_MASK & ~IGM_F_MASK) | IGM_D_MASK ) |
-                               (~IGM_S_MASK & IGM_D_MASK);
-  p9000PixAlu[GXnand] = ((IGM_S_MASK & ~IGM_F_MASK) | ~IGM_D_MASK )|
-                         (~IGM_S_MASK & IGM_D_MASK);
-  p9000PixAlu[GXset] = ~0;                             /* 1 */
-
-/* for a pix op, source = foreground with p9000 source as a pattern on it. */
-/* two versions, opaque and transparent */
-
-  p9000PixOpAlu[GXclear] = 0;                          /* 0 */
-  p9000PixOpAlu[GXand] = ( (IGM_S_MASK & IGM_F_MASK)  |
-                           (~IGM_S_MASK & IGM_B_MASK)) & IGM_D_MASK;
-  p9000PixOpAlu[GXandReverse] = ((IGM_S_MASK & IGM_F_MASK) |
-                                 (~IGM_S_MASK & IGM_B_MASK)) & ~IGM_D_MASK ;
-  p9000PixOpAlu[GXcopy] = (IGM_S_MASK & IGM_F_MASK ) |
-                         (~IGM_S_MASK & IGM_B_MASK) ;   
-  p9000PixOpAlu[GXandInverted] = ((IGM_S_MASK & ~IGM_F_MASK) |
-                                  (~IGM_S_MASK & IGM_B_MASK)) & IGM_D_MASK ; 
-  p9000PixOpAlu[GXnoop] = IGM_D_MASK;                      /* dst */
-
-  p9000PixOpAlu[GXxor] = ( (IGM_S_MASK & IGM_F_MASK) | 
-                           (~IGM_S_MASK & IGM_B_MASK)) ^ IGM_D_MASK ;
-
-  p9000PixOpAlu[GXor] = ((IGM_S_MASK & IGM_F_MASK) |
-                         (~IGM_S_MASK & IGM_B_MASK)) | IGM_D_MASK ;  
-  p9000PixOpAlu[GXnor] = ((IGM_S_MASK & ~IGM_F_MASK) |
-                         (~IGM_S_MASK & IGM_B_MASK)) & ~IGM_D_MASK ; 
-  p9000PixOpAlu[GXequiv] = ((IGM_S_MASK & ~IGM_F_MASK) |
-                            (~IGM_S_MASK & IGM_B_MASK)) ^ IGM_D_MASK ;  
-  p9000PixOpAlu[GXinvert] = ~IGM_D_MASK;                /* NOT dst */
-  p9000PixOpAlu[GXorReverse] = ((IGM_S_MASK & IGM_F_MASK) | 
-                                (~IGM_S_MASK & IGM_B_MASK)) | ~IGM_D_MASK ; 
-  p9000PixOpAlu[GXcopyInverted] = (IGM_S_MASK & ~IGM_F_MASK) |
-                                  (~IGM_S_MASK & IGM_B_MASK);  
-  p9000PixOpAlu[GXorInverted] = ((IGM_S_MASK & ~IGM_F_MASK) |
-                                (~IGM_S_MASK & IGM_B_MASK)) | IGM_D_MASK ;
-  p9000PixOpAlu[GXnand] = ((IGM_S_MASK & ~IGM_F_MASK) |
-                           (~IGM_S_MASK & IGM_B_MASK)) | ~IGM_D_MASK ;
-  p9000PixOpAlu[GXset] = ~0;                             /* 1 */
+  p9000alu[GXset] = IGM_S_MASK | ~IGM_S_MASK;         /* 1 */
 
   p9000BytesPerPixel = p9000InfoRec.bitsPerPixel / 8;
 }
-
+#endif
 
 
 static GCOps *
@@ -396,7 +316,7 @@ p9000MatchCommon (pGC, devPriv)
 }
 
 Bool
-p9000CreateGC(pGC)
+p9000CreateGC16(pGC)
     register GCPtr pGC;
 {
     cfbPrivGC  *pPriv;
@@ -438,8 +358,9 @@ p9000CreateGC(pGC)
 	    CT_other ==> pCompositeClip is the pixmap bounding box
 */
 
+
 void
-p9000ValidateGC(pGC, changes, pDrawable)
+p9000ValidateGC16(pGC, changes, pDrawable)
     register GCPtr  pGC;
     unsigned long   changes;
     DrawablePtr	    pDrawable;
@@ -539,9 +460,9 @@ p9000ValidateGC(pGC, changes, pDrawable)
 		PixmapPtr nstipple;
 
 		if ((width <= PGSZ) && !(width & (width - 1)) &&
-		    (nstipple = cfbCopyPixmap(pGC->stipple)))
+		    (nstipple = cfb16CopyPixmap(pGC->stipple)))
 		{
-		    cfbPadPixmap(nstipple);
+		    cfb16PadPixmap(nstipple);
 		    (*pGC->pScreen->DestroyPixmap)(pGC->stipple);
 		    pGC->stipple = nstipple;
 		}
@@ -606,7 +527,7 @@ p9000ValidateGC(pGC, changes, pDrawable)
 
 		if ((width <= PGSZ) && !(width & (width - 1)))
 		{
-		    cfbCopyRotatePixmap(pGC->tile.pixmap,
+		    cfb16CopyRotatePixmap(pGC->tile.pixmap,
 					&devPriv->pRotatedPixmap,
 					xrot, yrot);
 		    new_pix = TRUE;
@@ -641,7 +562,7 @@ p9000ValidateGC(pGC, changes, pDrawable)
 	int old_rrop;
 
 	old_rrop = devPriv->rop;
-	devPriv->rop = cfbReduceRasterOp (pGC->alu, pGC->fgPixel,
+	devPriv->rop = cfb16ReduceRasterOp (pGC->alu, pGC->fgPixel,
 					   pGC->planemask,
 					   &devPriv->and, &devPriv->xor);
 	if (old_rrop == devPriv->rop)
@@ -689,10 +610,10 @@ p9000ValidateGC(pGC, changes, pDrawable)
 	{
 	    switch (devPriv->rop) {
 	    case GXcopy:
-		pGC->ops->FillPolygon = cfbFillPoly1RectCopy;
+		pGC->ops->FillPolygon = cfb16FillPoly1RectCopy;
 		break;
 	    default:
-		pGC->ops->FillPolygon = cfbFillPoly1RectGeneral;
+		pGC->ops->FillPolygon = cfb16FillPoly1RectGeneral;
 		break;
 	    }
 	}
@@ -701,10 +622,10 @@ p9000ValidateGC(pGC, changes, pDrawable)
 	{
 	    switch (devPriv->rop) {
 	    case GXcopy:
-		pGC->ops->FillPolygon = cfbFillPoly1RectCopy;
+		pGC->ops->FillPolygon = cfb16FillPoly1RectCopy;
 		break;
 	    default:
-		pGC->ops->FillPolygon = cfbFillPoly1RectGeneral;
+		pGC->ops->FillPolygon = cfb16FillPoly1RectGeneral;
 		break;
 	    }
 	}
@@ -717,13 +638,13 @@ p9000ValidateGC(pGC, changes, pDrawable)
 		switch (devPriv->rop)
 		{
 		case GXxor:
-		    pGC->ops->PolyArc = cfbZeroPolyArcSS8Xor;
+		    pGC->ops->PolyArc = cfb16ZeroPolyArcSSXor;
 		    break;
 		case GXcopy:
-		    pGC->ops->PolyArc = cfbZeroPolyArcSS8Copy;
+		    pGC->ops->PolyArc = cfb16ZeroPolyArcSSCopy;
 		    break;
 		default:
-		    pGC->ops->PolyArc = cfbZeroPolyArcSS8General;
+		    pGC->ops->PolyArc = cfb16ZeroPolyArcSSGeneral;
 		    break;
 		}
 	    }
@@ -746,19 +667,19 @@ p9000ValidateGC(pGC, changes, pDrawable)
 			((pDrawable->x >= pGC->pScreen->width - 32768) &&
 			 (pDrawable->y >= pGC->pScreen->height - 32768)))
 		    {
-			pGC->ops->Polylines = p9000Line1Rect;
-			pGC->ops->PolySegment = p9000Segment;
+			pGC->ops->Polylines = cfb16LineSS1Rect;
+			pGC->ops->PolySegment = cfb16SegmentSS1Rect;
 		    } else
 #endif
 #ifdef NO_ONE_RECT
 		    {
-			pGC->ops->Polylines = p9000Line1Rect;
-			pGC->ops->PolySegment = p9000Segment;
+			pGC->ops->Polylines = cfb16LineSS1Rect;
+			pGC->ops->PolySegment = cfb16SegmentSS1Rect;
 		    }
 #else
 		    {
-		    	pGC->ops->Polylines = p9000Line;
-		    	pGC->ops->PolySegment = p9000Segment;
+		    	pGC->ops->Polylines = cfb16LineSS;
+		    	pGC->ops->PolySegment = cfb16SegmentSS;
 		    }
 #endif
 		}
@@ -772,8 +693,8 @@ p9000ValidateGC(pGC, changes, pDrawable)
 	case LineDoubleDash:
 	    if (pGC->lineWidth == 0 && pGC->fillStyle == FillSolid)
 	    {
-		pGC->ops->Polylines = cfbLineSD;
-		pGC->ops->PolySegment = cfbSegmentSD;
+		pGC->ops->Polylines = cfb16LineSD;
+		pGC->ops->PolySegment = cfb16SegmentSD;
 	    } else
 		pGC->ops->Polylines = miWideDash;
 	    break;
@@ -795,10 +716,10 @@ p9000ValidateGC(pGC, changes, pDrawable)
 	    if (pGC->fillStyle == FillSolid)
 	    {
 		if (devPriv->rop == GXcopy)
-		    pGC->ops->PolyGlyphBlt = cfbPolyGlyphBlt8;
+		    pGC->ops->PolyGlyphBlt = cfb16PolyGlyphBlt8;
 		else
 #ifdef FOUR_BIT_CODE
-		    pGC->ops->PolyGlyphBlt = cfbPolyGlyphRop8;
+		    pGC->ops->PolyGlyphBlt = cfb16PolyGlyphRop8;
 #else
 		    pGC->ops->PolyGlyphBlt = miPolyGlyphBlt;
 #endif
@@ -824,7 +745,7 @@ p9000ValidateGC(pGC, changes, pDrawable)
 		if (devPriv->rop == GXcopy &&
 		    pGC->fillStyle == FillSolid &&
 		    (pGC->planemask & PMSK) == PMSK)
-		    pGC->ops->ImageGlyphBlt = cfbImageGlyphBlt8;
+		    pGC->ops->ImageGlyphBlt = cfb16ImageGlyphBlt8;
 		else
 #endif
 		    pGC->ops->ImageGlyphBlt = miImageGlyphBlt;
@@ -838,13 +759,13 @@ p9000ValidateGC(pGC, changes, pDrawable)
 	case FillSolid:
 	    switch (devPriv->rop) {
 	    case GXcopy:
-		pGC->ops->FillSpans = cfbSolidSpansCopy;
+		pGC->ops->FillSpans = cfb16SolidSpansCopy;
 		break;
 	    case GXxor:
-		pGC->ops->FillSpans = cfbSolidSpansXor;
+		pGC->ops->FillSpans = cfb16SolidSpansXor;
 		break;
 	    default:
-		pGC->ops->FillSpans = cfbSolidSpansGeneral;
+		pGC->ops->FillSpans = cfb16SolidSpansGeneral;
 		break;
 	    }
 	    break;
@@ -852,31 +773,31 @@ p9000ValidateGC(pGC, changes, pDrawable)
 	    if (devPriv->pRotatedPixmap)
 	    {
 		if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK)
-		    pGC->ops->FillSpans = cfbTile32FSCopy;
+		    pGC->ops->FillSpans = cfb16Tile32FSCopy;
 		else
-		    pGC->ops->FillSpans = cfbTile32FSGeneral;
+		    pGC->ops->FillSpans = cfb16Tile32FSGeneral;
 	    }
 	    else
-		pGC->ops->FillSpans = cfbUnnaturalTileFS;
+		pGC->ops->FillSpans = cfb16UnnaturalTileFS;
 	    break;
 	case FillStippled:
 #ifdef FOUR_BIT_CODE
 	    if (devPriv->pRotatedPixmap)
-		pGC->ops->FillSpans = cfb8Stipple32FS;
+		pGC->ops->FillSpans = cfb16Stipple32FS;
 	    else
 #endif
-		pGC->ops->FillSpans = cfbUnnaturalStippleFS;
+		pGC->ops->FillSpans = cfb16UnnaturalStippleFS;
 	    break;
 	case FillOpaqueStippled:
 #ifdef FOUR_BIT_CODE
 	    if (devPriv->pRotatedPixmap)
-		pGC->ops->FillSpans = cfb8OpaqueStipple32FS;
+		pGC->ops->FillSpans = cfb16paqueStipple32FS;
 	    else
 #endif
-		pGC->ops->FillSpans = cfbUnnaturalStippleFS;
+		pGC->ops->FillSpans = cfb16UnnaturalStippleFS;
 	    break;
 	default:
-	    FatalError("p9000ValidateGC: illegal fillStyle\n");
+	    FatalError("p9000ValidateGC16: illegal fillStyle\n");
 	}
     } /* end of new_fillspans */
 
@@ -885,17 +806,17 @@ p9000ValidateGC(pGC, changes, pDrawable)
 	pGC->ops->PolyFillRect = miPolyFillRect;
 	if (pGC->fillStyle == FillSolid || pGC->fillStyle == FillTiled)
 	{
-	    pGC->ops->PolyFillRect = cfbPolyFillRect;
+	    pGC->ops->PolyFillRect = cfb16PolyFillRect;
 	}
-        if (pGC->fillStyle == FillSolid) 
-        {
-            pGC->ops->PolyFillRect = p9000PolyFillRect;
-        }
+	if (pGC->fillStyle == FillSolid)
+	{
+	    pGC->ops->PolyFillRect = p900016PolyFillRect;
+	}
 #endif
 #ifdef FOUR_BIT_CODE
 	pGC->ops->PushPixels = mfbPushPixels;
 	if (pGC->fillStyle == FillSolid && devPriv->rop == GXcopy)
-	    pGC->ops->PushPixels = cfbPushPixels8;
+	    pGC->ops->PushPixels = cfb16PushPixels8;
 #endif
 	pGC->ops->PolyFillArc = miPolyFillArc;
 	if (pGC->fillStyle == FillSolid)
@@ -903,10 +824,10 @@ p9000ValidateGC(pGC, changes, pDrawable)
 	    switch (devPriv->rop)
 	    {
 	    case GXcopy:
-		pGC->ops->PolyFillArc = cfbPolyFillArcSolidCopy;
+		pGC->ops->PolyFillArc = cfb16PolyFillArcSolidCopy;
 		break;
 	    default:
-		pGC->ops->PolyFillArc = cfbPolyFillArcSolidGeneral;
+		pGC->ops->PolyFillArc = cfb16PolyFillArcSolidGeneral;
 		break;
 	    }
 	}

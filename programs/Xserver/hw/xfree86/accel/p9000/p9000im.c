@@ -1,5 +1,5 @@
 /* $XConsortium: p9000im.c,v 1.5 95/01/05 20:38:51 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000im.c,v 3.4 1994/11/26 12:44:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000im.c,v 3.5 1995/01/28 15:54:57 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -39,6 +39,7 @@
 #include "xf86_HWlib.h"
 #include "p9000.h"
 #include "p9000reg.h"
+#include "p9000im.h"
 
 #ifdef P9000_ACCEL
 
@@ -249,7 +250,7 @@ p9000ImageWriteNoMem(
     int			y,
     int			w,
     int			h,
-    char		*psrc,
+    register char	*psrc,
     int			pwidth,
     int			px,
     int			py,
@@ -261,7 +262,7 @@ p9000ImageWriteNoMem(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     int			y;
     int			w;
     int			h;
-    char		*psrc;
+    register char       *psrc;
     int			pwidth;
     int			px;
     int			py;
@@ -293,6 +294,558 @@ p9000ImageWriteNoMem(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     p9000NotBusy();
 
 }
+
+static unsigned testalu[] = {
+    0,	/* 0 */
+    IGM_S_MASK & IGM_F_MASK & IGM_D_MASK, /* GXand src AND dst  */
+    IGM_S_MASK & IGM_F_MASK & ~IGM_D_MASK, /* GXandReverse src AND NOT dst  */
+    IGM_S_MASK & IGM_F_MASK, 	      /* GXcopy src */
+    (IGM_S_MASK & ~IGM_F_MASK) & IGM_D_MASK, /* GXandInverted  NOT src AND dst*/
+    IGM_D_MASK, 	      /* GXnoop */
+    (IGM_S_MASK & IGM_F_MASK) ^ IGM_D_MASK, /* GXxor src ^ dst */
+    (IGM_S_MASK & IGM_F_MASK) | IGM_D_MASK, /* GXor src or dst */
+    (IGM_S_MASK & ~IGM_F_MASK) & ~IGM_D_MASK, /* GXnor  not src and not dst */ 
+    (IGM_S_MASK & ~IGM_F_MASK) ^ IGM_D_MASK, /* GXequiv  not src XOR dst */ 
+    ~IGM_D_MASK, 			    /* GXinvert */
+    (IGM_S_MASK & IGM_F_MASK) | ~IGM_D_MASK, /* GXorReverse */
+    (IGM_S_MASK & ~IGM_F_MASK),              /* copy inverted */
+    (IGM_S_MASK & ~IGM_F_MASK) | IGM_D_MASK, /* GXorInverted NOT src or dst */
+    (IGM_S_MASK & ~IGM_F_MASK) | ~IGM_D_MASK, /* GXnand */
+    ~0					      /* GXset */
+} ;
+
+/*
+** opaque stipple
+** pw, ph, pox, poy are the pattern width, height, origin x and origin y
+** pwidth is the byte padded width of the pattern psrc
+**
+*/
+
+#if NeedFunctionPrototypes
+void
+p9000ImageOpStipple(int x, int y, int w, int h, char *psrc, int pwidth, int pw, 
+		  int ph, int pox, int poy,
+                  int fgPixel, int bgPixel, int alu, int planemask) 
+#else
+p9000ImageOpStipple(x, y, w, h, psrc, pwdith, pw, ph, pox, poy, fgPixel,
+		  bgPixel, alu, planemask)
+	int		x ;
+	int		y ;
+	int		w ;
+	int		h ;
+	char 		*psrc ;
+	int		pwidth ;
+	int		pw ;
+	int		ph ;
+	int		pox ;
+	int		poy ;
+	int		fgPixel ;
+	int		bgPixel ;
+	int		alu ;          /* X11 alu !! */
+	int		planemask ;
+#endif
+{
+    register int numpix ;
+    register int px ; /* where in the pattern you are */
+    int py ;
+    int xpos ;
+    int ypos ;
+    register int bw ;  /* width and height for current blit */
+    int bh ;
+    int tmp ;
+    int old_w_max ;
+    register char *pix ;
+    register int offset = 0 ;
+
+    p9000NotBusy() ;
+
+    old_w_max = p9000Fetch(W_MAX, CtlBase) ;
+
+    /* 12 bits each for x and y max value in W_MAX reg */
+    p9000Store(W_MAX, CtlBase, (8191<<16) | 8191 ) ;
+
+    p9000Store(PMASK, CtlBase, planemask) ;
+    p9000Store(FGROUND, CtlBase, fgPixel) ;
+    p9000Store(BGROUND, CtlBase, bgPixel) ;
+
+
+    /* this implementation copies offscreen and then blits */
+    if ( ((STIPPLEBYTE + ph * pw * p9000BytesPerPixel) <=
+         (p9000InfoRec.videoRam * 1024)) &&
+	 ((w > pw) || (h > ph)) 
+       ) {
+
+	/* write the whole pattern off screen */
+	p9000Store(RASTER, CtlBase, (IGM_S_MASK & IGM_F_MASK) |
+				    (~IGM_S_MASK & IGM_B_MASK)) ;
+	p9000Store(DEVICE_COORD | DC_0 | DC_X, CtlBase, OFFSCREENX) ;
+	p9000Store(DEVICE_COORD | DC_1 | DC_X, CtlBase, OFFSCREENX) ;
+	p9000Store(DEVICE_COORD | DC_1 | DC_Y, CtlBase, STIPPLEY) ;
+	p9000Store(DEVICE_COORD | DC_2 | DC_X, CtlBase, OFFSCREENX + pw) ;
+	p9000Store(DEVICE_COORD | DC_3 | DC_Y, CtlBase, 1) ;
+
+	pix = psrc ;
+	/* one line at a time, write out the stipple */
+	for (ypos = 0 ; ypos < ph ; ypos++) {
+	    numpix = pw ;
+	    offset = 0 ;
+	    /* print all pixels on this line */
+	    while (numpix >= 32) {
+	        p9000Store(CMD_PIXEL1_32 | HBBSWAP, CtlBase, 
+	                   *( (int *)pix + offset)) ;
+	        numpix -= 32 ; /* decrement by 32 pixels  */
+	        offset++;      /* move forward by 4 bytes */
+	    }
+	    if (numpix>0) {
+	        p9000Store(CMD_PIXEL1(numpix) | HBBSWAP, CtlBase,
+	                   *( (int *)pix + offset)) ;
+	    }
+	    pix += pwidth ; /* wrap to next line */
+	}
+
+	/* blit it on screen */
+	p9000NotBusy() ;
+
+        p9000Store(RASTER, CtlBase, p9000alu[alu]) ;
+
+	ypos = y ;
+	while ((ypos < (y + h))) {
+	    xpos = x ;
+	    modulus(ypos - poy, ph, py) ; /* offset into pattern */
+
+	    bh = min(h, (ph - py)) ;	  /* height of current write */
+	    if ( (ypos + bh) > (y + h) ) {
+	        bh = y + h - ypos ;
+	    }
+
+	    /* set all y coords */
+	    p9000Store(DEVICE_COORD | DC_0 | DC_Y, CtlBase, STIPPLEY + py) ;
+	    p9000Store(DEVICE_COORD | DC_1 | DC_Y, CtlBase, 
+	               STIPPLEY + py + bh - 1) ;
+	    p9000Store(DEVICE_COORD | DC_2 | DC_Y, CtlBase, ypos) ;
+	    p9000Store(DEVICE_COORD | DC_3 | DC_Y, CtlBase, ypos + bh - 1) ;
+
+	    while (xpos < (x + w)) {
+	        modulus(xpos - pox, pw, px) ; /* offset into pattern */
+	        bw = min(w, (pw - px)) ;       /* width of current write */
+	        if ( (xpos + bw) > (x + w) ) {
+	            bw = x + w - xpos ;
+	        }
+
+	        /* set all x coords */
+	        p9000Store(DEVICE_COORD | DC_0 | DC_X, CtlBase, OFFSCREENX+px);
+	        p9000Store(DEVICE_COORD | DC_1 | DC_X, CtlBase, 
+	                   OFFSCREENX + px + bw - 1) ;
+	        p9000Store(DEVICE_COORD | DC_2 | DC_X, CtlBase, xpos) ;
+	        p9000Store(DEVICE_COORD | DC_3 | DC_X, CtlBase, xpos + bw - 1) ;
+    
+	        while( p9000Fetch(CMD_BLIT, CtlBase) & SR_ISSUE_QBN) ;
+	        xpos += bw ;
+	    }
+	    ypos += bh; 
+	}
+    }
+/* this implementation uses pixel1 ops for everything */
+    else {
+        p9000Store(RASTER, CtlBase, p9000PixOpAlu[alu]) ; 
+                                     
+	p9000Store(DEVICE_COORD | DC_0 | DC_X, CtlBase, x) ;
+	p9000Store(DEVICE_COORD | DC_1 | DC_X, CtlBase, x) ;
+	p9000Store(DEVICE_COORD | DC_1 | DC_Y, CtlBase, y) ;
+	p9000Store(DEVICE_COORD | DC_2 | DC_X, CtlBase, x + w) ;
+	p9000Store(DEVICE_COORD | DC_3 | DC_Y, CtlBase, 1) ;
+
+	ypos = y ;
+	while (ypos < (y + h)) {
+	    xpos = x ;
+	    modulus(ypos - poy, ph, py) ; /* offset into pattern */
+
+	    while(xpos < (x + w)) {
+	        modulus(xpos - pox, pw, px) ; /* offset into pattern */
+	        pix = psrc + py * pwidth ;
+	        bw = min(w, (pw - px)) ;
+
+	        if ( (xpos + bw) > (x + w) ) {
+	            bw = x + w - xpos ;
+	        }
+
+		pix += px/8 ;
+		if ((px % 8)) {
+		    tmp = min(8 - (px % 8), bw) ;
+		    p9000Store(CMD_PIXEL1(tmp) | HBBSWAP, 
+		               CtlBase, (*pix) >> (px % 8)) ;
+		    xpos += tmp;
+		    bw   -= tmp;
+		    pix++ ;
+		}
+
+		while(bw >= 32) {
+		    p9000Store(CMD_PIXEL1_32 | HBBSWAP, CtlBase,
+		               *( (int *)pix)) ;
+		    bw -= 32 ;
+		    xpos += 32; 
+		    pix+= 4;
+		}
+		if (bw > 0) {
+		    p9000Store(CMD_PIXEL1(bw) | HBBSWAP, CtlBase,
+		    	       *( (int *)pix)) ;
+		    xpos += bw ;
+		}
+	    }
+	    ypos++ ;
+	}
+    }
+    p9000NotBusy() ;
+    p9000QBNotBusy() ;
+    p9000Store(W_MAX, CtlBase, old_w_max) ;
+}
+
+/*
+** stipple
+** pw, ph, pox, poy are the pattern width, height, origin x and origin y
+** pwidth is the byte padded width of the pattern psrc
+**
+*/
+
+#if NeedFunctionPrototypes
+void
+p9000ImageStipple(int x, int y, int w, int h, char *psrc, int pwidth, int pw, 
+		  int ph, int pox, int poy,
+                  int fgPixel, int alu, int planemask) 
+#else
+p9000ImageStipple(x, y, w, h, psrc, pwdith, pw, ph, pox, poy, fgPixel,
+		  alu, planemask)
+	int		x ;
+	int		y ;
+	int		w ;
+	int		h ;
+	char 		*psrc ;
+	int		pwidth ;
+	int		pw ;
+	int		ph ;
+	int		pox ;
+	int		poy ;
+	int		fgPixel ;
+	int		alu ;
+	int		planemask ;
+#endif
+{
+    register int numpix ;
+    register int px ; /* where in the pattern you are */
+    int py ;
+    int xpos ;
+    int ypos ;
+    register int bw ;  /* width and height for current blit */
+    int bh ;
+    int tmp ;
+    int old_w_max ;
+    register char *pix ;
+    register int offset = 0 ;
+
+    p9000NotBusy() ;
+
+    old_w_max = p9000Fetch(W_MAX, CtlBase) ;
+
+    /* 12 bits each for x and y max value in W_MAX reg */
+    p9000Store(W_MAX, CtlBase, (8191<<16) | 8191 ) ;
+
+    p9000Store(PMASK, CtlBase, planemask) ;
+    p9000Store(FGROUND, CtlBase, fgPixel) ;
+    p9000Store(BGROUND, CtlBase, 0x00000000) ;
+
+    /* this implementation copies offscreen and then blits */
+    if ( ((STIPPLEBYTE + ph * pw * p9000BytesPerPixel) <=
+         (p9000InfoRec.videoRam * 1024)) &&
+	 ((w > pw) || (h > ph))
+       ) {
+
+	/* write the whole pattern off screen */
+	p9000Store(RASTER, CtlBase, (IGM_S_MASK & IGM_F_MASK) |
+				    (~IGM_S_MASK & IGM_B_MASK)) ;
+	p9000Store(DEVICE_COORD | DC_0 | DC_X, CtlBase, OFFSCREENX) ;
+	p9000Store(DEVICE_COORD | DC_1 | DC_X, CtlBase, OFFSCREENX) ;
+	p9000Store(DEVICE_COORD | DC_1 | DC_Y, CtlBase, STIPPLEY) ;
+	p9000Store(DEVICE_COORD | DC_2 | DC_X, CtlBase, OFFSCREENX + pw) ;
+	p9000Store(DEVICE_COORD | DC_3 | DC_Y, CtlBase, 1) ;
+
+	pix = psrc ;
+	/* one line at a time, write out the stipple */
+	for (ypos = 0 ; ypos < ph ; ypos++) {
+	    numpix = pw ;
+	    offset = 0 ;
+	    /* print all pixels on this line */
+	    while (numpix >= 32) {
+	        p9000Store(CMD_PIXEL1_32 | HBBSWAP, CtlBase, 
+	                   *( (int *)pix + offset)) ;
+	        numpix -= 32 ; /* decrement by 32 pixels  */
+	        offset++;      /* move forward by 4 bytes */
+	    }
+	    if (numpix>0) {
+	        p9000Store(CMD_PIXEL1(numpix) | HBBSWAP, CtlBase,
+	                   *( (int *)pix + offset)) ;
+	    }
+	    pix += pwidth ; /* wrap to next line */
+	}
+
+	/* blit it on screen */
+	p9000NotBusy() ;
+
+        alu = p9000alu[alu] ;
+        p9000Store(RASTER, CtlBase, alu | (~IGM_S_MASK & IGM_D_MASK)) ;
+
+	ypos = y ;
+	while ((ypos < (y + h))) {
+	    xpos = x ;
+	    modulus(ypos - poy, ph, py) ; /* offset into pattern */
+
+	    bh = min(h, (ph - py)) ;	  /* height of current write */
+	    if ( (ypos + bh) > (y + h) ) {
+	        bh = y + h - ypos ;
+	    }
+
+	    /* set all y coords */
+	    p9000Store(DEVICE_COORD | DC_0 | DC_Y, CtlBase, STIPPLEY + py) ;
+	    p9000Store(DEVICE_COORD | DC_1 | DC_Y, CtlBase, 
+	               STIPPLEY + py + bh - 1) ;
+	    p9000Store(DEVICE_COORD | DC_2 | DC_Y, CtlBase, ypos) ;
+	    p9000Store(DEVICE_COORD | DC_3 | DC_Y, CtlBase, ypos + bh - 1) ;
+
+	    while (xpos < (x + w)) {
+	        modulus(xpos - pox, pw, px) ; /* offset into pattern */
+	        bw = min(w, (pw - px)) ;       /* width of current write */
+	        if ( (xpos + bw) > (x + w) ) {
+	            bw = x + w - xpos ;
+	        }
+
+	        /* set all x coords */
+	        p9000Store(DEVICE_COORD | DC_0 | DC_X, CtlBase, OFFSCREENX+px);
+	        p9000Store(DEVICE_COORD | DC_1 | DC_X, CtlBase, 
+	                   OFFSCREENX + px + bw - 1) ;
+	        p9000Store(DEVICE_COORD | DC_2 | DC_X, CtlBase, xpos) ;
+	        p9000Store(DEVICE_COORD | DC_3 | DC_X, CtlBase, xpos + bw - 1) ;
+    
+	        while( p9000Fetch(CMD_BLIT, CtlBase) & SR_ISSUE_QBN) ;
+	        xpos += bw ;
+	    }
+	    ypos += bh; 
+	}
+    }
+/* this implementation uses pixel1 ops for everything */
+    else {
+        p9000Store(RASTER, CtlBase, p9000PixAlu[alu]) ;
+	p9000Store(DEVICE_COORD | DC_0 | DC_X, CtlBase, x) ;
+	p9000Store(DEVICE_COORD | DC_1 | DC_X, CtlBase, x) ;
+	p9000Store(DEVICE_COORD | DC_1 | DC_Y, CtlBase, y) ;
+	p9000Store(DEVICE_COORD | DC_2 | DC_X, CtlBase, x + w) ;
+	p9000Store(DEVICE_COORD | DC_3 | DC_Y, CtlBase, 1) ;
+
+	ypos = y ;
+	while (ypos < (y + h)) {
+	    xpos = x ;
+	    modulus(ypos - poy, ph, py) ; /* offset into pattern */
+
+	    while(xpos < (x + w)) {
+	        modulus(xpos - pox, pw, px) ; /* offset into pattern */
+	        pix = psrc + py * pwidth ;
+	        bw = min(w, (pw - px)) ;
+
+	        if ( (xpos + bw) > (x + w) ) {
+	            bw = x + w - xpos ;
+	        }
+
+		pix += px/8 ;
+		if ((px % 8)) {
+		    tmp = min(8 - (px % 8), bw) ;
+		    p9000Store(CMD_PIXEL1(tmp) | HBBSWAP, 
+		               CtlBase, (*pix++) >> (px % 8)) ;
+		    xpos += tmp;
+		    bw   -= tmp;
+		}
+
+		while(bw >= 32) {
+		    p9000Store(CMD_PIXEL1_32 | HBBSWAP, CtlBase,
+		               *( (int *)pix)) ;
+		    bw -= 32 ;
+		    xpos += 32; 
+		    pix+= 4;
+		}
+		if (bw > 0) {
+		    p9000Store(CMD_PIXEL1(bw) | HBBSWAP, CtlBase,
+		    	       *( (int *)pix)) ;
+		    xpos += bw ;
+		}
+	    }
+	    ypos++ ;
+	}
+    }
+    p9000NotBusy() ;
+    p9000QBNotBusy() ;
+    p9000Store(W_MAX, CtlBase, old_w_max) ;
+}
+
+#if NeedFunctionPrototypes
+void
+p9000ImageFill(int x, int y, int w, int h, char *psrc, int pwidth, int pw, 
+		  int ph, int pox, int poy, int alu, int planemask) 
+#else
+p9000ImageFill(x, y, w, h, psrc, pwdith, pw, ph, pox, poy, 
+		  alu, planemask)
+	int		x ;
+	int		y ;
+	int		w ;
+	int		h ;
+	char 		*psrc ;
+	int		pwidth ;
+	int		pw ;
+	int		ph ;
+	int		pox ;
+	int		poy ;
+	int		alu ;
+	int		planemask ;
+#endif
+{
+    int numpix ;
+    register int px ; /* where in the pattern you are */
+    int py ;
+    register int xpos ;
+    int ypos ;
+    register int bw ;  /* width and height for current blit */
+    int bh ;
+    int tmp ;
+    int old_w_max ;
+    int old_w_min ;
+    register char *pix ;
+    register char *cpsrc ; /* copy of psrc */
+    register int offset = 0 ;
+    int align ;
+    int count = 0 ;
+
+    p9000NotBusy() ;
+
+    old_w_max = p9000Fetch(W_MAX, CtlBase) ;
+    old_w_min = p9000Fetch(W_MIN, CtlBase) ;
+
+
+    p9000Store(PMASK, CtlBase, planemask) ;
+
+    #if 0
+    /* this implementation copies offscreen and then blits */
+    if ( ((STIPPLEBYTE + ph * pw * p9000BytesPerPixel) <=
+         (p9000InfoRec.videoRam * 1024)) &&
+	 ((w > pw) || (h > ph)) &&
+	 ((w > 4) && (h > 4))
+       ) {
+
+	/* write the whole pattern off screen */
+        p9000Store(W_MAX, CtlBase, (8191<<16) | 8191 ) ;
+	p9000Store(RASTER, CtlBase, (IGM_S_MASK) ) ;
+	p9000Store(DEVICE_COORD | DC_0 | DC_X, CtlBase, OFFSCREENX) ;
+	p9000Store(DEVICE_COORD | DC_1 | DC_X, CtlBase, OFFSCREENX) ;
+	p9000Store(DEVICE_COORD | DC_1 | DC_Y, CtlBase, STIPPLEY) ;
+	p9000Store(DEVICE_COORD | DC_2 | DC_X, CtlBase, OFFSCREENX+pw) ;
+	p9000Store(DEVICE_COORD | DC_3 | DC_Y, CtlBase, 1) ;
+
+	/* one line at a time, write out the tile */
+	cpsrc = psrc ;
+	for (ypos = 0 ; ypos < ph ; ypos++) {
+	    pix = cpsrc ;
+	    for (xpos = 0 ; xpos < pw ; xpos += 4) {
+	        p9000Store(CMD_PIXEL8 | HBBSWAP, CtlBase, *( (int *)pix)) ;
+	        pix += 4 ;
+	    }
+	    cpsrc += pwidth ;
+	}
+
+	/* blit it on screen */
+	p9000NotBusy() ;
+
+        p9000Store(RASTER, CtlBase, p9000alu[alu])  ;
+
+	ypos = y ;
+	while ((ypos < (y + h))) {
+	    xpos = x ;
+	    modulus(ypos - poy, ph, py) ; /* offset into pattern */
+
+	    bh = min(h, (ph - py)) ;	  /* height of current write */
+	    if ( (ypos + bh) > (y + h) ) {
+	        bh = y + h - ypos ;
+	    }
+
+	    /* set all y coords */
+	    p9000Store(DEVICE_COORD | DC_0 | DC_Y, CtlBase, STIPPLEY + py) ;
+	    p9000Store(DEVICE_COORD | DC_1 | DC_Y, CtlBase, 
+	               STIPPLEY + py + bh - 1) ;
+	    p9000Store(DEVICE_COORD | DC_2 | DC_Y, CtlBase, ypos) ;
+	    p9000Store(DEVICE_COORD | DC_3 | DC_Y, CtlBase, ypos + bh - 1) ;
+
+	    while (xpos < (x + w)) {
+	        modulus(xpos - pox, pw, px) ; /* offset into pattern */
+	        bw = min(w, (pw - px)) ;       /* width of current write */
+	        if ( (xpos + bw) > (x + w) ) {
+	            bw = x + w - xpos ;
+	        }
+
+	        /* set all x coords */
+	        p9000Store(DEVICE_COORD | DC_0 | DC_X, CtlBase, OFFSCREENX+px);
+	        p9000Store(DEVICE_COORD | DC_1 | DC_X, CtlBase, 
+	                   OFFSCREENX + px + bw - 1) ;
+	        p9000Store(DEVICE_COORD | DC_2 | DC_X, CtlBase, xpos) ;
+	        p9000Store(DEVICE_COORD | DC_3 | DC_X, CtlBase, xpos + bw) ;
+	        xpos += bw ;
+   		while( p9000Fetch(CMD_BLIT, CtlBase) & SR_ISSUE_QBN) ; 
+	    }
+	    ypos += bh; 
+	}
+    }
+#endif
+   if (0) ;
+/* this implementation uses pixel8 ops for everything */
+    else {
+
+        p9000Store(RASTER, CtlBase, p9000alu[alu]) ;
+	p9000Store(DEVICE_COORD | DC_3 | DC_Y, CtlBase, 0) ;
+
+	ypos = y ;
+	cpsrc = psrc ;
+	while (ypos < (y + h)) {
+	    p9000Store(DEVICE_COORD | DC_1 | DC_Y, CtlBase, ypos) ;
+
+	    xpos = x ;
+	    modulus(ypos - poy, ph, py) ; /* offset into pattern */
+
+	    while(xpos < (x + w)) {
+	        modulus(xpos - pox, pw, px) ; /* offset into pattern */
+	        pix = cpsrc + py * pwidth ;
+	        bw = min(w, (pw - px)) ;
+
+	        if ( (xpos + bw) > (x + w) ) {
+	            bw = x + w - xpos ;
+	        }
+
+	        p9000Store(DEVICE_COORD | DC_0 | DC_X, CtlBase, xpos) ;
+	        p9000Store(DEVICE_COORD | DC_1 | DC_X, CtlBase, xpos) ;
+
+		pix += px ;
+		xpos += bw; 
+
+	        p9000Store(DEVICE_COORD | DC_2 | DC_X, CtlBase, xpos) ; 
+
+		while(bw > 0) {
+		    p9000Store(CMD_PIXEL8 | HBBSWAP, CtlBase,
+		               *( (int *)pix)) ;
+		    bw   -= 4 ;
+		    pix  += 4;
+		}
+	    }
+	    ypos++ ;
+	}
+    }
+    p9000NotBusy() ;
+    p9000QBNotBusy() ;
+    p9000Store(W_MAX, CtlBase, old_w_max) ;
+    p9000Store(W_MIN, CtlBase, old_w_min) ;
+}
+
 
 #endif /* P9000_ACCEL */
 

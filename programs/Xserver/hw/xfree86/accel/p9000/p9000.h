@@ -1,5 +1,5 @@
 /* $XConsortium: p9000.h,v 1.5 95/01/16 13:16:40 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.9 1995/01/15 10:31:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.11 1995/01/28 15:54:43 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>.
@@ -337,8 +337,40 @@ p9000CreateGC(
 #endif
 );
 
+extern Bool
+p9000CreateGC16(
+#if NeedFunctionPrototypes
+    register GCPtr
+#endif
+);
+
+extern Bool
+p9000CreateGC32(
+#if NeedFunctionPrototypes
+    register GCPtr
+#endif
+);
+
 extern void
 p9000ValidateGC(
+#if NeedFunctionPrototypes
+    register GCPtr,
+    unsigned long,
+    DrawablePtr
+#endif
+);
+
+extern void
+p9000ValidateGC16(
+#if NeedFunctionPrototypes
+    register GCPtr,
+    unsigned long,
+    DrawablePtr
+#endif
+);
+
+extern void
+p9000ValidateGC32(
 #if NeedFunctionPrototypes
     register GCPtr,
     unsigned long,
@@ -366,13 +398,27 @@ extern void (*p9000ImageWriteFunc)(
 #endif
 );
 
-#if 0
-extern void (*p9000ImageFillFunc)(
+extern void p9000ImageOpStipple(
 #if NeedFunctionPrototypes
-void
+    int x, int y, int w, int h, char *psrc, int pwidth, int pw, int ph, 
+    int pox, int poy, int fgPixel, int bgPixel, int alu, int planemask
 #endif
-);
-#endif /* if 0 */
+) ;
+
+extern void p9000ImageStipple(
+#if NeedFunctionPrototypes
+    int x, int y, int w, int h, char *psrc, int pwidth, int pw, int ph, 
+    int pox, int poy, int fgPixel, int alu, int planemask
+#endif
+) ;
+
+/* don't use this one yet! */
+extern void p9000ImageFill(
+#if NeedFunctionPrototypes
+    int x, int y, int w, int h, char *psrc, int pwidth, int pw, int ph, 
+    int pox, int poy, int alu, int planemask
+#endif
+) ;
 
 
 /*********************** p9000blt.c **************************/
@@ -389,7 +435,30 @@ p9000CopyArea(
 #endif
 );
 
-#if 0    /* Not Used Yet */
+extern RegionPtr
+p9000CopyArea16(
+#if NeedFunctionPrototypes
+    DrawablePtr,
+    DrawablePtr,
+    GC *,
+    int, int,
+    int, int,
+    int, int
+#endif
+);
+
+extern RegionPtr
+p9000CopyArea32(
+#if NeedFunctionPrototypes
+    DrawablePtr,
+    DrawablePtr,
+    GC *,
+    int, int,
+    int, int,
+    int, int
+#endif
+);
+
 extern RegionPtr p9000CopyPlane(
 #if NeedFunctionPrototypes
     DrawablePtr /*pSrcDrawable*/,
@@ -404,7 +473,6 @@ extern RegionPtr p9000CopyPlane(
     unsigned long /*bitPlane*/
 #endif
 );
-#endif
 
 extern void p9000CopyWindow() ;
  
@@ -465,6 +533,101 @@ void p9000Segment(
 #endif
 );
 
+/********************** p9000frect.c ******************************/
+
+void
+p9000PolyFillRect(
+#if NeedFunctionPrototypes
+     DrawablePtr,
+     GCPtr,
+     int,
+     xRectangle*
+#endif
+);
+ 
+void
+p900016PolyFillRect(
+#if NeedFunctionPrototypes
+     DrawablePtr,
+     GCPtr,
+     int,
+     xRectangle*
+#endif
+);
+
+void
+p900032PolyFillRect(
+#if NeedFunctionPrototypes
+     DrawablePtr,
+     GCPtr,
+     int,
+     xRectangle*
+#endif
+);
+
+
+/********************** p9000pntwin.c ******************************/
+
+void
+p9000PaintWindow(
+#if NeedFunctionPrototypes
+    WindowPtr,
+    RegionPtr,
+    int
+#endif
+);
+
+void
+p900016PaintWindow(
+#if NeedFunctionPrototypes
+    WindowPtr,
+    RegionPtr,
+    int
+#endif
+);
+
+void
+p900032PaintWindow(
+#if NeedFunctionPrototypes
+    WindowPtr,
+    RegionPtr,
+    int
+#endif
+);
+
+/*********************** p9000text.c *********************************/
+
+int
+p9000PolyText8(
+#if NeedFunctionPrototypes
+     DrawablePtr pDraw,
+     GCPtr pGC,
+     int   x,
+     int   y,
+     int   count,
+     char *chars
+#endif
+) ;
+
+int
+p9000PolyText16(
+#if NeedFunctionPrototypes
+     DrawablePtr pDraw,
+     GCPtr pGC,
+     int   x,
+     int   y,
+     int   count,
+     unsigned short *chars
+#endif
+);
+
+/* these two are slower than the software */
+int
+p9000ImageText8() ;
+
+int
+p9000ImageText16() ;
+ 
 /****************************************************************/
 
 
@@ -492,6 +655,8 @@ extern unsigned p9000BytesPerPixel;
 /* Raster operation (alu) -> minterm mapping */
 extern unsigned int p9000alu[];		/* alu src = p9000 src        */
 extern unsigned int p9000QuadAlu[] ;	/* alu src = p9000 foreground */
+extern unsigned int p9000PixOpAlu[] ;	/* use for opaque pix1 ops */
+extern unsigned int p9000PixAlu[] ;	/* use for transparent pix1 ops */
 
 /* Retrieve a long word from memory */
 #ifndef p9000Fetch
@@ -521,6 +686,35 @@ extern unsigned int p9000QuadAlu[] ;	/* alu src = p9000 foreground */
 /* Wait for Blit/Quad Engine to be free */
 #ifndef p9000QBNotBusy
 #define p9000QBNotBusy() while(p9000Fetch(STATUS,CtlBase) & SR_ISSUE_QBN)
+#endif
+
+/* 
+** offscreen memory looks something like this:
+**     fontcache: 78 rows
+**     stipple:  everything else
+** these are very experimental and subject to change -- CLM 5/12/95
+*/
+
+#ifndef _OFFSCREENCONST_
+#define _OFFSCREENCONST_
+/* address for the first byte of offscreen memory */
+#define OFFSCREENBYTE (p9000InfoRec.virtualX * (p9000InfoRec.virtualY) * \
+		       p9000BytesPerPixel) 
+
+/* x value for first offscreen byte */
+#define OFFSCREENX    0
+
+/* y value for first offscreen byte */
+#define OFFSCREENY    (p9000InfoRec.virtualY)
+
+/* font chache start and height */
+#define FONTCACHEY (OFFSCREENY)
+#define FONTCACHEBYTE (OFFSCREENBYTE)
+#define FONTCACHEHEIGHT 0
+
+/* where the offscreen area for p9000Stipple starts */
+#define STIPPLEY (OFFSCREENY + FONTCACHEHEIGHT)
+#define STIPPLEBYTE (p9000InfoRec.virtualX * STIPPLEY * p9000BytesPerPixel)
 #endif
 
 #endif /* P9000_H */
