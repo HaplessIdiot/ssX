@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.c,v 1.22 2002/05/24 20:07:51 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.c,v 1.23 2002/08/22 08:03:10 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -56,7 +56,8 @@ PictureDestroyWindow (WindowPtr pWindow)
     while ((pPicture = GetPictureWindow(pWindow)))
     {
 	SetPictureWindow(pWindow, pPicture->pNext);
-	FreeResource (pPicture->id, PictureType);
+	if (pPicture->id)
+	    FreeResource (pPicture->id, PictureType);
 	FreePicture ((pointer) pPicture, pPicture->id);
     }
     pScreen->DestroyWindow = ps->DestroyWindow;
