@@ -1,4 +1,8 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 514. Enable I845G_VBE_WORKAROUND in the i830 driver for all platforms, since
+      this reportedly fixes VT switching problems on hardware other than the
+      845G.
+ 513. Updated README.SiS (Thomas Winischhofer).
  512. Add the After X-TT Project's libfreetype-xtt2 1.0b fixes and
       enhancements to the "freetype" module (Chisato Yamauchi,
       After X-TT Project).  This should make it possible to deprecate the
@@ -18004,7 +18008,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2893 2003/10/19 18:34:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2894 2003/10/19 18:53:50 dawes Exp $
 
 
 
