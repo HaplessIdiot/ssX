@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/sample/sample.c,v 1.8 1999/06/05 15:55:28 dawes Exp $ */
+/* $XFree86: sample.c,v 1.9 2001/11/26 16:25:54 dawes Exp $ */
 
 #define _SAMPLE_C_
 /*****************************************************************************
@@ -71,7 +71,7 @@ static XF86ModuleVersionInfo VersionRec =
  * Be sure to set vmin appropriately for your device's protocol. You want to
  * read a full packet before returning
  */
-static char *default_options[] =
+static const char *default_options[] =
 {
 	"BaudRate", "9600",
 	"StopBits", "1",
@@ -157,7 +157,7 @@ SetupProc(	pointer module,
 	priv->button_threshold = xf86SetIntOption( merged, "ButtonThreshold", 128 );
 
 	s = xf86FindOptionValue (merged, "ReportingMode");
-	if ((s) && (StrCaseCmp (s, "raw") == 0))
+	if ((s) && (strcasecmp (s, "raw") == 0))
 		priv->reporting_mode = TS_Raw;
 	else
 		priv->reporting_mode = TS_Scaled;
