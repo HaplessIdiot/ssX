@@ -105,6 +105,8 @@ README for XFree86[tm] 3.2A
 
 	       o LynxOS PowerPC 2.4.0, 2.5.0
 
+	       o OS/2 Warp 3 FP5/17/22, Warp 4 -/FP1
+
 
       PC98:
 
@@ -122,8 +124,6 @@ At this time, XFree86 3.2A supports the following accelerated chipsets:
       8514/A
 	    (and true clones)
 
-      ATI
-	    Mach8, Mach32, Mach64
 
 
 
@@ -136,6 +136,9 @@ At this time, XFree86 3.2A supports the following accelerated chipsets:
 README for XFree86[tm] 3.2A
 
 
+
+      ATI
+	    Mach8, Mach32, Mach64
 
       Cirrus
 	    CLGD5420, CLGD5422, CLGD5424, CLGD5426, CLGD5428, CLGD5429,
@@ -189,9 +192,6 @@ In addition, the following SVGA chipsets are supported:
 	    WD90C00, WD90C10, WD90C11, WD90C24, WD90C24A, WD90C30, WD90C31,
 	    WD90C33
 
-      Genoa
-	    GVGA
-
 
 
 
@@ -202,6 +202,9 @@ In addition, the following SVGA chipsets are supported:
 README for XFree86[tm] 3.2A
 
 
+
+      Genoa
+	    GVGA
 
       Trident
 	    TVGA8800CS, TVGA8900B, TVGA8900C, TVGA8900CL, TVGA9000, TVGA9000i,
@@ -253,9 +256,6 @@ README for XFree86[tm] 3.2A
       Alliance
 	    AP6422
 
-      Matrox
-	    MGA2064W
-
 
 
 
@@ -268,6 +268,9 @@ README for XFree86[tm] 3.2A
 README for XFree86[tm] 3.2A
 
 
+
+      Matrox
+	    MGA2064W
 
       NVidia/SGS Thomson
 	    NV1, STG2000
@@ -320,9 +323,6 @@ tion.
 If you are totally at a loss, you can contact the XFree86 Support Team at
 <XFree86@XFree86.Org>.	Before doing so, please make sure that you are using
 the latest release of XFree86.	Check the versions listed on
-ftp://ftp.xfree86.org/pub/XFree86.
-
-There is a Usenet news group comp.windows.x.i386unix that contains mostly
 
 
 
@@ -335,7 +335,10 @@ README for XFree86[tm] 3.2A
 
 
 
-discussions about XFree86 and related topics. Many questions can be answered
+ftp://ftp.xfree86.org/pub/XFree86.
+
+There is a Usenet news group comp.windows.x.i386unix that contains mostly dis-
+cussions about XFree86 and related topics. Many questions can be answered
 there.
 
 
@@ -385,9 +388,6 @@ XFree86 support was integrated into the base X11R6 distribution by:
 
    o Rich Murphey <rich@XFree86.org>
 
-   o Hans Nasten <nasten@everyware.se>
-
-   o Mark Snitily <mark@sgcs.com>
 
 
 
@@ -400,6 +400,10 @@ XFree86 support was integrated into the base X11R6 distribution by:
 README for XFree86[tm] 3.2A
 
 
+
+   o Hans Nasten <nasten@everyware.se>
+
+   o Mark Snitily <mark@sgcs.com>
 
    o Randy Terbush <randyt@cse.unl.edu>
 
@@ -451,10 +455,6 @@ README for XFree86[tm] 3.2A
 
       Minix-386 support by:
 
-	       o Philip Homburg <philip@cs.vu.nl>
-
-      OSF/1 support by:
-
 
 
 
@@ -466,6 +466,10 @@ README for XFree86[tm] 3.2A
 README for XFree86[tm] 3.2A
 
 
+
+	       o Philip Homburg <philip@cs.vu.nl>
+
+      OSF/1 support by:
 
 	       o Marc Evans <Marc@XFree86.org>
 
@@ -517,10 +521,6 @@ README for XFree86[tm] 3.2A
 
 	       o Shuichiro Urata <s-urata@nmit.tmg.nec.co.jp>,
 
-	       o Yasuyuki Kato <yasuyuki@acaets0.anritsu.co.jp>,
-
-	       o Michio Jinbo <karl@pms.nagaokaut.ac.jp>,
-
 
 
 
@@ -532,6 +532,10 @@ README for XFree86[tm] 3.2A
 README for XFree86[tm] 3.2A
 
 
+
+	       o Yasuyuki Kato <yasuyuki@acaets0.anritsu.co.jp>,
+
+	       o Michio Jinbo <karl@pms.nagaokaut.ac.jp>,
 
 	       o Tatsuya Koike <koiket@focus.rim.or.jp>,
 
@@ -583,10 +587,6 @@ README for XFree86[tm] 3.2A
 
       XFree86 Acceleration Architecture (XAA) by:
 
-	       o Harm Hanemaayer <H.Hanemaayer@inter.nl.net>,
-
-      S3 accelerated code by:
-
 
 
 
@@ -598,6 +598,10 @@ README for XFree86[tm] 3.2A
 README for XFree86[tm] 3.2A
 
 
+
+	       o Harm Hanemaayer <H.Hanemaayer@inter.nl.net>,
+
+      S3 accelerated code by:
 
 	       o Jon Tombs <tombs@XFree86.org>,
 
@@ -649,10 +653,6 @@ README for XFree86[tm] 3.2A
 
 	       o Kevin Martin <martin@cs.unc.edu>,
 
-	       o Rik Faith <faith@cs.unc.edu>,
-
-	       o Tiago Gons <tiago@comosjn.hobby.nl>,
-
 
 
 
@@ -664,6 +664,10 @@ README for XFree86[tm] 3.2A
 README for XFree86[tm] 3.2A
 
 
+
+	       o Rik Faith <faith@cs.unc.edu>,
+
+	       o Tiago Gons <tiago@comosjn.hobby.nl>,
 
 	       o Hans Nasten <nasten@everyware.se>,
 
@@ -715,10 +719,6 @@ README for XFree86[tm] 3.2A
 
 	       o Jorge Delgado <ernar@dit.upm.es>,
 
-      16 color VGA server by:
-
-	       o Gertjan Akkerman <akkerman@dutiba.twi.tudelft.nl>
-
 
 
 
@@ -730,6 +730,10 @@ README for XFree86[tm] 3.2A
 README for XFree86[tm] 3.2A
 
 
+
+      16 color VGA server by:
+
+	       o Gertjan Akkerman <akkerman@dutiba.twi.tudelft.nl>
 
       2 color VGA and non-VGA mono servers by:
 
@@ -781,10 +785,6 @@ README for XFree86[tm] 3.2A
 
 	       o Corin Anderson <corina@bdc.cirrus.com>
 
-      Cirrus CL64xx driver by:
-
-	       o Manfred Brands <mb@oceonics.nl>
-
 
 
 
@@ -796,6 +796,10 @@ README for XFree86[tm] 3.2A
 README for XFree86[tm] 3.2A
 
 
+
+      Cirrus CL64xx driver by:
+
+	       o Manfred Brands <mb@oceonics.nl>
 
 	       o Randy Hendry <randy@sgi.com>
 
@@ -847,10 +851,6 @@ README for XFree86[tm] 3.2A
 
       MX SVGA driver by:
 
-	       o Frank Dikker <dikker@cs.utwente.nl>
-
-      Video7 SVGA driver by:
-
 
 
 
@@ -862,6 +862,10 @@ README for XFree86[tm] 3.2A
 README for XFree86[tm] 3.2A
 
 
+
+	       o Frank Dikker <dikker@cs.utwente.nl>
+
+      Video7 SVGA driver by:
 
 	       o Craig Struble <cstruble@acm.vt.edu>
 
@@ -891,6 +895,12 @@ README for XFree86[tm] 3.2A
 
 	       o Leonard N. Zubkoff <lnz@dandelion.com>
 
+      ViRGE SVGA driver by:
+
+	       o Sebastien Marineau <marineau@genie.uottawa.ca>,
+
+	       o Harald Koenig <koenig@tat.physik.uni-tuebingen.de>
+
       Tseng ET4000 and ET6000 SVGA driver by:
 
 	       o [Unknown authors]
@@ -906,16 +916,6 @@ README for XFree86[tm] 3.2A
 
 	       o Martin Schaller
 
-	       o Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-
-	       o Andreas Schwab <schwab@issan.informatik.uni-dortmund.de>
-
-	       o Guenther Kelleter <guenther@Pool.Informatik.RWTH-Aachen.de>
-
-      XFree86-VidModeExtension and xvidtune client by:
-
-	       o Kaleb S. Keithley <kaleb@x.org>
-
 
 
 
@@ -928,6 +928,16 @@ README for XFree86[tm] 3.2A
 README for XFree86[tm] 3.2A
 
 
+
+	       o Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+
+	       o Andreas Schwab <schwab@issan.informatik.uni-dortmund.de>
+
+	       o Guenther Kelleter <guenther@Pool.Informatik.RWTH-Aachen.de>
+
+      XFree86-VidModeExtension and xvidtune client by:
+
+	       o Kaleb S. Keithley <kaleb@x.org>
 
 	       o David Dawes <dawes@XFree86.org>
 
@@ -972,16 +982,6 @@ README for XFree86[tm] 3.2A
 	       o Eric Raymond <esr@snark.thyrsus.com> (new video mode documen-
 		 tation),
 
-	       o and an entire horde of beta-testers around the world!
-
-
-6.  Contact information
-
-Ongoing development planning and support is coordinated by the XFree86 Core
-Team.  At this time the Core Team consists of (in alphabetical order):
-
-   o Robin Cutshaw <robin@XFree86.org>
-
 
 
 
@@ -994,6 +994,16 @@ Team.  At this time the Core Team consists of (in alphabetical order):
 README for XFree86[tm] 3.2A
 
 
+
+	       o and an entire horde of beta-testers around the world!
+
+
+6.  Contact information
+
+Ongoing development planning and support is coordinated by the XFree86 Core
+Team.  At this time the Core Team consists of (in alphabetical order):
+
+   o Robin Cutshaw <robin@XFree86.org>
 
    o David Dawes <dawes@XFree86.org>
 
@@ -1040,16 +1050,6 @@ and have contributed the majority of XFree86 to the X11R6 and X11R6.1 core
 release.  The version of XFree86 in the initial X11R6 core is 3.0.  The version
 of XFree86 in the current X11R6.3 release is 3.2.
 
-An additional benefit of this incorporation is that The XFree86 Project, Inc
-has obtained outside financial support for our work.  This will hopefully give
-us the freedom to be more pro-active in obtaining new video hardware, and
-enable us to release better products more quickly, as we will be able to go and
-get what we need, and get it into the hands of the people who can do the work.
-
-The current Board of Directors and Officers of the The XFree86 Project, Inc,
-are:
-
-
 
 
 
@@ -1060,6 +1060,15 @@ are:
 README for XFree86[tm] 3.2A
 
 
+
+An additional benefit of this incorporation is that The XFree86 Project, Inc
+has obtained outside financial support for our work.  This will hopefully give
+us the freedom to be more pro-active in obtaining new video hardware, and
+enable us to release better products more quickly, as we will be able to go and
+get what we need, and get it into the hands of the people who can do the work.
+
+The current Board of Directors and Officers of the The XFree86 Project, Inc,
+are:
 
    o David Dawes, President and Secretary
 
@@ -1105,15 +1114,6 @@ Also deserving of special mention are the organizers and attendees of the 1st
 German Linux Congress in Heidelberg.  Significant funding to The XFree86 Pro-
 ject has been provided from its proceeds.
 
-   o AIB Software Corporation <URL:http://www.aib.com/>, Herndon, VA
-
-   o Roland Alder, Armin Fessler, Patrick Seemann, Martin Wunderli
-
-   o American Micro Group
-
-   o ATI Technologies Inc <URL:http://www.atitech.ca/>
-
-   o Andrew Burgess
 
 
 
@@ -1126,6 +1126,16 @@ ject has been provided from its proceeds.
 README for XFree86[tm] 3.2A
 
 
+
+   o AIB Software Corporation <URL:http://www.aib.com/>, Herndon, VA
+
+   o Roland Alder, Armin Fessler, Patrick Seemann, Martin Wunderli
+
+   o American Micro Group
+
+   o ATI Technologies Inc <URL:http://www.atitech.ca/>
+
+   o Andrew Burgess
 
    o Berkeley Software Design, Inc <URL:http://www.bsdi.com/>, Falls Church, VA
 
@@ -1170,16 +1180,6 @@ README for XFree86[tm] 3.2A
 
    o Rich & Amy Murphey
 
-   o NCR Corp <URL:http://www.ncr.com/>
-
-   o Brett Neumeier
-
-   o Number Nine, Lexington, MA
-
-   o Kazuyuki Okamoto, Japan
-
-   o Prime Time Freeware <URL:http://www.ptf.com/>, San Bruno, CA
-
 
 
 
@@ -1192,6 +1192,16 @@ README for XFree86[tm] 3.2A
 README for XFree86[tm] 3.2A
 
 
+
+   o NCR Corp <URL:http://www.ncr.com/>
+
+   o Brett Neumeier
+
+   o Number Nine, Lexington, MA
+
+   o Kazuyuki Okamoto, Japan
+
+   o Prime Time Freeware <URL:http://www.ptf.com/>, San Bruno, CA
 
    o Red Hat Software <URL:http://www.redhat.com/>, Chapel Hill, NC
 
@@ -1237,16 +1247,6 @@ and the following mirror sites:
 
    o North America:
 
-	o ftp://ftp.rge.com/pub/X/XFree86 (source and binaries)
-
-	o ftp://ftp.gw.com/pub/unix/XFree86 (source and NetBSD binaries)
-
-	o ftp://ftp.varesearch.com/pub/mirrors/xfree86 (source and binaries)
-
-	o ftp://ftp.cs.umn.edu/pub/XFree86 (source and binaries)
-
-	o ftp://ftp.thebandit.com/pub/XFree86 (Linux, NetBSD and FreeBSD bina-
-	  ries)
 
 
 
@@ -1257,6 +1257,18 @@ and the following mirror sites:
 
 README for XFree86[tm] 3.2A
 
+
+
+	o ftp://ftp.rge.com/pub/X/XFree86 (source and binaries)
+
+	o ftp://ftp.gw.com/pub/unix/XFree86 (source and NetBSD binaries)
+
+	o ftp://ftp.varesearch.com/pub/mirrors/xfree86 (source and binaries)
+
+	o ftp://ftp.cs.umn.edu/pub/XFree86 (source and binaries)
+
+	o ftp://ftp.thebandit.com/pub/XFree86 (Linux, NetBSD and FreeBSD bina-
+	  ries)
 
 
    o Europe:
@@ -1292,25 +1304,13 @@ Ensure that you are getting XFree86 3.2A - some of these sites may archive
 older releases as well.  Check the RELNOTES to find which files you need to
 take from the archive.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.81 1997/05/18 12:12:10 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.82 1997/05/22 14:22:25 dawes Exp $
 
 
 
 
 
      $XConsortium: README.sgml /main/31 1996/10/28 05:43:24 kaleb $
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1405,7 +1405,7 @@ README for XFree86[tm] 3.2A
 
 5. Credits .................................................................. 6
 
-6. Contact information ..................................................... 15
+6. Contact information ..................................................... 16
 
 7. The XFree86 Project, Inc. ............................................... 16
 
