@@ -178,7 +178,6 @@ static void TAG(fog_ci_vertices)( struct vertex_buffer *VB,
    VB->IndexPtr = VB->FoggedIndex[side];
    out = VB->IndexPtr->start;
 
-
    /* NOTE: the use of casts generates better/faster code for MIPS */
    for ( i = 0; i < n ; i++, STRIDE_F(v,stride), STRIDE_UI(in,in_stride))
       CULLCHECK {
@@ -364,12 +363,11 @@ static void TAG(fog_ci_vertices)( struct vertex_buffer *VB,
    (void) flag;
    (void) cullmask;
 
-
    in = VB->Index[side]->start;
    in_stride = VB->Index[side]->stride;
-   VB->IndexPtr = VB->FoggedIndex[side];
-   out = VB->IndexPtr->start;
-
+   VB->Index[side] = VB->FoggedIndex[side];
+   VB->IndexPtr = VB->Index[0];
+   out = (GLuint *)VB->Index[side]->start;
 
    /* NOTE: the extensive use of casts generates better/faster code for MIPS */
    if (vertex_size > 2) {
@@ -385,7 +383,7 @@ static void TAG(fog_ci_vertices)( struct vertex_buffer *VB,
 	    CULLCHECK {
 	       GLfloat f = (fogend - ABSF(v[2])) * d;
 	       f = CLAMP( f, 0.0, 1.0 );
-	       *out = (GLint) ((GLfloat)(GLint) *in + (1.0F-f) * fogindex);
+	       out[i] = (GLint) ((GLfloat)(GLint) *in + (1.0F-f) * fogindex);
 	    }
 	 }
 	 break;
@@ -398,7 +396,7 @@ static void TAG(fog_ci_vertices)( struct vertex_buffer *VB,
 	 {
 	    CULLCHECK {
 	       GLfloat f = exp( d * ABSF(v[2]) );
-	       *out = (GLint) ((GLfloat)(GLint) *in + (1.0F-f) * fogindex);
+	       out[i] = (GLint) ((GLfloat)(GLint) *in + (1.0F-f) * fogindex);
 	    }
 	 }
 	 break;
@@ -421,7 +419,8 @@ static void TAG(fog_ci_vertices)( struct vertex_buffer *VB,
 	 gl_problem(ctx, "Bad fog mode in gl_fog_ci_vertices");
 	 return;
       }
-   } else if (ctx->Fog.Mode == GL_LINEAR) {
+   }
+   else if (ctx->Fog.Mode == GL_LINEAR) {
       GLuint fogindex;
       GLfloat f = ctx->Fog.End / (ctx->Fog.End - ctx->Fog.Start);
 
@@ -431,7 +430,7 @@ static void TAG(fog_ci_vertices)( struct vertex_buffer *VB,
  	 for ( i = 0; i < n ; i++, STRIDE_F(v,stride), STRIDE_UI(in,in_stride))
 	 {
 	    CULLCHECK {
-	       *out = *in + fogindex;
+	       out[i] = *in + fogindex;
 	    }
 	 }
       }

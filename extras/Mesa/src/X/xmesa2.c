@@ -3467,11 +3467,32 @@ static void write_span_mono_pixmap( MONO_SPAN_ARGS )
       XMesaFillRectangle( dpy, buffer, gc, (int) x, (int) y, n, 1 );
    }
    else {
+#if 0
       for (i=0;i<n;i++,x++) {
 	 if (mask[i]) {
 	    XMesaDrawPoint( dpy, buffer, gc, (int) x, (int) y );
 	 }
       }
+#else
+      /* This version is usually faster.  Contributed by Jeff Epler
+       * and cleaned up by Keith Whitwell.
+       */
+      for (i = 0; i < n; ) {
+         GLuint start = i;
+         /* Identify and emit contiguous rendered pixels
+          */
+         for( ; i < n && mask[i]; i++)
+            /* Nothing */;
+         if (start < i) 
+            XMesaFillRectangle( dpy, buffer, gc,
+                                (int)(x+start), (int) y,
+                                (int)(i-start), 1);
+         /* Eat up non-rendered pixels
+          */
+         for(; i < n && !mask[i]; i++)
+            /* Nothing */;
+      }
+#endif
    }
 }
 
@@ -4194,10 +4215,18 @@ static void write_span_index8_pixmap( INDEX8_SPAN_ARGS )
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
    y = FLIP(xmesa->xm_buffer, y);
-   for (i=0;i<n;i++,x++) {
-      if (mask[i]) {
-	 XMesaSetForeground( dpy, gc, (unsigned long) index[i] );
-	 XMesaDrawPoint( dpy, buffer, gc, (int) x, (int) y );
+   if (mask) {
+      for (i=0;i<n;i++,x++) {
+         if (mask[i]) {
+            XMesaSetForeground( dpy, gc, (unsigned long) index[i] );
+            XMesaDrawPoint( dpy, buffer, gc, (int) x, (int) y );
+         }
+      }
+   }
+   else {
+      for (i=0;i<n;i++,x++) {
+         XMesaSetForeground( dpy, gc, (unsigned long) index[i] );
+         XMesaDrawPoint( dpy, buffer, gc, (int) x, (int) y );
       }
    }
 }
@@ -4212,9 +4241,16 @@ static void write_span_index_ximage( INDEX_SPAN_ARGS )
    XMesaImage *img = xmesa->xm_buffer->backimage;
    register GLuint i;
    y = FLIP(xmesa->xm_buffer, y);
-   for (i=0;i<n;i++,x++) {
-      if (mask[i]) {
-	 XMesaPutPixel( img, x, y, (unsigned long) index[i] );
+   if (mask) {
+      for (i=0;i<n;i++,x++) {
+         if (mask[i]) {
+            XMesaPutPixel( img, x, y, (unsigned long) index[i] );
+         }
+      }
+   }
+   else {
+      for (i=0;i<n;i++,x++) {
+         XMesaPutPixel( img, x, y, (unsigned long) index[i] );
       }
    }
 }

@@ -2302,9 +2302,6 @@ _mesa_unpack_ubyte_color_span( GLcontext *ctx,
           srcType == GL_UNSIGNED_INT_10_10_10_2 ||
           srcType == GL_UNSIGNED_INT_2_10_10_10_REV);
 
-   /* this is intended for RGBA mode only */
-   assert(ctx->Visual->RGBAflag);
-
    applyTransferOps &= (ctx->Pixel.ScaleOrBiasRGBA ||
                         ctx->Pixel.MapColorFlag ||
                         ctx->ColorMatrix.type != MATRIX_IDENTITY ||
