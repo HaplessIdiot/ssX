@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.33 1994/09/19 14:20:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.34 1994/09/20 12:45:57 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -993,10 +993,7 @@ s3Probe()
       if (S3_964_SERIES(s3ChipId)) {
          nonMuxMaxClock = 0;  /* 964 can only be in pixmux mode when */
          pixMuxMinWidth = 0;  /* working in enhanced mode */  
-	 if (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)) {
-	    /* Should this be done for the ELSA W2000pro too? */
-	    pixMuxLimitedWidths = FALSE;
-	 }
+	 pixMuxLimitedWidths = FALSE;
       }
    } else if (s3ATT498PixMux) {
       pixMuxPossible = TRUE;
