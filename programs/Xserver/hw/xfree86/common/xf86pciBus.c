@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.22 2000/09/29 08:59:44 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.23 2000/10/17 16:53:16 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -229,8 +229,9 @@ FindPCIVideoInfo(void)
 			mem64 = TRUE;
 #if defined LONG64 || defined WORD64
 			  info->memBase[0] |= 
-			    (memType)PCIGETMEMORY64HIGH(pcrp->pci_base0) << 32;
+			    (memType)PCIGETMEMORY64HIGH(pcrp->pci_base1) << 32;
 #else
+			if (pcrp->pci_base1)
 			  info->memBase[0] = 0;
 #endif
 		    } 
@@ -248,13 +249,14 @@ FindPCIVideoInfo(void)
 			mem64 = TRUE;
 #if defined LONG64 || defined WORD64
 			  info->memBase[1] |= 
-			    (memType)PCIGETMEMORY64HIGH(pcrp->pci_base1) << 32;
+			    (memType)PCIGETMEMORY64HIGH(pcrp->pci_base2) << 32;
 #else
+			if (pcrp->pci_base2)
 			  info->memBase[1] = 0;
 #endif
 		    }
 		}
-	    } else if (mem64)
+	    } else
 		mem64 = FALSE;
 
 	    if (pcrp->pci_base2 && !mem64) {
@@ -267,14 +269,15 @@ FindPCIVideoInfo(void)
 		    if (PCI_MAP_IS64BITMEM(pcrp->pci_base2)) {
 			mem64 = TRUE;
 #if defined LONG64 || defined WORD64
-			info->memBase[1] |= 
-			    (memType)PCIGETMEMORY64HIGH(pcrp->pci_base1) << 32;
+			info->memBase[2] |= 
+			    (memType)PCIGETMEMORY64HIGH(pcrp->pci_base3) << 32;
 #else
-			  info->memBase[1] = 0;
+			if (pcrp->pci_base3)
+			  info->memBase[2] = 0;
 #endif
 		    }
 		}
-	    } else if (mem64)
+	    } else
 		mem64 = FALSE;
 
 	    if (pcrp->pci_base3 && !mem64) {
@@ -288,13 +291,14 @@ FindPCIVideoInfo(void)
 			mem64 = TRUE;
 #if defined LONG64 || defined WORD64
 			  info->memBase[3] |= 
-			    (memType)PCIGETMEMORY64HIGH(pcrp->pci_base3) << 32;
+			    (memType)PCIGETMEMORY64HIGH(pcrp->pci_base4) << 32;
 #else
+			if (pcrp->pci_base4)
 			  info->memBase[3] = 0;
 #endif
 		    }
 		}
-	    } else if (mem64)
+	    } else
 		mem64 = FALSE;
 
 	    if (pcrp->pci_base4 && !mem64) {
@@ -308,13 +312,14 @@ FindPCIVideoInfo(void)
 			mem64 = TRUE;
 #if defined LONG64 || defined WORD64
 			  info->memBase[4] |= 
-			    (memType)PCIGETMEMORY64HIGH(pcrp->pci_base4) << 32;
+			    (memType)PCIGETMEMORY64HIGH(pcrp->pci_base5) << 32;
 #else
+			if (pcrp->pci_base5)
 			  info->memBase[4] = 0;
 #endif
 		    }
 		}
-	    } else if (mem64)
+	    } else
 		mem64 = FALSE;
 
 	    if (pcrp->pci_base5 && !mem64) {
@@ -325,7 +330,8 @@ FindPCIVideoInfo(void)
 		    info->type[5] = pcrp->pci_base5 & PCI_MAP_MEMORY_ATTR_MASK;
 		    info->memBase[5] = (memType)PCIGETMEMORY(pcrp->pci_base5);
 		}
-	    }
+	    } else
+		mem64 = FALSE;
 	    info->listed_class = pcrp->listed_class;
 	}
 	i++;
@@ -994,11 +1000,14 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
     resRange range;
     resPtr resSize = NULL;
     resPtr w_tmp, w = NULL, w_2nd = NULL;
-    PCITAG tag = pciTag(pvp->bus,pvp->device,pvp->func);
+    PCITAG tag;
     PciBusPtr pbp = xf86PciBus, pbp1 = xf86PciBus;
+    pciConfigPtr pcp;
     resPtr tmp;
     
     if (!pvp) return FALSE;
+    tag = pciTag(pvp->bus,pvp->device,pvp->func);
+    pcp = pvp->thisCard;
 
     type &= ResAccMask;
     if (!type) type = ResShared;
@@ -1241,19 +1250,34 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
     (*p_base) = H2B(tag,range.rBegin,type);
 #ifdef DEBUG
     ErrorF("New PCI res %i base: 0x%lx, size: 0x%lx, type %s\n",
-	   res_n,(*p_base),(1 << (*p_size)),type | ResMem ? "Mem" : "Io");
+	   res_n,(*p_base),(1 << (*p_size)), (type & ResMem) ? "Mem" : "Io");
 #endif
     if (res_n != 0xff) {
-	pciWriteLong(tag,PCI_CMD_BASE_REG + res_n * sizeof(CARD32),
-		     (CARD32)(*p_base) | (CARD32)(p_type));
+	if (type & ResMem)
+	    pvp->memBase[prt] = range.rBegin;
+	else
+	    pvp->ioBase[prt] = range.rBegin;
+	((CARD32 *)(&(pcp->pci_base0)))[res_n] =
+	    (CARD32)(*p_base) | (CARD32)(p_type);
+	pciWriteLong(tag, PCI_CMD_BASE_REG + res_n * sizeof(CARD32),
+		     ((CARD32 *)(&(pcp->pci_base0)))[res_n]);
+	if (PCI_MAP_IS64BITMEM(p_type)) {
 #if defined LONG64 || defined WORD64
-	if (PCI_MAP_IS64BITMEM(p_type))
-	    pciWriteLong(tag,PCI_CMD_BASE_REG + (res_n + 1) * sizeof(CARD32),
-			 (CARD32)(*p_base >> 32));
+	    ((CARD32 *)(&(pcp->pci_base0)))[res_n + 1] =
+		(CARD32)(*p_base >> 32);
+	    pciWriteLong(tag, PCI_CMD_BASE_REG + (res_n + 1) * sizeof(CARD32),
+	    		 ((CARD32 *)(&(pcp->pci_base0)))[res_n + 1]);
+#else
+	    ((CARD32 *)(&(pcp->pci_base0)))[res_n + 1] = 0;
+	    pciWriteLong(tag, PCI_CMD_BASE_REG + (res_n + 1) * sizeof(CARD32),
+			 0);
 #endif
+	}
     } else {
-	CARD32 val = pciReadLong(tag,PCI_CMD_BIOS_REG) & 0x01;
-	pciWriteLong(tag,PCI_CMD_BIOS_REG,(CARD32)(*p_base) | val);
+	pvp->biosBase = range.rBegin;
+	pcp->pci_baserom = (pciReadLong(tag,PCI_CMD_BIOS_REG) & 0x01) |
+	    (CARD32)(*p_base);
+	pciWriteLong(tag, PCI_CMD_BIOS_REG, pcp->pci_baserom);
     }
     /* @@@ fake BIOS allocated resource */
     range.type |= ResBios;
@@ -1564,7 +1588,9 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 			get_sun_apb_ranges(PciBus, pcrp);
 			break;
 		}
-		if (pcrp->pci_command & PCI_CMD_IO_ENABLE) {
+		if ((pcrp->pci_command & PCI_CMD_IO_ENABLE) &&
+		    (pcrp->pci_upper_io_base || pcrp->pci_io_base ||
+		     pcrp->pci_upper_io_limit || pcrp->pci_io_limit)) {
 		    base = (pcrp->pci_upper_io_base << 16) |
 			((pcrp->pci_io_base & 0xf0u) << 8);
 		    limit = (pcrp->pci_upper_io_limit << 16) |
@@ -1590,7 +1616,14 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 			    PciBus->preferred_io, &range, -1);
 		    }
 		}
-		if  (pcrp->pci_command & PCI_CMD_MEM_ENABLE) {
+		if (pcrp->pci_command & PCI_CMD_MEM_ENABLE) {
+		  /*
+		   * The P2P spec requires these next two, but some bridges
+		   * don't comply.  Err on the side of caution, making the not
+		   * so bold assumption that no bridge would ever re-route the
+		   * bottom megabyte.
+		   */
+		  if (pcrp->pci_mem_base || pcrp->pci_mem_limit) {
                     base = pcrp->pci_mem_base & 0xfff0u;
                     limit = pcrp->pci_mem_limit & 0xfff0u;
 		    if (base <= limit) {
@@ -1600,6 +1633,12 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 			PciBus->preferred_mem 
 			    = xf86AddResToList(NULL, &range, -1);
 		    }
+		  }
+
+		  if (pcrp->pci_prefetch_mem_base ||
+		      pcrp->pci_prefetch_mem_limit ||
+		      pcrp->pci_prefetch_upper_mem_base ||
+		      pcrp->pci_prefetch_upper_mem_limit) {
                     base = pcrp->pci_prefetch_mem_base & 0xfff0u;
                     limit = pcrp->pci_prefetch_mem_limit & 0xfff0u;
 #if defined(LONG64) || defined(WORD64)
@@ -1613,6 +1652,7 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 			PciBus->preferred_pmem 
 			    = xf86AddResToList(NULL, &range, -1);
 		    }
+		  }
 		}
 		break;
 	    case PCI_SUBCLASS_BRIDGE_ISA:

@@ -1,4 +1,10 @@
 XFree86 4.0.1d (27 October 2000)
+ 817. Fix for missing symbol messages in int10 and cirrus driver
+      (Marc La France).
+ 816. Detect null windows of PCI-to-PCI bridges (Marc La France).
+ 815. Update pciConfigRec's and pciVideoRec's when relocating PCI resources
+      (Marc La France).
+ 814. Fix handling of 64-bit PCI bases (Marc La France).
  813. Fix cursor hide on i128 in multi-head mode (Robin Cutshaw).
  812. Fix accel on i128 non-primary cards (Robin Cutshaw).
  811. locale.alias fix for ko_KR.utf8 (#4190, Won-kyu Park).
@@ -11321,4 +11327,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1355 2000/10/25 00:10:59 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1356 2000/10/25 22:55:02 robin Exp $
