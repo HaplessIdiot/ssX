@@ -1,5 +1,5 @@
 /* $XConsortium: s3fcach.c,v 1.1 94/03/28 21:17:12 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.10 1994/12/25 12:23:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.11 1995/01/21 12:39:34 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -115,7 +115,7 @@ s3FontCache8Init()
       w -= pmwidth;
       /* x2, w2 unchanged */
       y2 += pmwidth;
-      h -= pmwidth;
+      h2 -= pmwidth;
    }
 
    /* Initialise the pixmap expansion area */
