@@ -1,6 +1,6 @@
 /*
 Copyright (c) 1997 by Mark Leisher
-Copyright (c) 1998-2000 by Juliusz Chroboczek
+Copyright (c) 1998-2002 by Juliusz Chroboczek
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -56,21 +56,15 @@ THE SOFTWARE.
 #define TWO_SIXTEENTH ((double)(1<<16))
 #define TWO_SIXTH ((double)(1<<6))
 
-/* nameID macros for getting strings from the TT font. */
-
-#define TTF_COPYRIGHT 0
-#define TTF_TYPEFACE  1
-#define TTF_PSNAME    6
-
 /* Data structures used across files */
 
-struct ttf_mapping
+typedef struct _FTMapping
 {
-  int has_cmap;
-  TT_CharMap cmap;
-  int base;
-  struct _FontMap *mapping;     /* allow inclusion without fontenc.h */
-};
+    int named;
+    FT_CharMap cmap;
+    int base;
+    struct _FontMap *mapping;     /* allow inclusion without fontenc.h */
+} FTMappingRec, *FTMappingPtr;
 
 /* Prototypes */
 
@@ -80,17 +74,15 @@ void FreeTypeRegisterFontFileFunctions(void);
 
 /* ftenc.c */
 
-int ttf_pick_cmap(char*, int, char*, TT_Face, struct ttf_mapping *);
-int ftstrcasecmp(const char *s1, const char *s2);
-unsigned ttf_remap(unsigned code, struct ttf_mapping *tm);
+int FTPickMapping(char*, int, char*, FT_Face, FTMappingPtr);
+unsigned FTRemap(FT_Face face, FTMappingPtr, unsigned code);
 
-/* ftutil.c */
+/* fttools.c */
 
-long ttf_atol(char*, char**, int);
-int ttf_u2a(int, char*, char*, int);
+int FTu2a(int, char*, char*, int, int);
 int FTtoXReturnCode(int);
-int ttf_GetEnglishName(TT_Face, char *, int);
-int ttf_checkForTTCName(char*, char**, int*);
+int FTGetEnglishName(FT_Face, int, char *, int);
+int FTcheckForTTCName(char*, char**, int*);
 
 extern void ErrorF(const char*, ...);
 
