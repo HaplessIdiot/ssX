@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.28 2000/11/28 17:25:07 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.29 2001/01/17 19:41:48 dawes Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -266,7 +266,7 @@ _XkbGetConverters(encoding_name, cvt_rtrn)
  */
 
 #define	CHARSET_FILE	"/usr/lib/X11/input/charsets"
-static char *_XkbKnownLanguages = "c=ascii:da,de,en,es,fr,is,it,nl,no,pt,sv=iso8859-1:hu,pl,cs=iso8859-2:eo=iso8859-3:sp=iso8859-5:ar,ara=iso8859-6:el=iso8859-7:he=iso8859-8:tr=iso8859-9:lt,lv=iso8859-13:et,fi=iso8859-15:ru=koi8-r:uk=koi8-u:th,th_TH,th_TH.TACTIS=tactis:hy=armscii-8:vi=tcvn-5712:ka=georgian-academy:be,bg=microsoft-cp1251";
+static char *_XkbKnownLanguages = "c=ascii:da,de,en,es,fr,is,it,nl,no,pt,sv=iso8859-1:hu,pl,cs=iso8859-2:eo=iso8859-3:sp=iso8859-5:ar,ara=iso8859-6:el=iso8859-7:he=iso8859-8:tr=iso8859-9:lt,lv=iso8859-13:et,fi=iso8859-15:ru=koi8-r:uk=koi8-u:th,th_TH,th_TH.TIS620=tis620:hy=armscii-8:vi=tcvn-5712:ka=georgian-academy:be,bg=microsoft-cp1251";
 
 char	*
 _XkbGetCharset()
