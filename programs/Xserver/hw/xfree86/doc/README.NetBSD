@@ -44,7 +44,7 @@
 
   If you don't upgrade, you'll have to build XFree86 from the sources.
   XFree86 3.1.2F should compile cleanly under earlier versions of
-  NetBSD, althrough this has not been tested.
+  NetBSD, although this has not been tested.
 
   XFree86 3.1.2F also builds on NetBSD/sparc. See section ``Building on
   NetBSD/sparc'' for details.
@@ -821,7 +821,7 @@
         machines in preparing the FreeBSD binary release.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.29 1996/08/23 11:04:15 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.30 1996/08/26 14:08:44 dawes Exp $
 
 
 

@@ -75,7 +75,7 @@
 
         Option "tgui_pci_write_off"
            Turn off PCI burst write mode.  NOTE: PCI modes. By default
-           the read burst and write burst are independant of each other.
+           the read burst and write burst are independent of each other.
            By not specifying one of the above - the PCI registers are
            untouched. If you suffer from screen corruption then try
            turning them off. By turning them on explicitly may benefit
@@ -162,7 +162,7 @@
   be worth checking wait states etc. on the card and in the BIOS setup.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.12 1996/06/29 09:07:47 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.13 1996/08/26 14:08:49 dawes Exp $
 
 
 

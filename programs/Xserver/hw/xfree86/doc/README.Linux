@@ -66,7 +66,8 @@
 
   Starting with XFree86-3.1.2F a new interactive setup utility XF86Setup
   has been included in the distribution. We recommend using this tool to
-  setup the XF86Config file. Please read the corresponing documentation.
+  setup the XF86Config file. Please read the corresponding
+  documentation.
 
   XFree86 has the ability to perform VT switching to and from the X
   server. When first started, XFree86 will automatically locate the
@@ -129,7 +130,6 @@
 
 
 
-
   5.  Compiling XFree86
 
   Only the sources for full releases of XFree86 are freely available.
@@ -181,7 +181,7 @@
   support or the Linux distribution should be made to orestz@eskimo.com.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.7 1996/08/25 14:11:45 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.8 1996/08/26 14:08:42 dawes Exp $
 
 
 

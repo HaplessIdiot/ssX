@@ -686,11 +686,11 @@
 
      Screen is `wrapped' horizontally. (546x)
         The 546x chips must have their viewport on the virtual screen
-        alligned to tile boundries, typically 128, 64, or 32 pixels.
+        aligned to tile boundaries, typically 128, 64, or 32 pixels.
         For display modes that are not a multiple of the tile size
         (i.e., 800x600 display on a 1664x1024 virtual desktop), the
         display may wrap about half a tile on the far right hand side.
-        This is because the left side of the viewable screen is alligned
+        This is because the left side of the viewable screen is aligned
         to a tile, but the right side is hanging over the edge of the
         virtual desktop.  The solution is to use a display resolution
         that is a multiple of the tile size.  Horizontal resolutions of
@@ -812,7 +812,7 @@
      o  Support and accelerated features for 546x chips.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.12 1996/08/16 12:30:45 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.13 1996/08/26 14:08:47 dawes Exp $
 
 
 

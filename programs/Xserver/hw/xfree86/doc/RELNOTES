@@ -1,7 +1,7 @@
   Release Notes for XFree86[TM] 3.1.2F (beta version)
   The XFree86 Project, Inc
 
-  25 August 1996
+  26 August 1996
 
   This document describes the rationale and conditions of this beta
   release, what is new in the XFree86 beta versions 3.1.2F, 3.1.2E,
@@ -22,8 +22,8 @@
 
   The X servers included in beta releases have a built-in expiry date.
   The reason for this is to try to prevent them from persisting beyond
-  the date of the next release.  The expiry date for 3.1.2E is 1
-  September 1996.
+  the date of the next release, and to encourage people to test new beta
+  releases.  The expiry date for 3.1.2F is 1 December 1996.
 
   The XFree86 binary beta releases may be freely redistributed providing
   that they are not modified in any way, and providing that an
@@ -57,19 +57,191 @@
   2.  XFree86 and X11R6.1
 
   XFree86 3.1.2D and subsequent releases are based on the X Consortium's
-  X11R6.1.  3.1.2D is distributed as a complete release, and 3.1.2E is
-  distributed as an upgrade relative to 3.1.2D.  R6.1 is an update to
-  R6, and is intended to be compatible with R6 at the source and
-  protocol levels.  Binaries should be upward-compatible.  X11R6.1
+  X11R6.1.  3.1.2F is distributed as a complete release.  R6.1 is an
+  update to R6, and is intended to be compatible with R6 at the source
+  and protocol levels.  Binaries should be upward-compatible.  X11R6.1
   includes some new Xserver extensions: DOUBLE-BUFFER, XKEYBOARD and
   RECORD.  LBX has been dropped from R6.1, and as such, has been dropped
-
   from XFree86 too.  It is expected that it will reappear in some form
+
   in a future release.
 
-  3.  New Features in 3.1.2E
+  3.  New Features in 3.1.2F
 
   3.1.  General
+
+
+     o  3.1.2F includes a new, graphical utility for X server
+        configuration called `XF86Setup'.
+
+     o  3.1.2F includes a full distribution for Linux/m68k.
+
+     o  Support for the Linux/Alpha has been improved.
+
+  3.2.  General X server changes
+
+
+     o  The XKEYBOARD extension and related utilities and data files
+        have been updated.  The support for European keyboards should be
+        better than in the previous release.
+
+  3.3.  DGA Extension
+
+
+     o  SetViewport has been fixed for the SVGA server.
+
+     o  An InstallColormap function has been added.
+
+     o  DGA support has been added to the AGX server.
+
+     o  A man page has been added for this extension.
+
+  3.4.  XInput Extension
+
+
+     o  Some problems with loading XInput dynamic modules have been
+        fixed.
+
+     o  Motion history support has been added for XInput devices.
+
+     o  A driver for the SummaSketch tablet has been added.
+
+     o  The Wacom driver has been updated.
+
+  3.5.  PC98 Support
+
+
+     o  A server has been added for the GA-968V4/PCI(S3 968).
+
+  3.6.  S3 server
+
+
+     o  A bug which caused the server to hang during startup with
+        Trio64V+ cards in machines with PCI SCSI controllers has been
+        fixed.
+
+     o  Problems related to hardware bugs with the Trio64V+ video
+        blanking signal have been worked around.
+
+     o  A new driver has been added for the 868/968/Trio64V+ which uses
+        the new MMIO mode available with these chips.  This new driver
+        is used by default for these chips on Intel platforms, but not
+        yet on Alpha platforms.  It can be enabled for Alpha platforms
+        by specifying:
+
+
+                Chipset "NewMMio"
+
+
+
+     This driver has one known problem in 32bpp mode with a virtual
+     screen size of 1152x864 (1024x768 seems to work fine).  If you see
+     any other problems, please let us know.  It is possible to disable
+     this new driver and use the old one by specifying:
+
+             Chipset "mmio_928"
+
+
+
+     in the Device section.  Please test the new driver before disabling
+     it, and for any problem you see, also check if it happens with the
+     old driver, and let us know (even if the old driver fixes the prob-
+     lem!).
+
+     o  An initialisation problem with some VideoLogic cards has been
+        fixed.
+
+  3.7.  Mach64 server
+
+
+     o  A bug in the handling of block_write that was introduced in
+        3.1.2E has been fixed.  If you needed to add the
+        "no_block_write" option to your XF86Config in 3.1.2E, you should
+        be able to remove it now.
+
+  3.8.  W32 server
+
+
+     o  Support has been added for the ET6000
+
+  3.9.  I128 server
+
+
+     o  Support has been added for the Series 2 cards.
+
+  3.10.  Trident driver (SVGA server)
+
+
+     o  Some problems introduced in 3.1.2E have been fixed.
+
+  3.11.  SiS driver (SVGA server)
+
+
+     o  256 colour support has been added.
+
+  3.12.  Chips and Technologies driver (SVGA server)
+
+
+     o  This driver has been significantly reworked.
+
+     o  Support has been added for the 65546, 65548, 65550 and 65554.
+
+     o  Linear addressing support for the 65530 and above.
+
+     o  16bpp and 24bpp (packed) support for the 65545 an above.
+
+     o  BitBLT acceleration for the 65545, 65546 and 65548.
+
+
+
+
+
+  3.13.  ALI driver (SVGA server)
+
+
+     o  Interlaced modes now work with this driver.
+
+  3.14.  ATI driver (SVGA server)
+
+
+     o  Mach64 support has been improved.
+
+  3.15.  Cirrus driver (SVGA server)
+
+
+     o  Support has been added for the CL-GD5446 and CL-GD5462.
+
+  3.16.  ET3000 driver (SVGA server)
+
+
+     o  VGA16 support has been added to the ET3000 driver.
+
+  3.17.  Client/Library changes
+
+
+     o  Various bugs in the previous version of xterm have been fixed.
+
+     o  The termcap and terminfo entries for xterm have been updated.
+
+     o  Support for ddterm's escape sequences has been added to xterm.
+
+     o  Support for most vt220/vt320 escape sequenced has been added to
+        xterm.
+
+     o  xdm's session handling on BSD OSs has been fixed.
+
+     o  Some buffer overrun problems which can lead to security problems
+        have been fixed in libXt and libX11.  At least one of these
+        problems has been used to exploit the setuid xterm.
+
+  3.18.  Fonts
+
+
+     o  The Cyrillic fonts have been updated.
+
+  4.  New Features in 3.1.2E
+
+  4.1.  General
 
 
      o  3.1.2E is based on the first publicly released form of X11R6.1
@@ -81,7 +253,7 @@
         (Linux on DEC Alpha/AXP architecture) with tested servers for S3
         and Mach64 cards.
 
-  3.2.  General X server changes
+  4.2.  General X server changes
 
 
      o  All VGA cards with a set of discrete clocks (i.e. not a
@@ -95,7 +267,7 @@
 
      o  Autorepeating modifier keys when using XKB have been fixed.
 
-  3.3.  XInput Extension
+  4.3.  XInput Extension
 
 
      o  A new device supporting mouse protocols has been added.
@@ -103,7 +275,7 @@
      o  The wacom device has been enhanced to support tilt valuators and
         to have a motion history.
 
-  3.4.  PC98 Support
+  4.4.  PC98 Support
 
 
      o  Bugs have been fixed in some of the PC98 servers.
@@ -113,7 +285,7 @@
 
      o  Support has been added for the PANIX-PC98 SVR4.0 OS.
 
-  3.5.  S3 server
+  4.5.  S3 server
 
 
      o  Support for the ELSA Winner 2000PRO/X rev G and ELSA Gloria-8
@@ -126,11 +298,7 @@
      o  Added options "slow_dram" and "slow_edodram" to avoid pixel
         errors on the display for some broken cards.
 
-
-
-
-
-  3.6.  Mach64 server
+  4.6.  Mach64 server
 
 
      o  Screen blanking for Mach64 CT cards running at 16bpp and 32bpp
@@ -147,7 +315,7 @@
      o  A problem with ghostview scrollbars has been fixed.  This may
         also fix some Netscape font problems that have been reported.
 
-  3.7.  W32 server
+  4.7.  W32 server
 
 
      o  Support has been added for the ICD2061A clock chip (which is
@@ -155,29 +323,31 @@
 
      o  The server's reporting of bits/RGB resolution has been fixed.
 
-  3.8.  P9000 server
+  4.8.  P9000 server
+
+
 
 
      o  DGA support has been added to the P9000 server.
 
-  3.9.  Trident driver (SVGA server)
+  4.9.  Trident driver (SVGA server)
 
 
      o  Support for the TGUI9320 has been fixed (it was broken in
         3.1.2D).
 
-  3.10.  ATI driver (SVGA server)
+  4.10.  ATI driver (SVGA server)
 
 
      o  There have been a number of updates to the ati driver.
 
-  3.11.  ARK driver (SVGA server)
+  4.11.  ARK driver (SVGA server)
 
 
      o  A problem which caused the server to crash when no Ramdac was
         given in the XF86Config file has been fixed.
 
-  3.12.  Client/Library changes
+  4.12.  Client/Library changes
 
 
      o  Problems with the colour support in xterm have been fixed.
@@ -190,19 +360,15 @@
      o  The termcap and terminfo entries for xterm have been brought up
         to date.
 
-  4.  New Features in 3.1.2D
+  5.  New Features in 3.1.2D
 
-
-
-
-
-  4.1.  General
+  5.1.  General
 
 
      o  OS/2 support has advanced significantly.  There should be OS/2
         binaries available soon.
 
-  4.2.  General X server changes
+  5.2.  General X server changes
 
 
      o  A security problem related to the X server's lock files has been
@@ -227,6 +393,7 @@
      o  Support has been added for the ALPS GlidePoint.  A tap on the
         pad is treated as a fourth button.
 
+
      o  A RecolorCursor problem that was present in servers/drivers
         using HW cursors has been fixed.
 
@@ -237,7 +404,7 @@
         With this extension enabled, you may see some differences in the
         keyboard mappings.
 
-  4.3.  PC98 Support
+  5.3.  PC98 Support
 
 
      o  Initial release of the PC98 NKV-NEC(cirrus) server. This server
@@ -261,8 +428,7 @@
      o  Initial release of the PC98 PEGC-480 server. This server is
         based on the PC-AT SVGA(generic) server.
 
-
-  4.4.  S3 server
+  5.4.  S3 server
 
 
      o  A Ti3026 clock problem that appears on some SPEA cards has been
@@ -297,7 +463,7 @@
      o  Fixes for S3 dashed lines are included.  Part of this is a
         workaround for a dashed line bug in some 968 chips.
 
-  4.5.  Mach64 server
+  5.5.  Mach64 server
 
 
      o  The Mach64 server now correctly initialises Block I/O mode on
@@ -313,7 +479,7 @@
         +  Screen blanking at 16bpp doesn't work properly with CT (and
            other?) cards.
 
-  4.6.  I128 server
+  5.6.  I128 server
 
 
      o  Problems detecting some I128 cards have been fixed.
@@ -322,7 +488,7 @@
 
      o  The server is still completely unaccelerated.
 
-  4.7.  SVGA/VGA16/Mono servers
+  5.7.  SVGA/VGA16/Mono servers
 
 
      o  A PCI probe has been added to these servers.  If it causes
@@ -334,7 +500,7 @@
 
      to the Device section in your XF86Config file.
 
-  4.8.  Trident driver (SVGA server)
+  5.8.  Trident driver (SVGA server)
 
 
      o  Known problems with TGUI9440 cards have been fixed (including
@@ -342,13 +508,13 @@
 
      o  Support for TGUI9660/9680 cards has been improved.
 
-  4.9.  ARK driver (SVGA server)
+  5.9.  ARK driver (SVGA server)
 
 
      o  The ICS5342 clock support (required for the Diamond Stealth64
         Graphics 2001 series) has been fixed.
 
-  4.10.  ATI driver (SVGA server)
+  5.10.  ATI driver (SVGA server)
 
 
      o  The driver name has been changed back from "vgawonder" to "ati".
@@ -358,27 +524,29 @@
      o  The "undoc_clocks" option has been removed.  If you had been
         using it, remove it from your XF86Config file.
 
+
+
      o  A colourmap problem with VGA Wonder V3 boards has been fixed.
 
-  4.11.  ET4000 driver (SVGA server)
+  5.11.  ET4000 driver (SVGA server)
 
 
      o  The ET4000 driver support in the SVGA server was broken in
         3.1.2B for old ET4000 (non-W32) cards.  This has been fixed.
 
-  4.12.  Compaq AVGA driver (SVGA server)
+  5.12.  Compaq AVGA driver (SVGA server)
 
 
      o  The Compaq AVGA driver has been disabled in this release because
         it doesn't work, and nobody seems interested in fixing it.
 
-  4.13.  Hercules mono driver
+  5.13.  Hercules mono driver
 
 
      o  The Hercules mono driver has been disabled in this release
         because it has problems, and isn't likely to be fixed soon.
 
-  4.14.  XInput Extension
+  5.14.  XInput Extension
 
 
      o  Bugs with the Wacom Tablet support have been fixed.
@@ -394,7 +562,7 @@
      o  Multiple instances of XInput devices may be specified.  As a
         consequence, the "Joystick2" device has been removed.
 
-  4.15.  SuperProbe
+  5.15.  SuperProbe
 
 
      o  Much improved detection for Mach64 cards.
@@ -403,7 +571,7 @@
 
      o  Added detection of SiS cards.
 
-  4.16.  Client/Library Changes
+  5.16.  Client/Library Changes
 
 
      o  As part of the change to X11R6.1, the shared library revisions
@@ -422,13 +590,15 @@
      o  xdpyinfo has been updated to provide more detailed information
         about the XInput extension and the XFree86 extensions.
 
+
+
      o  The setting/examining of extended screen saver parameters has
         been added to xset (was in xvidtune).  xset can now also be used
         to set the keyboard repeat parameters.
 
-  5.  New Features in 3.1.2B
+  6.  New Features in 3.1.2B
 
-  5.1.  General X server changes
+  6.1.  General X server changes
 
 
      o  A new extension called XFree86-DGA is now provided.  This allows
@@ -457,10 +627,7 @@
      o  The RepeatMiddle keyword that was added in 3.1.2A has been
         removed because it didn't work properly.
 
-
-
-
-  5.2.  PC98 support
+  6.2.  PC98 support
 
 
      o  Support has been added for PC98 machines.  These are Intel based
@@ -475,13 +642,13 @@
      o  Initial release of the PC98 PowerWindowLB(S3) server. This
         server is based on the PC-AT S3 server.
 
-  5.3.  Number Nine Imagine 128 server
+  6.3.  Number Nine Imagine 128 server
 
 
      o  A new server for the Number Nine Imagine 128 card is included.
         This server is currently not accelerated.
 
-  5.4.  Trident driver (SVGA server)
+  6.4.  Trident driver (SVGA server)
 
 
      o  TGUI9440 is now fully supported by the SVGA server.
@@ -489,6 +656,7 @@
      o  Major updates for most of the trident family of chips.
 
      o  Preliminary support for the 9660/9680 chipsets - please test!
+
 
      o  Hardware Cursor support has problems when mode switching.  This
         is only a positioning issue and shouldn't cause any problems.
@@ -501,7 +669,7 @@
         +  There is a problem with interlaced modes with the SVGA
            driver.
 
-  5.5.  ARK driver (SVGA server)
+  6.5.  ARK driver (SVGA server)
 
 
      o  The ICS5342 clock support (required for the Diamond Stealth64
@@ -509,7 +677,7 @@
         version.  A problem with it has been found and fixed in 3.1.2B,
         but it hasn't been tested.
 
-  5.6.  S3 server
+  6.6.  S3 server
 
 
      o  Workaround for the hardware bug in some new Trio32 chips that
@@ -524,7 +692,6 @@
 
 
      o  Support for S3 and Bt485 HW cursor in doublescan modes.
-
 
      o  Fix positioning of IBM RGB Ramdac HW cursor in interlace and
         doublescan modes (the cursor shape still isn't correct).
@@ -542,7 +709,7 @@
      o  The AT&T20C409 RAMDAC now supported at clocks up to 135MHz in
         8bpp mode.
 
-  5.7.  Mach64 server
+  6.7.  Mach64 server
 
 
      o  The Mach64 CT (also known as the 264CT, or 215CT22200) chip is
@@ -556,6 +723,7 @@
 
      o  The "program_clocks" option added in the 3.1.2A version has been
         removed, so if you have been using it in your XF86Config you
+
         will need to remove it.  The use of programmed clocks is now the
         default when a programmable clock chip is present.  This can be
         disabled if necessary by adding the following line to the Device
@@ -590,8 +758,6 @@
         +  VT switching does not work for cards with the CH8398 and
            AT&T20C409 RAMDACs.
 
-
-
         +  The background colour of the cursor in xterms for the CH8398
            and AT&T20C409 RAMDACs is blue instead of black in 16bpp and
            32bpp modes.
@@ -600,7 +766,7 @@
            console and back, it leaves ``droppings'' when entering and
            exiting windows (this bug is also present in 3.1.2).
 
-  5.8.  ET4000/W32 server
+  6.8.  ET4000/W32 server
 
 
      o  Support for the STG1703 RAMDAC/clock has been added.  Clocks up
@@ -619,23 +785,28 @@
         section entries for these are:
 
 
-                  Option "pci_burst_on"
-                  Option "pci_burst_off"
-                  Option "w32_interleave_on"
-                  Option "w32_interleave_off"
 
 
 
 
 
-  5.9.  SiS 86C201 support
+             Option "pci_burst_on"
+             Option "pci_burst_off"
+             Option "w32_interleave_on"
+             Option "w32_interleave_off"
+
+
+
+
+
+  6.9.  SiS 86C201 support
 
 
      o  Support is included in 3.1.2B for the SiS 86C201 PCI graphics
         card.  It is currently only supported by the VGA16 and Mono
         servers.  Support for 256 colour operation is being worked on.
 
-  5.10.  Client/Library changes
+  6.10.  Client/Library changes
 
 
      o  The following new clients have been added:
@@ -645,9 +816,9 @@
         +  xsetmode, xsetpointer -- programs for use with the XInput
            extension.
 
-  6.  New Features in 3.1.2A
+  7.  New Features in 3.1.2A
 
-  6.1.  General X server changes
+  7.1.  General X server changes
 
 
      o  Underscore characters are now ignored in Options and keywords in
@@ -668,12 +839,12 @@
         prevent the fonts from being treated as scalable.  This works
         with the fontserver (xfs) too.
 
-  6.2.  Trident driver (SVGA server)
+  7.2.  Trident driver (SVGA server)
 
 
      o  Preliminary support is included for the TGUI 9440.
 
-  6.3.  Cirrus driver (SVGA server)
+  7.3.  Cirrus driver (SVGA server)
 
 
      o  Support has been added for the CL-GD7543.
@@ -681,7 +852,11 @@
      o  The programmable clock code has been improved to avoid unstable
         settings.
 
-  6.4.  ARK driver (SVGA server)
+
+
+
+
+  7.4.  ARK driver (SVGA server)
 
 
      o  Preliminary support has been added for the ICS5342
@@ -703,12 +878,12 @@
      o  Panning has been fixed for ARK2000PV cards with 2MB of video
         memory.
 
-  6.5.  WD90C24 driver (SVGA server)
+  7.5.  WD90C24 driver (SVGA server)
 
 
      o  A problem with snow at high clocks has been fixed.
 
-  6.6.  S3 server
+  7.6.  S3 server
 
 
      o  The default InvertVCLK settings have been changed for #9 Motion
@@ -722,8 +897,6 @@
         20C499 RAMDACs with 868 cards.  8bpp pixel multiplexing
         currently does not work.
 
-
-
      o  The IBM RGB526 RAMDAC used on the newer Diamond Stealth64 Video
         3240/3400 cards isn't yet auto-detected, but it will work if the
         following line is added to the Device section of your XF86Config
@@ -736,22 +909,23 @@
 
 
 
-  6.7.  Mach32 server
+  7.7.  Mach32 server
 
 
      o  Hardware cursor mask problem has been fixed.
 
-  6.8.  Mach64 server
+  7.8.  Mach64 server
 
 
      o  Hardware cursor mask problem has been fixed.
 
      o  Support for the AT&T 20C408 RAMDAC/Clockchip has been added.
 
+
      o  Arbitrary clocks can be used on most boards with supported clock
         chips.  This is enabled with the "program_clocks" option.
 
-  6.9.  ET4000/W32 server
+  7.9.  ET4000/W32 server
 
 
      o  Support has been added for the ICS5341 programmable clock.  To
@@ -769,31 +943,29 @@
      o  Problems that could cause the W32 server to crash at startup or
         get stuck in a loop at exit have been fixed.
 
-  6.10.  AGX server
+  7.10.  AGX server
 
 
      o  Fix for clock probing with AGX-010 chips.
 
-  6.11.  VGA16 server
+  7.11.  VGA16 server
 
 
      o  A problem preventing the StaticGray visual from working has been
         fixed.
 
-  6.12.  xf86config utility
+  7.12.  xf86config utility
 
 
      o  Incorrect handling of IBM RGB Ramdacs has been fixed.
 
-  6.13.  SuperProbe
-
-
+  7.13.  SuperProbe
 
 
      o  Added detection for C&T 65548, Cirrus CL-GD7543/1, AT&T 20C409,
         AT&T20C499, and fixed an incorrect ET4000/W32 probe problem.
 
-  6.14.  Client/Library changes
+  7.14.  Client/Library changes
 
 
      o  The xdm security fix from the X Consortium's fix-13 is included.
@@ -812,28 +984,30 @@
 
      o  libXt bug fix from the X Consortium's fix-13.
 
-  7.  Installing the XFree86 3.1.2E Beta Release
 
-  The XFree86 3.1.2E binary beta release is distributed as a upgrade to
-  3.1.2D.  If you don't already have 3.1.2D installed, first install it
-  (installation details for 3.1.2D are included below) except for the X
-  servers.
 
-  The core part of the 3.1.2E release consists of the following files:
+
+
+  8.  Installing the XFree86 3.1.2F Beta Release
+
+  The XFree86 3.1.2F binary beta release is distributed as a full
+  release, not as an upgrade.
+
+  What follows is a list of the XFree86 3.1.2F components.  There may be
+  some variations in this for some OSs.
+
+  The following are required for all installations:
 
 
        BetaReport         Beta test report template form
-       X312Eupd.tgz       Files which have changed since 3.1.2D
-       X312Edoc.tgz       Documentation for 3.1.2E
-
-
-
-
-  and for Linux a.out also:
-
-
-       X312Eprog.tgz      programming libraries and include files
-                          which have changed since 3.1.2D
+       preinst.sh         Pre-installation script
+       postinst.sh        Post-installation script
+       X312Fbin.tgz       Clients, run-time libs, and app-defaults files
+       X312Fdoc.tgz       Documentation
+       X312Ffnts.tgz      75dpi and misc fonts
+       X312Flib.tgz       Data files required at run-time
+       X312Fman.tgz       Manual pages
+       X312Fset.tgz       XF86Setup utility
 
 
 
@@ -842,18 +1016,20 @@
   which matches your hardware.
 
 
-       X312E8514.tgz      8514/A server
-       X312EAGX.tgz       AGX server
-       X312EI128.tgz      I128 server
-       X312EMa32.tgz      Mach 32 server
-       X312EMa64.tgz      Mach 64 server
-       X312EMa8.tgz       Mach 8 server
-       X312EMono.tgz      Mono server
-       X312EP9K.tgz       P9000 server
-       X312ES3.tgz        S3 server
-       X312ESVGA.tgz      SVGA server
-       X312EVG16.tgz      16 colour VGA server
-       X312EW32.tgz       ET4000/W32 server
+       X312F8514.tgz      8514/A server
+       X312FAGX.tgz       AGX server
+       X312FI128.tgz      I128 server
+       X312FMa32.tgz      Mach 32 server
+       X312FMa64.tgz      Mach 64 server
+       X312FMa8.tgz       Mach 8 server
+       X312FMono.tgz      Mono server
+       X312FP9K.tgz       P9000 server
+       X312FS3.tgz        S3 server
+       X312FSVGA.tgz      SVGA server
+       X312FVG16.tgz      16 colour VGA server
+       X312FW32.tgz       ET4000/W32, ET6000 server
+
+
 
 
   The following X servers are for PC98 hardware.  If you have a PC98
@@ -861,118 +1037,19 @@
   a PC98 machine is, you don't need any of these.
 
 
-       X312E9NS3.tgz      PC98 NEC(S3) server
-       X312E9SPW.tgz      PC98 PCSKB-PowerWindow(S3) server
-       X312E9LPW.tgz      PC98 PowerWindowLB(S3) server
-       X312E9EGC.tgz      PC98 EGC(generic) server
-       X312E9GAN.tgz      PC98 GANB-WAP(cirrus) server
-       X312E9480.tgz      PC98 PEGC-480(generic) server
-       X312E9NKV.tgz      PC98 NKV-NEC(cirrus) server
-       X312E9WBS.tgz      PC98 WABS(cirrus) server
-       X312E9WEP.tgz      PC98 WAB-EP(cirrus) server
-       X312E9WSN.tgz      PC98 WSN-A2F(cirrus) server
-       X312E9TGU.tgz      PC98 TGUI server
+       X312F9NS3.tgz      PC98 NEC(S3) server
+       X312F9SPW.tgz      PC98 PCSKB-PowerWindow(S3) server
+       X312F9LPW.tgz      PC98 PowerWindowLB(S3) server
+       X312F9EGC.tgz      PC98 EGC(generic) server
+       X312F9GA9.tgz      PC98 GA-968V4/PCI(S3 968) server
+       X312F9GAN.tgz      PC98 GANB-WAP(cirrus) server
+       X312F9480.tgz      PC98 PEGC-480(generic) server
+       X312F9NKV.tgz      PC98 NKV-NEC(cirrus) server
+       X312F9TGU.tgz      PC98 TGUI server
+       X312F9WBS.tgz      PC98 WABS(cirrus) server
+       X312F9WEP.tgz      PC98 WAB-EP(cirrus) server
+       X312F9WSN.tgz      PC98 WSN-A2F(cirrus) server
 
-
-
-
-  The following servers are optional:
-
-
-       X312Enest.tgz     Nested X server
-       X312Evfb.tgz      Virtual framebuffer X server
-
-
-
-
-  The upgrade to version 3.1.2E will overwrite some files from the
-  3.1.2D installation.  It is recommended that you MAKE A BACKUP OF
-  /usr/X11R6 BEFORE DOING ANYTHING ELSE.
-
-  To upgrade from 3.1.2D to 3.1.2E, first extract the X312Eupd.tgz and
-  X312Edoc.tgz files as root from the /usr/X11R6 directory:
-
-
-
-               cd /usr/X11R6
-               gzip -d < X312Eupd.tgz | tar vxf -
-               gzip -d < X312Edoc.tgz | tar vxf -
-
-
-
-
-  Next, extract the server(s) you need from the same directory.  For
-  example, to extract the S3 and SVGA and Xnest servers, run:
-
-
-
-               cd /usr/X11R6
-               gzip -d < X312ES3.tgz | tar vxf -
-               gzip -d < X312ESVGA.tgz | tar vxf -
-               gzip -d < X312Enest.tgz | tar vxf -
-
-
-
-
-  Note that there is no postinst.sh script to be run for this release.
-  However, if you didn't install X312Dfnon.tgz when installing 3.1.2D
-  (or are not sure if you installed it), you should run the following:
-
-
-
-
-
-          /usr/X11R6/bin/mkfontdir /usr/X11R6/lib/X11/fonts/misc
-
-
-
-
-  An up-to-date version of the xterm termcap and terminfo entries is
-  included in the 3.1.2E update.  The files get installed in
-  /usr/X11R6/lib/X11/etc.  To make use of these, you need to manually
-  update your system's termcap or terminfo database.  If your system
-  uses termcap, find the termcap file (it may be in /etc or somewhere
-  under /usr/share), comment out the existing xterm entries, and add the
-  new ones (which are in /usr/X11R6/lib/X11/etc/xterm.termcap).  If your
-  system uses terminfo, the new entries can be installed by running:
-
-
-
-               tic /usr/X11R6/lib/X11/etc/xterm.terminfo
-
-
-
-
-  Note: on some systems (including Linux), you may first need to remove
-  some existing terminfo entries if tic complains about duplicates.  For
-  example:
-
-
-
-               rm /usr/lib/terminfo/x/xterms
-               rm /usr/lib/terminfo/v/vs100
-
-
-
-
-  8.  Installing the XFree86 3.1.2D Beta Release
-
-  The XFree86 3.1.2D binary beta release is distributed as a full
-  release, not as an upgrade.  For most operating systems, it consists
-  of the following files.
-
-  What follows is a list of the XFree86 3.1.2D components.  There may be
-  some variations in this for some OSs.
-
-  The following are required for all installations:
-
-
-       BetaReport         Beta test report template form
-       X312Dbin.tgz       Clients, run-time libs, and app-defaults files.
-       X312Ddoc.tgz       Documentation
-       X312Dfnts.tgz      75dpi and misc fonts
-       X312Dlib.tgz       Data files required at run-time.
-       X312Dman.tgz       Manual pages
 
 
 
@@ -980,23 +1057,15 @@
   The following are optional.
 
 
-
-
-
-
-
-
-
-
-  X312Df100.tgz     100dpi fonts
-  X312Dfcyr.tgz     Cyrillic fonts
-  X312Dfnon.tgz     Other fonts (Chinese, Japanese, Korean, Hebrew)
-  X312Dfscl.tgz     Scalable fonts (Speedo and Type1)
-  X312Dfsrv.tgz     Font server and config files
-  X312Dprog.tgz     X header files, config files and compile-time libs
-  X312Dcfg.tgz      sample config files for xinit, xdm
-  X312Dnest.tgz     Nested X server
-  X312Dvfb.tgz      Virtual framebuffer X server
+       X312Ff100.tgz     100dpi fonts
+       X312Ffcyr.tgz     Cyrillic fonts
+       X312Ffnon.tgz     Other fonts (Chinese, Japanese, Korean, Hebrew)
+       X312Ffscl.tgz     Scalable fonts (Speedo and Type1)
+       X312Ffsrv.tgz     Font server and config files
+       X312Fprog.tgz     X header files, config files and compile-time libs
+       X312Fcfg.tgz      sample config files for xinit, xdm
+       X312Fnest.tgz     Nested X server
+       X312Fvfb.tgz      Virtual framebuffer X server
 
 
 
@@ -1008,10 +1077,11 @@
   If you have a previous version of XFree86 installed, you can upgrade
   to the new version by first running the script preinst.sh, and then
   extracting the required .tgz files over the previous version in
-  /usr/X11R6.  The preinst.sh script must be run before removing any
-  previous beta versions you have installed.  It removes symbolic links
-  that are going to be replaced by either files or new links in this
-  version (tar won't overwrite existing symbolic links).
+  /usr/X11R6, then running the script postinst.sh.  The preinst.sh
+  script must be run before removing any previous beta versions you have
+  installed.  It removes symbolic links that are going to be replaced by
+  either files or new links in this version (tar won't overwrite
+  existing symbolic links), and it removes some old files.
 
   If you are installing from scratch, create a directory called
   /usr/X11R6, then extract the required .tgz files.  If you don't have
@@ -1025,67 +1095,63 @@
 
 
 
+  If you are installing on top of an existing installation, after
+  backing up your existing installation, copy the preinst.sh script to
+  /var/tmp, then run go to /usr/X11R6 and run it:
+
+
+               cd /usr/X11R6
+               sh /var/tmp/preinst.sh
+
+
+
+
   The .tgz files are gzipped tar files.  To extract them, go to
   /usr/X11R6, and run the following as root for each file you need:
 
 
-               gzip -d < X312Dfile.tgz | tar vxf -
+               gzip -d < X312Ffile.tgz | tar vxf -
 
 
 
 
-  If you are using NetBSD or FreeBSD, an alternative to using the
-  preinst.sh script is to extract the .tgz files with:
-
-
-               gzip -d < X312Dfile.tgz | tar -v -x --unlink -f -
+  If you are using NetBSD or FreeBSD, a more reliable way of doing this
+  is to extract the .tgz files with:
 
 
 
-
-  If you have GNU cpio (as Linux does) or SVR4 cpio, an alternative to
-  using the preinst.sh script is to extract the .tgz files with:
-
-
-               gzip -d < X312Dfile.tgz | cpio -i -v -u -H ustar
+          gzip -d < X312Ffile.tgz | tar -v -x --unlink -f -
 
 
 
 
-  Note that there is no postinst.sh script to be run for this release.
+  If you have GNU cpio (as Linux does) or SVR4 cpio, a more reliable way
+  of doing this is to extract the .tgz files with:
 
-  However, for OSs which use ldconfig (like Linux, FreeBSD and NetBSD),
-  you should either run ldconfig or reboot to complete the installation.
-  On FreeBSD and NetBSD, ldconfig takes arguments.  In particular, you
+
+               gzip -d < X312Ffile.tgz | cpio -i -v -u -H ustar
+
+
+
+
+  Once the required .tgz files have been extracted, copy the postinst.sh
+  script to /var/tmp, then run go to /usr/X11R6 and run it:
+
+
+               cd /usr/X11R6
+               sh /var/tmp/postinst.sh
+
+
+
+
+  For OSs which use ldconfig (like Linux, FreeBSD and NetBSD), you
+  should either run ldconfig or reboot to complete the installation.  On
+  FreeBSD and NetBSD, ldconfig takes arguments.  In particular, you
   should at least include /usr/lib and /usr/X11R6/lib on the command
   line.  Check /etc/rc to see how ldconfig gets run at boot time.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.34 1996/08/24 12:52:17 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.35 1996/08/26 14:08:45 dawes Exp $
 
 
 

@@ -115,7 +115,7 @@
      MemBase 0x03b00000 (or a different address)
         This sets the physical memory base address of the linear
         framebuffer. Typically this is probed correctly, but if you
-        believe it to be misprobed, this option might help.
+        believe it to be mis-probed, this option might help.
 
      Option "sw_cursor" (Chips 65545 and later)
         This disables use of the hardware cursor provided by the chip.
@@ -446,7 +446,7 @@
      o  David Bateman
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.3 1996/08/24 12:52:18 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.4 1996/08/26 14:08:46 dawes Exp $
 
 
 
