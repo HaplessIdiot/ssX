@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapw.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapw.c,v 1.8tsi Exp $ */
 /*
  * Copyright 2002 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -49,6 +49,21 @@
 # define strtoull strtouq
 #endif
 
+#ifdef linux
+# include <sys/ioctl.h>
+# include <linux/pci.h>
+
+# ifndef PCIIOC_BASE
+   /* Selected ioctls for /proc/bus/pci/<bus>/<dfn> nodes */
+#  define PCIIOC_BASE		(('P' << 24) | ('C' << 16) | ('I' << 8))
+
+   /* Set mmap state to I/O space */
+#  define PCIIOC_MMAP_IS_IO	(PCIIOC_BASE | 0x01)
+   /* Set mmap state to memory space */
+#  define PCIIOC_MMAP_IS_MEM	(PCIIOC_BASE | 0x02)
+# endif
+#endif
+
 #define datab unsigned char
 #define dataw unsigned short
 #define datal unsigned int
@@ -59,7 +74,13 @@ static void
 usage(void)
 {
     fprintf(stderr, "\n"
+#ifdef linux
+        "mmapw [-{im}] [-{bwlqL}] <file> <offset> <value>\n\n"
+	" -i   select /proc/bus/pci/<bus>/<dfn> I/O space\n"
+	" -m   select /proc/bus/pci/<bus>/<dfn> memory space\n\n"
+#else
         "mmapw [-{bwlqL}] <file> <offset> <value>\n\n"
+#endif
         "access size flags:\n\n"
         " -b   write one byte\n"
         " -w   write two aligned bytes\n"
@@ -100,17 +121,15 @@ main(int argc, char **argv)
     char *BadString;
     void *buffer;
     int fd, pagesize;
+#ifdef linux
+    int mmap_ioctl = 0;
+#endif
     char size = sizeof(datal);
 
-    switch (argc)
+    while (argv[1] && (argv[1][0] == '-') && argv[1][1])
     {
-        case 4:
-            break;
-
-        case 5:
-            if (argv[1][0] != '-')
-                usage();
-
+	for (;  argv[1][1];  argv[1]++)
+	{
             switch (argv[1][1])
             {
                 case 'b':
@@ -132,21 +151,26 @@ main(int argc, char **argv)
                 case 'q':
                     size = sizeof(dataq);
                     break;
+#ifdef linux
+		case 'i':
+		    mmap_ioctl = PCIIOC_MMAP_IS_IO;
+		    break;
 
+		case 'm':
+		    mmap_ioctl = PCIIOC_MMAP_IS_MEM;
+		    break;
+#endif
                 default:
                     usage();
             }
+	}
 
-            if (argv[1][2])
-                usage();
-
-            argc--;
-            argv++;
-            break;
-
-        default:
-            usage();
+	argc--;
+	argv++;
     }
+
+    if (argc != 4)
+	usage();
 
     BadString = (char *)0;
     Offset = strtoull(argv[2], &BadString, 0);
@@ -160,10 +184,16 @@ main(int argc, char **argv)
 
     if ((fd = open(argv[1], O_RDWR)) < 0)
     {
-        fprintf(stderr, "mmapr:  Unable to open \"%s\":  %s.\n",
+        fprintf(stderr, "mmapw:  Unable to open \"%s\":  %s.\n",
             argv[1], strerror(errno));
         exit(1);
     }
+
+#ifdef linux
+    if (mmap_ioctl && (ioctl(fd, mmap_ioctl, 0) < 0))
+	fprintf(stderr, "mmapw:  ioctl error:  \"%s\";  Ignored.\n",
+	    strerror(errno));
+#endif
 
     pagesize = getpagesize();
     offset = Offset & (off_t)(-pagesize);
@@ -172,7 +202,7 @@ main(int argc, char **argv)
     close(fd);
     if (buffer == MAP_FAILED)
     {
-        fprintf(stderr, "mmapr:  Unable to mmap \"%s\":  %s.\n",
+        fprintf(stderr, "mmapw:  Unable to mmap \"%s\":  %s.\n",
             argv[1], strerror(errno));
         exit(1);
     }

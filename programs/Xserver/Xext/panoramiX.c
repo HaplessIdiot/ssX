@@ -68,7 +68,7 @@ Equipment Corporation.
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.40 2004/06/30 20:21:38 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.41tsi Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -538,12 +538,13 @@ void PanoramiXExtensionInit(int argc, char *argv[])
     if (noPanoramiXExtension) 
 	return;
 
+    /*
+     * Given this extension was explicitly requested, initialise it even if
+     * there's only one screen.
+     */
+
     GlobalScrInfo = &screenInfo;		/* For debug visibility */
     PanoramiXNumScreens = screenInfo.numScreens;
-    if (PanoramiXNumScreens == 1) {		/* Only 1 screen 	*/
-	noPanoramiXExtension = TRUE;
-	return;
-    }
 
     while (panoramiXGeneration != serverGeneration) {
 	extEntry = AddExtension(PANORAMIX_PROTOCOL_NAME, 0,0, 
@@ -687,6 +688,7 @@ PanoramiXCreateConnectionBlock(void)
     Bool disableBackingStore = FALSE;
     Bool disableSaveUnders = FALSE;
     int old_width, old_height;
+    int rootDepth;
     float width_mult, height_mult;
     xWindowRoot *root;
     xVisualType *visual;
@@ -698,14 +700,15 @@ PanoramiXCreateConnectionBlock(void)
      *	Do normal CreateConnectionBlock but faking it for only one screen
      */
 
-    if(!PanoramiXNumDepths) {
+    if(!PanoramiXNumDepths || !PanoramiXNumVisuals) {
 	ErrorF("PanoramiX error: Incompatible screens. No common visuals\n");
 	return FALSE;
     }
 
+    rootDepth = screenInfo.screens[0]->rootDepth;
     for(i = 1; i < screenInfo.numScreens; i++) {
 	pScreen = screenInfo.screens[i];
-	if(pScreen->rootDepth != screenInfo.screens[0]->rootDepth) {
+	if(pScreen->rootDepth != rootDepth) {
 	    ErrorF("PanoramiX error: Incompatible screens. Root window depths differ\n");
 	    return FALSE;
 	}
@@ -738,9 +741,25 @@ PanoramiXCreateConnectionBlock(void)
     length = connBlockScreenStart + sizeof(xWindowRoot);
 
     /* overwrite the connection block */
-    root->nDepths = PanoramiXNumDepths;
+    root->nDepths = 0;
 
     for (i = 0; i < PanoramiXNumDepths; i++) {
+	if (!PanoramiXDepths[i].numVids) {
+	    if (rootDepth == PanoramiXDepths[i].depth) {
+		/* This is a fatal error */
+		ErrorF("Root depth has no visuals common to all screens\n");
+		xfree(ConnectionInfo);
+		return FALSE;
+	    }
+#if 0
+	    ErrorF("Ignoring depth %d has no visuals common to all screens\n",
+		   PanoramiXDepths[i].depth);
+	    continue;
+#endif
+	}
+
+	root->nDepths++;
+
 	depth = (xDepth *) (ConnectionInfo + length);
 	depth->depth = PanoramiXDepths[i].depth;
 	depth->nVisuals = PanoramiXDepths[i].numVids;

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.40 2004/09/08 14:15:46 tsi Exp $ */
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.41tsi Exp $ */
 
 
 
@@ -34,8 +34,7 @@ DLOBJ=dlloader.o
     SHM_DEFINES = -DHAS_SHM
 #endif
 
-#if defined(LinuxArchitecture) && \
-    (defined(i386Architecture) || defined(AMD64Architecture))
+#if defined(LinuxArchitecture)
 ARCHDEFINES = -DDoMMAPedMerge -DMmapPageAlign
 #endif
 

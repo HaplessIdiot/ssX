@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapr.c,v 1.9 2004/12/24 16:18:48 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapr.c,v 1.10tsi Exp $ */
 /*
  * Copyright 2002 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -40,7 +40,7 @@
 #endif
 
 #if defined(_SCO_DS) && !defined(_SCO_DS_LL)
-#define strtoull (unsigned long long)strtoul
+# define strtoull (unsigned long long)strtoul
 #endif
 
 #if !defined(strtoull) && \
@@ -48,6 +48,21 @@
      (defined(__GNU_LIBRARY__) && \
        (__GNU_LIBRARY__ < 6)))
 # define strtoull strtouq
+#endif
+
+#ifdef linux
+# include <sys/ioctl.h>
+# include <linux/pci.h>
+
+# ifndef PCIIOC_BASE
+   /* Selected ioctls for /proc/bus/pci/<bus>/<dfn> nodes */
+#  define PCIIOC_BASE		(('P') << 24) | ('C' << 16) | ('I' << 8))
+
+   /* Set mmap state to I/O space */
+#  define PCIIOC_MMAP_IS_IO	(PCIIOC_BASE | 0x01)
+   /* Set mmap state to memory space */
+#  define PCIIOC_MMAP_IS_MEM	(PCIIOC_BASE | 0x02)
+# endif
 #endif
 
 static unsigned char datab;
@@ -62,7 +77,13 @@ static void
 usage(void)
 {
     fprintf(stderr, "\n"
+#ifdef linux
+        "mmapr [-p] [-{im}] [-{bwlqL}] <file> <offset> <length>\n\n"
+	" -i   select /proc/bus/pci/<bus>/<dfn> I/O space\n"
+	" -m   select /proc/bus/pci/<bus>/<dfn> memory space\n\n"
+#else
         "mmapr [-p] [-{bwlqL}] <file> <offset> <length>\n\n"
+#endif
         " -p   pretty-print output\n\n"
         "access size flags:\n\n"
         " -b   output one byte at a time\n"
@@ -103,6 +124,9 @@ main(int argc, char **argv)
     char *BadString, *data;
     void *buffer;
     int fd, pagesize, prettyprint = 0;
+#ifdef linux
+    int mmap_ioctl = 0;
+#endif
     char Address[20], Hex[36], Glyph[17];
     char Size = sizeof(datal), Format = 0;
 
@@ -135,7 +159,15 @@ main(int argc, char **argv)
                 case 'q':
                     Size = sizeof(dataq);
                     break;
+#ifdef linux
+		case 'i':
+		    mmap_ioctl = PCIIOC_MMAP_IS_IO;
+		    break;
 
+		case 'm':
+		    mmap_ioctl = PCIIOC_MMAP_IS_MEM;
+		    break;
+#endif
                 default:
                     usage();
             }
@@ -167,6 +199,12 @@ main(int argc, char **argv)
             argv[1], strerror(errno));
         exit(1);
     }
+
+#ifdef linux
+    if (mmap_ioctl && (ioctl(fd, mmap_ioctl, 0) < 0))
+	fprintf(stderr, "mmapr:  ioctl error:  \"%s\";  Ignored.\n",
+	    strerror(errno));
+#endif
 
     pagesize = getpagesize();
     offset = Offset & (off_t)(-pagesize);
