@@ -141,7 +141,10 @@
 #define R200_EMIT_PP_CUBIC_OFFSETS_4                70
 #define R200_EMIT_PP_CUBIC_FACES_5                  71
 #define R200_EMIT_PP_CUBIC_OFFSETS_5                72
-#define RADEON_MAX_STATE_PACKETS                    73
+#define RADEON_EMIT_PP_TEX_SIZE_0                   73
+#define RADEON_EMIT_PP_TEX_SIZE_1                   74
+#define RADEON_EMIT_PP_TEX_SIZE_2                   75
+#define RADEON_MAX_STATE_PACKETS                    76
 
 
 /* Commands understood by cmd_buffer ioctl.  More can be added but
@@ -526,8 +529,10 @@ typedef struct drm_radeon_indirect {
 #define RADEON_PARAM_LAST_FRAME            2
 #define RADEON_PARAM_LAST_DISPATCH         3
 #define RADEON_PARAM_LAST_CLEAR            4
+/* Added with DRM version 1.6. */
 #define RADEON_PARAM_IRQ_NR                5
 #define RADEON_PARAM_AGP_BASE              6 /* card offset of agp base */
+/* Added with DRM version 1.8. */
 #define RADEON_PARAM_REGISTER_HANDLE       7 /* for drmMap() */
 #define RADEON_PARAM_STATUS_HANDLE         8
 #define RADEON_PARAM_SAREA_HANDLE          9
