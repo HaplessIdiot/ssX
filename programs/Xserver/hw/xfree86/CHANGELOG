@@ -1,4 +1,9 @@
 XFree86 4.0.99.3 (26 April 2001)
+ 449. Don't build clients that require extension libraries unless those
+      libraries are being built (#A.386, Scott A McConnell, David Dawes).
+ 448. Fix the BuildXinerama test in Xserver/Imakefile (#4615, Harold Hunt).
+ 447. Ignore MakeDllModules when DoLoadableServer isn't set (#4613,
+      Guido Guenther).
  446. Don't define the <Ctrl>T compose sequences in the iso8859-1 compose
       map by default (#4611, Mike Harris).
  445. Allow the nls compose data files to be pre-processed (David Dawes).
@@ -132,7 +137,7 @@ XFree86 4.0.99.3 (26 April 2001)
       directories.  The other "unnec" fonts are also moved over (#4548,
       Markus Kuhn).
  382. Make the v4l driver module keep searching for more devices if the first
-      one can't do overlay (#4545, Gerd Knorr).
+      one can't do overlay (#4545, 4614, Gerd Knorr).
  381. Bug fixes for Xv support using a Permedia3 chip (#4564, Sven Luther).
  380. Xterm patches #151, #152, #153, #154 (Thomas Dickey):
        - improve select/paste of COMPOUND_TEXT and UTF8_STRING (Juliusz
@@ -13095,4 +13100,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1720 2001/04/26 16:54:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1721 2001/04/26 21:09:42 dawes Exp $

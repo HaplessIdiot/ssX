@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:47:01 cpqbld Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.224 2001/04/23 20:50:59 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.225 2001/04/26 18:00:19 alanh Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -21,7 +21,7 @@ INSTPGMFLAGS =
 #define BarePostFbLibs $(MFB) $(XPFBLIBS) $(MI)
 #define PostFbLibs BarePostFbLibs $(EXTENSIONS)
 #define NoMfbBarePostFbLibs $(XPFBLIBS) $(MI)
-#ifndef BuildXinerama
+#if !BuildXinerama
 #define NoMfbPostFbLibs NoMfbBarePostFbLibs $(EXTENSIONS)
 #else
 #define NoMfbPostFbLibs $(EXTENSIONS) NoMfbBarePostFbLibs $(EXTENSIONS)

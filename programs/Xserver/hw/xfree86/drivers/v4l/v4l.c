@@ -2,7 +2,7 @@
  *  video4linux Xv Driver 
  *  based on Michael Schimek's permedia 2 driver.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.22 2001/04/05 20:13:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.23 2001/04/18 14:52:42 dawes Exp $ */
 
 #include "videodev.h"
 #include "xf86.h"
@@ -838,15 +838,15 @@ V4LInit(ScrnInfoPtr pScrn, XF86VideoAdaptorPtr **adaptors)
     DevUnion *Private;
     XF86VideoAdaptorPtr *VAR = NULL;
     char dev[18];
-    int  fd,i,j;
+    int  fd,i,j,d;
 
     DEBUG(xf86Msg(X_INFO, "v4l: init start\n"));
 
-    for (i = 0; i < MAX_V4L_DEVICES; i++) {
-	sprintf(dev, "/dev/video%d", i);
+    for (i = 0, d = 0; d < MAX_V4L_DEVICES; d++) {
+	sprintf(dev, "/dev/video%d", d);
 	fd = open(dev, O_RDWR, 0);
 	if (fd == -1) {
-	    sprintf(dev, "/dev/v4l/video%d", i);
+	    sprintf(dev, "/dev/v4l/video%d", d);
 	    fd = open(dev, O_RDWR, 0);
 	    if (fd == -1)
 		break;
@@ -967,6 +967,7 @@ V4LInit(ScrnInfoPtr pScrn, XF86VideoAdaptorPtr **adaptors)
 
 	if (fd != -1)
 	    close(fd);
+	i++;
     }
 
     xvEncoding   = MAKE_ATOM(XV_ENCODING);
@@ -979,7 +980,7 @@ V4LInit(ScrnInfoPtr pScrn, XF86VideoAdaptorPtr **adaptors)
     xvMute       = MAKE_ATOM(XV_MUTE);
     xvVolume     = MAKE_ATOM(XV_VOLUME);
 
-    DEBUG(xf86Msg(X_INFO, "v4l: init done, %d found\n",i));
+    DEBUG(xf86Msg(X_INFO, "v4l: init done, %d device(s) found\n",i));
 
     *adaptors = VAR;
     return i;
