@@ -23,6 +23,7 @@
  * advertising or publicity pertaining to distribution of the software without
  * specific, written prior permission.
  */
+/* $XFree86$ */
 
 #ifndef _bbox_h
 #define _bbox_h

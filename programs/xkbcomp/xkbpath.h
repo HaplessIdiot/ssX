@@ -24,6 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
+/* $XFree86$ */
 
 #ifndef _XKBPATH_H_
 #define _XKBPATH_H_ 1

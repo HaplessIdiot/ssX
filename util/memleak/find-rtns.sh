@@ -8,6 +8,8 @@
 #
 # Usage: find-routines <program-name> {leak-tracing-output-files}
 #
+# $XFree86$
+#
 
 TMP1=find-routine.tmp1
 TMP=find-routine.tmp

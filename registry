@@ -1685,3 +1685,5 @@ REFERENCES
 [134]   In R6.6 X.Org is reserving the string UTF8_STRING for use as an ICCCM
         property type and selection target.  The ICCCM spec will be updated
         in a future release to fully specify UTF8_STRING.
+
+/* $XFree86$ */
