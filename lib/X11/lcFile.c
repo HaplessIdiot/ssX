@@ -23,7 +23,7 @@
  * SOFTWARE.
  *
 */
-/* $XFree86: xc/lib/X11/lcFile.c,v 3.13 1997/11/22 06:50:11 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcFile.c,v 3.14 1998/06/04 16:43:06 hohndel Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -311,6 +311,7 @@ _XlcResolveLocaleName(lc_name, pub)
     int i, n, len, sinamelen;
     char *args[NUM_LOCALEDIR];
     static char locale_alias[] = LOCALE_ALIAS;
+    char *tmp_siname;
 
     xlocaledir (dir, PATH_MAX);
     n = _XlcParsePath(dir, args, NUM_LOCALEDIR);
@@ -345,7 +346,11 @@ _XlcResolveLocaleName(lc_name, pub)
      * be "en_US.ISO8859-1", "en_US.utf8", "ru_RU.KOI-8", or ja_JP.SJIS,
      * although it could be ja.SJIS too.
      */
-    pub->siname = Xrealloc (pub->siname, 2 * (sinamelen + 1));
+    tmp_siname = Xrealloc (pub->siname, 2 * (sinamelen + 1));
+    if (tmp_siname == NULL) {
+	return 0;
+    }
+    pub->siname = tmp_siname;
 
     /* language */
     dst = &pub->siname[sinamelen + 1];
