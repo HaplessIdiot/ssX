@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.58 1997/04/08 10:11:41 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.59 1997/04/10 10:06:49 hohndel Exp $
 
 
 
@@ -329,6 +329,7 @@ InstallLinkKitNonExecFile(xf86_Option.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(xf86_Option.c,$(LINKKITDIR))
 InstallLinkKitNonExecFile(xf86_Config.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(xf86DCConf.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(xf86_ldext.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(compiler.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(XF86_SVGA.c,$(LINKKITDIR))
 InstallLinkKitNonExecFile(XF86_VGA16.c,$(LINKKITDIR))

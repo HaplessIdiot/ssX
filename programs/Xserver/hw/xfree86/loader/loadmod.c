@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.11 1997/04/08 10:13:49 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.12 1997/04/10 10:06:56 hohndel Exp $ */
 
 
 
@@ -29,15 +29,15 @@
 #define NO_OSLIB_PROTOTYPES
 #include "os.h"
 #include "xf86_OSlib.h"
+#if defined(SVR4)
+#include <sys/stat.h>
+#endif
 #define LOADERDECLARATIONS
 #include "misc.h"
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "vga.h"
 #include "xf86_ldext.h"
-
-void * LOADERVAR(cfbGCPrivateIndex);
-void * LOADERVAR(endtab);
 
 int  *xf86ccdScreenPrivateIndex = NULL;
 void (*xf86ccdDoBitblt)() = NULL;
@@ -68,12 +68,6 @@ GlxInitVisualsType GlxInitVisualsPtr;
 #endif
 
 extern int check_unresolved_sema;
-
-LoaderFixups()
-{
-LOADERVAR(endtab) =
-	(void *) LoaderSymbol("endtab");
-}
 
 static char *subdirs[] = 
 {

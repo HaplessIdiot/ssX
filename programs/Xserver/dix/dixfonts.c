@@ -22,7 +22,7 @@ SOFTWARE.
 ************************************************************************/
 
 /* $XConsortium: dixfonts.c /main/58 1996/09/28 17:11:55 rws $ */
-/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.8 1997/03/03 10:17:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.9 1997/03/18 10:04:43 hohndel Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -41,49 +41,7 @@ SOFTWARE.
 #include	<stdio.h>
 #endif
 
-#ifdef XFree86Server
-extern int xf86bpp;
-#endif
-
 #define QUERYCHARINFO(pci, pr)  *(pr) = (pci)->metrics
-
-#ifndef XFree86Server
-/*
- * when building the XFree86 server, we decide at runtime which one to use
- */
-static Mask FontFormat = 
-#if IMAGE_BYTE_ORDER == LSBFirst
-    BitmapFormatByteOrderLSB |
-#else
-    BitmapFormatByteOrderMSB |
-#endif
-
-#if BITMAP_BIT_ORDER == LSBFirst
-    BitmapFormatBitOrderLSB |
-#else
-    BitmapFormatBitOrderMSB |
-#endif
-
-    BitmapFormatImageRectMin |
-
-#if GLYPHPADBYTES == 1
-    BitmapFormatScanlinePad8 |
-#endif
-
-#if GLYPHPADBYTES == 2
-    BitmapFormatScanlinePad16 |
-#endif
-
-#if GLYPHPADBYTES == 4
-    BitmapFormatScanlinePad32 |
-#endif
-
-#if GLYPHPADBYTES == 8
-    BitmapFormatScanlinePad64 |
-#endif
-
-    BitmapFormatScanlineUnit8;
-#endif /* XFree86Server */
 
 extern pointer fosNaturalParams;
 extern FontPtr defaultFont;
@@ -266,39 +224,36 @@ doOpenFont(client, c)
                *newname;
     int         newlen;
     int		aliascount = 20;
-#ifdef XFree86Server
-/*
- * when building the loader, we decide at runtime which one to use
- */
+    /*
+     * Decide at runtime what FontFormat to use.
+     */
     Mask FontFormat = 
-#if IMAGE_BYTE_ORDER == LSBFirst
-    BitmapFormatByteOrderLSB |
-#else
-    BitmapFormatByteOrderMSB |
-#endif
 
-    ((xf86bpp < 8) ? BitmapFormatBitOrderMSB : BitmapFormatBitOrderLSB) |
+	((screenInfo.imageByteOrder == LSBFirst) ?
+	    BitmapFormatByteOrderLSB : BitmapFormatByteOrderMSB) |
 
-    BitmapFormatImageRectMin |
+	((screenInfo.bitmapBitOrder == LSBFirst) ?
+	    BitmapFormatBitOrderLSB : BitmapFormatBitOrderMSB) |
+
+	BitmapFormatImageRectMin |
 
 #if GLYPHPADBYTES == 1
-    BitmapFormatScanlinePad8 |
+	BitmapFormatScanlinePad8 |
 #endif
 
 #if GLYPHPADBYTES == 2
-    BitmapFormatScanlinePad16 |
+	BitmapFormatScanlinePad16 |
 #endif
 
 #if GLYPHPADBYTES == 4
-    BitmapFormatScanlinePad32 |
+	BitmapFormatScanlinePad32 |
 #endif
 
 #if GLYPHPADBYTES == 8
-    BitmapFormatScanlinePad64 |
+	BitmapFormatScanlinePad64 |
 #endif
 
-    BitmapFormatScanlineUnit8;
-#endif /* XFree86Server */
+	BitmapFormatScanlineUnit8;
 
     if (client->clientGone)
     {

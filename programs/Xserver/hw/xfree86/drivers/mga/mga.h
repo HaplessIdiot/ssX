@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga.h,v 3.9 1997/03/03 10:19:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.1 1997/03/06 23:15:59 hohndel Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -32,19 +32,19 @@
 #define OUTREG(addr, val) *(volatile CARD32 *)(MGAMMIOBase + (addr)) = (val)
 #endif /* __alpha__ */
 
+#define MGAWAITFIFO() while(INREG16(MGAREG_FIFOSTATUS) & 0x100);
+#define MGAWAITFREE() while(INREG8(MGAREG_Status + 2) & 0x01);
+#define MGAWAITFIFOSLOTS(slots) while ( ((INREG16(MGAREG_FIFOSTATUS) & 0x3f) - (slots)) < 0 );
+
+extern pciTagRec MGAPciTag;
+extern int MGAinterleave;
+extern int MGABppShft;
+extern int MGAusefbitblt;
+extern int MGAydstorg;
 extern unsigned char *MGAMMIOBase;
 #ifdef __alpha__
 extern unsigned char *MGAMMIOBaseDENSE;
 #endif
-
-#define MGAWAITFIFO() while(INREG16(MGAREG_FIFOSTATUS) & 0x100);
-#define MGAWAITFREE() while(INREG8(MGAREG_Status + 2) & 0x01);
-
-#define MGAWAITFIFOSLOTS(slots) while ( ((INREG16(MGAREG_FIFOSTATUS) & 0x3f) - (slots)) < 0 );
-
-extern int MGAinterleave;
-extern int MGAusefbitblt;
-extern int MGAydstorg;
 
 /*
  * ROPs

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.17 1997/03/24 13:09:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.18 1997/04/08 10:13:50 hohndel Exp $ */
 
 
 
@@ -80,6 +80,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86UnMapDisplay)
    SYMFUNC(xf86MapDisplay)
    SYMFUNC(xf86MapVidMem)
+   SYMFUNC(xf86InitViewport)
    SYMFUNC(xf86VerifyOptions)
    SYMFUNC(xf86ccdDoBitblt)
    SYMFUNC(xf86ccdXAAScreenInit)

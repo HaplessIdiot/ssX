@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.4 1997/03/27 08:30:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.5 1997/04/08 10:13:03 hohndel Exp $ */
 
 /*
  *
@@ -506,23 +506,47 @@ void S3SubsequentDashedBresenhamLine32(x1, y1, octant, err, e1, e2, length,
 							start)
     int x1, y1, octant, err, e1, e2, length, start;
 {
-    unsigned short cmd = LASTPIX | CMD_LINE | WRTDATA | PLANAR | 
-					_32BIT | DRAW | PCDATA;
+    unsigned short cmd;
     register int count;
     register CARD32 pattern;
 
-    if(octant & YMAJOR) cmd |= YMAJAXIS;
-    if(!(octant & XDECREASING)) cmd |= INC_X;
-    if(!(octant & YDECREASING)) cmd |= INC_Y;
-
     count = (length + 31) >> 5;
 
-    WaitQueue(7);
-    SET_CURPT((short)x1, (short)y1);
-    SET_ERR_TERM((short)err);
-    SET_DESTSTP((short)e2, (short)e1);
-    SET_MAJ_AXIS_PCNT((short)length);
-    SET_CMD(cmd);
+    if(e1) {
+	cmd = LASTPIX | CMD_LINE | WRTDATA | PLANAR | _32BIT | DRAW | PCDATA;
+
+       	if(octant & YMAJOR) cmd |= YMAJAXIS;
+    	if(!(octant & XDECREASING)) cmd |= INC_X;
+    	if(!(octant & YDECREASING)) cmd |= INC_Y;
+
+    	WaitQueue(7);
+    	SET_CURPT((short)x1, (short)y1);
+    	SET_ERR_TERM((short)err);
+    	SET_DESTSTP((short)e2, (short)e1);
+    	SET_MAJ_AXIS_PCNT((short)length);
+    	SET_CMD(cmd);
+    } else {
+	if (octant & YMAJOR){
+   	    if(octant & YDECREASING)   
+   	    	cmd = CMD_LINE | DRAW | LINETYPE | PLANAR | _32BIT | 
+						WRTDATA | VECDIR_090;
+            else 
+	    	cmd = CMD_LINE | DRAW | LINETYPE | PLANAR | _32BIT | 
+						WRTDATA | VECDIR_270;
+	} else {
+    	    if(octant & XDECREASING)   
+   	    	cmd = CMD_LINE | DRAW | LINETYPE | PLANAR | _32BIT |
+ 						WRTDATA | VECDIR_180;
+            else 
+	    	cmd = CMD_LINE | DRAW | LINETYPE | PLANAR | _32BIT | 
+						WRTDATA | VECDIR_000; 
+	}
+ 
+     	WaitQueue(4);
+    	SET_CURPT((short)x1, (short)y1);
+    	SET_MAJ_AXIS_PCNT((short)length - 1);
+    	SET_CMD(cmd);
+    }
 
     if(NicePattern) {
 	pattern = 
@@ -565,23 +589,47 @@ void S3SubsequentDashedBresenhamLine16(x1, y1, octant, err, e1, e2, length,
 							start)
     int x1, y1, octant, err, e1, e2, length, start;
 {
-    unsigned short cmd = LASTPIX | CMD_LINE | WRTDATA | PLANAR | 
-					_16BIT | DRAW | PCDATA;
+    unsigned short cmd;
     register int count;
     register unsigned short pattern;
 
-    if(octant & YMAJOR) cmd |= YMAJAXIS;
-    if(!(octant & XDECREASING)) cmd |= INC_X;
-    if(!(octant & YDECREASING)) cmd |= INC_Y;
-
     count = (length + 15) >> 4;
 
-    WaitQueue(7);
-    SET_CURPT((short)x1, (short)y1);
-    SET_ERR_TERM((short)err);
-    SET_DESTSTP((short)e2, (short)e1);
-    SET_MAJ_AXIS_PCNT((short)length);
-    SET_CMD(cmd);
+    if(e1) {
+	cmd = LASTPIX | CMD_LINE | WRTDATA | PLANAR | _16BIT | DRAW | PCDATA;
+
+       	if(octant & YMAJOR) cmd |= YMAJAXIS;
+    	if(!(octant & XDECREASING)) cmd |= INC_X;
+    	if(!(octant & YDECREASING)) cmd |= INC_Y;
+
+    	WaitQueue(7);
+    	SET_CURPT((short)x1, (short)y1);
+    	SET_ERR_TERM((short)err);
+    	SET_DESTSTP((short)e2, (short)e1);
+    	SET_MAJ_AXIS_PCNT((short)length);
+    	SET_CMD(cmd);
+    } else {
+	if (octant & YMAJOR){
+   	    if(octant & YDECREASING)   
+   	    	cmd = CMD_LINE | DRAW | LINETYPE | PLANAR | _16BIT | 
+						WRTDATA | VECDIR_090;
+            else 
+	    	cmd = CMD_LINE | DRAW | LINETYPE | PLANAR | _16BIT | 
+						WRTDATA | VECDIR_270;
+	} else {
+    	    if(octant & XDECREASING)   
+   	    	cmd = CMD_LINE | DRAW | LINETYPE | PLANAR | _16BIT |
+ 						WRTDATA | VECDIR_180;
+            else 
+	    	cmd = CMD_LINE | DRAW | LINETYPE | PLANAR | _16BIT | 
+						WRTDATA | VECDIR_000; 
+	}
+ 
+     	WaitQueue(4);
+    	SET_CURPT((short)x1, (short)y1);
+    	SET_MAJ_AXIS_PCNT((short)length - 1);
+    	SET_CMD(cmd);
+    }
 
     if(NicePattern) {
 	if(start)

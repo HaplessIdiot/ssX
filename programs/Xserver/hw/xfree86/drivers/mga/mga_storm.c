@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.1 1997/03/06 23:16:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.1 1997/04/10 11:34:38 hohndel Exp $ */
 
 /*
  * This is a sample driver implementation template for the new acceleration
@@ -8,6 +8,7 @@
 #include "vga256.h"
 #include "xf86.h"
 #include "vga.h"
+#include "vgaPCI.h"
 
 #include "miline.h"
 
@@ -27,8 +28,8 @@ void MgaSync();
  * forward definitions for once only compiled functions.
  */
 void MGAStormAccelInit();
-void MgaStormSync();
-void MgaStormEngineInit();
+void MGAStormSync();
+void MGAStormEngineInit();
 
 /*
  * forward definitions for the functions in this file.
@@ -109,7 +110,7 @@ void MGANAME(AccelInit)()
      * The following line installs a "Sync" function, that waits for
      * all coprocessor operations to complete.
      */
-    xf86AccelInfoRec.Sync = MgaStormSync;
+    xf86AccelInfoRec.Sync = MGAStormSync;
 
     /*
      * We want to set up the FillRectSolid primitive for filling a solid
@@ -250,7 +251,7 @@ void MGAStormAccelInit() {
 /*
  * This is the implementation of the Sync() function.
  */
-void MgaStormSync() 
+void MGAStormSync() 
 {
     /*
      * Flush the read cache (SDK 5-2)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.1 1997/03/06 23:14:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.2 1997/04/08 10:12:23 hohndel Exp $ */
 
 
 #define CT_EXTRA_WAIT
@@ -470,6 +470,7 @@ transparency_color)
     if (transparency_color != -1) {
 	CommandFlags |= ctCOLORTRANSENABLE | ctCOLORTRANSROP |
 	    ctCOLORTRANSNEQUAL;
+	ctBLTWAIT;
         switch (vga256InfoRec.bitsPerPixel) {
         case 8:
 	    ctSETBGCOLOR8(transparency_color);
@@ -481,7 +482,7 @@ transparency_color)
 	    ctSETBGCOLOR24(transparency_color);
 	    break;
         }
-    }
+    } else
 #endif
     ctBLTWAIT;
     if ((vga256InfoRec.bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
@@ -537,6 +538,9 @@ void CTNAME(SubsequentScreenToScreenCopy)(x1, y1, x2, y2, w, h)
     ctSETSRCADDR(srcaddr);
     ctSETDSTADDR(destaddr);
     ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel );
+#ifdef CT_EXTRA_WAIT
+    ctBLTWAIT;
+#endif
 }
 
 static unsigned int scanlinewidth;
@@ -872,6 +876,7 @@ transparency_color)
     if (transparency_color != -1) {
 	CommandFlags |= ctCOLORTRANSENABLE | ctCOLORTRANSROP |
 	    ctCOLORTRANSNEQUAL;
+	ctBLTWAIT;
         switch (vga256InfoRec.bitsPerPixel) {
         case 8:
 	    ctSETBGCOLOR8(transparency_color);
@@ -883,7 +888,7 @@ transparency_color)
 	    ctSETBGCOLOR24(transparency_color);
 	    break;
         }
-    }
+    } else
 #endif
     ctBLTWAIT;
     ctSETPATSRCADDR(patternaddr);
