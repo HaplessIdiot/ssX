@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.49 2002/09/11 19:54:51 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.50 2002/09/15 21:32:18 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -91,6 +91,7 @@ LispObj *LispXReverse(LispMac*, LispBuiltin*, int);
  */
 LispObj *Oeq, *Oeql, *Oequal, *Oequalp, *Omake_array,
 	*Kinitial_contents, *Osetf, *Ootherwise;
+LispObj *Ogensym_counter;
 
 Atom_id Svariable, Sstructure, Stype, Ssetf;
 
@@ -112,6 +113,11 @@ LispCoreInit(LispMac *mac)
     Svariable		= GETATOMID("VARIABLE");
     Sstructure		= GETATOMID("STRUCTURE");
     Stype		= GETATOMID("TYPE");
+
+    /* Create as a constant so that only the C code should change the value */
+    Ogensym_counter	= STATIC_ATOM("*GENSYM-COUNTER*");
+    LispDefconstant(mac, Ogensym_counter, INTEGER(0), NIL);
+    LispExportSymbol(mac, Ogensym_counter);
 
     Ssetf	= ATOMID(Osetf);
 }
@@ -1455,6 +1461,53 @@ Lisp_Gc(LispMac *mac, LispBuiltin *builtin)
     LispGC(mac, car, cdr);
 
     return (car == NIL && cdr == NIL ? NIL : T);
+}
+
+LispObj *
+Lisp_Gensym(LispMac *mac, LispBuiltin *builtin)
+/*
+ gensym &optional arg
+ */
+{
+    int inc = 1, unreadable = 0;
+    char *ptr, *preffix = "G", name[132];
+    long counter = Ogensym_counter->data.atom->property->value->data.integer;
+    LispObj *symbol;
+
+    LispObj *arg;
+
+    arg = ARGUMENT(0);
+    if (arg != NIL) {
+	if (STRING_P(arg))
+	    preffix = THESTR(arg);
+	else if (INT_P(arg)) {
+	    ERROR_CHECK_INDEX(arg);
+	    counter = arg->data.integer;
+	    inc = 0;
+	}
+	else
+	    LispDestroy(mac, "%s: %s is not a STRING or POSITIVE FIXNUM",
+			STRFUN(builtin), STROBJ(arg));
+    }
+    snprintf(name, sizeof(name), "%s%ld", preffix, counter);
+    if (strlen(name) >= 128)
+	LispDestroy(mac, "%s: name %s too long", STRFUN(builtin), name);
+    Ogensym_counter->data.atom->property->value->data.integer = counter + inc;
+
+    /* Check if string can be safely read back */
+    for (ptr = name; *ptr; ptr++)
+	if (islower(*ptr) || *ptr == '"' || *ptr == '\\' || *ptr == ';' ||
+	    *ptr == '#' || *ptr == ',' || *ptr == '@' || *ptr == '(' ||
+	    *ptr == ')' || *ptr == '`' || *ptr == '\'' || *ptr == '|' ||
+	    *ptr == ':') {
+	    unreadable = 1;
+	    break;
+	}
+
+    symbol = UNINTERNED_ATOM(name);
+    symbol->data.atom->unreadable = unreadable;
+
+    return (symbol);
 }
 
 LispObj *
@@ -5046,6 +5099,31 @@ Lisp_SymbolPlist(LispMac *mac, LispBuiltin *builtin)
 
     return (symbol->data.atom->a_property ?
 	    symbol->data.atom->property->properties : NIL);
+}
+
+LispObj *
+Lisp_SymbolValue(LispMac *mac, LispBuiltin *builtin)
+/*
+ symbol-value symbol
+ */
+{
+    LispAtom *atom;
+    LispObj *symbol;
+
+    symbol = ARGUMENT(0);
+
+    if (!SYMBOL_P(symbol)) {
+	if (symbol == NIL || symbol == T)
+	    return (symbol);
+	LispDestroy(mac, "%s: %s is not a symbol",
+		    STRFUN(builtin), STROBJ(symbol));
+    }
+    atom = symbol->data.atom;
+    if (!atom->a_object)
+	LispDestroy(mac, "%s: the symbol %s has no value",
+		    STRFUN(builtin), STROBJ(symbol));
+
+    return (atom->dyn ? LispGetVar(mac, symbol) : atom->property->value);
 }
 
 LispObj *

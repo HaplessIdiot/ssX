@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.59 2002/09/08 02:29:49 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.60 2002/09/15 21:32:20 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -344,6 +344,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Funcall, "funcall function &rest arguments"},
     {LispFunction, Lisp_Gc, "gc &optional car cdr"},
     {LispFunction, Lisp_Gcd, "gcd &rest integers"},
+    {LispFunction, Lisp_Gensym, "gensym &optional arg"},
     {LispFunction, Lisp_Get, "get symbol indicator &optional default"},
     {LispMacro, Lisp_Go, "go tag", 0, 0, Com_Go},
     {LispFunction, Lisp_HostNamestring, "host-namestring pathname"},
@@ -502,6 +503,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_SubstituteIfNot, "substitute-if-not newitem test sequence &key from-end start end count key"},
     {LispFunction, Lisp_Symbolp, "symbolp object"},
     {LispFunction, Lisp_SymbolPlist, "symbol-plist symbol"},
+    {LispFunction, Lisp_SymbolValue, "symbol-value symbol"},
     {LispMacro, Lisp_Tagbody, "tagbody &rest body", 0, 0, Com_Tagbody},
     {LispFunction, Lisp_Terpri, "terpri &optional output-stream"},
     {LispFunction, Lisp_Typep, "typep object type"},
@@ -652,6 +654,7 @@ LispDestroy(LispMac *mac, char *fmt, ...)
 	static char Fatal[] = "*** Fatal: nowhere to longjmp.\n";
 
 	LispFputs(Stderr, Fatal);
+	LispFflush(Stderr);
 	abort();
     }
 
@@ -769,7 +772,8 @@ LispTopLevel(LispMac *mac)
 	LispWarning(mac, "%d raw memory pointer(s) left. Probably a leak.",
 		    count);
 
-    mac->env.lex = mac->stack.base = mac->env.length = mac->env.head = 0;
+    mac->stack.base = mac->stack.length =
+	mac->env.lex = mac->env.length = mac->env.head = 0;
     RETURN_COUNT = 0;
     mac->protect.length = 0;
 
@@ -1277,6 +1281,8 @@ LispAllocAtomProperty(LispMac *mac, LispAtom *atom)
     LispMused(mac, property);
     atom->property = property;
     property->package = mac->pack;
+    if (atom->package == NULL)
+	atom->package = PACKAGE;
 
     LispIncrementAtomReference(mac, atom);
 }
@@ -1499,6 +1505,11 @@ LispRemAtomSetfProperty(LispMac *mac, LispAtom *atom)
 void
 LispSetAtomStructProperty(LispMac *mac, LispAtom *atom, LispObj *def, int fun)
 {
+    if (fun > 0xff)
+	/* Not suported by the bytecode compiler... */
+	LispDestroy(mac, "SET-ATOM-STRUCT-PROPERTY: "
+		    "more than 256 fields not supported");
+
     if (atom->property == NOPROPERTY)
 	LispAllocAtomProperty(mac, atom);
 
@@ -1838,7 +1849,7 @@ LispCheckArguments(LispMac *mac, LispFunType type, LispObj *list, char *name)
 		++alist->keys.num_symbols;
 		if (count == 0)
 		    *desc++ = 'k';
-		++alist->num_arguments;
+		alist->num_arguments += 1 + (sform != NULL);
 	    }
 	    else if (optional) {
 		defval = NIL;
@@ -1873,7 +1884,7 @@ LispCheckArguments(LispMac *mac, LispFunType type, LispObj *list, char *name)
 		++alist->optionals.num_symbols;
 		if (count == 0)
 		    *desc++ = 'o';
-		++alist->num_arguments;
+		alist->num_arguments += 1 + (sform != NULL);
 	    }
 
 	    /* Normal arguments cannot have default value */
@@ -2398,9 +2409,6 @@ Lisp__New(LispMac *mac, LispObj *car, LispObj *cdr)
 
     obj = objseg.freeobj;
     objseg.freeobj = CDR(obj);
-#if 0
-    --objseg.nfree;
-#endif
 
     return (obj);
 }
@@ -2412,24 +2420,24 @@ LispNew(LispMac *mac, LispObj *car, LispObj *cdr)
 
     if (obj == NIL)
 	obj = Lisp__New(mac, car, cdr);
-    else {
+    else
 	objseg.freeobj = CDR(obj);
-#if 0
-	--objseg.nfree;
-#endif
-    }
 
     return (obj);
 }
 
 LispObj *
-LispNewAtom(LispMac *mac, char *str)
+LispNewAtom(LispMac *mac, char *str, int intern)
 {
     LispObj *object;
     LispAtom *atom = LispDoGetAtom(mac, str, 0);
 
-    if (atom->object)
+    if (atom->object) {
+	if (intern && atom->package == NULL)
+	    atom->package = PACKAGE;
+
 	return (atom->object);
+    }
 
     if (atomseg.freeobj == NIL)
 	LispAllocSeg(mac, &atomseg, pagesize);
@@ -2440,7 +2448,8 @@ LispNewAtom(LispMac *mac, char *str)
     object->type = LispAtom_t;
     object->data.atom = atom;
     atom->object = object;
-    atom->package = PACKAGE;
+    if (intern)
+	atom->package = PACKAGE;
 
     return (object);
 }
@@ -2459,8 +2468,12 @@ LispNewStaticAtom(LispMac *mac, char *str)
 LispObj *
 LispNewSymbol(LispMac *mac, LispAtom *atom)
 {
-    if (atom->object)
+    if (atom->object) {
+	if (atom->package == NULL)
+	    atom->package = PACKAGE;
+
 	return (atom->object);
+    }
     else {
 	LispObj *symbol;
 
@@ -2486,12 +2499,8 @@ LispNewReal(LispMac *mac, double value)
 
     if (real == NIL)
 	real = Lisp__New(mac, NIL, NIL);
-    else {
+    else
 	objseg.freeobj = CDR(real);
-#if 0
-	--objseg.nfree;
-#endif
-    }
 
     real->type = LispReal_t;
     real->data.real = value;
@@ -2507,12 +2516,8 @@ LispNewString(LispMac *mac, char *str, long length, int alloced)
 
     if (string == NIL)
 	string = Lisp__New(mac, NIL, NIL);
-    else {
+    else
 	objseg.freeobj = CDR(string);
-#if 0
-	--objseg.nfree;
-#endif
-    }
 
     if (alloced)
 	cstring = str;
@@ -2536,12 +2541,8 @@ LispNewComplex(LispMac *mac, LispObj *realpart, LispObj *imagpart)
 
     if (complexp == NIL)
 	complexp = Lisp__New(mac, realpart, imagpart);
-    else {
+    else
 	objseg.freeobj = CDR(complexp);
-#if 0
-	--objseg.nfree;
-#endif
-    }
 
     complexp->type = LispComplex_t;
     complexp->data.complex.real = realpart;
@@ -2568,12 +2569,8 @@ LispNewInteger(LispMac *mac, long i)
 
     if (integer == NIL)
 	integer = Lisp__New(mac, NIL, NIL);
-    else {
+    else
 	objseg.freeobj = CDR(integer);
-#if 0
-	--objseg.nfree;
-#endif
-    }
 
     integer->type = LispInteger_t;
     integer->data.integer = i;
@@ -2591,12 +2588,8 @@ LispNewSmallInt(LispMac *mac, long i)
 
 	if (integer == NIL)
 	    integer = Lisp__New(mac, NIL, NIL);
-	else {
+	else
 	    objseg.freeobj = CDR(integer);
-#if 0
-	    --objseg.nfree;
-#endif
-	}
 
 	integer->type = LispInteger_t;
 	integer->data.integer = i;
@@ -2640,12 +2633,8 @@ LispNewRatio(LispMac *mac, long num, long den)
     ratio = objseg.freeobj;
     if (ratio == NIL)
 	ratio = Lisp__New(mac, NIL, NIL);
-    else {
+    else
 	objseg.freeobj = CDR(ratio);
-#if 0
-	--objseg.nfree;
-#endif
-    }
 
     ratio->type = LispRatio_t;
     ratio->data.ratio.numerator = numerator;
@@ -2718,12 +2707,8 @@ LispNewCons(LispMac *mac, LispObj *car, LispObj *cdr)
 
     if (cons == NIL)
 	cons = Lisp__New(mac, car, cdr);
-    else {
+    else
 	objseg.freeobj = CDR(cons);
-#if 0
-	--objseg.nfree;
-#endif
-    }
 
     /* Fresh objects are already of type LispCons_t */
     CAR(cons) = car;
@@ -3023,7 +3008,7 @@ LispImportSymbol(LispMac *mac, LispObj *symbol)
     LispObj *current;
 
     current = LispGetVarPack(mac, symbol);
-    if (current == NULL) {
+    if (current == NULL || current->data.atom->property == NOPROPERTY) {
 	/* No conflicts */
 
 	if (symbol->data.atom->a_object) {
@@ -3081,8 +3066,10 @@ LispImportSymbol(LispMac *mac, LispObj *symbol)
 	atom->a_object = 1;
     if (symbol->data.atom->a_function)
 	atom->a_function = 1;
-    if (symbol->data.atom->a_builtin)
+    else if (symbol->data.atom->a_builtin)
 	atom->a_builtin = 1;
+    else if (symbol->data.atom->a_compiled)
+	atom->a_compiled = 1;
     if (symbol->data.atom->a_property)
 	atom->a_property = 1;
     if (symbol->data.atom->a_defsetf)
@@ -4619,7 +4606,7 @@ LispApply1(LispMac *mac, LispObj *function, LispObj *argument)
     LispObj arguments;
 
     arguments.type = LispCons_t;
-/*    arguments.mark = LispNil_t;*/
+    arguments.mark = LispNil_t;
     arguments.data.cons.car = argument;
     arguments.data.cons.cdr = NIL;
 
@@ -4633,7 +4620,7 @@ LispApply2(LispMac *mac, LispObj *function,
     LispObj arguments, cdr;
 
     arguments.type = cdr.type = LispCons_t;
-/*    arguments.mark = cdr.mark = LispNil_t;*/
+    arguments.mark = cdr.mark = LispNil_t;
     arguments.data.cons.car = argument1;
     arguments.data.cons.cdr = &cdr;
     cdr.data.cons.car = argument2;
@@ -4825,7 +4812,6 @@ LispMachine(LispMac *mac)
     mac->sigfpe = signal(SIGFPE, LispFPESignal);
     global_mac = mac;
 
-    LispTopLevel(mac);
     /*CONSTCOND*/
     while (1) {
 	if (sigsetjmp(mac->jmp, 1) == 0) {
@@ -4841,11 +4827,13 @@ LispMachine(LispMac *mac)
 		    LispDestroy(mac, "dot allowed only on lists");
 		obj = EVAL(cod);
 		if (mac->interactive) {
-		    int i;
-
 		    LispPrint(mac, obj, NIL, 1);
-		    for (i = 0; i < RETURN_COUNT; i++)
-			LispPrint(mac, RETURN(i), NIL, 1);
+		    if (RETURN_COUNT) {
+			int i;
+
+			for (i = 0; i < RETURN_COUNT; i++)
+			    LispPrint(mac, RETURN(i), NIL, 1);
+		    }
 		    LispUpdateResults(mac, cod, obj);
 		    if (LispGetColumn(mac, NIL))
 			LispWriteChar(mac, NIL, '\n');
@@ -4929,7 +4917,7 @@ LispBegin(void)
     LispAtom *atom;
     char results[4];
     LispMac *mac = malloc(sizeof(LispMac));
-    LispObj *object, *lisp, *ext;
+    LispObj *object, *path, *lisp, *ext;
 
     if (mac == NULL)
 	return (NULL);
@@ -5160,6 +5148,31 @@ LispBegin(void)
 
     EXECUTE("(require \"lisp\")");
 
+    object = ATOM2("*DEFAULT-PATHNAME-DEFAULTS*");
+#ifdef LISPDIR
+    {
+	int length;
+	char *pathname = LISPDIR;
+
+	length = strlen(pathname);
+	if (length && pathname[length - 1] != '/') {
+	    pathname = LispMalloc(mac, length + 2);
+
+	    strcpy(pathname, LISPDIR);
+	    strcpy(pathname + length, "/");
+	    path = LSTRING2(pathname, length + 1);
+	}
+	else
+	    path = LSTRING(pathname, length);
+    }
+#else
+    path = STRING("");
+#endif
+    /* XXX When pathname.c be fixed in the gc handling, will need to
+     * protect path here. */
+    LispProclaimSpecial(mac, object, APPLY1(Oparse_namestring, path), NIL);
+    LispExportSymbol(mac, object);
+
     /* Create and make EXT the current package */
     PACKAGE = ext = LispNewPackage(mac, STRING("EXT"), NIL);
     mac->pack = mac->savepack = PACKAGE->data.package.package;
@@ -5185,6 +5198,8 @@ LispBegin(void)
     LispUsePackage(mac, lisp);
     /* And all EXT external symbols */
     LispUsePackage(mac, ext);
+
+    LispTopLevel(mac);
 
     return (mac);
 }

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.20 2002/08/25 02:48:31 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.21 2002/09/15 21:32:22 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -41,7 +41,7 @@ static LispObj *LispReadList(LispMac*);
 static LispObj *LispReadQuote(LispMac*);
 static LispObj *LispReadBackquote(LispMac*);
 static LispObj *LispReadCommaquote(LispMac*);
-static LispObj *LispReadObject(LispMac*);
+static LispObj *LispReadObject(LispMac*, int);
 static LispObj *LispParseAtom(LispMac*, char*, char*, int, int);
 static LispObj *LispParseNumber(LispMac*, char*, int);
 static int StringInRadix(char*, int, int);
@@ -404,7 +404,7 @@ LispRead(LispMac *mac)
 	    break;
 	default:
 	    LispUnget(mac, ch);
-	    object = LispReadObject(mac);
+	    object = LispReadObject(mac, 0);
 	    break;
     }
 
@@ -458,6 +458,9 @@ LispReadMacro(LispMac *mac)
 	    return (LispReadFeature(mac, 1));
 	case '-':
 	    return (LispReadFeature(mac, 0));
+	case ':':
+	    /* Uninterned symbol */
+	    return (LispReadObject(mac, 1));
 	default:
 	    if (isdigit(ch)) {
 		LispUnget(mac, ch);
@@ -685,7 +688,7 @@ LispReadCommaquote(LispMac *mac)
  * and also put the code for reading atoms, numbers and strings together.
  */
 static LispObj *
-LispReadObject(LispMac *mac)
+LispReadObject(LispMac *mac, int unintern)
 {
     LispObj *object;
     char stk[128], *string, *package, *symbol;
@@ -697,7 +700,9 @@ LispReadObject(LispMac *mac)
     length = 0;
 
     ch = LispGet(mac);
-    if (ch == '"' || ch == '|')
+    if (unintern && (ch == ':' || ch == '"'))
+	LispDestroy(mac, "READ: syntax error after #:");
+    else if (ch == '"' || ch == '|')
 	quote = ch;
     else if (ch == '\\') {
 	unreadable = backslash = 1;
@@ -753,7 +758,7 @@ LispReadObject(LispMac *mac)
 	    }
 	    else if (ch == ':') {
 		if (collon == 0 ||
-		    (collon == 1 && symbol == string + length)) {
+		    (collon == (1 - unintern) && symbol == string + length)) {
 		    ++collon;
 		    symbol = string + length + 1;
 		}
@@ -787,7 +792,13 @@ LispReadObject(LispMac *mac)
 
     string[length] = '\0';
 
-    if (quote == '"')
+    if (unintern) {
+	if (length == 0)
+	    LispDestroy(mac, "READ: syntax error after #:");
+	object = UNINTERNED_ATOM(string);
+    }
+
+    else if (quote == '"')
 	object = LSTRING(string, length);
 
     else if (quote == '|' || (unreadable && !collon)) {

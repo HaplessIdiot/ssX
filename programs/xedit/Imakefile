@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.17 93/08/17 20:49:32 rws Exp $
-XCOMM $XFree86: xc/programs/xedit/Imakefile,v 1.21 2002/07/16 05:19:37 paulo Exp $
+XCOMM $XFree86: xc/programs/xedit/Imakefile,v 1.22 2002/09/08 02:29:48 paulo Exp $
 
 #ifndef OS2Architecture
 #include "lisp/lisp.cf"
@@ -39,9 +39,9 @@ STRCCMP_DEFINES = -DNEED_STRCASECMP
        INCLUDES = -I. -Ilisp/re -I- $(MISC_INCLUDES)
 
            SRCS = xedit.c commands.c util.c $(SYS_SRCS) ispell.c options.c \
-		  hook.c c-mode.c proto.c $(LISP_SRC)
+		  hook.c $(LISP_SRC)
            OBJS = xedit.o commands.o util.o $(SYS_OBJS) ispell.o options.o \
-		  hook.o c-mode.o proto.o $(LISP_OBJ)
+		  hook.o $(LISP_OBJ)
 
 #ifdef IHaveSubdirs
 ForceSubdirs($(SUBDIRS))

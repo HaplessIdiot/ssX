@@ -25,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.29 2001/12/02 15:02:30 paulo Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.33 2002/09/08 02:29:47 paulo Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -1823,6 +1823,15 @@ XawTextSourceAddEntity(Widget w, int type, int flags, XtPointer data,
 					       length, property));
 	    }
 	}
+    }
+
+    /* Automatically join sequential entities if possible */
+    if (eprev &&
+	anchor->position + eprev->offset + eprev->length == position &&
+	eprev->property == property && eprev->type == type &&
+	eprev->flags == flags && eprev->data == data) {
+	eprev->length += length;
+	return (eprev);
     }
 
     entity = XtNew(XawTextEntity);

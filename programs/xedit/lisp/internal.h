@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.30 2002/09/08 02:29:49 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.31 2002/09/15 21:32:20 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -61,7 +61,8 @@
 #define APPLY2(fun, arg1, arg2)	LispApply2(mac, fun, arg1, arg2)
 #define EXECUTE(string)		LispExecute(mac, string)
 #define SYMBOL(atom)		LispNewSymbol(mac, atom)
-#define ATOM(string)		LispNewAtom(mac, string)
+#define ATOM(string)		LispNewAtom(mac, string, 1)
+#define UNINTERNED_ATOM(string)	LispNewAtom(mac, string, 0)
 
 	/* atom string is a static variable */
 #define ATOM2(string)		LispNewSymbol(mac, LispGetPermAtom(mac, string))
@@ -531,7 +532,7 @@ LispObj *LispApply2(LispMac*, LispObj*, LispObj*, LispObj*);
 
 LispObj *LispNew(LispMac*, LispObj*, LispObj*);
 LispObj *LispNewSymbol(LispMac*, LispAtom*);
-LispObj *LispNewAtom(LispMac*, char*);
+LispObj *LispNewAtom(LispMac*, char*, int);
 LispObj *LispNewStaticAtom(LispMac*, char*);
 LispObj *LispNewReal(LispMac*, double);
 LispObj *LispNewString(LispMac*, char*, long, int);

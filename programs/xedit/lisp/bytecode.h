@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/bytecode.h,v 1.1 2002/08/25 02:48:30 paulo Exp $ */
 
 #include "private.h"
 
@@ -48,14 +48,6 @@ typedef enum {
 
 typedef enum {
     XBC_NOOP,
-    XBC_NOOP1,
-    XBC_NOOP2,
-#ifdef LONG64
-    XBC_NOOP3,
-    XBC_NOOP4,
-    XBC_NOOP5,
-    XBC_NOOP6,
-#endif
 
     XBC_INV,		/* If NIL loaded, change to T else to NIL */
     XBC_NIL,		/* Load NIL */
@@ -103,19 +95,19 @@ typedef enum {
 
     XBC_LET,		/* Push loaded value to stack */
     XBC_LETX,		/* Push loaded value to stack and bind */
-	/*  Next bytes are the atom pointer */
+	/*  Next byte(s) are the symbol offset */
     XBC_LET_NIL,	/* Push loaded value to stack */
     XBC_LETX_NIL,	/* Push loaded value to stack and bind */
-	/*  Next bytes are the atom pointer */
+	/*  Next byte(s) are the symbol offset */
 
     XBC_LETBIND,	/* Bind locally added variables */
-	/* Followed by a short indicating number of symbols to bind */
+	/* Followed by number of symbols to bind */
 
     XBC_UNLET,		/* Unbind locally binded variables */
-	/* Followed by a short indicating number of symbols to unbind */
+	/* Followed by number of symbols to unbind */
 
     XBC_LOAD,		/* Load argument already from the stack */
-	/* A short integer with the relative offset follows the opcode */
+	/* Followed by  offset follows the opcode */
     XBC_LOAD_LET,	/* Load argument and push */
     XBC_LOAD_LETX,	/* Load argument,  push and bind */
 	/* Followed by a short and the atom to be bound */

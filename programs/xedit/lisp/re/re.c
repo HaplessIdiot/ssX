@@ -27,11 +27,11 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/re/re.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/re/re.c,v 1.3 2002/09/18 17:11:55 tsi Exp $ */
 
 #include <stdio.h>
 #include "rep.h"
-
+#define DEBUG
 /*
  * Types
  */
@@ -91,9 +91,6 @@ struct _re_eng {
     long goff;
     long gso[9];
     long geo[9];
-
-    /* Used to avoid loops needing to keep track of group offsets */
-    long gss[9];		/* (g)roup (s)start (s)aved */
 };
 
 /*
@@ -196,9 +193,9 @@ reexec(const re_cod *preg, const char *string,
     int len, si, ci, bas, i, j, k, l, m;
     re_eng eng;
 
-    if (preg == NULL || preg->cod == NULL || nmatch < 0 || nmatch > 10 ||
+    if (preg == NULL || preg->cod == NULL || nmatch < 0 ||
 	((flags & RE_STARTEND) &&
-	 (nmatch == 0 || pmat == NULL || pmat[0].rm_eo < pmat[0].rm_so)))
+	 (pmat == NULL || pmat[0].rm_eo < pmat[0].rm_so)))
 	return (RE_INVARG);
 
     eng.str = (unsigned char*)string;
@@ -216,7 +213,7 @@ reexec(const re_cod *preg, const char *string,
     if (!nosub && preg->cod[1] != 0xff) {
 	for (i = 0; i <= preg->cod[1]; i++) {
 	    eng.gso[i] = 0;
-	    eng.geo[i] = eng.gss[i] = -1;
+	    eng.geo[i] = -1;
 	}
     }
 
@@ -788,7 +785,6 @@ rangenot_match:
 	    case Re_Open:
 		if (++eng.goff >= 9)
 		    return (RE_ASSERT);
-		eng.gss[eng.goff] = eng.gso[eng.goff];
 		eng.gso[eng.goff] = eng.str - eng.bas;
 		++eng.cod;
 		continue;
@@ -798,7 +794,6 @@ rangenot_match:
 		continue;
 	    case Re_Update:
 		bas = eng.cod[1];
-		eng.gss[eng.goff] = eng.geo[eng.goff];
 		eng.geo[eng.goff] = eng.str - eng.bas;
 		eng.cod += 2;		/* + Update + bas */
 		continue;
@@ -1290,18 +1285,14 @@ rangenot_match:
 		    eng.rstr[eng.off] = eng.str;
 
 		    /* Setup match offsets */
-		    if (eng.so[bas] <= eng.eo[bas])
-			eng.so[eng.off] = eng.eo[bas];
-		    else
-			eng.so[eng.off] = eng.so[bas];
-		    eng.sv[eng.off] = eng.eo[eng.off] = eng.so[eng.off] - 1;
+		    eng.so[eng.off] = eng.str - eng.bas;
+		    eng.eo[eng.off] = eng.so[eng.off] - 1;
 
 		    if (newline)
-			/*  Use the repetition counter to store end of
-			 * previous match, if any, to check if skipping
-			 * a newline later */
-			eng.re[eng.off] = eng.eo[bas] > eng.so[bas] ?
-					  eng.eo[bas] : eng.so[bas];
+			/*  Use the repetition counter to store start of
+			 * skipped string, to later check if skipping a
+			 * newline. */
+			eng.re[eng.off] = eng.so[eng.off];
 
 		    /* Save start of possible previous matches */
 		    eng.ss[eng.off] = eng.so[bas];
@@ -1310,7 +1301,6 @@ rangenot_match:
 		    eng.cod += 5;
 		}
 		else {
-		    len = eng.goff;
 		    /* -1 as an unsigned char */
 		    if (eng.cod[2] != 0xff)
 			eng.goff = eng.cod[2];
@@ -1322,40 +1312,39 @@ rangenot_match:
 			str = eng.bas + eng.so[eng.off];
 			for (; ptr < str; ptr++)
 			    if (*ptr == '\n') {
-				if (bas &&
-				    eng.sv[eng.off] < eng.so[eng.off] &&
-				    eng.sv[eng.off] >= eng.re[eng.off]) {
-				    eng.so[bas] = eng.ss[eng.off];
-				    eng.eo[bas] = ptr - eng.bas;
-				    eng.cod += eng.cod[3] | (eng.cod[4] << 8);
-				    --eng.off;
-				}
-				else {
-				    eng.cod = eng.rcod[0];
-				    eng.so[0] = ptr - eng.bas + 1;
-				    eng.eo[0] = eng.so[0] - 1;
-				    eng.rstr[0] = eng.str = ptr + 1;
-				    eng.off = 0;
-				}
+				eng.cod = eng.rcod[0];
+				eng.so[0] = ptr - eng.bas + 1;
+				eng.eo[0] = eng.so[0] - 1;
+				eng.rstr[0] = eng.str = ptr + 1;
+				eng.off = 0;
 				goto reset;
 			    }
 			/* If looping, don't do too many noops */
 			eng.re[eng.off] = ptr - eng.bas;
 		    }
 
-		    if (eng.eo[eng.off] >= eng.so[eng.off] &&
-			eng.sv[eng.off] < eng.eo[eng.off]) {
+		    if (eng.eo[eng.off] >= eng.so[eng.off]) {
 			/* Note that this is only true if all possibly
 			 * nested special repetitions also matched. */
 
-			/* Update offset of match */
-			eng.sv[eng.off] = eng.eo[eng.off];
+			if (eng.goff >= 0) {
+			    if (eng.cod[5] == Re_Update)
+				eng.gso[eng.goff] = eng.eo[bas] +
+						    (eng.so[bas] > eng.eo[bas]);
+			    else
+				eng.geo[eng.goff] = eng.so[eng.off];
+			}
 
-			/* Update restart point for next pattern */
-			eng.rstr[eng.off] = eng.str;
+			/* Jump relative offset */
+			len = eng.cod[3] | (eng.cod[4] << 8);
 
-			/* Skip repetition instruction */
-			eng.cod += 5;
+			/* Restore offset from where started trying */
+			eng.so[bas] = eng.ss[eng.off];
+			eng.eo[bas] = eng.eo[eng.off];
+
+			/* Pop stack and skip code */
+			--eng.off;
+			eng.cod += len;
 		    }
 		    else {
 			/* Only give up if the entire string was scanned */
@@ -1363,38 +1352,21 @@ rangenot_match:
 			    /* Update restart point for next pattern */
 			    eng.str = ++eng.rstr[eng.off];
 
+			    /* Reset start of nested match */
+			    eng.so[eng.off] = eng.str - eng.bas;
+
 			    /* Skip repetition instruction */
 			    eng.cod += 5;
 			}
 			else {
-			    /* Finished all possibilities */
-
-			    /* Fix group offsets */
-			    if (eng.cod[2] != 0xff) {
-				for (; len > eng.cod[2]; len--)
-				    eng.gso[len] = eng.gss[len];
-
-				/* Check the next instruction to
-				 * know if we are the last/only
-				 * element in a group */
-				if (eng.cod[5] == Re_Update)
-				    eng.geo[len] = eng.gss[len];
-			    }
-			    else if (len == 0)
-				eng.gso[len] = eng.gss[len];
+			    /* Entire string scanned and failed */
 
 			    /* Jump relative offset */
 			    len = eng.cod[3] | (eng.cod[4] << 8);
 
 			    /* Restore offset from where started trying */
 			    eng.so[bas] = eng.ss[eng.off];
-
-			    if (eng.sv[eng.off] >= eng.so[eng.off])
-				/* Something matched earlier, update */
-				eng.eo[bas] = eng.sv[eng.off];
-			    else
-				/* Failed */
-				eng.eo[bas] = eng.ss[eng.off] - 1;
+			    eng.eo[bas] = eng.ss[eng.off] - 1;
 
 			    /* Pop stack and skip code */
 			    --eng.off;
@@ -1423,31 +1395,15 @@ rangenot_match:
 		    /* Return here for recovery if match fail */
 		    eng.rcod[eng.off] = eng.cod;
 
-		    /* First try eating a byte */
+		    /* First try without eating a byte */
 		    eng.rstr[eng.off] = eng.str;
-		    ++eng.str;
 
 		    /* Remember this is the first try if match fail */
 		    eng.re[eng.off] = 0;
 
-		    if (newline && eng.str[0] == '\n') {
-			/*  If RE_NEWLINE specified and the next
-			 * character is a newline, don't match it,
-			 * if the following pattern does not eat
-			 * it, will need to try again at a longer
-			 * offset. */
-
-			/* Emulate second try */
-			--eng.str;
-			++eng.re[eng.off];
-		    }
-
 		    /* Setup match offsets */
-		    if (eng.so[bas] <= eng.eo[bas])
-			eng.so[eng.off] = eng.eo[bas];
-		    else
-			eng.so[eng.off] = eng.so[bas];
-		    eng.sv[eng.off] = eng.eo[eng.off] = eng.so[eng.off] - 1;
+		    eng.so[eng.off] = eng.str - eng.bas;
+		    eng.eo[eng.off] = eng.so[eng.off] - 1;
 
 		    /* Save start of possible previous matches */
 		    eng.ss[eng.off] = eng.so[bas];
@@ -1462,34 +1418,16 @@ rangenot_match:
 		    else
 			eng.goff = -1;
 
-		    if (newline) {
-			/*  .? matches anything but a newline if
-			 * RE_NEWLINE specified */
-			ptr = eng.rstr[eng.off];
-			str = eng.bas + eng.so[eng.off];
-			for (; ptr < str; ptr++)
-			    if (*ptr == '\n') {
-				if (bas &&
-				    eng.sv[eng.off] < eng.so[eng.off] &&
-				    eng.sv[eng.off] >= eng.re[eng.off]) {
-				    eng.so[bas] = eng.ss[eng.off];
-				    eng.eo[bas] = ptr - eng.bas;
-				    eng.cod += eng.cod[3] | (eng.cod[4] << 8);
-				    --eng.off;
-				}
-				else {
-				    eng.cod = eng.rcod[0];
-				    eng.so[0] = ptr - eng.bas + 1;
-				    eng.eo[0] = eng.so[0] - 1;
-				    eng.rstr[0] = eng.str = ptr + 1;
-				    eng.off = 0;
-				}
-				goto reset;
-			    }
-		    }
-
 		    if (eng.eo[eng.off] >= eng.so[eng.off]) {
 			/* Something matched */
+
+			if (eng.goff >= 0) {
+			    if (eng.cod[5] == Re_Update)
+				eng.gso[eng.goff] = eng.eo[bas] +
+						    (eng.so[bas] > eng.eo[bas]);
+			    else
+				eng.geo[eng.goff] = eng.so[eng.off];
+			}
 
 			/* Jump relative offset */
 			len = eng.cod[3] | (eng.cod[4] << 8);
@@ -1501,30 +1439,34 @@ rangenot_match:
 			--eng.off;
 			eng.cod += len;
 		    }
-		    else if (eng.re[eng.off] == 0) {
-			/* Try this time without skiping a byte */
+		    else if (eng.re[eng.off] == 0 &&
+			     (!newline || eng.rstr[eng.off][1] != '\n')) {
+			/* Try this time skiping a byte */
 			++eng.re[eng.off];
 
 			/* Reset string, skip code and go try one time more */
-			eng.str = eng.rstr[eng.off];
+			eng.str = ++eng.rstr[eng.off];
 			eng.cod += 5;
 		    }
 		    else {
 			/* Failed to match */
 
-			/* Update offset of match */
+			/* Update offsets */
 			eng.eo[bas] = eng.ss[eng.off];
 			eng.so[bas] = eng.eo[bas] + 1;
 
-			eng.str = eng.rstr[eng.off];
+			eng.str = eng.rstr[eng.off] + (eng.re[eng.off] == 0);
 
 			/* Pop stack and return to toplevel code */
 			--eng.off;
+			if (eng.str >= eng.end)
+			    goto wont;
 			eng.cod = eng.rcod[bas];
 		    }
 		}
 		continue;
 
+	    /* .+ almost identical to .* but requires eating at least one byte */
 	    case Re_AnyAtLeast:
 		bas = eng.cod[1];
 		if (eng.off == bas) {
@@ -1535,23 +1477,27 @@ rangenot_match:
 		    /* Return here for recovery if match fail */
 		    eng.rcod[eng.off] = eng.cod;
 
-		    /* If fail, test the next pattern at the same point,
-		     * but skipping one character matched by .+ */
+		    /* Skip one byte for the restart string */
+		    if (newline && eng.str[0] == '\n') {
+			/* Cannot skip newline */
+			eng.cod = eng.rcod[0];
+			eng.rstr[0] = ++eng.str;
+			eng.so[0] = eng.str - eng.bas;
+			eng.eo[0] = eng.so[0] - 1;
+			eng.off = 0;
+			goto reset;
+		    }
 		    eng.rstr[eng.off] = ++eng.str;
 
 		    /* Setup match offsets */
-		    if (eng.so[bas] <= eng.eo[bas])
-			eng.so[eng.off] = eng.eo[bas];
-		    else
-			eng.so[eng.off] = eng.so[bas];
-		    eng.sv[eng.off] = eng.eo[eng.off] = eng.so[eng.off] - 1;
+		    eng.so[eng.off] = eng.str - eng.bas;
+		    eng.eo[eng.off] = eng.so[eng.off] - 1;
 
 		    if (newline)
-			/*  Use the repetition counter to store end of
-			 * previous match, if any, to check if skipping
-			 * a newline later */
-			eng.re[eng.off] = eng.eo[bas] > eng.so[bas] ?
-					  eng.eo[bas] : eng.so[bas];
+			/*  Use the repetition counter to store start of
+			 * skipped string, to later check if skipping a
+			 * newline. */
+			eng.re[eng.off] = eng.so[eng.off];
 
 		    /* Save start of possible previous matches */
 		    eng.ss[eng.off] = eng.so[bas];
@@ -1561,7 +1507,6 @@ rangenot_match:
 		}
 		else {
 		    /* -1 as an unsigned char */
-		    len = eng.goff;
 		    if (eng.cod[2] != 0xff)
 			eng.goff = eng.cod[2];
 		    else
@@ -1572,40 +1517,39 @@ rangenot_match:
 			str = eng.bas + eng.so[eng.off];
 			for (; ptr < str; ptr++)
 			    if (*ptr == '\n') {
-				if (bas &&
-				    eng.sv[eng.off] < eng.so[eng.off] &&
-				    eng.sv[eng.off] >= eng.re[eng.off]) {
-				    eng.so[bas] = eng.ss[eng.off];
-				    eng.eo[bas] = ptr - eng.bas;
-				    eng.cod += eng.cod[3] | (eng.cod[4] << 8);
-				    --eng.off;
-				}
-				else {
-				    eng.cod = eng.rcod[0];
-				    eng.so[0] = ptr - eng.bas + 1;
-				    eng.eo[0] = eng.so[0] - 1;
-				    eng.rstr[0] = eng.str = ptr + 1;
-				    eng.off = 0;
-				}
+				eng.cod = eng.rcod[0];
+				eng.so[0] = ptr - eng.bas + 1;
+				eng.eo[0] = eng.so[0] - 1;
+				eng.rstr[0] = eng.str = ptr + 1;
+				eng.off = 0;
 				goto reset;
 			    }
 			/* If looping, don't do too many noops */
 			eng.re[eng.off] = ptr - eng.bas;
 		    }
 
-		    if (eng.eo[eng.off] >= eng.so[eng.off] &&
-			eng.sv[eng.off] < eng.eo[eng.off]) {
+		    if (eng.eo[eng.off] >= eng.so[eng.off]) {
 			/* Note that this is only true if all possibly
 			 * nested special repetitions also matched. */
 
-			/* Update offset of match */
-			eng.sv[eng.off] = eng.eo[eng.off];
+			if (eng.goff >= 0) {
+			    if (eng.cod[5] == Re_Update)
+				eng.gso[eng.goff] = eng.eo[bas] +
+						    (eng.so[bas] > eng.eo[bas]);
+			    else
+				eng.geo[eng.goff] = eng.so[eng.off];
+			}
 
-			/* Update restart point for next pattern */
-			eng.rstr[eng.off] = eng.str;
+			/* Jump relative offset */
+			len = eng.cod[3] | (eng.cod[4] << 8);
 
-			/* Skip repetition instruction */
-			eng.cod += 5;
+			/* Restore offset from where started trying */
+			eng.so[bas] = eng.ss[eng.off];
+			eng.eo[bas] = eng.eo[eng.off];
+
+			/* Pop stack and skip code */
+			--eng.off;
+			eng.cod += len;
 		    }
 		    else {
 			/* Only give up if the entire string was scanned */
@@ -1613,38 +1557,21 @@ rangenot_match:
 			    /* Update restart point for next pattern */
 			    eng.str = ++eng.rstr[eng.off];
 
+			    /* Reset start of nested match */
+			    eng.so[eng.off] = eng.str - eng.bas;
+
 			    /* Skip repetition instruction */
 			    eng.cod += 5;
 			}
 			else {
-			    /* Finished all possibilities */
-
-			    /* Fix group offsets */
-			    if (eng.cod[2] != 0xff) {
-				for (; len > eng.cod[2]; len--)
-				    eng.gso[len] = eng.gss[len];
-
-				/* Check the next instruction to
-				 * know if we are the last/only
-				 * element in a group */
-				if (eng.cod[5] == Re_Update)
-				    eng.geo[len] = eng.gss[len];
-			    }
-			    else if (len == 0)
-				eng.gso[len] = eng.gss[len];
+			    /* Entire string scanned and failed */
 
 			    /* Jump relative offset */
 			    len = eng.cod[3] | (eng.cod[4] << 8);
 
 			    /* Restore offset from where started trying */
 			    eng.so[bas] = eng.ss[eng.off];
-
-			    if (eng.sv[eng.off] >= eng.so[eng.off])
-				/* Something matched earlier, update */
-				eng.eo[bas] = eng.sv[eng.off];
-			    else
-				/* Failed */
-				eng.eo[bas] = eng.ss[eng.off] - 1;
+			    eng.eo[bas] = eng.ss[eng.off] - 1;
 
 			    /* Pop stack and skip code */
 			    --eng.off;
@@ -1680,7 +1607,7 @@ rangenot_match:
 	     * Finished						*
 	     ****************************************************/
 	    case Re_DoneIf:
-		if (eng.str >= eng.end) {
+		if (eng.eo[eng.off] >= eng.so[eng.off]) {
 		    eng.so[0] = eng.ss[eng.off];
 		    eng.eo[0] = eng.eo[eng.off];
 		    goto done;
@@ -1706,8 +1633,10 @@ rangenot_match:
 
 wont:
 	/* Surely won't match */
-	if (eng.off == 0)
+	if (eng.off == 0) {
+	    eng.eo[0] = eng.so[0] - 1;
 	    break;
+	}
 
 
 fail:
@@ -1865,9 +1794,11 @@ reinit(void)
     for (i = '0'; i <= '9'; i++)
 	re__xdigit[i] = 1;
 
-    for (i = 1; i <= 32; i++)
+    for (i = 1; i < 32; i++)
 	re__control[i] = 1;
     re__control[127] = 1;
+    /* Don't show tabs as control characters */
+    re__control['\t'] = 0;
 }
 
 static int

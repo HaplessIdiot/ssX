@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.21 2002/08/05 03:56:23 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.22 2002/08/25 02:48:30 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -86,6 +86,7 @@ LispObj *Lisp_Fill(LispMac*, LispBuiltin*);		/* fill */
 LispObj *Lisp_Fmakunbound(LispMac*, LispBuiltin*);	/* fmakunbound */
 LispObj *Lisp_Funcall(LispMac*, LispBuiltin*);		/* funcall */
 LispObj *Lisp_Gc(LispMac*, LispBuiltin*);		/* gc */
+LispObj *Lisp_Gensym(LispMac*, LispBuiltin*);		/* gensym */
 LispObj *Lisp_Get(LispMac*, LispBuiltin*);		/* get */
 LispObj *Lisp_Getenv(LispMac*, LispBuiltin*);		/* getenv */
 LispObj *Lisp_Go(LispMac*, LispBuiltin*);		/* go */
@@ -164,6 +165,7 @@ LispObj *Lisp_SubstituteIf(LispMac*, LispBuiltin*);	/* substitute-if */
 LispObj *Lisp_SubstituteIfNot(LispMac*, LispBuiltin*);	/* substitute-if-not */
 LispObj *Lisp_Symbolp(LispMac*, LispBuiltin*);		/* symbolp */
 LispObj *Lisp_SymbolPlist(LispMac*, LispBuiltin*);	/* symbol-plist */
+LispObj *Lisp_SymbolValue(LispMac*, LispBuiltin*);	/* symbol-value */
 LispObj *Lisp_Tagbody(LispMac*, LispBuiltin*);		/* tagbody */
 LispObj *Lisp_Terpri(LispMac*, LispBuiltin*);		/* terpri */
 LispObj *Lisp_Throw(LispMac*, LispBuiltin*);		/* throw */

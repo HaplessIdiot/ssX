@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit.ad,v 1.19 2001/02/05 22:38:04 paulo Exp $
+! $XFree86: xc/programs/xedit/Xedit.ad,v 1.22 2002/09/08 02:29:48 paulo Exp $
 
 *geometry:				590x440
 *input:					TRUE
@@ -131,21 +131,6 @@ xedit.textSource*enableUndo:		True
 *scrollMenu.horizontal.label:		Horizontal
 *editMenu.modeMenuItem.leftBitmap:	menu12
 *editMenu.modeMenuItem.label:		Edit Mode
-*editModes.none.label:			Plain/None
-*editModes.C.label:			C/C++
-*editModes.C.properties:\
-keyword?font=*courier-bold-r*12*,\
-preprocessor?font=*courier-medium-r*12*,\
-comment?font=*courier-medium-o*12*,\
-string?font=*lucidatypewriter-medium-r*12*,\
-constant?font=*lucidatypewriter-medium-r*12*,\
-octal?font=*courier-bold-r*12*&overstrike,\
-hexa?font=*courier-bold-r*12*&underline,\
-integer?font=*courier-bold-r*12*,\
-float?font=*courier-bold-r*12*&overstrike&underline,\
-punctuation?font=*courier-bold-r*12*,\
-error?foreground=white&background=black&font=*new century schoolbook-bold*25*,\
-default?font=*courier-medium-r*12*
 
 *TransientShell*Text.translations: #override \
 c<Key>S:	no-op(r)\n\

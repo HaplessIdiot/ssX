@@ -27,7 +27,7 @@
 #  Author: Paulo César Pereira de Andrade
 #
 #
-# $XFree86$
+# $XFree86: xc/programs/xedit/lisp/re/tests.txt,v 1.1 2002/09/08 02:29:50 paulo Exp $
 
 # Some tests for the library:
 #	lines starting with # are comments
@@ -220,12 +220,12 @@
 # Some complex repetitions
 /foo.*bar/
 >barfoblaboofoobarfoobarfoobar
-11,29: foobarfoobarfoobar
+11,17: foobar
 /foo.+bar/
 >foobar
 :NOMATCH
 >fobbarfooxbarfooybar
-6,20: fooxbarfooybar
+6,13: fooxbar
 /foo.?bar/
 >xfoobar
 1,7: foobar
@@ -239,7 +239,7 @@
 >abc
 0,3: abc
 >xxxxxxxxxabbbbbbbccaaaaabbbc
-9,28: abbbbbbbccaaaaabbbc
+9,18: abbbbbbbc
 /a.+b.*c/
 >xxxabc 
 :NOMATCH
@@ -433,25 +433,29 @@
 0,3: abc
 4,6: 12
 >abcW12abcW12
-0,12: abcW12abcW12
-0,9: abcW12abc
-10,12: 12
-# This does not find the expected result, should be the same as above.
-# The engine currently only does one level "backtracking", so, once it
-# found the last "a" \D was true, so it forgot the last state and
-# followed to match (\d+)
+0,6: abcW12
+0,3: abc
+4,6: 12
+# This wasn't working in the previous version, but now with only minimal
+# matches supported, it works.
 >abcW12abcW12a
-:NOMATCH
+0,6: abcW12
+0,3: abc
+4,6: 12
 
-# This should always find the correct/expected result
+# Note the minimal match
 /.*\d/
 >a1a1a1aaaaaaa
-0,6: a1a1a1
-# But this fails to provide correct offsets unless the input ends with
-# a number
+0,2: a1
+# Check match offsets
 /(.*)\d/
-# So does this one.
+>a1a1a1aaaaaaa
+0,2: a1
+0,1: a
 /.*(\d)/
+>a1a1a1aaaaaaa
+0,2: a1
+1,2: 1
 
 /.*(\d+)/
 :BADRPT

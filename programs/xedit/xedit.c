@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/xedit.c,v 1.14 2002/02/10 02:50:05 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.c,v 1.16 2002/09/08 02:29:48 paulo Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include "xedit.h"
@@ -158,6 +158,13 @@ main(int argc, char *argv[])
 				 False);
   (void) XSetWMProtocols (XtDisplay(topwindow), XtWindow(topwindow),
 			  &wm_delete_window, 1);
+
+#ifndef __UNIXOS2__
+  XeditLispInitialize();
+#endif
+
+  /* This first call is just to save the default font and colors */
+  UpdateTextProperties();
 
   if (argc > 1) {
       Boolean exists;

@@ -1,4 +1,4 @@
-$XFree86$
+$XFree86: xc/programs/xedit/lisp/re/README,v 1.1 2002/09/08 02:29:50 paulo Exp $
 
 LAST UPDATED:	$Date$
 
@@ -76,27 +76,9 @@ with RE_NEWLINE, in that case it will match anything, but a newline).
 
   Limitations:
 
-o Only one level "backtracking", for example, with the pattern:
-	.*\D\d
-   It will correctly match:
-	a1, or 1a1b1, or a1b1c1
-   It also matches:
-	a1b
-   But in the previous case, if bakreference were required, it would
-  return incorrect values.
-   It fails do match:
-	a1bc
-   Because once the first "\D\d", that matches "a1" was found it started
-  searching the next match for "\D\d", "\D" was true for "b", so it forgot
-  the previous saved state and tried to match "\d" on "c", where it
-  failed.
-   If you need the proper information for the format:
-	.*<re>
-   Make <re> an atomic <re>, for example:
-	.*\d
-   But even in this case, backreference will not work, unless the match
- for "\d" is the last character in the input.
-   If you need backreference always working, don't use ".*", ".+" or ".?".
+o Only minimal matches supported. The engine has only one level "backtracking",
+  so, it also only does minimal matches to allow backreferences working
+  properly, and to avoid failing to match depending on the input.
 
 o Only one level "grouping", for example, with the pattern:
 	(a(b)c)
