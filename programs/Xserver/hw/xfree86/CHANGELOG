@@ -1,4 +1,22 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 216. Update ucs2any.pl, and replace the special map-* files with the
+      original mapping files from ftp.unicode.org.  Changes include:
+       - A bug has been fixed that caused sometimes the FONT property not
+         to be updated correctly.
+       - The FONTBOUNDINGBOX is now recalculated, which makes the script
+         also suitable for proportional fonts.
+       - The mapping table for the DEC VT100 graphic characters is now built
+         into the script. This means the special map-* files are not necessary
+         any more and they could be replaced with the original mapping files
+         found on ftp://ftp.unicode.org/Public/MAPPINGS/
+       - Whether the DEC VT100 graphic characters are added can be controlled
+         with options +d/-d. Default is to add them for upright charcell fonts
+         only.
+       - Slightly improved warning messages.
+      (#4472, Markus Kuhn).
+ 215. Fix libGLU build problem on Cygwin (#4467, Suhaib M. Siddiqi).
+ 214. Fix missing libX11 exported symbols for Cygwin (#4467,
+      Suhaib M. Siddiqi).
  213. Updates for Hurd support (#A.209, Marcus Brinkmann).
  212. Fix some mis-placed mem_barrier's for Alpha platforms (Jay Estabrook).
  211. Fix a Index/DAC register access in glint PM2v, PM3 driver.
@@ -12579,4 +12597,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1595 2001/02/27 23:04:55 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1596 2001/02/28 18:58:50 dawes Exp $

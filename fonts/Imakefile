@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:42:52 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/fonts/Imakefile,v 3.5 2000/11/09 01:35:06 dawes Exp $
+XCOMM $XFree86: xc/fonts/Imakefile,v 3.6 2001/01/17 17:33:06 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -18,7 +18,7 @@ FONTDIRS = bdf $(SCALEDDIR)
 PEXDIR = PEX
 #endif
 
-SUBDIRS = $(ENCODINGDIR) bdf $(SCALEDDIR) $(PEXDIR) util
+SUBDIRS = $(ENCODINGDIR) util bdf $(SCALEDDIR) $(PEXDIR)
 
 #if MakeLocalFontDir
 MakeDirectories(install,$(FONTDIR)/local)

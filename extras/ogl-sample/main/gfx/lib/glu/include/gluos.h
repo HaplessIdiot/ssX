@@ -1,10 +1,10 @@
 /*
 ** gluos.h - operating system dependencies for GLU
 **
-** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/include/gluos.h,v 1.1 2001/01/15 21:48:11 dawes Exp $
+** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/include/gluos.h,v 1.2 2001/03/01 00:37:00 dawes Exp $
 */
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(__CYGWIN__)
 
 #define WIN32_LEAN_AND_MEAN
 #define NOGDI
