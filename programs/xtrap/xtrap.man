@@ -1,4 +1,4 @@
-.\" $XFree86$
+.\" $XFree86: xc/programs/xtrap/xtrap.man,v 1.1 2001/11/02 23:29:34 dawes Exp $
 .TH xtrap 1
 .SH NAME
 xtrapreset, xtrapinfo, xtrapstats, xtrapout, xtrapin, xtrapchar, xtrapproto  
@@ -74,52 +74,54 @@ extension which facilitates the capturing of server protocol and synthesizing
 core input events.
 Information on how to obtain these sources can be
 found in the SOURCES section below.
+.LP
 The 
-.PN xtrapreset
+.B xtrapreset
 command
 is the simplest XTrap client in that it merely performs an XQueryExtension()
 against XTrap.  The name "reset" is historical.  The 
-.PN display
+.I display
 argument is parsed by the X Toolkit and specifies the display where XTrap is
 to be loaded; see X(1).
-.PN xtrapinfo
+.LP
+.B xtrapinfo
 displays general configuration information as a result of an GetAvailable
 XTrap request to the specified server.  It is simply designed to test the
 request/response mechanism of the XTrap extension and client library as
 well as display the configuration information that it finds.
 .LP
-.PN xtrapstats
+.B xtrapstats
 tests the event and request vectoring of the server extension by configuring
 XTrap to collect usage statistics on all core input events and requests.  It
 has a primitive command-line interface for showing the counters, zeroing
 out the counters, and quitting the program.
 .LP
-.PN xtrapout
+.B xtrapout
 tests the output transport from the XTrap extension to the XTrap client
 library.  
 As an aside, since xtrapout has the capability of "recording" events and
 requests it receives, 
-.PN xtrapout
+.B xtrapout
 is ideal for providing input to test 
-.PN xtrapin.
+.B xtrapin.
 Since events are the only concern for the input transport, the \-e flag can
 be specified to indicate that all input events (and only events) should be
 recorded by
-.PN xtrapout.
-.PN script
+.B xtrapout.
+.I script
 is specified primarily for non-U*IX machines which don't support I/O 
 re-direction easily.
 The \-v flag is used to force recording of all requests and input events.
 .LP
-.PN xtrapin
+.B xtrapin
 is used to test the input transport to the XTrap server extension.  As stated
 earler, it's input can be provided by 
-.PN xtrapout
+.B xtrapout
 using the \-e qualifer.  While it's primary function is for testing XTrap
 and serving as an example for XTrap functionality, it can reasonably used as
 a primitive "playback" client for X sessions.
 .LP
-.PN xtrapchar
+.B xtrapchar
 parses ANSI character sequences including application program sequences to 
 synthesize input events to X Window servers using the XTrap server extension.
 The intent of this program is to serve as a sample implementation for 
@@ -130,12 +132,14 @@ and echo's characters processed to stdout.  If present, this must be the
 first argument.
 .LP
 Note:  
-.PN xtrapchar 
+.B xtrapchar 
 has only been used with Digital Workstations using the 
 LK201 compatible keyboard.  Though reasonable effort was done to maintain 
 portability,  no claims are made as to the current level of portability to 
 non-DEC servers for this program.
-.PN xtrapproto
+.LP
+The
+.B xtrapproto
 command
 is a regression test designed to test the basic XTrap protocol between a
 client and server.  If a given implementation is suspect, the results of

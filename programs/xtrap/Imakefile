@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/xtrap/Imakefile,v 1.1 2001/11/02 23:29:34 dawes Exp $
 
         DEPLIBS = $(DEPXTRAPLIB) $(DEPEXTENSIONLIB) $(DEPXTOOLLIB) $(DEPXLIB)
          KEYSRC = XEKeybCtrl.c
@@ -43,5 +43,6 @@ InstallProgram(xtrapproto,$(BINDIR))
 InstallProgram(xtrapchar,$(BINDIR))
 
 InstallManPage(xtrap,$(MANDIR))
+InstallManPageAliases(xtrap,$(MANDIR),xtrapreset xtrapinfo xtrapstats xtrapout xtrapin xtrapchar xtrapproto)
 
 DependTarget()
