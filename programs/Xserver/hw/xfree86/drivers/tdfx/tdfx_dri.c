@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.1 1999/08/29 12:21:03 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -35,7 +35,6 @@ static void TDFXDRISwapContext(ScreenPtr pScreen, DRISyncType syncType,
 static void TDFXDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index);
 static void TDFXDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg, 
 			       RegionPtr prgnSrc, CARD32 index);
-static void TDFXDRIFlushContext(ScreenPtr pScreen);
 
 static Bool
 TDFXInitVisualConfigs(ScreenPtr pScreen)
@@ -265,7 +264,6 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
 
   pDRIInfo->CreateContext = TDFXCreateContext;
   pDRIInfo->SwapContext = TDFXDRISwapContext;
-  pDRIInfo->FlushContext = TDFXDRIFlushContext;
   pDRIInfo->InitBuffers = TDFXDRIInitBuffers;
   pDRIInfo->MoveBuffers = TDFXDRIMoveBuffers;
   pDRIInfo->bufferRequests = DRI_ALL_WINDOWS; /* !!! WHAT IS THIS? !!! */
@@ -375,13 +373,6 @@ TDFXDRISwapContext(ScreenPtr pScreen, DRISyncType syncType,
     /* Exiting through block handler */
     TDFXCheckSync(pScrn);
   }
-}
-
-static void
-TDFXDRIFlushContext(ScreenPtr pScreen)
-{
-  ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-  TDFXPtr pTDFX = TDFXPTR(pScrn);
 }
 
 static void
