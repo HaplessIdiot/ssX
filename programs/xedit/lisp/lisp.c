@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.46 2002/04/16 17:12:04 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.47 2002/04/25 22:00:30 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -2922,7 +2922,7 @@ LispSetVar(LispMac *mac, LispObj *atom, LispObj *obj)
 void
 LispProclaimSpecial(LispMac *mac, LispObj *atom, LispObj *value, LispObj *doc)
 {
-    int i, dyn, glb;
+    int i = 0, dyn, glb;
     LispAtom *name;
     LispPackage *pack;
 
