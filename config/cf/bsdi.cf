@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: bsdi.cf /main/22 1996/09/28 16:09:30 rws $
-XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.29 2000/05/23 04:47:34 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.30 2000/06/30 17:15:05 dawes Exp $
 
 #ifndef OSName
 #define OSName		DefaultOSName
@@ -87,6 +87,13 @@ XCOMM xf86site.def
 # define OptimizedCDebugFlags	-O
 #endif
 
+/*
+ * A hack to work around an optimization problem with GCC 2.95.2
+ */
+#if (OSMajorVersion == 4 && OSMinorVersion == 2)
+#define GccOptBug295
+#endif
+
 #define CppCmd		/usr/bin/cpp
 #define TroffCmd	groff -Tps
 #define MkdirHierCmd	mkdir -p
@@ -160,7 +167,11 @@ XCOMM xf86site.def
 #define LdPreLib -L$(BUILDLIBDIR) -L$(USRLIBDIR)
 #endif
 
+#if OSMajorVersion >= 4
 #define StandardDefines	-D__ELF__ -DCSRG_BASED
+#else
+#define StandardDefines	-DCSRG_BASED
+#endif
 
 #define InstallCmd /usr/bin/install
 #define	EqnCmd eqn -Tps

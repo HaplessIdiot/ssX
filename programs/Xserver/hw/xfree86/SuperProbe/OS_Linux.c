@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Linux.c,v 3.12 1997/03/17 11:22:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Linux.c,v 3.13 1999/03/28 15:32:21 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by Orest Zborowski <orestz@eskimo.com>
  *
@@ -112,7 +112,11 @@ int OpenVideo()
 	}
 	close(fd);
 	sprintf(fn, "/dev/tty%d", VT_num);
-	if ((VT_fd = open(fn, O_RDWR|O_NDELAY, 0)) < 0)
+	if ((VT_fd = open(fn, O_RDWR|O_NDELAY, 0)) < 0) {
+		sprintf(fn, "/dev/vc/%d", VT_num);
+		VT_fd = open(fn, O_RDWR|O_NDELAY, 0);
+	}
+	if (VT_fd < 0)
 	{
 		fprintf(stderr, "%s: Could not open VT %s\n", MyName, fn);
 		return(-1);

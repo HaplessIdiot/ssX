@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/63 1997/11/24 16:48:40 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.32 2000/02/13 06:15:30 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.33 2000/06/15 20:49:59 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -129,10 +129,9 @@ XF86INCLUDES = -I$(XF86COMSRC)
 NormalLibraryObjectRule()
 
 /*
- * A hack to work around an optimisation problem with the compiler on
- * FreeBSD 4.0-current in late 1999/early 2000.
+ * A hack to work around an optimization problem with gcc 2.95.2
  */
-#if BuildXF86VidModeExt && defined(FreeBSDGccOptBug)
+#if BuildXF86VidModeExt && defined(GccOptBug295)
 SpecialCObjectRule(xf86vmode,NullParameter,-O0)
 #endif
 
