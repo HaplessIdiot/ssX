@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.42 2002/01/16 18:20:12 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.43 2002/09/17 01:26:24 dawes Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -84,6 +84,7 @@
   lt_std	Lithuanian azerty standard
   lv		Latvian
   mk		Macedonian
+  ml		Malayalam
   mt		Maltese
   mt_us		Maltese (US layout)
   no		Norwegian
