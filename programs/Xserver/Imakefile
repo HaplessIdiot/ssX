@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.309 2005/02/07 01:38:23 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.310tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -601,6 +601,18 @@ XF86INIT   = $(XF86COMSRC)/xf86Init.o $(XF86COMSRC)/xf86IniExt.o
 XF86COMLIB = $(XF86COMSRC)/LibraryTargetName(xf86)
 XF86PARSLIB= $(XF86PARSERSRC)/LibraryTargetName(xf86config)
 XF86OSLIB  = $(XF86OSSRC)/LibraryTargetName(xf86_os)
+#if UseMemLeak
+MEMDEBUGLIB = $(TOP)/util/memleak/LibraryTargetName(memleak)
+#endif
+#if DoLoadableServer
+XF86LIBS  = $(MEMDEBUGLIB) $(XF86INIT) $(XF86COMLIB) \
+	    $(XF86PARSLIB) $(XF86OSLIB) 
+XF86LOADERLIB = $(XF86SRC)/loader/LibraryTargetName(loader)
+XF86MAINLIBS = PreFbLibsNoFont $(FONTBASE) $(XF86COMLIB) \
+	       NoMfbBarePostFbLibs $(XF86EXTENSIONS)
+XF86SERVERSYSLIBS = $(XPFBLIBS) $(SYSLIBS) $(LIBDL) $(LIBREGEX)
+XF86SERVERLIBS = $(XF86LIBS) $(XF86LOADERLIB) $(XF86MAINLIBS) $(XF86OSLIB)
+#else
 #if XF86XAA
 XF86XAALIB = $(XF86SRC)/xaa/LibraryTargetName(xaa)
 #endif
@@ -634,7 +646,6 @@ XFSHADOWFBLIB = $(XF86SRC)/shadowfb/LibraryTargetName(shadowfb)
 #if XF86AFB
 AFBLIB = afb/LibraryTargetName(afb)
 #endif
-XF86DRIVERLIB = $(XF86SRC)/drivers/LibraryTargetName(driver)
 #if XF86Ramdac
 XF86RAMDACLIB = $(XF86SRC)/ramdac/LibraryTargetName(ramdac)
 #endif
@@ -655,11 +666,8 @@ XF86INT10LIB = $(XF86OSSRC)/LibraryTargetName(int10)
 #else
 XF86INT10LIB = $(XF86SRC)/int10/LibraryTargetName(int10)
 #endif
-#if UseMemLeak
-MEMDEBUGLIB = $(TOP)/util/memleak/LibraryTargetName(memleak)
-#endif
+XF86DRIVERLIB = $(XF86SRC)/drivers/LibraryTargetName(driver)
 XF86IDRIVERLIB = $(XF86SRC)/input/LibraryTargetName(idriver)
-#if !DoLoadableServer
 XF86DRVOBJS = $(XF86SRC)/drivers/drvConf.o
 XF86DRVLIBS = $(XF86DRIVERLIB) $(XF86RAMDACLIB) $(XF86DDCLIB) $(XF86I2CLIB) \
               $(XF86XAALIB) $(XF86VGAHWLIB) $(XF86FBDEVHWLIB) \
@@ -671,24 +679,10 @@ XF86IDRVLIBS = $(XF86IDRIVERLIB)
 XF86SCANLIB = $(XF86SRC)/scanpci/LibraryTargetName(scanpci)
 XF86LIBS  = $(MEMDEBUGLIB) $(XF86INIT) $(XF86COMLIB) $(XF86RACLIB) \
 	    $(XF86PARSLIB) $(XF86VBELIB) $(XF86OSLIB) $(XF86INT10LIB) 
-#else
-XF86LIBS  = $(MEMDEBUGLIB) $(XF86INIT) $(XF86COMLIB) \
-	    $(XF86PARSLIB) $(XF86OSLIB) 
-#endif
-#if DoLoadableServer
-XF86LOADERLIB = $(XF86SRC)/loader/LibraryTargetName(loader)
-XF86MAINLIBS = PreFbLibsNoFont \
-	       $(FONTBASE) $(XF86COMLIB) \
-	       NoMfbBarePostFbLibs $(XF86EXTENSIONS)
-XF86SERVERSYSLIBS = $(XPFBLIBS) $(SYSLIBS) $(LIBDL) $(LIBREGEX)
-XF86SERVERLIBS = $(XF86DRVLIBS) $(XF86IDRVLIBS) $(XF86LIBS) $(XF86LOADERLIB) \
-		 $(XF86COMLIB) $(XF86MAINLIBS) $(XF86SCANLIB) $(XF86OSLIB)
-#else
-XF86MAINLIBS = MiExtLibs BareAllFBLibs $(XF86EXTENSIONS) $(XF86COMLIB) $(MI)
+XF86MAINLIBS = MiExtLibs BareAllFBLibs $(XF86EXTENSIONS) $(XF86COMLIB)
 XF86SERVERSYSLIBS = $(FONTLIBS) $(SYSLIBS) $(LIBDL) $(LIBREGEX)
-XF86SERVERLIBS = $(XF86DRVLIBS) $(XF86IDRVLIBS) $(XF86LIBS) $(XF86LOADERLIB) \
-		 $(XF86COMLIB) $(XF86MAINLIBS) $(XF86SCANLIB) $(XF86OSLIB) \
-		 $(XF86DDCLIB)
+XF86SERVERLIBS = $(XF86DRVLIBS) $(XF86IDRVLIBS) $(XF86LIBS) \
+		 $(XF86MAINLIBS) $(XF86SCANLIB)
 #endif
 XF86SERVEROBJS = $(XF86XKBOBJS) $(XF86DRVOBJS) $(XF86IDRVOBJS)
 #if HasParallelMake
@@ -698,8 +692,9 @@ MakeMutex($(XF86SERVERSUBDIRS) $(XF86SERVERLIBS) $(XF86SERVERSYSLIBS))
 $(XF86SERVERLIBS) $(XF86SERVERSYSLIBS):: $(XF86SERVERSUBDIRS)
 	@if [ -f $@ ]; then touch $@ >/dev/null 2>&1 || exit 0; fi
 #endif
-SetUIDServerTarget(XFree86,$(XF86SERVERSUBDIRS),$(XF86SERVEROBJS) $(SERVERDEFFILE), \
-	$(XF86SERVERLIBS),$(XF86SERVERSYSLIBS))
+SetUIDServerTarget(XFree86, $(XF86SERVERSUBDIRS), \
+		   $(XF86SERVEROBJS) $(SERVERDEFFILE), \
+		   $(XF86SERVERLIBS), $(XF86SERVERSYSLIBS))
 #if DoLoadableServer
 ServerDriverSDKTarget(XFree86)
 #endif
