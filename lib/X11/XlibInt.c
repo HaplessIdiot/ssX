@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.32 2002/10/16 00:37:26 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.33 2003/02/17 03:44:09 dawes Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -778,7 +778,10 @@ _XEventsQueued (dpy, mode)
 #endif /* XCONN_CHECK_FREQ */
 	if (!(len = pend)) {
 	    /* _XFlush can enqueue events */
-	    if (cvl) {
+#ifdef XTHREADS
+	    if (cvl)
+#endif
+	    {
 		UnlockNextEventReader(dpy);
 	    }
 	    return(dpy->qlen);
@@ -850,7 +853,10 @@ _XEventsQueued (dpy, mode)
 	    }
 	} ENDITERATE
 
-	if (cvl) {
+#ifdef XTHREADS
+	if (cvl)
+#endif
+	{
 	    UnlockNextEventReader(dpy);
 	}
 	return(dpy->qlen);
