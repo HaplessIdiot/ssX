@@ -606,7 +606,6 @@ DoConfigure()
 	    probeResultIsa = (*xf86DriverList[i]->Probe)(
 		xf86DriverList[i], PROBE_DETECTISA);
 	
-	/* Bail when we find the primary card ! */
 	if (probeResultPci) {
 	    ErrorF("We have found a PCI %s driver\n",*vl);
 	    if (xf86DriverList[i]->Identify != NULL)
@@ -744,7 +743,6 @@ DoConfigure()
 	ErrorF("XFree86 has configured a multihead system, please check your config.\n");
     }
 
-    ErrorF("XFree86 has configured the server for your primary card\n");
     ErrorF("Your XF86Config file is located in %s, and is called XF86Config.new\n\n",home);
     ErrorF("To test the server, type 'cd <return>' to take you back to\n");
     ErrorF("Your home directory. Then type 'XFree86 -xf86config XF86Config.new'\n");
