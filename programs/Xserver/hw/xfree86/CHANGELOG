@@ -1,4 +1,10 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 769. Add a root window property called XFree86_VT that holds the VT number
+      that the XFree86 server is running on (Andrew Aitcheson, suggested by
+      Samuel Thibault).
+ 768. Fix a problem where root window properties registered with
+      xf86RegisterRootWindowProperty() are not re-registered after server
+      regeneration (David Dawes, reported by Samuel Thibault).
  767. Fix xtest failures for the savage driver's zero width lines by
       removing the TwoPointLine and using only the Bresenham version
       (reported by Nicolas Joly).
@@ -18572,7 +18578,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3111 2004/01/25 16:57:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3112 2004/01/25 17:39:26 dawes Exp $
 
 
 

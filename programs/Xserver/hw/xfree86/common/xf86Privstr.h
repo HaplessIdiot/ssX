@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.39 2003/09/09 03:20:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.40 2003/10/17 20:02:12 alanh Exp $ */
 
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
@@ -197,6 +197,16 @@ typedef struct {
     CloseScreenProcPtr	CloseScreen;
 } VidModeRec, *VidModePtr;
 #endif
+
+/* Information for root window properties. */
+typedef struct _RootWinProp {
+    struct _RootWinProp *	next;
+    char *			name;
+    Atom			type;
+    short			format;
+    long			size;
+    pointer			data;
+} RootWinProp, *RootWinPropPtr;
 
 /* private resource types */
 #define ResNoAvoid  ResBios
