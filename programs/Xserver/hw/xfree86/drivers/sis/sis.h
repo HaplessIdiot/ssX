@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.23 2001/11/30 12:12:00 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.24 2002/01/10 19:05:43 eich Exp $ */
 
 #ifndef _SIS_H
 #define _SIS_H_
@@ -71,10 +71,13 @@
 #define CRT2_TV                 0x00000020
 #define CRT2_VGA                0x00000040
 #define CRT2_ENABLE             0x00000070
+#define DISPTYPE_DISP2		(CRT2_LCD | CRT2_TV | CRT2_VGA) /* TW */
+#define LCD_640x480             0x00000080 /* TW */
 #define LCD_800x600             0x00000100
 #define LCD_1024x768            0x00000200
 #define LCD_1280x1024           0x00000400
-#define LCD_TYPE                0x00000700
+#define LCD_1280x960    	0x00000800 /* TW */
+#define LCD_TYPE                0x00000F80 /* TW */
 #define TV_NTSC                 0x00001000
 #define TV_PAL                  0x00002000
 #define TV_HIVISION             0x00004000
@@ -83,17 +86,25 @@
 #define TV_SVIDEO               0x00020000
 #define TV_SCART                0x00040000
 #define TV_INTERFACE            0x00070000
+#define DISPTYPE_CRT1		0x00080000 /* TW: CRT1 connected and used */
+#define DISPTYPE_DISP1		DISPTYPE_CRT1 /* TW */
 #define VB_301                  0x00100000
 #define VB_302                  0x00200000
 #define VB_303                  0x00400000
 #define VB_301B			0x00800000 /* TW */
 #define VB_LVDS                 0x01000000
 #define VB_CHRONTEL             0x02000000
+#define VB_VIDEOBRIDGE		(VB_301|VB_301B|VB_302|VB_303|VB_LVDS|VB_CHRONTEL) /* TW */
 #define VB_NOLCD		0x04000000 /* TW */
-#define SINGLE_MODE             0x00000000
-#define SIMU_MODE               0x10000000
-#define MM_MODE                 0x20000000
-#define DISPLAY_MODE            0x30000000
+#define VB_LCDA			0x08000000 /* TW */
+#define SINGLE_MODE             0x10000000  /* TW: CRT1 or CRT2; old: 0x00000000 */
+#define VB_DISPMODE_SINGLE	SINGLE_MODE /* TW */
+#define MIRROR_MODE		0x20000000 /* TW: CRT1 + CRT2 */
+#define VB_DISPMODE_MIRROR	MIRROR_MODE /* TW */
+#define DUALVIEW_MODE		0x40000000 /* TW: CRT1 + CRT2 independent (not used) */
+/* #define SIMU_MODE               0x10000000 */ /* TW */
+/* #define MM_MODE                 0x20000000 */ /* TW */
+#define DISPLAY_MODE            0x70000000 /* TW: Mask; old 0x30000000 */
 #define MASK_DISPTYPE_CRT2     0x04         /* Connect LCD */
 #define MASK_DISPTYPE_LCD      0x02         /* Connect LCD */
 #define MASK_DISPTYPE_TV       0x01         /* Connect TV */
@@ -182,10 +193,12 @@ typedef struct {
     Bool        (*ModeInit)(ScrnInfoPtr pScrn, DisplayModePtr mode);
     void        (*SiSSave)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
     void        (*SiSSave2)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
+    void        (*SiSSave3)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
     void        (*SiSSaveLVDS)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
     void        (*SiSSaveChrontel)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
     void        (*SiSRestore)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
     void        (*SiSRestore2)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
+    void        (*SiSRestore3)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
     void        (*SiSRestoreLVDS)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
     void        (*SiSRestoreChrontel)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
     void        (*SetThreshold)(ScrnInfoPtr pScrn, DisplayModePtr mode,
@@ -239,6 +252,8 @@ typedef struct {
     unsigned char LCDon;
     Bool Blank;
     unsigned char BIOSModeSave;
+    int CRT1off;		/* TW: 1=CRT1 off, 0=CRT1 on */
+    CARD16 LCDheight;		/* TW: Vertical resolution of LCD panel */
     vbeInfoPtr pVbe;		/* TW: all following for VESA switching with 630+LVDS */
     CARD16 vesamajor;
     CARD16 vesaminor;

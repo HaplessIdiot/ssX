@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.4 2001/06/15 21:23:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.5 2002/01/10 19:05:45 eich Exp $ */
 
 /*
  * sis_video.c: SIS Xv driver. Based on the mga Xv driver by Mark Vojkovich
@@ -500,15 +500,21 @@ SISSetupImageVideo(ScreenPtr pScreen)
 
     /* set display mode */
     /* TODO: support CRT2-only mode */
-    if(pSIS->VBFlags) {
+    if(pSIS->VBFlags & VB_DISPMODE_MIRROR) {    /* TW: CRT1 + CRT2 */
       pPriv->displayMode = DISPMODE_MIRROR;
       setsrregmask (pSIS, 0x06, 0x80, 0xc0);
       setsrregmask (pSIS, 0x32, 0x80, 0xc0);
     }
     else {
-      pPriv->displayMode = DISPMODE_SINGLE1;
-      setsrregmask (pSIS, 0x06, 0x00, 0xc0);
-      setsrregmask (pSIS, 0x32, 0x00, 0xc0);
+      if (pSIS->VBFlags & DISPTYPE_DISP1) {	/* TW: CRT1 only */
+      	pPriv->displayMode = DISPMODE_SINGLE1;
+      	setsrregmask (pSIS, 0x06, 0x00, 0xc0);
+      	setsrregmask (pSIS, 0x32, 0x00, 0xc0);
+      } else {					/* TW: CRT2 only */
+        pPriv->displayMode = DISPMODE_SINGLE2;
+      	setsrregmask (pSIS, 0x06, 0x00, 0xc0);	/* No idea... do the same as for CRT1 now */
+      	setsrregmask (pSIS, 0x32, 0x00, 0xc0);
+      }
     }
 
     SISResetVideo(pScrn);
@@ -614,16 +620,24 @@ SISQueryBestSize(
 
 
 static void
-set_scale_factor(SISOverlayPtr pOverlay)
+set_scale_factor(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn)
 {
+  SISPtr pSIS = SISPTR(pScrn);
   CARD32 I=0;
   
   int dstW = pOverlay->dstBox.x2 - pOverlay->dstBox.x1;
   int dstH = pOverlay->dstBox.y2 - pOverlay->dstBox.y1;  
   int srcW = pOverlay->srcW;
   int srcH = pOverlay->srcH;
-  
+  CARD16 LCDheight = pSIS->LCDheight;
+  CARD16 SCREENheight = pScrn->currentMode->VDisplay;
+
   int srcPitch = pOverlay->pitch;
+
+  /* TW: Scale image due to idiotic VESA modes that scale CRT2 _and_ CRT1 */
+  if ( (pSIS->UseVESA) && (pSIS->VBFlags & CRT2_LCD) ) {
+  	dstH = (dstH * LCDheight) / SCREENheight;
+  }
 
     if (dstW == srcW) {
         pOverlay->HUSF   = 0x00;
@@ -997,9 +1011,9 @@ SISDisplayVideo(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
    set_line_buf_size (&overlay);
   
    /* set scale factor */
-   set_scale_factor (&overlay);
+   set_scale_factor (&overlay, pScrn);
 
-   if(pPriv->displayMode == DISPMODE_SINGLE2) {
+   if( (pPriv->displayMode == DISPMODE_SINGLE2) ) {
      index = 1;
      overlay.VBlankActiveFunc = vblank_active_CRT2;
      overlay.GetScanLineFunc = get_scanline_CRT2;
@@ -1013,7 +1027,7 @@ SISDisplayVideo(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
 MIRROR:
 
    setvideoregmask (pSIS, Index_VI_Control_Misc2, index, 0x01);
-   
+
    /* set scale temporarily */
    {
      int dstW = overlay.dstBox.x2 - overlay.dstBox.x1;
@@ -1045,7 +1059,7 @@ MIRROR:
    /* enable overlay */    
    setvideoregmask (pSIS, Index_VI_Control_Misc0, 0x02, 0x02);
 
-   if((pPriv->displayMode == DISPMODE_MIRROR) && (index == 0)) {
+   if(((pPriv->displayMode == DISPMODE_MIRROR) && (index == 0))) {
      index = 1;
      overlay.VBlankActiveFunc = vblank_active_CRT2;
      overlay.GetScanLineFunc = get_scanline_CRT2;

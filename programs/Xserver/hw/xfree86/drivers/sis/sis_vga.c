@@ -392,6 +392,13 @@ SISInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     return(TRUE);
 }
 
+/* TW: Initialize various regs for mode. This is done to
+ *     structure, not hardware. (SiSRestore would write
+ *     structure to hardware registers.)
+ *     This function is not used on SiS300, 540, 630 (unless
+ *     VESA is used for mode switching); on these chips,
+ *     the BIOS emulation (sis_bioc.s) does the job.
+ */
 Bool
 SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
@@ -483,7 +490,6 @@ SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
             GETBITSTR(mode->CrtcVBlankEnd    ,   8:8, 4:4) |
             GETBITSTR(mode->CrtcVSyncEnd     ,   4:4, 5:5) ;
 
-
     	pReg->sisRegs3C4[0x0B] = 			/* Extended Horizontal Overflow */
             GETBITSTR((mode->CrtcHTotal      >> 3) - 5, 9:8, 1:0) |
             GETBITSTR((mode->CrtcHDisplay    >> 3) - 1, 9:8, 3:2) |
@@ -509,11 +515,12 @@ SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
         ((mode->CrtcHDisplay *((pScrn->bitsPerPixel+7)/8) + 63) >> 6)+1;
     }	/* VESA */
 
-/* TW: Enable PCI adressing (0x80) & MMIO enable (0x1) & ? (0x40) */
+/* TW: Enable PCI adressing (0x80) & MMIO enable (0x1) & ? (0x20) */
     pReg->sisRegs3C4[0x20] = 0xA1;
 /* TW: Enable 3D accelerator & ? */
-/* TW: (was 5A) 0x42 enables 2D accellerator (done below), 0x18 enables 3D engine */
-    pReg->sisRegs3C4[0x1E] = 0x18;
+/* TW: 0x42 enables 2D accellerator (done below), 0x18 enables 3D engine */
+/*  pReg->sisRegs3C4[0x1E] = 0x18; */
+/* TW: !!! now done according to NoAccel setting !!! */
 
     if (!pSiS->UseVESA) {	/* TW: clocks have surely been set by VESA, so don't touch them now */
    	if (SiScompute_vclk(clock, &num, &denum, &div, &sbit, &scale)) {  /* Set vclk */
@@ -563,9 +570,10 @@ SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
        be limited when using DRI)
 */
     if (!pSiS->NoAccel) {
-        pReg->sisRegs3C4[0x1E] |= 0x42;  /* TW: Enable Accellerator (?) */
+        pReg->sisRegs3C4[0x1E] |= 0x42;  /* TW: Enable 2D accellerator */
+	pReg->sisRegs3C4[0x1E] |= 0x18;  /* TW: Enable 3D accellerator */
         if (pSiS->TurboQueue)  {    		/* set Turbo Queue as 512k */
-	    temp = ((pScrn->videoRam/64)-8);    /* TW: 8 = 512k, 4=256k, etc.*/
+	    temp = ((pScrn->videoRam/64)-8);    /* TW: 8=512k, 4=256k, 2=128k, 1=64k */
             pReg->sisRegs3C4[0x26] = temp & 0xFF;
 	    pReg->sisRegs3C4[0x27] =
 		(pReg->sisRegs3C4[0x27] & 0xfc) | (((temp >> 8) & 3) | 0xF0);
@@ -585,18 +593,26 @@ SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
     return(TRUE);
 }
 
+/* TW: Detect video bridge and set VBFlags accordingly */
 void SISVGAPreInit(ScrnInfoPtr pScrn)
 {
     SISPtr  pSiS = SISPTR(pScrn);
     int     temp;
-    unsigned short usOffsetHigh, usOffsetLow, vBiosVersion;
+    char    BIOSversion[]="x.xx.xx\0";
+    unsigned short usOffsetHigh, usOffsetLow, vBiosRevision;
     unsigned long   ROMAddr  = (unsigned long) SISPTR(pScrn)->BIOS;
+
+    for (temp = 0; temp < 7; temp++) {
+        BIOSversion[temp] = *((unsigned char *)(ROMAddr+temp+0x06));
+    }
+
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Video BIOS version %s detected\n", BIOSversion);
 
     usOffsetHigh = *((unsigned char *)(ROMAddr+0x08)) - 0x30;
     usOffsetLow  = *((unsigned char *)(ROMAddr+0x09)) - 0x30;
-    vBiosVersion = usOffsetHigh << 4 | usOffsetLow;
-#if 0			/* TW: What's this good for? Check the SUBrevision???? That can't be correct! */
-    if (vBiosVersion < 0x02) {
+    vBiosRevision = usOffsetHigh << 4 | usOffsetLow;
+#if 0	/* TW: What's this good for? Check the BIOS revision???? That can't be correct! */
+    if (vBiosRevision < 0x02) {
         outSISIDXREG(pSiS->RelIO+CROFFSET, 0x37, 0);
         inSISIDXREG(pSiS->RelIO+CROFFSET, 0x36, temp);
         temp &= 0x07;
@@ -620,7 +636,7 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 	temp = inb(SISPART4+1) & 0xff;
 	if (!(temp & 0x02))  {
 	        pSiS->VBFlags|=VB_NOLCD; /* TW: flag yet unused */
-		xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "[SiS301: NoLCD to be set]\n");
+		xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "[SiS301: NoLCD flag detected]\n");
 	}
     }
     else if (temp == 2) {
@@ -628,9 +644,11 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
     	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Detected SiS302(B) video bridge\n");
 	outb(SISPART4, 0x38);	/* TW: new; LCDA (?) support - yet incomplete */
 	temp = inb(SISPART4+1) & 0xff;
-	if (temp == 0x03)
+	if (temp == 0x03) {
+		pSiS->VBFlags|=VB_LCDA; /* TW: flag yet unused */
 		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		         "[SiS302: LCDA detected - yet unsupported]\n");
+		         "[SiS302: LCDA flag detected]\n");
+	}
     }
     else if (temp == 3) {
         pSiS->VBFlags|=VB_303;  /*303*/

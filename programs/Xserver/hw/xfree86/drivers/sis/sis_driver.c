@@ -102,9 +102,12 @@ static void SISVESARestore(ScrnInfoPtr pScrn);
 static Bool SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static void SISModifyModeInfo(DisplayModePtr mode);
 static void SiSPreSetMode(ScrnInfoPtr pScrn, int LockAfterwards);
+static void SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg, int LockAfterwards);
 static Bool SiSSetVESAMode(ScrnInfoPtr pScrn, DisplayModePtr pMode);
 static void SiSBuildVesaModeList(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe);
 static UShort CalcVESAModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode);
+static void SISBridgeRestore(ScrnInfoPtr pScrn);
+unsigned char SISSearchCRT1Rate(DisplayModePtr mode);
 static void SISVESASaveRestore(ScrnInfoPtr pScrn, vbeSaveRestoreFunction function);
 
 void SiSOptions(ScrnInfoPtr pScrn);
@@ -190,9 +193,10 @@ int sis2Reg32MMIO[]={0x8200,0x8204,0x8208,0x820C,0x8210,0x8214,0x8218,0x821C,
              0x8240, 0x8300};
 
 /* TW: The following was re-included because there are BIOSes out there that
- *     report incomplete mode lists.
+ *     report incomplete mode lists. These are BIOS versions <2.01.2x
+ *     NOTE: Mode numbers for 1280, 1600 and 1920 are unofficial but they work here!
  */
-				/*     8      16     24    32   */
+				       /*     8      16     24    32   */
 /* TW: VBE 3.0 on SiS630 does not support 24 fpp modes (only 32fpp when depth = 24);
  */
 static UShort  VESAModeIndex_640x480[]   = {0x100, 0x111, 0x112, 0x13a};
@@ -200,8 +204,32 @@ static UShort  VESAModeIndex_720x480[]   = {0x000, 0x000, 0x000, 0x000};
 static UShort  VESAModeIndex_720x576[]   = {0x000, 0x000, 0x000, 0x000};
 static UShort  VESAModeIndex_800x600[]   = {0x103, 0x114, 0x115, 0x13b};
 static UShort  VESAModeIndex_1024x768[]  = {0x105, 0x117, 0x118, 0x13c};
-static UShort  VESAModeIndex_1280x1024[] = {0x107, 0x11a, 0x11b, 0x000};
-static UShort  VESAModeIndex_1600x1200[] = {0x11c, 0x11e, 0x000, 0x000};
+UShort  VESAModeIndex_1280x1024[] = {0x107, 0x11a, 0x11b, 0x13d};
+UShort  VESAModeIndex_1600x1200[] = {0x13e, 0x13f, 0x000, 0x140};
+UShort  VESAModeIndex_1920x1440[] = {0x141, 0x142, 0x000, 0x143};
+
+static struct _sis_vrate {
+    CARD16 idx;
+    CARD16 xres;
+    CARD16 yres;
+    CARD16 refresh;
+}
+
+sisx_vrate[] = {
+    {1, 640, 480, 60},  {2, 640, 480, 72}, {3, 640, 480, 75},  {4, 640, 480, 85},
+    {5, 640, 480, 100}, {6, 640, 480, 120}, {7, 640, 480, 160}, {8, 640, 480, 200},
+    {1, 720, 480, 60}, {1, 720, 576, 50},
+    {1, 800, 600, 56}, {2, 800, 600, 60}, {3, 800, 600, 72}, {4, 800, 600, 75},
+    {5, 800, 600, 85}, {6, 800, 600, 100}, {7, 800, 600, 120}, {8, 800, 600, 160},
+    {1, 1024, 768, 43}, {2, 1024, 768, 60}, {3, 1024, 768, 70}, {4, 1024, 768, 75},
+    {5, 1024, 768, 85}, {6, 1024, 768, 100}, {7, 1024, 768, 120},
+    {1, 1280, 1024, 43}, {2, 1280, 1024, 60}, {3, 1280, 1024, 75}, {4, 1280, 1024, 85},
+    {1, 1600, 1200, 60}, {2, 1600, 1200, 65}, {3, 1600, 1200, 70}, {4, 1600, 1200, 75},
+    {5, 1600, 1200, 85},
+    {1, 1920, 1440, 60},
+    {0, 0, 0, 0}
+};
+
 
 sisModeInfoPtr SISVesaModeList = NULL;
 
@@ -392,7 +420,9 @@ SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
     unsigned char seq1 = 0;
     int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
-    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,"SISDisplayPowerManagementSet(%d)\n",PowerManagementMode);
+    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
+                 "SISDisplayPowerManagementSet(%d)\n",PowerManagementMode);
+
     outb(vgaIOBase + 4, 0x17);
     crtc17 = inb(vgaIOBase + 5);
     /* enable access to extended sequencer registers */
@@ -700,6 +730,10 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
 
+    /* TW: ---EGBERT: Remove this before committing !*/
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+           "Unofficial driver (16.01.02) by Thomas Winischhofer\n");
+
     /*
      * Set the Chipset and ChipRev, allowing config file entries to
      * override.
@@ -940,44 +974,71 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     } else pSiS->maxxfbmem = pSiS->FbMapSize;
 
+    /* TW: Detect video bridge */
     SISVGAPreInit(pScrn);
+    /* TW: Detect CRT2-LCD and LCD size */
     SISLCDPreInit(pScrn);
+    /* TW: Detect CRT2-TV and PAL/NTSC mode */
     SISTVPreInit(pScrn);
+    /* TW: Detect CRT2-VGA */
     SISCRT2PreInit(pScrn);
+    /* TW: Eventually overrule detected CRT2 type */
     if (pSiS->ForceCRT2Type == CRT2_DEFAULT)
-    {   if (pSiS->VBFlags & CRT2_VGA)
-        pSiS->ForceCRT2Type = CRT2_VGA;
-    else if (pSiS->VBFlags & CRT2_LCD)
-        pSiS->ForceCRT2Type = CRT2_LCD;
-    else if (pSiS->VBFlags & CRT2_TV)
-        pSiS->ForceCRT2Type = CRT2_TV;
+    {
+        if (pSiS->VBFlags & CRT2_VGA)
+           pSiS->ForceCRT2Type = CRT2_VGA;
+        else if (pSiS->VBFlags & CRT2_LCD)
+           pSiS->ForceCRT2Type = CRT2_LCD;
+        else if (pSiS->VBFlags & CRT2_TV)
+           pSiS->ForceCRT2Type = CRT2_TV;
     }
     switch (pSiS->ForceCRT2Type)
-    {    case CRT2_TV:
+    {
+    case CRT2_TV:
         pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_LCD | CRT2_VGA);
-        if (pSiS->VBFlags & (VB_301|VB_302|VB_303|VB_LVDS|VB_CHRONTEL))
+        if (pSiS->VBFlags & VB_VIDEOBRIDGE)
             pSiS->VBFlags = pSiS->VBFlags | CRT2_TV;
         else
             pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_TV);
         break;
      case CRT2_LCD:
         pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_TV | CRT2_VGA);
-        if (pSiS->VBFlags & (VB_301|VB_302|VB_303|VB_LVDS|VB_CHRONTEL))
+        if (pSiS->VBFlags & VB_VIDEOBRIDGE)
             pSiS->VBFlags = pSiS->VBFlags | CRT2_LCD;
         else
             pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_LCD);
         break;
      case CRT2_VGA:
         pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_TV | CRT2_LCD);
-        if (pSiS->VBFlags & (VB_301|VB_302|VB_303|VB_LVDS|VB_CHRONTEL))
+        if (pSiS->VBFlags & VB_VIDEOBRIDGE)
             pSiS->VBFlags = pSiS->VBFlags | CRT2_VGA;
         else
             pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_VGA);
         break;
-     }
+      default:
+        pSiS->VBFlags &= ~(CRT2_TV | CRT2_LCD | CRT2_VGA);
+    }
+
+    /* TW: Check if CRT1 used (or needed; this if no CRT2 detected) */
+    if (pSiS->VBFlags & VB_VIDEOBRIDGE) {
+        if (!(pSiS->VBFlags & (CRT2_VGA | CRT2_LCD | CRT2_TV)))
+	    pSiS->CRT1off = 0;
+    }
+    else /* TW: no video bridge? Then we NEED CRT1! */
+        pSiS->CRT1off = 0;
+
+    /* TW: Determine CRT1<>CRT2 mode */
+    if (pSiS->VBFlags & DISPTYPE_DISP2) {
+        if (pSiS->CRT1off)	/* TW: CRT2 only */
+	     pSiS->VBFlags |= VB_DISPMODE_SINGLE;
+	else			/* TW: CRT1 and CRT2 - mirror image */
+	     pSiS->VBFlags |= (VB_DISPMODE_MIRROR | DISPTYPE_CRT1);
+    } else			/* TW: CRT1 only */
+             pSiS->VBFlags |= (VB_DISPMODE_SINGLE | DISPTYPE_CRT1);
 
     SISDACPreInit(pScrn);
 
+    /* Lock extended registers */
     outw(VGA_SEQ_INDEX, (unlock << 8) | 0x05);
 
     /* Set the min pixel clock */
@@ -1140,6 +1201,12 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
     xf86LoaderReqSymLists(ddcSymbols, NULL);
 
+/* TW: Now load and initialize VBE module. The default behavior
+ *     for SiS630 with SiS301B, SiS302 or LVDS/CHRONTEL bridge
+ *     is to use VESA for mode switching. This can be overruled
+ *     with the option "VESA".
+ */
+
     {
 	Bool ret;
 	pSiS->UseVESA=0;
@@ -1151,7 +1218,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		if ( (pSiS->VESA == 1)
 		    || (   (pSiS->VESA != 0)
 			&& (pSiS->Chipset == PCI_CHIP_SIS630)
-			&& (pSiS->VBFlags & (VB_LVDS|VB_CHRONTEL))) ) {
+			&& (pSiS->VBFlags & (VB_301B|VB_302|VB_LVDS|VB_CHRONTEL))) ) {
 		    vbe = VBEGetVBEInfo(pSiS->pVbe);
 		    pSiS->vesamajor = (unsigned)(vbe->VESAVersion >> 8);
 		    pSiS->vesaminor = vbe->VESAVersion & 0xff;
@@ -1256,7 +1323,6 @@ SISUnmapMem(ScrnInfoPtr pScrn)
     return TRUE;
 }
 
-
 /*
  * This function saves the video state.
  */
@@ -1288,7 +1354,7 @@ SISVESASaveRestore(ScrnInfoPtr pScrn, vbeSaveRestoreFunction function)
 	&& (function == MODE_SAVE || pSiS->pstate)) {
 	if (function == MODE_RESTORE)
 	    memcpy(pSiS->state, pSiS->pstate, pSiS->stateSize);
-	ErrorF("VBESaveResore\n");
+	ErrorF("VBESaveRestore\n");
 	if ((VBESaveRestore(pSiS->pVbe,function,
 				     (pointer)&pSiS->state,
 			    &pSiS->stateSize,&pSiS->statePage))) {
@@ -1298,10 +1364,10 @@ SISVESASaveRestore(ScrnInfoPtr pScrn, vbeSaveRestoreFunction function)
 		    pSiS->pstate = xalloc(pSiS->stateSize);
 		memcpy(pSiS->pstate, pSiS->state, pSiS->stateSize);
 	    }
-	    	ErrorF("VBESaveResore done with success\n");
+	    ErrorF("VBESaveRestore done with success\n");
 	    return;
 	}
-	ErrorF("VBESaveResore done\n");
+	ErrorF("VBESaveRestore done\n");
     } else {
 	if (function == MODE_SAVE)
 	    (void)VBEGetVBEMode(pSiS->pVbe, &pSiS->stateMode);
@@ -1314,6 +1380,7 @@ SISVESASaveRestore(ScrnInfoPtr pScrn, vbeSaveRestoreFunction function)
  * Initialise a new mode.  This is currently still using the old
  * "initialise struct, restore/write struct to HW" model.  That could
  * be changed.
+ * TW: Why?
  */
 
 static Bool
@@ -1328,40 +1395,43 @@ SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	
     SISModifyModeInfo(mode);
 
-    if (pSiS->UseVESA) {
+    /* TW: Initialize SiS Port Reg definitions for externally used
+     *     sis_bios functions.
+     */
+    SiSRegInit(pSiS->RelIO+0x30);
 
-	/* 
+    if (pSiS->UseVESA) {  /* With VESA: */
+	/*
 	 * This order is required:
-	 * The video bridges need to be adjusted before the
-	 * BIOS is run as the configuration depends on this.
-	 * After the BIOS is run the bridges need to be readjusted
-	 * as the BIOS may have messed them up.
+	 * The video bridge needs to be adjusted before the
+	 * BIOS is run as the BIOS sets up CRT2 according to
+	 * these register settings.
+	 * After the BIOS is run, the bridges and turboqueue
+	 * registers need to be readjusted as the BIOS may
+	 * very probably have messed them up.
 	 */
 	SiSPreSetMode(pScrn, 1);
         /* TW: mode was pScrn->currentMode - VidModeExt did not work! */
  	if (!SiSSetVESAMode(pScrn, mode))
 	    return FALSE;
 	SiSPreSetMode(pScrn, 1);
+	SiSPostSetMode(pScrn, &pSiS->ModeReg, 1);
 
+ 	/* Prepare the register contents */
 	if (!(*pSiS->ModeInit)(pScrn, mode))
 	    return FALSE;
 
 	pScrn->vtSema = TRUE;
 
-	PDEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-			  "HDisplay: %d, VDisplay: %d  \n",
-			  mode->HDisplay, mode->VDisplay));
-
-        /* 
-	 * TW: must not do vga initialization when using VESA
-	 * - resets refresh rate 
-	 */
 	/* Program the registers */
 	vgaHWProtect(pScrn, TRUE);
 	(*pSiS->SiSRestore)(pScrn, &pSiS->ModeReg);
 	vgaHWProtect(pScrn, FALSE);
-
-    } else {
+	PDEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+ 			  "HDisplay: %d, VDisplay: %d  \n",
+ 			  mode->HDisplay, mode->VDisplay));
+ 
+    } else { /* Without VESA: */
     	/* Initialise the ModeReg values */
     	if (!vgaHWInit(pScrn, mode))
 	        return FALSE;
@@ -1416,20 +1486,21 @@ SiSSetVESAMode(ScrnInfoPtr pScrn, DisplayModePtr pMode)
 
     if (!(mode = CalcVESAModeIndex(pScrn, pMode))) return FALSE;
     ErrorF("mode: %x\n",mode);
+
     mode |= 1 << 15;			/* TW: Don't clear framebuffer */
     mode |= 1 << 14;   			/* TW: always use linear adressing */
 
     if (VBESetVBEMode(pSiS->pVbe, mode, NULL) == FALSE) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Set VBE Mode 0x%x failed\n",
-	             mode & 0x3fff);
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Setting mode 0x%x failed\n",
+	             mode & 0x0fff);
 	    return (FALSE);
     }
 
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Setting mode 0x%x succeeded\n",
-	       mode & 0x0fff);
-
     if (pMode->HDisplay != pScrn->virtualX)
 	VBESetLogicalScanline(pSiS->pVbe, pScrn->virtualX);
+
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Setting mode 0x%x succeeded\n",
+	       mode & 0x0fff);
 
     return (TRUE);
 }
@@ -1463,10 +1534,23 @@ SISRestore(ScrnInfoPtr pScrn)
 static void
 SISVESARestore(ScrnInfoPtr pScrn)
 {
-   SISPtr pSiS;
+   SISPtr pSiS = SISPTR(pScrn);
 
-   pSiS = SISPTR(pScrn);
    if(pSiS->UseVESA) SISVESASaveRestore(pScrn, MODE_RESTORE);
+}
+
+/* TW: Restore bridge output registers - to be called BEFORE VESARestore */
+static void
+SISBridgeRestore(ScrnInfoPtr pScrn)
+{
+    SISPtr pSiS = SISPTR(pScrn);
+
+    if ( (pSiS->Chipset == PCI_CHIP_SIS300) ||
+         (pSiS->Chipset == PCI_CHIP_SIS630) ||
+         (pSiS->Chipset == PCI_CHIP_SIS540) ) {
+
+		SiSRestoreBridge(pScrn, &pSiS->SavedReg);
+    }
 }
 
 /* Mandatory
@@ -1632,7 +1716,6 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
         return FALSE;
     }
 
-
     if (pScrn->bitsPerPixel > 8) {
         /* Fixup RGB ordering */
         visual = pScreen->visuals + pScreen->numVisuals;
@@ -1792,10 +1875,10 @@ SISAdjustFrame(int scrnIndex, int x, int y, int flags)
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
     if (pSiS->UseVESA) {
+        /* TW: Let BIOS adjust frame if using VESA */
 	VBESetDisplayStart(pSiS->pVbe, x, y, TRUE);
     }
     else {
-
     outb(VGA_SEQ_INDEX, 0x05); /* Unlock Registers */
     SR5State = inb(VGA_SEQ_DATA);
     outw(VGA_SEQ_INDEX, 0x8605);
@@ -1862,6 +1945,7 @@ SISAdjustFrame(int scrnIndex, int x, int y, int flags)
  * to reinitialise the video mode.
  *
  * We may wish to unmap video/MMIO memory too.
+ * (TW: This might be dangerous with TQ)
  */
 
 /* Mandatory */
@@ -1914,7 +1998,18 @@ SISLeaveVT(int scrnIndex, int flags)
     }
 #endif
 
-    if (pSiS->UseVESA) SISVESARestore(pScrn);
+    SISBridgeRestore(pScrn);
+
+    if (pSiS->UseVESA) {
+        /* TW: This is a q&d work-around for a BIOS bug. In case we disabled CRT2,
+    	 *     VBESaveRestore() does not re-enable CRT1. So we set any mode now,
+	 *     because VBESetVBEMode correctly restores CRT1. Afterwards, we
+	 *     can call VBESaveRestore to restore original mode.
+	 */
+        if ( (pSiS->VBFlags & VB_VIDEOBRIDGE) && (!(pSiS->VBFlags & DISPTYPE_DISP2)) )
+	           VBESetVBEMode(pSiS->pVbe, (SISVesaModeList->n) | 0xc000, NULL);
+        SISVESARestore(pScrn);
+    }
 
     SISRestore(pScrn);
 
@@ -1944,9 +2039,19 @@ SISCloseScreen(int scrnIndex, ScreenPtr pScreen)
 #endif
 
     if (pScrn->vtSema) {
-       if (pCursorInfo)
+        if (pCursorInfo)
            pCursorInfo->HideCursor(pScrn);
-	if (pSiS->UseVESA) SISVESARestore(pScrn);
+        SISBridgeRestore(pScrn);
+	if (pSiS->UseVESA) {
+          /* TW: This is a q&d work-around for a BIOS bug. In case we disabled CRT2,
+    	   *     VBESaveRestore() does not re-enable CRT1. So we set any mode now,
+	   *     because VBESetVBEMode correctly restores CRT1. Afterwards, we
+	   *     can call VBESaveRestore to restore original mode.
+	   */
+           if ( (pSiS->VBFlags & VB_VIDEOBRIDGE) && (!(pSiS->VBFlags & DISPTYPE_DISP2)))
+	           VBESetVBEMode(pSiS->pVbe, (SISVesaModeList->n) | 0xc000, NULL);
+	   SISVESARestore(pScrn);
+	}
 	SISRestore(pScrn);
         vgaHWLock(hwp);
         SISUnmapMem(pScrn);
@@ -2107,81 +2212,136 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, int LockAfterwards)
     unsigned char SR5State;
     unsigned long  temp;
     int vbflag;
-    
+
     outb(VGA_SEQ_INDEX, 0x05);           /* Unlock Registers */
     SR5State = inb(VGA_SEQ_DATA);
     outw(VGA_SEQ_INDEX, 0x8605);
 
     usScratchCR30 = usScratchCR31 = usScratchCR33 = 0;
     outb(SISCR, 0x31);
-    usScratchCR31 = inb(SISCR+1); /* & 0x06; */ /* TW: clear all except slavemode and notsimumode*/
-    outb(SISCR, 0x33);		/* TW: CRT1 refresh rate */
+    usScratchCR31 = inb(SISCR+1);
+    outb(SISCR, 0x33);		/* TW: CRT1 refresh rate index */
     usScratchCR33 = inb(SISCR+1);
     outb(SISCR, 0x32);		/* TW: Bridge connection info */
     usScratchCR32 = inb(SISCR+1);
-        outb(SISCR, 0x30);
-        usScratchCR30 = inb(SISCR+1);
-
-	xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	   "Bridge registers were 30=0x%02x, 31=0x%02x, 32=0x%02x, 33=0x%02x (VBFlags = 0x%x)\n",
-              usScratchCR30, usScratchCR31, usScratchCR32, usScratchCR33, pSiS->VBFlags);
-	usScratchCR30 = 0;
-    usScratchCR31 &= ~0x60;  /* TW: clear Drivermode & VB_OutputDisable */
-
+    outb(SISCR, 0x30);
+    usScratchCR30 = inb(SISCR+1);
+    
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	       "Bridge registers were 30=0x%02x, 31=0x%02x, 32=0x%02x, 33=0x%02x (VBFlags = 0x%x)\n",
+	       usScratchCR30, usScratchCR31, usScratchCR32, usScratchCR33, pSiS->VBFlags);
+    usScratchCR30 = 0;
+    usScratchCR31 &= ~0x60;  /* TW: clear VB_Drivermode & VB_OutputDisable */
+    
     vbflag=pSiS->VBFlags;
     switch (vbflag & (CRT2_TV|CRT2_LCD|CRT2_VGA))
     { case CRT2_TV:
-        	if (vbflag & TV_HIVISION) usScratchCR30 |= 0x80;
-        	else if (vbflag & TV_PAL) usScratchCR31 |= 0x01;
-
-        	if (vbflag & TV_AVIDEO) usScratchCR30 |= 0x04;
-        	else if (vbflag & TV_SVIDEO) usScratchCR30 |= 0x08;
-        	else if (vbflag & TV_SCART) usScratchCR30 |= 0x10;
-        	usScratchCR30 |= 0x01;
-		usScratchCR31 &= ~0x04;
-            break;
-      case CRT2_LCD:
-                usScratchCR30 |= 0x21;
-		usScratchCR31 |= 0x02;
-            break;
-      case CRT2_VGA:
-                usScratchCR30 |= 0x41;
-            break;
-      default:
-            	usScratchCR30 |= 0x00;
-            	usScratchCR31 |= 0x20; /* TW: VB_OUTPUT_DISABLE */
+	if (vbflag & TV_HIVISION)
+	    usScratchCR30 |= 0x80;
+	else if (vbflag & TV_SVIDEO)
+	    usScratchCR30 |= 0x08;
+	else if (vbflag & TV_AVIDEO)
+	    usScratchCR30 |= 0x04;
+	else if (vbflag & TV_SCART)
+	    usScratchCR30 |= 0x10;
+	if (vbflag & TV_PAL)
+	    usScratchCR31 |= 0x01;
+	else
+	    usScratchCR31 &= ~0x01;
+#if 0	/* TW: Old code */
+	if (vbflag & TV_HIVISION) usScratchCR30 |= 0x80;
+	else if (vbflag & TV_PAL) usScratchCR31 |= 0x01;
+	
+	if (vbflag & TV_AVIDEO) usScratchCR30 |= 0x04;
+	else if (vbflag & TV_SVIDEO) usScratchCR30 |= 0x08;
+	else if (vbflag & TV_SCART) usScratchCR30 |= 0x10;
+#endif
+	usScratchCR30 |= 0x01;
+	usScratchCR31 &= ~0x04;
+	break;
+    case CRT2_LCD:
+	usScratchCR30 |= 0x21;
+	usScratchCR31 |= 0x02;
+	break;
+    case CRT2_VGA:
+	usScratchCR30 |= 0x41;
+	break;
+    default:  /* TW: When CRT2Type is NONE, we can calculate a proper rate for CRT1 */
+	usScratchCR30 |= 0x00;
+	usScratchCR31 |= 0x20; /* TW: VB_OUTPUT_DISABLE */
+	if (pSiS->UseVESA)
+	    usScratchCR33 = SISSearchCRT1Rate(pScrn->currentMode);
     }
     /*
-     * TW: for VESA: no DRIVERMODE,
-     * otherwise CRT2 will not be initialized correctly
+     * TW: for VESA: no DRIVERMODE, otherwise
+     * -) CRT2 will not be initialized correctly when using mode
+     *    where LCD has to scale
+     * -) CRT1 will have too low rate
      */
-     if (pSiS->UseVESA) usScratchCR31 &= ~0x40;
-     else usScratchCR31 |= 0x40;   /* 40=drivermode */
-
-     SiSSetReg1(SISCR, 0x30, usScratchCR30);
-     SiSSetReg1(SISCR, 0x31, usScratchCR31);
-
-     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		"Bridge registers set to 30=0x%02x, 31=0x%02x\n",
-		usScratchCR30, usScratchCR31);
-
-     /* Set Turbo Queue as 512K */
-     /* TW: This done here _and_ in ModeInit() because ModeInit() is
-      * not called on SiS630, 300, 540.
-      */
-     if (!pSiS->NoAccel) {
+    if (pSiS->UseVESA) usScratchCR31 &= ~0x40;
+    else usScratchCR31 |= 0x40;   /* 0x40=drivermode */
+  
+   SiSSetReg1(SISCR, 0x30, usScratchCR30);
+   SiSSetReg1(SISCR, 0x31, usScratchCR31);
+   SiSSetReg1(SISCR, 0x33, usScratchCR33);
+  
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	       "Bridge registers set to 30=0x%02x, 31=0x%02x, 33=0x%02x\n",
+	       usScratchCR30, usScratchCR31, usScratchCR33);
+  
+    /* Set Turbo Queue as 512K */
+    /* TW: This is done here _and_ in SiS300Init() because SiS300Init() only
+     * sets up structure but structure is not written to hardware (using
+     * SiS300Restore) on SiS630, 300, 540 (unless VESA is used).
+     */
+    if (!pSiS->NoAccel) {
         if (pSiS->TurboQueue) {
-           temp = (pScrn->videoRam/64) - 8;
-           SR26 = temp & 0xFF;
-           SR27 = ((temp >> 8) & 3) | 0xF0;
-           SiSSetReg1(SISSR, 0x26, SR26);
-           SiSSetReg1(SISSR, 0x27, SR27);
-        }
-     }
-     if (LockAfterwards)
-        outw(VGA_SEQ_INDEX, (SR5State << 8) | 0x05); /* Relock Registers */
+	    temp = (pScrn->videoRam/64) - 8;
+	    SR26 = temp & 0xFF;
+	    SR27 = ((temp >> 8) & 3) | 0xF0;
+	    SiSSetReg1(SISSR, 0x26, SR26);
+	    SiSSetReg1(SISSR, 0x27, SR27);
+	}
+    }
+    
+    if (LockAfterwards)
+	outw(VGA_SEQ_INDEX, (SR5State << 8) | 0x05); /* Relock Registers */
 }
 
+/* TW: This doesn't work yet. Switching CRT1 off this way causes a white screen on CRT2 */
+void SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg, int LockAfterwards)
+{
+#if 0
+    SISPtr pSiS = SISPTR(pScrn);
+    unsigned char usScratchCR17;
+    unsigned char SR5State;
+
+    outb(VGA_SEQ_INDEX, 0x05);           /* Unlock Registers */
+    SR5State = inb(VGA_SEQ_DATA);
+    outw(VGA_SEQ_INDEX, 0x8605);
+
+    if ((pSiS->VBFlags & (VB_LVDS | VB_CHRONTEL)) &&
+	pScrn->bitsPerPixel == 8)
+        pSiS->CRT1off = 0;
+
+    xf86DrvMsg(0, X_PROBED, "CRT1off %d\n", pSiS->CRT1off);
+
+    outb(SISCR, 0x17);
+    usScratchCR17 = inb(SISCR+1);
+
+    xf86DrvMsg(0, X_PROBED, "CR17 was 0x%2x\n", usScratchCR17);
+    if (pSiS->CRT1off)
+	usScratchCR17 &= ~0x80;  /* sisReg->sisRegs3D4[0x17] &= ~0x80; */
+    else
+        usScratchCR17 |= 0x80;   /* sisReg->sisRegs3D4[0x17] |= 0x80; */
+
+    xf86DrvMsg(0, X_PROBED, "CR17 set to 0x%2x\n", usScratchCR17);
+    /*SiSSetReg1(SISCR, 0x17, usScratchCR17); */
+
+    if (LockAfterwards)
+        outw(VGA_SEQ_INDEX, (SR5State << 8) | 0x05); /* Relock Registers */
+#endif
+}
 
 static void
 SiSBuildVesaModeList(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe)
@@ -2259,6 +2419,9 @@ static UShort CalcVESAModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode)
      case 1600:
           ModeIndex = VESAModeIndex_1600x1200[i];
           break;
+     case 1920:
+          ModeIndex = VESAModeIndex_1920x1440[i];
+          break;
    }
 
    if (!ModeIndex) xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
@@ -2267,3 +2430,65 @@ static UShort CalcVESAModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
    return(ModeIndex);
 }
+
+/* TW: Calculate CR33 (rate index) for CRT1 if CRT2 is disabled.
+       Calculation is done using currentmode structure, therefore
+       it is recommended to set VertRefresh and HorizSync to correct
+       values in Config file.
+ */
+unsigned char SISSearchCRT1Rate(DisplayModePtr mode)
+{
+   float hsync, refresh = 0;
+   int i = 0;
+   unsigned short xres=mode->HDisplay;
+   unsigned short yres=mode->VDisplay;
+   unsigned char index;
+
+   if (mode->HSync > 0.0)
+       	hsync = mode->HSync;
+   else if (mode->HTotal > 0)
+       	hsync = (float)mode->Clock / (float)mode->HTotal;
+   else
+       	hsync = 0.0;
+   if (mode->VTotal > 0)
+       	refresh = hsync * 1000.0 / mode->VTotal;
+   if (mode->Flags & V_INTERLACE) {
+       	refresh *= 2.0;
+   }
+   if (mode->Flags & V_DBLSCAN) {
+       	refresh /= 2.0;
+   }
+   if (mode->VScan > 1) {
+        refresh /= mode->VScan;
+   }
+   if (mode->VRefresh > 0.0)
+    	refresh = mode->VRefresh;
+   if (hsync == 0 || refresh == 0)
+        return 0x02;  /* TW: Default mode index */
+   else {
+     index = 0;
+     while ((sisx_vrate[i].idx != 0) && (sisx_vrate[i].xres <= xres)) {
+	if ((sisx_vrate[i].xres == xres)
+		    && (sisx_vrate[i].yres == yres)) {
+	    if (sisx_vrate[i].refresh == refresh) {
+		index = sisx_vrate[i].idx;
+		break;
+	    } else if (sisx_vrate[i].refresh > refresh) {
+		if ((sisx_vrate[i].refresh - refresh) <= 2) {
+		    index = sisx_vrate[i].idx;
+		} else if (((refresh - sisx_vrate[i - 1].refresh) <=  2)
+				    	&& (sisx_vrate[i].idx != 1)) {
+			index = sisx_vrate[i - 1].idx;
+		}
+		break;
+	    }
+	}
+	i++;
+     }
+     if (index > 0)
+	return index;
+     else
+	return 0x02; /* TW: Default Rate index */
+   }
+}
+

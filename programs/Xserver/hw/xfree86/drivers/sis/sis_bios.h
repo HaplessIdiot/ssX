@@ -52,7 +52,7 @@ typedef unsigned char UChar;
 #define ECLKindex3              0x0300
 #define ECLKindex4              0x0400
 
-#define SetSimuScanMode         0x0001
+#define SetSimuScanMode         0x0001  /* CR 30 */
 #define SwitchToCRT2            0x0002
 #define SetCRT2ToTV             0x009C
 #define SetCRT2ToAVIDEO         0x0004
@@ -61,7 +61,7 @@ typedef unsigned char UChar;
 #define SetCRT2ToLCD            0x0020
 #define SetCRT2ToRAMDAC         0x0040
 #define SetCRT2ToHiVisionTV     0x0080
-#define SetNTSCTV               0x0000
+#define SetNTSCTV               0x0000  /* CR 31 */
 #define SetPALTV                0x0100
 #define SetInSlaveMode          0x0200
 #define SetNotSimuMode          0x0400
@@ -199,14 +199,20 @@ typedef unsigned char UChar;
 #define PanelType0F             0x78
 
 Bool SiSBIOSSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode);
+void SiSRegInit(UShort BaseAddr);
 UShort SiSCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode);
 void SiSSetReg1(UShort port, UShort index, UShort  data);
+UShort SiSGetReg1(UShort port, UShort index);
 void SiSDisableBridge(UShort  BaseAddr);
 void SiSDisableBridgeLVDS(UShort  BaseAddr);
+void SiSDisableBridge301(UShort BaseAddr);
+void SiSDisableBridge301B(UShort BaseAddr);
 void SiSUnLockCRT2(UShort BaseAddr);
 void SiSLockCRT2(UShort BaseAddr);
 void SiSEnableBridge(UShort BaseAddr);
 void SiSEnableBridgeLVDS(UShort BaseAddr);
+void SiSEnableBridge301(UShort BaseAddr);
+void SiSEnableBridge301B(UShort BaseAddr);
 void SiSSetCH7005(UShort tempbx);
 UShort SiSGetCH7005(UShort tempbx);
 unsigned char SiSGetSetModeID(ScrnInfoPtr pScrn, unsigned char id);
