@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/196 1996/12/03 16:52:46 swick $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.110 2000/10/05 18:06:35 keithp Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.111 2000/11/01 01:12:37 dawes Exp $
  */
 
 /*
@@ -4416,8 +4416,7 @@ static void VTInitialize (
 #ifdef XRENDERFONT
    wnew->screen.renderFont = 0;
    wnew->screen.renderFontBold = 0;
-   wnew->screen.renderColor = 0;
-   wnew->screen.renderPicture = 0;
+   wnew->screen.renderDraw = 0;
 #endif
 
    wnew->cur_foreground = 0;

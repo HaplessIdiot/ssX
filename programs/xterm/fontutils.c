@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/fontutils.c,v 1.24 2000/10/07 07:12:28 keithp Exp $
+ * $XFree86: xc/programs/xterm/fontutils.c,v 1.25 2000/11/01 01:12:38 dawes Exp $
  */
 
 /************************************************************
@@ -830,28 +830,20 @@ xtermComputeFontInfo (TScreen *screen, struct _vtwin *win, XFontStruct *font, in
     if (!screen->renderFont && term->misc.face_name &&
 	XRenderFindVisualFormat (dpy, DefaultVisual (dpy, DefaultScreen (dpy))))
     {
-	XftFontName		    fn;
-	
-	fn.mask = XftFontNameFace | XftFontNameSize | XftFontNameSpacing;
-	fn.face = term->misc.face_name;
-	fn.size = term->misc.face_size * 64;
-	fn.spacing = XftFontSpacingCell;
-	screen->renderFont = XftLoadFont (dpy, &fn);
+	screen->renderFont = XftFontOpen (dpy, DefaultScreen (dpy),
+					  XFT_FAMILY, XftTypeString, term->misc.face_name,
+					  XFT_FAMILY, XftTypeString, "mono",
+					  XFT_SIZE, XftTypeInteger, term->misc.face_size,
+					  XFT_SPACING, XftTypeInteger, XFT_MONO,
+					  0);
 	screen->renderFontBold = 0;
-	if (screen->renderFont &&
-	    (XftFontMaxAdvanceWidth (dpy, screen->renderFont) == 0 ||
-	     XftFontHeight (dpy, screen->renderFont) == 0))
-	{
-	    XftFreeFont (dpy, screen->renderFont);
-	    screen->renderFont = 0;
-	}
     }
     if (screen->renderFont)
     {
-	win->f_width = XftFontMaxAdvanceWidth (dpy, screen->renderFont);
-	win->f_height = XftFontHeight (dpy, screen->renderFont);
-	win->f_ascent = XftFontAscent (dpy, screen->renderFont);
-	win->f_descent = XftFontDescent (dpy, screen->renderFont);
+	win->f_width = screen->renderFont->max_advance_width;
+	win->f_height = screen->renderFont->height;
+	win->f_ascent = screen->renderFont->ascent;
+	win->f_descent = screen->renderFont->descent;;
     }
     else
 #endif

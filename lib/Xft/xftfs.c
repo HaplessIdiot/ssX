@@ -22,28 +22,53 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdlib.h>
 #include "xftint.h"
 
-int
-XftFontAscent (Display *dpy, XftFont *font)
+XftFontSet *
+XftFontSetCreate (void)
 {
-    return font->ascent;
+    XftFontSet	*s;
+
+    s = (XftFontSet *) malloc (sizeof (XftFontSet));
+    if (!s)
+	return 0;
+    s->nfont = 0;
+    s->sfont = 0;
+    s->fonts = 0;
+    return s;
 }
 
-int
-XftFontDescent (Display *dpy, XftFont *font)
+void
+XftFontSetDestroy (XftFontSet *s)
 {
-    return font->descent;
+    int	    i;
+
+    for (i = 0; i < s->nfont; i++)
+	XftPatternDestroy (s->fonts[i]);
+    if (s->fonts)
+	free (s->fonts);
+    free (s);
 }
 
-int
-XftFontHeight (Display *dpy, XftFont *font)
+Bool
+XftFontSetAdd (XftFontSet *s, XftPattern *font)
 {
-    return font->height;
-}
-
-int
-XftFontMaxAdvanceWidth (Display *dpy, XftFont *font)
-{
-    return font->max_advance_width;
+    XftPattern	**f;
+    int		sfont;
+    
+    if (s->nfont == s->sfont)
+    {
+	sfont = s->sfont + 32;
+	if (s->fonts)
+	    f = (XftPattern **) realloc (s->fonts, sfont * sizeof (XftPattern *));
+	else
+	    f = (XftPattern **) malloc (sfont * sizeof (XftPattern *));
+	if (!f)
+	    return False;
+	s->sfont = sfont;
+	s->fonts = f;
+    }
+    s->fonts[s->nfont++] = font;
+    return True;
 }

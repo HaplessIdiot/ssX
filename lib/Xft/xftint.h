@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.1 2000/10/05 18:05:27 keithp Exp $
+ * $XFree86$
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -26,124 +26,383 @@
 #define _XFTINT_H_
 
 #include <X11/Xlib.h>
-#include <X11/extensions/render.h>
-#include <X11/extensions/Xrender.h>
-#include "Xft.h"
-#include <freetype/freetype.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include "XftFreetype.h"
 
-FT_Library  library;
+typedef struct _XftMatcher {
+    char    *object;
+    double  (*compare) (char *object, XftValue value1, XftValue value2);
+} XftMatcher;
 
-struct _XftFont {
-    GlyphSet	    glyphset;
-    int		    min_char;
-    int		    max_char;
-    int		    size;
-    XRenderPictFormat	*format;
-    XGlyphInfo	    **realized;
-    int		    nrealized;
-    int		    ascent;
-    int		    descent;
-    int		    height;
-    int		    max_advance_width;
-    Bool	    monospace;
-    FT_Face	    face;      /* handle to face object */
-};
+typedef struct _XftSymbolic {
+    const char	*name;
+    int		value;
+} XftSymbolic;
 
-#define CACHE_SIZE  4
+#define CACHE_SIZE  3
 
 struct _XftDraw {
-    Drawable	    draw;
-    GC		    draw_gc;
-    Bool	    render;
+    Display	    *dpy;
+    Drawable	    drawable;
+    Visual	    *visual;
+    Colormap	    colormap;
+    Bool	    core_set;
+    Bool	    render_set;
+    Bool	    render_able;
     struct {
-	unsigned long	    pixel;
-	unsigned long	    color;
-	int		    use;
-    } cache[CACHE_SIZE];
-    union {
-	struct {
-	    XftFont	    *font;
-	    Picture	    pict;
-	    Pixmap	    fg_pix;
-	    Picture	    fg_pict;
-	    GC		    fg_gc;
-	} render;
-	struct {
-	    XFontStruct	    *font;
-	} core;
-    } u;
+	Picture	    pict;
+	Pixmap	    fg_pix;
+	Picture	    fg_pict;
+	XRenderColor	fg_color;
+    } render;
+    struct {
+	GC	    draw_gc;
+	union {
+	    struct {
+		unsigned long   pixel;
+		XRenderColor	color;
+		int		use;
+	    } cache[CACHE_SIZE];
+	    struct {
+		short	red_shift, red_len;
+		short	green_shift, green_len;
+		short	blue_shift, blue_len;
+	    } truecolor;
+	} u;
+    } core;
 };
+
+typedef struct _XftDisplayInfo {
+    struct _XftDisplayInfo  *next;
+    Display		    *display;
+    XExtCodes		    *codes;
+    XftPattern		    *defaults;
+    XftFontSet		    *coreFonts;
+    Bool		    hasRender;
+} XftDisplayInfo;
+
+#ifdef FREETYPE2
+extern FT_Library	_XftFTlibrary;
+#endif
+extern XftFontSet	*_XftGlobalFontSet;
+extern XftDisplayInfo	*_XftDisplayInfo;
+extern char		**XftConfigDirs;
+extern XftFontSet	*_XftFontSet;
+
+#define XFT_NMISSING	256
 
 #ifndef XFT_DEFAULT_PATH
 #define XFT_DEFAULT_PATH "/usr/X11R6/lib/X11/XftConfig"
 #endif
 
-#define XFT_MAX_STRING	2048
+typedef enum _XftOp {
+    XftOpInteger, XftOpDouble, XftOpString, XftOpBool, XftOpNil,
+    XftOpField,
+    XftOpAssign, XftOpPrepend, XftOpAppend,
+    XftOpQuest,
+    XftOpOr, XftOpAnd, XftOpEqual, XftOpNotEqual,
+    XftOpLess, XftOpLessEqual, XftOpMore, XftOpMoreEqual,
+    XftOpPlus, XftOpMinus, XftOpTimes, XftOpDivide,
+    XftOpNot
+} XftOp;
 
-typedef enum _XftMatchState { XftMatching, XftSkipping, XftEditing } XftMatchState;
+typedef struct _XftExpr {
+    XftOp   op;
+    union {
+	int	ival;
+	double	dval;
+	char	*sval;
+	Bool	bval;
+	char	*field;
+	struct {
+	    struct _XftExpr *left, *right;
+	} tree;
+    } u;
+} XftExpr;
 
-typedef enum _XftMatchToken {
-    XFT_ERROR,
-    XFT_EOF,
+typedef enum _XftQual {
+    XftQualAny, XftQualAll
+} XftQual;
 
-    XFT_EQUAL,
-    XFT_STRING,
-    XFT_NUMBER,
+typedef struct _XftTest {
+    struct _XftTest	*next;
+    XftQual		qual;
+    char		*field;
+    XftOp		op;
+    XftValue		value;
+} XftTest;
 
-    XFT_MATCH,
-    XFT_EDIT,
-    XFT_PATH,
-    XFT_DIR,
-    XFT_FACE,
-    XFT_ENCODING,
-    XFT_FILE,
-    XFT_SIZE,
-    XFT_ROTATION,
-    XFT_SPACING
-} XftMatchToken;
+typedef struct _XftEdit {
+    struct _XftEdit *next;
+    const char	    *field;
+    XftOp	    op;
+    XftExpr	    *expr;
+} XftEdit;
 
-typedef struct _XftParseState {
-    FILE	    *file;
-    char	    *filename;
-    int		    line;
-    XftMatchToken   token;
-    int		    number;
-    char	    string[XFT_MAX_STRING];
-    char	    *dir;
-    XftMatchState   state;
-    XftFontName	    *name;
-} XftParseState;
+typedef struct _XftSubst {
+    struct _XftSubst	*next;
+    XftTest		*test;
+    XftEdit		*edit;
+} XftSubst;
 
-/* drawstr.c */
-#define XFT_NMISSING    128
+/* xftcfg.c */
+Bool
+XftConfigAddDir (char *d);
+
+Bool
+XftConfigAddEdit (XftTest *test, XftEdit *edit);
+
+Bool
+XftConfigSubstitute (XftPattern *p);
+
+/* xftcore.c */
+
+#define XFT_CORE_N16LOCAL	256
+
+XChar2b *
+XftCoreConvert16 (unsigned short    *string,
+		  int		    len,
+		  XChar2b	    xcloc[XFT_CORE_N16LOCAL]);
+
+XChar2b *
+XftCoreConvert32 (unsigned long	    *string,
+		  int		    len,
+		  XChar2b	    xcloc[XFT_CORE_N16LOCAL]);
 
 void
-_XftCheckGlyph (Display *dpy, XftFont *font, unsigned long glyph,
-		unsigned long *missing, int *nmissing);
+XftCoreExtents8 (Display	*dpy,
+		 XFontStruct	*fs,
+		 unsigned char  *string, 
+		 int		len,
+		 XGlyphInfo	*extents);
 
-/* extents.c */
-
-/* glyphs.c */
 void
-_XftLoadGlyphs (Display *dpy, XftFont *font, unsigned long *glyphs, int nglyph);
+XftCoreExtents16 (Display	    *dpy,
+		  XFontStruct	    *fs,
+		  unsigned short    *string, 
+		  int		    len,
+		  XGlyphInfo	    *extents);
 
-/* lex.c */
+void
+XftCoreExtents32 (Display	    *dpy,
+		  XFontStruct	    *fs,
+		  unsigned long	    *string, 
+		  int		    len,
+		  XGlyphInfo	    *extents);
+
+/* xftdbg.c */
+void
+XftOpPrint (XftOp op);
+
+void
+XftTestPrint (XftTest *test);
+
+void
+XftExprPrint (XftExpr *expr);
+
+void
+XftEditPrint (XftEdit *edit);
+
+void
+XftSubstPrint (XftSubst *subst);
+
+/* xftdir.c */
+Bool
+XftDirScan (XftFontSet *set, const char *dir);
+
+/* xftdpy.c */
+Bool
+XftDefaultHasRender (Display *dpy);
+
+Bool
+XftDefaultSet (Display *dpy, XftPattern *defaults);
+
 int
-_XftLex (XftParseState *s);
- 
-/* load.c */
-extern FT_Library  _XftFTlibrary;
-
-/* match.c */
+XftDefaultParseBool (char *v);
 
 Bool
-XftMatch (XftFontName *pattern, XftFontName *result);
+XftDefaultGetBool (Display *dpy, const char *object, int screen, Bool def);
 
-/* parse.c */
+int
+XftDefaultGetInteger (Display *dpy, const char *object, int screen, int def);
 
-Bool
-_XftParsePathList (char *path, char *dir, XftFontName *result);
+double
+XftDefaultGetDouble (Display *dpy, const char *object, int screen, double def);
+
+XftFontSet *
+XftDisplayGetFontSet (Display *dpy);
+
+void
+XftDefaultSubstitute (Display *dpy, int screen, XftPattern *pattern);
     
-#endif /* _XFTINT_H_ */
+/* xftdraw.c */
+Bool
+XftDrawRenderPrepare (XftDraw	    *draw,
+		      XRenderColor  *color,
+		      XftFont	    *font);
+
+Bool
+XftDrawCorePrepare (XftDraw	    *draw,
+		    XRenderColor    *color,
+		    XftFont	    *font);
+
+/* xftextent.c */
+/* xftfont.c */
+/* xftfreetype.c */
+XftPattern *
+XftFreeTypeQuery (const char *file, int id, int *count);
+
+XftFontStruct *
+XftFreeTypeOpen (Display *dpy, XftPattern *pattern);
+
+void
+XftFreeTypeClose (Display *dpy, XftFontStruct *font);
+    
+/* xftfs.c */
+XftFontSet *
+XftFontSetCreate (void);
+
+void
+XftFontSetDestroy (XftFontSet *s);
+
+Bool
+XftFontSetAdd (XftFontSet *s, XftPattern *font);
+
+/* xftglyphs.c */
+void
+XftGlyphLoad (Display		*dpy,
+	      XftFontStruct	*font,
+	      unsigned long	*glyphs,
+	      int		nglyph);
+
+void
+XftGlyphCheck (Display		*dpy,
+	       XftFontStruct	*font,
+	       unsigned long	glyph,
+	       unsigned long	*missing,
+	       int		*nmissing);
+/* xftgram.y */
+int
+XftConfigparse (void);
+
+int
+XftConfigwrap (void);
+    
+void
+XftConfigerror (char *fmt, ...);
+    
+char *
+XftConfigSaveField (const char *field);
+
+XftTest *
+XftTestCreate (XftQual qual, const char *field, XftOp compare, XftValue value);
+
+XftExpr *
+XftExprCreateInteger (int i);
+
+XftExpr *
+XftExprCreateDouble (double d);
+
+XftExpr *
+XftExprCreateString (const char *s);
+
+XftExpr *
+XftExprCreateBool (Bool b);
+
+XftExpr *
+XftExprCreateNil (void);
+
+XftExpr *
+XftExprCreateField (const char *field);
+
+XftExpr *
+XftExprCreateOp (XftExpr *left, XftOp op, XftExpr *right);
+
+void
+XftExprDestroy (XftExpr *e);
+
+XftEdit *
+XftEditCreate (const char *field, XftOp op, XftExpr *expr);
+
+void
+XftEditDestroy (XftEdit *e);
+
+/* xftinit.c */
+Bool
+XftInitFtLibrary (void);
+
+Bool
+XftInit (char *config);
+
+/* xftlex.l */
+extern int	XftConfigLineno;
+extern char	*XftConfigFile;
+
+int
+XftConfiglex (void);
+
+Bool
+XftConfigLexFile(char *s);
+
+Bool
+XftConfigPushInput (char *s, Bool complain);
+
+/* xftmatch.c */
+XftPattern *
+XftFontSetMatch (XftFontSet	**sets, 
+		 int		nsets, 
+		 XftPattern	*p, 
+		 XftResult	*result);
+
+/* xftname.c */
+Bool
+XftNameConstant (char *string, int *result);
+
+XftPattern *
+XftNameParse (const char *name);
+
+/* xftpat.c */
+
+void
+XftValueDestroy (XftValue v);
+
+void
+XftValueListDestroy (XftValueList *l);
+
+XftPatternElt *
+XftPatternFind (XftPattern *p, const char *object, Bool insert);
+
+/* xftrender.c */
+
+/* xftstr.c */
+char *
+_XftSaveString (const char *s);
+
+const char *
+_XftGetInt(const char *ptr, int *val);
+
+char *
+_XftSplitStr (const char *field, char *save);
+
+char *
+_XftDownStr (const char *field, char *save);
+
+const char *
+_XftSplitField (const char *field, char *save);
+
+const char *
+_XftSplitValue (const char *field, char *save);
+
+int
+_XftMatchSymbolic (XftSymbolic *s, int n, const char *name, int def);
+
+/* xftxlfd.c */
+XftPattern *
+XftXlfdParse (const char *xlfd_orig, Bool ignore_scalable);
+
+Bool
+XftCoreAddFonts (XftFontSet *set, Display *dpy, Bool ignore_scalable);
+
+XFontStruct *
+XftCoreOpen (Display *dpy, XftPattern *pattern);
+
+#endif /* _XFT_INT_H_ */

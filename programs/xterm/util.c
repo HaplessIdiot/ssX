@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: util.c /main/33 1996/12/01 23:47:10 swick $
- *	$XFree86: xc/programs/xterm/util.c,v 3.58 2000/10/05 18:06:36 keithp Exp $
+ *	$XFree86: xc/programs/xterm/util.c,v 3.59 2000/11/01 01:12:42 dawes Exp $
  */
 
 /*
@@ -1375,14 +1375,14 @@ recolor_cursor (
 #endif
 
 #ifdef XRENDERFONT
-static Pixel
+static XRenderColor *
 getColor(Pixel pixel)
 {
 #define CACHE_SIZE  4
     static struct {
-	Pixel	    pixel;
-	Pixel	    color;
-	int	    use;
+	Pixel		pixel;
+	XRenderColor	color;
+	int		use;
     } cache[CACHE_SIZE];
     static int	    use;
     int		    i;
@@ -1398,7 +1398,7 @@ getColor(Pixel pixel)
 	    if (cache[i].pixel == pixel) 
 	    {
 		cache[i].use = ++use;
-		return cache[i].color;
+		return &cache[i].color;
 	    }
 	}
 	if (cache[i].use < oldestuse)
@@ -1410,41 +1410,13 @@ getColor(Pixel pixel)
     i = oldest;
     color.pixel = pixel;
     XQueryColor (term->screen.display, term->core.colormap, &color);
-    cache[i].color = ((((Pixel) color.red   & 0xff00) << 8) |
-		      (((Pixel) color.green & 0xff00)     ) |
-		      (((Pixel) color.blue  & 0xff00) >> 8));
+    cache[i].color.red = color.red;
+    cache[i].color.green = color.green;
+    cache[i].color.blue = color.blue;
+    cache[i].color.alpha = 0xffff;
     cache[i].pixel = pixel;
     cache[i].use = ++use;
-    return cache[i].color;
-}
-
-static Picture
-getColorPicture (Pixel pixel)
-{
-    Pixel   color = getColor (pixel);
-    Display *dpy = term->screen.display;
-    TScreen *screen = &term->screen;
-    if (!screen->renderColor)
-    {
-	XRenderPictureAttributes    pa;
-	XRenderPictFormat	    pf, *pix_format;
-	
-	pf.depth = 24;
-	pf.type = PictTypeDirect;
-	pix_format = XRenderFindFormat (dpy, PictFormatType|PictFormatDepth, &pf, 0);
-	if (!pix_format)
-	    return 0;
-	screen->renderColorPix = XCreatePixmap (dpy, RootWindow (dpy, DefaultScreen (dpy)),
-					1, 1, 24);
-	pa.repeat = True;
-	screen->renderColor = XRenderCreatePicture (dpy, screen->renderColorPix, pix_format, CPRepeat, &pa);
-	screen->renderPixGC = XCreateGC (dpy, screen->renderColorPix, 0, 0);
-    }
-    if (!screen->renderColor)
-	return 0;
-    XSetForeground (dpy, screen->renderPixGC, color);
-    XFillRectangle (dpy, screen->renderColorPix, screen->renderPixGC, 0, 0, 1, 1);
-    return screen->renderColor;
+    return &cache[i].color;
 }
 #endif
 
@@ -1473,33 +1445,32 @@ drawXtermText(
 	XftFont		*font;
 	XGCValues	values;
 	
-	if (!screen->renderPicture)
+	if (!screen->renderDraw)
 	{
 	    int			    scr;
 	    Drawable		    draw = VWindow(screen);
-	    XRenderPictFormat	    *format;
 	    Visual		    *visual;
 
 	    scr = DefaultScreen (dpy);
 	    visual = DefaultVisual (dpy, scr);
-	    format = XRenderFindVisualFormat (dpy, visual);
-
-	    screen->renderPicture = XRenderCreatePicture (dpy, draw, format, 0, 0);
-
-	    screen->renderGC = XCreateGC (dpy, draw, 0, 0);
+	    screen->renderDraw = XftDrawCreate (dpy, draw, visual, 
+						DefaultColormap (dpy, scr));
 	}
 	if ((flags & (BOLD|BLINK)) && screen->renderFontBold)
 	    font = screen->renderFontBold;
 	else
 	    font = screen->renderFont;
 	XGetGCValues (dpy, gc, GCForeground|GCBackground, &values);
-	XSetForeground (dpy, screen->renderGC, values.background);
-	XFillRectangle (dpy, VWindow(screen), screen->renderGC, x, y, 
-			len * FontWidth(screen), FontHeight(screen));
+	XftDrawRect (screen->renderDraw, 
+		     getColor (values.background),
+		     x, y, 
+		     len * FontWidth(screen), FontHeight(screen));
 			
-	y += XftFontAscent (dpy, font);
-	XftDrawString (dpy, getColorPicture (values.foreground), font, screen->renderPicture,
-		       0, 0, x, y, (char *) text, len);
+	y += font->ascent;
+	XftDrawString8 (screen->renderDraw,
+			getColor (values.foreground),
+			font,
+			x, y, (unsigned char *) text, len);
 
 	return x + len * FontWidth(screen);
     }

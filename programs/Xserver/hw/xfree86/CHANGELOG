@@ -1,4 +1,6 @@
 XFree86 4.0.1g (28 November 2000)
+1022. Rewrite Xft library for Render extension/core text and font management
+      Change xterm to use new interface (Keith Packard).
 1021. s3virge driver updates, including Xv fixes for the ViRGE DX, disable
       GX2 color expansion until it's stable, GX2 Xv code (not enabled or
       working yet) (#4299, Kevin Brosius).
@@ -11695,4 +11697,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1417 2000/11/28 19:09:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1418 2000/11/28 20:59:13 dawes Exp $
