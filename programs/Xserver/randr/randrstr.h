@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/programs/Xserver/randr/randrstr.h,v 1.1 2001/05/23 03:29:44 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation
  *
@@ -84,10 +84,10 @@ typedef struct _rrScrPriv {
     int			    swaps;
     
     int			    nVisualSets;
-    int			    nVisualSetsInUse
+    int			    nVisualSetsInUse;
     RRVisualSetPtr	    pVisualSets;
     int			    nSetsOfVisualSets;
-    int			    nSetsOfVisualSetsInUse
+    int			    nSetsOfVisualSetsInUse;
     RRSetOfVisualSetPtr	    pSetsOfVisualSets;
     int			    nSizes;
     int			    nSizesInUse;
