@@ -1,0 +1,28 @@
+XCOMM $XConsortium: Imakefile,v 1.1 94/04/13 18:05:48 rws Exp $
+#define DoNormalLib NormalLibXext
+#define DoSharedLib SharedLibXext
+#define DoDebugLib DebugLibXext
+#define DoProfileLib ProfileLibXext
+#define LibName lbxXext
+#define SoRev SOXEXTREV
+#define LibHeaders NO
+
+#include <Threads.tmpl>
+
+#ifdef SharedXextReqs
+REQUIREDLIBS = SharedXextReqs
+#endif
+
+#if Malloc0ReturnsNull
+ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
+#endif
+
+      DEFINES = $(ALLOC_DEFINES)
+     INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) -I$(TOP)/workInProgress/lbx/include/extensions
+         SRCS = XLbx.c
+         OBJS = XLbx.o
+     LINTLIBS = $(LINTXLIB)
+
+#include <Library.tmpl>
+
+DependTarget()
