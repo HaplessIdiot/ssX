@@ -1,4 +1,6 @@
 XFree86 4.1.99.4 (xx December 2001)
+ 614. ISO 8859-{1,7,15} Compose file updates and fixes (#5114,
+      Vasilis Vasaitis).
  613. In XDarwin multi-monitor IOKit mode, read screen location from the
       kernel (Torrey T. Lyons).
  612. Update XDarwin credits file (Torrey T. Lyons).
@@ -14408,4 +14410,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2101 2001/12/22 05:28:28 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2102 2001/12/23 02:26:02 torrey Exp $
