@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/shared/miLUT.c,v 1.8 1999/01/31 12:21:30 dawes Exp $ */
 
 #include "miLUT.h"
 #include "pexUtils.h"
@@ -361,7 +361,7 @@ InquireLUTPredEntries(pDrawable, LUTtype, start, count, pNumEntries, pBuffer)
     DrawablePtr	    pDrawable;	    /* pointer to example drawable */
     ddUSHORT	    LUTtype;	    /* table type */
     ddTableIndex    start;	    /* start index */
-    ddUSHORT	    count;	    /* number of entries to return /* out */
+    ddUSHORT	    count;	    /* number of entries to return */ /* out */
     ddULONG	    *pNumEntries;   /* number of entries */
     ddBufferPtr     pBuffer;	    /* table entries */
 {
