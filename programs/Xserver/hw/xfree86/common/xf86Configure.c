@@ -44,9 +44,10 @@
 
 pciVideoPtr ConfiguredPciCard;
 xf86MonPtr ConfiguredMonitor;
+xf86MonPtr ConfiguredMonitors;
 int ConfiguredIsaCard;
 int FoundPciCards = 0;
-Bool havePrimary = FALSE;
+char *foundDriver = NULL;
 Bool xf86DoConfigurePass1 = TRUE;
 Bool foundMouse = FALSE;
 
@@ -124,7 +125,7 @@ configureInputSection (void)
     XF86ConfInputPtr mouse = NULL;
     parsePrologue (XF86ConfInputPtr, XF86ConfInputRec)
 
-    ptr->inp_identifier = "Keyboard1";
+    ptr->inp_identifier = "Keyboard0";
     ptr->inp_driver = "keyboard";
     ptr->list.next = NULL;
 
@@ -140,7 +141,7 @@ configureInputSection (void)
 
     mouse = xf86confmalloc(sizeof(XF86ConfInputRec));
     memset((XF86ConfInputPtr)mouse,0,sizeof(XF86ConfInputRec));
-    mouse->inp_identifier = "Mouse1";
+    mouse->inp_identifier = "Mouse0";
     mouse->inp_driver = "mouse";
     mouse->list.next = NULL;
     mouse->inp_option_lst = 
@@ -165,15 +166,15 @@ configureVendorSection (void)
 {
     parsePrologue (XF86ConfVendorPtr, XF86ConfVendorRec)
 
-    ptr->vnd_identifier = "Vendor1";
-
+    return NULL;
+#if 0
     return ptr;
+#endif
 }
 
 XF86ConfScreenPtr
-configureScreenSection (char *driver)
+configureScreenSection (char *driver, int screennum)
 {
-    pciVideoPtr xf86PciCard;
     int i = 0;
     int depths[4] = { 8, 15, 16, 24 };
     unsigned char c1, c2, c3;
@@ -181,26 +182,21 @@ configureScreenSection (char *driver)
     int vendor1, vendor2, card;
     parsePrologue (XF86ConfScreenPtr, XF86ConfScreenRec)
 
-    ptr->scrn_identifier = "Screen1";
-    ptr->scrn_monitor_str = "Monitor1";
+    ptr->scrn_identifier = xalloc(8);
+    sprintf(ptr->scrn_identifier, "Screen%d", screennum);
+    ptr->scrn_monitor_str = xalloc(9);
+    sprintf(ptr->scrn_monitor_str, "Monitor%d", screennum);
 
-    xf86PciCard = ConfiguredPciCard;
-    for (i = 0; i < FoundPciCards; i++) {
-	if (xf86IsPrimaryPci(xf86PciCard)) {
-	    havePrimary = TRUE;
-    	    GetPciCard(i, &vendor1, &vendor2, &card);
-    	    ptr->scrn_device_str = xalloc(
-		strlen(xf86PCIVendorNameInfo[vendor1].name) + 
-		strlen(xf86PCIVendorInfo[vendor2].Device[card].DeviceName) + 2);
-    	    sprintf(ptr->scrn_device_str, "%s %s",
-		xf86PCIVendorNameInfo[vendor1].name, 
-		xf86PCIVendorInfo[vendor2].Device[card].DeviceName);
-	}
-	xf86PciCard++;
-    }
     if (xf86IsPrimaryIsa()) {
-	havePrimary = TRUE;
 	ptr->scrn_device_str = "ISA Card";
+    } else {
+    	GetPciCard(screennum, &vendor1, &vendor2, &card);
+    	ptr->scrn_device_str = xalloc(
+	    strlen(xf86PCIVendorNameInfo[vendor1].name) + 
+	    strlen(xf86PCIVendorInfo[vendor2].Device[card].DeviceName) + 2);
+    	sprintf(ptr->scrn_device_str, "%s %s",
+	    xf86PCIVendorNameInfo[vendor1].name, 
+	    xf86PCIVendorInfo[vendor2].Device[card].DeviceName);
     }
 
     if (!strcmp(driver, "vga"))
@@ -301,27 +297,22 @@ configureDeviceSection (char *driver, OptionInfoPtr devoptions)
 
     xf86PciCard = ConfiguredPciCard;
     for (i = 0; i < FoundPciCards; i++) {
-	ErrorF("Card Found vendor = 0x%x, card = 0x%x, %s\n", 
+	ErrorF("Card Found vendor = 0x%x, card = 0x%x\n", 
 			xf86PciCard->vendor, 
-	  		xf86PciCard->chipType,(xf86IsPrimaryPci(xf86PciCard) ? 
-			"Primary! - Configuring this one." : "Secondary.")); 
-	if (xf86IsPrimaryPci(xf86PciCard)) {
-	    havePrimary = TRUE;
-    	    GetPciCard(i, &vendor1, &vendor2, &card);
-    	    ptr->dev_identifier = xalloc(	
-		strlen(xf86PCIVendorNameInfo[vendor1].name) + 
-		strlen(xf86PCIVendorInfo[vendor2].Device[card].DeviceName) + 2);
-    	    sprintf(ptr->dev_identifier, "%s %s",
-		xf86PCIVendorNameInfo[vendor1].name, 
-		xf86PCIVendorInfo[vendor2].Device[card].DeviceName);
-    	    ptr->dev_busid = xalloc(16);
-	    sprintf(ptr->dev_busid, "PCI:%d:%d:%d", xf86PciCard->bus,
+	  		xf86PciCard->chipType);
+    	GetPciCard(i, &vendor1, &vendor2, &card);
+    	ptr->dev_identifier = xalloc(	
+	    strlen(xf86PCIVendorNameInfo[vendor1].name) + 
+	    strlen(xf86PCIVendorInfo[vendor2].Device[card].DeviceName) + 2);
+    	sprintf(ptr->dev_identifier, "%s %s",
+	    xf86PCIVendorNameInfo[vendor1].name, 
+	    xf86PCIVendorInfo[vendor2].Device[card].DeviceName);
+    	ptr->dev_busid = xalloc(16);
+	sprintf(ptr->dev_busid, "PCI:%d:%d:%d", xf86PciCard->bus,
 	    				xf86PciCard->device, xf86PciCard->func);
-	}
 	xf86PciCard++;
     }
     if (xf86IsPrimaryIsa()) {
-	    havePrimary = TRUE;
     	    ptr->dev_identifier = "ISA Card";
 	    ptr->dev_busid = "ISA";
     }
@@ -353,46 +344,14 @@ configureDeviceSection (char *driver, OptionInfoPtr devoptions)
 }
 
 XF86ConfLayoutPtr
-configureLayoutSection (void)
+configureLayoutSection ()
 {
     pciVideoPtr xf86PciCard;
     int i = 0;
-    int vendor1, vendor2, card;
+    int scrnum = 0;
     parsePrologue (XF86ConfLayoutPtr, XF86ConfLayoutRec)
 
-    xf86PciCard = ConfiguredPciCard;
-    for (i = 0; i < FoundPciCards; i++) {
-	if (xf86IsPrimaryPci(xf86PciCard)) {
-	    havePrimary = TRUE;
-    	    GetPciCard(i, &vendor1, &vendor2, &card);
-    	    ptr->lay_identifier = xalloc(
-		strlen(xf86PCIVendorNameInfo[vendor1].name) + 
-		strlen(xf86PCIVendorInfo[vendor2].Device[card].DeviceName) + 2);
-    	    sprintf(ptr->lay_identifier, "%s %s",
-		xf86PCIVendorNameInfo[vendor1].name, 
-		xf86PCIVendorInfo[vendor2].Device[card].DeviceName);
-	}
-	xf86PciCard++;
-    }
-    if (xf86IsPrimaryIsa()) {
-	havePrimary = TRUE;
-	ptr->lay_identifier = "ISA Card";
-    }
-
-    { 
-	XF86ConfAdjacencyPtr aptr;
-
-	aptr = xf86confmalloc (sizeof (XF86ConfAdjacencyRec));
-	aptr->list.next = NULL;
-	aptr->adj_x = 0;
-	aptr->adj_y = 0;
-	aptr->adj_refscreen = NULL;
-	aptr->adj_scrnum = 1;
-	aptr->adj_screen_str = "Screen1";
-	aptr->adj_where = CONF_ADJ_ABSOLUTE;
-    	ptr->lay_adjacency_lst = (XF86ConfAdjacencyPtr)
-			addListItem ((glp) ptr->lay_adjacency_lst, (glp) aptr);
-    }
+    ptr->lay_identifier = "XFree86 Configured";
 
     {
 	XF86ConfInputrefPtr iptr;
@@ -400,7 +359,7 @@ configureLayoutSection (void)
 	iptr = xf86confmalloc (sizeof (XF86ConfInputrefRec));
 	iptr->list.next = NULL;
 	iptr->iref_option_lst = NULL;
-	iptr->iref_inputdev_str = "Mouse1";
+	iptr->iref_inputdev_str = "Mouse0";
 	iptr->iref_option_lst =
 		addNewOption (iptr->iref_option_lst, "CorePointer", NULL);
 	ptr->lay_input_lst = (XF86ConfInputrefPtr)
@@ -413,11 +372,45 @@ configureLayoutSection (void)
 	iptr = xf86confmalloc (sizeof (XF86ConfInputrefRec));
 	iptr->list.next = NULL;
 	iptr->iref_option_lst = NULL;
-	iptr->iref_inputdev_str = "Keyboard1";
+	iptr->iref_inputdev_str = "Keyboard0";
 	iptr->iref_option_lst =
 		addNewOption (iptr->iref_option_lst, "CoreKeyboard", NULL);
 	ptr->lay_input_lst = (XF86ConfInputrefPtr)
 		addListItem ((glp) ptr->lay_input_lst, (glp) iptr);
+    }
+
+    if (xf86IsPrimaryIsa()) {
+	XF86ConfAdjacencyPtr aptr;
+
+	aptr = xf86confmalloc (sizeof (XF86ConfAdjacencyRec));
+	aptr->list.next = NULL;
+	aptr->adj_x = 0;
+	aptr->adj_y = 0;
+	aptr->adj_refscreen = 0;
+	aptr->adj_scrnum = 0;
+	aptr->adj_screen_str = xalloc(8);
+	sprintf(aptr->adj_screen_str, "Screen%d", scrnum);
+	aptr->adj_where = CONF_ADJ_ABSOLUTE;
+    	ptr->lay_adjacency_lst = (XF86ConfAdjacencyPtr)
+			addListItem ((glp) ptr->lay_adjacency_lst, (glp) aptr);
+	scrnum++;
+    }
+    xf86PciCard = ConfiguredPciCard;
+    for (i = 0; i < FoundPciCards; i++) {
+	XF86ConfAdjacencyPtr aptr;
+
+	aptr = xf86confmalloc (sizeof (XF86ConfAdjacencyRec));
+	aptr->list.next = NULL;
+	aptr->adj_x = 0;
+	aptr->adj_y = 0;
+	aptr->adj_refscreen = 0;
+	aptr->adj_scrnum = 0;
+	aptr->adj_screen_str = xalloc(8);
+	sprintf(aptr->adj_screen_str, "Screen%d", scrnum);
+	aptr->adj_where = CONF_ADJ_ABSOLUTE;
+    	ptr->lay_adjacency_lst = (XF86ConfAdjacencyPtr)
+	addListItem ((glp) ptr->lay_adjacency_lst, (glp) aptr);
+	scrnum++;
     }
 
     return ptr;
@@ -489,11 +482,12 @@ configureFilesSection (void)
 }
 
 XF86ConfMonitorPtr
-configureMonitorSection (void)
+configureMonitorSection (int screennum)
 {
     parsePrologue (XF86ConfMonitorPtr, XF86ConfMonitorRec)
 
-    ptr->mon_identifier = "Monitor1";
+    ptr->mon_identifier = xalloc(9);
+    sprintf(ptr->mon_identifier, "Monitor%d", screennum);
     ptr->mon_vendor = "Monitor Vendor";
     ptr->mon_modelname = "Monitor Model";
 
@@ -509,12 +503,13 @@ configureMonitorSection (void)
 }
 
 XF86ConfMonitorPtr
-configureDDCMonitorSection (void)
+configureDDCMonitorSection (int screennum)
 {
     int i = 0;
     parsePrologue (XF86ConfMonitorPtr, XF86ConfMonitorRec)
 
-    ptr->mon_identifier = "Monitor1";
+    ptr->mon_identifier = xalloc(9);
+    sprintf(ptr->mon_identifier, "Monitor%d", screennum);
     ptr->mon_vendor = ConfiguredMonitor->vendor.name;
     ptr->mon_modelname = xalloc(sizeof(ConfiguredMonitor->vendor.prod_id));
     sprintf(ptr->mon_modelname, "%x", ConfiguredMonitor->vendor.prod_id);
@@ -549,14 +544,14 @@ configureDDCMonitorSection (void)
 void
 DoConfigure()
 {
-    int i,j,k;
+    int i,j, screennum = -1;
     Bool probeResultPci = FALSE;
     Bool probeResultIsa = FALSE;
-    char *foundDriver = NULL;
     char *home = NULL;
     char *filename = NULL;
     OptionInfoPtr options = NULL;
     XF86ConfigPtr xf86config = NULL;
+    xf86MonPtr ConfMon;
     char **vlist, **ilist, **vl, **il;
 
     vlist = xf86DriverlistFromCompile();
@@ -584,16 +579,29 @@ DoConfigure()
 #endif /* XFree86LOADER */
 
     /* Disable PCI devices */
+    xf86ResourceBrokerInit();
     xf86AccessInit();
     xf86FindPrimaryDevice();
  
+    /* Create XF86Config file structure */
+    xf86config = malloc(sizeof(XF86ConfigRec));
+    memset ((XF86ConfigPtr)xf86config, 0, sizeof(XF86ConfigRec));
+    xf86config->conf_device_lst = NULL;
+    xf86config->conf_screen_lst = NULL;
+    xf86config->conf_monitor_lst = NULL;
+
     vl = vlist;
     /* Call all of the probe functions, reporting the results. */
     for (i = 0; i < xf86NumDrivers; i++) {
+    	XF86ConfDevicePtr DevicePtr;
+	XF86ConfScreenPtr ScreenPtr;
+	XF86ConfMonitorPtr MonitorPtr;
 	probeResultPci = FALSE;
 	probeResultIsa = FALSE;
 	
 	if (xf86DriverList[i]->Probe == NULL) continue;
+
+    	if (!strcmp(*vl, "vga")) continue;
 
 	probeResultPci = (*xf86DriverList[i]->Probe)(
 	    xf86DriverList[i], PROBE_DETECTPCI);
@@ -604,57 +612,51 @@ DoConfigure()
 	/* Bail when we find the primary card ! */
 	if (probeResultPci) {
 	    ErrorF("We have found a PCI %s driver\n",*vl);
-	    if (foundDriver == NULL) {
-	        foundDriver = *vl;
-	        if (xf86DriverList[i]->Identify != NULL)
-	    	    (*xf86DriverList[i]->Identify)(0);
-		if (xf86DriverList[i]->AvailableOptions != NULL)
-		    options = (*xf86DriverList[i]->AvailableOptions)(
+	    if (xf86DriverList[i]->Identify != NULL)
+	        (*xf86DriverList[i]->Identify)(0);
+	    if (xf86DriverList[i]->AvailableOptions != NULL)
+	    	options = (*xf86DriverList[i]->AvailableOptions)(
 				(ConfiguredPciCard->vendor << 16) | 
 				 ConfiguredPciCard->chipType, BUS_PCI);
-	    }
 	} else
 	if (probeResultIsa)  {
 	    ErrorF("We have found an ISA %s driver\n",*vl);
-	    if (foundDriver == NULL) {
-	        foundDriver = *vl;
-	        if (xf86DriverList[i]->Identify != NULL)
-	    	    (*xf86DriverList[i]->Identify)(0);
-		if (xf86DriverList[i]->AvailableOptions != NULL)
-		    options = (*xf86DriverList[i]->AvailableOptions)(
+	    if (xf86DriverList[i]->Identify != NULL)
+	    	(*xf86DriverList[i]->Identify)(0);
+	    if (xf86DriverList[i]->AvailableOptions != NULL)
+		options = (*xf86DriverList[i]->AvailableOptions)(
 				 ConfiguredIsaCard, BUS_ISA);
-	    }
+	}
+	if (probeResultPci || probeResultIsa) {
+	    screennum++;
+	    DevicePtr = configureDeviceSection(*vl, options);
+    	    xf86config->conf_device_lst = (XF86ConfDevicePtr)addListItem(
+			    (glp)xf86config->conf_device_lst, (glp)DevicePtr);
+	    ScreenPtr = configureScreenSection(*vl, screennum);
+    	    xf86config->conf_screen_lst = (XF86ConfScreenPtr)addListItem(
+			    (glp)xf86config->conf_screen_lst, (glp)ScreenPtr);
+	    MonitorPtr = configureMonitorSection(screennum);
+    	    xf86config->conf_monitor_lst = (XF86ConfMonitorPtr)addListItem(
+			    (glp)xf86config->conf_monitor_lst, (glp)MonitorPtr);
 	}
 
 	vl++;
     }
 
-
-    if (foundDriver == NULL) {
+    if (screennum == -1) {
 	ErrorF("Unable to configure XFree86 - no able drivers found.\n");
 	goto bail;
     }
 
-    /* Let's write the config file now ! */
-    xf86config = malloc(sizeof(XF86ConfigRec));
-    memset ((XF86ConfigPtr)xf86config, 0, sizeof(XF86ConfigRec));
-    xf86config->conf_monitor_lst = configureMonitorSection();
     xf86config->conf_files = configureFilesSection();
     xf86config->conf_modules = configureModuleSection();
     xf86config->conf_flags = configureFlagsSection();
     xf86config->conf_videoadaptor_lst = configureVideoAdaptorSection();
     xf86config->conf_modes_lst = configureModesSection();
-    xf86config->conf_layout_lst = configureLayoutSection();
-    xf86config->conf_device_lst = configureDeviceSection(foundDriver, options);
-    xf86config->conf_screen_lst = configureScreenSection(foundDriver);
     xf86config->conf_vendor_lst = configureVendorSection();
     xf86config->conf_dri = configureDRISection();
     xf86config->conf_input_lst = configureInputSection();
-
-    if (!havePrimary) {
-	ErrorF("Unable to configure XFree86 - Primary card driver not found.\n");
-	goto bail;
-    }
+    xf86config->conf_layout_lst = configureLayoutSection(screennum);
 
     if (!(home = getenv("HOME")))
     	home = "/";
@@ -676,46 +678,66 @@ DoConfigure()
 
     xf86WriteConfigFile(filename, xf86config);
 
+    xf86DoConfigurePass1 = FALSE;
     /* Try to get DDC information filled in */
     xf86ConfigFile = filename;
     xf86HandleConfigFile();
+    ConfiguredMonitors = xalloc(sizeof(xf86Monitor) * xf86NumDrivers);
+    ConfMon = ConfiguredMonitors;
     vl = vlist;
+
     for (i = 0; i < xf86NumDrivers; i++) {
-	/* Only scan the primary driver (for now) */
-	if (!strcmp(*vl,foundDriver)) {
+	probeResultPci = FALSE;
+	probeResultIsa = FALSE;
+	/* Allow probing for DDC - code taken from xf86Init */
+	/* All this might not be necessary, but for now.... */
+	if (xf86DriverList[i]->Probe == NULL) continue;
+    	if (!strcmp(*vl, "vga")) continue;
 
-	    /* Allow probing for DDC - code taken from xf86Init */
-	    /* All this might not be necessary, but for now.... */
-	    xf86DoConfigurePass1 = FALSE;
-	    xf86ResourceBrokerInit();
+    	xf86DoConfigurePass1 = TRUE;
+	probeResultPci = (*xf86DriverList[i]->Probe)(
+	    xf86DriverList[i], PROBE_DETECTPCI);
+	if (!probeResultPci)
+	    probeResultIsa = (*xf86DriverList[i]->Probe)(
+		xf86DriverList[i], PROBE_DETECTISA);
+    	xf86DoConfigurePass1 = FALSE;
+	if (probeResultPci || probeResultIsa)
 	    (*xf86DriverList[i]->Probe)(xf86DriverList[i], 0);
-	    xf86SetPciVideo(NULL,NONE);
-    	    xf86PostProbe();
-    	    xf86EntityInit();
 
-    	    for (j = 0; j < xf86NumScreens - 1; j++) {
-		for (k = 0; k < xf86NumScreens - j - 1; k++) {
-	    	    if (xf86Screens[k + 1]->confScreen->screennum <
-			xf86Screens[k]->confScreen->screennum) {
-			ScrnInfoPtr tmpScrn = xf86Screens[k + 1];
-			xf86Screens[k + 1] = xf86Screens[k];
-			xf86Screens[k] = tmpScrn;
-	    	    }
-		}
-    	    }
-
-    	    for (j = 0; j < xf86NumScreens; j++) {
-		xf86Screens[j]->scrnIndex = j;
-    	    }
-    
-    	    for (j = 0; j < xf86NumScreens; j++) {
-		xf86EnableAccess(xf86Screens[j]);
-		(*xf86Screens[j]->PreInit)(xf86Screens[j], PROBE_DETECT);
-    	    }
-	    xf86DoConfigurePass1 = TRUE;
-	}
+	xf86SetPciVideo(NULL,NONE);
 	vl++;
     }
+
+    xf86PostProbe();
+    xf86EntityInit();
+
+    for (j = 0; j < xf86NumScreens; j++) {
+	    xf86Screens[j]->scrnIndex = j;
+    }
+
+    xf86config->conf_monitor_lst = NULL;
+    xf86config->conf_screen_lst = NULL;
+    for (j = 0; j < xf86NumScreens; j++) {
+	XF86ConfMonitorPtr MonitorPtr;
+	XF86ConfScreenPtr ScreenPtr;
+	ConfiguredMonitor = NULL;
+
+	xf86EnableAccess(xf86Screens[j]);
+	(*xf86Screens[j]->PreInit)(xf86Screens[j], PROBE_DETECT);
+
+	if (ConfiguredMonitor) {
+	    MonitorPtr = configureDDCMonitorSection(j);
+	} else {
+	    MonitorPtr = configureMonitorSection(j);
+	}
+	ScreenPtr = configureScreenSection("",j);
+    	xf86config->conf_monitor_lst = (XF86ConfMonitorPtr)addListItem(
+			    (glp)xf86config->conf_monitor_lst, (glp)MonitorPtr);
+    	xf86config->conf_screen_lst = (XF86ConfScreenPtr)addListItem(
+			    (glp)xf86config->conf_screen_lst, (glp)ScreenPtr);
+    }
+
+    xf86WriteConfigFile(filename, xf86config);
 
     ErrorF("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 
@@ -723,13 +745,8 @@ DoConfigure()
 	ErrorF("XFree86 is not able to detect your mouse. Edit the file and correct the Device.\n");
     }
 
-    if (ConfiguredMonitor) {
-	/* Yeah ! - we got some monitor info */
-	/* Write the newer config file with monitor info */
-    	xf86config->conf_monitor_lst = configureDDCMonitorSection();
-    	xf86config->conf_screen_lst = configureScreenSection(foundDriver);
-    	xf86WriteConfigFile(filename, xf86config);
-	ErrorF("XFree86 has added DDC information to the XF86Config file successfully\n");
+    if (xf86NumScreens > 1) {
+	ErrorF("XFree86 has configured a multihead system, please check your config.\n");
     }
 
     ErrorF("XFree86 has configured the server for your primary card\n");
