@@ -1,3 +1,9 @@
+XFree86 3.9.16 (31 August 1999)
+3020. Fix a build problem on Alpha platforms (#3191, Matt Grossman).
+3019. Allow driver SDK builds for the i740 driver (#3190, Daryll Strauss).
+3018. Allow driver SDK builds for the tdfx driver, and allow it to be built
+      without DRI support (#3189, Daryll Strauss).
+
 XFree86 3.9.15d (29 August 1999)
 3017. 3Dfx driver for Banshee and Voodoo3 (#3188,
       Daryll Strauss/Precision Insight).
@@ -8677,4 +8683,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.820 1999/08/28 14:32:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.821 1999/08/29 12:20:52 dawes Exp $

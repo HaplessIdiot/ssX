@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/Imakefile,v 1.1 1999/08/29 12:21:02 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/Imakefile,v 1.2 1999/08/29 12:42:57 dawes Exp $
 XCOMM
 XCOMM This is the Imakefile for the TDFX driver.  
 XCOMM 
@@ -10,14 +10,18 @@ XCOMM
 DRISRC = tdfx_dri.c
 DRIOBJ = tdfx_dri.o
 DRIINCLUDES=-I$(SERVERSRC)/GL/dri -I$(LIBSRC)/GL/dri
+DRIDEFINES = $(GLX_DEFINES)
 #endif
 
 SRCS = tdfx_driver.c tdfx_io.c tdfx_hwcurs.c tdfx_accel.c \
-	tdfx_dga.c
+	tdfx_dga.c $(DRISRCS)
 
 OBJS = tdfx_driver.o tdfx_io.o tdfx_hwcurs.o tdfx_accel.o \
-	tdfx_dga.o
+	tdfx_dga.o $(DRIOBJS)
 
+#if defined(XF86DriverSDK)
+INCLUDES = -I. -I../../include
+#else
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
            -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
 	   -I$(XF86SRC)/xaa -I$(XF86SRC)/rac \
@@ -26,8 +30,9 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
 	   -I$(SERVERSRC)/Xext \
            -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
 	   -I$(EXTINCSRC) $(DRIINCLUDES)
+#endif
 
-DEFINES = $(GLX_DEFINES)
+DEFINES = $(DRIDEFINES)
 
 #if MakeHasPosixVariableSubstitutions
 SubdirLibraryRule($(OBJS))
@@ -44,3 +49,18 @@ XCOMM xCppManTarget(tdfx,)
 XCOMM xInstallModuleManPage(tdfx)
 
 DependTarget()
+
+InstallDriverSDKNonExecFile(Imakefile,$(DRIVERSDKDIR)/drivers/tdfx)
+InstallDriverSDKNonExecFile(tdfx.h,$(DRIVERSDKDIR)/drivers/tdfx)
+
+InstallDriverSDKNonExecFile(tdfx_accel.c,$(DRIVERSDKDIR)/drivers/tdfx)
+InstallDriverSDKNonExecFile(tdfx_dga.c,$(DRIVERSDKDIR)/drivers/tdfx)
+InstallDriverSDKNonExecFile(tdfx_dri.c,$(DRIVERSDKDIR)/drivers/tdfx)
+InstallDriverSDKNonExecFile(tdfx_dri.h,$(DRIVERSDKDIR)/drivers/tdfx)
+InstallDriverSDKNonExecFile(tdfx_dripriv.h,$(DRIVERSDKDIR)/drivers/tdfx)
+InstallDriverSDKNonExecFile(tdfx_driver.c,$(DRIVERSDKDIR)/drivers/tdfx)
+InstallDriverSDKNonExecFile(tdfx_hwcurs.c,$(DRIVERSDKDIR)/drivers/tdfx)
+InstallDriverSDKNonExecFile(tdfx_io.c,$(DRIVERSDKDIR)/drivers/tdfx)
+InstallDriverSDKNonExecFile(tdfx_io.h,$(DRIVERSDKDIR)/drivers/tdfx)
+
+InstallDriverSDKObjectModule(tdfx,$(DRIVERSDKMODULEDIR),drivers)

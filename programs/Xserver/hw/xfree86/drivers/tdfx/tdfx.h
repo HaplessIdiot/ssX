@@ -5,7 +5,7 @@
 
    Copyright: 1998,1999
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.1 1999/08/29 12:21:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.2 1999/08/29 12:42:57 dawes Exp $ */
 
 #ifndef _TDFX_H_
 #define _TDFX_H_
@@ -33,6 +33,7 @@ typedef struct _TDFXRec *TDFXPtr;
 #endif
 extern Bool TDFXInitPrivate(ScreenPtr pScreen);
 extern void TDFXShutdownPrivate(ScreenPtr pScreen);
+
 #ifdef XF86DRI
 extern void FillPrivateDRI(TDFXPtr pTDFX, TDFXDRIPtr pTDFXDRI);
 #endif
@@ -150,8 +151,6 @@ typedef struct _TDFXRec {
   TDFXRegRec DRContextRegs;
 #endif
 } TDFXRec;
-
-extern TDFXRec TDFXinfo;
 
 #define TDFXPTR(p) ((TDFXPtr)((p)->driverPrivate))
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/Imakefile,v 1.1 1999/08/29 12:20:57 dawes Exp $
 XCOMM
 XCOMM This is the Imakefile for the i740 driver.  
 XCOMM 
@@ -10,6 +10,9 @@ SRCS = i740_driver.c i740_cursor.c i740_accel.c i740_io.c
 
 OBJS = i740_driver.o i740_cursor.o i740_accel.o i740_io.o
 
+#if defined(XF86DriverSDK)
+INCLUDES = -I. -I../../include
+#else
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
            -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
 	   -I$(XF86SRC)/xaa -I$(XF86SRC)/rac \
@@ -18,6 +21,7 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
 	   -I$(SERVERSRC)/Xext \
            -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
 	   -I$(EXTINCSRC)
+#endif
 
 #if MakeHasPosixVariableSubstitutions
 SubdirLibraryRule($(OBJS))
@@ -34,3 +38,15 @@ XCOMM xCppManTarget(i740,)
 XCOMM xInstallModuleManPage(i740)
 
 DependTarget()
+
+InstallDriverSDKNonExecFile(Imakefile,$(DRIVERSDKDIR)/drivers/i740)
+InstallDriverSDKNonExecFile(i740.h,$(DRIVERSDKDIR)/drivers/i740)
+InstallDriverSDKNonExecFile(i740_accel.c,$(DRIVERSDKDIR)/drivers/i740)
+InstallDriverSDKNonExecFile(i740_cursor.c,$(DRIVERSDKDIR)/drivers/i740)
+InstallDriverSDKNonExecFile(i740_driver.c,$(DRIVERSDKDIR)/drivers/i740)
+InstallDriverSDKNonExecFile(i740_io.c,$(DRIVERSDKDIR)/drivers/i740)
+InstallDriverSDKNonExecFile(i740_macros.h,$(DRIVERSDKDIR)/drivers/i740)
+InstallDriverSDKNonExecFile(i740_reg.h,$(DRIVERSDKDIR)/drivers/i740)
+
+InstallDriverSDKObjectModule(i740,$(DRIVERSDKMODULEDIR),drivers)
+
