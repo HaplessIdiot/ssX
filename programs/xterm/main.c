@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.225.1.1 95/01/13 21:13:04 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.15 1995/03/04 06:24:52 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.16 1995/06/02 10:36:17 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -3408,10 +3408,12 @@ Exit(n)
 		    (void) pututline(utptr);
 #ifdef WTMP
 #ifdef SVR4
-		    updwtmpx(WTMPX_FILE, &utmp);
+		    if (term->misc.login_shell)
+			updwtmpx(WTMPX_FILE, &utmp);
 #else
 		    /* set wtmp entry if wtmp file exists */
-		    if ((fd = open(etc_wtmp, O_WRONLY | O_APPEND)) >= 0) {
+		    if (term->misc.login_shell &&
+			(fd = open(etc_wtmp, O_WRONLY | O_APPEND)) >= 0) {
 		      i = write(fd, utptr, sizeof(utmp));
 		      i = close(fd);
 		    }
