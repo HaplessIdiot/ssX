@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_Acc.man,v 1.8 95/01/23 15:33:27 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.29 1995/06/17 12:14:36 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.30 1995/07/03 08:41:14 dawes Exp $
 .TH XF86_Accel 1 "Version 3.1.2"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
@@ -447,7 +447,7 @@ cards.  For further details refer to \fIREADME.S3\fP.
 This allows the PLL reference clock to be specified.  This may be required
 for some cards that use the IBM RGB52x RAMDACs.  The value is in MHz.
 .TP 8
-.B S3BlankAdjust \fIa b\fP
+.B S3BlankDelay \fIa b\fP
 This allows the blank timing parameters to be adjusted.  This affects
 screen wrapping on 964 and 968 cards.  For further details refer to
 \fIREADME.S3\fP.

@@ -94,8 +94,9 @@
   3.  XF86Config options
 
   Several options are supported in the "Device" section for the Mach64 X
-  server.  The Mach64 X server reads the Clocks from the BIOS, so the
-  "Clocks" lines are not required.
+  server.  The Mach64 X server reads the Clocks from the BIOS.  The
+  "Clocks" lines in the XF86Config file are normally ignored by the
+  Mach64 X server unless the "no_bios_clocks" option is given.
 
 
      Option "sw_cursor"
@@ -129,11 +130,16 @@
         mode only works on certain types of VRAM cards, and this option
         has no effect on DRAM based cards.  If you want to override the
         probed default, you can use this option.
-
      Option "power_saver"
         This option allows the server to use the power saving features
         of certain "green" monitors instead of blanking when the screen
         saver is activated.  This option is still experimental.
+
+     Option "no_bios_clocks"
+        This option allows you to override the clocks read from the
+        video card's BIOS.  Normally the Mach64 server will ignore the
+        Clocks line, but with this option the clocks from the XF86Config
+        file can override the BIOS's clocks.
 
      MemBase baseaddress
         This entry specifies the video memory aperture address.
@@ -144,13 +150,7 @@
 
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.2 1995/06/25 09:53:40 dawes Exp $
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.3 1995/07/03 08:50:54 dawes Exp $
 
 
 

@@ -1,7 +1,7 @@
   Information for Cirrus Chipset Users
   Harm Hanemaayer (hhanemaa@cs.ruu.nl), Randy Hendry
   (randy@sgi.com)
-  27 January 1995
+  26 June 1995
 
   1.  Supported chipsets
 
@@ -65,8 +65,12 @@
         Next generation `Alpine' family chip with 64-bit internal memory
         interface. Used by the Orchid Kelvin 64. The chip can only
         support 64-bit mode if equipped with 2 Mbytes of memory; cards
-        with only 1 Mbyte are severely limited.  Support dot clocks up
-        to 110 MHz.
+        with only 1 Mbyte are severely limited.  Supports dot clocks up
+        to 110 MHz (recent chips support 135 MHz).
+
+     CL-GD5436
+        Highly optimized 5434. It is basically treated as a 5434, and is
+        untested.
 
   Here's a list of maximum dot clocks for each supported depth:
 
@@ -80,10 +84,13 @@
        CL-GD5429       85 MHz      85 MHz____      50 MHz____
        CL-GD5430       85 MHz      85 MHz____      45 MHz (2)
        CL-GD5434/1Mb   85 MHz      85 MHz____      45 MHz (2)
-       CL-GD5434/2Mb   85 MHz      85 MHz____      85 MHz____      45 MHz (2)
+       CL-GD5434/2Mb   85 MHz      110/135 MHz     85 MHz____      45/50 MHz (2)
+       CL-GD5436/1Mb   85 MHz      110 MHz (3)     60 MHz (3)
+       CL-GD5436/2Mb   85 MHz      135 MHz         85 MHz          60 MHz (3)
 
        (1) with 512K memory.
        (2) 50 MHz with high MCLK setting.
+       (3) Depends on memory clock.
 
 
 
@@ -118,8 +125,8 @@
   `xf86config' program, which should produce a working high-resolution
   8bpp configuration. You may want to include mode timings in the
   Monitor section that better fit your monitor (e.g 1152x900 modes). The
-  driver options are described in detail in next section; here the basic
-  options are hinted at.
+  driver options are described in detail in the next section; here the
+  basic options are hinted at.
 
   For all chipsets, a Clockchip "cirrus" line in the Device section can
   be useful. This allows the use of any dot clocks, instead of one out
@@ -130,6 +137,7 @@
   your chip has the BitBLT engine, if that doesn't work, try the
   "noaccel"; option, which disables all accelerated functions. The
   "no_imageblt" option may be sufficient.
+
   In order to be able to run at a depth of 16bpp and 32bpp, and to
   improve performance at 8bpp, linear addressing must be enabled. This
   is generally possible on 543x local bus cards, and if you have less
@@ -221,7 +229,7 @@
         effect of disabling the use of the BitBLT engine (which the 5424
         does not have), while retaining some acceleration. This will be
         useful for problems related to functions that use the BitBLT
-        engine.
+        engine.  Performance is significantly decreased.
 
      Option "no_imageblt"
         This option, when used with a 5426/28/29/3x, will have the
@@ -250,9 +258,10 @@
      Option "fifo_conservative" (5424/6/8/9/30)
         This option will set the CRT FIFO threshold to a conservative
         value for high dot clocks (>= 65 MHz), reducing performance but
-        hopefully alleviating problems with `streaks' on the screen
-        (especially when a BitBLT operation is in progress).
-
+        hopefully alleviating problems with what can be described as
+        flashing `streaks', `jitter' or horizontally repeated display
+        areas on the screen (especially when a BitBLT operation is in
+        progress, e.g.  scrolling).
      Option "fifo_aggressive" (5424/6/8/9/30)
         This option will set the CRT FIFO threshold to an aggressive
         value; it will be the same as that used for lower dot clocks. It
@@ -288,9 +297,9 @@
         Device section. With this option, the clocks the modes use will
         be automatically selected. Do not specify any Clocks line. This
         option makes a 12.5 MHz clock possible for a 320x200 Doublescan
-        mode. Note that some frequencies may be unstable. Only tried and
-        tested frequencies (like the default clocks) are guaranteed to
-        be stable.
+        mode. Note that some frequencies may be unstable (resulting in a
+        `wavy' screen). Only tried and tested frequencies (like the
+        default clocks) are guaranteed to be stable.
 
      Option "linear"
         This enables linear addressing, which is the mapping of the
@@ -304,7 +313,7 @@
         framebuffer. It must be specified in the Device section. It is
         required for most linear addressing configurations.
 
-     Option "favour_bitblt" (5426)
+     Option "favour_bitblt" (5426 only)
         This option will, when the BitBLT engine is enabled, favour its
         use over framebuffer color expansion functions that are normally
         faster.  This can give a performance improvement on a heavily
@@ -314,18 +323,22 @@
      Option "mmio" (543x)
         This enables the use of memory-mapped I/O to talk to the BitBLT
         engine on the 543x/5429, which is a bit faster. It also enables
-        additional acceleration using memory-mapped I/O.
+        additional acceleration using memory-mapped I/O. This is option
+        has no effect when not using the BitBLT engine (e.g. when using
+        "no_bitblt").
+
 
      Option "sw_cursor" (542x/3x)
         This disables use of the hardware cursor provided by the chip.
         Try this if the cursor seems to have problems. In particular,
-        use this when using dot clocks greater than 85 MHz on the 5434
+        use this when using dot clocks greater than 85 MHz on the 5434/6
         since the chip doesn't fully support the hardware cursor at
         those clocks.
 
      Option "clgd6225_lcd"
         Provides a work-around for problems on the LCD screen of some
         62x5 laptop chipsets with maximum white colors.
+
 
 
   4.  Mode issues
@@ -384,10 +397,11 @@
         apply (i.e. you must have less than 16Mb of memory).
 
      o  Cards that connect address line A26 and always map at 64Mb +
-        14Mb. In this case specify `MemBase 0x04e00000'. This assumes
-        you have a VLB motherboard implementation that implements A26.
-        This has not been tested; it is not quite clear whether it maps
-        at 0x04000000 or 0x04e00000.
+        14Mb or 64Mb. In this case specify `MemBase 0x04e00000' or
+        `MemBase 0x04000000'. This assumes you have a VLB motherboard
+        implementation that implements A26. Alternatively the card may
+        map to 0x2000000, and recent cards like the 5429 usually map to
+        0x03e00000 (62Mb).
 
   You will probably have to rely on trial and error. If you have less
   than 16Mb memory, the `wrong' membase setting will result in no graph-
@@ -416,12 +430,11 @@
   windows drivers use it), but it is not quite without problems.
 
   With a card on the PCI bus, there is a PCI configuration register that
-  holds the framebuffer base address. However, the driver currently does
-  not read it out yet, so you'll have to specify the address with
-  MemBase. On one system tested, it mapped at 0xa0000000, and it
-  appeared addresses where assigned in 0x08000000 increments over the
-  PCI devices. A program is most likely available to read out the PCI
-  configuration.
+  holds the framebuffer base address, which is read automatically by the
+  driver if a PCI card is detected. On one system tested, it mapped at
+  0xa0000000, and it appeared addresses where assigned in 0x08000000
+  increments over the PCI devices. The `scanpci' program can read out
+  the PCI configuration and show the base address.
 
   On the VESA local bus, most 543x cards have a default mapping address
   of 64Mb, with jumper options for 2048Mb and 32Mb. This is probably
@@ -446,43 +459,32 @@
   32bpp mode is only supported on a 5434 with 2Mb or more of memory.
 
   In the XF86Config "Screen" section, a "Display" subsection must be
-  defined for each depth that you want to run, with separates Modes and
+  defined for each depth that you want to run, with separate Modes and
   virtual screen size. Example (2Mb of video memory):
 
-
-
-
-
-
-
-
-
-
-
-
-  Section "screen"
-      SubSection "Display"
-          Depth 8
-          Virtual 1152 900
-          ViewPort 0 0
-          Modes "640x480" "800x600" "1024x768"
-          Option "linear"
-      EndSubSection
-      SubSection "Display"
-          Depth 16
-          Virtual 1152 900
-          ViewPort 0 0
-          Modes "640x480" "800x600" "1024x768"
-          Option "linear"
-      EndSubSection
-      SubSection "Display"
-          Depth 32
-          Virtual 800 600
-          ViewPort 0 0
-          Modes "640x480" "800x600"
-          Option "linear"
-      EndSubSection
-  EndSection
+       Section "screen"
+           SubSection "Display"
+               Depth 8
+               Virtual 1152 900
+               ViewPort 0 0
+               Modes "640x480" "800x600" "1024x768"
+               Option "linear"
+           EndSubSection
+           SubSection "Display"
+               Depth 16
+               Virtual 1152 900
+               ViewPort 0 0
+               Modes "640x480" "800x600" "1024x768"
+               Option "linear"
+           EndSubSection
+           SubSection "Display"
+               Depth 32
+               Virtual 800 600
+               ViewPort 0 0
+               Modes "640x480" "800x600"
+               Option "linear"
+           EndSubSection
+       EndSection
 
 
 
@@ -538,6 +540,16 @@
   does it shut off the LCD's backlight on screen blank.  I hope to
   implement all these features in future releases.
 
+  Some notes regarding the CL-GD6420:
+
+  The amount of video memory may not always be detected correctly. The
+  driver source code includes two methods, one defined out. Better
+  specify the amount of video memory with a VideoRam line in the Device
+  section. Use the standard 640x480 60 Hz standard mode timing with
+  25.175 MHz dot clock for CRT or SIMulscan mode; for LCD-only
+  operation, use the same mode timing but with a dot clock of 16.257
+  MHz. Standard 56 Hz 800x600 is also supported on the CRT.
+
   The primary contact for the cl6440 problems with ``cl64xx'' driver is
   Randy Hendry <randy@sgi.com>.
 
@@ -555,7 +567,8 @@
 
   Note that some VESA standard mode timings may give problems on some
   monitors (try increasing the horizontal sync pulse, i.e. the
-  difference between the middle two horizontal timing values).
+  difference between the middle two horizontal timing values, or try
+  multiples of 16 or 32 for all of the horizontal timing parameters).
 
      There is a video signal, but the screen doesn't sync.
         You are using a mode that your monitor cannot handle. If it is a
@@ -564,18 +577,21 @@
         able to handle, try to find different timings for a similar mode
         and frequency combination.
 
-     Sparklies/streaks at high dot clocks.
-        You can try the "fast_dram" option, or use a lower dot clock.
-        If it happens when moving something on the screen, try the
-        "fifo_conservative" option. If that is not sufficient, the
-        "noaccel" option or "no_bitblt" will probably help.
+     Horizontal jitter at high dot clocks.
+        This problem shows especially when drawing operations such as
+        scrolling are in progress.  Try the "fifo_conservative" option.
+        Failing that, you can try the "fast_dram" option, or use a lower
+        dot clock.  If that is not sufficient, the "noaccel" option or
+        "no_bitblt" will probably help.
 
-     `Wavy' screen, horizontal jitter.
-        You are probably using a dot clock that is too high; it is also
-        possible that there is interference with a close MCLK. Try a
-        lower dot clock. You can also try to tweak the mode timings; try
-        increasing the second horizontal value somewhat. Here's a 65 MHz
-        dot clock 1024x768 mode (about 60 Hz) that might help:
+     `Wavy' screen.
+        Horizontal waving or jittering of the whole screen, continuously
+        (independent from drawing operations).  You are probably using a
+        dot clock that is too high; it is also possible that there is
+        interference with a close MCLK. Try a lower dot clock. You can
+        also try to tweak the mode timings; try increasing the second
+        horizontal value somewhat. Here's a 65 MHz dot clock 1024x768
+        mode (about 60 Hz) that might help:
          "1024x768"     65      1024 1116 1228 1328     768  783  789  818
 
      If you are using programmable clocks with Clockchip "cirrus", try
@@ -592,6 +608,7 @@
         functions, or a problem with the BitBLT engine. Try the
         "noaccel" option, or the "no_bitblt" option. Also check the BIOS
         settings.
+
      `Blitter timeout' messages from the server.
         Same as for the above entry.
 
@@ -626,7 +643,7 @@
      Textmode is not properly restored
         This has been reported on some configurations. In XFree86 3.1
         the SVGA server probe would corrupt a register on the 543x,
-        requiring Chipset line. Normally you should be able to restore
+        requiring a Chipset line. Normally you should be able to restore
         the textmode font using a utility that sets it (setfont, runx,
         restorefont on Linux).
 
@@ -635,7 +652,7 @@
         with other components in the system (e.g. disk I/O), because of
         a bad card and/or motherboard design. It has been observed on
         some PCI 5428-based cards (which are very rare, since the 5428
-        doesn't support PCI).
+        chip doesn't support PCI).
 
   For other screen drawing related problems, try the "noaccel" option
   (if "no_bitblt" doesn't help).
@@ -679,8 +696,57 @@
 
      o  Support for the CL6440 in the ``cl64xx'' driver.
 
+  Changes since XFree86 3.1.1:
+
+     o  Fix memory leak in text drawing function.
+
+     o  Support for dot clocks up to 135 MHz on CL-GD5434 revision E and
+        later.
+
+     o  More balanced FIFO setting to resolve display refresh errors
+        (jitter) during drawing operations at high dot clocks.
+
+     o  Memory-mapped I/O (Option "mmio") operation improved (some side-
+        effects eliminated, support for 5429).
+
+     o  Sanity check added to avoid potential server crash with negative
+        size rectangle fill.
+
+     o  Fix display error occurring when scrolling without BitBLT
+        engine.
+
+     o  543x PCI base address detection.
+
+     o  Preliminary support for CL-GD5436.
+
+     o  Default VLB base address for 5429 is 0x03e00000.
+
   $XConsortium: cirrus.sgml,v 1.4 95/01/27 16:14:36 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.9 1995/01/28 16:03:03 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.10 1995/07/03 08:50:57 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.6 95/01/16 13:18:27 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.34 1995/06/29 13:33:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.35 1995/07/02 07:55:37 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -158,6 +158,7 @@ ScrnInfoRec vga256InfoRec = {
   0,			/* int s3RefClk */
   0,			/* int suspendTime */
   0,			/* int offTime */
+  -1,			/* int s3BlankDelay */
 };
 
 pointer vgaOrigVideoState = NULL;
