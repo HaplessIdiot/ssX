@@ -31,7 +31,7 @@
  * Modifier:  Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/omGeneric.c,v 3.13 2000/02/12 02:54:16 dawes Exp $ */
+/* $XFree86: xc/lib/X11/omGeneric.c,v 3.14 2000/02/29 03:09:04 dawes Exp $ */
 
 /*
  * Fixed the algorithms in parse_fontname() and parse_fontdata()
@@ -1031,6 +1031,16 @@ parse_fontdata(oc, font_set, font_data, font_data_count, name_list, name_list_co
 
 	    found_num++;
 	    is_found = True;
+	    /* We almost certainly should have 'break' here and should ignore
+	     * the rest of the patterns. The problem is that we'll overwrite
+	     * font_data->font and font_data->xlfd_name with later matches.
+	     * But the general expectation would be that font_data->xlfd_name
+	     * would correspond to to the returned value. (It's not clear
+	     * why this routine modifies font_data and has a
+	     * font_data_return...)
+	     *
+	     * Owen Taylor <otaylor@redhat.com>     12 Jul 2000
+	     */
 	}
 
 	switch(class) {

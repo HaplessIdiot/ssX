@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.68 2000/08/13 13:50:43 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.69 2000/08/15 22:06:22 mvojkovi Exp $ */
 /*
  * PCI Probe
  *
@@ -86,7 +86,6 @@
 #define PCI_VENDOR_PICOP	0x1066
 #define PCI_VENDOR_MYLEX	0x1069
 #define PCI_VENDOR_APPLE	0x106B
-/* Yahama is a guess based on chipset */
 #define PCI_VENDOR_YAMAHA	0x1073
 #define PCI_VENDOR_NEXGEN	0x1074
 #define PCI_VENDOR_QLOGIC	0x1077
@@ -551,6 +550,7 @@
 #define PCI_CHIP_NM2097	        0x0083
 #define PCI_CHIP_NM2160		0x0004
 #define PCI_CHIP_NM2200		0x0005
+#define PCI_CHIP_NM2230		0x0025
 #define PCI_CHIP_NM2360		0x0006
 #define PCI_CHIP_NM2380		0x0016
 
@@ -1151,6 +1151,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_NM2093,	"NM2093",0},
 				{PCI_CHIP_NM2160,	"NM2160",0},
 				{PCI_CHIP_NM2200,	"NM2200",0},
+				{PCI_CHIP_NM2230,	"NM2230 MagicMedia 256AV+",0},
 				{PCI_CHIP_NM2360,	"NM2360",0},
 				{PCI_CHIP_NM2380,	"NM2380",0},
 #ifdef VENDOR_INCLUDE_NONVIDEO

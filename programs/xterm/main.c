@@ -64,7 +64,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.115 2000/06/20 05:08:50 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.116 2000/08/10 17:40:42 dawes Exp $ */
 
 
 /* main.c */
@@ -89,6 +89,11 @@ SOFTWARE.
 #include <data.h>
 #include <error.h>
 #include <menu.h>
+#include <main.h>
+
+#if OPT_WIDE_CHARS
+#include <charclass.h>
+#endif
 
 #ifdef AMOEBA
 #include <amoeba.h>
@@ -867,15 +872,15 @@ static XtResource application_resources[] = {
 #undef offset
 
 static char *fallback_resources[] = {
-    "XTerm*SimpleMenu*menuLabel.vertSpace: 100",
-    "XTerm*SimpleMenu*HorizontalMargins: 16",
-    "XTerm*SimpleMenu*Sme.height: 16",
-    "XTerm*SimpleMenu*Cursor: left_ptr",
-    "XTerm*mainMenu.Label:  Main Options (no app-defaults)",
-    "XTerm*vtMenu.Label:  VT Options (no app-defaults)",
-    "XTerm*fontMenu.Label:  VT Fonts (no app-defaults)",
+    "*SimpleMenu*menuLabel.vertSpace: 100",
+    "*SimpleMenu*HorizontalMargins: 16",
+    "*SimpleMenu*Sme.height: 16",
+    "*SimpleMenu*Cursor: left_ptr",
+    "*mainMenu.Label:  Main Options (no app-defaults)",
+    "*vtMenu.Label:  VT Options (no app-defaults)",
+    "*fontMenu.Label:  VT Fonts (no app-defaults)",
 #if OPT_TEK4014
-    "XTerm*tekMenu.Label:  Tek Options (no app-defaults)",
+    "*tekMenu.Label:  Tek Options (no app-defaults)",
 #endif
     NULL
 };
@@ -905,6 +910,7 @@ static XrmOptionDescRec optionDescList[] = {
 {"-cb",		"*cutToBeginningOfLine", XrmoptionNoArg, (caddr_t) "off"},
 {"+cb",		"*cutToBeginningOfLine", XrmoptionNoArg, (caddr_t) "on"},
 {"-cc",		"*charClass",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-class",	NULL,		XrmoptionSkipArg,	(caddr_t) NULL},
 {"-cm",		"*colorMode",	XrmoptionNoArg,		(caddr_t) "off"},
 {"+cm",		"*colorMode",	XrmoptionNoArg,		(caddr_t) "on"},
 {"-cn",		"*cutNewline",	XrmoptionNoArg,		(caddr_t) "off"},
@@ -919,6 +925,9 @@ static XrmOptionDescRec optionDescList[] = {
 #ifndef NO_ACTIVE_ICON
 {"-fi",		"*iconFont",	XrmoptionSepArg,	(caddr_t) NULL},
 #endif /* NO_ACTIVE_ICON */
+#if OPT_WIDE_CHARS
+{"-fw",		"*wideFont",	XrmoptionSepArg,	(caddr_t) NULL},
+#endif
 #if OPT_HIGHLIGHT_COLOR
 {"-hc",		"*highlightColor", XrmoptionSepArg,	(caddr_t) NULL},
 #endif
@@ -1031,8 +1040,13 @@ static struct _options {
 { "-bd color",             "border color" },
 { "-bw number",            "border width in pixels" },
 { "-fn fontname",          "normal text font" },
+{ "-fb fontname",          "bold text font" },
+#if OPT_WIDE_CHARS
+{ "-fw fontname",          "doublewidth text font" },
+#endif
 { "-iconic",               "start iconic" },
 { "-name string",          "client instance, icon, and title strings" },
+{ "-class string",         "class string (XTerm)" },
 { "-title string",         "title string" },
 { "-xrm resourcestring",   "additional resource specifications" },
 { "-/+132",                "turn on/off column switch inhibiting" },
@@ -1053,7 +1067,6 @@ static struct _options {
 { "-cr color",             "text cursor color" },
 { "-/+cu",                 "turn on/off curses emulation" },
 { "-/+dc",		   "turn off/on dynamic color selection" },
-{ "-fb fontname",          "bold text font" },
 #if OPT_HIGHLIGHT_COLOR
 { "-hc",		   "selection background color" },
 #endif
@@ -1134,7 +1147,7 @@ static struct _options {
 { "-ziconbeep percent",    "beep and flag icon of window having hidden output" },
 #endif
 #if OPT_SAME_NAME
-{"-/+sameName",	   "Turn on/off the no flicker option for title and icon name" },
+{"-/+sameName",	   "turn on/off the no-flicker option for title and icon name" },
 #endif
 { NULL, NULL }};
 
@@ -1303,6 +1316,7 @@ main (int argc, char *argv[])
 	Widget form_top, menu_top;
 	register TScreen *screen;
 	int mode;
+	char *my_class = DEFCLASS;
 
 	/* Do these first, since we may not be able to open the display */
 	ProgramName = argv[0];
@@ -1312,6 +1326,12 @@ main (int argc, char *argv[])
 			Version();
 		if (abbrev(argv[1], "-help"))
 			Help();
+		for (n = 1; n < argc; n++) {
+			if (strlen(argv[n]) > 2
+			 && abbrev(argv[n], "-class"))
+				if ((my_class = argv[++n]) == 0)
+					Help();
+		}
 	}
 
 	/* This dumps core on HP-UX 9.05 with X11R5 */
@@ -1620,7 +1640,7 @@ main (int argc, char *argv[])
 #endif
 
 	    XtSetErrorHandler(xt_error);
-	    toplevel = XtAppInitialize (&app_con, "XTerm",
+	    toplevel = XtAppInitialize (&app_con, my_class,
 					optionDescList,
 					XtNumber(optionDescList),
 					&argc, argv, fallback_resources,
@@ -1703,6 +1723,11 @@ main (int argc, char *argv[])
 	XtSetValues (toplevel, ourTopLevelShellArgs,
 		     number_ourTopLevelShellArgs);
 
+#if OPT_WIDE_CHARS
+	/* seems as good a place as any */
+	init_classtab();
+#endif
+
 	/* Parse the rest of the command line */
 	for (argc--, argv++ ; argc > 0 ; argc--, argv++) {
 	    if(**argv != '-') Syntax (*argv);
@@ -1742,6 +1767,8 @@ main (int argc, char *argv[])
 		debug = TRUE;
 		continue;
 #endif	/* DEBUG */
+	     case 'c':	/* -class */
+		break;
 	     case 'e':
 		if (argc <= 1) Syntax (*argv);
 		command_to_exec = ++argv;
@@ -2706,7 +2733,7 @@ spawn (void)
 		 */
 		TRACE_CHILD
 #if defined(_POSIX_SOURCE) || defined(SVR4) || defined(__convex__) || defined(SCO325) || defined(__QNX__)
-		int pgrp = setsid();
+		int pgrp = setsid();	/* variable may not be used... */
 #else
 		int pgrp = getpid();
 #endif
@@ -3281,7 +3308,9 @@ spawn (void)
 #endif /* CRAY */
 		}
 
-#ifndef	USE_SYSV_PGRP
+#if defined(__QNX__)
+		tcsetpgrp( 0, pgrp /*setsid()*/ );
+#elif !defined(USE_SYSV_PGRP)
 #ifdef TIOCSCTTY
 		setsid();
 		ioctl(0, TIOCSCTTY, 0);
@@ -3291,10 +3320,6 @@ spawn (void)
 		close(open(ttydev, O_WRONLY, 0));
 		setpgrp (0, pgrp);
 #endif /* !USE_SYSV_PGRP */
-
-#if defined(__QNX__)
-		tcsetpgrp( 0, pgrp /*setsid()*/ );
-#endif
 
 #endif /* AMOEBA */
 

@@ -43,7 +43,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xaw/Form.c,v 1.14 1999/06/13 13:47:18 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Form.c,v 1.16 1999/11/19 13:53:26 hohndel Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -1099,7 +1099,7 @@ XawFormDoLayout(Widget w,
 	Widget nw = *childP;
 
 	if (XtIsManaged(nw)) {
-	    FormConstraints form = (FormConstraints)w->core.constraints;
+	    FormConstraints form = (FormConstraints)nw->core.constraints;
 
 	    /*
 	     * Xt Configure widget is too smart, and optimizes out

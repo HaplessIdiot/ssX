@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.28 2000/06/24 15:52:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.30 2000/08/04 16:13:32 eich Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -184,6 +184,7 @@ static SymTabRec NEOChipsets[] = {
     { NM2097,   "neo2097" },
     { NM2160,   "neo2160" },
     { NM2200,   "neo2200" },
+    { NM2230,   "neo2230" },
     { NM2360,   "neo2360" },
     { NM2380,   "neo2380" },
     { -1,		 NULL }
@@ -197,6 +198,7 @@ static PciChipsets NEOPCIchipsets[] = {
     { NM2097,  PCI_CHIP_NM2097,  RES_SHARED_VGA },
     { NM2160,  PCI_CHIP_NM2160,  RES_SHARED_VGA },
     { NM2200,  PCI_CHIP_NM2200,  RES_SHARED_VGA },
+    { NM2230,  PCI_CHIP_NM2230,  RES_SHARED_VGA },
     { NM2360,  PCI_CHIP_NM2360,  RES_SHARED_VGA },
     { NM2380,  PCI_CHIP_NM2380,  RES_SHARED_VGA },
     { -1,	     -1,	     RES_UNDEFINED}
@@ -652,6 +654,9 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     case NM2200 :
         xf86ErrorF("MagicMedia 256AV (NM2200)");
 	break;
+    case NM2230 :
+        xf86ErrorF("MagicMedia 256AV+ (NM2230)");
+	break;
     case NM2360 :
         xf86ErrorF("MagicMedia 256ZX (NM2360)");
 	break;
@@ -759,6 +764,16 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	bppSupport = Support24bppFb | Support32bppFb |
 	    SupportConvert32to24 | PreferConvert32to24;
 	videoRam   = 2560;
+	maxClock   = 110000;
+	CursorMem  = 1024;
+	CursorOff  = 0x1000;
+	linearSize = 4096;
+	maxWidth   = 1280;
+	break;
+    case NM2230:
+	bppSupport = Support24bppFb | Support32bppFb |
+	    SupportConvert32to24 | PreferConvert32to24;
+	videoRam   = 3008;
 	maxClock   = 110000;
 	CursorMem  = 1024;
 	CursorOff  = 0x1000;
@@ -1030,6 +1045,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	    case NM2160:
 	    case NM2097:
 	    case NM2200:
+	    case NM2230:
 	    case NM2360:
 	    case NM2380:
 		nPtr->NeoMMIOAddr = nPtr->PciInfo->memBase[1];
@@ -1505,6 +1521,7 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		Neo2097AccelInit(pScreen);
 		break;
 	    case NM2200 :
+	    case NM2230 :
 	    case NM2360 :
 	    case NM2380 :
 	        Neo2200AccelInit(pScreen);
@@ -1874,16 +1891,16 @@ neoSave(ScrnInfoPtr pScrn)
     if (nPtr->NeoChipset == NM2160) {
         save->PanelHorizCenterReg4 = VGArGR(0x36);
     }
-    if (nPtr->NeoChipset == NM2200 || nPtr->NeoChipset == NM2360
-	|| nPtr->NeoChipset == NM2380) {
+    if (nPtr->NeoChipset == NM2200 || nPtr->NeoChipset == NM2230
+	|| nPtr->NeoChipset == NM2360 || nPtr->NeoChipset == NM2380) {
 	save->PanelHorizCenterReg4 = VGArGR(0x36);
 	save->PanelVertCenterReg5  = VGArGR(0x37);
 	save->PanelHorizCenterReg5 = VGArGR(0x38);
     }
     save->ExtColorModeSelect = VGArGR(0x90);
     save->VCLK3NumeratorLow = VGArGR(0x9B);
-    if (nPtr->NeoChipset == NM2200 || nPtr->NeoChipset == NM2360
-	|| nPtr->NeoChipset == NM2380)
+    if (nPtr->NeoChipset == NM2200 || nPtr->NeoChipset == NM2230
+	|| nPtr->NeoChipset == NM2360 || nPtr->NeoChipset == NM2380)
 	save->VCLK3NumeratorHigh = VGArGR(0x8F);
     save->VCLK3Denominator = VGArGR(0x9F);
 
@@ -1949,6 +1966,7 @@ neoProgramShadowRegs(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore)
     case NM2097:
     case NM2160:
     case NM2200:
+    case NM2230:
     case NM2360:
     case NM2380:
     default:
@@ -2116,6 +2134,7 @@ neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
     case NM2097 :
     case NM2160 :
     case NM2200 :
+    case NM2230 :
     case NM2360 :
     case NM2380 :
 	temp &= 0x70; /* Save bits 6:4 */
@@ -2167,6 +2186,7 @@ neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
 	temp |= (restore->PanelDispCntlReg1 & ~0xDC);
 	break;
     case NM2200 :
+    case NM2230 :
     case NM2360 :
     case NM2380 :
 	temp &= 0x98; /* Save bits 7,4:3 */
@@ -2201,8 +2221,8 @@ neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
 	VGAwGR(0x36, restore->PanelHorizCenterReg4);
     }
 
-    if (nPtr->NeoChipset == NM2200 || nPtr->NeoChipset == NM2360
-	|| nPtr->NeoChipset == NM2380) {
+    if (nPtr->NeoChipset == NM2200 || nPtr->NeoChipset == NM2230
+	|| nPtr->NeoChipset == NM2360 || nPtr->NeoChipset == NM2380) {
         VGAwGR(0x36, restore->PanelHorizCenterReg4);
         VGAwGR(0x37, restore->PanelVertCenterReg5);
         VGAwGR(0x38, restore->PanelHorizCenterReg5);
@@ -2211,8 +2231,8 @@ neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
     /* Program VCLK3 if needed. */
     if (restore->ProgramVCLK) {
 	VGAwGR(0x9B, restore->VCLK3NumeratorLow);
-	if (nPtr->NeoChipset == NM2200 || nPtr->NeoChipset == NM2360
-	    || nPtr->NeoChipset == NM2380) {
+	if (nPtr->NeoChipset == NM2200 || nPtr->NeoChipset == NM2230
+	    || nPtr->NeoChipset == NM2360 || nPtr->NeoChipset == NM2380) {
 	    temp = VGArGR(0x8F);
 	    temp &= 0x0F; /* Save bits 3:0 */
 	    temp |= (restore->VCLK3NumeratorHigh & ~0x0F);
@@ -2244,8 +2264,8 @@ neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
 	restore->reg = NULL;
     }
     /* Program vertical extension register */
-    if (nPtr->NeoChipset == NM2200 || nPtr->NeoChipset == NM2360
-	|| nPtr->NeoChipset == NM2380) {
+    if (nPtr->NeoChipset == NM2200 || nPtr->NeoChipset == NM2230
+	|| nPtr->NeoChipset == NM2360 || nPtr->NeoChipset == NM2380) {
 	VGAwCR(0x70, restore->VerticalExt);
     }
 
@@ -2573,8 +2593,8 @@ neoCalcVCLK(ScrnInfoPtr pScrn, long freq)
 		}
 	    }
 
-    if (nPtr->NeoChipset == NM2200 || nPtr->NeoChipset == NM2360
-	|| nPtr->NeoChipset == NM2380) {
+    if (nPtr->NeoChipset == NM2200 || nPtr->NeoChipset == NM2230
+	|| nPtr->NeoChipset == NM2360 || nPtr->NeoChipset == NM2380) {
         /* NOT_DONE:  We are trying the full range of the 2200 clock.
            We should be able to try n up to 2047 */
 	nPtr->NeoModeReg.VCLK3NumeratorLow  = n_best;
