@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.174 2004/02/13 23:58:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.175tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
@@ -246,9 +246,14 @@ void xf86ProcessActionEvent(ActionEvent action, void *arg);
 
 /* xf86Helper.c */
 
-#ifdef printf
-#define printf_defined
-#undef printf
+/* XXX Need to check which GCC versions have the format(printf) attribute. */
+#if (!defined(printf) || defined(printf_is_xf86printf)) && \
+    defined(__GNUC__) && \
+    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ > 4)))
+# define _printf_attribute(a,b) __attribute((format(printf,a,b)))
+# undef printf
+#else
+# define _printf_attribute(a,b) /**/
 #endif
 
 void xf86AddDriver(DriverPtr driver, pointer module, int flags);
@@ -384,9 +389,9 @@ void xf86AddModuleInfo(ModuleInfoPtr info, pointer module);
 void xf86DeleteModuleInfo(int idx);
 #endif
 
-#ifdef printf_defined
+#undef _printf_attribute
+#ifdef printf_is_xf86printf
 #define printf xf86printf
-#undef printf_defined
 #endif
 
 /* xf86Debug.c */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.64 2004/02/13 23:58:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.65tsi Exp $ */
 /*
  * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -289,6 +289,7 @@ typedef int xf86jmp_buf[1024];
 #define fopen(ccp1,ccp2)	xf86fopen(ccp1,ccp2)
 #undef printf
 #define printf			xf86printf
+#define printf_is_xf86printf	1	/* For GCC's printf attributes */
 #undef fprintf
 #define fprintf			xf86fprintf
 #undef fputc

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.57 2004/11/23 02:25:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.58tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -550,16 +550,13 @@ typedef enum {
 } MessageType;
 
 /* XXX Need to check which GCC versions have the format(printf) attribute. */
-#if defined(__GNUC__) && \
+#if (!defined(printf) || defined(printf_is_xf86printf)) && \
+    defined(__GNUC__) && \
     ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ > 4)))
-#define _printf_attribute(a,b) __attribute((format(printf,a,b)))
+# define _printf_attribute(a,b) __attribute((format(printf,a,b)))
+# undef printf
 #else
-#define _printf_attribute(a,b) /**/
-#endif
-
-#ifdef printf
-#define printf_defined
-#undef printf
+# define _printf_attribute(a,b) /**/
 #endif
 
 extern const char *LogInit(const char *fname, const char *backup);
@@ -600,9 +597,9 @@ extern size_t strlcpy(char *dst, const char *src, size_t size);
 #endif
 #endif
 
-#ifdef printf_defined
+#undef _printf_attribute
+#ifdef printf_is_xf86printf
 #define printf xf86printf
-#undef printf_defined
 #endif
 
 #endif /* OS_H */
