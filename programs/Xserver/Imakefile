@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.4 2001/03/14 18:42:02 pookie Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.266 2002/10/17 08:18:11 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.267 2002/10/18 19:38:03 keithp Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -678,9 +678,12 @@ XCOMM Tiny X server section
 XCOMM
 
         KDRIVE = hw/kdrive
+#if HasTsLib
+       KDTSLIB = -lts
+#endif
 #ifdef LinuxArchitecture
        KDOSDIR = $(KDRIVE)/linux
-          KDOS = $(KDOSDIR)/LibraryTargetName(linux)
+          KDOS = $(KDOSDIR)/LibraryTargetName(linux) $(KDTSLIB)
 #endif
 
 #ifdef VXWORKS
