@@ -1,10 +1,10 @@
-/* $XTermId: charproc.c,v 1.470 2004/05/12 23:50:51 tom Exp $ */
+/* $XTermId: charproc.c,v 1.472 2004/05/16 17:41:35 tom Exp $ */
 
 /*
  * $Xorg: charproc.c,v 1.6 2001/02/09 02:06:02 xorgcvs Exp $
  */
 
-/* $XFree86: xc/programs/xterm/charproc.c,v 3.157 2004/04/18 20:49:42 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/charproc.c,v 3.158 2004/05/13 00:41:20 dickey Exp $ */
 
 /*
 
@@ -5600,7 +5600,7 @@ xim_real_init(void)
 
     term->screen.xic = NULL;
 
-    if (!term->misc.open_im || term->misc.cannot_im) {
+    if (term->misc.cannot_im) {
 	return;
     }
 
@@ -5793,15 +5793,17 @@ xim_real_init(void)
 static void
 VTInitI18N(void)
 {
-    xim_real_init();
+    if (term->misc.open_im) {
+	xim_real_init();
 
 #if defined(USE_XIM_INSTANTIATE_CB)
-    if (term->screen.xic == NULL && !term->misc.cannot_im) {
-	sleep(3);
-	XRegisterIMInstantiateCallback(XtDisplay(term), NULL, NULL, NULL,
-				       xim_instantiate_cb, NULL);
-    }
+	if (term->screen.xic == NULL && !term->misc.cannot_im) {
+	    sleep(3);
+	    XRegisterIMInstantiateCallback(XtDisplay(term), NULL, NULL, NULL,
+					   xim_instantiate_cb, NULL);
+	}
 #endif
+    }
 }
 #endif /* OPT_I18N_SUPPORT && OPT_INPUT_METHOD */
 
