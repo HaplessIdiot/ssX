@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.59tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.60 2002/11/07 18:04:57 tsi Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -766,7 +766,7 @@ xf86CheckModeForMonitor(DisplayModePtr mode, MonPtr monitor)
  *
  * An internal routine to check if a mode fits in video memory.  This tries to
  * avoid overflows that would otherwise occur when video memory size is greater
- * than 2456MB.
+ * than 256MB.
  */
 static Bool
 xf86CheckModeSize(ScrnInfoPtr scrp, int w, int x, int y)
