@@ -74,16 +74,18 @@ static void SavageDPMS(ScrnInfoPtr pScrn, int mode, int flags);
 static Bool SavageDDC1(int scrnIndex);
 static unsigned int SavageDDC1Read(ScrnInfoPtr pScrn);
 static void SavageProbeDDC(ScrnInfoPtr pScrn, int index);
+static void SavageGetTvMaxSize(SavagePtr psav);
+static Bool SavagePanningCheck(ScrnInfoPtr pScrn);
 
 extern ScrnInfoPtr gpScrn;
 
 #define iabs(a)	((int)(a)>0?(a):(-(a)))
 
 #define DRIVER_NAME	"savage"
-#define DRIVER_VERSION	"1.1.20"
+#define DRIVER_VERSION	"1.1.23"
 #define VERSION_MAJOR	1
 #define VERSION_MINOR	1
-#define PATCHLEVEL	20
+#define PATCHLEVEL	23
 #define SAVAGE_VERSION	((VERSION_MAJOR << 24) | \
 			 (VERSION_MINOR << 16) | \
 			 PATCHLEVEL)
@@ -132,6 +134,8 @@ static SymTabRec SavageChips[] = {
     { PCI_CHIP_SUPSAV_IX64DDR,	"SuperSavage/IX 64" },
     { PCI_CHIP_SUPSAV_IXCSDR,	"SuperSavage/IXC 64" },
     { PCI_CHIP_SUPSAV_IXCDDR,	"SuperSavage/IXC 64" },
+    { PCI_CHIP_PROSAVAGE_DDR,	"ProSavage DDR" },
+    { PCI_CHIP_PROSAVAGE_DDRK,	"ProSavage DDR-K" },
     { -1,			NULL }
 };
 
@@ -160,6 +164,8 @@ static PciChipsets SavagePciChipsets[] = {
     { S3_PROSAVAGE,	PCI_CHIP_PROSAVAGE_KM,	RES_SHARED_VGA },
     { S3_PROSAVAGE,	PCI_CHIP_S3TWISTER_P,	RES_SHARED_VGA },
     { S3_PROSAVAGE,	PCI_CHIP_S3TWISTER_K,	RES_SHARED_VGA },
+    { S3_PROSAVAGE,	PCI_CHIP_PROSAVAGE_DDR,	RES_SHARED_VGA },
+    { S3_PROSAVAGE,	PCI_CHIP_PROSAVAGE_DDRK,	RES_SHARED_VGA },
     { S3_SUPERSAVAGE,	PCI_CHIP_SUPSAV_MX128,	RES_SHARED_VGA },
     { S3_SUPERSAVAGE,	PCI_CHIP_SUPSAV_MX64,	RES_SHARED_VGA },
     { S3_SUPERSAVAGE,	PCI_CHIP_SUPSAV_MX64C,	RES_SHARED_VGA },
@@ -187,7 +193,10 @@ typedef enum {
     OPTION_ROTATE,
     OPTION_USEBIOS,
     OPTION_SHADOW_STATUS,
-    OPTION_VIDEORAM
+    OPTION_VIDEORAM,
+    OPTION_CRT_ONLY,
+    OPTION_TV_ON,
+    OPTION_TV_PAL
 } SavageOpts;
 
 
@@ -202,6 +211,9 @@ static const OptionInfoRec SavageOptions[] =
     { OPTION_LCDCLOCK,	"LCDClock",	OPTV_FREQ,    {0}, FALSE },
     { OPTION_SHADOW_STATUS, "ShadowStatus", OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_VIDEORAM,  "VideoRAM",     OPTV_INTEGER, {0}, FALSE },
+    { OPTION_CRT_ONLY,  "CrtOnly",      OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_TV_ON,     "TvOn",         OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_TV_PAL,    "PAL",          OPTV_BOOLEAN, {0}, FALSE },
     { -1,		NULL,		OPTV_NONE,    {0}, FALSE }
 };
 
@@ -707,6 +719,7 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     else {
         int requiredBpp;
+	int altBpp = 0;
 
 	switch (pScrn->depth) {
 	case 8:
@@ -718,6 +731,7 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 	    break;
 	case 24:
 	    requiredBpp = 32;
+	    altBpp = 24;
 	    break;
 
 	default:
@@ -727,7 +741,10 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 	}
 
-	if( pScrn->bitsPerPixel != requiredBpp ) {
+	if( 
+	    (pScrn->bitsPerPixel != requiredBpp) &&
+	    (pScrn->bitsPerPixel != altBpp) 
+	) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		       "Depth %d must specify %d bpp; %d was given\n",
 		       pScrn->depth, requiredBpp, pScrn->bitsPerPixel );
@@ -827,6 +844,13 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 	psav->NoAccel = TRUE;
     }
 
+    if (pScrn->bitsPerPixel == 24 && !psav->NoAccel) {
+	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		   "HW acceleration not possible with depth 32 and bpp 24.\n");
+	psav->NoAccel = TRUE;
+    }
+
+
     /*
      * The SWCursor setting takes priority over HWCursor.  The default
      * if neither is specified is HW, unless ShadowFB is specified,
@@ -867,6 +891,25 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg( pScrn->scrnIndex, X_CONFIG,
 		    "Option: ShadowStatus enabled\n" );
 
+
+    if( xf86GetOptValBool( psav->Options, OPTION_CRT_ONLY, &psav->CrtOnly))
+	xf86DrvMsg( pScrn->scrnIndex, X_CONFIG,
+		    "Option: CrtOnly enabled\n" );
+
+    if( xf86GetOptValBool( psav->Options, OPTION_TV_ON, &psav->TvOn)) {
+        psav->PAL = FALSE;
+        SavageGetTvMaxSize(psav);
+    }
+
+    if( xf86GetOptValBool( psav->Options, OPTION_TV_PAL, &psav->PAL)) {
+        SavageGetTvMaxSize(psav);
+	psav->TvOn = TRUE;
+    }
+
+    if( psav->TvOn )
+	xf86DrvMsg( pScrn->scrnIndex, X_CONFIG,
+		    "TV enabled in %s format\n",
+		    psav->PAL ? "PAL" : "NTSC" );
 
     /* Add more options here. */
 
@@ -987,7 +1030,7 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 
     psav->MemOffScreen = 0;
 
-    if( psav->pVbe )
+    if( !pScrn->videoRam && psav->pVbe )
     {
         /* If VBE is available, it is the best judge of onboard memory. */
 
@@ -1091,10 +1134,15 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
     }
     else
     {
-        /* We use 128kB for the COB on all chips. */
+	/* We use 128kB for the COB on all chips. */
 
-	psav->cobIndex = 7;
-	psav->cobSize = 0x400 << psav->cobIndex;
+	psav->cobSize = 1 << 17;
+	if (psav->Chipset == S3_SUPERSAVAGE) {
+	    psav->cobIndex = 2;
+	}
+	else {
+	    psav->cobIndex = 7;
+	}
 	psav->cobOffset = psav->videoRambytes - psav->cobSize;
     }
 
@@ -1165,11 +1213,13 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 		if ( xf86LoadSubModule(pScrn, "i2c") ) {
 		    xf86LoaderReqSymLists(i2cSymbols,NULL);
 		    if (SavageI2CInit(pScrn)) {
-			CARD32 temp = (INREG(DDC_REG));
-			OUTREG(DDC_REG,(temp | 0x13));
+			unsigned char tmp;
+
+			InI2CREG(tmp);
+			OutI2CREG(tmp | 0x13);
 			xf86SetDDCproperties(pScrn,xf86PrintEDID(
 			    xf86DoEDID_DDC2(pScrn->scrnIndex,psav->I2C)));
-			OUTREG(DDC_REG,temp);
+			OutI2CREG(tmp);
 		    }
 		}
 	    }
@@ -1223,7 +1273,7 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Check LCD panel information */
 
-    if( S3_SAVAGE_MOBILE_SERIES(psav->Chipset) )
+    if( S3_SAVAGE_MOBILE_SERIES(psav->Chipset) && !psav->CrtOnly )
     {
 	unsigned char cr6b = hwp->readCrtc( hwp, 0x6b );
 
@@ -1633,7 +1683,7 @@ static void SavageWriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr,
     
     TRACE(("SavageWriteMode(%x)\n", restore->mode));
 
-    if( Entering )
+    if( Entering && !S3_SAVAGE_MOBILE_SERIES(psav->Chipset) )
 	SavageInitialize2DEngine(pScrn);
 
     /*
@@ -2286,7 +2336,7 @@ static Bool SavageScreenInit(int scrnIndex, ScreenPtr pScreen,
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "DPMS initialization failed\n");
 
 #ifdef XvExtension
-    if( !psav->NoAccel )
+    if( !psav->NoAccel && !SavagePanningCheck(pScrn) )
 	SavageInitVideo( pScreen );
 #endif
 
@@ -2350,8 +2400,18 @@ static ModeStatus SavageValidMode(int index, DisplayModePtr pMode,
     /* We prohibit modes bigger than the LCD panel. */
     /* TODO We should do this only if the panel is active. */
 
+    if( psav->TvOn )
+    {
+	if( pMode->HDisplay > psav->TVSizeX )
+	    return MODE_VIRTUAL_X;
+
+	if( pMode->VDisplay > psav->TVSizeY )
+	    return MODE_VIRTUAL_Y;
+
+    }
     if( 
-	(psav->PanelX) &&
+	!psav->CrtOnly &&
+	psav->PanelX &&
 	( 
 	    (pMode->HDisplay > psav->PanelX) ||
 	    (pMode->VDisplay > psav->PanelY)
@@ -2454,7 +2514,10 @@ static Bool SavageModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    new->CR67 = 0x40;	/* 16bpp, 1 pixels/clock */
 	break;
     case 24:
-	new->CR67 = 0xd0;
+	if (pScrn->bitsPerPixel == 24 )
+	    new->CR67 = 0x70;
+	else
+	    new->CR67 = 0xd0;
 	break;
     }
 
@@ -3108,13 +3171,21 @@ static unsigned int
 SavageDDC1Read(ScrnInfoPtr pScrn)
 {
     register vgaHWPtr hwp = VGAHWPTR(pScrn);
-    register CARD32 tmp;
+    register unsigned char tmp;
     SavagePtr psav = SAVPTR(pScrn);
+    int vgaCRIndex, vgaCRReg, vgaIOBase;
 
+    vgaHWGetIOBase(hwp);
+    vgaIOBase = hwp->IOBase;
+    vgaCRIndex = vgaIOBase + 4;
+    vgaCRReg = vgaIOBase + 5;
+
+    VerticalRetraceWait();
+
+    InI2CREG(tmp);
     while (hwp->readST01(hwp)&0x8) {};
     while (!(hwp->readST01(hwp)&0x8)) {};
 
-    tmp = (INREG(DDC_REG));
     return ((unsigned int) (tmp & 0x08));
 }
 
@@ -3122,14 +3193,18 @@ static Bool
 SavageDDC1(int scrnIndex)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
     SavagePtr psav = SAVPTR(pScrn);
-    CARD32 tmp;
+    unsigned char tmp;
     Bool success = FALSE;
     xf86MonPtr pMon;
+    int vgaIOBase;
     
     /* initialize chipset */
-    tmp = INREG(DDC_REG);
-    OUTREG(DDC_REG,(tmp | 0x12));
+    vgaHWGetIOBase(hwp);
+    vgaIOBase = hwp->IOBase;
+    InI2CREG(tmp);
+    OutI2CREG(tmp | 0x12);
     
     if ((pMon = xf86PrintEDID(
 	xf86DoEDID_DDC1(scrnIndex,vgaHWddc1SetSpeed,SavageDDC1Read))) != NULL)
@@ -3137,7 +3212,7 @@ SavageDDC1(int scrnIndex)
     xf86SetDDCproperties(pScrn,pMon);
 
     /* undo initialization */
-    OUTREG(DDC_REG,(tmp));
+    OutI2CREG(tmp);
     return success;
 }
 
@@ -3152,4 +3227,35 @@ SavageProbeDDC(ScrnInfoPtr pScrn, int index)
 	vbeFree(pVbe);
     }
 }
+
+
+static void
+SavageGetTvMaxSize(SavagePtr psav)
+{
+    if( psav->PAL ) {
+	psav->TVSizeX = 800;
+	psav->TVSizeY = 600;
+    }
+    else {
+	psav->TVSizeX = 640;
+	psav->TVSizeY = 480;
+    }
+}
+
+
+static Bool
+SavagePanningCheck(ScrnInfoPtr pScrn)
+{
+    SavagePtr psav = SAVPTR(pScrn);
+    DisplayModePtr pMode;
+
+    pMode = pScrn->currentMode;
+    psav->iResX = pMode->CrtcHDisplay;
+    psav->iResY = pMode->CrtcVDisplay;
+    if( psav->iResX < pScrn->virtualX || psav->iResY < pScrn->virtualY )
+	return TRUE;
+    else
+	return FALSE;
+}
+
 
