@@ -1,10 +1,10 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/dixlbx/Imakefile,v 3.0 1994/12/25 12:16:38 dawes Exp $
 
 #define LinkDirectory ../dix
 
 #include "../dix/Imakefile"
 
-EXTRA_DEFINES = -DLBX
+LBXCOMPAT_DEFINES = -DLBX
 
 InstallLinkKitNamedLibrary(dix,dixlbx,$(LINKKITDIR)/lib)
 

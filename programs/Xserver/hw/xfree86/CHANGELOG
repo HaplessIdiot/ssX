@@ -1,3 +1,36 @@
+XFree86 3.1.1h (26 May 1995)
+ 93. Don't initialise the state of the lock keys based on their state
+     prior to server startup.
+ 92. Untested changes in the AGX server for AGX-010 support (Henry Worth).
+ 91. Tested support in the AGX server for the XGA-2 at 8bpp and 16bpp
+     (Henry Worth).
+ 90. 16bpp and 32bpp support for the AGX server (Henry Worth).
+ 89. Additional accelerations for the P9000 server (Henrik Harmsen and
+     Chris Mason).
+ 88. Fix some gamma correction problems in the S3 server (Harald Koenig).
+ 87. More 968/868 fixes, including code to recognise the newer ELSA cards
+     (Harald Koenig).
+ 86. Further VGA16 scrolling fix (Stuart Anderson).
+ 85. Fix problems with some 1MB P9000 cards (Erik Nygren).
+ 84. Swap the black and white pixel values in the SVGA server's default
+     colour map.  This fixes a white line problem with some older
+     VGA Wonder boards (Marc Aurele La France).
+ 83. Move sequencer resets into the driver's SaveScreen function
+     (Marc Aurele La France).
+ 82. vgawonder and ati_test updates (Marc Aurele La France).
+ 81. Handle "crippled" Mach32 and Mach64 chips in SuperProbe and the
+     vgawonder driver (Marc Aurele La France).
+ 80. Distinguish between different types of Mach64 chips in SuperProbe and
+     the vgawonder driver (Marc Aurele La France).
+ 79. Add defines to xf86Version.h for each part of the XFree86
+     version numbers (Marc Aurele La France).
+ 78. LinkKit updates to make it self-contained (Marc Aurele La France).
+ 77. Memleak support for NetBSD, and add UseMemLeak Imake config
+     parameter to allow compiling Xserver/os with memleak (Matthieu Herrb).
+ 76. Update NetBSD aperture driver to support -current loadable kernel
+     modules (Matthieu Herrb).
+ 75. Don't try to do clock doubling for 964 + Bt485 at 32bpp.
+
 XFree86 3.1.1g (7 May 1995)
  74. i386 BSD support for the memleak utility (Jeffrey Hsu).
  73. Fix a scrolling corruption problem with multiple regions in the VGA16
