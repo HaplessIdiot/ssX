@@ -1,4 +1,4 @@
-.\" $TOG: Xvfb.man /main/12 1998/02/10 13:24:06 kaleb $
+.\" $Xorg: Xvfb.man,v 1.3 2000/08/17 19:48:39 cpqbld Exp $
 .\" Copyright 1993, 1998  The Open Group
 .\" 
 .\" All Rights Reserved.
@@ -19,7 +19,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/programs/Xserver/hw/vfb/Xvfb.cpp,v 1.2 2000/12/12 18:06:51 dawes Exp $
 .\"
 .TH XVFB 1 "Release 6.4" "X Version 11"
 .SH NAME

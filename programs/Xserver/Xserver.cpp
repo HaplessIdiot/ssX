@@ -1,4 +1,4 @@
-.\" $TOG: Xserver.man /main/68 1998/02/09 14:12:35 kaleb $
+.\" $Xorg: Xserver.man,v 1.3 2000/08/17 19:47:01 cpqbld Exp $
 .\" Copyright 1984 - 1991, 1993, 1994, 1998  The Open Group
 .\" 
 .\" All Rights Reserved.
@@ -18,7 +18,7 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
-.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.12 1999/03/14 03:21:21 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/Xserver.cpp,v 1.1 2000/12/11 20:29:32 dawes Exp $
 .TH XSERVER 1 "Release 6.4"  "X Version 11"
 .SH NAME
 Xserver \- X Window System display server
