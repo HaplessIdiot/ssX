@@ -1,4 +1,10 @@
 XFree86 4.3.99.13 (xx September 2003)
+ 449. Improve the contrast of the whiteglass xterm cursor, and fix the
+      hotspot of the whiteglass right_ptr cursor and add transparency
+      to it (#5867, René Rebe).
+ 448. Fix a problem with the "pl2" (Polish qwertz) map where the order in
+      which the Alt_R and Shift keys are pressed affects the results
+      (Tom Pala).
  447. In xdm, use better pseudo-random number generators to generate
       magic cookies. Add support for EGD and other compatible entropy
       gathering daemons. (Oswald Buddenhagen from KDE, Matthieu Herrb).
@@ -17738,7 +17744,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2857 2003/09/17 04:03:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2858 2003/09/17 05:48:26 herrb Exp $
 
 
 
