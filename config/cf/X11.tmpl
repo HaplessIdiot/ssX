@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.190 2003/01/04 01:00:37 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.191 2003/01/28 22:06:08 alanh Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -149,6 +149,9 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef BuildBethMarduthoFonts
 #define BuildBethMarduthoFonts	NO
+#endif
+#ifndef BuildEthiopicFonts
+#define BuildEthiopicFonts	NO
 #endif
 #ifndef BuildCyrillicFonts
 #define BuildCyrillicFonts	YES
