@@ -1,4 +1,6 @@
 XFree86 4.3.99.3 (xx April 2003)
+ 108. Fix a server crash with shadowfb and render when refreshing outside the
+      visible screen (Sven Luther).
  107. Fix a potential infinite loop during server generation when in
       Xinerama (Rik Faith).
  106. Fix DRM module build on 2.5.41 and later kernels (tqueue -> workqueue)
@@ -16779,4 +16781,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2640 2003/04/16 15:46:08 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2641 2003/04/16 19:23:01 mvojkovi Exp $
