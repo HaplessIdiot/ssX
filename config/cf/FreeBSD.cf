@@ -2,7 +2,7 @@ XCOMM platform:  $TOG: FreeBSD.cf /main/21 1997/10/05 20:42:34 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.71 1997/11/16 06:17:22 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.72 1998/03/21 04:19:57 dawes Exp $
 
 #ifndef OSName
 #define OSName			DefaultOSName
@@ -138,27 +138,58 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 #endif
 
-#if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 2)
+#if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 2) || \
+    (OSMajorVersion == 2 && OSMinorVersion == 2 && OSTeenyVersion > 2)
 /*
+ * FreeBSD 2.2.5 or later.
+ *
+ * Don't make any assumptions about the version of Tcl in the base OS.
+ * These settings assume that the tcl-7.6 and tk-4.2 packages have been
+ * installed.
+ *
+ * Note the static libs in some versions of the FreeBSD packages are
+ * broken.  The symptom of this is unresolved symbols when linking
+ * XF86Setup.  If you run into this problem, either build your own
+ * static libs from the standard Tcl and Tk source, or change the
+ * definitions of XF86SetupUsesStatic{Tcl,Tk}.  The latter is not
+ * recommended for binaries that are going to be redistributed.
+ */
+#ifndef TkLibName
+#define TkLibName               tk42
+#endif
+#ifndef TkIncDir
+#define TkIncDir                /usr/local/include/tk4.2
+#endif
+#ifndef TclLibName
+#define TclLibName              tcl76
+#endif
+#ifndef TclIncDir
+#define TclIncDir               /usr/local/include/tcl7.6
+#endif
+#else
+#if OSMajorVersion == 2 && OSMinorVersion == 2
+/*
+ * FreeBSD 2.2 prior to 2.2.5
+ *
  * Note: the tk-4.1 package for FreeBSD doesn't have the static lib, so
  * you'll have to build it yourself, or change the definition of
  * XF86SetupUsesStaticTk.
  */
 #ifndef TkLibName
-#define TkLibName		tk41
+#define TkLibName               tk41
 #endif
 #ifndef TclLibName
-#define TclLibName		tcl
+#define TclLibName              tcl
 #endif
 #ifndef TclLibDir
-#define TclLibDir		/usr/lib
+#define TclLibDir               /usr/lib
 #endif
 #ifndef TclIncDir
-#define TclIncDir		/usr/include
+#define TclIncDir               /usr/include
 #endif
 /* FreeBSD 2.2 has libtcl in the base system */
 #ifndef XF86SetupUsesStaticTcl
-#define XF86SetupUsesStaticTcl	NO
+#define XF86SetupUsesStaticTcl  NO
 #endif
 
 #else /* ! 2.2 or later */
@@ -189,6 +220,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define TclLibName		tcl74
 #endif
 
+#endif
 #endif
 #endif
 
