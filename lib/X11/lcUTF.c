@@ -25,7 +25,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
   Author: Hiromu Inukai (inukai@Japan.Sun.COM) SunSoft, inc.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/lcUTF.c,v 3.9 1998/10/21 06:11:59 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUTF.c,v 3.10 1999/05/30 02:28:00 dawes Exp $ */
 
 
 #ifdef X_LOCALE
@@ -154,12 +154,68 @@ static void	init_latin6tab(
     wchar_t
 #endif
 );
+static void	init_latin8tab(
+#if NeedFunctionPrototypes
+    int*,
+    wchar_t
+#endif
+);
 static void	init_latin9tab(
 #if NeedFunctionPrototypes
     int*,
     wchar_t
 #endif
 );
+static void	init_tis620tab(
+#if NeedFunctionPrototypes
+    int*,
+    wchar_t
+#endif
+);
+static void	init_armscii8tab(
+#if NeedFunctionPrototypes
+    int*,
+    wchar_t
+#endif
+);
+static void	init_ibmcp1133tab(
+#if NeedFunctionPrototypes
+    int*,
+    wchar_t
+#endif
+);
+static void	init_mulelao1tab(
+#if NeedFunctionPrototypes
+    int*,
+    wchar_t
+#endif
+);
+static void	init_visciitab(
+#if NeedFunctionPrototypes
+    int*,
+    wchar_t
+#endif
+);
+static void	init_tcvn5712tab(
+#if NeedFunctionPrototypes
+    int*,
+    wchar_t
+#endif
+);
+static void	init_georgianacademytab(
+#if NeedFunctionPrototypes
+    int*,
+    wchar_t
+#endif
+);
+static void	init_georgianpstab(
+#if NeedFunctionPrototypes
+    int*,
+    wchar_t
+#endif
+);
+
+
 static void	init_jis0201tab(
 #if NeedFunctionPrototypes
     int*,
@@ -213,6 +269,8 @@ static XlcUTFDataRec default_utf_data[] =
     {"ISO8859-9", XlcGR, init_latin5tab, latin2rune, N11n_none, 0x20},
     {"ISO8859-10", XlcGL, init_latin6tab, latin2rune, N11n_none, 0x20},
     {"ISO8859-10", XlcGR, init_latin6tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-14", XlcGL, init_latin8tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-14", XlcGR, init_latin8tab, latin2rune, N11n_none, 0x20},
     {"ISO8859-15", XlcGL, init_latin9tab, latin2rune, N11n_none, 0x20},
     {"ISO8859-15", XlcGR, init_latin9tab, latin2rune, N11n_none, 0x20},
     {"JISX0201.1976-0", XlcGL, init_jis0201tab, jis02012rune, N11n_none, 0x20},
@@ -223,10 +281,27 @@ static XlcUTFDataRec default_utf_data[] =
     {"KSC5601.1987-0", XlcGR, init_ksc5601tab, ksc2rune, N11n_ko, 0x2160},
     {"GB2312.1980-0", XlcGL, init_gb2312tab, gb2rune, N11n_zh, 0x2175},
     {"GB2312.1980-0", XlcGR, init_gb2312tab, gb2rune, N11n_zh, 0x2175},
+    {"TIS620.2533-1", XlcGL, init_tis620tab, latin2rune, N11n_none, 0x20},
+    {"TIS620.2533-1", XlcGR, init_tis620rtab, latin2rune, N11n_none, 0x20},
     {"KOI8-R", XlcGL, init_koi8rtab, latin2rune, N11n_none, 0x20},
     {"KOI8-R", XlcGR, init_koi8rtab, latin2rune, N11n_none, 0x20},
     {"KOI8-U", XlcGL, init_koi8utab, latin2rune, N11n_none, 0x20},
     {"KOI8-U", XlcGR, init_koi8utab, latin2rune, N11n_none, 0x20},
+    {"ARMSCII-8", XlcGL, init_armscii8tab, latin2rune, N11n_none, 0x20},
+    {"ARMSCII-8", XlcGR, init_armscii8tab, latin2rune, N11n_none, 0x20},
+    {"IBM-CP1133", XlcGL, init_ibmcp1133tab, latin2rune, N11n_none, 0x20},
+    {"IBM-CP1133", XlcGR, init_ibmcp1133tab, latin2rune, N11n_none, 0x20},
+    {"MULELAO-1", XlcGL, init_mulelao1tab, latin2rune, N11n_none, 0x20},
+    {"MULELAO-1", XlcGR, init_mulelaotab, latin2rune, N11n_none, 0x20},
+    {"VISCII1.1-1", XlcGL, init_visciitab, latin2rune, N11n_none, 0x20},
+    {"VISCII1.1-1", XlcGR, init_visciitab, latin2rune, N11n_none, 0x20},
+    {"TCVN-5712", XlcGL, init_tcvn5712tab, latin2rune, N11n_none, 0x20},
+    {"TCVN-5712", XlcGR, init_tcvn5712tab, latin2rune, N11n_none, 0x20},
+    {"GEORGIAN-ACADEMY", XlcGL, init_georgianacademytab, latin2rune, N11n_none, 0x20},
+    {"GEORGIAN-ACADEMY", XlcGR, init_georgianacademytab, latin2rune, N11n_none, 0x20},
+    {"GEORGIAN-PS", XlcGL, init_georgianpstab, latin2rune, N11n_none, 0x20},
+    {"GEORGIAN-PS", XlcGR, init_georgianpstab, latin2rune, N11n_none, 0x20},
+
 };
 
 
@@ -566,6 +641,20 @@ init_latin6tab(tbl, fb_default)
 
 static void
 #if NeedFunctionPrototypes
+init_latin8tab(
+    int*	tbl,
+    wchar_t	fb_default)
+#else
+init_latin8tab(tbl, fb_default)
+    int*	tbl;
+    wchar_t	fb_default;
+#endif
+{
+    init_8859_tab (tbl, fb_default, tab8859_14);
+}
+
+static void
+#if NeedFunctionPrototypes
 init_latin9tab(
     int*	tbl,
     wchar_t	fb_default)
@@ -576,6 +665,118 @@ init_latin9tab(tbl, fb_default)
 #endif
 {
     init_8859_tab (tbl, fb_default, tab8859_15);
+}
+
+static void
+#if NeedFunctionPrototypes
+init_tis620tab(
+    int*	tbl,
+    wchar_t	fb_default)
+#else
+init_tis620tab(tbl, fb_default)
+    int*	tbl;
+    wchar_t	fb_default;
+#endif
+{
+    init_8859_tab (tbl, fb_default, tabtis620);
+}
+
+static void
+#if NeedFunctionPrototypes
+init_armscii8tab(
+    int*	tbl,
+    wchar_t	fb_default)
+#else
+init_armscii8tab(tbl, fb_default)
+    int*	tbl;
+    wchar_t	fb_default;
+#endif
+{
+    init_8859_tab (tbl, fb_default, tabarmscii_8);
+}
+
+static void
+#if NeedFunctionPrototypes
+init_ibmcp1133tab(
+    int*	tbl,
+    wchar_t	fb_default)
+#else
+init_ibmcp1133tab(tbl, fb_default)
+    int*	tbl;
+    wchar_t	fb_default;
+#endif
+{
+    init_8859_tab (tbl, fb_default, tabibm_cp1133);
+}
+
+static void
+#if NeedFunctionPrototypes
+init_mulelao1tab(
+    int*	tbl,
+    wchar_t	fb_default)
+#else
+init_mulelao1tab(tbl, fb_default)
+    int*	tbl;
+    wchar_t	fb_default;
+#endif
+{
+    init_8859_tab (tbl, fb_default, tabmulelao_1);
+}
+
+static void
+#if NeedFunctionPrototypes
+init_visciitab(
+    int*	tbl,
+    wchar_t	fb_default)
+#else
+init_visciitab(tbl, fb_default)
+    int*	tbl;
+    wchar_t	fb_default;
+#endif
+{
+    init_8859_tab (tbl, fb_default, tabviscii);
+}
+
+static void
+#if NeedFunctionPrototypes
+init_tcvn5712tab(
+    int*	tbl,
+    wchar_t	fb_default)
+#else
+init_tcvn5712tab(tbl, fb_default)
+    int*	tbl;
+    wchar_t	fb_default;
+#endif
+{
+    init_8859_tab (tbl, fb_default, tabtcvn);
+}
+
+static void
+#if NeedFunctionPrototypes
+init_georgianacademytab(
+    int*	tbl,
+    wchar_t	fb_default)
+#else
+init_georgianacademytab(tbl, fb_default)
+    int*	tbl;
+    wchar_t	fb_default;
+#endif
+{
+    init_8859_tab (tbl, fb_default, tabgeorgian_academy);
+}
+
+static void
+#if NeedFunctionPrototypes
+init_georgianpstab(
+    int*	tbl,
+    wchar_t	fb_default)
+#else
+init_georgianpstab(tbl, fb_default)
+    int*	tbl;
+    wchar_t	fb_default;
+#endif
+{
+    init_8859_tab (tbl, fb_default, tabgeorgian_ps);
 }
 
 static void

@@ -31,7 +31,7 @@
  * Modifier: Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/lcCT.c,v 3.11 1999/05/09 10:50:38 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcCT.c,v 3.12 1999/05/30 02:27:59 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
@@ -96,6 +96,14 @@ static CTDataRec default_ct_data[] =
     { "KOI8-R:GR", "\033%/1\200\210koi8-r\002"},
     { "KOI8-U:GR", "\033%/1\200\211koi8-u\002"},
     { "ISO8859-15:GR", "\033%/1\200\213iso8859-15\002"},
+    { "ARMSCII-8:GR", "\033%/1\200\210armscii-8\002"},
+    { "ISO8859-14:GR", "\033%/1\200\213iso8859-14\002"},
+    { "IBM-CP1133:GR", "\033%/1\200\210ibm-cp1133\002"},
+    { "MULELAO-1:GR", "\033%/1\200\210mulelao-1\002"},
+    { "VISCII1.1-1:GR", "\033%/1\200\210viscii1.1-1\002"},
+    { "TCVN-5712:GR", "\033%/1\200\210tcvn-5712\002"},
+    { "GEORGIAN-ACADEMY:GR", "\033%/1\200\210georgian-academy\002"},
+    { "GEORGIAN-PS:GR", "\033%/1\200\210georgian-ps\002"},
 } ; 
 
 #define XctC0		0x0000
@@ -324,6 +332,7 @@ _XlcParseCT(parse, text, length)
 done:
     *length -= (char *) str - *text;
     *text = (char *) str;
+
     return ret;
 }
 

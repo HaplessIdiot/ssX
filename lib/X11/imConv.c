@@ -31,7 +31,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                 fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imConv.c,v 1.15 1999/05/09 10:50:30 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imConv.c,v 1.16 1999/05/30 02:27:58 dawes Exp $ */
 
 #define NEED_EVENTS
 #include <stdio.h>
@@ -115,7 +115,7 @@ unsigned char _Xcyrillic[] = {
 };
 
 /* maps Cyrillic keysyms to KOI8-R */
-unsigned char _Xkoi8[] =
+unsigned char _Xkoi8_r[] =
    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -133,11 +133,8 @@ unsigned char _Xkoi8[] =
     0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, /* 15 */
     0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff};
 
-unsigned short _Xkoi8_size = sizeof _Xkoi8;
-
-
 /* maps Cyrillic keysyms to KOI8-U */
-unsigned char _Xkoi8u[] =
+unsigned char _Xkoi8_u[] =
    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -155,7 +152,7 @@ unsigned char _Xkoi8u[] =
     0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, /* 15 */
     0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff};
 
-unsigned short _Xkoi8u_size = sizeof _Xkoi8u;
+unsigned short _Xkoi8_size = sizeof _Xkoi8_r;
 
 /* maps Greek keysyms to 8859-7 */
 unsigned char _Xgreek[] = {
@@ -417,8 +414,8 @@ struct CodesetRec {
 #define sX0201  0x01000004L
 #define sArabic	5L
 #define sCyrillic	6L
-#define sKoi8	0x01000006L
-#define sKoi8u	0x02000006L
+#define sKoi8_r	0x01000006L
+#define sKoi8_u	0x02000006L
 #define sGreek	7L
 #define sHebrew	12L
 #define sThai	13L
@@ -428,6 +425,9 @@ struct CodesetRec {
 #define sLatin7	17L
 #define sLatin8	18L
 #define sLatin9	19L
+#define sArmenian 20L
+#define sGeorgian 21L
+#define sGeorgianPS 0x01000021L
 #define sCurrency 32L
 #define sUTF8	0x02000000L
 
@@ -445,6 +445,7 @@ static struct CodesetRec CodesetTable[] = {
     {sThai,	"TACTIS",	"\033-T"},
     {sKorean,	"ko.euc",	"\033$(C"},
     {sThai,	"ISO8859-11",	"\033-T"},
+    {sThai,	"TIS620.2533-1", "\033-T"},
 #if 0
     {sLatin8,	"ISO8859-12",	"\033-?"},/* Celtic, superceded by -14 */
     {sLatin7,	"ISO8859-13",	"\033-?"},/* Baltic Rim */
@@ -452,9 +453,18 @@ static struct CodesetRec CodesetTable[] = {
 #endif
     {sUTF8,	"utf8",		"\033%B"},
     /* Non-standard */
-    {sKoi8,	"KOI8-R", "\033%/1\200\210koi8-r\002"},
-    {sKoi8u,	"KOI8-U", "\033%/1\200\211koi8-u\002"},
+    {sKoi8_r,	"KOI8-R", "\033%/1\200\210koi8-r\002"},
+    {sKoi8_u,	"KOI8-U", "\033%/1\200\211koi8-u\002"},
     {sLatin9,	"ISO8859-15",	"\033%/1\200\213iso8859-15\002"},/* a.k.a. Latin-0 */
+    {sArmenian,	"ARMSCII-8", "\033%/1\200\210armscii-8\002"},
+    {sGeorgian,	"GEORGIAN-ACADEMY", "\033%/1\200\210georgian-academy\002"},
+    {sGeorgian,	"GEORGIAN-PS", "\033%/1\200\210georgian-ps\002"},
+	/* TODO find better values for the sLatin1 below */
+    {sLatin1,	"IBM-CP1133", "\033%/1\200\210ibm-cp1133\002"},
+    {sLatin1,	"MULELAO-1", "\033%/1\200\210mulelao-1\002"},
+    {sLatin1,	"VISCII1.1-1", "\033%/1\200\210viscii1.1-1\002"},
+    {sLatin1,	"TCVN-5712", "\033%/1\200\210tcvn-5712\002"},
+
 };
 
 #define NUM_CODESETS sizeof CodesetTable / sizeof CodesetTable[0]
@@ -643,10 +653,10 @@ _XGetCharCode (locale_code, keysym, buf, nbytes)
 		count = 0;
 	    break;
 	case sCyrillic:
-	    if (locale_code == sKoi8)
-		*buf = _Xkoi8[keysym & 0x7f];
-	    else if  (locale_code == sKoi8u)
-		*buf = _Xkoi8u[keysym & 0x7f];
+	    if (locale_code == sKoi8_r)
+		*buf = _Xkoi8_r[keysym & 0x7f];
+	    else if (locale_code == sKoi8_u)
+		*buf = _Xkoi8_u[keysym & 0x7f];
 	    else
 		*buf = _Xcyrillic[keysym & 0x7f];
 	    break;

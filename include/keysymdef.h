@@ -43,7 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/include/keysymdef.h,v 1.6 1999/05/30 15:28:18 dawes Exp $ */
 
 #define XK_VoidSymbol		0xFFFFFF	/* void symbol */
 
@@ -910,6 +910,8 @@ SOFTWARE.
  * Byte 3 = 6
  */
 #ifdef XK_CYRILLIC
+#define XK_Ukrainian_ghe_with_upturn                   0x681
+#define XK_Ukrainian_GHE_with_upturn                   0x682
 #define XK_Serbian_dje                                 0x6a1
 #define XK_Macedonia_gje                               0x6a2
 #define XK_Cyrillic_io                                 0x6a3
@@ -1580,6 +1582,163 @@ SOFTWARE.
 #define XK_Korean_Won					0xeff
 
 #endif /* XK_KOREAN */
+
+/*
+ *   Armenian
+ *   Byte 3 = 0x14
+ */
+
+#ifdef XK_ARMENIAN
+#define XK_Armenian_eternity				0x14a1
+#define XK_Armenian_section_sign			0x14a2
+#define XK_Armenian_full_stop				0x14a3
+#define XK_Armenian_verjaket				0x14a3
+#define XK_Armenian_parenright				0x14a4
+#define XK_Armenian_parenleft				0x14a5
+#define XK_Armenian_guillemotright			0x14a6
+#define XK_Armenian_guillemotleft			0x14a7
+#define XK_Armenian_em_dash				0x14a8
+#define XK_Armenian_dot					0x14a9
+#define XK_Armenian_mijaket				0x14a9
+#define XK_Armenian_separation_mark			0x14aa
+#define XK_Armenian_but					0x14aa
+#define XK_Armenian_comma				0x14ab
+#define XK_Armenian_en_dash				0x14ac
+#define XK_Armenian_hyphen				0x14ad
+#define XK_Armenian_yentamna				0x14ad
+#define XK_Armenian_ellipsis				0x14ae
+#define XK_Armenian_exclam				0x14af
+#define XK_Armenian_amanak				0x14af
+#define XK_Armenian_accent				0x14b0
+#define XK_Armenian_shesht				0x14b0
+#define XK_Armenian_question				0x14b1
+#define XK_Armenian_paruyk				0x14b1
+#define XK_Armenian_AYB					0x14b2
+#define XK_Armenian_ayb					0x14b3
+#define XK_Armenian_BEN					0x14b4
+#define XK_Armenian_ben					0x14b5
+#define XK_Armenian_GIM					0x14b6
+#define XK_Armenian_gim					0x14b7
+#define XK_Armenian_DA					0x14b8
+#define XK_Armenian_da					0x14b9
+#define XK_Armenian_YECH				0x14ba
+#define XK_Armenian_yech				0x14bb
+#define XK_Armenian_ZA					0x14bc
+#define XK_Armenian_za					0x14bd
+#define XK_Armenian_E					0x14be
+#define XK_Armenian_e					0x14bf
+#define XK_Armenian_AT					0x14c0
+#define XK_Armenian_at					0x14c1
+#define XK_Armenian_TO					0x14c2
+#define XK_Armenian_to					0x14c3
+#define XK_Armenian_ZHE					0x14c4
+#define XK_Armenian_zhe					0x14c5
+#define XK_Armenian_INI					0x14c6
+#define XK_Armenian_ini					0x14c7
+#define XK_Armenian_LYUN				0x14c8
+#define XK_Armenian_lyun				0x14c9
+#define XK_Armenian_KHE					0x14ca
+#define XK_Armenian_khe					0x14cb
+#define XK_Armenian_TSA					0x14cc
+#define XK_Armenian_tsa					0x14cd
+#define XK_Armenian_KEN					0x14ce
+#define XK_Armenian_ken					0x14cf
+#define XK_Armenian_HO					0x14d0
+#define XK_Armenian_ho					0x14d1
+#define XK_Armenian_DZA					0x14d2
+#define XK_Armenian_dza					0x14d3
+#define XK_Armenian_GHAT				0x14d4
+#define XK_Armenian_ghat				0x14d5
+#define XK_Armenian_TCHE				0x14d6
+#define XK_Armenian_tche				0x14d7
+#define XK_Armenian_MEN					0x14d8
+#define XK_Armenian_men					0x14d9
+#define XK_Armenian_HI					0x14da
+#define XK_Armenian_hi					0x14db
+#define XK_Armenian_NU					0x14dc
+#define XK_Armenian_nu					0x14dd
+#define XK_Armenian_SHA					0x14de
+#define XK_Armenian_sha					0x14df
+#define XK_Armenian_VO					0x14e0
+#define XK_Armenian_vo					0x14e1
+#define XK_Armenian_CHA					0x14e2
+#define XK_Armenian_cha					0x14e3
+#define XK_Armenian_PE					0x14e4
+#define XK_Armenian_pe					0x14e5
+#define XK_Armenian_JE					0x14e6
+#define XK_Armenian_je					0x14e7
+#define XK_Armenian_RA					0x14e8
+#define XK_Armenian_ra					0x14e9
+#define XK_Armenian_SE					0x14ea
+#define XK_Armenian_se					0x14eb
+#define XK_Armenian_VEV					0x14ec
+#define XK_Armenian_vev					0x14ed
+#define XK_Armenian_TYUN				0x14ee
+#define XK_Armenian_tyun				0x14ef
+#define XK_Armenian_RE					0x14f0
+#define XK_Armenian_re					0x14f1
+#define XK_Armenian_TSO					0x14f2
+#define XK_Armenian_tso					0x14f3
+#define XK_Armenian_VYUN				0x14f4
+#define XK_Armenian_vyun				0x14f5
+#define XK_Armenian_PYUR				0x14f6
+#define XK_Armenian_pyur				0x14f7
+#define XK_Armenian_KE					0x14f8
+#define XK_Armenian_ke					0x14f9
+#define XK_Armenian_O					0x14fa
+#define XK_Armenian_o					0x14fb
+#define XK_Armenian_FE					0x14fc
+#define XK_Armenian_fe					0x14fd
+#define XK_Armenian_apostrophe				0x14fe
+#define XK_Armenian_ligature_ew				0x14ff
+#endif /* XK_ARMENIAN */
+
+/*
+ *   Georgian
+ *   Byte 3 = 0x15
+ */
+
+#ifdef XK_GEORGIAN
+#define XK_Georgian_an					0x15d0
+#define XK_Georgian_ban					0x15d1
+#define XK_Georgian_gan					0x15d2
+#define XK_Georgian_don					0x15d3
+#define XK_Georgian_en					0x15d4
+#define XK_Georgian_vin					0x15d5
+#define XK_Georgian_zen					0x15d6
+#define XK_Georgian_tan					0x15d7
+#define XK_Georgian_in					0x15d8
+#define XK_Georgian_kan					0x15d9
+#define XK_Georgian_las					0x15da
+#define XK_Georgian_man					0x15db
+#define XK_Georgian_nar					0x15dc
+#define XK_Georgian_on					0x15dd
+#define XK_Georgian_par					0x15de
+#define XK_Georgian_zhar				0x15df
+#define XK_Georgian_rae					0x15e0
+#define XK_Georgian_san					0x15e1
+#define XK_Georgian_tar					0x15e2
+#define XK_Georgian_un					0x15e3
+#define XK_Georgian_phar				0x15e4
+#define XK_Georgian_khar				0x15e5
+#define XK_Georgian_ghan				0x15e6
+#define XK_Georgian_qar					0x15e7
+#define XK_Georgian_shin				0x15e8
+#define XK_Georgian_chin				0x15e9
+#define XK_Georgian_can					0x15ea
+#define XK_Georgian_jil					0x15eb
+#define XK_Georgian_cil					0x15ec
+#define XK_Georgian_char				0x15ed
+#define XK_Georgian_xan					0x15ee
+#define XK_Georgian_jhan				0x15ef
+#define XK_Georgian_hae					0x15f0
+#define XK_Georgian_he					0x15f1
+#define XK_Georgian_hie					0x15f2
+#define XK_Georgian_we					0x15f3
+#define XK_Georgian_har					0x15f4
+#define XK_Georgian_hoe					0x15f5
+#define XK_Georgian_fi					0x15f6
+#endif /* XK_GEORGIAN */
 
 #ifdef XK_CURRENCY
 #define XK_EcuSign					0x20a0

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.18 1999/05/09 10:50:23 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.19 1999/05/30 02:27:58 dawes Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -71,16 +71,12 @@ extern unsigned int _Xlatin1[];
 extern unsigned int _Xlatin2[];
 
 /* maps Cyrillic keysyms to KOI8-R */
-extern unsigned char _Xkoi8[];
-
-extern unsigned short _Xkoi8_size;
-
+extern unsigned char _Xkoi8_r[];
 
 /* maps Cyrillic keysyms to KOI8-U */
-extern unsigned char _Xkoi8u[];
+extern unsigned char _Xkoi8_u[];
 
-extern unsigned short _Xkoi8u_size;
-
+extern unsigned short _Xkoi8_size;
 
 #define sLatin1         0
 #define sLatin2         1
@@ -100,6 +96,8 @@ extern unsigned short _Xkoi8u_size;
 #define sLatin7		17
 #define sLatin8		18
 #define sLatin9		19
+#define sArmenian 	20
+#define sGeorgian 	21
 #define sCurrency	32
 
 
@@ -116,6 +114,8 @@ static unsigned long	WantCyrillic = sCyrillic;
 static unsigned long	WantGreek = sGreek;
 static unsigned long	WantAPL = sAPL;
 static unsigned long	WantHebrew = sHebrew;
+static unsigned long	WantArmenian = sArmenian;
+static unsigned long	WantGeorgian = sGeorgian;
 
 static int 
 #if NeedFunctionPrototypes
@@ -326,7 +326,7 @@ __XkbDefaultToUpper(sym)
 }
 
 static int
-_XkbKSToKoi8 (priv, keysym, buffer, nbytes, status)
+_XkbKSToKoi8_r (priv, keysym, buffer, nbytes, status)
     XPointer priv;
     KeySym keysym;
     char *buffer;
@@ -340,7 +340,7 @@ _XkbKSToKoi8 (priv, keysym, buffer, nbytes, status)
 	if (nbytes>0) {
 	    if ( (keysym&0x80)==0 )
 		 buffer[0] = keysym&0x7f;
-	    else buffer[0] = _Xkoi8[keysym & 0x7f];
+	    else buffer[0] = _Xkoi8_r[keysym & 0x7f];
 	    if (nbytes>1)
 		buffer[1]= '\0';
 	    return 1;
@@ -350,7 +350,7 @@ _XkbKSToKoi8 (priv, keysym, buffer, nbytes, status)
 }
 
 static KeySym
-_XkbKoi8ToKS(priv,buffer,nbytes,status)
+_XkbKoi8_rToKS(priv,buffer,nbytes,status)
     XPointer priv;
     char *buffer;
     int nbytes;
@@ -363,7 +363,7 @@ _XkbKoi8ToKS(priv,buffer,nbytes,status)
     else if ((buffer[0]&0x7f)>=32) {
 	register int i;
 	for (i=0;i<_Xkoi8_size;i++) {
-	    if (_Xkoi8[i]==buffer[0])
+	    if (_Xkoi8_r[i]==buffer[0])
 		return 0x680|i;
 	}
     }
@@ -371,7 +371,7 @@ _XkbKoi8ToKS(priv,buffer,nbytes,status)
 }
 
 /***========================KOI8-U======================================***/
-static int _XkbKSToKoi8U (priv, keysym, buffer, nbytes, status)
+static int _XkbKSToKoi8_u (priv, keysym, buffer, nbytes, status)
     XPointer priv;
     KeySym keysym;
     char *buffer;
@@ -385,7 +385,7 @@ static int _XkbKSToKoi8U (priv, keysym, buffer, nbytes, status)
 	if (nbytes>0) {
 	    if ( (keysym&0x80)==0 )
 		 buffer[0] = keysym&0x7f;
-	    else buffer[0] = _Xkoi8u[keysym & 0x7f];
+	    else buffer[0] = _Xkoi8_u[keysym & 0x7f];
 	    if (nbytes>1)
 		buffer[1]= '\0';
 	    return 1;
@@ -395,7 +395,7 @@ static int _XkbKSToKoi8U (priv, keysym, buffer, nbytes, status)
 }
 
 static KeySym
-_XkbKoi8UToKS(priv,buffer,nbytes,status)
+_XkbKoi8_uToKS(priv,buffer,nbytes,status)
     XPointer priv;
     char *buffer;
     int nbytes;
@@ -407,8 +407,8 @@ _XkbKoi8UToKS(priv,buffer,nbytes,status)
         return buffer[0];
     else if ((buffer[0]&0x7f)>=32) {
 	register int i;
-	for (i=0;i<_Xkoi8u_size;i++) {
-	    if (_Xkoi8u[i]==buffer[0])
+	for (i=0;i<_Xkoi8_size;i++) {
+	    if (_Xkoi8_u[i]==buffer[0])
 		return 0x680|i;
 	}
     }
@@ -481,12 +481,12 @@ static XkbConverters    cvt_Thai = {
         _XkbKSToThai, NULL, _XkbThaiToKS, NULL, NULL
 };
 
-static XkbConverters    cvt_Koi8 = {
-        _XkbKSToKoi8, NULL, _XkbKoi8ToKS, NULL, NULL
+static XkbConverters    cvt_Koi8_r = {
+        _XkbKSToKoi8_r, NULL, _XkbKoi8_rToKS, NULL, NULL
 };
 
-static XkbConverters    cvt_Koi8u = {
-        _XkbKSToKoi8U, NULL, _XkbKoi8UToKS, NULL, NULL
+static XkbConverters    cvt_Koi8_u = {
+        _XkbKSToKoi8_u, NULL, _XkbKoi8_uToKS, NULL, NULL
 };
 
 static int
@@ -568,9 +568,9 @@ _XkbGetConverters(encoding_name, cvt_rtrn)
 		 (Strcmp(encoding_name, "tis620.2533-1")==0))
 	     *cvt_rtrn = cvt_Thai;
 	else if (Strcmp(encoding_name, "koi8-r")==0)
-	     *cvt_rtrn = cvt_Koi8;
-	else if (Strcmp(encoding_name, "koi8-u")==0)
-	     *cvt_rtrn = cvt_Koi8u;
+	     *cvt_rtrn = cvt_Koi8_r;
+        else if (Strcmp(encoding_name, "koi8-u")==0)
+	     *cvt_rtrn = cvt_Koi8_u;
 	/* other codesets go here */
 	else *cvt_rtrn = cvt_latin1;
 	return 1;
@@ -595,7 +595,7 @@ _XkbGetConverters(encoding_name, cvt_rtrn)
  */
 
 #define	CHARSET_FILE	"/usr/lib/X11/input/charsets"
-static char *_XkbKnownLanguages = "c=ascii:da,de,en,es,fi,fr,is,it,nl,no,pt,sv=iso8859-1:hu,pl,cs=iso8859-2:bg,ru=iso8859-5:ar,ara=iso8859-6:el=iso8859-7:th,th_TH,th_TH.TACTIS=tactis";
+static char *_XkbKnownLanguages = "c=ascii:da,de,en,es,fi,fr,is,it,nl,no,pt,sv=iso8859-1:hu,pl,cs=iso8859-2:eo=iso8859-3:lt,lv,ee=iso8859-4:bg,sr=iso8859-5:ar,ara=iso8859-6:el=iso8859-7:he=iso8859-8:tr=iso8859-9:ru=koi8-r:uk=koi8-u:th,th_TH,th_TH.TACTIS=tactis:hy=armscii-8:vi=tcvn-5712:ka=georgian-academy";
 
 char	*
 _XkbGetCharset()
