@@ -1,24 +1,24 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/sunleo.cpp,v 1.1 2000/05/18 23:21:41 dawes Exp $ 
+.\" $XFree86:$ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
-.TH SUNLEO __drivermansuffix__ "Version 4.0"  "XFree86"
+.TH SUNCG6 __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
-sunleo \- Leo video driver
+suncg6 \- GX/Turbo GX video driver
 .SH SYNOPSIS
 .nf
 .B "Section \*qDevice\*q"
 .BI "  Identifier \*q"  devname \*q
-.B  "  Driver \*qsunleo\*q"
+.B  "  Driver \*qsuncg6\*q"
 \ \ ...
 .B EndSection
 .fi
 .SH DESCRIPTION
-.B leo
-is an XFree86 driver for Sun Leo (ZX) video cards.
+.B suncg6
+is an XFree86 driver for Sun GX and Turbo GX (also known as cgsix) video cards.
 THIS MAN PAGE NEEDS TO BE FILLED IN.
 .SH SUPPORTED HARDWARE
 The
-.B leo
+.B suncg6
 driver supports...
 .SH CONFIGURATION DETAILS
 Please refer to XF86Config(__filemansuffix__) for general configuration

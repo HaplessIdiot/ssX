@@ -23,9 +23,7 @@
  * IN THE SOFTWARE.
  *
  */
-/* $XFree86$ */
-
-#define PSZ 32
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_plygon.c,v 1.1 2000/05/18 23:21:37 dawes Exp $ */
 
 #include "ffb.h"
 #include "ffb_regs.h"
@@ -36,12 +34,17 @@
 #include "pixmapstr.h"
 #include "scrnintstr.h"
 
+#define PSZ 8
 #include "cfb.h"
+#undef PSZ
+#include "cfb32.h"
+
 #include "mi.h"
 
 void
 CreatorFillPolygon (DrawablePtr pDrawable, GCPtr pGC, int shape, int mode, int count, DDXPointPtr ppt)
 {
+	WindowPtr pWin = (WindowPtr) pDrawable;
 	CreatorPrivGCPtr gcPriv = CreatorGetGCPrivate (pGC);
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN (pGC->pScreen);
 	ffb_fbcPtr ffb = pFfb->regs;
@@ -117,20 +120,19 @@ CreatorFillPolygon (DrawablePtr pDrawable, GCPtr pGC, int shape, int mode, int c
 		return;
 	}
 	if(gcPriv->stipple == NULL) {
-		FFB_WRITE_ATTRIBUTES(pFfb,
-				     FFB_PPC_FW_DISABLE|FFB_PPC_VCE_DISABLE|FFB_PPC_APE_DISABLE|FFB_PPC_CS_CONST,
-				     FFB_PPC_FW_MASK|FFB_PPC_VCE_MASK|FFB_PPC_APE_MASK|FFB_PPC_CS_MASK,
-				     pGC->planemask,
-				     FFB_ROP_EDIT_BIT|pGC->alu,
-				     FFB_DRAWOP_POLYGON, pGC->fgPixel,
-				     FFB_FBC_DEFAULT);
+		FFB_ATTR_GC(pFfb, pGC, pWin,
+			    FFB_PPC_APE_DISABLE | FFB_PPC_CS_CONST,
+			    FFB_DRAWOP_POLYGON);
 	} else {
+		unsigned int fbc;
+
 		FFBSetStipple(pFfb, ffb, gcPriv->stipple,
-			      FFB_PPC_FW_DISABLE|FFB_PPC_VCE_DISABLE|FFB_PPC_CS_CONST,
-			      FFB_PPC_FW_MASK|FFB_PPC_VCE_MASK|FFB_PPC_CS_MASK);
+			      FFB_PPC_CS_CONST, FFB_PPC_CS_MASK);
 		FFB_WRITE_PMASK(pFfb, ffb, pGC->planemask);
 		FFB_WRITE_DRAWOP(pFfb, ffb, FFB_DRAWOP_POLYGON);
-		FFB_WRITE_FBC(pFfb, ffb, FFB_FBC_DEFAULT);
+		fbc = FFB_FBC_WIN(pWin);
+		fbc = (fbc & ~FFB_FBC_XE_MASK) | FFB_FBC_XE_OFF;
+		FFB_WRITE_FBC(pFfb, ffb, fbc);
 	}	
 	xy[0] = ppt[t].y;
 	xy[1] = ppt[t].x;

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/Imakefile,v 1.1 1999/04/04 07:03:23 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/Imakefile,v 1.2 1999/08/14 10:50:00 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -20,6 +20,11 @@ ModuleObjectRule()
 ObjectModuleTarget($(DRIVER),$(OBJS))
 
 InstallObjectModule($(DRIVER),$(MODULEDIR),input)
+
+#if !defined(XF86DriverSDK)
+CppManTarget($(DRIVER),)
+InstallModuleManPage($(DRIVER))
+#endif
 
 DependTarget()
 

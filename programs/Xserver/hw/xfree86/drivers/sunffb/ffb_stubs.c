@@ -22,9 +22,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86$ */
-
-#define PSZ 32
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_stubs.c,v 1.1 2000/05/18 23:21:38 dawes Exp $ */
 
 #include "ffb.h"
 #include "ffb_regs.h"
@@ -34,9 +32,19 @@
 #include "pixmapstr.h"
 #include "scrnintstr.h"
 
+#define PSZ 8
 #include "cfb.h"
-#include "cfbmskbits.h"
+#undef PSZ
+#include "cfb32.h"
 
+/* CFB is just too clever for it's own good.  There are paths
+ * in cfb for 8bpp that just arbitrarily change the ROP of the
+ * GC and assume it just works even without revalidating that
+ * GC.  So for now we turn this stuff off.  -DaveM
+ */
+#undef USE_SFB_TRICKS
+
+#ifdef USE_SFB_TRICKS
 /* Sorry, have to expose some CFB internals to get the stubs right. -DaveM */
 struct cfb_gcstate {
 	unsigned long pmask;
@@ -61,11 +69,12 @@ do {	(__gcp)->planemask = (__statep)->pmask; \
 
 #define CFB_STATE_SET_SFB(__gcp, __privp) \
 do {	(__gcp)->alu = GXcopy; \
-	(__gcp)->planemask = PMSK; \
+	(__gcp)->planemask = (((__gcp)->depth==8)?0xff:0xffffff); \
 	(__privp)->rop = GXcopy; \
 	(__privp)->and = 0; \
 	(__privp)->xor = (__gcp)->fgPixel; \
 } while(0)
+#endif
 
 /* Stubs so we can wait for the raster processor to
  * unbusy itself before we let the cfb code write
@@ -76,84 +85,169 @@ CreatorSolidSpansGeneralStub (DrawablePtr pDrawable, GCPtr pGC,
 			      int nInit, DDXPointPtr pptInit,
 			      int *pwidthInit, int fSorted)
 {
+	WindowPtr pWin = (WindowPtr) pDrawable;
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN (pDrawable->pScreen);
 	ffb_fbcPtr ffb = pFfb->regs;
 
 	FFBLOG(("STUB(%s:%d)\n", __FILE__, __LINE__));
-	FFB_WRITE_ATTRIBUTES_SFB_VAR(pFfb, 0xffffffff, pGC->alu);
+	FFB_ATTR_SFB_VAR_WIN(pFfb, 0xffffffff, GXcopy, pWin);
 	FFBWait(pFfb, ffb);
-	cfbSolidSpansCopy(pDrawable, pGC, nInit, pptInit,
-			  pwidthInit, fSorted);
+	if (pGC->depth == 8)
+		cfbSolidSpansGeneral(pDrawable, pGC, nInit, pptInit,
+				     pwidthInit, fSorted);
+	else
+		cfb32SolidSpansGeneral(pDrawable, pGC, nInit, pptInit,
+				       pwidthInit, fSorted);
 }
 
 void
 CreatorSegmentSSStub (DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSeg)
 {
+	WindowPtr pWin = (WindowPtr) pDrawable;
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN (pDrawable->pScreen);
 	ffb_fbcPtr ffb = pFfb->regs;
-	struct cfb_gcstate cfb_state;
 	cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
+#ifdef USE_SFB_TRICKS
+	struct cfb_gcstate cfb_state;
+#endif
 
 	FFBLOG(("STUB(%s:%d)\n", __FILE__, __LINE__));
+#ifndef USE_SFB_TRICKS
+	FFB_ATTR_SFB_VAR_WIN(pFfb, 0xffffffff, GXcopy, pWin);
+	FFBWait(pFfb, ffb);
+	if (pGC->depth == 8) {
+		if (devPriv->oneRect &&
+		    ((pDrawable->x >= pGC->pScreen->width - 32768) &&
+		     (pDrawable->y >= pGC->pScreen->height - 32768)))
+			cfb8SegmentSS1Rect(pDrawable, pGC, nseg, pSeg);
+		else
+			cfbSegmentSS(pDrawable, pGC, nseg, pSeg);
+	} else
+		cfb32SegmentSS(pDrawable, pGC, nseg, pSeg);
+#else
 	CFB_STATE_SAVE(&cfb_state, pGC, devPriv);
-	FFB_WRITE_ATTRIBUTES_SFB_VAR(pFfb, cfb_state.pmask, cfb_state.alu);
+	FFB_ATTR_SFB_VAR_WIN(pFfb, cfb_state.pmask, cfb_state.alu, pWin);
 	FFBWait(pFfb, ffb);
 	CFB_STATE_SET_SFB(pGC, devPriv);
-	cfbSegmentSS(pDrawable, pGC, nseg, pSeg);
+	if (pGC->depth == 8) {
+		if (devPriv->oneRect &&
+		    ((pDrawable->x >= pGC->pScreen->width - 32768) &&
+		     (pDrawable->y >= pGC->pScreen->height - 32768)))
+			cfb8SegmentSS1Rect(pDrawable, pGC, nseg, pSeg);
+		else
+			cfbSegmentSS(pDrawable, pGC, nseg, pSeg);
+	} else
+		cfb32SegmentSS(pDrawable, pGC, nseg, pSeg);
 	CFB_STATE_RESTORE(&cfb_state, pGC, devPriv);
+#endif
 }
 
 void
 CreatorLineSSStub (DrawablePtr pDrawable, GCPtr pGC,
 		   int mode, int npt, DDXPointPtr ppt)
 {
+	WindowPtr pWin = (WindowPtr) pDrawable;
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN (pDrawable->pScreen);
 	ffb_fbcPtr ffb = pFfb->regs;
-	struct cfb_gcstate cfb_state;
 	cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
+#ifdef USE_SFB_TRICKS
+	struct cfb_gcstate cfb_state;
+#endif
 
 	FFBLOG(("STUB(%s:%d)\n", __FILE__, __LINE__));
+#ifndef USE_SFB_TRICKS
+	FFB_ATTR_SFB_VAR_WIN(pFfb, 0xffffffff, GXcopy, pWin);
+	FFBWait(pFfb, ffb);
+	if (pGC->depth == 8) {
+		if (devPriv->oneRect &&
+		    ((pDrawable->x >= pGC->pScreen->width - 32768) &&
+		     (pDrawable->y >= pGC->pScreen->height - 32768)))
+			cfb8LineSS1Rect(pDrawable, pGC, mode, npt, ppt);
+		else
+			cfbLineSS(pDrawable, pGC, mode, npt, ppt);
+	} else
+		cfb32LineSS(pDrawable, pGC, mode, npt, ppt);
+#else
 	CFB_STATE_SAVE(&cfb_state, pGC, devPriv);
-	FFB_WRITE_ATTRIBUTES_SFB_VAR(pFfb, cfb_state.pmask, cfb_state.alu);
+	FFB_ATTR_SFB_VAR_WIN(pFfb, cfb_state.pmask, cfb_state.alu, pWin);
 	FFBWait(pFfb, ffb);
 	CFB_STATE_SET_SFB(pGC, devPriv);
-	cfbLineSS(pDrawable, pGC, mode, npt, ppt);
+	if (pGC->depth == 8) {
+		if (devPriv->oneRect &&
+		    ((pDrawable->x >= pGC->pScreen->width - 32768) &&
+		     (pDrawable->y >= pGC->pScreen->height - 32768)))
+			cfb8LineSS1Rect(pDrawable, pGC, mode, npt, ppt);
+		else
+			cfbLineSS(pDrawable, pGC, mode, npt, ppt);
+	} else
+		cfb32LineSS(pDrawable, pGC, mode, npt, ppt);
 	CFB_STATE_RESTORE(&cfb_state, pGC, devPriv);
+#endif
 }
 
 void
 CreatorSegmentSDStub (DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSeg)
 {
+	WindowPtr pWin = (WindowPtr) pDrawable;
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN (pDrawable->pScreen);
 	ffb_fbcPtr ffb = pFfb->regs;
+#ifdef USE_SFB_TRICKS
 	struct cfb_gcstate cfb_state;
 	cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
+#endif
 
 	FFBLOG(("STUB(%s:%d)\n", __FILE__, __LINE__));
+#ifndef USE_SFB_TRICKS
+	FFB_ATTR_SFB_VAR_WIN(pFfb, 0xffffffff, GXcopy, pWin);
+	FFBWait(pFfb, ffb);
+	if (pGC->depth == 8)
+		cfbSegmentSD(pDrawable, pGC, nseg, pSeg);
+	else
+		cfb32SegmentSD(pDrawable, pGC, nseg, pSeg);
+#else
 	CFB_STATE_SAVE(&cfb_state, pGC, devPriv);
-	FFB_WRITE_ATTRIBUTES_SFB_VAR(pFfb, cfb_state.pmask, cfb_state.alu);
+	FFB_ATTR_SFB_VAR_WIN(pFfb, cfb_state.pmask, cfb_state.alu, pWin);
 	FFBWait(pFfb, ffb);
 	CFB_STATE_SET_SFB(pGC, devPriv);
-	cfbSegmentSD(pDrawable, pGC, nseg, pSeg);
+	if (pGC->depth == 8)
+		cfbSegmentSD(pDrawable, pGC, nseg, pSeg);
+	else
+		cfb32SegmentSD(pDrawable, pGC, nseg, pSeg);
 	CFB_STATE_RESTORE(&cfb_state, pGC, devPriv);
+#endif
 }
 
 void
 CreatorLineSDStub (DrawablePtr pDrawable, GCPtr pGC,
 		   int mode, int npt, DDXPointPtr ppt)
 {
+	WindowPtr pWin = (WindowPtr) pDrawable;
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN (pDrawable->pScreen);
 	ffb_fbcPtr ffb = pFfb->regs;
+#ifdef USE_SFB_TRICKS
 	struct cfb_gcstate cfb_state;
 	cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
+#endif
 
 	FFBLOG(("STUB(%s:%d)\n", __FILE__, __LINE__));
+#ifndef USE_SFB_TRICKS
+	FFB_ATTR_SFB_VAR_WIN(pFfb, 0xffffffff, GXcopy, pWin);
+	FFBWait(pFfb, ffb);
+	if (pGC->depth == 8)
+		cfbLineSD(pDrawable, pGC, mode, npt, ppt);
+	else
+		cfb32LineSD(pDrawable, pGC, mode, npt, ppt);
+#else
 	CFB_STATE_SAVE(&cfb_state, pGC, devPriv);
-	FFB_WRITE_ATTRIBUTES_SFB_VAR(pFfb, cfb_state.pmask, cfb_state.alu);
+	FFB_ATTR_SFB_VAR_WIN(pFfb, cfb_state.pmask, cfb_state.alu, pWin);
 	FFBWait(pFfb, ffb);
 	CFB_STATE_SET_SFB(pGC, devPriv);
-	cfbLineSD(pDrawable, pGC, mode, npt, ppt);
+	if (pGC->depth == 8)
+		cfbLineSD(pDrawable, pGC, mode, npt, ppt);
+	else
+		cfb32LineSD(pDrawable, pGC, mode, npt, ppt);
 	CFB_STATE_RESTORE(&cfb_state, pGC, devPriv);
+#endif
 }
 
 void
@@ -161,18 +255,33 @@ CreatorPolyGlyphBlt8Stub (DrawablePtr pDrawable, GCPtr pGC,
 			  int x, int y, unsigned int nglyph, CharInfoPtr *ppci,
 			  pointer pglyphBase)
 {
+	WindowPtr pWin = (WindowPtr) pDrawable;
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN (pDrawable->pScreen);
 	ffb_fbcPtr ffb = pFfb->regs;
+#ifdef USE_SFB_TRICKS
 	struct cfb_gcstate cfb_state;
 	cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
+#endif
 
 	FFBLOG(("STUB(%s:%d)\n", __FILE__, __LINE__));
+#ifndef USE_SFB_TRICKS
+	FFB_ATTR_SFB_VAR_WIN(pFfb, 0xffffffff, GXcopy, pWin);
+	FFBWait(pFfb, ffb);
+	if (pGC->depth == 8)
+		cfbPolyGlyphBlt8(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
+	else
+		cfb32PolyGlyphBlt8(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
+#else
 	CFB_STATE_SAVE(&cfb_state, pGC, devPriv);
-	FFB_WRITE_ATTRIBUTES_SFB_VAR(pFfb, cfb_state.pmask, cfb_state.alu);
+	FFB_ATTR_SFB_VAR_WIN(pFfb, cfb_state.pmask, cfb_state.alu, pWin);
 	FFBWait(pFfb, ffb);
 	CFB_STATE_SET_SFB(pGC, devPriv);
-	cfbPolyGlyphBlt8(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
+	if (pGC->depth == 8)
+		cfbPolyGlyphBlt8(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
+	else
+		cfb32PolyGlyphBlt8(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
 	CFB_STATE_RESTORE(&cfb_state, pGC, devPriv);
+#endif
 }
 
 void
@@ -180,18 +289,33 @@ CreatorImageGlyphBlt8Stub (DrawablePtr pDrawable, GCPtr pGC,
 			   int x, int y, unsigned int nglyph,
 			   CharInfoPtr *ppci, pointer pglyphBase)
 {
+	WindowPtr pWin = (WindowPtr) pDrawable;
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN (pDrawable->pScreen);
 	ffb_fbcPtr ffb = pFfb->regs;
+#ifdef USE_SFB_TRICKS
 	struct cfb_gcstate cfb_state;
 	cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
+#endif
 
 	FFBLOG(("STUB(%s:%d)\n", __FILE__, __LINE__));
+#ifndef USE_SFB_TRICKS
+	FFB_ATTR_SFB_VAR_WIN(pFfb, 0xffffffff, GXcopy, pWin);
+	FFBWait(pFfb, ffb);
+	if (pGC->depth == 8)
+		cfbImageGlyphBlt8(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
+	else
+		cfb32ImageGlyphBlt8(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
+#else
 	CFB_STATE_SAVE(&cfb_state, pGC, devPriv);
-	FFB_WRITE_ATTRIBUTES_SFB_VAR(pFfb, cfb_state.pmask, cfb_state.alu);
+	FFB_ATTR_SFB_VAR_WIN(pFfb, cfb_state.pmask, cfb_state.alu, pWin);
 	FFBWait(pFfb, ffb);
 	CFB_STATE_SET_SFB(pGC, devPriv);
-	cfbImageGlyphBlt8(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
+	if (pGC->depth == 8)
+		cfbImageGlyphBlt8(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
+	else
+		cfb32ImageGlyphBlt8(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
 	CFB_STATE_RESTORE(&cfb_state, pGC, devPriv);
+#endif
 }
 
 void
@@ -199,18 +323,33 @@ CreatorTile32FSCopyStub(DrawablePtr pDrawable, GCPtr pGC,
 			int nInit, DDXPointPtr pptInit,
 			int *pwidthInit, int fSorted)
 {
+	WindowPtr pWin = (WindowPtr) pDrawable;
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN (pDrawable->pScreen);
 	ffb_fbcPtr ffb = pFfb->regs;
+#ifdef USE_SFB_TRICKS
 	struct cfb_gcstate cfb_state;
 	cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
+#endif
 
 	FFBLOG(("STUB(%s:%d)\n", __FILE__, __LINE__));
+#ifndef USE_SFB_TRICKS
+	FFB_ATTR_SFB_VAR_WIN(pFfb, 0xffffffff, GXcopy, pWin);
+	FFBWait(pFfb, ffb);
+	if (pGC->depth == 8)
+		cfbTile32FSCopy(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+	else
+		cfb32Tile32FSCopy(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+#else
 	CFB_STATE_SAVE(&cfb_state, pGC, devPriv);
-	FFB_WRITE_ATTRIBUTES_SFB_VAR(pFfb, cfb_state.pmask, cfb_state.alu);
+	FFB_ATTR_SFB_VAR_WIN(pFfb, cfb_state.pmask, cfb_state.alu, pWin);
 	FFBWait(pFfb, ffb);
 	CFB_STATE_SET_SFB(pGC, devPriv);
-	cfbTile32FSCopy(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+	if (pGC->depth == 8)
+		cfbTile32FSCopy(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+	else
+		cfb32Tile32FSCopy(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
 	CFB_STATE_RESTORE(&cfb_state, pGC, devPriv);
+#endif
 }
 
 void
@@ -218,18 +357,33 @@ CreatorTile32FSGeneralStub(DrawablePtr pDrawable, GCPtr pGC,
 			   int nInit, DDXPointPtr pptInit,
 			   int *pwidthInit, int fSorted)
 {
+	WindowPtr pWin = (WindowPtr) pDrawable;
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN (pDrawable->pScreen);
 	ffb_fbcPtr ffb = pFfb->regs;
+#ifdef USE_SFB_TRICKS
 	struct cfb_gcstate cfb_state;
 	cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
+#endif
 
 	FFBLOG(("STUB(%s:%d)\n", __FILE__, __LINE__));
+#ifndef USE_SFB_TRICKS
+	FFB_ATTR_SFB_VAR_WIN(pFfb, 0xffffffff, GXcopy, pWin);
+	FFBWait(pFfb, ffb);
+	if (pGC->depth == 8)
+		cfbTile32FSGeneral(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+	else
+		cfb32Tile32FSGeneral(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+#else
 	CFB_STATE_SAVE(&cfb_state, pGC, devPriv);
-	FFB_WRITE_ATTRIBUTES_SFB_VAR(pFfb, cfb_state.pmask, cfb_state.alu);
+	FFB_ATTR_SFB_VAR_WIN(pFfb, cfb_state.pmask, cfb_state.alu, pWin);
 	FFBWait(pFfb, ffb);
 	CFB_STATE_SET_SFB(pGC, devPriv);
-	cfbTile32FSGeneral(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+	if (pGC->depth == 8)
+		cfbTile32FSGeneral(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+	else
+		cfb32Tile32FSGeneral(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
 	CFB_STATE_RESTORE(&cfb_state, pGC, devPriv);
+#endif
 }
 
 void
@@ -237,18 +391,33 @@ CreatorUnnaturalTileFSStub(DrawablePtr pDrawable, GCPtr pGC,
 			   int nInit, DDXPointPtr pptInit,
 			   int *pwidthInit, int fSorted)
 {
+	WindowPtr pWin = (WindowPtr) pDrawable;
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN (pDrawable->pScreen);
 	ffb_fbcPtr ffb = pFfb->regs;
+#ifdef USE_SFB_TRICKS
 	struct cfb_gcstate cfb_state;
 	cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
+#endif
 
 	FFBLOG(("STUB(%s:%d)\n", __FILE__, __LINE__));
+#ifndef USE_SFB_TRICKS
+	FFB_ATTR_SFB_VAR_WIN(pFfb, 0xffffffff, GXcopy, pWin);
+	FFBWait(pFfb, ffb);
+	if (pGC->depth == 8)
+		cfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+	else
+		cfb32UnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+#else
 	CFB_STATE_SAVE(&cfb_state, pGC, devPriv);
-	FFB_WRITE_ATTRIBUTES_SFB_VAR(pFfb, cfb_state.pmask, cfb_state.alu);
+	FFB_ATTR_SFB_VAR_WIN(pFfb, cfb_state.pmask, cfb_state.alu, pWin);
 	FFBWait(pFfb, ffb);
 	CFB_STATE_SET_SFB(pGC, devPriv);
-	cfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+	if (pGC->depth == 8)
+		cfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+	else
+		cfb32UnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
 	CFB_STATE_RESTORE(&cfb_state, pGC, devPriv);
+#endif
 }
 
 void
@@ -256,18 +425,27 @@ Creator8Stipple32FSStub(DrawablePtr pDrawable, GCPtr pGC,
 			int nInit, DDXPointPtr pptInit,
 			int *pwidthInit, int fSorted)
 {
+	WindowPtr pWin = (WindowPtr) pDrawable;
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN (pDrawable->pScreen);
 	ffb_fbcPtr ffb = pFfb->regs;
+#ifdef USE_SFB_TRICKS
 	struct cfb_gcstate cfb_state;
 	cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
+#endif
 
 	FFBLOG(("STUB(%s:%d)\n", __FILE__, __LINE__));
+#ifndef USE_SFB_TRICKS
+	FFB_ATTR_SFB_VAR_WIN(pFfb, 0xffffffff, GXcopy, pWin);
+	FFBWait(pFfb, ffb);
+	cfb8Stipple32FS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+#else
 	CFB_STATE_SAVE(&cfb_state, pGC, devPriv);
-	FFB_WRITE_ATTRIBUTES_SFB_VAR(pFfb, cfb_state.pmask, cfb_state.alu);
+	FFB_ATTR_SFB_VAR_WIN(pFfb, cfb_state.pmask, cfb_state.alu, pWin);
 	FFBWait(pFfb, ffb);
 	CFB_STATE_SET_SFB(pGC, devPriv);
 	cfb8Stipple32FS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
 	CFB_STATE_RESTORE(&cfb_state, pGC, devPriv);
+#endif
 }
 
 void
@@ -275,18 +453,33 @@ CreatorUnnaturalStippleFSStub(DrawablePtr pDrawable, GCPtr pGC,
 			      int nInit, DDXPointPtr pptInit,
 			      int *pwidthInit, int fSorted)
 {
+	WindowPtr pWin = (WindowPtr) pDrawable;
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN (pDrawable->pScreen);
 	ffb_fbcPtr ffb = pFfb->regs;
+#ifdef USE_SFB_TRICKS
 	struct cfb_gcstate cfb_state;
 	cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
+#endif
 
 	FFBLOG(("STUB(%s:%d)\n", __FILE__, __LINE__));
+#ifndef USE_SFB_TRICKS
+	FFB_ATTR_SFB_VAR_WIN(pFfb, 0xffffffff, GXcopy, pWin);
+	FFBWait(pFfb, ffb);
+	if (pGC->depth == 8)
+		cfbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+	else
+		cfb32UnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+#else
 	CFB_STATE_SAVE(&cfb_state, pGC, devPriv);
-	FFB_WRITE_ATTRIBUTES_SFB_VAR(pFfb, cfb_state.pmask, cfb_state.alu);
+	FFB_ATTR_SFB_VAR_WIN(pFfb, cfb_state.pmask, cfb_state.alu, pWin);
 	FFBWait(pFfb, ffb);
 	CFB_STATE_SET_SFB(pGC, devPriv);
-	cfbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+	if (pGC->depth == 8)
+		cfbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+	else
+		cfb32UnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
 	CFB_STATE_RESTORE(&cfb_state, pGC, devPriv);
+#endif
 }
 
 void
@@ -294,34 +487,58 @@ Creator8OpaqueStipple32FSStub(DrawablePtr pDrawable, GCPtr pGC,
 			      int nInit, DDXPointPtr pptInit,
 			      int *pwidthInit, int fSorted)
 {
+	WindowPtr pWin = (WindowPtr) pDrawable;
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN (pDrawable->pScreen);
 	ffb_fbcPtr ffb = pFfb->regs;
+#ifdef USE_SFB_TRICKS
 	struct cfb_gcstate cfb_state;
 	cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
+#endif
 
 	FFBLOG(("STUB(%s:%d)\n", __FILE__, __LINE__));
+#ifndef USE_SFB_TRICKS
+	FFB_ATTR_SFB_VAR_WIN(pFfb, 0xffffffff, GXcopy, pWin);
+	FFBWait(pFfb, ffb);
+	cfb8OpaqueStipple32FS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+#else
 	CFB_STATE_SAVE(&cfb_state, pGC, devPriv);
-	FFB_WRITE_ATTRIBUTES_SFB_VAR(pFfb, cfb_state.pmask, cfb_state.alu);
+	FFB_ATTR_SFB_VAR_WIN(pFfb, cfb_state.pmask, cfb_state.alu, pWin);
 	FFBWait(pFfb, ffb);
 	CFB_STATE_SET_SFB(pGC, devPriv);
 	cfb8OpaqueStipple32FS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
 	CFB_STATE_RESTORE(&cfb_state, pGC, devPriv);
+#endif
 }
 
 void
 CreatorPolyFillRectStub(DrawablePtr pDrawable, GCPtr pGC,
 			int nrectFill, xRectangle *prectInit)
 {
+	WindowPtr pWin = (WindowPtr) pDrawable;
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN (pDrawable->pScreen);
 	ffb_fbcPtr ffb = pFfb->regs;
+#ifdef USE_SFB_TRICKS
 	struct cfb_gcstate cfb_state;
 	cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
+#endif
 
 	FFBLOG(("STUB(%s:%d)\n", __FILE__, __LINE__));
+#ifndef USE_SFB_TRICKS
+	FFB_ATTR_SFB_VAR_WIN(pFfb, 0xffffffff, GXcopy, pWin);
+	FFBWait(pFfb, ffb);
+	if (pGC->depth == 8)
+		cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit);
+	else
+		cfb32PolyFillRect(pDrawable, pGC, nrectFill, prectInit);
+#else
 	CFB_STATE_SAVE(&cfb_state, pGC, devPriv);
-	FFB_WRITE_ATTRIBUTES_SFB_VAR(pFfb, cfb_state.pmask, cfb_state.alu);
+	FFB_ATTR_SFB_VAR_WIN(pFfb, cfb_state.pmask, cfb_state.alu, pWin);
 	FFBWait(pFfb, ffb);
 	CFB_STATE_SET_SFB(pGC, devPriv);
-	cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit);
+	if (pGC->depth == 8)
+		cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit);
+	else
+		cfb32PolyFillRect(pDrawable, pGC, nrectFill, prectInit);
 	CFB_STATE_RESTORE(&cfb_state, pGC, devPriv);
+#endif
 }

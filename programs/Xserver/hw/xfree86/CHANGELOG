@@ -1,4 +1,26 @@
-XFree86 4.0b (18 May 2000)
+XFree86 4.0b (23 May 2000)
+ 212. Add support to the sunffb driver for multiple visuals on the same screen,
+      overlays, double buffering and some other niceties (#3938,
+      David S. Miller, Jakub Jelinek).
+ 211. Make the modifier setting on Sun keyboards match what XFree86 expects
+      (#3937, Jakub Jelinek).
+ 210. Add unaccelerated support for the Sun CG6 (#3935, Jakub Jelinek).
+ 209. Make the -configure option work with SBUS/UPA drivers, fix some
+      bugs in the sbus layer, add support for ioctl based colormap setting,
+      and fix leds on Sun keyboards (#3934, Jakub Jelinek).
+ 208. Fix a parallel build problem in lib/dps (#3932, H. J. Lu).
+ 207. Update the r128 driver to recosnise both variants of the Rage Mobility
+      and the PCI variant of the Rage128 Pro (#3931, Michel Danzer).
+ 206. Fix some build problems that show up  with LynxOS x86 and PowerPC (#3929,
+      Thomas Mueller).
+ 205. Fix documentation files for the mutouch and elographics drivers,
+      and build these drivers by default (#3935, Patrick Lecoanet).
+ 204. Make the dga2 library use the device name provide by the driver rather
+      than always using the default (3924, David S. Miller).
+ 203. Fix a problem with the internal xalloc that shows up on Sparc (#3923,
+      David S. Miller).
+ 202. Fix a GLX visual problem that causes a crash at server shutdown
+      (#3922, David S. Miller).
  201. 8+32 framebuffer for hardware that uses window IDs (David S. Miller).
  200. Fix a memory allocation in lbxproxy that can cause it to crash at
       startup (#3921, Peter Runestig).
@@ -11,7 +33,7 @@ XFree86 4.0b (18 May 2000)
  195. Ansi prototypes for the lbxusilt library and Xserver/lbx directory
       (#3908, Matthieu Herrb).
  194. Fix some bugs in the cirrus lg driver (#3900, Itai Nahshon).
- 193. Accelerated driver for Sun Leo/ZX cards (#3899, Jakub Jelinek).
+ 193. Accelerated driver for Sun Leo/ZX cards (#3899, 3936, Jakub Jelinek).
  192. Fully accelerated driver for Sun FFB and AFB chips (#3898,
       Jakub Jelinek).
  191. Generic SBUS and UPA support for XFree86 (#3897, Jakub Jelinek).
@@ -41,7 +63,7 @@ XFree86 4.0b (18 May 2000)
  177. Add support for building shared libraries on BSD/OS (#3876, Kurt Lidl).
  176. Add imake support for automatically determining the version for BSD/OS,
       and update bsdi.cf for the features relevant to the different versions
-      (#3876, Kurt Lidl).
+      (#3876, 3940, Kurt Lidl).
  175. Xterm patch #132 (#3874, Thomas Dickey).
  174. Fix rman-related build problems when building external applications
       (#3869, Matthieu Herrb, #3890, H. J. Lu).
@@ -10382,4 +10404,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1159 2000/05/18 23:46:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1160 2000/05/21 01:09:00 mvojkovi Exp $

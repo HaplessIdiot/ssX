@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_reg.h,v 1.5 2000/02/18 16:23:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_reg.h,v 1.6 2000/02/23 04:47:19 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -48,32 +48,32 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #if defined(__powerpc__)
 
-static inline void regw(volatile unsigned long base_addr, unsigned long regindex, unsigned long regdata)
+static __inline__ void regw(volatile unsigned long base_addr, unsigned long regindex, unsigned long regdata)
 {
- asm volatile ("stwbrx %1,%2,%3; eieio"
+ __asm__ volatile ("stwbrx %1,%2,%3; eieio"
           : "=m" (*(volatile unsigned *)(base_addr+regindex))
           : "r" (regdata), "b" (regindex), "r" (base_addr));
 }
 
-static inline void regw16(volatile unsigned long base_addr, unsigned long regindex, unsigned short regdata)
+static __inline__ void regw16(volatile unsigned long base_addr, unsigned long regindex, unsigned short regdata)
 {
-  asm volatile ("sthbrx %0,%1,%2; eieio": : "r"(regdata), "b"(regindex), "r"(base_addr));
+  __asm__ volatile ("sthbrx %0,%1,%2; eieio": : "r"(regdata), "b"(regindex), "r"(base_addr));
 }
 
-static inline unsigned long regr(volatile unsigned long base_addr, unsigned long regindex)
+static __inline__ unsigned long regr(volatile unsigned long base_addr, unsigned long regindex)
 {
   register unsigned long val;
-  asm volatile ("lwbrx %0,%1,%2; eieio"
+  __asm__ volatile ("lwbrx %0,%1,%2; eieio"
            : "=r"(val)
            : "b"(regindex), "r"(base_addr),
              "m" (*(volatile unsigned *)(base_addr+regindex)));
   return(val);
 }
 
-static inline unsigned short regr16(volatile unsigned long base_addr, unsigned long regindex)
+static __inline__ unsigned short regr16(volatile unsigned long base_addr, unsigned long regindex)
 {
   register unsigned short val;
-  asm volatile ("lhbrx %0,%1,%2; eieio": "=r"(val):"b"(regindex), "r"(base_addr));
+  __asm__ volatile ("lhbrx %0,%1,%2; eieio": "=r"(val):"b"(regindex), "r"(base_addr));
   return(val);
 }
 

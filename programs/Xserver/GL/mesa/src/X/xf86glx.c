@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx.c,v 1.6 2000/02/08 17:18:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx.c,v 1.7 2000/02/23 04:46:56 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -584,6 +584,8 @@ static void init_screen_visuals(int screen)
     /* Alloc space for the list of XMesa visuals */
     pXMesaVisual = (XMesaVisual *)__glXMalloc(MESAScreens[screen].num_vis *
 					      sizeof(XMesaVisual));
+    __glXMemset(pXMesaVisual, 0,
+		MESAScreens[screen].num_vis * sizeof(XMesaVisual));
 
     used = (int *)__glXMalloc(pScreen->numVisuals * sizeof(int));
     __glXMemset(used, 0, pScreen->numVisuals * sizeof(int));
@@ -670,7 +672,8 @@ extern void __MESA_resetExtension(void)
 
     for (i = 0; i < screenInfo.numScreens; i++) {
 	for (j = 0; j < MESAScreens[i].num_vis; j++) {
-	    XMesaDestroyVisual(MESAScreens[i].xm_vis[j]);
+	    if (MESAScreens[i].xm_vis[j])
+	        XMesaDestroyVisual(MESAScreens[i].xm_vis[j]);
 	}
 	__glXFree(MESAScreens[i].glx_vis);
 	MESAScreens[i].glx_vis = NULL;

@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo_frectsp.c,v 1.1 2000/05/18 23:21:39 dawes Exp $ */
 
 #define PSZ 32
 
@@ -88,7 +88,7 @@ LeoPolyFillStippledRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectan
 
 	if (REGION_NUM_RECTS(prgnClip) == 1) {
 		int x1, y1, x2, y2;
-		int x, y, w, h;
+		int x, y, xx, yy, w, h;
 		int i, j, sw, sm, ew, em, s;
 
 		pextent = REGION_RECTS(prgnClip);
@@ -97,20 +97,20 @@ LeoPolyFillStippledRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectan
 		x2 = pextent->x2;
 		y2 = pextent->y2;
 		while (nrectFill--) {
-			if ((x = prect->x) < x1)
-				x = x1;
-			if ((y = prect->y) < y1)
-				y = y1;
-			if ((w = prect->width) + x > x2) {
-				w = x2 - x;
-				if (w <= 0) continue;
-			}
-			if ((h = prect->height) + y > y2) {
-				h = y2 - y;
-				if (h <= 0) continue;
-			}
+			x = prect->x;
+			y = prect->y;
+			xx = x + prect->width;
+			yy = y + prect->height;
+			if (x < x1) x = x1;
+			if (y < y1) y = y1;
+			if (xx > x2) xx = x2;
+			if (yy > y2) yy = y2;
 			prect++;
-
+			if (x >= xx) continue;
+			if (y >= yy) continue;
+			prect++;
+			w = xx - x;
+			h = yy - y;
 			if (x & 31) {
 				sw = 32 - (x & 31);
 				sm = 0xffffffff >> (x & 31);

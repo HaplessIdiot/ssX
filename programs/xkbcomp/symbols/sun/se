@@ -1,4 +1,4 @@
-// $XFree86: xc/programs/xkbcomp/symbols/sun/se,v 1.1.2.2 1998/10/04 15:23:17 hohndel Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/sun/se,v 1.2 1998/12/20 09:40:28 dawes Exp $
 //
 // Swedish layout for a Type 5/5c Sun keyboard
 xkb_symbols "sun5" {
@@ -183,10 +183,11 @@ xkb_symbols "sun4" {
     // End "Keypad" section, 
 
     // Begin modifier mappings
-    modifier_map Shift  { Shift_R };
-    modifier_map Mod1	{ Meta_L, Meta_R };
-    modifier_map Mod2	{ Alt_L };
+    modifier_map Shift	{ Shift_R };
+    modifier_map Mod1	{ Alt_L };
+    modifier_map Mod2	{ Num_Lock };
     modifier_map Mod3	{ Mode_switch };
-    modifier_map Mod4	{ Num_Lock };
+    modifier_map Mod4	{ Meta_L };
+    modifier_map Mod5	{ Meta_R };
     // End modifier mappings
 };

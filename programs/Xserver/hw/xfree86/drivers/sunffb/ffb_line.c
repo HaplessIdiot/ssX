@@ -22,9 +22,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-/* $XFree86$ */
-
-#define PSZ 32
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_line.c,v 1.1 2000/05/18 23:21:37 dawes Exp $ */
 
 #include "ffb.h"
 #include "ffb_regs.h"
@@ -35,10 +33,12 @@
 #include "pixmapstr.h"
 #include "scrnintstr.h"
 
+#define PSZ 8
 #include "cfb.h"
-#include "miline.h"
+#undef PSZ
+#include "cfb32.h"
 
-#undef DEBUG_LINES
+#include "miline.h"
 
 /* The scheme here is similar as for segments, except that
  * if there are any out of range coordinate, we fully punt
@@ -54,6 +54,7 @@
 void
 CreatorPolylines (DrawablePtr pDrawable, GCPtr pGC, int mode, int nptInit, DDXPointPtr pptInit)
 {
+	WindowPtr pWin = (WindowPtr) pDrawable;
 	CreatorPrivGCPtr gcPriv = CreatorGetGCPrivate (pGC);
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN (pGC->pScreen);
 	ffb_fbcPtr ffb = pFfb->regs;
@@ -88,21 +89,19 @@ CreatorPolylines (DrawablePtr pDrawable, GCPtr pGC, int mode, int nptInit, DDXPo
 	FFBLOG(("CreatorPolylines: npt(%d) lpat(%08x) alu(%x) pmsk(%08x)\n",
 		npt, gcPriv->linepat, pGC->alu, pGC->planemask));
 	if(gcPriv->stipple == NULL) {
-		FFB_WRITE_ATTRIBUTES(pFfb,
-				     FFB_PPC_FW_DISABLE|FFB_PPC_VCE_DISABLE|FFB_PPC_APE_DISABLE|FFB_PPC_CS_CONST,
-				     FFB_PPC_FW_MASK|FFB_PPC_VCE_MASK|FFB_PPC_APE_MASK|FFB_PPC_CS_MASK,
-				     pGC->planemask,
-				     FFB_ROP_EDIT_BIT | pGC->alu,
-				     FFB_DRAWOP_BRLINEOPEN,
-				     pGC->fgPixel,
-				     FFB_FBC_DEFAULT);
+		FFB_ATTR_GC(pFfb, pGC, pWin,
+			    FFB_PPC_APE_DISABLE | FFB_PPC_CS_CONST,
+			    FFB_DRAWOP_BRLINEOPEN);
 	} else {
+		unsigned int fbc;
+
 		FFBSetStipple(pFfb, ffb, gcPriv->stipple,
-			      FFB_PPC_FW_DISABLE|FFB_PPC_VCE_DISABLE|FFB_PPC_CS_CONST,
-			      FFB_PPC_FW_MASK|FFB_PPC_VCE_MASK|FFB_PPC_CS_MASK);
+			      FFB_PPC_CS_CONST, FFB_PPC_CS_MASK);
 		FFB_WRITE_PMASK(pFfb, ffb, pGC->planemask);
 		FFB_WRITE_DRAWOP(pFfb, ffb, FFB_DRAWOP_BRLINEOPEN);
-		FFB_WRITE_FBC(pFfb, ffb, FFB_FBC_DEFAULT);
+		fbc = FFB_FBC_WIN(pWin);
+		fbc = (fbc & ~FFB_FBC_XE_MASK) | FFB_FBC_XE_OFF;
+		FFB_WRITE_FBC(pFfb, ffb, fbc);
 	}
 	pFfb->rp_active = 1;
 

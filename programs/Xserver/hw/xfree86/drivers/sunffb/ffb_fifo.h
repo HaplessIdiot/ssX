@@ -22,29 +22,12 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_fifo.h,v 1.1 2000/05/18 23:21:36 dawes Exp $ */
 
 #ifndef FFBFIFO_H
 #define FFBFIFO_H
 
 #include "ffb.h"
-
-#if 1
-/* The idling didn't really buy us anything. */
-#define FFB_IDLE(__x)	do { } while(0)
-#else
-/* Testing on my UltraI-170 indicated that each poll of
- * the FFB ucmd register cost this many cycles.  I consider
- * this a lower bound which we will use to tune the idler
- * here.  The whole idea behind this is to save PIO's.  -DaveM
- */
-#define FFB_UCMD_READ_COST	32
-#define FFB_IDLE(__x) \
-do {	int __idle, __lim = ((__x) * (FFB_UCMD_READ_COST)); \
-	for(__idle = 0; __idle < (__lim); __idle++) \
-		__asm__ __volatile__("" : : : "memory"); \
-} while(0)
-#endif
 
 /* This is the smallest FFB fifo size I know of. -DaveM */
 #define FFB_FIFO_MIN	124
@@ -53,8 +36,7 @@ do {	int __idle, __lim = ((__x) * (FFB_UCMD_READ_COST)); \
 do { 	int __cur_slots = (__fpriv)->fifo_cache; \
 	if((__cur_slots - (__n)) < 0) { \
 		ffb_fbcPtr __ffb = pFfb->regs; \
-		do {	FFB_IDLE(__n); \
-			__cur_slots = (((int)__ffb->ucsr & FFB_UCSR_FIFO_MASK) - 4); \
+		do {	__cur_slots = (((int)__ffb->ucsr & FFB_UCSR_FIFO_MASK) - 4); \
 		} while((__cur_slots - (__n)) < 0); \
 	} (__fpriv)->fifo_cache = (__cur_slots - (__n)); \
 } while(0)
@@ -66,15 +48,19 @@ do { 	int __cur_slots = (__fpriv)->fifo_cache; \
 if ((__fpriv)->rp_active != 0) { \
 	unsigned int __regval = (__ffb)->ucsr; \
 	while((__regval & FFB_UCSR_RP_BUSY) != 0) { \
-		FFB_IDLE(__regval & FFB_UCSR_FIFO_MASK); \
 		__regval = (__ffb)->ucsr; \
 	} \
 	(__fpriv)->fifo_cache = ((int)(__regval & FFB_UCSR_FIFO_MASK)) - 4; \
 	(__fpriv)->rp_active = 0; \
 } while(0)
 
-/* DEBUGGING */
-#if 0
+/* DEBUGGING:  You can use this if you suspect corruption is occuring
+ *             because someone is touching the framebuffer while the
+ *	       raster processor is active.  If you enable this and the
+ *	       problem goes away, odds are your suspicions are correct.
+ */
+#undef FORCE_WAIT_EVERY_ROP
+#ifdef FORCE_WAIT_EVERY_ROP
 #define FFBSync(__fpriv, __ffb)	FFBWait(__fpriv, __ffb)
 #else
 #define FFBSync(__fpriv, __ffb)	do { } while(0)

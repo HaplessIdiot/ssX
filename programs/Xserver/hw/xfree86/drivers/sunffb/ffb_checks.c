@@ -23,9 +23,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-/* $XFree86$ */
-
-#define PSZ 32
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_checks.c,v 1.1 2000/05/18 23:21:35 dawes Exp $ */
 
 #include "ffb.h"
 #include "ffb_regs.h"
@@ -35,9 +33,10 @@
 #include "pixmapstr.h"
 #include "scrnintstr.h"
 
+#define PSZ 8
 #include "cfb.h"
-
-#undef DEBUG_STIPPLE
+#undef PSZ
+#include "cfb32.h"
 
 int
 CreatorCheckTile (PixmapPtr pPixmap, CreatorStipplePtr stipple, int ox, int oy, int ph)
@@ -53,19 +52,13 @@ CreatorCheckTile (PixmapPtr pPixmap, CreatorStipplePtr stipple, int ox, int oy, 
 	int s_y, s_x;
 
 	h = pPixmap->drawable.height;
-	if (h > 32 || (h & (h - 1))) {
-#ifdef DEBUG_STIPPLE
-		ErrorF("CheckTile: Cannot do in hw, h[%x]\n", h);
-#endif
+	if (h > 32 || (h & (h - 1)))
 		return FALSE;
-	}
+
 	w = pPixmap->drawable.width;
-	if (w > 32 || (w & (w - 1))) {
-#ifdef DEBUG_STIPPLE
-		ErrorF("CheckTile: Cannot do in hw, w[%x]\n", w);
-#endif
+	if (w > 32 || (w & (w - 1)))
 		return FALSE;
-	}
+
 	stipple->patalign = (oy << 16) | ox;
 	sbits = stipple->bits;
 	tilebitsLine = (unsigned int *) pPixmap->devPrivate.ptr;
@@ -89,9 +82,6 @@ CreatorCheckTile (PixmapPtr pPixmap, CreatorStipplePtr stipple, int ox, int oy, 
 					bgset = 1;
 					bg = tilebit;
 				} else {
-#ifdef DEBUG_STIPPLE
-					ErrorF("CheckTile: Cannot do in hw, both bg and fg set.\n");
-#endif
 					return FALSE;
 				}
 			}
@@ -110,8 +100,8 @@ CreatorCheckTile (PixmapPtr pPixmap, CreatorStipplePtr stipple, int ox, int oy, 
 			break;
 		}
 	}
-	stipple->fg = fg | 0xff000000;
-	stipple->bg = bg | 0xff000000;
+	stipple->fg = fg;
+	stipple->bg = bg;
 	stipple->inhw = 0;
 	return TRUE;
 }
@@ -127,19 +117,13 @@ CreatorCheckStipple (PixmapPtr pPixmap, CreatorStipplePtr stipple, int ox, int o
 	int s_y, s_x;
 
 	h = pPixmap->drawable.height;
-	if (h > 32 || (h & (h - 1))) {
-#ifdef DEBUG_STIPPLE
-		ErrorF("CheckStipple: Cannot do in hw, h[%x]\n", h);
-#endif
+	if (h > 32 || (h & (h - 1)))
 		return FALSE;
-	}
+
 	w = pPixmap->drawable.width;
-	if (w > 32 || (w & (w - 1))) {
-#ifdef DEBUG_STIPPLE
-		ErrorF("CheckStipple: Cannot do in hw, w[%x]\n", w);
-#endif
+	if (w > 32 || (w & (w - 1)))
 		return FALSE;
-	}
+
 	stipple->patalign = (oy << 16) | ox;
 	sbits = stipple->bits;
 	stippleBits = (unsigned int *) pPixmap->devPrivate.ptr;
@@ -292,8 +276,8 @@ CreatorCheckFill (GCPtr pGC, DrawablePtr pDrawable)
 			}
 			return FALSE;
 		}
-		stipple->fg = pGC->fgPixel | 0xff000000;
-		stipple->bg = pGC->bgPixel | 0xff000000;
+		stipple->fg = pGC->fgPixel;
+		stipple->bg = pGC->bgPixel;
 		break;
 	}
 	stipple->alu = alu;

@@ -136,7 +136,11 @@ extern char *ofile;
 extern char *prog;
 extern char *string_temp;	/* buffer of that size for scanning strings */
 extern char headid[];
+#ifndef Lynx
 extern char yytext[];
+#else
+extern char *yytext;
+#endif
 extern int bigFile;
 extern int doANSI;		/* -a flag */
 extern int maxstring;		/* max PS string length to scan (-s) */

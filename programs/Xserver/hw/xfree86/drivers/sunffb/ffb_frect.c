@@ -24,9 +24,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86$ */
-
-#define PSZ 32
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_frect.c,v 1.1 2000/05/18 23:21:36 dawes Exp $ */
 
 #include "ffb.h"
 #include "ffb_regs.h"
@@ -38,8 +36,10 @@
 #include "pixmapstr.h"
 #include "scrnintstr.h"
 
+#define PSZ 8
 #include "cfb.h"
-#include "cfbmskbits.h"
+#undef PSZ
+#include "cfb32.h"
 
 #define PAGEFILL_DISABLED(pFfb) ((pFfb)->disable_pagefill != 0)
 #define FASTFILL_AP_DISABLED(pFfb) ((pFfb)->disable_fastfill_ap != 0)
@@ -48,6 +48,7 @@ void
 CreatorFillBoxStipple (DrawablePtr pDrawable, int nBox, BoxPtr pBox, CreatorStipplePtr stipple)
 {
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN (pDrawable->pScreen);
+	WindowPtr pWin = (WindowPtr) pDrawable;
 	ffb_fbcPtr ffb = pFfb->regs;
 	unsigned int bits[32];
 	unsigned int newalign;
@@ -70,11 +71,12 @@ CreatorFillBoxStipple (DrawablePtr pDrawable, int nBox, BoxPtr pBox, CreatorStip
 	}
 
 	FFBSetStipple(pFfb, ffb, stipple,
-		      FFB_PPC_FW_DISABLE|FFB_PPC_VCE_DISABLE|FFB_PPC_APE_DISABLE|FFB_PPC_CS_CONST,
-		      FFB_PPC_FW_MASK|FFB_PPC_VCE_MASK|FFB_PPC_APE_MASK|FFB_PPC_CS_MASK);
+		      FFB_PPC_APE_DISABLE|FFB_PPC_CS_CONST|FFB_PPC_XS_WID,
+		      FFB_PPC_APE_MASK|FFB_PPC_CS_MASK|FFB_PPC_XS_MASK);
 	FFB_WRITE_PMASK(pFfb, ffb, ~0);
 	FFB_WRITE_DRAWOP(pFfb, ffb, FFB_DRAWOP_RECTANGLE);
-	FFB_WRITE_FBC(pFfb, ffb, FFB_FBC_DEFAULT);
+	FFB_WRITE_FBC(pFfb, ffb, FFB_FBC_WIN(pWin));
+	FFB_WRITE_WID(pFfb, ffb, FFB_WID_WIN(pWin));
 
 	while(nBox--) {
 		register int x, y, w, h;
@@ -437,25 +439,12 @@ void
 CreatorFillBoxSolid (DrawablePtr pDrawable, int nBox, BoxPtr pBox, unsigned long pixel)
 {
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN (pDrawable->pScreen);
-	unsigned int fbc = FFB_FBC_FASTFILL;
-
-	/* In the high-resolution modes, the Creator3D transforms
-	 * the framebuffer such that the dual-buffers present become
-	 * one large single buffer.  As such you need to enable both
-	 * A and B write buffers for page fills to work properly under
-	 * this configuration. -DaveM
-	 */
-	if (pFfb->ffb_res == ffb_res_high)
-		fbc |= FFB_FBC_WB_B;
+	WindowPtr pWin = (WindowPtr) pDrawable;
 
 	FFBLOG(("CreatorFillBoxSolid: nbox(%d)\n", nBox));
-	FFB_WRITE_ATTRIBUTES(pFfb,
-			     FFB_PPC_FW_DISABLE|FFB_PPC_VCE_DISABLE|FFB_PPC_APE_DISABLE|FFB_PPC_CS_CONST,
-			     FFB_PPC_FW_MASK|FFB_PPC_VCE_MASK|FFB_PPC_APE_MASK|FFB_PPC_CS_MASK,
-			     ~0,
-			     (FFB_ROP_EDIT_BIT|GXcopy),
-			     FFB_DRAWOP_FASTFILL, pixel | 0xff000000,
-			     fbc);
+	FFB_ATTR_FFWIN(pFfb, pWin,
+		       FFB_PPC_APE_DISABLE | FFB_PPC_CS_CONST,
+		       pixel);
 	if (PAGEFILL_DISABLED(pFfb))
 		CreatorBoxFillNormal(pFfb, nBox, pBox);
 	else
@@ -470,10 +459,10 @@ FFBSetStippleFast(FFBPtr pFfb, ffb_fbcPtr ffb,
 		  CreatorStipplePtr stipple,
 		  unsigned int ppc, unsigned int ppc_mask)
 {
-	ppc |= FFB_PPC_APE_ENABLE | FFB_PPC_TBE_TRANSPARENT;
-	ppc_mask |= FFB_PPC_APE_MASK | FFB_PPC_TBE_MASK;
+	ppc |= FFB_PPC_APE_ENABLE | FFB_PPC_TBE_TRANSPARENT | FFB_PPC_XS_WID;
+	ppc_mask |= FFB_PPC_APE_MASK | FFB_PPC_TBE_MASK | FFB_PPC_XS_MASK;
 	FFB_WRITE_PPC(pFfb, ffb, ppc, ppc_mask);
-	FFB_WRITE_ROP(pFfb, ffb, (FFB_ROP_EDIT_BIT|stipple->alu));
+	FFB_WRITE_ROP(pFfb, ffb, (FFB_ROP_EDIT_BIT|stipple->alu)|(FFB_ROP_NEW<<8));
 	FFB_WRITE_FG(pFfb, ffb, stipple->fg);
 	FFBFifo(pFfb, 32);
 	FFB_STIPPLE_LOAD(&ffb->pattern[0], &stipple->bits[0]);
@@ -511,8 +500,9 @@ CreatorPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle 
 	int		xorg, yorg;
     
 	/* No garbage please. */
-	if(nrectFill <= 0)
+	if (nrectFill <= 0)
 		return;
+
 	gcPriv = CreatorGetGCPrivate (pGC);
 	FFBLOG(("CreatorPolyFillRect: nrect(%d) ALU(%x) STIP(%p) pmsk(%08x)\n",
 		nrectFill, pGC->alu, gcPriv->stipple, pGC->planemask));
@@ -628,18 +618,17 @@ CreatorPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle 
 		int num = (pboxClipped - pboxClippedBase);
 		int f_w = pboxClippedBase->x2 - pboxClippedBase->x1;
 		int f_h = pboxClippedBase->y2 - pboxClippedBase->y1;
-		unsigned int fbc = FFB_FBC_FASTFILL;
+		WindowPtr pWin = (WindowPtr) pDrawable;
+		unsigned int fbc = FFB_FBC_WIN(pWin);
 		unsigned int drawop = FFB_DRAWOP_FASTFILL;
 
 		if (PAGEFILL_DISABLED(pFfb) ||
 		    pGC->alu != GXcopy ||
 		    BOX_AREA(f_w, f_h) < 128) {
-			fbc = FFB_FBC_DEFAULT;
 			drawop = FFB_DRAWOP_RECTANGLE;
 			how = fillrect_normal;
 		} else if (gcPriv->stipple != NULL) {
 			if (FASTFILL_AP_DISABLED(pFfb)) {
-				fbc = FFB_FBC_DEFAULT;
 				drawop = FFB_DRAWOP_RECTANGLE;
 				how = fillrect_normal;
 			} else {
@@ -647,9 +636,22 @@ CreatorPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle 
 					how = fillrect_fast;
 				else
 					how = fillrect_fast_opaque;
-				if (pGC->planemask != PMSK)
-					fbc = FFB_FBC_DEFAULT;
 			}
+		} else {
+			int all_planes;
+
+			/* Plane masks are not controllable with page fills. */
+			if (pGC->depth == 8)
+				all_planes = 0xff;
+			else
+				all_planes = 0xffffff;
+			if ((pGC->planemask & all_planes) != all_planes)
+				how = fillrect_fast;
+		}
+
+		if (how == fillrect_page) {
+			fbc &= ~(FFB_FBC_XE_MASK | FFB_FBC_RGBE_MASK);
+			fbc |= FFB_FBC_XE_ON | FFB_FBC_RGBE_ON;
 		}
 
 		/* In the high-resolution modes, the Creator3D transforms
@@ -663,26 +665,27 @@ CreatorPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle 
 
 		/* Setup the attributes. */
 		if (gcPriv->stipple == NULL) {
-			FFB_WRITE_ATTRIBUTES(pFfb,
-					     FFB_PPC_FW_DISABLE|FFB_PPC_VCE_DISABLE|FFB_PPC_APE_DISABLE|FFB_PPC_CS_CONST,
-					     FFB_PPC_FW_MASK|FFB_PPC_VCE_MASK|FFB_PPC_APE_MASK|FFB_PPC_CS_MASK,
-					     pGC->planemask,
-					     (FFB_ROP_EDIT_BIT|pGC->alu),
-					     drawop,
-					     pGC->fgPixel | 0xff000000,
-					     fbc);
+			FFB_ATTR_RAW(pFfb,
+				     FFB_PPC_APE_DISABLE|FFB_PPC_CS_CONST|FFB_PPC_XS_WID,
+				     FFB_PPC_APE_MASK|FFB_PPC_CS_MASK|FFB_PPC_XS_MASK,
+				     pGC->planemask,
+				     ((FFB_ROP_EDIT_BIT|pGC->alu)|(FFB_ROP_NEW<<8)),
+				     drawop,
+				     pGC->fgPixel,
+				     fbc, FFB_WID_WIN(pWin));
 		} else {
 			if (how == fillrect_fast_opaque) {
 				FFBSetStippleFast(pFfb, ffb, gcPriv->stipple,
-						  FFB_PPC_FW_DISABLE|FFB_PPC_VCE_DISABLE|FFB_PPC_CS_CONST,
-						  FFB_PPC_FW_MASK|FFB_PPC_VCE_MASK|FFB_PPC_CS_MASK);
+						  FFB_PPC_CS_CONST|FFB_PPC_XS_WID,
+						  FFB_PPC_CS_MASK|FFB_PPC_XS_MASK);
 			} else {
 				FFBSetStipple(pFfb, ffb, gcPriv->stipple,
-					      FFB_PPC_FW_DISABLE|FFB_PPC_VCE_DISABLE|FFB_PPC_CS_CONST,
-					      FFB_PPC_FW_MASK|FFB_PPC_VCE_MASK|FFB_PPC_CS_MASK);
+					      FFB_PPC_CS_CONST|FFB_PPC_XS_WID,
+					      FFB_PPC_CS_MASK|FFB_PPC_XS_MASK);
 			}
 			FFB_WRITE_DRAWOP(pFfb, ffb, drawop);
 			FFB_WRITE_FBC(pFfb, ffb, fbc);
+			FFB_WRITE_WID(pFfb, ffb, FFB_WID_WIN(pWin));
 		}
 
 		/* Now render. */

@@ -22,9 +22,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-/* $XFree86$ */
-
-#define PSZ 32
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_bcopy.c,v 1.1 2000/05/18 23:21:35 dawes Exp $ */
 
 #include "ffb.h"
 #include "ffb_regs.h"
@@ -35,13 +33,18 @@
 #include "pixmapstr.h"
 #include "scrnintstr.h"
 
+#define PSZ 8
 #include "cfb.h"
+#undef PSZ
+#include "cfb32.h"
+#include "cfb8_32wid.h"
 
 #ifdef FFB_BLOCKCOPY_IMPLEMENTED
 /* Due to VIS based copyarea and ffb rop vertscroll being significantly faster
  * than the blockcopy rop, blockcopy was not implemented at all in the final
  * FFB hardware design.  This code is left here for hack value.  -DaveM
  */
+#error To use it, we would need to fix this to use WIDs in FFB attributes -DaveM
 void
 CreatorDoHWBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst,
 		  DDXPointPtr pptSrc, unsigned long planemask)
@@ -57,8 +60,8 @@ CreatorDoHWBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst
 	pbox = REGION_RECTS(prgnDst);
 
 	FFB_WRITE_ATTRIBUTES(pFfb,
-			     FFB_PPC_VCE_DISABLE|FFB_PPC_ACE_DISABLE|FFB_PPC_APE_DISABLE|FFB_PPC_CS_CONST,
-			     FFB_PPC_VCE_MASK|FFB_PPC_ACE_MASK|FFB_PPC_APE_MASK|FFB_PPC_CS_MASK,
+			     FFB_PPC_ACE_DISABLE|FFB_PPC_APE_DISABLE|FFB_PPC_CS_CONST,
+			     FFB_PPC_ACE_MASK|FFB_PPC_APE_MASK|FFB_PPC_CS_MASK,
 			     planemask,
 			     FFB_ROP_NEW,
 			     FFB_DRAWOP_BCOPY, pFfb->fg_cache,
@@ -224,7 +227,6 @@ CreatorDoVertBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnD
 	FFBSync(pFfb, ffb);
 }
 
-#ifdef USE_VIS
 extern void VISmoveImageLR(unsigned char *, unsigned char *, long, long, long, long);
 extern void VISmoveImageRL(unsigned char *, unsigned char *, long, long, long, long);
 
@@ -240,6 +242,7 @@ CreatorDoBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst,
 	DDXPointPtr pptTmp;
 	unsigned char *psrcBase, *pdstBase;
 	int nbox, widthSrc, widthDst, careful, use_prefetch;
+	int psz_shift;
 
 	cfbGetByteWidthAndPointer (pSrc, widthSrc, psrcBase)
 	cfbGetByteWidthAndPointer (pDst, widthDst, pdstBase)
@@ -248,7 +251,8 @@ CreatorDoBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst,
 		  ((pSrc->type == DRAWABLE_WINDOW) &&
 		   (pDst->type == DRAWABLE_WINDOW)));
 	use_prefetch = (pFfb->use_blkread_prefetch &&
-			(psrcBase == (unsigned char *)pFfb->fb));
+			(psrcBase == (unsigned char *)pFfb->sfb32 ||
+			 psrcBase == (unsigned char *)pFfb->sfb8r));
 
 	pbox = REGION_RECTS(prgnDst);
 	nbox = REGION_NUM_RECTS(prgnDst);
@@ -257,6 +261,11 @@ CreatorDoBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst,
 	pboxTmp = pbox;
 
 	FFBLOG(("GCOPY(%d): ", nbox));
+
+	if (pSrc->bitsPerPixel == 8)
+		psz_shift = 0;
+	else
+		psz_shift = 2;
 
 	if (careful && pptSrc->y < pbox->y1) {
 		if (pptSrc->x < pbox->x1) {
@@ -280,11 +289,11 @@ CreatorDoBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst,
 					VISmoveImageRL ((psrcBase +
 							 ((pptTmp->y + pboxTmp->y2 - pboxTmp->y1 - 1) *
 							  widthSrc) +
-							 (pptTmp->x * (PSZ / 8))),
+							 (pptTmp->x << psz_shift)),
 				        	        (pdstBase +
 							 ((pboxTmp->y2 - 1) * widthDst) +
-							 (pboxTmp->x1 * (PSZ / 8))),
-					                (pboxTmp->x2 - pboxTmp->x1) * (PSZ / 8),
+							 (pboxTmp->x1 << psz_shift)),
+					                (pboxTmp->x2 - pboxTmp->x1) << psz_shift,
 				        	        (pboxTmp->y2 - pboxTmp->y1),
 					                -widthSrc, -widthDst);
 				} else {
@@ -297,11 +306,11 @@ CreatorDoBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst,
 					VISmoveImageLR ((psrcBase +
 							 ((pptTmp->y + pboxTmp->y2 - pboxTmp->y1 - 1) *
 							  widthSrc) +
-							 (pptTmp->x * (PSZ / 8))),
+							 (pptTmp->x << psz_shift)),
 				        	        (pdstBase +
 							 ((pboxTmp->y2 - 1) * widthDst) +
-							 (pboxTmp->x1 * (PSZ / 8))),
-					                (pboxTmp->x2 - pboxTmp->x1) * (PSZ / 8),
+							 (pboxTmp->x1 << psz_shift)),
+					                (pboxTmp->x2 - pboxTmp->x1) << psz_shift,
 				        	        (pboxTmp->y2 - pboxTmp->y1),
 					                -widthSrc, -widthDst);
 				}
@@ -333,11 +342,11 @@ CreatorDoBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst,
 					VISmoveImageLR ((psrcBase +
 							 ((pptTmp->y + pboxTmp->y2 - pboxTmp->y1 - 1) *
 							  widthSrc) +
-							 (pptTmp->x * (PSZ / 8))),
+							 (pptTmp->x << psz_shift)),
 				        	        (pdstBase +
 							 ((pboxTmp->y2 - 1) * widthDst) +
-							 (pboxTmp->x1 * (PSZ / 8))),
-					                (pboxTmp->x2 - pboxTmp->x1) * (PSZ / 8),
+							 (pboxTmp->x1 << psz_shift)),
+					                (pboxTmp->x2 - pboxTmp->x1) << psz_shift,
 				        	        (pboxTmp->y2 - pboxTmp->y1),
 					                -widthSrc, -widthDst);
 					++pboxTmp;
@@ -378,11 +387,11 @@ CreatorDoBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst,
 						}
 						VISmoveImageRL ((psrcBase +
 								 (pptTmp->y * widthSrc) +
-								 (pptTmp->x * (PSZ / 8))),
+								 (pptTmp->x << psz_shift)),
 						                (pdstBase +
 								 (pboxTmp->y1 * widthDst) +
-								 (pboxTmp->x1 * (PSZ / 8))),
-						                (pboxTmp->x2 - pboxTmp->x1) * (PSZ / 8),
+								 (pboxTmp->x1 << psz_shift)),
+						                (pboxTmp->x2 - pboxTmp->x1) << psz_shift,
 			        	        		(pboxTmp->y2 - pboxTmp->y1),
 						                widthSrc, widthDst);
 					} else {
@@ -394,11 +403,11 @@ CreatorDoBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst,
 						}
 						VISmoveImageLR ((psrcBase +
 								 (pptTmp->y * widthSrc) +
-								 (pptTmp->x * (PSZ / 8))),
+								 (pptTmp->x << psz_shift)),
 						                (pdstBase +
 								 (pboxTmp->y1 * widthDst) +
-								 (pboxTmp->x1 * (PSZ / 8))),
-				                		(pboxTmp->x2 - pboxTmp->x1) * (PSZ / 8),
+								 (pboxTmp->x1 << psz_shift)),
+				                		(pboxTmp->x2 - pboxTmp->x1) << psz_shift,
 					        	        (pboxTmp->y2 - pboxTmp->y1),
 						                widthSrc, widthDst);
 					}
@@ -418,11 +427,11 @@ CreatorDoBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst,
 				}
 				VISmoveImageLR ((psrcBase +
 						 (pptTmp->y * widthSrc) +
-						 (pptTmp->x * (PSZ / 8))),
+						 (pptTmp->x << psz_shift)),
 				                (pdstBase +
 						 (pboxTmp->y1 * widthDst) +
-						 (pboxTmp->x1 * (PSZ / 8))),
-				                (pboxTmp->x2 - pboxTmp->x1) * (PSZ / 8),
+						 (pboxTmp->x1 << psz_shift)),
+				                (pboxTmp->x2 - pboxTmp->x1) << psz_shift,
 			        	        (pboxTmp->y2 - pboxTmp->y1),
 				                widthSrc, widthDst);
 				pboxTmp++;
@@ -446,41 +455,107 @@ CreatorCopyArea(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable,
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN (pDstDrawable->pScreen);
 	ffb_fbcPtr ffb = pFfb->regs;
 	RegionPtr ret;
-	unsigned char *dptr, *sptr;
-	int garbage;
+	unsigned char *dptr, *sptr, *sfb;
+	int garbage, all_planes;
 	
 	cfbGetByteWidthAndPointer (pDstDrawable, garbage, dptr);
 	cfbGetByteWidthAndPointer (pSrcDrawable, garbage, sptr);
-	FFBLOG(("CreatorCopyArea: SFB(%p) s(%p) d(%p) alu(%x) pmsk(%08x) src(%08x:%08x) dst(%08x:%08x)\n",
-		pFfb->fb, sptr, dptr, pGC->alu, pGC->planemask,
-		srcx, srcy, dstx, dsty));
-	if (pGC->alu != GXcopy && dptr != (unsigned char *) pFfb->fb) {
-		if(sptr == (unsigned char *) pFfb->fb)
-			FFBWait(pFfb, ffb);
-		return cfbCopyArea (pSrcDrawable, pDstDrawable,
-				    pGC, srcx, srcy, width, height, dstx, dsty);
+	if (pSrcDrawable->bitsPerPixel == 8) {
+		sfb = (unsigned char *) pFfb->sfb8r;
+		all_planes = 0xff;
+	} else {
+		sfb = (unsigned char *) pFfb->sfb32;
+		all_planes = 0xffffff;
 	}
+
+	FFBLOG(("CreatorCopyArea: SFB(%p) s(%p) d(%p) alu(%x) pmsk(%08x) "
+		"src(%08x:%08x) dst(%08x:%08x)\n",
+		sfb, sptr, dptr, pGC->alu, pGC->planemask,
+		srcx, srcy, dstx, dsty));
+	if (((pGC->planemask & all_planes) != all_planes || pGC->alu != GXcopy) &&
+	    dptr != sfb) {
+		if(sptr == sfb) {
+			WindowPtr pWin = (WindowPtr) pSrcDrawable;
+
+			FFB_ATTR_SFB_VAR_WIN(pFfb, pGC->planemask, pGC->alu, pWin);
+			FFBWait(pFfb, ffb);
+		}
+		if (pSrcDrawable->bitsPerPixel == 8)
+			return cfbCopyArea (pSrcDrawable, pDstDrawable,
+					    pGC, srcx, srcy, width, height, dstx, dsty);
+		else
+			return cfb32CopyArea (pSrcDrawable, pDstDrawable,
+					      pGC, srcx, srcy, width, height, dstx, dsty);
+	}
+
 	/* Try to use hw VSCROLL if possible */
-	if (!pFfb->disable_vscroll &&/* must not be ffb1 in hires */
+	if (!pFfb->disable_vscroll &&	/* must not be ffb1 in hires */
 	    pGC->alu == GXcopy &&	/* it must be a copy */
 	    dstx == srcx &&		/* X must be unchanging */
 	    dsty != srcy &&		/* Y must be changing */
 	    sptr == dptr &&		/* src and dst must be the framebuffer */
-	    dptr == (unsigned char *) pFfb->fb) {
-		FFB_WRITE_ATTRIBUTES_VSCROLL(pFfb, pGC->planemask);
-		ret = cfbBitBlt (pSrcDrawable, pDstDrawable,
-				 pGC, srcx, srcy, width, height, dstx, dsty, (void (*)())CreatorDoVertBitblt, 0);
-	} else {
-		if(dptr == (unsigned char *) pFfb->fb)
-			FFB_WRITE_ATTRIBUTES_SFB_VAR(pFfb, pGC->planemask, pGC->alu);
-		if(dptr == (unsigned char *) pFfb->fb ||
-		   sptr == (unsigned char *) pFfb->fb)
-			FFBWait(pFfb, ffb);
-		ret = cfbBitBlt (pSrcDrawable, pDstDrawable,
-				 pGC, srcx, srcy, width, height, dstx, dsty, (void (*)())CreatorDoBitblt, 0);
+	    dptr == sfb) {
+		WindowPtr pWin = (WindowPtr) pSrcDrawable;
+		CreatorPrivWinPtr pFfbPrivWin = CreatorGetWindowPrivate(pWin);
+		unsigned int fbc = pFfbPrivWin->fbc_base;
+		int same_buffer;
+
+		/* One last check, the read buffer and the write buffer
+		 * must be the same.  VSCROLL only allows to move pixels
+		 * within the same buffer.
+		 */
+		if (!pFfb->has_double_buffer) {
+			same_buffer = 1;
+		} else {
+			same_buffer = 0;
+			if ((((fbc & FFB_FBC_WB_MASK) == FFB_FBC_WB_A) &&
+			     ((fbc & FFB_FBC_RB_MASK) == FFB_FBC_RB_A)) ||
+			    (((fbc & FFB_FBC_WB_MASK) == FFB_FBC_WB_B) &&
+			     ((fbc & FFB_FBC_RB_MASK) == FFB_FBC_RB_B)))
+				same_buffer = 1;
+		}
+
+		if (same_buffer != 0) {
+			FFB_ATTR_VSCROLL_WIN(pFfb, pGC->planemask, pWin);
+			if (pSrcDrawable->bitsPerPixel == 8)
+				ret = cfbBitBlt (pSrcDrawable, pDstDrawable,
+						 pGC, srcx, srcy, width, height,
+						 dstx, dsty,
+						 (void (*)())CreatorDoVertBitblt, 0);
+			else
+				ret = cfb32BitBlt (pSrcDrawable, pDstDrawable,
+						   pGC, srcx, srcy, width, height,
+						   dstx, dsty,
+						   (void (*)())CreatorDoVertBitblt, 0);
+			FFBLOG(("CreatorCopyArea: Done, returning %p\n", ret));
+			return ret;
+		}
 	}
+
+	/* OK, we have to use GCOPY. */
+
+	/* Even when we are only reading from the framebuffer, we must
+	 * set the SFB_VAR attributes to handle double-buffering correctly.
+	 */
+	if(dptr == sfb || sptr == sfb) {
+		WindowPtr pWin;
+
+		if (dptr == sfb)
+			pWin = (WindowPtr) pDstDrawable;
+		else
+			pWin = (WindowPtr) pSrcDrawable;
+		FFB_ATTR_SFB_VAR_WIN(pFfb, pGC->planemask, pGC->alu, pWin);
+		FFBWait(pFfb, ffb);
+	}
+	if (pSrcDrawable->bitsPerPixel == 8)
+		ret = cfbBitBlt (pSrcDrawable, pDstDrawable,
+				 pGC, srcx, srcy, width, height,
+				 dstx, dsty, (void (*)())CreatorDoBitblt, 0);
+	else
+		ret = cfb32BitBlt (pSrcDrawable, pDstDrawable,
+				   pGC, srcx, srcy, width, height,
+				   dstx, dsty, (void (*)())CreatorDoBitblt, 0);
+
 	FFBLOG(("CreatorCopyArea: Done, returning %p\n", ret));
 	return ret;
 }
-
-#endif /* USE_VIS */

@@ -22,9 +22,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-/* $XFree86$ */
-
-#define PSZ 32
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_cplane.c,v 1.1 2000/05/18 23:21:36 dawes Exp $ */
 
 #include "ffb.h"
 #include "ffb_regs.h"
@@ -34,7 +32,11 @@
 #include "pixmapstr.h"
 #include "scrnintstr.h"
 
+#define PSZ 8
 #include "cfb.h"
+#undef PSZ
+#include "cfb32.h"
+
 #include "cfbmskbits.h"
 #include "mi.h"
 
@@ -198,9 +200,10 @@ CreatorCopyPlane32to1 (DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable, int r
 static unsigned int copyPlaneFG, copyPlaneBG;
 
 static void
-CreatorCopyPlane1to32 (DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable, int rop, RegionPtr prgnDst, DDXPointPtr pptSrc, unsigned long planemask, unsigned long bitPlane)
+CreatorCopyPlane1toFbBpp (DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable, int alu, RegionPtr prgnDst, DDXPointPtr pptSrc, unsigned long planemask, unsigned long bitPlane)
 {
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN (pDstDrawable->pScreen);
+	WindowPtr pWin = (WindowPtr) pDstDrawable;
 	ffb_fbcPtr ffb = pFfb->regs;
 	int srcx, srcy, dstx, dsty, width, height;
 	int xoffSrc, widthSrc;
@@ -210,22 +213,25 @@ CreatorCopyPlane1to32 (DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable, int r
 	BoxPtr pbox;
 
 	{
-		unsigned int ppc = (FFB_PPC_FW_DISABLE|FFB_PPC_VCE_DISABLE|FFB_PPC_APE_DISABLE|
-				    FFB_PPC_TBE_OPAQUE|FFB_PPC_CS_CONST);
-		unsigned int ppc_mask = (FFB_PPC_FW_MASK|FFB_PPC_VCE_MASK|FFB_PPC_APE_MASK|
-					 FFB_PPC_TBE_MASK|FFB_PPC_CS_MASK);
-		unsigned int rop = FFB_ROP_EDIT_BIT | GXcopy;
+		unsigned int ppc = (FFB_PPC_APE_DISABLE | FFB_PPC_TBE_OPAQUE |
+				    FFB_PPC_CS_CONST);
+		unsigned int ppc_mask = (FFB_PPC_APE_MASK | FFB_PPC_TBE_MASK |
+					 FFB_PPC_CS_MASK);
+		unsigned int rop = (FFB_ROP_EDIT_BIT | alu) | (FFB_ROP_NEW << 8);
+		unsigned int fbc = FFB_FBC_WIN(pWin);
+
+		fbc = (fbc & ~FFB_FBC_XE_MASK) | FFB_FBC_XE_OFF;
 
 		if((pFfb->ppc_cache & ppc_mask) != ppc ||
 		   pFfb->fg_cache != copyPlaneFG ||
-		   pFfb->fbc_cache != FFB_FBC_DEFAULT ||
+		   pFfb->fbc_cache != fbc ||
 		   pFfb->rop_cache != rop ||
 		   pFfb->pmask_cache != planemask ||
 		   pFfb->bg_cache != copyPlaneBG) {
 			pFfb->ppc_cache &= ~ppc_mask;
 			pFfb->ppc_cache |= ppc;
 			pFfb->fg_cache = copyPlaneFG;
-			pFfb->fbc_cache = FFB_FBC_DEFAULT;
+			pFfb->fbc_cache = fbc;
 			pFfb->rop_cache = rop;
 			pFfb->pmask_cache = planemask;
 			pFfb->bg_cache = copyPlaneBG;
@@ -233,7 +239,7 @@ CreatorCopyPlane1to32 (DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable, int r
 			FFBFifo(pFfb, 6);
 			ffb->ppc = ppc;
 			ffb->fg = copyPlaneFG;
-			ffb->fbc = FFB_FBC_DEFAULT;
+			ffb->fbc = fbc;
 			ffb->rop = rop;
 			ffb->pmask = planemask;
 			ffb->bg = copyPlaneBG;
@@ -301,22 +307,26 @@ RegionPtr CreatorCopyPlane(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable,
 			   int dstx, int dsty, unsigned long bitPlane)
 {
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN (pSrcDrawable->pScreen);
+	WindowPtr pWin = (WindowPtr) pDstDrawable;
 	ffb_fbcPtr ffb = pFfb->regs;
 	RegionPtr ret;
 
 	FFBLOG(("CreatorCopyPlane: sbpp(%d) dbpp(%d) src[%08x:%08x] dst[%08x:%08x] bplane(%08x)\n",
 		pSrcDrawable->bitsPerPixel, pDstDrawable->bitsPerPixel,
 		srcx, srcy, dstx, dsty, bitPlane));
-	if (pSrcDrawable->bitsPerPixel == 1 && pDstDrawable->bitsPerPixel == 32) {
+	if (pSrcDrawable->bitsPerPixel == 1 &&
+	    (pDstDrawable->bitsPerPixel == 32 || pDstDrawable->bitsPerPixel == 8)) {
 		if (bitPlane == 1) {
 			copyPlaneFG = pGC->fgPixel;
 			copyPlaneBG = pGC->bgPixel;
 			ret = cfbBitBlt (pSrcDrawable, pDstDrawable,
-					 pGC, srcx, srcy, width, height, dstx, dsty, CreatorCopyPlane1to32, bitPlane);
+					 pGC, srcx, srcy, width, height,
+					 dstx, dsty, CreatorCopyPlane1toFbBpp, bitPlane);
 		} else
 			ret = miHandleExposures (pSrcDrawable, pDstDrawable,
 						 pGC, srcx, srcy, width, height, dstx, dsty, bitPlane);
-	} else if (pSrcDrawable->bitsPerPixel == 32 && pDstDrawable->bitsPerPixel == 1) {
+	} else if ((pSrcDrawable->bitsPerPixel == 32 || pSrcDrawable->bitsPerPixel == 8)
+		   && pDstDrawable->bitsPerPixel == 1) {
 		extern int InverseAlu[16];
 		int oldalu;
 
@@ -325,11 +335,17 @@ RegionPtr CreatorCopyPlane(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable,
 			pGC->alu = InverseAlu[pGC->alu];
 		else if ((pGC->fgPixel & 1) == (pGC->bgPixel & 1))
 			pGC->alu = mfbReduceRop(pGC->alu, pGC->fgPixel);
-		FFB_WRITE_ATTRIBUTES_SFB_VAR(pFfb, PMSK, GXcopy);
+		FFB_ATTR_SFB_VAR_WIN(pFfb, 0x00ffffff, GXcopy, pWin);
 		FFBWait(pFfb, ffb);
-		ret = cfbBitBlt (pSrcDrawable, pDstDrawable,
-				 pGC, srcx, srcy, width, height, dstx, dsty,
-				 CreatorCopyPlane32to1, bitPlane);
+		if (pSrcDrawable->bitsPerPixel == 32) {
+			ret = cfbBitBlt (pSrcDrawable, pDstDrawable,
+					 pGC, srcx, srcy, width, height, dstx, dsty,
+					 CreatorCopyPlane32to1, bitPlane);
+		} else {
+			ret = cfbBitBlt (pSrcDrawable, pDstDrawable,
+					 pGC, srcx, srcy, width, height, dstx, dsty,
+					 cfbCopyPlane8to1, bitPlane);
+		}
 		pGC->alu = oldalu;
 	} else {
 		PixmapPtr pBitmap;
@@ -345,20 +361,27 @@ RegionPtr CreatorCopyPlane(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable,
 			return NULL;
 		}
 		/*
-		 * don't need to set pGC->fgPixel,bgPixel as copyPlane8to1
+		 * don't need to set pGC->fgPixel,bgPixel as copyPlane{8,32}to1
 		 * ignores pixel values, expecting the rop to "do the
 		 * right thing", which GXcopy will.
 		 */
 		ValidateGC ((DrawablePtr) pBitmap, pGC1);
 		/* no exposures here, scratch GC's don't get graphics expose */
-		FFB_WRITE_ATTRIBUTES_SFB_VAR(pFfb, PMSK, GXcopy);
+		FFB_ATTR_SFB_VAR_WIN(pFfb, 0x00ffffff, GXcopy, pWin);
 		FFBWait(pFfb, ffb);
-		cfbBitBlt (pSrcDrawable, (DrawablePtr) pBitmap,
-			   pGC1, srcx, srcy, width, height, 0, 0, CreatorCopyPlane32to1, bitPlane);
+		if (pSrcDrawable->bitsPerPixel == 32) {
+			cfbBitBlt (pSrcDrawable, (DrawablePtr) pBitmap,
+				   pGC1, srcx, srcy, width, height, 0, 0,
+				   CreatorCopyPlane32to1, bitPlane);
+		} else {
+			cfbBitBlt (pSrcDrawable, (DrawablePtr) pBitmap,
+				   pGC1, srcx, srcy, width, height, 0, 0,
+				   cfbCopyPlane8to1, bitPlane);
+		}
 		copyPlaneFG = pGC->fgPixel;
 		copyPlaneBG = pGC->bgPixel;
 		cfbBitBlt ((DrawablePtr) pBitmap, pDstDrawable, pGC,
-			   0, 0, width, height, dstx, dsty, CreatorCopyPlane1to32, 1);
+			   0, 0, width, height, dstx, dsty, CreatorCopyPlane1toFbBpp, 1);
 		FreeScratchGC (pGC1);
 		(*pScreen->DestroyPixmap) (pBitmap);
 		/* compute resultant exposures */

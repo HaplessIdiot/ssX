@@ -1,5 +1,5 @@
 /*
- * Leo (ZX) framebuffer driver.
+ * GX and Turbo GX framebuffer driver.
  *
  * Copyright (C) 2000 Jakub Jelinek (jakub@redhat.com)
  *
@@ -20,8 +20,9 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo_driver.c,v 1.1 2000/05/18 23:21:39 dawes Exp $ */
+/* $XFree86$ */
 
+#define PSZ 8
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
@@ -30,41 +31,39 @@
 #include "mibstore.h"
 #include "micmap.h"
 
-#define PSZ 32
 #include "cfb.h"
-#undef PSZ
 #include "xf86cmap.h"
-#include "leo.h"
+#include "cg6.h"
 
-static OptionInfoPtr LeoAvailableOptions(int chipid, int busid);
-static void	LeoIdentify(int flags);
-static Bool	LeoProbe(DriverPtr drv, int flags);
-static Bool	LeoPreInit(ScrnInfoPtr pScrn, int flags);
-static Bool	LeoScreenInit(int Index, ScreenPtr pScreen, int argc,
+static OptionInfoPtr CG6AvailableOptions(int chipid, int busid);
+static void	CG6Identify(int flags);
+static Bool	CG6Probe(DriverPtr drv, int flags);
+static Bool	CG6PreInit(ScrnInfoPtr pScrn, int flags);
+static Bool	CG6ScreenInit(int Index, ScreenPtr pScreen, int argc,
 			      char **argv);
-static Bool	LeoEnterVT(int scrnIndex, int flags);
-static void	LeoLeaveVT(int scrnIndex, int flags);
-static Bool	LeoCloseScreen(int scrnIndex, ScreenPtr pScreen);
-static Bool	LeoSaveScreen(ScreenPtr pScreen, int mode);
+static Bool	CG6EnterVT(int scrnIndex, int flags);
+static void	CG6LeaveVT(int scrnIndex, int flags);
+static Bool	CG6CloseScreen(int scrnIndex, ScreenPtr pScreen);
+static Bool	CG6SaveScreen(ScreenPtr pScreen, int mode);
 
 /* Required if the driver supports mode switching */
-static Bool	LeoSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
+static Bool	CG6SwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 /* Required if the driver supports moving the viewport */
-static void	LeoAdjustFrame(int scrnIndex, int x, int y, int flags);
+static void	CG6AdjustFrame(int scrnIndex, int x, int y, int flags);
 
 /* Optional functions */
-static void	LeoFreeScreen(int scrnIndex, int flags);
-static int	LeoValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
+static void	CG6FreeScreen(int scrnIndex, int flags);
+static int	CG6ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
 			     int flags);
 
-void LeoSync(ScrnInfoPtr pScrn);
+void CG6Sync(ScrnInfoPtr pScrn);
 
 #define VERSION 4000
-#define LEO_NAME "SUNLEO"
-#define LEO_DRIVER_NAME "sunleo"
-#define LEO_MAJOR_VERSION 1
-#define LEO_MINOR_VERSION 0
-#define LEO_PATCHLEVEL 0
+#define CG6_NAME "SUNCG6"
+#define CG6_DRIVER_NAME "suncg6"
+#define CG6_MAJOR_VERSION 1
+#define CG6_MINOR_VERSION 0
+#define CG6_PATCHLEVEL 0
 
 /* 
  * This contains the functions needed by the server after loading the driver
@@ -74,12 +73,12 @@ void LeoSync(ScrnInfoPtr pScrn);
  * an upper-case version of the driver name.
  */
 
-DriverRec SUNLEO = {
+DriverRec SUNCG6 = {
     VERSION,
-    LEO_DRIVER_NAME,
-    LeoIdentify,
-    LeoProbe,
-    LeoAvailableOptions,
+    CG6_DRIVER_NAME,
+    CG6Identify,
+    CG6Probe,
+    CG6AvailableOptions,
     NULL,
     0
 };
@@ -88,9 +87,9 @@ typedef enum {
     OPTION_SW_CURSOR,
     OPTION_HW_CURSOR,
     OPTION_NOACCEL
-} LeoOpts;
+} CG6Opts;
 
-static OptionInfoRec LeoOptions[] = {
+static OptionInfoRec CG6Options[] = {
     { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -99,32 +98,32 @@ static OptionInfoRec LeoOptions[] = {
 
 #ifdef XFree86LOADER
 
-static MODULESETUPPROTO(leoSetup);
+static MODULESETUPPROTO(cg6Setup);
 
-static XF86ModuleVersionInfo sunleoVersRec =
+static XF86ModuleVersionInfo suncg6VersRec =
 {
-	"sunleo",
+	"suncg6",
 	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
-	LEO_MAJOR_VERSION, LEO_MINOR_VERSION, LEO_PATCHLEVEL,
+	CG6_MAJOR_VERSION, CG6_MINOR_VERSION, CG6_PATCHLEVEL,
 	ABI_CLASS_VIDEODRV,
 	ABI_VIDEODRV_VERSION,
 	MOD_CLASS_VIDEODRV,
 	{0,0,0,0}
 };
 
-XF86ModuleData sunleoModuleData = { &sunleoVersRec, leoSetup, NULL };
+XF86ModuleData suncg6ModuleData = { &suncg6VersRec, cg6Setup, NULL };
 
 pointer
-leoSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+cg6Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 
     if (!setupDone) {
 	setupDone = TRUE;
-	xf86AddDriver(&SUNLEO, module, 0);
+	xf86AddDriver(&SUNCG6, module, 0);
 
 	/*
 	 * Modules that this driver always requires can be loaded here
@@ -145,29 +144,29 @@ leoSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 #endif /* XFree86LOADER */
 
 static Bool
-LeoGetRec(ScrnInfoPtr pScrn)
+CG6GetRec(ScrnInfoPtr pScrn)
 {
     /*
-     * Allocate an LeoRec, and hook it into pScrn->driverPrivate.
+     * Allocate an Cg6Rec, and hook it into pScrn->driverPrivate.
      * pScrn->driverPrivate is initialised to NULL, so we can check if
      * the allocation has already been done.
      */
     if (pScrn->driverPrivate != NULL)
 	return TRUE;
 
-    pScrn->driverPrivate = xnfcalloc(sizeof(LeoRec), 1);
+    pScrn->driverPrivate = xnfcalloc(sizeof(Cg6Rec), 1);
     return TRUE;
 }
 
 static void
-LeoFreeRec(ScrnInfoPtr pScrn)
+CG6FreeRec(ScrnInfoPtr pScrn)
 {
-    LeoPtr pLeo;
+    Cg6Ptr pCg6;
 
     if (pScrn->driverPrivate == NULL)
 	return;
 
-    pLeo = GET_LEO_FROM_SCRN(pScrn);
+    pCg6 = GET_CG6_FROM_SCRN(pScrn);
 
     xfree(pScrn->driverPrivate);
     pScrn->driverPrivate = NULL;
@@ -177,22 +176,22 @@ LeoFreeRec(ScrnInfoPtr pScrn)
 
 static 
 OptionInfoPtr
-LeoAvailableOptions(int chipid, int busid)
+CG6AvailableOptions(int chipid, int busid)
 {
-    return LeoOptions;
+    return CG6Options;
 }
 
 /* Mandatory */
 static void
-LeoIdentify(int flags)
+CG6Identify(int flags)
 {
-    xf86Msg(X_INFO, "%s: driver for Leo (ZX)\n", LEO_NAME);
+    xf86Msg(X_INFO, "%s: driver for CGsix (GX and Turbo GX)\n", CG6_NAME);
 }
 
 
 /* Mandatory */
 static Bool
-LeoProbe(DriverPtr drv, int flags)
+CG6Probe(DriverPtr drv, int flags)
 {
     int i;
     GDevPtr *devSections = NULL;
@@ -221,7 +220,7 @@ LeoProbe(DriverPtr drv, int flags)
      * specified.
      */
 
-    if ((numDevSections = xf86MatchDevice(LEO_DRIVER_NAME,
+    if ((numDevSections = xf86MatchDevice(CG6_DRIVER_NAME,
 					  &devSections)) <= 0) {
 	/*
 	 * There's no matching device section in the config file, so quit
@@ -236,7 +235,7 @@ LeoProbe(DriverPtr drv, int flags)
      * file info to override any contradictions.
      */
 
-    numUsed = xf86MatchSbusInstances(LEO_NAME, SBUS_DEVICE_LEO,
+    numUsed = xf86MatchSbusInstances(CG6_NAME, SBUS_DEVICE_CG6,
 		   devSections, numDevSections,
 		   drv, &usedChips);
 				    
@@ -262,17 +261,17 @@ LeoProbe(DriverPtr drv, int flags)
 
 	    /* Fill in what we can of the ScrnInfoRec */
 	    pScrn->driverVersion = VERSION;
-	    pScrn->driverName	 = LEO_DRIVER_NAME;
-	    pScrn->name		 = LEO_NAME;
-	    pScrn->Probe	 = LeoProbe;
-	    pScrn->PreInit	 = LeoPreInit;
-	    pScrn->ScreenInit	 = LeoScreenInit;
-  	    pScrn->SwitchMode	 = LeoSwitchMode;
-  	    pScrn->AdjustFrame	 = LeoAdjustFrame;
-	    pScrn->EnterVT	 = LeoEnterVT;
-	    pScrn->LeaveVT	 = LeoLeaveVT;
-	    pScrn->FreeScreen	 = LeoFreeScreen;
-	    pScrn->ValidMode	 = LeoValidMode;
+	    pScrn->driverName	 = CG6_DRIVER_NAME;
+	    pScrn->name		 = CG6_NAME;
+	    pScrn->Probe	 = CG6Probe;
+	    pScrn->PreInit	 = CG6PreInit;
+	    pScrn->ScreenInit	 = CG6ScreenInit;
+  	    pScrn->SwitchMode	 = CG6SwitchMode;
+  	    pScrn->AdjustFrame	 = CG6AdjustFrame;
+	    pScrn->EnterVT	 = CG6EnterVT;
+	    pScrn->LeaveVT	 = CG6LeaveVT;
+	    pScrn->FreeScreen	 = CG6FreeScreen;
+	    pScrn->ValidMode	 = CG6ValidMode;
 	    xf86AddEntityToScreen(pScrn, pEnt->index);
 	    foundScreen = TRUE;
 	}
@@ -283,9 +282,9 @@ LeoProbe(DriverPtr drv, int flags)
 
 /* Mandatory */
 static Bool
-LeoPreInit(ScrnInfoPtr pScrn, int flags)
+CG6PreInit(ScrnInfoPtr pScrn, int flags)
 {
-    LeoPtr pLeo;
+    Cg6Ptr pCg6;
     sbusDevicePtr psdp;
     MessageType from;
     int i;
@@ -305,11 +304,11 @@ LeoPreInit(ScrnInfoPtr pScrn, int flags)
      * AllocateScreenPrivateIndex() from the ScreenInit() function.
      */
 
-    /* Allocate the LeoRec driverPrivate */
-    if (!LeoGetRec(pScrn)) {
+    /* Allocate the Cg6Rec driverPrivate */
+    if (!CG6GetRec(pScrn)) {
 	return FALSE;
     }
-    pLeo = GET_LEO_FROM_SCRN(pScrn);
+    pCg6 = GET_CG6_FROM_SCRN(pScrn);
     
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
@@ -321,10 +320,10 @@ LeoPreInit(ScrnInfoPtr pScrn, int flags)
     for (i = 0; i < pScrn->numEntities; i++) {
 	EntityInfoPtr pEnt = xf86GetEntityInfo(pScrn->entityList[i]);
 
-	/* LEO is purely SBUS */
+	/* CG6 is purely SBUS */
 	if (pEnt->location.type == BUS_SBUS) {
 	    psdp = xf86GetSbusInfoForEntity(pEnt->index);
-	    pLeo->psdp = psdp;
+	    pCg6->psdp = psdp;
 	} else
 	    return FALSE;
     }
@@ -333,12 +332,12 @@ LeoPreInit(ScrnInfoPtr pScrn, int flags)
     deal with depth
     *********************/
     
-    if (!xf86SetDepthBpp(pScrn, 0, 0, 0, Support32bppFb)) {
+    if (!xf86SetDepthBpp(pScrn, 0, 0, 0, NoDepth24Support)) {
 	return FALSE;
     } else {
 	/* Check that the returned depth is one we support */
 	switch (pScrn->depth) {
-	case 32:
+	case 8:
 	    /* OK */
 	    break;
 	default:
@@ -352,32 +351,10 @@ LeoPreInit(ScrnInfoPtr pScrn, int flags)
     /* Collect all of the relevant option flags (fill in pScrn->options) */
     xf86CollectOptions(pScrn, NULL);
     /* Process the options */
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, LeoOptions);
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, CG6Options);
     
-    /*
-     * This must happen after pScrn->display has been set because
-     * xf86SetWeight references it.
-     */
-    if (pScrn->depth > 8) {
-	rgb weight = {10, 11, 11};
-	rgb mask = {0xff, 0xff00, 0xff0000};
-
-	if (!xf86SetWeight(pScrn, weight, mask)) {
-	    return FALSE;
-	}
-    }
-
-    if (!xf86SetDefaultVisual(pScrn, -1)) {
+    if (!xf86SetDefaultVisual(pScrn, -1))
 	return FALSE;
-    } else {
-	/* We don't currently support DirectColor */
-	if (pScrn->defaultVisual != TrueColor) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Given default visual"
-		       " (%s) is not supported\n",
-		       xf86GetVisualName(pScrn->defaultVisual));
-	    return FALSE;
-	}
-    }
 
     /*
      * The new cmap code requires this to be initialised.
@@ -396,29 +373,29 @@ LeoPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* determine whether we use hardware or software cursor */
     
-    pLeo->HWCursor = TRUE;
-    if (xf86GetOptValBool(LeoOptions, OPTION_HW_CURSOR, &pLeo->HWCursor))
+    pCg6->HWCursor = TRUE;
+    if (xf86GetOptValBool(CG6Options, OPTION_HW_CURSOR, &pCg6->HWCursor))
 	from = X_CONFIG;
-    if (xf86ReturnOptValBool(LeoOptions, OPTION_SW_CURSOR, FALSE)) {
+    if (xf86ReturnOptValBool(CG6Options, OPTION_SW_CURSOR, FALSE)) {
 	from = X_CONFIG;
-	pLeo->HWCursor = FALSE;
+	pCg6->HWCursor = FALSE;
     }
     
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
-		pLeo->HWCursor ? "HW" : "SW");
+		pCg6->HWCursor ? "HW" : "SW");
 
-    if (xf86ReturnOptValBool(LeoOptions, OPTION_NOACCEL, FALSE)) {
-	pLeo->NoAccel = TRUE;
+    if (xf86ReturnOptValBool(CG6Options, OPTION_NOACCEL, FALSE)) {
+	pCg6->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }
         
-    if (xf86LoadSubModule(pScrn, "cfb32") == NULL) {
-	LeoFreeRec(pScrn);
+    if (xf86LoadSubModule(pScrn, "cfb") == NULL) {
+	CG6FreeRec(pScrn);
 	return FALSE;
     }
 
-    if (pLeo->HWCursor && xf86LoadSubModule(pScrn, "ramdac") == NULL) {
-	LeoFreeRec(pScrn);
+    if (pCg6->HWCursor && xf86LoadSubModule(pScrn, "ramdac") == NULL) {
+	CG6FreeRec(pScrn);
 	return FALSE;
     }
 
@@ -430,12 +407,12 @@ LeoPreInit(ScrnInfoPtr pScrn, int flags)
 
     if(pScrn->display->virtualX || pScrn->display->virtualY) {
 	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		   "Leo does not support a virtual desktop\n");
+		   "CG6 does not support a virtual desktop\n");
 	pScrn->display->virtualX = 0;
 	pScrn->display->virtualY = 0;
     }
 
-    xf86SbusUseBuiltinMode(pScrn, pLeo->psdp);
+    xf86SbusUseBuiltinMode(pScrn, pCg6->psdp);
     pScrn->currentMode = pScrn->modes;
     pScrn->displayWidth = pScrn->virtualX;
 
@@ -450,30 +427,33 @@ LeoPreInit(ScrnInfoPtr pScrn, int flags)
 /* This gets called at the start of each server generation */
 
 static Bool
-LeoScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
+CG6ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 {
     ScrnInfoPtr pScrn;
-    LeoPtr pLeo;
+    Cg6Ptr pCg6;
     int ret;
-    VisualPtr visual;
-    extern Bool LeoAccelInit(ScreenPtr pScreen, LeoPtr pLeo);
 
     /* 
      * First get the ScrnInfoRec
      */
     pScrn = xf86Screens[pScreen->myNum];
 
-    pLeo = GET_LEO_FROM_SCRN(pScrn);
+    pCg6 = GET_CG6_FROM_SCRN(pScrn);
 
-    /* Map the Leo memory */
-    pLeo->fb =
-	xf86MapSbusMem (pLeo->psdp, LEO_FB0_VOFF, 0x803000);
+    /* Map the CG6 memory */
+    pCg6->fbc =
+	xf86MapSbusMem (pCg6->psdp, CG6_FBC_VOFF,
+			CG6_RAM_VOFF - CG6_FBC_VOFF +
+			(pCg6->psdp->width * pCg6->psdp->height));
 
-    if (! pLeo->fb)
+    if (! pCg6->fbc)
 	return FALSE;
 
+    pCg6->fb = (unsigned char *)pCg6->fbc + CG6_RAM_VOFF - CG6_FBC_VOFF;
+    pCg6->thc = (Cg6ThcPtr)((char *)pCg6->fbc + CG6_THC_VOFF - CG6_FBC_VOFF);
+
     /* Darken the screen for aesthetic reasons and set the viewport */
-    LeoSaveScreen(pScreen, SCREEN_SAVER_ON);
+    CG6SaveScreen(pScreen, SCREEN_SAVER_ON);
 
     /*
      * The next step is to setup the screen's visuals, and initialise the
@@ -489,10 +469,13 @@ LeoScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      */
     miClearVisualTypes();
 
+    /* Set the bits per RGB for 8bpp mode */
+    pScrn->rgbBits = 8;
+
     /* Setup the visuals we support. */
 
-    if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
-			  pScrn->defaultVisual))
+    if (!miSetVisualTypes(pScrn->depth, miGetDefaultVisualMask(pScrn->depth),
+			  pScrn->rgbBits, pScrn->defaultVisual))
 	return FALSE;
 
     /*
@@ -500,9 +483,9 @@ LeoScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * pScreen fields.
      */
 
-    ret = cfb32ScreenInit(pScreen, pLeo->fb, pScrn->virtualX,
-			  pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-			  2048);
+    ret = cfbScreenInit(pScreen, pCg6->fb, pScrn->virtualX,
+			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
+			pScrn->virtualX);
     if (!ret)
 	return FALSE;
 
@@ -512,50 +495,40 @@ LeoScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     xf86SetBlackWhitePixels(pScreen);
 
-    if (pScrn->bitsPerPixel > 8) {
-        /* Fixup RGB ordering */
-        visual = pScreen->visuals + pScreen->numVisuals;
-        while (--visual >= pScreen->visuals) {
-	    if ((visual->class | DynamicClass) == DirectColor) {
-		visual->offsetRed = pScrn->offset.red;
-		visual->offsetGreen = pScrn->offset.green;
-		visual->offsetBlue = pScrn->offset.blue;
-		visual->redMask = pScrn->mask.red;
-		visual->greenMask = pScrn->mask.green;
-		visual->blueMask = pScrn->mask.blue;
-	    }
-	}
+    if (!pCg6->NoAccel) {
+	extern Bool CG6AccelInit(ScreenPtr pScreen, Cg6Ptr pCg6);
+
+	if (!CG6AccelInit(pScreen, pCg6))
+	    return FALSE;
+	xf86Msg(X_INFO, "%s: Using acceleration\n", pCg6->psdp->device);
     }
-
-    if (!LeoAccelInit(pScreen, pLeo))
-	return FALSE;
-
-    if (!pLeo->NoAccel)
-	xf86Msg(X_INFO, "%s: Using acceleration\n", pLeo->psdp->device);
 
     /* Initialise cursor functions */
     miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
 
     /* Initialize HW cursor layer. 
        Must follow software cursor initialization*/
-    if (pLeo->HWCursor) { 
-	extern Bool LeoHWCursorInit(ScreenPtr pScreen);
+    if (pCg6->HWCursor) { 
+	extern Bool CG6HWCursorInit(ScreenPtr pScreen);
 
-	if(!LeoHWCursorInit(pScreen)) {
+	if(!CG6HWCursorInit(pScreen)) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
 		       "Hardware cursor initialization failed\n");
 	    return(FALSE);
 	}
-	xf86SbusHideOsHwCursor(pLeo->psdp);
+	xf86SbusHideOsHwCursor(pCg6->psdp);
     }
 
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))
 	return FALSE;
 
-    pLeo->CloseScreen = pScreen->CloseScreen;
-    pScreen->CloseScreen = LeoCloseScreen;
-    pScreen->SaveScreen = LeoSaveScreen;
+    if(!xf86SbusHandleColormaps(pScreen, pCg6->psdp))
+	return FALSE;
+
+    pCg6->CloseScreen = pScreen->CloseScreen;
+    pScreen->CloseScreen = CG6CloseScreen;
+    pScreen->SaveScreen = CG6SaveScreen;
 
     /* Report any unused options (only for the first generation) */
     if (serverGeneration == 1) {
@@ -563,7 +536,7 @@ LeoScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 
     /* unblank the screen */
-    LeoSaveScreen(pScreen, SCREEN_SAVER_OFF);
+    CG6SaveScreen(pScreen, SCREEN_SAVER_OFF);
 
     /* Done */
     return TRUE;
@@ -572,7 +545,7 @@ LeoScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 /* Usually mandatory */
 static Bool
-LeoSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
+CG6SwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 {
     return TRUE;
 }
@@ -584,13 +557,11 @@ LeoSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
  */
 /* Usually mandatory */
 static void 
-LeoAdjustFrame(int scrnIndex, int x, int y, int flags)
+CG6AdjustFrame(int scrnIndex, int x, int y, int flags)
 {
     /* we don't support virtual desktops */
     return;
 }
-
-extern void LeoVtChange (ScreenPtr pScreen, int enter);
 
 /*
  * This is called when VT switching back to the X server.  Its job is
@@ -599,14 +570,13 @@ extern void LeoVtChange (ScreenPtr pScreen, int enter);
 
 /* Mandatory */
 static Bool
-LeoEnterVT(int scrnIndex, int flags)
+CG6EnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-    LeoPtr pLeo = GET_LEO_FROM_SCRN(pScrn);
+    Cg6Ptr pCg6 = GET_CG6_FROM_SCRN(pScrn);
 
-    LeoVtChange (pScrn->pScreen, TRUE);
-    if (pLeo->HWCursor)
-	xf86SbusHideOsHwCursor (pLeo->psdp);
+    if (pCg6->HWCursor)
+	xf86SbusHideOsHwCursor (pCg6->psdp);
     return TRUE;
 }
 
@@ -617,11 +587,9 @@ LeoEnterVT(int scrnIndex, int flags)
 
 /* Mandatory */
 static void
-LeoLeaveVT(int scrnIndex, int flags)
+CG6LeaveVT(int scrnIndex, int flags)
 {
-    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-
-    LeoVtChange (pScrn->pScreen, FALSE);
+    return;
 }
 
 
@@ -632,15 +600,17 @@ LeoLeaveVT(int scrnIndex, int flags)
 
 /* Mandatory */
 static Bool
-LeoCloseScreen(int scrnIndex, ScreenPtr pScreen)
+CG6CloseScreen(int scrnIndex, ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-    LeoPtr pLeo = GET_LEO_FROM_SCRN(pScrn);
+    Cg6Ptr pCg6 = GET_CG6_FROM_SCRN(pScrn);
 
     pScrn->vtSema = FALSE;
-    xf86UnmapSbusMem(pLeo->psdp, pLeo->fb, 0x803000);
-
-    pScreen->CloseScreen = pLeo->CloseScreen;
+    xf86UnmapSbusMem(pCg6->psdp, pCg6->fb,
+		     CG6_RAM_VOFF - CG6_FBC_VOFF +
+		     (pCg6->psdp->width * pCg6->psdp->height));
+    
+    pScreen->CloseScreen = pCg6->CloseScreen;
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);
     return FALSE;
 }
@@ -650,9 +620,9 @@ LeoCloseScreen(int scrnIndex, ScreenPtr pScreen)
 
 /* Optional */
 static void
-LeoFreeScreen(int scrnIndex, int flags)
+CG6FreeScreen(int scrnIndex, int flags)
 {
-    LeoFreeRec(xf86Screens[scrnIndex]);
+    CG6FreeRec(xf86Screens[scrnIndex]);
 }
 
 
@@ -660,7 +630,7 @@ LeoFreeScreen(int scrnIndex, int flags)
 
 /* Optional */
 static int
-LeoValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
+CG6ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
     if (mode->Flags & V_INTERLACE)
 	return(MODE_BAD);
@@ -672,7 +642,7 @@ LeoValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 
 /* Mandatory */
 static Bool
-LeoSaveScreen(ScreenPtr pScreen, int mode)
+CG6SaveScreen(ScreenPtr pScreen, int mode)
     /* this function should blank the screen when unblank is FALSE and
        unblank it when unblank is TRUE -- it doesn't actually seem to be
        used for much though */
@@ -684,7 +654,7 @@ LeoSaveScreen(ScreenPtr pScreen, int mode)
  * This is the implementation of the Sync() function.
  */
 void
-LeoSync(ScrnInfoPtr pScrn)
+CG6Sync(ScrnInfoPtr pScrn)
 {
     return;
 }

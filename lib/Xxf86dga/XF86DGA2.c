@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.11 1999/08/14 10:49:17 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.13 1999/11/30 18:06:19 mvojkovi Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -906,7 +906,9 @@ DGAMapPhysical(
 #ifndef MAP_FILE
 #define MAP_FILE 0
 #endif
-    if ((pMap->fd = open(DEV_MEM, O_RDWR)) < 0)
+    if (!name)
+	    name = DEV_MEM;
+    if ((pMap->fd = open(name, O_RDWR)) < 0)
 	return False;
     pMap->virtual = mmap(NULL, size, PROT_READ | PROT_WRITE, 
 			MAP_FILE | MAP_SHARED, pMap->fd, (off_t)base);

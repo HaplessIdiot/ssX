@@ -24,12 +24,11 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_gc.h,v 1.1 2000/05/18 23:21:37 dawes Exp $ */
 
 #ifndef FFBGC_H
 #define FFBGC_H
 
-#ifdef USE_VIS
 extern void CreatorDoBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst,
 			    DDXPointPtr pptSrc, unsigned long planemask);
 
@@ -39,9 +38,6 @@ extern void CreatorDoVertBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, Reg
 extern RegionPtr CreatorCopyArea(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable,
 				 GCPtr pGC, int srcx, int srcy, int width, int height,
 				 int dstx, int dsty);
-#else /* !USE_VIS */
-#define CreatorCopyArea cfbCopyArea
-#endif /* !USE_VIS */
 
 extern RegionPtr CreatorCopyPlane(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable,
 				  GCPtr pGC, int srcx, int srcy, int width, int height,

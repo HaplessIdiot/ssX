@@ -24,9 +24,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-/* $XFree86$ */
-
-#define PSZ 32
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_zeroarc.c,v 1.1 2000/05/18 23:21:38 dawes Exp $ */
 
 #include "ffb.h"
 #include "ffb_regs.h"
@@ -37,7 +35,10 @@
 #include "pixmapstr.h"
 #include "scrnintstr.h"
 
+#define PSZ 8
 #include "cfb.h"
+#undef PSZ
+#include "cfb32.h"
 
 #include "mi.h"
 #include "mizerarc.h"
@@ -354,6 +355,7 @@ CreatorZeroArcDashPts(GCPtr pGC, xArc *arc, DashInfo *dinfo, DDXPointPtr points,
 void
 CreatorZeroPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 {
+	WindowPtr pWin = (WindowPtr) pDrawable;
 	int maxPts = 0;
 	register int n;
 	register xArc *arc;
@@ -423,26 +425,31 @@ CreatorZeroPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 			   &dinfo.dashOffsetInit);
 		off = *(int *)&pDrawable->x;
 		off -= (off & 0x8000) << 1;
-		addrp = (char *)pFfb->fb + (pDrawable->y << 13) + (pDrawable->x << 2);
+		if (pGC->depth == 8) {
+			addrp = (char *)pFfb->sfb8r +
+				(pDrawable->y << 11) + (pDrawable->x << 0);
+		} else {
+			addrp = (char *)pFfb->sfb32 +
+				(pDrawable->y << 13) + (pDrawable->x << 2);
+		}
 		ppc = FFB_PPC_CS_VAR;
 	} else
 		ppc = FFB_PPC_CS_CONST;
 
         if(gcPriv->stipple == NULL) {
-		FFB_WRITE_ATTRIBUTES(pFfb,
-				     ppc|FFB_PPC_FW_DISABLE|FFB_PPC_VCE_DISABLE|FFB_PPC_APE_DISABLE,
-				     FFB_PPC_CS_MASK|FFB_PPC_FW_MASK|FFB_PPC_VCE_MASK|FFB_PPC_APE_MASK,
-				     pGC->planemask,
-				     FFB_ROP_EDIT_BIT|pGC->alu,
-				     FFB_DRAWOP_DOT, pGC->fgPixel,
-				     FFB_FBC_DEFAULT);
+		FFB_ATTR_GC(pFfb, pGC, pWin,
+			    ppc | FFB_PPC_APE_DISABLE,
+			    FFB_DRAWOP_DOT);
 	} else {
+		unsigned int fbc;
+
 		FFBSetStipple(pFfb, ffb, gcPriv->stipple,
-			      ppc|FFB_PPC_FW_DISABLE|FFB_PPC_VCE_DISABLE,
-			      FFB_PPC_CS_MASK|FFB_PPC_FW_MASK|FFB_PPC_VCE_MASK);
+			      ppc, FFB_PPC_CS_MASK);
 		FFB_WRITE_PMASK(pFfb, ffb, pGC->planemask);
 		FFB_WRITE_DRAWOP(pFfb, ffb, FFB_DRAWOP_DOT);
-		FFB_WRITE_FBC(pFfb, ffb, FFB_FBC_DEFAULT);
+		fbc = FFB_FBC_WIN(pWin);
+		fbc = (fbc & ~FFB_FBC_XE_MASK) | FFB_FBC_XE_OFF;
+		FFB_WRITE_FBC(pFfb, ffb, fbc);
 	}
 	if((ppc & FFB_PPC_CS_MASK) == FFB_PPC_CS_VAR)
 		FFBWait(pFfb, ffb);
@@ -462,15 +469,28 @@ CreatorZeroPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 				pbox = REGION_RECTS(clip);
 				j = numRects;
 				pix = pGC->fgPixel;
-				while (j--) {
-					c1 = *(int *)&pbox->x1 - off;
-					c2 = *(int *)&pbox->x2 - off - 0x00010001;
-					for (ppt = (int *)points, k = n; --k >= 0; ) {
-						pt = *ppt++;
-						if (!(((pt - c1) | (c2 - pt)) & 0x80008000))
-							*(unsigned int *)(addrp + ((pt << 13) & 0xffe000) + ((pt >> 14) & 0x1ffc)) = pix;
+				if (pGC->depth == 8) {
+					while (j--) {
+						c1 = *(int *)&pbox->x1 - off;
+						c2 = *(int *)&pbox->x2 - off - 0x00010001;
+						for (ppt = (int *)points, k = n; --k >= 0; ) {
+							pt = *ppt++;
+							if (!(((pt - c1) | (c2 - pt)) & 0x80008000))
+								*(unsigned char *)(addrp + ((pt << 11) & 0x3ff800) + ((pt >> 16) & 0x07ff)) = pix;
+						}
+						pbox++;
 					}
-					pbox++;
+				} else {
+					while (j--) {
+						c1 = *(int *)&pbox->x1 - off;
+						c2 = *(int *)&pbox->x2 - off - 0x00010001;
+						for (ppt = (int *)points, k = n; --k >= 0; ) {
+							pt = *ppt++;
+							if (!(((pt - c1) | (c2 - pt)) & 0x80008000))
+								*(unsigned int *)(addrp + ((pt << 13) & 0xffe000) + ((pt >> 14) & 0x1ffc)) = pix;
+						}
+						pbox++;
+					}
 				}
 				if (pGC->lineStyle != LineDoubleDash)
 					continue;
@@ -481,15 +501,28 @@ CreatorZeroPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 				n = pts - oddPts;
 				pbox = REGION_RECTS(clip);
 				j = numRects;
-				while (j--) {
-					c1 = *(int *)&pbox->x1 - off;
-					c2 = *(int *)&pbox->x2 - off - 0x00010001;
-					for (ppt = (int *)oddPts, k = n; --k >= 0; ) {
-						pt = *ppt++;
-						if (!(((pt - c1) | (c2 - pt)) & 0x80008000))
-							*(unsigned int *)(addrp + ((pt << 13) & 0xffe000) + ((pt >> 14) & 0x1ffc)) = pix;
+				if (pGC->depth == 8) {
+					while (j--) {
+						c1 = *(int *)&pbox->x1 - off;
+						c2 = *(int *)&pbox->x2 - off - 0x00010001;
+						for (ppt = (int *)oddPts, k = n; --k >= 0; ) {
+							pt = *ppt++;
+							if (!(((pt - c1) | (c2 - pt)) & 0x80008000))
+								*(unsigned char *)(addrp + ((pt << 11) & 0x3ff800) + ((pt >> 16) & 0x07ff)) = pix;
+						}
+						pbox++;
 					}
-					pbox++;
+				} else {
+					while (j--) {
+						c1 = *(int *)&pbox->x1 - off;
+						c2 = *(int *)&pbox->x2 - off - 0x00010001;
+						for (ppt = (int *)oddPts, k = n; --k >= 0; ) {
+							pt = *ppt++;
+							if (!(((pt - c1) | (c2 - pt)) & 0x80008000))
+								*(unsigned int *)(addrp + ((pt << 13) & 0xffe000) + ((pt >> 14) & 0x1ffc)) = pix;
+						}
+						pbox++;
+					}
 				}
 			}
 		}

@@ -21,7 +21,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/VISmoveImage.s,v 1.1 2000/05/18 23:21:35 dawes Exp $ */
 
 
 /* NOTE NOTE NOTE: All loads in these routines _MUST_ be 64-byte block
@@ -849,31 +849,31 @@ narrowst:
 	ba,pt			%xcc, 4f
 	 nop
 3:	cmp			%tmp4, -8
-	bgu,a,pn		%xcc, 4f
+	bg,a,pn			%ICC, 4f
 	 stda			%f18, [%fregset + %srcend] ASI_PST8_P
 	ba,a,pt			%xcc, 4f
 	cmp			%tmp4, -8
-	bgu,a,pn		%xcc, 4f
+	bg,a,pn			%ICC, 4f
 	 stda			%f20, [%fregset + %srcend] ASI_PST8_P
 	ba,a,pt			%xcc, 4f
 	cmp			%tmp4, -8
-	bgu,a,pn		%xcc, 4f
+	bg,a,pn			%ICC, 4f
 	 stda			%f22, [%fregset + %srcend] ASI_PST8_P
 	ba,a,pt			%xcc, 4f
 	cmp			%tmp4, -8
-	bgu,a,pn		%xcc, 4f
+	bg,a,pn			%ICC, 4f
 	 stda			%f24, [%fregset + %srcend] ASI_PST8_P
 	ba,a,pt			%xcc, 4f
 	cmp			%tmp4, -8
-	bgu,a,pn		%xcc, 4f
+	bg,a,pn			%ICC, 4f
 	 stda			%f26, [%fregset + %srcend] ASI_PST8_P
 	ba,a,pt			%xcc, 4f
 	cmp			%tmp4, -8
-	bgu,a,pn		%xcc, 4f
+	bg,a,pn			%ICC, 4f
 	 stda			%f28, [%fregset + %srcend] ASI_PST8_P
 	ba,a,pt			%xcc, 4f
 	cmp			%tmp4, -8
-	bgu,a,pn		%xcc, 4f
+	bg,a,pn			%ICC, 4f
 	 stda			%f30, [%fregset + %srcend] ASI_PST8_P
 4:	and			%tmp3, 60, %tmp3
 	sub			%dst, 64, %dst
@@ -2253,35 +2253,35 @@ narrowstr:
 	ba,pt			%xcc, 5f
 	 nop
 4:	cmp			%tmp4, -8
-	bgu,a,pn		%xcc, 5f
+	bg,a,pn			%ICC, 5f
 	 stda			%f30, [%fregset + %srcend] ASI_PST8_P
 	ba,a,pt			%xcc, 5f
 	cmp			%tmp4, -8
-	bgu,a,pn		%xcc, 5f
+	bg,a,pn			%ICC, 5f
 	 stda			%f28, [%fregset + %srcend] ASI_PST8_P
 	ba,a,pt			%xcc, 5f
 	cmp			%tmp4, -8
-	bgu,a,pn		%xcc, 5f
+	bg,a,pn			%ICC, 5f
 	 stda			%f26, [%fregset + %srcend] ASI_PST8_P
 	ba,a,pt			%xcc, 5f
 	cmp			%tmp4, -8
-	bgu,a,pn		%xcc, 5f
+	bg,a,pn			%ICC, 5f
 	 stda			%f24, [%fregset + %srcend] ASI_PST8_P
 	ba,a,pt			%xcc, 5f
 	cmp			%tmp4, -8
-	bgu,a,pn		%xcc, 5f
+	bg,a,pn			%ICC, 5f
 	 stda			%f22, [%fregset + %srcend] ASI_PST8_P
 	ba,a,pt			%xcc, 5f
 	cmp			%tmp4, -8
-	bgu,a,pn		%xcc, 5f
+	bg,a,pn			%ICC, 5f
 	 stda			%f20, [%fregset + %srcend] ASI_PST8_P
 	ba,a,pt			%xcc, 5f
 	cmp			%tmp4, -8
-	bgu,a,pn		%xcc, 5f
+	bg,a,pn			%ICC, 5f
 	 stda			%f18, [%fregset + %srcend] ASI_PST8_P
 	ba,a,pt			%xcc, 5f
 	cmp			%tmp4, -8
-	bgu,a,pn		%xcc, 5f
+	bg,a,pn			%ICC, 5f
 	 stda			%f16, [%fregset + %srcend] ASI_PST8_P
 5:	and			%tmp3, 60, %tmp3
 	add			%dst, 64, %dst
