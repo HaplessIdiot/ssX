@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.158 2000/03/07 14:31:35 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.159 2000/03/07 15:23:00 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -255,7 +255,15 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.158 2000/03/07 14:31:35 dawes Exp 
 				neomagic i740 tdfx \
 				cirrus tseng trident chips apm \
 				GlideDriver fbdev \
-				ati r128 vga XF86ExtraCardDrivers
+				ati r128 AgpGartDrivers cyrix \
+				vga XF86OSCardDrivers XF86ExtraCardDrivers
+ */
+
+/*
+ * To add third party drivers to the standard driver list, set the
+ * following.
+ *
+#define XF86ExtraCardDrivers	extradriver1 extradriver2 ...
  */
 
 /*
