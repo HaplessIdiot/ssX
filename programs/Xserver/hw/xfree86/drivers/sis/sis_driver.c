@@ -11322,9 +11322,9 @@ SISWaitRetraceCRT1(ScrnInfoPtr pScrn)
    if(temp & 0xc0) return;
 
    watchdog = 65536;
-   while((!(inSISREG(SISINPSTAT) & 0x08)) && --watchdog);
-   watchdog = 65536;
    while((inSISREG(SISINPSTAT) & 0x08) && --watchdog);
+   watchdog = 65536;
+   while((!(inSISREG(SISINPSTAT) & 0x08)) && --watchdog);
 }
 
 void
@@ -11334,12 +11334,17 @@ SISWaitRetraceCRT2(ScrnInfoPtr pScrn)
    int           watchdog;
    unsigned char temp, reg;
 
+   if(SiSBridgeIsInSlaveMode(pScrn)) {
+      SISWaitRetraceCRT1(pScrn);
+      return;
+   }
+
    switch(pSiS->VGAEngine) {
    case SIS_300_VGA:
-   	reg = 0x28;
+   	reg = 0x25;
 	break;
    case SIS_315_VGA:
-   	reg = 0x33;
+   	reg = 0x30;
 	break;
    default:
         return;
@@ -11348,12 +11353,12 @@ SISWaitRetraceCRT2(ScrnInfoPtr pScrn)
    watchdog = 65536;
    do {
    	inSISIDXREG(SISPART1, reg, temp);
-	if(temp & 0x80) break;
+	if(!(temp & 0x02)) break;
    } while(--watchdog);
    watchdog = 65536;
    do {
    	inSISIDXREG(SISPART1, reg, temp);
-	if(!(temp & 0x80)) break;
+	if(temp & 0x02) break;
    } while(--watchdog);
 }
 
@@ -11361,23 +11366,23 @@ static void
 SISWaitVBRetrace(ScrnInfoPtr pScrn)
 {
    SISPtr  pSiS = SISPTR(pScrn);
-   
+
    if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
 #ifdef SISDUALHEAD
       if(pSiS->DualHeadMode) {
    	 if(pSiS->SecondHead)
-		SISWaitRetraceCRT1(pScrn);
+	    SISWaitRetraceCRT1(pScrn);
          else
-		SISWaitRetraceCRT2(pScrn);
+	    SISWaitRetraceCRT2(pScrn);
       } else {
 #endif
 	 if(pSiS->VBFlags & DISPTYPE_DISP1) {
-		SISWaitRetraceCRT1(pScrn);
+	    SISWaitRetraceCRT1(pScrn);
 	 }
 	 if(pSiS->VBFlags & DISPTYPE_DISP2) {
-		if(!(SiSBridgeIsInSlaveMode(pScrn))) {
-		  	SISWaitRetraceCRT2(pScrn);
-		}
+	    if(!(SiSBridgeIsInSlaveMode(pScrn))) {
+	       SISWaitRetraceCRT2(pScrn);
+	    }
 	 }
 #ifdef SISDUALHEAD
       }

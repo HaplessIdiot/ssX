@@ -748,14 +748,14 @@ SiS_WaitRetrace1(SiS_Private *SiS_Pr)
 }
 
 static void
-SiS_WaitRetrace2(SiS_Private *SiS_Pr)
+SiS_WaitRetrace2(SiS_Private *SiS_Pr, USHORT reg)
 {
   USHORT watchdog;
 
   watchdog = 65535;
-  while((SiS_GetReg(SiS_Pr->SiS_Part1Port,0x30) & 0x02) && --watchdog);
+  while((SiS_GetReg(SiS_Pr->SiS_Part1Port,reg) & 0x02) && --watchdog);
   watchdog = 65535;
-  while((!(SiS_GetReg(SiS_Pr->SiS_Part1Port,0x30) & 0x02)) && --watchdog);
+  while((!(SiS_GetReg(SiS_Pr->SiS_Part1Port,reg) & 0x02)) && --watchdog);
 }
 
 static void
@@ -769,7 +769,7 @@ SiS_WaitVBRetrace(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
      if(!(SiS_GetReg(SiS_Pr->SiS_Part1Port,0x00) & 0x80)) {
         SiS_WaitRetrace1(SiS_Pr);
      } else {
-        SiS_WaitRetrace2(SiS_Pr);
+        SiS_WaitRetrace2(SiS_Pr, 0x25);
      }
 #endif
   } else {
@@ -777,7 +777,7 @@ SiS_WaitVBRetrace(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
      if(!(SiS_GetReg(SiS_Pr->SiS_Part1Port,0x00) & 0x40)) {
         SiS_WaitRetrace1(SiS_Pr);
      } else {
-        SiS_WaitRetrace2(SiS_Pr);
+        SiS_WaitRetrace2(SiS_Pr, 0x30);
      }
 #endif
   }
