@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.cpp,v 1.2 2000/03/08 05:38:31 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.cpp,v 1.3 2000/03/08 19:12:44 dawes Exp $
 .TH XF86Config __filemansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 XF86Config - Configuration File for XFree86
@@ -166,6 +166,9 @@ on the keyword.  The argument types are:
 .fi
 .RE
 .PP
+Note: hex integer values must be prefixed with "0x", and octal values
+with "0".
+.PP
 A special keyword called
 .B Option
 may be used to provide free-form data to various components of the server.
@@ -263,7 +266,7 @@ Multiple
 .B FontPath
 entries may be specified, and they will be
 concatenated to build up the fontpath used by the server.
-Font path elements may be either absolute directory paths, or the
+Font path elements may be either absolute directory paths, or
 a font server identifier.  Font server identifiers have the form:
 .PP
 .RS 11
@@ -1415,7 +1418,7 @@ section.
 .PP
 The entries that may be used in this section are described here.
 .TP 7
-.BI "Screen  """ screen-id """" " screen-num  position-information"
+.BI "Screen  " "screen-num" " ""screen-id"" " "position-information"
 One of these entries must be given for each screen being used in
 a session.  The
 .I screen-id
