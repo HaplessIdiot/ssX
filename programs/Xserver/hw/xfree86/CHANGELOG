@@ -1,4 +1,5 @@
 XFree86 4.3.99.2 (xx March 2003)
+  88. Fix file descriptor leaks in xman (Ted Unangst, OpenBSD PR#3186).
   87. Fix bug in mode validation that occurs when the XF86Config doesn't
       specify any mode or virtual resolution information (Marc La France).
   86. Resetting 'bound' flag for an agp entry after undbind succeeded in
@@ -16715,4 +16716,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2623 2003/04/07 16:23:32 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2624 2003/04/08 20:47:34 tsi Exp $
