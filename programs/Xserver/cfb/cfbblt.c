@@ -1,7 +1,7 @@
 /*
  * cfb copy area
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbblt.c,v 3.2 1998/10/04 09:37:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbblt.c,v 3.3 1998/12/05 14:39:58 dawes Exp $ */
 
 /*
 
@@ -95,57 +95,6 @@ Author: Keith Packard
    words, so we unroll the planemask here and redefine MROP_SOLID
    and MROP_MASK. */
 
-#define DeclareMergeRop24i() unsigned long   _ca1[3], _cx1[3], _ca2[3], _cx2[3];
-
-#if	(BITMAP_BIT_ORDER == MSBFirst)
-#define InitializeMergeRop24i(alu,pm) {		\
-  unsigned long _pm;				\
-  mergeRopPtr  _bits;				\
-  int i;					\
-  for (i = 0; i < 3; i++) {			\
-    _pm = ((pm << (8+8*i)) | (pm >> (16-8*i)));	\
-    _bits = &mergeRopBits[alu];			\
-    _ca1[i] = _bits->ca1 &  _pm;		\
-    _cx1[i] = _bits->cx1 | ~_pm;		\
-    _ca2[i] = _bits->ca2 &  _pm;		\
-    _cx2[i] = _bits->cx2 &  _pm;		\
-  }						\
-}
-#else	/* (BITMAP_BIT_ORDER == LSBFirst) */
-#define InitializeMergeRop24i(alu,pm) {		\
-  unsigned long _pm;				\
-  mergeRopPtr  _bits;				\
-  int i;					\
-  for (i = 0; i < 3; i++) {			\
-    _pm = ((pm >> (8*i)) | (pm << (24-8*i)));	\
-    _bits = &mergeRopBits[alu];			\
-    _ca1[i] = _bits->ca1 &  _pm;		\
-    _cx1[i] = _bits->cx1 | ~_pm;		\
-    _ca2[i] = _bits->ca2 &  _pm;		\
-    _cx2[i] = _bits->cx2 &  _pm;		\
-  }						\
-}
-#endif	/* (BITMAP_BIT_ORDER == MSBFirst) */
-
-#define DoMergeRop24i(src, dst, i)					\
-((dst) & ((src) & _ca1[i] ^ _cx1[i]) ^ ((src) & _ca2[i] ^ _cx2[i]))
-
-#define DoMaskMergeRop24i(src, dst, mask, i)							\
-((dst) & (((src) & _ca1[i] ^ _cx1[i]) | ~(mask)) ^ (((src) & _ca2[i] ^ _cx2[i]) & (mask)))
-
-#undef MROP_DECLARE
-#define MROP_DECLARE()			DeclareMergeRop24i()
-/* We can't put the arrays in registers */
-#undef MROP_DECLARE_REG
-#define MROP_DECLARE_REG()		DeclareMergeRop24i()
-#undef MROP_INITIALIZE
-#define MROP_INITIALIZE(alu, pm)	InitializeMergeRop24i(alu, pm)
-#undef MROP_SOLID
-#define MROP_SOLID(src, dst)		\
-	DoMergeRop24i(src, dst, (&(dst)-pdstBase) % 3)
-#undef MROP_MASK
-#define MROP_MASK(src, dst, mask)	\
-	DoMaskMergeRop24i(src, dst, mask, (&(dst)-pdstBase) % 3)
 
 #endif /* MROP == 0 && PSZ == 24 */
 
@@ -380,7 +329,8 @@ MROP_NAME(cfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 #else /* ! DO_MEMCPY */
 	if (xdir == 1)
 	{
-#if defined(SLOW_24BIT_COPY) && PSZ == 24 && MROP == 0
+#if PSZ == 24 && MROP == 0
+	  if( widthDst & 3 || widthSrc & 3  ||  (int)(psrcLine + pptSrc->x) & 3 != (int)(pdstLine + pbox->x1) &3 ){
 	  while (h--)
 	    {
 	      /* Unfortunately a word-by-word copy is difficult for 24-bit
@@ -403,16 +353,21 @@ MROP_NAME(cfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 	      pdstLine += widthDst;
 	      psrcLine += widthSrc;
 	    }
-#else /* ! (defined(SLOW_24BIT_COPY) && PSZ == 24 && MROP == 0) */
+	  }
+	  else
+#endif
+	  {
+
 #if PSZ == 24
+
 	    /* Note: x is a pixel number; the byte offset is 3*x;
 	       therefore the offset within a word is (3*x) & 3 ==
 	       (4*x-x) & 3 == (-x) & 3.  The offsets therefore
 	       DECREASE by 1 for each pixel.
 	       Note: We are assuming 4 bytes per word here!
 	    */
-	    xoffSrc = (-pptSrc->x) & 3;
-	    xoffDst = (-pbox->x1) & 3;
+	    xoffSrc = ( - pptSrc->x) & 3;
+	    xoffDst = ( - pbox->x1) & 3;
 	    pdstLine += (pbox->x1 * 3) >> 2;
 	    psrcLine += (pptSrc->x * 3) >> 2;
 #else
@@ -437,7 +392,11 @@ MROP_NAME(cfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 		    psrcLine += widthSrc;
 		    if (startmask)
 		    {
+#if PSZ == 24 && MROP == 0
+			*pdst = DoMaskMergeRop24u(*psrc, *pdst, startmask, (int)pdst & 3);
+#else
 			*pdst = MROP_MASK(*psrc, *pdst, startmask);
+#endif
 			psrc++;
 			pdst++;
 		    }
@@ -495,7 +454,11 @@ psrc += UNROLL;
 #endif
 
 		    if (endmask)
+#if PSZ == 24 && MROP == 0
+			*pdst = DoMaskMergeRop24u(*psrc, *pdst, endmask, (int)pdst & 3);
+#else
 			*pdst = MROP_MASK(*psrc, *pdst, endmask);
+#endif
 		}
 	    }
 #ifndef DO_UNALIGNED_BITBLT
@@ -541,7 +504,11 @@ psrc += UNROLL;
 			bits1 = BitLeft(bits,leftShift);
 			bits = *psrc++;
 			bits1 |= BitRight(bits,rightShift);
+#if PSZ == 24 && MROP == 0
+			*pdst = DoMaskMergeRop24u(bits1, *pdst, startmask, (int)pdst & 3);
+#else
 			*pdst = MROP_MASK(bits1, *pdst, startmask);
+#endif
 			pdst++;
 		    }
 		    nl = nlMiddle;
@@ -605,17 +572,24 @@ pdst++;
 			    bits = *psrc;
 			    bits1 |= BitRight(bits, rightShift);
 			}
+#if PSZ == 24 && MROP == 0
+			*pdst = DoMaskMergeRop24u(bits1, *pdst, endmask, (int)pdst & 3);
+#else
 			*pdst = MROP_MASK (bits1, *pdst, endmask);
+#endif
 		    }
 		}
 	    }
 #endif /* DO_UNALIGNED_BITBLT */
-#endif /* defined(SLOW_24BIT_COPY) && PSZ == 24 && MROP == 0 */
+
+	  }
 	}
 #endif /* ! DO_MEMCPY */
 	else	/* xdir == -1 */
 	{
-#if defined(SLOW_24BIT_COPY) && PSZ == 24 && MROP == 0
+#if PSZ == 24 && MROP == 0
+	  if( widthDst & 3 || widthSrc & 3  ||  (int)(psrcLine + pptSrc->x) & 3 != (int)(pdstLine + pbox->x1) &3 ){
+
 	  while (h--)
 	    {
 	      /* Unfortunately a word-by-word copy is difficult for 24-bit
@@ -638,7 +612,10 @@ pdst++;
 	      psrcLine += widthSrc;
 	      pdstLine += widthDst;
 	    }
-#else /* ! (defined(SLOW_24BIT_COPY) && PSZ == 24 && MROP == 0) */
+	  }else
+#endif /* MROP != 0 || PSZ != 24 */
+	    {
+
 #if PSZ == 24
 	    xoffSrc = (pptSrc->x + w) & 3;
 	    xoffDst = pbox->x2 & 3;
@@ -672,7 +649,11 @@ pdst++;
 		    {
 			pdst--;
 			psrc--;
+#if PSZ == 24 && MROP == 0
+			*pdst = DoMaskMergeRop24u(*psrc, *pdst, endmask, (int)pdst & 3);
+#else
 			*pdst = MROP_MASK (*psrc, *pdst, endmask);
+#endif
 		    }
 		    nl = nlMiddle;
 
@@ -711,7 +692,11 @@ psrc -= UNROLL;
 		    {
 			--pdst;
 			--psrc;
+#if PSZ == 24 && MROP == 0
+			*pdst = DoMaskMergeRop24u(*psrc, *pdst, startmask, (int)pdst & 3);
+#else
 			*pdst = MROP_MASK(*psrc, *pdst, startmask);
+#endif
 		    }
 		}
 	    }
@@ -765,7 +750,11 @@ psrc -= UNROLL;
 			bits = *--psrc;
 			bits1 |= BitLeft(bits, leftShift);
 			pdst--;
+#if PSZ == 24 && MROP == 0
+			*pdst = DoMaskMergeRop24u(bits1, *pdst, endmask, (int)pdst & 3);
+#else
 			*pdst = MROP_MASK(bits1, *pdst, endmask);
+#endif
 		    }
 		    nl = nlMiddle;
 
@@ -825,12 +814,16 @@ bits1 = *--psrc; --pdst; \
 			    bits1 |= BitLeft(bits, leftShift);
 			}
 			--pdst;
+#if PSZ == 24 && MROP == 0
+			*pdst = DoMaskMergeRop24u(bits1, *pdst, startmask, (int)pdst & 3);
+#else
 			*pdst = MROP_MASK(bits1, *pdst, startmask);
+#endif
 		    }
 		}
 	    }
 #endif
-#endif /* defined(SLOW_24BIT_COPY) && PSZ == 24 && MROP == 0 */
+	    }
 	}
 	pbox++;
 	pptSrc++;
