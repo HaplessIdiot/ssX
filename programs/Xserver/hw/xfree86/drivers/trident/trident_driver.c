@@ -2070,6 +2070,7 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     miInitializeBackingStore(pScreen);
     xf86SetBackingStore(pScreen);
+    xf86SetSilkenMouse(pScreen);
 
     /* Initialise cursor functions */
     miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
