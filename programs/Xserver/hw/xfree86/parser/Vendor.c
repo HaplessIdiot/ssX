@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Vendor.c,v 1.5 2000/01/26 02:00:51 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Vendor.c,v 1.7 2000/11/02 19:58:20 anderson Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -206,10 +206,10 @@ xf86printVendorSection (FILE * cf, XF86ConfVendorPtr ptr)
 		{
 			fprintf (cf, "\tSubSection \"Vendor\"\n");
 			if (pptr->vs_identifier)
-					fprintf (cf, "\tIdentifier \"%s\"\n", pptr->vs_identifier);
+					fprintf (cf, "\t\tIdentifier \"%s\"\n", pptr->vs_identifier);
 			for (optr = pptr->vs_option_lst; optr; optr = optr->list.next)
 			{
-				fprintf (cf, "\tOption     \"%s\"", optr->opt_name);
+				fprintf (cf, "\t\tOption     \"%s\"", optr->opt_name);
 				if (optr->opt_val)
 						fprintf (cf, " \"%s\"", optr->opt_val);
 				fprintf (cf, "\n");
@@ -226,6 +226,7 @@ xf86freeVendorList (XF86ConfVendorPtr p)
 {
 	if (p == NULL)
 		return;
+	xf86freeVendorSubList (p->vnd_sub_lst);
 	TestFree (p->vnd_identifier);
 	xf86optionListFree (p->vnd_option_lst);
 	xf86conffree (p);
@@ -239,6 +240,7 @@ xf86freeVendorSubList (XF86ConfVendSubPtr ptr)
 	while (ptr)
 	{
 		TestFree (ptr->vs_identifier);
+		TestFree (ptr->vs_name);
 		xf86optionListFree (ptr->vs_option_lst);
 		prev = ptr;
 		ptr = ptr->list.next;

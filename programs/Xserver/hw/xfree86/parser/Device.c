@@ -318,7 +318,7 @@ xf86printDeviceSection (FILE * cf, XF86ConfDevicePtr ptr)
 		if (ptr->dev_busid)
 			fprintf (cf, "\tBusID       \"%s\"\n", ptr->dev_busid);
 		if (ptr->dev_screen > 0)
-			fprintf (cf, "\tScreen      \"%d\"\n", ptr->dev_screen);
+			fprintf (cf, "\tScreen      %d\n", ptr->dev_screen);
 		if (ptr->dev_irq >= 0)
 			fprintf (cf, "\tIRQ         %d\n", ptr->dev_irq);
 		fprintf (cf, "EndSection\n\n");
