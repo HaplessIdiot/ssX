@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.16tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.17 2003/05/27 22:27:01 tsi Exp $ */
 
 
 /*
@@ -396,7 +396,7 @@ Lisp_Compile(LispBuiltin *builtin)
 	else if (atom->a_function) {
 	    LispCom com;
 	    int failed;
-	    int lex, base;
+	    int lex = 0, base;
 	    LispArgList *alist;
 	    LispObj *lambda, *form, *arguments;
 

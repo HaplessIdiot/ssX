@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xmh/msg.c,v 1.3 2001/10/28 03:34:39 tsi Exp $ */
+/* $XFree86: xc/programs/xmh/msg.c,v 1.4 2002/04/05 21:06:28 dickey Exp $ */
 
 /* msgs.c -- handle operations on messages. */
 
@@ -105,6 +105,7 @@ static void ResetMsgLabel(Scrn scrn)
 		(void) strcat(str, msg->desttoc->foldername);
 		if (msg->fate == Fcopy)
 		    (void) strcat(str, " (Copy)");
+	      default:
 		break;
 	    }
 	    if (msg->temporary) (void)strcat(str, " [Temporary]");
