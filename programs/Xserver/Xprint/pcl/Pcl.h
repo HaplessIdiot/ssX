@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/Pcl.h,v 1.10 2001/10/28 03:32:54 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/Pcl.h,v 1.11 2001/10/31 22:50:28 tsi Exp $ */
 
 #ifndef _PCL_H_
 #define _PCL_H_
@@ -67,13 +67,16 @@ copyright holders.
 /*
  * Some sleazes to force the XrmDB stuff into the server
  */
+#ifndef HAVE_XPointer
 typedef char *XPointer;
+#endif
 #define Status int
 #define True 1
 #define False 0
 #include "misc.h"
 #include <X11/Xfuncproto.h>
 #include <X11/Xresource.h>
+#include "attributes.h"
 
 /******
  * externally visible variables from PclInit.c
@@ -82,6 +85,11 @@ extern int PclScreenPrivateIndex, PclWindowPrivateIndex;
 extern int PclContextPrivateIndex;
 extern int PclPixmapPrivateIndex;
 extern int PclGCPrivateIndex;
+
+/******
+ * externally visible variables from PclAttVal.c
+ ******/
+extern XpValidatePoolsRec PclValidatePoolsRec;
 
 /*
  * This structure defines a mapping from an X colormap ID to a list of
@@ -368,7 +376,17 @@ extern void PclComputeCompositeClip(
 extern Bool PclCloseScreen(
     int index,
     ScreenPtr pScreen);
-extern Bool InitializePclDriver(
+extern Bool InitializeColorPclDriver(
+    int ndx,
+    ScreenPtr pScreen,
+    int argc,
+    char **argv);
+extern Bool InitializeMonoPclDriver(
+    int ndx,
+    ScreenPtr pScreen,
+    int argc,
+    char **argv);
+extern Bool InitializeLj3PclDriver(
     int ndx,
     ScreenPtr pScreen,
     int argc,

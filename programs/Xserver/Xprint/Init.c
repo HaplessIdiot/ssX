@@ -50,7 +50,7 @@ copyright holders.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/Init.c,v 1.11 2001/12/19 21:28:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/Init.c,v 1.12 2001/12/19 21:55:57 dawes Exp $ */
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -175,8 +175,7 @@ PixmapFormatRec	RasterPixmapFormats[] = {
 };
 #define NUMRASTFORMATS	(sizeof RasterPixmapFormats)/(sizeof RasterPixmapFormats[0])
 
-extern Bool InitializeRasterDriver();
-extern XpValidatePoolsRec RasterValidatePoolsRec; /* From RasterAttVal.c */
+#include "raster/Raster.h"
 
 #endif
 
@@ -191,12 +190,6 @@ PixmapFormatRec	ColorPclPixmapFormats[] = {
 
 #define NUMCPCLFORMATS	(sizeof ColorPclPixmapFormats)/(sizeof ColorPclPixmapFormats[0])
 
-#ifdef XPPCLDDX
-extern Bool InitializeColorPclDriver(BFuncArgs);
-#endif
-
-extern XpValidatePoolsRec PclValidatePoolsRec;
-
 #endif
 
 #ifdef XPMONOPCLDDX
@@ -208,9 +201,10 @@ PixmapFormatRec	MonoPclPixmapFormats[] = {
 
 #define NUMMPCLFORMATS	(sizeof MonoPclPixmapFormats)/(sizeof MonoPclPixmapFormats[0])
 
-extern Bool InitializeMonoPclDriver();
-extern XpValidatePoolsRec PclValidatePoolsRec;
+#endif
 
+#if defined(XPPCLDDX) || defined(XPMONOPCLDDX)
+#include "pcl/Pcl.h"
 #endif
 
 #ifdef XPPSDDX

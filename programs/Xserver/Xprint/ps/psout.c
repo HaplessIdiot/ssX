@@ -73,7 +73,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 **
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/psout.c,v 1.10 2001/12/19 21:28:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/psout.c,v 1.11 2001/12/19 21:55:59 dawes Exp $ */
 
 /*      
  * For XFree86 3.3.3:  
@@ -143,6 +143,8 @@ typedef struct PsOutRec_
   int         MxDownloads;
   char      **Downloads;
   Bool        isRaw;
+
+  int         start_image;
 } PsOutRec;
 
 /*
@@ -336,6 +338,7 @@ static char *S_CompositeDefs = "\
 {p dp currentpagedevice dp 3 -1 r kn \
 {x get eq} {p p p t}ie} \
 {p p t}ie}bd \
+/mtx{scl t [3 i 0 0 5 i 0 0]}bd \
 ";
 
 int  pagenum = 0;
@@ -561,6 +564,18 @@ S_SetPageDevice(PsOutPtr self, int orient, int count, int plex, int res,
  *                        PUBLIC FUNCTIONS                         *
  *******************************************************************/
 
+FILE *
+PsOut_ChangeFile(PsOutPtr self, FILE *fp)
+{
+  FILE *nfp;
+
+  nfp = self->Fp;
+
+  self->Fp = fp;
+
+  return nfp;
+}
+
 PsOutPtr
 PsOut_BeginFile(FILE *fp, int orient, int count, int plex, int res,
                 int wd, int ht, Bool raw)
@@ -608,6 +623,7 @@ PsOut_BeginFile(FILE *fp, int orient, int count, int plex, int res,
   psout->Dashes      = (int *)0;
   psout->FontName    = (char *)0;
   psout->FontSize    = 0;
+  psout->start_image = 0;
   for( i=0 ; i<4 ; i++ ) psout->FontMtx[i] = 0.;
   psout->ImageFormat = 0;
   return(psout);
@@ -1155,6 +1171,61 @@ PsOut_Text(PsOutPtr self, int x, int y, char *text, int textl, int bclr)
   }
 }
 
+#ifdef BM_CACHE
+void  /* new */
+PsOut_ImageCache(PsOutPtr self, int x, int y, long cache_id, int bclr, int fclr)
+{
+  char cacheID[10];
+  int xo = self->XOff;
+  int yo = self->YOff;
+
+  if( self->InFrame || self->InTile ) xo = yo = 0;
+  x += xo; y += yo;
+  sprintf(cacheID, "c%ldi", cache_id);
+
+  S_OutNum(self, (float)x);
+  S_OutNum(self, (float)y);
+
+  if( fclr==0xFFFFFF )
+  {
+    int   ir, ig, ib;
+    ir = bclr>>16; ig = (bclr>>8)&0xFF; ib = bclr&0xFF;
+    if( ir==ig && ig==ib )
+      S_OutNum(self, (float)ir/255.);
+    else
+      S_OutNum(self, (float)0);
+      self->RevImage = 1;
+    }
+  else
+  {
+    int   ir, ig, ib;
+    ir = fclr>>16; ig = (fclr>>8)&0xFF; ib = fclr&0xFF;
+    if( ir==ig && ig==ib )
+      S_OutNum(self, (float)ir/255.);
+    else
+      S_OutNum(self, (float)0);
+  }
+
+  S_OutTok(self, cacheID, 1);
+}     /* new */
+
+void  /* new */
+PsOut_BeginImageCache(PsOutPtr self, long cache_id)
+{
+  char cacheID[10];
+
+  sprintf(cacheID, "/c%ldi {", cache_id);
+
+  S_OutTok(self, cacheID, 0);
+}     /* new */
+
+void  /* new */
+PsOut_EndImageCache(PsOutPtr self)
+{
+  S_OutTok(self, "}bd", 1);
+}     /* new */
+#endif
+              
 void
 PsOut_BeginImage(PsOutPtr self, int bclr, int fclr, int x, int y,
                  int w, int h, int sw, int sh, int format)
@@ -1244,6 +1315,9 @@ PsOut_BeginImageIM(PsOutPtr self, int bclr, int fclr, int x, int y,
   if( format==1 )
   {
     S_OutTok(self, "gs", 0);
+#ifdef BM_CACHE
+    S_OutTok(self, "g", 1);
+#else
     if( fclr==0xFFFFFF )
     {
       PsOut_Color(self, bclr);
@@ -1253,13 +1327,24 @@ PsOut_BeginImageIM(PsOutPtr self, int bclr, int fclr, int x, int y,
     {
       PsOut_Color(self, fclr);
     }
+#endif
   }
+
+#ifdef BM_CACHE
+  S_OutTok(self, "tr", 0);    /* new */
+#else
   S_OutNum(self, (float)x);
   S_OutNum(self, (float)y);
+#endif
   S_OutNum(self, (float)w);
   S_OutNum(self, (float)h);
   S_OutNum(self, (float)sw);
   S_OutNum(self, (float)sh);
+#ifdef BM_CACHE
+  S_OutTok(self, "mtx", 1);   /* new */
+  S_OutTok(self, "<", 0);     /* new */
+  self->start_image = 1;
+#else
   if( format==1 ){
         if(self->RevImage)
             S_OutTok(self, "Im1rev", 1);
@@ -1267,6 +1352,7 @@ PsOut_BeginImageIM(PsOutPtr self, int bclr, int fclr, int x, int y,
             S_OutTok(self, "Im1", 1);
   }
   else      S_OutTok(self, "Im24", 1);
+#endif
   self->ImageFormat = format;
   self->CurColor    = savClr;
 }
@@ -1306,10 +1392,24 @@ PsOut_EndImage(PsOutPtr  self)
     return;
   }
 
+#ifdef BM_CACHE
+  if(self->start_image)
+    S_OutTok(self, "> im", 1);       /* new */
+#endif
   self->ImageFormat = 0;
   self->RevImage    = 0;
   S_Flush(self);
+#ifdef BM_CACHE
+  if(self->start_image)
+  {
+    self->start_image = 0;
+    S_OutTok(self, "gr", 0);
+  }
+  else
+    S_OutTok(self, "gr", 1);
+#else
   S_OutTok(self, "gr", 1);
+#endif
 }
 
 void

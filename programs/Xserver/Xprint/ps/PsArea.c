@@ -1,4 +1,4 @@
-/* $Xorg: PsArea.c,v 1.5 2001/02/09 02:04:35 xorgcvs Exp $ */
+/* $Xorg: PsArea.c,v 1.6 2001/03/14 18:27:44 pookie Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -228,7 +228,7 @@ error:
   return;
 }
 
-void
+static void
 PsPutScaledImageIM(DrawablePtr pDrawable, GCPtr pGC, int depth, int x, int y,
            int w, int h, int leftPad, int format, int imageRes, char *pImage)
 {
@@ -268,7 +268,10 @@ PsPutScaledImageIM(DrawablePtr pDrawable, GCPtr pGC, int depth, int x, int y,
     PsOutPtr     psOut;
     ColormapPtr  cMap;
     int          pageRes, sw, sh;
-
+#ifdef BM_CACHE
+    long   cache_id = 0;
+#endif
+    
     if( PsUpdateDrawableGC(pGC, pDrawable, &psOut, &cMap)==FALSE ) return;
     if (!imageRes) {
         sw = w;
@@ -281,6 +284,18 @@ PsPutScaledImageIM(DrawablePtr pDrawable, GCPtr pGC, int depth, int x, int y,
     PsOut_Offset(psOut, pDrawable->x, pDrawable->y);
     pt = (char *)(&i); i = 1; if( pt[0]=='\001' ) swap = 1; else swap = 0;
 
+#ifdef BM_CACHE
+    cache_id = PsBmIsImageCached(w, h, pImage);
+
+    if(!cache_id)
+    {
+      cache_id = PsBmPutImageInCache(w, h, pImage);
+
+      if(!cache_id)
+         return;
+
+      PsOut_BeginImageCache(psOut, cache_id);
+#endif
     if( depth==24 )
     {
       PsOut_BeginImageIM(psOut, 0, 0, x, y, w, h, sw, sh, 3);
@@ -373,6 +388,12 @@ PsPutScaledImageIM(DrawablePtr pDrawable, GCPtr pGC, int depth, int x, int y,
         PsOut_EndImage(psOut);
       }
     }
+#ifdef BM_CACHE
+    PsOut_EndImageCache(psOut);
+    }
+    PsOut_ImageCache(psOut, x, y, cache_id, PsGetPixelColor(cMap, pGC->bgPixel),
+                           PsGetPixelColor(cMap, pGC->fgPixel));
+#endif
   }
 error:
   return;
