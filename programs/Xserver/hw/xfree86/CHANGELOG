@@ -1,4 +1,5 @@
 XFree86 4.4.99.4 (xx April 2004)
+  80. Fix build on Mac OS X following Mesa 6 merge (Torrey T. Lyons).
   79. Fix GLX multithreaded bug (DRI Project).
   78. Xterm patch #186 (Thomas Dickey).
   77. Add an "AllowNoCntl" option to the elographics driver, which allows the
@@ -18867,7 +18868,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3229 2004/04/18 21:46:59 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3230 2004/04/19 21:04:19 alanh Exp $
 
 
 

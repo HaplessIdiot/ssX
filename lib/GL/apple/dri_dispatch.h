@@ -1,5 +1,5 @@
 /* dri_dispatch.h -- built automatically, DO NOT EDIT
-   $Id: dri_dispatch.h,v 1.5 2004/01/17 00:38:12 torrey Exp $
+   $Id: dri_dispatch.h,v 1.6 2004/04/21 04:59:40 torrey Exp $
    $XFree86: $ */
 
 DEFUN_LOCAL_VOID (NewList,
@@ -2614,6 +2614,198 @@ DEFUN_EXTERN_VOID (SetFenceNV,
     (GLuint fence, GLenum condition),
     (fence, condition))
 
+DEFUN_LOCAL_VOID (VertexAttrib4bvARB,
+    (void *rend, GLuint index, const GLbyte * v),
+    (index, v))
+
+DEFUN_LOCAL_VOID (VertexAttrib4ivARB,
+    (void *rend, GLuint index, const GLint * v),
+    (index, v))
+
+DEFUN_LOCAL_VOID (VertexAttrib4ubvARB,
+    (void *rend, GLuint index, const GLubyte * v),
+    (index, v))
+
+DEFUN_LOCAL_VOID (VertexAttrib4usvARB,
+    (void *rend, GLuint index, const GLushort * v),
+    (index, v))
+
+DEFUN_LOCAL_VOID (VertexAttrib4uivARB,
+    (void *rend, GLuint index, const GLuint * v),
+    (index, v))
+
+DEFUN_LOCAL_VOID (VertexAttrib4NbvARB,
+    (void *rend, GLuint index, const GLbyte * v),
+    (index, v))
+
+DEFUN_LOCAL_VOID (VertexAttrib4NsvARB,
+    (void *rend, GLuint index, const GLshort * v),
+    (index, v))
+
+DEFUN_LOCAL_VOID (VertexAttrib4NivARB,
+    (void *rend, GLuint index, const GLint * v),
+    (index, v))
+
+DEFUN_LOCAL_VOID (VertexAttrib4NusvARB,
+    (void *rend, GLuint index, const GLushort * v),
+    (index, v))
+
+DEFUN_LOCAL_VOID (VertexAttrib4NuivARB,
+    (void *rend, GLuint index, const GLuint * v),
+    (index, v))
+
+DEFUN_LOCAL_VOID (VertexAttribPointerARB,
+    (void *rend, GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid * pointer),
+    (index, size, type, normalized, stride, pointer))
+
+DEFUN_LOCAL_VOID (EnableVertexAttribArrayARB,
+    (void *rend, GLuint index),
+    (index))
+
+DEFUN_LOCAL_VOID (DisableVertexAttribArrayARB,
+    (void *rend, GLuint index),
+    (index))
+
+DEFUN_LOCAL_VOID (ProgramStringARB,
+    (void *rend, GLenum target, GLenum format, GLsizei len, const GLvoid * string),
+    (target, format, len, string))
+
+DEFUN_LOCAL_VOID (ProgramEnvParameter4dARB,
+    (void *rend, GLenum target, GLuint index, GLdouble x, GLdouble y, GLdouble z, GLdouble w),
+    (target, index, x, y, z, w))
+
+DEFUN_LOCAL_VOID (ProgramEnvParameter4dvARB,
+    (void *rend, GLenum target, GLuint index, const GLdouble * params),
+    (target, index, params))
+
+DEFUN_LOCAL_VOID (ProgramEnvParameter4fARB,
+    (void *rend, GLenum target, GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w),
+    (target, index, x, y, z, w))
+
+DEFUN_LOCAL_VOID (ProgramEnvParameter4fvARB,
+    (void *rend, GLenum target, GLuint index, const GLfloat * params),
+    (target, index, params))
+
+DEFUN_LOCAL_VOID (ProgramLocalParameter4dARB,
+    (void *rend, GLenum target, GLuint index, GLdouble x, GLdouble y, GLdouble z, GLdouble w),
+    (target, index, x, y, z, w))
+
+DEFUN_LOCAL_VOID (ProgramLocalParameter4dvARB,
+    (void *rend, GLenum target, GLuint index, const GLdouble * params),
+    (target, index, params))
+
+DEFUN_LOCAL_VOID (ProgramLocalParameter4fARB,
+    (void *rend, GLenum target, GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w),
+    (target, index, x, y, z, w))
+
+DEFUN_LOCAL_VOID (ProgramLocalParameter4fvARB,
+    (void *rend, GLenum target, GLuint index, const GLfloat * params),
+    (target, index, params))
+
+DEFUN_LOCAL_VOID (GetProgramEnvParameterdvARB,
+    (void *rend, GLenum target, GLuint index, GLdouble * params),
+    (target, index, params))
+
+DEFUN_LOCAL_VOID (GetProgramEnvParameterfvARB,
+    (void *rend, GLenum target, GLuint index, GLfloat * params),
+    (target, index, params))
+
+DEFUN_LOCAL_VOID (GetProgramLocalParameterdvARB,
+    (void *rend, GLenum target, GLuint index, GLdouble * params),
+    (target, index, params))
+
+DEFUN_LOCAL_VOID (GetProgramLocalParameterfvARB,
+    (void *rend, GLenum target, GLuint index, GLfloat * params),
+    (target, index, params))
+
+DEFUN_LOCAL_VOID (GetProgramivARB,
+    (void *rend, GLenum target, GLenum pname, GLint * params),
+    (target, pname, params))
+
+DEFUN_LOCAL_VOID (GetProgramStringARB,
+    (void *rend, GLenum target, GLenum pname, GLvoid * string),
+    (target, pname, string))
+
+DEFUN_EXTERN_VOID (ProgramNamedParameter4fNV,
+    (GLuint id, GLsizei len, const GLubyte * name, GLfloat x, GLfloat y, GLfloat z, GLfloat w),
+    (id, len, name, x, y, z, w))
+
+DEFUN_EXTERN_VOID (ProgramNamedParameter4dNV,
+    (GLuint id, GLsizei len, const GLubyte * name, GLdouble x, GLdouble y, GLdouble z, GLdouble w),
+    (id, len, name, x, y, z, w))
+
+DEFUN_EXTERN_VOID (ProgramNamedParameter4fvNV,
+    (GLuint id, GLsizei len, const GLubyte * name, const GLfloat * v),
+    (id, len, name, v))
+
+DEFUN_EXTERN_VOID (ProgramNamedParameter4dvNV,
+    (GLuint id, GLsizei len, const GLubyte * name, const GLdouble * v),
+    (id, len, name, v))
+
+DEFUN_EXTERN_VOID (GetProgramNamedParameterfvNV,
+    (GLuint id, GLsizei len, const GLubyte * name, GLfloat * params),
+    (id, len, name, params))
+
+DEFUN_EXTERN_VOID (GetProgramNamedParameterdvNV,
+    (GLuint id, GLsizei len, const GLubyte * name, GLdouble * params),
+    (id, len, name, params))
+
+DEFUN_EXTERN_VOID (BindBufferARB,
+    (GLenum target, GLuint buffer),
+    (target, buffer))
+
+DEFUN_EXTERN_VOID (BufferDataARB,
+    (GLenum target, GLsizeiptrARB size, const GLvoid * data, GLenum usage),
+    (target, size, data, usage))
+
+DEFUN_EXTERN_VOID (BufferSubDataARB,
+    (GLenum target, GLintptrARB offset, GLsizeiptrARB size, const GLvoid * data),
+    (target, offset, size, data))
+
+DEFUN_EXTERN_VOID (DeleteBuffersARB,
+    (GLsizei n, const GLuint * buffer),
+    (n, buffer))
+
+DEFUN_EXTERN_VOID (GenBuffersARB,
+    (GLsizei n, GLuint * buffer),
+    (n, buffer))
+
+DEFUN_EXTERN_VOID (GetBufferParameterivARB,
+    (GLenum target, GLenum pname, GLint * params),
+    (target, pname, params))
+
+DEFUN_EXTERN_VOID (GetBufferPointervARB,
+    (GLenum target, GLenum pname, GLvoid ** params),
+    (target, pname, params))
+
+DEFUN_EXTERN_VOID (GetBufferSubDataARB,
+    (GLenum target, GLintptrARB offset, GLsizeiptrARB size, void * data),
+    (target, offset, size, data))
+
+DEFUN_EXTERN (GLboolean, IsBufferARB,
+    (GLuint buffer),
+    (buffer))
+
+DEFUN_EXTERN (void*, MapBufferARB,
+    (GLenum target, GLenum access),
+    (target, access))
+
+DEFUN_EXTERN (GLboolean, UnmapBufferARB,
+    (GLenum target),
+    (target))
+
+DEFUN_EXTERN_VOID (DepthBoundsEXT,
+    (GLclampd zmin, GLclampd zmax),
+    (zmin, zmax))
+
+DEFUN_EXTERN_VOID (MultiModeDrawArraysIBM,
+    (const GLenum * mode, const GLint * first, const GLsizei * count, GLsizei primcount, GLint modestride),
+    (mode, first, count, primcount, modestride))
+
+DEFUN_EXTERN_VOID (MultiModeDrawElementsIBM,
+    (const GLenum * mode, const GLsizei * count, GLenum type, const GLvoid * const * indices, GLsizei primcount, GLint modestride),
+    (mode, count, type, indices, primcount, modestride))
+
 DEFUN_ALIAS_VOID (ArrayElementEXT, ArrayElement,
     (GLint i),
     (i))
@@ -2773,6 +2965,50 @@ DEFUN_ALIAS_VOID (TexSubImage2DEXT, TexSubImage2D,
 DEFUN_ALIAS_VOID (TexSubImage3DEXT, TexSubImage3D,
     (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid * pixels),
     (target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels))
+
+DEFUN_ALIAS_VOID (BindBuffer, BindBufferARB,
+    (GLenum target, GLuint buffer),
+    (target, buffer))
+
+DEFUN_ALIAS_VOID (BufferData, BufferDataARB,
+    (GLenum target, GLsizeiptrARB size, const GLvoid * data, GLenum usage),
+    (target, size, data, usage))
+
+DEFUN_ALIAS_VOID (BufferSubData, BufferDataARB,
+    (GLenum target, GLintptrARB offset, GLsizeiptrARB size, const GLvoid * data),
+    (target, offset, size, data))
+
+DEFUN_ALIAS_VOID (DeleteBuffers, DeleteBuffersARB,
+    (GLsizei n, const GLuint * buffer),
+    (n, buffer))
+
+DEFUN_ALIAS_VOID (GenBuffers, GenBuffersARB,
+    (GLsizei n, GLuint * buffer),
+    (n, buffer))
+
+DEFUN_ALIAS_VOID (GetBufferParameteriv, GetBufferParameterivARB,
+    (GLenum target, GLenum pname, GLint * params),
+    (target, pname, params))
+
+DEFUN_ALIAS_VOID (GetBufferPointerv, GetBufferPointervARB,
+    (GLenum target, GLenum pname, GLvoid ** params),
+    (target, pname, params))
+
+DEFUN_ALIAS_VOID (GetBufferSubData, GetBufferSubDataARB,
+    (GLenum target, GLintptrARB offset, GLsizeiptrARB size, void * data),
+    (target, offset, size, data))
+
+DEFUN_ALIAS (GLboolean, IsBuffer, IsBufferARB,
+    (GLuint buffer),
+    (buffer))
+
+DEFUN_ALIAS (void*, MapBuffer, MapBufferARB,
+    (GLenum target, GLenum access),
+    (target, access))
+
+DEFUN_ALIAS (GLboolean, UnmapBuffer, UnmapBufferARB,
+    (GLenum target),
+    (target))
 
 #define INDIRECT_DISPATCH_INIT(d,p) \
 do { \
@@ -3230,6 +3466,34 @@ do { \
     (d)[452] = (void *) &p ## GetFinalCombinerInputParameterfvNV; \
     (d)[453] = (void *) &p ## GetFinalCombinerInputParameterivNV; \
     (d)[459] = (void *) &p ## SampleCoverageARB; \
+    (d)[497] = (void *) &p ## VertexAttrib4bvARB; \
+    (d)[498] = (void *) &p ## VertexAttrib4NsvARB; \
+    (d)[499] = (void *) &p ## VertexAttrib4ivARB; \
+    (d)[500] = (void *) &p ## VertexAttrib4ubvARB; \
+    (d)[501] = (void *) &p ## VertexAttrib4usvARB; \
+    (d)[502] = (void *) &p ## VertexAttrib4uivARB; \
+    (d)[505] = (void *) &p ## VertexAttrib4NbvARB; \
+    (d)[507] = (void *) &p ## VertexAttrib4NivARB; \
+    (d)[509] = (void *) &p ## VertexAttrib4NusvARB; \
+    (d)[510] = (void *) &p ## VertexAttrib4NuivARB; \
+    (d)[511] = (void *) &p ## VertexAttribPointerARB; \
+    (d)[512] = (void *) &p ## EnableVertexAttribArrayARB; \
+    (d)[513] = (void *) &p ## DisableVertexAttribArrayARB; \
+    (d)[518] = (void *) &p ## ProgramEnvParameter4dARB; \
+    (d)[519] = (void *) &p ## ProgramEnvParameter4dvARB; \
+    (d)[520] = (void *) &p ## ProgramEnvParameter4fARB; \
+    (d)[521] = (void *) &p ## ProgramEnvParameter4fvARB; \
+    (d)[522] = (void *) &p ## ProgramLocalParameter4dARB; \
+    (d)[523] = (void *) &p ## ProgramLocalParameter4dvARB; \
+    (d)[524] = (void *) &p ## ProgramLocalParameter4fARB; \
+    (d)[525] = (void *) &p ## ProgramLocalParameter4fvARB; \
+    (d)[526] = (void *) &p ## GetProgramEnvParameterdvARB; \
+    (d)[527] = (void *) &p ## GetProgramEnvParameterfvARB; \
+    (d)[528] = (void *) &p ## GetProgramLocalParameterdvARB; \
+    (d)[529] = (void *) &p ## GetProgramLocalParameterfvARB; \
+    (d)[530] = (void *) &p ## ProgramStringARB; \
+    (d)[531] = (void *) &p ## GetProgramStringARB; \
+    (d)[532] = (void *) &p ## GetProgramivARB; \
     (d)[540] = (void *) &p ## PointParameterfEXT; \
     (d)[541] = (void *) &p ## PointParameterfvEXT; \
     (d)[542] = (void *) &p ## PointParameteriNV; \
