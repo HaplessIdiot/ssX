@@ -1,4 +1,5 @@
 XFree86 3.9.16Z (xx December 1999)
+3401. Export symbols for SGI driver (#3505, Terence Ripperda).
 3400. Fix problem with compilation of static server on SVR4.0
       (#3497,3514 Takaaki Nomura).
 3399. Fix where using bitsPerPixel from screen pixmap to use drawable,
@@ -9193,4 +9194,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.896 1999/12/27 01:26:23 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.897 1999/12/27 01:33:53 robin Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.22 1999/09/27 06:30:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.23 1999/10/11 00:32:13 robin Exp $ */
 
 /*
  *
@@ -52,6 +52,13 @@ extern PanoramiXData *panoramiXdataPtr;
 #endif
 
 LOOKUP miLookupTab[] = {
+   SYMFUNC(miClearToBackground)
+   SYMFUNC(miSendGraphicsExpose)
+   SYMFUNC(miModifyPixmapHeader)
+   SYMFUNC(miHandleValidateExposures)
+   SYMFUNC(miSetShape)
+   SYMFUNC(miChangeBorderWidth)
+   SYMFUNC(miShapedWindowIn)
    SYMFUNC(miRectIn)
    SYMFUNC(miZeroClipLine)
    SYMFUNC(miZeroDashLine)
