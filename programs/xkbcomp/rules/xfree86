@@ -64,7 +64,7 @@
 ! model		layout	=	symbols
   pc98		nec/jp	=	nec/jp(pc98)
   abnt2		br	=	us(pc101)+br
-  pc101		us_intl	=	us(pc101)+us_intl
+ $pcmodels	us_intl	=	us(%m)+us_intl
  $mac		us	=	macintosh/us(extended)
  $mac		en_US	=	macintosh/us(extended)
  $mac		*	=	macintosh/us(extended)+macintosh/%l%(v)
