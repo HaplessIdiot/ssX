@@ -9,7 +9,7 @@
 <date>26 February 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.79 2003/02/26 16:41:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.80 2003/02/26 21:59:44 dawes Exp $
 </ident>
 
 <abstract>
@@ -1069,7 +1069,7 @@ new features should be completed in a future release.
 
 Xedit has several new features, including:
 <itemize>
-  <item>An embeded lisp interpreter that allows easier extension of the editor.
+  <item>An embedded lisp interpreter that allows easier extension of the editor.
   <item>Several new syntax highlight modes, and indentation rules for C and Lisp.
   <item>Flexible search/replace interface that allows regex matches.
   <item>Please refer to <tt><htmlurl name="xedit(1)" url="xedit.1.html"></tt>
