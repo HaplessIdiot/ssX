@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.36 2000/01/30 01:15:55 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.37 2000/02/12 20:45:35 dawes Exp $ */
 
 
 #define PSZ 8
@@ -69,7 +69,6 @@
 #include "extensions/dpms.h"
 #endif
 
-static OptionInfoPtr SISAvailableOptions(int chipid, int busid);
 static void	SISIdentify(int flags);
 static Bool	SISProbe(DriverPtr drv, int flags);
 static Bool	SISPreInit(ScrnInfoPtr pScrn, int flags);
@@ -333,12 +332,6 @@ SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
 }
 #endif
 
-static 
-OptionInfoPtr
-SISAvailableOptions(int chipid, int busid)
-{
-    return SISOptions;
-}
 
 /* Mandatory */
 static void
@@ -770,8 +763,10 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     pSiS->FbMapSize = pScrn->videoRam * 1024;
 
     SiSVGASetup(pScrn);
-//    SiSLCDPreInit(pScrn);
-//    SiSTVPreInit(pScrn);
+#if 0
+    SiSLCDPreInit(pScrn);
+    SiSTVPreInit(pScrn);
+#endif
 
     outw(VGA_SEQ_INDEX, (unlock << 8) | 0x05);
 

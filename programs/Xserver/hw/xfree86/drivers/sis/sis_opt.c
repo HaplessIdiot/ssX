@@ -1,3 +1,4 @@
+/* $XFree86$ */
 
 #include "xf86.h"
 
@@ -84,3 +85,10 @@ SiSOptions(ScrnInfoPtr pScrn)
 	}
 
 }
+
+OptionInfoPtr
+SISAvailableOptions(int chipid, int busid)
+{
+    return SISOptions;
+}
+

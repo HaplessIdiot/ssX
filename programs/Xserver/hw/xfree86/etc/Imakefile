@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/24 1996/10/28 04:24:12 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.30 2000/02/08 13:13:21 eich Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.31 2000/02/12 20:45:38 dawes Exp $
 #include <Server.tmpl>
 
 #if SystemV
@@ -100,8 +100,12 @@ InstallProgram(joycal,$(BINDIR))
 
         SRCS4 = pcitweak.c
 
+#ifdef ServerExtraSysLibs
+SERVEREXTRASYSLIBS = ServerExtraSysLibs
+#endif
+
 AllTarget(ProgramTargetName(pcitweak))
-NormalProgramTarget(pcitweak,pcitweak.o,NullParameter,-L../os-support -lxf86_os ServerExtraSysLibs,NullParameter)
+NormalProgramTarget(pcitweak,pcitweak.o,NullParameter,-L../os-support -lxf86_os $(SERVEREXTRASYSLIBS),NullParameter)
 InstallProgram(pcitweak,$(BINDIR))
 
         SRCS = $(SRCS1) $(SRCS2) $(SRCS3) $(SRCS4)

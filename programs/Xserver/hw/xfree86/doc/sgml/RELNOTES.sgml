@@ -9,7 +9,7 @@
 <date>12 February 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.24 2000/02/12 05:24:55 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.25 2000/02/12 20:45:20 dawes Exp $
 </ident>
 
 <abstract>
@@ -48,6 +48,13 @@ that are new to the pre-4.0 snapshot series.
 	MouseSystems SmartScroll, Logitech Cordless MouseMan Wheel, 8D 
 	Scroll mouse) are recognized and supported.  USB mice support is
 	also available in FreeBSD and OpenBSD.
+
+  <item>A DPS extension for XFree86 is currently under development.  The DPS
+	client library is now part of the XFree86 source tree; the extension
+	code itself, however, cannot be integrated for licensing reasons and
+	is distributed separately.  For more information, please consult
+	the
+	<url name="DPS site at SourceForge" url="http://dps.sourceforge.net">.
 
 </itemize>
 

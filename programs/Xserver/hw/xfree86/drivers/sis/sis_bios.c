@@ -434,14 +434,18 @@ SetCRT2Group(ScrnInfoPtr pScrn, CARD16 ModeNo)
 		return;
 	}
 	GetCRT2Data(ROMAddr,ModeNo);
-//	if (VBInfo & SET_CRT2_TO_HIVISION_TV)
-//		ModifyDotClock();
+#if 0
+	if (VBInfo & SET_CRT2_TO_HIVISION_TV)
+		ModifyDotClock();
+#endif
 
 	SetGroup1(pScrn,ModeNo);
 	SetGroup2(BaseAddr,ROMAddr);     
 	SetGroup3(BaseAddr);
 	SetGroup4(BaseAddr,ROMAddr,ModeNo);
-//	SetGroup5(BaseAddr,ROMAddr);
+#if 0
+	SetGroup5(BaseAddr,ROMAddr);
+#endif
 
 	LockCRT2(BaseAddr);
 	if (SetFlag & TV_SIMU_MODE)  {
@@ -469,12 +473,12 @@ GetRatePtr(ScrnInfoPtr pScrn, unsigned short ModeNo, CARD8 CRTx)
 	unsigned short	p3d4 = SISPTR(pScrn)->RelIO+CROFFSET;
 	unsigned char * ROMAddr = SISPTR(pScrn)->BIOS;
 
-	if (ModeNo <= 0x13)			// Mode No <= 13h then return
+	if (ModeNo <= 0x13)			/* Mode No <= 13h then return */
 		return (STANDARD_MODE | CRT2_SUPPORT);
 
-	inSISIDXREG(p3d4,0x33,index);		// Get 3d4 CRTC33
+	inSISIDXREG(p3d4,0x33,index);		/* Get 3d4 CRTC33 */
 	if (CRTx == SELECT_CRT1)
-		index &= 0x0F;			// Frame rate index
+		index &= 0x0F;			/* Frame rate index */
 	else
 		index = (index & 0xF0) >> 4;
 
@@ -661,30 +665,40 @@ EnableBridge(CARD16 BaseAddr)
 			temp1 = 0x20;
 		}
 	}
-//	LongWait(BaseAddr+0x5A);
-//	VBLongWait(BaseAddr);
+#if 0
+	LongWait(BaseAddr+0x5A);
+	VBLongWait(BaseAddr);
+#endif
 	setSISIDXREG(BaseAddr+SROFFSET, 0x32, ~0x20, temp1);
 
-//	LongWait(BaseAddr+0x5A);
-//	VBLongWait(BaseAddr);
+#if 0
+	LongWait(BaseAddr+0x5A);
+	VBLongWait(BaseAddr);
+#endif
 	orSISIDXREG(BaseAddr+SROFFSET, 0x1E, 0x20);
 
 	LongWait(BaseAddr+0x5A);
 	LongWait(BaseAddr+0x5A);
 	LongWait(BaseAddr+0x5A);
-//	VBLongWait(BaseAddr);
+#if 0
+	VBLongWait(BaseAddr);
+#endif
 	setSISIDXREG(part2_base, 0, ~0xE0, 0x20);
 
 	LongWait(BaseAddr+0x5A);
 	LongWait(BaseAddr+0x5A);
 	LongWait(BaseAddr+0x5A);
-//	VBLongWait(BaseAddr);
+#if 0
+	VBLongWait(BaseAddr);
+#endif
 	andSISIDXREG(BaseAddr+SROFFSET, 1, ~0x20);	/* DisplayOn */
 
 	LongWait(BaseAddr+0x5A);
 	LongWait(BaseAddr+0x5A);
 	LongWait(BaseAddr+0x5A);
-//	VBLongWait(BaseAddr);
+#if 0
+	VBLongWait(BaseAddr);
+#endif
 }
 
 void
@@ -1253,7 +1267,9 @@ SetCRT2FIFO(ScrnInfoPtr pScrn)
 	unsigned int	Low;
 	unsigned int	High;
 	SISPtr		pSiS = SISPTR(pScrn);
-//	unsigned int	temp, dclk, vclk;
+#if 0
+	unsigned int	temp, dclk, vclk;
+#endif
 	unsigned short	part1_base = pSiS->RelIO+4;
 
 	Low = 0x14;
@@ -1446,6 +1462,8 @@ SetGroup5(CARD16 BaseAddr, CARD8 *ROMAddr)
 	ErrorF("Group5 begin to write DAC\n");
 	EnableCRT2(BaseAddr);
 	ErrorF("Group5 end to write DAC\n");
-//	LoadDAC();
+#if 0
+	LoadDAC();
+#endif
 	ErrorF("Leave SetGroup5()\n");
 }

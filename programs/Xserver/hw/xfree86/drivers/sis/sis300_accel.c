@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis300_accel.c,v 1.1 1999/03/21 07:35:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis300_accel.c,v 1.1 2000/02/12 20:45:32 dawes Exp $ */
 
 /*
  *
@@ -10,7 +10,9 @@
  *	
  *	Xavier Ducoin <x.ducoin@lectra.com>
  */
-//#define DEBUG
+#if 0
+#define DEBUG
+#endif
 
 #include <xf86.h>
 #include <xf86_OSproc.h>
