@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: WaitFor.c /main/52 1995/11/30 17:21:05 dpw $ */
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.4 1994/09/03 02:53:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.5 1996/01/05 13:20:01 dawes Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -71,6 +71,11 @@ extern int errno;
 #ifdef MINIX
 #include <sys/nbio.h>
 #define select(n,r,w,x,t) nbio_select(n,r,w,x,t)
+#endif
+#ifdef __EMX__
+#define select(n,r,w,x,t) os2PseudoSelect(n,r,w,x,t)
+
+#include <time.h>
 #endif
 #include <X11/Xpoll.h>
 #include "osdep.h"
@@ -146,6 +151,9 @@ WaitForSomething(pClientsReady)
     int nready;
     fd_set devicesReadable;
     CARD32 now;
+#ifdef __EMX__
+    static int dum=0;
+#endif
 
     FD_ZERO(&clientsReadable);
 

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/191 1996/01/23 11:34:26 kaleb $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.18 1996/01/21 08:49:27 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.19 1996/01/24 22:04:59 dawes Exp $
  */
 
 /*
@@ -63,8 +63,15 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xmu/Atoms.h>
 #include <X11/Xmu/CharSet.h>
 #include <X11/Xmu/Converters.h>
+
+#if XtSpecificationRelease >= 6
 #include <X11/Xaw/XawImP.h>
 #include <X11/Xpoll.h>
+#else
+#define Select(n,r,w,e,t) select(0,(fd_set*)r,(fd_set*)w,(fd_set*)e,(struct timeval *)t)
+#define XFD_COPYSET(src,dst) bcopy((src)->fds_bits, (dst)->fds_bits, sizeof(fd_set))
+#endif
+
 #include <stdio.h>
 #include <errno.h>
 #include <setjmp.h>
@@ -572,6 +579,7 @@ static XtResource resources[] = {
 {"font6", "Font6", XtRString, sizeof(String),
 	XtOffsetOf(XtermWidgetRec, screen.menu_font_names[fontMenu_font6]),
 	XtRString, (XtPointer) NULL},
+#if XtSpecificationRelease >= 6
 {XtNinputMethod, XtCInputMethod, XtRString, sizeof(char*),
 	XtOffsetOf(XtermWidgetRec, misc.input_method),
 	XtRString, (XtPointer)NULL},
@@ -581,6 +589,7 @@ static XtResource resources[] = {
 {XtNopenIm, XtCOpenIm, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, misc.open_im),
 	XtRImmediate, (XtPointer)TRUE},
+#endif
 {XtNcolor0, XtCForeground, XtRPixel, sizeof(Pixel),
 	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_0]),
 	XtRString, "XtDefaultForeground"},
@@ -1153,6 +1162,11 @@ static void VTparse()
 						  ? 8 : 0));
 					}
 					break;
+				 case 39:
+					if( screen->colorMode ) {
+					  SGR_Foreground(-1);
+					}
+					break;
 				 case 40:
 				 case 41:
 				 case 42:
@@ -1163,6 +1177,11 @@ static void VTparse()
 				 case 47:
 					if( screen->colorMode ) {
 					  SGR_Background(param[row] - 40);
+					}
+					break;
+				 case 49:
+					if( screen->colorMode ) {
+					  SGR_Background(-1);
 					}
 					break;
 				 case 100:
@@ -2639,6 +2658,9 @@ static void VTInitialize (wrequest, wnew, args, num_args)
    for (i = 0; i < MAXCOLORS; i++) {
        new->screen.colors[i] = request->screen.colors[i];
    }
+
+   new->cur_foreground = 0;
+   new->cur_background = 0;
 
     /*
      * The definition of -rv now is that it changes the definition of 

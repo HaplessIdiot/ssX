@@ -1,5 +1,5 @@
 /* $XConsortium: ddxLoad.c /main/4 1996/01/14 16:45:59 kaleb $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.0 1996/01/28 07:32:43 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -68,7 +68,11 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifdef _PATH_VARTMP
 #define XKM_OUTPUT_DIR	_PATH_VARTMP
 #else
+#ifndef __EMX__
 #define	XKM_OUTPUT_DIR	"/usr/tmp"
+#else
+#define	XKM_OUTPUT_DIR	"."
+#endif
 #endif
 #endif
 #endif

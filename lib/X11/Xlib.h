@@ -1,5 +1,5 @@
 /* $XConsortium: Xlib.h /main/118 1995/09/19 10:00:22 kaleb $ */
-/* $XFree86: xc/lib/X11/Xlib.h,v 3.5 1995/06/14 07:07:08 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlib.h,v 3.6 1996/01/05 13:11:09 dawes Exp $ */
 /* 
 
 Copyright (c) 1985, 1986, 1987, 1991  X Consortium
@@ -155,7 +155,11 @@ typedef char *XPointer;
 typedef struct _XExtData {
 	int number;		/* number returned by XRegisterExtension */
 	struct _XExtData *next;	/* next item on list of data for structure */
-	int (*free_private)();	/* called to free private storage */
+	int (*free_private)(	/* called to free private storage */
+#if NeedFunctionPrototypes
+	struct _XExtData *extension
+#endif
+	);
 	XPointer private_data;	/* data private to this extension. */
 } XExtData;
 
@@ -369,14 +373,25 @@ typedef struct _XImage {
     unsigned long blue_mask;
     XPointer obdata;		/* hook for the object routines to hang on */
     struct funcs {		/* image manipulation routines */
-	struct _XImage *(*create_image)();
 #if NeedFunctionPrototypes
+	struct _XImage *(*create_image)(
+		struct _XDisplay* /* display */,
+		Visual*		/* visual */,
+		unsigned int	/* depth */,
+		int		/* format */,
+		int		/* offset */,
+		char*		/* data */,
+		unsigned int	/* width */,
+		unsigned int	/* height */,
+		int		/* bitmap_pad */,
+		int		/* bytes_per_line */);
 	int (*destroy_image)        (struct _XImage *);
 	unsigned long (*get_pixel)  (struct _XImage *, int, int);
 	int (*put_pixel)            (struct _XImage *, int, int, unsigned long);
 	struct _XImage *(*sub_image)(struct _XImage *, int, int, unsigned int, unsigned int);
 	int (*add_pixel)            (struct _XImage *, long);
 #else
+	struct _XImage *(*create_image)();
 	int (*destroy_image)();
 	unsigned long (*get_pixel)();
 	int (*put_pixel)();
@@ -499,7 +514,11 @@ _XDisplay
 	XID private4;
 	XID private5;
 	int private6;
-	XID (*resource_alloc)();/* allocator function */
+	XID (*resource_alloc)(	/* allocator function */
+#if NeedFunctionPrototypes
+		struct _XDisplay*
+#endif
+	);
 	int byte_order;		/* screen byte order, LSBFirst, MSBFirst */
 	int bitmap_unit;	/* padding and data requirements */
 	int bitmap_pad;		/* padding requirements on bitmaps */
@@ -518,7 +537,11 @@ _XDisplay
 	XPointer private14;
 	unsigned max_request_size; /* maximum number 32 bit words in request*/
 	struct _XrmHashBucketRec *db;
-	int (*private15)();
+	int (*private15)(
+#if NeedFunctionPrototypes
+		struct _XDisplay*
+#endif
+		);
 	char *display_name;	/* "host:display" string used on this connect*/
 	int default_screen;	/* default screen for operations */
 	int nscreens;		/* number of screens on this server*/
@@ -1047,7 +1070,9 @@ typedef struct {
     XRectangle      max_logical_extent;
 } XFontSetExtents;
 
+/* unused:
 typedef void (*XOMProc)();
+ */
 
 typedef struct _XOM *XOM;
 typedef struct _XOC *XOC, *XFontSet;
@@ -1101,7 +1126,16 @@ typedef struct {
     char **font_name_list;
 } XOMFontInfo;
 
-typedef void (*XIMProc)();
+typedef void (*XIMProc)(
+/* FIX this later -- XIMProc is used in too many conflicting ways, including
+ * returning a value!
+#if NeedFunctionPrototypes
+    XPointer,
+    XPointer,
+    XPointer
+#endif
+ */
+);
 
 typedef struct _XIM *XIM;
 typedef struct _XIC *XIC;
@@ -1506,7 +1540,11 @@ extern int (*XSynchronize(
     Display*		/* display */,
     Bool		/* onoff */
 #endif
-))();
+))(
+#if NeedNestedPrototypes
+    Display*		/* display */
+#endif
+);
 extern int (*XSetAfterFunction(
 #if NeedFunctionPrototypes
     Display*		/* display */,
@@ -1516,7 +1554,11 @@ extern int (*XSetAfterFunction(
 #endif
             )		/* procedure */
 #endif
-))();
+))(
+#if NeedNestedPrototypes
+    Display*		/* display */
+#endif
+);
 extern Atom XInternAtom(
 #if NeedFunctionPrototypes
     Display*		/* display */,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xsetpointer/xsetpointer.c,v 3.2 1995/12/23 12:02:45 dawes Exp $ */
+/* $XFree86: xc/programs/xsetpointer/xsetpointer.c,v 3.3 1996/01/11 13:32:23 dawes Exp $ */
 
 /*
  * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>       
@@ -99,7 +99,21 @@ main(int argc, char * argv[])
       for(loop=0; loop<num_devices; loop++)
         {
 	  if (list) {
-	    printf("\"%s\"\n", devices[loop].name);
+	      printf("\"%s\"	[", devices[loop].name ? devices[loop].name : "<noname>");
+	      switch(devices[loop].use) {
+	      case IsXPointer:
+		  printf("XPointer]\n");
+		  break;
+	      case IsXKeyboard:
+		  printf("XKeyboard]\n");
+		  break;
+	      case IsXExtensionDevice:
+		  printf("XExtensionDevice]\n");
+		  break;
+	      default:
+		  printf("invalid value]\n");
+		  break;
+	      }
 	  }
 	  else {
           if ((argc == 2) && devices[loop].name &&

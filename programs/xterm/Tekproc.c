@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Tekproc.c /main/118 1996/01/14 16:52:29 kaleb $
- * $XFree86: xc/programs/xterm/Tekproc.c,v 3.7 1996/01/10 05:44:05 dawes Exp $
+ * $XFree86: xc/programs/xterm/Tekproc.c,v 3.8 1996/01/16 15:09:36 dawes Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -64,7 +64,14 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 #include <X11/Xmu/CharSet.h>
+
+#if XtSpecificationRelease >= 6
 #include <X11/Xpoll.h>
+#else
+#define Select(n,r,w,e,t) select(0,(fd_set*)r,(fd_set*)w,(fd_set*)e,(struct timeval *)t)
+#define XFD_COPYSET(src,dst) bcopy((src)->fds_bits, (dst)->fds_bits, sizeof(fd_set))
+#endif
+
 #include <stdio.h>
 #include <errno.h>
 #include <setjmp.h>

@@ -1,4 +1,5 @@
-/* $XConsortium: lock.c,v 1.5 95/05/24 20:43:29 mor Exp $ */
+/* $XConsortium: lock.c /main/6 1996/01/14 16:52:07 kaleb $ */
+/* $XFree86$ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -61,8 +62,12 @@ Bool write_id;
 
     path = GetPath ();
 
+#ifndef __EMX__
     sprintf (lock_file, "%s/.XSMlock-%s", path, session_name);
     sprintf (temp_lock_file, "%s/.XSMtlock-%s", path, session_name);
+#else
+    sprintf (temp_lock_file, "%s/%s.slk", path, session_name);
+#endif
 
     if ((fd = creat (temp_lock_file, 0444)) < 0)
 	return (0);
@@ -77,6 +82,7 @@ Bool write_id;
 
     close (fd);
 
+#ifndef __EMX__
     status = 1;
 
     if (link (temp_lock_file, lock_file) < 0)
@@ -84,6 +90,9 @@ Bool write_id;
 
     if (unlink (temp_lock_file) < 0)
 	status = 0;
+#else
+    status = 0;
+#endif
 
     return (status);
 }
@@ -166,7 +175,11 @@ char *session_name;
      * We should popup a dialog here giving error.
      */
 
+#ifdef XKB
+    XkbStdBell(XtDisplay(topLevel),XtWindow(topLevel),0,XkbBI_Failure);
+#else
     XBell (XtDisplay (topLevel), 0);
+#endif
     sleep (2);
 
     ChooseSession ();
