@@ -2,9 +2,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  *
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -128,6 +128,9 @@ static points_func points_tab[0x40]; /* less than 0x20 used */
 #define TAG(x) x##_flat_front_back_twoside_offset
 #include "fxtritmp.h"
 
+/* We don't actually do antialiasing correctly. Geometry has to be
+   sorted for glide's antialiasing to operate */
+#if 0
 #define IND (FX_ANTIALIAS)
 #define TAG(x) x##_aa
 #include "fxtritmp.h"
@@ -191,7 +194,7 @@ static points_func points_tab[0x40]; /* less than 0x20 used */
 #define IND (FX_ANTIALIAS|FX_FLAT|FX_FRONT_BACK|FX_TWOSIDE|FX_OFFSET)
 #define TAG(x) x##_aa_flat_front_back_twoside_offset
 #include "fxtritmp.h"
-
+#endif
 
 void fxDDTrifuncInit() 
 {
@@ -211,6 +214,7 @@ void fxDDTrifuncInit()
    init_flat_front_back_offset();
    init_flat_front_back_twoside();
    init_flat_front_back_twoside_offset();
+#if 0
    init_aa();
    init_aa_offset();
    init_aa_twoside();
@@ -227,6 +231,7 @@ void fxDDTrifuncInit()
    init_aa_flat_front_back_offset();
    init_aa_flat_front_back_twoside();
    init_aa_flat_front_back_twoside_offset();
+#endif
 }
 
 void fxPrintRenderState( const char *msg, GLuint state )
@@ -283,14 +288,13 @@ void fxDDChooseRenderState( GLcontext *ctx )
       if (flags & DD_FLATSHADE)                    ind |= FX_FLAT;
       if (flags & DD_TRI_LIGHT_TWOSIDE)            ind |= FX_TWOSIDE;
       if (flags & DD_MULTIDRAW)                    ind |= FX_FRONT_BACK;
-      if (flags & DD_POINT_SMOOTH)                 ind |= FX_ANTIALIAS;
-      if (flags & (DD_POINT_SIZE|DD_POINT_ATTEN))  {
+      if (flags & (DD_POINT_ATTEN|DD_POINT_SMOOTH))  {
 	ind |= FX_FALLBACK;
 #if 0
-	if (flags&DD_POINT_SIZE)
-	  fprintf(stderr, "Fallback point size = %f\n", ctx->Point.Size);
 	if (flags&DD_POINT_ATTEN)
 	  fprintf(stderr, "Fallback point atten\n");
+	if (flags&DD_POINT_SMOOTH)
+	  fprintf(stderr, "Fallback point smooth\n");
 #endif
       }
 
@@ -300,14 +304,13 @@ void fxDDChooseRenderState( GLcontext *ctx )
 	 ctx->IndirectTriangles |= DD_POINT_SW_RASTERIZE;
       ind &= ~(FX_ANTIALIAS|FX_FALLBACK);
 
-      if (flags & DD_LINE_SMOOTH)                   ind |= FX_ANTIALIAS;
-      if (flags & (DD_LINE_WIDTH|DD_LINE_STIPPLE))  {
+      if (flags & (DD_LINE_STIPPLE|DD_LINE_SMOOTH))  {
 	ind |= FX_FALLBACK;
 #if 0
-	if (flags&DD_LINE_WIDTH)
-	  fprintf(stderr, "Fallback line wide=%f\n", ctx->Line.Width);
 	if (flags&DD_LINE_STIPPLE)
 	  fprintf(stderr, "Fallback line stipple\n");
+        if (flags&DD_LINE_SMOOTH)
+	  fprintf(stderr, "Fallback line smooth\n");
 #endif
       }
 
@@ -317,15 +320,16 @@ void fxDDChooseRenderState( GLcontext *ctx )
 	 ctx->IndirectTriangles |= DD_LINE_SW_RASTERIZE;
       ind &= ~(FX_ANTIALIAS|FX_FALLBACK);
 
-      if (flags & DD_TRI_SMOOTH)                    ind |= FX_ANTIALIAS;
       if (flags & DD_TRI_OFFSET)                    ind |= FX_OFFSET;
-      if (flags & (DD_TRI_UNFILLED|DD_TRI_STIPPLE)) {
+      if (flags & (DD_TRI_UNFILLED|DD_TRI_STIPPLE|DD_TRI_SMOOTH)) {
 	ind |= FX_FALLBACK;	
 #if 0
 	if (flags&DD_TRI_UNFILLED)
 	  fprintf(stderr, "Fallback tri unfilled\n");
 	if (flags&DD_TRI_STIPPLE)
 	  fprintf(stderr, "Fallback tri stippled\n");
+	if (flags&DD_TRI_SMOOTH)
+	  fprintf(stderr, "Fallback tri smooth\n");
 #endif
       }
 

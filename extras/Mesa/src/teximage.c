@@ -1,10 +1,9 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -1247,6 +1246,17 @@ _mesa_TexImage3D( GLenum target, GLint level, GLint internalformat,
 }
 
 
+void
+_mesa_TexImage3DEXT( GLenum target, GLint level, GLenum internalformat,
+                     GLsizei width, GLsizei height, GLsizei depth,
+                     GLint border, GLenum format, GLenum type,
+                     const GLvoid *pixels )
+{
+   _mesa_TexImage3D(target, level, (GLint) internalformat, width, height,
+                    depth, border, format, type, pixels);
+}
+
+
 
 void
 _mesa_GetTexImage( GLenum target, GLint level, GLenum format,
@@ -1663,7 +1673,7 @@ _mesa_CopyTexImage1D( GLenum target, GLint level,
          gl_error( ctx, GL_OUT_OF_MEMORY, "glCopyTexImage1D" );
          return;
       }
-      (*ctx->Exec.TexImage1D)( target, level, internalFormat, width,
+      (*ctx->Exec->TexImage1D)( target, level, internalFormat, width,
                      border, GL_RGBA, GL_UNSIGNED_BYTE, image );
       FREE(image);
    }
@@ -1686,7 +1696,7 @@ _mesa_CopyTexImage2D( GLenum target, GLint level, GLenum internalFormat,
          gl_error( ctx, GL_OUT_OF_MEMORY, "glCopyTexImage2D" );
          return;
       }
-      (ctx->Exec.TexImage2D)( target, level, internalFormat, width,
+      (ctx->Exec->TexImage2D)( target, level, internalFormat, width,
                          height, border, GL_RGBA, GL_UNSIGNED_BYTE, image );
       FREE(image);
    }

@@ -1,5 +1,6 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.7 2000/01/22 21:24:01 martin Exp $
-XCOMM $PI: xc/lib/GL/mesa/src/Imakefile,v 1.5 1999/06/21 05:13:55 martin Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.8 2000/02/08 17:18:39 dawes Exp $
+
+#include <Threads.tmpl>
 
 #define DoNormalLib NormalLibGlx
 #define DoSharedLib SharedLibGlx
@@ -30,6 +31,8 @@ LinkSourceFile(bitmap.c, ../../../../extras/Mesa/src)
 LinkSourceFile(bitmap.h, ../../../../extras/Mesa/src)
 LinkSourceFile(blend.c, ../../../../extras/Mesa/src)
 LinkSourceFile(blend.h, ../../../../extras/Mesa/src)
+LinkSourceFile(buffers.c, ../../../../extras/Mesa/src)
+LinkSourceFile(buffers.h, ../../../../extras/Mesa/src)
 LinkSourceFile(clip.c, ../../../../extras/Mesa/src)
 LinkSourceFile(clip.h, ../../../../extras/Mesa/src)
 LinkSourceFile(clip_funcs.h, ../../../../extras/Mesa/src)
@@ -51,8 +54,6 @@ LinkSourceFile(debug_xform.c, ../../../../extras/Mesa/src)
 LinkSourceFile(debug_xform.h, ../../../../extras/Mesa/src)
 LinkSourceFile(depth.c, ../../../../extras/Mesa/src)
 LinkSourceFile(depth.h, ../../../../extras/Mesa/src)
-LinkSourceFile(dispatch.c, ../../../../extras/Mesa/src)
-LinkSourceFile(dispatch.h, ../../../../extras/Mesa/src)
 LinkSourceFile(dlist.c, ../../../../extras/Mesa/src)
 LinkSourceFile(dlist.h, ../../../../extras/Mesa/src)
 LinkSourceFile(dotprod_tmp.h, ../../../../extras/Mesa/src)
@@ -83,12 +84,12 @@ LinkSourceFile(glapioffsets.h, ../../../../extras/Mesa/src)
 LinkSourceFile(glapitable.h, ../../../../extras/Mesa/src)
 LinkSourceFile(glapitemp.h, ../../../../extras/Mesa/src)
 LinkSourceFile(glheader.h, ../../../../extras/Mesa/src)
-LinkSourceFile(glmisc.c, ../../../../extras/Mesa/src)
-LinkSourceFile(glmisc.h, ../../../../extras/Mesa/src)
 LinkSourceFile(glthread.c, ../../../../extras/Mesa/src)
 LinkSourceFile(glthread.h, ../../../../extras/Mesa/src)
 LinkSourceFile(hash.c, ../../../../extras/Mesa/src)
 LinkSourceFile(hash.h, ../../../../extras/Mesa/src)
+LinkSourceFile(hint.c, ../../../../extras/Mesa/src)
+LinkSourceFile(hint.h, ../../../../extras/Mesa/src)
 LinkSourceFile(image.c, ../../../../extras/Mesa/src)
 LinkSourceFile(image.h, ../../../../extras/Mesa/src)
 LinkSourceFile(imaging.c, ../../../../extras/Mesa/src)
@@ -142,6 +143,8 @@ LinkSourceFile(span.c, ../../../../extras/Mesa/src)
 LinkSourceFile(span.h, ../../../../extras/Mesa/src)
 LinkSourceFile(stages.c, ../../../../extras/Mesa/src)
 LinkSourceFile(stages.h, ../../../../extras/Mesa/src)
+LinkSourceFile(state.c, ../../../../extras/Mesa/src)
+LinkSourceFile(state.h, ../../../../extras/Mesa/src)
 LinkSourceFile(stencil.c, ../../../../extras/Mesa/src)
 LinkSourceFile(stencil.h, ../../../../extras/Mesa/src)
 LinkSourceFile(texgen_tmp.h, ../../../../extras/Mesa/src)
@@ -186,9 +189,6 @@ LinkSourceFile(xform_tmp.h, ../../../../extras/Mesa/src)
 LinkSourceFile(zoom.c, ../../../../extras/Mesa/src)
 LinkSourceFile(zoom.h, ../../../../extras/Mesa/src)
 
-LinkSourceFile(zoom.c, ../../../../extras/Mesa/src)
-LinkSourceFile(zoom.h, ../../../../extras/Mesa/src)
-
     CORE_SRCS = accum.c \
 		alpha.c \
 		alphabuf.c \
@@ -196,6 +196,7 @@ LinkSourceFile(zoom.h, ../../../../extras/Mesa/src)
 		bbox.c \
 		bitmap.c \
 		blend.c \
+		buffers.c \
 		clip.c \
 		colortab.c \
 		config.c \
@@ -204,7 +205,6 @@ LinkSourceFile(zoom.h, ../../../../extras/Mesa/src)
 		cva.c \
 		debug_xform.c \
 		depth.c \
-		dispatch.c \
 		dlist.c \
 		drawpix.c \
 		enable.c \
@@ -216,9 +216,9 @@ LinkSourceFile(zoom.h, ../../../../extras/Mesa/src)
 		get.c \
 		glapi.c \
 		glapinoop.c \
-		glmisc.c \
 		glthread.c \
 		hash.c \
+		hint.c \
 		image.c \
 		imaging.o \
 		light.c \
@@ -241,6 +241,7 @@ LinkSourceFile(zoom.h, ../../../../extras/Mesa/src)
 		shade.c \
 		span.c \
 		stages.c \
+		state.c \
 		stencil.c \
 		teximage.c \
 		texobj.c \
@@ -268,6 +269,7 @@ LinkSourceFile(zoom.h, ../../../../extras/Mesa/src)
 		bbox.o \
 		bitmap.o \
 		blend.o \
+		buffers.o \
 		clip.o \
 		colortab.o \
 		config.o \
@@ -276,7 +278,6 @@ LinkSourceFile(zoom.h, ../../../../extras/Mesa/src)
 		cva.o \
 		debug_xform.o \
 		depth.o \
-		dispatch.o \
 		dlist.o \
 		drawpix.o \
 		enable.o \
@@ -286,8 +287,8 @@ LinkSourceFile(zoom.h, ../../../../extras/Mesa/src)
 		feedback.o \
 		fog.o \
 		get.o \
-		glmisc.o \
 		hash.o \
+		hint.o \
 		image.o \
 		imaging.o \
 		light.o \
@@ -310,6 +311,7 @@ LinkSourceFile(zoom.h, ../../../../extras/Mesa/src)
 		shade.o \
 		span.o \
 		stages.o \
+		state.o \
 		stencil.o \
 		teximage.o \
 		texobj.o \
@@ -337,7 +339,7 @@ LinkSourceFile(zoom.h, ../../../../extras/Mesa/src)
 #endif
 
       DEFINES = $(ALLOC_DEFINES) GlxDefines $(TDFX_DEFS) $(ASM_DEFS)
-     INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) -I../include -I../../dri -I.
+     INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) -I../include -I../../dri -I. -I../../../../include
          SRCS = $(CORE_SRCS) $(ASM_SRCS)
          OBJS = $(CORE_OBJS) $(ASM_OBJS)
 
@@ -351,11 +353,8 @@ LinkSourceFile(zoom.h, ../../../../extras/Mesa/src)
 #if GlxBuiltInMesa || GlxDriverUsesMesa || !GlxUseBuiltInDRIDriver
 # We have to go into X to make the xmesaP.h symbolic link
   MESASUBDIRS = X
-#ifdef i386Architecture
+
   ASMSUBDIRS = X86
-#else
-  ASMSUBDIRS =
-#endif /* i386Architecture */
 
 #include <Library.tmpl>
 
@@ -375,17 +374,10 @@ DependSubdirs($(SUBDIRS))
 
 #if !GlxUseBuiltInDRIDriver && !GlxDriverUsesMesa
 LIBNAME = mesa_dri.so
-
-#ifdef i386Architecture
 ALL_OBJS = $(CORE_OBJS) X/?*.o X86/?*.o
 ALL_DEPS = $(SUBDIRS) DONE X/DONE X86/DONE
-#else
-ALL_OBJS = $(CORE_OBJS) X/?*.o
-ALL_DEPS = $(SUBDIRS) DONE X/DONE
-#endif /* i386Architecture */
-
 SharedDepModuleTarget($(LIBNAME),$(ALL_DEPS),$(ALL_OBJS))
-InstallDynamicModule($(LIBNAME),$(MODULEDIR),.)
+InstallDynamicModule($(LIBNAME),$(MODULEDIR)/dri,.)
 #endif
 
 DependTarget()

@@ -1,4 +1,3 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
@@ -34,6 +33,7 @@
 #include "mem.h"
 #include "masking.h"
 #include "span.h"
+#include "state.h"
 #include "types.h"
 #endif
 
@@ -66,7 +66,8 @@
 
 
 
-void gl_alloc_accum_buffer( GLcontext *ctx )
+void
+_mesa_alloc_accum_buffer( GLcontext *ctx )
 {
    GLint n;
 
@@ -343,7 +344,7 @@ _mesa_Accum( GLenum op, GLfloat value )
          if (ctx->IntegerAccumMode && value != 1.0)
             rescale_accum(ctx);
 
-         if (ctx->IntegerAccumMode) {
+         if (ctx->IntegerAccumMode && ctx->IntegerAccumScaler > 0) {
             /* build lookup table to avoid many floating point multiplies */
             const GLfloat mult = ctx->IntegerAccumScaler;
             static GLchan multTable[32768];
@@ -419,7 +420,8 @@ _mesa_Accum( GLenum op, GLfloat value )
 /*
  * Clear the accumulation Buffer.
  */
-void gl_clear_accum_buffer( GLcontext *ctx )
+void
+_mesa_clear_accum_buffer( GLcontext *ctx )
 {
    GLuint buffersize;
    GLfloat acc_scale;

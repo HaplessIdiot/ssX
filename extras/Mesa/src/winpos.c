@@ -1,10 +1,9 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -127,7 +126,149 @@ _mesa_WindowPos4fMESA( GLfloat x, GLfloat y, GLfloat z, GLfloat w )
 }
 
 
-#ifndef GL_MESA_window_pos
+
+
+void
+_mesa_WindowPos2dMESA(GLdouble x, GLdouble y)
+{
+   _mesa_WindowPos4fMESA(x, y, 0.0F, 1.0F);
+}
+
+void
+_mesa_WindowPos2fMESA(GLfloat x, GLfloat y)
+{
+   _mesa_WindowPos4fMESA(x, y, 0.0F, 1.0F);
+}
+
+void
+_mesa_WindowPos2iMESA(GLint x, GLint y)
+{
+   _mesa_WindowPos4fMESA(x, y, 0.0F, 1.0F);
+}
+
+void
+_mesa_WindowPos2sMESA(GLshort x, GLshort y)
+{
+   _mesa_WindowPos4fMESA(x, y, 0.0F, 1.0F);
+}
+
+void
+_mesa_WindowPos3dMESA(GLdouble x, GLdouble y, GLdouble z)
+{
+   _mesa_WindowPos4fMESA(x, y, z, 1.0F);
+}
+
+void
+_mesa_WindowPos3fMESA(GLfloat x, GLfloat y, GLfloat z)
+{
+   _mesa_WindowPos4fMESA(x, y, z, 1.0F);
+}
+
+void
+_mesa_WindowPos3iMESA(GLint x, GLint y, GLint z)
+{
+   _mesa_WindowPos4fMESA(x, y, z, 1.0F);
+}
+
+void
+_mesa_WindowPos3sMESA(GLshort x, GLshort y, GLshort z)
+{
+   _mesa_WindowPos4fMESA(x, y, z, 1.0F);
+}
+
+void
+_mesa_WindowPos4dMESA(GLdouble x, GLdouble y, GLdouble z, GLdouble w)
+{
+   _mesa_WindowPos4fMESA(x, y, z, w);
+}
+
+void
+_mesa_WindowPos4iMESA(GLint x, GLint y, GLint z, GLint w)
+{
+   _mesa_WindowPos4fMESA(x, y, z, w);
+}
+
+void
+_mesa_WindowPos4sMESA(GLshort x, GLshort y, GLshort z, GLshort w)
+{
+   _mesa_WindowPos4fMESA(x, y, z, w);
+}
+
+void
+_mesa_WindowPos2dvMESA(const GLdouble *v)
+{
+   _mesa_WindowPos4fMESA(v[0], v[1], 0.0F, 1.0F);
+}
+
+void
+_mesa_WindowPos2fvMESA(const GLfloat *v)
+{
+   _mesa_WindowPos4fMESA(v[0], v[1], 0.0F, 1.0F);
+}
+
+void
+_mesa_WindowPos2ivMESA(const GLint *v)
+{
+   _mesa_WindowPos4fMESA(v[0], v[1], 0.0F, 1.0F);
+}
+
+void
+_mesa_WindowPos2svMESA(const GLshort *v)
+{
+   _mesa_WindowPos4fMESA(v[0], v[1], 0.0F, 1.0F);
+}
+
+void
+_mesa_WindowPos3dvMESA(const GLdouble *v)
+{
+   _mesa_WindowPos4fMESA(v[0], v[1], v[2], 1.0F);
+}
+
+void
+_mesa_WindowPos3fvMESA(const GLfloat *v)
+{
+   _mesa_WindowPos4fMESA(v[0], v[1], v[2], 1.0F);
+}
+
+void
+_mesa_WindowPos3ivMESA(const GLint *v)
+{
+   _mesa_WindowPos4fMESA(v[0], v[1], v[2], 1.0F);
+}
+
+void
+_mesa_WindowPos3svMESA(const GLshort *v)
+{
+   _mesa_WindowPos4fMESA(v[0], v[1], v[2], 1.0F);
+}
+
+void
+_mesa_WindowPos4dvMESA(const GLdouble *v)
+{
+   _mesa_WindowPos4fMESA(v[0], v[1], v[2], v[3]);
+}
+
+void
+_mesa_WindowPos4fvMESA(const GLfloat *v)
+{
+   _mesa_WindowPos4fMESA(v[0], v[1], v[2], v[3]);
+}
+
+void
+_mesa_WindowPos4ivMESA(const GLint *v)
+{
+   _mesa_WindowPos4fMESA(v[0], v[1], v[2], v[3]);
+}
+
+void
+_mesa_WindowPos4svMESA(const GLshort *v)
+{
+   _mesa_WindowPos4fMESA(v[0], v[1], v[2], v[3]);
+}
+
+
+
+#if 0
 
 /*
  * OpenGL implementation of glWindowPos*MESA()

@@ -1,4 +1,3 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
@@ -38,6 +37,7 @@
 #include "mmath.h"
 #include "rastpos.h"
 #include "shade.h"
+#include "state.h"
 #include "types.h"
 #include "xform.h"
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/indirect_init.c,v 1.1 1999/06/14 07:23:37 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/indirect_init.c,v 1.2 2000/02/08 17:18:32 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -29,8 +29,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /*
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
- *
- * $PI: xc/lib/GL/glx/indirect_init.c,v 1.2 1999/04/05 05:24:32 martin Exp $
+ *   Brian Paul <brian@precisioninsight.com>
  */
 
 #ifdef GLX_DIRECT_RENDERING
@@ -49,21 +48,6 @@ static int NoOp(void)
 }
 
 
-/*
-** Initialize the given dispatch table to all no-op functions.
-*/
-static void InitNoOpAPI(__GLapi *glAPI)
-{
-    const int entries = sizeof(__GLapi) / sizeof(void *);
-    int i;
-    void **dispatch = (void **) glAPI;
-
-    for (i = 0; i < entries; i++) {
-       dispatch[i] = (void *) NoOp;
-    }
-}
-
-
 __GLapi *__glXNewIndirectAPI(void)
 {
     __GLapi *glAPI;
@@ -72,7 +56,13 @@ __GLapi *__glXNewIndirectAPI(void)
     glAPI = (__GLapi *) Xmalloc(entries * sizeof(void *));
 
     /* first, set all entries to point to no-op functions */
-    InitNoOpAPI(glAPI);
+    {
+       int i;
+       void **dispatch = (void **) glAPI;
+       for (i = 0; i < entries; i++) {
+          dispatch[i] = (void *) NoOp;
+       }
+    }
 
     /* now, initialize the entries we understand */
     glAPI->Accum = __indirect_glAccum;

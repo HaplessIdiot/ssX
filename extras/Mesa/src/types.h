@@ -1,5 +1,4 @@
 /* -*- mode: C; tab-width:8; c-basic-offset:8 -*- */
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
@@ -35,6 +34,7 @@
 #include "extensions.h"
 #include "fixed.h"
 #include "glapitable.h"
+#include "glthread.h"
 #include "macros.h"
 #include "matrix.h"
 #include "vb.h"
@@ -706,6 +706,7 @@ typedef void (*texgen_func)( struct vertex_buffer *VB,
 
 /* Texture object record */
 struct gl_texture_object {
+        _glthread_Mutex Mutex;		/* for thread safety */
 	GLint RefCount;			/* reference count */
 	GLuint Name;			/* an unsigned integer */
 	GLuint Dimensions;		/* 1 or 2 or 3 */
@@ -1161,6 +1162,7 @@ struct gl_evaluators {
  * State which can be shared by multiple contexts:
  */
 struct gl_shared_state {
+   _glthread_Mutex Mutex;		   /* for thread safety */
    GLint RefCount;			   /* Reference count */
    struct _mesa_HashTable *DisplayList;	   /* Display lists hash table */
    struct _mesa_HashTable *TexObjects;	   /* Texture objects hash table */
@@ -1179,22 +1181,22 @@ struct gl_shared_state {
  * will make derived classes.
  */
 struct gl_visual {
-	GLboolean RGBAflag;	/* Is frame buffer in RGBA mode, not CI? */
-	GLboolean DBflag;	/* Is color buffer double buffered? */
-	GLboolean StereoFlag;	/* stereo buffer? */
+   GLboolean RGBAflag;		/* Is frame buffer in RGBA mode, not CI? */
+   GLboolean DBflag;		/* Is color buffer double buffered? */
+   GLboolean StereoFlag;	/* stereo buffer? */
 
-	GLint RedBits;		/* Bits per color component */
-	GLint GreenBits;
-	GLint BlueBits;
-	GLint AlphaBits;
+   GLint RedBits;		/* Bits per color component */
+   GLint GreenBits;
+   GLint BlueBits;
+   GLint AlphaBits;
 
-	GLint IndexBits;	/* Bits/pixel if in color index mode */
+   GLint IndexBits;		/* Bits/pixel if in color index mode */
 
-	GLint AccumBits;	/* Number of bits per color channel, or 0 */
-	GLint DepthBits;	/* Number of bits in depth buffer, or 0 */
-	GLint StencilBits;	/* Number of bits in stencil buffer, or 0 */
+   GLint AccumBits;		/* Number of bits per color channel, or 0 */
+   GLint DepthBits;		/* Number of bits in depth buffer, or 0 */
+   GLint StencilBits;		/* Number of bits in stencil buffer, or 0 */
 
-	GLboolean SoftwareAlpha;/* Implement software alpha buffer? */
+   GLboolean SoftwareAlpha;	/* Implement software alpha buffer? */
 };
 
 
@@ -1206,33 +1208,33 @@ struct gl_visual {
  * will make derived classes.
  */
 struct gl_frame_buffer {
-	GLvisual *Visual;	/* The corresponding visual */
+   GLvisual *Visual;		/* The corresponding visual */
 
-	GLint Width, Height;	/* size of frame buffer in pixels */
+   GLint Width, Height;		/* size of frame buffer in pixels */
 
-        GLboolean UseSoftwareDepthBuffer;
-        GLboolean UseSoftwareAccumBuffer;
-        GLboolean UseSoftwareStencilBuffer;
-        GLboolean UseSoftwareAlphaBuffers;
+   GLboolean UseSoftwareDepthBuffer;
+   GLboolean UseSoftwareAccumBuffer;
+   GLboolean UseSoftwareStencilBuffer;
+   GLboolean UseSoftwareAlphaBuffers;
 
-	/* Software depth (aka Z) buffer */
-	GLdepth *Depth;		/* array [Width*Height] of GLdepth values */
+   /* Software depth (aka Z) buffer */
+   GLdepth *Depth;		/* array [Width*Height] of GLdepth values */
 
-	/* Software stencil buffer */
-	GLstencil *Stencil;	/* array [Width*Height] of GLstencil values */
+   /* Software stencil buffer */
+   GLstencil *Stencil;		/* array [Width*Height] of GLstencil values */
 
-	/* Software accumulation buffer */
-	GLaccum *Accum;		/* array [4*Width*Height] of GLaccum values */
+   /* Software accumulation buffer */
+   GLaccum *Accum;		/* array [4*Width*Height] of GLaccum values */
 
-	/* Software alpha planes */
-	GLubyte *FrontLeftAlpha;  /* array [Width*Height] of GLubyte */
-	GLubyte *BackLeftAlpha;   /* array [Width*Height] of GLubyte */
-	GLubyte *FrontRightAlpha; /* array [Width*Height] of GLubyte */
-	GLubyte *BackRightAlpha;  /* array [Width*Height] of GLubyte */
-	GLubyte *Alpha;           /* Points to current alpha buffer */
+   /* Software alpha planes */
+   GLubyte *FrontLeftAlpha;	/* array [Width*Height] of GLubyte */
+   GLubyte *BackLeftAlpha;	/* array [Width*Height] of GLubyte */
+   GLubyte *FrontRightAlpha;	/* array [Width*Height] of GLubyte */
+   GLubyte *BackRightAlpha;	/* array [Width*Height] of GLubyte */
+   GLubyte *Alpha;		/* Points to current alpha buffer */
 
-	/* Drawing bounds: intersection of window size and scissor box */
-	GLint Xmin, Xmax, Ymin, Ymax;
+   /* Drawing bounds: intersection of window size and scissor box */
+   GLint Xmin, Xmax, Ymin, Ymax;
 };
 
 
@@ -1244,6 +1246,14 @@ struct gl_constants {
    GLint MaxTextureLevels;
    GLuint MaxTextureUnits;
    GLuint MaxArrayLockSize;
+   GLint SubPixelBits;
+   GLfloat MinPointSize, MaxPointSize;		/* aliased */
+   GLfloat MinPointSizeAA, MaxPointSizeAA;	/* antialiased */
+   GLfloat PointSizeGranularity;
+   GLfloat MinLineWidth, MaxLineWidth;		/* aliased */
+   GLfloat MinLineWidthAA, MaxLineWidthAA;	/* antialiased */
+   GLfloat LineWidthGranularity;
+   GLuint NumAuxBuffers;
 };
 
 
@@ -1620,8 +1630,8 @@ struct gl_context {
 	struct gl_shared_state *Shared;
 
 	/* API function pointer tables */
-	struct _glapi_table Save;	/* Display list save funcs */
-	struct _glapi_table Exec;	/* Execute funcs */
+	struct _glapi_table *Save;	/* Display list save funcs */
+	struct _glapi_table *Exec;	/* Execute funcs */
         struct _glapi_table *CurrentDispatch;  /* == Save or Exec !! */
 
         GLvisual *Visual;

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/gamma/Imakefile,v 1.4 1999/12/14 01:33:38 robin Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/gamma/Imakefile,v 1.5 2000/02/08 17:18:41 dawes Exp $
 XCOMM $PI: xc/lib/GL/mesa/src/drv/gamma/Imakefile,v 1.6 1999/06/21 05:13:55 martin Exp $
 
 #define DoNormalLib NormalLibGlx
@@ -71,7 +71,7 @@ LIBNAME = gamma_dri.so
 ALL_OBJS = $(OBJS)
 ALL_DEPS = DONE
 SharedDepModuleTarget($(LIBNAME),$(ALL_DEPS),$(ALL_OBJS))
-InstallDynamicModule($(LIBNAME),$(MODULEDIR),.)
+InstallDynamicModule($(LIBNAME),$(MODULEDIR)/dri,.)
 #endif
 
 DependTarget()

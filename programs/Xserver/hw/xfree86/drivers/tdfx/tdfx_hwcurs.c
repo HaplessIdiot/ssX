@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_hwcurs.c,v 1.1 1999/08/29 12:21:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_hwcurs.c,v 1.2 1999/09/27 06:29:58 dawes Exp $ */
 /*
    Voodoo Banshee driver version 1.0.2
 
@@ -21,20 +21,6 @@ static void TDFXHideCursor(ScrnInfoPtr pScrn);
 static void TDFXSetCursorPosition(ScrnInfoPtr pScrn, int x, int y);
 static void TDFXSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg);
 static Bool TDFXUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs);
-
-void
-TDFXCursorGrabMemory(ScreenPtr pScreen)
-{
-  ScrnInfoPtr pScrn;
-  TDFXPtr pTDFX;
-
-  pScrn = xf86Screens[pScreen->myNum];
-  pTDFX = TDFXPTR(pScrn);
-
-  /* Grab a whole page to help with alignment */
-  pTDFX->cursorOffset=pTDFX->lowMemLoc;
-  pTDFX->lowMemLoc+=1024;
-}
 
 Bool
 TDFXCursorInit(ScreenPtr pScreen)

@@ -1,4 +1,3 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
@@ -38,6 +37,7 @@
 #include "mmath.h"
 #include "pixel.h"
 #include "span.h"
+#include "state.h"
 #include "stencil.h"
 #include "types.h"
 #include "zoom.h"
@@ -380,7 +380,7 @@ static void copy_depth_pixels( GLcontext *ctx, GLint srcx, GLint srcy,
       }
       p = pdepth;
       for (j = 0; j < height; j++, ssy += stepy) {
-         gl_read_depth_span_float(ctx, width, srcx, ssy, p);
+         _mesa_read_depth_span_float(ctx, width, srcx, ssy, p);
          p += width;
       }
       p = pdepth;
@@ -396,7 +396,7 @@ static void copy_depth_pixels( GLcontext *ctx, GLint srcx, GLint srcy,
          p += width;
       }
       else {
-         gl_read_depth_span_float(ctx, width, srcx, sy, depth);
+         _mesa_read_depth_span_float(ctx, width, srcx, sy, depth);
       }
 
       for (i = 0; i < width; i++) {

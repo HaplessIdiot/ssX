@@ -2,9 +2,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  *
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -109,7 +109,7 @@ static void fxTexValidate(GLcontext *ctx, struct gl_texture_object *tObj)
   else
     FX_smallLodLog2(ti->info)=FX_largeLodLog2(ti->info);
 
-  fxTexGetFormat(tObj->Image[minl]->Format,&(ti->info.format),&(ti->baseLevelInternalFormat));
+  fxTexGetFormat(tObj->Image[minl]->IntFormat,&(ti->info.format),&(ti->baseLevelInternalFormat));
 
   switch (tObj->WrapS) {
   case GL_CLAMP_TO_EDGE:
@@ -395,11 +395,11 @@ static void fxSetupSingleTMU_NoLock(fxMesaContext fxMesa, struct gl_texture_obje
 static void fxSelectSingleTMUSrc_NoLock(fxMesaContext fxMesa, GLint tmu, 
 					FxBool LODblend)
 {
-   if (MESA_VERBOSE&VERBOSE_DRIVER) {
-      fprintf(stderr,"fxmesa: fxSelectSingleTMUSrc(%d,%d)\n",tmu,LODblend);
-   }
+  if (MESA_VERBOSE&VERBOSE_DRIVER) {
+    fprintf(stderr,"fxmesa: fxSelectSingleTMUSrc(%d,%d)\n",tmu,LODblend);
+  }
 
-  if(LODblend) {
+  if (LODblend) {
     FX_grTexCombine_NoLock(GR_TMU0,
 			   GR_COMBINE_FUNCTION_BLEND,
 			   GR_COMBINE_FACTOR_ONE_MINUS_LOD_FRACTION,
@@ -407,37 +407,42 @@ static void fxSelectSingleTMUSrc_NoLock(fxMesaContext fxMesa, GLint tmu,
 			   GR_COMBINE_FACTOR_ONE_MINUS_LOD_FRACTION,
 			   FXFALSE,FXFALSE);
 
-    FX_grTexCombine_NoLock(GR_TMU1,
-			   GR_COMBINE_FUNCTION_LOCAL,GR_COMBINE_FACTOR_NONE,
-			   GR_COMBINE_FUNCTION_LOCAL,GR_COMBINE_FACTOR_NONE,
-			   FXFALSE,FXFALSE);
+    if (fxMesa->haveTwoTMUs)
+      FX_grTexCombine_NoLock(GR_TMU1,
+			     GR_COMBINE_FUNCTION_LOCAL,GR_COMBINE_FACTOR_NONE,
+			     GR_COMBINE_FUNCTION_LOCAL,GR_COMBINE_FACTOR_NONE,
+			     FXFALSE,FXFALSE);
     fxMesa->tmuSrc=FX_TMU_SPLIT;
-  } else {
+  }
+  else {
     if (tmu!=FX_TMU1) {
       FX_grTexCombine_NoLock(GR_TMU0,
 			     GR_COMBINE_FUNCTION_LOCAL,GR_COMBINE_FACTOR_NONE,
 			     GR_COMBINE_FUNCTION_LOCAL,GR_COMBINE_FACTOR_NONE,
 			     FXFALSE,FXFALSE);
-      FX_grTexCombine_NoLock(GR_TMU1,
-			     GR_COMBINE_FUNCTION_ZERO, GR_COMBINE_FACTOR_NONE,
-			     GR_COMBINE_FUNCTION_ZERO, GR_COMBINE_FACTOR_NONE,
-			     FXFALSE,FXFALSE);
+      if (fxMesa->haveTwoTMUs) {
+        FX_grTexCombine_NoLock(GR_TMU1,
+                               GR_COMBINE_FUNCTION_ZERO, GR_COMBINE_FACTOR_NONE,
+                               GR_COMBINE_FUNCTION_ZERO, GR_COMBINE_FACTOR_NONE,
+                               FXFALSE,FXFALSE);
+      }
       fxMesa->tmuSrc=FX_TMU0;
-    } else {
+    }
+    else {
       FX_grTexCombine_NoLock(GR_TMU1,
 			     GR_COMBINE_FUNCTION_LOCAL,GR_COMBINE_FACTOR_NONE,
 			     GR_COMBINE_FUNCTION_LOCAL,GR_COMBINE_FACTOR_NONE,
 			     FXFALSE,FXFALSE);
-    
+
       /* GR_COMBINE_FUNCTION_SCALE_OTHER doesn't work ?!? */
-    
+
       FX_grTexCombine_NoLock(GR_TMU0,
 			     GR_COMBINE_FUNCTION_BLEND,
 			     GR_COMBINE_FACTOR_ONE,
 			     GR_COMBINE_FUNCTION_BLEND,
 			     GR_COMBINE_FACTOR_ONE,
 			     FXFALSE,FXFALSE);
-    
+
       fxMesa->tmuSrc=FX_TMU1;
     }
   }
@@ -1557,28 +1562,28 @@ void fxDDFrontFace(GLcontext *ctx, GLenum mode)
 
 static void fxSetupCull(GLcontext *ctx)
 {
-   if(ctx->Polygon.CullFlag) {
-      switch(ctx->Polygon.CullFaceMode) {
-      case GL_BACK:
-	 if(ctx->Polygon.FrontFace==GL_CCW)
-	    FX_grCullMode(GR_CULL_NEGATIVE);
-	 else
-	    FX_grCullMode(GR_CULL_POSITIVE);
-	 break;
-      case GL_FRONT:
-	 if(ctx->Polygon.FrontFace==GL_CCW)
-	    FX_grCullMode(GR_CULL_POSITIVE);
-	 else
-	    FX_grCullMode(GR_CULL_NEGATIVE);
-	 break;
-      case GL_FRONT_AND_BACK:
-	 FX_grCullMode(GR_CULL_DISABLE);
-	 break;
-      default:
-	 break;
-      }
-   } else
-      FX_grCullMode(GR_CULL_DISABLE);
+  if (ctx->Polygon.CullFlag) {
+    switch (ctx->Polygon.CullFaceMode) {
+    case GL_BACK:
+      if (ctx->Polygon.FrontFace==GL_CCW)
+	FX_CONTEXT(ctx)->cullMode=GR_CULL_NEGATIVE;
+      else
+	FX_CONTEXT(ctx)->cullMode=GR_CULL_POSITIVE;
+      break;
+    case GL_FRONT:
+      if(ctx->Polygon.FrontFace==GL_CCW)
+	FX_CONTEXT(ctx)->cullMode=GR_CULL_POSITIVE;
+      else
+	FX_CONTEXT(ctx)->cullMode=GR_CULL_NEGATIVE;
+      break;
+    case GL_FRONT_AND_BACK:
+      FX_CONTEXT(ctx)->cullMode=GR_CULL_DISABLE;
+      break;
+    default:
+      break;
+    }
+  } else FX_CONTEXT(ctx)->cullMode=GR_CULL_DISABLE;
+  FX_grCullMode(FX_CONTEXT(ctx)->cullMode);
 }
 
 

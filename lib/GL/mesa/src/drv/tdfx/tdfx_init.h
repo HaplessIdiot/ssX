@@ -71,8 +71,8 @@ typedef struct {
 } tdfxScreenPrivate;
 
 typedef struct {
-  volatile int *fifoPtr;
-  volatile int *fifoRead;
+  volatile int fifoPtr;
+  volatile int fifoRead;
   volatile int fifoOwner;
   volatile int ctxOwner;
   volatile int texOwner;
@@ -123,8 +123,7 @@ extern void grDRIResetSAREA(void);
 extern XMesaContext gCC;
 extern tdfxContextPrivate *gCCPriv;
 
-/* 
-You can turn this on to find locking conflicts.
+/* You can turn this on to find locking conflicts.
 #define DEBUG_LOCKING 
 */
 
@@ -168,18 +167,20 @@ extern int prevLockLine;
 /* Lock the hardware using the global current context */
 #define LOCK_HARDWARE() \
   do { \
-    int stamp; \
     char __ret=0; \
     __DRIdrawablePrivate *dPriv = gCC->driContextPriv->driDrawablePriv; \
     __DRIscreenPrivate *sPriv = dPriv->driScreenPriv; \
     DEBUG_CHECK_LOCK(); \
-    DRM_LIGHT_LOCK_RETURN(sPriv->fd, &sPriv->pSAREA->lock, \
-		   dPriv->driContextPriv->hHWContext, __ret); \
-    if (__ret) __ret=1; \
-    stamp=dPriv->lastStamp; \
-    XMESA_VALIDATE_DRAWABLE_INFO(gCC->display, sPriv, dPriv); \
-    if (*(dPriv->pStamp)!=stamp) __ret=2; \
-    if (__ret) XMesaUpdateState(__ret==2); \
+    DRM_CAS(&sPriv->pSAREA->lock, dPriv->driContextPriv->hHWContext, \
+	    DRM_LOCK_HELD|dPriv->driContextPriv->hHWContext, __ret); \
+    if (__ret) { \
+        int stamp; \
+	drmGetLock(sPriv->fd, dPriv->driContextPriv->hHWContext, 0); \
+        stamp=dPriv->lastStamp; \
+        XMESA_VALIDATE_DRAWABLE_INFO(gCC->display, sPriv, dPriv); \
+        if (*(dPriv->pStamp)!=stamp) XMesaUpdateState(GL_TRUE); \
+	else XMesaUpdateState(GL_FALSE); \
+    } \
     DEBUG_LOCK(); \
   } while (0)
 
@@ -205,8 +206,9 @@ extern int prevLockLine;
 #define BEGIN_CLIP_LOOP()	\
   do {				\
     __DRIdrawablePrivate *dPriv = gCC->driContextPriv->driDrawablePriv; \
-    int _nc = dPriv->numClipRects; \
+    int _nc; \
     LOCK_HARDWARE(); \
+    _nc = dPriv->numClipRects; \
     while (_nc--) { \
       if (gCCPriv->needClip) { \
         gCCPriv->clipMinX=dPriv->pClipRects[_nc].x1; \

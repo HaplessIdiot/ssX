@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.3 1999/12/14 01:32:24 robin Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.4 2000/02/08 17:18:32 dawes Exp $ */
 
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
@@ -36,6 +36,9 @@
 #include "indirect_init.h"
 #include "glapi.h"
 #include <assert.h>
+#ifdef XTHREADS
+#include "Xthreads.h"
+#endif
 #endif
 
 #ifdef DEBUG
@@ -72,7 +75,48 @@ static __GLapi *IndirectAPI = NULL;
 #endif
 
 
+/*
+ * Current context management
+ */
+
+#if defined(GLX_DIRECT_RENDERING) && defined(XTHREADS)
+
+/* thread safe */
+static GLboolean TSDinitialized = GL_FALSE;
+static xthread_key_t ContextTSD;
+
+__GLXcontext *__glXGetCurrentContext(void)
+{
+   if (!TSDinitialized) {
+      xthread_key_create(&ContextTSD, NULL);
+      TSDinitialized = GL_TRUE;
+      return &dummyContext;
+   }
+   else {
+      void *p;
+      xthread_get_specific(ContextTSD, &p);
+      if (!p)
+         return &dummyContext;
+      else
+         return (__GLXcontext *) p;
+   }
+}
+
+void __glXSetCurrentContext(__GLXcontext *c)
+{
+   if (!TSDinitialized) {
+      xthread_key_create(&ContextTSD, NULL);
+      TSDinitialized = GL_TRUE;
+   }
+   xthread_set_specific(ContextTSD, c);
+}
+
+#else
+
+/* not thread safe */
 __GLXcontext *__glXcurrentContext = &dummyContext;
+
+#endif
 
 
 /*
@@ -411,14 +455,6 @@ __GLXdisplayPrivate *__glXInitialize(Display* dpy)
     XEDataObject dataObj;
     int major, minor;
 
-#ifdef GLX_DIRECT_RENDERING
-    /*
-    **Initialize the indirect GLX dispatch table.  It'll never change and
-    ** can be used by all indirect contexts.
-    */
-    IndirectAPI = __glXNewIndirectAPI();
-#endif
-
     /* The one and only long long lock */
     __glXLock();
 
@@ -504,6 +540,7 @@ __GLXdisplayPrivate *__glXInitialize(Display* dpy)
         __glXClientInfo(dpy, dpyPriv->majorOpcode);
     }
     __glXUnlock();
+
     return dpyPriv;
 }
 
@@ -896,9 +933,15 @@ Bool glXMakeCurrent(Display *dpy, GLXDrawable draw, GLXContext gc)
 	    __glXSetCurrentContext(gc);
 #ifdef GLX_DIRECT_RENDERING
             if (!gc->isDirect) {
-               assert(IndirectAPI);
+               if (!IndirectAPI)
+                  IndirectAPI = __glXNewIndirectAPI();
                _glapi_set_dispatch(IndirectAPI);
             }
+#else
+            /* if not direct rendering, always need indirect dispatch */
+            if (!IndirectAPI)
+               IndirectAPI = __glXNewIndirectAPI();
+            _glapi_set_dispatch(IndirectAPI);
 #endif
 	    gc->currentDpy = dpy;
 	    gc->currentDrawable = draw;

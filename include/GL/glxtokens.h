@@ -1,7 +1,7 @@
 #ifndef __GLX_glxtokens_h__
 #define __GLX_glxtokens_h__
 
-/* $XFree86$ */
+/* $XFree86: xc/include/GL/glxtokens.h,v 1.2 1999/06/14 07:23:29 dawes Exp $ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -112,6 +112,7 @@ extern "C" {
 #define GLX_EXT_import_context  1
 #define GLX_EXT_visual_info     1
 #define GLX_EXT_visual_rating   1
+#define GLX_ARB_get_proc_address 1
 
 #ifdef __cplusplus
 }

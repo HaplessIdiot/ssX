@@ -1,10 +1,9 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -24,6 +23,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+
 /* Mesa config file parse and execute code.
  * Copyright (C) 1999 Keith Whitwell.
  *
@@ -39,7 +39,7 @@
 #include "config.h"
 #include "enums.h"
 #include "extensions.h"
-#include "glmisc.h"
+#include "hint.h"
 #include "simple_list.h"
 #include "mem.h"
 #include "types.h"

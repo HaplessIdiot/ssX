@@ -1,4 +1,3 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
@@ -2023,6 +2022,14 @@ GLboolean XMesaMakeCurrent2( XMesaContext c, XMesaBuffer drawBuffer,
    return GL_TRUE;
 }
 
+
+/*
+ * Unbind the context c from its buffer.
+ */
+GLboolean XMesaUnbindContext( XMesaContext c )
+{
+    return GL_TRUE;
+}
 
 
 XMesaContext XMesaGetCurrentContext( void )

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.5 2000/02/08 20:24:13 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.6 2000/02/10 15:48:28 dawes Exp $
 XCOMM The contents of this file are subject to the GLX Public License Version 1.0
 XCOMM (the "License"). You may not use this file except in compliance with the
 XCOMM License. You may obtain a copy of the License at Silicon Graphics, Inc.,
@@ -15,6 +15,8 @@ XCOMM The Original Software is GLX version 1.2 source code, released February,
 XCOMM 1999. The developer of the Original Software is Silicon Graphics, Inc.
 XCOMM Those portions of the Subject Software created by Silicon Graphics, Inc.
 XCOMM are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
+
+#include <Threads.tmpl>
 
 #define DoNormalLib NormalLibGlx
 #define DoSharedLib SharedLibGlx
@@ -36,7 +38,6 @@ LinkSourceFile(glapinoop.h, ../../../extras/Mesa/src)
 LinkSourceFile(glapioffsets.h, ../../../extras/Mesa/src)
 LinkSourceFile(glapitable.h, ../../../extras/Mesa/src)
 LinkSourceFile(glapitemp.h, ../../../extras/Mesa/src)
-LinkSourceFile(glheader.h, ../../../extras/Mesa/src)
 LinkSourceFile(glthread.c, ../../../extras/Mesa/src)
 LinkSourceFile(glthread.h, ../../../extras/Mesa/src)
 LinkSourceFile(glapi_x86.S, ../../../extras/Mesa/src/X86)
@@ -45,6 +46,7 @@ LinkSourceFile(assyntax.h, ../../../extras/Mesa/src/X86)
      GLX_SRCS = \
 		clientattrib.c \
 		compsize.c \
+		dispatch.c \
 		eval.c \
 		g_render.c \
 		g_single.c \
@@ -54,6 +56,7 @@ LinkSourceFile(assyntax.h, ../../../extras/Mesa/src/X86)
 		glthread.c \
 		glxcmds.c \
 		glxext.c \
+		indirect_init.c \
 		pixel.c \
 		pixelstore.c \
 		render2.c \
@@ -66,6 +69,7 @@ LinkSourceFile(assyntax.h, ../../../extras/Mesa/src/X86)
      GLX_OBJS = \
 	        clientattrib.o \
 		compsize.o \
+		dispatch.o \
 		eval.o \
 		g_render.o \
 		g_single.o \
@@ -75,6 +79,7 @@ LinkSourceFile(assyntax.h, ../../../extras/Mesa/src/X86)
 		glthread.o \
 		glxcmds.o \
 		glxext.o \
+		indirect_init.o \
 		pixel.o \
 		pixelstore.o \
 		render2.o \
@@ -87,18 +92,16 @@ LinkSourceFile(assyntax.h, ../../../extras/Mesa/src/X86)
 #if BuildXF86DRI
      GLX_DEFS = GlxDefines
      DRI_INCS = -I../dri
-     DRI_SRCS = dispatch.c indirect_init.c
-     DRI_OBJS = dispatch.o indirect_init.o
 #endif
 
-#if defined(i386Architecture) && BuildXF86DRI
+#ifdef i386Architecture
      ASM_SRCS = glapi_x86.S
      ASM_OBJS = glapi_x86.o
      ASM_DEFS = -DUSE_X86_ASM
 #endif
 
-         SRCS = $(GLX_SRCS) $(DRI_SRCS) $(ASM_SRCS)
-         OBJS = $(GLX_OBJS) $(DRI_OBJS) $(ASM_OBJS)
+         SRCS = $(GLX_SRCS) $(ASM_SRCS)
+         OBJS = $(GLX_OBJS) $(ASM_OBJS)
       DEFINES = $(GLX_DEFS) $(ASM_DEFS)
 
      INCLUDES = -I$(TOP)/include \

@@ -2,9 +2,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  *
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -1057,7 +1057,8 @@ fxMesaContext GLAPIENTRY fxMesaCreateContext(GLuint win,
 
    /* install signal handlers */
 #if defined(__linux__)
-   if (fxMesa->glCtx->CatchSignals) {
+   /* Only install if environment var. is not set. */
+   if (fxMesa->glCtx->CatchSignals && !getenv("MESA_FX_NO_SIGNALS")) {
       signal(SIGINT,cleangraphics_handler);
       signal(SIGHUP,cleangraphics_handler);
       signal(SIGPIPE,cleangraphics_handler);
@@ -1300,7 +1301,10 @@ int GLAPIENTRY fxQueryHardware(void)
 #if defined(__WIN32__)
     onexit((_onexit_t)cleangraphics);
 #elif defined(__linux__)
-    atexit(cleangraphics);
+    /* Only register handler if environment variable is not defined. */
+    if (!getenv("MESA_FX_NO_SIGNALS")) {
+	atexit(cleangraphics);
+    }
 #endif
   }
 

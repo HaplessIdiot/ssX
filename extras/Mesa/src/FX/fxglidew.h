@@ -2,9 +2,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  *
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -77,6 +77,7 @@
  * Genral warper functions for Glide2/Glide3:
  */ 
 extern FxI32 FX_grGetInteger(FxU32 pname);
+extern FxI32 FX_grGetInteger_NoLock(FxU32 pname);
 
 /*
  * Glide2 emulation on Glide3:
@@ -532,6 +533,17 @@ extern FX_GrContext_t FX_grSstWinOpen( FxU32                hWnd,
     END_CLIP_LOOP();		\
   } while (0)
 
+#if defined(FX_GLIDE3)
+extern void FX_grDrawPolygonVertexList(int n, GrVertex *v);
+#else
+#define FX_grDrawPolygonVertexList(n, v)	\
+  do {						\
+    BEGIN_CLIP_LOOP();				\
+    grDrawPolygonVertexList(n, v);		\
+    END_CLIP_LOOP();				\
+  } while (0)
+#endif
+
 #define FX_grDitherMode(m)	\
   do {				\
     BEGIN_BOARD_LOCK();		\
@@ -758,6 +770,7 @@ extern FxU32 FX_grTexTextureMemRequired(FxU32 evenOdd, GrTexInfo *info);
     grGlideGetState(s);		\
     END_BOARD_LOCK();		\
   } while (0)
+#define FX_grGlideGetState_NoLock(s) grGlideGetState(s);
 
 #define FX_grDRIBufferSwap(i)	\
   do {				\
@@ -781,6 +794,7 @@ extern FxU32 FX_grTexTextureMemRequired(FxU32 evenOdd, GrTexInfo *info);
     grGlideSetState(s);		\
     END_BOARD_LOCK();		\
   } while (0)
+#define FX_grGlideSetState_NoLock(s) grGlideSetState(s);
 
 #define FX_grDepthBufferMode(m)	\
   do {				\

@@ -206,7 +206,6 @@ void XMesaDestroyContext(XMesaContext c)
   tdfxContextPrivate *cPriv;
 
   cPriv=(tdfxContextPrivate*)c->private;
-  fprintf(stderr, "Destory context cPriv=%x\n", cPriv);
   if (cPriv) {
     gl_destroy_context(cPriv->glCtx);
     gl_destroy_framebuffer(cPriv->glBuffer);
@@ -271,28 +270,33 @@ void XMesaSwapBuffers(XMesaBuffer b)
   }
 }
 
+GLboolean XMesaUnbindContext(XMesaContext c)
+{
+  if (c && c==gCC && gCCPriv) FX_grGlideGetState((GrState*)gCCPriv->state);
+  return GL_TRUE;
+}
+
 GLboolean XMesaMakeCurrent(XMesaContext c, XMesaBuffer b)
 {
   __DRIdrawablePrivate *driDrawPriv;
 
   if (c) {
     if (c==gCC) return GL_TRUE;
-    if (gCCPriv) FX_grGlideGetState((GrState*)gCCPriv->state);
     gCC     = c;
     gCCPriv = (tdfxContextPrivate *)c->private;
 
     driDrawPriv = gCC->driContextPriv->driDrawablePriv;
     if (!gCCPriv->initDone) {
-      gCCPriv->width=driDrawPriv->w;
-      gCCPriv->height=driDrawPriv->h;
       if (!tdfxInitHW(c)) return GL_FALSE;
-      /* Zap the width to force XMesaWindowMoved to execute */
       gCCPriv->width=0;
+      XMesaWindowMoved();
+      FX_grGlideGetState((GrState*)gCCPriv->state);
+    } else {
+      FX_grSstSelect(gCCPriv->board);
+      FX_grGlideSetState((GrState*)gCCPriv->state);
+      XMesaWindowMoved();
     }
-    FX_grSstSelect(gCCPriv->board);
-    XMesaWindowMoved();
 
-    FX_grGlideSetState((GrState*)gCCPriv->state);
     gl_make_current(gCCPriv->glCtx, gCCPriv->glBuffer);
     fxSetupDDPointers(gCCPriv->glCtx);
     if (!gCCPriv->glCtx->Viewport.Width)
@@ -356,9 +360,15 @@ void XMesaUpdateState(int windowMoved) {
     grDRIImportFifo(saPriv->fifoPtr, saPriv->fifoRead);
   }
   if (saPriv->ctxOwner!=dPriv->driContextPriv->hHWContext) {
-    grDRIInvalidateAll();
-    /* This shouldn't be needed if the state is reset by Glide */
-    /* FX_grConstantColorValue_NoLock(FXCOLOR4(&gCCPriv->constColor)); */
+    /* This sequence looks a little odd. Glide mirrors the state, and
+       when you get the state you are forcing the mirror to be up to
+       date, and then getting a copy from the mirror. You can then force
+       that state onto the hardware when you set the state. */
+    void *state;
+    state=malloc(FX_grGetInteger_NoLock(FX_GLIDE_STATE_SIZE));
+    FX_grGlideGetState_NoLock(state);
+    FX_grGlideSetState_NoLock(state);
+    free(state);
   }
   if (saPriv->texOwner!=dPriv->driContextPriv->hHWContext) {
     fxTMRestoreTextures_NoLock(gCCPriv);
@@ -378,5 +388,21 @@ void XMesaSetSAREA() {
   grDRIResetSAREA();
   /* fprintf(stderr, "Out FifoPtr=%d FifoRead=%d\n", saPriv->fifoPtr, saPriv->fifoRead); */
 }
+
+
+extern void _register_gl_extensions(void); /* silence compiler warning */
+
+void _register_gl_extensions(void)
+{
+   /* Here is where the 3Dfx driver would register new extensions
+    * with libGL.so.
+    * This function is called as soon as the driver object is dlopened.
+    */
+#if 0
+   /* really, the return code should be checked */
+   _glapi_add_entrypoint("glFooBarEXT", _gloffset_FooBarEXT);
+#endif
+}
+
 
 #endif

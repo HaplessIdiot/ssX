@@ -1,4 +1,3 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
@@ -2122,8 +2121,8 @@ GLAPI void GLAPIENTRY glGetColorTableParameterivEXT( GLenum target, GLenum pname
 #ifndef GL_EXT_compiled_vertex_array
 #define GL_EXT_compiled_vertex_array 1
 
-#define GL_ARRAY_ELEMENT_LOCK_FIRST_SGI		0x81A8
-#define GL_ARRAY_ELEMENT_LOCK_COUNT_SGI		0x81A9
+#define GL_ARRAY_ELEMENT_LOCK_FIRST_EXT		0x81A8
+#define GL_ARRAY_ELEMENT_LOCK_COUNT_EXT		0x81A9
 
 GLAPI void GLAPIENTRY glLockArraysEXT( GLint first, GLsizei count );
 GLAPI void GLAPIENTRY glUnlockArraysEXT( void );

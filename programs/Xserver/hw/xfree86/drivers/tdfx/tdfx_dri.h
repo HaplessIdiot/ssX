@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.h,v 1.1 1999/08/29 12:21:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.h,v 1.2 1999/12/14 01:33:49 robin Exp $ */
 
 #ifndef _TDFX_DRI_
 #define _TDFX_DRI_
@@ -15,8 +15,8 @@ typedef struct {
   int mem;
   int cpp;
   int stride;
-  int priv1;
-  int priv2;
+  int fifoOffset;
+  int fifoSize;
   int fbOffset;
   int backOffset;
   int depthOffset;

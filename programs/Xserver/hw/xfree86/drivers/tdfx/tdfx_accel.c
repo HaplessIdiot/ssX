@@ -233,7 +233,7 @@ TDFXAccelInit(ScreenPtr pScreen)
 
 #if 0
   /* This causes us to fail compliance */
-  /* I suspect 1bpp pixmaps are getting written to cache correctly */
+  /* I suspect 1bpp pixmaps are getting written to cache incorrectly */
   infoPtr->SetupForScreenToScreenColorExpandFill =
     TDFXSetupForScreenToScreenColorExpandFill;
   infoPtr->SubsequentScreenToScreenColorExpandFill =
@@ -296,9 +296,9 @@ TDFXMatchState(TDFXPtr pTDFX)
 
   /* Do we need to set a clipping rectangle? */
   if (pTDFX->DrawState&DRAW_STATE_CLIPPING)
-    pTDFX->Cmd |= BIT(23);
+    pTDFX->Cmd |= SST_2D_USECLIP1;
   else
-    pTDFX->Cmd &= ~BIT(23);
+    pTDFX->Cmd &= ~SST_2D_USECLIP1;
 
   /* Do we need to set transparency? */
   TDFXMakeRoom(pTDFX, 1);
@@ -334,7 +334,8 @@ TDFXSetClippingRectangle(ScrnInfoPtr pScrn, int left, int top, int right,
 {
   TDFXPtr pTDFX;
 
-  TDFXTRACEACCEL("TDFXSetClippingRectangle\n");
+  TDFXTRACEACCEL("TDFXSetClippingRectangle %d,%d to %d,%d\n", left, top,
+		 right, bottom);
   pTDFX=TDFXPTR(pScrn);
 
   pTDFX->ModeReg.clip1min=(top&0xFFF)<<16 | (left&0xFFF);
@@ -407,9 +408,11 @@ TDFXSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int srcX, int srcY,
     srcX += w-1;
     dstX += w-1;
   }
-  if (srcY>=pTDFX->prevBlitDest.y1-32 && srcY<=pTDFX->prevBlitDest.y1) {
-    TDFXSync(pScrn);
+  if ((srcY>=dstY-32 && srcY<=dstY)||
+      (srcY>=pTDFX->prevBlitDest.y1-32 && srcY<=pTDFX->prevBlitDest.y1)) {
+    TDFXSendNOP(pTDFX);
   }
+  pTDFX->sync(pScrn);
 
   TDFXMakeRoom(pTDFX, 4);
   DECLARE(SSTCP_DSTSIZE|SSTCP_DSTXY|SSTCP_SRCXY|SSTCP_COMMAND);
@@ -594,7 +597,7 @@ TDFXNonTEGlyphRenderer(ScrnInfoPtr pScrn, int x, int y, int n,
   pTDFX->DrawState&=~DRAW_STATE_CLIP1CHANGED;
   TDFXMatchState(pTDFX);
   /* We're changing clip1 so make sure we use it and flag it */
-  pTDFX->Cmd|=BIT(23);
+  pTDFX->Cmd|=SST_2D_USECLIP1;
   pTDFX->DrawState|=DRAW_STATE_CLIP1CHANGED;
 
   pTDFX->Cmd|=(TDFXROPCvt[rop]<<24)|SST_2D_TRANSPARENT_MONOCHROME;
@@ -700,7 +703,8 @@ TDFXSetupForScreenToScreenColorExpandFill(ScrnInfoPtr pScrn, int fg, int bg,
   TDFXClearState(pTDFX);
   TDFXFirstSync(pScrn);
   
-  pTDFX->Cmd=SST_2D_SCRNTOSCRNBLIT|(TDFXROPCvt[rop]<<24);
+  TDFXMatchState(pTDFX);
+  pTDFX->Cmd|=SST_2D_SCRNTOSCRNBLIT|(TDFXROPCvt[rop]<<24);
   
   if (bg==-1) {
     pTDFX->Cmd |= SST_2D_TRANSPARENT_MONOCHROME;
@@ -727,7 +731,7 @@ TDFXSubsequentScreenToScreenColorExpandFill(ScrnInfoPtr pScrn, int x, int y,
   pTDFX->DrawState&=~DRAW_STATE_CLIP1CHANGED;
   TDFXMatchState(pTDFX);
   /* We're changing clip1 so make sure we use it and flag it */
-  pTDFX->Cmd|=BIT(23);
+  pTDFX->Cmd|=SST_2D_USECLIP1;
   pTDFX->DrawState|=DRAW_STATE_CLIP1CHANGED;
 
   if (srcy>=pTDFX->prevBlitDest.y1-8 && srcy<=pTDFX->prevBlitDest.y1) {
@@ -764,8 +768,8 @@ TDFXSetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int fg, int bg,
   pTDFX=TDFXPTR(pScrn);
   TDFXClearState(pTDFX);
   TDFXFirstSync(pScrn);
-  
-  pTDFX->Cmd=SST_2D_HOSTTOSCRNBLIT|(TDFXROPCvt[rop]<<24);
+
+  pTDFX->Cmd|=SST_2D_HOSTTOSCRNBLIT|(TDFXROPCvt[rop]<<24);
   
   if (bg == -1) {
     pTDFX->Cmd |= SST_2D_TRANSPARENT_MONOCHROME;
@@ -787,11 +791,12 @@ TDFXSubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int x, int y,
   TDFXTRACEACCEL("SubsequentCPUToScreenColorExpandFill x=%d y=%d w=%d h=%d"
                  " skipleft=%d\n", x, y, w, h, skipleft);
   pTDFX = TDFXPTR(pScrn);
+
   /* We're changing clip1 anyway, so don't bother to reset it */
   pTDFX->DrawState&=~DRAW_STATE_CLIP1CHANGED;
   TDFXMatchState(pTDFX);
   /* Make sure we use clip1 and flag it */
-  pTDFX->Cmd|=BIT(23);
+  pTDFX->Cmd|=SST_2D_USECLIP1;
   pTDFX->DrawState|=DRAW_STATE_CLIP1CHANGED;
   
   if (pTDFX->cpp==1) fmt=(1<<16)|pTDFX->stride; 
@@ -809,7 +814,7 @@ TDFXSubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int x, int y,
   TDFXWriteLong(pTDFX, SST_2D_SRCXY, skipleft&0x1F);
   TDFXWriteLong(pTDFX, SST_2D_DSTSIZE, ((w-skipleft)&0x1FFF)|((h&0x1FFF)<<16));
   TDFXWriteLong(pTDFX, SST_2D_DSTXY, ((x+skipleft)&0x1FFF) | ((y&0x1FFF)<<16));
-  TDFXWriteLong(pTDFX, SST_2D_COMMAND, pTDFX->Cmd);
+  TDFXWriteLong(pTDFX, SST_2D_COMMAND, pTDFX->Cmd|SST_2D_GO);
 }
   
 static void TDFXSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)

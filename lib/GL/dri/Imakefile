@@ -1,5 +1,6 @@
-XCOMM $XFree86: xc/lib/GL/dri/Imakefile,v 1.3 1999/12/14 01:32:22 robin Exp $
-XCOMM $PI: xc/lib/GL/dri/Imakefile,v 1.11 1999/05/16 14:00:45 faith Exp $
+XCOMM $XFree86: xc/lib/GL/dri/Imakefile,v 1.4 2000/02/08 17:18:26 dawes Exp $
+
+#include <Threads.tmpl>
 
 #define DoNormalLib NormalLibGlx
 #define DoSharedLib SharedLibGlx
@@ -27,7 +28,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
      GLX_DEFS = -DBUILT_IN_DRI_DRIVER
 #endif
 
-  PATHDEFINES = -DDEFAULT_DRIVER_DIR="$(MODULEDIR)/dri"
+  PATHDEFINES = -DDEFAULT_DRIVER_DIR=\"$(MODULEDIR)/dri\"
 
       DEFINES = $(ALLOC_DEFINES) GlxDefines $(TDFX_DEFS) $(GLX_DEFS) $(PATHDEFINES)
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) -I$(XF86OSSRC) $(DRI_INCS)

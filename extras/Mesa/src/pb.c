@@ -1,10 +1,9 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -174,7 +173,7 @@ static void multi_write_rgba_pixels( GLcontext *ctx, GLuint n,
             gl_logicop_rgba_pixels( ctx, n, x, y, rgbaTmp, mask );
          }
          else if (ctx->Color.BlendEnabled) {
-            gl_blend_pixels( ctx, n, x, y, rgbaTmp, mask );
+            _mesa_blend_pixels( ctx, n, x, y, rgbaTmp, mask );
          }
          if (ctx->Color.SWmasking) {
             gl_mask_rgba_pixels( ctx, n, x, y, rgbaTmp, mask );
@@ -279,14 +278,14 @@ void gl_flush_pb( GLcontext *ctx )
 	 if (ctx->Fog.Enabled
              && (ctx->Hint.Fog==GL_NICEST || PB->primitive==GL_BITMAP
                  || ctx->Texture.ReallyEnabled)) {
-	    gl_fog_rgba_pixels( ctx, PB->count, PB->z, PB->rgba );
+	    _mesa_fog_rgba_pixels( ctx, PB->count, PB->z, PB->rgba );
 	 }
 
          /* Scissoring already done above */
 
 	 if (ctx->Color.AlphaEnabled) {
-	    if (gl_alpha_test( ctx, PB->count, 
-			       (const GLubyte (*)[4])PB->rgba, mask )==0) {
+	    if (_mesa_alpha_test( ctx, PB->count, 
+                                  (const GLubyte (*)[4]) PB->rgba, mask )==0) {
 	       goto CleanUp;
 	    }
 	 }
@@ -300,7 +299,7 @@ void gl_flush_pb( GLcontext *ctx )
 	 }
 	 else if (ctx->Depth.Test) {
 	    /* regular depth testing */
-	    gl_depth_test_pixels( ctx, PB->count, PB->x, PB->y, PB->z, mask );
+	    _mesa_depth_test_pixels( ctx, PB->count, PB->x, PB->y, PB->z, mask );
 	 }
 
          
@@ -316,7 +315,7 @@ void gl_flush_pb( GLcontext *ctx )
                                        PB->rgba, mask);
             }
             else if (ctx->Color.BlendEnabled) {
-               gl_blend_pixels( ctx, PB->count, PB->x, PB->y, PB->rgba, mask);
+               _mesa_blend_pixels( ctx, PB->count, PB->x, PB->y, PB->rgba, mask);
             }
             if (ctx->Color.SWmasking) {
                gl_mask_rgba_pixels(ctx, PB->count, PB->x, PB->y, PB->rgba, mask);
@@ -337,8 +336,8 @@ void gl_flush_pb( GLcontext *ctx )
          /* Scissoring already done above */
 
 	 if (ctx->Color.AlphaEnabled) {
-	    if (gl_alpha_test( ctx, PB->count, 
-			       (const GLubyte (*)[4]) PB->rgba, mask )==0) {
+	    if (_mesa_alpha_test( ctx, PB->count, 
+                                  (const GLubyte (*)[4]) PB->rgba, mask )==0) {
 	       goto CleanUp;
 	    }
 	 }
@@ -352,7 +351,7 @@ void gl_flush_pb( GLcontext *ctx )
 	 }
 	 else if (ctx->Depth.Test) {
 	    /* regular depth testing */
-	    gl_depth_test_pixels( ctx, PB->count, PB->x, PB->y, PB->z, mask );
+	    _mesa_depth_test_pixels( ctx, PB->count, PB->x, PB->y, PB->z, mask );
 	 }
 
          if (ctx->Color.DrawBuffer == GL_NONE) {
@@ -410,7 +409,7 @@ void gl_flush_pb( GLcontext *ctx )
 
 	 if (ctx->Fog.Enabled
              && (ctx->Hint.Fog==GL_NICEST || PB->primitive==GL_BITMAP)) {
-	    gl_fog_ci_pixels( ctx, PB->count, PB->z, PB->i );
+	    _mesa_fog_ci_pixels( ctx, PB->count, PB->z, PB->i );
 	 }
 
          /* Scissoring already done above */
@@ -424,7 +423,7 @@ void gl_flush_pb( GLcontext *ctx )
 	 }
 	 else if (ctx->Depth.Test) {
 	    /* regular depth testing */
-	    gl_depth_test_pixels( ctx, PB->count, PB->x, PB->y, PB->z, mask );
+	    _mesa_depth_test_pixels( ctx, PB->count, PB->x, PB->y, PB->z, mask );
 	 }
 
          if (ctx->RasterMask & MULTI_DRAW_BIT) {
@@ -460,7 +459,7 @@ void gl_flush_pb( GLcontext *ctx )
 	 }
 	 else if (ctx->Depth.Test) {
 	    /* regular depth testing */
-	    gl_depth_test_pixels( ctx, PB->count, PB->x, PB->y, PB->z, mask );
+	    _mesa_depth_test_pixels( ctx, PB->count, PB->x, PB->y, PB->z, mask );
 	 }
          
          if (ctx->RasterMask & MULTI_DRAW_BIT) {

@@ -1,5 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.3 1999/06/27 14:07:25 dawes Exp $
-XCOMM $PI: xc/lib/GL/mesa/src/Imakefile,v 1.5 1999/06/21 05:13:55 martin Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.2 2000/02/08 17:18:40 dawes Exp $
 
 #define DoNormalLib NormalLibGlx
 #define DoSharedLib SharedLibGlx
@@ -71,6 +70,7 @@ XCOMM We'll learn at runtime whether 3dNow, MMX, etc are really present.
 
     3DNOW_DEFS = -DUSE_3DNOW_ASM
 
+
 #endif
 
       DEFINES = $(ALLOC_DEFINES) GlxDefines -DFX $(X86_DEFS) $(MMX_DEFS) $(3DNOW_DEFS)
@@ -89,16 +89,34 @@ XCOMM We'll learn at runtime whether 3dNow, MMX, etc are really present.
 
 LibraryObjectRule()
 
+STD_CPP_DEFINES = StandardDefines $(PROJECT_DEFINES)
+
 SubdirLibraryRule($(OBJS))
 NormalLintTarget($(SRCS))
-#if 1
+
+#ifdef HAVE_3DNOW
+ObjectFromAsmSource(3dnow_norm_raw, NullParameter)
+ObjectFromAsmSource(3dnow_xform_masked1, NullParameter)
+ObjectFromAsmSource(3dnow_xform_masked2, NullParameter)
+ObjectFromAsmSource(3dnow_xform_masked3, NullParameter)
+ObjectFromAsmSource(3dnow_xform_masked4, NullParameter)
+ObjectFromAsmSource(3dnow_xform_raw1, NullParameter)
+ObjectFromAsmSource(3dnow_xform_raw2, NullParameter)
+ObjectFromAsmSource(3dnow_xform_raw3, NullParameter)
+ObjectFromAsmSource(3dnow_xform_raw4, NullParameter)
+ObjectFromAsmSource(vertex_3dnow, NullParameter)
 #endif
+
+#ifdef HAVE_MMX
+ObjectFromAsmSource(mmx_blend, NullParameter)
+#endif
+
+ObjectFromAsmSource(common_x86asm, NullParameter)
+ObjectFromAsmSource(vertex, NullParameter)
+ObjectFromAsmSource(x86a, NullParameter)
 
 DependTarget()
 
 x86a.S: x86flatregs.m4
 x86a.S: x86a.S.m4
 	m4 $< >$@
-
-x86a.asm: x86a.S
-	gcc -E -P -DNASM_ASSEMBLER $< >$@

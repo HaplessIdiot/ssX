@@ -1,4 +1,3 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
@@ -41,6 +40,7 @@
 #include "all.h"
 #else
 #include "glheader.h"
+#include "buffers.h"
 #include "context.h"
 #include "enums.h"
 #include "matrix.h"

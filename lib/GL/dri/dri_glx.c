@@ -61,11 +61,9 @@ extern void *driCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
 #else /* BUILT_IN_DRI_DRIVER */
 
 
-#define QUOTE(s)   #s
-
 #ifndef DEFAULT_DRIVER_DIR
 /* this should be defined in the Imakefile */
-#define DEFAULT_DRIVER_DIR /usr/X11R6/lib/modules/dri
+#define DEFAULT_DRIVER_DIR "/usr/X11R6/lib/modules/dri"
 #endif
 
 
@@ -99,6 +97,10 @@ static void *DummyCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
  * screen number.
  * We use the DRI in order to find the driCreateScreen function
  * exported by each screen on a display.
+ *
+ * Also, this function calls the driver's _register_gl_extensions()
+ * function in order to let the driver hook new extension functions
+ * into the libGL dispatcher.
  */
 static void Find_CreateScreenFuncs(Display *dpy,
                                    CreateScreenFunc *createFuncs,
@@ -138,7 +140,8 @@ static void Find_CreateScreenFuncs(Display *dpy,
 
 
         /*
-         * dlopen the driver module and call its driCreateScreen function.
+         * dlopen the driver module and save the pointer to its
+         * driCreateScreen function.
          */
         {
             char realDriverName[100];
@@ -151,7 +154,7 @@ static void Find_CreateScreenFuncs(Display *dpy,
                 libDir = getenv("DRI_MODULES_DIR");
             }
             if (!libDir)
-                libDir = QUOTE(DEFAULT_DRIVER_DIR);
+                libDir = DEFAULT_DRIVER_DIR;
 
             sprintf(realDriverName, "%s/%s_dri.so", libDir, driverName);
             /*printf("OPEN %s\n", realDriverName);*/
@@ -175,6 +178,19 @@ static void Find_CreateScreenFuncs(Display *dpy,
                 ErrorMessage(message);
                 dlclose(handle);
             }
+
+            /* Find the driver's _register_gl_extensions() function and
+             * call it if present.  This will let the driver tell libGL.so
+             * about any extension functions it wants to export.
+             */
+            {
+               typedef void *(*RegisterExtFunc)(void);
+               RegisterExtFunc registerExtFunc = (RegisterExtFunc) dlsym(handle, "_register_gl_extensions");
+               if (registerExtFunc) {
+                  (*registerExtFunc)();
+               }
+            }
+
         }
     }
 }

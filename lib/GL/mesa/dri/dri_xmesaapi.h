@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/dri_xmesaapi.h,v 1.1 1999/06/14 07:23:33 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/dri/dri_xmesaapi.h,v 1.1 2000/02/08 17:18:36 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -70,6 +70,7 @@ struct __XMESAapiRec {
     void         (*DestroyBuffer)(XMesaBuffer b);
     void         (*SwapBuffers)(XMesaBuffer b);
     GLboolean    (*MakeCurrent)(XMesaContext c, XMesaBuffer b);
+    GLboolean    (*UnbindContext)(XMesaContext c);
 };
 
 #endif

@@ -5,7 +5,7 @@
 
    Copyright: 1998,1999
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.6 1999/12/14 01:33:48 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.7 1999/12/27 01:33:58 robin Exp $ */
 
 #ifndef _TDFX_H_
 #define _TDFX_H_
@@ -143,7 +143,6 @@ typedef struct _TDFXRec {
   DGAModePtr DGAModes;
   Bool DGAactive;
   int DGAViewportStatus;
-  int lowMemLoc;
   int cursorOffset;
   int fbOffset;
   int backOffset;

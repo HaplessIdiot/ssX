@@ -2,9 +2,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  *
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -443,6 +443,7 @@ struct tfxMesaContext {
   GrColor_t clearC;
   GrAlpha_t clearA;
   GLuint constColor;
+  GrCullMode_t cullMode;
 
   tfxUnitsState unitsState;
   tfxUnitsState restoreUnitsState; /* saved during multipass */
@@ -562,8 +563,6 @@ extern void fxDDClipInit(void);
 
 extern void fxUpdateDDSpanPointers(GLcontext *);
 extern void fxSetupDDSpanPointers(GLcontext *);
-
-extern void fxDDBufferSize(GLcontext *, GLuint *, GLuint *);
 
 extern void fxPrintTextureData(tfxTexInfo *ti);
 extern void fxDDTexEnv(GLcontext *, GLenum, const GLfloat *);

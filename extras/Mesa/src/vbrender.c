@@ -1,4 +1,3 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
@@ -350,10 +349,12 @@ static void render_quad( GLcontext *ctx, GLuint v0, GLuint v1,
 }
 
 
+#if 0
 static void null_quad( GLcontext *ctx, GLuint v0, GLuint v1,
 		       GLuint v2, GLuint v3, GLuint pv )
 {
 }
+#endif
 
 
 extern const char *gl_prim_name[];

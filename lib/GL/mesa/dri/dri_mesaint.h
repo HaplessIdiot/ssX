@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/dri/dri_mesaint.h,v 1.3 2000/02/13 00:56:02 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/dri/dri_mesaint.h,v 1.4 2000/02/14 06:27:12 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -41,8 +41,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <GL/glx.h>
 #include "xf86dri.h"
 #include "sarea.h"
-#include "dri_mesa.h"
 #include "GL/xmesa.h"
+#include "dri_mesa.h"
 #include "dri_xmesaapi.h"
 
 #define DRI_MESA_VALIDATE_DRAWABLE_INFO(dpy,scrn,pDrawPriv)  \

@@ -1,10 +1,9 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -202,7 +201,7 @@ void gl_write_index_span( GLcontext *ctx,
 
    /* Per-pixel fog */
    if (ctx->Fog.Enabled && (primitive==GL_BITMAP || ctx->FogMode == FOG_FRAGMENT)) {
-      gl_fog_ci_pixels( ctx, n, z, index );
+      _mesa_fog_ci_pixels( ctx, n, z, index );
    }
 
    /* Do the scissor test */
@@ -225,7 +224,7 @@ void gl_write_index_span( GLcontext *ctx,
    }
    else if (ctx->Depth.Test) {
       /* regular depth testing */
-      if (gl_depth_test_span( ctx, n, x, y, z, mask )==0)  return;
+      if (_mesa_depth_test_span( ctx, n, x, y, z, mask )==0)  return;
    }
 
    if (ctx->RasterMask & MULTI_DRAW_BIT) {
@@ -285,7 +284,7 @@ void gl_write_monoindex_span( GLcontext *ctx,
    }
    else if (ctx->Depth.Test) {
       /* regular depth testing */
-      if (gl_depth_test_span( ctx, n, x, y, z, mask )==0)  return;
+      if (_mesa_depth_test_span( ctx, n, x, y, z, mask )==0)  return;
    }
 
    if (ctx->Color.DrawBuffer == GL_NONE) {
@@ -302,7 +301,7 @@ void gl_write_monoindex_span( GLcontext *ctx,
       }
 
       if (ctx->Fog.Enabled && (primitive==GL_BITMAP || ctx->FogMode==FOG_FRAGMENT)) {
-	 gl_fog_ci_pixels( ctx, n, z, indexes );
+	 _mesa_fog_ci_pixels( ctx, n, z, indexes );
       }
 
       if (ctx->Color.SWLogicOpEnabled) {
@@ -390,7 +389,7 @@ static void multi_write_rgba_span( GLcontext *ctx, GLuint n,
             gl_logicop_rgba_span( ctx, n, x, y, rgbaTmp, mask );
          }
          else if (ctx->Color.BlendEnabled) {
-            gl_blend_span( ctx, n, x, y, rgbaTmp, mask );
+            _mesa_blend_span( ctx, n, x, y, rgbaTmp, mask );
          }
          if (ctx->Color.SWmasking) {
             gl_mask_rgba_span( ctx, n, x, y, rgbaTmp );
@@ -444,7 +443,7 @@ void gl_write_rgba_span( GLcontext *ctx,
 
    /* Per-pixel fog */
    if (ctx->Fog.Enabled && (primitive==GL_BITMAP || ctx->FogMode==FOG_FRAGMENT)) {
-      gl_fog_rgba_pixels( ctx, n, z, rgba );
+      _mesa_fog_rgba_pixels( ctx, n, z, rgba );
    }
 
    /* Do the scissor test */
@@ -463,7 +462,7 @@ void gl_write_rgba_span( GLcontext *ctx,
 
    /* Do the alpha test */
    if (ctx->Color.AlphaEnabled) {
-      if (gl_alpha_test( ctx, n, (const GLubyte (*)[4]) rgba, mask )==0) {
+      if (_mesa_alpha_test( ctx, n, (const GLubyte (*)[4]) rgba, mask )==0) {
 	 return;
       }
       write_all = GL_FALSE;
@@ -478,7 +477,7 @@ void gl_write_rgba_span( GLcontext *ctx,
    }
    else if (ctx->Depth.Test) {
       /* regular depth testing */
-      GLuint m = gl_depth_test_span( ctx, n, x, y, z, mask );
+      GLuint m = _mesa_depth_test_span( ctx, n, x, y, z, mask );
       if (m==0) {
          return;
       }
@@ -499,7 +498,7 @@ void gl_write_rgba_span( GLcontext *ctx,
          gl_logicop_rgba_span( ctx, n, x, y, rgba, mask );
       }
       else if (ctx->Color.BlendEnabled) {
-         gl_blend_span( ctx, n, x, y, rgba, mask );
+         _mesa_blend_span( ctx, n, x, y, rgba, mask );
       }
 
       /* Color component masking */
@@ -573,7 +572,7 @@ void gl_write_monocolor_span( GLcontext *ctx,
       for (i=0;i<n;i++) {
          rgba[i][ACOMP] = color[ACOMP];
       }
-      if (gl_alpha_test( ctx, n, (const GLubyte (*)[4])rgba, mask )==0) {
+      if (_mesa_alpha_test( ctx, n, (const GLubyte (*)[4])rgba, mask )==0) {
 	 return;
       }
       write_all = GL_FALSE;
@@ -588,7 +587,7 @@ void gl_write_monocolor_span( GLcontext *ctx,
    }
    else if (ctx->Depth.Test) {
       /* regular depth testing */
-      GLuint m = gl_depth_test_span( ctx, n, x, y, z, mask );
+      GLuint m = _mesa_depth_test_span( ctx, n, x, y, z, mask );
       if (m==0) {
          return;
       }
@@ -621,7 +620,7 @@ void gl_write_monocolor_span( GLcontext *ctx,
             gl_logicop_rgba_span( ctx, n, x, y, rgba, mask );
          }
          else if (ctx->Color.BlendEnabled) {
-            gl_blend_span( ctx, n, x, y, rgba, mask );
+            _mesa_blend_span( ctx, n, x, y, rgba, mask );
          }
 
          /* Color component masking */
@@ -743,7 +742,7 @@ void gl_write_texture_span( GLcontext *ctx,
 
    /* Per-pixel fog */
    if (ctx->Fog.Enabled && (primitive==GL_BITMAP || ctx->FogMode==FOG_FRAGMENT)) {
-      gl_fog_rgba_pixels( ctx, n, z, rgba );
+      _mesa_fog_rgba_pixels( ctx, n, z, rgba );
    }
 
    /* Do the scissor test */
@@ -762,7 +761,7 @@ void gl_write_texture_span( GLcontext *ctx,
 
    /* Do the alpha test */
    if (ctx->Color.AlphaEnabled) {
-      if (gl_alpha_test( ctx, n, (const GLubyte (*)[4]) rgba, mask )==0) {
+      if (_mesa_alpha_test( ctx, n, (const GLubyte (*)[4]) rgba, mask )==0) {
 	 return;
       }
       write_all = GL_FALSE;
@@ -777,7 +776,7 @@ void gl_write_texture_span( GLcontext *ctx,
    }
    else if (ctx->Depth.Test) {
       /* regular depth testing */
-      GLuint m = gl_depth_test_span( ctx, n, x, y, z, mask );
+      GLuint m = _mesa_depth_test_span( ctx, n, x, y, z, mask );
       if (m==0) {
          return;
       }
@@ -796,7 +795,7 @@ void gl_write_texture_span( GLcontext *ctx,
          gl_logicop_rgba_span( ctx, n, x, y, rgba, mask );
       }
       else  if (ctx->Color.BlendEnabled) {
-         gl_blend_span( ctx, n, x, y, rgba, mask );
+         _mesa_blend_span( ctx, n, x, y, rgba, mask );
       }
       if (ctx->Color.SWmasking) {
          gl_mask_rgba_span( ctx, n, x, y, rgba );
@@ -868,7 +867,7 @@ void gl_write_multitexture_span( GLcontext *ctx, GLuint texUnits,
 
    /* Per-pixel fog */
    if (ctx->Fog.Enabled && (primitive==GL_BITMAP || ctx->FogMode==FOG_FRAGMENT)) {
-      gl_fog_rgba_pixels( ctx, n, z, rgba );
+      _mesa_fog_rgba_pixels( ctx, n, z, rgba );
    }
 
    /* Do the scissor test */
@@ -887,7 +886,7 @@ void gl_write_multitexture_span( GLcontext *ctx, GLuint texUnits,
 
    /* Do the alpha test */
    if (ctx->Color.AlphaEnabled) {
-      if (gl_alpha_test( ctx, n, (const GLubyte (*)[4])rgba, mask )==0) {
+      if (_mesa_alpha_test( ctx, n, (const GLubyte (*)[4])rgba, mask )==0) {
 	 return;
       }
       write_all = GL_FALSE;
@@ -902,7 +901,7 @@ void gl_write_multitexture_span( GLcontext *ctx, GLuint texUnits,
    }
    else if (ctx->Depth.Test) {
       /* regular depth testing */
-      GLuint m = gl_depth_test_span( ctx, n, x, y, z, mask );
+      GLuint m = _mesa_depth_test_span( ctx, n, x, y, z, mask );
       if (m==0) {
          return;
       }
@@ -921,7 +920,7 @@ void gl_write_multitexture_span( GLcontext *ctx, GLuint texUnits,
          gl_logicop_rgba_span( ctx, n, x, y, rgba, mask );
       }
       else  if (ctx->Color.BlendEnabled) {
-         gl_blend_span( ctx, n, x, y, rgba, mask );
+         _mesa_blend_span( ctx, n, x, y, rgba, mask );
       }
       if (ctx->Color.SWmasking) {
          gl_mask_rgba_span( ctx, n, x, y, rgba );

@@ -1,4 +1,3 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
@@ -44,6 +43,7 @@
 #include "mmath.h"
 #include "pipeline.h"
 #include "shade.h"
+#include "state.h"
 #include "texture.h"
 #include "types.h"
 #include "varray.h"

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.7 2000/02/09 19:56:19 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.8 2000/02/12 19:15:47 dawes Exp $
 XCOMM $PI: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.9 1999/05/27 03:43:46 jens Exp $
 
 #define IHaveModules
@@ -23,6 +23,8 @@ LinkSourceFile(bitmap.c,../../../../../extras/Mesa/src)
 LinkSourceFile(bitmap.h,../../../../../extras/Mesa/src)
 LinkSourceFile(blend.c,../../../../../extras/Mesa/src)
 LinkSourceFile(blend.h,../../../../../extras/Mesa/src)
+LinkSourceFile(buffers.c,../../../../../extras/Mesa/src)
+LinkSourceFile(buffers.h,../../../../../extras/Mesa/src)
 LinkSourceFile(clip.c,../../../../../extras/Mesa/src)
 LinkSourceFile(clip.h,../../../../../extras/Mesa/src)
 LinkSourceFile(clip_funcs.h,../../../../../extras/Mesa/src)
@@ -46,7 +48,6 @@ LinkSourceFile(debug_xform.h,../../../../../extras/Mesa/src)
 LinkSourceFile(depth.c,../../../../../extras/Mesa/src)
 LinkSourceFile(depth.h,../../../../../extras/Mesa/src)
 LinkSourceFile(dispatch.c,../../../../../extras/Mesa/src)
-LinkSourceFile(dispatch.h,../../../../../extras/Mesa/src)
 LinkSourceFile(dlist.c,../../../../../extras/Mesa/src)
 LinkSourceFile(dlist.h,../../../../../extras/Mesa/src)
 LinkSourceFile(dotprod_tmp.h,../../../../../extras/Mesa/src)
@@ -79,10 +80,12 @@ LinkSourceFile(glthread.h,../../../../../extras/Mesa/src)
 LinkSourceFile(general_clip.h,../../../../../extras/Mesa/src)
 LinkSourceFile(get.c,../../../../../extras/Mesa/src)
 LinkSourceFile(get.h,../../../../../extras/Mesa/src)
-LinkSourceFile(glmisc.c,../../../../../extras/Mesa/src)
-LinkSourceFile(glmisc.h,../../../../../extras/Mesa/src)
+LinkSourceFile(glthread.c,../../../../../extras/Mesa/src)
+LinkSourceFile(glthread.h,../../../../../extras/Mesa/src)
 LinkSourceFile(hash.c,../../../../../extras/Mesa/src)
 LinkSourceFile(hash.h,../../../../../extras/Mesa/src)
+LinkSourceFile(hint.c,../../../../../extras/Mesa/src)
+LinkSourceFile(hint.h,../../../../../extras/Mesa/src)
 LinkSourceFile(highpc.c,../../../../../extras/Mesa/src)
 LinkSourceFile(image.c,../../../../../extras/Mesa/src)
 LinkSourceFile(image.h,../../../../../extras/Mesa/src)
@@ -138,6 +141,8 @@ LinkSourceFile(span.c,../../../../../extras/Mesa/src)
 LinkSourceFile(span.h,../../../../../extras/Mesa/src)
 LinkSourceFile(stages.c,../../../../../extras/Mesa/src)
 LinkSourceFile(stages.h,../../../../../extras/Mesa/src)
+LinkSourceFile(state.c,../../../../../extras/Mesa/src)
+LinkSourceFile(state.h,../../../../../extras/Mesa/src)
 LinkSourceFile(stencil.c,../../../../../extras/Mesa/src)
 LinkSourceFile(stencil.h,../../../../../extras/Mesa/src)
 LinkSourceFile(texgen_tmp.h,../../../../../extras/Mesa/src)
@@ -189,6 +194,7 @@ LinkSourceFile(zoom.h,../../../../../extras/Mesa/src)
 		bbox.c \
 		bitmap.c \
 		blend.c \
+		buffers.c \
 		clip.c \
 		colortab.c \
 		config.c \
@@ -209,11 +215,10 @@ LinkSourceFile(zoom.h,../../../../../extras/Mesa/src)
 		get.c \
 		glapi.c \
 		glapinoop.c \
-		glmisc.c \
-		glthread.c \
 		hash.c \
+		hint.c \
 		image.c \
-		imaging.c \
+		imaging.o \
 		light.c \
 		lines.c \
 		logic.c \
@@ -234,6 +239,7 @@ LinkSourceFile(zoom.h,../../../../../extras/Mesa/src)
 		shade.c \
 		span.c \
 		stages.c \
+		state.c \
 		stencil.c \
 		teximage.c \
 		texobj.c \
@@ -261,6 +267,7 @@ LinkSourceFile(zoom.h,../../../../../extras/Mesa/src)
 		bbox.o \
 		bitmap.o \
 		blend.o \
+		buffers.o \
 		clip.o \
 		colortab.o \
 		config.o \
@@ -281,9 +288,9 @@ LinkSourceFile(zoom.h,../../../../../extras/Mesa/src)
 		get.o \
 		glapi.o \
 		glapinoop.o \
-		glmisc.o \
 		glthread.o \
 		hash.o \
+		hint.o \
 		image.o \
 		imaging.o \
 		light.o \
@@ -306,6 +313,7 @@ LinkSourceFile(zoom.h,../../../../../extras/Mesa/src)
 		shade.o \
 		span.o \
 		stages.o \
+		state.o \
 		stencil.o \
 		teximage.o \
 		texobj.o \

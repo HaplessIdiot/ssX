@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/xf86dri.c,v 1.3 2000/02/11 17:25:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/xf86dri.c,v 1.4 2000/02/14 06:27:14 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -420,6 +420,7 @@ ProcXF86DRIGetDrawableInfo(
     rep.drawableY = Y;
     rep.drawableWidth = W;
     rep.drawableHeight = H;
+
     rep.length = 0;
     if (rep.numClipRects) {
 	rep.length = (SIZEOF(xXF86DRIGetDrawableInfoReply) - 

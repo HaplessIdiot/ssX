@@ -1,4 +1,3 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
@@ -43,6 +42,7 @@
 #include "pipeline.h"
 #include "shade.h"
 #include "stages.h"
+#include "state.h"
 #include "types.h"
 #include "translate.h"
 #include "vbcull.h"
@@ -61,7 +61,7 @@ int MESA_VERBOSE = 0
 /*                 | VERBOSE_VARRAY */
 /*                 | VERBOSE_TEXTURE */
 /*                 | VERBOSE_API */
-               | VERBOSE_DRIVER
+/*                 | VERBOSE_DRIVER */
 /*                 | VERBOSE_STATE */
 /*                 | VERBOSE_CULL */
 /*                 | VERBOSE_DISPLAY_LIST */
