@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.15 2000/06/10 18:10:59 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.16 2000/07/14 22:38:49 mvojkovi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -785,7 +785,7 @@ localAllocateOffscreenLinear(
    FBAreaPtr area;
    FBLinearPtr linear = NULL;
    BoxPtr extents;
-   int w, h;
+   int w, h, pitch;
 
    offman = pScreen->devPrivates[xf86FBScreenIndex].ptr;
 
@@ -812,19 +812,20 @@ localAllocateOffscreenLinear(
 #endif
 
    extents = REGION_EXTENTS(pScreen, offman->InitialBoxes);
-   w = extents->x2 - extents->x1;
+   pitch = extents->x2 - extents->x1;
 
-   if(gran && ((gran > w) || (w % gran))) {
+   if(gran && ((gran > pitch) || (pitch % gran))) {
 	/* we can't match the specified alignment with XY allocations */
 	xfree(link);
 	return NULL;
    }
 
-   if(length < w) { /* special case */
-	h = 1;
+   if(length < pitch) { /* special case */
 	w = length;
+	h = 1;
    } else {
-	h = (length + w - 1) / w;
+	w = pitch;
+	h = (length + pitch - 1) / pitch;
    }
 
    if((area = localAllocateOffscreenArea(pScreen, w, h, gran, 
@@ -838,7 +839,7 @@ localAllocateOffscreenLinear(
 	linear = &(link->linear);
 	linear->pScreen = pScreen;
 	linear->size = h * w;
-	linear->offset = (w * area->box.y1) + area->box.x1;
+	linear->offset = (pitch * area->box.y1) + area->box.x1;
 	linear->granularity = gran;
 	linear->MoveLinearCallback = moveCB;
 	linear->RemoveLinearCallback = removeCB;
