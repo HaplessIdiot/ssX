@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.29 2002/07/05 09:19:25 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.30 2002/10/17 08:18:19 alanh Exp $ */
 
 #include "win.h"
 #include "winconfig.h"
@@ -44,6 +44,7 @@ int		g_iScreenPrivateIndex = -1;
 int		g_iCmapPrivateIndex = -1;
 int		g_iGCPrivateIndex = -1;
 int		g_iPixmapPrivateIndex = -1;
+int		g_iWindowPrivateIndex = -1;
 unsigned long	g_ulServerGeneration = 0;
 Bool		g_fInitializedDefaultScreens = FALSE;
 FILE		*g_pfLog = NULL;

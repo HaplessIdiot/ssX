@@ -31,7 +31,7 @@
  *		Harold L Hunt II
  *		MATSUZAKI Kensuke
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.30 2002/07/05 09:19:25 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.31 2002/10/17 08:18:21 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -48,7 +48,7 @@
  * Build toggles for experimental features
  */
 #define WIN_NATIVE_GDI_SUPPORT		YES
-#define WIN_LAYER_SUPPORT		NO
+#define WIN_LAYER_SUPPORT		YES
 #define WIN_NEW_KEYBOARD_SUPPORT	NO
 #define WIN_EMULATE_PSEUDO_SUPPORT	YES
 #define WIN_UPDATE_STATS		NO
@@ -292,6 +292,7 @@ typedef Bool (*winReleasePrimarySurfaceProcPtr)(ScreenPtr);
 typedef struct
 {
   DWORD			dwDummy;
+  HRGN			hRgn;
 } winPrivWinRec, *winPrivWinPtr;
 
 
@@ -516,6 +517,9 @@ typedef struct
   ClearToBackgroundProcPtr		ClearToBackground;
   ClipNotifyProcPtr			ClipNotify;
   RestackWindowProcPtr			RestackWindow;
+#ifdef SHAPE
+  SetShapeProcPtr			SetShape;
+#endif
 } winPrivScreenRec, *winPrivScreenPtr;
 
 
@@ -531,6 +535,7 @@ extern int			g_iScreenPrivateIndex;
 extern int			g_iCmapPrivateIndex;
 extern int			g_iGCPrivateIndex;
 extern int			g_iPixmapPrivateIndex;
+extern int			g_iWindowPrivateIndex;
 extern unsigned long		g_ulServerGeneration;
 extern CARD32			g_c32LastInputEventTime;
 extern DWORD			g_dwEnginesSupported;
@@ -609,8 +614,14 @@ extern FARPROC			g_fpTrackMouseEvent;
  * Window privates macros
  */
 
-#define winGetWindowPrivate(_pWin) ((winPrivWin *)\
-	(_pWin)->devPrivates[winWindowPrivateIndex].ptr)
+#define winGetWindowPriv(pWin) \
+	((winPrivWinPtr) (pWin)->devPrivates[g_iWindowPrivateIndex].ptr)
+
+#define winSetWindowPriv(pWin,v) \
+	((pWin)->devPrivates[g_iWindowPrivateIndex].ptr = (pointer) v)
+
+#define winWindowPriv(pWin) \
+	winPrivWinPtr pWinPriv = winGetWindowPriv(pWin)
 
 
 /*
@@ -905,8 +916,7 @@ winRandRGetInfo (ScreenPtr pScreen, Rotation *pRotations);
 Bool
 winRandRSetConfig (ScreenPtr		pScreen,
 		   Rotation		rotateKind,
-		   RRScreenSizePtr	pSize,
-		   RRVisualGroupPtr	pVisualGroup);
+		   RRScreenSizePtr	pSize);
 
 Bool
 winRandRInit (ScreenPtr pScreen);
@@ -1341,6 +1351,10 @@ winUnmapWindowPRootless (WindowPtr pWindow);
 Bool
 winMapWindowPRootless (WindowPtr pWindow);
 
+#ifdef SHAPE
+void
+winSetShapePRootless (WindowPtr pWindow);
+#endif
 
 /*
  * winwndproc.c

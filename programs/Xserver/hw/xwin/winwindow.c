@@ -28,7 +28,7 @@
  * Authors:	Harold L Hunt II
  *		MATSUZAKI Kensuke
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwindow.c,v 1.2 2001/06/04 13:04:41 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwindow.c,v 1.3 2002/10/17 08:18:25 alanh Exp $ */
 
 #include "win.h"
 
@@ -42,6 +42,10 @@ winAddRgn (WindowPtr pWindow, pointer data);
 static void
 winUpdateRgn (WindowPtr pWindow);
 
+#ifdef SHAPE
+static void
+winReshape (WindowPtr pWin);
+#endif
 
 
 /* See Porting Layer Definition - p. 37 */
@@ -138,6 +142,7 @@ Bool
 winCreateWindowPRootless (WindowPtr pWin)
 {
   Bool			fResult = FALSE;
+  winWindowPriv(pWin);
 
 #if CYGDEBUG
   ErrorF ("winCreateWindowPRootless()\n");
@@ -145,6 +150,7 @@ winCreateWindowPRootless (WindowPtr pWin)
 
   fResult = winGetScreenPriv(pWin->drawable.pScreen)->CreateWindow(pWin);
   
+  pWinPriv->hRgn = NULL;
   /*winUpdateRgn (pWin);*/
   
   return fResult;
@@ -158,12 +164,19 @@ Bool
 winDestroyWindowPRootless (WindowPtr pWin)
 {
   Bool			fResult = FALSE;
+  winWindowPriv(pWin);
 
 #if CYGDEBUG
   ErrorF ("winDestroyWindowPRootless()\n");
 #endif
 
   fResult = winGetScreenPriv(pWin->drawable.pScreen)->DestroyWindow(pWin);
+  
+  if (pWinPriv->hRgn != NULL)
+    {
+      DeleteObject(pWinPriv->hRgn);
+      pWinPriv->hRgn = NULL;
+    }
   
   winUpdateRgn (pWin);
   
@@ -184,6 +197,11 @@ winPositionWindowPRootless (WindowPtr pWin, int x, int y)
 #endif
 
   fResult = winGetScreenPriv(pWin->drawable.pScreen)->PositionWindow(pWin, x, y);
+  
+  if (wBoundingShape(pWin))
+    {
+      winReshape (pWin);
+    }
   
   winUpdateRgn (pWin);
   
@@ -253,46 +271,79 @@ winMapWindowPRootless (WindowPtr pWin)
 }
 
 
+#ifdef SHAPE
+void
+winSetShapePRootless (WindowPtr pWin)
+{
+#if CYGDEBUG
+  ErrorF ("winSetShapePRootless()\n");
+#endif
+
+  winGetScreenPriv(pWin->drawable.pScreen)->SetShape(pWin);
+  
+  winReshape (pWin);
+  winUpdateRgn (pWin);
+  
+  return;
+}
+#endif
+
+
 /*
  * Local function for adding a region to the Windows window region
  */
 
 static
 int
-winAddRgn (WindowPtr pWindow, pointer data)
+winAddRgn (WindowPtr pWin, pointer data)
 {
   int		iX, iY, iWidth, iHeight, iBorder;
   HRGN		hRgn = *(HRGN*)data;
   HRGN		hRgnWin;
+  winWindowPriv(pWin);
   
-  /* If pWindow is not Root */
-  if (pWindow->parent != NULL) 
+  /* If pWin is not Root */
+  if (pWin->parent != NULL) 
     {
+#if CYGDEBUG
       ErrorF("winAddRgn()\n");
-      if (pWindow->mapped)
+#endif
+      if (pWin->mapped)
 	{
-	  iBorder = wBorderWidth (pWindow);
+	  iBorder = wBorderWidth (pWin);
 	  
-	  iX = pWindow->drawable.x - iBorder;
-	  iY = pWindow->drawable.y - iBorder;
+	  iX = pWin->drawable.x - iBorder;
+	  iY = pWin->drawable.y - iBorder;
 	  
-	  iWidth = pWindow->drawable.width + iBorder * 2;
-	  iHeight = pWindow->drawable.height + iBorder * 2;
+	  iWidth = pWin->drawable.width + iBorder * 2;
+	  iHeight = pWin->drawable.height + iBorder * 2;
 	  
-	  hRgnWin = CreateRectRgn (iX, iY, iX + iWidth, iY + iHeight);
+	  hRgnWin = CreateRectRgn (0, 0, iWidth, iHeight);
+	  
 	  if (hRgnWin == NULL)
 	    {
 	      ErrorF ("winAddRgn - CreateRectRgn() failed\n");
 	      ErrorF ("  Rect %d %d %d %d\n",
-		     iX, iY, iX + iWidth, iY + iHeight);
+		      iX, iY, iX + iWidth, iY + iHeight);
 	    }
+	  
+	  if (pWinPriv->hRgn)
+	    {
+	      if (CombineRgn (hRgnWin, hRgnWin, pWinPriv->hRgn, RGN_AND)
+		  == ERROR)
+		{
+		  ErrorF ("winSetShapePRootless - CombineRgn() failed\n");
+		}
+	    }
+	  
+	  OffsetRgn (hRgnWin, iX, iY);
 
 	  if (CombineRgn (hRgn, hRgn, hRgnWin, RGN_OR) == ERROR)
 	    {
-	      ErrorF("winAddRgn - CombineRgn() failed\n");
+	      ErrorF ("winAddRgn - CombineRgn() failed\n");
 	    }
 	  
-	  DeleteObject(hRgnWin);
+	  DeleteObject (hRgnWin);
 	}
       return WT_DONTWALKCHILDREN;
     }
@@ -309,14 +360,14 @@ winAddRgn (WindowPtr pWindow, pointer data)
 
 static
 void
-winUpdateRgn (WindowPtr pWindow)
+winUpdateRgn (WindowPtr pWin)
 {
   HRGN		hRgn = CreateRectRgn (0, 0, 0, 0);
   
   if (hRgn != NULL)
     {
-      WalkTree (pWindow->drawable.pScreen, winAddRgn, &hRgn);
-      SetWindowRgn (winGetScreenPriv(pWindow->drawable.pScreen)->hwndScreen,
+      WalkTree (pWin->drawable.pScreen, winAddRgn, &hRgn);
+      SetWindowRgn (winGetScreenPriv(pWin->drawable.pScreen)->hwndScreen,
 		    hRgn, TRUE);
     }
   else
@@ -324,3 +375,93 @@ winUpdateRgn (WindowPtr pWindow)
       ErrorF ("winUpdateRgn fail to CreateRectRgn\n");
     }
 }
+
+
+#ifdef SHAPE
+static
+void
+winReshape (WindowPtr pWin)
+{
+  int		nRects;
+  ScreenPtr	pScreen = pWin->drawable.pScreen;
+  RegionRec	rrNewShape;
+  BoxPtr	pShape, pRects, pEnd;
+  HRGN		hRgn, hRgnRect;
+  winWindowPriv(pWin);
+
+#if CYGDEBUG
+  ErrorF ("winReshape()\n");
+#endif
+  
+  if (pWin->parent == NULL)
+    { /* If pWin is Root */
+      return;
+    }
+  else if (pWin->parent->parent != NULL)
+    { /* If pWin is not top level */
+      return;
+    }
+  
+  if (wBoundingShape(pWin)) 
+    {
+      REGION_INIT(pScreen, &rrNewShape, NullBox, 0);
+      REGION_COPY(pScreen, &rrNewShape, wBoundingShape(pWin));
+      REGION_TRANSLATE(pScreen, &rrNewShape, pWin->borderWidth,
+                       pWin->borderWidth);
+    }
+  else
+    {
+      if (pWinPriv->hRgn != NULL)
+        {
+	  DeleteObject (pWinPriv->hRgn);
+	  pWinPriv->hRgn = NULL;
+	  return;
+        }
+    }
+  
+  nRects = REGION_NUM_RECTS(&rrNewShape);
+  pShape = REGION_RECTS(&rrNewShape);
+  
+  if (nRects > 0)
+    {
+      hRgn = CreateRectRgn (0, 0, 0, 0);
+      for (pRects = pShape, pEnd = pShape+nRects; pRects < pEnd; pRects++)
+        {
+	  hRgnRect = CreateRectRgn (pRects->x1, pRects->y1,
+				    pRects->x2, pRects->y2);
+	  if (hRgnRect == NULL)
+	    {
+	      ErrorF("winReshape - CreateRectRgn() failed\n");
+	    }
+
+	  if (CombineRgn (hRgn, hRgn, hRgnRect, RGN_OR) == ERROR)
+	    {
+	      ErrorF("winReshape - CombineRgn() failed\n");
+	    }
+
+	  DeleteObject (hRgnRect);
+        }
+
+      if (pWinPriv->hRgn != NULL)
+	{
+	  DeleteObject (pWinPriv->hRgn);
+	  pWinPriv->hRgn = NULL;
+	}
+      
+      pWinPriv->hRgn = hRgn;
+    }
+  else
+    {
+      if (pWinPriv->hRgn != NULL)
+        {
+	  DeleteObject (pWinPriv->hRgn);
+	  pWinPriv->hRgn = NULL;
+        }
+      
+    }
+
+  REGION_UNINIT(pScreen, &rrNewShape);
+  
+  return;
+}
+#endif
