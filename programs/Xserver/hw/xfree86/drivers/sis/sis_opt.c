@@ -197,12 +197,15 @@ SiSOptions(ScrnInfoPtr pScrn)
     MessageType from;
 /*  double      temp;  */
     char        *strptr;
+    static const char *mybadparm = "\"%s\" is is not a valid parameter for option \"%s\"\n";
+    static const char *disabledstr = "disabled";
+    static const char *enabledstr = "enabled";
 
     /* Collect all of the relevant option flags (fill in pScrn->options) */
     xf86CollectOptions(pScrn, NULL);
 
     /* Process the options */
-    if (!(pSiS->Options = xalloc(sizeof(SISOptions))))
+    if(!(pSiS->Options = xalloc(sizeof(SISOptions))))
 	return;
 
     memcpy(pSiS->Options, SISOptions, sizeof(SISOptions));
@@ -244,7 +247,6 @@ SiSOptions(ScrnInfoPtr pScrn)
     pSiS->sistvedgeenhance = -1;
     pSiS->sistvantiflicker = -1;
     pSiS->sistvsaturation = -1;
-    pSiS->sis6326antiflicker = -1;
     pSiS->sis6326enableyfilter = -1;
     pSiS->sis6326yfilterstrong = -1;
     pSiS->sis6326tvplug = -1;
@@ -316,7 +318,7 @@ SiSOptions(ScrnInfoPtr pScrn)
         from = X_CONFIG;
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "PCI retry %s\n",
-                         pSiS->UsePCIRetry ? "enabled" : "disabled");
+                         pSiS->UsePCIRetry ? enabledstr : disabledstr);
 #endif
 
    /* Mem clock */
@@ -338,7 +340,7 @@ SiSOptions(ScrnInfoPtr pScrn)
        }
        xf86DrvMsg(pScrn->scrnIndex, from, "Fast VRAM %s\n",
                    (pSiS->newFastVram == -1) ? "enabled (for write only)" :
-		   	(pSiS->newFastVram ? "enabled (for read and write)" : "disabled"));
+		   	(pSiS->newFastVram ? "enabled (for read and write)" : disabledstr));
     }
 
    /* NoHostBus (5597/5598 only)
@@ -349,7 +351,7 @@ SiSOptions(ScrnInfoPtr pScrn)
           from = X_CONFIG;
        }
        xf86DrvMsg(pScrn->scrnIndex, from, "SiS5597/5598 VGA-to-CPU host bus %s\n",
-                   pSiS->NoHostBus ? "disabled" : "enabled");
+                   pSiS->NoHostBus ? disabledstr : enabledstr);
     }
 
    /* MaxXFBMem
@@ -370,12 +372,17 @@ SiSOptions(ScrnInfoPtr pScrn)
     }
 
     /* NoAccel
-     * Turns off 2D acceleration (and XVideo since it relies on acceleration)
+     * Turns off 2D acceleration
      */
     if(xf86ReturnOptValBool(pSiS->Options, OPTION_NOACCEL, FALSE)) {
         pSiS->NoAccel = TRUE;
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
 	pSiS->NoXvideo = TRUE;
-        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration and Xv disabled\n");
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "2D Acceleration and Xv disabled\n");
+#else
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "2D Acceleration disabled\n");
+#endif
+
     }
 
     /* SWCursor
@@ -413,7 +420,7 @@ SiSOptions(ScrnInfoPtr pScrn)
     	   from = X_CONFIG;
        }
        xf86DrvMsg(pScrn->scrnIndex, from, "Color HW cursor is %s\n",
-                    pSiS->OptUseColorCursor ? "enabled" : "disabled");
+                    pSiS->OptUseColorCursor ? enabledstr : disabledstr);
 
        if(pSiS->VGAEngine == SIS_300_VGA) {
           from = X_DEFAULT;
@@ -423,7 +430,7 @@ SiSOptions(ScrnInfoPtr pScrn)
           if(pSiS->OptUseColorCursor) {
              xf86DrvMsg(pScrn->scrnIndex, from,
 	   	"HW cursor color blending emulation is %s\n",
-		(pSiS->OptUseColorCursorBlend) ? "enabled" : "disabled");
+		(pSiS->OptUseColorCursorBlend) ? enabledstr : disabledstr);
 	  }
 	  {
 	  int temp;
@@ -483,19 +490,18 @@ SiSOptions(ScrnInfoPtr pScrn)
 	     strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_CRT2POS2);
 	  }
       	  if(strptr) {
-       	     if((!strcmp(strptr,"LeftOf")) || (!strcmp(strptr,"leftof")))
+       	     if(!xf86NameCmp(strptr,"LeftOf"))
                 pSiS->CRT2Position = sisLeftOf;
- 	     else if((!strcmp(strptr,"RightOf")) || (!strcmp(strptr,"rightof")))
+ 	     else if(!xf86NameCmp(strptr,"RightOf"))
                 pSiS->CRT2Position = sisRightOf;
-	     else if((!strcmp(strptr,"Above")) || (!strcmp(strptr,"above")))
+	     else if(!xf86NameCmp(strptr,"Above"))
                 pSiS->CRT2Position = sisAbove;
-	     else if((!strcmp(strptr,"Below")) || (!strcmp(strptr,"below")))
+	     else if(!xf86NameCmp(strptr,"Below"))
                 pSiS->CRT2Position = sisBelow;
-	     else if((!strcmp(strptr,"Clone")) || (!strcmp(strptr,"clone")))
+	     else if(!xf86NameCmp(strptr,"Clone"))
                 pSiS->CRT2Position = sisClone;
 	     else {
-	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-	            "\"%s\" is not a valid parameter for Option \"CRT2Position\"\n", strptr);
+	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mybadparm, strptr, "CRT2Position");
 	    	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 	            "Valid parameters are \"RightOf\", \"LeftOf\", \"Above\", \"Below\", or \"Clone\"\n");
 	     }
@@ -609,6 +615,9 @@ SiSOptions(ScrnInfoPtr pScrn)
        if(xf86GetOptValBool(pSiS->Options, OPTION_CRT2GAMMA, &val)) {
           xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mystring, "CRT2Gamma");
        }
+       if(xf86GetOptValBool(pSiS->Options, OPTION_XVONCRT2, &val)) {
+	  xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mystring, "XvOnCRT2");
+       }
 #ifdef SIS_CP
        SIS_CP_OPT_DH_WARN
 #endif
@@ -625,7 +634,7 @@ SiSOptions(ScrnInfoPtr pScrn)
     	     from = X_CONFIG;
           }
           xf86DrvMsg(pScrn->scrnIndex, from, "TurboQueue %s\n",
-                    pSiS->TurboQueue ? "enabled" : "disabled");
+                    pSiS->TurboQueue ? enabledstr : disabledstr);
        }
 
        if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
@@ -666,7 +675,7 @@ SiSOptions(ScrnInfoPtr pScrn)
 	     else     pSiS->AllowHotkey = 0;
           }
 	  xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Hotkey display switching is %s%s\n",
-	        pSiS->AllowHotkey ? "enabled" : "disabled",
+	        pSiS->AllowHotkey ? enabledstr : disabledstr,
 	        flag ? " in dual head mode" : "");
 	  if(pSiS->Chipset == PCI_CHIP_SIS630 ||
 	     pSiS->Chipset == PCI_CHIP_SIS650 ||
@@ -674,7 +683,7 @@ SiSOptions(ScrnInfoPtr pScrn)
 	     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 	         "WARNING: Using the Hotkey might freeze your machine, regardless\n");
 	     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		 "         whether enabled or disabled. This is no driver bug.\n");
+		 "\twhether enabled or disabled. This is no driver bug.\n");
 	  }
 	  }
 
@@ -690,7 +699,7 @@ SiSOptions(ScrnInfoPtr pScrn)
 
 	     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 	         "Video ROM data usage shall be %s\n",
-	          val ? "enabled":"disabled");
+	          val ? enabledstr : disabledstr);
 	  }
 
          /* UseOEMData (300/315/330 series only)
@@ -706,7 +715,7 @@ SiSOptions(ScrnInfoPtr pScrn)
 
 	     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 	         "Internal LCD/TV/VGA2 OEM data usage shall be %s\n",
-	         val ? "enabled":"disabled");
+	         val ? enabledstr : disabledstr);
 	  }
 
 	 /* TW: This remains undocumented :)
@@ -768,42 +777,37 @@ SiSOptions(ScrnInfoPtr pScrn)
           */
           strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_FORCE_CRT2TYPE);
           if(strptr != NULL) {
-             if((!strcmp(strptr,"TV")) || (!strcmp(strptr,"tv")))
+             if(!xf86NameCmp(strptr,"TV"))
                 pSiS->ForceCRT2Type = CRT2_TV;
- 	     else if((!strcmp(strptr,"SVIDEO")) || (!strcmp(strptr,"svideo"))) {
+ 	     else if(!xf86NameCmp(strptr,"SVIDEO")) {
                 pSiS->ForceCRT2Type = CRT2_TV;
 	        pSiS->ForceTVType = TV_SVIDEO;
-             } else if((!strcmp(strptr,"COMPOSITE")) || (!strcmp(strptr,"composite"))) {
+             } else if(!xf86NameCmp(strptr,"COMPOSITE")) {
                 pSiS->ForceCRT2Type = CRT2_TV;
 	        pSiS->ForceTVType = TV_AVIDEO;
-             } else if((!strcmp(strptr,"SCART")) || (!strcmp(strptr,"scart"))) {
+             } else if(!xf86NameCmp(strptr,"SCART")) {
                 pSiS->ForceCRT2Type = CRT2_TV;
 	        pSiS->ForceTVType = TV_SCART;
-             } else if((!strcmp(strptr,"LCD")) || (!strcmp(strptr,"lcd")))
+             } else if((!xf86NameCmp(strptr,"LCD")) || (!xf86NameCmp(strptr,"DVI-D")))
                 pSiS->ForceCRT2Type = CRT2_LCD;
-             else if((!strcmp(strptr,"DVI-D")) || (!strcmp(strptr,"dvi-d")))
-                pSiS->ForceCRT2Type = CRT2_LCD;
-             else if((!strcmp(strptr,"VGA")) || (!strcmp(strptr,"vga")))
+             else if((!xf86NameCmp(strptr,"VGA")) || (!xf86NameCmp(strptr,"DVI-A")))
                 pSiS->ForceCRT2Type = CRT2_VGA;
- 	     else if((!strcmp(strptr,"DVI-A")) || (!strcmp(strptr,"dvi-a")))
-                pSiS->ForceCRT2Type = CRT2_VGA;
-             else if((!strcmp(strptr,"NONE")) || (!strcmp(strptr,"none")))
+             else if(!xf86NameCmp(strptr,"NONE"))
                 pSiS->ForceCRT2Type = 0;
 	     else if(pSiS->Chipset == PCI_CHIP_SIS550) {
-	        if((!strcmp(strptr,"DSTN")) || (!strcmp(strptr,"dstn"))) {
+	        if(!xf86NameCmp(strptr,"DSTN")) {
 		   pSiS->ForceCRT2Type = CRT2_LCD;
 		   pSiS->DSTN = TRUE;
-		} else if((!strcmp(strptr,"FSTN")) || (!strcmp(strptr,"fstn"))) {
+		} else if(!xf86NameCmp(strptr,"FSTN")) {
 		   pSiS->ForceCRT2Type = CRT2_LCD;
 		   pSiS->FSTN = TRUE;
 		}
 	     } else {
-	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-	      	    "\"%s\" is not a valid parameter for Option \"ForceCRT2Type\"\n", strptr);
+	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mybadparm, strptr, "ForceCRT2Type");
 	        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	            "Valid parameters are \"LCD\" (=\"DVI-D\"), \"TV\", \"SVIDEO\", \"COMPOSITE\", "
-		    "\"SCART\", \"VGA\" (=\"DVI-A\") or \"NONE\", on the SiS550 also \"DSTN\" "
-		    "and \"FSTN\"\n");
+	            "Valid parameters are \"LCD\" (=\"DVI-D\"), \"TV\", \"SVIDEO\", \"COMPOSITE\",\n"
+		    "\t\"SCART\", \"VGA\" (=\"DVI-A\") or \"NONE\", on the SiS550 also \"DSTN\"\n"
+		    "\tand \"FSTN\"\n");
 	     }
 
              if(pSiS->ForceCRT2Type != CRT2_DEFAULT)
@@ -821,7 +825,7 @@ SiSOptions(ScrnInfoPtr pScrn)
 	     if(val)  pSiS->UsePanelScaler = 0;
 	     else     pSiS->UsePanelScaler = 1;
 	     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "LCD scaling is %s\n",
-	         pSiS->UsePanelScaler ? "disabled" : "enabled");
+	         pSiS->UsePanelScaler ? disabledstr : enabledstr);
 	  }
 
          /* PanelDelayCompensation (300/315/330 series only; currently used
@@ -837,7 +841,7 @@ SiSOptions(ScrnInfoPtr pScrn)
           if(xf86GetOptValInteger(pSiS->Options, OPTION_PDC, &pSiS->PDC)) {
 	     if(pSiS->PDC & ~0x3c) {
 	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-	            "Illegal PanelDelayCompensation value\n");
+	            "Illegal PanelDelayCompensation parameter\n");
 	        pSiS->PDC = -1;
 	     } else {
                 xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
@@ -858,36 +862,32 @@ SiSOptions(ScrnInfoPtr pScrn)
           ((pSiS->Chipset == PCI_CHIP_SIS6326) && (pSiS->SiS6326Flags & SIS6326_HASTV))) {
           strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_TVSTANDARD);
           if(strptr != NULL) {
-             if((!strcmp(strptr,"PAL")) || (!strcmp(strptr,"pal")))
+             if(!xf86NameCmp(strptr,"PAL"))
 	        pSiS->OptTVStand = 1;
-	     else if((!strcmp(strptr,"PALM")) ||
-	             (!strcmp(strptr,"palm")) ||
-	             (!strcmp(strptr,"PAL-M")) ||
-		     (!strcmp(strptr,"pal-m"))) {
+	     else if((!xf86NameCmp(strptr,"PALM")) ||
+	             (!xf86NameCmp(strptr,"PAL-M"))) {
 	        pSiS->OptTVStand = 1;
 	        pSiS->NonDefaultPAL = 1;
-  	     } else if((!strcmp(strptr,"PALN")) ||
-	               (!strcmp(strptr,"paln")) ||
-	               (!strcmp(strptr,"PAL-N")) ||
-		       (!strcmp(strptr,"pal-n"))) {
+  	     } else if((!xf86NameCmp(strptr,"PALN")) ||
+	               (!xf86NameCmp(strptr,"PAL-N"))) {
 	        pSiS->OptTVStand = 1;
 	        pSiS->NonDefaultPAL = 0;
-  	     } else if((!strcmp(strptr,"NTSC")) || (!strcmp(strptr,"ntsc")))
+  	     } else if(!xf86NameCmp(strptr,"NTSC"))
 	        pSiS->OptTVStand = 0;
 	     else {
-	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-	            "\"%s\" is not a valid parameter for Option \"TVStandard\"\n", strptr);
+	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mybadparm, strptr, "TVStandard");
                 xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	            "Valid options are \"PAL\", \"PALM\", \"PALN\" or \"NTSC\"\n");
+	            "Valid parameters are \"PAL\", \"PALM\", \"PALN\" or \"NTSC\"\n");
 	     }
 
 	     if(pSiS->OptTVStand != -1) {
+	        static const char *tvstdstr = "TV standard shall be %s\n";
 	        if(pSiS->Chipset == PCI_CHIP_SIS6326) {
 	           pSiS->NonDefaultPAL = -1;
-	           xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "TV Standard shall be %s\n",
+	           xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, tvstdstr,
 	               pSiS->OptTVStand ? "PAL" : "NTSC");
 	        } else {
-	           xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "TV Standard shall be %s\n",
+	           xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, tvstdstr,
 		       (pSiS->OptTVStand ?
 		           ( (pSiS->NonDefaultPAL == -1) ? "PAL" :
 			      ((pSiS->NonDefaultPAL) ? "PALM" : "PALN") )
@@ -904,19 +904,18 @@ SiSOptions(ScrnInfoPtr pScrn)
        if(pSiS->VGAEngine == SIS_315_VGA) {
           strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_CHTVTYPE);
           if(strptr != NULL) {
-             if((!strcmp(strptr,"SCART")) || (!strcmp(strptr,"scart")))
+             if(!xf86NameCmp(strptr,"SCART"))
                 pSiS->chtvtype = 1;
- 	     else if((!strcmp(strptr,"HDTV")) || (!strcmp(strptr,"hdtv")))
+ 	     else if(!xf86NameCmp(strptr,"HDTV"))
 	        pSiS->chtvtype = 0;
 	     else {
-	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-	            "\"%s\" is not a valid parameter for Option \"CHTVType\"\n", strptr);
+	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mybadparm, strptr, "CHTVType");
 	        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 	          "Valid parameters are \"SCART\" or \"HDTV\"\n");
 	     }
              if(pSiS->chtvtype != -1)
                 xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-                  "Chrontel TV type shall be %s\n", strptr);
+                  "Chrontel: TV type shall be %s\n", strptr);
           }
        }
 
@@ -937,12 +936,12 @@ SiSOptions(ScrnInfoPtr pScrn)
 
 	     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 	         "Chrontel: TV overscan shall be %s\n",
-	         val ? "enabled":"disabled");
+	         val ? enabledstr : disabledstr);
 	  }
           if(xf86GetOptValBool(pSiS->Options, OPTION_CHTVSOVERSCAN, &pSiS->OptTVSOver)) {
 	     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 	         "Chrontel: TV super overscan shall be %s\n",
-	         pSiS->OptTVSOver ? "enabled":"disabled");
+	         pSiS->OptTVSOver ? enabledstr : disabledstr);
 	  }
        }
 
@@ -968,26 +967,6 @@ SiSOptions(ScrnInfoPtr pScrn)
                                 &pSiS->chtvcontrast);
 	  xf86GetOptValInteger(pSiS->Options, OPTION_SISTVEDGEENHANCE,
                                 &pSiS->sistvedgeenhance);
-	  strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_SISTVANTIFLICKER);
-          if(strptr) {
-             if((!strcmp(strptr,"OFF")) || (!strcmp(strptr,"off")))
-	        pSiS->sis6326antiflicker = 0;
-  	     else if((!strcmp(strptr,"LOW")) || (!strcmp(strptr,"low")))
-	        pSiS->sis6326antiflicker = 1;
-	     else if((!strcmp(strptr,"MED")) || (!strcmp(strptr,"med")))
-	        pSiS->sis6326antiflicker = 2;
-	     else if((!strcmp(strptr,"HIGH")) || (!strcmp(strptr,"high")))
-	        pSiS->sis6326antiflicker = 3;
-	     else if((!strcmp(strptr,"ADAPTIVE")) || (!strcmp(strptr,"adaptive")))
-	        pSiS->sis6326antiflicker = 4;
-	     else {
-	        pSiS->sis6326antiflicker = -1;
-	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-	      	    "\"%s\" is not a valid parameter for Option \"SISTVAntiFlicker\"\n", strptr);
-	        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	            "Valid parameters are \"OFF\", \"LOW\", \"MED\", \"HIGH\" or \"ADAPTIVE\"\n");
-	     }
-	  }
 	  xf86GetOptValInteger(pSiS->Options, OPTION_SISTVSATURATION,
                                 &pSiS->sistvsaturation);
 	  xf86GetOptValInteger(pSiS->Options, OPTION_TVXPOSOFFSET,
@@ -1004,35 +983,14 @@ SiSOptions(ScrnInfoPtr pScrn)
 
        if((pSiS->Chipset == PCI_CHIP_SIS6326) && (pSiS->SiS6326Flags & SIS6326_HASTV)) {
           int tmp = 0;
-          strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_SIS6326ANTIFLICKER);
-          if(strptr) {
-             if((!strcmp(strptr,"OFF")) || (!strcmp(strptr,"off")))
-	        pSiS->sis6326antiflicker = 0;
-  	     else if((!strcmp(strptr,"LOW")) || (!strcmp(strptr,"low")))
-	        pSiS->sis6326antiflicker = 1;
-	     else if((!strcmp(strptr,"MED")) || (!strcmp(strptr,"med")))
-	        pSiS->sis6326antiflicker = 2;
-	     else if((!strcmp(strptr,"HIGH")) || (!strcmp(strptr,"high")))
-	        pSiS->sis6326antiflicker = 3;
-	     else if((!strcmp(strptr,"ADAPTIVE")) || (!strcmp(strptr,"adaptive")))
-	        pSiS->sis6326antiflicker = 4;
-	     else {
-	        pSiS->sis6326antiflicker = -1;
-	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-	     	    "\"%s\" is not a valid parameter for Option \"SIS6326TVAntiFlicker\"\n", strptr);
-	        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	           "Valid parameters are \"OFF\", \"LOW\", \"MED\", \"HIGH\" or \"ADAPTIVE\"\n");
-	     }
-	  }
 	  strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_SIS6326FORCETVPPLUG);
           if(strptr) {
-             if((!strcmp(strptr,"COMPOSITE")) || (!strcmp(strptr,"composite")))
+             if(!xf86NameCmp(strptr,"COMPOSITE"))
 	        pSiS->sis6326tvplug = 1;
-  	     else if((!strcmp(strptr,"SVIDEO")) || (!strcmp(strptr,"svideo")))
+  	     else if(!xf86NameCmp(strptr,"SVIDEO"))
 	        pSiS->sis6326tvplug = 0;
 	     else {
-	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-	     	    "\"%s\" is not a valid parameter for Option \"SIS6326TVForcePlug\"\n", strptr);
+	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mybadparm, strptr, "SIS6326TVForcePlug");
 	        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 	           "Valid parameters are \"COMPOSITE\" or \"SVIDEO\"\n");
 	     }
@@ -1060,6 +1018,32 @@ SiSOptions(ScrnInfoPtr pScrn)
 	  }
        }
 
+       if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA) ||
+          ((pSiS->Chipset == PCI_CHIP_SIS6326) && (pSiS->SiS6326Flags & SIS6326_HASTV))) {
+          strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_SISTVANTIFLICKER);
+          if(!strptr) {
+             strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_SIS6326ANTIFLICKER);
+          }
+          if(strptr) {
+             if(!xf86NameCmp(strptr,"OFF"))
+	        pSiS->sistvantiflicker = 0;
+  	     else if(!xf86NameCmp(strptr,"LOW"))
+	        pSiS->sistvantiflicker = 1;
+	     else if(!xf86NameCmp(strptr,"MED"))
+	        pSiS->sistvantiflicker = 2;
+	     else if(!xf86NameCmp(strptr,"HIGH"))
+	        pSiS->sistvantiflicker = 3;
+	     else if(!xf86NameCmp(strptr,"ADAPTIVE"))
+	        pSiS->sistvantiflicker = 4;
+	     else {
+	        pSiS->sistvantiflicker = -1;
+	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mybadparm, strptr, "SISTVAntiFlicker");
+	        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	            "Valid parameters are \"OFF\", \"LOW\", \"MED\", \"HIGH\" or \"ADAPTIVE\"\n");
+	     }
+	  }
+       }
+
       /* CRT1Gamma - disable gamma correction for CRT1
        */
        {
@@ -1070,7 +1054,7 @@ SiSOptions(ScrnInfoPtr pScrn)
 	  pSiS->CRT1gamma = val;
        }
        xf86DrvMsg(pScrn->scrnIndex, from, "CRT1 gamma correction is %s\n",
-                  pSiS->CRT1gamma ? "enabled" : "disabled");
+                  pSiS->CRT1gamma ? enabledstr : disabledstr);
        }
 
       /* CRT2Gamma - disable gamma correction for CRT2
@@ -1101,7 +1085,7 @@ SiSOptions(ScrnInfoPtr pScrn)
 
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 	        "VESA: VESA usage shall be %s\n",
-		val ? "enabled":"disabled");
+		val ? enabledstr : disabledstr);
  	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 	    	"*** Option \"VESA\" is deprecated. *** \n");
 	}
@@ -1115,15 +1099,13 @@ SiSOptions(ScrnInfoPtr pScrn)
         *     for a pre-defined number of modes. The default behavior
         *     is to replace XFree's default modes with a mode list
         *     generated out of the known and supported modes. Use
-        *     this option to disable this. However, even if using
-        *     out built-in mode list will NOT make it possible to
-        *     use modelines.
+        *     this option to disable this. NOT RECOMMENDED.
         */
         from = X_DEFAULT;
 	if(xf86GetOptValBool(pSiS->Options, OPTION_NOINTERNALMODES, &pSiS->noInternalModes))
 		from = X_CONFIG;
 	xf86DrvMsg(pScrn->scrnIndex, from, "Usage of built-in modes is %s\n",
-		       pSiS->noInternalModes ? "disabled":"enabled");
+		       pSiS->noInternalModes ? disabledstr : enabledstr);
     }
 
     /* ShadowFB */
@@ -1133,16 +1115,21 @@ SiSOptions(ScrnInfoPtr pScrn)
        if(pSiS->MergedFB) {
           pSiS->ShadowFB = FALSE;
 	  xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-	      "Shadow Frame Buffer not permitted in MergeFB mode\n");
+	      "Shadow Frame Buffer not supported in MergedFB mode\n");
        } else
 #endif
           from = X_CONFIG;
     }
     if(pSiS->ShadowFB) {
 	pSiS->NoAccel = TRUE;
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
 	pSiS->NoXvideo = TRUE;
     	xf86DrvMsg(pScrn->scrnIndex, from,
-	   "Using \"Shadow Frame Buffer\" - acceleration and Xv disabled\n");
+	   "Using \"Shadow Frame Buffer\" - 2D acceleration and Xv disabled\n");
+#else
+    	xf86DrvMsg(pScrn->scrnIndex, from,
+	   "Using \"Shadow Frame Buffer\" - 2D acceleration disabled\n");
+#endif
     }
 
     /* Rotate */
@@ -1150,37 +1137,45 @@ SiSOptions(ScrnInfoPtr pScrn)
 #ifdef SISMERGED
        if(pSiS->MergedFB) {
 	  xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-	      "Screen rotation not permitted in MergeFB mode\n");
+	      "Screen rotation not supported in MergedFB mode\n");
        } else
 #endif
        if(!xf86NameCmp(strptr, "CW")) {
-          pSiS->ShadowFB = TRUE;
-          pSiS->NoAccel = TRUE;
-	  pSiS->NoXvideo = TRUE;
-          pSiS->HWCursor = FALSE;
           pSiS->Rotate = 1;
-          xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-              "Rotating screen clockwise (acceleration and Xv disabled)\n");
        } else if(!xf86NameCmp(strptr, "CCW")) {
-          pSiS->ShadowFB = TRUE;
-          pSiS->NoAccel = TRUE;
-          pSiS->NoXvideo = TRUE;
-          pSiS->HWCursor = FALSE;
           pSiS->Rotate = -1;
-          xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-              "Rotating screen counter clockwise (acceleration and Xv disabled)\n");
        } else {
-          xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-              "\"%s\" is not a valid parameter for Option \"Rotate\"\n", strptr);
+          xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mybadparm, strptr, "Rotate");
           xf86DrvMsg(pScrn->scrnIndex, X_INFO,
               "Valid parameters are \"CW\" or \"CCW\"\n");
+       }
+
+       if(pSiS->Rotate) {
+          pSiS->ShadowFB = TRUE;
+          pSiS->NoAccel  = TRUE;
+          pSiS->HWCursor = FALSE;
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
+	  pSiS->NoXvideo = TRUE;
+          xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+              "Rotating screen %sclockwise (2D acceleration and Xv disabled)\n",
+	      (pSiS->Rotate == -1) ? "counter " : "");
+#else
+	  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+              "Rotating screen %sclockwise (2D acceleration disabled)\n",
+	      (pSiS->Rotate == -1) ? "counter " : "");
+#endif
+
        }
     }
 
    /* NoXVideo
     * Set this to TRUE to disable Xv hardware video acceleration
     */
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
     if((!pSiS->NoAccel) && (!pSiS->NoXvideo)) {
+#else
+    if(!pSiS->NoXvideo) {
+#endif
        if(xf86ReturnOptValBool(pSiS->Options, OPTION_NOXVIDEO, FALSE)) {
           pSiS->NoXvideo = TRUE;
           xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "XVideo extension disabled\n");
@@ -1189,10 +1184,11 @@ SiSOptions(ScrnInfoPtr pScrn)
        if(!pSiS->NoXvideo) {
           Bool val;
 	  int tmp;
+	  static const char *ilrangestr = "Illegal %s parameter. Valid range is %d through %d\n";
 
 	  if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
       	     /* TW: XvOnCRT2:
-	      * On chipsets with only one overlay (315, 650), the user should
+	      * On chipsets with only one overlay (315, 650, 740, 330), the user can
 	      * choose to display the overlay on CRT1 or CRT2. By setting this
 	      * option to TRUE, the overlay will be displayed on CRT2. The
 	      * default is: CRT1 if only CRT1 available, CRT2 if only CRT2
@@ -1201,12 +1197,6 @@ SiSOptions(ScrnInfoPtr pScrn)
 	      * selects the default CRT.
 	      */
              if(xf86GetOptValBool(pSiS->Options, OPTION_XVONCRT2, &val)) {
-#ifdef SISDUALHEAD
-                if((pSiS->DualHeadMode) && (pSiS->SecondHead)) {
-    		   xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		   	"Option \"XvOnCRT2\" only accepted in Master Head's device section\n");
-	        } else
-#endif
 	        if(val) pSiS->XvOnCRT2 = TRUE;
 	        else    pSiS->XvOnCRT2 = FALSE;
 	     }
@@ -1223,44 +1213,44 @@ SiSOptions(ScrnInfoPtr pScrn)
 	        else     pSiS->NoYV12 = 0;
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 			"Xv YV12/I420 support is %s\n",
-			pSiS->NoYV12 ? "disabled" : "enabled");
+			pSiS->NoYV12 ? disabledstr : enabledstr);
 	     }
 	  }
 
 	  /* Some Xv properties' defaults can be set by options */
           if(xf86GetOptValInteger(pSiS->Options, OPTION_XVDEFCONTRAST, &tmp)) {
              if((tmp >= 0) && (tmp <= 7)) pSiS->XvDefCon = tmp;
-             else xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-       		      "Illegal XvDefaultContrast parameter. Valid range is 0 - 7\n");
+             else xf86DrvMsg(pScrn->scrnIndex, X_WARNING, ilrangestr,
+       		      "XvDefaultContrast" ,0, 7);
           }
           if(xf86GetOptValInteger(pSiS->Options, OPTION_XVDEFBRIGHTNESS, &tmp)) {
              if((tmp >= -128) && (tmp <= 127)) pSiS->XvDefBri = tmp;
-             else xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-       		      "Illegal XvDefaultBrightness parameter. Valid range is -128 - 127\n");
+             else xf86DrvMsg(pScrn->scrnIndex, X_WARNING, ilrangestr,
+       		      "XvDefaultBrightness", -128, 127);
           }
           if(pSiS->VGAEngine == SIS_315_VGA) {
              if(xf86GetOptValInteger(pSiS->Options, OPTION_XVDEFHUE, &tmp)) {
                 if((tmp >= -8) && (tmp <= 7)) pSiS->XvDefHue = tmp;
-                else xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-       	              "Illegal XvDefaultHue parameter. Valid range is -8 - 7\n");
+                else xf86DrvMsg(pScrn->scrnIndex, X_WARNING, ilrangestr,
+       	              "XvDefaultHue", -8, 7);
              }
              if(xf86GetOptValInteger(pSiS->Options, OPTION_XVDEFSATURATION, &tmp)) {
                 if((tmp >= -7) && (tmp <= 7)) pSiS->XvDefSat = tmp;
-                else xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-       	              "Illegal XvDefaultSaturation parameter. Valid range is -7 - 7\n");
+                else xf86DrvMsg(pScrn->scrnIndex, X_WARNING, ilrangestr,
+       	              "XvDefaultSaturation", -7, 7);
              }
           }
 	  if(xf86GetOptValBool(pSiS->Options, OPTION_XVDEFDISABLEGFX, &val)) {
 	     if(val)  pSiS->XvDefDisableGfx = TRUE;
 	     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Graphics display will be %s during Xv usage\n",
-	     	val ? "disabled" : "enabled");
+	     	val ? disabledstr : enabledstr);
           }
 	  if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
 	     if(xf86GetOptValBool(pSiS->Options, OPTION_XVDEFDISABLEGFXLR, &val)) {
 	        if(val)  pSiS->XvDefDisableGfxLR = TRUE;
 	        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 	     	   "Graphics display left/right of overlay will be %s during Xv usage\n",
-		   val ? "disabled" : "enabled");
+		   val ? disabledstr : enabledstr);
              }
           }
 	  if(xf86GetOptValBool(pSiS->Options, OPTION_XVMEMCPY, &val)) {

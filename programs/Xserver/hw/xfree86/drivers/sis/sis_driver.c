@@ -1443,7 +1443,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     xf86LoaderReqSymLists(vgahwSymbols, NULL);
 
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-        "SiS driver (2003/05/20-1) by "
+        "SiS driver (2003/05/22-1) by "
 	"Thomas Winischhofer <thomas@winischhofer.net>\n");
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
         "See http://www.winischhofer.net/linuxsisvga.shtml "
@@ -7695,7 +7695,7 @@ int SiS_GetSISTVantiflicker(ScrnInfoPtr pScrn)
            return (int)pSiSEnt->sistvantiflicker;
       else
 #endif      
-           return (int)pSiS->sistvantiflicker;  
+           return (int)pSiS->sistvantiflicker;
    } else {
       unsigned char temp;
 #ifdef UNLOCK_ALWAYS
@@ -7760,7 +7760,7 @@ void SiS_SetSIS6326TVantiflicker(ScrnInfoPtr pScrn, int val)
    SISPtr pSiS = SISPTR(pScrn);
    unsigned char tmp;
    
-   pSiS->sis6326antiflicker = val;
+   pSiS->sistvantiflicker = val;
 
    if(!(pSiS->SiS6326Flags & SIS6326_TVDETECTED)) return;
    
@@ -7785,7 +7785,7 @@ int SiS_GetSIS6326TVantiflicker(ScrnInfoPtr pScrn)
    unsigned char tmp;
    
    if(!(pSiS->SiS6326Flags & SIS6326_TVDETECTED)) {
-      return (int)pSiS->sis6326antiflicker;
+      return (int)pSiS->sistvantiflicker;
    }
    
 #ifdef UNLOCK_ALWAYS
@@ -7794,7 +7794,7 @@ int SiS_GetSIS6326TVantiflicker(ScrnInfoPtr pScrn)
    
    tmp = SiS6326GetTVReg(pScrn,0x00);
    if(!(tmp & 0x04)) {
-      return (int)pSiS->sis6326antiflicker;
+      return (int)pSiS->sistvantiflicker;
    } else {
       return (int)((tmp >> 5) & 0x07);    
    }
@@ -7939,81 +7939,21 @@ void SiS_SetTVxposoffset(ScrnInfoPtr pScrn, int val)
 	 } else if(pSiS->VBFlags & VB_SISBRIDGE) {
 	 
 	    if((val >= -32) && (val <= 32)) {
-		unsigned char p2_1f,p2_2b,p2_2c,p2_2d,p2_43;
-		const unsigned char p2_left_ntsc[8][4] = {
-			{ 0x48, 0x63, 0x49, 0xf4 },
-			{ 0x45, 0x60, 0x46, 0xf1 },
-			{ 0x43, 0x6e, 0x44, 0xff },
-			{ 0x40, 0x6b, 0x41, 0xfc },
-			{ 0x3e, 0x69, 0x3f, 0xfa },
-			{ 0x3c, 0x67, 0x3d, 0xf8 },
-			{ 0x39, 0x64, 0x3a, 0xf5 },
-			{ 0x37, 0x62, 0x38, 0xf3 }
-		};
-		const unsigned char p2_right_ntsc[8][4] = {
-			{ 0x4b, 0x66, 0x4c, 0xf7 },
-			{ 0x4c, 0x67, 0x4d, 0xf8 },
-			{ 0x4e, 0x69, 0x4f, 0xfa },
-			{ 0x4f, 0x6a, 0x50, 0xfb },
-			{ 0x51, 0x6c, 0x52, 0xfd },
-			{ 0x53, 0x6e, 0x54, 0xff },
-			{ 0x55, 0x60, 0x56, 0xf1 },
-			{ 0x56, 0x61, 0x57, 0xf2 }
-		};
-		const unsigned char p2_left_pal[8][4] = {
-			{ 0x5b, 0x66, 0x5c, 0x87 },
-			{ 0x59, 0x64, 0x5a, 0x85 },
-			{ 0x56, 0x61, 0x57, 0x82 },
-			{ 0x53, 0x6e, 0x54, 0x8f },
-			{ 0x50, 0x6b, 0x51, 0x8c },
-			{ 0x4d, 0x68, 0x4e, 0x89 },
-			{ 0x4a, 0x65, 0x4b, 0x86 },
-			{ 0x49, 0x64, 0x4a, 0x85 }
-		};
-		const unsigned char p2_right_pal[8][4] = {
-			{ 0x5f, 0x6a, 0x60, 0x8b },
-			{ 0x61, 0x6c, 0x62, 0x8d },
-			{ 0x63, 0x6e, 0x64, 0x8f },
-			{ 0x65, 0x60, 0x66, 0x81 },
-			{ 0x66, 0x61, 0x67, 0x82 },
-			{ 0x68, 0x63, 0x69, 0x84 },
-			{ 0x69, 0x64, 0x6a, 0x85 },
-			{ 0x6b, 0x66, 0x6c, 0x87 }
-		};
-		val /= 4;
-		p2_2d = pSiS->p2_2d;
+
+	        unsigned char p2_1f,p2_2b,p2_2c,p2_2d,p2_43;
+
+	        /* P2B = (P1F - 5) & 0x0f | 0x60  */
+		/* P2C = P1F + 1                  */
+		/* P2D = (P2C - 5) & 0x0f | (PAL ? 0x80 : 0xf0) */
+
+		p2_1f = pSiS->p2_1f;
 #ifdef SISDUALHEAD
-	        if(pSiSEnt && pSiS->DualHeadMode) p2_2d = pSiSEnt->p2_2d;
-#endif		
-		p2_2d &= 0xf0;
-		if(val < 0) {
-		      val = -val;
-		      if(val == 8) val = 7;
-		      if(pSiS->VBFlags & TV_PAL) {
-		         p2_1f = p2_left_pal[val][0];
-		         p2_2b = p2_left_pal[val][1];
-		         p2_2c = p2_left_pal[val][2];
-		         p2_2d |= (p2_left_pal[val][3] & 0x0f);
-		      } else {
-		         p2_1f = p2_left_ntsc[val][0];
-		         p2_2b = p2_left_ntsc[val][1];
-		         p2_2c = p2_left_ntsc[val][2];
-		         p2_2d |= (p2_left_ntsc[val][3] & 0x0f);
-		      }
-		} else {
-		      if(val == 8) val = 7;
-		      if(pSiS->VBFlags & TV_PAL) {
-		         p2_1f = p2_right_pal[val][0];
-		         p2_2b = p2_right_pal[val][1];
-		         p2_2c = p2_right_pal[val][2];
-		         p2_2d |= (p2_right_pal[val][3] & 0x0f);
-		      } else {
-		         p2_1f = p2_right_ntsc[val][0];
-		         p2_2b = p2_right_ntsc[val][1];
-		         p2_2c = p2_right_ntsc[val][2];
-		         p2_2d |= (p2_right_ntsc[val][3] & 0x0f);
-		      }
-		}
+	        if(pSiSEnt && pSiS->DualHeadMode) p2_1f = pSiSEnt->p2_1f;
+#endif
+		p2_1f += (val * 2);
+		p2_2b = ((p2_1f - 5) & 0x0f) | 0x60;
+		p2_2c = p2_1f + 1;
+		p2_2d = ((p2_2c - 5) & 0x0f) | (pSiS->VBFlags & TV_PAL ? 0x80 : 0xf0);
 		p2_43 = p2_1f + 3;
 		SISWaitRetraceCRT2(pScrn);
 	        outSISIDXREG(SISPART2,0x1f,p2_1f);
@@ -8472,12 +8412,12 @@ void SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 	  }
 #endif	  
           /* Backup default TV position registers */
-	  inSISIDXREG(SISPART2,0x2d,pSiS->p2_2d);
+	  inSISIDXREG(SISPART2,0x1f,pSiS->p2_1f);
 	  inSISIDXREG(SISPART2,0x01,pSiS->p2_01);
 	  inSISIDXREG(SISPART2,0x02,pSiS->p2_02);
 #ifdef SISDUALHEAD
 	  if(pSiSEnt && pSiS->DualHeadMode) {
-	        pSiSEnt->p2_2d = pSiS->p2_2d;
+	        pSiSEnt->p2_1f = pSiS->p2_1f;
 		pSiSEnt->p2_01 = pSiS->p2_01;
 		pSiSEnt->p2_02 = pSiS->p2_02;
 	  }
@@ -8561,7 +8501,7 @@ void SiS6326PostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     if(!(tmp & 0x04)) return;
 
     /* TW: Apply TV settings given by options */
-    if((val = pSiS->sis6326antiflicker) != -1) {
+    if((val = pSiS->sistvantiflicker) != -1) {
        SiS_SetSIS6326TVantiflicker(pScrn, val);
     }
     if((val = pSiS->sis6326enableyfilter) != -1) {
