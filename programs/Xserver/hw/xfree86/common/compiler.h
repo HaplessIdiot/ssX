@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.94 2002/09/16 18:05:42 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.96 2002/11/25 14:04:55 eich Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -132,42 +132,42 @@ extern unsigned short ldw_brx(volatile unsigned char *, int);
 /* note that the appropriate setup via "ioperm" needs to be done */
 /*  *before* any inx/outx is done. */
 
-extern void _alpha_outb(char val, unsigned long port);
+extern void (*_alpha_outb)(char val, unsigned long port);
 static __inline__ void
 outb(unsigned long port, unsigned char val)
 {
     _alpha_outb(val, port);
 }
 
-extern void _alpha_outw(short val, unsigned long port);
+extern void (*_alpha_outw)(short val, unsigned long port);
 static __inline__ void
 outw(unsigned long port, unsigned short val)
 {
     _alpha_outw(val, port);
 }
 
-extern void _alpha_outl(int val, unsigned long port);
+extern void (*_alpha_outl)(int val, unsigned long port);
 static __inline__ void
 outl(unsigned long port, unsigned int val)
 {
     _alpha_outl(val, port);
 }
 
-extern unsigned int _alpha_inb(unsigned long port);
+extern unsigned int (*_alpha_inb)(unsigned long port);
 static __inline__ unsigned int
 inb(unsigned long port)
 {
-  return _inb(port);
+  return _alpha_inb(port);
 }
 
-extern unsigned int _alpha_inw(unsigned long port);
+extern unsigned int (*_alpha_inw)(unsigned long port);
 static __inline__ unsigned int
 inw(unsigned long port)
 {
   return _alpha_inw(port);
 }
 
-extern unsigned int _alpha_inl(unsigned long port);
+extern unsigned int (*_alpha_inl)(unsigned long port);
 static __inline__ unsigned int
 inl(unsigned long port)
 {

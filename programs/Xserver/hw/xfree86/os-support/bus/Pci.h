@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.32 2002/10/03 21:32:21 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.34 2002/11/25 14:05:03 eich Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -114,7 +114,7 @@
 			      (((d) & 0x00001fu) << 11) | \
 			      (((f) & 0x000007u) << 8))
 
-#define PCI_MAKE_BUS(d,b)    ((((d) & 0xffu) << 8) | ((b) & 0xffu))
+#define PCI_MAKE_BUS(d,b)    ((((d) & (PCI_DOM_MASK)) << 8) | ((b) & 0xffu))
 
 #define PCI_DOM_FROM_TAG(tag)  (((tag) >> 24) & (PCI_DOM_MASK))
 #define PCI_BUS_FROM_TAG(tag)  (((tag) >> 16) & (PCI_DOMBUS_MASK))

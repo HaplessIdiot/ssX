@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.63 2002/10/08 22:14:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.65 2002/11/25 14:04:56 eich Exp $ */
 /*
  * Copyright (c) 1997-2002 by The XFree86 Project, Inc.
  */
@@ -204,6 +204,7 @@ FindPCIVideoInfo(void)
 	    info->biosSize = pciGetBaseSize(pcrp->tag, 6, TRUE, NULL);
 	    info->thisCard = pcrp;
 	    info->validate = FALSE;
+#ifdef INCLUDE_XF86_NO_DOMAIN
 	    if ((PCISHAREDIOCLASSES(baseclass, subclass))
 		&& (pcrp->pci_command & PCI_CMD_IO_ENABLE) &&
 		(pcrp->pci_prog_if == 0)) {
@@ -237,6 +238,7 @@ FindPCIVideoInfo(void)
 		    j = pBus->primary;
 		}
 	    }
+#endif
 	    
 	    for (j = 0; j < 6; j++) {
 		info->memBase[j] = 0;

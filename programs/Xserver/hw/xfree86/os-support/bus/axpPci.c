@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/axpPci.c,v 1.13 2002/11/25 14:05:03 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/axpPci.c,v 1.14 2002/12/11 02:44:28 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -216,14 +216,11 @@ axpPciInit()
 	 */
 	bus = PCI_MAKE_BUS(domain, 0);
 	pciBusInfo[bus] = xnfalloc(sizeof(pciBusInfo_t));
+	(void)memset(pciBusInfo[bus], 0, sizeof(pciBusInfo_t));
 
 	pciBusInfo[bus]->configMech = PCI_CFG_MECH_OTHER;
 	pciBusInfo[bus]->numDevices = 32;
-	pciBusInfo[bus]->funcs.pciReadLong = axpPciCfgRead;
-	pciBusInfo[bus]->funcs.pciWriteLong = axpPciCfgWrite;
-	pciBusInfo[bus]->funcs.pciSetBitsLong = axpPciCfgSetBits;
-	pciBusInfo[bus]->funcs.pciAddrHostToBus = pciAddrNOOP;
-	pciBusInfo[bus]->funcs.pciAddrBusToHost = pciAddrNOOP;
+	pciBusInfo[bus]->funcs = &axpFuncs0;
 	pciBusInfo[bus]->pciBusPriv = pDomain;
 
 	pciNumBuses = bus + 1;
@@ -275,7 +272,6 @@ axpPciCfgWrite(PCITAG tag, int off, CARD32 val)
 {
     int bus, dfn;
 
-    bus = PCI_BUS_FROM_TAG(tag);
     if ((bus = axpPciBusFromTag(tag)) >= 0) {
 	dfn = PCI_DFN_FROM_TAG(tag);
 	syscall(__NR_pciconfig_write, bus, dfn, off, 4, &val);
