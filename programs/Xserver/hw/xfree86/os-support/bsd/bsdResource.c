@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsdResource.c,v 1.4 2001/02/12 01:25:24 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsdResource.c,v 1.5 2001/02/14 22:10:48 tsi Exp $ */
 
 /* Resource information code */
 
@@ -69,7 +69,6 @@ xf86IsaBusAccWindowsFromOS(void)
 resPtr
 xf86AccResFromOS(resPtr ret)
 {
-    resPtr ret = NULL;
     resRange range;
 
     /*
@@ -155,7 +154,6 @@ xf86IsaBusAccWindowsFromOS(void)
 resPtr
 xf86AccResFromOS(resPtr ret)
 {
-    resPtr ret = NULL;
     resRange range;
 
     /*
