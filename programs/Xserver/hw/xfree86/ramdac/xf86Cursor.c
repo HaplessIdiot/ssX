@@ -263,7 +263,7 @@ xf86SetDGAMode(int index, int num, DGADevicePtr devRet)
 
     ret = (*ScreenPriv->SetDGAMode)(index, num, devRet);
 
-    if(!num && ScreenPriv->CurrentCursor) {
+    if(ScreenPriv->CurrentCursor && (!num || (ret != Success))) {
 	xf86CursorSetCursor(pScreen, ScreenPriv->CurrentCursor, 
 			ScreenPriv->x, ScreenPriv->y);
     }
