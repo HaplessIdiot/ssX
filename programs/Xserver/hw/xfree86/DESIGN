@@ -121,6 +121,17 @@ The entry points for drawing operations are already taken care of by
 the framebuffer code (including, XAA).  Extensions and enhancements to
 framebuffer code are outside the scope of this document.
 
+This approach to the driver interface provides good flexibility, but does
+increase the complexity of drivers.  To help address this, the XFree86
+common layer provides a set of "helper" functions to take care of things
+that most drivers need.  These helpers help minimise the amount of code
+duplication between drivers.  The use of helper functions by drivers is
+however optional, though encouraged.  The basic philosophy behind the
+helper functions is that they should be useful to many drivers, that
+they should balance this against the complexity of their interface.  It
+is inevitable that some drivers may find some helpers unsuitable and
+need to provide their own code.
+
 Events that a driver needs to react to are:
 
    ScreenInit:
@@ -3352,4 +3363,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.1.2.31 1998/07/24 11:36:13 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.3 1998/08/02 05:47:26 dawes Exp $
