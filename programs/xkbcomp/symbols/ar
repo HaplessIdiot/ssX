@@ -1,5 +1,5 @@
 // $XConsortium: th /main/3 1996/08/31 12:20:18 kaleb $
-// $XFree86: xc/programs/xkbcomp/symbols/th,v 3.1.2.1 1997/07/19 13:28:20 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/ar,v 1.1 2001/11/21 22:28:52 dawes Exp $
 partial default alphanumeric_keys 
 xkb_symbols "basic" {
     name[Group2]= "Arabic";
@@ -11,7 +11,7 @@ xkb_symbols "basic" {
 // should a third state be added to Group2 ?
 //
 
-    key <TLDE> { [  ], [     less,		greater ]	};
+    key <TLDE> { [  ], [     Arabic_thal,      Arabic_shadda   ]	};
     key <AE01> { [  ], [               1,          exclam      ]       };
     key <AE02> { [  ], [               2,              at      ]       };
     key <AE03> { [  ], [               3,      numbersign      ]       };
@@ -49,7 +49,7 @@ xkb_symbols "basic" {
     key <AC09> { [  ], [     Arabic_meem,         slash        ]       };
     key <AC10> { [  ], [      Arabic_kaf,           colon      ]       };
     key <AC11> { [  ], [      Arabic_tah,        quotedbl      ]       };
-    key <BKSL> { [  ], [     Arabic_thal,      Arabic_shadda   ]       };
+    key <BKSL> { [  ], [            less,         greater      ]       };
 
     key <LSGT> { [  ], [             bar,      brokenbar	   ]       };
     key <AB01> { [  ], [Arabic_hamzaonyeh,    asciitilde       ]       };
