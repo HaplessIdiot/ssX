@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.90 1996/03/31 11:42:41 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.91 1996/06/10 08:42:19 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -552,7 +552,7 @@ XFREE86JAPANESEDOCDIR = $(XFREE86DOCDIR)/Japanese
 #endif
 
 #ifndef XFree86Version
-#define XFree86Version	3125
+#define XFree86Version	3126
 #endif
 
 #ifndef XVendorString

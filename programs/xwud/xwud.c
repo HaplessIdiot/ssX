@@ -43,7 +43,11 @@ from the X Consortium.
 #include <errno.h>
 
 extern int errno;
+#ifdef X_NOT_STDC_ENV
 extern char *malloc();
+#else
+#include <stdlib.h>
+#endif
 unsigned Image_Size();
 Atom wm_protocols;
 Atom wm_delete_window;
