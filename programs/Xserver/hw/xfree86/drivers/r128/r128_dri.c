@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_dri.c,v 1.2 2000/06/20 20:34:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_dri.c,v 1.3 2000/06/23 23:43:44 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -143,8 +143,10 @@ void R128CCEWaitForIdle(ScrnInfoPtr pScrn)
 		if (*r128RingReadPtr == pSAREAPriv->ringWrite) {
 		    int pm4stat = INREG(R128_PM4_STAT);
 		    if ((pm4stat & R128_PM4_FIFOCNT_MASK) >= info->CCEFifoSize
-			&& !(pm4stat & (R128_PM4_BUSY | R128_PM4_GUI_ACTIVE)))
+			&& !(pm4stat & (R128_PM4_BUSY|R128_PM4_GUI_ACTIVE))) {
+			R128EngineFlush(pScrn);
 			return;
+		    }
 		}
 	    }
 	    R128EngineReset(pScrn);

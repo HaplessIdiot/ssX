@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_cce.c,v 1.1 2000/06/17 00:03:04 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -170,6 +170,7 @@ static void r128_fire_ring_locked( r128ContextPtr r128ctx )
    int format = r128ctx->vc_format;
    int size = r128ctx->vert_buf->used / (vertsize * sizeof(GLuint));
    drmBufPtr buf = r128ctx->vert_buf;
+   int dwords = buf->used >> 2;
    CARD32 prim;
 
    prim = R128_CCE_VC_CNTL_PRIM_TYPE_TRI_LIST;
@@ -177,13 +178,13 @@ static void r128_fire_ring_locked( r128ContextPtr r128ctx )
    /* Send the vertex buffer to the hardware */
    BEGIN_CLIP_LOOP( r128ctx );
    {
-      R128CCE3( R128_CCE_PACKET3_3D_RNDR_GEN_PRIM, 3 );
+      R128CCE3( R128_CCE_PACKET3_3D_RNDR_GEN_PRIM, dwords + 1 );
       R128CCE( format );
       R128CCE( prim | R128_CCE_VC_CNTL_PRIM_WALK_RING |
 	       (size << R128_CCE_VC_CNTL_NUM_SHIFT) );
 
       memcpy( &r128ctx->CCEbuf[r128ctx->CCEcount], buf->address, buf->used );
-      r128ctx->CCEcount += (buf->used >> 2);
+      r128ctx->CCEcount += dwords;
 
       R128CCE_SUBMIT_PACKET();
    }
@@ -317,6 +318,12 @@ void r128InitVertexBuffers( r128ScreenPtr r128scrn )
       r128GetBufferLocked = r128_get_buffer_locked;
       r128FireVerticesLocked = r128_fire_vertices_locked;
    } else {
+      r128GetBufferLocked = r128_get_ring_locked;
+      r128FireVerticesLocked = r128_fire_ring_locked;
+   }
+
+   /* Provide a fallback for Rage 128 Pro cards until we fix the lockups */
+   if (getenv("LIBGL_USE_RING_VB")) {
       r128GetBufferLocked = r128_get_ring_locked;
       r128FireVerticesLocked = r128_fire_ring_locked;
    }

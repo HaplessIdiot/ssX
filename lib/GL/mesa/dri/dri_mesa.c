@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.6 2000/03/02 16:07:33 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.7 2000/06/17 00:02:50 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -118,8 +118,6 @@ static __DRIdrawable *__driMesaFindDrawable(GLXDrawable draw)
     return pdraw;
 }
 
-#if 0
-/* not used yet */
 static void __driMesaRemoveDrawable(__DRIdrawable *pdraw)
 {
     int retcode;
@@ -133,7 +131,6 @@ static void __driMesaRemoveDrawable(__DRIdrawable *pdraw)
 	drmHashDelete(drawHash, pdp->draw);
     }
 }
-#endif
 
 /*****************************************************************/
 
@@ -521,9 +518,26 @@ static void *driMesaCreateContext(Display *dpy, XVisualInfo *vis, void *shared,
 
 static void driMesaDestroyContext(Display *dpy, int scrn, void *private)
 {
-    __DRIcontextPrivate *pcp = (__DRIcontextPrivate *)private;
+    __DRIcontextPrivate  *pcp   = (__DRIcontextPrivate *)private;
+    __DRIdrawablePrivate *pdp;
+    __DRIdrawable        *pdraw;
 
     if (pcp) {
+	pdp = pcp->driDrawablePriv;
+	if (pdp) {
+	    /* Unbind Mesa's drawable from Mesa's context */
+	    (*pcp->driScreenPriv->MesaAPI.UnbindContext)(pcp);
+
+	    if (pdp->refcount == 1) {
+		/* If refcount is 1, then this is the last context to
+                   reference this drawable, so we can destroy the
+                   drawable and remove it from the hash table */
+		pdraw = __driMesaFindDrawable(pdp->draw);
+		(*pdraw->destroyDrawable)(dpy, pdraw->private);
+		__driMesaRemoveDrawable(pdraw);
+		Xfree(pdraw);
+	    }
+	}
 	(void)XF86DRIDestroyContext(dpy, scrn, pcp->contextID);
 	(*pcp->driScreenPriv->MesaAPI.DestroyContext)(pcp);
         gl_destroy_context(pcp->mesaContext);
