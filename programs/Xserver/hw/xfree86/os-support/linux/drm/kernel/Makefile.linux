@@ -11,7 +11,7 @@
 # everything required for in-kernel source builds.  It is included into
 # this file, so none of that should be duplicated here.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/Makefile.linux,v 1.33 2003/04/12 17:18:17 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/Makefile.linux,v 1.34 2003/04/16 15:42:19 dawes Exp $
 #
 
 #
@@ -82,7 +82,7 @@ SISHEADERS=     sis_drv.h sis_drm.h $(DRMHEADERS)
 
 SHAREDSRC = $(DRMSHARED) $(MGASHARED) $(R128SHARED) $(RADEONSHARED)
 
-CLEANFILES = *.o *.ko $(PROGS) .depend .*.flags .*.d .*.cmd $(SHAREDSRC)
+CLEANFILES = *.o *.ko $(PROGS) .depend .*.flags .*.d .*.cmd
 
 # VERSION is not defined from the initial invocation.  It is defined when
 # this Makefile is invoked from the kernel's root Makefile.
@@ -199,13 +199,20 @@ endif
 
 # Make sure that the shared source files are linked into this directory.
 
-includes:: $(SHAREDSRC)
 
 SHAREDDIR := ../../../shared/drm/kernel
+
+HASSHARED := $(shell if [ -d $(SHAREDDIR) ]; then echo y; fi)
+
+ifeq ($(HASSHARED),y)
+includes:: $(SHAREDSRC)
 
 $(SHAREDSRC):
 	@if [ -r $(SHAREDDIR)/$@ ]; then \
 		(rm -f $@; set -x; ln -s $(SHAREDDIR)/$@ $@); fi
+
+CLEANFILES += $(SHAREDSRC)
+endif
 
 includes:: linux
 
@@ -237,9 +244,16 @@ CC += -I$(DRMSRCDIR)
 # Check for Red Hat's 4-argument do_munmap().
 DOMUNMAP := $(shell grep do_munmap $(LINUXDIR)/include/linux/mm.h | \
                 grep -c acct)
+# Check for 5-argument remap_page_range() in RH9 kernel, and 2.5.x kernels
+RPR := $(shell grep remap_page_range $(LINUXDIR)/include/linux/mm.h | \
+		grep -c vma)
 
-ifeq ($(DOMUNMAP),1)
+ifneq ($(DOMUNMAP),0)
 EXTRA_CFLAGS += -DDO_MUNMAP_4_ARGS
+endif
+
+ifneq ($(RPR),0)
+EXTRA_CFLAGS += -DREMAP_PAGE_RANGE_5_ARGS
 endif
 
 # Start with all modules turned off.

@@ -1,4 +1,13 @@
 XFree86 4.3.99.3 (xx April 2003)
+ 109. Resync the Linux drm module with the DRI trunk.  Includes:
+       - Add 2nd arg for DRM_FREE (Keith Whitwell).
+       - Use file pointers instead of pids for resource and lock tracking
+         (Keith Whitwell).
+       - Add 'SG' map type identifier string ((pci scatter/gather) to /proc vm
+         info (Leif Delgass).
+       - Use list_entry() to get container struct from struct list_head
+         pointers.  Build fix for RedHat 9 kernel (5 args to
+         remap_page_range()) (Leif Delgass).
  108. Fix a server crash with shadowfb and render when refreshing outside the
       visible screen (Sven Luther).
  107. Fix a potential infinite loop during server generation when in
@@ -16781,4 +16790,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2641 2003/04/16 19:23:01 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2642 2003/04/17 13:00:27 sven Exp $
