@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/cr/crFrame.m,v 1.3 2003/09/16 00:36:14 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/cr/crFrame.m,v 1.4 2003/10/18 00:00:34 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "cr.h"
@@ -206,7 +206,7 @@ CRReshapeFrame(RootlessFrameID wid, RegionPtr pShape)
 
     if (pShape != NULL) {
         // Calculate the region outside the new shape.
-        REGION_INVERSE(pScreen, pShape, pShape, &localBox);
+        REGION_INVERSE(NULL, pShape, pShape, &localBox);
     }
 
     // If window is currently shaped we need to undo the previous shape.

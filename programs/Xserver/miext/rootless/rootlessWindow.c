@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessWindow.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessWindow.c,v 1.9 2003/11/10 18:22:50 tsi Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
@@ -131,6 +131,8 @@ RootlessDestroyWindow(WindowPtr pWin)
 static Bool
 RootlessGetShape(WindowPtr pWin, RegionPtr pShape)
 {
+    ScreenPtr pScreen = pWin->drawable.pScreen;
+
     if (wBoundingShape(pWin) == NULL)
         return FALSE;
 
