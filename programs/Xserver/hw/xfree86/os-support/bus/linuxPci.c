@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxPci.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxPci.c,v 1.12tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -613,6 +613,9 @@ linuxPpcHostAddrToBusAddr(PCITAG tag, PciAddrType type, ADDRESS addr)
  *         master aborts are avoided during PCI scans).
  */
 
+/* Workaround for kernel header breakage since 2.5.62 */
+#undef  LINUX_MOD_DEVICETABLE_H
+#define LINUX_MOD_DEVICETABLE_H 1
 #include <linux/pci.h>
 
 #ifndef PCIIOC_BASE		/* Ioctls for /proc/bus/pci/X/Y nodes. */

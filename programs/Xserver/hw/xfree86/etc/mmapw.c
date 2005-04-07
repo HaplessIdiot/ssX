@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapw.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapw.c,v 1.9tsi Exp $ */
 /*
  * Copyright 2002 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -51,6 +51,9 @@
 
 #ifdef linux
 # include <sys/ioctl.h>
+  /* Workaround for kernel header breakage since 2.5.62 */
+# undef  LINUX_MOD_DEVICETABLE_H
+# define LINUX_MOD_DEVICETABLE_H 1
 # include <linux/pci.h>
 
 # ifndef PCIIOC_BASE

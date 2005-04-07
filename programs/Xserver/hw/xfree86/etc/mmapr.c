@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapr.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapr.c,v 1.11tsi Exp $ */
 /*
  * Copyright 2002 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -52,11 +52,14 @@
 
 #ifdef linux
 # include <sys/ioctl.h>
+  /* Workaround for kernel header breakage since 2.5.62 */
+# undef  LINUX_MOD_DEVICETABLE_H
+# define LINUX_MOD_DEVICETABLE_H 1
 # include <linux/pci.h>
 
 # ifndef PCIIOC_BASE
    /* Selected ioctls for /proc/bus/pci/<bus>/<dfn> nodes */
-#  define PCIIOC_BASE		(('P') << 24) | ('C' << 16) | ('I' << 8))
+#  define PCIIOC_BASE		(('P' << 24) | ('C' << 16) | ('I' << 8))
 
    /* Set mmap state to I/O space */
 #  define PCIIOC_MMAP_IS_IO	(PCIIOC_BASE | 0x01)
