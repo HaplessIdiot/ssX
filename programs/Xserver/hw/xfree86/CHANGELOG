@@ -1,4 +1,6 @@
-XFree86 4.5.99.1 (xx March 2005)
+XFree86 4.5.99.2 (xx April 2005)
+
+XFree86 4.5.99.1 (8 April 2005)
   18. Check the VESA BIOS scanline requirements and adjust the 
       displayWidth accordingly. Fixes an assumption that the screen width
       was always used as the displayWidth in the i830 driver (Alan Hourihane).
@@ -19496,7 +19498,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3483 2005/03/29 18:41:44 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3484 2005/04/01 14:19:10 alanh Exp $
 
 
 
