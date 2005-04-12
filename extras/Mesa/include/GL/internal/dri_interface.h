@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/include/GL/internal/dri_interface.h,v 1.3 2005/03/29 04:00:28 tsi Exp $ */
 /*
  * Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
  * (C) Copyright IBM Corporation 2004
@@ -173,15 +173,6 @@ extern void *__driCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
     int numConfigs, __GLXvisualConfig *config);
 
 #endif /* DRI_NEW_INTERFACE_ONLY */
-
-
-/**
- * XML document describing the configuration options supported by the
- * driver.
- */
-extern const char __driConfigOptions[];
-
-/*@}*/
 
 
 /**

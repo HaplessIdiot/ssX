@@ -1,4 +1,6 @@
 XFree86 4.5.99.2 (xx April 2005)
+  20. Fix some cases in the Darwin build where a variable is declared static
+      and later as extern (Bugzilla #1576, Jordan Frank).
   19. Reduce the Mystique's SYSCLK from 197MHz to 166MHz, allowing the
       higher clock to be used when the "OverclockMem" option is activated.
       This fixes instability seen on some Mystique cards, and removes the
@@ -19504,7 +19506,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3485 2005/04/08 11:02:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3486 2005/04/12 22:41:26 dawes Exp $
 
 
 
