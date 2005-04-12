@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.102 2004/04/06 20:53:22 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.103 2004/06/01 00:17:01 dawes Exp $ */
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1140,9 +1140,12 @@ MGAStormSync(ScrnInfoPtr pScrn)
 
     CHECK_DMA_QUIESCENT(pMga, pScrn);
 
-    /* This reportedly causes a freeze for the Mystique. */
-    if (!(pMga->Chipset == PCI_CHIP_MGA1064 && pMga->ChipRev < 3))
-	while(MGAISBUSY());
+    /*
+     * The freeze that can happen here with some Mystique cards appears to
+     * have been caused by the memory clock being set too high.
+     */
+
+    while(MGAISBUSY());
     /* flush cache before a read (mga-1064g 5.1.6) */
     OUTREG8(MGAREG_CRTC_INDEX, 0);
     if(pMga->AccelFlags & CLIPPER_ON) {

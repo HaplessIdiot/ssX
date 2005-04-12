@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200, MGA-G400, MGA-G550 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.56tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.57 2004/11/26 11:48:47 tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -287,9 +287,17 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	switch(pMga->Chipset)
 	{
 	case PCI_CHIP_MGA1064:
-		pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x04;
-		pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x44;
-		pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x18;
+		if(pMga->OverclockMem) {
+		    /* 197 MHz */
+		    pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x04;
+		    pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x44;
+		    pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x18;
+		} else {
+		    /*166 MHz */
+		    pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x0a;
+		    pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x7f;
+		    pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x10;
+		}
 		pReg->Option  = 0x5F094F21;
 		pReg->Option2 = 0x00000000;
 		break;

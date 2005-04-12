@@ -1,4 +1,9 @@
 XFree86 4.5.99.2 (xx April 2005)
+  19. Reduce the Mystique's SYSCLK from 197MHz to 166MHz, allowing the
+      higher clock to be used when the "OverclockMem" option is activated.
+      This fixes instability seen on some Mystique cards, and removes the
+      need for the 4.4.0 workaround in MGAStormSync() (based on
+      Bugzilla #1575, #1577, Khong Jye Liew).
 
 XFree86 4.5.99.1 (8 April 2005)
   18. Check the VESA BIOS scanline requirements and adjust the 
@@ -61,6 +66,7 @@ XFree86 4.5.0 (16 March 2005)
 XFree86 4.4.99.903 (6 March 2005)
  355. DRM build fixes for the 2.6.11 Linux kernel (David Dawes).
  354. Fix a ScreenToScreenCopy bug in the s3 driver that shows up with xtest
+      This fixes instability seen on some cards, and removes the need for
       (NMarci, Tim Roberts).
  353. Documentation readability updates (#7466, Georgina Economou).
  352. Limit the maximum refresh rate to 85Hz and remove the bogus 
@@ -19498,7 +19504,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3484 2005/04/01 14:19:10 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3485 2005/04/08 11:02:48 dawes Exp $
 
 
 
