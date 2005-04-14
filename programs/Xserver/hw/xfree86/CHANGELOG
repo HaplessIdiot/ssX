@@ -1,4 +1,5 @@
 XFree86 4.5.99.2 (xx April 2005)
+  22. Fix a bug in XKB group adjustment (Ivan Pascal, reported Bugzilla #1566).
   21. Replace the macintosh/fr map with the "fr_new" map, release 4
       (Bugzilla #1574, Étienne Bersac).
   20. Fix some cases in the Darwin build where a variable is declared static
@@ -19508,7 +19509,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3487 2005/04/12 23:20:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3488 2005/04/12 23:27:19 dawes Exp $
 
 
 
