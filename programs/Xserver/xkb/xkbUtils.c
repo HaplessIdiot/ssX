@@ -23,7 +23,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbUtils.c,v 3.17 2003/11/17 22:20:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbUtils.c,v 3.18 2005/03/28 02:51:13 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -746,11 +746,11 @@ unsigned char	grp;
 
     grp= state->locked_group;
     if (grp>=ctrls->num_groups)
-	state->locked_group= XkbAdjustGroup(grp,ctrls);
+	state->locked_group= XkbAdjustGroup(XkbCharToInt(grp),ctrls);
 
     grp= state->locked_group+state->base_group+state->latched_group;
     if (grp>=ctrls->num_groups)
-	 state->group= XkbAdjustGroup(grp,ctrls);
+	 state->group= XkbAdjustGroup(XkbCharToInt(grp),ctrls);
     else state->group= grp;
     XkbComputeCompatState(xkbi);
     return;
