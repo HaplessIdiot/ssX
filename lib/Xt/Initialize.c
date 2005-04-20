@@ -1,5 +1,3 @@
-/* $Xorg: Initialize.c,v 1.8 2001/02/09 02:03:55 xorgcvs Exp $ */
-
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -32,7 +30,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Initialize.c,v 3.22 2003/12/22 21:10:25 dickey Exp $ */
+/* $XFree86: xc/lib/Xt/Initialize.c,v 3.23 2004/05/05 00:07:03 dickey Exp $ */
 
 /*
 
@@ -320,7 +318,7 @@ static String GetRootDirName(
 {
 #ifdef WIN32
     register char *ptr1;
-    register char *ptr2;
+    register char *ptr2 = NULL;
     int len1 = 0, len2 = 0;
 
     if (ptr1 = getenv("HOME")) {	/* old, deprecated */
