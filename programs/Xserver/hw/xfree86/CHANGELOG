@@ -1,7 +1,7 @@
 XFree86 4.5.99.2 (xx April 2005)
-  23. Fix a null pointer dereference in Xt/Initialize.c on WIN32 platforms
-      that happens if $HOME is set in the environment (Bugzilla #1580,
-      Dave Williss).
+  23. Fix an uninitialised pointer dereference in Xt/Initialize.c on WIN32
+      platforms that happens if $HOME is set in the environment
+      (Bugzilla #1580, Dave Williss).
   22. Fix a bug in XKB group adjustment (Ivan Pascal, reported Bugzilla #1566).
   21. Replace the macintosh/fr map with the "fr_new" map, release 4
       (Bugzilla #1574, Étienne Bersac).
@@ -19512,7 +19512,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3489 2005/04/14 12:32:48 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3490 2005/04/20 01:49:19 dawes Exp $
 
 
 
