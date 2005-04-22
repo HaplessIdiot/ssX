@@ -1,11 +1,11 @@
-/* $XTermId: Tekproc.c,v 1.114 2005/01/10 22:20:03 tom Exp $ */
+/* $XTermId: Tekproc.c,v 1.117 2005/04/17 20:03:48 tom Exp $ */
 
 /*
  * $Xorg: Tekproc.c,v 1.5 2001/02/09 02:06:02 xorgcvs Exp $
  *
  * Warning, there be crufty dragons here.
  */
-/* $XFree86: xc/programs/xterm/Tekproc.c,v 3.50 2004/12/01 01:27:46 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/Tekproc.c,v 3.51 2005/01/14 01:50:02 dickey Exp $ */
 
 /*
 
@@ -730,6 +730,7 @@ Tekparse(void)
 			break;
 		    buf2[len++] = c2;
 		}
+		buf2[len] = 0;
 		if (c2 == BEL)
 		    do_osc(buf2, len, BEL);
 	    }
@@ -765,8 +766,8 @@ Tinput(void)
 	longjmp(Tekjump, 1);
     }
   again:
-    if (VTbuffer.next >= VTbuffer.last) {
-	int update = VTbuffer.update;
+    if (VTbuffer->next >= VTbuffer->last) {
+	int update = VTbuffer->update;
 
 	if (nplot > 0)		/* flush line */
 	    TekFlush();
@@ -784,7 +785,7 @@ Tinput(void)
 			  &Tselect_mask, NULL, NULL,
 			  &crocktimeout);
 #endif
-	    if (readPtyData(screen, &Tselect_mask, &VTbuffer)) {
+	    if (readPtyData(screen, &Tselect_mask, VTbuffer)) {
 		break;
 	    }
 	    if (Ttoggled && curstate == Talptable) {
@@ -814,13 +815,13 @@ Tinput(void)
 #ifdef VMS
 	    if (Tselect_mask & X_mask) {
 		xevents();
-		if (VTbuffer.update != update)
+		if (VTbuffer->update != update)
 		    goto again;
 	    }
 #else /* VMS */
 	    if (FD_ISSET(ConnectionNumber(screen->display), &Tselect_mask)) {
 		xevents();
-		if (VTbuffer.update != update)
+		if (VTbuffer->update != update)
 		    goto again;
 	    }
 #endif /* VMS */
@@ -843,8 +844,8 @@ Tinput(void)
     }
     tek->count++;
 
-    (void) morePtyData(screen, &VTbuffer);
-    return (*tek->ptr++ = nextPtyData(screen, &VTbuffer));
+    (void) morePtyData(screen, VTbuffer);
+    return (*tek->ptr++ = nextPtyData(screen, VTbuffer));
 }
 
 /* this should become the Tek Widget's Resize proc */
