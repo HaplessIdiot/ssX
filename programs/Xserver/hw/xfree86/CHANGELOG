@@ -1,4 +1,6 @@
-XFree86 4.5.99.2 (xx April 2005)
+XFree86 4.5.99.3 (xx May 2005)
+
+XFree86 4.5.99.2 (23 April 2005)
   24. Xterm patch #201 (Thomas Dickey).
   23. Fix an uninitialised pointer dereference in Xt/Initialize.c on WIN32
       platforms that happens if $HOME is set in the environment
@@ -19513,7 +19515,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3491 2005/04/20 01:58:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3492 2005/04/22 00:21:52 dickey Exp $
 
 
 
