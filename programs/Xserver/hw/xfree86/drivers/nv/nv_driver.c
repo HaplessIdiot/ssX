@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.132 2005/02/18 02:55:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.133 2005/04/16 23:57:26 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -1702,8 +1702,6 @@ NVRestore(ScrnInfoPtr pScrn)
 
 static void NVBacklightEnable(NVPtr pNv,  Bool on)
 {
-    CARD32 fpcontrol;
-
     /* This is done differently on each laptop.  Here we
        define the ones we know for sure. */
 
@@ -1722,10 +1720,16 @@ static void NVBacklightEnable(NVPtr pNv,  Bool on)
       }
       pNv->PMC[0x10F0/4] = tmp_pmc;
       pNv->PCRTC0[0x081C/4] = tmp_pcrt;
-    }
+    } 
 #endif
     
-    if(!pNv->LVDS) {
+    if(pNv->LVDS) {
+       if(pNv->twoHeads && ((pNv->Chipset & 0x0ff0) != 0x0110)) {
+           pNv->PMC[0x130C/4] = on ? 3 : 7; 
+       }
+    } else {
+       CARD32 fpcontrol;
+
        fpcontrol = pNv->PRAMDAC[0x0848/4] & 0xCfffffCC;
 
        /* cut the TMDS output */
