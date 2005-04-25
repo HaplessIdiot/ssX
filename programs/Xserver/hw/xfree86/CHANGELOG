@@ -79,7 +79,6 @@ XFree86 4.5.0 (16 March 2005)
 XFree86 4.4.99.903 (6 March 2005)
  355. DRM build fixes for the 2.6.11 Linux kernel (David Dawes).
  354. Fix a ScreenToScreenCopy bug in the s3 driver that shows up with xtest
-      This fixes instability seen on some cards, and removes the need for
       (NMarci, Tim Roberts).
  353. Documentation readability updates (#7466, Georgina Economou).
  352. Limit the maximum refresh rate to 85Hz and remove the bogus 
@@ -19517,7 +19516,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3493 2005/04/23 11:02:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3494 2005/04/24 19:07:11 mvojkovi Exp $
 
 
 
