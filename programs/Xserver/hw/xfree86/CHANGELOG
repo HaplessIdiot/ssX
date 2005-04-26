@@ -1,4 +1,6 @@
 XFree86 4.5.99.3 (xx May 2005)
+  28. Replace lib/font/fontfile/decompress.c with a version derived from
+      the BSD src/usr.bin/compress/zopen.c (Thorsten Glasser).
   27. Revert the MGA HALlib MGASetDisplayStart interface back to
       HALSetDisplayStart (#7577, Peter Breitenlohner).
   26. Updates to mkfontscale's handling of font weights (#7596,
@@ -19520,7 +19522,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3496 2005/04/26 00:44:06 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3497 2005/04/26 00:56:42 dawes Exp $
 
 
 
