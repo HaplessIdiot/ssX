@@ -13,7 +13,7 @@
  @end
 
 ***************************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/HALlib/binding.h,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/HALlib/binding.h,v 1.5 2000/12/06 20:39:52 dawes Exp $ */
 
 #ifndef _BINDING
 #define _BINDING
@@ -210,6 +210,8 @@ typedef struct TAGMAGMODEINFO {
 #define MGAMODEINFO_FORCE_PITCH        (1L << 5) 
 #define MGAMODEINFO_FORCE_DISPLAYORG   (1L << 6) 
 #define MGAMODEINFO_TV                 (1L << 7)
+#define MGAMODEINFO_FLATPANEL1         (1L << 8)
+#define MGAMODEINFO_FLATPANEL2         (1L << 9)
 #define MGAMODEINFO_TESTONLY           0x80000000
 
 /* Cable Type */
@@ -243,7 +245,8 @@ ULONG MGAOpenLibrary(LPBOARDHANDLE pBoard, LPVOID lpClient, ULONG ulClientSize);
 ULONG MGAGetBOARDHANDLESize(void);
 ULONG MGASetTVStandard(LPBOARDHANDLE pBoard, ULONG ulTVStandard);
 ULONG MGASetTVCableType(LPBOARDHANDLE pBoard, ULONG ulCableType);
-ULONG MGASetDisplayStart(LPBOARDHANDLE pBoard, ULONG ulX, ULONG ulY, ULONG ulCrtc);
+ULONG MGAForceFlatPanel(LPBOARDHANDLE pBoard);
+ULONG HALSetDisplayStart(LPBOARDHANDLE pBoard, ULONG ulX, ULONG ulY, ULONG ulCrtc);
 
 #if defined(__cplusplus)
     }

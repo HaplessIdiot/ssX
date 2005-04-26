@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.249 2004/12/10 16:07:02 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.250 2005/02/18 02:55:08 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -401,7 +401,7 @@ static const char *halSymbols[] = {
   "MGASetVgaMode",
   "MGAValidateMode",
   "MGAValidateVideoParameters",
-  "MGASetDisplayStart",
+  "HALSetDisplayStart",
   NULL
 };
 #endif
@@ -3644,7 +3644,7 @@ MGAAdjustFrame(int scrnIndex, int x, int y, int flags)
         MGAAdjustGranularity(pScrn,&x,&y);
 	    pMga->HALGranularityOffX = pMga->HALGranularityOffX - x;
 	    pMga->HALGranularityOffY = pMga->HALGranularityOffY - y;
-        MGASetDisplayStart(pMga->pBoard,x,y,0);
+        HALSetDisplayStart(pMga->pBoard,x,y,0);
     );
 #endif
     MGA_NOT_HAL(
@@ -3692,7 +3692,7 @@ MGAAdjustFrameCrtc2(int scrnIndex, int x, int y, int flags)
 #ifdef USEMGAHAL
     MGA_HAL(
         MGAAdjustGranularity(pScrn,&x,&y);
-        MGASetDisplayStart(pMga->pBoard,x,y,1);
+        HALSetDisplayStart(pMga->pBoard,x,y,1);
     );
 #endif
     MGA_NOT_HAL(
