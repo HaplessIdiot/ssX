@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.85tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.86tsi Exp $ */
 /*
  * Copyright 2000-2002 by Alan Hourihane, Flint Mountain, North Wales.
  *
@@ -690,10 +690,8 @@ configureFilesSection (void)
 {
     configPrologue(XF86ConfFilesPtr)
 
-#ifdef XFree86LOADER
    if (xf86FilePaths->modulePath)
        ptr->file_modulepath = strdup(xf86FilePaths->modulePath);
-#endif
    if (defaultFontPath)
        ptr->file_fontpath = strdup(defaultFontPath);
    if (rgbPath)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.40 2004/11/07 04:33:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.41tsi Exp $ */
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -162,6 +162,11 @@ void
 xf86SetViewport(ScreenPtr pScreen, int x, int y)
 {
   ScrnInfoPtr   pScr = XF86SCRNINFO(pScreen);
+
+#ifdef XFreeXDGA
+  if (DGAActive(pScr->scrnIndex))
+    return;
+#endif
 
   (*pScr->PointerMoved)(pScreen->myNum, x, y);
 }

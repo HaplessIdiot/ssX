@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.82tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.83tsi Exp $ */
 /*
  * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1749,10 +1749,10 @@ xf86GetPciBridgeInfo(void)
 		    break;
 		}
 
-		domain = pcrp->busnum & 0x0000FF00;
+		i = pcrp->busnum & (PCI_DOM_MASK << 8);
 		primary = pcrp->busnum;
-		secondary = domain | pcrp->pci_secondary_bus_number;
-		subordinate = domain | pcrp->pci_subordinate_bus_number;
+		secondary = i | pcrp->pci_secondary_bus_number;
+		subordinate = i | pcrp->pci_subordinate_bus_number;
 
 		/* Is this the correct bridge? If not, ignore it */
 		pBusInfo = pcrp->businfo;
@@ -1865,6 +1865,12 @@ xf86GetPciBridgeInfo(void)
 #if defined(LONG64) || defined(WORD64)
 		    base |= (memType)pcrp->pci_prefetch_upper_mem_base << 16;
 		    limit |= (memType)pcrp->pci_prefetch_upper_mem_limit << 16;
+#else
+		    if (pcrp->pci_prefetch_upper_mem_base)
+			break;
+
+		    if (pcrp->pci_prefetch_upper_mem_limit)
+			limit = 0xfff0u;
 #endif
 		    if (base <= limit) {
 			PCI_M_RANGE(range, pcrp->tag,
@@ -1888,10 +1894,10 @@ xf86GetPciBridgeInfo(void)
 		    break;
 		}
 
-		domain = pcrp->busnum & 0x0000FF00;
+		i = pcrp->busnum & (PCI_DOM_MASK << 8);
 		primary = pcrp->busnum;
-		secondary = domain | pcrp->pci_cb_cardbus_bus_number;
-		subordinate = domain | pcrp->pci_subordinate_bus_number;
+		secondary = i | pcrp->pci_cb_cardbus_bus_number;
+		subordinate = i | pcrp->pci_subordinate_bus_number;
 
 		/* Is this the correct bridge?  If not, ignore it */
 		pBusInfo = pcrp->businfo;
@@ -1960,13 +1966,25 @@ xf86GetPciBridgeInfo(void)
 			if (pcrp->pci_bridge_control & PCI_PCI_BRIDGE_ISA_EN) {
 			    while ((base <= (CARD16)(-1)) &&
 				   (base <= limit)) {
-				PCI_I_RANGE(range, pcrp->tag,
-					    base, base + (CARD8)(-1),
-					    ResIo | ResBlock | ResExclusive);
-				PciBus->preferred_io =
-				    xf86AddResToList(PciBus->preferred_io,
-						     &range, -1);
-				base += 0x0400;
+				if ((base + (CARD8)(-1)) <= limit) {
+				    PCI_I_RANGE(range, pcrp->tag,
+						base, base + (CARD8)(-1),
+						ResIo | ResBlock |
+						 ResExclusive);
+				    PciBus->preferred_io =
+					xf86AddResToList(PciBus->preferred_io,
+							 &range, -1);
+				    base += 0x0400;
+				} else {
+				    PCI_I_RANGE(range, pcrp->tag,
+						base, limit,
+						ResIo | ResBlock |
+						 ResExclusive);
+				    PciBus->preferred_io =
+					xf86AddResToList(PciBus->preferred_io,
+							 &range, -1);
+				    base = limit + 1;
+				}
 			    }
 			}
 
@@ -1990,13 +2008,25 @@ xf86GetPciBridgeInfo(void)
 			if (pcrp->pci_bridge_control & PCI_PCI_BRIDGE_ISA_EN) {
 			    while ((base <= (CARD16)(-1)) &&
 				   (base <= limit)) {
-				PCI_I_RANGE(range, pcrp->tag,
-					    base, base + (CARD8)(-1),
-					    ResIo | ResBlock | ResExclusive);
-				PciBus->preferred_io =
-				    xf86AddResToList(PciBus->preferred_io,
-						     &range, -1);
-				base += 0x0400;
+				if ((base + (CARD8)(-1)) <= limit) {
+				    PCI_I_RANGE(range, pcrp->tag,
+						base, base + (CARD8)(-1),
+						ResIo | ResBlock |
+						 ResExclusive);
+				    PciBus->preferred_io =
+					xf86AddResToList(PciBus->preferred_io,
+							 &range, -1);
+				    base += 0x0400;
+				} else {
+				    PCI_I_RANGE(range, pcrp->tag,
+						base, limit,
+						ResIo | ResBlock |
+						 ResExclusive);
+				    PciBus->preferred_io =
+					xf86AddResToList(PciBus->preferred_io,
+							 &range, -1);
+				    base = limit + 1;
+				}
 			    }
 			}
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.58tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.59tsi Exp $ */
 /*
  * Copyright 1997-2004 by The XFree86 Project, Inc
  * All rights reserved.
@@ -174,6 +174,17 @@
 #endif /* (XFree86LOADER && IN_MODULE) || NEED_XF86_TYPES */
 
 #if (defined(XFree86LOADER) && defined(IN_MODULE)) || defined(NEED_XF86_PROTOTYPES)
+
+/* XXX Need to check which GCC versions have the format(printf) attribute. */
+#if (!defined(printf) || defined(printf_is_xf86printf)) && \
+    defined(__GNUC__) && \
+    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ > 4)))
+# define _printf_attribute(a,b) __attribute((format(printf,a,b)))
+# undef printf
+#else
+# define _printf_attribute(a,b) /**/
+#endif
+
 /*
  * ANSI C compilers only.
  */
@@ -211,8 +222,8 @@ extern double xf86floor(double);
 extern double xf86fmod(double,double);
 extern XF86FILE* xf86fopen(const char*,const char*);
 extern double xf86frexp(double, int*);
-extern int xf86printf(const char*,...);
-extern int xf86fprintf(XF86FILE*,const char*,...);
+extern int xf86printf(const char*,...) _printf_attribute(1,2);
+extern int xf86fprintf(XF86FILE*,const char*,...) _printf_attribute(2,3);
 extern int xf86fputc(int,XF86FILE*);
 extern int xf86fputs(const char*,XF86FILE*);
 extern xf86size_t xf86fread(void*,xf86size_t,xf86size_t,XF86FILE*);
@@ -262,8 +273,8 @@ extern void xf86rewind(XF86FILE*);
 extern int xf86setbuf(XF86FILE*,char*);
 extern int xf86setvbuf(XF86FILE*,char*,int,xf86size_t);
 extern double xf86sin(double);
-extern int xf86sprintf(char*,const char*,...);
-extern int xf86snprintf(char*,xf86size_t,const char*,...);
+extern int xf86sprintf(char*,const char*,...) _printf_attribute(2,3);
+extern int xf86snprintf(char*,xf86size_t,const char*,...) _printf_attribute(3,4);
 extern double xf86sqrt(double);
 #if defined(HAVE_VSSCANF) || !defined(NEED_XF86_PROTOTYPES)
 extern int xf86sscanf(const char*,const char*,...);
@@ -357,6 +368,11 @@ extern void xf86longjmp(xf86jmp_buf env, int val);
 	(xf86getjmptype() == 0 ? xf86setjmp0((env)) : \
 	(xf86getjmptype() == 1 ? xf86setjmp1((env), xf86setjmp1_arg2()) : \
 		xf86setjmperror((env))))
+
+#undef _printf_attribute
+#if defined(printf_is_xf86printf) && !defined(printf)
+#define printf xf86printf
+#endif
 
 #else /* (XFree86LOADER && IN_MODULE) || NEED_XF86_PROTOTYPES */
 #include <unistd.h>

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_esc.c,v 1.3tsi Exp $ */
 /****************************************************************************
 * mga_esc.c
 *
@@ -134,7 +134,7 @@ static LPMGAMODEINFO  GetModeInfoPtr(ULONG ulScreen)
 
 static void GetVideoParameterStr(LPMGAMODEINFO pModeInfo, char *sResult)
 {
-    sprintf(sResult, "%d %d %d %d %d %d %d %d %d %d %d",
+    sprintf(sResult, "%ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld",
             pModeInfo->ulDispWidth,
             pModeInfo->ulDispHeight,
             pModeInfo->ulBpp,
@@ -213,28 +213,28 @@ static void  EscRead(ScrnInfoPtr pScrn, unsigned long *param, char *sResult, Dis
     {
     case 0:
         ulData = INREG(ulAddr);
-        sprintf(sResult, "MGA[%04X] = 0x%08X", ulAddr, ulData);
+        sprintf(sResult, "MGA[%04lX] = 0x%08lX", ulAddr, ulData);
         break;
     case 1:
         ucIndex = INREG8(0x3c00);
         OUTREG8(0x3c00, (UCHAR)ulAddr);
         ulData = (ULONG)INREG8(0x3c0a);
         OUTREG8(0x3c00, ucIndex);
-        sprintf(sResult, "DAC[%02X] = 0x%02X", ulAddr, ulData);
+        sprintf(sResult, "DAC[%02lX] = 0x%02lX", ulAddr, ulData);
         break;
     case 2:
         ucIndex = INREG8(0x1fd4);
         OUTREG8(0x1fd4, (UCHAR)ulAddr);
         ulData = (ULONG)INREG8(0x1fd5);
         OUTREG8(0x1fd4, ucIndex);
-        sprintf(sResult, "CRTC[%02X] = 0x%02X", ulAddr, ulData);
+        sprintf(sResult, "CRTC[%02lX] = 0x%02lX", ulAddr, ulData);
         break;
     case 3:
         ucIndex = INREG8(0x1fde);
         OUTREG8(0x1fde, (UCHAR)ulAddr);
         ulData = (ULONG)INREG8(0x1fdf);
         OUTREG8(0x1fde, ucIndex);
-        sprintf(sResult, "CRTCEXT[%02X] = 0x%02X", ulAddr, ulData);
+        sprintf(sResult, "CRTCEXT[%02lX] = 0x%02lX", ulAddr, ulData);
         break;
     default:
         strcpy(sResult, "ERROR# 2");
