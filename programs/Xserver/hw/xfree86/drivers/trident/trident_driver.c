@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.192 2004/11/26 13:45:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.193tsi Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -2606,7 +2606,7 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     TRIDENTRegPtr tridentReg;
 
-    WAITFORVSYNC;
+    if (!xf86IsPc98()) WAITFORVSYNC;
 
     TridentFindClock(pScrn,mode->Clock);
 

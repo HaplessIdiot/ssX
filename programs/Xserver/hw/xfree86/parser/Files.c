@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Files.c,v 1.18 2005/01/07 23:03:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Files.c,v 1.19tsi Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -354,7 +354,7 @@ xf86printFileSection (FILE * cf, XF86ConfFilesPtr ptr)
 			fprintf (cf, "\tFontPath     \"%s\"\n", s);
 		}
 		xf86printOptionList(cf, ptr->file_option_lst, 1);
-		fprintf(cf, "EndSection\n");
+		fprintf(cf, "EndSection\n\n");
 		ptr = ptr->list.next;
 	}
 }

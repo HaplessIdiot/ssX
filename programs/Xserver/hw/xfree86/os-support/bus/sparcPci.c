@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.19tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.20tsi Exp $ */
 /*
  * Copyright (C) 2001-2005 The XFree86 Project, Inc.
  * All rights reserved.
@@ -898,8 +898,7 @@ static Bool simbavgaRoutingAllow = TRUE;
  * Scan the bus subtree rooted at 'bus' for a non-display device that might be
  * decoding any resource in the bottom 2 MB of I/O space and/or the bottom 512
  * MB of memory space.  Reset simbavgaRoutingAllow if such a device is found.
- * Also, if a display device is found to advertise resources in those ranges,
- * ensure the ranges always remain forwarded by some Simba in the system.
+ * Also, ensure the ranges always remain forwarded by some Simba in the system.
  *
  * XXX For now, this is very conservative and should be made less so as the
  *     need arises.
@@ -908,7 +907,6 @@ static void
 simbaCheckBus(CARD16 pcicommand, int bus)
 {
     pciConfigPtr pPCI, *ppPCI = xf86scanpci(0);
-    int i;
     CARD16 savecmd = pcicommand;
 
     while ((pPCI = *ppPCI++)) {
@@ -930,54 +928,9 @@ simbaCheckBus(CARD16 pcicommand, int bus)
 		(pPCI->pci_vendor == PCI_VENDOR_CREATIVE) ||
 		(pPCI->pci_vendor == PCI_VENDOR_ENSONIQ))
 		break;
+            /* Fall through */
 
 	case PCI_CLASS_DISPLAY:
-	    if (simbadefaultIOTag && simbadefaultMemTag)
-		continue;
-
-	    /* Check bases to see if VGA needs to be routed at all times */
-	    for (i = 0;  i < 7;  i++) {
-		if (!pPCI->basesize[i])
-		    continue;
-
-		if (i == 6) {
-		    if (!simbadefaultMemTag &&
-			(pcicommand & PCI_CMD_MEM_ENABLE) &&
-			PCIGETROM(pPCI->pci_baserom) &&
-			(PCIGETROM(pPCI->pci_baserom) < (1 << 29))) {
-			simbadefaultMemTag = simbavgaMemTag;
-			if (simbadefaultIOTag)
-			    break;
-		    }
-		} else if (PCI_MAP_IS_IO((&pPCI->pci_base0)[i])) {
-		    if (!simbadefaultIOTag &&
-			(pcicommand & PCI_CMD_IO_ENABLE) &&
-			PCIGETIO((&pPCI->pci_base0)[i]) &&
-			(PCIGETIO((&pPCI->pci_base0)[i]) < (1 << 21))) {
-			simbadefaultIOTag = simbavgaIOTag;
-			if (simbadefaultMemTag)
-			    break;
-		    }
-		} else {
-		    if (simbadefaultMemTag ||
-			!(pcicommand & PCI_CMD_MEM_ENABLE))
-			continue;
-
-		    /* Note:  The next basesize for 64-bit BARs is zero */
-		    if ((i < 5) &&
-			PCI_MAP_IS64BITMEM((&pPCI->pci_base0)[i]) &&
-			(&pPCI->pci_base0)[i + 1])
-			continue;
-
-		    if (PCIGETMEMORY((&pPCI->pci_base0)[i]) &&
-			(PCIGETMEMORY((&pPCI->pci_base0)[i]) < (1 < 29))) {
-			simbadefaultMemTag = simbavgaMemTag;
-			if (simbadefaultIOTag)
-			    break;
-		    }
-		}
-	    }
-
 	    continue;
 
 	case PCI_CLASS_BRIDGE:
@@ -1210,12 +1163,12 @@ void ARCH_PCI_PCI_BRIDGE(pciConfigPtr pPCI)
 
     if (pciReadByte(pPCI->tag, APB_IO_ADDRESS_MAP) & 0x01) {
 	pcicommand |= PCI_CMD_IO_ENABLE;
-	simbavgaIOTag = pPCI->tag;
+	simbavgaIOTag = simbadefaultIOTag = pPCI->tag;
     }
 
     if (pciReadByte(pPCI->tag, APB_MEM_ADDRESS_MAP) & 0x01) {
 	pcicommand |= PCI_CMD_MEM_ENABLE;
-	simbavgaMemTag = pPCI->tag;
+	simbavgaMemTag = simbadefaultMemTag = pPCI->tag;
     }
 
     if (!pcicommand)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.43tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.44tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -803,6 +803,7 @@ typedef enum {
   PCI_BIOS_PC = 0,
   PCI_BIOS_OPEN_FIRMARE,
   PCI_BIOS_HP_PA_RISC,
+  PCI_BIOS_EFI,
   PCI_BIOS_OTHER
 } PciBiosType;
 

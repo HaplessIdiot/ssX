@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.250 2005/02/18 02:55:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.251tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -176,17 +176,17 @@ static SymTabRec MGAChipsets[] = {
 };
 
 static PciChipsets MGAPciChipsets[] = {
-    { PCI_CHIP_MGA2064,	    PCI_CHIP_MGA2064,	(resRange*)RES_SHARED_VGA },
-    { PCI_CHIP_MGA1064,	    PCI_CHIP_MGA1064,	(resRange*)RES_SHARED_VGA },
-    { PCI_CHIP_MGA2164,	    PCI_CHIP_MGA2164,	(resRange*)RES_SHARED_VGA },
-    { PCI_CHIP_MGA2164_AGP, PCI_CHIP_MGA2164_AGP,(resRange*)RES_SHARED_VGA },
-    { PCI_CHIP_MGAG100,	    PCI_CHIP_MGAG100,	(resRange*)RES_SHARED_VGA },
-    { PCI_CHIP_MGAG100_PCI, PCI_CHIP_MGAG100_PCI,(resRange*)RES_SHARED_VGA },
-    { PCI_CHIP_MGAG200,	    PCI_CHIP_MGAG200,	(resRange*)RES_SHARED_VGA },
-    { PCI_CHIP_MGAG200_PCI, PCI_CHIP_MGAG200_PCI,(resRange*)RES_SHARED_VGA },
-    { PCI_CHIP_MGAG400,	    PCI_CHIP_MGAG400,	(resRange*)RES_SHARED_VGA },
-    { PCI_CHIP_MGAG550,	    PCI_CHIP_MGAG550,	(resRange*)RES_SHARED_VGA },
-    { -1,			-1,		(resRange*)RES_UNDEFINED }
+    { PCI_CHIP_MGA2064,	    PCI_CHIP_MGA2064,	  RES_SHARED_VGA },
+    { PCI_CHIP_MGA1064,	    PCI_CHIP_MGA1064,	  RES_SHARED_VGA },
+    { PCI_CHIP_MGA2164,	    PCI_CHIP_MGA2164,	  RES_SHARED_VGA },
+    { PCI_CHIP_MGA2164_AGP, PCI_CHIP_MGA2164_AGP, RES_SHARED_VGA },
+    { PCI_CHIP_MGAG100,	    PCI_CHIP_MGAG100,	  RES_SHARED_VGA },
+    { PCI_CHIP_MGAG100_PCI, PCI_CHIP_MGAG100_PCI, RES_SHARED_VGA },
+    { PCI_CHIP_MGAG200,	    PCI_CHIP_MGAG200,	  RES_SHARED_VGA },
+    { PCI_CHIP_MGAG200_PCI, PCI_CHIP_MGAG200_PCI, RES_SHARED_VGA },
+    { PCI_CHIP_MGAG400,	    PCI_CHIP_MGAG400,	  RES_SHARED_VGA },
+    { PCI_CHIP_MGAG550,	    PCI_CHIP_MGAG550,	  RES_SHARED_VGA },
+    { -1,		    -1,			  RES_UNDEFINED }
 };
 
 static const OptionInfoRec MGAOptions[] = {

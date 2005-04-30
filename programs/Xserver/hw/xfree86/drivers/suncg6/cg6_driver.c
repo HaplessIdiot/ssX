@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg6/cg6_driver.c,v 1.11 2004/12/05 23:06:37 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg6/cg6_driver.c,v 1.12tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -89,7 +89,31 @@ typedef enum {
 static const OptionInfoRec CG6Options[] = {
     { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
+};
+
+static const char *fbSymbols[] =
+{
+    "fbPictureInit",
+    "fbScreenInit",
+    NULL
+};
+
+static const char *ramdacSymbols[] =
+{
+    "xf86CreateCursorInfoRec",
+    "xf86DestroyCursorInfoRec",
+    "xf86InitCursor",
+    NULL
+};
+
+static const char *xaaSymbols[] =
+{
+    "XAACreateInfoRec",
+    "XAADestroyInfoRec",
+    "XAAInit",
+    NULL
 };
 
 #ifdef XFree86LOADER
@@ -125,6 +149,7 @@ cg6Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * Modules that this driver always requires can be loaded here
 	 * by calling LoadSubModule().
 	 */
+	xf86LoaderRefSymLists(fbSymbols, ramdacSymbols, xaaSymbols, NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -381,14 +406,31 @@ CG6PreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pCg6->HWCursor ? "HW" : "SW");
 
+    if (xf86ReturnOptValBool(pCg6->Options, OPTION_NOACCEL, FALSE)) {
+	pCg6->NoAccel = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
+    }
+
     if (xf86LoadSubModule(pScrn, "fb") == NULL) {
 	CG6FreeRec(pScrn);
 	return FALSE;
     }
+    xf86LoaderReqSymLists(fbSymbols, NULL);
 
-    if (pCg6->HWCursor && xf86LoadSubModule(pScrn, "ramdac") == NULL) {
-	CG6FreeRec(pScrn);
-	return FALSE;
+    if (pCg6->HWCursor) {
+	if (xf86LoadSubModule(pScrn, "ramdac") == NULL) {
+	    CG6FreeRec(pScrn);
+	    return FALSE;
+	}
+	xf86LoaderReqSymLists(ramdacSymbols, NULL);
+    }
+
+    if (!pCg6->NoAccel) {
+	if (xf86LoadSubModule(pScrn, "xaa") == NULL) {
+	    CG6FreeRec(pScrn);
+	    return FALSE;
+	}
+	xf86LoaderReqSymLists(xaaSymbols, NULL);
     }
 
     /*********************
@@ -424,16 +466,18 @@ CG6ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     ScrnInfoPtr pScrn;
     Cg6Ptr pCg6;
     sbusDevicePtr psdp;
-    int ret;
+    int ret, vidmem;
 
     pScrn = xf86Screens[pScreen->myNum];
     pCg6 = GET_CG6_FROM_SCRN(pScrn);
     psdp = pCg6->psdp;
 
+    vidmem = max(psdp->width * psdp->height, 1024 * 1024);
+
     /* Map CG6 memory areas */
     pCg6->fbc = xf86MapSbusMem(psdp, CG6_FBC_VOFF, sizeof(*pCg6->fbc));
     pCg6->thc = xf86MapSbusMem(psdp, CG6_THC_VOFF, sizeof(*pCg6->thc));
-    pCg6->fb = xf86MapSbusMem(psdp, CG6_RAM_VOFF, psdp->width * psdp->height);
+    pCg6->fb = xf86MapSbusMem(psdp, CG6_RAM_VOFF, vidmem);
 
     if (!pCg6->fbc || !pCg6->thc || !pCg6->fb) {
 	if (pCg6->fbc) {
@@ -493,6 +537,10 @@ CG6ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!ret)
 	return FALSE;
 
+    pCg6->width = pScrn->virtualX;
+    pCg6->height = pScrn->virtualY;
+    pCg6->maxheight = (vidmem / pCg6->width) & 0xffff;
+
     fbPictureInit(pScreen, 0, 0);
 
     miInitializeBackingStore(pScreen);
@@ -500,6 +548,21 @@ CG6ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     xf86SetSilkenMouse(pScreen);
 
     xf86SetBlackWhitePixels(pScreen);
+
+    if (!pCg6->NoAccel) {
+	BoxRec bx;
+
+	pCg6->pXAA = XAACreateInfoRec();
+	CG6AccelInit(pScrn);
+	bx.x1 = bx.y1 = 0;
+	bx.x2 = pCg6->width;
+	bx.y2 = pCg6->maxheight;
+	xf86InitFBManager(pScreen, &bx);
+	if(!XAAInit(pScreen, pCg6->pXAA))
+	    return FALSE;
+
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using acceleration\n");
+    }
 
     /* Initialise cursor functions */
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
@@ -604,19 +667,31 @@ CG6CloseScreen(int scrnIndex, ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     Cg6Ptr pCg6 = GET_CG6_FROM_SCRN(pScrn);
     sbusDevicePtr psdp = pCg6->psdp;
+    Bool closed;
 
     pScrn->vtSema = FALSE;
+
+    if (pCg6->HWCursor)
+	xf86SbusHideOsHwCursor(psdp);
+
+    if (pCg6->pXAA) {
+	XAADestroyInfoRec(pCg6->pXAA);
+	pCg6->pXAA = NULL;
+    }
+
+    pScreen->CloseScreen = pCg6->CloseScreen;
+    closed = (*pScreen->CloseScreen)(scrnIndex, pScreen);
+
+    if (pCg6->CursorInfoRec) {
+	xf86DestroyCursorInfoRec(pCg6->CursorInfoRec);
+	pCg6->CursorInfoRec = NULL;
+    }
 
     xf86UnmapSbusMem(psdp, pCg6->fbc, sizeof(*pCg6->fbc));
     xf86UnmapSbusMem(psdp, pCg6->thc, sizeof(*pCg6->thc));
     xf86UnmapSbusMem(psdp, pCg6->fb, psdp->width * psdp->height);
 
-    if (pCg6->HWCursor)
-	xf86SbusHideOsHwCursor(psdp);
-
-    pScreen->CloseScreen = pCg6->CloseScreen;
-    return (*pScreen->CloseScreen)(scrnIndex, pScreen);
-    return FALSE;
+    return closed;
 }
 
 
