@@ -17,7 +17,7 @@ XFree86 4.5.99.3 (xx May 2005)
   30. Don't call a screen's PointerMoved entry if a DGA mode is active on that
       screen (Marc La France).
   29. Allow a static server's -configure to generate an XF86Config for the
-      loadder server (Marc La France).
+      loader server (Marc La France).
   28. Replace lib/font/fontfile/decompress.c with a version derived from
       the BSD src/usr.bin/compress/zopen.c (Thorsten Glasser).
   27. Revert the MGA HALlib MGASetDisplayStart interface back to
@@ -19541,7 +19541,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3498 2005/04/26 15:35:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3499 2005/04/30 17:03:57 tsi Exp $
 
 
 
