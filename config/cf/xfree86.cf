@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.492 2005/02/28 23:19:12 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.493 2005/03/20 01:34:56 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -359,7 +359,7 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.492 2005/02/28 23:19:12 dawes Exp $
 #  else
 #   define NscDriver		/**/
 #  endif
-#  define XF86CardDrivers	mga glint nv tga s3 s3virge sis rendition \
+#  define XF86CardDrivers	mga glint nv tga s3 s3virge sis xgi rendition \
 				neomagic i740 tdfx savage \
 				cirrus vmware tseng trident chips apm \
 				GlideDriver i128 NscDriver \
@@ -462,7 +462,7 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.492 2005/02/28 23:19:12 dawes Exp $
 
 /* Pure PCI drivers should go first */
 # ifndef XF86CardDrivers
-#  define XF86CardDrivers	mga glint nv tga s3 s3virge sis rendition \
+#  define XF86CardDrivers	mga glint nv tga s3 s3virge sis xgi rendition \
 				neomagic tdfx savage cirrus tseng trident \
 				chips apm i128 ati ark cyrix siliconmotion \
 				vga dummy fbdev vesa
