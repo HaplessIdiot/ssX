@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcint.h,v 1.28 2002/09/26 00:15:54 keithp Exp $
+ * $XFree86: xc/extras/fontconfig/src/fcint.h,v 1.2 2003/10/22 17:15:22 tsi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -467,6 +467,8 @@ int
 FcDebug (void);
 
 /* fcdir.c */
+FcChar8 *
+FcGetHomeDir (void);
 
 /* fcfont.c */
 int
