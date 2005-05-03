@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/fontconfig/src/fccfg.c,v 1.2 2003/06/04 16:29:39 dawes Exp $ */
 
 #include "fcint.h"
 
@@ -1382,10 +1382,11 @@ FcConfigFilename (const FcChar8 *url)
     file = 0;
     switch (*url) {
     case '~':
-	dir = (FcChar8 *) getenv ("HOME");
-	if (dir)
+	dir = FcGetHomeDir ();
+	if (dir) {
 	    file = FcConfigFileExists (dir, url + 1);
-	else
+	    FcStrFree (dir);
+	} else
 	    file = 0;
 	break;
     case '/':

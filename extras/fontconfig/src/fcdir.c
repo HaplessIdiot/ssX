@@ -19,10 +19,11 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/fontconfig/src/fcdir.c,v 1.2 2003/06/04 16:29:39 dawes Exp $ */
 
 #include "fcint.h"
 #include <dirent.h>
+#include <pwd.h>
 
 static FcBool
 FcFileIsDir (const FcChar8 *file)
@@ -219,3 +220,23 @@ FcDirSave (FcFontSet *set, FcStrSet *dirs, const FcChar8 *dir)
 {
     return FcDirCacheWriteDir (set, dirs, dir);
 }
+
+FcChar8 *
+FcGetHomeDir ()
+{
+    struct passwd *pw;
+    char *home = NULL, *p;
+
+    if (!(home = getenv("HOME"))) {
+	if ((p = getenv("USER"))) {
+	    pw = getpwnam(p);
+	} else {
+	    pw = getpwuid(getuid());
+	}
+	if (pw) {
+	    home = pw->pw_dir;
+	}
+    }
+    return FcStrCopy(home);
+}
+

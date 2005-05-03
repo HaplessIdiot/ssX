@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/extras/fontconfig/src/fcstr.c,v 1.2 2003/06/04 16:29:39 dawes Exp $ */
+/* $XFree86: xc/extras/fontconfig/src/fcstr.c,v 1.3 2003/11/07 18:12:36 dawes Exp $ */
 
 #include <stdlib.h>
 #include <ctype.h>
@@ -426,7 +426,7 @@ FcStrCopyFilename (const FcChar8 *s)
     
     if (*s == '~')
     {
-	FcChar8	*home = (FcChar8 *) getenv ("HOME");
+	FcChar8	*home = FcGetHomeDir ();
 	int	size;
 	if (!home)
 	    return 0;
@@ -437,6 +437,7 @@ FcStrCopyFilename (const FcChar8 *s)
 	FcMemAlloc (FC_MEM_STRING, size);
 	strcpy ((char *) new, (char *) home);
 	strcat ((char *) new, (char *) s + 1);
+	FcStrFree (home);
     }
     else
     {
