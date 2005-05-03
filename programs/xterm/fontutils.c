@@ -1,7 +1,7 @@
-/* $XTermId: fontutils.c,v 1.145 2005/04/19 22:18:04 tom Exp $ */
+/* $XTermId: fontutils.c,v 1.147 2005/05/01 22:45:03 tom Exp $ */
 
 /*
- * $XFree86: xc/programs/xterm/fontutils.c,v 1.49 2005/01/14 01:50:02 dickey Exp $
+ * $XFree86: xc/programs/xterm/fontutils.c,v 1.50 2005/04/22 00:21:53 dickey Exp $
  */
 
 /************************************************************
@@ -285,9 +285,9 @@ alloca_fontname(char **result, unsigned next)
     if (want >= have) {
 	want = ALLOCHUNK(want);
 	if (last != 0) {
-	    *result = realloc(*result, want);
+	    *result = TypeRealloc(char, want, *result);
 	} else {
-	    if ((*result = malloc(want)) != 0)
+	    if ((*result = TypeMallocN(char, want)) != 0)
 		**result = '\0';
 	}
     }

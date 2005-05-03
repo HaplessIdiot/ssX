@@ -1,4 +1,5 @@
 XFree86 4.5.99.3 (xx May 2005)
+  41. Xterm patch #202 (Thomas Dickey).
   40. Some XGI driver cleanups and build/warning fixes (David Dawes).
   39. Initial version of XGI driver for Volari V5, V8, Z7 (Bugzilla #1550,
       Jong Lin, XGI).
@@ -19544,7 +19545,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3500 2005/04/30 17:09:27 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3501 2005/05/02 13:28:00 dawes Exp $
 
 
 
