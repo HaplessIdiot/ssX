@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xaw/Tip.h,v 1.1 1999/06/27 14:07:35 dawes Exp $ */
 
 #ifndef _XawTip_h
 #define _XawTip_h
@@ -75,14 +75,17 @@ extern WidgetClass tipWidgetClass;
 #define XtNtimeout		"timeout"
 #define XtNtopMargin		"topMargin"
 #define XtNtip			"tip"
+#define XtNtipCallback		"tipCallback"
 
 #define XawCDisplayList		"DisplayList"
 #define XtCHorizontalMargins	"HorizontalMargins"
 #define XtCTimeout		"Timeout"
 #define XtCVerticalMargins	"VerticalMargins"
 #define XtCTip			"Tip"
+#define XtCTipCallback		"Callback"
 
 #define XawRDisplayList		"XawDisplayList"
+#define XawRTipCallback 	"XawTipCallback"
 
 /*
  * Public Functions
@@ -104,7 +107,7 @@ void XawTipEnable
 
 /*
  * Function:
- *	XawTipEnable
+ *	XawTipDisable
  *
  * Parameters:
  *	w - widget

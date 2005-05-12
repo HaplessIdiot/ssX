@@ -1,5 +1,3 @@
-/* $Xorg: Simple.c,v 1.4 2001/02/09 02:03:45 xorgcvs Exp $ */
-
 /***********************************************************
 
 Copyright 1987, 1988, 1994, 1998  The Open Group
@@ -47,7 +45,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xaw/Simple.c,v 1.16 2001/09/29 04:36:02 paulo Exp $ */
+/* $XFree86: xc/lib/Xaw/Simple.c,v 1.17 2001/12/14 19:54:42 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -164,6 +162,15 @@ static XtResource resources[] = {
     XtRString,
     sizeof(String),
     offset(tip),
+    XtRImmediate,
+    NULL
+  },
+  {
+    XtNtipCallback,
+    XtCTipCallback,
+    XawRTipCallback,
+    sizeof(XtCallbackList),
+    offset(tipCallback),
     XtRImmediate,
     NULL
   },
@@ -352,7 +359,8 @@ XawSimpleRealize(Widget w, Mask *valueMask, XSetWindowAttributes *attributes)
 	    XawReshapeWidget(w, pixmap);
     }
 
-    if (((SimpleWidget)w)->simple.tip)
+    if (((SimpleWidget)w)->simple.tip ||
+	((SimpleWidget)w)->simple.tipCallback)
 	XawTipEnable(w);
 #endif
 }
@@ -451,9 +459,11 @@ XawSimpleSetValues(Widget current, Widget request, Widget cnew,
 	    s_new->simple.tip = XtNewString(s_new->simple.tip);
     }
 
-    if (s_old->simple.tip && !s_new->simple.tip)
+    if ((s_old->simple.tip && !s_new->simple.tip) ||
+	(s_old->simple.tipCallback && !s_new->simple.tipCallback))
 	XawTipDisable(cnew);
-    else if (!s_old->simple.tip && s_new->simple.tip)
+    else if ((!s_old->simple.tip && s_new->simple.tip) ||
+	     (!s_old->simple.tipCallback && s_new->simple.tipCallback))
 	XawTipEnable(cnew);
 
     if (s_old->simple.display_list != s_new->simple.display_list)

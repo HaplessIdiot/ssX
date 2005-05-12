@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/lib/Xaw/Tip.c,v 1.4 1999/07/11 08:49:16 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Tip.c,v 1.5 2000/05/18 16:29:53 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -552,15 +552,22 @@ static void
 TipTimeoutCallback(XtPointer closure, XtIntervalId *id)
 {
     XawTipInfo *info = (XawTipInfo*)closure;
-    Arg args[3];
+    Arg args[4];
 
     info->tip->tip.label = NULL;
     info->tip->tip.international = False;
     info->tip->tip.encoding = 0;
+    info->tip->tip.getLabelProc = NULL;
     XtSetArg(args[0], XtNtip, &info->tip->tip.label);
     XtSetArg(args[1], XtNinternational, &info->tip->tip.international);
     XtSetArg(args[2], XtNencoding, &info->tip->tip.encoding);
-    XtGetValues(info->widget, args, 3);
+    XtSetArg(args[3], XtNtipCallback, &info->tip->tip.getLabelProc);
+    XtGetValues(info->widget, args, 4);
+
+    if (info->tip->tip.label == NULL &&
+	info->tip->tip.getLabelProc != NULL) {
+	(info->tip->tip.getLabelProc) (info->widget, &info->tip->tip.label, NULL);
+    }
 
     if (info->tip->tip.label) {
 	TipLayout(info);

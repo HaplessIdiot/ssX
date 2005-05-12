@@ -1,4 +1,8 @@
 XFree86 4.5.99.3 (xx May 2005)
+  43. Extend the tip resource for Xaw's simpleWidgetClass to allow
+      a function to be called before the tip is created.  This allows
+      the tip label to be modified each time a tip is displayed
+      (Bugzilla #1586, Alexander Pohoyda).
   42. Modify the fontconfig library to use getpwnam/getpwuid to find the
       home directory when $HOME is not set (Bugzilla #1582, David Dawes,
       reported by Denis Vlasenko).
@@ -19548,7 +19552,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3502 2005/05/03 00:38:23 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3503 2005/05/03 20:43:28 dawes Exp $
 
 
 

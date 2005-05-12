@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xaw/TipP.h,v 1.1 1999/06/27 14:07:35 dawes Exp $ */
 
 #ifndef _XawTipP_h
 #define _XawTipP_h
@@ -66,7 +66,8 @@ typedef struct _TipPart {
     String label;
     Boolean international;
     unsigned char encoding;
-    XtPointer pad[4];
+    XtCallbackProc getLabelProc;
+    XtPointer pad[3];
 } TipPart;
 
 typedef struct _TipRec {
