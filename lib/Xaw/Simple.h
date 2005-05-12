@@ -1,5 +1,3 @@
-/* $Xorg: Simple.h,v 1.4 2001/02/09 02:03:45 xorgcvs Exp $ */
-
 /***********************************************************
 
 Copyright 1987, 1988, 1994, 1998  The Open Group
@@ -46,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Simple.h,v 1.8 2001/01/17 19:42:30 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Simple.h,v 1.9 2001/12/14 19:54:42 dawes Exp $ */
 
 #ifndef _Simple_h
 #define _Simple_h
@@ -71,6 +69,7 @@ SOFTWARE.
  pointerColorBackground Background      Pixel           XtDefaultBackground
  sensitive	     Sensitive		Boolean		True
  tip		     Tip		String		NULL
+ tipCallback	     Callback		Pointer		NULL
  width		     Width		Dimension	0
  x		     Position		Position	0
  y		     Position		Position	0
@@ -106,6 +105,13 @@ SOFTWARE.
 
 #define XtNtip		"tip"
 #define XtCTip		"Tip"
+
+#define XtNtipCallback	"tipCallback"
+#define XtCTipCallback	"Callback"
+
+#ifndef XawRTipCallback
+#define XawRTipCallback "XawTipCallback"
+#endif
 #endif	/* OLDXAW */
 
 typedef struct _SimpleClassRec	*SimpleWidgetClass;

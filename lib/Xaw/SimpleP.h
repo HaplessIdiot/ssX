@@ -1,8 +1,5 @@
 /***********************************************************
 
- $Xorg: SimpleP.h,v 1.4 2001/02/09 02:03:45 xorgcvs Exp $
-
-
 Copyright 1987, 1988, 1994, 1998  The Open Group
 
 Permission to use, copy, modify, distribute, and sell this software and its
@@ -47,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/SimpleP.h,v 1.12 2001/12/14 19:54:43 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleP.h,v 1.13 2001/12/19 21:37:31 dawes Exp $ */
 
 #ifndef _SimpleP_h
 #define _SimpleP_h
@@ -88,7 +85,8 @@ typedef struct {
 #ifndef OLDXAW
     XawDisplayList *display_list;
     String tip;
-    XtPointer pad[3];	/* for future use and keep binary compatability */
+    XtCallbackList tipCallback;
+    XtPointer pad[2];	/* for future use and keep binary compatability */
 #endif
 } SimplePart;
 
