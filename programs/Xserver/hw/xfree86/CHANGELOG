@@ -1,5 +1,3 @@
-<<<<<<< CHANGELOG
-=======
 XFree86 4.5.99.4 (xx May 2005)
 
 XFree86 4.5.99.3 (11 May 2005)
@@ -19556,10 +19554,9 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3504 2005/05/12 00:51:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3505 2005/05/12 00:57:05 dawes Exp $
 
 
 
 
->>>>>>> 3.3504
 
