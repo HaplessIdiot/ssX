@@ -1,4 +1,5 @@
 XFree86 4.5.99.4 (xx May 2005)
+  44. Cleanup the build for some extension modules (David Dawes).
 
 XFree86 4.5.99.3 (11 May 2005)
   43. Extend the tip resource for Xaw's simpleWidgetClass to allow
@@ -19554,7 +19555,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3505 2005/05/12 00:57:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3506 2005/05/12 01:05:53 dawes Exp $
 
 
 
