@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.70 2005/03/25 02:22:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.71 2005/03/28 02:51:10 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 #include "misc.h"
-#include "extension.h"
+#include "extnsionst.h"
 #include "micmap.h"
 
 #ifdef NOPEXEXT /* sleaze for Solaris cpp building XsunMono */
@@ -72,10 +72,7 @@ extern Bool noXkbExtension;
 extern Bool dmxNoRender;
 #endif
 
-#ifndef XFree86LOADER
-#define INITARGS void
-typedef void (*InitExtension)(INITARGS);
-#else /* XFree86Loader */
+#ifdef XFree86LOADER
 #include "loaderProcs.h"
 #endif
 
@@ -111,6 +108,8 @@ typedef void (*InitExtension)(INITARGS);
 #ifdef XF86BIGFONT
 #include "xf86bigfstr.h"
 #endif
+
+#ifndef XFree86LOADER
 #ifdef RES
 #include "XResproto.h"
 #endif
@@ -121,13 +120,49 @@ typedef void (*InitExtension)(INITARGS);
 #define DBE_EXT_INIT_ONLY
 #include "dbeproc.h"
 #endif
+#endif
 
 /* FIXME: this whole block of externs should be from the appropriate headers */
-#ifdef BEZIER
-extern void BezierExtensionInit(INITARGS);
+#ifdef MITSHM
+extern void ShmExtensionInit(INITARGS);
 #endif
 #ifdef XTESTEXT1
 extern void XTestExtension1Init(INITARGS);
+#endif
+#ifdef PANORAMIX
+extern void PanoramiXExtensionInit(INITARGS);
+#endif
+#ifdef XTEST
+extern void XTestExtensionInit(INITARGS);
+#endif
+#ifdef XKB
+extern void XkbExtensionInit(INITARGS);
+#endif
+#ifdef XINPUT
+extern void XInputExtensionInit(INITARGS);
+#endif
+#ifdef LBX
+extern void LbxExtensionInit(INITARGS);
+#endif
+#ifdef XAPPGROUP
+extern void XagExtensionInit(INITARGS);
+#endif
+#ifdef XCSECURITY
+extern void SecurityExtensionInit(INITARGS);
+#endif
+#ifdef XF86BIGFONT
+extern void XFree86BigfontExtensionInit(INITARGS);
+#endif
+#ifdef RENDER
+extern void RenderExtensionInit(INITARGS);
+#endif
+#ifdef RANDR
+extern void RRExtensionInit(INITARGS);
+#endif
+
+#ifndef XFree86LOADER
+#ifdef BEZIER
+extern void BezierExtensionInit(INITARGS);
 #endif
 #ifdef SHAPE
 extern void ShapeExtensionInit(INITARGS);
@@ -135,23 +170,11 @@ extern void ShapeExtensionInit(INITARGS);
 #ifdef EVI
 extern void EVIExtensionInit(INITARGS);
 #endif
-#ifdef MITSHM
-extern void ShmExtensionInit(INITARGS);
-#endif
 #ifdef PEXEXT
 extern void PexExtensionInit(INITARGS);
 #endif
 #ifdef MULTIBUFFER
 extern void MultibufferExtensionInit(INITARGS);
-#endif
-#ifdef PANORAMIX
-extern void PanoramiXExtensionInit(INITARGS);
-#endif
-#ifdef XINPUT
-extern void XInputExtensionInit(INITARGS);
-#endif
-#ifdef XTEST
-extern void XTestExtensionInit(INITARGS);
 #endif
 #ifdef BIGREQS
 extern void BigReqExtensionInit(INITARGS);
@@ -178,26 +201,11 @@ extern void XieInit(INITARGS);
 #ifdef XSYNC
 extern void SyncExtensionInit(INITARGS);
 #endif
-#ifdef XKB
-extern void XkbExtensionInit(INITARGS);
-#endif
 #ifdef XCMISC
 extern void XCMiscExtensionInit(INITARGS);
 #endif
-#ifdef LBX
-extern void LbxExtensionInit(INITARGS);
-#endif
-#ifdef XAPPGROUP
-extern void XagExtensionInit(INITARGS);
-#endif
-#ifdef XCSECURITY
-extern void SecurityExtensionInit(INITARGS);
-#endif
 #ifdef XPRINT
 extern void XpExtensionInit(INITARGS);
-#endif
-#ifdef XF86BIGFONT
-extern void XFree86BigfontExtensionInit(INITARGS);
 #endif
 #ifdef XF86VIDMODE
 extern void XFree86VidModeExtensionInit(INITARGS);
@@ -232,20 +240,12 @@ extern void DPSExtensionInit(INITARGS);
 #ifdef FONTCACHE
 extern void FontCacheExtensionInit(INITARGS);
 #endif
-#ifdef RENDER
-extern void RenderExtensionInit(INITARGS);
-#endif
-#ifdef RANDR
-extern void RRExtensionInit(INITARGS);
-#endif
 #ifdef RES
 extern void ResExtensionInit(INITARGS);
 #endif
 #ifdef DMXEXT
 extern void DMXExtensionInit(INITARGS);
 #endif
-
-#ifndef XFree86LOADER
 
 /*ARGSUSED*/
 void
@@ -405,64 +405,6 @@ InitVisualWrap()
 }
 
 #else /* XFree86LOADER */
-#if 0
-/* FIXME:The names here must come from the headers. those with ?? are 
-   not included in X11R6.3 sample implementation, so there's a problem... */
-/* XXX use the correct #ifdefs for symbols not present when an extension
-   is disabled */
-ExtensionModule extension[] =
-{
-    { NULL, "BEZIER", NULL, NULL },	/* ?? */
-    { NULL, "XTEST1", &noTestExtensions, NULL }, /* ?? */
-    { NULL, "SHAPE", NULL, NULL },
-    { NULL, "MIT-SHM", NULL, NULL },
-    { NULL, "X3D-PEX", NULL, NULL },
-    { NULL, "Multi-Buffering", NULL, NULL },
-    { NULL, "XInputExtension", NULL, NULL },
-    { NULL, "XTEST", &noTestExtensions, NULL },
-    { NULL, "BIG-REQUESTS", NULL, NULL },
-    { NULL, "MIT-SUNDRY-NONSTANDARD", NULL, NULL },
-    { NULL, "XIDLE", NULL, NULL },	/* ?? */
-    { NULL, "XTRAP", &noTestExtensions, NULL }, /* ?? */
-    { NULL, "MIT-SCREEN-SAVER", NULL, NULL },
-    { NULL, "XVideo", NULL, NULL },	/* ?? */
-    { NULL, "XIE", NULL, NULL },
-    { NULL, "SYNC", NULL, NULL },
-#ifdef XKB
-    { NULL, "XKEYBOARD", &noXkbExtension, NULL },
-#else
-    { NULL, "NOXKEYBOARD", NULL, NULL },
-#endif
-    { NULL, "XC-MISC", NULL, NULL },
-    { NULL, "RECORD", &noTestExtensions, NULL },
-    { NULL, "LBX", NULL, NULL },
-    { NULL, "DOUBLE-BUFFER", NULL, NULL },
-    { NULL, "XC-APPGROUP", NULL, NULL },
-    { NULL, "SECURITY", NULL, NULL },
-    { NULL, "XpExtension", NULL, NULL },
-    { NULL, "XFree86-VidModeExtension", NULL, NULL },
-    { NULL, "XFree86-Misc", NULL, NULL },
-    { NULL, "XFree86-DGA", NULL, NULL },
-    { NULL, "DPMS", NULL, NULL },
-    { NULL, "GLX", NULL, NULL },
-    { NULL, "TOG-CUP", NULL, NULL },
-    { NULL, "Extended-Visual-Information", NULL, NULL },
-#ifdef PANORAMIX
-    { NULL, "XINERAMA", &noPanoramiXExtension, NULL },
-#else
-    { NULL, "NOXINERAMA", NULL, NULL },
-#endif
-    { NULL, "XFree86-Bigfont", NULL, NULL },
-    { NULL, "XFree86-DRI", NULL, NULL },
-    { NULL, "Adobe-DPS-Extension", NULL, NULL },
-    { NULL, "FontCache", NULL, NULL },
-    { NULL, "RENDER", NULL, NULL },
-    { NULL, "RANDR", NULL, NULL },
-    { NULL, "X-Resource", NULL, NULL },
-    { NULL, "DMX", NULL, NULL },
-    { NULL, NULL, NULL, NULL }
-};
-#endif
 
 /* List of built-in (statically linked) extensions */
 static ExtensionModule staticExtensions[] = {

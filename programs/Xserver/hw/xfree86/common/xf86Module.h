@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.40 2004/12/07 15:59:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.41 2005/01/21 02:03:12 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -65,6 +65,8 @@
 
 #include "misc.h"
 #include "xf86Version.h"
+#include "extnsionst.h"
+
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
@@ -195,10 +197,6 @@ typedef struct {
 #define GET_MODULE_MAJOR_VERSION(vers)	(((vers) >> 24) & 0xFF)
 #define GET_MODULE_MINOR_VERSION(vers)	(((vers) >> 16) & 0xFF)
 #define GET_MODULE_PATCHLEVEL(vers)	((vers) & 0xFFFF)
-
-#define INITARGS void
-
-typedef void (*InitExtension)(INITARGS);
 
 typedef struct {
     InitExtension	initFunc;
