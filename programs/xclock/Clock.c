@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xclock/Clock.c,v 3.26 2003/10/25 00:52:37 dawes Exp $ */
+/* $XFree86: xc/programs/xclock/Clock.c,v 3.27 2004/10/23 15:29:32 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/StringDefs.h>
@@ -441,7 +441,9 @@ TimeString (ClockWidget w, struct tm *tm)
       tsec = time(NULL);
       sprintf (utime, "%10lu seconds since Epoch", (unsigned long)tsec);
       return utime;
-   } else if (*w->clock.strftime) {
+   }
+   else if (*w->clock.strftime)
+   {
      /*Note: this code is probably excessively paranoid 
        about buffer overflow.  The extra size 10 padding
        is also meant as a further guard against programmer 
@@ -467,7 +469,7 @@ static void
 Initialize (Widget request, Widget new, ArgList args, Cardinal *num_args)
 {
     ClockWidget w = (ClockWidget)new;
-    XtGCMask		valuemask;
+    XtGCMask	valuemask;
     XGCValues	myXGCV;
     int min_height, min_width;
 

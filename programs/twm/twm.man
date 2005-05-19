@@ -25,7 +25,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86: xc/programs/twm/twm.man,v 1.12 2004/06/08 01:17:02 dawes Exp $
+.\" $XFree86: xc/programs/twm/twm.man,v 1.13 2005/02/11 03:03:15 dawes Exp $
 .\"
 .de EX		\"Begin example
 .ne 5
@@ -972,6 +972,11 @@ This function sounds the keyboard bell.
 .IP "\fBf.bottomzoom\fP" 8
 This function is similar to the \fBf.fullzoom\fP function, but
 resizes the window to fill only the bottom half of the screen.
+.IP "\fBf.changelabel\fP" 8
+This function enters a mode where the user is able to change a window
+or an icon title. It grabs the keyboard and ignores all other events,
+so the only way to exit from this mode is to press Enter (confirm a new
+title) or Escape (restore the original title) keys.
 .IP "\fBf.circledown\fP" 8
 This function lowers the top-most window that occludes another window.
 .IP "\fBf.circleup\fP" 8
@@ -1070,8 +1075,9 @@ the selected window is only resized to the left half of the display.
 .IP "\fBf.lower\fP" 8
 This function lowers the selected window.
 .IP "\fBf.menu\fP \fIstring\fP" 8
-This function invokes the menu specified by the argument \fIstring\fP.
-Cascaded menus may be built by nesting calls to \fBf.menu\fP.
+This function invokes the menu specified by the argument a\fIstring\fP.
+If a string starts with a $-symbols, it will be expanded as an environment
+variable.  Cascaded menus may be built by nesting calls to \fBf.menu\fP.
 .IP "\fBf.move\fP" 8
 This function drags an outline of the selected window (or the window itself
 if the \fBOpaqueMove\fP variable is set) until the invoking pointer button

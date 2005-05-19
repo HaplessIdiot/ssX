@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/menus.c,v 1.18tsi Exp $ */
+/* $XFree86: xc/programs/twm/menus.c,v 1.20 2003/08/04 10:32:30 eich Exp $ */
 /*****************************************************************************/
 /*
 
@@ -81,6 +81,7 @@ in this Software without prior written authorization from The Open Group.
 #include "version.h"
 #include <X11/extensions/sync.h>
 #include <X11/SM/SMlib.h>
+#include <X11/keysym.h>
 
 int RootFunction = 0;
 MenuRoot *ActiveMenu = NULL;		/* the active menu */
@@ -115,6 +116,7 @@ static void Identify ( TwmWindow *t );
 static void send_clientmessage ( Window w, Atom a, Time timestamp );
 
 #define SHADOWWIDTH 5			/* in pixels */
+#define EMPTY_LABEL	"<empty>"
 
 
 
@@ -522,8 +524,7 @@ UpdateMenu()
 		    break;
 	}
 
-	if (!DispatchEvent ())
-	    continue;
+	if (!DispatchEvent ()) continue;
 
 	if (Event.type == ButtonRelease || Cancel) {
 	  menuFromFrameOrWindowOrTitlebar = FALSE;
@@ -650,6 +651,12 @@ NewMenuRoot(name)
     MenuRoot *tmp;
 
 #define UNUSED_PIXEL ((unsigned long) (~0))	/* more than 24 bits */
+
+    if (name != NULL && *name == '$')
+    {
+	/* resolve this environment variable */
+	name = getenv(name + 1);
+    }
 
     tmp = (MenuRoot *) malloc(sizeof(MenuRoot));
     tmp->hi_fore = UNUSED_PIXEL;
@@ -1062,7 +1069,7 @@ PopUpMenu (menu, x, y, center)
             for (i=0; i<WindowNameCount; i++)
             {
                 AddToMenu(menu, WindowNames[i]->name, (char *)WindowNames[i],
-                          NULL, F_POPUP,NULL,NULL);
+                          NULL, F_POPUP, NULL, NULL);
             }
             free(WindowNames);
         }
@@ -1377,7 +1384,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 {
     static Time last_time = 0;
     char tmp[200];
-    char *ptr;
+    char *ptr, *orig_icon_name, *orig_name;
     char buff[MAX_FILE_SIZE];
     int count, fd;
     Window rootw;
@@ -1568,8 +1575,8 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		
 		if (fromtitlebar && Event.type == ButtonPress) {
 		  fromtitlebar = False;
-		    continue;
-		  }
+		  continue;
+		}
 		
 	    	if (Event.type == MotionNotify) {
 		  /* discard any extra motion events before a release */
@@ -2060,6 +2067,79 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	  Bell(XkbBI_MinorError,0,tmp_win->w);
 	break;
 
+    case F_CHANGELABEL:
+	if (DeferExecution(context, func, Scr->SelectCursor))
+	    return TRUE;
+
+	EventHandler[KeyPress] = HandleUnknown;
+
+	XGrabKeyboard(dpy, tmp_win->frame, False, GrabModeAsync, GrabModeAsync, CurrentTime);
+
+	/* backup original names */
+	orig_icon_name = tmp_win->icon_name;
+	orig_name = tmp_win->name;
+
+	strcpy(tmp, orig_name);
+
+	/* read in a new name */
+	while (TRUE)
+	{
+	    XMaskEvent(dpy, KeyPressMask | ExposureMask |
+	               PropertyChangeMask, &Event);
+
+	    if (!DispatchEvent ()) continue;
+
+	    if (Event.type == KeyPress) {
+		char xlat[20];
+		int  nchar = 20;
+		int  count;
+		KeySym key;
+		XComposeStatus cs;
+
+		count = XLookupString(&Event.xkey, xlat, nchar, &key, &cs);
+		xlat[count] = '\0';
+
+		if (key == XK_Escape) {
+		    /* restore original names */
+		    XSetIconName(dpy, tmp_win->w, orig_icon_name);
+		    XStoreName(dpy, tmp_win->w, orig_name);
+		    break;
+		}
+
+		if (key == XK_Return) {
+		    break;
+		}
+
+		if (key == XK_BackSpace || key == XK_Delete) {
+		    if (strcmp(tmp, EMPTY_LABEL) != 0) {
+			count = strlen(tmp);
+			if (count == 1)
+			    strcpy(tmp, EMPTY_LABEL);
+			else if (count > 0)
+			    tmp[count - 1] = '\0';
+		    }
+		}
+		else {
+		    if (strcmp(tmp, EMPTY_LABEL) != 0)
+			strcat(tmp, xlat);
+		    else
+			strcpy(tmp, xlat);
+		}
+
+		/* do the change */
+		XSetIconName(dpy, tmp_win->w, tmp);
+		XStoreName(dpy, tmp_win->w, tmp);
+	    }
+	}
+
+	/* to exit from the UpdateMenu function */
+	Event.type = ButtonRelease;
+
+	XUngrabKeyboard(dpy, CurrentTime);
+
+	EventHandler[KeyPress] = HandleKeyPress;
+	break;
+
     case F_CIRCLEUP:
 	XCirculateSubwindowsUp(dpy, Scr->Root);
 	break;
@@ -2430,6 +2510,7 @@ MenuRoot *root;
         case F_TOPZOOM:
         case F_BOTTOMZOOM:
 	case F_AUTORAISE:
+	case F_CHANGELABEL:
 	    return TRUE;
 	}
     }

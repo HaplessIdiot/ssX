@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/events.c,v 1.13 2003/04/21 11:46:13 herrb Exp $ */
+/* $XFree86: xc/programs/twm/events.c,v 1.14 2004/06/08 01:17:02 dawes Exp $ */
 /*****************************************************************************/
 /*
 
@@ -1738,6 +1738,7 @@ HandleButtonRelease()
 	      case F_CIRCLEUP:
 	      case F_CIRCLEDOWN:
 	      case F_REFRESH:
+	      case F_CHANGELABEL:
 		PopDownMenu();
 		break;
 	      default:

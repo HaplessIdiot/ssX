@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/parse.c,v 1.17 2003/08/04 10:32:30 eich Exp $ */
+/* $XFree86: xc/programs/twm/parse.c,v 1.18 2004/06/08 01:17:02 dawes Exp $ */
 /*****************************************************************************/
 /*
 
@@ -453,6 +453,7 @@ static TwmKeyword keytable[] = {
     { "f.backiconmgr",		FKEYWORD, F_BACKICONMGR },
     { "f.beep",			FKEYWORD, F_BEEP },
     { "f.bottomzoom",		FKEYWORD, F_BOTTOMZOOM },
+    { "f.changelabel",		FKEYWORD, F_CHANGELABEL },
     { "f.circledown",		FKEYWORD, F_CIRCLEDOWN },
     { "f.circleup",		FKEYWORD, F_CIRCLEUP },
     { "f.colormap",		FSKEYWORD, F_COLORMAP },
