@@ -29,16 +29,18 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86: xclock.c,v 1.16 2002/10/21 13:33:08 alanh Exp $ */
+/* $XFree86: xc/programs/xclock/xclock.c,v 1.17 2003/12/29 09:10:37 herrb Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <X11/Xatom.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 #include "Clock.h"
 #include <X11/Xaw/Cardinals.h>
+#include <X11/Xaw/Tip.h>
 #include "clock.bit"
 #include "clmask.bit"
 
@@ -103,6 +105,28 @@ Syntax(char *call)
 }
 
 static void 
+get_tip_text(Widget w, XtPointer client_data, XtPointer call_data)
+{
+    time_t tloc;
+    char ctime[12 + 1];
+    String strTime = NULL;
+    Arg arg;
+
+    XtSetArg(arg, XtNstrftime, &strTime);
+    XtGetValues(w, &arg, ONE);
+    if (strTime == NULL || strcmp(strTime, "") == 0)
+    {
+	strTime = "%F";
+    }
+
+    time(&tloc);
+    strftime(ctime, sizeof(ctime), strTime, localtime(&tloc));
+    ctime[12] = '\0';
+
+    *((String*) client_data) = XtNewString(ctime);
+}
+
+static void 
 die(Widget w, XtPointer client_data, XtPointer call_data)
 {
     XCloseDisplay(XtDisplayOfObject(w));
@@ -140,10 +164,11 @@ save(Widget w, XtPointer client_data, XtPointer call_data)
 int 
 main(int argc, char *argv[])
 {
-    Widget toplevel;
+    Widget toplevel, clock;
     Arg arg;
     Pixmap icon_pixmap = None;
     XtAppContext app_con;
+    Boolean analog;
 
     toplevel = XtOpenApplication(&app_con, "XClock",
 				 options, XtNumber(options), &argc, argv, NULL,
@@ -162,7 +187,6 @@ main(int argc, char *argv[])
 
     XtSetArg(arg, XtNiconPixmap, &icon_pixmap);
     XtGetValues(toplevel, &arg, ONE);
-
     if (icon_pixmap == None) {
 	arg.value = (XtArgVal)XCreateBitmapFromData(XtDisplay(toplevel),
 				       XtScreen(toplevel)->root,
@@ -180,7 +204,14 @@ main(int argc, char *argv[])
 	XtSetValues (toplevel, &arg, ONE);
     }
 
-    XtCreateManagedWidget ("clock", clockWidgetClass, toplevel, NULL, ZERO);
+    clock = XtCreateManagedWidget ("clock", clockWidgetClass, toplevel,
+				   NULL, ZERO);
+    XtSetArg(arg, XtNanalog, &analog);
+    XtGetValues(clock, &arg, ONE);
+    if (analog) {
+	XtSetArg(arg, XtNtipCallback, &get_tip_text);
+	XtSetValues (clock, &arg, ONE);
+    }
     XtRealizeWidget (toplevel);
     wm_delete_window = XInternAtom (XtDisplay(toplevel), "WM_DELETE_WINDOW",
 				    False);

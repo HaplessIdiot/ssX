@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/parse.h,v 1.10 2001/09/30 17:58:19 herrb Exp $ */
+/* $XFree86: xc/programs/twm/parse.h,v 1.11 2001/12/14 20:01:09 dawes Exp $ */
 /*****************************************************************************/
 /*
 
@@ -136,6 +136,7 @@ extern int mods;
 #define F_CUTFILE		43
 #define F_SHOWLIST		44
 #define F_HIDELIST		45
+#define F_CHANGELABEL		46
 
 #define F_MENU			101	/* string */
 #define F_WARPNEXT		112	/* string */

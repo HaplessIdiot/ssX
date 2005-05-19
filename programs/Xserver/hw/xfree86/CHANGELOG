@@ -1,4 +1,10 @@
 XFree86 4.5.99.4 (xx May 2005)
+  47. Allow environment variables to be used in twm menu names (Bugzilla #1590,
+      Alexander Pohoyda).
+  46. Add a new function to twm to allow the window text title to be changed
+      interactively (Bugzilla #1078, Alexander Pohoyda).
+  45. Use the Xaw tooltip to display the date in xclock (Bugzilla #1589,
+      Alexander Pohoyda).
   44. Cleanup the build for some extension modules (David Dawes).
 
 XFree86 4.5.99.3 (11 May 2005)
@@ -19555,7 +19561,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3506 2005/05/12 01:05:53 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3507 2005/05/13 21:02:31 dawes Exp $
 
 
 
