@@ -72,7 +72,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.113 2005/02/18 02:55:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.114 2005/05/20 11:59:25 alanh Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -356,7 +356,7 @@ const char *I810driSymbols[] = {
 
 #ifdef XF86DRI
 
-static const char *driShadowFBSymbols[] = {
+const char *I810shadowFBSymbols[] = {
     "ShadowFBInit",
     NULL
 };
@@ -437,7 +437,7 @@ i810Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 			I810drmSymbols,
 			I810driSymbols,
 			I810shadowSymbols,
-			driShadowFBSymbols,
+			I810shadowFBSymbols,
 #endif
 			I810vbeSymbols, vbeOptionalSymbols,
 			I810ddcSymbols, I810int10Symbols, NULL);
@@ -1137,7 +1137,7 @@ I810PreInit(ScrnInfoPtr pScrn, int flags)
 		    "Couldn't load shadowfb module:\n");
        }
        else {
-	 xf86LoaderReqSymLists(driShadowFBSymbols, NULL);
+	 xf86LoaderReqSymLists(I810shadowFBSymbols, NULL);
        }
      }
      
