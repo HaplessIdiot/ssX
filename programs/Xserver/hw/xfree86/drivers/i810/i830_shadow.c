@@ -26,14 +26,14 @@ I830RefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
     while(num--) {
 	width = (pbox->x2 - pbox->x1) * Bpp;
 	height = pbox->y2 - pbox->y1;
-	src = pI830->ShadowPtr + (pbox->y1 * pI830->ShadowPitch) + 
+	src = pI830->shadowPtr + (pbox->y1 * pI830->shadowPitch) + 
 						(pbox->x1 * Bpp);
 	dst = pI830->FbBase + (pbox->y1 * FBPitch) + (pbox->x1 * Bpp);
 
 	while(height--) {
 	    memcpy(dst, src, width);
 	    dst += FBPitch;
-	    src += pI830->ShadowPitch;
+	    src += pI830->shadowPitch;
 	}
 	
 	pbox++;
@@ -68,7 +68,7 @@ I830RefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
     CARD32 *dst;
 
     dstPitch = pScrn->displayWidth;
-    srcPitch = -pI830->rotate * pI830->ShadowPitch;
+    srcPitch = -pI830->rotate * pI830->shadowPitch;
 
     while(num--) {
 	width = pbox->x2 - pbox->x1;
@@ -79,11 +79,11 @@ I830RefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 	if(pI830->rotate == 1) {
 	    dstPtr = pI830->FbBase + 
 			(pbox->x1 * dstPitch) + pScrn->virtualX - y2;
-	    srcPtr = pI830->ShadowPtr + ((1 - y2) * srcPitch) + pbox->x1;
+	    srcPtr = pI830->shadowPtr + ((1 - y2) * srcPitch) + pbox->x1;
 	} else {
 	    dstPtr = pI830->FbBase + 
 			((pScrn->virtualY - pbox->x2) * dstPitch) + y1;
-	    srcPtr = pI830->ShadowPtr + (y1 * srcPitch) + pbox->x2 - 1;
+	    srcPtr = pI830->shadowPtr + (y1 * srcPitch) + pbox->x2 - 1;
 	}
 
 	while(width--) {
@@ -114,7 +114,7 @@ I830RefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
     CARD32 *dst;
 
     dstPitch = pScrn->displayWidth;
-    srcPitch = -pI830->rotate * pI830->ShadowPitch >> 1;
+    srcPitch = -pI830->rotate * pI830->shadowPitch >> 1;
 
     while(num--) {
 	width = pbox->x2 - pbox->x1;
@@ -125,12 +125,12 @@ I830RefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 	if(pI830->rotate == 1) {
 	    dstPtr = (CARD16*)pI830->FbBase + 
 			(pbox->x1 * dstPitch) + pScrn->virtualX - y2;
-	    srcPtr = (CARD16*)pI830->ShadowPtr + 
+	    srcPtr = (CARD16*)pI830->shadowPtr + 
 			((1 - y2) * srcPitch) + pbox->x1;
 	} else {
 	    dstPtr = (CARD16*)pI830->FbBase + 
 			((pScrn->virtualY - pbox->x2) * dstPitch) + y1;
-	    srcPtr = (CARD16*)pI830->ShadowPtr + 
+	    srcPtr = (CARD16*)pI830->shadowPtr + 
 			(y1 * srcPitch) + pbox->x2 - 1;
 	}
 
@@ -161,7 +161,7 @@ I830RefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
     CARD32 *dst;
 
     dstPitch = BitmapBytePad(pScrn->displayWidth * 24);
-    srcPitch = -pI830->rotate * pI830->ShadowPitch;
+    srcPitch = -pI830->rotate * pI830->shadowPitch;
 
     while(num--) {
         width = pbox->x2 - pbox->x1;
@@ -172,11 +172,11 @@ I830RefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 	if(pI830->rotate == 1) {
 	    dstPtr = pI830->FbBase + 
 			(pbox->x1 * dstPitch) + ((pScrn->virtualX - y2) * 3);
-	    srcPtr = pI830->ShadowPtr + ((1 - y2) * srcPitch) + (pbox->x1 * 3);
+	    srcPtr = pI830->shadowPtr + ((1 - y2) * srcPitch) + (pbox->x1 * 3);
 	} else {
 	    dstPtr = pI830->FbBase + 
 			((pScrn->virtualY - pbox->x2) * dstPitch) + (y1 * 3);
-	    srcPtr = pI830->ShadowPtr + (y1 * srcPitch) + (pbox->x2 * 3) - 3;
+	    srcPtr = pI830->shadowPtr + (y1 * srcPitch) + (pbox->x2 * 3) - 3;
 	}
 
 	while(width--) {
@@ -211,7 +211,7 @@ I830RefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
     CARD32 *dstPtr, *srcPtr, *src, *dst;
 
     dstPitch = pScrn->displayWidth;
-    srcPitch = -pI830->rotate * pI830->ShadowPitch >> 2;
+    srcPitch = -pI830->rotate * pI830->shadowPitch >> 2;
 
     while(num--) {
 	width = pbox->x2 - pbox->x1;
@@ -220,12 +220,12 @@ I830RefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 	if(pI830->rotate == 1) {
 	    dstPtr = (CARD32*)pI830->FbBase + 
 			(pbox->x1 * dstPitch) + pScrn->virtualX - pbox->y2;
-	    srcPtr = (CARD32*)pI830->ShadowPtr + 
+	    srcPtr = (CARD32*)pI830->shadowPtr + 
 			((1 - pbox->y2) * srcPitch) + pbox->x1;
 	} else {
 	    dstPtr = (CARD32*)pI830->FbBase + 
 			((pScrn->virtualY - pbox->x2) * dstPitch) + pbox->y1;
-	    srcPtr = (CARD32*)pI830->ShadowPtr + 
+	    srcPtr = (CARD32*)pI830->shadowPtr + 
 			(pbox->y1 * srcPitch) + pbox->x2 - 1;
 	}
 
