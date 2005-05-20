@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/common.h,v 1.12 2005/01/09 20:47:19 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/common.h,v 1.13 2005/05/20 11:59:25 alanh Exp $ */
 
 /*
  * Authors:
@@ -79,6 +79,7 @@ extern const char *I810vbeSymbols[];
 extern const char *I810ddcSymbols[];
 extern const char *I810fbSymbols[];
 extern const char *I810xaaSymbols[];
+extern const char *I810shadowFBSymbols[];
 #ifdef XF86DRI
 extern const char *I810driSymbols[];
 extern const char *I810drmSymbols[];
