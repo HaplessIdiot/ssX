@@ -1,4 +1,10 @@
 XFree86 4.5.99.4 (xx May 2005)
+  49. Changes for the i830 driver.
+      - Much better display switching support for mobile chipsets using
+        the Fn+F? combination keys.
+      - Add DirectColor support.
+      - Add gamma correction support.
+      (Alan Hourihane).
   48. Support the Intel E7221 server chipset in the i830 driver.
       (Alan Hourihane).
   47. Allow environment variables to be used in twm menu names (Bugzilla #1590,
@@ -19563,7 +19569,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3508 2005/05/19 01:02:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3509 2005/05/20 11:59:23 alanh Exp $
 
 
 
