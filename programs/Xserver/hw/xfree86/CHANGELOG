@@ -1,4 +1,6 @@
-XFree86 4.5.99.4 (xx May 2005)
+XFree86 4.5.99.5 (xx June 2005)
+
+XFree86 4.5.99.4 (23 May 2005)
   50. Add rotation to the i830 driver (Helmar Spangenberg).
   49. Changes for the i830 driver.
       - Much better display switching support for mobile chipsets using
@@ -19570,7 +19572,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3510 2005/05/20 14:06:31 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3511 2005/05/20 15:34:49 alanh Exp $
 
 
 
