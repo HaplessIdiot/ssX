@@ -1,4 +1,6 @@
 XFree86 4.5.99.5 (xx June 2005)
+  51. Fix a bug in xmessage's handling of escapes in button labels
+      (Bugzilla #1591, Timothy Musson).
 
 XFree86 4.5.99.4 (23 May 2005)
   50. Add rotation to the i830 driver (Helmar Spangenberg).
@@ -19572,7 +19574,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3511 2005/05/20 15:34:49 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3512 2005/05/23 11:02:42 dawes Exp $
 
 
 
