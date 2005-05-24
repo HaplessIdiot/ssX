@@ -1,4 +1,7 @@
 XFree86 4.5.99.5 (xx June 2005)
+  52. Update 'X -configure' to detect when wscons support should be used
+      for the keyboard on NetBSD, and improve the handling of Sun-specific
+      keys (Michael ??).
   51. Fix a bug in xmessage's handling of escapes in button labels
       (Bugzilla #1591, Timothy Musson).
 
@@ -19574,7 +19577,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3512 2005/05/23 11:02:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3513 2005/05/24 00:46:21 dawes Exp $
 
 
 

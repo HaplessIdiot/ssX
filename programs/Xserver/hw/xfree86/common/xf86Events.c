@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.165 2005/01/16 02:42:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.166 2005/02/18 22:38:31 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -67,8 +67,6 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-/* $XConsortium: xf86Events.c /main/46 1996/10/25 11:36:30 kaleb $ */
 
 /* [JCH-96/01/21] Extended std reverse map to four buttons. */
 
@@ -1638,11 +1636,13 @@ xf86PostWSKbdEvent(struct wscons_event *event)
 
     /* map the scancodes to standard XFree86 scancode */  	
     keycode = WSKbdToKeycode(value);
-    if (!down) keycode |= 0x80;
-    /* It seems better to block SIGIO there */
-    blocked = xf86BlockSIGIO();
-    xf86PostKbdEvent(keycode);
-    xf86UnblockSIGIO(blocked);
+    if ((keycode != KEY_NOTUSED) && ((keycode & 0x80) == 0)) {
+        if (!down) keycode |= 0x80;
+        /* It seems better to block SIGIO there */
+        blocked = xf86BlockSIGIO();
+        xf86PostKbdEvent(keycode);
+        xf86UnblockSIGIO(blocked);
+    }
   }
 }
 #endif /* WSCONS_SUPPORT */
