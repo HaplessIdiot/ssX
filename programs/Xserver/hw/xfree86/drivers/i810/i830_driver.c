@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.69 2005/05/20 14:06:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.70 2005/05/20 15:34:50 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -3264,7 +3264,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
 
    SetPipeAccess(pScrn);
-   i830PrintModes(pScrn);
+   I830PrintModes(pScrn);
 
    if (!pI830->vesa->useDefaultRefresh) {
       /*
