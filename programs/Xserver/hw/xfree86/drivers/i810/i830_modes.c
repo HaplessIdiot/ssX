@@ -27,7 +27,7 @@
  *
  * Authors: David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_modes.c,v 1.4 2005/03/03 18:06:27 alanh Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_modes.c,v 1.5 2005/05/20 14:06:32 alanh Exp $
  */
 /*
  * Modified by Alan Hourihane <alanh@tungstengraphics.com>
@@ -664,22 +664,6 @@ I830SetModeParameters(ScrnInfoPtr pScrn, vbeInfoPtr pVbe)
 	       (double)data->block->RefreshRate/100);
 #endif
 	pMode = pMode->next;
-    } while (pMode != pScrn->modes);
-}
-
-void
-I830UnsetModeParameters(ScrnInfoPtr pScrn, vbeInfoPtr pVbe)
-{
-    DisplayModePtr pMode;
-    VbeModeInfoData *data;
-
-    pMode = pScrn->modes;
-    do {
-	pMode = pMode->next;
-
-	data = (VbeModeInfoData*)pMode->Private;
-	xfree(data->block);
-        data->block = NULL;
     } while (pMode != pScrn->modes);
 }
 
