@@ -1,4 +1,6 @@
 XFree86 4.5.99.5 (xx June 2005)
+  53. Change the sequence on how refresh rates are set in the i830 driver.
+      This works much better with custom modelines (Alan Hourihane).
   52. Update 'X -configure' to detect when wscons support should be used
       for the keyboard on NetBSD, and improve the handling of Sun-specific
       keys (Michael ??).
@@ -19577,7 +19579,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3513 2005/05/24 00:46:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3514 2005/05/24 01:19:21 dawes Exp $
 
 
 
