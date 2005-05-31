@@ -72,7 +72,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.114 2005/05/20 11:59:25 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.115 2005/05/20 15:34:50 alanh Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -178,6 +178,7 @@ static SymTabRec I810Chipsets[] = {
    {PCI_CHIP_I915_G,		"915G"},
    {PCI_CHIP_E7221_G,		"E7221 (i915)"},
    {PCI_CHIP_I915_GM,		"915GM"},
+   {PCI_CHIP_I945_G,		"945G"},
    {-1,				NULL}
 };
 
@@ -195,6 +196,7 @@ static PciChipsets I810PciChipsets[] = {
    {PCI_CHIP_I915_G,		PCI_CHIP_I915_G,	RES_SHARED_VGA},
    {PCI_CHIP_E7221_G,		PCI_CHIP_E7221_G,	RES_SHARED_VGA},
    {PCI_CHIP_I915_GM,		PCI_CHIP_I915_GM,	RES_SHARED_VGA},
+   {PCI_CHIP_I945_G,		PCI_CHIP_I945_G,	RES_SHARED_VGA},
    {-1,				-1, RES_UNDEFINED }
 };
 
@@ -613,6 +615,7 @@ I810Probe(DriverPtr drv, int flags)
 	    case PCI_CHIP_I915_G:
 	    case PCI_CHIP_E7221_G:
 	    case PCI_CHIP_I915_GM:
+	    case PCI_CHIP_I945_G:
     	       xf86SetEntitySharable(usedChips[i]);
 
     	       /* Allocate an entity private if necessary */		
