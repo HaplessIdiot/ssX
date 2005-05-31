@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.72 2005/05/25 09:15:05 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.73 2005/05/31 18:19:18 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -2693,7 +2693,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
 
    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "BIOS Build: %d\n",pI830->bios_version);
 
-   if (IS_I915G(pI830) || IS_I915GM(pI830))
+   if (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830))
       pI830->newPipeSwitch = TRUE;
    else
    if (pI830->availablePipes == 2 && pI830->bios_version >= 3062) {
