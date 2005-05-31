@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.73 2005/05/31 18:19:18 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.74 2005/05/31 20:26:35 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -2222,7 +2222,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
    if (pI830->PciInfo->chipType == PCI_CHIP_E7221_G)
       pI830->availablePipes = 1;
    else
-   if (IS_MOBILE(pI830) || IS_I915G(pI830))
+   if (IS_MOBILE(pI830) || IS_I915G(pI830) || IS_I945G(pI830))
       pI830->availablePipes = 2;
    else
       pI830->availablePipes = 1;
