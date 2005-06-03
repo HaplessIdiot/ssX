@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/vm86/linux_vm86.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/vm86/linux_vm86.c,v 1.4tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -194,7 +194,8 @@ vm86_GP_fault(xf86Int10InfoPtr pInt)
 static int
 do_vm86(xf86Int10InfoPtr pInt)
 {
-    int retval, signo;
+    volatile int signo;
+    int retval;
 
     xf86InterceptSignals(&signo);
     retval = vm86_rep(VM86S);

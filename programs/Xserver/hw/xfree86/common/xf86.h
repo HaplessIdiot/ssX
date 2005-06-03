@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.184 2005/02/26 01:07:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.185 2005/02/26 18:31:48 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -172,7 +172,7 @@ Bool xf86ComparePciBusString(const char *busID, int bus, int device, int func);
 void xf86FormatPciBusNumber(int busnum, char *buffer);
 pciVideoPtr *xf86GetPciVideoInfo(void);
 pciConfigPtr *xf86GetPciConfigInfo(void);
-void xf86SetPciVideo(pciVideoPtr, resType);
+void xf86SetPciVideo(pciVideoPtr pvp, resType rt);
 void xf86PrintResList(int verb, resPtr list);
 resPtr xf86AddRangesToList(resPtr list, resRange *pRange, int entityIndex);
 int xf86ClaimIsaSlot(DriverPtr drvp, int chipset, GDevPtr dev, Bool active);
@@ -416,7 +416,7 @@ pointer xf86AddInputHandler(int fd, InputHandlerProc proc, pointer data);
 int xf86RemoveInputHandler(pointer handler);
 void xf86DisableInputHandler(pointer handler);
 void xf86EnableInputHandler(pointer handler);
-void xf86InterceptSignals(int *signo);
+void xf86InterceptSignals(volatile int *signo);
 Bool xf86EnableVTSwitch(Bool new);
 Bool xf86CommonSpecialKey(int key, Bool down, int modifiers);
 void xf86ProcessActionEvent(ActionEvent action, void *arg);

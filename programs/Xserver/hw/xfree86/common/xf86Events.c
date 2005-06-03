@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.166 2005/02/18 22:38:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.167tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1268,10 +1268,10 @@ xf86RemoveEnabledDevice(InputInfoPtr pInfo)
     }
 }
 
-static int *xf86SignalIntercept = NULL;
+static volatile int *xf86SignalIntercept = NULL;
 
 void
-xf86InterceptSignals(int *signo)
+xf86InterceptSignals(volatile int *signo)
 {
     if ((xf86SignalIntercept = signo))
 	*signo = -1;
