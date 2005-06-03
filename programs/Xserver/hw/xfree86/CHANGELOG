@@ -1,4 +1,5 @@
 XFree86 4.5.99.5 (xx June 2005)
+  56. Fix (some of) the vbe module's endianness bugs (Marc La France).
   55. Fix endianness bug in xf4bpp;  This is actually faster on all
       architectures (Marc La Framce).
   54. Add Intel(R) i945G support to the i830 driver (Tungsten Graphics).
@@ -19582,7 +19583,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3516 2005/05/31 18:19:17 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3517 2005/06/03 01:24:06 tsi Exp $
 
 
 
