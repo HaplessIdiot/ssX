@@ -1,4 +1,6 @@
 XFree86 4.5.99.5 (xx June 2005)
+  60. Add option to the mmapr & mmapw utilities to allow unaligned accesses for
+      testing purposes (Marc La France).
   59. Ensure signals are trapped during -configure or -probe (Marc La France).
   58. Re-implement Alpha kludge in x86emu's ops.c to be more portable
       (Marc La France).
@@ -19587,7 +19589,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3520 2005/06/03 01:34:34 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3521 2005/06/03 01:38:02 tsi Exp $
 
 
 
