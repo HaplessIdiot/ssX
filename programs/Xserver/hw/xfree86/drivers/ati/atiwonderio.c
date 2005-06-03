@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiwonderio.c,v 1.5 2004/01/05 16:42:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiwonderio.c,v 1.6tsi Exp $ */
 /*
  * Copyright 2000 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -24,8 +24,6 @@
 #include "ati.h"
 #include "atichip.h"
 #include "atiwonderio.h"
-
-#ifndef AVOID_CPIO
 
 /*
  * ATIModifyExtReg --
@@ -82,5 +80,3 @@ ATIModifyExtReg
     else
         ATIPutExtReg(Index, NewValue);
 }
-
-#endif /* AVOID_CPIO */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.134tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.135tsi Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -2731,7 +2731,7 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	}
 	linearRes[0].type = ResExcIoSparse | ResBios | ResBus;
 	linearRes[0].rBase = cPtr->Regs32[0];
-	linearRes[0].rMask = 0x83FC;
+	linearRes[0].rMask = (int)0xFFFF83FC;
 	if (xf86RegisterResources(cPtr->pEnt->index,linearRes,ResNone)) {
 	    if (cPtr->Flags & ChipsAccelSupport) {
 		cPtr->Flags &= ~ChipsAccelSupport;
@@ -3407,7 +3407,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	}
 	linearRes[0].type = ResExcIoSparse | ResBios | ResBus;
 	linearRes[0].rBase = cPtr->Regs32[0];
-	linearRes[0].rMask = 0x83FC;
+	linearRes[0].rMask = (int)0xFFFF83FC;
 	if (xf86RegisterResources(cPtr->pEnt->index,linearRes,ResNone)) {
 	    if (cPtr->Flags & ChipsAccelSupport) {
 		cPtr->Flags &= ~ChipsAccelSupport;

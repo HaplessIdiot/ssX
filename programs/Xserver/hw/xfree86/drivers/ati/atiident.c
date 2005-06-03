@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiident.c,v 1.12 2004/01/05 16:42:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiident.c,v 1.13tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -32,18 +32,12 @@
 const char *ATIChipsetNames[] =
 {
     "ati",
-
-#ifndef AVOID_CPIO
-
     "ativga",
     "ibmvga",
     "ibm8514",
     "vgawonder",
     "mach8",
     "mach32",
-
-#endif /* AVOID_CPIO */
-
     "mach64",
     "rage128",
     "radeon"
@@ -52,9 +46,6 @@ const char *ATIChipsetNames[] =
 static SymTabRec ATIPublicChipsetNames[] =
 {
     {ATI_CHIPSET_ATI, "ati"},
-
-#ifndef AVOID_CPIO
-
     {ATI_CHIPSET_ATIVGA, "ativga"},
 #ifdef __MAYBE_NOT__
     {ATI_CHIPSET_IBMVGA, "ibmvga"},
@@ -62,9 +53,6 @@ static SymTabRec ATIPublicChipsetNames[] =
 #ifdef __NOT_YET__
     {ATI_CHIPSET_IBM8514, "ibm8514"},
 #endif
-
-#endif /* AVOID_CPIO */
-
     {-1, NULL}
 };
 
@@ -104,17 +92,11 @@ ATIIdentProbe
 
     static SymTabRec SpecificNames[] =
     {
-
-#ifndef AVOID_CPIO
-
         {ATI_CHIPSET_VGAWONDER, "vgawonder"},
 #ifdef __NOT_YET__
         {ATI_CHIPSET_MACH8, "mach8"},
 #endif
         {ATI_CHIPSET_MACH32, "mach32"},
-
-#endif /* AVOID_CPIO */
-
         {ATI_CHIPSET_MACH64, "mach64"},
         {ATI_CHIPSET_RAGE128, "rage128"},
         {ATI_CHIPSET_RADEON, "radeon"},

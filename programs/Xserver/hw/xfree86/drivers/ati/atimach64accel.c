@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64accel.c,v 1.3 2004/12/31 03:30:41 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64accel.c,v 1.4tsi Exp $ */
 /*
  * Copyright 2003 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -46,6 +46,7 @@
 
 #include "ati.h"
 #include "atichip.h"
+#include "atiendian.h"
 #include "atimach64accel.h"
 #include "atimach64io.h"
 #include "atipriv.h"
@@ -773,16 +774,8 @@ ATIMach64AccelInit
     if (pATI->XModifier == 1)
     {
         pXAAInfo->Flags = PIXMAP_CACHE | OFFSCREEN_PIXMAPS;
-
-#ifndef AVOID_CPIO
-
         if (!pATI->BankInfo.BankSize)
-
-#endif /* AVOID_CPIO */
-
-        {
             pXAAInfo->Flags |= LINEAR_FRAMEBUFFER;
-        }
     }
 
     /* Sync */
@@ -799,14 +792,9 @@ ATIMach64AccelInit
 
     /* 8x8 mono pattern fills */
     pXAAInfo->Mono8x8PatternFillFlags =
-
-#if X_BYTE_ORDER != X_LITTLE_ENDIAN
-
-        BIT_ORDER_IN_BYTE_MSBFIRST |
-
-#endif /* X_BYTE_ORDER */
-
         HARDWARE_PATTERN_PROGRAMMED_BITS | HARDWARE_PATTERN_SCREEN_ORIGIN;
+    if (ATIEndian.endian == ATI_BIG_ENDIAN)
+        pXAAInfo->Mono8x8PatternFillFlags |= BIT_ORDER_IN_BYTE_MSBFIRST;
     pXAAInfo->SetupForMono8x8PatternFill = ATIMach64SetupForMono8x8PatternFill;
     pXAAInfo->SubsequentMono8x8PatternFillRect =
         ATIMach64SubsequentMono8x8PatternFillRect;

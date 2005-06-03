@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.h,v 1.27 2004/02/24 16:51:22 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.h,v 1.28tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -35,9 +35,6 @@
 typedef enum
 {
     ATI_CHIP_NONE = 0,
-
-#ifndef AVOID_CPIO
-
     ATI_CHIP_VGA,               /* Generic VGA */
     ATI_CHIP_18800,
     ATI_CHIP_18800_1,
@@ -53,9 +50,6 @@ typedef enum
     ATI_CHIP_68800_6,           /* Mach32 */
     ATI_CHIP_68800LX,           /* Mach32 */
     ATI_CHIP_68800AX,           /* Mach32 */
-
-#endif /* AVOID_CPIO */
-
     ATI_CHIP_88800GXC,          /* Mach64 */
     ATI_CHIP_88800GXD,          /* Mach64 */
     ATI_CHIP_88800GXE,          /* Mach64 */
@@ -127,12 +121,7 @@ typedef enum
 
 extern const char *ATIFoundryNames[];
 
-#ifndef AVOID_CPIO
-
 extern void        ATIMach32ChipID FunctionPrototype((ATIPtr));
-
-#endif /* AVOID_CPIO */
-
 extern void        ATIMach64ChipID FunctionPrototype((ATIPtr, const CARD16));
 extern ATIChipType ATIChipID       FunctionPrototype((const CARD16,
                                                       const CARD8));

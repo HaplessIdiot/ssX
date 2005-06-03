@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimisc.c,v 1.9 2004/02/24 16:51:22 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimisc.c,v 1.10tsi Exp $ */
 /*
  * Copyright 2000 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -103,14 +103,8 @@ ATISetup
             ATIint10Symbols,
             ATIddcSymbols,
             ATIvbeSymbols,
-
-#ifndef AVOID_CPIO
-
             ATIxf1bppSymbols,
             ATIxf4bppSymbols,
-
-#endif /* AVOID_CPIO */
-
             ATIfbSymbols,
             ATIshadowfbSymbols,
             ATIxaaSymbols,

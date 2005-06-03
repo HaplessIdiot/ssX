@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonfig.c,v 1.16 2004/02/24 16:51:22 tsi Exp $*/
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonfig.c,v 1.17tsi Exp $*/
 /*
  * Copyright 2000 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -111,13 +111,7 @@ ATIProcessOptions
 #   define CSync         PublicOption[ATI_OPTION_CSYNC].value.bool
 #   define Devel         PrivateOption[ATI_OPTION_DEVEL].value.bool
 #   define HWCursor      PublicOption[ATI_OPTION_HWCURSOR].value.bool
-
-#ifndef AVOID_CPIO
-
 #   define Linear        PublicOption[ATI_OPTION_LINEAR].value.bool
-
-#endif /* AVOID_CPIO */
-
 #   define CacheMMIO     PublicOption[ATI_OPTION_MMIO_CACHE].value.bool
 #   define TestCacheMMIO PublicOption[ATI_OPTION_TEST_MMIO_CACHE].value.bool
 #   define PanelDisplay  PublicOption[ATI_OPTION_PANEL_DISPLAY].value.bool
@@ -133,44 +127,18 @@ ATIProcessOptions
     xf86CollectOptions(pScreenInfo, NULL);
 
     /* Set non-zero defaults */
-
-#ifndef AVOID_CPIO
-
     if (pATI->Adapter >= ATI_ADAPTER_MACH64)
-
-#endif /* AVOID_CPIO */
-
-    {
-        Accel = CacheMMIO = HWCursor = TRUE;
-
-#ifndef AVOID_CPIO
-
-        Linear = TRUE;
-
-#endif /* AVOID_CPIO */
-
-    }
+        Accel = CacheMMIO = HWCursor = Linear = Blend = PanelDisplay = TRUE;
 
     ReferenceClock = ((double)157500000.0) / ((double)11.0);
 
-#ifndef AVOID_CPIO
-
     if (pATI->PCIInfo)
-
-#endif /* AVOID_CPIO */
-
-    {
         ShadowFB = TRUE;
-    }
-
-    Blend = PanelDisplay = TRUE;
 
     xf86ProcessOptions(pScreenInfo->scrnIndex, pScreenInfo->options,
         PublicOption);
     xf86ProcessOptions(pScreenInfo->scrnIndex, pScreenInfo->options,
         PrivateOption);
-
-#ifndef AVOID_CPIO
 
     /* Disable linear apertures if the OS doesn't support them */
     if (!xf86LinearVidMem() && Linear)
@@ -181,8 +149,6 @@ ATIProcessOptions
         Linear = FALSE;
     }
 
-#endif /* AVOID_CPIO */
-
     /* Move option values into driver private structure */
     pATI->OptionAccel = Accel;
     pATI->OptionBIOSDisplay = BIOSDisplay;
@@ -190,13 +156,7 @@ ATIProcessOptions
     pATI->OptionCRTDisplay = CRTDisplay;
     pATI->OptionCSync = CSync;
     pATI->OptionDevel = Devel;
-
-#ifndef AVOID_CPIO
-
     pATI->OptionLinear = Linear;
-
-#endif /* AVOID_CPIO */
-
     pATI->OptionMMIOCache = CacheMMIO;
     pATI->OptionTestMMIOCache = TestCacheMMIO;
     pATI->OptionProbeClocks = ProbeClocks;

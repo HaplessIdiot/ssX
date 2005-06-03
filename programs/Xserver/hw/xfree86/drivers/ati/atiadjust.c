@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadjust.c,v 1.16 2004/01/05 16:42:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadjust.c,v 1.17tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -51,8 +51,6 @@ ATIAdjustPreInit
 {
     unsigned long MaxBase;
 
-#ifndef AVOID_CPIO
-
     if ((pATI->CPIO_VGAWonder) &&
         (pATI->Chip <= ATI_CHIP_18800_1) &&
         (pATI->VideoRAM == 256) &&
@@ -63,9 +61,6 @@ ATIAdjustPreInit
         pATI->AdjustMask = (unsigned long)(-32);
     }
     else
-
-#endif /* AVOID_CPIO */
-
     {
         pATI->AdjustDepth = (pATI->bitsPerPixel + 7) >> 3;
 
@@ -79,9 +74,6 @@ ATIAdjustPreInit
 
     switch (pATI->NewHW.crtc)
     {
-
-#ifndef AVOID_CPIO
-
         case ATI_CRTC_VGA:
             if (pATI->Chip >= ATI_CHIP_264CT)
             {
@@ -103,8 +95,6 @@ ATIAdjustPreInit
             }
             break;
 
-#endif /* AVOID_CPIO */
-
         case ATI_CRTC_MACH64:
             pATI->AdjustMaxBase = MaxBits(CRTC_OFFSET) << 3;
             break;
@@ -124,9 +114,8 @@ ATIAdjustPreInit
 /*
  * ATIAdjustFrame --
  *
- * This function is used to initialise the SVGA Start Address - the first
- * displayed location in video memory.  This is used to implement the virtual
- * window.
+ * This function is used to set the SVGA Start Address - the first displayed
+ * location in video memory.  This is used to implement the virtual window.
  */
 void
 ATIAdjustFrame
@@ -173,8 +162,6 @@ ATIAdjustFrame
     /* Unlock registers */
     ATIUnlock(pATI);
 
-#ifndef AVOID_CPIO
-
     if ((pATI->NewHW.crtc == ATI_CRTC_VGA) && (pATI->Chip < ATI_CHIP_264CT))
     {
         PutReg(CRTX(pATI->CPIO_VGABase), 0x0CU, GetByte(Base, 1));
@@ -212,17 +199,9 @@ ATIAdjustFrame
             SetBits(Base, CRTC_OFFSET));
     }
     else
-
-#endif /* AVOID_CPIO */
-
     {
-
-#ifndef AVOID_CPIO
-
         if (pATI->NewHW.crtc == ATI_CRTC_VGA)
             Base <<= 1;                 /* LSBit must be zero */
-
-#endif /* AVOID_CPIO */
 
         outr(CRTC_OFF_PITCH, SetBits(pATI->displayWidth >> 3, CRTC_PITCH) |
             SetBits(Base, CRTC_OFFSET));

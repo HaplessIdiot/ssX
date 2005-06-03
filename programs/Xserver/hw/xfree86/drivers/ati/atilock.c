@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.c,v 1.22 2004/06/10 17:28:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.c,v 1.23tsi Exp $ */
 /*
  * Copyright 1999 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -40,19 +40,11 @@ ATIUnlock
     ATIPtr pATI
 )
 {
-    CARD32 tmp;
-
-#ifndef AVOID_CPIO
-
-    CARD32 saved_lcd_gen_ctrl = 0, lcd_gen_ctrl = 0;
-
-#endif /* AVOID_CPIO */
+    CARD32 saved_lcd_gen_ctrl = 0, lcd_gen_ctrl = 0, tmp;
 
     if (pATI->Unlocked)
         return;
     pATI->Unlocked = TRUE;
-
-#ifndef AVOID_CPIO
 
     if (pATI->ChipHasSUBSYS_CNTL)
     {
@@ -92,9 +84,6 @@ ATIUnlock
         ProbeWaitIdleEmpty();
     }
     else if (pATI->Chip >= ATI_CHIP_88800GXC)
-
-#endif /* AVOID_CPIO */
-
     {
         /* Reset everything */
         pATI->LockData.bus_cntl = inr(BUS_CNTL);
@@ -161,15 +150,10 @@ ATIUnlock
         if (pATI->Chip >= ATI_CHIP_264CT)
             tmp &= ~DAC_FEA_CON_EN;
 
-#ifndef AVOID_CPIO
-
         /* Ensure VGA aperture is enabled */
         pATI->LockData.config_cntl = inr(CONFIG_CNTL);
         tmp |= DAC_VGA_ADR_EN;
         outr(CONFIG_CNTL, pATI->LockData.config_cntl & ~CFG_VGA_DIS);
-
-#endif /* AVOID_CPIO */
-
         outr(DAC_CNTL, tmp);
 
         if (pATI->Chip >= ATI_CHIP_264VTB)
@@ -202,9 +186,6 @@ ATIUnlock
                 }
             }
         }
-
-#ifndef AVOID_CPIO
-
     }
 
     if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
@@ -400,9 +381,6 @@ ATIUnlock
                 out8(LCD_INDEX, GetByte(pATI->LockData.lcd_index, 0));
             }
         }
-
-#endif /* AVOID_CPIO */
-
     }
 }
 
@@ -417,18 +395,11 @@ ATILock
     ATIPtr pATI
 )
 {
-
-#ifndef AVOID_CPIO
-
     CARD32 tmp, saved_lcd_gen_ctrl = 0, lcd_gen_ctrl = 0;
-
-#endif /* AVOID_CPIO */
 
     if (!pATI->Unlocked)
         return;
     pATI->Unlocked = FALSE;
-
-#ifndef AVOID_CPIO
 
     if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
     {
@@ -537,9 +508,6 @@ ATILock
         ProbeWaitIdleEmpty();
     }
     else if (pATI->Chip >= ATI_CHIP_88800GXC)
-
-#endif /* AVOID_CPIO */
-
     {
         /* Reset everything */
         outr(BUS_CNTL, pATI->LockData.bus_cntl);
@@ -550,16 +518,18 @@ ATILock
         outr(GEN_TEST_CNTL, pATI->LockData.gen_test_cntl);
         outr(GEN_TEST_CNTL, pATI->LockData.gen_test_cntl | GEN_GUI_EN);
 
+        /*
+         * Work around for yet another atyfb bug...  If composite sync was in
+         * effect for server video modes, ensure it is also in effect in the
+         * mode on entry/exit.
+         */
+        if (pATI->OptionCSync)
+            pATI->LockData.crtc_gen_cntl |= CRTC_CSYNC_EN;
+
         outr(CRTC_GEN_CNTL, pATI->LockData.crtc_gen_cntl | CRTC_EN);
         outr(CRTC_GEN_CNTL, pATI->LockData.crtc_gen_cntl);
         outr(CRTC_GEN_CNTL, pATI->LockData.crtc_gen_cntl | CRTC_EN);
-
-#ifndef AVOID_CPIO
-
         outr(CONFIG_CNTL, pATI->LockData.config_cntl);
-
-#endif /* AVOID_CPIO */
-
         outr(DAC_CNTL, pATI->LockData.dac_cntl);
         if (pATI->Chip < ATI_CHIP_264CT)
             outr(MEM_CNTL, pATI->LockData.mem_cntl);

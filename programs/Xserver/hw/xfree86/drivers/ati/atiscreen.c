@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.33 2004/12/31 03:30:41 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.34tsi Exp $ */
 /*
  * Copyright 1999 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -137,9 +137,6 @@ ATIScreenInit
     /* Initialise framebuffer layer */
     switch (pATI->bitsPerPixel)
     {
-
-#ifndef AVOID_CPIO
-
         case 1:
             pATI->Closeable = xf1bppScreenInit(pScreen, pFB,
                 pScreenInfo->virtualX, pScreenInfo->virtualY,
@@ -151,8 +148,6 @@ ATIScreenInit
                 pScreenInfo->virtualX, pScreenInfo->virtualY,
                 pScreenInfo->xDpi, pScreenInfo->yDpi, pATI->displayWidth);
             break;
-
-#endif /* AVOID_CPIO */
 
         case 8:
         case 16:
@@ -201,9 +196,6 @@ ATIScreenInit
                     "RENDER extension not supported with a shadowed"
                     " framebuffer.\n");
         }
-
-#ifndef AVOID_CPIO
-
         else if (pATI->BankInfo.BankSize)
         {
             if (serverGeneration == 1)
@@ -211,9 +203,6 @@ ATIScreenInit
                     "RENDER extension not supported with a banked"
                     " framebuffer.\n");
         }
-
-#endif /* AVOID_CPIO */
-
         else if (!fbPictureInit(pScreen, NULL, 0))
         {
             if (serverGeneration == 1)
@@ -232,15 +221,11 @@ ATIScreenInit
 
     xf86SetBlackWhitePixels(pScreen);
 
-#ifndef AVOID_CPIO
-
     /* Initialise banking if needed */
     if (!miInitializeBanking(pScreen,
                              pScreenInfo->virtualX, pScreenInfo->virtualY,
                              pATI->displayWidth, &pATI->BankInfo))
         return FALSE;
-
-#endif /* AVOID_CPIO */
 
     /* Setup acceleration */
     if (!ATIInitializeAcceleration(pScreen, pScreenInfo, pATI))
@@ -261,23 +246,12 @@ ATIScreenInit
     if (!miCreateDefColormap(pScreen))
         return FALSE;
 
-#ifdef AVOID_CPIO
-
-    if (!xf86HandleColormaps(pScreen, 256, pATI->rgbBits, ATILoadPalette, NULL,
-                             CMAP_PALETTED_TRUECOLOR |
-                             CMAP_LOAD_EVEN_IF_OFFSCREEN))
-            return FALSE;
-
-#else /* AVOID_CPIO */
-
     if (pATI->depth > 1)
         if (!xf86HandleColormaps(pScreen, (pATI->depth == 4) ? 16 : 256,
                                  pATI->rgbBits, ATILoadPalette, NULL,
                                  CMAP_PALETTED_TRUECOLOR |
                                  CMAP_LOAD_EVEN_IF_OFFSCREEN))
             return FALSE;
-
-#endif /* AVOID_CPIO */
 
     /* Initialise shadow framebuffer */
     if (pATI->OptionShadowFB &&

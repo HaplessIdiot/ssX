@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiwonder.c,v 1.15 2004/01/05 16:42:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiwonder.c,v 1.16tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -54,8 +54,6 @@
 #include "atichip.h"
 #include "atiwonder.h"
 #include "atiwonderio.h"
-
-#ifndef AVOID_CPIO
 
 /*
  * ATIVGAWonderPreInit --
@@ -299,5 +297,3 @@ ATIVGAWonderSet
     ATIModifyExtReg(pATI, 0xBAU, -1, 0x00U, pATIHW->ba);
     ATIModifyExtReg(pATI, 0xBDU, -1, 0x00U, pATIHW->bd);
 }
-
-#endif /* AVOID_CPIO */

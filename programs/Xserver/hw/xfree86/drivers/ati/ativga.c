@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.22 2004/06/10 17:28:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.23tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -33,8 +33,6 @@
 # define DPMS_SERVER
 #endif
 #include "extensions/dpms.h"
-
-#ifndef AVOID_CPIO
 
 /*
  * ATIVGAPreInit --
@@ -136,6 +134,8 @@ ATIVGASave
 {
     int Index;
 
+    xf86InterceptSignals(&pATI->CaughtSignal);
+
     /* Save miscellaneous output register */
     pATIHW->genmo = inb(R_GENMO);
     ATISetVGAIOBase(pATI, pATIHW->genmo);
@@ -158,6 +158,8 @@ ATIVGASave
     /* Save graphics controller registers */
     for (Index = 0;  Index < NumberOf(pATIHW->gra);  Index++)
         pATIHW->gra[Index] = GetReg(GRAX, Index);
+
+    xf86InterceptSignals(NULL);
 }
 
 /*
@@ -426,6 +428,8 @@ ATIVGASet
 {
     int Index;
 
+    xf86InterceptSignals(&pATI->CaughtSignal);
+
     /* Set VGA I/O base */
     ATISetVGAIOBase(pATI, pATIHW->genmo);
 
@@ -451,6 +455,8 @@ ATIVGASet
     /* Load graphics controller registers */
     for (Index = 0;  Index < NumberOf(pATIHW->gra);  Index++)
         PutReg(GRAX, Index, pATIHW->gra[Index]);
+
+    xf86InterceptSignals(NULL);
 }
 
 /*
@@ -465,7 +471,9 @@ ATIVGASaveScreen
     int    Mode
 )
 {
+    xf86InterceptSignals(&pATI->CaughtSignal);
     (void)inb(GENS1(pATI->CPIO_VGABase));       /* Reset flip-flop */
+    xf86InterceptSignals(NULL);
 
     switch (Mode)
     {
@@ -532,5 +540,3 @@ ATIVGASetDPMSMode
     PutReg(CRTX(pATI->CPIO_VGABase), 0x17U, crt17);
     PutReg(SEQX, 0x01U, 0x03U); /* End synchonous reset */
 }
-
-#endif /* AVOID_CPIO */

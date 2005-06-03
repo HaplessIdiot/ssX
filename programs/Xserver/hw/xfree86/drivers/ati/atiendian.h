@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativgaio.c,v 1.6tsi Exp $ */
+/* $XFree86$ */
 /*
- * Copyright 2000 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
+ * Copyright 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,23 +21,21 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "ati.h"
-#include "atistruct.h"
-#include "ativgaio.h"
+#ifndef ___ATIENDIAN_H___
+#define ___ATIENDIAN_H___ 1
 
 /*
- * ATISetVGAIOBase --
- *
- * This sets vgaIOBase according to the value of the passed value of the
- * miscellaneous output register.
+ * Declarations related to endianness.
  */
-void
-ATISetVGAIOBase
-(
-    ATIPtr      pATI,
-    const CARD8 misc
-)
+typedef union
 {
-    pATI->CPIO_VGABase = (misc & 0x01U) ? ColourIOBase : MonochromeIOBase;
-    pATI->CPIO_VGABase += pATI->DomainIOBase;
-}
+    const unsigned char byte[4];
+    const unsigned int  endian;
+} ATIEndianType;
+
+extern const ATIEndianType ATIEndian;
+
+#define ATI_LITTLE_ENDIAN 0x67452301U
+#define ATI_BIG_ENDIAN    0x01234567U
+
+#endif /* ___ATIENDIAN_H___ */

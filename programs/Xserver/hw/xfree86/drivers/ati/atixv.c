@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atixv.c,v 1.6 2004/01/05 16:42:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atixv.c,v 1.7tsi Exp $ */
 /*
  * Copyright 2001 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -22,6 +22,8 @@
  */
 
 #include "atiadapter.h"
+#include "atichip.h"
+#include "atiendian.h"
 #include "atimach64xv.h"
 #include "atistruct.h"
 #include "atixv.h"
@@ -97,14 +99,9 @@ ATIXVPreInit
     ATIPtr      pATI
 )
 {
-
-#ifndef AVOID_CPIO
-
-    /* Currently a linear aperture is needed ... */
+    /* Currently a linear packed aperture is needed ... */
     if (!pATI->LinearBase)
         return;
-
-#endif /* AVOID_CPIO */
 
     (void)xf86XVRegisterGenericAdaptorDriver(ATIXVInitializeAdaptor);
 }
@@ -126,8 +123,13 @@ ATIInitializeXVideo
     int                 nAdaptor;
     Bool                result;
 
-    if (!(pScreenInfo->memPhysBase = pATI->LinearBase))
+    if ((pScreenInfo->depth < 8) ||
+        !(pScreenInfo->memPhysBase = pATI->LinearBase))
         return FALSE;
+
+    if ((ATIEndian.endian == ATI_BIG_ENDIAN) &&
+        (pATI->Chip >= ATI_CHIP_264VTB))
+        pScreenInfo->memPhysBase -= 0x00800000U;
 
     pScreenInfo->fbOffset = 0;
 

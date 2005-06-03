@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiident.h,v 1.11 2004/01/05 16:42:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiident.h,v 1.12tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -29,18 +29,12 @@
 typedef enum
 {
     ATI_CHIPSET_ATI,
-
-#ifndef AVOID_CPIO
-
     ATI_CHIPSET_ATIVGA,
     ATI_CHIPSET_IBMVGA,
     ATI_CHIPSET_IBM8514,
     ATI_CHIPSET_VGAWONDER,
     ATI_CHIPSET_MACH8,
     ATI_CHIPSET_MACH32,
-
-#endif /* AVOID_CPIO */
-
     ATI_CHIPSET_MACH64,
     ATI_CHIPSET_RAGE128,
     ATI_CHIPSET_RADEON,

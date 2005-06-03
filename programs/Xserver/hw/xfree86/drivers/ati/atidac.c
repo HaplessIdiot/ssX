@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.19 2004/01/05 16:42:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.20tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -57,12 +57,13 @@ const SymTabRec ATIDACDescriptors[] =
     {ATI_DAC_UNKNOWN,       "Unknown"}          /* Must be last */
 };
 
-#ifndef AVOID_CPIO
-
 /*
  * ATISetDACIOPorts --
  *
- * This function sets up DAC access I/O port numbers.
+ * This function sets up DAC access I/O port numbers.  It is important there be
+ * no side-effects when reading the CPIO_DAC_WAIT port.  The current settings
+ * might need to be changed should they end up interfering with accessing
+ * certain RAMDACs.
  */
 void
 ATISetDACIOPorts
@@ -78,7 +79,7 @@ ATISetDACIOPorts
             pATI->CPIO_DAC_MASK = VGA_DAC_MASK;
             pATI->CPIO_DAC_READ = VGA_DAC_READ;
             pATI->CPIO_DAC_WRITE = VGA_DAC_WRITE;
-            pATI->CPIO_DAC_WAIT = GENS1(pATI->CPIO_VGABase);
+            pATI->CPIO_DAC_WAIT = GENENB;
             break;
 
         case ATI_CRTC_8514:
@@ -90,19 +91,18 @@ ATISetDACIOPorts
             break;
 
         case ATI_CRTC_MACH64:
+            /* This is no longer used, but is kept for reference */
             pATI->CPIO_DAC_DATA = ATIIOPort(DAC_REGS) + 1;
             pATI->CPIO_DAC_MASK = ATIIOPort(DAC_REGS) + 2;
             pATI->CPIO_DAC_READ = ATIIOPort(DAC_REGS) + 3;
             pATI->CPIO_DAC_WRITE = ATIIOPort(DAC_REGS) + 0;
-            pATI->CPIO_DAC_WAIT = pATI->CPIOBase;
+            pATI->CPIO_DAC_WAIT = pATI->CPIO_DAC_MASK;
             break;
 
         default:
             break;
     }
 }
-
-#endif /* AVOID_CPIO */
 
 /*
  * ATIGetDACCmdReg --
@@ -112,28 +112,26 @@ ATISetDACIOPorts
 CARD8
 ATIGetDACCmdReg
 (
-    ATIPtr pATI
+    ATIPtr      pATI,
+    ATICRTCType crtc
 )
 {
+    switch (crtc)
+    {
+        case ATI_CRTC_MACH64:
+            (void)in8(M64_DAC_WRITE);           /* Reset to PEL mode */
+            (void)in8(M64_DAC_MASK);
+            (void)in8(M64_DAC_MASK);
+            (void)in8(M64_DAC_MASK);
+            return in8(M64_DAC_MASK);
 
-#ifdef AVOID_CPIO
-
-    (void)in8(M64_DAC_WRITE);           /* Reset to PEL mode */
-    (void)in8(M64_DAC_MASK);
-    (void)in8(M64_DAC_MASK);
-    (void)in8(M64_DAC_MASK);
-    return in8(M64_DAC_MASK);
-
-#else /* AVOID_CPIO */
-
-    (void)inb(pATI->CPIO_DAC_WRITE);    /* Reset to PEL mode */
-    (void)inb(pATI->CPIO_DAC_MASK);
-    (void)inb(pATI->CPIO_DAC_MASK);
-    (void)inb(pATI->CPIO_DAC_MASK);
-    return inb(pATI->CPIO_DAC_MASK);
-
-#endif /* AVOID_CPIO */
-
+        default:
+            (void)inb(pATI->CPIO_DAC_WRITE);    /* Reset to PEL mode */
+            (void)inb(pATI->CPIO_DAC_MASK);
+            (void)inb(pATI->CPIO_DAC_MASK);
+            (void)inb(pATI->CPIO_DAC_MASK);
+            return inb(pATI->CPIO_DAC_MASK);
+    }
 }
 
 /*
@@ -182,8 +180,6 @@ ATIDACPreInit
             pATIHW->lut[Index2 + 2] = maxColour;
         }
 
-#ifndef AVOID_CPIO
-
         if (pATI->depth == 1)
         {
             rgb blackColour = pScreenInfo->display->blackColour,
@@ -227,9 +223,6 @@ ATIDACPreInit
                 pATIHW->lut[Index + 1] =
                 pATIHW->lut[Index + 2] = 0x00U;
         }
-
-#endif /* AVOID_CPIO */
-
     }
 }
 
@@ -248,60 +241,60 @@ ATIDACSave
 {
     int Index;
 
-#ifdef AVOID_CPIO
-
-    pATIHW->dac_read = in8(M64_DAC_READ);
-    DACDelay;
-    pATIHW->dac_write = in8(M64_DAC_WRITE);
-    DACDelay;
-    pATIHW->dac_mask = in8(M64_DAC_MASK);
-    DACDelay;
-
-    /* Save DAC's colour lookup table */
-    out8(M64_DAC_MASK, 0xFFU);
-    DACDelay;
-    out8(M64_DAC_READ, 0x00U);
-    DACDelay;
-    for (Index = 0;  Index < NumberOf(pATIHW->lut);  Index++)
+    switch (pATIHW->crtc)
     {
-        pATIHW->lut[Index] = in8(M64_DAC_DATA);
-        DACDelay;
+        case ATI_CRTC_MACH64:
+            pATIHW->dac_read = in8(M64_DAC_READ);
+            DACDelay(in8(M64_DAC_WAIT));
+            pATIHW->dac_write = in8(M64_DAC_WRITE);
+            DACDelay(in8(M64_DAC_WAIT));
+            pATIHW->dac_mask = in8(M64_DAC_MASK);
+            DACDelay(in8(M64_DAC_WAIT));
+
+            /* Save DAC's colour lookup table */
+            out8(M64_DAC_MASK, 0xFFU);
+            DACDelay(in8(M64_DAC_WAIT));
+            out8(M64_DAC_READ, 0x00U);
+            DACDelay(in8(M64_DAC_WAIT));
+            for (Index = 0;  Index < NumberOf(pATIHW->lut);  Index++)
+            {
+                pATIHW->lut[Index] = in8(M64_DAC_DATA);
+                DACDelay(in8(M64_DAC_WAIT));
+            }
+
+            out8(M64_DAC_MASK, pATIHW->dac_mask);
+            DACDelay(in8(M64_DAC_WAIT));
+            out8(M64_DAC_READ, pATIHW->dac_read);
+            DACDelay(in8(M64_DAC_WAIT));
+            break;
+
+        default:
+            ATISetDACIOPorts(pATI, pATIHW->crtc);
+
+            pATIHW->dac_read = inb(pATI->CPIO_DAC_READ);
+            DACDelay(inb(pATI->CPIO_DAC_WAIT));
+            pATIHW->dac_write = inb(pATI->CPIO_DAC_WRITE);
+            DACDelay(inb(pATI->CPIO_DAC_WAIT));
+            pATIHW->dac_mask = inb(pATI->CPIO_DAC_MASK);
+            DACDelay(inb(pATI->CPIO_DAC_WAIT));
+
+            /* Save DAC's colour lookup table */
+            outb(pATI->CPIO_DAC_MASK, 0xFFU);
+            DACDelay(inb(pATI->CPIO_DAC_WAIT));
+            outb(pATI->CPIO_DAC_READ, 0x00U);
+            DACDelay(inb(pATI->CPIO_DAC_WAIT));
+            for (Index = 0;  Index < NumberOf(pATIHW->lut);  Index++)
+            {
+                pATIHW->lut[Index] = inb(pATI->CPIO_DAC_DATA);
+                DACDelay(inb(pATI->CPIO_DAC_WAIT));
+            }
+
+            outb(pATI->CPIO_DAC_MASK, pATIHW->dac_mask);
+            DACDelay(inb(pATI->CPIO_DAC_WAIT));
+            outb(pATI->CPIO_DAC_READ, pATIHW->dac_read);
+            DACDelay(inb(pATI->CPIO_DAC_WAIT));
+            break;
     }
-
-    out8(M64_DAC_MASK, pATIHW->dac_mask);
-    DACDelay;
-    out8(M64_DAC_READ, pATIHW->dac_read);
-    DACDelay;
-
-#else /* AVOID_CPIO */
-
-    ATISetDACIOPorts(pATI, pATIHW->crtc);
-
-    pATIHW->dac_read = inb(pATI->CPIO_DAC_READ);
-    DACDelay;
-    pATIHW->dac_write = inb(pATI->CPIO_DAC_WRITE);
-    DACDelay;
-    pATIHW->dac_mask = inb(pATI->CPIO_DAC_MASK);
-    DACDelay;
-
-    /* Save DAC's colour lookup table */
-    outb(pATI->CPIO_DAC_MASK, 0xFFU);
-    DACDelay;
-    outb(pATI->CPIO_DAC_READ, 0x00U);
-    DACDelay;
-    for (Index = 0;  Index < NumberOf(pATIHW->lut);  Index++)
-    {
-        pATIHW->lut[Index] = inb(pATI->CPIO_DAC_DATA);
-        DACDelay;
-    }
-
-    outb(pATI->CPIO_DAC_MASK, pATIHW->dac_mask);
-    DACDelay;
-    outb(pATI->CPIO_DAC_READ, pATIHW->dac_read);
-    DACDelay;
-
-#endif /* AVOID_CPIO */
-
 }
 
 /*
@@ -318,50 +311,89 @@ ATIDACSet
 {
     int Index;
 
-#ifdef AVOID_CPIO
-
-    /* Load DAC's colour lookup table */
-    out8(M64_DAC_MASK, 0xFFU);
-    DACDelay;
-    out8(M64_DAC_WRITE, 0x00U);
-    DACDelay;
-    for (Index = 0;  Index < NumberOf(pATIHW->lut);  Index++)
+    switch (pATIHW->crtc)
     {
-        out8(M64_DAC_DATA, pATIHW->lut[Index]);
-        DACDelay;
+        case ATI_CRTC_MACH64:
+            /* Load DAC's colour lookup table */
+            out8(M64_DAC_MASK, 0xFFU);
+            DACDelay(in8(M64_DAC_WAIT));
+            out8(M64_DAC_WRITE, 0x00U);
+            DACDelay(in8(M64_DAC_WAIT));
+            for (Index = 0;  Index < NumberOf(pATIHW->lut);  Index++)
+            {
+                out8(M64_DAC_DATA, pATIHW->lut[Index]);
+                DACDelay(in8(M64_DAC_WAIT));
+            }
+
+            out8(M64_DAC_MASK, pATIHW->dac_mask);
+            DACDelay(in8(M64_DAC_WAIT));
+            out8(M64_DAC_READ, pATIHW->dac_read);
+            DACDelay(in8(M64_DAC_WAIT));
+            out8(M64_DAC_WRITE, pATIHW->dac_write);
+            DACDelay(in8(M64_DAC_WAIT));
+            break;
+
+        default:
+            ATISetDACIOPorts(pATI, pATIHW->crtc);
+
+            /* Load DAC's colour lookup table */
+            outb(pATI->CPIO_DAC_MASK, 0xFFU);
+            DACDelay(inb(pATI->CPIO_DAC_WAIT));
+            outb(pATI->CPIO_DAC_WRITE, 0x00U);
+            DACDelay(inb(pATI->CPIO_DAC_WAIT));
+            for (Index = 0;  Index < NumberOf(pATIHW->lut);  Index++)
+            {
+                outb(pATI->CPIO_DAC_DATA, pATIHW->lut[Index]);
+                DACDelay(inb(pATI->CPIO_DAC_WAIT));
+            }
+
+            outb(pATI->CPIO_DAC_MASK, pATIHW->dac_mask);
+            DACDelay(inb(pATI->CPIO_DAC_WAIT));
+            outb(pATI->CPIO_DAC_READ, pATIHW->dac_read);
+            DACDelay(inb(pATI->CPIO_DAC_WAIT));
+            outb(pATI->CPIO_DAC_WRITE, pATIHW->dac_write);
+            DACDelay(inb(pATI->CPIO_DAC_WAIT));
+            break;
     }
+}
 
-    out8(M64_DAC_MASK, pATIHW->dac_mask);
-    DACDelay;
-    out8(M64_DAC_READ, pATIHW->dac_read);
-    DACDelay;
-    out8(M64_DAC_WRITE, pATIHW->dac_write);
-    DACDelay;
-
-#else /* AVOID_CPIO */
-
-    ATISetDACIOPorts(pATI, pATIHW->crtc);
-
-    /* Load DAC's colour lookup table */
-    outb(pATI->CPIO_DAC_MASK, 0xFFU);
-    DACDelay;
-    outb(pATI->CPIO_DAC_WRITE, 0x00U);
-    DACDelay;
-    for (Index = 0;  Index < NumberOf(pATIHW->lut);  Index++)
+/*
+ * ATISetLUTEntry --
+ *
+ * This function is called to set one of a DAC's LUT entries.
+ */
+static void
+ATISetLUTEntry
+(
+    ATIPtr pATI,
+    int    Index,
+    CARD8  *LUTEntry
+)
+{
+    switch (pATI->NewHW.crtc)
     {
-        outb(pATI->CPIO_DAC_DATA, pATIHW->lut[Index]);
-        DACDelay;
+        case ATI_CRTC_MACH64:
+            out8(M64_DAC_WRITE, Index);
+            DACDelay(in8(M64_DAC_WAIT));
+            out8(M64_DAC_DATA, LUTEntry[0]);
+            DACDelay(in8(M64_DAC_WAIT));
+            out8(M64_DAC_DATA, LUTEntry[1]);
+            DACDelay(in8(M64_DAC_WAIT));
+            out8(M64_DAC_DATA, LUTEntry[2]);
+            DACDelay(in8(M64_DAC_WAIT));
+            break;
+
+        default:
+            outb(pATI->CPIO_DAC_WRITE, Index);
+            DACDelay(inb(pATI->CPIO_DAC_WAIT));
+            outb(pATI->CPIO_DAC_DATA, LUTEntry[0]);
+            DACDelay(inb(pATI->CPIO_DAC_WAIT));
+            outb(pATI->CPIO_DAC_DATA, LUTEntry[1]);
+            DACDelay(inb(pATI->CPIO_DAC_WAIT));
+            outb(pATI->CPIO_DAC_DATA, LUTEntry[2]);
+            DACDelay(inb(pATI->CPIO_DAC_WAIT));
+            break;
     }
-
-    outb(pATI->CPIO_DAC_MASK, pATIHW->dac_mask);
-    DACDelay;
-    outb(pATI->CPIO_DAC_READ, pATIHW->dac_read);
-    DACDelay;
-    outb(pATI->CPIO_DAC_WRITE, pATIHW->dac_write);
-    DACDelay;
-
-#endif /* AVOID_CPIO */
-
 }
 
 /*
@@ -445,35 +477,8 @@ ATILoadPalette
             for (Index = 0;
                  Index < (SizeOf(pATI->NewHW.lut) / 3);
                  Index += i, LUTEntry += i * 3)
-            {
-                if (!fChanged[Index])
-                    continue;
-
-#ifdef AVOID_CPIO
-
-                out8(M64_DAC_WRITE, Index);
-                DACDelay;
-                out8(M64_DAC_DATA, LUTEntry[0]);
-                DACDelay;
-                out8(M64_DAC_DATA, LUTEntry[1]);
-                DACDelay;
-                out8(M64_DAC_DATA, LUTEntry[2]);
-                DACDelay;
-
-#else /* AVOID_CPIO */
-
-                outb(pATI->CPIO_DAC_WRITE, Index);
-                DACDelay;
-                outb(pATI->CPIO_DAC_DATA, LUTEntry[0]);
-                DACDelay;
-                outb(pATI->CPIO_DAC_DATA, LUTEntry[1]);
-                DACDelay;
-                outb(pATI->CPIO_DAC_DATA, LUTEntry[2]);
-                DACDelay;
-
-#endif /* AVOID_CPIO */
-
-            }
+                if (fChanged[Index])
+                    ATISetLUTEntry(pATI, Index, LUTEntry);
         }
     }
     else
@@ -490,33 +495,7 @@ ATILoadPalette
             LUTEntry[2] = Colours[Index].blue;
 
             if (pScreenInfo->vtSema || pATI->currentMode)
-            {
-
-#ifdef AVOID_CPIO
-
-                out8(M64_DAC_WRITE, Index);
-                DACDelay;
-                out8(M64_DAC_DATA, LUTEntry[0]);
-                DACDelay;
-                out8(M64_DAC_DATA, LUTEntry[1]);
-                DACDelay;
-                out8(M64_DAC_DATA, LUTEntry[2]);
-                DACDelay;
-
-#else /* AVOID_CPIO */
-
-                outb(pATI->CPIO_DAC_WRITE, Index);
-                DACDelay;
-                outb(pATI->CPIO_DAC_DATA, LUTEntry[0]);
-                DACDelay;
-                outb(pATI->CPIO_DAC_DATA, LUTEntry[1]);
-                DACDelay;
-                outb(pATI->CPIO_DAC_DATA, LUTEntry[2]);
-                DACDelay;
-
-#endif /* AVOID_CPIO */
-
-            }
+                ATISetLUTEntry(pATI, Index, LUTEntry);
         }
     }
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadapter.h,v 1.11 2004/01/05 16:42:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadapter.h,v 1.12tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -30,9 +30,6 @@
 typedef enum
 {
     ATI_ADAPTER_NONE = 0,
-
-#ifndef AVOID_CPIO
-
     ATI_ADAPTER_EGA,
     ATI_ADAPTER_EGA_PLUS,
     ATI_ADAPTER_VGA,
@@ -46,9 +43,6 @@ typedef enum
     ATI_ADAPTER_8514A,
     ATI_ADAPTER_MACH8,
     ATI_ADAPTER_MACH32,
-
-#endif /* AVOID_CPIO */
-
     ATI_ADAPTER_MACH64,
     ATI_ADAPTER_RAGE128,
     ATI_ADAPTER_RADEON,

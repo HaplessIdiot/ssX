@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.c,v 1.19 2004/01/05 16:42:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.c,v 1.20tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -64,8 +64,6 @@ ATIClaimResources
 {
     resPtr   pResources;
 
-#ifndef AVOID_CPIO
-
     resRange Resources[2] = {{0, 0, 0}, _END};
 
     /* Claim VGA and VGAWonder resources */
@@ -91,9 +89,9 @@ ATIClaimResources
                 Resources[0].type = ResExcIoSparse | ResBus;
             Resources[0].rBase = pATI->CPIO_VGAWonder;
             if (pATI->Chip <= ATI_CHIP_18800_1)
-                Resources[0].rMask = 0x03FEU;
+                Resources[0].rMask = (int)0xFFFF03FEU;
             else
-                Resources[0].rMask = 0xF3FEU;
+                Resources[0].rMask = (int)0xFFFFF3FEU;
 
             xf86ClaimFixedResources(Resources, pATI->iEntity);
 
@@ -113,27 +111,20 @@ ATIClaimResources
 
     /* Claim Mach64 sparse I/O resources */
     if ((pATI->Adapter == ATI_ADAPTER_MACH64) &&
-        (pATI->CPIODecoding == SPARSE_IO))
+        (pATI->IODecoding == SPARSE_IO))
     {
         if (pATI->SharedAccelerator)
             Resources[0].type = ResShrIoSparse | ResBus;
         else
             Resources[0].type = ResExcIoSparse | ResBus;
-        Resources[0].rBase = pATI->CPIOBase;
-        Resources[0].rMask = 0x03FCU;
+        Resources[0].rBase = pATI->CPIOBase - pATI->DomainIOBase;
+        Resources[0].rMask = (int)0xFFFF03FCU;
 
         xf86ClaimFixedResources(Resources, pATI->iEntity);
     }
 
     if (Active)
         return;
-
-#else /* AVOID_CPIO */
-
-    if (pATI->SharedAccelerator)
-        return;
-
-#endif /* AVOID_CPIO */
 
     /* Register unshared relocatable resources for inactive adapters */
     do

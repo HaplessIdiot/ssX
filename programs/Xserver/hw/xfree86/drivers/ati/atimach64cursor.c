@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64cursor.c,v 1.2 2004/01/05 16:42:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64cursor.c,v 1.3tsi Exp $ */
 /*
  * Copyright 2003 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -23,6 +23,7 @@
 
 #include "ati.h"
 #include "aticrtc.h"
+#include "atiendian.h"
 #include "atimach64accel.h"
 #include "atimach64cursor.h"
 #include "atimach64io.h"
@@ -337,8 +338,6 @@ ATIMach64UseHWCursor
     if (!pATI->CursorBase)
         return FALSE;
 
-#ifndef AVOID_CPIO
-
     /*
      * For some reason, the hardware cursor isn't vertically scaled when a VGA
      * doublescanned or multiscanned mode is in effect.
@@ -348,8 +347,6 @@ ATIMach64UseHWCursor
     if ((pScreenInfo->currentMode->Flags & V_DBLSCAN) ||
         (pScreenInfo->currentMode->VScan > 1))
         return FALSE;
-
-#endif /* AVOID_CPIO */
 
     return TRUE;
 }
@@ -379,14 +376,9 @@ ATIMach64CursorInit
         HARDWARE_CURSOR_SHOW_TRANSPARENT |
         HARDWARE_CURSOR_UPDATE_UNHIDDEN |
         HARDWARE_CURSOR_AND_SOURCE_WITH_MASK |
-
-#if X_BYTE_ORDER != X_LITTLE_ENDIAN
-
-        HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
-
-#endif /* X_BYTE_ORDER */
-
         HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_1;
+    if (ATIEndian.endian == ATI_BIG_ENDIAN)
+        pCursorInfo->Flags |= HARDWARE_CURSOR_BIT_ORDER_MSBFIRST;
     pCursorInfo->MaxWidth = pCursorInfo->MaxHeight = 64;
 
     pCursorInfo->SetCursorColors = ATIMach64SetCursorColours;

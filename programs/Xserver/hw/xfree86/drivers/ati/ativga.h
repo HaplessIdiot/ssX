@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.h,v 1.11 2004/01/05 16:42:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.h,v 1.12tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -29,8 +29,6 @@
 
 #include "xf86str.h"
 
-#ifndef AVOID_CPIO
-
 extern void ATIVGAPreInit     FunctionPrototype((ATIPtr, ATIHWPtr));
 extern void ATIVGASave        FunctionPrototype((ATIPtr, ATIHWPtr));
 extern void ATIVGACalculate   FunctionPrototype((ATIPtr, ATIHWPtr,
@@ -39,7 +37,5 @@ extern void ATIVGASet         FunctionPrototype((ATIPtr, ATIHWPtr));
 
 extern void ATIVGASaveScreen  FunctionPrototype((ATIPtr, int));
 extern void ATIVGASetDPMSMode FunctionPrototype((ATIPtr, int));
-
-#endif /* AVOID_CPIO */
 
 #endif /* ___ATIVGA_H___ */

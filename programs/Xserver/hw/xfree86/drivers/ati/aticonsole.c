@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.24 2004/12/31 03:30:41 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.25tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -62,14 +62,9 @@ ATISaveScreen
     pATI = ATIPTR(pScreenInfo);
     switch (pATI->NewHW.crtc)
     {
-
-#ifndef AVOID_CPIO
-
         case ATI_CRTC_VGA:
             ATIVGASaveScreen(pATI, Mode);
             break;
-
-#endif /* AVOID_CPIO */
 
         case ATI_CRTC_MACH64:
             ATIMach64SaveScreen(pATI, Mode);
@@ -110,9 +105,6 @@ ATISetDPMSMode
             break;
 
         default:
-
-#ifndef AVOID_CPIO
-
             /* Assume EGA/VGA */
             ATIVGASetDPMSMode(pATI, DPMSMode);
             break;
@@ -120,9 +112,6 @@ ATISetDPMSMode
         case ATI_ADAPTER_NONE:
         case ATI_ADAPTER_8514A:
         case ATI_ADAPTER_MACH8:
-
-#endif /* AVOID_CPIO */
-
             break;
     }
 }
@@ -266,13 +255,9 @@ ATIEnterVT
     if (pATI->OptionShadowFB)
         return TRUE;
 
-#ifndef AVOID_CPIO
-
     /* If used, modify banking interface */
     if (!miModifyBanking(pScreen, &pATI->BankInfo))
         return FALSE;
-
-#endif /* AVOID_CPIO */
 
     pScreenPixmap = (*pScreen->GetScreenPixmap)(pScreen);
     PixmapPrivate = pScreenPixmap->devPrivate;
@@ -334,12 +319,8 @@ ATIFreeScreen
 
     ATILeaveGraphics(pScreenInfo, pATI);
 
-#ifndef AVOID_CPIO
-
     xfree(pATI->OldHW.frame_buffer);
     xfree(pATI->NewHW.frame_buffer);
-
-#endif /* AVOID_CPIO */
 
     xfree(pATI->pShadow);
     xfree(pATI->pDGAMode);

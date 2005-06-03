@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.44 2004/12/31 03:30:41 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.45tsi Exp $ */
 /*
  * Copyright 1999 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -57,8 +57,6 @@ typedef struct _ATIHWRec
     /* Colour lookup table */
     CARD8 lut[256 * 3];
 
-#ifndef AVOID_CPIO
-
     /* VGA registers */
     CARD8 genmo, crt[25], seq[5], gra[9], attr[21];
 
@@ -68,8 +66,6 @@ typedef struct _ATIHWRec
 
     /* Shadow VGA CRTC registers */
     CARD8 shadow_vga[25];
-
-#endif /* AVOID_CPIO */
 
     /* Generic DAC registers */
     CARD8 dac_read, dac_write, dac_mask;
@@ -136,15 +132,10 @@ typedef struct _ATIHWRec
     /* Clock programming data */
     int FeedbackDivider, ReferenceDivider, PostDivider;
 
-#ifndef AVOID_CPIO
-
-    /* This is used by ATISwap() */
+    /* These are used by ATISwap() */
     pointer frame_buffer;
     ATIBankProcPtr SetBank;
     unsigned int nBank, nPlane;
-
-#endif /* AVOID_CPIO */
-
 } ATIHWRec;
 
 /*
@@ -160,13 +151,7 @@ typedef struct _ATIRec
     /*
      * Adapter-related definitions.
      */
-    CARD8 Adapter;
-
-#ifndef AVOID_CPIO
-
-    CARD8 VGAAdapter;
-
-#endif /* AVOID_CPIO */
+    CARD8 Adapter, VGAAdapter;
 
     /*
      * Chip-related definitions.
@@ -175,20 +160,14 @@ typedef struct _ATIRec
     CARD16 ChipType;
     CARD8 Chip;
     CARD8 ChipClass, ChipRevision, ChipRev, ChipVersion, ChipFoundry;
-
-#ifndef AVOID_CPIO
-
     CARD8 Coprocessor, ChipHasSUBSYS_CNTL;
-
-#endif /* AVOID_CPIO */
 
     /*
      * Processor I/O decoding definitions.
      */
-    CARD8 CPIODecoding;
-    IOADDRESS CPIOBase;
-
-#ifndef AVOID_CPIO
+    int Domain;
+    CARD8 IODecoding;
+    IOADDRESS CPIOBase, DomainIOBase;
 
     /*
      * Processor I/O port definition for VGA.
@@ -202,19 +181,11 @@ typedef struct _ATIRec
     CARD8 B2Reg;        /* The B2 mirror */
     CARD8 VGAOffset;    /* Low index for CPIO_VGAWonder */
 
-#endif /* AVOID_CPIO */
-
     /*
      * DAC-related definitions.
      */
-
-#ifndef AVOID_CPIO
-
     IOADDRESS CPIO_DAC_MASK, CPIO_DAC_DATA, CPIO_DAC_READ, CPIO_DAC_WRITE,
               CPIO_DAC_WAIT;
-
-#endif /* AVOID_CPIO */
-
     CARD16 DAC;
     CARD8 rgbBits;
 
@@ -222,15 +193,8 @@ typedef struct _ATIRec
      * Definitions related to system bus interface.
      */
     pciVideoPtr PCIInfo;
-    CARD8 BusType;
-    CARD8 SharedAccelerator;
-
-#ifndef AVOID_CPIO
-
-    CARD8 SharedVGA;
     resRange VGAWonderResources[2];
-
-#endif /* AVOID_CPIO */
+    CARD8 BusType, SharedAccelerator, SharedVGA;
 
     /*
      * Definitions related to video memory.
@@ -252,16 +216,12 @@ typedef struct _ATIRec
     unsigned long LinearBase;
     int LinearSize, FBPitch;
 
-#ifndef AVOID_CPIO
-
     /*
      * Banking interface.
      */
     miBankInfoRec BankInfo;
     pointer pBank;
     CARD8 UseSmallApertures;
-
-#endif /* AVOID_CPIO */
 
     /*
      * Definitions related to MMIO register apertures.
@@ -369,8 +329,6 @@ typedef struct _ATIRec
                scratch_reg3, bus_cntl, lcd_index, mem_cntl, i2c_cntl_1,
                dac_cntl, gen_test_cntl, mpp_config, mpp_strobe_seq, tvo_cntl;
 
-#ifndef AVOID_CPIO
-
         CARD32 config_cntl;
 
         /* Mach8/Mach32 registers */
@@ -384,9 +342,6 @@ typedef struct _ATIRec
 
         /* VGA shadow registers */
         CARD8 shadow_crt03, shadow_crt11;
-
-#endif /* AVOID_CPIO */
-
     } LockData;
 
     /* Mode data */
@@ -408,13 +363,7 @@ typedef struct _ATIRec
     unsigned int OptionCRTDisplay:1;   /* Display on both CRT & DFP */
     unsigned int OptionCSync:1;        /* Use composite sync */
     unsigned int OptionDevel:1;        /* Intentionally undocumented */
-
-#ifndef AVOID_CPIO
-
     unsigned int OptionLinear:1;       /* Use linear aperture if available */
-
-#endif /* AVOID_CPIO */
-
     unsigned int OptionMMIOCache:1;    /* Cache MMIO writes */
     unsigned int OptionTestMMIOCache:1;/* Test MMIO cache integrity */
     unsigned int OptionPanelDisplay:1; /* Prefer digital panel over CRT */
@@ -427,6 +376,11 @@ typedef struct _ATIRec
      */
     CARD8 Unlocked, Mapped, Closeable;
     CARD8 MMIOInLinear;
+
+    /*
+     * Number of signal that interrupts certain accesses.
+     */
+    volatile int CaughtSignal;
 
     /*
      * Wrapped functions.

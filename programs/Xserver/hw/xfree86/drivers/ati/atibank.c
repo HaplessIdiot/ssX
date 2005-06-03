@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibank.c,v 1.13 2004/01/05 16:42:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibank.c,v 1.14tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -25,8 +25,6 @@
 #include "atibank.h"
 #include "atimach64io.h"
 #include "atiwonderio.h"
-
-#ifndef AVOID_CPIO
 
 /*
  * ATI VGA Wonder V3 adapters use an ATI 18800 chip and are single-banked.
@@ -405,5 +403,3 @@ ATIMach64SetReadWritePlanar
     ATIMach64SetBankPlanar(ATIPTR(XF86SCRNINFO(pScreen)), iBank);
     return 0;
 }
-
-#endif /* AVOID_CPIO */
