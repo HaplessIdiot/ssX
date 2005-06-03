@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/vb_util.c,v 1.1tsi Exp $ */
 
 #include "osdef.h"
 #include "vb_def.h"
@@ -209,6 +209,7 @@ void XGINew_ClearDAC( PUCHAR port )
 }
 
 
+#if 0
 /* --------------------------------------------------------------------- */
 /* Function : NewDelaySecond */
 /* Input : */
@@ -239,6 +240,7 @@ static void NewDelaySeconds( int seconds )
 #endif
     }
 }
+#endif
 
 
 /* --------------------------------------------------------------------- */
@@ -249,11 +251,11 @@ static void NewDelaySeconds( int seconds )
 /* --------------------------------------------------------------------- */
 void XGI_Newdebugcode( UCHAR code )
 {
-/*    ULONG ultemp ;  */
-
     OutPortByte ( 0x80 , code ) ;
-    /* OutPortByte ( 0x300 , code ) ; */
-    /* NewDelaySeconds( 0x3 ) ; */
+#if 0
+    OutPortByte ( 0x300 , code ) ;
+    NewDelaySeconds( 0x3 ) ;
+#endif
 }
 
 
