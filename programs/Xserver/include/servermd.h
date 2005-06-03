@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.57 2003/11/03 05:11:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.58tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -52,6 +52,7 @@ SOFTWARE.
 
 /*
  * Machine dependent values:
+ *
  * GLYPHPADBYTES should be chosen with consideration for the space-time
  * trade-off.  Padding to 0 bytes means that there is no wasted space
  * in the font bitmaps (both on disk and in memory), but that access of
@@ -111,10 +112,12 @@ SOFTWARE.
  *	define uses unaligned reads for 8-bit BitBLT instead of doing
  *	aligned reads and combining the results with shifts and
  *	logical-ors.  Currently defined for 68020 and vax.
+ *
  *  PLENTIFUL_REGISTERS -
  *	For machines with > 20 registers.  Currently used for
  *	unrolling the text painting code a bit more.  Currently
  *	defined for MIPS.
+ *
  *  SHARED_IDCACHE -
  *	For non-Harvard RISC machines, those which share the same
  *	CPU memory bus for instructions and data.  This unrolls some
@@ -134,26 +137,17 @@ SOFTWARE.
 
 #ifdef __arm32__
 
-#define IMAGE_BYTE_ORDER        LSBFirst
+# define IMAGE_BYTE_ORDER        LSBFirst
+# define BITMAP_BIT_ORDER        LSBFirst
 
-# if defined(XF86MONOVGA) || defined(XF86VGA16) || defined(XF86MONO)
-#  define BITMAP_BIT_ORDER      MSBFirst
-# else
-#  define BITMAP_BIT_ORDER      LSBFirst
-# endif
-
-# if defined(XF86MONOVGA) || defined(XF86VGA16)
-#  define BITMAP_SCANLINE_UNIT  8
-# endif
-
-#define GLYPHPADBYTES           4
-#define GETLEFTBITS_ALIGNMENT   1
-#define LARGE_INSTRUCTION_CACHE
-#define AVOID_MEMORY_READ
+# define GLYPHPADBYTES           4
+# define GETLEFTBITS_ALIGNMENT   1
+# define LARGE_INSTRUCTION_CACHE
+# define AVOID_MEMORY_READ
 
 #endif /* __arm32__ */
 
-#if defined (hpux)
+#if defined(hpux)
 
 #define IMAGE_BYTE_ORDER	MSBFirst
 #define BITMAP_BIT_ORDER	MSBFirst
@@ -317,16 +311,7 @@ SOFTWARE.
 
 #if defined(__alpha) || defined(__alpha__) || defined(__alphaCross)
 # define IMAGE_BYTE_ORDER	LSBFirst	/* Values for the Alpha only */
-
-# if defined(XF86MONOVGA) || defined(XF86VGA16) || defined(XF86MONO)
-#  define BITMAP_BIT_ORDER      MSBFirst
-# else
-#  define BITMAP_BIT_ORDER      LSBFirst
-# endif
-
-# if defined(XF86MONOVGA) || defined(XF86VGA16)
-#  define BITMAP_SCANLINE_UNIT  8
-# endif
+# define BITMAP_BIT_ORDER       LSBFirst
 
 # define GLYPHPADBYTES		4
 # define GETLEFTBITS_ALIGNMENT	1
@@ -370,16 +355,7 @@ SOFTWARE.
 
 #if defined(__ia64__) || defined(ia64)
 # define IMAGE_BYTE_ORDER	LSBFirst
-
-# if defined(XF86MONOVGA) || defined(XF86VGA16) || defined(XF86MONO)
-#  define BITMAP_BIT_ORDER      MSBFirst
-# else
-#  define BITMAP_BIT_ORDER      LSBFirst
-# endif
-
-# if defined(XF86MONOVGA) || defined(XF86VGA16)
-#  define BITMAP_SCANLINE_UNIT  8
-# endif
+# define BITMAP_BIT_ORDER       LSBFirst
 
 # define GLYPHPADBYTES		4
 # define GETLEFTBITS_ALIGNMENT	1
@@ -391,16 +367,7 @@ SOFTWARE.
 
 #if defined(__AMD64__) || defined(AMD64) || defined(__amd64__)
 # define IMAGE_BYTE_ORDER	LSBFirst
-
-# if defined(XF86MONOVGA) || defined(XF86VGA16) || defined(XF86MONO)
-#  define BITMAP_BIT_ORDER      MSBFirst
-# else
-#  define BITMAP_BIT_ORDER      LSBFirst
-# endif
-
-# if defined(XF86MONOVGA) || defined(XF86VGA16)
-#  define BITMAP_SCANLINE_UNIT  8
-# endif
+# define BITMAP_BIT_ORDER       LSBFirst
 
 # define GLYPHPADBYTES		4
 # define GETLEFTBITS_ALIGNMENT	1
@@ -453,17 +420,7 @@ SOFTWARE.
 #endif
 
 #ifndef BITMAP_BIT_ORDER
-# if defined(XF86MONOVGA) || defined(XF86VGA16) || defined(XF86MONO)
-#  define BITMAP_BIT_ORDER      MSBFirst
-# else
-#  define BITMAP_BIT_ORDER      LSBFirst
-# endif
-#endif
-
-#ifndef BITMAP_SCANLINE_UNIT
-# if defined(XF86MONOVGA) || defined(XF86VGA16)
-#  define BITMAP_SCANLINE_UNIT  8
-# endif
+#define BITMAP_BIT_ORDER        LSBFirst
 #endif
 
 #ifndef GLYPHPADBYTES
@@ -520,9 +477,19 @@ SOFTWARE.
 #define IMAGE_BUFSIZE		(64*1024)
 #endif
 
+#if defined(XF86VGA16) || defined(XF86MONO)
+# undef BITMAP_BIT_ORDER	/* Always override this */
+# define BITMAP_BIT_ORDER	MSBFirst
+#endif
+
+#ifdef XF86VGA16
+# undef  BITMAP_SCANLINE_UNIT	/* Always override */
+# define BITMAP_SCANLINE_UNIT	8
+#endif
+
 /* pad scanline to a longword */
 #ifndef BITMAP_SCANLINE_UNIT
-#define BITMAP_SCANLINE_UNIT	32
+# define BITMAP_SCANLINE_UNIT	32
 #endif
 
 #ifndef BITMAP_SCANLINE_PAD
