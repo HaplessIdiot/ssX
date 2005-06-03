@@ -1,10 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/wm3.h,v 1.2 1998/07/25 16:59:46 dawes Exp $ */
-
-
-
-
-
-/* $XConsortium: wm3.h /main/4 1996/02/21 17:59:24 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/wm3.h,v 1.3tsi Exp $ */
 
 #include "vgaReg.h"
 
@@ -65,11 +59,10 @@
 	{ volatile char *_dtmp = (volatile char *)(destp); \
 	  unsigned int _stmp = (src); \
 	  volatile int dummy; /* Bit bucket. */ \
-	  _stmp = ldl_u(&_stmp); \
-	  dummy = *_dtmp; *_dtmp = _stmp; _dtmp++; _stmp >>= 8; \
-	  dummy = *_dtmp; *_dtmp = _stmp; _dtmp++; _stmp >>= 8; \
-	  dummy = *_dtmp; *_dtmp = _stmp; _dtmp++; _stmp >>= 8; \
-	  dummy = *_dtmp; *_dtmp = _stmp; }
+	  dummy = *_dtmp; *_dtmp = ((char *)(&_stmp))[0]; _dtmp++; \
+	  dummy = *_dtmp; *_dtmp = ((char *)(&_stmp))[1]; _dtmp++; \
+	  dummy = *_dtmp; *_dtmp = ((char *)(&_stmp))[2]; _dtmp++; \
+	  dummy = *_dtmp; *_dtmp = ((char *)(&_stmp))[3]; }
 #endif
 
 #define UPDRWB(destp,src) \
