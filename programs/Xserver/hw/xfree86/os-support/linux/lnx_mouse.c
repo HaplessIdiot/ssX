@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_mouse.c,v 1.5 2005/01/27 22:24:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_mouse.c,v 1.6tsi Exp $ */
 
 /*
  * Copyright 1999-2005 by The XFree86 Project, Inc.
@@ -72,20 +72,20 @@ DefaultProtocol(void)
 #define DEFAULT_PS2_DEV			"/dev/psaux"
 #define DEFAULT_GPM_DATA_DEV		"/dev/gpmdata"
 #define DEFAULT_GPM_CTL_DEV		"/dev/gpmctl"
-#define DEFAULT_INPUT_MICE_DEV		"/dev/input/mice"
 #ifdef __sparc__
 #define DEFAULT_SUNMOUSE_DEV		"/dev/sunmouse"
 #endif
+#define DEFAULT_INPUT_MICE_DEV		"/dev/input/mice"
 #define DEFAULT_INPUT_MOUSE_PREFIX	"/dev/input/mouse"
 
 static const char *mouseDevs[] = {
 	DEFAULT_MOUSE_DEV,
 	DEFAULT_PS2_DEV,
 	DEFAULT_GPM_DATA_DEV,
-	DEFAULT_INPUT_MICE_DEV,
 #ifdef __sparc__
 	DEFAULT_SUNMOUSE_DEV,
 #endif
+	DEFAULT_INPUT_MICE_DEV,
 	NULL
 };
 
