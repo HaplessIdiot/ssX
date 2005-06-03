@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.227 2005/02/15 03:08:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.228tsi Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -307,34 +307,6 @@ PostConfigInit(void)
 
     done = TRUE;
 
-    /*
-     * Install signal handler for unexpected signals
-     */
-    xf86Info.caughtSignal=FALSE;
-    if (!xf86Info.notrapSignals) {
-       signal(SIGSEGV,xf86SigHandler);
-       signal(SIGILL,xf86SigHandler);
-#ifdef SIGEMT
-       signal(SIGEMT,xf86SigHandler);
-#endif
-       signal(SIGFPE,xf86SigHandler);
-#ifdef SIGBUS
-       signal(SIGBUS,xf86SigHandler);
-#endif
-#ifdef SIGSYS
-       signal(SIGSYS,xf86SigHandler);
-#endif
-#ifdef SIGXCPU
-       signal(SIGXCPU,xf86SigHandler);
-#endif
-#ifdef SIGXFSZ
-       signal(SIGXFSZ,xf86SigHandler);
-#endif
-#ifdef MEMDEBUG
-       signal(SIGUSR2,xf86SigMemDebug);
-#endif
-    }
-
     xf86OSPMClose = xf86OSPMOpen();
     
     if (!noVT) {
@@ -442,6 +414,35 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
       }
     } else {
 	appendauto = FALSE;
+    }
+
+    /*
+     * Install signal handlers earlier to catch hardware problems.  Perhaps
+     * there should be a command line flag to control xf86Info.notrapSignals.
+     */
+    xf86Info.caughtSignal=FALSE;
+    if (!xf86Info.notrapSignals) {
+       signal(SIGSEGV,xf86SigHandler);
+       signal(SIGILL,xf86SigHandler);
+#ifdef SIGEMT
+       signal(SIGEMT,xf86SigHandler);
+#endif
+       signal(SIGFPE,xf86SigHandler);
+#ifdef SIGBUS
+       signal(SIGBUS,xf86SigHandler);
+#endif
+#ifdef SIGSYS
+       signal(SIGSYS,xf86SigHandler);
+#endif
+#ifdef SIGXCPU
+       signal(SIGXCPU,xf86SigHandler);
+#endif
+#ifdef SIGXFSZ
+       signal(SIGXFSZ,xf86SigHandler);
+#endif
+#ifdef MEMDEBUG
+       signal(SIGUSR2,xf86SigMemDebug);
+#endif
     }
 
 #ifdef XFree86LOADER
@@ -1062,34 +1063,6 @@ retry:
     /* Make sure full I/O access is enabled */
     xf86EnableIO();
   }
-
-#if 0
-  /*
-   * Install signal handler for unexpected signals
-   */
-  xf86Info.caughtSignal=FALSE;
-  if (!xf86Info.notrapSignals)
-  {
-     signal(SIGSEGV,xf86SigHandler);
-     signal(SIGILL,xf86SigHandler);
-#ifdef SIGEMT
-     signal(SIGEMT,xf86SigHandler);
-#endif
-     signal(SIGFPE,xf86SigHandler);
-#ifdef SIGBUS
-     signal(SIGBUS,xf86SigHandler);
-#endif
-#ifdef SIGSYS
-     signal(SIGSYS,xf86SigHandler);
-#endif
-#ifdef SIGXCPU
-     signal(SIGXCPU,xf86SigHandler);
-#endif
-#ifdef SIGXFSZ
-     signal(SIGXFSZ,xf86SigHandler);
-#endif
-  }
-#endif
 
   /*
    * Use the previously collected parts to setup pScreenInfo
