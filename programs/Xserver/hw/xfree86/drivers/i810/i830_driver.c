@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.74 2005/05/31 20:26:35 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.75tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -620,6 +620,7 @@ SetRefreshRate(ScrnInfoPtr pScrn, int mode, int refresh)
       return 0;
 }
 
+#ifdef UNUSED
 static Bool
 SetPowerStatus(ScrnInfoPtr pScrn, int mode)
 {
@@ -636,6 +637,7 @@ SetPowerStatus(ScrnInfoPtr pScrn, int mode)
   
    return FALSE;
 }
+#endif
 
 static Bool
 GetModeSupport(ScrnInfoPtr pScrn, int modePipeA, int modePipeB,
@@ -673,6 +675,7 @@ GetModeSupport(ScrnInfoPtr pScrn, int modePipeA, int modePipeB,
       return FALSE;
 }
 
+#if 0
 static int
 GetLFPCompMode(ScrnInfoPtr pScrn)
 {
@@ -691,7 +694,6 @@ GetLFPCompMode(ScrnInfoPtr pScrn)
       return -1;
 }
 
-#if 0
 static Bool
 SetLFPCompMode(ScrnInfoPtr pScrn, int compMode)
 {
@@ -3479,7 +3481,7 @@ SetFenceRegs(ScrnInfoPtr pScrn)
    for (i = 0; i < 8; i++) {
       OUTREG(FENCE + i * 4, pI830->ModeReg.Fence[i]);
       if (I810_DEBUG & DEBUG_VERBOSE_VGA)
-	 ErrorF("Fence Register : %lx\n", pI830->ModeReg.Fence[i]);
+	 ErrorF("Fence Register : %x\n", pI830->ModeReg.Fence[i]);
    }
 }
 
