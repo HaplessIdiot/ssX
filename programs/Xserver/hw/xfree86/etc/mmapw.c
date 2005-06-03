@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapw.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapw.c,v 1.10tsi Exp $ */
 /*
  * Copyright 2002 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -21,11 +21,16 @@
  * OF THIS SOFTWARE.
  */
 
+#undef _LARGEFILE_SOURCE
+#undef _FILE_OFFSET_BITS
+#undef __STRICT_ANSI__
+
 #define _LARGEFILE_SOURCE 1
 #define _FILE_OFFSET_BITS 64
-#undef  __STRICT_ANSI__
+
 #include <errno.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,12 +39,14 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+typedef void *ptr;
+
 #ifndef MAP_FAILED
-# define MAP_FAILED ((void *)(-1))
+# define MAP_FAILED ((ptr)(-1))
 #endif
 
 #if defined(_SCO_DS) && !defined(_SCO_DS_LL)
-#define strtoull (unsigned long long)strtoul
+# define strtoull (unsigned long long)strtoul
 #endif
 
 #if !defined(strtoull) && \
@@ -78,42 +85,60 @@ usage(void)
 {
     fprintf(stderr, "\n"
 #ifdef linux
-        "mmapw [-{im}] [-{bwlqL}] <file> <offset> <value>\n\n"
+	"mmapw [-{im}] [-{bwlqL}] [-{au}] <file> <offset> <value>\n\n"
 	" -i   select /proc/bus/pci/<bus>/<dfn> I/O space\n"
 	" -m   select /proc/bus/pci/<bus>/<dfn> memory space\n\n"
 #else
-        "mmapw [-{bwlqL}] <file> <offset> <value>\n\n"
+	"mmapw [-{bwlqL}] [-{au}] <file> <offset> <value>\n\n"
 #endif
-        "access size flags:\n\n"
-        " -b   write one byte\n"
-        " -w   write two aligned bytes\n"
-        " -l   write four aligned bytes (default)\n"
-        " -q   write eight aligned bytes\n");
+	"access size flags:\n\n"
+	" -b   write one byte\n"
+	" -w   write two aligned bytes\n"
+	" -l   write four aligned bytes (default)\n"
+	" -q   write eight aligned bytes\n");
+
     switch (sizeof(dataL))
     {
-        case sizeof(datab):
-            fprintf(stderr, " -L   same as -b\n\n");
-            break;
+	case sizeof(datab):
+	    fprintf(stderr, " -L   same as -b\n\n");
+	    break;
 
-        case sizeof(dataw):
-            fprintf(stderr, " -L   same as -w\n\n");
-            break;
+	case sizeof(dataw):
+	    fprintf(stderr, " -L   same as -w\n\n");
+	    break;
 
-        case sizeof(datal):
-            fprintf(stderr, " -L   same as -l\n\n");
-            break;
+	case sizeof(datal):
+	    fprintf(stderr, " -L   same as -l\n\n");
+	    break;
 
-        case sizeof(dataq):
-            fprintf(stderr, " -L   same as -q\n\n");
-            break;
+	case sizeof(dataq):
+	    fprintf(stderr, " -L   same as -q\n\n");
+	    break;
 
-        default:
-            fprintf(stderr, "\n");
-            break;
+	default:
+	    fprintf(stderr, "\n");
+	    break;
     }
+
+    fprintf(stderr,
+	" -u   as above but allow unaligned accesses (might crash)\n"
+	" -a   only use aligned accesses (default)\n\n");
 
     exit(1);
 }
+
+#ifdef SIGBUS
+/*
+ * Signal handler to catch unaligned access and print a meaningful message.
+ */
+static void
+sigbus(int signum)
+{
+    fprintf(stderr,
+	"The architecture or OS does not allow unaligned accesses\n");
+    exit (128 + SIGBUS);
+}
+#endif
 
 int
 main(int argc, char **argv)
@@ -123,7 +148,7 @@ main(int argc, char **argv)
     size_t length;
     char *BadString;
     void *buffer;
-    int fd, pagesize;
+    int fd, pagesize, aligned = 1;
 #ifdef linux
     int mmap_ioctl = 0;
 #endif
@@ -133,27 +158,35 @@ main(int argc, char **argv)
     {
 	for (;  argv[1][1];  argv[1]++)
 	{
-            switch (argv[1][1])
-            {
-                case 'b':
-                    size = sizeof(datab);
-                    break;
+	    switch (argv[1][1])
+	    {
+		case 'b':
+		    size = sizeof(datab);
+		    break;
 
-                case 'w':
-                    size = sizeof(dataw);
-                    break;
+		case 'w':
+		    size = sizeof(dataw);
+		    break;
 
-                case 'l':
-                    size = sizeof(datal);
-                    break;
+		case 'l':
+		    size = sizeof(datal);
+		    break;
 
-                case 'L':
-                    size = sizeof(dataL);
-                    break;
+		case 'L':
+		    size = sizeof(dataL);
+		    break;
 
-                case 'q':
-                    size = sizeof(dataq);
-                    break;
+		case 'q':
+		    size = sizeof(dataq);
+		    break;
+
+		case 'u':
+		    aligned = 0;
+		    break;
+
+		case 'a':
+		    aligned = 1;
+		    break;
 #ifdef linux
 		case 'i':
 		    mmap_ioctl = PCIIOC_MMAP_IS_IO;
@@ -163,9 +196,9 @@ main(int argc, char **argv)
 		    mmap_ioctl = PCIIOC_MMAP_IS_MEM;
 		    break;
 #endif
-                default:
-                    usage();
-            }
+		default:
+		    usage();
+	    }
 	}
 
 	argc--;
@@ -175,21 +208,27 @@ main(int argc, char **argv)
     if (argc != 4)
 	usage();
 
-    BadString = (char *)0;
+    BadString = (ptr)0;
     Offset = strtoull(argv[2], &BadString, 0);
     if (errno || (BadString && *BadString) || (Offset & (size - 1)))
-        usage();
+	usage();
 
-    BadString = (char *)0;
+    BadString = (ptr)0;
     data = strtoull(argv[3], &BadString, 0);
     if (errno || (BadString && *BadString))
-        usage();
+	usage();
+
+    if (data & ((unsigned long long)(-1LL) << (size * 8)))
+    {
+	fprintf(stderr, "Value too large for access size\n");
+	exit(1);
+    }
 
     if ((fd = open(argv[1], O_RDWR)) < 0)
     {
-        fprintf(stderr, "mmapw:  Unable to open \"%s\":  %s.\n",
-            argv[1], strerror(errno));
-        exit(1);
+	fprintf(stderr, "mmapw:  Unable to open \"%s\":  %s.\n",
+	    argv[1], strerror(errno));
+	exit(1);
     }
 
 #ifdef linux
@@ -205,27 +244,69 @@ main(int argc, char **argv)
     close(fd);
     if (buffer == MAP_FAILED)
     {
-        fprintf(stderr, "mmapw:  Unable to mmap \"%s\":  %s.\n",
-            argv[1], strerror(errno));
-        exit(1);
+	fprintf(stderr, "mmapw:  Unable to mmap \"%s\":  %s.\n",
+	    argv[1], strerror(errno));
+	exit(1);
     }
 
+#ifdef SIGBUS
+    if (!aligned)
+	signal(SIGBUS, sigbus);
+#endif
+
     Offset -= offset;
-    if (size == sizeof(datab))
-	*(volatile unsigned char *)((char *)buffer + Offset) =
-	    (unsigned char)data;
-    else if (size == sizeof(dataw))
-	*(volatile unsigned short *)((char *)buffer + Offset) =
-	    (unsigned short)data;
-    else if (size == sizeof(datal))
-	*(volatile unsigned int *)((char *)buffer + Offset) =
-	    (unsigned int)data;
-    else if (size == sizeof(dataL))
-	*(volatile unsigned long *)((char *)buffer + Offset) =
-	    (unsigned long)data;
-    else if (size == sizeof(dataq))
-	*(volatile unsigned long long *)((char *)buffer + Offset) =
+    if ((size == sizeof(datab)) || (aligned && (Offset & sizeof(datab))))
+    {
+	do
+	{
+	    *(volatile unsigned char *)(ptr)((char *)buffer + Offset) =
+		(unsigned char)data;
+	    data >>= 8 * sizeof(datab);
+	    Offset += sizeof(datab);
+	    size -= sizeof(datab);
+	} while (size);
+    }
+    else
+    if ((size == sizeof(dataw)) || (aligned && (Offset & sizeof(dataw))))
+    {
+	do
+	{
+	    *(volatile unsigned short *)(ptr)((char *)buffer + Offset) =
+		(unsigned short)data;
+	    data >>= 8 * sizeof(dataw);
+	    Offset += sizeof(dataw);
+	    size -= sizeof(dataw);
+	} while (size);
+    }
+    else
+    if ((size == sizeof(datal)) || (aligned && (Offset & sizeof(datal))))
+    {
+	do
+	{
+	    *(volatile unsigned int *)(ptr)((char *)buffer + Offset) =
+		(unsigned int)data;
+	    data >>= 8 * sizeof(datal);
+	    Offset += sizeof(datal);
+	    size -= sizeof(datal);
+	} while (size);
+    }
+    else
+    if ((size == sizeof(dataL)) || (aligned && (Offset & sizeof(dataL))))
+    {
+	do
+	{
+	    *(volatile unsigned long *)(ptr)((char *)buffer + Offset) =
+		(unsigned long)data;
+	    data >>= 8 * sizeof(dataL);
+	    Offset += sizeof(dataL);
+	    size -= sizeof(dataL);
+	} while (size);
+    }
+    else
+    {
+	*(volatile unsigned long long *)(ptr)((char *)buffer + Offset) =
 	    (unsigned long long)data;
+    }
 
     munmap(buffer, length);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapr.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapr.c,v 1.12tsi Exp $ */
 /*
  * Copyright 2002 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -21,12 +21,17 @@
  * OF THIS SOFTWARE.
  */
 
+#undef _LARGEFILE_SOURCE
+#undef _FILE_OFFSET_BITS
+#undef __STRICT_ANSI__
+
 #define _LARGEFILE_SOURCE 1
 #define _FILE_OFFSET_BITS 64
-#undef  __STRICT_ANSI__
+
 #include <errno.h>
 #include <ctype.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,8 +40,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+typedef void *ptr;
+
 #ifndef MAP_FAILED
-# define MAP_FAILED ((void *)(-1))
+# define MAP_FAILED ((ptr)(-1))
 #endif
 
 #if defined(_SCO_DS) && !defined(_SCO_DS_LL)
@@ -81,43 +88,61 @@ usage(void)
 {
     fprintf(stderr, "\n"
 #ifdef linux
-        "mmapr [-p] [-{im}] [-{bwlqL}] <file> <offset> <length>\n\n"
+	"mmapr [-p] [-{im}] [-{bwlqL}] [-{au}] <file> <offset> <length>\n\n"
 	" -i   select /proc/bus/pci/<bus>/<dfn> I/O space\n"
 	" -m   select /proc/bus/pci/<bus>/<dfn> memory space\n\n"
 #else
-        "mmapr [-p] [-{bwlqL}] <file> <offset> <length>\n\n"
+	"mmapr [-p] [-{bwlqL}] [-{au}] <file> <offset> <length>\n\n"
 #endif
-        " -p   pretty-print output\n\n"
-        "access size flags:\n\n"
-        " -b   output one byte at a time\n"
-        " -w   output up to two aligned bytes at a time\n"
-        " -l   output up to four aligned bytes at a time (default)\n"
-        " -q   output up to eight aligned bytes at a time\n");
+	" -p   pretty-print output\n\n"
+	" access size flags:\n\n"
+	" -b   output one byte at a time\n"
+	" -w   output up to two aligned bytes at a time\n"
+	" -l   output up to four aligned bytes at a time (default)\n"
+	" -q   output up to eight aligned bytes at a time\n");
+
     switch (sizeof(dataL))
     {
-        case sizeof(datab):
-            fprintf(stderr, " -L   same as -b\n\n");
-            break;
+	case sizeof(datab):
+	    fprintf(stderr, " -L   same as -b\n\n");
+	    break;
 
-        case sizeof(dataw):
-            fprintf(stderr, " -L   same as -w\n\n");
-            break;
+	case sizeof(dataw):
+	    fprintf(stderr, " -L   same as -w\n\n");
+	    break;
 
-        case sizeof(datal):
-            fprintf(stderr, " -L   same as -l\n\n");
-            break;
+	case sizeof(datal):
+	    fprintf(stderr, " -L   same as -l\n\n");
+	    break;
 
-        case sizeof(dataq):
-            fprintf(stderr, " -L   same as -q\n\n");
-            break;
+	case sizeof(dataq):
+	    fprintf(stderr, " -L   same as -q\n\n");
+	    break;
 
-        default:
-            fprintf(stderr, "\n");
-            break;
+	default:
+	    fprintf(stderr, "\n");
+	    break;
     }
+
+    fprintf(stderr,
+	" -u   as above but allow unaligned accesses (might crash)\n"
+	" -a   only use aligned accesses (default)\n\n");
 
     exit(1);
 }
+
+#ifdef SIGBUS
+/*
+ * Signal handler to catch unaligned accesses and print a meaningful message.
+ */
+static void
+sigbus(int signum)
+{
+    fprintf(stderr,
+	"The architecture or OS does not allow unaligned accesses\n");
+    exit(128 + SIGBUS);
+}
+#endif
 
 int
 main(int argc, char **argv)
@@ -126,7 +151,7 @@ main(int argc, char **argv)
     size_t Length = 0, length, size;
     char *BadString, *data;
     void *buffer;
-    int fd, pagesize, prettyprint = 0;
+    int fd, pagesize, prettyprint = 0, aligned = 1;
 #ifdef linux
     int mmap_ioctl = 0;
 #endif
@@ -135,33 +160,41 @@ main(int argc, char **argv)
 
     while (argv[1] && (argv[1][0] == '-') && argv[1][1])
     {
-        for (;  argv[1][1];  argv[1]++)
-        {
-            switch (argv[1][1])
-            {
-                case 'p':
-                    prettyprint = 1;
-                    break;
+	for (;  argv[1][1];  argv[1]++)
+	{
+	    switch (argv[1][1])
+	    {
+		case 'p':
+		    prettyprint = 1;
+		    break;
 
-                case 'b':
-                    Size = sizeof(datab);
-                    break;
+		case 'b':
+		    Size = sizeof(datab);
+		    break;
 
-                case 'w':
-                    Size = sizeof(dataw);
-                    break;
+		case 'w':
+		    Size = sizeof(dataw);
+		    break;
 
-                case 'l':
-                    Size = sizeof(datal);
-                    break;
+		case 'l':
+		    Size = sizeof(datal);
+		    break;
 
-                case 'L':
-                    Size = sizeof(dataL);
-                    break;
+		case 'L':
+		    Size = sizeof(dataL);
+		    break;
 
-                case 'q':
-                    Size = sizeof(dataq);
-                    break;
+		case 'q':
+		    Size = sizeof(dataq);
+		    break;
+
+		case 'u':
+		    aligned = 0;
+		    break;
+
+		case 'a':
+		    aligned = 1;
+		    break;
 #ifdef linux
 		case 'i':
 		    mmap_ioctl = PCIIOC_MMAP_IS_IO;
@@ -171,36 +204,36 @@ main(int argc, char **argv)
 		    mmap_ioctl = PCIIOC_MMAP_IS_MEM;
 		    break;
 #endif
-                default:
-                    usage();
-            }
-        }
+		default:
+		    usage();
+	    }
+	}
 
-        argc--;
-        argv++;
+	argc--;
+	argv++;
     }
 
     if (argc != 4)
-        usage();
+	usage();
 
-    BadString = (char *)0;
+    BadString = (ptr)0;
     Offset = strtoull(argv[2], &BadString, 0);
     if (errno || (BadString && *BadString))
-        usage();
+	usage();
 
-    BadString = (char *)0;
+    BadString = (ptr)0;
     Length = strtoul(argv[3], &BadString, 0);
     if (errno || (BadString && *BadString))
-        usage();
+	usage();
 
     if (Length <= 0)
-        return 0;
+	return 0;
 
     if ((fd = open(argv[1], O_RDONLY)) < 0)
     {
-        fprintf(stderr, "mmapr:  Unable to open \"%s\":  %s.\n",
-            argv[1], strerror(errno));
-        exit(1);
+	fprintf(stderr, "mmapr:  Unable to open \"%s\":  %s.\n",
+	    argv[1], strerror(errno));
+	exit(1);
     }
 
 #ifdef linux
@@ -216,153 +249,159 @@ main(int argc, char **argv)
     close(fd);
     if (buffer == MAP_FAILED)
     {
-        fprintf(stderr, "mmapr:  Unable to mmap \"%s\":  %s.\n",
-            argv[1], strerror(errno));
-        exit(1);
+	fprintf(stderr, "mmapr:  Unable to mmap \"%s\":  %s.\n",
+	    argv[1], strerror(errno));
+	exit(1);
     }
 
     if (prettyprint)
     {
-        End = Offset + Length - 1;
+	End = Offset + Length - 1;
 
-        if ((sizeof(Offset) > sizeof(dataL)) &&
-            ((unsigned long long)End != (unsigned long)End))
-        {
-            sprintf(Address, "0x%015llX0", (unsigned long long)Offset >> 4);
-            Format = 3;
-        }
-        else
-        if ((sizeof(Offset) > sizeof(dataw)) &&
-            ((unsigned long long)End != (unsigned short)End))
-        {
-            sprintf(Address, "0x%07lX0", (unsigned long)Offset >> 4);
-            Format = 2;
-        }
-        else
-        if ((sizeof(Offset) > sizeof(datab)) &&
-            ((unsigned long long)End != (unsigned char)End))
-        {
-            sprintf(Address, "0x%03X0", (unsigned short)Offset >> 4);
-            Format = 1;
-        }
-        else
-        {
-            sprintf(Address, "0x%01X0", (unsigned char)Offset >> 4);
-         /* Format = 0; */
-        }
+	if ((sizeof(Offset) > sizeof(dataL)) &&
+	    ((unsigned long long)End != (unsigned long)End))
+	{
+	    sprintf(Address, "0x%015llX0", (unsigned long long)Offset >> 4);
+	    Format = 3;
+	}
+	else
+	if ((sizeof(Offset) > sizeof(dataw)) &&
+	    ((unsigned long long)End != (unsigned short)End))
+	{
+	    sprintf(Address, "0x%07lX0", (unsigned long)Offset >> 4);
+	    Format = 2;
+	}
+	else
+	if ((sizeof(Offset) > sizeof(datab)) &&
+	    ((unsigned long long)End != (unsigned char)End))
+	{
+	    sprintf(Address, "0x%03X0", (unsigned short)Offset >> 4);
+	    Format = 1;
+	}
+	else
+	{
+	    sprintf(Address, "0x%01X0", (unsigned char)Offset >> 4);
+	 /* Format = 0; */
+	}
 
-        memset(Hex, ' ', 35);
-        Hex[35] = 0;
-        memset(Glyph, ' ', 16);
-        Glyph[16] = 0;
+	memset(Hex, ' ', 35);
+	Hex[35] = 0;
+	memset(Glyph, ' ', 16);
+	Glyph[16] = 0;
     }
+
+#ifdef SIGBUS
+    if (!aligned)
+	signal(SIGBUS, sigbus);
+#endif
 
     Offset -= offset;
     while (Length > 0)
     {
-        if ((Offset & sizeof(datab)) ||
-            (Length < sizeof(dataw)) ||
-            (Size < sizeof(dataw)))
-        {
-            datab = *(volatile unsigned char *)((char *)buffer + Offset);
-            data = (char *)&datab;
-            size = sizeof(datab);
-        }
-        else
-        if ((Offset & sizeof(dataw)) ||
-            (Length < sizeof(datal)) ||
-            (Size < sizeof(datal)))
-        {
-            dataw = *(volatile unsigned short *)((char *)buffer + Offset);
-            data = (char *)&dataw;
-            size = sizeof(dataw);
-        }
-        else
-        if ((Offset & sizeof(datal)) ||
-            (Length < sizeof(dataL)) ||
-            (Size < sizeof(dataL)))
-        {
-            datal = *(volatile unsigned int *)((char *)buffer + Offset);
-            data = (char *)&datal;
-            size = sizeof(datal);
-        }
-        else
-        if ((Offset & sizeof(dataL)) ||
-            (Length < sizeof(dataq)) ||
-            (Size < sizeof(dataq)))
-        {
-            dataL = *(volatile unsigned long *)((char *)buffer + Offset);
-            data = (char *)&dataL;
-            size = sizeof(dataL);
-        }
-        else
-        {
-            dataq = *(volatile unsigned long long *)((char *)buffer + Offset);
-            data = (char *)&dataq;
-            size = sizeof(dataq);
-        }
+	if ((Length < sizeof(dataw)) ||
+	    (Size < sizeof(dataw)) ||
+	    (aligned && (Offset & sizeof(datab))))
+	{
+	    datab = *(volatile unsigned char *)(ptr)((char *)buffer + Offset);
+	    data = (ptr)&datab;
+	    size = sizeof(datab);
+	}
+	else
+	if ((Length < sizeof(datal)) ||
+	    (Size < sizeof(datal)) ||
+	    (aligned && (Offset & sizeof(dataw))))
+	{
+	    dataw = *(volatile unsigned short *)(ptr)((char *)buffer + Offset);
+	    data = (ptr)&dataw;
+	    size = sizeof(dataw);
+	}
+	else
+	if ((Length < sizeof(dataL)) ||
+	    (Size < sizeof(dataL)) ||
+	    (aligned && (Offset & sizeof(datal))))
+	{
+	    datal = *(volatile unsigned int *)(ptr)((char *)buffer + Offset);
+	    data = (ptr)&datal;
+	    size = sizeof(datal);
+	}
+	else
+	if ((Length < sizeof(dataq)) ||
+	    (Size < sizeof(dataq)) ||
+	    (aligned && (Offset & sizeof(dataL))))
+	{
+	    dataL = *(volatile unsigned long *)(ptr)((char *)buffer + Offset);
+	    data = (ptr)&dataL;
+	    size = sizeof(dataL);
+	}
+	else
+	{
+	    dataq =
+		*(volatile unsigned long long *)(ptr)((char *)buffer + Offset);
+	    data = (ptr)&dataq;
+	    size = sizeof(dataq);
+	}
 
-        if (prettyprint)
-        {
-            unsigned int i = (offset + Offset) & 15;
+	if (prettyprint)
+	{
+	    unsigned int i = (offset + Offset) & 15;
 
-            Offset += size;
-            Length -= size;
+	    Offset += size;
+	    Length -= size;
 
-            for (;  size > 0;  --size, ++i, ++data)
-            {
-                Hex[((i >> 2) * 9) + ((i & 3) << 1)] =
-                    hextab[(unsigned char)*data >> 4];
-                Hex[((i >> 2) * 9) + ((i & 3) << 1) + 1] =
-                    hextab[(unsigned char)*data & 15];
+	    for (;  size > 0;  --size, ++i, ++data)
+	    {
+		Hex[((i >> 2) * 9) + ((i & 3) << 1)] =
+		    hextab[(unsigned char)*data >> 4];
+		Hex[((i >> 2) * 9) + ((i & 3) << 1) + 1] =
+		    hextab[(unsigned char)*data & 15];
 
-                if (isprint(*data))
-                    Glyph[i] = *data;
-                else
-                    Glyph[i] = '.';
-            }
+		if (isprint(*data))
+		    Glyph[i] = *data;
+		else
+		    Glyph[i] = '.';
+	    }
 
-            if (!Length || !(Offset & 15))
-            {
-                printf("%s:  %s  |%s|\n", Address, Hex, Glyph);
+	    if (!Length || !(Offset & 15))
+	    {
+		printf("%s:  %s  |%s|\n", Address, Hex, Glyph);
 
-                if (!Length)
-                    break;
+		if (!Length)
+		    break;
 
-                switch(Format)
-                {
-                    case 0:
-                        sprintf(Address, "0x%02X",
-                                (unsigned char)(Offset + offset));
-                        break;
+		switch(Format)
+		{
+		    case 0:
+			sprintf(Address, "0x%02X",
+				(unsigned char)(Offset + offset));
+			break;
 
-                    case 1:
-                        sprintf(Address, "0x%04X",
-                                (unsigned short)(Offset + offset));
-                        break;
+		    case 1:
+			sprintf(Address, "0x%04X",
+				(unsigned short)(Offset + offset));
+			break;
 
-                    case 2:
-                        sprintf(Address, "0x%08lX",
-                                (unsigned long)(Offset + offset));
-                        break;
+		    case 2:
+			sprintf(Address, "0x%08lX",
+				(unsigned long)(Offset + offset));
+			break;
 
-                    case 3:  default:
-                        sprintf(Address, "0x%016llX",
-                                (unsigned long long)(Offset + offset));
-                        break;
-                }
+		    case 3:  default:
+			sprintf(Address, "0x%016llX",
+				(unsigned long long)(Offset + offset));
+			break;
+		}
 
-                memset(Hex, ' ', 35);
-                memset(Glyph, ' ', 16);
-            }
-        }
-        else
-        {
-            Offset += size;
-            Length -= size;
+		memset(Hex, ' ', 35);
+		memset(Glyph, ' ', 16);
+	    }
+	}
+	else
+	{
+	    Offset += size;
+	    Length -= size;
 
-            fwrite(data, size, 1, stdout);
-        }
+	    fwrite(data, size, 1, stdout);
+	}
     }
 
     munmap(buffer, length);
