@@ -1,13 +1,13 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.h,v 1.5 2004/02/02 03:55:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.h,v 1.6tsi Exp $ */
 
 /*
  *                   XFree86 vbe module
  *               Copyright 2000 Egbert Eich
  *
- * The mode query/save/set/restore functions from the vesa driver 
+ * The mode query/save/set/restore functions from the vesa driver
  * have been moved here.
  * Copyright (c) 2000 by Conectiva S.A. (http://www.conectiva.com)
- * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br> 
+ * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  */
 
 #ifndef _VBE_H
@@ -15,14 +15,23 @@
 #include "xf86int10.h"
 #include "xf86DDC.h"
 
+/* Endianness-neutral unaligned access definitions */
+#define B8P(x)   ((CARD8 *)(&(x)))
+#define B_O08(x) ((CARD32)(B8P(x)[0]))
+#define B_O16(x) ((CARD32)(B8P(x)[0]) | \
+		 ((CARD32)(B8P(x)[1]) << 8))
+#define B_O32(x) ((CARD32)(B8P(x)[0]) | \
+		 ((CARD32)(B8P(x)[1]) << 8) | \
+		 ((CARD32)(B8P(x)[2]) << 16) | \
+		 ((CARD32)(B8P(x)[3]) << 24))
+
 typedef enum {
     DDC_UNCHECKED,
     DDC_NONE,
     DDC_1,
     DDC_2,
     DDC_1_2
-}
-ddc_lvl;
+} ddc_lvl;
 
 typedef struct {
     xf86Int10InfoPtr pInt10;
@@ -35,8 +44,8 @@ typedef struct {
     Bool ddc_blank;
 } vbeInfoRec, *vbeInfoPtr;
 
-#define VBE_VERSION_MAJOR(x) *((CARD8*)(&x) + 1)
-#define VBE_VERSION_MINOR(x) (CARD8)(x)
+#define VBE_VERSION_MAJOR(x) (B8P(x)[1])
+#define VBE_VERSION_MINOR(x) (B8P(x)[0])
 
 vbeInfoPtr VBEInit(xf86Int10InfoPtr pInt, int entityIndex);
 vbeInfoPtr VBEExtendedInit(xf86Int10InfoPtr pInt, int entityIndex, int Flags);
@@ -220,7 +229,7 @@ typedef enum {
 } vbeSaveRestoreFunction;
 
 Bool
-VBESaveRestore(vbeInfoPtr pVbe, vbeSaveRestoreFunction fuction, 
+VBESaveRestore(vbeInfoPtr pVbe, vbeSaveRestoreFunction fuction,
 	       pointer *memory, int *size, int *real_mode_pages);
 
 /*
@@ -253,7 +262,7 @@ typedef enum {
 #define VBEGetMaxLogicalScanline(pVbe, pixels, bytes, max)	\
 	VBESetGetLogicalScanlineLength(pVbe, SCANWID_GET_MAX, 0, \
 					pixels, bytes, max)
-Bool VBESetGetLogicalScanlineLength(vbeInfoPtr pVbe, 
+Bool VBESetGetLogicalScanlineLength(vbeInfoPtr pVbe,
 				    vbeScanwidthCommand command, int width,
 				     int *pixels, int *bytes, int *max);
 
@@ -309,10 +318,10 @@ typedef struct _vbeModeInfoRec {
     struct _vbeModeInfoRec *next;
 } vbeModeInfoRec, *vbeModeInfoPtr;
 
-vbeModeInfoPtr    VBEBuildVbeModeList(vbeInfoPtr pVbe, 
+vbeModeInfoPtr    VBEBuildVbeModeList(vbeInfoPtr pVbe,
 			    VbeInfoBlock *vbe);
 
-unsigned short VBECalcVbeModeIndex(vbeModeInfoPtr m, 
+unsigned short VBECalcVbeModeIndex(vbeModeInfoPtr m,
 				   DisplayModePtr mode, int bpp);
 
 typedef struct {
