@@ -1,4 +1,11 @@
 XFree86 4.5.99.5 (xx June 2005)
+  62. int10 changes:
+      - Intercept "raw" requests for PCI configuration space from video BIOS'es
+        on all architectures;
+      - Fix typo that produced an incorrect message for int 15h emulation;
+      - Handle unaligned I/O requests gracefully;
+      - Be more tolerant of spurious I/O errors
+      (Marc La France).
   61. Tweak xf86InterceptSignals()'s interface (Marc La France).
   60. Add option to the mmapr & mmapw utilities to allow unaligned accesses for
       testing purposes (Marc La France).
@@ -19590,7 +19597,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3522 2005/06/03 01:47:01 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3523 2005/06/03 02:01:36 tsi Exp $
 
 
 
