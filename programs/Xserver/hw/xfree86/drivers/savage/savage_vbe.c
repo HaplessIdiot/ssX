@@ -1,16 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_vbe.c,v 1.14 2003/06/18 16:17:40 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_vbe.c,v 1.15tsi Exp $ */
 
 #include "savage_driver.h"
 #include "savage_vbe.h"
 
-#if X_BYTE_ORDER == X_LITTLE_ENDIAN
-#define B_O16(x)  (x) 
-#define B_O32(x)  (x)
-#else
-#define B_O16(x)  ((((x) & 0xff) << 8) | (((x) & 0xff) >> 8))
-#define B_O32(x)  ((((x) & 0xff) << 24) | (((x) & 0xff00) << 8) \
-                  | (((x) & 0xff0000) >> 8) | (((x) & 0xff000000) >> 24))
-#endif
 #define L_ADD(x)  (B_O32(x) & 0xffff) + ((B_O32(x) >> 12) & 0xffff00)
 
 Bool vbeModeInit( vbeInfoPtr, int );
