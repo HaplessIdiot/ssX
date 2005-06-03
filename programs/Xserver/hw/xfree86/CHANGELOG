@@ -1,4 +1,5 @@
 XFree86 4.5.99.5 (xx June 2005)
+  59. Ensure signals are trapped during -configure or -probe (Marc La France).
   58. Re-implement Alpha kludge in x86emu's ops.c to be more portable
       (Marc La France).
   57. Fix for auto-detection of Sun mice on Linux/SPARC (Marc La France).
@@ -19586,7 +19587,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3519 2005/06/03 01:30:24 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3520 2005/06/03 01:34:34 tsi Exp $
 
 
 
