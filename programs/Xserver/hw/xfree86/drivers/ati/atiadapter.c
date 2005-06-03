@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadapter.c,v 1.18 2004/01/05 16:42:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadapter.c,v 1.19tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -29,9 +29,6 @@
 const char *ATIAdapterNames[] =
 {
     "Unknown",
-
-#ifndef AVOID_CPIO
-
     "ATI EGA Wonder800",
     "ATI EGA Wonder800+",
     "IBM VGA or compatible",
@@ -45,9 +42,6 @@ const char *ATIAdapterNames[] =
     "IBM 8514/A or compatible",
     "ATI Mach8",
     "ATI Mach32",
-
-#endif /* AVOID_CPIO */
-
     "ATI Mach64",
     "ATI Rage128",
     "ATI Radeon"

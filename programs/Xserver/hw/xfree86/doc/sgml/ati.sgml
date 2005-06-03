@@ -11,7 +11,7 @@
 <date>2005 March 16
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.43tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.44tsi Exp $
 </ident>
 
 <abstract>
@@ -250,11 +250,6 @@ ChipID can only be used with Mach32 or Mach64 adapters, and, thus, specifically
 excludes any other adapter from matching the ``Device'' section.
 ChipRev is meaningful only with Mach64 adapters, and then only if ChipID is
 also specified in the same ``Device'' section.<p>
-<sect1>IOBase<p>
-This option limits the adapters that can be associated with the ``Device''
-section to the one with the specified I/O base.
-This option only applies to Mach64 adapters and specifically excludes other
-adapters.<p>
 <sect1>BusID<p>
 This option limits the adapters that can be associated with the ``Device''
 section to the one with the specified PCI Bus ID.

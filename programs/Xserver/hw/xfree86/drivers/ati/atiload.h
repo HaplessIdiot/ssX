@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.h,v 1.7 2004/01/05 16:42:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.h,v 1.8tsi Exp $ */
 /*
  * Copyright 2000 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -32,15 +32,9 @@
 #include "xf86str.h"
 
 extern const char *ATIint10Symbols[], *ATIddcSymbols[], *ATIvbeSymbols[],
-
-#ifndef AVOID_CPIO
-
-                  *ATIxf1bppSymbols[], *ATIxf4bppSymbols[],
-
-#endif /* AVOID_CPIO */
-
-                  *ATIfbSymbols[], *ATIshadowfbSymbols[], *ATIxaaSymbols[],
-                  *ATIramdacSymbols[], *ATIi2cSymbols[];
+                  *ATIxf1bppSymbols[], *ATIxf4bppSymbols[], *ATIfbSymbols[],
+                  *ATIshadowfbSymbols[], *ATIxaaSymbols[], *ATIramdacSymbols[],
+                  *ATIi2cSymbols[];
 
 extern pointer ATILoadModule  FunctionPrototype((ScrnInfoPtr, const char *,
                                                  const char **));

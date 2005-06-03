@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.23 2004/01/05 16:42:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.24tsi Exp $ */
 /*
  * Copyright 1999 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -60,9 +60,6 @@ const OptionInfoRec ATIPublicOptions[] =
         {0, },
         FALSE,
     },
-
-#ifndef AVOID_CPIO
-
     {
         ATI_OPTION_LINEAR,
         "linear",
@@ -70,9 +67,6 @@ const OptionInfoRec ATIPublicOptions[] =
         {0, },
         FALSE
     },
-
-#endif /* AVOID_CPIO */
-
     {
         ATI_OPTION_MMIO_CACHE,
         "mmio_cache",

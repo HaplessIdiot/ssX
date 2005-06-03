@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiwonder.h,v 1.10 2004/01/05 16:42:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiwonder.h,v 1.11tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -29,14 +29,10 @@
 
 #include "xf86str.h"
 
-#ifndef AVOID_CPIO
-
 extern void ATIVGAWonderPreInit   FunctionPrototype((ATIPtr, ATIHWPtr));
 extern void ATIVGAWonderSave      FunctionPrototype((ATIPtr, ATIHWPtr));
 extern void ATIVGAWonderCalculate FunctionPrototype((ATIPtr, ATIHWPtr,
                                                      DisplayModePtr));
 extern void ATIVGAWonderSet       FunctionPrototype((ATIPtr, ATIHWPtr));
-
-#endif /* AVOID_CPIO */
 
 #endif /* ___ATIWONDER_H___ */

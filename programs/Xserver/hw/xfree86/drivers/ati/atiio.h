@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiio.h,v 1.15 2004/01/05 16:42:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiio.h,v 1.16tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -38,10 +38,9 @@
 typedef enum
 {
     SPARSE_IO,
-    BLOCK_IO
+    BLOCK_IO,
+    MEMORY_IO
 } ATIIODecodingType;
-
-#ifndef AVOID_CPIO
 
 /* Wait until "n" queue entries are free */
 #define ibm8514WaitQueue(_n)                      \
@@ -77,7 +76,5 @@ typedef enum
     {                                      \
         while (!(inw(GP_STAT) & DATARDY)); \
     }
-
-#endif /* AVOID_CPIO */
 
 #endif /* ___ATIIO_H___ */

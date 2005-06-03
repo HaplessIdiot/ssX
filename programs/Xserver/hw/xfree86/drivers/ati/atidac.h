@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.h,v 1.16 2004/01/05 16:42:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.h,v 1.17tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -73,31 +73,23 @@
                                          ATI_DAC_MAX_SUBTYPE)
 extern const SymTabRec ATIDACDescriptors[];
 
-#ifdef AVOID_CPIO
+#define DACDelay(IODelay) \
+    do                    \
+    {                     \
+        (void)IODelay;    \
+        (void)IODelay;    \
+    } while (0)
 
-#   define DACDelay     /* Nothing */
+extern void  ATISetDACIOPorts FunctionPrototype((ATIPtr, ATICRTCType));
 
-#else /* AVOID_CPIO */
+extern CARD8 ATIGetDACCmdReg  FunctionPrototype((ATIPtr, ATICRTCType));
 
-#   define DACDelay                         \
-        do                                  \
-        {                                   \
-            (void)inb(pATI->CPIO_DAC_WAIT); \
-            (void)inb(pATI->CPIO_DAC_WAIT); \
-        } while (0)
+extern void  ATIDACPreInit    FunctionPrototype((ScrnInfoPtr, ATIPtr,
+                                                 ATIHWPtr));
+extern void  ATIDACSave       FunctionPrototype((ATIPtr, ATIHWPtr));
+extern void  ATIDACSet        FunctionPrototype((ATIPtr, ATIHWPtr));
 
-    extern void ATISetDACIOPorts FunctionPrototype((ATIPtr, ATICRTCType));
-
-#endif /* AVOID_CPIO */
-
-extern CARD8 ATIGetDACCmdReg     FunctionPrototype((ATIPtr));
-
-extern void ATIDACPreInit        FunctionPrototype((ScrnInfoPtr, ATIPtr,
-                                                    ATIHWPtr));
-extern void ATIDACSave           FunctionPrototype((ATIPtr, ATIHWPtr));
-extern void ATIDACSet            FunctionPrototype((ATIPtr, ATIHWPtr));
-
-extern void ATILoadPalette       FunctionPrototype((ScrnInfoPtr, int, int *,
-                                                    LOCO *, VisualPtr));
+extern void  ATILoadPalette   FunctionPrototype((ScrnInfoPtr, int, int *,
+                                                 LOCO *, VisualPtr));
 
 #endif /* ___ATIDAC_H___ */

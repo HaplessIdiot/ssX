@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidga.c,v 1.13 2004/12/31 03:30:41 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidga.c,v 1.14tsi Exp $ */
 /*
  * Copyright 2000 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -395,9 +395,6 @@ ATIDGAInit
 
     if (!pATI->nDGAMode)
     {
-
-#ifndef AVOID_CPIO
-
         /*
          * Contrary to previous extension versions, DGA 2 does not support
          * banked framebuffers.  Also, disable DGA when non-DGA server modes
@@ -405,8 +402,6 @@ ATIDGAInit
          */
         if (pATI->BankInfo.BankSize || (pScreenInfo->depth <= 4))
             return FALSE;
-
-#endif /* AVOID_CPIO */
 
         /* Set up DGA callbacks */
         pATI->ATIDGAFunctions.OpenFramebuffer = ATIDGAOpenFramebuffer;

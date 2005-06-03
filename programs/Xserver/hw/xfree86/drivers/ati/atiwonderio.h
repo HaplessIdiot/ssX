@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiwonderio.h,v 1.5 2004/01/05 16:42:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiwonderio.h,v 1.6tsi Exp $ */
 /*
  * Copyright 2000 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -33,16 +33,12 @@
 #include "atistruct.h"
 #include "ativgaio.h"
 
-#ifndef AVOID_CPIO
-
 extern void ATIModifyExtReg FunctionPrototype((ATIPtr, const CARD8, int,
                                                const CARD8, CARD8));
 
-#define ATIGetExtReg(_Index)                    \
-    GetReg(pATI->CPIO_VGAWonder, _Index)
-#define ATIPutExtReg(_Index, _Value)            \
-    PutReg(pATI->CPIO_VGAWonder, _Index, _Value)
-
-#endif /* AVOID_CPIO */
+#define ATIGetExtReg(_Index)                                          \
+    GetReg(pATI->CPIO_VGAWonder + pATI->DomainIOBase, _Index)
+#define ATIPutExtReg(_Index, _Value)                                  \
+    PutReg(pATI->CPIO_VGAWonder + pATI->DomainIOBase, _Index, _Value)
 
 #endif /* ___ATIWONDERIO_H___ */

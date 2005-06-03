@@ -253,19 +253,13 @@ adapters, and, thus, specifically excludes any other adapter from matching
 the ``Device'' section.  ChipRev is meaningful only with Mach64 adapters, and
 then only if ChipID is also specified in the same ``Device'' section.
 
-5.4  IOBase
-
-This option limits the adapters that can be associated with the ``Device''
-section to the one with the specified I/O base.  This option only applies to
-Mach64 adapters and specifically excludes other adapters.
-
-5.5  BusID
+5.4  BusID
 
 This option limits the adapters that can be associated with the ``Device''
 section to the one with the specified PCI Bus ID.  This specification
 excludes non-PCI adapters.
 
-5.6  Clocks
+5.5  Clocks
 
 For the purpose of specifying a clock line in your XF86Config, one of four
 different situations can occur, as follows.
@@ -286,7 +280,7 @@ are used on the great majority of Mach64 adapters.
 If you are uncertain which situation applies to your adapter, you can run a
 clock probe with the command ``X -probeonly''.
 
-5.6.1  Clocks for supported programmable clock generators
+5.5.1  Clocks for supported programmable clock generators
 
 At bootup, video BIOS initialisation programmes an initial set of frequen-
 cies.  Two of these are reserved to allow the setting of modes that do not
@@ -300,7 +294,7 @@ exist on Mach64 adapters.  In this case, the driver will completely ignore
 any XF86Config clock specification, and programme the clock generator as
 needed by the modes used during the X session.
 
-5.6.2  Clocks for unsupported programmable clock generators
+5.5.2  Clocks for unsupported programmable clock generators
 
 This case is unlikely to occur, but is documented for the sake of complete-
 ness.
@@ -334,7 +328,7 @@ tions:
 If the driver matches the clocks to the third setting above, functionality
 will be extremely limited (assuming the driver works at all).
 
-5.6.3  Clocks for fixed clock generators on ATI adapters
+5.5.3  Clocks for fixed clock generators on ATI adapters
 
 This section applies to all VGAWonder and Mach32 adapters, and to early
 Mach64 prototypes.
@@ -405,7 +399,7 @@ the specified clocks if it deems it appropriate to do so.  Mach32 and Mach64
 owners should note that this order is different than what they would use for
 previous XFree86 accelerated servers.
 
-5.6.4  Clocks for non-ATI adapters
+5.5.4  Clocks for non-ATI adapters
 
 If no clocks are specified in the XF86Config, the driver will probe for four
 clocks, the second of which will be assumed to be 28.322 MHz.  The first
@@ -413,7 +407,7 @@ clock will typically be 25.175 MHz, but there are exceptions.  You can
 include up to four clock frequencies in your XF86Config to specify the actual
 values used by the adapter.  Any more will be ignored.
 
-5.7  Option ``nopanel_display''
+5.6  Option ``nopanel_display''
 
 This specification is only effective when the driver detects that the
 adapter's BIOS has initialised both the digital flat panel and CRT inter-
@@ -422,7 +416,7 @@ and the CRT.  This specification causes the driver to disable the digital
 flat panel and display the screen image on the CRT instead, which could
 potentially allow for larger physical resolutions than the panel can handle.
 
-5.8  Option ``crt_display''
+5.7  Option ``crt_display''
 
 This specification is only effective when the driver detects that the
 adapter's BIOS has initialised the digital flat panel interface, but has dis-
@@ -430,14 +424,14 @@ abled the CRT interface.  In such a situation the driver will normally drive
 only the panel.  This specification causes the driver to instead display the
 same image on both the panel and the CRT.
 
-5.9  Option ``noaccel''
+5.8  Option ``noaccel''
 
 By default, the driver will accelerate draw operations if a Mach64 CRTC is
 used to drive the display.  As implemented in this driver, acceleration does
 not require a linear video memory aperture.  This option disables this accel-
 eration.
 
-5.10  Option ``nolinear''
+5.9  Option ``nolinear''
 
 By default, the driver will enable a linear video memory aperture for
 256-colour and higher depth modes if it is also using a Mach64 accelerator
@@ -447,7 +441,7 @@ aperture.
 On non-Intel platforms, the driver requires a linear aperture and, so, this
 option is ignored.
 
-5.11  Option ``HWCursor'' and Option ``SWCursor''
+5.10  Option ``HWCursor'' and Option ``SWCursor''
 
 Option ``HWCursor'', which is the default, specifies that hardware facilities
 are to be used to paint the mouse pointer on the screen.  Option ``SWCursor''
@@ -458,7 +452,7 @@ modes, if a Mach64 accelerator CRTC, or a Mach64 integrated controller is
 being used.  In all other situations, a software cursor will be used, regard-
 less of what these options specify.
 
-5.12  Option ``SilkenMouse''
+5.11  Option ``SilkenMouse''
 
 This option is only acted upon when a hardware cursor is being used.  It
 specifies that the cursor's position on the screen is to be updated as
@@ -466,7 +460,7 @@ quickly as possible when the mouse is moved.  This is the default behaviour.
 If this option is negated, the cursor may lag the mouse when the X server is
 very busy.
 
-5.13  Option ``shadowfb''
+5.12  Option ``shadowfb''
 
 If this option is enabled, the driver will cause the CPU to do each drawing
 operation first into a shadow frame buffer in system virtual memory and then
@@ -482,19 +476,19 @@ Note that, due to various limitations, this option is forcibly disabled when
 a linear video memory aperture is not enabled, when the frame buffer depth is
 less than 8, or when acceleration is used.
 
-5.14  Option ``dpms''
+5.13  Option ``dpms''
 
 This option enables the driver's support for VESA's Display Power Management
 Specification.
 
-5.15  Option ``backingstore''
+5.14  Option ``backingstore''
 
 This is not specifically a driver option.  It is used to enable the server's
 support for backing store, a mechanism by which pixel data for occluded win-
 dow regions is remembered by the server thereby alleviating the need to send
 expose events to X clients when the data needs to be redisplayed.
 
-5.16  MemBase address
+5.15  MemBase address
 
 This specification is only effective for non-PCI Mach64 adapters, and is used
 to override the CPU address at which the adapter will map its video memory.
@@ -508,14 +502,14 @@ ing to the PCI Plug'n'Play specification which arbitrates the resource
 requirements of most devices in the system.  This means the driver can not
 easily change the linear aperture address.
 
-5.17  Option ``ReferenceClock'' ``frequency''
+5.16  Option ``ReferenceClock'' ``frequency''
 
 This option is only applicable to non-Intel platforms, where an adapter BIOS
 is not available to the driver.  The option specifies the reference frequency
 used by the adapter's clock generator.  The default is 14.318 MHz, and other
 typical values are 28.636, or 29.5 MHz.
 
-5.18  ClockChip ``name''
+5.17  ClockChip ``name''
 
 This option is only applicable to non-Intel platforms, where an adapter BIOS
 is not available to the driver, and the driver cannot reliably determine
@@ -710,7 +704,7 @@ the new driver API that XFree86 4.0 and later adopted.
 Version 6 begins the process of porting the driver to non-Intel architec-
 tures.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.44 tsi Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.45 tsi Exp $
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.ati,v 3.68tsi Exp $

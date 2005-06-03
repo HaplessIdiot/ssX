@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativalid.c,v 1.18 2004/01/05 16:42:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativalid.c,v 1.19tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -46,13 +46,7 @@ ATIValidMode
     ScrnInfoPtr pScreenInfo = xf86Screens[iScreen];
     ATIPtr      pATI        = ATIPTR(pScreenInfo);
     Bool        InterlacedSeen;
-    int         HBlankWidth, HAdjust, VScan, VInterlace;
-
-#ifndef AVOID_CPIO
-
-    int VDisplay, VTotal;
-
-#endif /* AVOID_CPIO */
+    int         HBlankWidth, HAdjust, VScan, VInterlace, VDisplay, VTotal;
 
     if (flags & MODECHECK_FINAL)
     {
@@ -185,9 +179,6 @@ ATIValidMode
 
     switch (pATI->NewHW.crtc)
     {
-
-#ifndef AVOID_CPIO
-
         case ATI_CRTC_VGA:
             /* Prevent overscans */
             if (HBlankWidth > 63)
@@ -218,8 +209,6 @@ ATIValidMode
                 return MODE_BAD_VVALUE;
 
             break;
-
-#endif /* AVOID_CPIO */
 
         case ATI_CRTC_MACH64:
             if (VScan > 2)

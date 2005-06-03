@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.h,v 3.10 2003/08/24 17:36:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.h,v 3.11tsi Exp $ */
 
 /*
  * Copyright (c) 1999-2003 by The XFree86 Project, Inc.
@@ -81,17 +81,24 @@ typedef union {
 } pciBridgesSave, *pciBridgesSavePtr;
 
 typedef struct pciBusRec {
+    int domain;			/* bridge & bus domain number */
     int brbus, brdev, brfunc;	/* ID of the bridge to this bus */
+    /*
+     * If primary == -1, then redundant host bridge, else
+     * if secondary == -1, then pre-PCI bus, else
+     * if primary == secondary, then PCI root bus segment, else
+     * PCI non-root bus segment.
+     */
     int primary, secondary, subordinate;
     int subclass;		/* bridge type */
     int interface;
+    int brcontrol;		/* bridge_control word */
     resPtr preferred_io;	/* I/O range */
     resPtr preferred_mem;	/* non-prefetchable memory range */
     resPtr preferred_pmem;	/* prefetchable memory range */
     resPtr io;			/* for subtractive PCI-PCI bridges */
     resPtr mem;
     resPtr pmem;
-    int brcontrol;		/* bridge_control byte */
     struct pciBusRec *next;
 } PciBusRec, *PciBusPtr;
 

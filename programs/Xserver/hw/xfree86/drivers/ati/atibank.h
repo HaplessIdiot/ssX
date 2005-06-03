@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibank.h,v 1.9 2004/01/05 16:42:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibank.h,v 1.10tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -28,8 +28,6 @@
 #include "atiproto.h"
 
 #include "mibank.h"
-
-#ifndef AVOID_CPIO
 
 /*
  * Banking definitions.
@@ -82,7 +80,5 @@ extern ATIBankProc       ATIV3SetBank,
                          ATIx8800SetBank,
                          ATIMach64SetBankPacked,
                          ATIMach64SetBankPlanar;
-
-#endif /* AVOID_CPIO */
 
 #endif /* ___ATIBANK_H___ */

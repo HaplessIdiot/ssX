@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.83tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.84tsi Exp $ */
 /*
  * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -135,6 +135,10 @@ static PciBusPtr xf86PciBus = NULL;
 #define I2B(tag,base) pciHostAddrToBusAddr(tag,PCI_IO,base)
 #define H2B(tag,base,type) (((type & ResPhysMask) == ResMem) ? \
 			M2B(tag, base) : I2B(tag, base))
+
+#define B2ISB(tag, base) pciBusAddrToHostAddr(tag, PCI_IO_SPARSE_BASE, base)
+#define B2ISM(tag, mask) pciBusAddrToHostAddr(tag, PCI_IO_SPARSE_MASK, mask)
+
 #define TAG(pvp) (pciTag(pvp->bus,pvp->device,pvp->func))
 #define SIZE(size) ((1 << size) - 1)
 #define PCI_SIZE(type,tag,size) (((type & ResPhysMask) == ResMem) \
@@ -1783,6 +1787,7 @@ xf86GetPciBridgeInfo(void)
 		*pnPciBus = PciBus = xnfcalloc(1, sizeof(PciBusRec));
 		pnPciBus = &PciBus->next;
 
+		PciBus->domain = domain;
 		PciBus->primary = primary;
 		PciBus->secondary = secondary;
 		PciBus->subordinate = subordinate;
@@ -1929,6 +1934,7 @@ xf86GetPciBridgeInfo(void)
 		*pnPciBus = PciBus = xnfcalloc(1, sizeof(PciBusRec));
 		pnPciBus = &PciBus->next;
 
+		PciBus->domain = domain;
 		PciBus->primary = primary;
 		PciBus->secondary = secondary;
 		PciBus->subordinate = subordinate;
@@ -2082,6 +2088,7 @@ xf86GetPciBridgeInfo(void)
 	    case PCI_SUBCLASS_BRIDGE_MC:
 		*pnPciBus = PciBus = xnfcalloc(1, sizeof(PciBusRec));
 		pnPciBus = &PciBus->next;
+		PciBus->domain = domain;
 		PciBus->primary = pcrp->busnum;
 		PciBus->secondary = PciBus->subordinate = -1;
 		PciBus->brbus = pcrp->busnum;
@@ -2117,6 +2124,7 @@ xf86GetPciBridgeInfo(void)
 		*pnPciBus = PciBus = xnfcalloc(1, sizeof(PciBusRec));
 		pnPciBus = &PciBus->next;
 
+		PciBus->domain = domain;
 		PciBus->primary = -1;
 		PciBus->secondary = -1; /* to be set below */
 		PciBus->subordinate = pciNumBuses - 1;
@@ -2178,11 +2186,12 @@ xf86GetPciBridgeInfo(void)
 	     * Find the 'smallest' free HOST-PCI bridge, where 'small' is in
 	     * the order of pciTag().
 	     */
-	    PCITAG minTag = 0xFFFFFFFF, tag;
+	    PCITAG minTag = (PCITAG)(-1L), tag;
 	    PciBusPtr PciBusFound = NULL;
 	    for (PciBus = PciBusBase; PciBus; PciBus = PciBus->next)
 		if ((PciBus->subclass == PCI_SUBCLASS_BRIDGE_HOST) &&
 		    (PciBus->secondary == -1) &&
+		    (PciBus->brbus == i) &&
 		    ((tag = pciTag(PciBus->brbus,PciBus->brdev,PciBus->brfunc))
 		     < minTag) )  {
 		    minTag = tag;
@@ -2201,6 +2210,7 @@ xf86GetPciBridgeInfo(void)
 		}
 		*pnPciBus = PciBus = xnfcalloc(1, sizeof(PciBusRec));
 		pnPciBus = &PciBus->next;
+		PciBus->domain = domain;
 		PciBus->primary = PciBus->secondary = i;
 		PciBus->subclass = PCI_SUBCLASS_BRIDGE_HOST;
 		PciBus->brcontrol = PCI_PCI_BRIDGE_VGA_EN;
@@ -3062,10 +3072,336 @@ xf86SetPciVideo(pciVideoPtr pvp, resType rt)
 }
 
 /*
+ * This function is called to determine whether or not a hard-failed master
+ * abort can occur when testing if an adapter can actually be disabled through
+ * PCI.  The function returns whether the adapter can be probed at all, and (in
+ * *pActivate) whether enabling the adapter through PCI is a likely requisite
+ * to prevent such hard-fails.  The function assumes that all resources the
+ * adapter registers are actually routed to it through the bus tree.
+ */
+Bool
+xf86CheckPciVideo(pciVideoPtr pvp, Bool *pActivate)
+{
+    PciBusPtr pBus;
+
+    /* Start by assuming the adapter doesn't need to be enabled */
+    if (pActivate)
+	*pActivate = FALSE;
+
+    /*
+     * If no PCI bus segments are present, assume all master aborts complete
+     * normally.  Note that no bus segments will be known when PCI scans are
+     * disabled entirely, but that option should only be used when the presence
+     * of PCI in a system is incorrectly detected.
+     */
+    if (!xf86PciBus)
+	return TRUE;
+
+    if (!pvp)	/* This one is actually a programming error */
+	return FALSE;
+
+    /* Find the adapter's bus segment structure */
+    for (pBus = xf86PciBus;  ;  pBus = pBus->next) {
+	if (!pBus)
+	    return FALSE;
+
+	if (pBus->secondary == pvp->bus)
+	    break;
+    }
+
+    /* After this point, we will always return TRUE */
+    if (!pActivate)
+	return TRUE;
+
+    /* Given we disable hard-fails on non-root bus segments... */
+    if ((pBus->primary != -1) && (pBus->primary != pvp->bus))
+	return TRUE;
+
+    /*
+     * Look for a subtractive decoder on the same segment as the adapter, on
+     * the assumption that such bridges never generate master aborts on the
+     * root segment.
+     */
+    for (pBus = xf86PciBus;  pBus;  pBus = pBus->next) {
+	if (pBus->primary != pvp->bus)
+	    continue;
+
+	switch (pBus->subclass) {
+#if 0  /* ??? */
+	case PCI_SUBCLASS_BRIDGE_PCI:
+	    if (pBus->interface != PCI_IF_BRIDGE_PCI_SUBTRACTIVE)
+		continue;
+	    /* XXX Should check if bridge routes adapter's resources */
+	    /* Fall through */
+#endif
+	case PCI_SUBCLASS_BRIDGE_ISA:
+	case PCI_SUBCLASS_BRIDGE_EISA:
+	case PCI_SUBCLASS_BRIDGE_MC:
+	    return TRUE;
+
+	default:
+	    continue;
+	}
+    }
+
+    /*
+     * At this point the adapter's compliance with PCI enablement/disablement
+     * cannot be safely determined.
+     */
+    *pActivate = TRUE;
+
+    return TRUE;
+}
+
+/*
+ * A recursive helper for xf86CheckPciSparseIO() below.  This scans the PCI bus
+ * sub-tree rooted at pBus1 for its sub-sub-tree to which a sparse resource
+ * range is routed.  The function returns FALSE if more than one such
+ * subordinate tree is found, or TRUE otherwise.  This sets *ppUnRouted to NULL
+ * if exactly one subordinate is found.
+ */
+static Bool
+xf86CheckPciSubTreeIO(PciBusPtr pBus1,
+		      IOADDRESS Base, IOADDRESS Last, IOADDRESS End,
+		      memType mask, Bool **ppUnrouted)
+{
+    PciBusPtr pBus2;
+    resPtr pRes;
+    IOADDRESS bot, top;
+    PCITAG tag;
+    resRange range;
+
+    /*
+     * Loop through all of of pBus1's secondary bus segments.  Note that these
+     * include those behind a subtractive-decoding P2P bridge.
+     */
+    for (pBus2 = xf86PciBus;  pBus2;  pBus2 = pBus2->next) {
+	if ((pBus1 == pBus2) || (pBus2->secondary == -1) ||
+	    (pBus1->secondary != pBus2->primary))
+	    continue;
+
+	tag = pciTag(pBus2->secondary, 0, 0);
+
+	/* Loop through all I/O resources routed to pBus2 */
+	for (pRes = pBus2->preferred_io;  pRes;  pRes = pRes->next) {
+	    /*
+	     * Look for overlaps in the device (or bus) view, rather than in
+	     * the host view, because the former is not as subject to OS
+	     * mangling.  Assume that, for all "R" ...
+	     *
+	     *    (B2I(tag, I2B(tag, R)) == R) &&
+	     *    (I2B(tag, B2I(tag, R)) == R)
+	     *
+	     * ... holds true.
+	     */
+	    bot = I2B(tag, pRes->block_begin);
+	    top = I2B(tag, pRes->block_end);
+
+	    if ((bot > End) || (top < Base))
+		continue;	/* No potential overlap */
+
+	    if ((bot > Base) || (top < End)) {
+		/* A potential partial overlap */
+		if (Base > bot)
+		    bot = Base;
+
+		if (End < top)
+		    top = End;
+
+		if ((bot & ~mask) == (top & ~mask)) {
+		    if (((bot & mask) > Last) ||
+			((top & mask) < Base))
+			continue;	/* No overlap */
+		}
+
+		/*
+		 * A partial overlap, but the bridge might route enough
+		 * overlapping ranges to entirely cover the requested
+		 * resources.  Use xf86IsSubsetOf() to determine this.
+		 */
+		bot = Base;
+		while (bot <= Last) {
+		    top = ((bot - 1) ^ bot) >> 1;
+		    while ((bot + top) > Last)
+			top >>= 1;
+
+		    RANGE(range, B2ISB(tag, bot), B2ISM(tag, mask & ~top),
+			  RANGE_TYPE(ResIo | ResSparse | ResExclusive,
+				     pBus2->domain));
+
+		    if (!xf86IsSubsetOf(range, pBus2->preferred_io))
+			return FALSE;
+
+		    bot += top + 1;
+		}
+	    }
+
+	    /*
+	     * pBus2 completely routes the requested resources.  Check its
+	     * sub-trees.
+	     */
+	    if (!xf86CheckPciSubTreeIO(pBus2, Base, Last, End, mask,
+				       ppUnrouted))
+		return FALSE;
+
+	    *ppUnrouted = NULL;
+	    return TRUE;
+	}
+    }
+
+    /* No bridge on pBus1 routes the resources */
+    return TRUE;
+}
+
+/*
+ * This function determines which secondary bridges, if any, would decode an
+ * access to a range of sparse I/O addresses in a particular domain.  The
+ * function returns FALSE if there is more than one such bridge in the system
+ * (or some other error), and returns TRUE otherwise.  In the latter case, this
+ * function also returns (in *pUnRouted) whether or not any such bridge exists.
+ * This function is intended to be used by a driver before probing sparse I/O
+ * addresses while all PCI display functions are disabled, to determine if such
+ * a probe might cause a hard-failed master abort and crash the system.
+ *
+ * This function intentionally ignores VGA routing overrides, and, therefore,
+ * should only be called while VGA routing is disabled throughout the system.
+ *
+ * The mask specified here, like all sparse masks throughout the server, must
+ * be 1-extended to be portable to all host architectures.  But, at odds with
+ * the rest of the server, the mask passed here applies to each _individual_
+ * port in [Base, Base + count[, not to the range as a whole.  In particular,
+ * should it ever be needed to run this function for a non-sparse range, simply
+ * call it with an all-ones mask.
+ */
+Bool
+xf86CheckPciSparseIO(int domain, IOADDRESS Base, int count, memType mask,
+		     Bool *pUnRouted)
+{
+    IOADDRESS Last, End;
+    PciBusPtr pBusRoot, pBus;
+    int nRoot;
+
+    /*
+     * Begin with the assumption that the requested resources are routed away
+     * from the root bus segment.
+     */
+    if (pUnRouted)
+	*pUnRouted = FALSE;
+
+    /*
+     * If there are no PCI bus segments, assume all master aborts complete
+     * normally.  PCI scans should only be disabled when the presence of PCI
+     * is incorrectly detected.
+     */
+    if (!xf86PciBus)
+	return TRUE;
+
+    /* Sanity check */
+    if (count < 1)
+	return FALSE;
+
+    /*
+     * Find a root bus segment in the domain.  If none is found, the domain
+     * isn't populated.  If more than one are present (a case dealt with below),
+     * then we don't understand enough about the domain chipset to determine
+     * how I/O routing is partitionned amongst these pseudo-root bus segments,
+     * but we still look for a secondary that completely routes the requested
+     * resources.
+     */
+    for (pBusRoot = xf86PciBus;  ;  pBusRoot = pBusRoot->next) {
+	if (!pBusRoot)
+	    return FALSE;
+
+	if ((domain == pBusRoot->domain) && (pBusRoot->primary != -1) &&
+	    (pBusRoot->primary == pBusRoot->secondary))
+	    break;
+    }
+
+    /* Requested resources must be contiguous (within mask) */
+    Last = Base;
+    while (TRUE) {
+	if ((Last & mask) != Last)
+	    return FALSE;
+
+	if (!--count)
+	    break;
+
+	Last++;
+    }
+
+    End = Last | ~mask;	/* Maximum I/O port of interest */
+    nRoot = 0;		/* Number of "root" bus segments in domain */
+
+    /* Loop through (and count) all root bus segments in the domain */
+    for (pBus = pBusRoot;  pBus;  pBus = pBus->next) {
+	if ((domain != pBus->domain) || (pBus->primary == -1) ||
+	    (pBus->primary != pBus->secondary))
+	    continue;
+
+	nRoot++;
+
+	if (!xf86CheckPciSubTreeIO(pBus, Base, Last, End, mask, &pUnRouted))
+	    return FALSE;
+    }
+
+    /*
+     * If the resources are routed to any secondary bus segment, or if the
+     * caller doesn't care about the potential for hard-failed master aborts,
+     * return now.
+     */
+    if (!pUnRouted)
+	return TRUE;
+
+    /*
+     * If we know of only one root bus segment in the domain, look for a
+     * pre-PCI subtractive decoder on it.  Otherwise, err on the side of
+     * caution because we don't know enough about the domain chipset to
+     * determine which pseudo-root bus segment would claim an access to the
+     * requested resources.
+     */
+    if (nRoot == 1) {
+	for (pBus = xf86PciBus;  pBus;  pBus = pBus->next) {
+	    if ((pBus->primary == pBusRoot->secondary) &&
+		(pBus->secondary == -1))
+		return TRUE;
+	}
+    }
+
+    /*
+     * Notify caller that probing the requested resources might generate
+     * hard-failed master aborts.
+     */
+    *pUnRouted = TRUE;
+
+    return TRUE;
+}
+
+/*
+ * This function determines whether a domain provides actual memory (ROM or
+ * RAM) in the traditional x86 BIOS range (0x0C0000 to 0x0FFFF).  It currently
+ * does so by looking for a pre-PCI bridge in the domain.
+ */
+Bool
+xf86DomainHasBIOSSegments(int domain)
+{
+    PciBusPtr pBus;
+
+    if (!xf86PciBus)
+	return TRUE;
+
+    for (pBus = xf86PciBus;  pBus;  pBus = pBus->next) {
+	if ((domain == pBus->domain) && (pBus->primary != -1) &&
+	    (pBus->secondary == -1))
+	    return TRUE;
+    }
+
+    return FALSE;
+}
+
+/*
  * Parse a BUS ID string, and return the PCI bus parameters if it was
  * in the correct format for a PCI bus id.
  */
-
 Bool
 xf86ParsePciBusString(const char *busID, int *bus, int *device, int *func)
 {

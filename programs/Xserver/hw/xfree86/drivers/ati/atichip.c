@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.39 2004/02/24 16:51:20 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.40tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -33,9 +33,6 @@
 const char *ATIChipNames[] =
 {
     "Unknown",
-
-#ifndef AVOID_CPIO
-
     "IBM VGA or compatible",
     "ATI 18800",
     "ATI 18800-1",
@@ -51,9 +48,6 @@ const char *ATIChipNames[] =
     "ATI 68800-6",
     "ATI 68800LX",
     "ATI 68800AX",
-
-#endif /* AVOID_CPIO */
-
     "ATI 88800GX-C",
     "ATI 88800GX-D",
     "ATI 88800GX-E",
@@ -109,8 +103,6 @@ const char *ATIChipNames[] =
 const char *ATIFoundryNames[] =
     { "SGS", "NEC", "KCS", "UMC", "TSMC", "5", "6", "UMC" };
 
-#ifndef AVOID_CPIO
-
 /*
  * ATIMach32ChipID --
  *
@@ -152,8 +144,6 @@ ATIMach32ChipID
             break;
     }
 }
-
-#endif /* AVOID_CPIO */
 
 /*
  * ATIMach64ChipID --
@@ -443,9 +433,6 @@ ATIChipID
 {
     switch (ChipID)
     {
-
-#ifndef AVOID_CPIO
-
         case OldChipID('A', 'A'):  case NewChipID('A', 'A'):
             return ATI_CHIP_68800_3;
 
@@ -457,8 +444,6 @@ ATIChipID
 
         case OldChipID('A', 'X'):  case NewChipID('A', 'X'):
             return ATI_CHIP_68800AX;
-
-#endif /* AVOID_CPIO */
 
         case OldChipID('G', 'X'):  case NewChipID('G', 'X'):
             switch (ChipRev)

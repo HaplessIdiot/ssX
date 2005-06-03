@@ -1,4 +1,16 @@
 XFree86 4.5.99.5 (xx June 2005)
+  64. ATIProbe() and atimisc changes:
+      - Port to common layer's domain scheme;
+      - Replace AVOID_CPIO and AVOID_NON_PCI rchitecture-specific #define's
+        with run-time checks and implement new common layer infrastructure to
+        allow this to happen;
+      - Replace endianness compile-time checks with run-time ones;
+      - Deal with certain spurious I/O errors;
+      - No longer consider IOBase when matching adapters to device sections
+      This re-instates support for all ATI adapters on all architectures
+      supported by the common layer (Marc La France).
+  63. Make sparse I/O masks more portable throughout the server
+      (Marc La France).
   62. int10 changes:
       - Intercept "raw" requests for PCI configuration space from video BIOS'es
         on all architectures;
@@ -19597,7 +19609,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3523 2005/06/03 02:01:36 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3524 2005/06/03 02:10:05 tsi Exp $
 
 
 

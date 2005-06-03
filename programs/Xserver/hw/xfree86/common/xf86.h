@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.185 2005/02/26 18:31:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.186tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -173,6 +173,10 @@ void xf86FormatPciBusNumber(int busnum, char *buffer);
 pciVideoPtr *xf86GetPciVideoInfo(void);
 pciConfigPtr *xf86GetPciConfigInfo(void);
 void xf86SetPciVideo(pciVideoPtr pvp, resType rt);
+Bool xf86CheckPciVideo(pciVideoPtr pvp, Bool *pActivate);
+Bool xf86CheckPciSparseIO(int domain, IOADDRESS Base, int count,
+			  memType mask, Bool *pUnRouted);
+Bool xf86DomainHasBIOSSegments(int domain);
 void xf86PrintResList(int verb, resPtr list);
 resPtr xf86AddRangesToList(resPtr list, resRange *pRange, int entityIndex);
 int xf86ClaimIsaSlot(DriverPtr drvp, int chipset, GDevPtr dev, Bool active);

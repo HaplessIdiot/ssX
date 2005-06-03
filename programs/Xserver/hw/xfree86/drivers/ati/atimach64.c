@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.53 2004/01/05 16:42:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.54tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -25,6 +25,7 @@
 #include "atibus.h"
 #include "atichip.h"
 #include "atidac.h"
+#include "atiendian.h"
 #include "atimach64.h"
 #include "atimach64accel.h"
 #include "atimach64io.h"
@@ -52,19 +53,10 @@ ATIMach64PreInit
     CARD32 bus_cntl, config_cntl;
     int    tmp;
 
-#ifndef AVOID_CPIO
-
     if (pATI->depth <= 4)
-    {
         pATIHW->crtc_off_pitch = SetBits(pATI->displayWidth >> 4, CRTC_PITCH);
-    }
     else
-
-#endif /* AVOID_CPIO */
-
-    {
         pATIHW->crtc_off_pitch = SetBits(pATI->displayWidth >> 3, CRTC_PITCH);
-    }
 
     if ((pATI->LockData.crtc_gen_cntl & CRTC_CSYNC_EN) && !pATI->OptionCSync)
     {
@@ -93,21 +85,10 @@ ATIMach64PreInit
     if (pATI->Chip >= ATI_CHIP_264VT)
         pATIHW->bus_cntl |= BUS_EXT_REG_EN;     /* Enable Block 1 */
 
-#ifdef AVOID_CPIO
-
-    pATIHW->mem_vga_wp_sel = SetBits(0, MEM_VGA_WPS0) |
-        SetBits(1, MEM_VGA_WPS1);
-    pATIHW->mem_vga_rp_sel = SetBits(0, MEM_VGA_RPS0) |
-        SetBits(1, MEM_VGA_RPS1);
-
-#else /* AVOID_CPIO */
-
     pATIHW->mem_vga_wp_sel = SetBits(0, MEM_VGA_WPS0) |
         SetBits(pATIHW->nPlane, MEM_VGA_WPS1);
     pATIHW->mem_vga_rp_sel = SetBits(0, MEM_VGA_RPS0) |
         SetBits(pATIHW->nPlane, MEM_VGA_RPS1);
-
-#endif /* AVOID_CPIO */
 
     pATIHW->dac_cntl = inr(DAC_CNTL) &
         ~(DAC1_CLK_SEL | DAC_PALETTE_ACCESS_CNTL | DAC_8BIT_EN);
@@ -122,19 +103,10 @@ ATIMach64PreInit
 
     pATIHW->config_cntl = config_cntl = inr(CONFIG_CNTL);
 
-#ifndef AVOID_CPIO
-
     if (pATI->UseSmallApertures)
-    {
         pATIHW->config_cntl |= CFG_MEM_VGA_AP_EN;
-    }
     else
-
-#endif /* AVOID_CPIO */
-
-    {
         pATIHW->config_cntl &= ~CFG_MEM_VGA_AP_EN;
-    }
 
     if (pATI->LinearBase && (pATI->Chip < ATI_CHIP_264CT))
     {
@@ -275,11 +247,8 @@ ATIMach64PreInit
                 break;
         }
 
-#if X_BYTE_ORDER == X_LITTLE_ENDIAN
-
-        pATIHW->dp_pix_width |= DP_BYTE_PIX_ORDER;
-
-#endif /* X_BYTE_ORDER */
+        if (ATIEndian.endian == ATI_LITTLE_ENDIAN)
+            pATIHW->dp_pix_width |= DP_BYTE_PIX_ORDER;
 
         pATIHW->dp_mix = SetBits(MIX_SRC, DP_FRGD_MIX) |
             SetBits(MIX_DST, DP_BKGD_MIX);
@@ -639,9 +608,6 @@ ATIMach64Calculate
         CRTC_EXT_DISP_EN | CRTC_EN | CRTC_VGA_LINEAR | CRTC_CNT_EN;
     switch (pATI->depth)
     {
-
-#ifndef AVOID_CPIO
-
         case 1:
             pATIHW->crtc_gen_cntl |= SetBits(PIX_WIDTH_1BPP, CRTC_PIX_WIDTH);
             break;
@@ -649,8 +615,6 @@ ATIMach64Calculate
         case 4:
             pATIHW->crtc_gen_cntl |= SetBits(PIX_WIDTH_4BPP, CRTC_PIX_WIDTH);
             break;
-
-#endif /* AVOID_CPIO */
 
         case 8:
             pATIHW->crtc_gen_cntl |= SetBits(PIX_WIDTH_8BPP, CRTC_PIX_WIDTH);
@@ -705,13 +669,7 @@ ATIMach64Set
     ATIHWPtr    pATIHW
 )
 {
-
-#ifndef AVOID_CPIO
-
     if (pATIHW->crtc == ATI_CRTC_MACH64)
-
-#endif /* AVOID_CPIO */
-
     {
         if ((pATIHW->FeedbackDivider > 0) &&
             (pATI->ProgrammableClock != ATI_CLOCK_NONE))
@@ -989,12 +947,7 @@ ATIMach64Set
         }
     }
 
-#ifndef AVOID_CPIO
-
     if (pATIHW->crtc == ATI_CRTC_MACH64)
-
-#endif /* AVOID_CPIO */
-
     {
         /* Aperture setup */
         outr(MEM_VGA_WP_SEL, pATIHW->mem_vga_wp_sel);
