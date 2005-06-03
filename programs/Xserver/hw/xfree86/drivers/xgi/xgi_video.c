@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_video.c,v 1.1tsi Exp $ */
 /***************************************************************************
 
 Copyright 2004 eXtreme Graphics Innovation Corp, Inc., HsinChu, Taiwan.
@@ -985,7 +985,7 @@ XGIPutImage(
    /* copy data */
    if((pXGI->XvUseMemcpy) || (totalSize < 16)) {
 #ifndef NewPath
-	   		xf86memcpy(pXGI->FbBase + pPriv->bufAddr[pPriv->currentBuf], buf, totalSize);
+	   		memcpy(pXGI->FbBase + pPriv->bufAddr[pPriv->currentBuf], buf, totalSize);
 #else
 		   switch(id){
 		   case PIXEL_FMT_YV12:
@@ -1005,12 +1005,12 @@ XGIPutImage(
 		      srcU = srcV + width  * height / 4;
 			  
 		      for(i=0; i<height; i++)
-		         xf86memcpy(Y + i * pPriv->srcPitch, srcY + i*width, width);
+		         memcpy(Y + i * pPriv->srcPitch, srcY + i*width, width);
 			  
 		      for(i=0; i<height2; i++)
 		      {
-		         xf86memcpy(V + i * srcPitch2, srcV + i*width2, width2);
-		         xf86memcpy(U + i * srcPitch2, srcU + i*width2, width2);
+		         memcpy(V + i * srcPitch2, srcV + i*width2, width2);
+		         memcpy(U + i * srcPitch2, srcU + i*width2, width2);
 		      }
 		      break;
 		   }
@@ -1028,10 +1028,10 @@ XGIPutImage(
 		      srcVU = srcY + width * height;
 
 		      for(i=0; i<height; i++)
-		         xf86memcpy(Y + i * pPriv->srcPitch, srcY + i*width, width);
+		         memcpy(Y + i * pPriv->srcPitch, srcY + i*width, width);
 			  
 		      for(i=0; i<height2; i++)
-		         xf86memcpy(VU + i * pPriv->srcPitch, srcVU + i*width, width);
+		         memcpy(VU + i * pPriv->srcPitch, srcVU + i*width, width);
 		      break;
 		   }
 		   case PIXEL_FMT_YUY2:
@@ -1042,11 +1042,11 @@ XGIPutImage(
 		   {
 		      BYTE *Base = (BYTE *)(pXGI->FbBase + pPriv->bufAddr[pPriv->currentBuf]);
 		      for(i=0; i<height; i++)
-		         xf86memcpy( Base + i * pPriv->srcPitch, buf + i*width*2, width*2);
+		         memcpy( Base + i * pPriv->srcPitch, buf + i*width*2, width*2);
 		      break;
 		   }
 		   default:
-		      xf86memcpy(pXGI->FbBase + pPriv->bufAddr[pPriv->currentBuf], buf, totalSize);
+		      memcpy(pXGI->FbBase + pPriv->bufAddr[pPriv->currentBuf], buf, totalSize);
 		      break;
 		   	}
 #endif
