@@ -1,4 +1,6 @@
 XFree86 4.5.99.5 (xx June 2005)
+  65. Restore accuracy of atimisc's clock probe despite ceratin I/O errors
+      (Marc La France).
   64. ATIProbe() and atimisc changes:
       - Port to common layer's domain scheme;
       - Replace AVOID_CPIO and AVOID_NON_PCI rchitecture-specific #define's
@@ -19609,7 +19611,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3524 2005/06/03 02:10:05 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3525 2005/06/03 03:18:30 tsi Exp $
 
 
 
