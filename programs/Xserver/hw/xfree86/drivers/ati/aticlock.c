@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.c,v 1.24tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.c,v 1.25tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -745,6 +745,13 @@ ProbeClocks:
          */
         CanDisableInterrupts = TRUE;    /* An assumption verified below */
 
+        /*
+         * It's unfortunate this message can only show up when the server is
+         * started remotely.
+         */
+        xf86DrvMsgVerb(pScreenInfo->scrnIndex, X_INFO, 0,
+            "Probing clocks.  Please standby...\n");
+
         for (ClockIndex = 0;  ClockIndex < NumberOfClocks;  ClockIndex++)
         {
             pScreenInfo->clock[ClockIndex] = 0;
@@ -867,14 +874,29 @@ ProbeClocks:
                             goto EnableInterrupts;
 
                     /* Generate the count */
-                    for (Index = 0;  Index < 8;  Index++)
+                    for (Index = 0;  Index < 8;  )
                     {
+                        int count1 = 0, count2 = 0;
+
                         while ((inb(GENS1(pATI->CPIO_VGABase)) & 0x08U) ||
                                (pATI->CaughtSignal >= 0))
-                            pScreenInfo->clock[ClockIndex]++;
+                        {
+                            count1--;
+                            count2 += pATI->CaughtSignal;
+                        }
+
                         while (!(inb(GENS1(pATI->CPIO_VGABase)) & 0x08U) ||
                                (pATI->CaughtSignal >= 0))
-                            pScreenInfo->clock[ClockIndex]++;
+                        {
+                            count1--;
+                            count2 += pATI->CaughtSignal;
+                        }
+
+                        if (count1 != count2)
+                            continue;
+
+                        pScreenInfo->clock[ClockIndex] -= count1;
+                        Index++;
                     }
                     break;
 
