@@ -1,4 +1,7 @@
 XFree86 4.5.99.5 (xx June 2005)
+  66. Fix some offset, pitch and overlay scaler size problems with
+      the video overlay. Solves various spontaneous lockups in the i830
+      driver (Alan Hourihane).
   65. Restore accuracy of atimisc's clock probe despite ceratin I/O errors
       (Marc La France).
   64. ATIProbe() and atimisc changes:
@@ -19611,7 +19614,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3525 2005/06/03 03:18:30 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3526 2005/06/05 22:13:30 tsi Exp $
 
 
 
