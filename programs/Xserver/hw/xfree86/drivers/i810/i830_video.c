@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.21 2005/05/31 18:19:18 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.22 2005/06/06 09:42:04 alanh Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -1141,6 +1141,7 @@ I830DisplayVideo(ScrnInfoPtr pScrn, int id, short width, short height,
    I830OverlayRegPtr overlay =
 	 (I830OverlayRegPtr) (pI830->FbBase + pI830->OverlayMem->Start);
    unsigned int swidth;
+   unsigned int mask, shift, offsety, offsetu;
 
    ErrorF("I830DisplayVideo: %dx%d (pitch %d)\n", width, height,
 	   dstPitch);
