@@ -8,10 +8,10 @@
 
 <title>ATI Adapters README file
 <author>Marc Aurele La France
-<date>2005 March 16
+<date>2005 June 06
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.44tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.45tsi Exp $
 </ident>
 
 <abstract>
@@ -60,7 +60,7 @@ clarified.
 Two of the many components in an accelerator are the CRT controller (CRTC) and
 the Draw Engine.
 This is in addition to another CRTC that, generally, is also present in the
-system, and often in the same chip and typically provides EGA, VGA or SuperVGA
+system, often in the same chip and typically provides EGA, VGA or SuperVGA
 functionality.<p>
 
 A CRTC is the component of a graphics controller that is responsible for
@@ -98,11 +98,9 @@ VGAWonder series:  18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6
 The driver also supports 32K, 64K and 16M-colour modes on the 264xT and 3D Rage
 series of adapters using the accelerator CRTC (but not the VGA CRTC).<p>
 The newer Rage 128 and Radeon chips are not yet supported by this driver.
-
 Rage 128's and Radeon's are, however, supported by separate drivers, and
 owners of such adapters should consult the documentation provided with these
 drivers.
-
 This driver will also invoke the appropriate driver if it finds Rage 128 and/or
 Radeon adapter(s) in the system.<p>
 
@@ -131,7 +129,6 @@ VGAWonder series:  VGAWonder V3, VGAWonder V4, VGAWonder V5, VGAWonder+,
 
 There are also a number of mainboards, laptops and notebooks that harbour a
 Mach32 or Mach64 controller.<p>
-
 VGAWonder, Mach8 and Mach32 ISA adapters are available with or without a
 mouse.<p>
 These adapters are available with a variety of clock generators and RAMDACs.
@@ -141,8 +138,7 @@ For all but Mach64 adapters, this driver still does not provide support for
 accelerated drawing to the screen.
 This means that all drawing is done by the CPU, rather than by any accelerator
 present in the system and this can make opaque moves, for example, quite
-``jerky''.
-
+``jerky''.<p>
 Given that IBM 8514/A and ATI Mach8 do not allow CPU access to their frame
 buffer, the driver will currently ignore these accelerators.
 Most Mach32 adapters provide both accelerated function and SuperVGA
@@ -162,8 +158,6 @@ CRTC is used, and modes whose colour depth greater than or equal to 8 are to be
 used.
 This support is as yet incomplete and can be disabled entirely with an
 XF86Config option.<p>
-On non-Intel platforms, the driver can, currently, only support PCI Mach64
-adapters.<p>
 <sect>Current implementation of generic VGA support for non-ATI adapters<p>
 Support for generic VGA with non-ATI adapters is also implemented, but has
 undergone only limited testing.
@@ -238,8 +232,6 @@ appropriate, will force the driver to probe for the non-PCI adapter.
 These ChipSet names should, therefore, only be used when there is in fact such
 an adapter in the system.
 They are otherwise equivalent to ``<it>ati</it>''.<p>
-On non-Intel platforms, only ``<it>ati</it>'' and ``<it>mach64</it>'' ChipSet
-values are operative.<p>
 <sect1>ChipID & ChipRev specifications<p>
 These specifications will cause the driver to associate the ``Device'' section
 only with an adapter having the same attributes, or an adapter whose PCI device
@@ -412,8 +404,6 @@ By default, the driver will enable a linear video memory aperture for
 256-colour and higher depth modes if it is also using a Mach64 accelerator CRTC
 or an integrated Mach64 graphics chip.
 This option disables this linear aperture.<p>
-On non-Intel platforms, the driver requires a linear aperture and, so, this
-option is ignored.<p>
 <sect1>Option <it>``HWCursor''</it> and Option <it>``SWCursor''</it><p>
 Option <it>``HWCursor''</it>, which is the default, specifies that hardware
 facilities are to be used to paint the mouse pointer on the screen.
@@ -500,6 +490,7 @@ usable mode, whether or not the chosen mode is specified in the corresponding
 ``Monitor'' section.<p>
 For a digital flat panel, any sync tolerances should be removed from the
 corresponding ``Monitor'' section.
+If any are specified, they will be ignored.
 The driver will automatically calculate these from the mode that is active on
 server entry.
 The driver also inserts timings for a mode called <it>"Native panel mode"</it>
@@ -558,7 +549,11 @@ adapters, although many are capable of higher frequencies.
 This will eventually be fixed in a future release.
 <item>The use of a laptop's hot-keys to switch displays while this driver is
 active can cause lockups and/or other woes, and is therefore not recommended.
-It is not currently possible to solve this problem.<p>
+It is not currently possible to solve this problem.
+By default, the driver disables the use of such keys, by communicating to the
+video BIOS to ignore them.
+These hot-keys can be re-enabled with Option ``BIOSDisplay'' but results will
+be unpredictable.<p>
 <item>In situations where the driver is to simultaneously display on both a
 panel and a CRT, the same image will be seen on both.
 In particular, this means the CRT must be able to synchronise with the timings
@@ -593,7 +588,7 @@ name="ftp://ftp.xfree86.org/pub/XFree86"
 url="ftp://ftp.xfree86.org/pub/XFree86"> if you are uncertain.<p>
 Secondly, please check XFree86's doc directory for additional information.<p>
 Thirdly, a scan through the comp.windows.x.i386unix and comp.os.linux.x
-newsgroups and the xfree86 mailing list using your favourite archiving
+newsgroups and the xfree86 mailing lists using your favourite archiving
 service can also prove useful in resolving problems.<p>
 If you are still experiencing problems, you can send me <it>non-HTMLised</it>
 e-mail at <email>tsi@xfree86.org</email>.
@@ -636,4 +631,6 @@ Version 5 is an almost complete restructuring of version 4, made to fit into
 the new driver API that XFree86 4.0 and later adopted.<p>
 Version 6 begins the process of porting the driver to non-Intel
 architectures.<p>
+Version 7 introduces a much more ``mature'' port of this driver to all
+architectures supported by the core server.<p>
 </article>

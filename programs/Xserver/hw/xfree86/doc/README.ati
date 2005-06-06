@@ -2,7 +2,7 @@
 
                             Marc Aurele La France
 
-                                2005 March 16
+                                2005 June 06
 
                                   Abstract
 
@@ -48,7 +48,7 @@ VGA.  If you have concerns about this decision, please contact me at
 The meaning of ``acceleration'', as used in this document, needs to be clari-
 fied.  Two of the many components in an accelerator are the CRT controller
 (CRTC) and the Draw Engine.  This is in addition to another CRTC that, gener-
-ally, is also present in the system, and often in the same chip and typically
+ally, is also present in the system, often in the same chip and typically
 provides EGA, VGA or SuperVGA functionality.
 
 A CRTC is the component of a graphics controller that is responsible for
@@ -87,13 +87,10 @@ The driver also supports 32K, 64K and 16M-colour modes on the 264xT and 3D
 Rage series of adapters using the accelerator CRTC (but not the VGA CRTC).
 
 The newer Rage 128 and Radeon chips are not yet supported by this driver.
-
 Rage 128's and Radeon's are, however, supported by separate drivers, and own-
 ers of such adapters should consult the documentation provided with these
-drivers.
-
-This driver will also invoke the appropriate driver if it finds Rage 128
-and/or Radeon adapter(s) in the system.
+drivers.  This driver will also invoke the appropriate driver if it finds
+Rage 128 and/or Radeon adapter(s) in the system.
 
 Adapters based on the above chips have been marketed under a rather large
 number of names over the years.  Among them are:
@@ -150,9 +147,6 @@ By default, the driver provides some acceleration for Mach64 if the accelera-
 tor CRTC is used, and modes whose colour depth greater than or equal to 8 are
 to be used.  This support is as yet incomplete and can be disabled entirely
 with an XF86Config option.
-
-On non-Intel platforms, the driver can, currently, only support PCI Mach64
-adapters.
 
 4.  Current implementation of generic VGA support for non-ATI adapters
 
@@ -238,9 +232,6 @@ ChipSet name of ``mach32'' or ``mach64'', as appropriate, will force the
 driver to probe for the non-PCI adapter.  These ChipSet names should, there-
 fore, only be used when there is in fact such an adapter in the system.  They
 are otherwise equivalent to ``ati''.
-
-On non-Intel platforms, only ``ati'' and ``mach64'' ChipSet values are opera-
-tive.
 
 5.3  ChipID & ChipRev specifications
 
@@ -438,9 +429,6 @@ By default, the driver will enable a linear video memory aperture for
 CRTC or an integrated Mach64 graphics chip.  This option disables this linear
 aperture.
 
-On non-Intel platforms, the driver requires a linear aperture and, so, this
-option is ignored.
-
 5.10  Option ``HWCursor'' and Option ``SWCursor''
 
 Option ``HWCursor'', which is the default, specifies that hardware facilities
@@ -538,10 +526,10 @@ resolution the largest usable mode, whether or not the chosen mode is speci-
 fied in the corresponding ``Monitor'' section.
 
 For a digital flat panel, any sync tolerances should be removed from the cor-
-responding ``Monitor'' section.  The driver will automatically calculate
-these from the mode that is active on server entry.  The driver also inserts
-timings for a mode called "Native panel mode" that represents the panel's
-native resolution.
+responding ``Monitor'' section.  If any are specified, they will be ignored.
+The driver will automatically calculate these from the mode that is active on
+server entry.  The driver also inserts timings for a mode called "Native
+panel mode" that represents the panel's native resolution.
 
 7.  Known problems and limitations
 
@@ -601,7 +589,10 @@ driver.  They include:
 
    o The use of a laptop's hot-keys to switch displays while this driver is
      active can cause lockups and/or other woes, and is therefore not recom-
-     mended.  It is not currently possible to solve this problem.
+     mended.  It is not currently possible to solve this problem.  By
+     default, the driver disables the use of such keys, by communicating to
+     the video BIOS to ignore them.  These hot-keys can be re-enabled with
+     Option ``BIOSDisplay'' but results will be unpredictable.
 
    o In situations where the driver is to simultaneously display on both a
      panel and a CRT, the same image will be seen on both.  In particular,
@@ -645,7 +636,7 @@ uncertain.
 Secondly, please check XFree86's doc directory for additional information.
 
 Thirdly, a scan through the comp.windows.x.i386unix and comp.os.linux.x news-
-groups and the xfree86 mailing list using your favourite archiving service
+groups and the xfree86 mailing lists using your favourite archiving service
 can also prove useful in resolving problems.
 
 If you are still experiencing problems, you can send me non-HTMLised e-mail
@@ -704,7 +695,10 @@ the new driver API that XFree86 4.0 and later adopted.
 Version 6 begins the process of porting the driver to non-Intel architec-
 tures.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.45 tsi Exp $
+Version 7 introduces a much more ``mature'' port of this driver to all archi-
+tectures supported by the core server.
+
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.46 tsi Exp $
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.ati,v 3.68tsi Exp $
+$XFree86$
