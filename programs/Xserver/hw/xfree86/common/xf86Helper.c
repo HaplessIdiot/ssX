@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.146 2005/02/03 03:32:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.147tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -892,9 +892,9 @@ xf86SetWeight(ScrnInfoPtr scrp, rgb weight, rgb mask)
 	scrp->mask.red = mask.red;
 	scrp->mask.green = mask.green;
 	scrp->mask.blue = mask.blue;
-	scrp->offset.red = ffs(mask.red);
-	scrp->offset.green = ffs(mask.green);
-	scrp->offset.blue = ffs(mask.blue);
+	scrp->offset.red = ffs(mask.red) - 1;
+	scrp->offset.green = ffs(mask.green) - 1;
+	scrp->offset.blue = ffs(mask.blue) - 1;
     }
     return TRUE;
 }
