@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.7tsi Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -149,7 +149,7 @@ VBEExtendedInit(xf86Int10InfoPtr pInt, int entityIndex, int Flags)
 		"VbeVersion is %ld, OemStringPtr is 0x%08lx,\n"
 		"\tOemVendorNamePtr is 0x%08lx, OemProductNamePtr is 0x%08lx,\n"
 		"\tOemProductRevPtr is 0x%08lx\n",
-		B_O16(vbe->VbeVersion),
+		(unsigned long)B_O16(vbe->VbeVersion),
 		(unsigned long)B_O32(vbe->OemStringPtr),
 		(unsigned long)B_O32(vbe->OemVendorNamePtr),
 		(unsigned long)B_O32(vbe->OemProductNamePtr),
@@ -158,7 +158,7 @@ VBEExtendedInit(xf86Int10InfoPtr pInt, int entityIndex, int Flags)
     xf86DrvMsgVerb(screen, X_INFO, 3, "VESA VBE Version %i.%i\n",
 		   VERSION(vbe->VbeVersion));
     xf86DrvMsgVerb(screen, X_INFO, 3, "VESA VBE Total Mem: %li kB\n",
-		   B_O16(vbe->TotalMem) * 64);
+		   (unsigned long)B_O16(vbe->TotalMem) * 64);
     xf86DrvMsgVerb(screen, X_INFO, 3, "VESA VBE OEM: %s\n",
 		   (CARD8*)xf86int10Addr(pInt, L_ADD(vbe->OemStringPtr)));
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.75tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.76tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -4016,10 +4016,12 @@ I830VESASetMode(ScrnInfoPtr pScrn, DisplayModePtr pMode)
     * Print out the PIPEACONF and PIPEBCONF registers.
     */
    temp = INREG(PIPEACONF);
-   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "PIPEACONF is 0x%08lx\n", temp);
+   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "PIPEACONF is 0x%08lx\n",
+	      (unsigned long)temp);
    if (pI830->availablePipes == 2) {
       temp = INREG(PIPEBCONF);
-      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "PIPEBCONF is 0x%08lx\n", temp);
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "PIPEBCONF is 0x%08lx\n",
+		 (unsigned long)temp);
    }
 
 
@@ -5701,7 +5703,7 @@ I830CheckDevicesTimer(OsTimerPtr timer, CARD32 now, pointer arg)
          } 
 
          xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-			"Requested display devices 0x%lx.\n", temp);
+		    "Requested display devices 0x%lx.\n", (unsigned long)temp);
 
 
          /* If the BIOS doesn't flip between CRT, LFP and CRT+LFP we fake
@@ -5728,12 +5730,13 @@ I830CheckDevicesTimer(OsTimerPtr timer, CARD32 now, pointer arg)
          if (temp == pI830->lastDevice1 || temp == pI830->lastDevice2) {
              temp = toggle;
              xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-			"Detected duplicate devices. Toggling (0x%lx)\n", temp);
+			"Detected duplicate devices. Toggling (0x%lx)\n",
+			(unsigned long)temp);
          }
 
          xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 		"Detected display change operation (0x%x, 0x%x, 0x%lx).\n", 
-                pI8301->lastDevice1, pI8301->lastDevice2, temp);
+                pI8301->lastDevice1, pI8301->lastDevice2, (unsigned long)temp);
 
          /* double check the display devices are what's configured and try
           * not to do it twice because of dual heads with the code above */
@@ -5743,10 +5746,12 @@ I830CheckDevicesTimer(OsTimerPtr timer, CARD32 now, pointer arg)
                      (CountBits((temp & 0xff00) >> 8) > 1)) ) {
 	       temp = pI8301->lastDevice2 | pI8301->lastDevice1;
                xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "Cloning failed, "
-                    "trying dual pipe clone mode (0x%lx)\n", temp);
+			  "trying dual pipe clone mode (0x%lx)\n",
+			  (unsigned long)temp);
                if (!SetDisplayDevices(pScrn, temp))
                     xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "Failed to switch "
- 		    "to configured display devices (0x%lx).\n", temp);
+			       "to configured display devices (0x%lx).\n",
+			       (unsigned long)temp);
                else
                  pI830->Clone = TRUE;
             }
