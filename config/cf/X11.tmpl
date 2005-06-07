@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.278 2005/03/29 15:55:49 tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.279 2005/03/29 17:33:20 tsi Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -139,8 +139,7 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildLibrariesForDmx	XdmxServer
 #endif
 #ifndef BuildLibraries
-#define BuildLibraries		(!BuildServersOnly || BuildClients || \
-				 BuildLibrariesForDmx)
+#define BuildLibraries		(!BuildServersOnly || BuildClients)
 #endif
 #ifndef BuildLibrariesForXServers
 #define BuildLibrariesForXServers	BuildServer
@@ -173,7 +172,8 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildBuiltinFonts	NO
 #endif
 #ifndef BuildFonts
-#define BuildFonts		(BuildServer | BuildFontServer)
+#define BuildFonts		((BuildServer && !BuildServersOnly) \
+					|| BuildClients)
 #endif
 #ifndef Build75DpiFonts
 #define Build75DpiFonts		YES
@@ -295,6 +295,9 @@ VENDORMANVERSION = XVendorManVersionString
 #ifndef BuildX11Lib
 #define BuildX11Lib		BuildLibraries
 #endif
+#ifndef BuildNLS
+#define BuildNLS		BuildX11Lib
+#endif
 
 #ifndef BuildLoadableXlibI18n
 #define BuildLoadableXlibI18n	(HasDlopen && SharedLibX11)
@@ -321,6 +324,33 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildXauLib		(BuildLibraries || BuildLibrariesForXServers)
 #endif
 #define UseInstalledXauLib	(defined(UseInstalled) || !BuildXauLib)
+#ifndef BuildXawLib
+#define BuildXawLib		BuildLibraries
+#endif
+#ifndef BuildOldXLib
+#define BuildOldXLib		BuildLibraries
+#endif
+#ifndef BuildICELib
+#define BuildICELib		BuildLibraries
+#endif
+#ifndef BuildSMLib
+#define BuildSMLib		BuildLibraries
+#endif
+#ifndef BuildXmuLib
+#define BuildXmuLib		BuildLibraries
+#endif
+#ifndef BuildXmuuLib
+#define BuildXmuuLib		BuildLibraries
+#endif
+#ifndef BuildXpmLib
+#define BuildXpmLib		BuildLibraries
+#endif
+#ifndef BuildXtstLib
+#define BuildXtstLib		BuildLibraries
+#endif
+#ifndef BuildFSLib
+#define BuildFSLib		BuildLibraries
+#endif
 #ifndef BuildXdmcpLib
 #define BuildXdmcpLib		(BuildLibraries || BuildLibrariesForXServers)
 #endif
@@ -344,13 +374,23 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildBigReqsExt		YES
 #endif
 #ifndef BuildXInputExt
-#define BuildXInputExt		NO
+#define BuildXInputExt		YES
 #endif
 #ifndef BuildXInputLib
-#define BuildXInputLib		(BuildXInputExt && \
-				 BuildLibraries && \
-				 (!BuildServersOnly || BuildLibrariesForDmx))
+#define BuildXInputLib		((BuildXInputExt && BuildLibraries) \
+				  || BuildLibrariesForDmx)
 #endif
+
+#ifndef NeedXTrans
+#define NeedXTrans		(BuildServer || BuildX11Lib || BuildFontLib || \
+				 BuildICELib || BuildSMLib || BuildFSLib || \
+				 (BuildFontServer && BuildClients))
+#endif
+
+#ifndef NeedBerklib
+#define NeedBerklib		NO
+#endif
+
 #ifndef BuildEVI
 #define BuildEVI		YES
 #endif
@@ -358,10 +398,7 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildDBE		YES
 #endif
 #ifndef BuildDBElib
-#define BuildDBElib		BuildDBE
-#endif
-#ifndef BuildDIS
-#define BuildDIS		NO
+#define BuildDBElib		(BuildDBE && BuildLibraries)
 #endif
 #ifndef BuildDPMS
 #define BuildDPMS		YES
@@ -381,8 +418,7 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildFontCache		YES
 #endif
 #ifndef BuildFontCacheLib
-#define BuildFontCacheLib	(BuildFontCache && !BuildServersOnly && \
-				 BuildLibraries)
+#define BuildFontCacheLib	(BuildFontCache && BuildLibraries)
 #endif
 #ifndef BuildFontEncLib
 #define BuildFontEncLib		BuildLibraries
@@ -445,27 +481,41 @@ VENDORMANVERSION = XVendorManVersionString
 #ifndef BuildLBX
 #define BuildLBX		YES
 #endif
+#ifndef BuildLbxUtilLibrary
+#define BuildLbxUtilLibrary	(BuildLBX && (BuildServer || BuildClients))
+#endif
+#ifndef NeedZlib
+#define NeedZlib		(BuildLBX || \
+				 (GzipFontCompression && \
+				  (BuildServer || BuildClients)))
+#endif
+#ifndef BuildZlib
+#define BuildZlib		(NeedZlib && !HasZlib)
+#endif
+#ifndef BuildRegexLib
+#define BuildRegexLib		(defined(XF86Server) && XF86Server && \
+				!HasPosixRegex)
+#endif
 #ifndef BuildXKB
 #define BuildXKB		YES
 #endif
 #ifndef BuildXKBlib
-#define BuildXKBlib		(BuildXKB && !BuildServersOnly && \
-				 BuildLibraries)
+#define BuildXKBlib		(BuildXKB && BuildLibraries)
 #endif
 #ifndef BuildXKBuilib
-#define BuildXKBuilib		(BuildXKB && !BuildServersOnly && \
-				 BuildLibraries)
+#define BuildXKBuilib		(BuildXKB && BuildLibraries)
 #endif
 #ifndef BuildXKBfilelib
-#define BuildXKBfilelib		(BuildXKB && !BuildServersOnly && \
-				 BuildLibraries)
+#define BuildXKBfilelib		(BuildXKB && BuildLibraries)
 #endif
 #ifndef BuildXTrap
 #define BuildXTrap		YES
 #endif
 #ifndef BuildXTrapLibrary
-#define BuildXTrapLibrary	(BuildXTrap && !BuildServersOnly && \
-				 BuildLibraries)
+#define BuildXTrapLibrary	(BuildXTrap && BuildLibraries)
+#endif
+#ifndef BuildXtLib
+#define BuildXtLib		(BuildLibraries || BuildXTrapLibrary)
 #endif
 
 	/*
@@ -483,22 +533,20 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildRECORD		YES
 #endif
 #ifndef BuildRECORDlib
-#define BuildRECORDlib		BuildRECORD
+#define BuildRECORDlib		(BuildRECORD && BuildLibraries)
 #endif
 #ifndef BuildXinerama
-#define BuildXinerama		NO
+#define BuildXinerama		YES
 #endif
 #ifndef BuildXineramaLibrary
-#define BuildXineramaLibrary	(BuildXinerama && !BuildServersOnly && \
-				 BuildLibraries)
+#define BuildXineramaLibrary	(BuildXinerama && BuildLibraries)
 #endif
 #ifndef BuildDmxDevelTools
 #define BuildDmxDevelTools	NO
 #endif
 #ifndef BuildDmxLibrary
 #define BuildDmxLibrary		(BuildDmx && \
-				 (BuildDmxDevelTools || \
-				  (!BuildServersOnly && BuildLibraries)))
+				 (BuildDmxDevelTools || BuildLibraries))
 #endif
 #ifndef BuildXCSecurity
 #define BuildXCSecurity		YES
@@ -540,29 +588,25 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #endif
 #ifndef BuildXprintLib
-#define BuildXprintLib		(BuildXprint && !BuildServersOnly && \
-				 BuildLibraries)
+#define BuildXprintLib		(BuildXprint && BuildLibraries)
 #endif
 #ifndef BuildScreenSaverExt
-#define BuildScreenSaverExt	NO
+#define BuildScreenSaverExt	YES
 #endif
 #ifndef BuildScreenSaverLibrary
-#define BuildScreenSaverLibrary	(BuildScreenSaverExt && !BuildServersOnly && \
-				 BuildLibraries)
+#define BuildScreenSaverLibrary	(BuildScreenSaverExt && BuildLibraries)
 #endif
 #ifndef BuildXF86VidModeExt
 #define BuildXF86VidModeExt	NO
 #endif
 #ifndef BuildXF86VidModeLibrary
-#define BuildXF86VidModeLibrary (BuildXF86VidModeExt && !BuildServersOnly && \
-				 BuildLibraries)
+#define BuildXF86VidModeLibrary (BuildXF86VidModeExt && BuildLibraries)
 #endif
 #ifndef BuildXF86MiscExt
 #define BuildXF86MiscExt	NO
 #endif
 #ifndef BuildXF86MiscLibrary
-#define BuildXF86MiscLibrary	(BuildXF86MiscExt && !BuildServersOnly && \
-				 BuildLibraries)
+#define BuildXF86MiscLibrary	(BuildXF86MiscExt && BuildLibraries)
 #endif
 #ifndef BuildXF86BigfontExt
 #define BuildXF86BigfontExt	NO
@@ -571,30 +615,26 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildXF86DGA		NO
 #endif
 #ifndef BuildXF86DGALibrary
-#define BuildXF86DGALibrary	(BuildXF86DGA && !BuildServersOnly && \
-				 BuildLibraries)
+#define BuildXF86DGALibrary	(BuildXF86DGA && BuildLibraries)
 #endif
 #ifndef BuildXResExt
 #define BuildXResExt            NO
 #endif
 #ifndef BuildXResLibrary
 #define BuildXResLibrary        (BuildXResExt && \
-				 (BuildDmxDevelTools || \
-				  (!BuildServersOnly && BuildLibraries)))
+				 (BuildDmxDevelTools || BuildLibraries))
 #endif
 #ifndef BuildXvExt
 #define BuildXvExt		NO
 #endif
 #ifndef BuildXvLibrary
-#define BuildXvLibrary		(BuildXvExt && !BuildServersOnly && \
-				 BuildLibraries)
+#define BuildXvLibrary		(BuildXvExt && BuildLibraries)
 #endif
 #ifndef BuildXvMCExt
 #define BuildXvMCExt		NO
 #endif
 #ifndef BuildXvMCLibrary
-#define BuildXvMCLibrary	(BuildXvMCExt && !BuildServersOnly && \
-				 BuildLibraries)
+#define BuildXvMCLibrary	(BuildXvMCExt && BuildLibraries)
 #endif
 #ifndef BuildGlxExt
 #define BuildGlxExt		NO
@@ -607,8 +647,7 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #endif
 #ifndef BuildGLXLibrary
-#define BuildGLXLibrary		(BuildGlxExt && !BuildServersOnly && \
-				 BuildLibraries)
+#define BuildGLXLibrary		(BuildGlxExt && BuildLibraries)
 #endif
 #ifndef BuildGlxInDmx
 #define BuildGlxInDmx		(XdmxServer && BuildGlxExt)
@@ -627,11 +666,10 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildXF86RushExt	NO
 #endif
 #ifndef BuildXF86RushLibrary
-#define BuildXF86RushLibrary	(BuildXF86RushExt && !BuildServersOnly && \
-				 BuildLibraries)
+#define BuildXF86RushLibrary	(BuildXF86RushExt && BuildLibraries)
 #endif
 #ifndef BuildDPSLibraries
-#define BuildDPSLibraries	(!BuildServersOnly && BuildLibraries)
+#define BuildDPSLibraries	BuildLibraries
 #endif
 #ifndef BuildDPSLibrary
 #define BuildDPSLibrary		BuildDPSLibraries
@@ -649,8 +687,7 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildRender		YES
 #endif
 #ifndef BuildRenderLibrary
-#define BuildRenderLibrary	(XdmxServer || \
-				 (!BuildServersOnly && BuildLibraries))
+#define BuildRenderLibrary	(XdmxServer || (BuildRender && BuildLibraries))
 #endif
 #ifndef BuildXftLibrary
 #define BuildXftLibrary		BuildRenderLibrary
@@ -666,7 +703,8 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef UseFreetype2
 #define UseFreetype2		(BuildXftLibrary || BuildXft1Library || \
-				 UseFontconfig || BuildFreeType)
+				 UseFontconfig || BuildFontconfigLibrary || \
+				 BuildFreeType)
 #endif
 #ifndef HasExpat
 #define HasExpat		NO
@@ -692,7 +730,7 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildRandR		YES
 #endif
 #ifndef BuildRandRLibrary
-#define BuildRandRLibrary	(!BuildServersOnly && BuildLibraries)
+#define BuildRandRLibrary	(BuildRandR && BuildLibraries)
 #endif
 
 #ifndef BuildXcursorLibrary
@@ -708,7 +746,7 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 
 #ifndef BuildAppleWMLibrary
-#define BuildAppleWMLibrary	NO
+#define BuildAppleWMLibrary	BuildLibraries
 #endif
 
 #ifndef BuildWindowsWMLibrary
@@ -781,11 +819,14 @@ VENDORMANVERSION = XVendorManVersionString
 #ifndef ThreadedProject
 #define ThreadedProject ThreadedX
 #endif
-#ifndef BuildThreadStubLibrary
-#define BuildThreadStubLibrary	NO
+#ifndef NeedThreadStubLibrary
+#define NeedThreadStubLibrary	NO
 #endif
 #ifndef NeedUIThrStubs
 #define NeedUIThrStubs		NO
+#endif
+#ifndef BuildThreadStubLibrary
+#define BuildThreadStubLibrary	(NeedThreadStubLibrary && BuildLibraries)
 #endif
 #ifndef HasWChar32
 #define HasWChar32		SystemV4
@@ -2449,6 +2490,8 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #define DebugLibGlx		NO
 #undef  ProfileLibGlx
 #define ProfileLibGlx		NO
+#undef LinkGLToUsrInclude
+#define LinkGLToUsrInclude	NO
 #endif
 /*
  * Only make a shared GLw library on systems with Weak symbols 
@@ -2999,7 +3042,7 @@ ProjectUnsharedLibReferences(XAW,Xaw,$(AWIDGETSRC),XBuildLibDir)
 #endif
 
 #ifndef BuildXaw6
-#define BuildXaw6 HasSharedLibraries
+#define BuildXaw6 (BuildXawLib && HasSharedLibraries)
 #endif
 
 #if BuildXaw6
@@ -3264,8 +3307,6 @@ SharedLibReferences(XPM,Xpm,$(XPMLIBSRC),SOXPMREV,SharedXpmRev)
 ProjectUnsharedLibReferences(XPM,Xpm,$(XPMLIBSRC),XBuildLibDir)
 #endif
 
-#if UseFreetype2
-
 #if BuildFreetype2Library
 
 #ifndef SharedLibFreetype2
@@ -3323,9 +3364,10 @@ FREETYPE2INCDIR=$(INCDIR)
 FREETYPE2INCDIR=$(BUILDINCDIR)
 #endif
 
-#else /* BuildFreetype2Library */
+#endif /* BuildFreetype2Library */
 
-#if HasFreetype2
+#if UseFreetype2
+#if !BuildFreetype2Library && HasFreetype2
 
 #ifndef Freetype2Dir
 #define Freetype2Dir /usr
@@ -3363,9 +3405,7 @@ FREETYPE2LIB = -lfreetype
 FREETYPE2LIB = -L$(FREETYPE2LIBDIR) -lfreetype
 #endif
 
-#endif /* HasFreetype2 */
-
-#endif /* else BuildFreetype2Library */
+#endif /* HasFreetype2 && !BuildFreetype2Library */
 
 #ifndef Freetype2IncDirStandard
 # define Freetype2IncDirStandard NO
@@ -3562,10 +3602,7 @@ ProjectUnsharedLibReferences(XFT,Xft,$(XFTLIBSRC),XBuildLibDir)
 #define XftClientLibs $(XFTLIB) FontconfigClientLibs $(XRENDERLIB)
 #endif
 
-#if UseFontconfig
-
 #if BuildFontconfigLibrary
-
 #ifndef SharedLibFontconfig
 #define SharedLibFontconfig HasSharedLibraries
 #endif
@@ -3582,6 +3619,7 @@ ProjectUnsharedLibReferences(XFT,Xft,$(XFTLIBSRC),XBuildLibDir)
 #define ProfileLibFontconfig		NO
 #endif
           FONTCONFIGLIBSRC = $(LIBSRC)/fontconfig
+
 #if SharedLibFontconfig
 #ifndef SharedFontconfigRev
 #define SharedFontconfigRev 1.0
@@ -3605,9 +3643,10 @@ FCCACHE = $(BINDIR)/fc-cache
 FCCACHE = set -x; $(CLIENTENVSETUP) $(PRELOADXFTSETUP) FONTCONFIG_PATH=$(FONTCONFIGLIBSRC) $(XBUILDBINDIR)/fc-cache
 #endif
 
-#else /* BuildFontconfigLibrary */
+#endif /* BuildFontconfigLibrary */
 
-#if HasFontconfig
+#if UseFontconfig
+#if HasFontconfig && !BuildFontconfigLibrary
 
 #ifndef FontconfigDir
 # define FontconfigDir /usr
@@ -3663,9 +3702,7 @@ FONTCONFIGINCLUDES = -I$(FONTCONFIGINCDIR)
 
 FCCACHE = $(FONTCONFIGBINDIR)/fc-cache
 
-#endif /* HasFontconfig */
-
-#endif /* else BuildFontconfigLibrary */
+#endif /* HasFontconfig && !BuildFontconfigLibrary */
 
 #if BuildFontconfigLibrary || HasFontconfig
 FONTCONFIGDEFINES = -DFONTCONFIG

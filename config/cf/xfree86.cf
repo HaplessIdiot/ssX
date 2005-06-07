@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.493 2005/03/20 01:34:56 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.494 2005/05/02 13:28:00 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -178,6 +178,13 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.493 2005/03/20 01:34:56 dawes Exp $
 #define XLogFile		XFree86
 #endif
 
+#ifndef BuildServer
+#define BuildServer		YES
+#endif
+#ifndef BuildServersOnly
+#define BuildServersOnly	NO
+#endif
+
 /*
  * BuildXFree86ConfigTools:
  *
@@ -187,10 +194,10 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.493 2005/03/20 01:34:56 dawes Exp $
  * a full build.
  */
 #ifndef BuildXFree86ConfigTools
-#ifdef BuildServersOnly
+#if BuildServer
 #define BuildXFree86ConfigTools		!BuildServersOnly
 #else
-#define BuildXFree86ConfigTools		YES
+#define BuildXFree86ConfigTools		NO
 #endif
 #endif
 
@@ -198,13 +205,35 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.493 2005/03/20 01:34:56 dawes Exp $
 #define BuildLibrariesForConfigTools	BuildXFree86ConfigTools
 #endif
 
-#if !defined(BuildServer) || BuildServer
 #if BuildXFree86ConfigTools && BuildLibrariesForConfigTools
-#define BuildLibraries		YES
+#ifndef BuildX11Lib
+#define BuildX11Lib		YES
+#endif
+#ifndef BuildXawLibrary
+#define BuildXawLibrary		YES
+#endif
+#ifndef BuildXtLibrary
+#define BuildXtLibrary		YES
+#endif
+#ifndef BuildXmuLibrary
+#define BuildXmuLibrary		YES
+#endif
+#ifndef BuildXpmLibrary
+#define BuildXpmLibrary		YES
+#endif
+#ifndef BuildXF86MiscLibrary
 #define BuildXF86MiscLibrary	YES
+#endif
+#ifndef BuildXF86VidModeLibrary
 #define BuildXF86VidModeLibrary	YES
+#endif
+#ifndef BuildXKBlib
 #define BuildXKBlib		YES
+#endif
+#ifndef BuildXKBfilelib
 #define BuildXKBfilelib		YES
+#endif
+#ifndef BuildXKBuilib
 #define BuildXKBuilib		YES
 #endif
 #endif
@@ -1238,14 +1267,6 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 
 #if BuildXF86DRI
 
-#ifndef BuildGLXLibrary
-#  if defined (BuildServersOnly) && BuildServersOnly
-#    define BuildGLXLibrary	NO
-#  else
-#    define BuildGLXLibrary	YES
-#  endif
-#endif
-
 /*
  * One and ONLY one of the GlxBuiltIn* drivers can be defined to be YES.
  * If more than one are defined, the compilation will fail with multiply
@@ -1445,46 +1466,6 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #  define XF86INT10_BUILD		X86INT10_STUB
 # endif
 #endif
-/*
- * Build the Rush extension library (non standard extension for cooperation
- * between glide library and X server). Enabled by default only for Linux.
- */
-#ifndef BuildXF86RushExt
-# define BuildXF86RushExt	NO
-#endif
-
-#ifndef BuildDBElib
-# define BuildDBElib	YES
-#endif
-
-#ifndef BuildRECORDlib
-# define BuildRECORDlib	YES
-#endif
-
-#ifndef BuildXKBlib
-# define BuildXKBlib	YES
-#endif
-
-#ifndef BuildScreenSaverExt
-# define BuildScreenSaverExt	YES
-#endif
-
-/*
- * Build XInput support
- */
-#ifndef BuildXInputExt
-# define BuildXInputExt		YES
-#endif
-
-/* Build Xinerama (aka panoramiX) extension */
-#ifndef BuildXinerama
-# define BuildXinerama		YES
-#endif
-
-/* Build Render extension */
-#ifndef BuildRender
-# define BuildRender		YES
-#endif
 
 #if 0
 #ifndef JoystickSupport
@@ -1492,36 +1473,9 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #endif
 #endif
 
-#if 0
 /*
- * Build the extra extension libs even when not including the extra extensions
- * in the servers
+ * Enable some extensions that are disabled by default in X11.tmpl.
  */
-#ifndef BuildScreenSaverLibrary
-# define BuildScreenSaverLibrary   YES
-#endif
-#ifndef BuildXF86MiscLibrary
-# define BuildXF86MiscLibrary	YES
-#endif
-#ifndef BuildXF86DGALibrary
-# define BuildXF86DGALibrary	YES
-#endif
-#ifndef BuildXF86VidModeLibrary
-# define BuildXF86VidModeLibrary YES
-#endif
-#ifndef BuildXvLibrary
-# define BuildXvLibrary		YES
-#endif
-#ifndef BuildXvMCLibrary
-# define BuildXvMCLibrary	YES
-#endif
-#ifndef BuildGLXLibrary
-# define BuildGLXLibrary	YES
-#endif
-#ifndef BuildXResLibrary
-# define BuildXResLibrary       YES
-#endif
-#endif
 
 /*
  * Build the XFree86-VidMode extension
@@ -1530,7 +1484,6 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 # define BuildXF86VidModeExt		YES
 #endif
 
-/* Don't build this now because the interface hasn't been done yet */
 /*
  * Build the XFree86-Misc extension
  */
@@ -1550,13 +1503,6 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
  */
 #ifndef BuildXF86DGA
 # define BuildXF86DGA			YES
-#endif
-
-/*
- * Build the DPMS extension support
- */
-#ifndef BuildDPMSExt
-# define BuildDPMSExt			YES
 #endif
 
 /*

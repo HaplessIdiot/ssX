@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 /*
  * the outer shell of regexec()
  *
@@ -16,7 +18,9 @@
 #include "utils.h"
 #include "regex2.h"
 
+#if 0
 static int nope = 0;		/* for use in asserts; shuts lint up */
+#endif
 
 /* macros for manipulating states, small version */
 #define	states	unsigned
