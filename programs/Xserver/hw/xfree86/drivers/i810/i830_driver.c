@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.76tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.77 2005/06/07 03:09:45 tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -5737,6 +5737,9 @@ I830CheckDevicesTimer(OsTimerPtr timer, CARD32 now, pointer arg)
          xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 		"Detected display change operation (0x%x, 0x%x, 0x%lx).\n", 
                 pI8301->lastDevice1, pI8301->lastDevice2, (unsigned long)temp);
+
+         /* So that if we close on the wrong config, we restore correctly */
+         pI830->specifiedMonitor = TRUE;
 
          /* double check the display devices are what's configured and try
           * not to do it twice because of dual heads with the code above */
