@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.81tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.82tsi Exp $ */
 /*
  * Copyright 1999 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -31,7 +31,6 @@
 #include "aticursor.h"
 #include "atidac.h"
 #include "atidsp.h"
-#include "atiendian.h"
 #include "atii2c.h"
 #include "atiident.h"
 #include "atiload.h"
@@ -415,6 +414,7 @@ ATIPreInit
     int              VGAVideoRAM = 0, AcceleratorVideoRAM = 0, ServerVideoRAM;
     int              Numerator, Denominator;
     int              MinX, MinY;
+    rgb              defaultMask = {0, 0, 0};
     ClockRange       ATIClockRange = {NULL, 0, 80000, 0, TRUE, TRUE, 1, 1, 0};
     resRange         Resources[2] = {{0, 0, 0}, _END};
     int              DefaultmaxClock = 0;
@@ -567,31 +567,52 @@ ATIPreInit
          */
         ATIProcessOptions(pScreenInfo, pATI);
 
-        if ((ATIEndian.endian == ATI_BIG_ENDIAN) && (pScreenInfo->depth > 8))
-        {
-            /*
-             * A big-endian aperture is required in this case unless all draw
-             * primitives are guaranteed to be accelerated, which currently
-             * isn't the case, with or without XAA.
-             */
-            if (pATI->Chip < ATI_CHIP_264VTB)
-            {
-                xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
-                    "This adapter does not provide a big-endian aperture for"
-                    " depth %d.\n", pScreenInfo->depth);
-                return FALSE;
-            }
+        pATI->ATIApplyEndian = ATIEndianCopy;
 
-            /*
-             * "NoLinear" isn't the default, so respect the user's choice
-             * instead of over-ridding it.
-             */
-            if (!pATI->OptionLinear)
+        if (ATIEndian.endian == ATI_BIG_ENDIAN)
+        {
+            if (pScreenInfo->depth == 24)
             {
-               xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
-                    "Depth %d is not supported without a big-endian"
-                    " aperture.\n", pScreenInfo->depth);
-               return FALSE;
+                if ((pATI->Chip < ATI_CHIP_264VTB) || !pATI->OptionLinear)
+                {
+                    /*
+                     * For depth 24, the common layer's xf86SetWeight() sets a
+                     * default of 'aRGB'.  In the absence of a big-endian
+                     * aperture, byte-swap this to 'BGRa'.
+                     */
+                    defaultMask.red = 0x0000FF00U;
+                    defaultMask.green = 0x00FF0000U;
+                    defaultMask.blue = 0xFF000000U;
+
+                    pATI->ATIApplyEndian = ATIEndianSwap;
+                }
+            }
+            else if (pScreenInfo->depth > 8)
+            {
+                /*
+                 * A big-endian aperture is required in this case unless all
+                 * draw primitives are guaranteed to be accelerated, which
+                 * currently isn't the case, with or without XAA.
+                 */
+                if (pATI->Chip < ATI_CHIP_264VTB)
+                {
+                    xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+                        "This adapter does not provide a big-endian aperture"
+                        " for depth %d.\n", pScreenInfo->depth);
+                    return FALSE;
+                }
+
+                /*
+                 * "NoLinear" isn't the default, so respect the user's choice
+                 * instead of over-ridding it.
+                 */
+                if (!pATI->OptionLinear)
+                {
+                   xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+                        "Depth %d is not supported without a big-endian"
+                        " aperture.\n", pScreenInfo->depth);
+                   return FALSE;
+                }
             }
         }
     }
@@ -1463,7 +1484,7 @@ ATIPreInit
     else
         pScreenInfo->rgbBits = 8;
     pATI->rgbBits = pScreenInfo->rgbBits;
-    if (!xf86SetWeight(pScreenInfo, defaultWeight, defaultWeight))
+    if (!xf86SetWeight(pScreenInfo, defaultWeight, defaultMask))
     {
         ATILock(pATI);
         ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);

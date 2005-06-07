@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64cursor.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64cursor.c,v 1.4tsi Exp $ */
 /*
  * Copyright 2003 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -23,7 +23,6 @@
 
 #include "ati.h"
 #include "aticrtc.h"
-#include "atiendian.h"
 #include "atimach64accel.h"
 #include "atimach64cursor.h"
 #include "atimach64io.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64accel.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64accel.c,v 1.5tsi Exp $ */
 /*
  * Copyright 2003 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -46,7 +46,6 @@
 
 #include "ati.h"
 #include "atichip.h"
-#include "atiendian.h"
 #include "atimach64accel.h"
 #include "atimach64io.h"
 #include "atipriv.h"
@@ -356,7 +355,7 @@ ATIMach64SetupForSolidFill
     outf(DP_WRITE_MASK, planemask);
     outf(DP_SRC, DP_MONO_SRC_ALLONES |
         SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
-    outf(DP_FRGD_CLR, colour);
+    outf(DP_FRGD_CLR, (*pATI->ATIApplyEndian)(colour));
     outf(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
 
     outf(CLR_CMP_CNTL, CLR_CMP_FN_FALSE);
@@ -420,7 +419,7 @@ ATIMach64SetupForSolidLine
     outf(DP_WRITE_MASK, planemask);
     outf(DP_SRC, DP_MONO_SRC_ALLONES |
         SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
-    outf(DP_FRGD_CLR, colour);
+    outf(DP_FRGD_CLR, (*pATI->ATIApplyEndian)(colour));
     outf(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
 
     outf(CLR_CMP_CNTL, CLR_CMP_FN_FALSE);
@@ -520,7 +519,7 @@ ATIMach64SetupForMono8x8PatternFill
     outf(DP_WRITE_MASK, planemask);
     outf(DP_SRC, DP_MONO_SRC_PATTERN |
         SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
-    outf(DP_FRGD_CLR, fg);
+    outf(DP_FRGD_CLR, (*pATI->ATIApplyEndian)(fg));
 
     if (bg == -1)
     {
@@ -530,7 +529,7 @@ ATIMach64SetupForMono8x8PatternFill
     else
     {
         ATIMach64WaitForFIFO(pATI, 2);
-        outf(DP_BKGD_CLR, bg);
+        outf(DP_BKGD_CLR, (*pATI->ATIApplyEndian)(bg));
         outf(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX) |
             SetBits(ATIMach64ALU[rop], DP_BKGD_MIX));
     }
@@ -603,7 +602,7 @@ ATIMach64SetupForScanlineCPUToScreenColorExpandFill
     outf(DP_WRITE_MASK, planemask);
     outf(DP_SRC, DP_MONO_SRC_HOST |
         SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
-    outf(DP_FRGD_CLR, fg);
+    outf(DP_FRGD_CLR, (*pATI->ATIApplyEndian)(fg));
 
     if (bg == -1)
     {
@@ -613,7 +612,7 @@ ATIMach64SetupForScanlineCPUToScreenColorExpandFill
     else
     {
         ATIMach64WaitForFIFO(pATI, 2);
-        outf(DP_BKGD_CLR, bg);
+        outf(DP_BKGD_CLR, (*pATI->ATIApplyEndian)(bg));
         outf(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX) |
             SetBits(ATIMach64ALU[rop], DP_BKGD_MIX));
     }

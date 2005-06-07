@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.54tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.55tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -25,7 +25,6 @@
 #include "atibus.h"
 #include "atichip.h"
 #include "atidac.h"
-#include "atiendian.h"
 #include "atimach64.h"
 #include "atimach64accel.h"
 #include "atimach64io.h"

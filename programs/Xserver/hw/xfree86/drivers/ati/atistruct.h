@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.45tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.46tsi Exp $ */
 /*
  * Copyright 1999 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -26,6 +26,7 @@
 
 #include "atibank.h"
 #include "aticlock.h"
+#include "atiendian.h"
 #include "atiregs.h"
 
 #include "xaa.h"
@@ -386,6 +387,11 @@ typedef struct _ATIRec
      * Wrapped functions.
      */
     CloseScreenProcPtr CloseScreen;
+
+    /*
+     * Endianness transformation function.
+     */
+    ATIApplyEndianProc *ATIApplyEndian;
 } ATIRec;
 
 #define ATIPTR(_p) ((ATIPtr)((_p)->driverPrivate))

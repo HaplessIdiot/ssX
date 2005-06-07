@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atividmem.c,v 1.18tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atividmem.c,v 1.19tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -24,7 +24,6 @@
 #include "ati.h"
 #include "atiadapter.h"
 #include "atichip.h"
-#include "atiendian.h"
 #include "atistruct.h"
 #include "atividmem.h"
 
