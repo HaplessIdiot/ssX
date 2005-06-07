@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.65tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.66tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -27,7 +27,6 @@
 #include "atibus.h"
 #include "atichip.h"
 #include "aticonsole.h"
-#include "atiendian.h"
 #include "atiident.h"
 #include "atimach64io.h"
 #include "atimodule.h"
@@ -1080,7 +1079,11 @@ ATIFindVGA
     {
         /*
          * An ATI PCI adapter has been detected at this point, and its VGA, if
-         * any, is shareable.  Ensure the VGA isn't in sleep mode.
+         * any, is shareable.  Ensure the VGA isn't in sleep mode.  Note that
+         * it's possible GENENA (0x46E8) and/or GENVS (0x0102) are not routed
+         * to the adapter, potentially causing a hang.  But then again, video
+         * BIOS initialisation would have caused (or, in ATIPreInit(), will
+         * cause) the same.
          */
         if (inb(GENENB) != 0x01U)
         {
@@ -1091,7 +1094,11 @@ ATIFindVGA
 
         pATI = ATIVGAProbe(pATI, 0, Domain);
         if (pATI->VGAAdapter == ATI_ADAPTER_NONE)
+        {
+            xf86Msg(X_WARNING,
+                ATI_NAME ":  VGA not detected on this adapter.\n");
             return;
+        }
 
         ppVGA = ppATI;
     }
@@ -1670,12 +1677,13 @@ ATIProbe
                     continue;
 
                 /*
-                 * Possibly fix block I/O indicator in PCI configuration space.
+                 * Possibly fix block I/O and GENENA decoding indicators in PCI
+                 * configuration space.
                  */
                 PciReg = pciReadLong(pPCI->tag, PCI_REG_USERCONFIG);
-                if (PciReg & 0x00000004U)
+                if (PciReg & 0x0000000CU)
                     pciWriteLong(pPCI->tag, PCI_REG_USERCONFIG,
-                        PciReg & ~0x00000004U);
+                        PciReg & ~0x0000000CU);
 
                 Domain = xf86GetPciDomain(pPCI->tag);
                 Mach64SparseIOBase = 0;
@@ -1786,17 +1794,15 @@ ATIProbe
                 if (Chip > ATI_CHIP_Mach64)
                     continue;
 
-                if (Chip < ATI_CHIP_264VTB)
-                {
-                    /*
-                     * Possibly fix block I/O indicator in PCI configuration
-                     * space.
-                     */
-                    PciReg = pciReadLong(pPCI->tag, PCI_REG_USERCONFIG);
-                    if (!(PciReg & 0x00000004U))
-                        pciWriteLong(pPCI->tag, PCI_REG_USERCONFIG,
-                            PciReg | 0x00000004U);
-                }
+                /*
+                 * Possibly fix block I/O and GENENA decoding indicators in PCI
+                 * configuration space.
+                 */
+                PciReg = pciReadLong(pPCI->tag, PCI_REG_USERCONFIG);
+                if ((PciReg & 0x00000008U) ||
+                    ((Chip < ATI_CHIP_264VTB) && !(PciReg & 0x00000004U)))
+                    pciWriteLong(pPCI->tag, PCI_REG_USERCONFIG,
+                        (PciReg & ~0x00000008U) | 0x00000004U);
 
                 Domain = xf86GetPciDomain(pPCI->tag);
 
@@ -2075,11 +2081,6 @@ ATIProbe
                                       pVideo->device,
                                       pVideo->func))
                     continue;
-
-                /* Possibly fix block I/O indicator */
-                if (PciReg & 0x00000004U)
-                    pciWriteLong(pPCI->tag, PCI_REG_USERCONFIG,
-                        PciReg & ~0x00000004U);
 
                 xf86SetPciVideo(pVideo, MEM_IO);
 
