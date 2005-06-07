@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiendian.c,v 1.1tsi Exp $ */
 /*
  * Copyright 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -30,3 +30,41 @@ const ATIEndianType ATIEndian =
 {
     {0x01U, 0x23U, 0x45U, 0x67U}
 };
+
+/*
+ * ATIEndianCopy --
+ *
+ * This function applies a null endianness transformation on an integer.
+ */
+int
+ATIEndianCopy
+(
+    int value
+)
+{
+    return value;
+}
+
+/*
+ * ATIEndianSwap --
+ *
+ * This function applies a big-endian transformation on an integer.
+ */
+int
+ATIEndianSwap
+(
+    int value
+)
+{
+    union
+    {
+        unsigned int  word;
+        unsigned char byte[4];
+    } copy;
+
+    copy.word = (unsigned int)value;
+    return (int)((((((copy.byte[3] << 8) |
+                     copy.byte[2]) << 8) |
+                   copy.byte[1]) << 8) |
+                 copy.byte[0]);
+}

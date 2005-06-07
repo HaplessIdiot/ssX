@@ -1,4 +1,7 @@
 XFree86 4.5.99.5 (xx June 2005)
+  69. Change atimisc driver on big-endian systems to allow depth 24 even if
+      a big-endian aperture is not available, by swapping RGB masks
+      (Marc La France).
   68. Fix long-standing off-by-one bug in the setting of RGB offsets when the
       driver supplies RGB masks (Marc La France).
   67. Improve the support for selecting which library components get built
@@ -6,7 +9,7 @@ XFree86 4.5.99.5 (xx June 2005)
   66. Fix some offset, pitch and overlay scaler size problems with
       the video overlay. Solves various spontaneous lockups in the i830
       driver (Alan Hourihane).
-  65. Restore accuracy of atimisc's clock probe despite ceratin I/O errors
+  65. Restore accuracy of atimisc's clock probe despite certain I/O errors
       (Marc La France).
   64. ATIProbe() and atimisc changes:
       - Port to common layer's domain scheme;
@@ -19618,7 +19621,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3528 2005/06/07 08:02:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3529 2005/06/07 15:32:00 tsi Exp $
 
 
 

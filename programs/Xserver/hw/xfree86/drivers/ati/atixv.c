@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atixv.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atixv.c,v 1.8tsi Exp $ */
 /*
  * Copyright 2001 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -23,7 +23,6 @@
 
 #include "atiadapter.h"
 #include "atichip.h"
-#include "atiendian.h"
 #include "atimach64xv.h"
 #include "atistruct.h"
 #include "atixv.h"
