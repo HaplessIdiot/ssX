@@ -4,7 +4,7 @@
  * $Xorg: charproc.c,v 1.6 2001/02/09 02:06:02 xorgcvs Exp $
  */
 
-/* $XFree86: xc/programs/xterm/charproc.c,v 3.169 2005/04/22 00:21:53 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/charproc.c,v 3.170tsi Exp $ */
 
 /*
 
@@ -3093,8 +3093,10 @@ in_put(void)
 		} else
 		    break;
 	    } else
+#else
+	    (void)size;		/* Muffle compiler */
 #endif
-		break;
+	    break;
 	}
 	/* update the screen */
 	if (screen->scroll_amt)

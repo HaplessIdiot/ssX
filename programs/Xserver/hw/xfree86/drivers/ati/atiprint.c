@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.30tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.31tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -134,8 +134,8 @@ ATIPrintIndexedRegisters
 static void
 ATIMach64PrintRegisters
 (
-    ATIPtr     pATI,
-    CARD8      *crtc,
+    ATIPtr      pATI,
+    ATICRTCType *crtc,
     const char *Description,
     Bool       OnlyFirst256
 )
@@ -362,8 +362,9 @@ ATIPrintRegisters
     pciConfigPtr pPCI;
     int          Index;
     CARD32       lcd_index, tv_out_index, lcd_gen_ctrl;
+    ATICRTCType  crtc = ATI_CRTC_VGA;
     CARD8        dac_read, dac_mask, dac_write;
-    CARD8        crtc = ATI_CRTC_VGA, genmo, seq1 = 0;
+    CARD8        genmo, seq1 = 0;
 
     if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
     {

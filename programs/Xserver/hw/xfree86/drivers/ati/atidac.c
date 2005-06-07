@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.20tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.21tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -269,7 +269,7 @@ ATIDACSave
             break;
 
         default:
-            ATISetDACIOPorts(pATI, pATIHW->crtc);
+            ATISetDACIOPorts(pATI, (ATICRTCType)(pATIHW->crtc));
 
             pATIHW->dac_read = inb(pATI->CPIO_DAC_READ);
             DACDelay(inb(pATI->CPIO_DAC_WAIT));
@@ -334,7 +334,7 @@ ATIDACSet
             break;
 
         default:
-            ATISetDACIOPorts(pATI, pATIHW->crtc);
+            ATISetDACIOPorts(pATI, (ATICRTCType)(pATIHW->crtc));
 
             /* Load DAC's colour lookup table */
             outb(pATI->CPIO_DAC_MASK, 0xFFU);

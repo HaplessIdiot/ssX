@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_setup.c,v 1.1tsi Exp $ */
 /*
  * Basic hardware and memory detection
  *
@@ -141,6 +141,7 @@ xgiXG40_Setup(ScrnInfoPtr pScrn)
 
     PDEBUG(ErrorF("xg40_Setup(): ulMemConfig = %02X\n",ulMemConfig)) ;
     PDEBUG(ErrorF("xg40_Setup(): ulDramType = %02X\n",ulDramType)) ;
+    (void)ulDramType;
 
     pXGI->BusWidth = (ulMemConfig & (1<<1) )?64:32 ;
 
@@ -315,13 +316,11 @@ XGI_InitHwDevInfo(ScrnInfoPtr pScrn)
 {
     XGIPtr pXGI  ;
     PXGI_HW_DEVICE_INFO pHwDevInfo ;
-    PCITAG NBridge ;
     ULONG ulTemp ;
     int i ;
 
     pXGI = XGIPTR(pScrn ) ;
     pHwDevInfo = &pXGI->xgi_HwDevExt ;
-    NBridge = pciTag(0,0,0) ;
     pXGI->pVBInfo = &(pXGI->VBInfo) ;
 
     pHwDevInfo->pDevice = pXGI ;
