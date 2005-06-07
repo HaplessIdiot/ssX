@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/vb_table.h,v 1.1tsi Exp $ */
 
 #define  Tap4
 #if 0
@@ -2933,6 +2933,7 @@ static XGI330_TVDataTablStruct XGI_EPLCHTVRegPtr[]=
   {0xFFFF,0x0000,4}
 };
 
+#if 0
 static USHORT LCDLenList[]=
 {
    LVDSCRT1Len_H,
@@ -2947,7 +2948,6 @@ static USHORT LCDLenList[]=
    0
 } ;
 
-#if 0
 static XGI330_LCDCapStruct  XGI660_LCDDLCapList[]=  /* 660, Dual link */
 {
 /* LCDCap1024x768 */
