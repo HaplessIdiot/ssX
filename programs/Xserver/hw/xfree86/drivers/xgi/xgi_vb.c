@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_vb.c,v 1.1tsi Exp $ */
 /*
  * Video bridge detection and configuration for 300, 315 and 330 series
  *
@@ -221,6 +221,9 @@ void XGITVPreInit(ScrnInfoPtr pScrn)
     	"(vb.c: CR32=%02x SR16=%02x SR38=%02x)\n",
 	CR32, SR16, SR38);
 #endif
+    (void)SR16;
+    (void)SR38;
+    (void)CR35;
 
     if(CR32 & 0x47) pXGI->VBFlags |= CRT2_TV;
 

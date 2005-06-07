@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_video.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_video.c,v 1.2tsi Exp $ */
 /***************************************************************************
 
 Copyright 2004 eXtreme Graphics Innovation Corp, Inc., HsinChu, Taiwan.
@@ -607,10 +607,7 @@ set_scale_factor(XGIOverlayPtr pOverlay)
 	}
 	/* downscale in vertical */
 	else {
-
-	        CARD32 realI;
-
-	        I = realI = srcH / dstH;
+	        I = srcH / dstH;
 	        pOverlay->IntBit |= 0x02;
 
 	        if (I < 2)

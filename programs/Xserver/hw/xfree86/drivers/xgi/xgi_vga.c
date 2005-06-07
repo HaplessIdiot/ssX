@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_vga.c,v 1.1tsi Exp $ */
 /*
  * Mode setup and basic video bridge detection
  *
@@ -57,7 +57,6 @@ XG40Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
     XGIPtr     pXGI = XGIPTR(pScrn);
     XGIRegPtr    pReg = &pXGI->ModeReg;
     vgaRegPtr    vgaReg = &VGAHWPTR(pScrn)->ModeReg;
-    int       vgaIOBase;
     unsigned short temp;
     int       offset;
     int       clock = mode->Clock;
@@ -75,7 +74,6 @@ PDEBUG(ErrorF("XG40Init()\n"));
         pScrn->virtualX * pScrn->bitsPerPixel/8);
 
     vgaHWGetIOBase(VGAHWPTR(pScrn));
-    vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
     (*pXGI->XGISave)(pScrn, pReg);
 

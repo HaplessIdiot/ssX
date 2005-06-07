@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_exec.c,v 1.27tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_exec.c,v 1.28tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -408,7 +408,7 @@ x_inb(CARD16 port)
 	IOADDRESS ioport = Int10Current->ioBase + port;
 	volatile int signo;
 	int iScreen = Int10Current->scrnIndex;
-	char attempt;
+	signed char attempt;
 
 	xf86InterceptSignals(&signo);
 	for (attempt = 0;  attempt >= 0;  attempt++) {
@@ -453,7 +453,7 @@ x_inw(CARD16 port)
 	IOADDRESS ioport = Int10Current->ioBase + port;
 	volatile int signo;
 	int iScreen = Int10Current->scrnIndex;
-	char attempt;
+	signed char attempt;
 
 	xf86InterceptSignals(&signo);
 	for (attempt = 0;  attempt >= 0;  attempt++) {
@@ -495,7 +495,7 @@ x_inl(CARD16 port)
 	    IOADDRESS ioport = Int10Current->ioBase + port;
 	    volatile int signo;
 	    int iScreen = Int10Current->scrnIndex;
-	    char attempt;
+	    signed char attempt;
 
 	    xf86InterceptSignals(&signo);
 	    for (attempt = 0;  attempt >= 0;  attempt++) {
@@ -546,7 +546,7 @@ x_outb(CARD16 port, CARD8 val)
 	IOADDRESS ioport = Int10Current->ioBase + port;
 	volatile int signo;
 	int iScreen = Int10Current->scrnIndex;
-	char attempt;
+	signed char attempt;
 
 	xf86InterceptSignals(&signo);
 	for (attempt = 0;  attempt >= 0;  attempt++) {
@@ -576,7 +576,7 @@ x_outw(CARD16 port, CARD16 val)
 	IOADDRESS ioport = Int10Current->ioBase + port;
 	volatile int signo;
 	int iScreen = Int10Current->scrnIndex;
-	char attempt;
+	signed char attempt;
 
 	xf86InterceptSignals(&signo);
 	for (attempt = 0;  attempt >= 0;  attempt++) {
@@ -614,7 +614,7 @@ x_outl(CARD16 port, CARD32 val)
 	    IOADDRESS ioport = Int10Current->ioBase + port;
 	    volatile int signo;
 	    int iScreen = Int10Current->scrnIndex;
-	    char attempt;
+	    signed char attempt;
 
 	    xf86InterceptSignals(&signo);
 	    for (attempt = 0;  attempt >= 0;  attempt++) {

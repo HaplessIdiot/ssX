@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_driver.h,v 1.1tsi Exp $ */
 /*
  * Global data and definitions
  *
@@ -907,10 +907,8 @@ static Bool XGISaveScreenDH(ScreenPtr pScreen, int mode);
 /* Optional functions */
 static void       XGIFreeScreen(int scrnIndex, int flags);
 
-/* static ModeStatus XGIValidMode(int scrnIndex, DisplayModePtr mode, */
-/* Bool verbose, int flags); */
-static int      XGIValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
-                             int flags);
+static ModeStatus XGIValidMode(int scrnIndex, DisplayModePtr mode,
+			       Bool verbose, int flags);
 /* Internally used functions */
 static Bool    XGIMapMem(ScrnInfoPtr pScrn);
 static Bool    XGIUnmapMem(ScrnInfoPtr pScrn);
@@ -936,7 +934,6 @@ void           XGIWaitRetraceCRT2(ScrnInfoPtr pScrn);
 /* #ifdef XGIMERGED
 static void    XGIMergePointerMoved(int scrnIndex, int x, int y);
 #endif */
-BOOLEAN        XGIBridgeIsInSlaveMode(ScrnInfoPtr pScrn);
 USHORT 	       XGI_CalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode,
 				 unsigned long VBFlags, BOOLEAN hcm);
 USHORT         XGI_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode,

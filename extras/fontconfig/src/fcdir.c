@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/extras/fontconfig/src/fcdir.c,v 1.2 2003/06/04 16:29:39 dawes Exp $ */
+/* $XFree86: xc/extras/fontconfig/src/fcdir.c,v 1.3tsi Exp $ */
 
 #include "fcint.h"
 #include <dirent.h>
@@ -237,6 +237,6 @@ FcGetHomeDir ()
 	    home = pw->pw_dir;
 	}
     }
-    return FcStrCopy(home);
+    return FcStrCopy((FcChar8 *)home);
 }
 

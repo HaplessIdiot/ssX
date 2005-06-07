@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_driver.c,v 1.1tsi Exp $ */
 /*
  * XGI driver main code
  *
@@ -431,18 +431,16 @@ static void
 XGIDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
 {
     XGIPtr pXGI = XGIPTR(pScrn);
-    BOOLEAN docrt1 = TRUE, docrt2 = TRUE;
-    unsigned char sr1=0, cr17=0, cr63=0, sr11=0, pmreg=0, sr7=0;
-    unsigned char p1_13=0, p2_0=0, oldpmreg=0;
-    BOOLEAN backlight = TRUE;
+    BOOLEAN docrt1 = TRUE;
+    unsigned char sr1=0, cr17=0, pmreg=0;
+    unsigned char oldpmreg=0;
 
     xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
           "XGIDisplayPowerManagementSet(%d)\n",PowerManagementMode);
 
 #ifdef XGIDUALHEAD
     if(pXGI->DualHeadMode) {
-       if(pXGI->SecondHead) docrt2 = FALSE;
-       else                 docrt1 = FALSE;
+       if(!pXGI->SecondHead) docrt1 = FALSE;
     }
 #endif
 
@@ -460,12 +458,6 @@ XGIDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
             sr1   = 0x00;
             cr17  = 0x80;
 	    pmreg = 0x00;
-	    cr63  = 0x00;
-	    sr7   = 0x10;
-	    sr11  = (pXGI->LCDon & 0x0C);
-	    p2_0  = 0x20;
-	    p1_13 = 0x00;
-	    backlight = TRUE;
             break;
 
        case DPMSModeSuspend: /* HSync: On, VSync: Off */
@@ -476,12 +468,6 @@ XGIDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
             sr1   = 0x20;
 	    cr17  = 0x80;
 	    pmreg = 0x80;
-	    cr63  = 0x40;
-	    sr7   = 0x00;
-	    sr11  = 0x08;
-	    p2_0  = 0x40;
-	    p1_13 = 0x80;
-	    backlight = FALSE;
             break;
 
        case DPMSModeStandby: /* HSync: Off, VSync: On */
@@ -492,12 +478,6 @@ XGIDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
             sr1   = 0x20;
 	    cr17  = 0x80;
 	    pmreg = 0x40;
-	    cr63  = 0x40;
-	    sr7   = 0x00;
-	    sr11  = 0x08;
-	    p2_0  = 0x80;
-	    p1_13 = 0x40;
-	    backlight = FALSE;
             break;
 
        case DPMSModeOff:     /* HSync: Off, VSync: Off */
@@ -508,12 +488,6 @@ XGIDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
             sr1   = 0x20;
 	    cr17  = 0x00;
 	    pmreg = 0xc0;
-	    cr63  = 0x40;
-	    sr7   = 0x00;
-	    sr11  = 0x08;
-	    p2_0  = 0xc0;
-	    p1_13 = 0xc0;
-	    backlight = FALSE;
 	    break;
 
        default:
@@ -548,7 +522,6 @@ XGIDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
        usleep(10000);
        outXGIIDXREG(XGISR, 0x00, 0x03);    /* End Reset */
     }
-
 }
 
 /* Mandatory */
@@ -644,9 +617,6 @@ XGIProbe(DriverPtr drv, int flags)
         foundScreen = TRUE;
     } else for(i = 0; i < numUsed; i++) {
         ScrnInfoPtr pScrn;
-#ifdef XGIDUALHEAD
-	EntityInfoPtr pEnt;
-#endif
 
         /* Allocate a ScrnInfoRec and claim the slot */
         pScrn = NULL;
@@ -669,10 +639,6 @@ XGIProbe(DriverPtr drv, int flags)
             pScrn->ValidMode        = XGIValidMode;
             foundScreen = TRUE;
         }
-#ifdef XGIDUALHEAD
-	pEnt = xf86GetEntityInfo(usedChips[i]);
-
-#endif
     }
     xfree(usedChips);
 
@@ -1327,7 +1293,7 @@ static xf86MonPtr
 XGIInternalDDC(ScrnInfoPtr pScrn, int crtno)
 {
    XGIPtr        pXGI = XGIPTR(pScrn);
-   USHORT        temp = 0xffff, realcrtno = crtno;
+   USHORT        temp = 0xffff;
    unsigned char buffer[256];
    xf86MonPtr    pMonitor = NULL;
 
@@ -1335,14 +1301,13 @@ XGIInternalDDC(ScrnInfoPtr pScrn, int crtno)
    if((pXGI->CRT1off) && (!crtno)) return NULL;
 
    if(crtno) {
-      if(pXGI->VBFlags & CRT2_LCD)      realcrtno = 1;
-      else if(pXGI->VBFlags & CRT2_VGA) realcrtno = 2;
-      else return NULL;
+      if(!(pXGI->VBFlags & (CRT2_LCD|CRT2_VGA)))
+         return NULL;
    } else {
       /* If CRT1 is LCDA, skip DDC (except 301C: DDC allowed, but uses CRT2 port!) */
       if(pXGI->VBFlags & CRT1_LCDA) {
-         if(pXGI->VBFlags & VB_301C)    realcrtno = 1;
-         else return NULL;
+         if(!(pXGI->VBFlags & VB_301C))
+            return NULL;
       }
    }
 
@@ -3000,10 +2965,6 @@ PDEBUG(ErrorF(" --- Chipset : %s \n", pScrn->chipset));
 
 #ifdef XGIMERGED
     if(pXGI->MergedFB) {
-       BOOLEAN acceptcustommodes = TRUE;
-       BOOLEAN includelcdmodes   = TRUE;
-       BOOLEAN isfordvi          = FALSE;
-
        xf86DrvMsg(pScrn->scrnIndex, X_INFO, crtsetupstr, 2);
 
        clockRanges->next = NULL;
@@ -3016,15 +2977,6 @@ PDEBUG(ErrorF(" --- Chipset : %s \n", pScrn->chipset));
                 clockRanges->minClock / 1000);
        xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, "Max pixel clock for CRT2 is %d MHz\n",
                 clockRanges->maxClock / 1000);
-
-       if((pXGI->VBFlags & (VB_301|VB_301B|VB_301C|VB_302B)) && (!(pXGI->VBFlags & VB_30xBDH))) {
-          if(!(pXGI->VBFlags & (CRT2_LCD|CRT2_VGA))) includelcdmodes   = FALSE;
-	  if(pXGI->VBFlags & CRT2_LCD)               isfordvi          = TRUE;
-	  if(pXGI->VBFlags & CRT2_TV)                acceptcustommodes = FALSE;
-       } else {
-          includelcdmodes   = FALSE;
-	  acceptcustommodes = FALSE;
-       }
 
        pXGI->HaveCustomModes2 = FALSE;
     }
@@ -5052,7 +5004,7 @@ XGIFreeScreen(int scrnIndex, int flags)
 
 /* Checks if a mode is suitable for the selected chipset. */
 
-static int
+static ModeStatus
 XGIValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
@@ -5695,19 +5647,6 @@ PDEBUG(ErrorF(" XGIPostSetMode(). \n"));
 	   - if this is called by SetModeCRT2, CRT2 mode has changed (duh!)
 	   -> Hence, in both cases, the settings must be re-applied.
      */
-}
-
-/* Check if video bridge is in slave mode */
-BOOLEAN
-XGIBridgeIsInSlaveMode(ScrnInfoPtr pScrn)
-{
-    XGIPtr pXGI = XGIPTR(pScrn);
-    unsigned char usScratchP1_00;
-
-    if(!(pXGI->VBFlags & VB_VIDEOBRIDGE)) return FALSE;
-
-    inXGIIDXREG(XGIPART1,0x00,usScratchP1_00);
-    return FALSE;
 }
 
 /* Build a list of the VESA modes the BIOS reports as valid */

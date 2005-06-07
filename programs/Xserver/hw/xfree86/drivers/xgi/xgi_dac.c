@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_dac.c,v 1.1tsi Exp $ */
 /*
  * DAC helper functions (Save/Restore, MemClk, etc)
  *
@@ -296,14 +296,12 @@ static void
 Volari_Save(ScrnInfoPtr pScrn, XGIRegPtr xgiReg)
 {
     XGIPtr pXGI = XGIPTR(pScrn);
-    int vgaIOBase;
     int i; 
 
     PDEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
            "Volari_Save(ScrnInfoPtr pScrn, XGIRegPtr xgiReg)\n"));
 
     vgaHWGetIOBase(VGAHWPTR(pScrn));
-    vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
     outw(VGA_SEQ_INDEX, 0x8605);
 
@@ -324,14 +322,12 @@ Volari_Save(ScrnInfoPtr pScrn, XGIRegPtr xgiReg)
 
     PDEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
            "Volari_Save(ScrnInfoPtr pScrn, XGIRegPtr xgiReg) Done\n"));
-
 }
 
 static void
 Volari_Restore(ScrnInfoPtr pScrn, XGIRegPtr xgiReg)
 {
     XGIPtr pXGI = XGIPTR(pScrn);
-    int vgaIOBase;
     int i;
 
 PDEBUG(ErrorF("--- Volari_Restore(). \n")) ;
@@ -339,7 +335,6 @@ PDEBUG(ErrorF("--- Volari_Restore(). \n")) ;
                 "Volari_Restore(ScrnInfoPtr pScrn, XGIRegPtr xgiReg)\n");
 
     vgaHWGetIOBase(VGAHWPTR(pScrn));
-    vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
     outXGIIDXREG(XGISR, 0x05, 0x86);
 
@@ -402,8 +397,6 @@ PDEBUG(ErrorF("--- Volari_Restore(). \n")) ;
 
     xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4,
                 "Volari_Restore(ScrnInfoPtr pScrn, XGIRegPtr xgiReg) Done\n");
-
-
 }
 
 static  void

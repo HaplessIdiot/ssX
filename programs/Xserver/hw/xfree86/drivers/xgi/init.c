@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/init.c,v 1.1tsi Exp $ */
 /*
  * Mode initializing code (CRT1 section) 
  * (Universal module for Linux kernel framebuffer and XFree86 4.x)
@@ -1566,6 +1566,7 @@ XGISetMode(XGI_Private *XGI_Pr, PXGI_HW_DEVICE_INFO HwInfo,USHORT ModeNo)
       } else {
          backupreg = XGI_GetReg(XGI_Pr->XGI_P3d4,0x35);
       }
+      (void)backupreg;
    }
 
    /* Get VB information (connectors, connected devices) */
@@ -1755,6 +1756,7 @@ XGIBIOSSetModeCRT1(XGI_Private *XGI_Pr, PXGI_HW_DEVICE_INFO HwInfo, ScrnInfoPtr 
       } else {
          backupreg = XGI_GetReg(XGI_Pr->XGI_P3d4,0x35);
       }
+      (void)backupreg;
    }
 
    /* Get VB information (connectors, connected devices) */

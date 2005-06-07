@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.c,v 1.25tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.c,v 1.26tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1418,7 +1418,7 @@ ATIClockSet
             break;
 
         case ATI_CLOCK_STG1703:
-            (void)ATIGetDACCmdReg(pATI, pATIHW->crtc);
+            (void)ATIGetDACCmdReg(pATI, (ATICRTCType)(pATIHW->crtc));
             (void)in8(M64_DAC_MASK);
             out8(M64_DAC_MASK, (pATIHW->clock << 1) + 0x20U);
             out8(M64_DAC_MASK, 0);
@@ -1469,9 +1469,9 @@ ATIClockSet
             break;
 
         case ATI_CLOCK_ATT20C408:
-            (void)ATIGetDACCmdReg(pATI, pATIHW->crtc);
+            (void)ATIGetDACCmdReg(pATI, (ATICRTCType)(pATIHW->crtc));
             tmp = in8(M64_DAC_MASK);
-            (void)ATIGetDACCmdReg(pATI, pATIHW->crtc);
+            (void)ATIGetDACCmdReg(pATI, (ATICRTCType)(pATIHW->crtc));
             out8(M64_DAC_MASK, tmp | 1);
             out8(M64_DAC_WRITE, 1);
             out8(M64_DAC_MASK, tmp | 9);

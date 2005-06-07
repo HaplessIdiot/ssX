@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/fontfile/decompress.c,v 1.6tsi Exp $ */
 /**	$MirOS: X11/xc/lib/font/fontfile/decompress.c,v 1.2 2005/04/14 18:06:24 tg Exp $ */
 /*	$OpenBSD: zopen.c,v 1.14 2003/08/03 01:26:46 deraadt Exp $	*/
 /*	$NetBSD: zopen.c,v 1.5 1995/03/26 09:44:53 glass Exp $	*/
@@ -85,8 +85,10 @@
 #define	MIN(a, b)	(((a) < (b)) ? (a) : (b))
 #endif
 
+#ifdef UNUSED
 static const char __sccsid[] = "@(#)zopen.c	8.1 (Berkeley) 6/27/93";
 static const char __rcsid[] = "$MirOS: X11/xc/lib/font/fontfile/decompress.c,v 1.2 2005/04/14 18:06:24 tg Exp $";
+#endif
 
 #define	BITS		16		/* Default bits. */
 #define	HSIZE		69001		/* 95% occupancy */
@@ -231,10 +233,8 @@ zclose(BufFilePtr zsf, int doClose)
 static int
 zskip(BufFilePtr zsf, int len)
 {
-	code_int gcode;
-
 	while (len--)
-		if ((gcode = BufFileGet(zsf)) == BUFFILEEOF)
+		if (BufFileGet(zsf) == BUFFILEEOF)
 			return BUFFILEEOF;
 	return 0;
 }

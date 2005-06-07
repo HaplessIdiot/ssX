@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.64tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.65tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1612,8 +1612,12 @@ ATIProbe
                     continue;
                 }
 
+                /*
+                 * The first 3D Rage (the GT) appears to have been the last
+                 * Mach64 to support sparse I/O.
+                 */
                 pATI = ATIMach64Probe(NULL, Mach64SparseIOBases[i],
-                    pDomainIOBase[Domain], Domain, SPARSE_IO, 0);
+                    pDomainIOBase[Domain], Domain, SPARSE_IO, ATI_CHIP_264GT);
                 if (!pATI)
                 {
                     xf86MsgVerb(X_INFO, 4,
@@ -1782,13 +1786,17 @@ ATIProbe
                 if (Chip > ATI_CHIP_Mach64)
                     continue;
 
-                /*
-                 * Possibly fix block I/O indicator in PCI configuration space.
-                 */
-                PciReg = pciReadLong(pPCI->tag, PCI_REG_USERCONFIG);
-                if (!(PciReg & 0x00000004U))
-                    pciWriteLong(pPCI->tag, PCI_REG_USERCONFIG,
-                        PciReg | 0x00000004U);
+                if (Chip < ATI_CHIP_264VTB)
+                {
+                    /*
+                     * Possibly fix block I/O indicator in PCI configuration
+                     * space.
+                     */
+                    PciReg = pciReadLong(pPCI->tag, PCI_REG_USERCONFIG);
+                    if (!(PciReg & 0x00000004U))
+                        pciWriteLong(pPCI->tag, PCI_REG_USERCONFIG,
+                            PciReg | 0x00000004U);
+                }
 
                 Domain = xf86GetPciDomain(pPCI->tag);
 
