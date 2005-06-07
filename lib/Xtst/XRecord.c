@@ -48,7 +48,7 @@ from The Open Group.
 /*
  * By Stephen Gildea, X Consortium, and Martha Zimet, NCD.
  */
-/* $XFree86: xc/lib/Xtst/XRecord.c,v 1.7 2003/09/13 21:33:00 dawes Exp $ */
+/* $XFree86: xc/lib/Xtst/XRecord.c,v 1.8 2005/01/27 02:28:59 dawes Exp $ */
 
 #include <stdio.h>
 #include <assert.h>
@@ -56,7 +56,6 @@ from The Open Group.
 #define NEED_REPLIES
 #include <X11/Xlibint.h>
 #include <X11/extensions/Xext.h>
-#include <X11/Xtrans.h>
 #include <X11/extensions/extutil.h>
 #include <X11/extensions/recordstr.h>
 

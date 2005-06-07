@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/XF86dri.c,v 1.12 2001/08/27 17:40:57 dawes Exp $ */
+/* $XFree86: xc/lib/apple/applewm.c,v 1.1 2003/08/12 23:47:10 torrey Exp $ */
 /**************************************************************************
 
 Copyright (c) 2002 Apple Computer, Inc.
@@ -50,8 +50,8 @@ static char *applewm_extension_name = APPLEWMNAME;
  *****************************************************************************/
 
 static int close_display(Display *dpy, XExtCodes *extCodes);
-static Bool wire_to_event();
-static Status event_to_wire();
+static Bool wire_to_event (Display *dpy, XEvent *re, xEvent *event);
+static Status event_to_wire (Display *dpy, XEvent *re, xEvent *event);
 
 static /* const */ XExtensionHooks applewm_extension_hooks = {
     NULL,				/* create_gc */
@@ -74,10 +74,8 @@ static XEXT_GENERATE_FIND_DISPLAY (find_display, applewm_info,
 
 static XEXT_GENERATE_CLOSE_DISPLAY (close_display, applewm_info)
 
-static Bool wire_to_event (dpy, re, event)
-    Display *dpy;
-    XEvent  *re;
-    xEvent  *event;
+static Bool
+wire_to_event (Display *dpy, XEvent *re, xEvent *event)
 {
     XExtDisplayInfo *info = find_display (dpy);
     XAppleWMNotifyEvent *se;
@@ -104,10 +102,8 @@ static Bool wire_to_event (dpy, re, event)
     return False;
 }
 
-static Status event_to_wire (dpy, re, event)
-    Display *dpy;
-    XEvent  *re;
-    xEvent  *event;
+static Status
+event_to_wire (Display *dpy, XEvent *re, xEvent *event)
 {
     XExtDisplayInfo *info = find_display (dpy);
     XAppleWMNotifyEvent *se;
@@ -145,9 +141,8 @@ static Status event_to_wire (dpy, re, event)
 #endif
 
 
-Bool XAppleWMQueryExtension (dpy, event_basep, error_basep)
-    Display *dpy;
-    int *event_basep, *error_basep;
+Bool
+XAppleWMQueryExtension (Display *dpy, int *event_basep, int *error_basep)
 {
     XExtDisplayInfo *info = find_display (dpy);
 
@@ -163,11 +158,9 @@ Bool XAppleWMQueryExtension (dpy, event_basep, error_basep)
     }
 }
 
-Bool XAppleWMQueryVersion(dpy, majorVersion, minorVersion, patchVersion)
-    Display* dpy;
-    int* majorVersion;
-    int* minorVersion;
-    int* patchVersion;
+Bool
+XAppleWMQueryVersion(Display *dpy, int *majorVersion, int *minorVersion,
+		     int *patchVersion)
 {
     XExtDisplayInfo *info = find_display (dpy);
     xAppleWMQueryVersionReply rep;
@@ -195,9 +188,8 @@ Bool XAppleWMQueryVersion(dpy, majorVersion, minorVersion, patchVersion)
     return True;
 }
 
-Bool XAppleWMDisableUpdate(dpy, screen)
-    Display* dpy;
-    int screen;
+Bool
+XAppleWMDisableUpdate(Display *dpy, int screen)
 {
     XExtDisplayInfo *info = find_display (dpy);
     xAppleWMDisableUpdateReq *req;
@@ -216,9 +208,8 @@ Bool XAppleWMDisableUpdate(dpy, screen)
     return True;
 }
 
-Bool XAppleWMReenableUpdate(dpy, screen)
-    Display* dpy;
-    int screen;
+Bool
+XAppleWMReenableUpdate(Display *dpy, int screen)
 {
     XExtDisplayInfo *info = find_display (dpy);
     xAppleWMReenableUpdateReq *req;
@@ -237,9 +228,8 @@ Bool XAppleWMReenableUpdate(dpy, screen)
     return True;
 }
 
-Bool XAppleWMSelectInput(dpy, mask)
-    Display* dpy;
-    unsigned long mask;
+Bool
+XAppleWMSelectInput(Display *dpy, unsigned long mask)
 {
     XExtDisplayInfo *info = find_display (dpy);
     xAppleWMSelectInputReq *req;
@@ -258,11 +248,9 @@ Bool XAppleWMSelectInput(dpy, mask)
     return True;
 }
 
-Bool XAppleWMSetWindowMenuWithShortcuts(dpy, nitems, items, shortcuts)
-    Display* dpy;
-    int nitems;
-    const char **items;
-    const char *shortcuts;
+Bool
+XAppleWMSetWindowMenuWithShortcuts(Display *dpy, int nitems,
+				   const char **items, const char *shortcuts)
 {
     XExtDisplayInfo *info = find_display (dpy);
     xAppleWMSetWindowMenuReq *req;
@@ -301,17 +289,14 @@ Bool XAppleWMSetWindowMenuWithShortcuts(dpy, nitems, items, shortcuts)
     return True;
 }
 
-Bool XAppleWMSetWindowMenu(dpy, nitems, items)
-    Display* dpy;
-    int nitems;
-    const char **items;
+Bool
+XAppleWMSetWindowMenu(Display *dpy, int nitems, const char **items)
 {
     return XAppleWMSetWindowMenuWithShortcuts (dpy, nitems, items, NULL);
 }
 
-Bool XAppleWMSetWindowMenuCheck(dpy, idx)
-    Display* dpy;
-    int idx;
+Bool
+XAppleWMSetWindowMenuCheck(Display *dpy, int idx)
 {
     XExtDisplayInfo *info = find_display (dpy);
     xAppleWMSetWindowMenuCheckReq *req;
@@ -330,8 +315,8 @@ Bool XAppleWMSetWindowMenuCheck(dpy, idx)
     return True;
 }
 
-Bool XAppleWMSetFrontProcess(dpy)
-    Display* dpy;
+Bool
+XAppleWMSetFrontProcess(Display *dpy)
 {
     XExtDisplayInfo *info = find_display (dpy);
     xAppleWMSetFrontProcessReq *req;
@@ -349,10 +334,8 @@ Bool XAppleWMSetFrontProcess(dpy)
     return True;
 }
 
-Bool XAppleWMSetWindowLevel(dpy, id, level)
-    Display* dpy;
-    Window id;
-    int level;
+Bool
+XAppleWMSetWindowLevel(Display *dpy, Window id, int level)
 {
     XExtDisplayInfo *info = find_display (dpy);
     xAppleWMSetWindowLevelReq *req;
@@ -372,9 +355,8 @@ Bool XAppleWMSetWindowLevel(dpy, id, level)
     return True;
 }
 
-Bool XAppleWMSetCanQuit(dpy, state)
-    Display* dpy;
-    Bool state;
+Bool
+XAppleWMSetCanQuit(Display *dpy, Bool state)
 {
     XExtDisplayInfo *info = find_display (dpy);
     xAppleWMSetCanQuitReq *req;
@@ -393,13 +375,11 @@ Bool XAppleWMSetCanQuit(dpy, state)
     return True;
 }
 
-Bool XAppleWMFrameGetRect(dpy, frame_class, frame_rect,
-                          ix, iy, iw, ih, ox, oy, ow, oh, rx, ry, rw, rh)
-    Display* dpy;
-    unsigned int frame_class, frame_rect;
-    short ix, iy, iw, ih;
-    short ox, oy, ow, oh;
-    short *rx, *ry, *rw, *rh;
+Bool
+XAppleWMFrameGetRect(Display *dpy, unsigned int frame_class,
+		     unsigned int frame_rect, short ix, short iy, short iw,
+		     short ih, short ox, short oy, short ow, short oh,
+		     short *rx, short *ry, short *rw, short *rh)
 {
     XExtDisplayInfo *info = find_display (dpy);
     xAppleWMFrameGetRectReply rep;
@@ -437,13 +417,10 @@ Bool XAppleWMFrameGetRect(dpy, frame_class, frame_rect,
     return True;
 }
 
-unsigned int XAppleWMFrameHitTest(dpy, frame_class, px, py,
-                                  ix, iy, iw, ih, ox, oy, ow, oh)
-    Display* dpy;
-    unsigned int frame_class;
-    short px, py;
-    short ix, iy, iw, ih;
-    short ox, oy, ow, oh;
+unsigned int
+XAppleWMFrameHitTest(Display *dpy, unsigned int frame_class,
+		     short px, short py, short ix, short iy, short iw,
+		     short ih, short ox, short oy, short ow, short oh)
 {
     XExtDisplayInfo *info = find_display (dpy);
     xAppleWMFrameHitTestReply rep;
@@ -480,18 +457,13 @@ unsigned int XAppleWMFrameHitTest(dpy, frame_class, px, py,
     return rep.ret;
 }
 
-Bool XAppleWMFrameDraw(dpy, screen, window,
-                       frame_class, frame_attr,
-                       ix, iy, iw, ih, ox, oy, ow, oh,
-                       title_length, title_bytes)
-    Display* dpy;
-    int screen;
-    Window window;
-    unsigned int frame_class, frame_attr;
-    short ix, iy, iw, ih;
-    short ox, oy, ow, oh;
-    unsigned int title_length;
-    const unsigned char *title_bytes;
+Bool
+XAppleWMFrameDraw(Display *dpy, int screen, Window window,
+                       unsigned int frame_class, unsigned int frame_attr,
+                       short ix, short iy, short iw, short ih,
+		       short ox, short oy, short ow, short oh,
+                       unsigned int title_length,
+		       const unsigned char *title_bytes)
 {
     XExtDisplayInfo *info = find_display (dpy);
     xAppleWMFrameDrawReq *req;

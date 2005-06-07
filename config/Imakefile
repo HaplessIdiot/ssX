@@ -1,5 +1,4 @@
-XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:41:45 cpqbld Exp $
-XCOMM $XFree86: xc/config/Imakefile,v 1.4tsi Exp $
+XCOMM $XFree86: xc/config/Imakefile,v 1.5 2005/02/07 01:38:22 tsi Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -7,7 +6,7 @@ XCOMM $XFree86: xc/config/Imakefile,v 1.4tsi Exp $
 #define BootstrapCleanSubdirs BOOTSTRAPSUBDIRS="$(BOOTSTRAPSUBDIRS)"
 
 BOOTSTRAPSUBDIRS = imake makedepend
-#if BuildDPSLibrary
+#if BuildDPSLibrary || BuildDPSTkLibrary
 PSWRAPDIR = pswrap
 #endif
 SUBDIRS = cf util $(BOOTSTRAPSUBDIRS) $(PSWRAPDIR)

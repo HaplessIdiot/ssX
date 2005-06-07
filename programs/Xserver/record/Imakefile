@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/record/Imakefile,v 1.14 2005/03/25 02:22:58 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/record/Imakefile,v 1.15 2005/05/13 21:02:32 dawes Exp $
 
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -80,6 +80,10 @@ NormalLibraryTarget(record,$(OBJS))
 
 LintLibraryTarget(record,$(SRCS))
 NormalLintTarget($(SRCS))
+
+#ifdef IHaveModules
+InstallLibraryModule(record,$(MODULEDIR),extensions)
+#endif
 
 #ifdef IHaveSubdirs
 MakeSubdirs($(SUBDIRS))

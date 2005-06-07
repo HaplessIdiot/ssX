@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.111 2005/02/02 21:53:58 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.112 2005/02/04 02:58:27 dawes Exp $
 XCOMM
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -974,7 +974,7 @@ install::								@@\
 #  define HasPosixThreads		YES
 #  define ThreadedX			YES
 #  define SystemMTDefines		/**/
-#  define BuildThreadStubLibrary	YES
+#  define NeedThreadStubLibrary		YES
 #  define NeedUIThrStubs		YES
 #  define ThreadsCompileFlag		-pthread
 #  define ThreadsLibraries		-pthread

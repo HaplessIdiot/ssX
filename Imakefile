@@ -1,9 +1,4 @@
-XCOMM $Xorg: Imakefile,v 1.5 2000/08/17 19:41:44 cpqbld Exp $
-
-
-
-
-XCOMM $XFree86: xc/Imakefile,v 3.31 2004/06/04 17:16:12 dawes Exp $
+XCOMM $XFree86: xc/Imakefile,v 3.32 2004/06/23 17:04:13 dawes Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
@@ -16,7 +11,6 @@ VERSTRING = " "version XFree86VersionString "("XFree86DateString")"
 #define OSName Unknown Operating System!
 #endif
 
-#if !BuildServersOnly
 #if BuildFonts
         FONTSDIR = fonts
 #endif
@@ -24,6 +18,7 @@ VERSTRING = " "version XFree86VersionString "("XFree86DateString")"
 #if BuildDocs
         DOCSDIR = doc
 #endif
+#if BuildNLS
         NLSSUBDIR = nls
 #endif
 #endif

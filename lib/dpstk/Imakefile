@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/dpstk/Imakefile,v 1.6 2000/06/07 22:03:00 tsi Exp $
+XCOMM $XFree86: xc/lib/dpstk/Imakefile,v 1.7 2004/04/05 02:33:13 dawes Exp $
 
 #define DoNormalLib NormalLibDpsTk
 #define DoSharedLib SharedLibDpsTk
@@ -48,10 +48,16 @@ OBJS = 	XDPSpwraps.o XDPSswraps.o XDPSshare.o XDPSpreview.o \
 
 .SUFFIXES: .psw
 
-.psw.c :
+.psw.c : HostProgramTargetName($(PSWRAP))
 	RunProgram(PSWRAP,-o $*.c -a -f $*.h -h $*.h $<)
 
+HostProgramTargetName($(PSWRAP)):
+	@echo "checking $@ over in $(PSWRAPSRC) first..."; \
+	cd $(PSWRAPSRC) && $(MAKE) pswraponly; \
+	echo "okay, continuing in $(CURRENT_DIR)"
+
 includes:: $(SRCS)
+depend:: $(SRCS)
 
 #if HasMotif
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/dbe/Imakefile,v 3.11 2001/12/17 20:00:39 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/dbe/Imakefile,v 3.12 2005/05/13 21:02:31 dawes Exp $
 
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -79,6 +79,10 @@ NormalLibraryTarget(dbe,$(OBJS))
 
 LintLibraryTarget(dbe,$(SRCS))
 NormalLintTarget($(SRCS))
+
+#ifdef IHaveModules
+InstallLibraryModule(dbe,$(MODULEDIR),extensions)
+#endif
 
 #ifdef IHaveSubdirs
 MakeSubdirs($(SUBDIRS))
