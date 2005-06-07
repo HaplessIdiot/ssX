@@ -1,4 +1,6 @@
 XFree86 4.5.99.5 (xx June 2005)
+  68. Fix long-standing off-by-one bug in the setting of RGB offsets when the
+      driver supplies RGB masks (Marc La France).
   67. Improve the support for selecting which library components get built
       (David Dawes).
   66. Fix some offset, pitch and overlay scaler size problems with
@@ -19616,7 +19618,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3527 2005/06/06 09:42:00 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3528 2005/06/07 08:02:15 dawes Exp $
 
 
 
