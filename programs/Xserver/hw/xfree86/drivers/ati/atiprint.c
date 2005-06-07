@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.31tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.32tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -549,7 +549,7 @@ ATIPrintRegisters
         {
             if (!(Index & 3))
                 xf86ErrorFVerb(4, "\n 0x%02X: ", Index);
-            xf86ErrorFVerb(4, " %08X", ATIMach64GetLCDReg(Index));
+            xf86ErrorFVerb(4, " %08X", (int)ATIMach64GetLCDReg(Index));
         }
 
         outr(LCD_INDEX, lcd_index);
@@ -561,7 +561,7 @@ ATIPrintRegisters
         {
             if (!(Index & 3))
                 xf86ErrorFVerb(4, "\n 0x%02X: ", Index);
-            xf86ErrorFVerb(4, " %08X", ATIMach64GetTVReg(Index));
+            xf86ErrorFVerb(4, " %08X", (int)ATIMach64GetTVReg(Index));
         }
 
         outr(TV_OUT_INDEX, tv_out_index);
