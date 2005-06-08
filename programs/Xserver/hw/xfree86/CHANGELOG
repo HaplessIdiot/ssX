@@ -1,4 +1,6 @@
 XFree86 4.5.99.6 (xx June 2005)
+  72. Fix the mode validation such that using function 5f05 to set 
+      the refresh rate works again in the i830 driver (Alan Hourihane).
 
 XFree86 4.5.99.5 (8 June 2005)
   71. Fix for GENENA register handling in ATIProbe()  (Marc La France).
@@ -19627,7 +19629,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3532 2005/06/07 19:24:19 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3533 2005/06/08 11:02:46 dawes Exp $
 
 
 
