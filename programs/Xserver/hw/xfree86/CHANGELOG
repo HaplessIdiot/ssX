@@ -1,4 +1,6 @@
-XFree86 4.5.99.5 (xx June 2005)
+XFree86 4.5.99.6 (xx June 2005)
+
+XFree86 4.5.99.5 (8 June 2005)
   71. Fix for GENENA register handling in ATIProbe()  (Marc La France).
   70. Fix text restoration when display switching has been activated
       and we could be potentially on a different display than the
@@ -19625,7 +19627,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3531 2005/06/07 18:55:58 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3532 2005/06/07 19:24:19 tsi Exp $
 
 
 
