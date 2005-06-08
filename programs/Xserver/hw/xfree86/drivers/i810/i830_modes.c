@@ -27,7 +27,7 @@
  *
  * Authors: David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_modes.c,v 1.5 2005/05/20 14:06:32 alanh Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_modes.c,v 1.6 2005/05/25 09:15:05 alanh Exp $
  */
 /*
  * Modified by Alan Hourihane <alanh@tungstengraphics.com>
@@ -387,16 +387,16 @@ CheckMode(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe, int id,
 
     /*
      * Check if there's a valid monitor mode that this one can be matched
-     * up with from the specified modes list.
+     * up with from the 'specified' modes list.
      */
     if (modeOK) {
 	for (p = pScrn->monitor->Modes; p != NULL; p = p->next) {
-	    if ((p->HDisplay != mode->XResolution) ||
+	    if ((p->type != 0) ||
+		(p->HDisplay != mode->XResolution) ||
 		(p->VDisplay != mode->YResolution) ||
 		(p->Flags & (V_INTERLACE | V_DBLSCAN | V_CLKDIV2)))
 		continue;
 	    status = xf86CheckModeForMonitor(p, pScrn->monitor);
-	    if (p->type == M_T_BUILTIN) continue;
 	    if (status == MODE_OK) {
 		modeOK = TRUE;
 		break;
