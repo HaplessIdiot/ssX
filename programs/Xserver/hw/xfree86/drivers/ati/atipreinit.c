@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.82tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.83tsi Exp $ */
 /*
  * Copyright 1999 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -624,7 +624,8 @@ ATIPreInit
      */
     xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
         "Initialising int10 interface.\n");
-    if (!(pInt10Module = ATILoadModule(pScreenInfo, "int10", ATIint10Symbols)))
+    pInt10Module = ATILoadModule(pScreenInfo, "int10", ATIint10Symbols);
+    if (!pInt10Module)
     {
         xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
             "Unable to load int10 module.\n");
@@ -638,27 +639,31 @@ ATIPreInit
     {
         xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
             "Determining BIOS support for VBE.\n");
-        if (!(pDDCModule = ATILoadModule(pScreenInfo, "ddc", ATIddcSymbols)))
+        pDDCModule = ATILoadModule(pScreenInfo, "ddc", ATIddcSymbols);
+        if (!pDDCModule)
         {
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "Unable to load ddc module.\n");
         }
         else
-        if (!(pVBEModule = ATILoadModule(pScreenInfo, "vbe", ATIvbeSymbols)))
         {
-            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
-                "Unable to load vbe module.\n");
-        }
-        else
-        {
-            if ((pVBE = VBEInit(pInt10Info, pATI->iEntity)))
+            pVBEModule = ATILoadModule(pScreenInfo, "vbe", ATIvbeSymbols);
+            if (!pVBEModule)
             {
-                xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
-                    "Video BIOS supports VBE.\n");
-                ConfiguredMonitor = vbeDoEDID(pVBE, pDDCModule);
-                vbeFree(pVBE);
+                xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                    "Unable to load vbe module.\n");
             }
-            xf86UnloadSubModule(pVBEModule);
+            else
+            {
+                if ((pVBE = VBEInit(pInt10Info, pATI->iEntity)))
+                {
+                    xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
+                        "Video BIOS supports VBE.\n");
+                    ConfiguredMonitor = vbeDoEDID(pVBE, pDDCModule);
+                    vbeFree(pVBE);
+                }
+                xf86UnloadSubModule(pVBEModule);
+            }
         }
 
         if (!(flags & PROBE_DETECT))
