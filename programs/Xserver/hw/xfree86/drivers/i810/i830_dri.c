@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dri.c,v 1.20 2005/01/09 20:47:19 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dri.c,v 1.21 2005/02/01 19:49:40 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -593,9 +593,6 @@ I830DRIScreenInit(ScreenPtr pScreen)
 	    drmFreeVersion(version);
 	    return FALSE;
 	 }
-	 if (version->version_minor < 2)
-	    xf86DrvMsg(pScreen->myNum, X_WARNING, 
-			"Resume functionality not available with DRM < 1.2\n");
 	 pI830->drmMinor = version->version_minor;
 	 drmFreeVersion(version);
       }
