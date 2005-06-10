@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:48:29 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/sun/Imakefile,v 1.6 2001/04/16 20:57:04 herrb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/sun/Imakefile,v 1.7tsi Exp $
 
 #include <Server.tmpl>
 
@@ -56,10 +56,13 @@ SRCS = $(SRCS1) $(SRCS2) $(SRCS3) kbd_mode.c constype.c
 
 OBJS = $(OBJS1) $(OBJS2)
 
-   INCLUDES = -I. -I../.. -I../../mi -I../../mfb -I../../cfb -I../../cfb32 \
-	      -I../../include -I$(XINCLUDESRC) -I$(FONTINCSRC) -I$(EXTINCSRC)
-   LINTLIBS = ../../dix/llib-ldix.ln ../../os/llib-los.ln \
-	      ../mfb/llib-lmfb.ln ../mi/llib-lmi.ln ../cfb/llib-lcfb.ln
+   INCLUDES = -I. -I$(SERVERSRC) -I$(SERVERSRC)/mi -I$(SERVERSRC)/mfb \
+	      -I$(SERVERSRC)/cfb -I$(SERVERSRC)/cfb32 \
+	      -I$(SERVERSRC)/dbe -I$(SERVERSRC)/record -I$(SERVERSRC)/include \
+	      -I$(XINCLUDESRC) -I$(FONTINCSRC) -I$(EXTINCSRC)
+   LINTLIBS = $(SERVERSRC)/dix/llib-ldix.ln $(SERVERSRC)/os/llib-los.ln \
+	      $(SERVERSRC)/mfb/llib-lmfb.ln $(SERVERSRC)/mi/llib-lmi.ln \
+	      $(SERVERSRC)/cfb/llib-lcfb.ln
 
 NormalLibraryObjectRule()
 
@@ -72,10 +75,10 @@ NormalLintTarget($(SRCS1))
 
 #ifndef i386Architecture
 sunInExMono.o: $(ICONFIGFILES)
-ObjectFromSpecialSource(sunInExMono,../../mi/miinitext, \
+ObjectFromSpecialSource(sunInExMono,$(SERVERSRC)/mi/miinitext, \
 	-UPEXEXT -UGLXEXT -UXV -URENDER)
-LinkFile(sunInitExt.c,../../mi/miinitext.c)
-LinkSourceFile(stubs.c,../../Xi)
+LinkFile(sunInitExt.c,$(SERVERSRC)/mi/miinitext.c)
+LinkSourceFile(stubs.c,$(SERVERSRC)/Xi)
 ObjectFromSpecialSource(sunInitMono,sunInit,-DSUNMAXDEPTH=1)
 ObjectFromSpecialSource(sunInitMulti,sunInit,-DSUNMAXDEPTH=32)
 #endif

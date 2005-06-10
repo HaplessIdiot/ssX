@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.310tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.311tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -438,10 +438,8 @@ CFB8SUBDIR = cfb
 SUNDDXDIR = hw/sun
 #if DoLoadableServer
 SUNOBJS = hw/sun/sunInit.o hw/sun/sunInitExt.o hw/sun/stubs.o
-#elif defined(XF86Server) && XF86Server
-SUNOBJS = hw/sun/sunInit.o hw/sun/stubs.o
 #else
-SUNOBJS = hw/sun/sunInit.o
+SUNOBJS = hw/sun/sunInit.o hw/sun/stubs.o
 #endif
 #if BuildLowMem
 SUNDIRS = $(STDDIRS) $(LMFCFBDIR) $(SUNDDXDIR) $(DEPDIRS)
@@ -474,10 +472,8 @@ SUN24DIRS = $(STDDIRS) $(MFBDIR) \
 	    $(SUNDDXDIR) $(DEPDIRS)
 #if DoLoadableServer
 SUN24OBJS = hw/sun/sunInitMulti.o hw/sun/sunInitExt.o hw/sun/stubs.o
-#elif defined(XF86Server) && XF86Server
-SUN24OBJS = hw/sun/sunInitMulti.o hw/sun/stubs.o
 #else
-SUN24OBJS = hw/sun/sunInitMulti.o
+SUN24OBJS = hw/sun/sunInitMulti.o hw/sun/stubs.o
 #endif
 SUN24LIBS = hw/sun/LibraryTargetName(sun) CFBLibs
 SetUIDServerTarget(Xsun24,$(SUN24DIRS),$(SUN24OBJS), \
@@ -495,11 +491,7 @@ XCOMM
 MFBSUBDIR = mfb
 SUNDDXDIR = hw/sun
 SUNMDIRS = $(STDDIRS) $(MFBDIR) $(SUNDDXDIR) $(DEPDIRS)
-#if defined(XF86Server) && XF86Server
 SUNMOBJS = hw/sun/sunInitMono.o hw/sun/sunInExMono.o hw/sun/stubs.o
-#else
-SUNMOBJS = hw/sun/sunInitMono.o hw/sun/sunInExMono.o
-#endif
 SUNMLIBS = hw/sun/LibraryTargetName(sun) MFBLibs
 SetUIDServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS), \
 	$(SUNMLIBS),$(FONTLIBS) $(SYSLIBS))
