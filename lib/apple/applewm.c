@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/apple/applewm.c,v 1.1 2003/08/12 23:47:10 torrey Exp $ */
+/* $XFree86: xc/lib/apple/applewm.c,v 1.2tsi Exp $ */
 /**************************************************************************
 
 Copyright (c) 2002 Apple Computer, Inc.
@@ -35,6 +35,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <X11/extensions/Xext.h>
 #include "extutil.h"
 #include <stdio.h>
+#include <X11/Xalloca.h>
 
 static XExtensionInfo _applewm_info_data;
 static XExtensionInfo *applewm_info = &_applewm_info_data;

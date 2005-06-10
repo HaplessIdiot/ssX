@@ -72,7 +72,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.115 2005/05/20 15:34:50 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.116tsi Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -355,24 +355,21 @@ const char *I810driSymbols[] = {
    "DRICreatePCIBusID",
    NULL
 };
-
-#ifdef XF86DRI
+#endif
 
 const char *I810shadowFBSymbols[] = {
     "ShadowFBInit",
     NULL
 };
 
+#ifdef XF86DRI
 const char *I810shadowSymbols[] = {
     "shadowInit",
     "shadowSetup",
     "shadowAdd",
     NULL
 };
-
 #endif
-
-#endif /* I830_ONLY */
 
 #ifndef I810_DEBUG
 int I810_DEBUG = (0
