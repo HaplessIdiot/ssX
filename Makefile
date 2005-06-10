@@ -1,13 +1,8 @@
-# $Xorg: Makefile,v 1.5 2000/08/17 19:41:44 cpqbld Exp $
-
-
-
-# $XFree86: xc/Makefile,v 3.28tsi Exp $
+# $XFree86: xc/Makefile,v 3.29 2003/10/21 17:41:43 tsi Exp $
 
 # Luna users will need to either run make as "make MAKE=make"
 # or add "MAKE = make" to this file.
 
-RELEASE = "Release 6.6"
 SHELL = /bin/sh
 RM = rm -f
 MV = mv
