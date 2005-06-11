@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.494 2005/05/02 13:28:00 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.495 2005/06/07 08:02:14 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -264,7 +264,7 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.494 2005/05/02 13:28:00 dawes Exp $
 #define XInputDrivers		mouse keyboard acecad calcomp citron \
 				digitaledge dmc dynapro elographics tek4957 \
 				microtouch mutouch penmount spaceorb summa \
-				wacom void magellan /* magictouch */ hyperpen \
+				wacom void magellan magictouch hyperpen \
 				jamstudio fpit \
 				palmax OSXInputDrivers ExtraXInputDrivers
 #endif

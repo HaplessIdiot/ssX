@@ -1,4 +1,5 @@
 XFree86 4.5.99.6 (xx June 2005)
+  76. Port of the magictouch driver for XFree86 4.x (Bruno Schwander).
   75. Add multimedia keysyms for the Inspiron 6000 laptop to the "inspiron"
       set (Bugzilla #1592, Aaron Solochek).
   74. Fix potential infinite loop in xdm when the "willing" command fails
@@ -19636,7 +19637,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3536 2005/06/11 01:54:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3537 2005/06/11 02:02:02 dawes Exp $
 
 
 
