@@ -27,7 +27,7 @@
  * SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/magictouch/xf86MagicTouch.c,v 1.7 2005/06/11 02:40:55 dawes Exp $ */
 
 #define _MGT_C_
 
@@ -42,7 +42,7 @@
 
 #include "xf86MagicTouch.h"
 
-InputDriverRec MGT = {
+InputDriverRec MAGICTOUCH = {
         1,
         "magictouch",
         NULL,
@@ -125,7 +125,7 @@ MGTSetupProc(	pointer module,
 			int *errmin )
 {
 	xf86LoaderReqSymLists(reqSymbols, NULL);
-	xf86AddInputDriver(&MGT, module, 0);
+	xf86AddInputDriver(&MAGICTOUCH, module, 0);
 	return (pointer) 1;
 }
 
