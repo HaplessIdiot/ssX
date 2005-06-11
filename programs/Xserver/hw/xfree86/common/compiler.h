@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.107 2004/02/13 23:58:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.108tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -586,11 +586,18 @@ inl(unsigned short port)
 #      define ASI_PL 0x88
 #     endif
 
-#     define barrier() __asm__ __volatile__(".word 0x8143e00a": : :"memory")
+/*
+ * MEMBAR instruction coded to be acceptable even to an assembler not
+ * expecting it in its input stream.  This has been changed to "membar"
+ * everything and is now used to bracket most accesses for fault-isolation
+ * purposes.
+ */
+#     define barrier() __asm__ __volatile__(".word 0x8143e07f": : :"memory")
 
 static __inline__ void
 outb(unsigned long port, unsigned char val)
 {
+	barrier();
 	__asm__ __volatile__("stba %0, [%1] %2"
 			     : /* No outputs */
 			     : "r" (val), "r" (port), "i" (ASI_PL));
@@ -600,6 +607,7 @@ outb(unsigned long port, unsigned char val)
 static __inline__ void
 outw(unsigned long port, unsigned short val)
 {
+	barrier();
 	__asm__ __volatile__("stha %0, [%1] %2"
 			     : /* No outputs */
 			     : "r" (val), "r" (port), "i" (ASI_PL));
@@ -609,6 +617,7 @@ outw(unsigned long port, unsigned short val)
 static __inline__ void
 outl(unsigned long port, unsigned int val)
 {
+	barrier();
 	__asm__ __volatile__("sta %0, [%1] %2"
 			     : /* No outputs */
 			     : "r" (val), "r" (port), "i" (ASI_PL));
@@ -619,9 +628,12 @@ static __inline__ unsigned int
 inb(unsigned long port)
 {
 	unsigned int ret;
+
+	barrier();
 	__asm__ __volatile__("lduba [%1] %2, %0"
 			     : "=r" (ret)
 			     : "r" (port), "i" (ASI_PL));
+	barrier();
 	return ret;
 }
 
@@ -629,9 +641,12 @@ static __inline__ unsigned int
 inw(unsigned long port)
 {
 	unsigned int ret;
+
+	barrier();
 	__asm__ __volatile__("lduha [%1] %2, %0"
 			     : "=r" (ret)
 			     : "r" (port), "i" (ASI_PL));
+	barrier();
 	return ret;
 }
 
@@ -639,9 +654,12 @@ static __inline__ unsigned int
 inl(unsigned long port)
 {
 	unsigned int ret;
+
+	barrier();
 	__asm__ __volatile__("lda [%1] %2, %0"
 			     : "=r" (ret)
 			     : "r" (port), "i" (ASI_PL));
+	barrier();
 	return ret;
 }
 
@@ -651,9 +669,11 @@ xf86ReadMmio8(__volatile__ void *base, const unsigned long offset)
 	unsigned long addr = ((unsigned long)base) + offset;
 	unsigned char ret;
 
+	barrier();
 	__asm__ __volatile__("lduba [%1] %2, %0"
 			     : "=r" (ret)
 			     : "r" (addr), "i" (ASI_PL));
+	barrier();
 	return ret;
 }
 
@@ -663,9 +683,11 @@ xf86ReadMmio16Be(__volatile__ void *base, const unsigned long offset)
 	unsigned long addr = ((unsigned long)base) + offset;
 	unsigned short ret;
 
+	barrier();
 	__asm__ __volatile__("lduh [%1], %0"
 			     : "=r" (ret)
 			     : "r" (addr));
+	barrier();
 	return ret;
 }
 
@@ -675,9 +697,11 @@ xf86ReadMmio16Le(__volatile__ void *base, const unsigned long offset)
 	unsigned long addr = ((unsigned long)base) + offset;
 	unsigned short ret;
 
+	barrier();
 	__asm__ __volatile__("lduha [%1] %2, %0"
 			     : "=r" (ret)
 			     : "r" (addr), "i" (ASI_PL));
+	barrier();
 	return ret;
 }
 
@@ -687,9 +711,11 @@ xf86ReadMmio32Be(__volatile__ void *base, const unsigned long offset)
 	unsigned long addr = ((unsigned long)base) + offset;
 	unsigned int ret;
 
+	barrier();
 	__asm__ __volatile__("ld [%1], %0"
 			     : "=r" (ret)
 			     : "r" (addr));
+	barrier();
 	return ret;
 }
 
@@ -699,9 +725,11 @@ xf86ReadMmio32Le(__volatile__ void *base, const unsigned long offset)
 	unsigned long addr = ((unsigned long)base) + offset;
 	unsigned int ret;
 
+	barrier();
 	__asm__ __volatile__("lda [%1] %2, %0"
 			     : "=r" (ret)
 			     : "r" (addr), "i" (ASI_PL));
+	barrier();
 	return ret;
 }
 
@@ -711,6 +739,7 @@ xf86WriteMmio8(__volatile__ void *base, const unsigned long offset,
 {
 	unsigned long addr = ((unsigned long)base) + offset;
 
+	barrier();
 	__asm__ __volatile__("stba %0, [%1] %2"
 			     : /* No outputs */
 			     : "r" (val), "r" (addr), "i" (ASI_PL));
@@ -723,6 +752,7 @@ xf86WriteMmio16Be(__volatile__ void *base, const unsigned long offset,
 {
 	unsigned long addr = ((unsigned long)base) + offset;
 
+	barrier();
 	__asm__ __volatile__("sth %0, [%1]"
 			     : /* No outputs */
 			     : "r" (val), "r" (addr));
@@ -735,6 +765,7 @@ xf86WriteMmio16Le(__volatile__ void *base, const unsigned long offset,
 {
 	unsigned long addr = ((unsigned long)base) + offset;
 
+	barrier();
 	__asm__ __volatile__("stha %0, [%1] %2"
 			     : /* No outputs */
 			     : "r" (val), "r" (addr), "i" (ASI_PL));
@@ -747,6 +778,7 @@ xf86WriteMmio32Be(__volatile__ void *base, const unsigned long offset,
 {
 	unsigned long addr = ((unsigned long)base) + offset;
 
+	barrier();
 	__asm__ __volatile__("st %0, [%1]"
 			     : /* No outputs */
 			     : "r" (val), "r" (addr));
@@ -759,6 +791,7 @@ xf86WriteMmio32Le(__volatile__ void *base, const unsigned long offset,
 {
 	unsigned long addr = ((unsigned long)base) + offset;
 
+	barrier();
 	__asm__ __volatile__("sta %0, [%1] %2"
 			     : /* No outputs */
 			     : "r" (val), "r" (addr), "i" (ASI_PL));

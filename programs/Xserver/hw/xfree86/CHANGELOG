@@ -1,4 +1,5 @@
 XFree86 4.5.99.6 (xx June 2005)
+  77. Make I/O error handling more reliable on SPARC (Marc La France)
   76. Port of the magictouch driver for XFree86 4.x (Bruno Schwander).
   75. Add multimedia keysyms for the Inspiron 6000 laptop to the "inspiron"
       set (Bugzilla #1592, Aaron Solochek).
@@ -19637,7 +19638,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3537 2005/06/11 02:02:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3538 2005/06/11 02:40:54 dawes Exp $
 
 
 
