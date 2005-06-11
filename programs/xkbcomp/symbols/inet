@@ -1,4 +1,4 @@
- // $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.40 2004/06/19 13:53:47 pascal Exp $
+ // $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.41 2004/10/27 03:12:03 dawes Exp $
 
 // EAK (Easy Access, Internet, Multimedia, PDA) keyboards
 // Copyright (C) 2002 Stanislav Brabec <sbrabec@suse.cz>
@@ -500,12 +500,19 @@ xkb_symbols "dell" {
 
 partial alphanumeric_keys
 xkb_symbols "inspiron" {
-    name[Group1]= "Laptop/notebook Dell Inspiron 8xxx";
+    name[Group1]= "Laptop/notebook Dell Inspiron 6xxx, 8xxx";
 
+    // 8xxx
     key <XFER>	{	[ XF86AudioPlay, XF86AudioPause ] };
     key <NFER>	{	[ XF86AudioPrev		]	};
     key <I04>	{	[ XF86AudioNext		]	};
     key <I02>	{	[ XF86AudioStop		]	};
+    // 6xxx
+    key <I22>	{	[ XF86AudioPlay, XF86AudioPause ] };
+    key <I10>	{	[ XF86AudioPrev		]	};
+    key <I19>	{	[ XF86AudioNext		]	};
+    key <I24>	{	[ XF86AudioStop		]	};
+    // 6xxx, 8xxx
     key <I30>	{	[ XF86AudioRaiseVolume	]	};
     key <I2E>	{	[ XF86AudioLowerVolume	]	};
     key <I20>	{	[ XF86AudioMute		]	};
