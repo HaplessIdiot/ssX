@@ -1,4 +1,3 @@
-/* $Xorg: XKBGetMap.c,v 1.4 2000/08/17 19:45:02 cpqbld Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -25,7 +24,55 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XFree86: xc/lib/X11/XKBGetMap.c,v 1.9 2003/04/17 02:06:31 dawes Exp $ */
+/*
+ * Copyright (c) 2005 by The XFree86 Project, Inc.
+ * Copyright (c) 2005 by Michal Maruska.
+ * All rights reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject
+ * to the following conditions:
+ *
+ *   1.  Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions, and the following disclaimer.
+ *
+ *   2.  Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer
+ *       in the documentation and/or other materials provided with the
+ *       distribution, and in the same place and form as other copyright,
+ *       license and disclaimer information.
+ *
+ *   3.  The end-user documentation included with the redistribution,
+ *       if any, must include the following acknowledgment: "This product
+ *       includes software developed by The XFree86 Project, Inc
+ *       (http://www.xfree86.org/) and its contributors", in the same
+ *       place and form as other third-party acknowledgments.  Alternately,
+ *       this acknowledgment may appear in the software itself, in the
+ *       same form and location as other such third-party acknowledgments.
+ *
+ *   4.  Except as contained in this notice, the name of The XFree86
+ *       Project, Inc shall not be used in advertising or otherwise to
+ *       promote the sale, use or other dealings in this Software without
+ *       prior written authorization from The XFree86 Project, Inc.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE XFREE86 PROJECT, INC OR ITS CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/* $XFree86: xc/lib/X11/XKBGetMap.c,v 1.10 2003/11/17 22:20:09 dawes Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -150,6 +197,7 @@ _XkbReadKeySyms(XkbReadBufferPtr buf,XkbDescPtr xkb,xkbGetMapReply *rep)
 register int i;
 XkbClientMapPtr	map;
 
+  if (rep->totalSyms > 0) {
     map= xkb->map;
     if (map->key_sym_map==NULL) {
 	register int offset;
@@ -236,7 +284,8 @@ XkbClientMapPtr	map;
 	    oldMap->width = newMap->width;
 	}
     }
-    return Success;
+  }
+  return Success;
 }
 
 static Status
@@ -249,7 +298,9 @@ register int	nKeyActs;
 Status		ret = Success;
 
     if ( (nKeyActs=rep->nKeyActs)>0 ) {
+#if 0
 	XkbSymMapPtr	symMap;
+#endif
 
 	if (nKeyActs < sizeof numDescBuf) numDesc = numDescBuf;
 	else numDesc = Xmalloc (nKeyActs * sizeof(CARD8));
@@ -263,8 +314,19 @@ Status		ret = Success;
 	    ret = BadLength;
 	    goto done;
 	}
+#if 0        
+        /*
+	 * mmc:  This probably should check that the number of actions &
+	 * keysyms is the same for each keycode.
+         * But for now it doesn't, so I disable it.
+	 */
 	symMap = &info->map->key_sym_map[rep->firstKeyAct];
-	for (i=0;i<(int)rep->nKeyActs;i++,symMap++) {
+#endif        
+	for (i=0;i<(int)rep->nKeyActs;i++
+#if 0
+                ,symMap++
+#endif
+       	    ) {
 	    if (numDesc[i]==0) {
 		info->server->key_acts[i+rep->firstKeyAct]= 0;
 	    }
@@ -478,7 +540,7 @@ unsigned	mask;
     }
     extraData= (int)(rep->length*4);
     extraData-= (SIZEOF(xkbGetMapReply)-SIZEOF(xGenericReply));
-    if (rep->length) {
+    if (extraData) {
 	XkbReadBufferRec	buf;
 	int			left;
 	if (_XkbInitReadBuffer(dpy,&buf,extraData)) {
@@ -683,6 +745,8 @@ XkbGetVirtualMods(Display *dpy,unsigned which,XkbDescPtr xkb)
 
     req = _XkbGetGetMapReq(dpy, xkb);
     req->virtualMods = which;
+    /* mmc:  We want this information, so the mask must be set! */
+    req->partial = XkbVirtualModsMask;
     status= _XkbHandleGetMapReply(dpy, xkb);
 
     UnlockDisplay(dpy);
@@ -740,6 +804,7 @@ XkbGetKeyModifierMap(Display *dpy,unsigned first,unsigned num,XkbDescPtr xkb)
     req = _XkbGetGetMapReq(dpy, xkb);
     req->firstModMapKey = first;
     req->nModMapKeys = num;
+    req->partial = XkbModifierMapMask;	/* mmc: Once again (see above). */
     if ((xkb!=NULL) && (xkb->map!=NULL) && (xkb->map->modmap!=NULL)) {
 	if ((num>0)&&(first>=xkb->min_key_code)&&(first+num<=xkb->max_key_code))
 	    bzero(&xkb->map->modmap[first],num);
@@ -767,9 +832,10 @@ XkbGetKeyVirtualModMap(Display *dpy,unsigned first,unsigned num,XkbDescPtr xkb)
     LockDisplay(dpy);
 
     req = _XkbGetGetMapReq(dpy, xkb);
+    req->partial = XkbVirtualModMapMask;
     req->firstVModMapKey = first;
     req->nVModMapKeys = num;
-    if ((xkb!=NULL) && (xkb->map!=NULL) && (xkb->map->modmap!=NULL)) {
+    if ((xkb!=NULL) && (xkb->server!=NULL) && (xkb->server->vmodmap!=NULL)) {
 	if ((num>0)&&(first>=xkb->min_key_code)&&(first+num<=xkb->max_key_code))
 	    bzero(&xkb->server->vmodmap[first],num*sizeof(unsigned short));
     }
