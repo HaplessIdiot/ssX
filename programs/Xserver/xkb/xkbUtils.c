@@ -23,7 +23,55 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbUtils.c,v 3.18 2005/03/28 02:51:13 dawes Exp $ */
+/*
+ * Copyright (c) 2005 by The XFree86 Project, Inc.
+ * Copyright (c) 2005 by Michal Maruska.
+ * All rights reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject
+ * to the following conditions:
+ *
+ *   1.  Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions, and the following disclaimer.
+ *
+ *   2.  Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer
+ *       in the documentation and/or other materials provided with the
+ *       distribution, and in the same place and form as other copyright,
+ *       license and disclaimer information.
+ *
+ *   3.  The end-user documentation included with the redistribution,
+ *       if any, must include the following acknowledgment: "This product
+ *       includes software developed by The XFree86 Project, Inc
+ *       (http://www.xfree86.org/) and its contributors", in the same
+ *       place and form as other third-party acknowledgments.  Alternately,
+ *       this acknowledgment may appear in the software itself, in the
+ *       same form and location as other such third-party acknowledgments.
+ *
+ *   4.  Except as contained in this notice, the name of The XFree86
+ *       Project, Inc shall not be used in advertising or otherwise to
+ *       promote the sale, use or other dealings in this Software without
+ *       prior written authorization from The XFree86 Project, Inc.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE XFREE86 PROJECT, INC OR ITS CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/* $XFree86: xc/programs/Xserver/xkb/xkbUtils.c,v 3.19 2005/04/14 12:31:58 pascal Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -372,6 +420,11 @@ CARD8 *			repeat;
     return;
 }
 
+#if 0
+extern char* ConnectionInfo;    /* mmc: I think it's a precomputed byte
+				   array to send to clients on connection.*/
+#endif
+
 void
 XkbUpdateCoreDescription(DeviceIntPtr keybd,Bool resize)
 {
@@ -388,6 +441,12 @@ CARD8			keysPerMod[XkbNumModifiers];
     keyc= keybd->key;
     maxSymsPerKey= maxKeysPerMod= 0;
     bzero(keysPerMod,sizeof(keysPerMod));
+
+    /* mmc:
+     * 1/ does it start w/ keycode 0? or min?
+     * 2/ modifierMap is always 256
+     * xkb->max_key_code  might be > keyc->curKeySyms.maxKeyCode
+     */
     memcpy(keyc->modifierMap,xkb->map->modmap,xkb->max_key_code+1);
     if ((xkb->min_key_code==keyc->curKeySyms.minKeyCode)&&
 	(xkb->max_key_code==keyc->curKeySyms.maxKeyCode)) {
@@ -403,6 +462,12 @@ CARD8			keysPerMod[XkbNumModifiers];
 	   FatalError("Couldn't allocate keysyms\n");
 	first= firstCommon= xkb->min_key_code;
 	last= lastCommon= xkb->max_key_code;
+
+#if 0 
+        /* mmc: i should recompute: ConnectionInfo in dix/main.c !! */
+        ((xConnSetup*) ConnectionInfo)->minKeyCode = xkb->min_key_code;
+        ((xConnSetup*) ConnectionInfo)->maxKeyCode = xkb->max_key_code;
+#endif        
     }
     else {
 	if (xkb->min_key_code<keyc->curKeySyms.minKeyCode) {
@@ -410,6 +475,7 @@ CARD8			keysPerMod[XkbNumModifiers];
 	    firstCommon= keyc->curKeySyms.minKeyCode;
 	}
 	else {
+           /* mmc: Core (partly) superset of xkb?  */
 	    firstCommon= xkb->min_key_code;
 	    first= keyc->curKeySyms.minKeyCode;
 	}
@@ -423,7 +489,10 @@ CARD8			keysPerMod[XkbNumModifiers];
 	}
     }
 
-    /* determine sizes */
+    /*
+     * Determine sizes:  maxSymsPerKey  and  maxKeysPerMod:
+     * minimum 2 !  Sum of group1 & group2 ?
+     */
     for (key=first;key<=last;key++) {
 	if (XkbKeycodeInRange(xkb,key)) {
 	    int	nGroups;
@@ -441,6 +510,7 @@ CARD8			keysPerMod[XkbNumModifiers];
 		          tmp+= 2;
 		     else tmp+= w;
                 } else {
+                   /* group 1 provides more than 2: */
                      if ((w=XkbKeyGroupWidth(xkb,key,XkbGroup2Index))>2)
                           tmp+= w - 2;
                 }
@@ -483,7 +553,8 @@ CARD8			keysPerMod[XkbNumModifiers];
     }
     keyc->maxKeysPerModifier= maxKeysPerMod;
 
-    if (maxSymsPerKey>0) {
+    /* Now, that we have the `maxSymsPerKey'.  */
+    if (maxSymsPerKey>0) { /* mmc: this could fail if ...  xkb keycode range is disjoint from the core range? */
 	tmp= maxSymsPerKey*_XkbCoreNumKeys(keyc);
 	keyc->curKeySyms.map= _XkbTypedRealloc(keyc->curKeySyms.map,tmp,KeySym);
 	if (keyc->curKeySyms.map==NULL)
@@ -495,6 +566,11 @@ CARD8			keysPerMod[XkbNumModifiers];
     }
     keyc->curKeySyms.mapWidth= maxSymsPerKey;
 
+  if (maxSymsPerKey>0) {    /* mmc! */
+    /*
+     * What use in core for keysPerMod?  8 numbers -- count of keycodes
+     * associtated with the modifier bit.
+     */
     bzero(keysPerMod,sizeof(keysPerMod));
     for (key=firstCommon;key<=lastCommon;key++) {
 	if (keyc->curKeySyms.map!=NULL) {
@@ -507,12 +583,15 @@ CARD8			keysPerMod[XkbNumModifiers];
 	    bzero(pCore,maxSymsPerKey*sizeof(KeySym));
 	    pXKB= XkbKeySymsPtr(xkb,key);
 	    nOut= 2;
+            /* Copy the initial keysyms? */
 	    if (nGroups>0) {
 		groupWidth= XkbKeyGroupWidth(xkb,key,XkbGroup1Index);
 		if (groupWidth>0)	pCore[0]= pXKB[0];
 		if (groupWidth>1)	pCore[1]= pXKB[1];
 		for (n=2;n<groupWidth;n++) {
-		    pCore[2+n]= pXKB[n];
+		    pCore[2+n]= pXKB[n];	/* mmc: Why the 2+ skip?
+						 * Because below (on 2,3)
+						 * we put from group2! */
 		}
 		if (groupWidth>2)
 		    nOut= groupWidth;
@@ -556,6 +635,7 @@ CARD8			keysPerMod[XkbNumModifiers];
 	    }
 	}
     }
+  }
 #ifdef MODE_SWITCH
     /* Fix up any of the KME stuff if we changed the core description.
      */

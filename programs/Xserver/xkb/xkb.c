@@ -23,7 +23,55 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.23 2003/12/22 17:48:11 tsi Exp $ */
+/*
+ * Copyright (c) 2005 by The XFree86 Project, Inc.
+ * Copyright (c) 2005 by Michal Maruska.
+ * All rights reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject
+ * to the following conditions:
+ *
+ *   1.  Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions, and the following disclaimer.
+ *
+ *   2.  Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer
+ *       in the documentation and/or other materials provided with the
+ *       distribution, and in the same place and form as other copyright,
+ *       license and disclaimer information.
+ *
+ *   3.  The end-user documentation included with the redistribution,
+ *       if any, must include the following acknowledgment: "This product
+ *       includes software developed by The XFree86 Project, Inc
+ *       (http://www.xfree86.org/) and its contributors", in the same
+ *       place and form as other third-party acknowledgments.  Alternately,
+ *       this acknowledgment may appear in the software itself, in the
+ *       same form and location as other such third-party acknowledgments.
+ *
+ *   4.  Except as contained in this notice, the name of The XFree86
+ *       Project, Inc shall not be used in advertising or otherwise to
+ *       promote the sale, use or other dealings in this Software without
+ *       prior written authorization from The XFree86 Project, Inc.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE XFREE86 PROJECT, INC OR ITS CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.24 2005/03/28 02:51:13 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -1514,10 +1562,15 @@ xkbKeyTypeWireDesc	*wire = *wireRtrn;
 	*nMapsRtrn = xkb->map->num_types;
 	for (i=0;i<xkb->map->num_types;i++) {
 	    mapWidthRtrn[i] = xkb->map->types[i].num_levels;
+	    /*
+	     * mmc:  mapWidthRtrn is allocated for max keycodes.  Is the same
+	     * limit valid for # of levels of Types???
+	     */
 	}
 	return 1;
     }
 
+    /* Copy the unaffected interval: */
     for (i=0;i<req->firstType;i++) {
 	mapWidthRtrn[i] = xkb->map->types[i].num_levels;
     }
@@ -1610,14 +1663,34 @@ CheckKeySyms(	ClientPtr		client,
 		xkbSymMapWireDesc **	wireRtrn,
 		int *			errorRtrn)
 {
+   /* mmc:
+    *   Checks consistency of the data:
+    *   - types inside an interval
+    *   - number of syms must be = width * ngroups
+    *   AND
+    *   constructs the symsPerKey mapping keycode->number.  This will be
+    *   used by the caller for checking n. of actions! 
+    *   Uses mapWidths for that(?)
+    */
 unsigned	i;
 XkbSymMapPtr		map;
 xkbSymMapWireDesc*	wire = *wireRtrn;
 
+#if 0
+    /* mmc: Is this correct? symsPerKey would not be computed! */
     if (!(XkbKeySymsMask&req->present))
 	return 1;
+#endif
+    
     CHK_REQ_KEY_RANGE2(0x11,req->firstKeySym,req->nKeySyms,req,(*errorRtrn),0);
     map = &xkb->map->key_sym_map[xkb->min_key_code];
+
+    /*
+     * mmc: This checks if the keycodes `below' (think this ordering:
+     *   min_keycode --- req->firstKeySym ---
+     *   (req->firstKeySym + req->nKeySyms) --- max_keycode)
+     * have types above the nTypes. If so => error.
+     */
     for (i=xkb->min_key_code;i<(unsigned)req->firstKeySym;i++,map++) {
 	int g,ng,w;
 	ng= XkbNumGroups(map->group_info);
@@ -1629,6 +1702,10 @@ xkbSymMapWireDesc*	wire = *wireRtrn;
 	    if (mapWidths[map->kt_index[g]]>w)
 		w= mapWidths[map->kt_index[g]];
 	}
+	/*
+	 * mmc: Now w is the maximum of widths, and
+         * the caller is interested in this info:
+	 */
 	symsPerKey[i] = w*ng;
     }
     for (i=0;i<req->nKeySyms;i++) {
@@ -1637,6 +1714,7 @@ xkbSymMapWireDesc*	wire = *wireRtrn;
 	if (client->swapped) {
 	    swaps(&wire->nSyms,nG);
 	}
+        /* mmc: Checking the Nodes: 1/ good group information? */
 	nG = XkbNumGroups(wire->groupInfo);
 	if (nG>XkbNumKbdGroups) {
 	    *errorRtrn = _XkbErrCode3(0x14,i+req->firstKeySym,nG);
@@ -1668,12 +1746,15 @@ xkbSymMapWireDesc*	wire = *wireRtrn;
 	    *errorRtrn = _XkbErrCode3(0x17,i+req->firstKeySym,wire->nSyms);
 	    return 0;
 	}
+        /* Go to next? Skip the record & following syms! */
 	pSyms = (KeySym *)&wire[1];
 	wire = (xkbSymMapWireDesc *)&pSyms[wire->nSyms];
     }
 
+    /* mmc: Keycodes after affected ones: */
     map = &xkb->map->key_sym_map[i];
-    for (;i<=(unsigned)xkb->max_key_code;i++,map++) {
+    for (i= req->nKeySyms + req->firstKeySym ;
+	 i<=(unsigned)xkb->max_key_code;i++,map++) { /* mmc: Bug was here. */
 	int g,nG,w;
 	nG= XkbKeyNumGroups(xkb,i);
 	for (w=g=0;g<nG;g++)  {
@@ -2088,6 +2169,10 @@ XkbAction *		newActs;
     if (changes->map.changed&XkbKeyActionsMask) {
 	int oldLast;
 	oldLast= changes->map.first_key_act+changes->map.num_key_acts-1;
+	/*
+	 * mmc: Isn't there a function to enlarge an interval to include
+	 * 2 points?  (inverse of CLAMP)
+	 */
 	if (changes->map.first_key_act<first)
 	    first= changes->map.first_key_act;
 	if (oldLast>last)
@@ -2320,13 +2405,14 @@ ProcXkbSetMap(ClientPtr client)
     }
 
     tmp = (char *)&stuff[1];
-    if ((stuff->present&XkbKeyTypesMask)&&
+    /* Bug: We need `mapWidths' which is calculated in CheckKeyTypes. */
+    if (/* (stuff->present&XkbKeyTypesMask)&& */
 	(!CheckKeyTypes(client,xkb,stuff,(xkbKeyTypeWireDesc **)&tmp,
 						&nTypes,mapWidths))) {
 	client->errorValue = nTypes;
 	return BadValue;
     }
-    if ((stuff->present&XkbKeySymsMask)&&
+    if (/* (stuff->present&XkbKeySymsMask)&& */	/* symsPerKey is used later */
 	(!CheckKeySyms(client,xkb,stuff,nTypes,mapWidths,symsPerKey,
 					(xkbSymMapWireDesc **)&tmp,&error))) {
 	client->errorValue = error;
@@ -2718,7 +2804,12 @@ ProcXkbSetCompatMap(ClientPtr client)
 									&cause);
 	if (check)
 	    XkbCheckSecondaryEffects(xkbi,check,&change,&cause);
-	XkbUpdateCoreDescription(dev,False);
+	/*
+	 * mmc: Was False.  I think there will be problems, but i want to
+	 * discover them.  Besides, this function probably does not resize
+	 * the XKB map.
+	 */
+        XkbUpdateCoreDescription(dev,True);
 	XkbSendNotification(dev,&change,&cause);
     }
     return client->noClientException;
