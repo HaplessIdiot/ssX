@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/Imakefile,v 1.3 2005/01/31 04:32:48 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/Imakefile,v 1.4 2005/03/12 23:36:27 dawes Exp $
 /*
  * Copyright (c) 2004, 2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -91,7 +91,23 @@ AllTarget(miinitext.o)
 LinkSourceFile(miinitext.c,$(SERVERSRC)/mi)
 SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES) $(PAN_DEFINES) -DNO_MODULE_EXTS $(EXT_MODULE_DEFINES) $(TINY_DEFINES))
 
-TINY_FONT_DEFINES =
+TINYX_FONT_DEFS = TinyXFontDefines
+#if TinyXSpeedo
+TINYX_SPEEDO_DEFINES = -DBUILD_SPEEDO
+#endif
+#if TinyXType1
+TINYX_TYPE1_DEFINES = -DBUILD_TYPE1
+#endif
+#if TinyXCID
+TINYX_CID_DEFINES = -DBUILD_CID
+#endif
+#if TinyXFreeType
+TINYX_FREETYPE_DEFINES = -DBUILD_FREETYPE
+#endif
+
+TINY_FONT_DEFINES = $(TINYX_FONT_DEFS) $(TINYX_SPEEDO_DEFINES) \
+	$(TINYX_TYPE1_DEFINES) $(TINYX_CID_DEFINES) $(TINYX_FREETYPE_DEFINES)
+
 
 AllTarget(register.o)
 LinkSourceFile(register.c,$(FONTLIBSRC)/fontfile)

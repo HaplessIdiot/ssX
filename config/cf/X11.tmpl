@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.279 2005/03/29 17:33:20 tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.280 2005/06/07 08:02:14 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -466,6 +466,18 @@ VENDORMANVERSION = XVendorManVersionString
 #ifndef TinyXFontDefines
 #define TinyXFontDefines	/**/
 #endif
+#ifndef TinyXSpeedo
+#define TinyXSpeedo		NO
+#endif
+#ifndef TinyXType1
+#define TinyXType1		NO
+#endif
+#ifndef TinyXCID
+#define TinyXCID		NO
+#endif
+#ifndef TinyXFreeType
+#define TinyXFreeType		NO
+#endif
 #ifndef TinyXFontServerAccess
 #define TinyXFontServerAccess	NO
 #endif
@@ -704,7 +716,7 @@ VENDORMANVERSION = XVendorManVersionString
 #ifndef UseFreetype2
 #define UseFreetype2		(BuildXftLibrary || BuildXft1Library || \
 				 UseFontconfig || BuildFontconfigLibrary || \
-				 BuildFreeType)
+				 BuildFreeType || TinyXFreeType)
 #endif
 #ifndef HasExpat
 #define HasExpat		NO

@@ -1,4 +1,6 @@
 XFree86 4.5.99.6 (xx June 2005)
+  79. Add imake parameters to select which font renders get linked into the
+      TinyX servers (David Dawes).
   78. Several fixes for XKB:
        - Off-by-one errors in XKBMAlloc.c.
        - Shrink tables instead of only growing them.
@@ -19645,7 +19647,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3539 2005/06/11 16:56:58 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3540 2005/06/15 01:02:08 dawes Exp $
 
 
 

@@ -1,10 +1,10 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.311tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.312 2005/06/10 14:54:06 tsi Exp $
 
 /*
- * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -302,12 +302,15 @@ DMXLOADABLEEXTS = $(MISCEXT) $(RECORDEXT) $(XTRAPEXT)
        FONTBASE = $(FONTLIBSRC)/fontbase.o \
 		  $(FONTLIBSRC)/LibraryTargetName(fontbase)
 #endif
+#if TinyXFreeType
+TINYFREETYPELIB = $(FREETYPE2LIB)
+#endif
 #if XserverStaticFontLib
            FONT = $(FONTLIBSRC)/LibraryTargetName(Xfont) $(FREETYPE2LIB)
-      TINY_FONT = $(FONTLIBSRC)/LibraryTargetName(Xfont)
+      TINY_FONT = $(FONTLIBSRC)/LibraryTargetName(Xfont) $(TINYFREETYPELIB)
 #else
            FONT = $(LDPRELIB) $(XFONTLIB) $(FREETYPE2LIB)
-      TINY_FONT = $(LDPRELIB) $(XFONTLIB)
+      TINY_FONT = $(LDPRELIB) $(XFONTLIB) $(TINYFREETYPELIB)
 #endif
        FONTLIBS = $(FONT) $(XPFBLIBS)
   TINY_FONTLIBS = $(TINY_FONT) $(XPFBLIBS)
