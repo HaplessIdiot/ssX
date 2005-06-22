@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.59 2005/01/16 00:09:45 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.60 2005/06/07 08:02:14 dawes Exp $
 
 #ifndef OSName
 # define OSName                 Cygwin
@@ -245,7 +245,6 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.59 2005/01/16 00:09:45 daw
 #define ConnectionFlags         -DTCPCONN -DUNIXCONN
 #define ExtraLibraries          
 #define InstUidFlags            -m 4711
-#define UseRgbTxt               YES
 #define ExtraFilesToClean	*.obj *.orig *.rej junk.c *.exe *.dll *.lib *~
 
 /* IPv6 not yet supported */

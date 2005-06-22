@@ -1,7 +1,7 @@
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.126 2005/02/01 02:25:05 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.127 2005/02/04 02:58:27 dawes Exp $
 
 /*
- * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -657,15 +657,6 @@ InstallManPageAliasesBase(file,destdir,aliases)
 #define BuildScreenSaverLibrary	YES
 #endif
 
-/*
- * XFree86 uses its own (more portable) database routines to speed up 
- * the RGB database lookups
- * However, if you want to use ndbm anyway, you can set that to NO in 
- * site.def
- */
-#ifndef UseRgbTxt
-#define UseRgbTxt	YES
-#endif
 #define BuildXF86VidModeExt	NO
 #define BuildXF86DGA		NO
 #define BuildXInputExt		NO

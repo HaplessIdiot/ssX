@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.312 2005/06/10 14:54:06 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.313 2005/06/17 02:16:02 dawes Exp $
 
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -327,12 +327,9 @@ TINYFREETYPELIB = $(FREETYPE2LIB)
 #if HasPam && HasPamMisc
         PAMLIBS = PamLibraries PamMiscLibraries
 #endif
-#if !(SystemV4 || defined(SGIArchitecture) || UseRgbTxt)
-       DBMLIBS = DBMLibrary
-#endif
-        SYSLIBS = $(ZLIB) MathLibrary Krb5Libraries $(DBMLIBS) $(USB) \
+        SYSLIBS = $(ZLIB) MathLibrary Krb5Libraries $(USB) \
 		  $(PAMLIBS) $(XAUTHLIB) $(XDMCPLIB) $(EXTRASYSLIBS)
- NOAUTH_SYSLIBS = $(ZLIB) MathLibrary Krb5Libraries $(DBMLIBS) $(USB) \
+ NOAUTH_SYSLIBS = $(ZLIB) MathLibrary Krb5Libraries $(USB) \
 		  $(PAMLIBS) $(XDMCPLIB) $(EXTRASYSLIBS)
 #if !HasCbrt
            CBRT = mi/LibraryTargetName(cbrt)

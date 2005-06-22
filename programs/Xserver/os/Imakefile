@@ -1,6 +1,6 @@
-XCOMM $XFree86: xc/programs/Xserver/os/Imakefile,v 3.43 2004/06/02 22:43:06 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/os/Imakefile,v 3.44 2005/02/03 02:01:14 dawes Exp $
 /*
- * Copyright (c) 1996-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1996-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -117,7 +117,13 @@ KRB5SRCS = k5auth.c k5encode.c
    LBX_OBJS =
 #endif
 
-#if !defined(DDXOsColor)
+#if BuiltinRGB
+BUILTIN_RGB_SRC = builtinrgb.c
+BUILTIN_RGB_OBJ = builtinrgb.o
+RGB_DEFINES = -DBUILTIN_RGB
+#endif
+
+#if !defined(DDXOsColor) || !DDXOsColor
 COLOR_SRCS=oscolor.c
 COLOR_OBJS=oscolor.o
 #endif
@@ -147,11 +153,13 @@ GETPEEREID_DEFINES = -DHAS_GETPEEREID
 
 BOOTSTRAPCFLAGS = 
            SRCS = WaitFor.c access.c connection.c io.c $(COLOR_SRCS) \
+		  $(BUILTIN_RGB_SRC) \
                   osinit.c utils.c log.c auth.c mitauth.c secauth.c \
                   $(XDMAUTHSRCS) $(RPCSRCS) $(KRB5SRCS) xdmcp.c OtherSources \
                   transport.c $(SNPRINTF_SRCS) $(STRLCAT_SRCS) \
 		  $(MALLOC_SRCS) $(LBX_SRCS)
            OBJS = WaitFor.o access.o connection.o io.o $(COLOR_OBJS) \
+		  $(BUILTIN_RGB_OBJ) \
                   osinit.o utils.o log.o auth.o mitauth.o secauth.o \
                   $(XDMAUTHOBJS) $(RPCOBJS) $(KRB5OBJS) xdmcp.o OtherObjects \
                   transport.o $(SNPRINTF_OBJS) $(STRLCAT_OBJS) \
@@ -165,9 +173,6 @@ BOOTSTRAPCFLAGS =
 #endif
 #if UseMemLeak
      MEM_DEFINES = -DMEMBUG
-#endif
-#if UseRgbTxt
-    RGB_DEFINES = -DUSE_RGB_TXT
 #endif
     DBM_DEFINES = NdbmDefines
     ADM_DEFINES = -DADMPATH=\"$(ADMDIR)/X\%smsgs\"
@@ -254,6 +259,23 @@ LinkSourceFile(strlcat.c,$(LIBSRC)/misc)
 LinkSourceFile(strlcpy.c,$(LIBSRC)/misc)
 #endif
 
+#if BuiltinRGB && !defined(LinkDirectory)
+#if HasPerl5
+RGBTXTSRCS = $(RGBSRC)/rgb.txt
+
+includes:: $(BUILTIN_RGB_SRC)
+
+$(BUILTIN_RGB_SRC): $(RGBTXTSRCS) rgbBuiltin.pl
+	RemoveFile($@)
+	RunPerlScript(rgbBuiltin.pl, < $(RGBTXTSRCS) > $@)
+
+clean::
+	RemoveFile($(BUILTIN_RGB_SRC))
+#else
+LinkFile($(BUILTIN_RGB_SRC),stdrgb.c)
+#endif
+#endif
+
 DependTarget()
 
 #ifdef IHaveSubdirs
@@ -280,5 +302,8 @@ LinkSourceFile(utils.c,LinkDirectory)
 LinkSourceFile(xalloc.c,LinkDirectory)
 LinkSourceFile(xdmauth.c,LinkDirectory)
 LinkSourceFile(xdmcp.c,LinkDirectory)
+#if BuiltinRGB
+LinkSourceFile($(BUILTIN_RGB_SRC),LinkDirectory)
+#endif
 #endif
 

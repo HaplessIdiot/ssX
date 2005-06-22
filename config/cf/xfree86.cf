@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.495 2005/06/07 08:02:14 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.496 2005/06/11 02:40:54 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1817,10 +1817,6 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 
 #ifndef OtherIConfigFiles
 # define OtherIConfigFiles $(IRULESRC)/xfree86.cf $(IRULESRC)/xf86.rules
-#endif
-
-#ifndef UseRgbTxt
-# define UseRgbTxt	YES
 #endif
 
 #ifndef ManSuffix

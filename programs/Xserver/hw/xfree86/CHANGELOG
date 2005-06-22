@@ -1,4 +1,12 @@
 XFree86 4.5.99.6 (xx June 2005)
+  81. Updates to the handling of the X server RGB database:
+       - Ignore space, '-' and '_' characters as well as case when
+         matching colour names, and remove the unnecessary duplicates in
+         rgb.txt.
+       - Allow a built-in copy of the RGB database to be included in the
+         X servers as a fallback for when the rgb.txt file cannot be found.
+       - Remove support for DBM-compiled RGB database files.
+      (David Dawes).
   80. Fix a problem where VT switching back to TinyX servers was failing due to
       blocking on keyboard read (David Dawes).
   79. Add imake parameters to select which font renders get linked into the
@@ -19649,7 +19657,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3541 2005/06/17 02:16:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3542 2005/06/20 17:12:52 dawes Exp $
 
 
 

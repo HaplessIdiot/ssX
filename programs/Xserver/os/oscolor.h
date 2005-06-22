@@ -1,6 +1,7 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/Imakefile,v 1.5 2005/06/17 02:16:02 dawes Exp $
+/* $XFree86$ */
+
 /*
- * Copyright (c) 2004, 2005 by The XFree86 Project, Inc.
+ * Copyright © 2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -46,80 +47,16 @@ XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/Imakefile,v 1.5 2005/06/17 02:16:02
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "TinyX.tmpl"
+#define HASHSIZE 511
 
-#if BuildRender
-RENDERSRCS=txpict.c
-RENDEROBJS=txpict.o
-#endif
+typedef struct _dbEntry * dbEntryPtr;
+typedef struct _dbEntry {
+  dbEntryPtr		link;
+  unsigned short	red;
+  unsigned short	green;
+  unsigned short	blue;
+  const unsigned char *	name;
+} dbEntry;
 
-#if BuildXvExt
-XVSRCS=txxv.c
-XVOBJS=txxv.o 
-#endif
+extern dbEntryPtr builtinRGBhashTab[HASHSIZE];
 
-#ifdef TinyDIXDefines
-TINY_DEFINES = TinyDIXDefines
-#endif
-
-#if XipaqServer
-IPAQ_DEFINES = -DXIPAQ
-#endif
-
-#if HasMTRRSupport
-MTRR_DEFINES = -DHAS_MTRR
-#endif
-
-DEFINES = $(IPAQ_DEFINES) $(TINY_DEFINES) $(MTRR_DEFINES) -UXFree86LOADER
-
-SRCS = txaa.c txcmap.c tinyx.c txinfo.c txinput.c txmap.c txnoop.c \
-	txtest.c vga.c txasync.c txmode.c txcurscol.c txshadow.c \
-	$(RENDERSRCS) $(XVSRCS) miinitext.c stubs.c
-
-OBJS = txaa.o txcmap.o tinyx.o txinfo.o txinput.o txmap.o txnoop.o \
-	txtest.o vga.o txasync.o txmode.o txcurscol.o txshadow.o \
-	$(RENDEROBJS) $(XVOBJS)
-
-INCLUDES = $(TINYXINCLUDES)
-
-NormalLibraryObjectRule()
-NormalLibraryTarget(tinyx,$(OBJS))
-
-SpecialCObjectRule(tinyx,,$(EXT_DEFINES) $(TINY_DEFINES))
-
-AllTarget(miinitext.o)
-LinkSourceFile(miinitext.c,$(SERVERSRC)/mi)
-SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES) $(PAN_DEFINES) -DNO_MODULE_EXTS $(EXT_MODULE_DEFINES) $(TINY_DEFINES))
-
-TINYX_FONT_DEFS = TinyXFontDefines
-#if TinyXSpeedo
-TINYX_SPEEDO_DEFINES = -DBUILD_SPEEDO
-#endif
-#if TinyXType1
-TINYX_TYPE1_DEFINES = -DBUILD_TYPE1
-#endif
-#if TinyXCID
-TINYX_CID_DEFINES = -DBUILD_CID
-#endif
-#if TinyXFreeType
-TINYX_FREETYPE_DEFINES = -DBUILD_FREETYPE
-#endif
-
-TINY_FONT_DEFINES = $(TINYX_FONT_DEFS) $(TINYX_SPEEDO_DEFINES) \
-	$(TINYX_TYPE1_DEFINES) $(TINYX_CID_DEFINES) $(TINYX_FREETYPE_DEFINES)
-
-
-AllTarget(register.o)
-LinkSourceFile(register.c,$(FONTLIBSRC)/fontfile)
-SpecialCObjectRule(register,$(ICONFIGFILES),-I$(FONTLIBSRC)/include $(TINY_FONT_DEFINES))
-AllTarget(ffcheck.o)
-LinkSourceFile(ffcheck.c,$(FONTLIBSRC)/fontfile)
-SpecialCObjectRule(ffcheck,$(ICONFIGFILES),-I$(FONTLIBSRC)/include $(TINY_FONT_DEFINES))
-
-AllTarget(stubs.o)
-LinkSourceFile(stubs.c,$(SERVERSRC)/Xi)
-SpecialCObjectRule(stubs,$(ICONFIGFILES),-UXINPUT)
-
-InstallManPage(TinyX,$(MANDIR))
-InstallManPageAliases(TinyX,$(MANDIR),Xchips Xi810 Xigs Xipaq Xmach64 Xsavage Xsis530 Xtrident Xtrio Xts300 Xkdrive kdrive)
-DependTarget()
