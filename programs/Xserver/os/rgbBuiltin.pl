@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# $XFree86: xc/programs/Xserver/os/rgbBuiltin.pl,v 1.1 2005/06/22 03:28:51 dawes Exp $
+# $XFree86: xc/programs/Xserver/os/rgbBuiltin.pl,v 1.2 2005/06/22 03:38:18 dawes Exp $
 #
 # Read rgb.txt on stdin and write a hashed C source file to stdout.
 # The hashing algorithm must match that in oscolor.c.
@@ -81,8 +81,8 @@ sub hash {
 }
 
 while(<>) {
-	$line =$_;
-	if ($line =~ /^!/) {
+	$line = $_;
+	if ($line =~ /^[!#]/) {
 		next;
 	}
 	if ($line =~ /^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\S.*\S)\s*$/) {
