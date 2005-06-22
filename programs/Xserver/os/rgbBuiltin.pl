@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# $XFree86$
+# $XFree86: xc/programs/Xserver/os/rgbBuiltin.pl,v 1.1 2005/06/22 03:28:51 dawes Exp $
 #
 # Read rgb.txt on stdin and write a hashed C source file to stdout.
 # The hashing algorithm must match that in oscolor.c.
@@ -59,7 +59,7 @@ $HASHSIZE = 511;
 $tmp = 1;
 
 sub hash {
-	my ($name, $create) = @_;
+	my ($name) = @_;
 	@chars, $ch, $h;
 
 	@chars = split(//, $name);
@@ -80,7 +80,6 @@ sub hash {
 	return $h;
 }
 
-$;="-";
 while(<>) {
 	$line =$_;
 	if ($line =~ /^!/) {
@@ -94,7 +93,6 @@ while(<>) {
 		$hash = &hash($name);
 		$hashEntry{$name} = [ $red, $green, $blue ];
 		push @{$hashTab[$hash]}, $name;
-		# print "rgb: $red, $green, $blue, name: \"$name\", hash: $hash\n";
 	}
 }
 
