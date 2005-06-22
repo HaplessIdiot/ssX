@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/Imakefile,v 1.4 2005/03/12 23:36:27 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/Imakefile,v 1.5 2005/06/17 02:16:02 dawes Exp $
 /*
  * Copyright (c) 2004, 2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -72,11 +72,11 @@ MTRR_DEFINES = -DHAS_MTRR
 
 DEFINES = $(IPAQ_DEFINES) $(TINY_DEFINES) $(MTRR_DEFINES) -UXFree86LOADER
 
-SRCS = txaa.c txcmap.c txcolor.c tinyx.c txinfo.c txinput.c txmap.c txnoop.c \
+SRCS = txaa.c txcmap.c tinyx.c txinfo.c txinput.c txmap.c txnoop.c \
 	txtest.c vga.c txasync.c txmode.c txcurscol.c txshadow.c \
 	$(RENDERSRCS) $(XVSRCS) miinitext.c stubs.c
 
-OBJS = txaa.o txcmap.o txcolor.o tinyx.o txinfo.o txinput.o txmap.o txnoop.o \
+OBJS = txaa.o txcmap.o tinyx.o txinfo.o txinput.o txmap.o txnoop.o \
 	txtest.o vga.o txasync.o txmode.o txcurscol.o txshadow.o \
 	$(RENDEROBJS) $(XVOBJS)
 

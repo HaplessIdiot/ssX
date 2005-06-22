@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.112 2005/02/04 02:58:27 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.113 2005/06/07 08:02:13 dawes Exp $
 XCOMM
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -656,8 +656,6 @@ install::								@@\
 /* For the X11R5 server */
 # define CompressAllFonts	NO
 # define InstallFontAliases	InstallFontAliasesNoComment
-# define UseRgbTxt		NO
-# define UseRgb			YES
 
 # define ServerExtraDefines	-DXFree86Server
 
@@ -770,7 +768,6 @@ install::								@@\
 /* For the X11R5 server */
 # define CompressAllFonts	NO
 # define InstallFontAliases	InstallFontAliasesNoComment
-# define UseRgbTxt		NO
 
 #endif /* PmaxArchitecture */
 
@@ -929,8 +926,6 @@ install::								@@\
 /* For the X11R5 server */
 # define CompressAllFonts	NO
 # define InstallFontAliases	InstallFontAliasesNoComment
-# define UseRgbTxt		NO
-# define UseRgb			YES
 
 # define ServerExtraDefines	-DXFree86Server
 # define UnalignedReferencesAllowed YES
@@ -1019,16 +1014,6 @@ install::								@@\
 
 #ifndef SharedLibXdmGreet
 # define SharedLibXdmGreet		NO
-#endif
-
-/*
- * XFree86 uses its own (more portable) database routines to speed up
- * the RGB database lookups
- * However, if you want to use ndbm anyway, you can set that to NO in
- * host.def
- */
-#ifndef UseRgbTxt
-# define UseRgbTxt			YES
 #endif
 
 #ifndef OSBinaryType

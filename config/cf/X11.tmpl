@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.280 2005/06/07 08:02:14 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.281 2005/06/17 02:16:01 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -882,8 +882,8 @@ VENDORMANVERSION = XVendorManVersionString
 #ifndef DefaultRGBDatabase
 #define DefaultRGBDatabase $(LIBDIR)/rgb
 #endif
-#ifndef UseRgbTxt
-#define UseRgbTxt		NO	/* default is to compile with dbm */
+#ifndef BuiltinRGB
+#define BuiltinRGB		YES
 #endif
 #ifndef UseMemLeak
 #define UseMemLeak		NO
