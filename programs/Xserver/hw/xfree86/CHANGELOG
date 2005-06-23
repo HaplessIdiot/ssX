@@ -1,4 +1,6 @@
-XFree86 4.5.99.6 (xx June 2005)
+XFree86 4.5.99.7 (xx July 2005)
+
+XFree86 4.5.99.6 (23 June 2005)
   81. Updates to the handling of the X server RGB database:
        - Ignore space, '-' and '_' characters as well as case when
          matching colour names, and remove the unnecessary duplicates in
@@ -19657,7 +19659,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3542 2005/06/20 17:12:52 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3543 2005/06/22 03:28:50 dawes Exp $
 
 
 
