@@ -1,4 +1,3 @@
-/* $Xorg: transport.c,v 1.4 2001/02/09 02:04:07 xorgcvs Exp $ */
 /*
 
 Copyright 1993, 1994, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/transport.c,v 3.9 2002/05/31 18:45:51 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/transport.c,v 3.10 2003/03/25 04:18:15 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -63,6 +62,9 @@ from The Open Group.
 #define xcalloc(_num,_size)	calloc(_num,_size)
 #define xrealloc(_ptr,_size)	realloc(_ptr,_size)
 #define xfree(_ptr)		free(_ptr)
+#endif
+#ifdef FONT_t
+extern void ErrorF(const char *f, ...);
 #endif
 
 #include "Xtransint.h"
