@@ -1,4 +1,8 @@
 XFree86 4.5.99.7 (xx July 2005)
+  83. Fix an xfs bug introduced when the syslog support was added that prevents
+      exit on fatal errors (David Dawes).
+  82. Modify the font server transport messages to go through xfs's logging
+      mechanisms (Bugzilla #1598, David Dawes, reported by Newsh).
 
 XFree86 4.5.99.6 (23 June 2005)
   81. Updates to the handling of the X server RGB database:
@@ -19659,7 +19663,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3543 2005/06/22 03:28:50 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3544 2005/06/23 11:02:42 dawes Exp $
 
 
 

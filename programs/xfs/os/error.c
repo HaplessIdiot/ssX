@@ -1,4 +1,3 @@
-/* $Xorg: error.c,v 1.4 2001/02/09 02:05:44 xorgcvs Exp $ */
 /*
  * error message handling
  */
@@ -44,7 +43,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/error.c,v 1.12 2004/01/28 22:12:49 herrb Exp $ */
+/* $XFree86: xc/programs/xfs/os/error.c,v 1.13 2004/04/03 10:50:05 herrb Exp $ */
 
 #include	<stdio.h>
 #include	<stdlib.h>
@@ -198,7 +197,6 @@ FatalError(char * f, ...)
 #ifdef USE_SYSLOG
     if (UseSyslog) {
 	vsyslog(LOG_ERR, f, args);
-	return;
     }
 #else
     fprintf(stderr, "%s fatal error: ", progname);
