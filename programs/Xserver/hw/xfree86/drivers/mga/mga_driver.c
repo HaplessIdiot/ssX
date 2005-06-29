@@ -1,4 +1,3 @@
-/* $XConsortium: mga_driver.c /main/12 1996/10/28 05:13:26 kaleb $ */
 /*
  * MGA Millennium (MGA2064W) with Ti3026 RAMDAC driver v.1.1
  *
@@ -45,7 +44,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.251tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.252 2005/04/30 17:03:59 tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -3254,11 +3253,20 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* All MGA support DirectColor and can do overlays in 32bpp */
     if(pMga->Overlay8Plus24 && (pScrn->bitsPerPixel == 32)) {
-	if (!miSetVisualTypes(8, PseudoColorMask | GrayScaleMask,
-			      pScrn->rgbBits, PseudoColor))
-		return FALSE;
-	if (!miSetVisualTypes(24, TrueColorMask, pScrn->rgbBits, TrueColor))
-		return FALSE;
+	if (pScrn->defaultVisual >= TrueColor) {
+	  if (!miSetVisualTypes(24, TrueColorMask,
+				pScrn->rgbBits, pScrn->defaultVisual))
+	    return FALSE;
+	  if (!miSetVisualTypes(8, PseudoColorMask | GrayScaleMask,
+				pScrn->rgbBits, PseudoColor))
+	    return FALSE;
+	} else {
+	  if (!miSetVisualTypes(8, PseudoColorMask | GrayScaleMask,
+				pScrn->rgbBits, pScrn->defaultVisual))
+	    return FALSE;
+	  if (!miSetVisualTypes(24, TrueColorMask, pScrn->rgbBits, TrueColor))
+	    return FALSE;
+	}
     } else if (pMga->SecondCrtc) {
 	/* No DirectColor on the second head */
 	if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
