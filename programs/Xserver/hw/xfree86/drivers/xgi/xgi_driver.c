@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_driver.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_driver.c,v 1.2 2005/06/07 01:33:39 tsi Exp $ */
 /*
  * XGI driver main code
  *
@@ -5981,7 +5981,7 @@ unsigned char
 XGI_GetSetBIOSScratch(ScrnInfoPtr pScrn, USHORT offset, unsigned char value)
 {
     unsigned char ret = 0;
-#if (defined(i386) || defined(__i386) || defined(__i386__) || defined(__AMD64__))
+#if defined(i386) || defined(__i386) || defined(__i386__) || defined(__amd64__) || defined(__x86_64__)
     unsigned char *base;
 
     base = xf86MapVidMem(pScrn->scrnIndex, VIDMEM_MMIO, 0, 0x2000);

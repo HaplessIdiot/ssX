@@ -1,7 +1,7 @@
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.234 2005/02/03 02:01:12 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.235 2005/02/09 19:49:09 dawes Exp $
 
 /*
- * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -911,7 +911,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 # ifndef OptimizedCDebugFlags
 #  define OptimizedCDebugFlags	DefaultGcc2AMD64Opt
 # endif
-# define LinuxMachineDefines   -D__AMD64__
+# define LinuxMachineDefines   -D__amd64__
 # define ServerOSDefines	XFree86ServerOSDefines
 # define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines -D_XSERVER64
 #endif /* AMD64Architecture */

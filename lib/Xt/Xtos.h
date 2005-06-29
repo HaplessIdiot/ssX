@@ -1,7 +1,3 @@
-/*
-* $Xorg: Xtos.h,v 1.4 2001/02/09 02:03:59 xorgcvs Exp $
-*/
-
 /***********************************************************
 
 Copyright 1987, 1988, 1994, 1998  The Open Group
@@ -48,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Xtos.h,v 3.12tsi Exp $ */
+/* $XFree86: xc/lib/Xt/Xtos.h,v 3.13 2003/10/24 15:47:35 tsi Exp $ */
 
 #ifndef _Xtos_h
 #define _Xtos_h
@@ -67,7 +63,7 @@ SOFTWARE.
     defined(__sparc64__) || \
     defined(__s390x__) || \
     (defined(__hppa__) && defined(__LP64__)) || \
-    defined(__AMD64__) || defined(AMD64) || \
+    defined(__amd64__) || defined(__x86_64__) || \
     (defined(sgi) && (_MIPS_SZLONG == 64))
 #define LONG64
 #endif

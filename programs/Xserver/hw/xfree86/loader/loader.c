@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.73 2004/11/24 19:01:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.74 2004/12/03 02:18:39 dawes Exp $ */
 
 /*
  * Copyright 1995-1998 by Metro Link, Inc.
@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 /*
- * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -81,7 +81,7 @@
 #include <string.h>
 #if defined(linux) && \
     (defined(__alpha__) || defined(__powerpc__) || defined(__ia64__) \
-    || defined(__AMD64__))
+    || defined(__amd64__) || defined(__x86_64__))
 #include <malloc.h>
 #endif
 #include <stdarg.h>
@@ -388,7 +388,8 @@ LoaderInit(void)
 
 #if defined(linux) && \
     (defined(__alpha__) || defined(__powerpc__) || defined(__ia64__) \
-     || ( defined __AMD64__ && ! defined UseMMAP && ! defined DoMMAPedMerge))
+     || ((defined(__amd64__) || defined(__x86_64__)) && \
+	 !defined(UseMMAP) && ! defined(DoMMAPedMerge)))
     /*
      * The glibc malloc uses mmap for large allocations anyway. This breaks
      * some relocation types because the offset overflow. See loader.h for more
@@ -492,7 +493,7 @@ _LoaderFileToMem(int fd, unsigned long offset, int size, char *label)
     unsigned long new_off_bias;
 # endif
 # define MMAP_PROT	(PROT_READ|PROT_WRITE|PROT_EXEC)
-# if !defined (__AMD64__) || !defined(__linux__)
+# if !(defined(__amd64__) || defined(__x86_64__)) || !defined(__linux__)
 # define MMAP_FLAGS     (MAP_PRIVATE) 
 # else 
 # define MMAP_FLAGS     (MAP_PRIVATE | MAP_32BIT)

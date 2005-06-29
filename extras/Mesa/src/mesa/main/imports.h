@@ -21,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/mesa/main/imports.h,v 1.6 2004/12/10 15:30:12 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/main/imports.h,v 1.7 2004/12/10 15:41:02 alanh Exp $ */
 
 /**
  * \file imports.h
@@ -224,7 +224,7 @@ extern void _ext_mesa_free_pixelbuffer( void *pb );
  ***/
 #if defined(__i386__) || defined(__386__) || defined(__sparc__) || \
     defined(__s390x__) || defined(__powerpc__) || \
-    defined(__amd64__) || \
+    defined(__amd64__) || defined(__x86_64__) || \
     defined(ia64) || defined(__ia64__) || \
     defined(__hppa__) || defined(hpux) || \
     defined(__mips) || defined(_MIPS_ARCH) || \

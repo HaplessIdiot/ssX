@@ -23,9 +23,9 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.80 2005/02/01 02:25:06 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.81 2005/03/28 02:50:58 dawes Exp $ */
 /*
- * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -423,7 +423,7 @@ char *cpp_argv[ARGUMENTS] = {
 	"-D__amd64__",
 # endif
 # ifdef __x86_64__
-	"-D__AMD64__",
+	"-D__x86_64__",
 # endif
 # ifdef __s390__
 	"-D__s390__",

@@ -1,4 +1,6 @@
 XFree86 4.5.99.7 (xx July 2005)
+  85. Make the AMD64/x86_64 platform tests consistent throughout the source
+      tree (David Dawes, Bugzilla #1599, reported by Dejan Lesjak).
   84. Add support to check the in-built VESA mode list in the i830 driver
       (Alan Hourihane).
   83. Fix an xfs bug introduced when the syslog support was added that prevents
@@ -19665,7 +19667,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3545 2005/06/28 02:33:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3546 2005/06/28 16:14:33 alanh Exp $
 
 
 

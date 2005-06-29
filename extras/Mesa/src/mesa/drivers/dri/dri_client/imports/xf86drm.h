@@ -31,7 +31,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.26 2003/08/16 19:26:37 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/dri_client/imports/xf86drm.h,v 1.1.1.1 2004/12/10 15:06:12 alanh Exp $ */
 
 #ifndef _XF86DRM_H_
 #define _XF86DRM_H_
@@ -285,7 +285,7 @@ typedef struct _drmSetVersion {
 #define DRM_LOCK_CONT  0x40000000 /**< Hardware lock is contended */
 
 #if defined(__GNUC__) && (__GNUC__ >= 2)
-# if defined(__i386) || defined(__AMD64__)
+# if defined(__i386) || defined(__amd64__) || defined(__x86_64__)
 				/* Reflect changes here to drmP.h */
 #define DRM_CAS(lock,old,new,__ret)                                    \
 	do {                                                           \

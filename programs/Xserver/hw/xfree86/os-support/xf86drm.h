@@ -31,7 +31,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.28 2004/06/30 20:40:13 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.29 2004/12/10 16:07:03 alanh Exp $ */
 
 #ifndef _XF86DRM_H_
 #define _XF86DRM_H_
@@ -285,7 +285,7 @@ typedef struct _drmSetVersion {
 #define DRM_LOCK_CONT  0x40000000 /**< Hardware lock is contended */
 
 #if defined(__GNUC__) && (__GNUC__ >= 2)
-# if defined(__i386) || defined(__amd64__)
+# if defined(__i386) || defined(__amd64__) || defined(__x86_64__)
 				/* Reflect changes here to drmP.h */
 #define DRM_CAS(lock,old,new,__ret)                                    \
 	do {                                                           \

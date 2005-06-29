@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.108tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.109 2005/06/11 16:56:59 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -22,7 +22,7 @@
  *
  */
 /*
- * Copyright (c) 1994-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -513,7 +513,7 @@ __ustw (unsigned long r5, unsigned short * r11)
 #    define outw(a,b)	_outw(b,a)
 #    define outl(a,b)	_outl(b,a) 
 
-#   elif defined(linux) && defined(__AMD64__) 
+#   elif defined(linux) && defined(__amd64__)  || defined(__x86_64__)
  
 #    include <inttypes.h>
 

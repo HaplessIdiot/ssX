@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.58tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.59 2005/06/03 01:16:57 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: servermd.h,v 1.3 2000/08/17 19:53:31 cpqbld Exp $ */
 
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
@@ -365,7 +364,7 @@ SOFTWARE.
 
 #endif /* ia64 */
 
-#if defined(__AMD64__) || defined(AMD64) || defined(__amd64__)
+#if defined(__amd64__) || defined(__x86_64__)
 # define IMAGE_BYTE_ORDER	LSBFirst
 # define BITMAP_BIT_ORDER       LSBFirst
 
@@ -375,7 +374,7 @@ SOFTWARE.
 # define FAST_CONSTANT_OFFSET_MODE
 /* ???? */
 # define FAST_UNALIGNED_READS
-#endif /* AMD64 */
+#endif /* __amd64__ || __x86_64__ */
 
 #ifdef stellar
 
