@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/init.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/init.c,v 1.2 2005/06/07 01:33:39 tsi Exp $ */
 /*
  * Mode initializing code (CRT1 section) 
  * (Universal module for Linux kernel framebuffer and XFree86 4.x)
@@ -1525,7 +1525,7 @@ XGISetMode(XGI_Private *XGI_Pr, PXGI_HW_DEVICE_INFO HwInfo,USHORT ModeNo)
    XGIRegInit(XGI_Pr, BaseAddr);
    XGI_GetSysFlags(XGI_Pr, HwInfo);
 
-#if defined(LINUX_XF86) && (defined(i386) || defined(__i386) || defined(__i386__) || defined(__AMD64__))
+#if defined(LINUX_XF86) && (defined(i386) || defined(__i386) || defined(__i386__) || defined(__amd64__) || defined(__x86_64__))
    if(pScrn) XGI_Pr->XGI_VGAINFO = XGI_GetSetBIOSScratch(pScrn, 0x489, 0xff);
    else
 #endif

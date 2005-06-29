@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsdResource.c,v 1.6 2001/02/16 14:45:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsdResource.c,v 1.9 2003/10/02 13:30:06 eich Exp $ */
 
 /* Resource information code */
 
@@ -18,7 +18,8 @@ resRange PciAvoid[] = {_PCI_AVOID_PC_STYLE, _END};
 
 #ifdef INCLUDE_XF86_NO_DOMAIN
 
-#if defined(__alpha__) || defined(__sparc64__) || defined(__amd64__)
+#if defined(__alpha__) || defined(__sparc64__) || defined(__amd64__) || \
+    defined(__x86_64__)
 
 resPtr
 xf86BusAccWindowsFromOS(void)

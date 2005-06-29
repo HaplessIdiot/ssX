@@ -1,5 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.117 2004/07/07 21:20:40 twini Exp $ */
-/* $XdotOrg$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.118 2005/02/19 01:03:23 dawes Exp $ */
 /*
  * Main global data and definitions
  *
@@ -461,7 +460,7 @@ typedef unsigned char UChar;
 
 /* Used for makeing use of the BIOS scratch area (save/restore mode number) */
 #undef SIS_USE_BIOS_SCRATCH
-#if (defined(i386) || defined(__i386) || defined(__i386__) || defined(__AMD64__))
+#if (defined(i386) || defined(__i386) || defined(__i386__) || defined(__amd64__)) || defined(__x86_64__)
 #define SIS_USE_BIOS_SCRATCH
 #endif
 
