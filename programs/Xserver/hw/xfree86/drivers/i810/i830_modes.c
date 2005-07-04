@@ -27,7 +27,7 @@
  *
  * Authors: David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_modes.c,v 1.7 2005/06/08 17:52:01 alanh Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_modes.c,v 1.8 2005/06/28 16:14:34 alanh Exp $
  */
 /*
  * Modified by Alan Hourihane <alanh@tungstengraphics.com>
@@ -414,7 +414,7 @@ CheckMode(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe, int id,
      */
     if (modeOK && !pMode) {
 	int refresh = 0, calcrefresh = 0;
-	DisplayModePtr newMode;
+	DisplayModePtr newMode = NULL;
 
 	for (p = pScrn->monitor->Modes; p != NULL; p = p->next) {
 	    calcrefresh = (int)(((double)(p->Clock * 1000) /
