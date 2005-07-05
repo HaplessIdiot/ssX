@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiendian.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiendian.c,v 1.2tsi Exp $ */
 /*
  * Copyright 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -39,7 +39,7 @@ const ATIEndianType ATIEndian =
 int
 ATIEndianCopy
 (
-    int value
+    const int value
 )
 {
     return value;
@@ -53,7 +53,7 @@ ATIEndianCopy
 int
 ATIEndianSwap
 (
-    int value
+    const int value
 )
 {
     union
