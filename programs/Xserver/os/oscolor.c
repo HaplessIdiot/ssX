@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/oscolor.c,v 3.11 2003/09/24 02:43:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/oscolor.c,v 3.12tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -111,7 +111,7 @@ static dbEntryPtr hashTab[HASHSIZE];
  */
 
 static void
-stringCopy(unsigned char *dest, unsigned char *source, int length)
+stringCopy(char *dest, char *source, int length)
 {
     int i;
 
@@ -132,11 +132,11 @@ stringCopy(unsigned char *dest, unsigned char *source, int length)
 }
 
 static dbEntryPtr
-lookup(unsigned char *name, int len, Bool create)
+lookup(char *name, int len, Bool create)
 {
     unsigned int h = 0, g;
     dbEntryPtr entry, *prev = NULL;
-    unsigned char *str = name;
+    char *str = name;
 
     if (!colorTab)
 	return NULL;
@@ -258,9 +258,8 @@ OsLookupColor(int screen, char *name, unsigned int len,
     unsigned short *pred, unsigned short *pgreen, unsigned short *pblue)
 {
     dbEntryPtr entry;
-    unsigned char *n = (unsigned char *)name;
 
-    if ((entry = lookup(n, len, FALSE))) {
+    if ((entry = lookup(name, len, FALSE))) {
 	*pred   = entry->red;
 	*pgreen = entry->green;
 	*pblue  = entry->blue;

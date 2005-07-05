@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xrandr/Imakefile,v 1.2 2002/10/02 16:55:41 keithp Exp $
+XCOMM $XFree86: xc/lib/apple/Imakefile,v 1.1tsi Exp $
 
 
 #define DoNormalLib NormalLibAppleWM
@@ -20,7 +20,12 @@ REQUIREDLIBS = SharedAppleWMReqs
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
-      DEFINES = $(ALLOC_DEFINES)
+#if DoSharedLib && defined(SharedAllocateLocalDefines)
+#undef AllocateLocalDefines
+#define AllocateLocalDefines SharedAllocateLocalDefines
+#endif
+
+      DEFINES = $(ALLOC_DEFINES) AllocateLocalDefines
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
          SRCS = applewm.c
          OBJS = applewm.o

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/apple/applewm.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/lib/apple/applewm.c,v 1.3tsi Exp $ */
 /**************************************************************************
 
 Copyright (c) 2002 Apple Computer, Inc.
@@ -491,7 +491,7 @@ XAppleWMFrameDraw(Display *dpy, int screen, Window window,
     req->title_length = title_length;
 
     req->length += (title_length + 3)>>2;
-    Data (dpy, title_bytes, title_length);
+    Data (dpy, (const char *)title_bytes, title_length);
 
     UnlockDisplay(dpy);
     SyncHandle();
