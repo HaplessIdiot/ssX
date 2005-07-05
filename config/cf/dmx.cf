@@ -1,4 +1,4 @@
-/* $XFree86$ */
+XCOMM $XFree86: xc/config/cf/dmx.cf,v 1.1tsi Exp $
  
 /*
  * This file contains DMX server specific defines
@@ -37,10 +37,8 @@
 
 EXTENSIONS_NOT_SUPPORTED = \
 	-UBEZIER \
-	-UPEXEXT \
 	-UMULTIBUFFER \
 	-UXV \
-	-UXIE \
 	-UDBE \
 	-UXF86VIDMODE \
 	-UXF86MISC \

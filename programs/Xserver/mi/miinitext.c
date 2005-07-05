@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.71 2005/03/28 02:51:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.72tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -50,13 +50,7 @@ SOFTWARE.
 #include "extnsionst.h"
 #include "micmap.h"
 
-#ifdef NOPEXEXT /* sleaze for Solaris cpp building XsunMono */
-#undef PEXEXT
-#endif
-
 #if defined(QNX4) /* sleaze for Watcom on QNX4 ... */
-#undef PEXEXT
-#undef XIE
 #undef GLXEXT
 #endif
 
@@ -170,9 +164,6 @@ extern void ShapeExtensionInit(INITARGS);
 #ifdef EVI
 extern void EVIExtensionInit(INITARGS);
 #endif
-#ifdef PEXEXT
-extern void PexExtensionInit(INITARGS);
-#endif
 #ifdef MULTIBUFFER
 extern void MultibufferExtensionInit(INITARGS);
 #endif
@@ -194,9 +185,6 @@ extern void ScreenSaverExtensionInit (INITARGS);
 #ifdef XV
 extern void XvExtensionInit(INITARGS);
 extern void XvMCExtensionInit(INITARGS);
-#endif
-#ifdef XIE
-extern void XieInit(INITARGS);
 #endif
 #ifdef XSYNC
 extern void SyncExtensionInit(INITARGS);
@@ -271,9 +259,6 @@ InitExtensions(int argc, char *argv[])
 #ifdef EVI
     EVIExtensionInit();
 #endif
-#ifdef PEXEXT
-    PexExtensionInit();
-#endif
 #ifdef MULTIBUFFER
     MultibufferExtensionInit();
 #endif
@@ -301,9 +286,6 @@ InitExtensions(int argc, char *argv[])
 #ifdef XV
     XvExtensionInit();
     XvMCExtensionInit();
-#endif
-#ifdef XIE
-    XieInit();
 #endif
 #ifdef XSYNC
     SyncExtensionInit();
