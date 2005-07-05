@@ -1,10 +1,8 @@
-XCOMM $Xorg: ibmLib.tmpl,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
-
 /*
  * AIX shared library template
  */
 
-XCOMM $XFree86: xc/config/cf/ibmLib.tmpl,v 1.3tsi Exp $
+XCOMM $XFree86: xc/config/cf/ibmLib.tmpl,v 1.4tsi Exp $
 
 /*
  * IBM used an unusual shared object file name in some libraries. 
@@ -36,8 +34,6 @@ XCOMM $XFree86: xc/config/cf/ibmLib.tmpl,v 1.3tsi Exp $
 #define SharedXawReqs	$(XMULIB) $(XTOOLLIB) $(XLIB)
 #define SharedXiReqs	$(XLIB)
 #define SharedXtstReqs	$(XLIB)
-#define SharedPexReqs	$(XONLYLIB)
-#define SharedXieReqs	$(XONLYLIB)
 #define SharedSMReqs	$(ICELIB)
 #define SharedXpReqs	$(XLIB)
 #define SharedXpmReqs	$(XLIB)

@@ -1,9 +1,4 @@
-XCOMM platform:  $Xorg: osf1.cf,v 1.3 2000/08/17 19:41:48 cpqbld Exp $
-/* only tested with Digital OSF/1 */
-
-
-
-XCOMM platform:  $XFree86$
+XCOMM platform:  $XFree86: xc/config/cf/osf1.cf,v 3.9tsi Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -37,7 +32,6 @@ XCOMM operating system: OSName (OSMajorVersion.OSMinorVersion)
 #else
 #define ModernOSF1		NO
 #define ShLibDir		/usr/shlib
-#define SharedLibPex		NO  /* losing, no shared -lm */
 #endif
 
 #define InstallXloadSetGID	NO
@@ -184,7 +178,6 @@ XCOMM operating system: OSName (OSMajorVersion.OSMinorVersion)
 #define DefaultCCOptions	-Xa
 #define XdecServer YES
 #define ServerOSDefines -DDDXTIME
-#define PexCCOptions -Xa -Wf,-XNp15000,-XNd15000
 #define NormalLibObjCompile(options) 	ClearmakeOSName			  \
 	$(RM) $@ $*.os \						@@\
 	&& $(CC) -c options $(CFLAGS) $*.c \				@@\

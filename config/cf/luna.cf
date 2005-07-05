@@ -1,25 +1,49 @@
-XCOMM platform:  $XConsortium: luna.cf,v 1.30 94/04/01 19:59:08 kaleb Exp $
+XCOMM platform:  $XFree86$
 /*
  *	Please set the values for OSMajorVerion and OSMinorVersion
  *	before making makefiles.	 
+ *
+ *	The Luna version of the make program doesn't define the standard
+ *	macro MAKE, so you must run it as "make MAKE=make" at top level,
+ *	e.g., "make MAKE=make World"
  */
 
 #ifdef Mc68000Architecture
 # ifdef luna2
+#ifndef OSName
 #define OSName            Mach 2.5 Vers 1.40
+#endif
+#ifndef OSMajorVersion
 #define OSMajorVersion    1
+#endif
+#ifndef OSMinorVersion
 #define OSMinorVersion    40
+#endif
 # else 
+#ifndef OSName
 #define OSName            UNIOS-B 4.3BSD UNIX: 2.00
+#endif
+#ifndef OSMajorVersion
 #define OSMajorVersion    2
+#endif
+#ifndef OSMinorVersion
 #define OSMinorVersion    0
+#endif
 #define DirFailPrefix -
 # endif
 #else  /* Mc88000Architecture */
+#ifndef OSName
 #define OSName            Mach 2.5 Vers 2.00.1
+#endif
+#ifndef OSMajorVersion
 #define OSMajorVersion    2
+#endif
+#ifndef OSMinorVersion
 #define OSMinorVersion    0
+#endif
+#ifndef OSTeenyVersion
 #define OSTeenyVersion    1
+#endif
 #endif
 XCOMM operating system:  OSName
 
@@ -27,10 +51,13 @@ XCOMM operating system:  OSName
 #define HasVoidSignalReturn	NO
 #define HasGcc			YES
 #define HasCThreads		YES
+#define HasThreadSafeAPI	NO
 #define Malloc0ReturnsNull	HasCThreads    /* -lthreads fails, -lc works */
 #define XawI18nDefines		-DHAS_WCHAR_H -DHAS_ISW_FUNCS
+#define BootstrapCFlags		-DUSE_CC_E -DNFS_STDOUT_BUG
 
-#define ThreadsLibraries -lthreads -lmach
+#define ThreadsLibraries		-lthreads -lmach
+#define ThreadsCplusplusLibraries	-lthreads -lmach
 
 #define PrimaryScreenResolution 100
 #define	BuildXKB	YES
@@ -76,12 +103,10 @@ XCOMM operating system:  OSName
 
 #ifdef Mc68000Architecture
 #define UnalignedReferencesAllowed YES  /* if arbitrary deref is okay */
-#define BuildPexExt		NO		
 #define XlunaServer 		YES
 #endif
 
 #ifdef Mc88000Architecture
-#define BuildPexExt		NO
 #define XlunaServer 		YES
 #endif
 

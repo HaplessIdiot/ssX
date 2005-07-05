@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.78 2005/01/16 00:09:45 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.79tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -376,9 +376,6 @@ XCOMM SunPro C++ CplusplusCompilerMajorVersion./**/CplusplusCompilerMinorVersion
 # ifndef XsunMonoServer
 #  define XsunMonoServer	  NO		/* monochrome only */
 # endif
-# ifndef BuildPexExt
-#  define BuildPexExt	  (XsunServer || Xsun24Server)
-# endif
 # undef BuildXF86DRI
 # define BuildXF86DRI     NO
 # if (OSMajorVersion > 4)
@@ -495,9 +492,6 @@ XCOMM SunPro C++ CplusplusCompilerMajorVersion./**/CplusplusCompilerMinorVersion
 #   define NeedVarargsPrototypes YES
 #  endif
 # endif
-
-
-# define PexCCOptions DefaultCCOptions
 
 # ifndef AsCmd
 #  ifdef SparcArchitecture

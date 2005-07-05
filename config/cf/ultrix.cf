@@ -1,8 +1,4 @@
-XCOMM platform:  $Xorg: ultrix.cf,v 1.3 2000/08/17 19:41:48 cpqbld Exp $
-
-
-
-XCOMM $XFree86$
+XCOMM $XFree86: xc/config/cf/ultrix.cf,v 1.2tsi Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -37,7 +33,6 @@ XCOMM operating system: OSName (OSMajorVersion.OSMinorVersion)
 #endif
 
 #ifdef VaxArchitecture
-#define PexNativeFPFormat PEXDEC_F_Floating
 #define NativeFPFormat DEC_F_Float
 #define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
 #define BuildServer NO
@@ -55,7 +50,6 @@ XCOMM operating system: OSName (OSMajorVersion.OSMinorVersion)
 #endif
 #if !HasGcc
 #define NeedFunctionPrototypes YES
-#define PexCCOptions -Wf,-XNp15000,-XNd15000
 /*
  * NormalLibObjCompile - compile fragment for a library object file
  * 	do ld -x to remove line number symbols for libraries

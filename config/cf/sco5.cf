@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.17 2004/04/03 22:26:20 dawes Exp $
+XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.18tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -130,14 +130,6 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.17 2004/04/03 22:26:20 dawes Exp $
 
 #define LogDirectory		/var/adm
 
-#ifndef PexDynamicModule
-#define PexDynamicModule        YES
-#endif
-
-#ifndef XieDynamicModule
-#define XieDynamicModule        YES
-#endif
-
 #ifndef HasSymLinks
 # define HasSymLinks            YES
 #endif
@@ -268,7 +260,6 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #define SharedGLReqs        $(LDPRELIB) $(XLIB)
 #define SharedGLUReqs       $(LDPRELIB) $(XLIB) $(GLXLIB)
 #define SharedOSMesaReqs    $(LDPRELIB) $(XLIB) $(GLXLIB)
-#define SharedPexReqs       $(LDPRELIB) $(XONLYLIB) MathLibrary
 #define SharedSMReqs        $(LDPRELIB) $(ICELIB)
 #define SharedX11Reqs       $(LDPRELIB) -lsocket
 #define SharedXawReqs       $(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XPMLIB) $(XLIB)
@@ -276,7 +267,6 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #define SharedXcursorReqs   $(LDPRELIB) $(XRENDERLIB) $(XLIB)
 #define SharedXextReqs      $(LDPRELIB) $(XONLYLIB)
 #define SharedXiReqs        $(LDPRELIB) $(XLIB)
-#define SharedXieReqs       $(LDPRELIB) $(XONLYLIB)
 #define SharedXmuReqs       $(LDPRELIB) $(XTOOLLIB) $(XLIB)
 #define SharedXmuuReqs      $(LDPRELIB) $(XONLYLIB)
 #define SharedXpReqs        $(LDPRELIB) $(XLIB)

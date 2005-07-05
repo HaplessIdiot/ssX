@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: bigreq.ms,v 1.11 94/04/17 20:06:09 rws Exp $
+.\" $XFree86$
 .EH ''''
 .OH ''''
 .EF ''''
@@ -14,12 +14,12 @@
 .ce 3
 Version 2.0
 X Consortium Standard
-X Version 11, Release 6
+X Version 11, Release 6.4
 .sp 6
 .ce 4
 Bob Scheifler
 .sp 6p
-X Consortium
+X Consortium, Inc.
 .ps 9
 .nr PS 9
 .sp 8
@@ -67,10 +67,9 @@ protocol when joining large numbers of lines
 or arcs
 .Pn ( PolyArc ),
 since these requests cannot be broken up into smaller requests without
-disturbing the rendering of the join points.  It is also much more of
-a problem for protocol extensions, such as the PEX extension
-for 3D graphics and the XIE extension for imaging, that need to send
-long data lists in output commands.
+disturbing the rendering of the join points.  It is also much more of a problem
+for certain protocol extensions that need to send long data lists in output
+commands.
 .LP
 This extension defines a mechanism for extending the length field
 beyond 16 bits.  If the normal 16-bit length field of the protocol

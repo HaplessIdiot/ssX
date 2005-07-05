@@ -1,9 +1,17 @@
-XCOMM platform:  $XConsortium: macII.cf,v 1.46 94/04/02 16:27:41 kaleb Exp $
+XCOMM platform:  $XFree86$
 
+#ifndef OSName
 #define OSName            A/UX 3.0.1
+#endif
+#ifndef OSMajorVersion
 #define OSMajorVersion    3
+#endif
+#ifndef OSMinorVersion
 #define OSMinorVersion    0
+#endif
+#ifndef OSTeenyVersion
 #define OSTeenyVersion    1
+#endif
 XCOMM operating system:  OSName
 
 #if HasGcc
@@ -18,9 +26,8 @@ XCOMM operating system:  OSName
 #define ExecableScripts     NO
 #define RemoveTargetProgramByMoving YES
 #define ExpandManNames      YES
-#define PexShmIPC           NO
 #define XmacIIServer        YES
-#define XawI18nDefines      -DUSE_XWCHAR_STRING
+#define XawI18nDefines      -DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 #if MacHasc89
 #define CcCmd c89 -D_POSIX_SOURCE
 #else
@@ -29,12 +36,11 @@ XCOMM operating system:  OSName
 #if OSMajorVersion <= 2
 #define ServerExtraDefines  -DSUPPORT_2_0
 #endif
-#define InstKmemFlags	    -g sys -m 2755
+#define InstKmemFlags	    -g sys -m 2711
 #define ExtensionOSDefines  -DXTESTEXT1
 
 #if !HasGcc
 #define DefaultCCOptions -A 3
-#define PexCCOptions -A 4
 #endif
 
 /*

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.60 2005/06/07 08:02:14 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.61tsi Exp $
 
 #ifndef OSName
 # define OSName                 Cygwin
@@ -263,17 +263,6 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.60 2005/06/07 08:02:14 daw
  * if it even makes sense to enable such a beast in Cygwin/XFree86.
  */
 #define BuildXinerama		NO
-
-/*
- * PEX and XIE were deprecated on 2001-05-29, as Keith Packard says,
- * "they are so broken as to be unusable in real applications," furthermore,
- * "neither PEX nor XIE have seen any development for almost a decade".
- * 
- * XIE is the X Image Extension Protocol, not to be confused with
- * XInputExt, which is the X Input Extension.
- */
-#define BuildPexExt		NO
-#define BuildXIE		NO
 
 /*
  * Rush is a non standard extension for cooperation between the glide

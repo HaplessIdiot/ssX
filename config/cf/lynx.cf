@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.53 2005/01/16 00:09:45 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.54tsi Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -417,8 +417,6 @@ install.man::                                                           @@\
 #ifdef SparcArchitecture
 # define XsunLynxServer			YES
 # define XsunLynxMonoServer		NO
-# define BuildPexExt			YES
-# define BuildXIE			YES
 # ifndef BuildScreenSaverLibrary
 #  define BuildScreenSaverLibrary	YES
 # endif

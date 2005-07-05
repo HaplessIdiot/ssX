@@ -1,9 +1,4 @@
-XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:48:29 cpqbld Exp $
-
-
-
-
-XCOMM $XFree86: xc/programs/Xserver/hw/sun/Imakefile,v 1.7tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/sun/Imakefile,v 1.8tsi Exp $
 
 #include <Server.tmpl>
 
@@ -76,7 +71,7 @@ NormalLintTarget($(SRCS1))
 #ifndef i386Architecture
 sunInExMono.o: $(ICONFIGFILES)
 ObjectFromSpecialSource(sunInExMono,$(SERVERSRC)/mi/miinitext, \
-	-UPEXEXT -UGLXEXT -UXV -URENDER)
+	-UGLXEXT -UXV -URENDER)
 LinkFile(sunInitExt.c,$(SERVERSRC)/mi/miinitext.c)
 LinkSourceFile(stubs.c,$(SERVERSRC)/Xi)
 ObjectFromSpecialSource(sunInitMono,sunInit,-DSUNMAXDEPTH=1)
