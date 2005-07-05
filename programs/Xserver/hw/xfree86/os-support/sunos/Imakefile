@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/Imakefile,v 1.7tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/Imakefile,v 1.8 2005/01/24 21:27:10 tsi Exp $
 XCOMM
 XCOMM Copyright 2001 The XFree86 Project, Inc.
 XCOMM All rights reserved.
@@ -52,7 +52,7 @@ XCOMM
 
 #if !HasGcc && defined(i386Architecture)
 PROWORKS_INOUT_SRC = sun_inout.s
-PROWORKS_INOUT_OBJ = sun_inout.s
+PROWORKS_INOUT_OBJ = sun_inout.o
 #endif
 
 #if defined(i386Architecture) && (OSMinorVersion < 8)
