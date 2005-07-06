@@ -1,9 +1,9 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.168 2005/02/03 02:01:12 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.169 2005/02/11 03:02:53 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 /*
- * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -76,6 +76,9 @@ all::
 /* Intercept clean rules for current directory */
 #undef clean
 #define clean cleandir
+
+#include <version.def>
+#include <date.def>
 
 #include <Imake.cf>
 
