@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.281 2005/06/17 02:16:01 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.282 2005/06/22 03:28:49 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -85,11 +85,25 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.281 2005/06/17 02:16:01 dawes Exp $
 #endif
 
 #ifndef XVendorRelease
-# define XVendorRelease 40400000
+# ifdef XF86_VERSION_CURRENT
+#  define XVendorRelease XF86_VERSION_CURRENT
+# else /* Must be defined for bootstrapping purposes. */
+#  define XVendorRelease 0
+# endif
+#endif
+
+#if !defined(XVendorManVersionString) && \
+    defined(XF86_VERSION_MAJOR) && defined(XF86_VERSION_MINOR) && \
+    defined(XF86_VERSION_PATCH) && defined(XF86_VERSION_SNAP)
+# if XF86_VERSION_SNAP == 0
+#define XVendorManVersionString `echo XF86_VERSION_MAJOR XF86_VERSION_MINOR XF86_VERSION_PATCH | sed -e 's/ /./g' -e 's/^/Version\\\ /'`
+#else
+#define XVendorManVersionString `echo XF86_VERSION_MAJOR XF86_VERSION_MINOR XF86_VERSION_PATCH XF86_VERSION_SNAP | sed -e 's/ /./g' -e 's/^/Version\\\ /'`
+# endif
 #endif
 
 #ifndef XVendorManVersionString
-#define XVendorManVersionString 4.x
+# define XVendorManVersionString 4.x
 #endif
 
 #ifndef XVendorManNameString

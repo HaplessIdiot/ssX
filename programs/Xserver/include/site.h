@@ -1,4 +1,3 @@
-/* $Xorg: site.h,v 1.6 2001/02/09 02:05:16 xorgcvs Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,41 +44,10 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/include/site.h,v 1.8 2001/12/19 21:37:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/site.h,v 1.9 2003/09/09 03:20:41 dawes Exp $ */
 
 #ifndef SITE_H
 #define SITE_H
-/*
- * The vendor string identifies the vendor responsible for the
- * server executable.
- */
-#ifndef VENDOR_STRING
-#define VENDOR_STRING "The X.Org Group"
-#endif
-
-/*
- * The vendor release number identifies, for the purpose of submitting
- * traceable bug reports, the release number of software produced
- * by the vendor.
- */
-#ifndef VENDOR_RELEASE
-#define VENDOR_RELEASE	6600
-#endif
-
-/*
- * The following constants are provided solely as a last line of defense.  The
- * normal build ALWAYS overrides them using a special rule given in
- * server/dix/Imakefile.  If you want to change either of these constants, 
- * you should set the DefaultFontPath or DefaultRGBDatabase configuration 
- * parameters.
- * DO NOT CHANGE THESE VALUES OR THE DIX IMAKEFILE!
- */
-#ifndef COMPILEDDEFAULTFONTPATH
-#define COMPILEDDEFAULTFONTPATH	"/usr/lib/X11/fonts/misc/"
-#endif
-#ifndef RGB_DB
-#define RGB_DB			"/usr/lib/X11/rgb"
-#endif
 
 /*
  * The following constants contain default values for all of the variables 

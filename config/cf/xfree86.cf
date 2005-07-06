@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.496 2005/06/11 02:40:54 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.497 2005/06/22 03:28:49 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -53,30 +53,6 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.496 2005/06/11 02:40:54 dawes Exp $
  * BeforeVendor part of the site.def file.
  */
 
-
-/* Get and set version information. */
-
-#include "version.def"
-#include "date.def"
-/*
- * As of the development trunk after 4.0.2, XFree86 versions are
- * M.m.P.s, and XFree86Version is:
- *
- *    M * 10000000 + m * 100000 + P * 1000 + s
- *
- * See xc/programs/Xserver/hw/xfree86/doc/Versions for further details.
- *
- * From 3.9.15 to 4.0.x, XFree86 release versions are X.Y.Z, and
- * XFree86Version is:
- *
- *    X * 1000 + Y * 100 + Z
- *
- * For the 3.3.x branch, the versions are X.Y.Z.W, with XFree86Version
- * calculated as:
- *
- *    X * 1000 + Y * 100 + Z * 10 + W
- *
- */
 #ifndef XFree86Version
 # ifdef XF86_VERSION_CURRENT
 #  define XFree86Version	XF86_VERSION_CURRENT
