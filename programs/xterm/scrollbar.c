@@ -1,11 +1,13 @@
+/* $XTermId: scrollbar.c,v 1.95 2005/07/06 23:50:51 tom Exp $ */
+
 /*
  *	$Xorg: scrollbar.c,v 1.4 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/scrollbar.c,v 3.40 2004/12/01 01:27:47 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/scrollbar.c,v 3.41 2005/01/14 01:50:03 dickey Exp $ */
 
 /*
- * Copyright 2000-2003,2004 by Thomas E. Dickey
+ * Copyright 2000-2004,2005 by Thomas E. Dickey
  *
  *                         All Rights Reserved
  *

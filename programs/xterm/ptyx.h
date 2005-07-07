@@ -1,10 +1,10 @@
-/* $XTermId: ptyx.h,v 1.365 2005/04/20 23:58:43 tom Exp $ */
+/* $XTermId: ptyx.h,v 1.373 2005/07/06 23:52:59 tom Exp $ */
 
 /*
  *	$Xorg: ptyx.h,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/ptyx.h,v 3.121 2005/01/14 01:50:03 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/ptyx.h,v 3.122 2005/04/22 00:21:54 dickey Exp $ */
 
 /*
  * Copyright 1999-2004,2005 by Thomas E. Dickey
@@ -213,7 +213,7 @@
 #ifdef __hpux
 #define	PTYCHAR2	"fedcba9876543210"
 #else	/* !__hpux */
-#ifdef __FreeBSD__
+#if defined(__DragonFly__) || defined(__FreeBSD__)
 #define	PTYCHAR2	"0123456789abcdefghijklmnopqrstuv"
 #else /* !__FreeBSD__ */
 #define	PTYCHAR2	"0123456789abcdef"
@@ -524,6 +524,10 @@ typedef struct {
 #define OPT_NUM_LOCK	1 /* use NumLock key only for numeric-keypad */
 #endif
 
+#ifndef OPT_PASTE64
+#define OPT_PASTE64	0 /* program control of select/paste via base64 */
+#endif
+
 #ifndef OPT_PC_COLORS
 #define OPT_PC_COLORS   1 /* true if xterm supports PC-style (bold) colors */
 #endif
@@ -630,6 +634,12 @@ typedef struct {
 /* You must have 88/256 colors to need fake-resource logic */
 #undef  OPT_COLOR_RES2
 #define OPT_COLOR_RES2 0
+#endif
+
+#if OPT_PASTE64 && !OPT_READLINE
+/* OPT_PASTE64 uses logic from OPT_READLINE */
+#undef  OPT_READLINE
+#define OPT_READLINE 1
 #endif
 
 #if OPT_PC_COLORS && !OPT_ISO_COLORS
@@ -1229,6 +1239,7 @@ typedef struct {
 	Boolean		boldColors;	/* can we make bold colors?	*/
 	Boolean		colorMode;	/* are we using color mode?	*/
 	Boolean		colorULMode;	/* use color for underline?	*/
+	Boolean		italicULMode;	/* italic font for underline?	*/
 	Boolean		colorBDMode;	/* use color for bold?		*/
 	Boolean		colorBLMode;	/* use color for blink?		*/
 	Boolean		colorRVMode;	/* use color for reverse?	*/
@@ -1270,6 +1281,16 @@ typedef struct {
 	unsigned long	event_mask;
 	unsigned short	send_mouse_pos;	/* user wants mouse transition  */
 					/* and position information	*/
+#if OPT_PASTE64
+	int		base64_paste;	/* set to send paste in base64	*/
+	/* _qWriteSelectionData expects these to be initialized to zero. 
+	 * base64_flush() is the last step of the conversion, it clears these
+	 * variables.
+	 */
+	int		base64_accu;
+	int		base64_count;
+	int		base64_pad;
+#endif
 #if OPT_READLINE
 	unsigned	click1_moves;
 	unsigned	paste_moves;
@@ -1298,6 +1319,8 @@ typedef struct {
 	Boolean		poponbell;	/* pop on bell mode		*/
 	Boolean		allowSendEvents;/* SendEvent mode		*/
 	Boolean		allowWindowOps;	/* WindowOps mode		*/
+	Boolean		allowSendEvent0;/* initial SendEvent mode	*/
+	Boolean		allowWindowOp0;	/* initial WindowOps mode	*/
 	Boolean		awaitInput;	/* select-timeout mode		*/
 	Boolean		grabbedKbd;	/* keyboard is grabbed		*/
 #ifdef ALLOWLOGGING
@@ -1516,8 +1539,10 @@ typedef struct {
 #if OPT_RENDERFONT
 	XftFont *	renderFontNorm[NMENUFONTS];
 	XftFont *	renderFontBold[NMENUFONTS];
+	XftFont *	renderFontItal[NMENUFONTS];
 	XftFont *	renderWideNorm[NMENUFONTS];
 	XftFont *	renderWideBold[NMENUFONTS];
+	XftFont *	renderWideItal[NMENUFONTS];
 	XftDraw *	renderDraw;
 #endif
 #if OPT_INPUT_METHOD
@@ -1917,6 +1942,12 @@ typedef struct _TekWidgetRec {
 #define TFullWidth(screen)	WhichTWin(screen)->fullwidth
 #define TFullHeight(screen)	WhichTWin(screen)->fullheight
 #define TekScale(screen)	WhichTWin(screen)->tekscale
+
+#if OPT_TOOLBAR
+#define ToolbarHeight(w) ((resource.toolBar) ? term->VT100_TB_INFO(menu_height) : 0)
+#else
+#define ToolbarHeight(w) 0
+#endif
 
 #if OPT_TEK4014
 #define TEK_LINK_BLOCK_SIZE 1024

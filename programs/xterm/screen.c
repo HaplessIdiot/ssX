@@ -1,4 +1,4 @@
-/* $XTermId: screen.c,v 1.168 2005/04/07 23:43:37 tom Exp $ */
+/* $XTermId: screen.c,v 1.171 2005/07/06 20:39:30 tom Exp $ */
 
 /*
  *	$Xorg: screen.c,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
@@ -56,7 +56,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86: xc/programs/xterm/screen.c,v 3.68 2005/01/14 01:50:03 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/screen.c,v 3.69 2005/04/22 00:21:54 dickey Exp $ */
 
 /* screen.c */
 
@@ -1368,7 +1368,10 @@ ScreenResize(TScreen * screen,
 #endif
     Window tw = VWindow(screen);
 
-    TRACE(("ScreenResize %dx%d\n", height, width));
+    TRACE(("ScreenResize %dx%d border %d font %dx%d\n",
+	   height, width, border,
+	   FontHeight(screen), FontWidth(screen)));
+
     assert(width > 0);
     assert(height > 0);
 
@@ -1504,8 +1507,11 @@ ScreenResize(TScreen * screen,
     if (screen->pid > 1) {
 	int pgrp;
 
-	if (ioctl(screen->respond, TIOCGPGRP, &pgrp) != -1)
+	TRACE(("getting process-group\n"));
+	if (ioctl(screen->respond, TIOCGPGRP, &pgrp) != -1) {
+	    TRACE(("sending SIGWINCH to process group %d\n", pgrp));
 	    kill_process_group(pgrp, SIGWINCH);
+	}
     }
 #endif /* SIGWINCH */
 

@@ -1,5 +1,5 @@
--- $XTermId: INSTALL,v 1.79 2005/01/09 16:20:01 tom Exp $
--- $XFree86: xc/programs/xterm/INSTALL,v 3.36 2004/12/01 01:27:46 dickey Exp $
+-- $XTermId: INSTALL,v 1.81 2005/06/21 00:39:08 tom Exp $
+-- $XFree86: xc/programs/xterm/INSTALL,v 3.37 2005/01/14 01:50:02 dickey Exp $
 -- Thomas E. Dickey
 
 Xterm is normally built as part of the X Window System source tree, using
@@ -309,6 +309,11 @@ The options (in alphabetic order):
 	Unicode (ISO10646) fonts and setting the locale resource to "checkfont".
 
 	This sets "--enable-luit" as a side-effect.
+
+  --enable-paste64        enable support for bracketed paste mode
+
+	Compile-in code to support experimental bracketed paste mode, i.e.,
+	provide functions for setting/getting the selection data.
 
   --enable-sco-fkeys      enable support for SCO-style function keys
 
