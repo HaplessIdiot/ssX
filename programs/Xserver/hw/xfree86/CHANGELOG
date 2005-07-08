@@ -1,4 +1,6 @@
-XFree86 4.5.99.7 (xx July 2005)
+XFree86 4.5.99.8 (xx July 2005)
+
+XFree86 4.5.99.7 (8 July 2005)
   89. Xterm patch #202 (Thomas Dickey).
   88. Remove most remaining references to PEX and XIE (Marc La France).
   87. Fix Xvideo when operating in one line mode and video is pushed off
@@ -19674,7 +19676,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3550 2005/07/05 16:43:56 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3551 2005/07/07 00:46:12 dickey Exp $
 
 
 
