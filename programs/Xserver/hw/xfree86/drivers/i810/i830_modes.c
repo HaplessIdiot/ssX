@@ -27,7 +27,7 @@
  *
  * Authors: David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_modes.c,v 1.8 2005/06/28 16:14:34 alanh Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_modes.c,v 1.9 2005/07/04 20:49:11 alanh Exp $
  */
 /*
  * Modified by Alan Hourihane <alanh@tungstengraphics.com>
@@ -405,6 +405,7 @@ CheckMode(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe, int id,
 	if (p) {
     		pMode = xnfcalloc(sizeof(DisplayModeRec), 1);
 		memcpy((char*)pMode,(char*)p,sizeof(DisplayModeRec));
+    		pMode->name = xnfstrdup(p->name);
 	}
     } 
 
@@ -436,6 +437,7 @@ CheckMode(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe, int id,
 	if (newMode) {
     		pMode = xnfcalloc(sizeof(DisplayModeRec), 1);
 		memcpy((char*)pMode,(char*)newMode,sizeof(DisplayModeRec));
+    		pMode->name = xnfstrdup(newMode->name);
 	}
     } 
 
