@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/oscolor.c,v 3.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/oscolor.c,v 3.13tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -116,18 +116,18 @@ stringCopy(char *dest, char *source, int length)
     int i;
 
     for (i = 0; i < length; i++) {
-	if ((*source >= XK_A) && (*source <= XK_Z))
-	    *dest++ = *source++ + (XK_a - XK_A);
-	else if ((*source >= XK_Agrave) && (*source <= XK_Odiaeresis))
-	    *dest++ = *source++ + (XK_agrave - XK_Agrave);
-	else if ((*source >= XK_Ooblique) && (*source <= XK_Thorn))
-	    *dest++ = *source++ + (XK_oslash - XK_Ooblique);
-	else if ((*source != XK_space) && (*source != XK_minus) &&
-		  (*source != XK_underscore))
-	    *dest++ = *source++;
-	else
-	    source++;
+	unsigned char c = (unsigned char)*source++;
+
+	if ((c >= XK_A) && (c <= XK_Z))
+	    *dest++ = (char)c + (XK_a - XK_A);
+	else if ((c >= XK_Agrave) && (c <= XK_Odiaeresis))
+	    *dest++ = (char)c + (XK_agrave - XK_Agrave);
+	else if ((c >= XK_Ooblique) && (c <= XK_Thorn))
+	    *dest++ = (char)c + (XK_oslash - XK_Ooblique);
+	else if ((c != XK_space) && (c != XK_minus) && (c != XK_underscore))
+	    *dest++ = (char)c;
     }
+
     *dest = '\0';
 }
 
