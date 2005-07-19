@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.66tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.67tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -2361,7 +2361,7 @@ ATIProbe
          * adapters.
          *
          * Within each domain, generate device sections in a specific order:
-         * first non-PCI adapters in the order they are detected, then any PCIi
+         * first non-PCI adapters in the order they are detected, then any PCI
          * primary, followed by non-primary PCI in increasing PCITAG order.
          */
         for (i = 0;  i < nATIPtr;  i++)
