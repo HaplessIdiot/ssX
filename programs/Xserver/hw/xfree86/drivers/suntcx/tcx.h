@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suntcx/tcx.h,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suntcx/tcx.h,v 1.3tsi Exp $ */
 
 #ifndef TCX_H
 #define TCX_H
@@ -43,7 +43,6 @@
 #define TCX_THC_VOFF		0x70004000
 #define TCX_DHC_VOFF		0x70008000
 #define TCX_ALT_VOFF		0x7000a000
-#define TCX_SYNC_VOFF		0x7000e000
 
 typedef struct {
 	unsigned char	*fb;

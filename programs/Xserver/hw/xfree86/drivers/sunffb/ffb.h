@@ -24,7 +24,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.11tsi Exp $ */
 
 #ifndef FFB_H
 #define FFB_H
@@ -50,36 +50,25 @@
 
 
 /* Various offsets in virtual (ie. mmap()) spaces Linux and Solaris support. */
-/* Note: do not mmap FFB_DFB8R_VOFF and following mappings using one mmap together
-   with any previous SFB mapping, otherwise the OS won't be able to use 4M pages
-   for the DFB mappings. -jj */
-#define	FFB_SFB8R_VOFF		0x00000000
-#define	FFB_SFB8G_VOFF		0x00400000
-#define	FFB_SFB8B_VOFF		0x00800000
-#define	FFB_SFB8X_VOFF		0x00c00000
-#define	FFB_SFB32_VOFF		0x01000000
-#define	FFB_SFB64_VOFF		0x02000000
-#define	FFB_FBC_REGS_VOFF	0x04000000
-#define	FFB_BM_FBC_REGS_VOFF	0x04002000
-#define	FFB_DFB8R_VOFF		0x04004000
-#define	FFB_DFB8G_VOFF		0x04404000
-#define	FFB_DFB8B_VOFF		0x04804000
-#define	FFB_DFB8X_VOFF		0x04c04000
-#define	FFB_DFB24_VOFF		0x05004000
-#define	FFB_DFB32_VOFF		0x06004000
-#define	FFB_DFB422A_VOFF	0x07004000	/* DFB 422 mode write to A */
-#define	FFB_DFB422AD_VOFF	0x07804000	/* DFB 422 mode with line doubling */
-#define	FFB_DFB24B_VOFF		0x08004000	/* DFB 24bit mode write to B */
-#define	FFB_DFB422B_VOFF	0x09004000	/* DFB 422 mode write to B */
-#define	FFB_DFB422BD_VOFF	0x09804000	/* DFB 422 mode with line doubling */
-#define	FFB_SFB16Z_VOFF		0x0a004000	/* 16bit mode Z planes */
-#define	FFB_SFB8Z_VOFF		0x0a404000	/* 8bit mode Z planes */
-#define	FFB_SFB422_VOFF		0x0ac04000	/* SFB 422 mode write to A/B */
-#define	FFB_SFB422D_VOFF	0x0b404000	/* SFB 422 mode with line doubling */
-#define	FFB_FBC_KREGS_VOFF	0x0bc04000
-#define	FFB_DAC_VOFF		0x0bc06000
-#define	FFB_PROM_VOFF		0x0bc08000
-#define	FFB_EXP_VOFF		0x0bc18000
+/*
+ * Note: do not mmap FFB_DFB8R_VOFF and following mappings using one mmap
+ * together with any previous SFB mapping, otherwise the OS won't be able to
+ * use 4M pages for the DFB mappings. -jj
+ */
+#define		FFB_SFB8R_VOFF		0x00000000
+#define		FFB_SFB8X_VOFF		0x00c00000
+#define		FFB_SFB32_VOFF		0x01000000
+#define		FFB_FBC_REGS_VOFF	0x04000000
+#define		FFB_DFB8R_VOFF		0x04004000
+#define		FFB_DFB8X_VOFF		0x04c04000
+#define		FFB_DFB24_VOFF		0x05004000
+#ifdef sun
+# define	FFB_DAC_VOFF		0x07018000
+# define	FFB_EXP_VOFF		0x07006000
+#else
+# define	FFB_DAC_VOFF		0x0bc06000
+# define	FFB_EXP_VOFF		0x0bc18000
+#endif
 
 #if defined(__GNUC__) && defined(USE_VIS)
 #define FFB_ALIGN64	__attribute__((aligned(8)))
