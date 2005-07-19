@@ -1,4 +1,6 @@
 XFree86 4.5.99.8 (xx July 2005)
+  90. Change OS-specific module subdirectory name for all SunOS variants from
+      "solaris" to "sunos" (Marc La France).
 
 XFree86 4.5.99.7 (8 July 2005)
   89. Xterm patch #202 (Thomas Dickey).
@@ -19676,7 +19678,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3551 2005/07/07 00:46:12 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3552 2005/07/08 11:02:42 dawes Exp $
 
 
 

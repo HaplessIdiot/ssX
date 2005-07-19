@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/os.c,v 1.5 2004/02/13 23:58:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/os.c,v 1.6tsi Exp $ */
 
 /*
  * Copyright (c) 1999-2002 by The XFree86 Project, Inc.
@@ -73,7 +73,7 @@
 #elif defined(ISC)
 #define OSNAME "isc"
 #elif defined(SVR4) && defined(sun)
-#define OSNAME "solaris"
+#define OSNAME "sunos"
 #elif defined(SVR4)
 #define OSNAME "svr4"
 #elif defined(__UNIXOS2__)
