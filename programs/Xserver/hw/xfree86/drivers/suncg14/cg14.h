@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg14/cg14.h,v 1.2 2001/03/03 22:41:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg14/cg14.h,v 1.3tsi Exp $ */
 
 #ifndef CG14_H
 #define CG14_H
@@ -34,11 +34,6 @@
 #include "xf86sbusBus.h"
 
 /* Various offsets in virtual (ie. mmap()) spaces Linux and Solaris support. */
-#define CG14_REGS_VOFF		0x00000000	/* registers */
-#define CG14_XLUT_VOFF		0x00003000	/* X Look Up Table */
-#define CG14_CLUT1_VOFF		0x00004000	/* Color Look Up Table */
-#define CG14_CLUT2_VOFF		0x00005000	/* Color Look Up Table */
-#define CG14_CLUT3_VOFF		0x00006000	/* Color Look Up Table */
 #define CG14_DIRECT_VOFF	0x10000000
 #define CG14_CTLREG_VOFF	0x20000000
 #define CG14_CURSOR_VOFF	0x30000000
@@ -55,7 +50,6 @@
 typedef struct {
 	unsigned int	*fb;
 	unsigned char	*x32;
-	unsigned char	*xlut;
 	int		width;
 	int		height;
 	sbusDevicePtr	psdp;

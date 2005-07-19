@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.88tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.89tsi Exp $ */
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -3254,7 +3254,7 @@ xf86LocateMemoryArea(int entityIndex, char **devName,
 		   pEntity->pciBusId.func),
 	    devName, devOffset, fbSize, fbOffset, flags);
 
-#if defined(__sparc__) && !defined(__OpenBSD__) && defined(___NOT_YET___)
+#if defined(__sparc__) && !defined(__OpenBSD__)
     case BUS_SBUS:
 	return xf86LocateSbusMemoryArea(xf86GetSbusInfoForEntity(entityIndex),
 					devName, devOffset,

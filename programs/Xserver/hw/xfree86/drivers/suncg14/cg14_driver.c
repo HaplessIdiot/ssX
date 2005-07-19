@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg14/cg14_driver.c,v 1.10 2004/12/05 23:06:37 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg14/cg14_driver.c,v 1.11tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -432,9 +432,8 @@ CG14ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			       (psdp->width * psdp->height));
     pCg14->x32 = xf86MapSbusMem(psdp, CG14_X32_VOFF,
 				psdp->width * psdp->height);
-    pCg14->xlut = xf86MapSbusMem(psdp, CG14_XLUT_VOFF, 4096);
 
-    if (!pCg14->fb || !pCg14->x32 || !pCg14->xlut) {
+    if (!pCg14->fb || !pCg14->x32) {
 	if (pCg14->fb) {
 	    xf86UnmapSbusMem(psdp, pCg14->fb, 4 * (psdp->width * psdp->height));
 	    pCg14->fb = NULL;
@@ -443,11 +442,6 @@ CG14ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	if (pCg14->x32) {
 	    xf86UnmapSbusMem(psdp, pCg14->x32, psdp->width * psdp->height);
 	    pCg14->x32 = NULL;
-	}
-
-	if (pCg14->xlut) {
-	    xf86UnmapSbusMem(psdp, pCg14->xlut, 4096);
-	    pCg14->xlut = NULL;
 	}
 
 	return FALSE;
@@ -606,7 +600,6 @@ CG14CloseScreen(int scrnIndex, ScreenPtr pScreen)
     pScrn->vtSema = FALSE;
     xf86UnmapSbusMem(psdp, pCg14->fb, psdp->width * psdp->height * 4);
     xf86UnmapSbusMem(psdp, pCg14->x32, psdp->width * psdp->height);
-    xf86UnmapSbusMem(psdp, pCg14->xlut, 4096);
 
     pScreen->CloseScreen = pCg14->CloseScreen;
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);
@@ -662,7 +655,6 @@ CG14InitCplane24(ScrnInfoPtr pScrn)
   ioctl(pCg14->psdp->fd, CG14_SET_PIXELMODE, &bpp);
   memset(pCg14->fb, 0, size * 4);
   memset(pCg14->x32, 0, size);
-  memset(pCg14->xlut, 0, 0x200);
 }
 
 /*

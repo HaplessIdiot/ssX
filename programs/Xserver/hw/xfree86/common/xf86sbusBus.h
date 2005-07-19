@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.h,v 3.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.h,v 3.6tsi Exp $ */
 
 #ifndef _XF86_SBUSBUS_H
 #define _XF86_SBUSBUS_H
@@ -80,6 +80,10 @@ int xf86MatchSbusInstances(const char *driverName, int sbusDevId,
 sbusDevicePtr xf86GetSbusInfoForEntity(int entityIndex);
 int xf86GetEntityForSbusInfo(sbusDevicePtr psdp);
 void xf86SbusUseBuiltinMode(ScrnInfoPtr pScrn, sbusDevicePtr psdp);
+Bool xf86LocateSbusMemoryArea(sbusDevicePtr psdp,
+			      char **devName, unsigned int *devOffset,
+			      unsigned int *fbSize, unsigned int *fbOffset,
+			      unsigned int *flags);
 pointer xf86MapSbusMem(sbusDevicePtr psdp, unsigned long offset,
 		       unsigned long size);
 void xf86UnmapSbusMem(sbusDevicePtr psdp, pointer addr, unsigned long size);

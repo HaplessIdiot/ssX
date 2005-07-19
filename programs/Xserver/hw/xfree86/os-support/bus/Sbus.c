@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Sbus.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Sbus.c,v 1.6tsi Exp $ */
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -682,11 +682,55 @@ sparcPromPathname2Node(const char *pathName)
     return i;
 }
 
+Bool
+xf86LocateSbusMemoryArea(sbusDevicePtr psdp, char **devName,
+			 unsigned int *devOffset, unsigned int *fbSize,
+			 unsigned int *fbOffset, unsigned int *flags)
+{
+    /*
+     * Note that SBUS video drivers, contrary to other drivers, can be
+     * OS-specific.  That's because the offset(s) needed to mmap(2) SBUS video
+     * devices can be also.  One might think this common layer function could
+     * translate from a more generic offset scheme to the needed OS-specific
+     * one, but this would require adapter-specific knowledge in the common
+     * layer, and, for SBUS devices, there's enough of that already...
+     *
+     * Instead, this simply checks that all offsets are 32-bit.
+     */
+    unsigned int offset;
+
+    if (!psdp || !devOffset || devOffset[1])
+	return FALSE;
+
+    offset = devOffset[0];
+
+    if (fbOffset) {
+	if ((offset ^ (unsigned int)(-1L)) < *fbOffset)
+	    return FALSE;
+
+	offset += *fbOffset;
+    }
+
+    if (fbSize) {
+	if ((offset ^ (unsigned int)(-1L)) < *fbSize)
+	    return FALSE;
+    }
+
+    if (devName)
+	*devName = psdp->device;
+
+    if (flags)
+	*flags = 0;
+
+    return TRUE;
+}
+
 pointer
 xf86MapSbusMem(sbusDevicePtr psdp, unsigned long offset, unsigned long size)
 {
     pointer ret;
     unsigned long pagemask, off, len;
+    unsigned int devOffset[2], fbSize;
 
     if (!psdp || !size)
 	return NULL;
@@ -699,6 +743,14 @@ xf86MapSbusMem(sbusDevicePtr psdp, unsigned long offset, unsigned long size)
 	return NULL;
     }
 
+    devOffset[0] = offset;
+    devOffset[1] = 0;
+    fbSize = size;
+    if (!xf86LocateSbusMemoryArea(psdp, NULL, devOffset, &fbSize, NULL, NULL) ||
+	(devOffset[1] != 0))
+	return NULL;
+
+    offset = devOffset[0];
     pagemask = xf86getpagesize() - 1;
     off = offset & ~pagemask;
     len = ((offset + size + pagemask) & ~pagemask) - off;
