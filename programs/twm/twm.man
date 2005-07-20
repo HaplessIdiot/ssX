@@ -1,4 +1,3 @@
-.\" $Xorg: twm.man,v 1.4 2001/02/09 02:05:37 xorgcvs Exp $
 .\" Copyright 1993, 1994, 1998  The Open Group
 .\" Portions copyright 1988 Evans & Sutherland Computer Corporation.
 .\" Portions copyright 1989 Hewlett-Packard Company
@@ -25,7 +24,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86: xc/programs/twm/twm.man,v 1.13 2005/02/11 03:03:15 dawes Exp $
+.\" $XFree86: xc/programs/twm/twm.man,v 1.14 2005/05/19 01:02:44 dawes Exp $
 .\"
 .de EX		\"Begin example
 .ne 5
@@ -1171,6 +1170,11 @@ manager, wrapping to the last row in the same column if necessary.
 This function is a synonym for \fBf.leftzoom\fP.
 .IP "\fBf.vrzoom\fP" 8
 This function is a synonym for \fBf.rightzoom\fP.
+.IP "\fBf.totalzoom\fP" 8
+This function resizes the selected window to the full size of the
+display or else restores the original size if the window was already
+zoomed.  Zoomed window covers the whole area of a screen, without even
+window manager decoration.
 .IP "\fBf.warpring\fP \fIstring\fP" 8
 This function warps the pointer to the next or previous window (as indicated
 by the argument \fIstring\fP, which may be \fB"next"\fP or \fB"prev"\fP) 

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/mesa/sparc/xform.S,v 1.2 2004/04/22 13:58:37 tsi Exp $ */
 
 	/* TODO
 	 *
@@ -19,7 +19,7 @@
 
 #include "sparc_matrix.h"
 
-#ifdef SVR4
+#if (defined(__sparc_v9__) && (!defined(__linux__) || defined(__linux_sparc_64__)))
 	/* Solaris requires this for 64-bit. */
         .register %g2, #scratch
         .register %g3, #scratch

@@ -1,4 +1,12 @@
 XFree86 4.5.99.8 (xx July 2005)
+  95. Add a '-noinput' option to Xnest, allowing it to be run in a view-only
+      mode (Bugzilla #87, James Ascroft-Leigh).
+  94. Add a new "f.totalzoom" function to twm that zooms windows to cover the
+      whole area of a screen with no window decoration visible (Bugzilla #1602,
+      Alexander Pohoyda).
+  93. Fix an xfd bug that prevents it from properly paging through xft fonts
+      beyond 0xFFFF (Bugzilla #1603, James Cloos).
+  92. Mesa build fixes for NetBSD/sparc64 (Bugzilla #1604, Luke Mewburn).
   91. Preliminary port of SBUS drivers to SunOS variants.  This also allows for
       multihead using a mix of SBUS and PCI devices (Marc La France).
   90. Change OS-specific module subdirectory name for all SunOS variants from
@@ -19680,7 +19688,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3553 2005/07/19 14:42:24 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3554 2005/07/19 15:02:48 tsi Exp $
 
 
 

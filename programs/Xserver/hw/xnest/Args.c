@@ -1,4 +1,3 @@
-/* $Xorg: Args.c,v 1.3 2000/08/17 19:53:26 cpqbld Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -12,7 +11,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Args.c,v 1.2 2003/11/16 05:05:20 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -46,6 +45,7 @@ char *xnestWindowName = NULL;
 int xnestNumScreens = 0;
 Bool xnestDoDirectColormaps = False;
 Window xnestParentWindow = 0;
+Bool xnestInputEnabled = True;
 
 int
 ddxProcessArgument (int argc, char *argv[], int i)
@@ -122,6 +122,10 @@ ddxProcessArgument (int argc, char *argv[], int i)
     xnestSoftwareScreenSaver = True;
     return 1;
   }
+  if (!strcmp(argv[i], "-noinput")) {
+    xnestInputEnabled = False;
+    return 1;
+  }
   if (!strcmp(argv[i], "-geometry")) {
     if (++i < argc) {
       xnestUserGeometry = XParseGeometry(argv[i],
@@ -185,4 +189,5 @@ void ddxUseMsg()
   ErrorF("-name string           window name\n");
   ErrorF("-scrns int             number of screens to generate\n");
   ErrorF("-install               instal colormaps directly\n");
+  ErrorF("-noinput               do not capture mouse or keyboard events\n");
 }

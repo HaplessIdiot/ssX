@@ -52,15 +52,13 @@ in this Software without prior written authorization from The Open Group.
 
 /***********************************************************************
  *
- * $Xorg: resize.c,v 1.5 2001/02/09 02:05:37 xorgcvs Exp $
- *
  * window resizing borrowed from the "wm" window manager
  *
  * 11-Dec-87 Thomas E. LaStrange                File created
  *
  ***********************************************************************/
 
-/* $XFree86: xc/programs/twm/resize.c,v 1.8 2001/12/14 20:01:09 dawes Exp $ */
+/* $XFree86: xc/programs/twm/resize.c,v 1.9 2004/06/08 01:17:02 dawes Exp $ */
 
 #include <stdio.h>
 #include "twm.h"
@@ -997,35 +995,32 @@ int flag;
     int basex, basey;
     int frame_bw_times_2;
 
-	XGetGeometry(dpy, (Drawable) tmp_win->frame, &junkRoot,
-	        &dragx, &dragy, (unsigned int *)&dragWidth, (unsigned int *)&dragHeight, &junkbw,
-	        &junkDepth);
+    XGetGeometry(dpy, (Drawable) tmp_win->frame, &junkRoot, &dragx, &dragy,
+		 (unsigned int *)&dragWidth, (unsigned int *)&dragHeight,
+		 &junkbw, &junkDepth);
 
-	basex = 0;
-	basey = 0;
+    basex = 0;
+    basey = 0;
 
-        if (tmp_win->zoomed == flag)
-        {
-            dragHeight = tmp_win->save_frame_height;
-            dragWidth = tmp_win->save_frame_width;
-            dragx = tmp_win->save_frame_x;
-            dragy = tmp_win->save_frame_y;
-            tmp_win->zoomed = ZOOM_NONE;
-        }
-        else
-        {
-                if (tmp_win->zoomed == ZOOM_NONE)
-                {
-                        tmp_win->save_frame_x = dragx;
-                        tmp_win->save_frame_y = dragy;
-                        tmp_win->save_frame_width = dragWidth;
-                        tmp_win->save_frame_height = dragHeight;
-                        tmp_win->zoomed = flag;
-                 }
-                  else
-                            tmp_win->zoomed = flag;
+    if (tmp_win->zoomed == flag)
+    {
+	dragHeight = tmp_win->save_frame_height;
+	dragWidth = tmp_win->save_frame_width;
+	dragx = tmp_win->save_frame_x;
+	dragy = tmp_win->save_frame_y;
+	tmp_win->zoomed = ZOOM_NONE;
+    }
+    else
+    {
+	if (tmp_win->zoomed == ZOOM_NONE)
+	{
+	    tmp_win->save_frame_x = dragx;
+	    tmp_win->save_frame_y = dragy;
+	    tmp_win->save_frame_width = dragWidth;
+	    tmp_win->save_frame_height = dragHeight;
+	}
 
-
+	tmp_win->zoomed = flag;
 	frame_bw_times_2 = 2*tmp_win->frame_bw;
 
         switch (flag)
@@ -1070,15 +1065,22 @@ int flag;
             dragHeight = Scr->MyDisplayHeight/2 - frame_bw_times_2;
             dragWidth = Scr->MyDisplayWidth - frame_bw_times_2;
             break;
+	case F_TOTALZOOM:
+	    dragx = -tmp_win->frame_bw;
+	    dragy = -tmp_win->title_height - tmp_win->frame_bw;
+	    dragHeight = Scr->MyDisplayHeight + tmp_win->title_height;
+	    dragWidth = Scr->MyDisplayWidth;
+	    break;
          }
-      }
+    }
 
     if (!Scr->NoRaiseResize)
         XRaiseWindow(dpy, tmp_win->frame);
 
-    ConstrainSize(tmp_win, &dragWidth, &dragHeight);
+    if (flag != F_TOTALZOOM)
+	ConstrainSize(tmp_win, &dragWidth, &dragHeight);
 
-    SetupWindow (tmp_win, dragx , dragy , dragWidth, dragHeight, -1);
+    SetupWindow (tmp_win, dragx, dragy, dragWidth, dragHeight, -1);
     XUngrabPointer (dpy, CurrentTime);
     XUngrabServer (dpy);
 }
