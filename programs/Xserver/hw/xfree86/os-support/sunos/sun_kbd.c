@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_kbd.c,v 1.3 2005/02/09 19:49:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_kbd.c,v 1.4tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@XFree86.org>
@@ -55,7 +55,8 @@ xf86SetKbdRepeat(char rad)
 void
 xf86KbdInit()
 {
-	int	klayout;
+	const char *ktype_name;
+	int	    klayout;
 
 	if (xf86Info.kbdFd < 0) {
 		xf86Info.kbdFd = open("/dev/kbd", O_RDWR|O_NONBLOCK);
@@ -64,7 +65,7 @@ xf86KbdInit()
 	}
 
 	/*
-	 * None of the followin should ever fail.  If it does, something is
+	 * None of the following should ever fail.  If it does, something is
 	 * broken (IMO) - DWH 8/21/99
 	 */
 
@@ -83,6 +84,35 @@ xf86KbdInit()
 	if (ioctl(xf86Info.kbdFd, KIOCGDIRECT, &sun_odirect) < 0)
 		xf86Msg(X_ERROR,
 			"Unable to determine keyboard direct setting.\n");
+
+	switch (sun_ktype) {
+#ifdef KB_SUN3
+	case KB_SUN3:
+		ktype_name = "Sun Type 3";
+		break;
+#endif
+#ifdef KB_SUN4
+	case KB_SUN4:
+		ktype_name = "Sun Type 4/5/6";
+		break;
+#endif
+#ifdef KB_USB
+	case KB_USB:
+		ktype_name = "USB";
+		break;
+#endif
+#ifdef KB_PC
+	case KB_PC:
+		ktype_name = "PC";
+		break;
+#endif
+	default:
+		ktype_name = "Unknown";
+		break;
+	}
+
+	xf86Msg(X_PROBED, "Keyboard type: %s (%d)\n", ktype_name, sun_ktype);
+	xf86Msg(X_PROBED, "Keyboard layout: %d\n", klayout);
 }
 
 int

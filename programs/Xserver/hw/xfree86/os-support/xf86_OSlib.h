@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.98tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.99tsi Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -99,12 +99,11 @@ typedef signed long xf86ssize_t;
 #include <stddef.h>
 
 /**************************************************************************/
-/* SYSV386 (SVR3, SVR4) - But not Solaris8                                */
+/* SYSV386 (SVR3, SVR4) - including Solaris                               */
 /**************************************************************************/
 #if (defined(SYSV) || defined(SVR4)) && \
     !defined(DGUX) && !defined(sgi) && \
-    !defined(__SOL8__) && \
-    (!defined(sun) || defined(i386))
+    (defined(sun) || defined(i386))
 # ifdef __SCO__
 #  ifndef _SVID3
 #   define _SVID3
@@ -137,7 +136,7 @@ typedef signed long xf86ssize_t;
 #  include <sys/sysmacros.h>
 # elif defined(_NEED_SYSI86)
 #  include <sys/immu.h>
-#  if !(defined (sun) && defined (i386) && defined (SVR4))
+#  if !(defined(sun) && defined(SVR4))
 #    include <sys/region.h>
 #  endif
 #  include <sys/proc.h>
@@ -146,14 +145,15 @@ typedef signed long xf86ssize_t;
 #  if defined(SVR4) && !defined(sun)
 #   include <sys/seg.h>
 #  endif /* SVR4 && !sun */
-#  if defined(sun) && defined (i386) && defined (SVR4) 	/* Solaris? */
-#   if !defined(V86SC_IOPL)				/* Solaris 7? */
+/* V86SC_IOPL was moved to <sys/sysi86.h> on Solaris 7 and later */
+#  if defined(sun) && defined(SVR4) 			/* Solaris? */
+#   if !defined(V86SC_IOPL) && !defined(__sparc__)	/* Solaris 7? */
 #    include <sys/v86.h>				/* Nope */
 #   endif /* V86SC_IOPL */
 #  else 
 #   include <sys/v86.h>					/* Not solaris */
 #  endif /* sun && i386 && SVR4 */
-#  if defined(sun) && defined (i386) && defined (SVR4)
+#  if defined(sun) && defined(SVR4) && !defined(__sparc__)
 #    include <sys/psw.h>
 #  endif
 # endif /* _NEED_SYSI86 */
@@ -167,7 +167,7 @@ typedef signed long xf86ssize_t;
 #  include <sys/mmap.h>		/* MMAP driver header */
 # endif
 
-# if !defined(sun) || !defined(sparc)
+# if !defined(sun) || (!defined(sparc) && !defined(__SOL8__))
 #  define HAS_USL_VTS
 # endif
 # if !defined(sun)
@@ -185,6 +185,26 @@ typedef signed long xf86ssize_t;
 #  include <sys/at_ansi.h>
 #  include <sys/kd.h>
 #  include <sys/vt.h>
+# elif defined(sun)
+#  include <sys/fbio.h>
+#  include <sys/kbd.h>
+#  include <sys/kbio.h>
+#  ifndef __sparc__
+#   include <sys/kd.h>
+#  endif
+
+/*
+ * Undefine symbols from <sys/kbd.h> we don't need that conflict with enum
+ * definitions in parser/xf86tokens.h.
+ */
+#  undef STRING
+#  undef LEFTALT
+#  undef RIGHTALT
+
+#  define LED_CAP LED_CAPS_LOCK
+#  define LED_NUM LED_NUM_LOCK
+#  define LED_SCR LED_SCROLL_LOCK
+#  define LED_COMP LED_COMPOSE
 # endif /* __SCO__ */
 
 # if !defined(VT_ACKACQ)
@@ -198,7 +218,7 @@ typedef signed long xf86ssize_t;
 
 # if defined(SVR4) || defined(__SCO__)
 #  include <sys/mman.h>
-#  if !(defined(sun) && defined (i386) && defined (SVR4))
+#  if !(defined(sun) && defined(SVR4))
 #    define DEV_MEM "/dev/pmem"
 #  elif defined(PowerMAX_OS)
 #    define DEV_MEM "/dev/iomem"
@@ -216,7 +236,7 @@ typedef signed long xf86ssize_t;
 #  define POSIX_TTY
 # endif
 
-# if defined(sun) && defined (i386) && defined (SVR4)
+# if defined(sun) && defined(SVR4) && !defined(__SOL8__)
 #  define USE_VT_SYSREQ
 #  define VT_SYSREQ_DEFAULT TRUE
 # endif
@@ -239,33 +259,6 @@ typedef signed long xf86ssize_t;
 # endif
 
 #endif /* (SYSV || SVR4) && !DGUX */
-
-/**********
- * Good ol' Solaris8, and its lack of VT support 
- ***********/
-
-#if defined(__SOL8__) || (defined(sun) && !defined(i386))
-# include <sys/mman.h>
-# include <errno.h>
-# ifdef i386
-#  include <sys/sysi86.h>
-# endif
-# include <sys/psw.h>
-
-# include <termio.h>
-# include <sys/fbio.h>
-# include <sys/kbd.h>
-# include <sys/kbio.h>
-# include <sys/ioctl.h>
-
-# define LED_CAP LED_CAPS_LOCK
-# define LED_NUM LED_NUM_LOCK
-# define LED_SCR LED_SCROLL_LOCK
-
-# include <signal.h>
-
-#endif /* __SOL8__ */
-
 
 
 /**************************************************************************/

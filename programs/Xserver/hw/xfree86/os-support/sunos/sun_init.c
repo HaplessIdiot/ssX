@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.5 2001/11/25 13:51:24 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.6tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -34,7 +34,11 @@ static int VTnum = -1;
 static int xf86StartVT = -1;
 #endif
 
+#if defined(__SOL8__) || defined(__sparc__)
+static char fb_dev[PATH_MAX] = "/dev/fb";
+#else
 static char fb_dev[PATH_MAX] = "/dev/console";
+#endif
 
 void
 xf86OpenConsole(void)
@@ -162,10 +166,13 @@ xf86OpenConsole(void)
 
 	if (ioctl(xf86Info.consoleFd, VT_SETMODE, &VT) < 0)
 	    FatalError("xf86OpenConsole: VT_SETMODE VT_PROCESS failed\n");
-
+#endif
+#ifdef KDSETMODE
 	if (ioctl(xf86Info.consoleFd, KDSETMODE, KD_GRAPHICS) < 0)
 	    FatalError("xf86OpenConsole: KDSETMODE KD_GRAPHICS failed\n");
+#endif
     }
+#ifdef HAS_USL_VTS
     else /* serverGeneration != 1 */
     {
 	/*
@@ -184,10 +191,10 @@ xf86OpenConsole(void)
 	 */
 	if (!xf86Screens[0]->vtSema)
 	    sleep(5);
+    }
 
 #endif /* HAS_USL_VTS */
 
-    }
 }
 
 void
@@ -196,15 +203,13 @@ xf86CloseConsole(void)
 #ifdef HAS_USL_VTS
     struct vt_mode VT;
 #endif
-#if defined(__SOL8__) || !defined(i386)
+#if defined(__SOL8__) || defined(__sparc__)
     int tmp;
 #endif
 
-#ifndef i386
+#ifdef __sparc__
 
     if (!xf86DoProbe && !xf86DoConfigure) {
-	int fd;
-
 	/*
 	 * Wipe out framebuffer just like the non-SI Xsun server does.  This
 	 * could be improved by saving framebuffer contents in
@@ -212,37 +217,35 @@ xf86CloseConsole(void)
 	 * at this point whether this should be done for all framebuffers in
 	 * the system, rather than only the console.
 	 */
-	if ((fd = open("/dev/fb", O_RDWR, 0)) < 0) {
+	struct fbgattr fbattr;
+
+	if ((ioctl(xf86Info.consoleFd, FBIOGATTR, &fbattr) < 0) &&
+	    (ioctl(xf86Info.consoleFd, FBIOGTYPE, &fbattr.fbtype) < 0)) {
 	    xf86Msg(X_WARNING,
-		    "xf86CloseConsole():  unable to open framebuffer (%s)\n",
-		    strerror(errno));
+		    "xf86CloseConsole():  unable to retrieve framebuffer"
+		    " attributes (%s)\n", strerror(errno));
 	} else {
-	    struct fbgattr fbattr;
+	    pointer fbdata;
 
-	    if ((ioctl(fd, FBIOGATTR, &fbattr) < 0) &&
-		(ioctl(fd, FBIOGTYPE, &fbattr.fbtype) < 0)) {
+	    fbdata = mmap(NULL, fbattr.fbtype.fb_size,
+			  PROT_READ | PROT_WRITE, MAP_SHARED,
+			  xf86Info.consoleFd, 0);
+	    if (fbdata == MAP_FAILED) {
 		xf86Msg(X_WARNING,
-			"xf86CloseConsole():  unable to retrieve framebuffer"
-			" attributes (%s)\n", strerror(errno));
+			"xf86CloseConsole():  unable to mmap framebuffer"
+			" (%s)\n", strerror(errno));
 	    } else {
-		pointer fbdata;
-
-		fbdata = mmap(NULL, fbattr.fbtype.fb_size,
-			      PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-		if (fbdata == MAP_FAILED) {
-		    xf86Msg(X_WARNING,
-			    "xf86CloseConsole():  unable to mmap framebuffer"
-			    " (%s)\n", strerror(errno));
-		} else {
-		    (void)memset(fbdata, 0, fbattr.fbtype.fb_size);
-		    (void)munmap(fbdata, fbattr.fbtype.fb_size);
-		}
+		(void)memset(fbdata, 0, fbattr.fbtype.fb_size);
+		(void)munmap(fbdata, fbattr.fbtype.fb_size);
 	    }
-
-	    close(fd);
 	}
     }
 
+#endif
+
+#ifdef KDSETMODE
+    /* Reset the display back to text mode */
+    ioctl(xf86Info.consoleFd, KDSETMODE, KD_TEXT);
 #endif
 
 #ifdef HAS_USL_VTS
@@ -261,8 +264,6 @@ xf86CloseConsole(void)
      * Did the whole thing similarly to the way linux does it
      */
 
-    /* Reset the display back to text mode */
-    ioctl(xf86Info.consoleFd, KDSETMODE, KD_TEXT);
     if (ioctl(xf86Info.consoleFd, VT_GETMODE, &VT) != -1)
     {
 	VT.mode = VT_AUTO;		/* Set default vt handling */
@@ -276,7 +277,7 @@ xf86CloseConsole(void)
 
     close(xf86Info.consoleFd);
 
-#if defined(__SOL8__) || !defined(i386)
+#if defined(__SOL8__) || defined(__sparc__)
 
     /*
      * This probably shouldn't be here.  However, there is no corresponding
@@ -333,7 +334,7 @@ xf86ProcessArgument(int argc, char **argv, int i)
 
 #endif /* HAS_USL_VTS */
 
-#if defined(__SOL8__) || !defined(i386)
+#if defined(__SOL8__) || defined(__sparc__)
 
     if ((i + 1) < argc) {
 	if (!strcmp(argv[i], "-dev")) {
@@ -363,7 +364,7 @@ void xf86UseMsg()
 #ifdef HAS_USL_VTS
     ErrorF("vtXX                   Use the specified VT number\n");
 #endif
-#if defined(__SOL8__) || !defined(i386)
+#if defined(__SOL8__) || defined(__sparc__)
     ErrorF("-dev <fb>              Framebuffer device\n");
     ErrorF("-ar1 <float>           Set autorepeat initiate time (sec)\n");
     ErrorF("                       (if not using XKB)\n");
