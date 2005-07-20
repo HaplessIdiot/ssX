@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/menus.c,v 1.20 2003/08/04 10:32:30 eich Exp $ */
+/* $XFree86: xc/programs/twm/menus.c,v 1.21 2005/05/19 01:02:44 dawes Exp $ */
 /*****************************************************************************/
 /*
 
@@ -52,8 +52,6 @@ in this Software without prior written authorization from The Open Group.
 
 
 /***********************************************************************
- *
- * $Xorg: menus.c,v 1.6 2001/02/09 02:05:36 xorgcvs Exp $
  *
  * twm menu code
  *
@@ -1603,6 +1601,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
     case F_RIGHTZOOM:
     case F_TOPZOOM:
     case F_BOTTOMZOOM:
+    case F_TOTALZOOM:
 	if (DeferExecution(context, func, Scr->SelectCursor))
 	    return TRUE;
 	fullzoom(tmp_win, func);
@@ -2503,6 +2502,7 @@ MenuRoot *root;
 	case F_DESTROY:
 	case F_WINREFRESH:
 	case F_ZOOM:
+	case F_TOTALZOOM:
 	case F_FULLZOOM:
 	case F_HORIZOOM:
         case F_RIGHTZOOM:

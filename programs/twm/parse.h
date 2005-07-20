@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/parse.h,v 1.11 2001/12/14 20:01:09 dawes Exp $ */
+/* $XFree86: xc/programs/twm/parse.h,v 1.12 2005/05/19 01:02:44 dawes Exp $ */
 /*****************************************************************************/
 /*
 
@@ -52,8 +52,6 @@ in this Software without prior written authorization from The Open Group.
 
 
 /**********************************************************************
- *
- * $Xorg: parse.h,v 1.4 2001/02/09 02:05:37 xorgcvs Exp $
  *
  * .twmrc parsing externs
  *
@@ -137,6 +135,7 @@ extern int mods;
 #define F_SHOWLIST		44
 #define F_HIDELIST		45
 #define F_CHANGELABEL		46
+#define F_TOTALZOOM  		47
 
 #define F_MENU			101	/* string */
 #define F_WARPNEXT		112	/* string */

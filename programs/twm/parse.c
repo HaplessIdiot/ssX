@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/parse.c,v 1.18 2004/06/08 01:17:02 dawes Exp $ */
+/* $XFree86: xc/programs/twm/parse.c,v 1.19 2005/05/19 01:02:44 dawes Exp $ */
 /*****************************************************************************/
 /*
 
@@ -52,9 +52,6 @@ in this Software without prior written authorization from The Open Group.
 
 
 /***********************************************************************
- *
- * $Xorg: parse.c,v 1.5 2001/02/09 02:05:37 xorgcvs Exp $
- *
  * parse the .twmrc file
  *
  * 17-Nov-87 Thomas E. LaStrange       File created
@@ -502,6 +499,7 @@ static TwmKeyword keytable[] = {
     { "f.startwm",		FSKEYWORD, F_STARTWM },
     { "f.title",		FKEYWORD, F_TITLE },
     { "f.topzoom",		FKEYWORD, F_TOPZOOM },
+    { "f.totalzoom",		FKEYWORD, F_TOTALZOOM },
     { "f.twmrc",		FKEYWORD, F_RESTART },
     { "f.unfocus",		FKEYWORD, F_UNFOCUS },
     { "f.upiconmgr",		FKEYWORD, F_UPICONMGR },

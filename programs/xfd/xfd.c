@@ -1,6 +1,4 @@
 /*
- * $Xorg: xfd.c,v 1.4 2001/02/09 02:05:42 xorgcvs Exp $
- *
  * 
 Copyright 1989, 1998  The Open Group
 
@@ -26,7 +24,7 @@ in this Software without prior written authorization from The Open Group.
  * *
  * Author:  Jim Fulton, MIT X Consortium
  */
-/* $XFree86: xc/programs/xfd/xfd.c,v 1.8 2003/02/20 02:56:40 dawes Exp $ */
+/* $XFree86: xc/programs/xfd/xfd.c,v 1.9 2003/04/19 23:49:27 herrb Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
@@ -401,7 +399,7 @@ change_page(int page)
     GetFontGridCellDimensions (fontGrid, &oldstart, &ncols, &nrows);
 
     if (page) {
-	Dimension start = (oldstart + 
+	long start = (oldstart + 
 			   ((long) ncols) * ((long) nrows) * ((long) page));
 
 	arg.value = (XtArgVal) start;

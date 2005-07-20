@@ -1,4 +1,3 @@
-/* $Xorg: Screen.c,v 1.3 2000/08/17 19:53:28 cpqbld Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -12,7 +11,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Screen.c,v 3.12 2003/11/14 22:25:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Screen.c,v 3.13 2003/11/16 05:05:20 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -372,7 +371,8 @@ xnestOpenScreen(int index, ScreenPtr pScreen, int argc, char *argv[])
     
     if (xnestParentWindow != 0) {
       xnestDefaultWindows[pScreen->myNum] = xnestParentWindow;
-      XSelectInput (xnestDisplay, xnestDefaultWindows[pScreen->myNum],
+	  if (xnestInputEnabled)
+        XSelectInput (xnestDisplay, xnestDefaultWindows[pScreen->myNum],
 		    xnestEventMask);
     } else
       xnestDefaultWindows[pScreen->myNum] = 
