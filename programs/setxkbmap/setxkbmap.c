@@ -23,7 +23,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/setxkbmap/setxkbmap.c,v 3.8 2003/11/17 22:20:50 dawes Exp $ */
+/* $XFree86: xc/programs/setxkbmap/setxkbmap.c,v 3.9tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -467,6 +467,8 @@ char *			tmp= NULL;
         tmp = DFLT_XKB_RULES_FILE;
         vd.model = DFLT_XKB_MODEL;
         vd.layout = DFLT_XKB_LAYOUT;
+	vd.variant = NULL;
+	vd.options = NULL;
         VMSG3(3,"Use defaults: rules - '%s' model - '%s' layout - '%s'\n",
                 tmp, vd.model, vd.layout);
     }

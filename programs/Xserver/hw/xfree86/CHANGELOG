@@ -1,4 +1,5 @@
 XFree86 4.5.99.8 (xx July 2005)
+  97. Fix setxkbmap segfault (Miguel González Cuadrado).
   96. Fix textmode restore on x86/Solaris 8 and later;  and a number of other
       SunOS cleanups (Marc La France, adapted from Alan Coopersmith).
   95. Add a '-noinput' option to Xnest, allowing it to be run in a view-only
@@ -19690,7 +19691,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3555 2005/07/20 00:32:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3556 2005/07/20 21:12:41 tsi Exp $
 
 
 
