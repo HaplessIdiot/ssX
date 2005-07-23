@@ -1,4 +1,6 @@
-XFree86 4.5.99.8 (xx July 2005)
+XFree86 4.5.99.9 (xx August 2005)
+
+XFree86 4.5.99.8 (23 July 2005)
   97. Fix setxkbmap segfault (Miguel González Cuadrado).
   96. Fix textmode restore on x86/Solaris 8 and later;  and a number of other
       SunOS cleanups (Marc La France, adapted from Alan Coopersmith).
@@ -19691,7 +19693,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3556 2005/07/20 21:12:41 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3557 2005/07/22 16:01:31 tsi Exp $
 
 
 
