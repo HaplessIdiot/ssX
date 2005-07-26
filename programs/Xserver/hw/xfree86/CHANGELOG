@@ -1,4 +1,10 @@
 XFree86 4.5.99.9 (xx August 2005)
+ 100. Insulate various common layer functions against out-of-bounds entity
+      indices (Marc La France).
+  99. Prevent the sharing of a PCI entity by more than one driver
+      (Marc La France).
+  98. Change autoconfiguration to include PCI and SBUS BusIDs in generated
+      device sections (Marc La France).
 
 XFree86 4.5.99.8 (23 July 2005)
   97. Fix setxkbmap segfault (Miguel González Cuadrado).
@@ -19693,7 +19699,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3557 2005/07/22 16:01:31 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3558 2005/07/23 11:02:35 dawes Exp $
 
 
 

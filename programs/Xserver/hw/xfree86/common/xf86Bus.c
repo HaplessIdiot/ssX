@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.90 2005/07/19 15:02:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.90tsi Exp $ */
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -264,7 +264,12 @@ EntityLeave(void)
 Bool
 xf86IsEntityPrimary(int entityIndex)
 {
-    EntityPtr pEnt = xf86Entities[entityIndex];
+    EntityPtr pEnt;
+
+    if ((entityIndex < 0) || (entityIndex >= xf86NumEntities))
+	return FALSE;
+
+    pEnt = xf86Entities[entityIndex];
 
     if (primaryBus.type != pEnt->busType) return FALSE;
 
@@ -286,8 +291,9 @@ Bool
 xf86SetEntityFuncs(int entityIndex, EntityProc init, EntityProc enter,
 		   EntityProc leave, pointer private)
 {
-    if (entityIndex >= xf86NumEntities)
+    if ((entityIndex < 0) || (entityIndex >= xf86NumEntities))
 	return FALSE;
+
     xf86Entities[entityIndex]->entityInit = init;
     xf86Entities[entityIndex]->entityEnter = enter;
     xf86Entities[entityIndex]->entityLeave = leave;
@@ -319,8 +325,9 @@ xf86ClearDriverEntities(DriverPtr drvp)
 void
 xf86AddEntityToScreen(ScrnInfoPtr pScrn, int entityIndex)
 {
-    if (entityIndex == -1)
+    if ((entityIndex < 0) || (entityIndex >= xf86NumEntities))
 	return;
+
     if (xf86Entities[entityIndex]->inUse &&
 	!(xf86Entities[entityIndex]->entityProp & IS_SHARED_ACCEL))
 	FatalError("Requested Entity already in use!\n");
@@ -343,7 +350,7 @@ xf86SetEntityInstanceForScreen(ScrnInfoPtr pScrn, int entityIndex, int instance)
 {
     int i;
 
-    if (entityIndex == -1 || entityIndex >= xf86NumEntities)
+    if ((entityIndex < 0) || (entityIndex >= xf86NumEntities))
 	return;
 
     for (i = 0; i < pScrn->numEntities; i++) {
@@ -363,7 +370,8 @@ xf86FindScreenForEntity(int entityIndex)
 {
     int i,j;
 
-    if (entityIndex == -1) return NULL;
+    if ((entityIndex < 0) || (entityIndex >= xf86NumEntities))
+	return NULL;
 
     if (xf86Screens) {
 	for (i = 0; i < xf86NumScreens; i++) {
@@ -382,6 +390,9 @@ xf86RemoveEntityFromScreen(ScrnInfoPtr pScrn, int entityIndex)
     int i;
     EntityAccessPtr *ptr = (EntityAccessPtr *)&pScrn->access;
     EntityAccessPtr peacc;
+
+    if ((entityIndex < 0) || (entityIndex >= xf86NumEntities))
+	return;
 
     for (i = 0; i < pScrn->numEntities; i++) {
 	if (pScrn->entityList[i] == entityIndex) {
@@ -447,7 +458,7 @@ xf86DeallocateResourcesForEntity(int entityIndex, unsigned long type)
     resPtr res = Acc;
 
     while (res) {
-	if (res->entityIndex == entityIndex &&
+	if ((res->entityIndex == entityIndex) &&
 	    (type & ResAccMask & res->res_type))
 	{
 	    (*pprev_next) = res->next;
@@ -467,7 +478,7 @@ xf86AddDevToEntity(int entityIndex, GDevPtr dev)
 {
     EntityPtr pEnt;
 
-    if (entityIndex >= xf86NumEntities)
+    if ((entityIndex < 0) || (entityIndex >= xf86NumEntities))
 	return;
 
     pEnt = xf86Entities[entityIndex];
@@ -489,7 +500,7 @@ xf86GetEntityInfo(int entityIndex)
     EntityInfoPtr pEnt;
     int i;
 
-    if (entityIndex >= xf86NumEntities)
+    if ((entityIndex < 0) || (entityIndex >= xf86NumEntities))
 	return NULL;
 
     pEnt = xnfcalloc(1,sizeof(EntityInfoRec));
@@ -514,7 +525,7 @@ xf86GetEntityInfo(int entityIndex)
 int
 xf86GetNumEntityInstances(int entityIndex)
 {
-    if (entityIndex >= xf86NumEntities)
+    if ((entityIndex < 0) || (entityIndex >= xf86NumEntities))
 	return -1;
 
     return xf86Entities[entityIndex]->numInstances;
@@ -525,13 +536,16 @@ xf86GetDevFromEntity(int entityIndex, int instance)
 {
     int i;
 
+    if ((entityIndex < 0) || (entityIndex >= xf86NumEntities))
+	return NULL;
+
     /* We might not use AddDevtoEntity */
     if ( (!xf86Entities[entityIndex]->devices) ||
 	 (!xf86Entities[entityIndex]->devices[0]) )
 	return NULL;
 
-    if (entityIndex >= xf86NumEntities ||
-	instance >= xf86Entities[entityIndex]->numInstances)
+    if ((instance < 0) ||
+	(instance >= xf86Entities[entityIndex]->numInstances))
 	return NULL;
 
     for (i = 0; i < xf86Entities[entityIndex]->numInstances; i++)
@@ -1116,9 +1130,9 @@ needCheck(resPtr pRes, unsigned long type, int entityIndex, xf86State state)
 	    return FALSE;
     }
 
-    if (entityIndex > -1)
+    if ((entityIndex >= 0) && (entityIndex < xf86NumEntities))
 	loc = xf86Entities[entityIndex]->busType;
-    if (pRes->entityIndex > -1)
+    if ((pRes->entityIndex >= 0) && (pRes->entityIndex < xf86NumEntities))
 	r_loc = xf86Entities[pRes->entityIndex]->busType;
 
     switch (type & ResAccMask) {
@@ -1150,8 +1164,7 @@ needCheck(resPtr pRes, unsigned long type, int entityIndex, xf86State state)
 
     if (pRes->entityIndex == entityIndex) return FALSE;
 
-    if (pRes->entityIndex > -1 &&
-	(pScrn = xf86FindScreenForEntity(entityIndex))) {
+    if ((pScrn = xf86FindScreenForEntity(entityIndex))) {
 	for (i = 0; i < pScrn->numEntities; i++)
 	    if (pScrn->entityList[i] == pRes->entityIndex) return FALSE;
     }
@@ -1739,7 +1752,8 @@ xf86GetSparse(unsigned long type,  memType fixed_bits,
 static resList
 xf86GetResourcesImplicitly(int entityIndex)
 {
-    if (entityIndex >= xf86NumEntities) return NULL;
+    if ((entityIndex < 0) || (entityIndex >= xf86NumEntities))
+	return NULL;
 
     switch (xf86Entities[entityIndex]->bus.type) {
     case BUS_ISA:
@@ -1757,6 +1771,9 @@ xf86GetResourcesImplicitly(int entityIndex)
 static void
 convertRange2Host(int entityIndex, resRange *pRange)
 {
+    if ((entityIndex < 0) || (entityIndex >= xf86NumEntities))
+	return;
+
     if (pRange->type & ResBus) {
 	switch (xf86Entities[entityIndex]->busType) {
 	case BUS_PCI:
@@ -2190,9 +2207,10 @@ xf86ClaimFixedResources(resList list, int entityIndex)
     resPtr ptr = NULL;
     resRange range;
 
-    if (!list) return;
+    if (!list || (entityIndex < 0) || (entityIndex >= xf86NumEntities))
+	return;
 
-    while (list->type !=ResEnd) {
+    while (list->type != ResEnd) {
 	range = *list;
 
 	convertRange2Host(entityIndex,&range);
@@ -2232,6 +2250,7 @@ xf86ClaimFixedResources(resList list, int entityIndex)
 	}
 	list++;
     }
+
     xf86Entities[entityIndex]->resources =
 	xf86JoinResLists(xf86Entities[entityIndex]->resources,ptr);
     xf86MsgVerb(X_INFO, 3,
@@ -2435,7 +2454,12 @@ checkRequiredResources(int entityIndex)
 {
     resRange range;
     resPtr pAcc = Acc;
-    const EntityPtr pEnt = xf86Entities[entityIndex];
+    EntityPtr pEnt;
+
+    if ((entityIndex < 0) || (entityIndex >= xf86NumEntities))
+	return;
+
+    pEnt = xf86Entities[entityIndex];
     while (pAcc) {
 	if (pAcc->entityIndex == entityIndex) {
 	    range = pAcc->val;
@@ -2540,7 +2564,7 @@ xf86PostScreenInit(void)
 #endif
     if (serverGeneration == 1) {
 	checkRoutingForScreens(OPERATING);
-	for (i=0; i<xf86NumEntities; i++) {
+	for (i = 0; i < xf86NumEntities; i++) {
 	    checkRequiredResources(i);
 	}
 
@@ -3124,17 +3148,16 @@ xf86QueueAsyncEvent(void (*func)(pointer),pointer arg)
 int
 xf86GetLastScrnFlag(int entityIndex)
 {
-    if(entityIndex < xf86NumEntities) {
-	return(xf86Entities[entityIndex]->lastScrnFlag);
-    } else {
+    if ((entityIndex < 0) || (entityIndex >= xf86NumEntities))
 	return -1;
-    }
+
+    return(xf86Entities[entityIndex]->lastScrnFlag);
 }
 
 void
 xf86SetLastScrnFlag(int entityIndex, int scrnIndex)
 {
-    if(entityIndex < xf86NumEntities) {
+    if ((entityIndex >= 0) && (entityIndex < xf86NumEntities)) {
 	xf86Entities[entityIndex]->lastScrnFlag = scrnIndex;
     }
 }
@@ -3142,18 +3165,19 @@ xf86SetLastScrnFlag(int entityIndex, int scrnIndex)
 Bool
 xf86IsEntityShared(int entityIndex)
 {
-    if(entityIndex < xf86NumEntities) {
-	if(xf86Entities[entityIndex]->entityProp & IS_SHARED_ACCEL) {
+    if ((entityIndex >= 0) && (entityIndex < xf86NumEntities)) {
+	if (xf86Entities[entityIndex]->entityProp & IS_SHARED_ACCEL) {
 	    return TRUE;
 	}
     }
+
     return FALSE;
 }
 
 void
 xf86SetEntityShared(int entityIndex)
 {
-    if(entityIndex < xf86NumEntities) {
+    if ((entityIndex >= 0) && (entityIndex < xf86NumEntities)) {
 	xf86Entities[entityIndex]->entityProp |= IS_SHARED_ACCEL;
     }
 }
@@ -3161,18 +3185,19 @@ xf86SetEntityShared(int entityIndex)
 Bool
 xf86IsEntitySharable(int entityIndex)
 {
-    if(entityIndex < xf86NumEntities) {
-	if(xf86Entities[entityIndex]->entityProp & ACCEL_IS_SHARABLE) {
+    if ((entityIndex >= 0) && (entityIndex < xf86NumEntities)) {
+	if (xf86Entities[entityIndex]->entityProp & ACCEL_IS_SHARABLE) {
 	    return TRUE;
 	}
     }
+
     return FALSE;
 }
 
 void
 xf86SetEntitySharable(int entityIndex)
 {
-    if(entityIndex < xf86NumEntities) {
+    if ((entityIndex >= 0) && (entityIndex < xf86NumEntities)) {
 	xf86Entities[entityIndex]->entityProp |= ACCEL_IS_SHARABLE;
     }
 }
@@ -3180,18 +3205,19 @@ xf86SetEntitySharable(int entityIndex)
 Bool
 xf86IsPrimInitDone(int entityIndex)
 {
-    if(entityIndex < xf86NumEntities) {
-	if(xf86Entities[entityIndex]->entityProp & SA_PRIM_INIT_DONE) {
+    if ((entityIndex >= 0) && (entityIndex < xf86NumEntities)) {
+	if (xf86Entities[entityIndex]->entityProp & SA_PRIM_INIT_DONE) {
 	    return TRUE;
 	}
     }
+
     return FALSE;
 }
 
 void
 xf86SetPrimInitDone(int entityIndex)
 {
-    if(entityIndex < xf86NumEntities) {
+    if ((entityIndex >= 0) && (entityIndex < xf86NumEntities)) {
 	xf86Entities[entityIndex]->entityProp |= SA_PRIM_INIT_DONE;
     }
 }
@@ -3199,7 +3225,7 @@ xf86SetPrimInitDone(int entityIndex)
 void
 xf86ClearPrimInitDone(int entityIndex)
 {
-    if(entityIndex < xf86NumEntities) {
+    if ((entityIndex >= 0) && (entityIndex < xf86NumEntities)) {
 	xf86Entities[entityIndex]->entityProp &= ~SA_PRIM_INIT_DONE;
     }
 }
@@ -3231,7 +3257,8 @@ xf86AllocateEntityPrivateIndex(void)
 DevUnion *
 xf86GetEntityPrivate(int entityIndex, int privIndex)
 {
-    if (entityIndex >= xf86NumEntities || privIndex >= xf86EntityPrivateCount)
+    if ((entityIndex < 0) || (entityIndex >= xf86NumEntities) ||
+	(privIndex < 0) || (privIndex >= xf86EntityPrivateCount))
 	return NULL;
 
     return &(xf86Entities[entityIndex]->entityPrivates[privIndex]);
@@ -3244,7 +3271,12 @@ xf86LocateMemoryArea(int entityIndex, char **devName,
 		     unsigned int *devOffset, unsigned int *fbSize,
 		     unsigned int *fbOffset, unsigned int *flags)
 {
-    EntityPtr pEntity = xf86Entities[entityIndex];
+    EntityPtr pEntity;
+
+    if ((entityIndex < 0) || (entityIndex >= xf86NumEntities))
+	return FALSE;
+
+    pEntity = xf86Entities[entityIndex];
 
     switch (pEntity->busType) {
     case BUS_PCI:

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.85 2005/06/03 03:18:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.85tsi Exp $ */
 /*
  * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -2350,7 +2350,7 @@ ValidatePci(void)
 	if (PCINONSYSTEMCLASSES(pvp->class, pvp->subclass))
 	    continue;
 	/* has it an Entity assigned to it? */
-	for (i=0; i<xf86NumEntities; i++) {
+	for (i = 0; i < xf86NumEntities; i++) {
 	    EntityPtr p = xf86Entities[i];
 	    if (p->busType != BUS_PCI)
 		continue;
@@ -3538,10 +3538,15 @@ pciVideoPtr
 xf86GetPciInfoForEntity(int entityIndex)
 {
     pciVideoPtr *ppPci;
-    EntityPtr p = xf86Entities[entityIndex];
+    EntityPtr p;
 
-    if (entityIndex >= xf86NumEntities
-	|| p->busType != BUS_PCI) return NULL;
+    if ((entityIndex < 0) || (entityIndex >= xf86NumEntities) ||
+	(xf86PciVideoInfo == NULL))
+	return NULL;
+
+    p = xf86Entities[entityIndex];
+    if (p->busType != BUS_PCI)
+	return NULL;
 
     for (ppPci = xf86PciVideoInfo; *ppPci != NULL; ppPci++) {
 	if (p->pciBusId.bus == (*ppPci)->bus &&

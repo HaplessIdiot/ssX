@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.148 2005/06/07 15:32:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.148tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -1664,39 +1664,43 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
     int *retEntities = NULL;
 
     *foundEntities = NULL;
+    if (xf86PciVideoInfo == NULL)
+	return 0;
 
-    if (vendorID == 0) {
-	for (ppPci = xf86PciVideoInfo; *ppPci != NULL; ppPci++) {
+    for (ppPci = xf86PciVideoInfo; (pPci = *ppPci); ppPci++) {
+	/* Two or more different drivers may not share entities */
+	if (!xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func))
+	    continue;
+
+	if (vendorID == 0) {
 	    Bool foundVendor = FALSE;
 	    for (id = PCIchipsets; id->PCIid != -1; id++) {
-		if ( (((id->PCIid & 0xFFFF0000) >> 16) == (*ppPci)->vendor)) {
+		if ( (((id->PCIid & 0xFFFF0000) >> 16) == pPci->vendor)) {
 		    if (!foundVendor) {
 			++allocatedInstances;
 			instances = xnfrealloc(instances,
 				     allocatedInstances * sizeof(struct Inst));
-			instances[allocatedInstances - 1].pci = *ppPci;
+			instances[allocatedInstances - 1].pci = pPci;
 			instances[allocatedInstances - 1].dev = NULL;
 			instances[allocatedInstances - 1].claimed = FALSE;
 			instances[allocatedInstances - 1].foundHW = FALSE;
 			instances[allocatedInstances - 1].screen = 0;
 			foundVendor = TRUE;
 		    }
-		    if ((id->PCIid & 0x0000FFFF) == (*ppPci)->chipType) {
+		    if ((id->PCIid & 0x0000FFFF) == pPci->chipType) {
 		       instances[allocatedInstances - 1].foundHW = TRUE;
 		       instances[allocatedInstances - 1].chip = id->numChipset;
 		       numFound++;
 		    }
 		}
 	    }
-	}
-    } else if (vendorID == PCI_VENDOR_GENERIC) {
-	for (ppPci = xf86PciVideoInfo; *ppPci != NULL; ppPci++) {
+	} else if (vendorID == PCI_VENDOR_GENERIC) {
 	    for (id = PCIchipsets; id->PCIid != -1; id++) {
-		if (id->PCIid == xf86CheckPciGAType(*ppPci)) {
+		if (id->PCIid == xf86CheckPciGAType(pPci)) {
 		    ++allocatedInstances;
 		    instances = xnfrealloc(instances,
 				  allocatedInstances * sizeof(struct Inst));
-		    instances[allocatedInstances - 1].pci = *ppPci;
+		    instances[allocatedInstances - 1].pci = pPci;
 		    instances[allocatedInstances - 1].dev = NULL;
 		    instances[allocatedInstances - 1].claimed = FALSE;
 		    instances[allocatedInstances - 1].foundHW = TRUE;
@@ -1705,16 +1709,13 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 		    numFound++;
 		}
 	    }
-	}
-    } else {
-	/* Find PCI devices that match the given vendor ID */
-	for (ppPci = xf86PciVideoInfo; (ppPci != NULL)
-	       && (*ppPci != NULL); ppPci++) {
-	    if ((*ppPci)->vendor == vendorID) {
+	} else {
+	    /* Find PCI devices that match the given vendor ID */
+	    if (pPci->vendor == vendorID) {
 		++allocatedInstances;
 		instances = xnfrealloc(instances,
 			      allocatedInstances * sizeof(struct Inst));
-		instances[allocatedInstances - 1].pci = *ppPci;
+		instances[allocatedInstances - 1].pci = pPci;
 		instances[allocatedInstances - 1].dev = NULL;
 		instances[allocatedInstances - 1].claimed = FALSE;
 		instances[allocatedInstances - 1].foundHW = FALSE;
@@ -1722,7 +1723,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 
 		/* Check if the chip type is listed in the chipsets table */
 		for (id = PCIchipsets; id->PCIid != -1; id++) {
-		    if (id->PCIid == (*ppPci)->chipType) {
+		    if (id->PCIid == pPci->chipType) {
 			instances[allocatedInstances - 1].chip
 			    = id->numChipset;
 			instances[allocatedInstances - 1].foundHW = TRUE;

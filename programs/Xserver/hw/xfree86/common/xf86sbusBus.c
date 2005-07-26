@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.c,v 3.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.c,v 3.8tsi Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -656,9 +656,14 @@ sbusDevicePtr
 xf86GetSbusInfoForEntity(int entityIndex)
 {
     sbusDevicePtr *psdpp;
-    EntityPtr p = xf86Entities[entityIndex];
+    EntityPtr p;
 
-    if ((entityIndex >= xf86NumEntities) || (p->busType != BUS_SBUS))
+    if ((entityIndex < 0) || (entityIndex >= xf86NumEntities) ||
+	(xf86SbusInfo == NULL))
+	return NULL;
+
+    p = xf86Entities[entityIndex];
+    if (p->busType != BUS_SBUS)
 	return NULL;
 
     for (psdpp = xf86SbusInfo; *psdpp; psdpp++) {
