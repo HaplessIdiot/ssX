@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.84tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.85 2005/06/03 03:18:31 tsi Exp $ */
 /*
  * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -107,7 +107,7 @@ static PciBusPtr xf86PciBus = NULL;
     (((b) == PCI_CLASS_PREHISTORIC && (s) == PCI_SUBCLASS_PREHISTORIC_VGA) || \
      ((b) == PCI_CLASS_DISPLAY) ||					      \
      ((b) == PCI_CLASS_MULTIMEDIA && (s) == PCI_SUBCLASS_MULTIMEDIA_VIDEO))
- 
+
 /*
  * PCI classes for which potentially destructive checking of the map sizes
  * may be done.  Any classes where this may be unsafe should be omitted
@@ -115,8 +115,8 @@ static PciBusPtr xf86PciBus = NULL;
  */
 #define PCINONSYSTEMCLASSES(b,s) PCIALWAYSPRINTCLASSES(b,s)
 
-/* 
- * PCI classes that use RAC 
+/*
+ * PCI classes that use RAC
  */
 #define PCISHAREDIOCLASSES(b,s)					      \
     (((b) == PCI_CLASS_PREHISTORIC && (s) == PCI_SUBCLASS_PREHISTORIC_VGA) || \
@@ -142,8 +142,8 @@ static PciBusPtr xf86PciBus = NULL;
 #define TAG(pvp) (pciTag(pvp->bus,pvp->device,pvp->func))
 #define SIZE(size) ((1 << size) - 1)
 #define PCI_SIZE(type,tag,size) (((type & ResPhysMask) == ResMem) \
-                        ? pciBusAddrToHostAddr(tag,PCI_MEM_SIZE,size) \
-                        : pciBusAddrToHostAddr(tag,PCI_IO_SIZE,size))
+			? pciBusAddrToHostAddr(tag,PCI_MEM_SIZE,size) \
+			: pciBusAddrToHostAddr(tag,PCI_IO_SIZE,size))
 #define PCI_M_RANGE(range,tag,begin,end,type) \
 	{ \
 	    RANGE(range, B2M(tag, begin), B2M(tag, end), \
@@ -156,20 +156,20 @@ static PciBusPtr xf86PciBus = NULL;
 	}
 #define PCI_X_RANGE(range,tag,begin,end,type) \
 { if ((type & ResPhysMask) == ResMem)  PCI_M_RANGE(range,tag,begin,end,type); \
-                else PCI_I_RANGE(range,tag,begin,end,type); } 
+		else PCI_I_RANGE(range,tag,begin,end,type); }
 #define P_M_RANGE(range,tag,begin,size,type) \
-                    PCI_M_RANGE(range,tag,begin,(begin + SIZE(size)),type)
+		    PCI_M_RANGE(range,tag,begin,(begin + SIZE(size)),type)
 #define P_I_RANGE(range,tag,begin,size,type) \
-                    PCI_I_RANGE(range,tag,begin,(begin + SIZE(size)),type)
+		    PCI_I_RANGE(range,tag,begin,(begin + SIZE(size)),type)
 #define P_X_RANGE(range,tag,begin,size,type) \
 { if ((type & ResPhysMask) == ResMem)  P_M_RANGE(range,tag,begin,size,type); \
-                else P_I_RANGE(range,tag,begin,size,type); }
+		else P_I_RANGE(range,tag,begin,size,type); }
 #define PV_M_RANGE(range,pvp,i,type) \
-                  P_M_RANGE(range,TAG(pvp),pvp->memBase[i],pvp->size[i],type)
+		  P_M_RANGE(range,TAG(pvp),pvp->memBase[i],pvp->size[i],type)
 #define PV_B_RANGE(range,pvp,type) \
-                  P_M_RANGE(range,TAG(pvp),pvp->biosBase,pvp->biosSize,type)
+		  P_M_RANGE(range,TAG(pvp),pvp->biosBase,pvp->biosSize,type)
 #define PV_I_RANGE(range,pvp,i,type) \
-                  P_I_RANGE(range,TAG(pvp),pvp->ioBase[i],pvp->size[i],type)
+		  P_I_RANGE(range,TAG(pvp),pvp->ioBase[i],pvp->size[i],type)
 
 static void getPciClassFlags(pciConfigPtr *pcrpp);
 static void pciConvertListToHost(int bus, int dev, int func, resPtr list);
@@ -210,13 +210,13 @@ FindPCIVideoInfo(void)
 
     pcrpp = xf86PciInfo = xf86scanpci(0);
     getPciClassFlags(pcrpp);
-    
+
     if (pcrpp == NULL) {
 	xf86PciVideoInfo = NULL;
 	return;
     }
     xf86PciBus = xf86GetPciBridgeInfo();
-    
+
     while ((pcrp = pcrpp[i])) {
 	int baseclass;
 	int subclass;
@@ -228,7 +228,7 @@ FindPCIVideoInfo(void)
 	    baseclass = pcrp->pci_base_class;
 	    subclass = pcrp->pci_sub_class;
 	}
-	
+
 	if (PCIINFOCLASSES(baseclass, subclass)) {
 	    num++;
 	    xf86PciVideoInfo = xnfrealloc(xf86PciVideoInfo,
@@ -286,7 +286,7 @@ FindPCIVideoInfo(void)
 		}
 	    }
 #endif
-	    
+
 	    for (j = 0; j < 6; j++) {
 		info->memBase[j] = 0;
 		info->ioBase[j] = 0;
@@ -315,7 +315,7 @@ FindPCIVideoInfo(void)
 		if (info->size[5] && IsBaseUnassigned(pcrp->pci_base5))
 		    pcrp->pci_base5 = pciCheckForBrokenBase(pcrp->tag, 5);
 	    }
-	    
+
 	    /*
 	     * 64-bit base addresses are checked for and avoided on 32-bit
 	     * platforms.
@@ -364,7 +364,7 @@ FindPCIVideoInfo(void)
 	for (i = 0;  i < num;  i++) {
 	    info = xf86PciVideoInfo[i];
 	    pcrp = info->thisCard;
-	    
+
 	    if ((pcrp->pci_command & PCI_CMD_MEM_ENABLE) &&
 		(num == 1 ||
 		 ((info->class == PCI_CLASS_DISPLAY) &&
@@ -382,7 +382,7 @@ FindPCIVideoInfo(void)
 	    }
 	}
     }
-    
+
     /* Print a summary of the video devices found */
     for (k = 0; k < num; k++) {
 	const char *vendorname = NULL, *chipname = NULL;
@@ -390,7 +390,7 @@ FindPCIVideoInfo(void)
 	char busnum[8];
 	Bool memdone = FALSE, iodone = FALSE;
 
-	i = 0; 
+	i = 0;
 	info = xf86PciVideoInfo[k];
 	xf86FormatPciBusNumber(info->bus, busnum);
 	xf86FindPciNamesByDevice(info->vendor, info->chipType,
@@ -467,19 +467,19 @@ fixPciSizeInfo(int entityIndex)
     resPtr pAcc;
     PCITAG tag;
     int j;
-    
+
     if (! (pvp = xf86GetPciInfoForEntity(entityIndex))) return;
     if (pvp->validSize) return;
 
     tag = pciTag(pvp->bus,pvp->device,pvp->func);
-    
+
     for (j = 0; j < 6; j++) {
 	pAcc = Acc;
-	if (pvp->memBase[j]) 
+	if (pvp->memBase[j])
 	    while (pAcc) {
 		if (((pAcc->res_type & (ResPhysMask | ResBlock))
 		     == (ResMem | ResBlock))
-		    && (pAcc->block_begin == B2M(TAG(pvp),pvp->memBase[j])) 
+		    && (pAcc->block_begin == B2M(TAG(pvp),pvp->memBase[j]))
 		    && (pAcc->block_end == B2M(TAG(pvp),pvp->memBase[j]
 		    + SIZE(pvp->size[j])))) break;
 		pAcc = pAcc->next;
@@ -668,11 +668,11 @@ pciSetBusAccess(BusAccPtr ptr)
 
     if (!ptr->primary && !ptr->current)
 	return;
-    
+
     if (ptr->current && ptr->current->disable_f)
 	(*ptr->current->disable_f)(ptr->current);
     ptr->current = NULL;
-    
+
     /* walk down */
     while (ptr->primary) {	/* No enable for root bus */
 	if (ptr != ptr->primary->current) {
@@ -691,10 +691,10 @@ static void
 savePciState(PCITAG tag, pciSavePtr ptr)
 {
     int i;
-     
+
     ptr->command = pciReadLong(tag, PCI_CMD_STAT_REG);
-    for (i=0; i < 6; i++) 
-        ptr->base[i] = pciReadLong(tag, PCI_MAP_REG_START + (i * 4));
+    for (i=0; i < 6; i++)
+	ptr->base[i] = pciReadLong(tag, PCI_MAP_REG_START + (i * 4));
     ptr->biosBase = pciReadLong(tag, PCI_MAP_ROM_REG);
 }
 
@@ -703,13 +703,13 @@ static void
 restorePciState(PCITAG tag, pciSavePtr ptr)
 {
     int i;
-    
+
     /* disable card before setting anything */
     pciSetBitsLong(tag, PCI_CMD_STAT_REG,
 		   PCI_CMD_MEM_ENABLE | PCI_CMD_IO_ENABLE , 0);
     pciWriteLong(tag, PCI_MAP_ROM_REG, ptr->biosBase);
     for (i=0; i<6; i++)
-        pciWriteLong(tag, PCI_MAP_REG_START + (i * 4), ptr->base[i]);        
+	pciWriteLong(tag, PCI_MAP_REG_START + (i * 4), ptr->base[i]);
     pciWriteLong(tag, PCI_CMD_STAT_REG, ptr->command);
 }
 
@@ -767,7 +767,7 @@ restorePciDrvBusState(BusAccPtr ptr)
     int bus = ptr->busdep.pci.bus;
 
     (*pciBusInfo[bus]->funcs->pciControlBridge)(bus, (CARD16)(-1),
-					        ptr->busdep.pci.save.control);
+						ptr->busdep.pci.save.control);
 }
 
 
@@ -796,9 +796,9 @@ correctPciSize(memType base, memType oldsize, memType newsize,
 	new_bits ++;
 	newsize >>= 1;
     }
-    
+
     for (pcrpp = xf86PciInfo, pcrp = *pcrpp; pcrp; pcrp = *++(pcrpp)) {
-	
+
 	/* Only process devices with type 0 headers */
 	if ((pcrp->pci_header_type & 0x7f) != 0)
 	    continue;
@@ -820,7 +820,7 @@ correctPciSize(memType base, memType oldsize, memType newsize,
 		      ||
 		      (!basep[i+1]
 		       && (B2M(pcrp->tag,PCIGETMEMORY(basep[i])) == base))
-#endif 
+#endif
 		     ))) {
 		    pcrp->basesize[i] = new_bits;
 		    break;	/* to next device */
@@ -836,8 +836,8 @@ correctPciSize(memType base, memType oldsize, memType newsize,
 	    for (i = 0; i < 6; i++) {
 		if (pvp->size[i] == old_bits) {
 		    if ((((type & ResPhysMask) == ResIo) && pvp->ioBase[i]
-			 && (B2I(TAG(pvp),pvp->ioBase[i]) == base)) || 
-			(((type & ResPhysMask) == ResMem) && pvp->memBase[i] 
+			 && (B2I(TAG(pvp),pvp->ioBase[i]) == base)) ||
+			(((type & ResPhysMask) == ResMem) && pvp->memBase[i]
 			  && (B2M(TAG(pvp),pvp->memBase[i]) == base))) {
 			pvp->size[i] = new_bits;
 			break;	/* to next device */
@@ -858,12 +858,12 @@ removeOverlapsWithBridges(int busIndex, resPtr target)
 
     if (!target)
 	return;
-    
+
     if (!ResCanOverlap(&target->val))
 	return;
 
     range = target->val;
-    
+
     for (pbp=xf86PciBus; pbp; pbp = pbp->next) {
 	if (pbp->primary == busIndex) {
 	    tmp = xf86DupResList(pbp->preferred_io);
@@ -874,7 +874,7 @@ removeOverlapsWithBridges(int busIndex, resPtr target)
 	    bridgeRes = xf86JoinResLists(tmp,bridgeRes);
 	}
     }
-    
+
     RemoveOverlaps(target, bridgeRes, TRUE, TRUE);
     if (range.rEnd > target->block_end) {
 	correctPciSize(range.rBegin, range.rEnd - range.rBegin,
@@ -887,7 +887,7 @@ removeOverlapsWithBridges(int busIndex, resPtr target)
     }
     xf86FreeResList(bridgeRes);
 }
-    
+
 /* ????? */
 static void
 xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
@@ -912,20 +912,20 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 	for (pvpp = xf86PciVideoInfo, pvp = *pvpp; pvp; pvp = *(++pvpp)) {
 	    resPtr *res;
 
-	    if (PCINONSYSTEMCLASSES(pvp->class, pvp->subclass)) 
+	    if (PCINONSYSTEMCLASSES(pvp->class, pvp->subclass))
 		resMisc = ResBios;
-	    else 
+	    else
 		resMisc = 0;
-	    
+
 	    if (((pciConfigPtr)pvp->thisCard)->pci_command
 		& (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE))
 		res = activeRes;
 	    else
 		res = inactiveRes;
-	    
+
 	    if (!pvp->validSize)
 		resMisc |= ResEstimated;
-	    
+
 	    for (i = 0; i < 6; i++) {
 		if (pvp->ioBase[i] &&
 		    (pvp->ioBase[i] < (memType)(-1 << pvp->size[i]))) {
@@ -964,10 +964,10 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 	    baseclass = pcrp->pci_base_class;
 	    subclass = pcrp->pci_sub_class;
 	}
-	
+
 	if (PCIINFOCLASSES(baseclass, subclass))
 	    continue;
-	
+
 	/* Only process devices with type 0 headers */
 	if ((pcrp->pci_header_type & 0x7f) != 0)
 	    continue;
@@ -985,11 +985,11 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 	if ((baseclass == PCI_CLASS_BRIDGE) &&
 	    (subclass == PCI_SUBCLASS_BRIDGE_HOST))
 	    resMisc |= ResOverlap;
-	
+
 	basep = &pcrp->pci_base0;
 	for (i = 0; i < 6; i++) {
 	    if (basep[i]) {
-	        if (PCI_MAP_IS_IO(basep[i])) {
+		if (PCI_MAP_IS_IO(basep[i])) {
 		    if (pcrp->pci_command & PCI_CMD_IO_ENABLE)
 			res = activeRes;
 		    else
@@ -1027,7 +1027,7 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 	    }
 	}
 
-        /* Ignore disabled non-video ROMs */
+	/* Ignore disabled non-video ROMs */
 	if ((pcrp->pci_command & PCI_CMD_MEM_ENABLE) &&
 	    (pcrp->pci_baserom & PCI_MAP_ROM_DECODE_ENABLE)) {
 	    P_M_RANGE(range,pcrp->tag,PCIGETROM(pcrp->pci_baserom),
@@ -1064,9 +1064,9 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 		range = pRes->val;
 
 		RemoveOverlaps(pRes, *activeRes, TRUE, TRUE);
-		RemoveOverlaps(pRes, *inactiveRes, TRUE, 
+		RemoveOverlaps(pRes, *inactiveRes, TRUE,
 		    (xf86Info.estimateSizesAggressively > 0));
-		
+
 		if (range.rEnd > pRes->block_end) {
 		    correctPciSize(range.rBegin, range.rEnd - range.rBegin,
 				   pRes->block_end - pRes->block_begin,
@@ -1095,7 +1095,7 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 		    (xf86Info.estimateSizesAggressively > 1));
 		RemoveOverlaps(pRes, *inactiveRes, TRUE,
 		    (xf86Info.estimateSizesAggressively > 1));
-		
+
 		if (range.rEnd > pRes->block_end) {
 		    correctPciSize(range.rBegin, range.rEnd - range.rBegin,
 				   pRes->block_end - pRes->block_begin,
@@ -1107,7 +1107,7 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 				 "Memory" : "I/O",
 				range.rBegin, range.rEnd, pRes->block_end);
 		}
-		
+
 	    }
 	}
 	xf86MsgVerb(X_INFO, 3,
@@ -1121,7 +1121,7 @@ ResourceBrokerInitPci(resPtr *osRes)
 {
     resPtr activeRes, inactiveRes;
     resPtr tmp;
-    
+
     /* Get bus-specific system resources (PCI) */
     xf86GetPciRes(&activeRes, &inactiveRes);
 
@@ -1132,7 +1132,7 @@ ResourceBrokerInitPci(resPtr *osRes)
      * to host memory.
      */
 
-    for (tmp = *osRes; tmp; tmp = tmp->next) 
+    for (tmp = *osRes; tmp; tmp = tmp->next)
 	RemoveOverlaps(tmp, activeRes, FALSE, TRUE);
 
     xf86MsgVerb(X_INFO, 3, "OS-reported resource ranges after removing"
@@ -1140,11 +1140,11 @@ ResourceBrokerInitPci(resPtr *osRes)
     xf86PrintResList(3, *osRes);
 
     pciAvoidRes = xf86AddRangesToList(pciAvoidRes,PciAvoid,-1);
-    for (tmp = pciAvoidRes; tmp; tmp = tmp->next) 
+    for (tmp = pciAvoidRes; tmp; tmp = tmp->next)
 	RemoveOverlaps(tmp, activeRes, FALSE, TRUE);
     tmp = xf86DupResList(*osRes);
     pciAvoidRes = xf86JoinResLists(pciAvoidRes,tmp);
-    
+
     return (xf86JoinResLists(activeRes,inactiveRes));
 }
 
@@ -1170,7 +1170,7 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, unsigned long type)
     PciBusPtr pbp = xf86PciBus;
     pciConfigPtr pcp;
     resPtr tmp;
-    
+
     if (!pvp) return FALSE;
     tag = pciTag(pvp->bus,pvp->device,pvp->func);
     pcp = pvp->thisCard;
@@ -1209,9 +1209,9 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, unsigned long type)
     } else return FALSE;
 
     if (! *p_base) return FALSE;
-    
+
     type |= (range.type & ResDomain) | ResBlock;
-    
+
     /* setup avoid: PciAvoid is bus range: convert later */
     avoid = xf86DupResList(pciAvoidRes);
 
@@ -1228,11 +1228,11 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, unsigned long type)
 						     ResRange);
 		    else if (pbp->pmem)
 			w = xf86FindIntersectOfLists(pbp->pmem,ResRange);
-		    
-		    if (pbp->preferred_mem) 
+
+		    if (pbp->preferred_mem)
 			w_2nd = xf86FindIntersectOfLists(pbp->preferred_mem,
 							 ResRange);
-		    else if (pbp->mem) 
+		    else if (pbp->mem)
 			w_2nd = xf86FindIntersectOfLists(pbp->mem,
 							 ResRange);
 		} else {
@@ -1243,9 +1243,9 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, unsigned long type)
 			w = xf86FindIntersectOfLists(pbp->mem,ResRange);
 		}
 	    } else {
-		if (pbp->preferred_io) 
+		if (pbp->preferred_io)
 		    w = xf86FindIntersectOfLists(pbp->preferred_io,ResRange);
-		if (pbp->io) 
+		if (pbp->io)
 		    w = xf86FindIntersectOfLists(pbp->io,ResRange);
 	    }
 	} else if (pbp->primary == pvp->bus) {
@@ -1258,20 +1258,20 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, unsigned long type)
 		tmp = xf86DupResList(pbp->preferred_io);
 		avoid = xf86JoinResLists(avoid, tmp);
 	    }
-	}	
+	}
 	pbp = pbp->next;
     }
-    
+
     /* convert bus based entries in avoid list to host base */
     pciConvertListToHost(pvp->bus,pvp->device,pvp->func, avoid);
-    
+
     if (!w)
 	w = xf86DupResList(ResRange);
     xf86MsgVerb(X_INFO, 3, "window:\n");
     xf86PrintResList(3, w);
     xf86MsgVerb(X_INFO, 3, "resSize:\n");
     xf86PrintResList(3, resSize);
-    
+
     if (resSize) {
 	w_tmp = w;
 	w = xf86FindIntersectOfLists(w,resSize);
@@ -1288,7 +1288,7 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, unsigned long type)
 
     if (!alignment)
 	alignment = (1 << (*p_size)) - 1;
-    
+
     /* Access list holds bios resources -- remove this one */
 #ifdef NOTYET
     AccTmp = xf86DupResList(Acc);
@@ -1348,7 +1348,7 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, unsigned long type)
 	    pAcc = &((*pAcc)->next);
     }
 #endif
-    
+
 #ifdef DEBUG
     ErrorF("base: 0x%lx alignment: 0x%lx host alignment: 0x%lx size[bit]: 0x%x\n",
 	   (*p_base),alignment,PCI_SIZE(type,tag,alignment),(*p_size));
@@ -1407,7 +1407,7 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, unsigned long type)
 #ifdef DEBUG
     ErrorF("begin: 0x%lx, end: 0x%lx\n",range.a,range.b);
 #endif
-    
+
     (*p_size) = 0;
     while (alignment >> (*p_size))
 	(*p_size)++;
@@ -1431,7 +1431,7 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, unsigned long type)
 	    ((CARD32 *)(&(pcp->pci_base0)))[res_n + 1] =
 		(CARD32)(*p_base >> 32);
 	    pciWriteLong(tag, PCI_MAP_REG_START + ((res_n + 1) * sizeof(CARD32)),
-	    		 ((CARD32 *)(&(pcp->pci_base0)))[res_n + 1]);
+			 ((CARD32 *)(&(pcp->pci_base0)))[res_n + 1]);
 #else
 	    ((CARD32 *)(&(pcp->pci_base0)))[res_n + 1] = 0;
 	    pciWriteLong(tag, PCI_MAP_REG_START + ((res_n + 1) * sizeof(CARD32)),
@@ -1448,9 +1448,9 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, unsigned long type)
     /* @@@ fake BIOS allocated resource */
     range.type |= ResBios;
     Acc = xf86AddResToList(Acc, &range,-1);
-    
+
     return TRUE;
-    
+
 }
 
 Bool
@@ -1468,7 +1468,7 @@ xf86ReallocatePciResources(int entityIndex, resPtr pRes)
     resPtr pBad = NULL,pResTmp;
     unsigned int prt = 0;
     int i;
-    
+
     if (!pvp) return pRes;
 
     while (pRes) {
@@ -1478,7 +1478,7 @@ xf86ReallocatePciResources(int entityIndex, resPtr pRes)
 		pRes->block_end == B2M(TAG(pvp),pvp->biosBase
 				       + SIZE(pvp->biosSize)))
 		prt = 6;
-	    else for (i = 0 ; i < 6; i++) 
+	    else for (i = 0 ; i < 6; i++)
 		if ((pRes->block_begin == B2M(TAG(pvp),pvp->memBase[i]))
 		    && (pRes->block_end == B2M(TAG(pvp),pvp->memBase[i]
 					      + SIZE(pvp->size[i])))) {
@@ -1487,7 +1487,7 @@ xf86ReallocatePciResources(int entityIndex, resPtr pRes)
 		}
 	    break;
 	case ResIo:
-	    for (i = 0 ; i < 6; i++) 
+	    for (i = 0 ; i < 6; i++)
 		if (pRes->block_begin == B2I(TAG(pvp),pvp->ioBase[i])
 		    && pRes->block_end == B2I(TAG(pvp),pvp->ioBase[i]
 		    + SIZE(pvp->size[i]))) {
@@ -1505,7 +1505,7 @@ xf86ReallocatePciResources(int entityIndex, resPtr pRes)
 	    pBad = pRes;
 	} else
 	    xfree(pRes);
-	
+
 	pRes = pResTmp;
     }
     return pBad;
@@ -1528,7 +1528,7 @@ getValidBIOSBase(PCITAG tag, int num)
     CARD32 biosSize, alignment;
 
     if (!xf86PciVideoInfo) return 0;
-    
+
     while ((pvp = xf86PciVideoInfo[n++])) {
 	if (pciTag(pvp->bus,pvp->device,pvp->func) == tag)
 	    break;
@@ -1610,7 +1610,7 @@ getValidBIOSBase(PCITAG tag, int num)
 	    avoid = xf86JoinResLists(avoid, tmp);
 	}
 	pbp = pbp->next;
-    }	
+    }
     pciConvertListToHost(pvp->bus,pvp->device,pvp->func, avoid);
     if (mem)
 	pciConvertListToHost(pvp->bus,pvp->device,pvp->func, mem);
@@ -1621,7 +1621,7 @@ getValidBIOSBase(PCITAG tag, int num)
 	    range = xf86GetBlock(RANGE_TYPE(ResExcMemBlock, xf86GetPciDomain(tag)),
 				 PCI_SIZE(ResMem, TAG(pvp), 1 << biosSize),
 				 m->block_begin, m->block_end,
-				 PCI_SIZE(ResMem, TAG(pvp), alignment), 
+				 PCI_SIZE(ResMem, TAG(pvp), alignment),
 				 avoid);
 	    if (range.type != ResEnd) {
 		ret =  M2B(TAG(pvp), range.rBase);
@@ -1630,9 +1630,9 @@ getValidBIOSBase(PCITAG tag, int num)
 	    m = m->next;
 	}
     } else {
-	if (!xf86IsSubsetOf(range, m) || 
-	    ChkConflict(&range, avoid, SETUP) 
-	    || (mem && ChkConflict(&range, mem, SETUP))) 
+	if (!xf86IsSubsetOf(range, m) ||
+	    ChkConflict(&range, avoid, SETUP)
+	    || (mem && ChkConflict(&range, mem, SETUP)))
 	    ret = 0;
     }
 
@@ -1680,7 +1680,7 @@ xf86PciProbe(void)
 static void alignBridgeRanges(PciBusPtr PciBusBase, PciBusPtr primary);
 
 static void
-printBridgeInfo(PciBusPtr PciBus) 
+printBridgeInfo(PciBusPtr PciBus)
 {
     char primary[8], secondary[8], subordinate[8], brbus[8];
 
@@ -1850,8 +1850,8 @@ xf86GetPciBridgeInfo(void)
 		   * bottom megabyte.
 		   */
 		  if (pcrp->pci_mem_base || pcrp->pci_mem_limit) {
-                    base = pcrp->pci_mem_base & 0xfff0u;
-                    limit = pcrp->pci_mem_limit & 0xfff0u;
+		    base = pcrp->pci_mem_base & 0xfff0u;
+		    limit = pcrp->pci_mem_limit & 0xfff0u;
 		    if (base <= limit) {
 			PCI_M_RANGE(range, pcrp->tag,
 				    base << 16, (limit << 16) | 0x0fffff,
@@ -1865,8 +1865,8 @@ xf86GetPciBridgeInfo(void)
 		      pcrp->pci_prefetch_mem_limit ||
 		      pcrp->pci_prefetch_upper_mem_base ||
 		      pcrp->pci_prefetch_upper_mem_limit) {
-                    base = pcrp->pci_prefetch_mem_base & 0xfff0u;
-                    limit = pcrp->pci_prefetch_mem_limit & 0xfff0u;
+		    base = pcrp->pci_prefetch_mem_base & 0xfff0u;
+		    limit = pcrp->pci_prefetch_mem_limit & 0xfff0u;
 #if defined(LONG64) || defined(WORD64)
 		    base |= (memType)pcrp->pci_prefetch_upper_mem_base << 16;
 		    limit |= (memType)pcrp->pci_prefetch_upper_mem_limit << 16;
@@ -1924,7 +1924,7 @@ xf86GetPciBridgeInfo(void)
 
 		if (primary >= secondary) {
 		    if (pcrp->pci_cb_cardbus_bus_number != 0)
-		        xf86MsgVerb(X_WARNING, 3, "Misconfigured CardBus"
+			xf86MsgVerb(X_WARNING, 3, "Misconfigured CardBus"
 				    " bridge %x:%x:%x (%x,%x)\n",
 				    pcrp->busnum, pcrp->devnum, pcrp->funcnum,
 				    primary, secondary);
@@ -2337,7 +2337,7 @@ ValidatePci(void)
 	    if ((pvp = xf86GetPciInfoForEntity(xf86Screens[i]->entityList[m])))
 		pvp->validate = TRUE;
     }
-    
+
     /*
      * Collect all background PCI resources we need to validate against.
      * These are all resources which don't belong to PCINONSYSTEMCLASSES
@@ -2361,7 +2361,7 @@ ValidatePci(void)
 	}
 	if (i != xf86NumEntities) /* found an Entity for this one */
 	    continue;
-	
+
 	for (i = 0; i<6; i++) {
 	    if (pvp->ioBase[i]) {
 		PV_I_RANGE(range,pvp,i,ResExcIoBlock);
@@ -2377,7 +2377,7 @@ ValidatePci(void)
 	/* These were handled above */
 	if (PCIINFOCLASSES(pcrp->pci_base_class, pcrp->pci_sub_class))
 	    continue;
-	
+
 	if ((pcrp->pci_header_type & 0x7f) ||
 	    !(pcrp->pci_command & (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE)))
 	    continue;
@@ -2404,11 +2404,11 @@ ValidatePci(void)
 			      pcrp->basesize[i-1], ResExcMemBlock)
 #else
 		    if (basep[i])
-		        continue;
+			continue;
 		    P_M_RANGE(range, pcrp->tag, PCIGETMEMORY(basep[i-1]),
 			      pcrp->basesize[i-1], ResExcMemBlock)
 #endif
-		} 
+		}
 		Sys = xf86AddResToList(Sys, &range, -1);
 	    }
 	}
@@ -2547,7 +2547,7 @@ ValidatePci(void)
 			&& ! ChkConflict(&range,own,SETUP)
 			&& ! ChkConflict(&range,avoid,SETUP)
 			&& ! ChkConflict(&range,NonSys,SETUP)) {
-		        xf86FreeResList(own);
+			xf86FreeResList(own);
 			continue;
 		    }
 		}
@@ -2588,7 +2588,7 @@ ValidatePci(void)
     }
     xf86FreeResList(Sys);
 }
-    
+
 resList
 GetImplicitPciResources(int entityIndex)
 {
@@ -2596,13 +2596,13 @@ GetImplicitPciResources(int entityIndex)
     int i;
     resList list = NULL;
     int num = 0;
-    
+
     if (! (pvp = xf86GetPciInfoForEntity(entityIndex))) return NULL;
 
     for (i = 0; i < 6; i++) {
 	if (pvp->ioBase[i]) {
 	    list = xnfrealloc(list,sizeof(resRange) * (++num));
-	    PV_I_RANGE(list[num - 1],pvp,i,ResShrIoBlock | ResBios); 
+	    PV_I_RANGE(list[num - 1],pvp,i,ResShrIoBlock | ResBios);
 	} else if (pvp->memBase[i]) {
 	    list = xnfrealloc(list,sizeof(resRange) * (++num));
 	    PV_M_RANGE(list[num - 1],pvp,i,ResShrMemBlock | ResBios);
@@ -2616,7 +2616,7 @@ GetImplicitPciResources(int entityIndex)
 #endif
     list = xnfrealloc(list,sizeof(resRange) * (++num));
     list[num - 1].type = ResEnd;
-    
+
     return list;
 }
 
@@ -2625,40 +2625,40 @@ initPciState(void)
 {
     int i = 0;
     int j = 0;
-    pciVideoPtr pvp; 
+    pciVideoPtr pvp;
     pciAccPtr pcaccp;
 
     if (xf86PciAccInfo != NULL)
 	return;
-  
+
     if (xf86PciVideoInfo == NULL)
 	return;
 
     while ((pvp = xf86PciVideoInfo[i]) != NULL) {
-  	i++;
-  	    j++;
-  	    xf86PciAccInfo = xnfrealloc(xf86PciAccInfo,
-  					sizeof(pciAccPtr) * (j + 1));
-  	    xf86PciAccInfo[j] = NULL;
-  	    pcaccp = xf86PciAccInfo[j - 1] = xnfalloc(sizeof(pciAccRec));
-	    pcaccp->busnum = pvp->bus; 
- 	    pcaccp->devnum = pvp->device; 
- 	    pcaccp->funcnum = pvp->func;
- 	    pcaccp->arg.tag = pciTag(pvp->bus, pvp->device, pvp->func);
-  	    pcaccp->ioAccess.AccessDisable = pciIoAccessDisable;
-  	    pcaccp->ioAccess.AccessEnable = pciIoAccessEnable;
-  	    pcaccp->ioAccess.arg = &pcaccp->arg;
+	i++;
+	    j++;
+	    xf86PciAccInfo = xnfrealloc(xf86PciAccInfo,
+					sizeof(pciAccPtr) * (j + 1));
+	    xf86PciAccInfo[j] = NULL;
+	    pcaccp = xf86PciAccInfo[j - 1] = xnfalloc(sizeof(pciAccRec));
+	    pcaccp->busnum = pvp->bus;
+	    pcaccp->devnum = pvp->device;
+	    pcaccp->funcnum = pvp->func;
+	    pcaccp->arg.tag = pciTag(pvp->bus, pvp->device, pvp->func);
+	    pcaccp->ioAccess.AccessDisable = pciIoAccessDisable;
+	    pcaccp->ioAccess.AccessEnable = pciIoAccessEnable;
+	    pcaccp->ioAccess.arg = &pcaccp->arg;
 	    pcaccp->io_memAccess.AccessDisable = pciIo_MemAccessDisable;
 	    pcaccp->io_memAccess.AccessEnable = pciIo_MemAccessEnable;
 	    pcaccp->io_memAccess.arg = &pcaccp->arg;
 	    pcaccp->memAccess.AccessDisable = pciMemAccessDisable;
 	    pcaccp->memAccess.AccessEnable = pciMemAccessEnable;
 	    pcaccp->memAccess.arg = &pcaccp->arg;
- 	    if (PCISHAREDIOCLASSES(pvp->class, pvp->subclass))
- 		pcaccp->ctrl = TRUE;
- 	    else
- 		pcaccp->ctrl = FALSE;
- 	    savePciState(pcaccp->arg.tag, &pcaccp->save);
+	    if (PCISHAREDIOCLASSES(pvp->class, pvp->subclass))
+		pcaccp->ctrl = TRUE;
+	    else
+		pcaccp->ctrl = FALSE;
+	    savePciState(pcaccp->arg.tag, &pcaccp->save);
 	    pcaccp->arg.ctrl = pcaccp->save.command;
     }
 }
@@ -2682,7 +2682,7 @@ initPciState(void)
  * 2. Climb down the ladder and enable any bridge on buses
  *    on the path from the CPU to this bus.
  */
- 
+
 void
 initPciBusState(void)
 {
@@ -2758,19 +2758,19 @@ initPciBusState(void)
     }
 }
 
-void 
+void
 PciStateEnter(void)
 {
     pciAccPtr paccp;
     int i = 0;
-    
-    if (xf86PciAccInfo == NULL) 
+
+    if (xf86PciAccInfo == NULL)
 	return;
 
     while ((paccp = xf86PciAccInfo[i]) != NULL) {
 	i++;
- 	if (!paccp->ctrl)
- 	    continue;
+	if (!paccp->ctrl)
+	    continue;
 	savePciState(paccp->arg.tag, &paccp->save);
 	restorePciState(paccp->arg.tag, &paccp->restore);
 	paccp->arg.ctrl = paccp->restore.command;
@@ -2789,13 +2789,13 @@ PciBusStateEnter(void)
     }
 }
 
-void 
+void
 PciStateLeave(void)
 {
     pciAccPtr paccp;
     int i = 0;
 
-    if (xf86PciAccInfo == NULL) 
+    if (xf86PciAccInfo == NULL)
 	return;
 
     while ((paccp = xf86PciAccInfo[i]) != NULL) {
@@ -2819,7 +2819,7 @@ PciBusStateLeave(void)
     }
 }
 
-void 
+void
 DisablePciAccess(void)
 {
     int i = 0;
@@ -2858,7 +2858,7 @@ xf86IsPciDevPresent(int bus, int dev, int func)
 {
     int i = 0;
     pciConfigPtr pcp;
-    
+
     while ((pcp = xf86PciInfo[i]) != NULL) {
 	if ((pcp->busnum == bus)
 	    && (pcp->devnum == dev)
@@ -2881,9 +2881,9 @@ xf86ClaimPciSlot(int bus, int device, int func, DriverPtr drvp,
     EntityPtr p = NULL;
     pciAccPtr *ppaccp = xf86PciAccInfo;
     BusAccPtr pbap = xf86BusAccInfo;
-    
+
     int num;
-    
+
     if (xf86CheckPciSlot(bus, device, func)) {
 	if ((num = FindDiscardedPciSlot(bus, device, func)) < 0)
 	    num = xf86AllocateEntity();
@@ -2897,7 +2897,7 @@ xf86ClaimPciSlot(int bus, int device, int func, DriverPtr drvp,
 	p->active = active;
 	p->inUse = FALSE;
 	if (dev)
-            xf86AddDevToEntity(num, dev);
+	    xf86AddDevToEntity(num, dev);
 	/* Here we initialize the access structure */
 	p->access = xnfcalloc(1,sizeof(EntityAccessRec));
 	while (ppaccp && *ppaccp) {
@@ -2906,7 +2906,7 @@ xf86ClaimPciSlot(int bus, int device, int func, DriverPtr drvp,
 		&& (*ppaccp)->funcnum == func) {
 		p->access->fallback = &(*ppaccp)->io_memAccess;
 		p->access->pAccess = &(*ppaccp)->io_memAccess;
- 		(*ppaccp)->ctrl = TRUE; /* mark control if not already */
+		(*ppaccp)->ctrl = TRUE; /* mark control if not already */
 		break;
 	    }
 	    ppaccp++;
@@ -2915,7 +2915,7 @@ xf86ClaimPciSlot(int bus, int device, int func, DriverPtr drvp,
 	    p->access->fallback = &AccessNULL;
 	    p->access->pAccess = &AccessNULL;
 	}
-	
+
 	p->busAcc = NULL;
 	while (pbap) {
 	    if (pbap->type == BUS_PCI && pbap->busdep.pci.bus == bus)
@@ -2933,10 +2933,10 @@ xf86ClaimPciSlot(int bus, int device, int func, DriverPtr drvp,
 	   p->domainIO = xf86MapDomainIO(-1, VIDMEM_MMIO,
 					 pciTag(bus, device, func), 0, 1);
 	}
-	
- 	return num;
+
+	return num;
     } else
- 	return -1;
+	return -1;
 }
 
 /*
@@ -3492,7 +3492,7 @@ xf86ComparePciBusString(const char *busID, int bus, int device, int func)
  * xf86IsPrimaryPci() -- return TRUE if primary device
  * is PCI and bus, dev and func numbers match.
  */
- 
+
 Bool
 xf86IsPrimaryPci(pciVideoPtr pPci)
 {
@@ -3510,8 +3510,8 @@ xf86CheckPciGAType(pciVideoPtr pPci)
 {
     int i = 0;
     pciConfigPtr pcp;
-    
-    while ((pcp = xf86PciInfo[i]) != NULL) { 
+
+    while ((pcp = xf86PciInfo[i]) != NULL) {
 	if (pPci->bus == pcp->busnum && pPci->device == pcp->devnum
 	    && pPci->func == pcp->funcnum) {
 	    if (pcp->pci_base_class == PCI_CLASS_PREHISTORIC &&
@@ -3520,7 +3520,7 @@ xf86CheckPciGAType(pciVideoPtr pPci)
 	    if (pcp->pci_base_class == PCI_CLASS_DISPLAY &&
 		pcp->pci_sub_class == PCI_SUBCLASS_DISPLAY_VGA) {
 		if (pcp->pci_prog_if == 0)
-		    return PCI_CHIP_VGA ; 
+		    return PCI_CHIP_VGA ;
 		if (pcp->pci_prog_if == 1)
 		    return PCI_CHIP_8514;
 	    }
@@ -3539,14 +3539,14 @@ xf86GetPciInfoForEntity(int entityIndex)
 {
     pciVideoPtr *ppPci;
     EntityPtr p = xf86Entities[entityIndex];
-    
+
     if (entityIndex >= xf86NumEntities
 	|| p->busType != BUS_PCI) return NULL;
-    
+
     for (ppPci = xf86PciVideoInfo; *ppPci != NULL; ppPci++) {
 	if (p->pciBusId.bus == (*ppPci)->bus &&
 	    p->pciBusId.device == (*ppPci)->device &&
-	    p->pciBusId.func == (*ppPci)->func) 
+	    p->pciBusId.func == (*ppPci)->func)
 	    return (*ppPci);
     }
     return NULL;
@@ -3556,14 +3556,14 @@ int
 xf86GetPciEntity(int bus, int dev, int func)
 {
     int i;
-    
+
     for (i = 0; i < xf86NumEntities; i++) {
 	EntityPtr p = xf86Entities[i];
 	if (p->busType != BUS_PCI) continue;
-	
+
 	if (p->pciBusId.bus == bus &&
 	    p->pciBusId.device == dev &&
-	    p->pciBusId.func == func) 
+	    p->pciBusId.func == func)
 	    return i;
     }
     return -1;
@@ -3603,7 +3603,7 @@ xf86CheckPciSlot(int bus, int device, int func)
 	    p->pciBusId.device == device && p->pciBusId.func == func)
 	    return FALSE;
     }
-    
+
     return TRUE;
 }
 
@@ -3615,7 +3615,7 @@ FindDiscardedPciSlot(int bus, int device, int func)
 
     for (i = 0; i < xf86NumEntities; i++) {
 	p = xf86Entities[i];
-	if (!p->driver && 
+	if (!p->driver &&
 	    p->busType == BUS_PCI && p->pciBusId.bus == bus &&
 	    p->pciBusId.device == device && p->pciBusId.func == func) {
 	    return i;
@@ -3683,7 +3683,7 @@ xf86FindPciClass(CARD8 intf, CARD8 subClass, CARD16 class,
 {
     pciVideoPtr pvp, *ppvp;
     n++;
-    
+
     for (ppvp = xf86PciVideoInfo, pvp =*ppvp; pvp ; pvp = *(++ppvp)) {
 	if (pvp == pvp_exclude) continue;
 	if ((pvp->interface == intf) && (pvp->subclass == subClass)
@@ -3716,13 +3716,13 @@ pciTestMultiDeviceCard(int bus, int dev, int func, PCITAG** pTag)
   Bool multifunc = FALSE;
   char str[256];
   char *str1;
-  
+
   str1 = str;
-  if (!pTag) 
+  if (!pTag)
     return 0;
 
   *pTag = NULL;
- 
+
   for (i=0; i < 8; i++) {
     j = 0;
 
@@ -3736,23 +3736,23 @@ pciTestMultiDeviceCard(int bus, int dev, int func, PCITAG** pTag)
 
     if (!pcrp) return 0;
 
-    /* 
+    /*
      * we check all functions here: since multifunc devices need
      * to implement func 0 we catch all devices on the bus when
      * i = 0
      */
-    if (pcrp->pci_header_type &0x80) 
+    if (pcrp->pci_header_type &0x80)
 	multifunc = TRUE;
-    
+
     j = 0;
-    
+
     while (ppcrp[j]) {
       if (ppcrp[j]->busnum == bus && ppcrp[j]->funcnum == i
 	  && ppcrp[j]->devnum != pcrp->devnum) {
-	/* don't test subsys ID here. It might be set by POST 
+	/* don't test subsys ID here. It might be set by POST
 	   - however some cards might not have been POSTed */
-	if (ppcrp[j]->pci_device_vendor != pcrp->pci_device_vendor 
-	    || ppcrp[j]->pci_header_type != pcrp->pci_header_type ) 
+	if (ppcrp[j]->pci_device_vendor != pcrp->pci_device_vendor
+	    || ppcrp[j]->pci_header_type != pcrp->pci_header_type )
 	  return 0;
 	else
 	  multicard = TRUE;
@@ -3763,7 +3763,7 @@ pciTestMultiDeviceCard(int bus, int dev, int func, PCITAG** pTag)
       break;
   }
 
-  if (!multicard) 
+  if (!multicard)
     return 0;
 
   j = 0;
@@ -3841,7 +3841,7 @@ updateAccessInfoStatusControlInfo(PCITAG tag, CARD32 ctrl)
 
     if (!xf86PciAccInfo)
 	return;
-    
+
     for (i = 0; xf86PciAccInfo[i] != NULL; i++) {
 	if (xf86PciAccInfo[i]->arg.tag == tag)
 	    xf86PciAccInfo[i]->arg.ctrl = ctrl;

@@ -10,7 +10,7 @@
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  *  1. Redistributions of source code must retain the above copyright
  *     notice, this list of conditions, and the following disclaimer.
  *
@@ -18,7 +18,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- * 
+ *
  *  3. The end-user documentation included with the redistribution,
  *     if any, must include the following acknowledgment: "This product
  *     includes software developed by X-Oz Technologies
@@ -42,11 +42,11 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * Author: David Dawes <dawes@x-oz.com>.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AutoConfig.c,v 1.7 2005/02/18 01:52:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AutoConfig.c,v 1.8 2005/02/19 01:02:34 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86Parser.h"
@@ -425,7 +425,7 @@ xf86AutoConfig(void)
     for (p = builtinConfig; *p; p++)
 	xf86ErrorFVerb(3, "\t%s", *p);
     xf86MsgVerb(X_DEFAULT, 3, "--- End of built-in configuration ---\n");
-    
+
     xf86setBuiltinConfig(builtinConfig);
     pConfig = (XF86ConfigPtr)(xf86Info.config);
     xf86Info.config = xf86parseConfigFile(pConfig);

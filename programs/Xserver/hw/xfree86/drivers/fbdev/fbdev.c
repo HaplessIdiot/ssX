@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.45tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.46 2004/12/07 15:59:19 tsi Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -242,7 +242,7 @@ FBDevGetRec(ScrnInfoPtr pScrn)
 {
 	if (pScrn->driverPrivate != NULL)
 		return TRUE;
-	
+
 	pScrn->driverPrivate = xnfcalloc(sizeof(FBDevRec), 1);
 	return TRUE;
 }
@@ -275,7 +275,7 @@ FBDevProbe(DriverPtr drv, int flags)
 {
 	int i;
 	ScrnInfoPtr pScrn;
-       	GDevPtr *devSections;
+	GDevPtr *devSections;
 	int numDevSections;
 	int bus,device,func;
 	char *dev;
@@ -287,35 +287,35 @@ FBDevProbe(DriverPtr drv, int flags)
 	if (flags & PROBE_DETECT)
 		return FALSE;
 
-	if ((numDevSections = xf86MatchDevice(FBDEV_DRIVER_NAME, &devSections)) <= 0) 
+	if ((numDevSections = xf86MatchDevice(FBDEV_DRIVER_NAME, &devSections)) <= 0)
 	    return FALSE;
-	
+
 	if (!xf86LoadDrvSubModule(drv, "fbdevhw"))
 	    return FALSE;
-	    
+
 	xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
-	
+
 	for (i = 0; i < numDevSections; i++) {
 	    Bool isIsa = FALSE;
 	    Bool isPci = FALSE;
 
 	    dev = xf86FindOptionValue(devSections[i]->options,"fbdev");
 	    if (devSections[i]->busID) {
-	        if (xf86ParsePciBusString(devSections[i]->busID,&bus,&device,
+		if (xf86ParsePciBusString(devSections[i]->busID,&bus,&device,
 					  &func)) {
 		    if (!xf86CheckPciSlot(bus,device,func))
-		        continue;
+			continue;
 		    isPci = TRUE;
 		} else if (xf86ParseIsaBusString(devSections[i]->busID))
 		    isIsa = TRUE;
-		  
+
 	    }
 	    if (fbdevHWProbe(NULL,dev,NULL)) {
 		pScrn = NULL;
 		if (isPci) {
 		    /* XXX what about when there's no busID set? */
 		    int entity;
-		    
+
 		    entity = xf86ClaimPciSlot(bus,device,func,drv,
 					      0,devSections[i],
 					      TRUE);
@@ -330,7 +330,7 @@ FBDevProbe(DriverPtr drv, int flags)
 
 		} else if (isIsa) {
 		    int entity;
-		    
+
 		    entity = xf86ClaimIsaSlot(drv, 0,
 					      devSections[i], TRUE);
 		    pScrn = xf86ConfigIsaEntity(pScrn,0,entity,
@@ -343,11 +343,11 @@ FBDevProbe(DriverPtr drv, int flags)
 					      devSections[i], TRUE);
 		    pScrn = xf86ConfigFbEntity(pScrn,0,entity,
 					       NULL,NULL,NULL,NULL);
-		   
+
 		}
 		if (pScrn) {
 		    foundScreen = TRUE;
-		    
+
 		    pScrn->driverVersion = VERSION;
 		    pScrn->driverName    = FBDEV_DRIVER_NAME;
 		    pScrn->name          = FBDEV_NAME;
@@ -359,7 +359,7 @@ FBDevProbe(DriverPtr drv, int flags)
 		    pScrn->EnterVT       = fbdevHWEnterVT;
 		    pScrn->LeaveVT       = fbdevHWLeaveVT;
 		    pScrn->ValidMode     = fbdevHWValidMode;
-		    
+
 		    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 			       "using %s\n", dev ? dev : "default device");
 		}
@@ -505,7 +505,7 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Checking Modes against monitor...\n");
 	{
 		DisplayModePtr mode, first = mode = pScrn->modes;
-		
+
 		if (mode != NULL) do {
 			mode->status = xf86CheckModeForMonitor(mode, pScrn->monitor);
 			mode = mode->next;
@@ -557,26 +557,26 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 		}
 		break;
 	case FBDEVHW_INTERLEAVED_PLANES:
-               /* Not supported yet, don't know what to do with this */
-               xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-               "Interleaved Planes are not supported yet by drivers/fbdev.");
+	       /* Not supported yet, don't know what to do with this */
+	       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	       "Interleaved Planes are not supported yet by drivers/fbdev.");
 		return FALSE;
 	case FBDEVHW_TEXT:
-               /* This should never happen ...
-                * we should check for this much much earlier ... */
-               xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-               "Text mode is not supprted by drivers/fbdev.\n"
-               "Why do you want to run the X in TEXT mode anyway ?");
+	       /* This should never happen ...
+		* we should check for this much much earlier ... */
+	       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	       "Text mode is not supprted by drivers/fbdev.\n"
+	       "Why do you want to run the X in TEXT mode anyway ?");
 		return FALSE;
        case FBDEVHW_VGA_PLANES:
-               /* Not supported yet */
-               xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-               "EGA/VGA Planes are not supprted yet by drivers/fbdev.");
-               return FALSE;
+	       /* Not supported yet */
+	       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	       "EGA/VGA Planes are not supprted yet by drivers/fbdev.");
+	       return FALSE;
        default:
-               xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-               "Fbdev type (%d) not supported yet.", type);
-               return FALSE;
+	       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	       "Fbdev type (%d) not supported yet.", type);
+	       return FALSE;
 	}
 	if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
 		FBDevFreeRec(pScrn);
@@ -623,7 +623,7 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #endif
 
 	if (NULL == (fPtr->fbmem = fbdevHWMapVidmem(pScrn))) {
-	        xf86DrvMsg(scrnIndex,X_ERROR,"Map vid mem failed\n");
+		xf86DrvMsg(scrnIndex,X_ERROR,"Map vid mem failed\n");
 		return FALSE;
 	}
 	fPtr->fboff = fbdevHWLinearOffset(pScrn);
@@ -719,7 +719,7 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 					   pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth, pScrn->bitsPerPixel);
 			init_picture = 1;
 			break;
-	 	default:
+		default:
 			xf86DrvMsg(scrnIndex, X_ERROR,
 				   "Internal error: invalid bpp (%d) in FBDevScreenInit\n",
 				   pScrn->bitsPerPixel);
@@ -780,7 +780,7 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 			   "RENDER extension initialisation failed.\n");
 
-	if (fPtr->shadowFB && 
+	if (fPtr->shadowFB &&
 	    (!shadowSetup(pScreen) || !shadowAdd(pScreen, NULL,
 	      fPtr->rotate ? shadowUpdateRotatePacked : shadowUpdatePacked,
 	      FBDevWindowLinear, fPtr->rotate, NULL)) ) {
@@ -872,7 +872,7 @@ FBDevCloseScreen(int scrnIndex, ScreenPtr pScreen)
 {
 	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
 	FBDevPtr fPtr = FBDEVPTR(pScrn);
-	
+
 	fbdevHWRestore(pScrn);
 	fbdevHWUnmapVidmem(pScrn);
 	if (fPtr->shadowmem)
@@ -964,8 +964,8 @@ static void FBDevDGASetViewport(ScrnInfoPtr pScrn, int x, int y, int flags);
 
 static Bool
 FBDevDGAOpenFramebuffer(ScrnInfoPtr pScrn, char **DeviceName,
-		        unsigned int *ApertureBase, unsigned int *ApertureSize,
-		        unsigned int *ApertureOffset, unsigned int *flags)
+			unsigned int *ApertureBase, unsigned int *ApertureSize,
+			unsigned int *ApertureOffset, unsigned int *flags)
 {
     *DeviceName = NULL;		/* No special device */
     *ApertureBase = pScrn->memPhysBase;
