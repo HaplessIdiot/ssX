@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.46 2004/12/07 15:59:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.46tsi Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -319,15 +319,10 @@ FBDevProbe(DriverPtr drv, int flags)
 		    entity = xf86ClaimPciSlot(bus,device,func,drv,
 					      0,devSections[i],
 					      TRUE);
-		    pScrn = xf86ConfigPciEntity(pScrn,0,entity,
-						      NULL,RES_SHARED_VGA,
-						      NULL,NULL,NULL,NULL);
-		    /* xf86DrvMsg() can't be called without setting these */
-		    pScrn->driverName    = FBDEV_DRIVER_NAME;
-		    pScrn->name          = FBDEV_NAME;
-		    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-			       "claimed PCI slot %d:%d:%d\n",bus,device,func);
-
+		    if (entity >= 0)
+			pScrn = xf86ConfigPciEntity(pScrn,0,entity,
+						    NULL,RES_SHARED_VGA,
+						    NULL,NULL,NULL,NULL);
 		} else if (isIsa) {
 		    int entity;
 
@@ -337,13 +332,12 @@ FBDevProbe(DriverPtr drv, int flags)
 						      NULL,RES_SHARED_VGA,
 						      NULL,NULL,NULL,NULL);
 		} else {
-		   int entity;
+		    int entity;
 
 		    entity = xf86ClaimFbSlot(drv, 0,
 					      devSections[i], TRUE);
 		    pScrn = xf86ConfigFbEntity(pScrn,0,entity,
 					       NULL,NULL,NULL,NULL);
-
 		}
 		if (pScrn) {
 		    foundScreen = TRUE;
