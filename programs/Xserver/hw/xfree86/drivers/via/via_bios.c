@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_bios.c,v 1.11 2004/02/20 21:50:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_bios.c,v 1.12tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -12555,4 +12555,23 @@ Bool VIABIOS_SetActiveDevice(ScrnInfoPtr pScrn)
         xf86Int10FreePages(pVia->pInt10, page, 1);
 
     return TRUE;
+}
+/*************************************************
+ Name   :  VIAGetBIOSConnectedDevice
+ Purpose:  Check BIOS for connected devices
+ Input  :  Pointer to VIA structure
+ Output :  Connected mask, conform to Int 0x10,ax=1414 bx=0x3 
+*************************************************/
+unsigned char  VIAGetBIOSConnectedDevice(ScrnInfoPtr pScrn)
+{
+    VIAPtr  pVia = VIAPTR(pScrn);
+    pVia->pInt10->ax = 0x4F14;
+    pVia->pInt10->bx = 0x4;
+    pVia->pInt10->cx = 0;
+    xf86ExecX86int10(pVia->pInt10);
+    if (pVia->pInt10->ax  != 0x4f /* include status for test */) {
+	/* the user should specify it manually or use the standard procedure */
+	return 0;
+    }
+    return pVia->pInt10->cx;
 }
