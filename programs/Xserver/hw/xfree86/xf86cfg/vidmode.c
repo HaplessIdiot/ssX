@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/vidmode.c,v 1.7tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/vidmode.c,v 1.8tsi Exp $
  */
 
 /*
@@ -137,9 +137,9 @@ static Widget values[VSYNC + 1], repeater, monitor,
 static int MajorVersion, MinorVersion, EventBase, ErrorBase;
 static XtIntervalId timeout;
 
-/* The information bellow is extracted from
+/* The information below is extracted from
  * xc/programs/Xserver/hw/xfree86/etc/vesamodes
- * If that file is changed, please update the table bellow also. Or even
+ * If that file is changed, please update the table below also. Or even
  * better, write a script to generate the table.
  */
 static xf86cfgVesaModeInfo vesamodes[] = {

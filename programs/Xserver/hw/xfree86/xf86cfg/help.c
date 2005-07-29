@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/help.c,v 1.7tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/help.c,v 1.8tsi Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -162,7 +162,7 @@ HelpCancelAction(Widget w, XEvent *event, String *params, Cardinal *num_params)
 }
 
 
-/* bellow is a modified version of the html-mode.c I wrote for xedit
+/* Below is a modified version of the html-mode.c I wrote for xedit
  * (at least) temporarily dead.
  */
 
