@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativersion.h,v 1.77tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativersion.h,v 1.78 2005/06/07 19:24:20 tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -39,7 +39,7 @@
 
 #define ATI_VERSION_MAJOR 7
 #define ATI_VERSION_MINOR 0
-#define ATI_VERSION_PATCH 4
+#define ATI_VERSION_PATCH 5
 
 #ifndef ATI_VERSION_EXTRA
 #define ATI_VERSION_EXTRA ""
