@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.33 2003/11/03 05:11:54 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.33tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -1325,13 +1325,15 @@ XAACheckTileReducibility(PixmapPtr pPixmap, Bool checkMono)
 	} else if(pPixmap->drawable.bitsPerPixel == 24) {
 	    CARD32 val;
 	    unsigned char *srcp = pPixmap->devPrivate.ptr;
-	    fg = *((CARD32*)srcp) & 0x00FFFFFF;
+#	    define Pixel24(ppix) \
+		((((*((ppix) + 2) << 8) | *((ppix) + 1)) << 8) | *(ppix))
+	    fg = Pixel24(srcp);
 	    pitch = pPixmap->devKind;
 	    j *= 3;
 	    for(y = 0; y < i; y++) {
 		bits[y] = 0;
 		for(x = 0; x < j; x+=3) {
-		   val = *((CARD32*)(srcp+x)) & 0x00FFFFFF;
+		   val = Pixel24(srcp + x);
 		   if(val != fg) {
 			if(bg == -1) bg = val;
 			else if(bg != val)
@@ -1340,6 +1342,7 @@ XAACheckTileReducibility(PixmapPtr pPixmap, Bool checkMono)
 		}
 		srcp += pitch;
 	    }
+#	    undef Pixel24
 	} else if(pPixmap->drawable.bitsPerPixel == 32) {
 	    IntPtr = (CARD32*)pPixmap->devPrivate.ptr;
 	    fg = IntPtr[0];

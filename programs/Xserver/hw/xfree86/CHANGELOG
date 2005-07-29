@@ -1,4 +1,8 @@
 XFree86 4.5.99.9 (xx August 2005)
+ 103. Fix XAA's support for TRIPLE_BITS_24BPP on big-endian systems
+      (Marc La France).
+ 102. Fix unaligned access in XAA's handling of 24bpp (Marc La France).
+ 101. Fix atimisc's support of 24bpp on big-endian systems (Marc La France).
  100. Insulate various common layer functions against out-of-bounds entity
       indices (Marc La France).
   99. Prevent the sharing of a PCI entity by more than one driver
@@ -19699,7 +19703,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3558 2005/07/23 11:02:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3559 2005/07/26 18:32:01 tsi Exp $
 
 
 

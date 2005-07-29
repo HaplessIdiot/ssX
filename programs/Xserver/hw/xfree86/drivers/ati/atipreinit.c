@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.83tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.84tsi Exp $ */
 /*
  * Copyright 1999 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -571,12 +571,24 @@ ATIPreInit
 
         if (ATIEndian.endian == ATI_BIG_ENDIAN)
         {
-            if (pScreenInfo->depth == 24)
+            if (pScreenInfo->bitsPerPixel == 24)
+            {
+                /*
+                 * For bpp 24, the common layer's xf86SetWeight() sets a
+                 * default of 'RGB'.  Byte-swap this to 'BGR'.
+                 */
+                defaultMask.red = 0x000000FFU;
+                defaultMask.green = 0x0000FF00U;
+                defaultMask.blue = 0x00FF0000U;
+
+                pATI->ATIApplyEndian = ATIEndianSwap24;
+            }
+            else if (pScreenInfo->depth == 24)
             {
                 if ((pATI->Chip < ATI_CHIP_264VTB) || !pATI->OptionLinear)
                 {
                     /*
-                     * For depth 24, the common layer's xf86SetWeight() sets a
+                     * For bpp 32, the common layer's xf86SetWeight() sets a
                      * default of 'aRGB'.  In the absence of a big-endian
                      * aperture, byte-swap this to 'BGRa'.
                      */
@@ -584,7 +596,7 @@ ATIPreInit
                     defaultMask.green = 0x00FF0000U;
                     defaultMask.blue = 0xFF000000U;
 
-                    pATI->ATIApplyEndian = ATIEndianSwap;
+                    pATI->ATIApplyEndian = ATIEndianSwap32;
                 }
             }
             else if (pScreenInfo->depth > 8)

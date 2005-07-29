@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEGlyph.c,v 1.10 2004/10/23 15:29:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEGlyph.c,v 1.10tsi Exp $ */
 
 /*
  * Copyright (c) 1998-2004 by The XFree86 Project, Inc.
@@ -342,7 +342,7 @@ EXPNAME(XAATEGlyphRenderer3)(
     }
 
     dwords = ((3 * w + 31) >> 5) * h;
-    mem = (CARD32*)ALLOCATE_LOCAL(((w + 31) >> 3) * sizeof(char));
+    mem = (CARD32*)ALLOCATE_LOCAL(((w + 31) >> 5) * sizeof(CARD32));
     if (!mem) return;
 
     (*infoRec->SubsequentCPUToScreenColorExpandFill)(pScrn, x, y, w, h, 0);
@@ -350,7 +350,7 @@ EXPNAME(XAATEGlyphRenderer3)(
     base = (CARD32*)infoRec->ColorExpandBase;
 
 # ifndef FIXEDBASE
-    if((((3 * w + 31) >> 5) * h) <= infoRec->ColorExpandRange)
+    if(dwords <= infoRec->ColorExpandRange)
 	while(h--) {
 	    (*GlyphFunc)(mem, glyphs, startline++, w, glyphWidth);
 	    base = DrawTextScanline3(base, mem, w);
@@ -517,9 +517,7 @@ EXPNAME(XAATEGlyphRendererScanline3)(
 	skipleft = 0;	/* nicely aligned again */
     }
 
-    w += skipleft;
-    x -= skipleft;
-    mem = (CARD32*)ALLOCATE_LOCAL(((w + 31) >> 3) * sizeof(char));
+    mem = (CARD32*)ALLOCATE_LOCAL(((w + 31) >> 5) * sizeof(CARD32));
     if (!mem) return;
 
    (*infoRec->SubsequentScanlineCPUToScreenColorExpandFill)(

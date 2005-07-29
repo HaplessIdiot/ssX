@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64accel.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64accel.c,v 1.6tsi Exp $ */
 /*
  * Copyright 2003 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -811,7 +811,7 @@ ATIMach64AccelInit
 
     /* Align bitmap data on a 64-byte boundary */
     pATI->ExpansionBitmapWidth =        /* DWord size in bits */
-        ((pATI->displayWidth * pATI->XModifier) + 31) & ~31U;
+        ((pATI->displayWidth * pATI->XModifier) + 63) & ~31U;
     pATI->ExpansionBitmapScanlinePtr[1] =
         (CARD32 *)xnfalloc((pATI->ExpansionBitmapWidth >> 3) + 63);
     pATI->ExpansionBitmapScanlinePtr[0] =
