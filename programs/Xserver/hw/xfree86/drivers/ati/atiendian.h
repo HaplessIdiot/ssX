@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiendian.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiendian.h,v 1.2tsi Exp $ */
 /*
  * Copyright 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -43,6 +43,7 @@ extern const ATIEndianType ATIEndian;
 typedef int ATIApplyEndianProc FunctionPrototype((const int));
 
 extern ATIApplyEndianProc ATIEndianCopy;
-extern ATIApplyEndianProc ATIEndianSwap;
+extern ATIApplyEndianProc ATIEndianSwap32;
+extern ATIApplyEndianProc ATIEndianSwap24;
 
 #endif /* ___ATIENDIAN_H___ */

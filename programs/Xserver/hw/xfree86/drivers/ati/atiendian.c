@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiendian.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiendian.c,v 1.3tsi Exp $ */
 /*
  * Copyright 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -48,10 +48,10 @@ ATIEndianCopy
 /*
  * ATIEndianSwap --
  *
- * This function applies a big-endian transformation on an integer.
+ * This function applies a big-endian transformation on a 32-bit value.
  */
 int
-ATIEndianSwap
+ATIEndianSwap32
 (
     const int value
 )
@@ -67,4 +67,19 @@ ATIEndianSwap
                      copy.byte[2]) << 8) |
                    copy.byte[1]) << 8) |
                  copy.byte[0]);
+}
+
+/*
+ * ATIEndianSwap24 --
+ *
+ * This function applies a big-endian transformation on a 24-bit value.
+ */
+int
+ATIEndianSwap24
+(
+    const int value
+)
+{
+    return ((value & 0x000000FFU) << 16) | (value & 0x0000FF00U) |
+           ((value & 0x00FF0000U) >> 16);
 }
