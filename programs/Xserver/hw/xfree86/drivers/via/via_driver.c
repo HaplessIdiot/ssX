@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.35 2004/10/26 22:26:38 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.36tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -152,7 +152,8 @@ typedef enum {
     OPTION_CAP0_DEINTERLACE,
     OPTION_CAP1_DEINTERLACE,
     OPTION_CAP0_FIELDSWAP,
-    OPTION_DRIXINERAMA
+    OPTION_DRIXINERAMA,
+    OPTION_CONNECTED_DEVICE
 } VIAOpts;
 
 
@@ -184,9 +185,31 @@ static OptionInfoRec VIAOptions[] =
     {OPTION_CAP1_DEINTERLACE, "Cap1Deinterlace",    OPTV_ANYSTR,  {0}, FALSE},
     {OPTION_CAP0_FIELDSWAP, "Cap0FieldSwap",    OPTV_BOOLEAN,  {0}, FALSE},
     {OPTION_DRIXINERAMA,  "DRIXINERAMA",    OPTV_BOOLEAN, {0}, FALSE},
+    {OPTION_CONNECTED_DEVICE,"ConnectedDevice",OPTV_ANYSTR,{0},FALSE},
     {-1,                NULL,           OPTV_NONE,    {0}, FALSE}
 };
 
+struct OutputDesc { char *Name;unsigned char Mask;};
+const static  struct OutputDesc Values[]=
+{
+	{"NONE",0} ,
+	{"BIOS",0xFF} ,
+	{"CRT",VIA_DEVICE_CRT1} ,
+	{"CRT ONLY",VIA_DEVICE_CRT1} ,
+        {"TV", VIA_DEVICE_TV},
+        {"TV ONLY", VIA_DEVICE_TV},
+        {"LCD",VIA_DEVICE_LCD},
+        {"LCD ONLY",VIA_DEVICE_LCD} ,
+	{"DVI",VIA_DEVICE_DFP},
+	{"DVI ONLY",VIA_DEVICE_DFP},
+	{"DFP",VIA_DEVICE_DFP},
+	{"DFP ONLY",VIA_DEVICE_DFP},
+	{"CRT2",VIA_DEVICE_CRT2}
+};
+static char *DevMask2Str[5]=
+{
+	"CRT","LCD","TV","DFP","CRT2"
+};
 
 static const char *vgaHWSymbols[] = {
     "vgaHWGetHWRec",
@@ -346,7 +369,8 @@ static XF86ModuleVersionInfo VIAVersRec = {
 XF86ModuleData viaModuleData = {&VIAVersRec, VIASetup, NULL};
 
 
-static pointer VIASetup(pointer module, pointer opts, int *errmaj, int *errmin)
+/* static */ 
+pointer VIASetup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 
@@ -673,8 +697,67 @@ VIAProbeDDC(ScrnInfoPtr pScrn, int index)
         ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
     }
 }
+/***********************************************************
+ Purpose: sets connectedDevice map according to user requirements
 
+ Input:   string passed to driver via ConnectedDevice option
 
+ output:  mask of connected devices
+
+ Remarks: the option BIOS sets the value according to register SR32
+          ~ char negates the value;
+
+************************************************************/ 
+static unsigned char ParseDeviceMask(
+	ScrnInfoPtr  pScrn, 
+	const char *opt_value,
+	const char *opt_name,
+	const int  start)
+{
+        VIABIOSInfoPtr  pBIOSInfo;
+	unsigned char val=0;
+	VIAPtr  pVia = VIAPTR(pScrn);
+    	pBIOSInfo = pVia->pBIOSInfo;
+	do {
+		char str[5],neg=0;
+		unsigned char pv=0;
+		int  n;
+		int  err = 1;
+		const char *p=strchr(opt_value,',');
+		if(!p)
+			p = opt_value + strlen(opt_value);
+		if(*opt_value == '~') {
+			++opt_value;
+			neg=1;
+		}
+		if((n=p - opt_value) <= sizeof(str)) {
+			memcpy(str,opt_value,n*sizeof(str[0]));
+			str[n]='\0';
+			for(n=start;n<sizeof(Values)/sizeof(Values[0]);++n)
+        			if (!xf86NameCmp(str,Values[n].Name))
+					break;
+			if( n < (sizeof(Values)/sizeof(Values[0]))) {
+				pv=Values[n].Mask;
+				if(pv == 0xFF)
+					pv = VIAGetBIOSConnectedDevice(pScrn);
+				if(neg) 
+					val &= ~pv;
+				else
+					val |= pv;
+				err = 0;
+			}
+		}
+		if(err) {
+        		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+			    "Option %s, value %s is unknown in this context.\n",
+				opt_name, opt_value);
+			
+		}
+		opt_value = p+ ((*p) ? 1:0);
+	} while(*opt_value);
+	return val;
+}
+/*****************************************************************/
 static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
 {
     EntityInfoPtr   pEnt;
@@ -984,53 +1067,22 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
     /* ActiveDevice Option for device selection */
     pBIOSInfo->ActiveDevice = 0x00;
     if ((s = xf86GetOptValString(VIAOptions, OPTION_ACTIVEDEVICE))) {
-        if (!xf86NameCmp(s, "CRT,TV") || !xf86NameCmp(s, "TV,CRT")) {
-            pBIOSInfo->ActiveDevice = VIA_DEVICE_CRT1 | VIA_DEVICE_TV;
-            xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Active Device is CRT and TV.\n");
-        }
-        else if(!xf86NameCmp(s, "CRT,LCD") || !xf86NameCmp(s, "LCD,CRT")) {
-            pBIOSInfo->ActiveDevice = VIA_DEVICE_CRT1 | VIA_DEVICE_LCD;
-            xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Active Device is CRT and LCD.\n");
-        }
-        else if(!xf86NameCmp(s, "CRT,DFP") || !xf86NameCmp(s, "DFP,CRT")
-                || !xf86NameCmp(s, "CRT,DVI") || !xf86NameCmp(s, "DVI,CRT")) {
-            pBIOSInfo->ActiveDevice = VIA_DEVICE_CRT1 | VIA_DEVICE_DFP;
-            xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Active Device is CRT and DFP.\n");
-        }
-        else if(!xf86NameCmp(s, "TV,DFP") || !xf86NameCmp(s, "DFP,TV")
-                || !xf86NameCmp(s, "TV,DVI") || !xf86NameCmp(s, "DVI,TV")) {
-            pBIOSInfo->ActiveDevice = VIA_DEVICE_TV | VIA_DEVICE_DFP;
-            xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Active Device is TV and DFP.\n");
-        }
-#if 0
-        else if(!xf86NameCmp(s, "DFP,LCD") || !xf86NameCmp(s, "LCD,DFP")
-                || !xf86NameCmp(s, "LCD,DVI") || !xf86NameCmp(s, "DVI,LCD")) {
-            pBIOSInfo->ActiveDevice = VIA_DEVICE_DFP | VIA_DEVICE_LCD;
-            xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Active Device is DFP and LCD.\n");
-        }
-#endif
-        else if(!xf86NameCmp(s, "CRT") || !xf86NameCmp(s, "CRT ONLY")) {
-            pBIOSInfo->ActiveDevice = VIA_DEVICE_CRT1;
-            xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Active Device is CRT Only.\n");
-        }
-        else if(!xf86NameCmp(s, "LCD") || !xf86NameCmp(s, "LCD ONLY")) {
-            pBIOSInfo->ActiveDevice = VIA_DEVICE_LCD;
-            xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Active Device is LCD Only.\n");
-        }
-        else if(!xf86NameCmp(s, "TV") || !xf86NameCmp(s, "TV ONLY")) {
-            pBIOSInfo->ActiveDevice = VIA_DEVICE_TV;
-            xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Active Device is TV Only.\n");
-        }
-        else if(!xf86NameCmp(s, "DFP") || !xf86NameCmp(s, "DFP ONLY")
-                || !xf86NameCmp(s, "DVI") || !xf86NameCmp(s, "DVI ONLY")) {
-            pBIOSInfo->ActiveDevice = VIA_DEVICE_DFP;
-            xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Active Device is DFP Only.\n");
-        }
-        else {
-            xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option \"%s\" can't recognize!, Active Device by default.\n", s);
-        }
+	char ActDevStr[128];
+	int k;
+    	pBIOSInfo->ActiveDevice = ParseDeviceMask(pScrn,s,"ActiveDevice",2);
+	ActDevStr[0]='\0';
+	for(k=0;k<5;++k) {
+		if( pBIOSInfo->ActiveDevice & (1<<k)) {
+			strcat(ActDevStr,DevMask2Str[k]);
+			strcat(ActDevStr,",");
+		}
+	}
+	k = strlen(ActDevStr);
+	if(k)
+		ActDevStr[k-1]='\0'; /* remove last , */
+        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Active device is %s.\n",
+		ActDevStr);
     }
-
     /* LCDDualEdge Option */
     pBIOSInfo->LCDDualEdge = FALSE;
     if (xf86ReturnOptValBool(VIAOptions, OPTION_LCDDUALEDGE, FALSE)) {
@@ -1039,7 +1091,9 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
          "Option: Using Dual Edge mode to set LCD\n");
     }
     else {
-        pBIOSInfo->LCDDualEdge = FALSE;
+	if((pBIOSInfo->ActiveDevice & VIA_DEVICE_LCD)
+	  && (pBIOSInfo->ActiveDevice & (~VIA_DEVICE_LCD)))
+        	pBIOSInfo->LCDDualEdge = TRUE;
     }
 
     /* Digital Output Bus Width Option */
@@ -1306,6 +1360,12 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
         vbeFree(pVia->pVbe);
         return FALSE;
     }
+    /* now we can check what devices are connected */
+    pBIOSInfo->ConnectedDevice=0;
+    if ((s = xf86GetOptValString(VIAOptions, OPTION_CONNECTED_DEVICE))) {
+    	pBIOSInfo->ConnectedDevice = 
+		ParseDeviceMask(pScrn,s,"ConnectedDevice",0);
+    }
 
     /* Get BIOS ver. From BIOS Call Function */
     tmp = VIABIOS_GetBIOSVersion(pScrn);
@@ -1492,7 +1552,8 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
     /* Detect TMDS/LVDS Encoder */
     VIAPostDVI(pBIOSInfo);
 	/*VIAGetPanelInfo(pBIOSInfo);*/
-    pBIOSInfo->ConnectedDevice = VIAGetDeviceDetect(pBIOSInfo);
+    if(!pBIOSInfo->ConnectedDevice)
+    	pBIOSInfo->ConnectedDevice = VIAGetDeviceDetect(pBIOSInfo);
 
     xf86SetCrtcForModes(pScrn, INTERLACE_HALVE_V);
     pScrn->currentMode = pScrn->modes;
