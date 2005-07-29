@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaacexp.h,v 1.3 2000/01/21 02:30:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaacexp.h,v 1.5 2000/06/13 02:51:25 mvojkovi Exp $ */
 
 
 #include "Xarch.h"
@@ -19,14 +19,14 @@
 
 #ifndef MSBFIRST
 # ifdef FIXEDBASE
-#   define WRITE_IN_BITORDER(dest, offset, data) *(dest) = data; 
-# else  
+#   define WRITE_IN_BITORDER(dest, offset, data) *(dest) = data;
+# else
 #   define WRITE_IN_BITORDER(dest, offset, data) *(dest + offset) = data;
 # endif
-#else	
+#else
 # ifdef FIXEDBASE
 #   define WRITE_IN_BITORDER(dest, offset, data) *(dest) = SWAP_BITS_IN_BYTES(data);
-# else  
+# else
 #   define WRITE_IN_BITORDER(dest, offset, data) *(dest + offset) = SWAP_BITS_IN_BYTES(data)
 # endif
 #endif
