@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.78 2005/06/07 18:55:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.79 2005/06/13 12:16:12 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -2695,15 +2695,21 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
 
    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "BIOS Build: %d\n",pI830->bios_version);
 
-   if (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830))
+   /* Great..
+    * Intel changed the BIOS version codes and started at 1200.
+    * We know that bios codes for 830M started around 2400.
+    * So we test those conditions to make this judgement. Ugh.
+    */
+   if (pI830->availablePipes == 2 && pI830->bios_version < 2000)
       pI830->newPipeSwitch = TRUE;
-   else
-   if (pI830->availablePipes == 2 && pI830->bios_version >= 3062) {
+   else if (pI830->availablePipes == 2 && pI830->bios_version >= 3062)
       /* BIOS build 3062 changed the pipe switching functionality */
       pI830->newPipeSwitch = TRUE;
-      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using new Pipe switch code\n");
-   } else
+   else
       pI830->newPipeSwitch = FALSE;
+
+   if (pI830->newPipeSwitch)
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using new Pipe switch code\n");
 
    pI830->devicePresence = FALSE;
    from = X_DEFAULT;
