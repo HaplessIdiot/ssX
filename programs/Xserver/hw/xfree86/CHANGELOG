@@ -1,4 +1,5 @@
 XFree86 4.5.99.9 (xx August 2005)
+ 105. More endianness fixes for the vbe module (Marc La France).
  104. Add a "ConnectedDevice" option to the via driver to force selection of
       output devices (Damian Janusz Gruszka).
  103. Fix XAA's support for TRIPLE_BITS_24BPP on big-endian systems
@@ -19705,7 +19706,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3560 2005/07/29 03:12:29 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3561 2005/07/29 15:42:38 tsi Exp $
 
 
 
