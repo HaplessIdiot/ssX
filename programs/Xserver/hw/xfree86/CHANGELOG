@@ -1,4 +1,6 @@
 XFree86 4.5.99.9 (xx August 2005)
+ 107. Fix endianness in savage driver's VBE support and remove this driver's
+      private definition of VBE structures (Marc La France).
  106. Xterm patch #204 (Thomas Dickey).
  105. More endianness fixes for the vbe module (Marc La France).
  104. Add a "ConnectedDevice" option to the via driver to force selection of
@@ -19707,7 +19709,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3562 2005/08/03 23:43:25 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3563 2005/08/05 01:25:38 dickey Exp $
 
 
 
