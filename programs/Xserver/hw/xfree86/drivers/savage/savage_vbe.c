@@ -1,7 +1,27 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_vbe.c,v 1.15tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_vbe.c,v 1.16tsi Exp $ */
 
 #include "savage_driver.h"
-#include "savage_vbe.h"
+
+#define VBE_ATTR_MODE_SUPPORTED 	(1 << 0)
+#define VBE_ATTR_TTY 	(1 << 2)
+#define VBE_ATTR_COLOR 	(1 << 3)
+#define VBE_ATTR_GRAPHICS 	(1 << 4)
+#define VBE_ATTR_NOT_VGA 	(1 << 5)
+#define VBE_ATTR_NOT_WINDOWED 	(1 << 6)
+#define VBE_ATTR_LINEAR 	(1 << 7)
+
+#define VBE_WIN_RELOCATABLE 	(1 << 0)
+#define VBE_WIN_READABLE 	(1 << 1)
+#define VBE_WIN_WRITEABLE 	(1 << 2)
+
+#define VBE_MODEL_TEXT 	0
+#define VBE_MODEL_CGA 	1
+#define VBE_MODEL_HERCULES 	2
+#define VBE_MODEL_PLANAR 	3
+#define VBE_MODEL_PACKED 	4
+#define VBE_MODEL_256 	5
+#define VBE_MODEL_RGB 	6
+#define VBE_MODEL_YUV 	7
 
 #define L_ADD(x)  (B_O32(x) & 0xffff) + ((B_O32(x) >> 12) & 0xffff00)
 
@@ -192,10 +212,9 @@ SavageGetBIOSModes(
 {
     unsigned short iModeCount = 0;
     unsigned short int *mode_list;
-    pointer vbeLinear = NULL;
+    unsigned char *vbeLinear = NULL;
     vbeControllerInfoPtr vbe = NULL;
     int vbeReal;
-    struct vbe_mode_info_block * vmib;
 
     if( !psav->pVbe )
 	return 0;
@@ -207,7 +226,6 @@ SavageGetBIOSModes(
 	ErrorF( "Cannot allocate scratch page in real mode memory." );
 	return 0;
     }
-    vmib = (struct vbe_mode_info_block *) vbeLinear;
     
     for (
 	mode_list = xf86int10Addr( psav->pInt10, L_ADD(vbe->VideoModePtr) );
@@ -215,6 +233,7 @@ SavageGetBIOSModes(
 	mode_list++
     )
     {
+	int mode = B_O16(*mode_list);
 	/*
 	 * This is a HACK to work around what I believe is a BUG in the
 	 * Toshiba Satellite BIOSes in 08/2000 and 09/2000.  The BIOS
@@ -227,13 +246,13 @@ SavageGetBIOSModes(
 	 * This also prevents some strange and unusual results seen with
 	 * the later ProSavage/PM133 BIOSes directly from S3/VIA.
 	 */
-	if( *mode_list >= 0x0200 )
+	if( mode >= 0x0200 )
 	    continue;
 
 	SavageClearVM86Regs( psav->pInt10 );
 
 	psav->pInt10->ax = 0x4f01;
-	psav->pInt10->cx = *mode_list;
+	psav->pInt10->cx = mode;
 	psav->pInt10->es = SEG_ADDR(vbeReal);
 	psav->pInt10->di = SEG_OFF(vbeReal);
 	psav->pInt10->num = 0x10;
@@ -241,11 +260,11 @@ SavageGetBIOSModes(
 	xf86ExecX86int10( psav->pInt10 );
 
 	if( 
-	   (vmib->bits_per_pixel == iDepth) &&
+	   (vbeLinear[25] == iDepth) &&
 	   (
-	      (vmib->memory_model == VBE_MODEL_256) ||
-	      (vmib->memory_model == VBE_MODEL_PACKED) ||
-	      (vmib->memory_model == VBE_MODEL_RGB)
+	      (vbeLinear[27] == VBE_MODEL_256) ||
+	      (vbeLinear[27] == VBE_MODEL_PACKED) ||
+	      (vbeLinear[27] == VBE_MODEL_RGB)
 	   )
 	)
 	{
@@ -259,13 +278,13 @@ SavageGetBIOSModes(
 	    {
 	        int iRefresh = 0;
 
-		s3vModeTable->Width = vmib->x_resolution;
-		s3vModeTable->Height = vmib->y_resolution;
-		s3vModeTable->VesaMode = *mode_list;
+		s3vModeTable->Width = B_O16(vbeLinear[18]);
+		s3vModeTable->Height = B_O16(vbeLinear[20]);
+		s3vModeTable->VesaMode = mode;
 		
 		/* Query the refresh rates at this mode. */
 
-		psav->pInt10->cx = *mode_list;
+		psav->pInt10->cx = mode;
 		psav->pInt10->dx = 0;
 
 		do
