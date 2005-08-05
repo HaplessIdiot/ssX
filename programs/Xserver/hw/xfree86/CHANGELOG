@@ -1,4 +1,6 @@
 XFree86 4.5.99.9 (xx August 2005)
+ 109. s3 driver changes:  remove its unused interface to vbe and cleanup its
+      use of int10 (Marc La France).
  108. Fix memory leak in vesa driver (Marc La France).
  107. Fix endianness in savage driver's VBE support and remove this driver's
       private definition of VBE structures (Marc La France).
@@ -19710,7 +19712,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3564 2005/08/05 16:53:28 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3565 2005/08/05 17:24:25 tsi Exp $
 
 
 

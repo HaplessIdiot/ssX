@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3.h,v 1.19 2004/11/26 12:08:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3.h,v 1.19tsi Exp $ */
 
 
 #ifndef _S3_H
@@ -35,7 +35,6 @@
 #include "xf86PciInfo.h"
 #include "xf86RamDac.h"
 #include "xaa.h"
-#include "vbe.h"
 #include "xf86_ansic.h"
 #include "vgaHW.h"
 
@@ -105,8 +104,6 @@ typedef struct _S3Rec {
 
 	XAAInfoRecPtr           pXAA;
 	xf86CursorInfoPtr	pCurs;
-	xf86Int10InfoPtr	pInt10;
-	vbeInfoPtr		pVBE;
 	XF86VideoAdaptorPtr     adaptor;
 	S3PortPrivPtr           portPrivate;
 
