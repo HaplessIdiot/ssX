@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.27 2005/03/15 21:39:20 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.27tsi Exp $ */
 
 
 #include "xf86.h"
@@ -47,6 +47,7 @@
 #include "xf86fbman.h"
 #include "xf86cmap.h"
 #include "xf86RAC.h"
+#include "xf86int10.h"
 #include "compiler.h"
 #include "xaa.h"
 #include "mipointer.h"
@@ -198,19 +199,9 @@ static const char *vgaHWSymbols[] = {
 	NULL
 };
 
-static const char *vbeSymbols[] = {
-	"VBEInit",
-	"vbeDoEDID",
-	"vbeFree",
-	NULL
-};
-
 static const char *int10Symbols[] = {
-	"xf86ExecX86int10",
 	"xf86FreeInt10",
 	"xf86InitInt10",
-	"xf86Int10AllocPages",
-	"xf86Int10FreePages",
 	NULL
 };
 
@@ -264,8 +255,7 @@ pointer S3Setup (pointer module, pointer opts, int *errmaj, int *errmin)
 	if (!setupDone) {
 		setupDone = TRUE;
 		xf86AddDriver(&S3, module, 0);
-		LoaderRefSymLists(vgaHWSymbols,
-				  vbeSymbols, int10Symbols, ramdacSymbols,
+		LoaderRefSymLists(vgaHWSymbols, int10Symbols, ramdacSymbols,
 				  fbSymbols, xaaSymbols,
 				  NULL);
 		return (pointer) 1;
@@ -468,13 +458,11 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
 	}
 
 	if (xf86LoadSubModule(pScrn, "int10")) {
+		xf86Int10InfoPtr pInt10;
 		xf86LoaderReqSymLists(int10Symbols, NULL);
-		pS3->pInt10 = xf86InitInt10(pEnt->index);
-	}
-
-	if (xf86LoadSubModule(pScrn, "vbe")) {
-		xf86LoaderReqSymLists(vbeSymbols, NULL);
-		pS3->pVBE = VBEInit(pS3->pInt10, pEnt->index);
+		pInt10 = xf86InitInt10(pEnt->index);
+		if (pInt10)
+			xf86FreeInt10(pInt10);
 	}
 
 	if (!xf86SetGamma(pScrn, gzeros))
