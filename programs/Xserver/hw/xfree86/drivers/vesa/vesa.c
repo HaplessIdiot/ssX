@@ -28,7 +28,7 @@
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *          David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.47 2005/02/26 03:18:38 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.47tsi Exp $
  */
 /*
  * Copyright (c) 2000-2005 by The XFree86 Project, Inc.
@@ -223,6 +223,7 @@ static const char *vbeSymbols[] = {
     "VBEBankSwitch",
     "VBEExtendedInit",
     "VBEFindSupportedDepths",
+    "VBEFreeVBEInfo",
     "VBEGetModeInfo",
     "VBEGetVBEInfo",
     "VBEGetVBEMode",
@@ -462,7 +463,7 @@ VESAFreeRec(ScrnInfoPtr pScrn)
     }
 #endif
     xfree(pVesa->monitor);
-    xfree(pVesa->vbeInfo);
+    VBEFreeVBEInfo(pVesa->vbeInfo);
     xfree(pVesa->pal);
     xfree(pVesa->savedPal);
     xfree(pVesa->fonts);
