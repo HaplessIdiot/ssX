@@ -1,4 +1,5 @@
 XFree86 4.5.99.9 (xx August 2005)
+ 106. Xterm patch #204 (Thomas Dickey).
  105. More endianness fixes for the vbe module (Marc La France).
  104. Add a "ConnectedDevice" option to the via driver to force selection of
       output devices (Damian Janusz Gruszka).
@@ -31,7 +32,7 @@ XFree86 4.5.99.8 (23 July 2005)
       "solaris" to "sunos" (Marc La France).
 
 XFree86 4.5.99.7 (8 July 2005)
-  89. Xterm patch #202 (Thomas Dickey).
+  89. Xterm patch #203 (Thomas Dickey).
   88. Remove most remaining references to PEX and XIE (Marc La France).
   87. Fix Xvideo when operating in one line mode and video is pushed off
       the top of the screen. Also some fixes for Xvideo skew in certain
@@ -19706,7 +19707,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3561 2005/07/29 15:42:38 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3562 2005/08/03 23:43:25 tsi Exp $
 
 
 
