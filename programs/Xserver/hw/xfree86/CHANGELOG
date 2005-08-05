@@ -1,4 +1,5 @@
 XFree86 4.5.99.9 (xx August 2005)
+ 108. Fix memory leak in vesa driver (Marc La France).
  107. Fix endianness in savage driver's VBE support and remove this driver's
       private definition of VBE structures (Marc La France).
  106. Xterm patch #204 (Thomas Dickey).
@@ -19709,7 +19710,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3563 2005/08/05 01:25:38 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3564 2005/08/05 16:53:28 tsi Exp $
 
 
 
