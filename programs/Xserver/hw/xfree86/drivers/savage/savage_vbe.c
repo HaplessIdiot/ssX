@@ -1,27 +1,27 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_vbe.c,v 1.16tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_vbe.c,v 1.17 2005/08/05 16:53:30 tsi Exp $ */
 
 #include "savage_driver.h"
 
-#define VBE_ATTR_MODE_SUPPORTED 	(1 << 0)
-#define VBE_ATTR_TTY 	(1 << 2)
-#define VBE_ATTR_COLOR 	(1 << 3)
-#define VBE_ATTR_GRAPHICS 	(1 << 4)
-#define VBE_ATTR_NOT_VGA 	(1 << 5)
-#define VBE_ATTR_NOT_WINDOWED 	(1 << 6)
-#define VBE_ATTR_LINEAR 	(1 << 7)
+#define VBE_ATTR_MODE_SUPPORTED		(1 << 0)
+#define VBE_ATTR_TTY	(1 << 2)
+#define VBE_ATTR_COLOR	(1 << 3)
+#define VBE_ATTR_GRAPHICS	(1 << 4)
+#define VBE_ATTR_NOT_VGA	(1 << 5)
+#define VBE_ATTR_NOT_WINDOWED	(1 << 6)
+#define VBE_ATTR_LINEAR		(1 << 7)
 
-#define VBE_WIN_RELOCATABLE 	(1 << 0)
-#define VBE_WIN_READABLE 	(1 << 1)
-#define VBE_WIN_WRITEABLE 	(1 << 2)
+#define VBE_WIN_RELOCATABLE	(1 << 0)
+#define VBE_WIN_READABLE	(1 << 1)
+#define VBE_WIN_WRITEABLE	(1 << 2)
 
-#define VBE_MODEL_TEXT 	0
-#define VBE_MODEL_CGA 	1
-#define VBE_MODEL_HERCULES 	2
-#define VBE_MODEL_PLANAR 	3
-#define VBE_MODEL_PACKED 	4
-#define VBE_MODEL_256 	5
-#define VBE_MODEL_RGB 	6
-#define VBE_MODEL_YUV 	7
+#define VBE_MODEL_TEXT	0
+#define VBE_MODEL_CGA	1
+#define VBE_MODEL_HERCULES	2
+#define VBE_MODEL_PLANAR	3
+#define VBE_MODEL_PACKED	4
+#define VBE_MODEL_256	5
+#define VBE_MODEL_RGB	6
+#define VBE_MODEL_YUV	7
 
 #define L_ADD(x)  (B_O32(x) & 0xffff) + ((B_O32(x) >> 12) & 0xffff00)
 
@@ -192,8 +192,8 @@ SavageGetBIOSModeTable( SavagePtr psav, int iDepth )
     int nModes = SavageGetBIOSModes( psav, iDepth, NULL );
     SavageModeTablePtr pTable;
 
-    pTable = (SavageModeTablePtr) 
-	xcalloc( 1, sizeof(SavageModeTableRec) + 
+    pTable = (SavageModeTablePtr)
+	xcalloc( 1, sizeof(SavageModeTableRec) +
 		    (nModes-1) * sizeof(SavageModeEntry) );
     if( pTable ) {
 	pTable->NumModes = nModes;
@@ -205,7 +205,7 @@ SavageGetBIOSModeTable( SavagePtr psav, int iDepth )
 
 
 unsigned short
-SavageGetBIOSModes( 
+SavageGetBIOSModes(
     SavagePtr psav,
     int iDepth,
     SavageModeEntryPtr s3vModeTable )
@@ -226,7 +226,7 @@ SavageGetBIOSModes(
 	ErrorF( "Cannot allocate scratch page in real mode memory." );
 	return 0;
     }
-    
+
     for (
 	mode_list = xf86int10Addr( psav->pInt10, L_ADD(vbe->VideoModePtr) );
 	*mode_list != 0xffff;
@@ -238,7 +238,7 @@ SavageGetBIOSModes(
 	 * This is a HACK to work around what I believe is a BUG in the
 	 * Toshiba Satellite BIOSes in 08/2000 and 09/2000.  The BIOS
 	 * table for 1024x600 says it has six refresh rates, when in fact
-	 * it only has 3.  When I ask for rate #4, the BIOS goes into an 
+	 * it only has 3.  When I ask for rate #4, the BIOS goes into an
 	 * infinite loop until the user interrupts it, usually by pressing
 	 * Ctrl-Alt-F1.  For now, we'll just punt everything with a VESA
 	 * number greater than or equal to 0200.
@@ -259,7 +259,7 @@ SavageGetBIOSModes(
 
 	xf86ExecX86int10( psav->pInt10 );
 
-	if( 
+	if(
 	   (vbeLinear[25] == iDepth) &&
 	   (
 	      (vbeLinear[27] == VBE_MODEL_256) ||
@@ -276,12 +276,12 @@ SavageGetBIOSModes(
 
 	    if( s3vModeTable )
 	    {
-	        int iRefresh = 0;
+		int iRefresh = 0;
 
 		s3vModeTable->Width = B_O16(vbeLinear[18]);
 		s3vModeTable->Height = B_O16(vbeLinear[20]);
 		s3vModeTable->VesaMode = mode;
-		
+
 		/* Query the refresh rates at this mode. */
 
 		psav->pInt10->cx = mode;
@@ -294,7 +294,7 @@ SavageGetBIOSModes(
 			if( s3vModeTable->RefreshRate )
 			{
 			    s3vModeTable->RefreshRate = (unsigned char *)
-				xrealloc( 
+				xrealloc(
 				    s3vModeTable->RefreshRate,
 				    (iRefresh+8) * sizeof(unsigned char)
 				);
@@ -302,7 +302,7 @@ SavageGetBIOSModes(
 			else
 			{
 			    s3vModeTable->RefreshRate = (unsigned char *)
-				xcalloc( 
+				xcalloc(
 				    sizeof(unsigned char),
 				    (iRefresh+8)
 				);
@@ -320,7 +320,7 @@ SavageGetBIOSModes(
 
 		s3vModeTable->RefreshCount = iRefresh;
 
-	    	s3vModeTable++;
+		s3vModeTable++;
 	    }
 	}
     }
