@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.118 2005/02/19 01:03:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.119tsi Exp $ */
 /*
  * Main global data and definitions
  *
@@ -841,7 +841,6 @@ typedef struct {
     vbeInfoPtr 		pVbe;			/* For VESA mode switching */
     CARD16 		vesamajor;
     CARD16 		vesaminor;
-    VbeInfoBlock 	*vbeInfo;
     int 		UseVESA;
     sisModeInfoPtr      SISVESAModeList;
     xf86MonPtr 		monitor;
@@ -1033,12 +1032,6 @@ typedef struct {
 #endif
 #endif
 } SISRec, *SISPtr;
-
-typedef struct _ModeInfoData {
-    int mode;
-    VbeModeInfoBlock *data;
-    VbeCRTCInfoBlock *block;
-} ModeInfoData;
 
 #define SDMPTR(x) ((SiSMergedDisplayModePtr)(x->currentMode->Private))
 #define CDMPTR    ((SiSMergedDisplayModePtr)(pSiS->CurrentLayout.mode->Private))

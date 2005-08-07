@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.196 2004/11/28 17:22:34 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.197tsi Exp $ */
 /* $XdotOrg$ */
 /*
  * SiS driver main code
@@ -5793,12 +5793,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
           vbe = VBEGetVBEInfo(pSiS->pVbe);
           pSiS->vesamajor = (unsigned)(vbe->VESAVersion >> 8);
           pSiS->vesaminor = vbe->VESAVersion & 0xff;
-          pSiS->vbeInfo = vbe;
           if(pSiS->VESA == 1) {
              SiSBuildVesaModeList(pScrn, pSiS->pVbe, vbe);
-             VBEFreeVBEInfo(vbe);
              pSiS->UseVESA = 1;
           }
+          VBEFreeVBEInfo(vbe);
        } else {
           xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 	    	"Could not load and initialize VBE module.%s\n",
