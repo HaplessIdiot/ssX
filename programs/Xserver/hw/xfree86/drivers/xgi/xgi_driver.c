@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_driver.c,v 1.2 2005/06/07 01:33:39 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_driver.c,v 1.3tsi Exp $ */
 /*
  * XGI driver main code
  *
@@ -3170,12 +3170,11 @@ PDEBUG(ErrorF(" --- Chipset : %s \n", pScrn->chipset));
           vbe = VBEGetVBEInfo(pXGI->pVbe);
           pXGI->vesamajor = (unsigned)(vbe->VESAVersion >> 8);
           pXGI->vesaminor = vbe->VESAVersion & 0xff;
-          pXGI->vbeInfo = vbe;
           if(pXGI->VESA == 1) {
              XGIBuildVesaModeList(pScrn, pXGI->pVbe, vbe);
-             VBEFreeVBEInfo(vbe);
              pXGI->UseVESA = 1;
           }
+          VBEFreeVBEInfo(vbe);
        } else {
           xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 	    	"Could not load and initialize VBE module.%s\n",

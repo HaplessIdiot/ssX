@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi.h,v 1.1tsi Exp $ */
 /*
  * Main global data and definitions
  *
@@ -825,7 +825,6 @@ typedef struct {
     vbeInfoPtr 		pVbe;			/* For VESA mode switching */
     CARD16 		vesamajor;
     CARD16 		vesaminor;
-    VbeInfoBlock 	*vbeInfo;
     int 		UseVESA;
     xgiModeInfoPtr      XGIVESAModeList;
     xf86MonPtr 		monitor;
@@ -1015,12 +1014,6 @@ typedef struct {
     XGI_DSReg           SRList[ExtRegSize] ;
     XGI_DSReg           CRList[ExtRegSize] ;
 } XGIRec, *XGIPtr;
-
-typedef struct _ModeInfoData {
-    int mode;
-    VbeModeInfoBlock *data;
-    VbeCRTCInfoBlock *block;
-} ModeInfoData;
 
 #define SEQ_ADDRESS_PORT  0x0014
 #define MISC_OUTPUT_REG_WRITE_PORT  0x0012
