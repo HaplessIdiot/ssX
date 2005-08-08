@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from the XFree86 Project and silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_accel.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_accel.c,v 1.9tsi Exp $ */
 
 #include "smi.h"
 
@@ -118,7 +118,11 @@ SMI_AccelInit(ScreenPtr pScreen)
 	/* Color Expansion Fills */
 	infoPtr->CPUToScreenColorExpandFillFlags = ROP_NEEDS_SOURCE
 											 | NO_PLANEMASK
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+											 | BIT_ORDER_IN_BYTE_LSBFIRST
+#else
 											 | BIT_ORDER_IN_BYTE_MSBFIRST
+#endif
 											 | LEFT_EDGE_CLIPPING
 											 | CPU_TRANSFER_PAD_DWORD
 											 | SCANLINE_PAD_DWORD;
