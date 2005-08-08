@@ -1,4 +1,6 @@
 XFree86 4.5.99.10 (xx August 2005)
+ 112. Remove obsolete VBE functions that have not been compiled in for quite
+      some time (Marc La France).
  111. Endianness fix for colour expansion in siliconmotion driver
       (Mark Vojkovich, Bob Peterson).
 
@@ -19717,7 +19719,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3568 2005/08/08 11:02:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3569 2005/08/08 14:52:25 tsi Exp $
 
 
 

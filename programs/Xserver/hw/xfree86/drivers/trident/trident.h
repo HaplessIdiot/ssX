@@ -21,8 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.59 2003/09/05 22:07:28 alanh Exp $ */
-/*#define VBE_INFO*/
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.60tsi Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -130,9 +129,6 @@ typedef struct {
     xf86CursorInfoPtr	CursorInfoRec;
     xf86Int10InfoPtr	Int10;
     vbeInfoPtr		pVbe;
-#ifdef VBE_INFO
-    vbeModeInfoPtr	vbeModes;
-#endif
     XAAInfoRecPtr	AccelInfoRec;
     CloseScreenProcPtr	CloseScreen;
     ScreenBlockHandlerProcPtr BlockHandler;

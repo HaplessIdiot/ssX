@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.h,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.h,v 1.7tsi Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -309,20 +309,6 @@ VBEpmi *VBEGetVBEpmi(vbeInfoPtr pVbe);
 #define VESAFreeVBEpmi(pmi)	xfree(pmi)
 
 /* high level helper functions */
-
-typedef struct _vbeModeInfoRec {
-    int width;
-    int height;
-    int bpp;
-    int n;
-    struct _vbeModeInfoRec *next;
-} vbeModeInfoRec, *vbeModeInfoPtr;
-
-vbeModeInfoPtr    VBEBuildVbeModeList(vbeInfoPtr pVbe,
-			    VbeInfoBlock *vbe);
-
-unsigned short VBECalcVbeModeIndex(vbeModeInfoPtr m,
-				   DisplayModePtr mode, int bpp);
 
 typedef struct {
     CARD8 *state;
