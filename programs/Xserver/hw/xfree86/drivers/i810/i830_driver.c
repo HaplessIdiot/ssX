@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.79 2005/06/13 12:16:12 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.80 2005/08/02 16:29:54 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -1734,11 +1734,7 @@ I830LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
       dspbase = DSPBBASE;
    }
 
-   if (pScrn->depth > 8) {
-      OUTREG(dspreg, INREG(dspreg) | DISPPLANE_GAMMA_ENABLE);
-   } else {
-      OUTREG(dspreg, INREG(dspreg) & ~DISPPLANE_GAMMA_ENABLE);
-   }
+   OUTREG(dspreg, INREG(dspreg) | DISPPLANE_GAMMA_ENABLE);
    OUTREG(dspbase, INREG(dspbase));
 
    /* It seems that an initial read is needed. */
