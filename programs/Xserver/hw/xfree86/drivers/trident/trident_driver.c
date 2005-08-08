@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.193tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.194tsi Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -1537,15 +1537,6 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
         xf86LoaderReqSymLists(vbeSymbols, NULL);
 	pVbe =  VBEInit(NULL,pTrident->pEnt->index);
 	pMon = vbeDoEDID(pVbe, NULL);
-#ifdef VBE_INFO
-	{
-	    VbeInfoBlock* vbeInfoBlockPtr;
-	    if ((vbeInfoBlockPtr = VBEGetVBEInfo(pVbe))) {
-		pTrident->vbeModes = VBEBuildVbeModeList(pVbe,vbeInfoBlockPtr);
-		VBEFreeVBEInfo(vbeInfoBlockPtr);
-	    }
-	}
-#endif
 	vbeFree(pVbe);
 	if (pMon) {
 	    if (!xf86LoadSubModule(pScrn, "ddc")) {
@@ -2769,20 +2760,10 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!TRIDENTMapMem(pScrn))
 	return FALSE;
 
-    if (!xf86IsPc98()) {
-#ifdef VBE_INFO
-	if (pTrident->vbeModes) {
-	    pTrident->pVbe = VBEInit(NULL,pTrident->pEnt->index);
-	    pTrident->Int10 = pTrident->pVbe->pInt10;
-	} else
-#endif
-	{
-	    if (xf86LoadSubModule(pScrn, "int10")) {
-		xf86LoaderReqSymLists(int10Symbols, NULL);
-		xf86DrvMsg(pScrn->scrnIndex,X_INFO,"Initializing int10\n");
-		pTrident->Int10 = xf86InitInt10(pTrident->pEnt->index);
-	    }
-	}
+    if (!xf86IsPc98() && xf86LoadSubModule(pScrn, "int10")) {
+	xf86LoaderReqSymLists(int10Symbols, NULL);
+	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"Initializing int10\n");
+	pTrident->Int10 = xf86InitInt10(pTrident->pEnt->index);
     }
     
     hwp = VGAHWPTR(pScrn);
@@ -3635,26 +3616,6 @@ tridentSetModeBIOS(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
-
-#ifdef VBE_INFO
-    if (pTrident->vbeModes) {
-	vbeSaveRestoreRec vbesr;
-	vbesr.stateMode = VBECalcVbeModeIndex(pTrident->vbeModes,
-					     mode, pScrn->bitsPerPixel);
-	vbesr.pstate = NULL;
-	if (vbesr.stateMode) {
-	    if (IsPciCard && UseMMIO) 
-		TRIDENTDisableMMIO(pScrn);
-	    VBEVesaSaveRestore(pTrident->pVbe,&vbesr,MODE_RESTORE);
-	    if (IsPciCard && UseMMIO) 
-		TRIDENTEnableMMIO(pScrn);
-	    return;
-	} else
-	    xf86DrvMsg(pScrn->scrnIndex,X_WARNING,"No BIOS Mode matches "
-		       "%ix%I@%ibpp\n",mode->HDisplay,mode->VDisplay,
-		       pScrn->bitsPerPixel);
-    } 
-#endif
     /* This function is only for LCD screens, and also when we have
      * int10 available */
 
