@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.10tsi Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -515,19 +515,47 @@ VBESetVBEMode(vbeInfoPtr pVbe, int mode, VbeCRTCInfoBlock *block)
     Output: AX = Status
 	(All other registers are preserved)
     */
-    pVbe->pInt10->num = 0x10;
-    pVbe->pInt10->ax = 0x4f02;
-    pVbe->pInt10->bx = mode;
+    xf86Int10InfoPtr pInt10 = pVbe->pInt10;
+    CARD8 *pBlock = pVbe->memory;
+
+    pInt10->num = 0x10;
+    pInt10->ax = 0x4f02;
+    pInt10->bx = mode & ~(1 << 11);
     if (block) {
-	pVbe->pInt10->bx |= 1 << 11;
-	memcpy(pVbe->memory, block, sizeof(VbeCRTCInfoBlock));
-	pVbe->pInt10->es = SEG_ADDR(pVbe->real_mode_base);
-	pVbe->pInt10->di = SEG_OFF(pVbe->real_mode_base);
+	pInt10->bx |= 1 << 11;
+	pInt10->es = SEG_ADDR(pVbe->real_mode_base);
+	pInt10->di = SEG_OFF(pVbe->real_mode_base);
+
+	/*
+	 * Move most fields byte by byte to avoid endianness and alignment
+	 * issues.
+	 */
+	pBlock[0] = block->HorizontalTotal;
+	pBlock[1] = block->HorizontalTotal >> 8;
+	pBlock[2] = block->HorizontalSyncStart;
+	pBlock[3] = block->HorizontalSyncStart >> 8;
+	pBlock[4] = block->HorizontalSyncEnd;
+	pBlock[5] = block->HorizontalSyncEnd >> 8;
+	pBlock[6] = block->VerticalTotal;
+	pBlock[7] = block->VerticalTotal >> 8;
+	pBlock[8] = block->VerticalSyncStart;
+	pBlock[9] = block->VerticalSyncStart >> 8;
+	pBlock[10] = block->VerticalSyncEnd;
+	pBlock[11] = block->VerticalSyncEnd >> 8;
+	pBlock[12] = block->Flags;
+	pBlock[13] = block->PixelClock;
+	pBlock[14] = block->PixelClock >> 8;
+	pBlock[15] = block->PixelClock >> 16;
+	pBlock[16] = block->PixelClock >> 24;
+	pBlock[17] = block->RefreshRate;
+	pBlock[18] = block->RefreshRate >> 8;
+
+	(void)memcpy(pBlock + 19, block->Reserved, 40);
     }
 
-    xf86ExecX86int10(pVbe->pInt10);
+    xf86ExecX86int10(pInt10);
 
-    return (R16(pVbe->pInt10->ax) == 0x4f);
+    return (R16(pInt10->ax) == 0x4f);
 }
 
 Bool
