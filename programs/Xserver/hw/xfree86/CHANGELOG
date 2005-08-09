@@ -1,4 +1,5 @@
 XFree86 4.5.99.10 (xx August 2005)
+ 113. Endianness fix in VBESetVBEMode()  (Marc La France).
  112. Remove obsolete VBE functions that have not been compiled in for quite
       some time (Marc La France).
  111. Endianness fix for colour expansion in siliconmotion driver
@@ -111,7 +112,7 @@ XFree86 4.5.99.5 (8 June 2005)
       (Marc La France).
   64. ATIProbe() and atimisc changes:
       - Port to common layer's domain scheme;
-      - Replace AVOID_CPIO and AVOID_NON_PCI rchitecture-specific #define's
+      - Replace AVOID_CPIO and AVOID_NON_PCI architecture-specific #define's
         with run-time checks and implement new common layer infrastructure to
         allow this to happen;
       - Replace endianness compile-time checks with run-time ones;
@@ -19719,7 +19720,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3569 2005/08/08 14:52:25 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3570 2005/08/08 20:15:27 tsi Exp $
 
 
 
