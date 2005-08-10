@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.84tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.85 2005/07/29 03:12:31 tsi Exp $ */
 /*
  * Copyright 1999 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -599,7 +599,7 @@ ATIPreInit
                     pATI->ATIApplyEndian = ATIEndianSwap32;
                 }
             }
-            else if (pScreenInfo->depth > 8)
+            else if (pScreenInfo->bitsPerPixel > 8)
             {
                 /*
                  * A big-endian aperture is required in this case unless all
