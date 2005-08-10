@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.11tsi Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -615,7 +615,7 @@ VBEGetModeInfo(vbeInfoPtr pVbe, int mode)
 
     block = xnfcalloc(sizeof(VbeModeInfoBlock), 1);
 
-    block->ModeAttributes = B_O16(pVbe->memory);
+    block->ModeAttributes = B_O16(((char*)pVbe->memory)[0]);
     block->WinAAttributes = ((char*)pVbe->memory)[2];
     block->WinBAttributes = ((char*)pVbe->memory)[3];
     block->WinGranularity = B_O16(((char*)pVbe->memory)[4]);
