@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from the XFree86 Project and silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_accel.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_accel.c,v 1.10tsi Exp $ */
 
 #include "smi.h"
 
@@ -864,7 +864,7 @@ SMI_SubsequentImageWriteRect(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 		}
 	}
 	WRITE_DPR(pSmi, 0x00, 0);
-	WRITE_DPR(pSmi, 0x04, (x << 16) | (y * 0xFFFF));
+	WRITE_DPR(pSmi, 0x04, (x << 16) | (y & 0xFFFF));
 	WRITE_DPR(pSmi, 0x08, (w << 16) | (h & 0xFFFF));
 	WRITE_DPR(pSmi, 0x0C, pSmi->AccelCmd);
 
