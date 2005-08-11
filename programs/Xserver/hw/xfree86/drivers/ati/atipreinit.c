@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.85 2005/07/29 03:12:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.86 2005/08/10 16:11:41 tsi Exp $ */
 /*
  * Copyright 1999 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -620,10 +620,10 @@ ATIPreInit
                  */
                 if (!pATI->OptionLinear)
                 {
-                   xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+                    xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
                         "Depth %d is not supported without a big-endian"
                         " aperture.\n", pScreenInfo->depth);
-                   return FALSE;
+                    return FALSE;
                 }
             }
         }
