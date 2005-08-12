@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.86 2005/08/10 16:11:41 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.87 2005/08/11 13:58:33 tsi Exp $ */
 /*
  * Copyright 1999 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -2440,7 +2440,7 @@ ATIPreInit
                     CARD32 PageSize = (getpagesize() + 1023) >> 10;
 
                     /*
-                     * Note:  At this point, big-endian depths 16 & 24 without
+                     * Note:  At this point, big-endian depths 15 & 16 without
                      * an appropriate aperture have already been disallowed.
                      */
                     if ((ATIEndian.endian == ATI_LITTLE_ENDIAN) ||
