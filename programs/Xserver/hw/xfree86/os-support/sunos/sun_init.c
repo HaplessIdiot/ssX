@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.7tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -34,11 +34,7 @@ static int VTnum = -1;
 static int xf86StartVT = -1;
 #endif
 
-#if defined(__SOL8__) || defined(__sparc__)
-static char fb_dev[PATH_MAX] = "/dev/fb";
-#else
 static char fb_dev[PATH_MAX] = "/dev/console";
-#endif
 
 void
 xf86OpenConsole(void)
