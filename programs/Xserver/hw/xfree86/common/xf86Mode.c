@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.80 2005/02/26 18:31:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.81tsi Exp $ */
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1487,6 +1487,7 @@ xf86SetMonitorParameters(ScrnInfoPtr pScrn, MonPtr monitor,
 		    monitor->hsync[i].lo = hsync[i].lo;
 		    monitor->hsync[i].hi = hsync[i].hi;
 		}
+		type = "DDC-derived ";
 	    } else {
 		monitor->hsync[0].lo = 28;
 		monitor->nHsync = 1;
@@ -1524,6 +1525,7 @@ xf86SetMonitorParameters(ScrnInfoPtr pScrn, MonPtr monitor,
 		    monitor->vrefresh[i].lo = vrefresh[i].lo;
 		    monitor->vrefresh[i].hi = vrefresh[i].hi;
 		}
+		type = "DDC-derived ";
 	    } else {
 		monitor->nVrefresh = 1;
 		if (hSize > 0 && vSize > 0) {
