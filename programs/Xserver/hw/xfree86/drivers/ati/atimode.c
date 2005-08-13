@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.c,v 1.22tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.c,v 1.23 2005/06/03 03:18:32 tsi Exp $ */
 /*
  * Copyright 2000 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -464,12 +464,14 @@ ATIModeSave
             }
         }
         else if (pATI->DAC == ATI_DAC_IBMRGB514)
+        {
             ATIRGB514Save(pATI, pATIHW);
+        }
     }
 
     /*
-     * For some unknown reason, CLKDIV2 needs to be turned off to save the
-     * DAC's LUT reliably on VGA Wonder VLB adapters.
+     * For some unknown reason, CLKDIV2 needs to be turned off to reliably save
+     * the DAC's LUT on VGA Wonder VLB adapters.
      */
     if ((pATI->Adapter == ATI_ADAPTER_NONISA) && (pATIHW->seq[1] & 0x08U))
         PutReg(SEQX, 0x01U, pATIHW->seq[1] & ~0x08U);
