@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.23tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.24 2005/06/03 03:18:33 tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -538,5 +538,5 @@ ATIVGASetDPMSMode
     crt17 |= GetReg(CRTX(pATI->CPIO_VGABase), 0x17U) & ~0x80U;
     usleep(10000);
     PutReg(CRTX(pATI->CPIO_VGABase), 0x17U, crt17);
-    PutReg(SEQX, 0x01U, 0x03U); /* End synchonous reset */
+    PutReg(SEQX, 0x00U, 0x03U); /* End synchonous reset */
 }
