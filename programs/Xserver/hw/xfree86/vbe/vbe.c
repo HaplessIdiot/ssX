@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.12tsi Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -98,6 +98,7 @@ VBEExtendedInit(xf86Int10InfoPtr pInt, int entityIndex, int Flags)
     Bool init_int10 = FALSE;
     vbeInfoPtr vip = NULL;
     int screen = pScrn->scrnIndex;
+    unsigned long TotalMem;
 
     if (!pInt) {
 	if (!xf86LoadSubModule(pScrn, "int10"))
@@ -157,8 +158,13 @@ VBEExtendedInit(xf86Int10InfoPtr pInt, int entityIndex, int Flags)
 
     xf86DrvMsgVerb(screen, X_INFO, 3, "VESA VBE Version %i.%i\n",
 		   VERSION(vbe->VbeVersion));
+
+    TotalMem = B_O16(vbe->TotalMem);
+    /* Some BIOS'es are off by one */
+    TotalMem += TotalMem & 1U;
+
     xf86DrvMsgVerb(screen, X_INFO, 3, "VESA VBE Total Mem: %li kB\n",
-		   (unsigned long)B_O16(vbe->TotalMem) * 64);
+		   TotalMem * 64);
     xf86DrvMsgVerb(screen, X_INFO, 3, "VESA VBE OEM: %s\n",
 		   (CARD8*)xf86int10Addr(pInt, L_ADD(vbe->OemStringPtr)));
 
@@ -455,6 +461,7 @@ VBEGetVBEInfo(vbeInfoPtr pVbe)
     block->VideoModePtr[i] = 0xffff;
 
     block->TotalMemory = B_O16(((char*)pVbe->memory)[18]);
+    block->TotalMemory += block->TotalMemory & 1U;
 
     if (major < 2) {
 	memcpy(&block->OemSoftwareRev, (char*)pVbe->memory + 20, 236);
@@ -604,6 +611,8 @@ VBEGetModeInfo(vbeInfoPtr pVbe, int mode)
 	AX    := status
 	(All other registers are preserved)
      */
+    (void) memset(pVbe->memory, 0, 256);
+
     pVbe->pInt10->num = 0x10;
     pVbe->pInt10->ax = 0x4f01;
     pVbe->pInt10->cx = mode;

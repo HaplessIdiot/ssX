@@ -1,4 +1,6 @@
 XFree86 4.5.99.10 (xx August 2005)
+ 116. Fix VBE's reporting of video memory size, and zero out return area before
+      calling VBE to retrieve video mode information (Marc La France).
  115. Change a message to indicate whether or not a monitor's sync tolerance(s)
       is/are derived from DDC information (Marc La France).
  114. Revert to the use of /dev/console, rather than /dev/fb, as the console
@@ -19724,7 +19726,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3572 2005/08/12 13:42:42 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3573 2005/08/12 14:04:49 tsi Exp $
 
 
 
