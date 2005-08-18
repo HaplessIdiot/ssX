@@ -1,4 +1,18 @@
 XFree86 4.5.99.10 (xx August 2005)
+ 122. In the vesa driver, do not call VBE to save/restore adapter state if the
+      mode on server entry is not one reported by VBE (i.e. is a VGA or OEM
+      mode).  This prevents hangs under certain video BIOS'es (Marc La France).
+ 121. Change the vesa and vgahw modules' saving and restoring of video memory
+      for the mode on server entry to be less prone to bus lockouts
+      (Marc La France).
+ 120. Change the vesa driver to save and restore more video memory contents
+      for the mode on server entry (Marc La France).
+ 119. Fix vesa driver's mapping of video memory apertures (Marc La France).
+ 118. Experimental change to cause the vesa driver to ignore sync tolerances in
+      XF86Config monitor sections when the monitor is detected through DDC to
+      be a digital panel, relying instead on any BIOS ability to reject or
+      adjust mode timings to accomodate the panel (Marc La France).
+ 117. Endianness changes to the vesa driver (Marc La France).
  116. Fix VBE's reporting of video memory size, and zero out return area before
       calling VBE to retrieve video mode information (Marc La France).
  115. Change a message to indicate whether or not a monitor's sync tolerance(s)
@@ -19726,7 +19740,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3573 2005/08/12 14:04:49 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3574 2005/08/18 14:52:20 tsi Exp $
 
 
 
