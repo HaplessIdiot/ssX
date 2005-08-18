@@ -25,7 +25,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
 .\"
-.\" $XFree86: xc/programs/xedit/xedit.man,v 1.19tsi Exp $
+.\" $XFree86: xc/programs/xedit/xedit.man,v 1.20tsi Exp $
 .\"
 .TH XEDIT 1 __vendorversion__
 .SH NAME
@@ -440,4 +440,4 @@ for a full statement of rights and permissions.
 .SH AUTHORS
 Chris D. Peterson, MIT X Consortium
 .br
-Paulo Cesar Pereira de Andrade, The XFree86 Project
+Paulo C\('esar Pereira de Andrade, The XFree86 Project
