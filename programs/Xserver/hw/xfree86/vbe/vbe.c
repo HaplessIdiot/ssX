@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.13 2005/08/18 14:52:21 tsi Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -490,6 +490,9 @@ VBEGetVBEInfo(vbeInfoPtr pVbe)
 void
 VBEFreeVBEInfo(VbeInfoBlock *block)
 {
+    if (!block)
+	return;
+
     xfree(block->OEMStringPtr);
     xfree(block->VideoModePtr);
     if (((unsigned)block->VESAVersion >> 8) >= 2) {
