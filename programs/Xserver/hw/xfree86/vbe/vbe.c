@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.13 2005/08/18 14:52:21 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.14 2005/08/19 00:36:10 tsi Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -1021,41 +1021,6 @@ VBEGetVBEpmi(vbeInfoPtr pVbe)
     pmi->tbl_len = R16(pVbe->pInt10->cx);
 
     return (pmi);
-}
-
-void
-VBEVesaSaveRestore(vbeInfoPtr pVbe, vbeSaveRestorePtr vbe_sr,
-		  vbeSaveRestoreFunction function)
-{
-    Bool SaveSucc = FALSE;
-
-    if (VBE_VERSION_MAJOR(pVbe->version) > 1
-	&& (function == MODE_SAVE || vbe_sr->pstate)) {
-	if (function == MODE_RESTORE)
-	    memcpy(vbe_sr->state, vbe_sr->pstate, vbe_sr->stateSize);
-	ErrorF("VBESaveRestore\n");
-	if ((VBESaveRestore(pVbe, function, (pointer)&vbe_sr->state,
-			    &vbe_sr->stateSize, &vbe_sr->statePage))) {
-	    if (function == MODE_SAVE) {
-		SaveSucc = TRUE;
-		vbe_sr->stateMode = -1; /* invalidate */
-		/* don't rely on the memory not being touched */
-		if (vbe_sr->pstate == NULL)
-		    vbe_sr->pstate = xnfalloc(vbe_sr->stateSize);
-		memcpy(vbe_sr->pstate, vbe_sr->state, vbe_sr->stateSize);
-	    }
-	    ErrorF("VBESaveRestore done with success\n");
-	    return;
-	}
-	ErrorF("VBESaveRestore done\n");
-    }
-
-    if (function == MODE_SAVE && !SaveSucc)
-	    (void)VBEGetVBEMode(pVbe, &vbe_sr->stateMode);
-
-    if (function == MODE_RESTORE && vbe_sr->stateMode != -1)
-	    VBESetVBEMode(pVbe, vbe_sr->stateMode, NULL);
-
 }
 
 int
