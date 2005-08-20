@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_KbdMap.c,v 1.1 2002/10/11 01:40:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_KbdMap.c,v 1.2tsi Exp $ */
 
 /*
  * Slightly modified xf86KbdBSD.c which is
@@ -17,12 +17,14 @@
 
 #include "xf86.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h" 
+#include "xf86_OSlib.h"
 #include "xf86Xinput.h"
 #include "xf86OSKbd.h"
 #include "atKeynames.h"
 #include "xf86Keymap.h"
 #include "bsd_kbd.h"
+
+static Bool ADBScanCode(InputInfoPtr, int *);
 
 #if (defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)) && defined(GIO_KEYMAP)
 #define KD_GET_ENTRY(i,n) \
@@ -47,7 +49,7 @@ static unsigned char remap[NUM_KEYCODES] = {
      0,    0,    0,    0,    0,    0,    0,    0,   /* 0x78 - 0x7f */
 };
 
-/* This table assumes the ibm code page 437 coding for characters 
+/* This table assumes the ibm code page 437 coding for characters
  * > 0x80. They are returned in this form by PCVT */
 static KeySym eascii_to_x[512] = {
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
@@ -107,7 +109,7 @@ static KeySym eascii_to_x[512] = {
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
 	XK_Greek_alpha,	XK_ssharp,	XK_Greek_GAMMA,	XK_Greek_pi,
-	XK_Greek_SIGMA,	XK_Greek_sigma,	XK_mu,	        XK_Greek_tau,
+	XK_Greek_SIGMA,	XK_Greek_sigma,	XK_mu,		XK_Greek_tau,
 	XK_Greek_PHI,	XK_Greek_THETA,	XK_Greek_OMEGA,	XK_Greek_delta,
 	XK_infinity,	XK_Ooblique,	XK_Greek_epsilon, XK_intersection,
 	XK_identical,	XK_plusminus,	XK_greaterthanequal, XK_lessthanequal,
@@ -115,7 +117,7 @@ static KeySym eascii_to_x[512] = {
 	XK_degree,	NoSymbol,	NoSymbol,	XK_radical,
 	XK_Greek_eta,	XK_twosuperior,	XK_periodcentered, NoSymbol,
 
-	/* 
+	/*
 	 * special marked entries (256 + x)
 	 */
 
@@ -187,7 +189,7 @@ static KeySym eascii_to_x[512] = {
 };
 
 #ifdef __OpenBSD__
-/* don't mark AltR and  CtrlR for remapping, since they 
+/* don't mark AltR and  CtrlR for remapping, since they
  * cannot be remapped by pccons */
 static unsigned char pccons_remap[128] = {
      0, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,   /* 0x00 - 0x07 */
@@ -208,7 +210,7 @@ static unsigned char pccons_remap[128] = {
      0,    0,    0,    0,    0,    0,    0,    0,   /* 0x78 - 0x7f */
 };
 
-/* This table assumes an iso8859_1 encoding for the characters 
+/* This table assumes an iso8859_1 encoding for the characters
  * > 80, as returned by pccons */
 static KeySym latin1_to_x[256] = {
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
@@ -268,13 +270,13 @@ static KeySym latin1_to_x[256] = {
 	XK_Ooblique,	XK_Ugrave,	XK_Uacute,	XK_Ucircumflex,
 	XK_Udiaeresis,	XK_Yacute,	XK_THORN,	XK_ssharp,
 	XK_agrave,	XK_aacute,	XK_acircumflex,	XK_atilde,
-	XK_adiaeresis,	XK_aring,	XK_ae,	        XK_ccedilla,
+	XK_adiaeresis,	XK_aring,	XK_ae,		XK_ccedilla,
 	XK_egrave,	XK_eacute,	XK_ecircumflex,	XK_ediaeresis,
 	XK_igrave,	XK_iacute,	XK_icircumflex, XK_idiaeresis,
-	XK_eth,		XK_ntilde,	XK_ograve, 	XK_oacute,
+	XK_eth,		XK_ntilde,	XK_ograve,	XK_oacute,
 	XK_ocircumflex,	XK_otilde,	XK_odiaeresis,	XK_division,
 	XK_oslash,	XK_ugrave,	XK_uacute,	XK_ucircumflex,
-	XK_udiaeresis,	XK_yacute,	XK_thorn, 	XK_ydiaeresis
+	XK_udiaeresis,	XK_yacute,	XK_thorn,	XK_ydiaeresis
       };
 #endif
 
@@ -303,7 +305,7 @@ static CARD8 wsUsbMap[] = {
 	/* 1 */ KEY_NOTUSED,
 	/* 2 */ KEY_NOTUSED,
 	/* 3 */ KEY_NOTUSED,
-	/* 4 */ KEY_A,		
+	/* 4 */ KEY_A,
 	/* 5 */ KEY_B,
 	/* 6 */ KEY_C,
 	/* 7 */ KEY_D,
@@ -400,8 +402,8 @@ static CARD8 wsUsbMap[] = {
 	/* 98 */ KEY_KP_0,	/* Keypad 0 Ins */
 	/* 99 */ KEY_KP_Decimal,	/* Keypad . Del */
 	/* 100 */ KEY_Less,	/* < > on some keyboards */
-	/* 101 */ KEY_Menu,	/* Menu */
-	/* 102 */ KEY_NOTUSED,
+	/* 101 */ KEY_Menu,	/* Menu, Compose on Sun Type 6 USB */
+	/* 102 */ KEY_Power,	/* Sun Type 6 USB */
 	/* 103 */ KEY_KP_Equal, /* Keypad = on Mac keyboards */
 	/* 104 */ KEY_NOTUSED,
 	/* 105 */ KEY_NOTUSED,
@@ -415,20 +417,21 @@ static CARD8 wsUsbMap[] = {
 	/* 113 */ KEY_NOTUSED,
 	/* 114 */ KEY_NOTUSED,
 	/* 115 */ KEY_NOTUSED,
-	/* 116 */ KEY_NOTUSED,
-	/* 117 */ KEY_NOTUSED,
-	/* 118 */ KEY_NOTUSED,
-	/* 119 */ KEY_NOTUSED,
-	/* 120 */ KEY_NOTUSED,
-	/* 121 */ KEY_NOTUSED,
-	/* 122 */ KEY_NOTUSED,
-	/* 123 */ KEY_NOTUSED,
-	/* 124 */ KEY_NOTUSED,
-	/* 125 */ KEY_NOTUSED,
-	/* 126 */ KEY_NOTUSED,
-	/* 127 */ KEY_NOTUSED,
-	/* 128 */ KEY_NOTUSED,
-	/* 129 */ KEY_NOTUSED,
+	/* the following codes are used by Sun Type 6 USB keyboards */
+	/* 116 */ KEY_L7,
+	/* 117 */ KEY_Help,
+	/* 118 */ KEY_L3,
+	/* 119 */ KEY_L5,
+	/* 120 */ KEY_L1,
+	/* 121 */ KEY_L2,
+	/* 122 */ KEY_L4,
+	/* 123 */ KEY_L10,
+	/* 124 */ KEY_L6,
+	/* 125 */ KEY_L8,
+	/* 126 */ KEY_L9,
+	/* 127 */ KEY_Mute,
+	/* 128 */ KEY_AudioRaise,
+	/* 129 */ KEY_AudioLower,
 	/* 130 */ KEY_NOTUSED,
 	/* 131 */ KEY_NOTUSED,
 	/* 132 */ KEY_NOTUSED,
@@ -594,14 +597,14 @@ static CARD8 wsAdbMap[] = {
 	/* 48 */ KEY_Tab,
 	/* 49 */ KEY_Space,
 	/* 50 */ KEY_Tilde,
-	/* 51 */ KEY_Delete,
+	/* 51 */ KEY_BackSpace,
 	/* 52 */ KEY_AltLang,
 	/* 53 */ KEY_Escape,
 	/* 54 */ KEY_LCtrl,
-	/* 55 */ KEY_Alt,
+	/* 55 */ KEY_LMeta,
 	/* 56 */ KEY_ShiftL,
 	/* 57 */ KEY_CapsLock,
-	/* 58 */ KEY_LMeta,
+	/* 58 */ KEY_Alt,
 	/* 59 */ KEY_Left,
 	/* 60 */ KEY_Right,
 	/* 61 */ KEY_Down,
@@ -614,8 +617,8 @@ static CARD8 wsAdbMap[] = {
 	/* 68 */ KEY_NOTUSED,
 	/* 69 */ KEY_KP_Plus,
 	/* 70 */ KEY_NOTUSED,
-	/* 71 */ KEY_UNKNOWN,	/* Clear */
-	/* 72 */ KEY_NOTUSED, 
+	/* 71 */ KEY_NumLock,	/* Clear */
+	/* 72 */ KEY_NOTUSED,
 	/* 73 */ KEY_NOTUSED,
 	/* 74 */ KEY_NOTUSED,
 	/* 75 */ KEY_KP_Divide,
@@ -638,7 +641,7 @@ static CARD8 wsAdbMap[] = {
 	/* 92 */ KEY_KP_9,
 	/* 93 */ KEY_NOTUSED,
 	/* 94 */ KEY_NOTUSED,
-	/* 95 */ KEY_UNKNOWN,	/* Keypad ,  */
+	/* 95 */ KEY_KP_Decimal,	/* Keypad ,  */
 	/* 96 */ KEY_F5,
 	/* 97 */ KEY_F6,
 	/* 98 */ KEY_F7,
@@ -648,24 +651,29 @@ static CARD8 wsAdbMap[] = {
 	/* 102 */ KEY_NOTUSED,
 	/* 103 */ KEY_F11,
 	/* 104 */ KEY_NOTUSED,
-	/* 105 */ KEY_NOTUSED,
+	/* 105 */ KEY_Print,
 	/* 106 */ KEY_KP_Enter,
-	/* 107 */ KEY_NOTUSED,
+	/* 107 */ KEY_ScrollLock,
 	/* 108 */ KEY_NOTUSED,
 	/* 109 */ KEY_F10,
 	/* 110 */ KEY_NOTUSED,
 	/* 111 */ KEY_F12,
 	/* 112 */ KEY_NOTUSED,
-	/* 113 */ KEY_NOTUSED,
-	/* 114 */ KEY_NOTUSED,
+	/* 113 */ KEY_Pause,
+	/* 114 */ KEY_Insert,
 	/* 115 */ KEY_Home,
 	/* 116 */ KEY_PgUp,
-	/* 117 */ KEY_NOTUSED,
+	/* 117 */ KEY_Delete,
 	/* 118 */ KEY_F4,
 	/* 119 */ KEY_End,
 	/* 120 */ KEY_F2,
 	/* 121 */ KEY_PgDown,
-	/* 122 */ KEY_F1
+	/* 122 */ KEY_F1,
+	/* 123 */ KEY_NOTUSED,
+	/* 124 */ KEY_NOTUSED,
+	/* 125 */ KEY_NOTUSED,
+	/* 126 */ KEY_NOTUSED,
+	/* 127 */ KEY_Power
 };
 #define WS_ADB_MAP_SIZE (sizeof(wsAdbMap)/sizeof(unsigned char))
 
@@ -725,7 +733,7 @@ static CARD8 wsSunMap[] = {
 	/* 0x2d */ KEY_KP_Equal,
 	/* 0x2e */ KEY_KP_Divide,
 	/* 0x2f */ KEY_KP_Multiply,
-	/* 0x30 */ KEY_NOTUSED,
+	/* 0x30 */ KEY_Power,
 	/* 0x31 */ KEY_L5,		/* front */
 	/* 0x32 */ KEY_KP_Decimal,
 	/* 0x33 */ KEY_L6,		/* copy */
@@ -744,7 +752,7 @@ static CARD8 wsSunMap[] = {
 	/* 0x40 */ KEY_LBrace,
 	/* 0x41 */ KEY_RBrace,
 	/* 0x42 */ KEY_Delete,
-	/* 0x43 */ KEY_NOTUSED,		/* compose */
+	/* 0x43 */ KEY_Compose,		/* compose */
 	/* 0x44 */ KEY_KP_7,
 	/* 0x45 */ KEY_KP_8,
 	/* 0x46 */ KEY_KP_9,
@@ -795,13 +803,13 @@ static CARD8 wsSunMap[] = {
 	/* 0x73 */ KEY_NOTUSED,
 	/* 0x74 */ KEY_NOTUSED,
 	/* 0x75 */ KEY_NOTUSED,
-	/* 0x76 */ KEY_NOTUSED,		/* help */
+	/* 0x76 */ KEY_Help,		/* help */
 	/* 0x77 */ KEY_CapsLock,
 	/* 0x78 */ KEY_LMeta,
 	/* 0x79 */ KEY_Space,
 	/* 0x7a */ KEY_RMeta,
 	/* 0x7b */ KEY_PgDown,
-	/* 0x7c */ KEY_NOTUSED,
+	/* 0x7c */ KEY_Less,
 	/* 0x7d */ KEY_KP_Plus,
 	/* 0x7e */ KEY_NOTUSED,
 	/* 0x7f */ KEY_NOTUSED
@@ -844,7 +852,7 @@ KbdGetMapping (InputInfoPtr pInfo, KeySymsPtr pKeySyms, CARD8 *pModMap)
     {
       pccons_keymap_t keymap[KB_NUM_KEYS];
       if (ioctl(pInfo->fd, CONSOLE_GET_KEYMAP, &keymap) != -1) {
-	for (i = 0; i < KB_NUM_KEYS; i++) 
+	for (i = 0; i < KB_NUM_KEYS; i++)
 	  if (pccons_remap[i]) {
 	    k = map + (pccons_remap[i] << 2);
 	    switch (keymap[i].type) {
@@ -949,7 +957,7 @@ KbdGetMapping (InputInfoPtr pInfo, KeySymsPtr pKeySyms, CARD8 *pModMap)
   case PCVT:
     {
       keymap_t keymap;
-    
+
       if (ioctl(pInfo->fd, GIO_KEYMAP, &keymap) != -1) {
 	for (i = 0; i < keymap.n_keys && i < NUM_KEYCODES; i++)
 	  if (remap[i]) {
@@ -968,8 +976,8 @@ KbdGetMapping (InputInfoPtr pInfo, KeySymsPtr pKeySyms, CARD8 *pModMap)
     }
     break;
 #endif /* SYSCONS || PCVT */
-    
-  } 
+
+  }
 #endif /* !bsdi */
 
   /*
@@ -977,32 +985,32 @@ KbdGetMapping (InputInfoPtr pInfo, KeySymsPtr pKeySyms, CARD8 *pModMap)
    */
   for (i = 0; i < MAP_LENGTH; i++)
     pModMap[i] = NoSymbol;  /* make sure it is restored */
-  
+
   for (k = map, i = MIN_KEYCODE;
        i < (NUM_KEYCODES + MIN_KEYCODE);
        i++, k += 4)
-    
+
     switch(*k) {
-      
+
     case XK_Shift_L:
     case XK_Shift_R:
       pModMap[i] = ShiftMask;
       break;
-      
+
     case XK_Control_L:
     case XK_Control_R:
       pModMap[i] = ControlMask;
       break;
-      
+
     case XK_Caps_Lock:
       pModMap[i] = LockMask;
       break;
-      
+
     case XK_Alt_L:
     case XK_Alt_R:
       pModMap[i] = AltMask;
       break;
-      
+
     case XK_Num_Lock:
       pModMap[i] = NumLockMask;
       break;
@@ -1023,56 +1031,83 @@ KbdGetMapping (InputInfoPtr pInfo, KeySymsPtr pKeySyms, CARD8 *pModMap)
       break;
 
     }
-  
+
   pKbd->kbdType = 0;
 
   pKeySyms->map        = map;
   pKeySyms->mapWidth   = GLYPHS_PER_KEY;
   pKeySyms->minKeyCode = MIN_KEYCODE;
-  pKeySyms->maxKeyCode = MAX_KEYCODE; 
+  pKeySyms->maxKeyCode = MAX_KEYCODE;
 
   switch(pKbd->consType) {
 #ifdef SYSCONS_SUPPORT
       case SYSCONS:
-           if (pKbd->CustomKeycodes)
-              pKbd->scancodeMap = &sysconsCODE;
-           else
-              pKbd->RemapScanCode = ATScancode;
-           break;
+	   if (pKbd->CustomKeycodes)
+	      pKbd->scancodeMap = &sysconsCODE;
+	   else
+	      pKbd->RemapScanCode = ATScancode;
+	   break;
 #endif
 #if defined(PCCONS_SUPPORT) || defined (PCVT_SUPPORT)
       case PCCONS:
       case PCVT:
-           pKbd->RemapScanCode = ATScancode;
+	   pKbd->RemapScanCode = ATScancode;
 #endif
 #ifdef WSCONS_SUPPORT
       case WSCONS:
-           switch (pKbd->wsKbdType) {
+	   switch (pKbd->wsKbdType) {
 	       case WSKBD_TYPE_PC_XT:
 	       case WSKBD_TYPE_PC_AT:
-                    pKbd->RemapScanCode = ATScancode;
-                    break;
+		    pKbd->RemapScanCode = ATScancode;
+		    break;
 	       case WSKBD_TYPE_USB:
-                    pKbd->scancodeMap = &wsUsb;
-                    break;
-#ifdef WSKBD_TYPE_ADB	
+		    pKbd->scancodeMap = &wsUsb;
+		    break;
+#ifdef WSKBD_TYPE_ADB
 	       case WSKBD_TYPE_ADB:
-                    pKbd->scancodeMap = &wsAdb; 
-                    break;
+		    pKbd->RemapScanCode = ADBScanCode;
+		    break;
 #endif
 #ifdef WSKBD_TYPE_SUN
 #ifdef WSKBD_TYPE_SUN5
 	       case WSKBD_TYPE_SUN5:
 #endif /* WSKBD_TYPE_SUN5 */
 	       case WSKBD_TYPE_SUN:
-                    pKbd->scancodeMap = &wsSun;
-                    break;
+		    pKbd->scancodeMap = &wsSun;
+		    break;
 #endif /* WSKBD_TYPE_SUN */
 	       default:
-		    ErrorF("Unknown wskbd type %d\n", pKbd->wsKbdType);
-           }
+		    pKbd->RemapScanCode = ATScancode;
+		    break;
+	   }
       break;
 #endif
   }
   return;
+}
+
+static Bool
+ADBScanCode(InputInfoPtr pInfo, int *scanCode)
+{
+    KbdDevPtr pKbd = (KbdDevPtr) pInfo->private;
+
+    /*
+     * we abuse pKbd->scanPrefix to record each scancode so we can weed out the
+     * 0 following every caps-lock which would otherwise result in spurious 'A's
+     */
+    if (*scanCode == 0) {
+	/* drop this event when the previous one was caps-lock */
+	if (pKbd->scanPrefix == 57) {
+	    pKbd->scanPrefix = 0;
+	    return TRUE;	/* let the input handler stop right here */
+	}
+    }
+
+    /* record the scancode */
+    pKbd->scanPrefix = (*scanCode) & 0x7f;
+
+    /* do the normal remapping */
+    if (*scanCode >= wsAdb.begin && *scanCode < wsAdb.end)
+	*scanCode = wsAdb.map[*scanCode - wsAdb.begin];
+    return FALSE;	/* continue normal processing */
 }
