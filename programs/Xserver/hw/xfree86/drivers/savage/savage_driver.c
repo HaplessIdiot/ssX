@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.52tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.53tsi Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -253,15 +253,12 @@ static const char *ramdacSymbols[] = {
 static const char *vbeSymbols[] = {
     "VBEInit",
     "vbeDoEDID",
-#if 0
     "vbeFree",
-#endif
     NULL
 };
 
 #ifdef XFree86LOADER
 static const char *vbeOptSymbols[] = {
-    "vbeModeInit",
     "VBESetVBEMode",
     "VBEGetVBEInfo",
     "VBEFreeVBEInfo",
@@ -593,12 +590,15 @@ static Bool SavageGetRec(ScrnInfoPtr pScrn)
 
 static void SavageFreeRec(ScrnInfoPtr pScrn)
 {
+    SavagePtr psav;
+
     TRACE(( "SavageFreeRec(%x)\n", pScrn->driverPrivate ));
-    if (!pScrn->driverPrivate)
+    if (!(psav = pScrn->driverPrivate))
 	return;
+    vbeFree(psav->pVbe);
+    SavageUnmapMem(pScrn, 1);
     xfree(pScrn->driverPrivate);
     pScrn->driverPrivate = NULL;
-    SavageUnmapMem(pScrn, 1);
 }
 
 
@@ -1011,7 +1011,6 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 
     if (!SavageMapMMIO(pScrn)) {
 	SavageFreeRec(pScrn);
-        vbeFree(psav->pVbe);
 	return FALSE;
     }
 
@@ -1041,7 +1040,6 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 	Gamma zeros = {0.0, 0.0, 0.0};
 
 	if (!xf86SetGamma(pScrn, zeros)) {
-	    vbeFree(psav->pVbe);
 	    SavageFreeRec(pScrn);
 	    return FALSE;
 	}
@@ -1383,7 +1381,6 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
     if (i == -1) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "xf86ValidateModes failure\n");
 	SavageFreeRec(pScrn);
-	vbeFree(psav->pVbe);
 	return FALSE;
     }
 
@@ -1392,7 +1389,6 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
     if (i == 0 || pScrn->modes == NULL) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No valid modes found\n");
 	SavageFreeRec(pScrn);
-	vbeFree(psav->pVbe);
 	return FALSE;
     }
 
@@ -1445,7 +1441,6 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 
     if (xf86LoadSubModule(pScrn, "fb") == NULL) {
 	SavageFreeRec(pScrn);
-	vbeFree(psav->pVbe);
 	return FALSE;
     }
 
@@ -1454,7 +1449,6 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
     if( !psav->NoAccel ) {
 	if( !xf86LoadSubModule(pScrn, "xaa") ) {
 	    SavageFreeRec(pScrn);
-	    vbeFree(psav->pVbe);
 	    return FALSE;
 	}
 	xf86LoaderReqSymLists(xaaSymbols, NULL );
@@ -1463,7 +1457,6 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
     if (psav->hwcursor) {
 	if (!xf86LoadSubModule(pScrn, "ramdac")) {
 	    SavageFreeRec(pScrn);
-	    vbeFree(psav->pVbe);
 	    return FALSE;
 	}
 	xf86LoaderReqSymLists(ramdacSymbols, NULL);
@@ -1472,7 +1465,6 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
     if (psav->shadowFB) {
 	if (!xf86LoadSubModule(pScrn, "shadowfb")) {
 	    SavageFreeRec(pScrn);
-	    vbeFree(psav->pVbe);
 	    return FALSE;
 	}
 	xf86LoaderReqSymLists(shadowSymbols, NULL);
