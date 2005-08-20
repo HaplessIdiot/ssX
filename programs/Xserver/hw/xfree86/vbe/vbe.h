@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.h,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.h,v 1.8 2005/08/08 20:15:29 tsi Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -309,18 +309,6 @@ VBEpmi *VBEGetVBEpmi(vbeInfoPtr pVbe);
 #define VESAFreeVBEpmi(pmi)	xfree(pmi)
 
 /* high level helper functions */
-
-typedef struct {
-    CARD8 *state;
-    CARD8 *pstate;
-    int statePage;
-    int stateSize;
-    int stateMode;
-} vbeSaveRestoreRec, *vbeSaveRestorePtr;
-
-void
-VBEVesaSaveRestore(vbeInfoPtr pVbe, vbeSaveRestorePtr vbe_sr,
-		   vbeSaveRestoreFunction function);
 
 int VBEGetPixelClock(vbeInfoPtr pVbe, int mode, int Clock);
 Bool VBEDPMSSet(vbeInfoPtr pVbe, int mode);
