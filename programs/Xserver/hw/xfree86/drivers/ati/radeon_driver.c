@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.126 2004/10/08 17:29:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.127tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -330,6 +330,7 @@ static const char *driShadowFBSymbols[] = {
 static const char *vbeSymbols[] = {
     "VBEInit",
     "vbeDoEDID",
+    "vbeFree",
     NULL
 };
 
@@ -1272,6 +1273,7 @@ static void RADEONQueryConnectedDisplays(ScrnInfoPtr pScrn, xf86Int10InfoPtr pIn
 			if (pRADEONEnt->MonInfo1->rawData[0x14] & 0x80)
 			    pRADEONEnt->MonType1 = MT_DFP;
 			else pRADEONEnt->MonType1 = MT_CRT;
+			vbeFree(pVbe);
 		    }
 		}
 	    } else
@@ -3859,6 +3861,7 @@ RADEONProbeDDC(ScrnInfoPtr pScrn, int indx)
     if (xf86LoadSubModule(pScrn, "vbe")) {
 	pVbe = VBEInit(NULL,indx);
 	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
+	vbeFree(pVbe);
     }
 }
 
