@@ -4,7 +4,7 @@
  * $Xorg: charproc.c,v 1.6 2001/02/09 02:06:02 xorgcvs Exp $
  */
 
-/* $XFree86: xc/programs/xterm/charproc.c,v 3.172 2005/07/07 00:46:13 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/charproc.c,v 3.173tsi Exp $ */
 
 /*
 
@@ -5637,7 +5637,6 @@ VTRealize(Widget w,
 
     unsigned width, height;
     int xpos, ypos, pr;
-    int rc;
     XSizeHints sizehints;
     Atom pid_atom;
 
@@ -5787,9 +5786,9 @@ VTRealize(Widget w,
 	!= None) {
 	unsigned long pid_l = (unsigned long) getpid();
 	TRACE(("Setting _NET_WM_PID property to %lu\n", pid_l));
-	rc = XChangeProperty(XtDisplay(xw), VShellWindow,
-			     pid_atom, XA_CARDINAL, 32, PropModeReplace,
-			     (unsigned char *) &pid_l, 1);
+	(void) XChangeProperty(XtDisplay(xw), VShellWindow,
+			       pid_atom, XA_CARDINAL, 32, PropModeReplace,
+			       (unsigned char *) &pid_l, 1);
     }
 
     XFlush(XtDisplay(xw));	/* get it out to window manager */

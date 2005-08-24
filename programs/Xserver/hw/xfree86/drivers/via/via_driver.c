@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.36tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.37tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -714,10 +714,8 @@ static unsigned char ParseDeviceMask(
 	const char *opt_name,
 	const int  start)
 {
-        VIABIOSInfoPtr  pBIOSInfo;
 	unsigned char val=0;
-	VIAPtr  pVia = VIAPTR(pScrn);
-    	pBIOSInfo = pVia->pBIOSInfo;
+
 	do {
 		char str[5],neg=0;
 		unsigned char pv=0;
