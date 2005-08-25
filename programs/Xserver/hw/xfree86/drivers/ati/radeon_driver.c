@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.127tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.128tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -246,13 +246,6 @@ static const char *xaaSymbols[] = {
     NULL
 };
 
-#if 0
-static const char *xf8_32bppSymbols[] = {
-    "xf86Overlay8Plus32Init",
-    NULL
-};
-#endif
-
 static const char *ramdacSymbols[] = {
     "xf86CreateCursorInfoRec",
     "xf86DestroyCursorInfoRec",
@@ -356,9 +349,6 @@ void RADEONLoaderRefSymLists(void)
     xf86LoaderRefSymLists(vgahwSymbols,
 			  fbSymbols,
 			  xaaSymbols,
-#if 0
-			  xf8_32bppSymbols,
-#endif
 			  ramdacSymbols,
 #ifdef XF86DRI
 			  drmSymbols,

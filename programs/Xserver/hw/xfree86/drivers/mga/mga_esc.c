@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_esc.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_esc.c,v 1.4tsi Exp $ */
 /****************************************************************************
 * mga_esc.c
 *
@@ -38,7 +38,6 @@
 #include "vbe.h"
 
 #include "fb.h"
-#include "cfb8_32.h"
 #include "dixstruct.h"
 
 #include "mga_reg.h"
