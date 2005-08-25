@@ -26,7 +26,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.h,v 1.14tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.h,v 1.15tsi Exp $
  */
 
 #ifndef _VESA_H_
@@ -75,7 +75,6 @@
 #include "fb.h"
 #include "afb.h"
 #include "mfb.h"
-#include "cfb24_32.h"
 
 #define VESA_VERSION		4000
 #define VESA_NAME		"VESA"

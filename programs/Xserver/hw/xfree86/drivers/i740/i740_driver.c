@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.52 2004/11/26 13:45:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.53tsi Exp $ */
 
 /*
  * Authors:
@@ -233,8 +233,6 @@ static const char *fbSymbols[] = {
     "cfb24ScreenInit",
     "cfb32ScreenInit",
 #endif
-    "cfb8_32ScreenInit",
-    "cfb24_32ScreenInit",
     NULL
 };
 #endif
