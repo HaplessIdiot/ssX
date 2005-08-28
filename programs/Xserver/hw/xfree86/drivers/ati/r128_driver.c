@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.89 2004/01/29 03:37:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.90tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -1190,7 +1190,7 @@ static Bool R128PreInitDDC(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
     /* Int10 is broken on PPC and some Alphas */
     return TRUE;
 #else
-    if (xf86LoadSubModule(pScrn, "vbe")) {
+    if (xf86LoadVBEModule(pScrn)) {
 	xf86LoaderReqSymLists(vbeSymbols,NULL);
 	pVbe = VBEInit(pInt10,info->pEnt->index);
 	if (!pVbe) return FALSE;
@@ -1832,7 +1832,7 @@ static void
 R128ProbeDDC(ScrnInfoPtr pScrn, int indx)
 {
     vbeInfoPtr pVbe;
-    if (xf86LoadSubModule(pScrn, "vbe")) {
+    if (xf86LoadVBEModule(pScrn)) {
 	pVbe = VBEInit(NULL,indx);
 	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
 	vbeFree(pVbe);

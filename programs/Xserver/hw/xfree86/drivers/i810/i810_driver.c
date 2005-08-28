@@ -72,7 +72,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.118tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.119tsi Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -667,7 +667,7 @@ I810ProbeDDC(ScrnInfoPtr pScrn, int index)
 {
    vbeInfoPtr pVbe;
 
-   if (xf86LoadSubModule(pScrn, "vbe")) {
+   if (xf86LoadVBEModule(pScrn)) {
       pVbe = VBEInit(NULL, index);
       ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
       vbeFree(pVbe);
@@ -686,7 +686,7 @@ I810DoDDC(ScrnInfoPtr pScrn, int index)
       return MonInfo;
    }
 
-   if (xf86LoadSubModule(pScrn, "vbe") && (pVbe = VBEInit(NULL, index))) {
+   if (xf86LoadVBEModule(pScrn) && (pVbe = VBEInit(NULL, index))) {
       xf86LoaderReqSymLists(I810vbeSymbols, NULL);
       MonInfo = vbeDoEDID(pVbe, NULL);
       xf86PrintEDID(MonInfo);
@@ -2149,8 +2149,8 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 #ifdef XF86DRI
    /*
-    * Setup DRI after visuals have been established, but before cfbScreenInit
-    * is called.   cfbScreenInit will eventually call into the drivers
+    * Setup DRI after visuals have been established, but before fbScreenInit
+    * is called.   fbScreenInit will eventually call into the drivers
     * InitGLXVisuals call back.
     */
    /*
@@ -2292,7 +2292,7 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 #ifdef XF86DRI
    if (pI810->directRenderingEnabled) {
-      /* Now that mi, cfb, drm and others have done their thing,
+      /* Now that mi, fb, drm and others have done their thing,
        * complete the DRI setup.
        */
       pI810->directRenderingEnabled = I810DRIFinishScreenInit(pScreen);

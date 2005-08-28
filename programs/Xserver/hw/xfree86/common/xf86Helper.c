@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.150 2005/07/26 18:32:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.151tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -2396,6 +2396,14 @@ xf86GetModuleVersion(pointer module)
 #endif
 }
 
+void
+xf86SetParentModuleRequirements(pointer module, pointer req)
+{
+#ifdef XFree86LOADER
+    LoaderSetParentModuleRequirements(module, req);
+#endif
+}
+
 pointer
 xf86LoadDrvSubModule(DriverPtr drv, const char *name)
 {
@@ -2414,6 +2422,24 @@ xf86LoadDrvSubModule(DriverPtr drv, const char *name)
 }
 
 pointer
+xf86LoadDrvSubModuleWithRequirements(DriverPtr drv, const char *name,
+				     pointer req)
+{
+#ifdef XFree86LOADER
+    pointer ret;
+    int errmaj = 0, errmin = 0;
+
+    ret = LoadSubModule(drv->module, name, NULL, NULL, NULL, req,
+			&errmaj, &errmin);
+    if (!ret)
+	LoaderErrorMsg(NULL, name, errmaj, errmin);
+    return ret;
+#else
+    return (pointer)1;
+#endif
+}
+
+pointer
 xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name)
 {
 #ifdef XFree86LOADER
@@ -2421,6 +2447,24 @@ xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name)
     int errmaj = 0, errmin = 0;
 
     ret = LoadSubModule(pScrn->module, name, NULL, NULL, NULL, NULL,
+			&errmaj, &errmin);
+    if (!ret)
+	LoaderErrorMsg(pScrn->name, name, errmaj, errmin);
+    return ret;
+#else
+    return (pointer)1;
+#endif
+}
+
+pointer
+xf86LoadSubModuleWithRequirements(ScrnInfoPtr pScrn, const char *name,
+				  pointer req)
+{
+#ifdef XFree86LOADER
+    pointer ret;
+    int errmaj = 0, errmin = 0;
+
+    ret = LoadSubModule(pScrn->module, name, NULL, NULL, NULL, req,
 			&errmaj, &errmin);
     if (!ret)
 	LoaderErrorMsg(pScrn->name, name, errmaj, errmin);

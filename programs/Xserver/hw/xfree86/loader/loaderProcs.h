@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.21 2003/10/15 16:29:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.22tsi Exp $ */
 
 /*
  *
@@ -92,6 +92,7 @@ typedef struct module_desc {
     void *TearDownData;		/* returned from SetupProc */
     const char *path;
     const XF86ModuleVersionInfo *VersionInfo;
+    const XF86ModReqInfo *ParentReq;
 } ModuleDesc, *ModuleDescPtr;
 
 /*
@@ -118,6 +119,8 @@ ModuleDescPtr NewModuleDesc(const char *);
 ModuleDescPtr AddSibling(ModuleDescPtr head, ModuleDescPtr new);
 void LoaderSetPath(const char *path);
 void LoaderSortExtensions(void);
+void LoaderSetParentModuleRequirements(ModuleDescPtr module,
+				       XF86ModReqInfo *req);
 
 void LoaderVReqSymLists(const char **, va_list args);
 void LoaderVReqSymbols(const char *, va_list args);

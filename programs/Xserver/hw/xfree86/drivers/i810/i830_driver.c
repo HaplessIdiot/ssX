@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.80 2005/08/02 16:29:54 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.81tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -1939,7 +1939,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
    xf86LoaderReqSymLists(I810int10Symbols, NULL);
 
    /* Load vbe module */
-   if (!(pVBEModule = xf86LoadSubModule(pScrn, "vbe")))
+   if (!(pVBEModule = xf86LoadVBEModule(pScrn)))
       return FALSE;
    xf86LoaderReqSymLists(I810vbeSymbols, NULL);
 

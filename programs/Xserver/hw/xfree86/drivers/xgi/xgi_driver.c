@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_driver.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_driver.c,v 1.4tsi Exp $ */
 /*
  * XGI driver main code
  *
@@ -61,6 +61,11 @@
 #include "xf86RAC.h"
 #include "shadowfb.h"
 #include "vbe.h"
+#ifndef xf86LoadVBEModule
+#   define xf86LoadVBEModule(_pScrn) \
+	   xf86LoadSubModule(_pScrn, "vbe")
+#endif
+
 
 #include "mipointer.h"
 #include "mibstore.h"
@@ -1423,7 +1428,7 @@ XGIPreInit(ScrnInfoPtr pScrn, int flags)
 #endif */
 
     if(flags & PROBE_DETECT) {
-       if(xf86LoadSubModule(pScrn, "vbe")) {
+       if(xf86LoadVBEModule(pScrn)) {
           int index = xf86GetEntityInfo(pScrn->entityList[0])->index;
 
 #if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
@@ -2647,7 +2652,7 @@ PDEBUG(ErrorF(" --- Chipset : %s \n", pScrn->chipset));
           xf86LoaderReqSymLists(ddcSymbols, NULL);
 
           /* Now load and initialize VBE module. */
-          if(xf86LoadSubModule(pScrn, "vbe")) {
+          if(xf86LoadVBEModule(pScrn)) {
 	      xf86LoaderReqSymLists(vbeSymbols, NULL);
 #if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
 	      pXGI->pVbe = VBEInit(pXGI->pInt,pXGI->pEnt->index);
@@ -3156,7 +3161,7 @@ PDEBUG(ErrorF(" --- Chipset : %s \n", pScrn->chipset));
     pXGI->UseVESA = 0;
     if(pXGI->VESA == 1) {
        if(!pXGI->pVbe) {
-          if(xf86LoadSubModule(pScrn, "vbe")) {
+          if(xf86LoadVBEModule(pScrn)) {
 	     xf86LoaderReqSymLists(vbeSymbols, NULL);
 #if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
 	     pXGI->pVbe = VBEInit(pXGI->pInt,pXGI->pEnt->index);
@@ -3972,7 +3977,7 @@ PDEBUG(ErrorF("XGIScreenInit(). \n"));
 #ifdef XGIDUALHEAD
     if((!pXGI->DualHeadMode) || (!pXGI->SecondHead)) {
 #endif
-       if(xf86LoadSubModule(pScrn, "vbe")) {
+       if(xf86LoadVBEModule(pScrn)) {
 	  xf86LoaderReqSymLists(vbeSymbols, NULL);
 #if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
           pXGI->pVbe = VBEInit(NULL, pXGI->pEnt->index);
@@ -4068,7 +4073,7 @@ PDEBUG(ErrorF("XGIScreenInit(). \n"));
      * function.  If not, the visuals will need to be setup before calling
      * a fb ScreenInit() function and fixed up after.
      *
-     * For most PC hardware at depths >= 8, the defaults that cfb uses
+     * For most PC hardware at depths >= 8, the defaults that fb uses
      * are not appropriate.  In this driver, we fixup the visuals after.
      */
 

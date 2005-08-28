@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.135tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.136tsi Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -107,7 +107,6 @@
 
 #include "fb.h"
 #include "cfb8_16.h"
-
 
 /* Needed for the 1 and 4 bpp framebuffers */
 #include "xf1bpp.h"
@@ -1121,7 +1120,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     }
 #endif
 
-    if (xf86LoadSubModule(pScrn, "vbe")) {
+    if (xf86LoadVBEModule(pScrn)) {
 	xf86LoaderReqSymLists(vbeSymbols, NULL);
 	cPtr->pVbe =  VBEInit(NULL,cPtr->pEnt->index);
     }
@@ -3931,7 +3930,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * function.  If not, the visuals will need to be setup before calling
      * a fb ScreenInit() function and fixed up after.
      *
-     * For most PC hardware at depths >= 8, the defaults that cfb uses
+     * For most PC hardware at depths >= 8, the defaults that fb uses
      * are not appropriate.  In this driver, we fixup the visuals after.
      */
 

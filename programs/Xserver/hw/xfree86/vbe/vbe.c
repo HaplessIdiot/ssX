@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.15 2005/08/20 15:31:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.16tsi Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -57,8 +57,6 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "xf86.h"
-#include "xf86_ansic.h"
 #include "vbe.h"
 #include "Xarch.h"
 #define DPMS_SERVER
@@ -114,6 +112,7 @@ VBEExtendedInit(xf86Int10InfoPtr pInt, int entityIndex, int Flags)
     page = xf86Int10AllocPages(pInt, 1, &RealOff);
     if (!page) goto error;
     vbe = (vbeControllerInfoPtr) page;
+    (void) memset(vbe, 0, 512);
     (void) memcpy(vbe->VbeSignature, vbeVersionString, 4);
 
     pInt->ax = 0x4F00;
@@ -418,7 +417,7 @@ VBEGetVBEInfo(vbeInfoPtr pVbe)
     char *str, *pBlock = pVbe->memory;
     CARD16 *modes;
 
-    (void) memset(pBlock, 0, sizeof(VbeInfoBlock));
+    (void) memset(pBlock, 0, 512);
     (void) memcpy(pBlock, vbeVersionString, 4);
 
     pVbe->pInt10->num = 0x10;
@@ -462,7 +461,7 @@ VBEGetVBEInfo(vbeInfoPtr pVbe)
     block->TotalMemory += block->TotalMemory & 1U;
 
     if (block->VESAVersion < 0x0200) {
-	(void) memcpy(&block->OemSoftwareRev, pBlock + 20, 236);
+	(void) memcpy(&block->Reserved, pBlock + 20, 236);
     } else {
 	block->OemSoftwareRev = B_O16(pBlock[20]);
 
@@ -640,6 +639,11 @@ VBEGetModeInfo(vbeInfoPtr pVbe, int mode)
     block->WinFuncPtr = B_O32(pBlock[12]);
     block->BytesPerScanline = B_O16(pBlock[16]);
 
+    if (pVbe->version < 0x0102) {
+	(void) memcpy(&block->Reserved2, pBlock + 18, 238);
+	return block;
+    }
+
     /* mandatory information for VBE 1.2 and above */
     block->XResolution = B_O16(pBlock[18]);
     block->YResolution = B_O16(pBlock[20]);
@@ -665,7 +669,7 @@ VBEGetModeInfo(vbeInfoPtr pVbe, int mode)
     block->DirectColorModeInfo = pBlock[39];
 
     if (pVbe->version < 0x0200) {
-	(void) memcpy(&block->PhysBasePtr, pBlock + 40, 216);
+	(void) memcpy(&block->Reserved2, pBlock + 40, 216);
 	return block;
     }
 
@@ -675,7 +679,7 @@ VBEGetModeInfo(vbeInfoPtr pVbe, int mode)
     block->Reserved16 = B_O16(pBlock[48]);
 
     if (pVbe->version < 0x0300) {
-	(void) memcpy(&block->LinBytesPerScanLine, pBlock + 50, 206);
+	(void) memcpy(&block->Reserved2, pBlock + 50, 206);
 	return block;
     }
 
@@ -692,7 +696,7 @@ VBEGetModeInfo(vbeInfoPtr pVbe, int mode)
     block->LinRsvdMaskSize = pBlock[60];
     block->LinRsvdFieldPosition = pBlock[61];
     block->MaxPixelClock = B_O32(pBlock[62]);
-    (void) memcpy(&block->Reserved2, pBlock + 66, 188);
+    (void) memcpy(&block->Reserved2, pBlock + 66, 190);
 
     return block;
 }

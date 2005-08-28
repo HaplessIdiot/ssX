@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.108 2004/12/10 16:07:03 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.109tsi Exp $ */
 
 /*
  * Authors:
@@ -375,7 +375,7 @@ static void
 TDFXProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
-    if (xf86LoadSubModule(pScrn, "vbe"))
+    if (xf86LoadVBEModule(pScrn))
     {
 	pVbe =  VBEInit(NULL,index);
 	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
@@ -1054,7 +1054,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
   xf86LoaderReqSymLists(ddcSymbols, NULL);
 
   /* Initialize DDC1 if possible */
-  if (xf86LoadSubModule(pScrn, "vbe")) {
+  if (xf86LoadVBEModule(pScrn)) {
       xf86MonPtr pMon;
       vbeInfoPtr pVbe = VBEInit(NULL,pTDFX->pEnt->index);
 

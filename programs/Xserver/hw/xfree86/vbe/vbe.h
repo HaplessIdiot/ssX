@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.h,v 1.9 2005/08/20 15:31:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.h,v 1.10tsi Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -12,6 +12,9 @@
 
 #ifndef _VBE_H
 #define _VBE_H
+#include "xf86.h"
+#include "xf86_ansic.h"
+#include "compiler.h"
 #include "xf86int10.h"
 #include "xf86DDC.h"
 
@@ -78,8 +81,51 @@ typedef struct vbeControllerInfoBlock {
 #pragma pack(0)
 #endif
 
-#ifndef __GNUC__
-#define __attribute__(a)
+/*
+ * The three Vbe.*InfoBlock structures below were originally defined as packed
+ * in line with their VBE counterparts.  Strictly speaking, this is unnecessary
+ * given their contents must be massaged for endianness, alignment, etc. before
+ * being used to interact directly with the BIOS.
+ *
+ * It is also undesirable because their layout then varies by compiler and, in
+ * VbeInfoBlock's case, platform pointer size.  Thus the layout of these
+ * structures has been changed to remove any lingering expectation that they
+ * match their VBE counterparts.
+ *
+ * The following definitions are meant to deal with the incompatibility between
+ * modules that arose when these structures were changed.
+ */
+
+#undef xf86LoadVBEModule
+
+#if defined(XFree86LOADER)
+
+    static __inline__ pointer
+    xf86LoadVBEModule(ScrnInfoPtr pScreenInfo)
+    {
+	/*
+	 * The Vbe*.InfoBlock structures were reworked starting with vbe module
+	 * version number 2.0.0, video driver ABI version 0.9.
+	 */
+	static XF86ModReqInfo vbeModuleVersionRequirements =
+	{
+	    2, 0, 0,			/* major, minor, patchlevel */
+	    ABI_CLASS_VIDEODRV,		/* abiclass */
+	    SET_ABI_VERSION(0, 9),	/* abiversion */
+	    MOD_CLASS_NONE		/* moduleclass */
+	};
+
+	return xf86LoadSubModuleWithRequirements(pScreenInfo, "vbe",
+						 &vbeModuleVersionRequirements);
+}
+
+#    define xf86LoadVBEModule(_pScreenInfo) \
+	    xf86LoadVBEModule(_pScreenInfo)
+#else
+
+#    define xf86LoadVBEModule(_pScreenInfo) \
+	    xf86LoadSubModule(_pScreenInfo, "vbe")
+
 #endif
 
 typedef struct _VbeInfoBlock VbeInfoBlock;
@@ -94,22 +140,22 @@ struct _VbeInfoBlock {
     /* VESA 1.2 fields */
     CARD8 VESASignature[4];	/* VESA */
     CARD16 VESAVersion;		/* Higher byte major, lower byte minor */
-    char *OEMStringPtr;		/* Pointer to OEM string */
     CARD8 Capabilities[4];	/* Capabilities of the video environment */
-
+    CARD16 TotalMemory;		/* Number of 64kb memory blocks on board */
+    char *OEMStringPtr;		/* Pointer to OEM string */
     CARD16 *VideoModePtr;	/* pointer to supported Super VGA modes */
 
-    CARD16 TotalMemory;		/* Number of 64kb memory blocks on board */
-    /* if not VESA 2, 236 scratch bytes follow (256 bytes total size) */
-
     /* VESA 2 fields */
-    CARD16 OemSoftwareRev;	/* VBE implementation Software revision */
     char *OemVendorNamePtr;	/* Pointer to Vendor Name String */
     char *OemProductNamePtr;	/* Pointer to Product Name String */
     char *OemProductRevPtr;	/* Pointer to Product Revision String */
-    CARD8 Reserved[222];	/* Reserved for VBE implementation */
+    CARD16 OemSoftwareRev;	/* VBE implementation Software revision */
+
+    /* Allow enough space for VESA 1's reserved field */
+    CARD8 Reserved[236];	/* Reserved for VBE implementation */
+    /* This only exists for VESA 2 */
     CARD8 OemData[256];		/* Data Area for OEM Strings */
-} __attribute__((packed));
+};
 
 /* Return Super VGA Information */
 VbeInfoBlock *VBEGetVBEInfo(vbeInfoPtr pVbe);
@@ -172,10 +218,13 @@ struct _VbeModeInfoBlock {
     CARD8 LinBlueFieldPosition;		/* bit position of blue mask lsb */
     CARD8 LinRsvdMaskSize;		/* size of direct color reserved mask */
     CARD8 LinRsvdFieldPosition;		/* bit position of reserved mask lsb */
+
+    CARD16 pad;				/* two-byte fluff */
     CARD32 MaxPixelClock;		/* maximum pixel clock (in Hz) for
 					   graphics mode */
-    CARD8 Reserved2[189];		/* remainder of VbeModeInfoBlock */
-} __attribute__((packed));
+    /* Allow enough space for VESA 1.1's reserved field */
+    CARD8 Reserved2[238];		/* remainder of VbeModeInfoBlock */
+};
 
 /* Return VBE Mode Information */
 VbeModeInfoBlock *VBEGetModeInfo(vbeInfoPtr pVbe, int mode);
@@ -197,12 +246,11 @@ struct _VbeCRTCInfoBlock {
     CARD16 VerticalTotal;	/* Vertical total in lines */
     CARD16 VerticalSyncStart;	/* Vertical sync start in lines */
     CARD16 VerticalSyncEnd;	/* Vertical sync end in lines */
-    CARD8 Flags;		/* Flags (Interlaced, Double Scan etc) */
     CARD32 PixelClock;		/* Pixel clock in units of Hz */
     CARD16 RefreshRate;		/* Refresh rate in units of 0.01 Hz */
+    CARD8 Flags;		/* Flags (Interlaced, Double Scan etc) */
     CARD8 Reserved[40];		/* remainder of ModeInfoBlock */
-} __attribute__((packed));
-/* VbeCRTCInfoBlock is in the VESA 3.0 specs */
+};
 
 Bool VBESetVBEMode(vbeInfoPtr pVbe, int mode, VbeCRTCInfoBlock *crtc);
 

@@ -26,10 +26,12 @@
  *
  * Authors: David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbeModes.h,v 1.1 2002/08/06 13:46:28 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbeModes.h,v 1.1tsi Exp $
  */
 
 #ifndef _VBE_MODES_H
+
+#include "vbe.h"
 
 /*
  * This is intended to be stored in the DisplayModeRec's private area.

@@ -1,11 +1,24 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe_module.c,v 1.1 2003/02/17 17:06:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe_module.c,v 1.2tsi Exp $ */
 
 #ifdef XFree86LOADER
 
-#include "xf86.h"
 #include "vbe.h"
 
 extern const char *vbe_ddcSymbols[];
+
+/*
+ * Vbe.*InfoBlock structures were reworked starting with video driver ABI
+ * version number 0.9.
+ */
+static XF86ModReqInfo ParentModuleRequirements =
+{
+    MAJOR_UNSPEC,		/* majorversion */
+    MINOR_UNSPEC,		/* minorversion */
+    PATCH_UNSPEC,		/* patchlevel */
+    ABI_CLASS_VIDEODRV,		/* abiclass */
+    SET_ABI_VERSION(0, 9),	/* abiversion */
+    MOD_CLASS_NONE		/* moduleclass */
+};
 
 static pointer
 vbeSetup(pointer module, pointer opts, int *errmaj, int *errmin)
@@ -21,6 +34,10 @@ vbeSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 */
 	LoaderRefSymLists(vbe_ddcSymbols, NULL);
     } 
+
+    /* Cause parent module version to be checked */
+    xf86SetParentModuleRequirements(module, &ParentModuleRequirements);
+
     /*
      * The return value must be non-NULL on success even though there
      * is no TearDownProc.
@@ -35,9 +52,9 @@ static XF86ModuleVersionInfo vbeVersRec =
     MODINFOSTRING1,		/* _modinfo1_ */
     MODINFOSTRING2,		/* _modinfo2_ */
     XF86_VERSION_CURRENT,	/* xf86version */
-    1, 1, 0,			/* majorversion, minorversion, patchlevel */
+    2, 0, 0,			/* majorversion, minorversion, patchlevel */
     ABI_CLASS_VIDEODRV,		/* needs the video driver ABI */
-    ABI_VIDEODRV_VERSION,	/* abiversion */
+    ABI_VIDEODRV_VERSION,	/* abiversion (current) */
     MOD_CLASS_NONE,		/* moduleclass */
     {0,0,0,0}			/* checksum */
 };

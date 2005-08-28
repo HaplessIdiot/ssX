@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.67 2004/11/26 13:44:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.68tsi Exp $ */
 
 #include "apm.h"
 #include "xf86cmap.h"
@@ -499,7 +499,7 @@ ApmProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
 
-    if (xf86LoadSubModule(pScrn, "vbe")) {
+    if (xf86LoadVBEModule(pScrn)) {
         pVbe = VBEInit(NULL, index);
         ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
 	vbeFree(pVbe);

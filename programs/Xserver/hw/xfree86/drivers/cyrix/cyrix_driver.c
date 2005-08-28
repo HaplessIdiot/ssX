@@ -50,7 +50,7 @@
  *		(note that most of the data books have been released by
  *		 NatSemi and are downloadable for free as pdf files)
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.32 2004/11/26 11:48:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.33tsi Exp $ */
 
 #include "fb.h"
 #include "mibank.h"
@@ -528,7 +528,7 @@ static void
 CYRIXProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
-    if (xf86LoadSubModule(pScrn, "vbe")) {
+    if (xf86LoadVBEModule(pScrn)) {
 	pVbe = VBEInit(NULL,index);
 	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
 	vbeFree(pVbe);

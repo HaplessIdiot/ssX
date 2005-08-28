@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.163 2003/11/03 22:17:21 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.164tsi Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -614,7 +614,7 @@ static void
 GLINTProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
-    if (xf86LoadSubModule(pScrn, "vbe"))
+    if (xf86LoadVBEModule(pScrn))
     {
 	pVbe =  VBEInit(NULL,index);
 	vbeDoEDID(pVbe, NULL);
@@ -2886,7 +2886,7 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * function.  If not, the visuals will need to be setup before calling
      * a fb ScreenInit() function and fixed up after.
      *
-     * For most PC hardware at depths >= 8, the defaults that cfb uses
+     * For most PC hardware at depths >= 8, the defaults that fb uses
      * are not appropriate.  In this driver, we fixup the visuals after.
      */
 
@@ -3150,7 +3150,7 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 #ifdef XF86DRI
     if (pGlint->directRenderingEnabled) {
-	/* Now that mi, cfb, drm and others have done their thing, 
+	/* Now that mi, fb, drm and others have done their thing, 
          * complete the DRI setup.
          */
 	pGlint->directRenderingEnabled = GLINTDRIFinishScreenInit(pScreen);

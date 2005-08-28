@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.197tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.198tsi Exp $ */
 /* $XdotOrg$ */
 /*
  * SiS driver main code
@@ -62,6 +62,11 @@
 #include "xf86RAC.h"
 #include "shadowfb.h"
 #include "vbe.h"
+#ifndef xf86LoadVBEModule
+#   define xf86LoadVBEModule(_pScrn) \
+	   xf86LoadSubModule(_pScrn, "vbe")
+#endif
+
 
 #include "sis_shadow.h"
 
@@ -2402,7 +2407,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
 
     if(flags & PROBE_DETECT) {
-       if(xf86LoadSubModule(pScrn, "vbe")) {
+       if(xf86LoadVBEModule(pScrn)) {
           int index = xf86GetEntityInfo(pScrn->entityList[0])->index;
 
 #if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
@@ -4965,7 +4970,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
           xf86LoaderReqSymLists(ddcSymbols, NULL);
 
           /* Now load and initialize VBE module. */
-          if(xf86LoadSubModule(pScrn, "vbe")) {
+          if(xf86LoadVBEModule(pScrn)) {
 	      xf86LoaderReqSymLists(vbeSymbols, NULL);
 #if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
 	      pSiS->pVbe = VBEInit(pSiS->pInt,pSiS->pEnt->index);
@@ -5779,7 +5784,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     pSiS->UseVESA = 0;
     if(pSiS->VESA == 1) {
        if(!pSiS->pVbe) {
-          if(xf86LoadSubModule(pScrn, "vbe")) {
+          if(xf86LoadVBEModule(pScrn)) {
 	     xf86LoaderReqSymLists(vbeSymbols, NULL);
 #if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
 	     pSiS->pVbe = VBEInit(pSiS->pInt,pSiS->pEnt->index);
@@ -7177,7 +7182,7 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #ifdef SISDUALHEAD
     if((!pSiS->DualHeadMode) || (!pSiS->SecondHead)) {
 #endif    
-       if(xf86LoadSubModule(pScrn, "vbe")) {
+       if(xf86LoadVBEModule(pScrn)) {
 	  xf86LoaderReqSymLists(vbeSymbols, NULL);
 #if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
           pSiS->pVbe = VBEInit(NULL, pSiS->pEnt->index);

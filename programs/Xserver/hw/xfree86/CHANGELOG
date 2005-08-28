@@ -1,4 +1,6 @@
 XFree86 4.5.99.11 (xx September 2005)
+ 130. Add loader infrastructure to implement inter-module version checks and
+      use it as part of a rework of VBE information blocks (Marc La France).
  129. The xf8_32wid module is only used by the sunffb driver, so don't include
       it in non-SPARC static server builds (Marc La France).
  128. The xf24_32bpp module is now no longer used by any XFree86-provided
@@ -19755,7 +19757,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3579 2005/08/28 16:24:06 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3580 2005/08/28 17:47:58 tsi Exp $
 
 
 

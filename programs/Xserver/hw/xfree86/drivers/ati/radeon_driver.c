@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.128tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.129tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1253,7 +1253,7 @@ static void RADEONQueryConnectedDisplays(ScrnInfoPtr pScrn, xf86Int10InfoPtr pIn
 	    else if((pRADEONEnt->MonType1 = RADEONDisplayDDCConnected(pScrn, DDC_VGA, &pRADEONEnt->MonInfo1)));
 	    else if((pRADEONEnt->MonType1 = RADEONDisplayDDCConnected(pScrn, DDC_CRT2, &pRADEONEnt->MonInfo1)));
 	    else if (pInt10) {
-		if (xf86LoadSubModule(pScrn, "vbe")) {
+		if (xf86LoadVBEModule(pScrn)) {
 		    vbeInfoPtr  pVbe;
 		    pVbe = VBEInit(pInt10, info->pEnt->index);
 		    if (pVbe) {
@@ -3848,7 +3848,7 @@ RADEONProbeDDC(ScrnInfoPtr pScrn, int indx)
 {
     vbeInfoPtr  pVbe;
 
-    if (xf86LoadSubModule(pScrn, "vbe")) {
+    if (xf86LoadVBEModule(pScrn)) {
 	pVbe = VBEInit(NULL,indx);
 	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
 	vbeFree(pVbe);

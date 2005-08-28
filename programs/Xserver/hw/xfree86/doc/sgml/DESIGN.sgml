@@ -27,7 +27,7 @@
 
 <title>XFree86&reg; server 4.x Design (DRAFT)
 <author>The XFree86 Project, Inc
-<date>19 December 2003
+<date>18 August 2005
 
 
 
@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.56 2004/12/07 15:59:18 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.57tsi Exp $
 </ident>
 
 
@@ -2341,7 +2341,7 @@ can be set with the &s.code;xf86SetOperatingState()&e.code; function:
       that the resource ranges have to match those specified during
       registration.  If a range has been specified starting at
       &s.code;A&e.code; and ending at &s.code;B&e.code; and suppose
-      &s.code;C&e.code; us a value satisfying
+      &s.code;C&e.code; is a value satisfying
       &s.code;A&nbsp;&lt;&nbsp;C&nbsp;&lt;&nbsp;B&e.code; one may not
       specify the resource range &s.code;(A,B)&e.code; by splitting it
       into two ranges &s.code;(A,C)&e.code; and &s.code;(C,B)&e.code;.
@@ -4247,7 +4247,7 @@ XFree86 common layer.
       &s.code;modreq&e.code;
 	<quote><p>
 		  An optional &s.code;XF86ModReqInfo*&e.code; containing
-		  version/ABI/vendor information to requirements to
+		  version/ABI/vendor information specifying requirements to
 		  check the newly loaded module against.  The main
 		  purpose of this is to allow the loader to verify that
 		  a module of the correct type/version before running
@@ -4541,7 +4541,7 @@ typedef struct {
 
 The vers parameter must be initialised to a pointer to a correctly
 initialised &s.code;XF86ModuleVersionInfo&e.code; struct.  The other
-two parameter are optional, and should be initialised to
+two parameters are optional, and should be initialised to
 &s.code;NULL&e.code; when not required.  The other parameters are defined
 as
 
@@ -4592,6 +4592,12 @@ as
 
 The following is the Loader interface that is available to any part of
 the server, and may also be used from within modules.
+
+<p>
+Some of these have &s.code;xf86*&e.code; wrappers with simpler interfaces
+declared in &s.code;"xf86.h"&e.code;.
+These wrappers are the prefered interface for modules, given that they are also
+available in a staticly built server, whereas the functions below are not.
 
   <quote><p>
   &s.code;pointer LoadSubModule(pointer parent, const char *module,
@@ -4723,6 +4729,19 @@ the server, and may also be used from within modules.
     &s.code;errmin&e.code;.  If &s.code;name&e.code; is
     non-&s.code;NULL&e.code;, it is printed as an identifying prefix
     to the message (followed by a `:').
+
+  </quote>
+
+  &s.code;LoaderSetParentModuleRequirements(pointer module,
+			&f.indent;pointer req);&e.code;
+  <quote><p>
+    This function is intended to be called from a module's
+    &s.code;Setup&e.code; function.  It associates an
+    &s.code;XF86ModReqInfo&e.code; structure occurrence (addressed by
+    &s.code;req&e.code;) with the module being loaded (specified by
+    &s.code;module&e.code;).  This structure occurrence will then be used to
+    check this module's parent modules against.  This mechanism allows a module
+    to ensure its callers are compatible.
 
   </quote>
   </quote>
@@ -5644,7 +5663,7 @@ typedef struct {
     <ref id="avail" name="Available Functions"> sections.
 
 
-<sect1>Probing discrete clocks on old hardware
+<sect1>Probing discrete clocks on older hardware
 <p>
 
     The &s.code;xf86GetClocks()&e.code; function may be used to assist
@@ -5669,7 +5688,7 @@ typedef struct {
       a function that does whatever is required to protect the hardware
       state while selecting a new clock.  &s.code;BlankScreen&e.code;
       is a function that blanks the screen.  &s.code;vertsyncreg&e.code;
-      and &s.code;maskval&e.code; are the register and bitmask to
+      and &s.code;maskval&e.code; are the I/O register and bitmask to
       check for the presence of vertical sync pulses.
       &s.code;knownclkindex&e.code; and &s.code;knownclkvalue&e.code;
       are the index and value of a known clock.  These are the known
@@ -6259,7 +6278,7 @@ programming the standard VGA registers, and for handling VGA colourmaps.
 
 The following is an outline for writing a basic unaccelerated driver
 for a PCI video card with a linear mapped framebuffer, and which has a
-VGA core.  It is includes some general information that is relevant to
+VGA core.  It includes some general information that is relevant to
 most drivers (even those which don't fit that basic description).
 
 The information here is based on the initial conversion of the Matrox
@@ -6272,8 +6291,9 @@ Each driver must reserve a unique driver name, and a string that is used
 to prefix all of its externally visible symbols.  This is to avoid name
 space clashes when loading multiple drivers.  The examples here are for
 the ``ZZZ'' driver, which uses the ``ZZZ'' or ``zzz'' prefix for its externally
-visible symbols.
-
+visible symbols, with preference given to the uppercase prefix.
+Internal symbols should also follow this convention to facilitate the debugging
+of a staticly built server.
 
 <sect1>Include files
 <p>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.186tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.187tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -507,8 +507,13 @@ Bool xf86IsPc98(void);
 void xf86DisableRandR(void);
 CARD32 xf86GetVersion(void);
 CARD32 xf86GetModuleVersion(pointer module);
+void xf86SetParentModuleRequirements(pointer module, pointer req);
 pointer xf86LoadDrvSubModule(DriverPtr drv, const char *name);
+pointer xf86LoadDrvSubModuleWithRequirements(DriverPtr drv, const char *name,
+					     pointer req);
 pointer xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name);
+pointer xf86LoadSubModuleWithRequirements(ScrnInfoPtr pScrn, const char *name,
+					  pointer req);
 pointer xf86LoadOneModule(char *name, pointer optlist);
 void xf86UnloadSubModule(pointer mod);
 Bool xf86LoaderCheckSymbol(const char *name);

@@ -44,7 +44,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.252 2005/04/30 17:03:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.253tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1084,7 +1084,7 @@ MGAdoDDC(ScrnInfoPtr pScrn)
 	  }
 	  if (!MonInfo){
 	    vbeInfoPtr pVbe;
-	    if (xf86LoadSubModule(pScrn, "vbe")) {
+	    if (xf86LoadVBEModule(pScrn)) {
 	      pVbe = VBEInit(NULL,pMga->pEnt->index);
 	      MonInfo = vbeDoEDID(pVbe, NULL);
 	      vbeFree(pVbe);
@@ -1176,7 +1176,7 @@ void
 MGAProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
-    if (xf86LoadSubModule(pScrn, "vbe")) {
+    if (xf86LoadVBEModule(pScrn)) {
 	pVbe = VBEInit(NULL,index);
 	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
 	vbeFree(pVbe); 
@@ -3240,7 +3240,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * function.  If not, the visuals will need to be setup before calling
      * a fb ScreenInit() function and fixed up after.
      *
-     * For most PC hardware at depths >= 8, the defaults that cfb uses
+     * For most PC hardware at depths >= 8, the defaults that fb uses
      * are not appropriate.  In this driver, we fixup the visuals after.
      */
 
@@ -3313,8 +3313,8 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 #ifdef XF86DRI
      /*
-      * Setup DRI after visuals have been established, but before cfbScreenInit
-      * is called.   cfbScreenInit will eventually call into the drivers
+      * Setup DRI after visuals have been established, but before fbScreenInit
+      * is called.   fbScreenInit will eventually call into the drivers
       * InitGLXVisuals call back.
       * The DRI does not work when textured video is enabled at this time.
       */
@@ -3352,7 +3352,6 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 #endif
 
-
     if (pMga->Overlay8Plus24) {
 	ret = cfb8_32ScreenInit(pScreen, FBStart,
 			width, height,
@@ -3366,7 +3365,6 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     if (!ret)
 	return FALSE;
-
 
     if (pScrn->bitsPerPixel > 8) {
         /* Fixup RGB ordering */
@@ -3489,7 +3487,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 #ifdef XF86DRI
     if (pMga->directRenderingEnabled) {
-       /* Now that mi, cfb, drm and others have done their thing,
+       /* Now that mi, fb, drm and others have done their thing,
 	* complete the DRI setup.
 	*/
        pMga->directRenderingEnabled = MGADRIFinishScreenInit(pScreen);

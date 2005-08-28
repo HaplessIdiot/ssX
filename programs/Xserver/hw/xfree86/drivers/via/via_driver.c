@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.41tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.42tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -675,7 +675,7 @@ VIAProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
 
-    if (xf86LoadSubModule(pScrn, "vbe")) {
+    if (xf86LoadVBEModule(pScrn)) {
 	pVbe = VBEInit(NULL,index);
 	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
     }
@@ -1253,7 +1253,7 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
 	pVia->pInt10 = xf86InitInt10(pEnt->index);
     }
 
-    if (pVia->pInt10 && xf86LoadSubModule(pScrn, "vbe")) {
+    if (pVia->pInt10 && xf86LoadVBEModule(pScrn)) {
 	xf86LoaderReqSymLists(vbeSymbols, NULL);
 	pVia->pVbe = VBEInit(pVia->pInt10, pVia->EntityIndex);
     }

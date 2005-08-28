@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.c,v 1.18tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.c,v 1.19tsi Exp $ */
 /*
  * Copyright 2000 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -27,6 +27,8 @@
 #include "aticursor.h"
 #include "atiload.h"
 #include "atistruct.h"
+
+#include "vbe.h"
 
 /*
  * All symbol lists belong here.  They are externalised so that they can be
@@ -110,13 +112,13 @@ const char *ATIi2cSymbols[] =
 };
 
 /*
- * ATILoadModule --
+ * ATILoadSubModule --
  *
  * Load a specific module and register with the loader those of its entry
  * points that are referenced by this driver.
  */
 pointer
-ATILoadModule
+ATILoadSubModule
 (
     ScrnInfoPtr  pScreenInfo,
     const char  *Module,
@@ -132,12 +134,31 @@ ATILoadModule
 }
 
 /*
- * ATILoadModules --
+ * ATILoadVBEModule --
+ *
+ * A variant of ATILoadSubModule() specifically for loading the 'vbe' module.
+ */
+pointer
+ATILoadVBEModule
+(
+    ScrnInfoPtr  pScreenInfo
+)
+{
+    pointer pModule = xf86LoadVBEModule(pScreenInfo);
+
+    if (pModule)
+        xf86LoaderReqSymLists(ATIvbeSymbols, NULL);
+
+    return pModule;
+}
+
+/*
+ * ATILoadSubModules --
  *
  * This function loads other modules required for a screen.
  */
 pointer
-ATILoadModules
+ATILoadSubModules
 (
     ScrnInfoPtr pScreenInfo,
     ATIPtr      pATI
@@ -145,33 +166,33 @@ ATILoadModules
 {
     /* Load shadow frame buffer code if needed */
     if (pATI->OptionShadowFB &&
-        !ATILoadModule(pScreenInfo, "shadowfb", ATIshadowfbSymbols))
+        !ATILoadSubModule(pScreenInfo, "shadowfb", ATIshadowfbSymbols))
         return NULL;
 
     /* Load XAA if needed */
     if (pATI->OptionAccel &&
-        !ATILoadModule(pScreenInfo, "xaa", ATIxaaSymbols))
+        !ATILoadSubModule(pScreenInfo, "xaa", ATIxaaSymbols))
         return NULL;
 
     /* Load ramdac module if needed */
     if ((pATI->Cursor > ATI_CURSOR_SOFTWARE) &&
-        !ATILoadModule(pScreenInfo, "ramdac", ATIramdacSymbols))
+        !ATILoadSubModule(pScreenInfo, "ramdac", ATIramdacSymbols))
         return NULL;
 
     /* Load depth-specific entry points */
     switch (pATI->bitsPerPixel)
     {
         case 1:
-            return ATILoadModule(pScreenInfo, "xf1bpp", ATIxf1bppSymbols);
+            return ATILoadSubModule(pScreenInfo, "xf1bpp", ATIxf1bppSymbols);
 
         case 4:
-            return ATILoadModule(pScreenInfo, "xf4bpp", ATIxf4bppSymbols);
+            return ATILoadSubModule(pScreenInfo, "xf4bpp", ATIxf4bppSymbols);
 
         case 8:
         case 16:
         case 24:
         case 32:
-            return ATILoadModule(pScreenInfo, "fb", ATIfbSymbols);
+            return ATILoadSubModule(pScreenInfo, "fb", ATIfbSymbols);
 
         default:
             return NULL;
