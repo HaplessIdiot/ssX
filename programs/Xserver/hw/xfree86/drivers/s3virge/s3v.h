@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.32tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.33tsi Exp $ */
 
 /*
  * Copyright (C) 1994-1999 The XFree86 Project, Inc.
@@ -77,19 +77,6 @@
 
 /* All drivers using the mi colormap manipulation need this */
 #include "micmap.h"
-
-/* Drivers using cfb need this */
-
-#define PSZ 8
-#include "cfb.h"
-#undef PSZ
-
-/* Drivers supporting bpp 16, 24 or 32 with cfb need these */
-
-#include "cfb16.h"
-#include "cfb24.h"
-#include "cfb32.h"
-#include "cfb24_32.h"
 
 /* fb support */
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.88 2004/06/01 00:16:59 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.89tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -68,7 +68,8 @@ XF4BPPDIR = xf4bpp
 # endif
 #endif
 
-#if XF8_32Wid
+/* xf8_32wid is only used by sunffb driver */
+#if XF8_32Wid && (DoLoadableServer || defined(SparcArchitecture)) 
 XF8_32WIDDIR = xf8_32wid
 #endif
 
@@ -80,7 +81,8 @@ XF8_32BPPDIR = xf8_32bpp
 XF8_16BPPDIR = xf8_16bpp
 #endif
 
-#if XF24_32Bpp
+/* xf24_32bpp is no longer used by any included drivers */
+#if XF24_32Bpp && DoLoadableServer
 XF24_32BPPDIR = xf24_32bpp
 #endif
 

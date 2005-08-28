@@ -26,12 +26,10 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from the XFree86 Project and Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi.h,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi.h,v 1.14tsi Exp $ */
 
 #ifndef _SMI_H
 #define _SMI_H
-
-#define USE_FB
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -46,16 +44,7 @@ authorization from the XFree86 Project and Silicon Motion.
 #include "mipointer.h"
 #include "micmap.h"
 
-#ifdef USE_FB
 #include "fb.h"
-#else
-
-#define PSZ 8
-#include "cfb.h"
-#undef PSZ
-#include "cfb16.h"
-#include "cfb24.h"
-#endif
 
 #include "xaa.h"
 #include "xf86cmap.h"

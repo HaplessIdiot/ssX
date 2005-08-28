@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.33 2004/07/25 20:17:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.34tsi Exp $ */
 
 /*
  * Copyright 2000 VA Linux Systems Inc., Fremont, California.
@@ -35,16 +35,8 @@
 
 #include "xf86PciInfo.h"
 #include "xf86Pci.h"
-#define PSZ 8
-#include "cfb.h"
-#undef PSZ
-#include "cfb16.h"
-#include "cfb32.h"
 
 #include "miline.h"
-
-
-
 
 #include "mga_bios.h"
 #include "mga_reg.h"
@@ -57,10 +49,6 @@
 #define _XF86DRI_SERVER_
 #include "GL/glxtokens.h"
 #include "sarea.h"
-
-
-
-
 
 #include "GL/glxtokens.h"
 

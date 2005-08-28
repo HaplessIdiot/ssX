@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_driver.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_driver.c,v 1.6tsi Exp $ */
 /*
  * $Workfile: nsc_driver.c $
  * $Revision$
@@ -145,7 +145,6 @@
 
 #define DEBUG(x)
 #define NSC_TRACE 0
-#define CFB 0
 #define HWVGA 1
 
 /* Includes that are used by all drivers */
@@ -167,20 +166,7 @@
 #define RC_MAX_DEPTH 24
 
 /* Frame buffer stuff */
-#if CFB
-/*
- * If using cfb, cfb.h is required.  Select the others for the bpp values
- * the driver supports.
- */
-#define PSZ 8				/* needed for cfb.h */
-#include "cfb.h"
-#undef PSZ
-#include "cfb16.h"
-#include "cfb24.h"
-#include "cfb32.h"
-#else
 #include "fb.h"
-#endif
 
 #include "shadowfb.h"
 
@@ -351,21 +337,11 @@ const char *nscInt10Symbols[] = {
    NULL
 };
 
-#if CFB
-const char *nscCfbSymbols[] = {
-   "cfbScreenInit",
-   "cfb16ScreenInit",
-   "cfb24ScreenInit",
-   "cfb32ScreenInit",
-   NULL
-};
-#else
 const char *nscFbSymbols[] = {
    "fbScreenInit",
    "fbPictureInit",
    NULL
 };
-#endif
 
 const char *nscXaaSymbols[] = {
    "XAADestroyInfoRec",
@@ -441,12 +417,7 @@ NscSetup(pointer Module, pointer Options, int *ErrorMajor, int *ErrorMinor)
        * module might refer to.
        */
       LoaderRefSymLists(nscVgahwSymbols, nscVbeSymbols,
-#if CFB
-			nscCfbSymbols,
-#else
-			nscFbSymbols,
-#endif
-			nscXaaSymbols,
+			nscFbSymbols, nscXaaSymbols,
 			nscInt10Symbols, nscRamdacSymbols, nscShadowSymbols,
 			NULL);
       return (pointer) TRUE;

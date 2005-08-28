@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_setup.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_setup.c,v 1.2tsi Exp $ */
 /*
  * Basic hardware and memory detection
  *
@@ -35,8 +35,6 @@
 #include "xf86Pci.h"
 #include "xf86.h"
 #include "fb.h"
-#include "xf1bpp.h"
-#include "xf4bpp.h"
 #include "xf86_OSproc.h"
 #include "xf86Resources.h"
 #include "xf86_ansic.h"

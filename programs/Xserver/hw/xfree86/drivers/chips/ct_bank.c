@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_bank.c,v 1.6 2002/01/25 21:55:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_bank.c,v 1.7tsi Exp $ */
 
 /*
  * Copyright 1997
@@ -28,7 +28,6 @@
  *    negligence, tort, under statute, in equity, at law or otherwise, even if
  *    advised of the possibility of such damage. 
  */
-#define PSZ 8
 
 /*
  * Define DIRECT_REGISTER_ACCESS if you want to bypass the wrapped register
