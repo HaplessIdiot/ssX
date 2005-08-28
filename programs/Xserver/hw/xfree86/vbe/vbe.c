@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.14 2005/08/19 00:36:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.15 2005/08/20 15:31:02 tsi Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -114,7 +114,7 @@ VBEExtendedInit(xf86Int10InfoPtr pInt, int entityIndex, int Flags)
     page = xf86Int10AllocPages(pInt, 1, &RealOff);
     if (!page) goto error;
     vbe = (vbeControllerInfoPtr) page;
-    memcpy(vbe->VbeSignature, vbeVersionString, 4);
+    (void) memcpy(vbe->VbeSignature, vbeVersionString, 4);
 
     pInt->ax = 0x4F00;
     pInt->es = SEG_ADDR(RealOff);
@@ -276,11 +276,12 @@ vbeProbeDDC(vbeInfoPtr pVbe)
 	    xf86DrvMsgVerb(screen, X_INFO, 3, "VESA VBE DDC Screen blanked"
 			"for data transfer\n");
 	    pVbe->ddc_blank = TRUE;
-	}  else
+	} else {
 	    pVbe->ddc_blank = FALSE;
+	}
 
 	xf86DrvMsgVerb(screen, X_INFO, 3,
-		       "VESA VBE DDC transfer in appr. %x sec.\n",
+		       "VESA VBE DDC transfer in approximately %x second(s)\n",
 		       (pVbe->pInt10->bx >> 8) & 0xff);
     }
 
@@ -315,7 +316,7 @@ vbeReadEDID(vbeInfoPtr pVbe)
     if (!page) return NULL;
 
     options = xnfalloc(sizeof(VBEOptions));
-    (void)memcpy(options, VBEOptions, sizeof(VBEOptions));
+    (void) memcpy(options, VBEOptions, sizeof(VBEOptions));
     xf86ProcessOptions(screen, xf86Screens[screen]->options, options);
     xf86GetOptValBool(options, VBEOPT_NOVBE, &novbe);
     xf86GetOptValBool(options, VBEOPT_NODDC, &noddc);
@@ -330,8 +331,8 @@ vbeReadEDID(vbeInfoPtr pVbe)
 
     if (!vbeProbeDDC(pVbe)) goto error;
 
-    memset(page, 0, sizeof(vbeInfoPtr));
-    strcpy(page, vbeVersionString);
+    (void) memset(page, 0, sizeof(vbeInfoPtr));
+    (void) memcpy(page, vbeVersionString, 4);
 
     pVbe->pInt10->ax = 0x4F15;
     pVbe->pInt10->bx = 0x01;
@@ -351,13 +352,13 @@ vbeReadEDID(vbeInfoPtr pVbe)
     case 0x0:
 	xf86DrvMsgVerb(screen, X_INFO, 3, "VESA VBE DDC read successfully\n");
 	tmp = (unsigned char *)xnfalloc(128);
-	memcpy(tmp, page, 128);
+	(void) memcpy(tmp, page, 128);
 	break;
     case 0x100:
 	xf86DrvMsgVerb(screen, X_INFO, 3, "VESA VBE DDC read failed\n");
 	break;
     default:
-	xf86DrvMsgVerb(screen, X_INFO, 3, "VESA VBE DDC unkown failure %i\n",
+	xf86DrvMsgVerb(screen, X_INFO, 3, "VESA VBE DDC unknown failure %i\n",
 		       pVbe->pInt10->ax & 0xff00);
 	break;
     }
@@ -398,17 +399,9 @@ vbeDoEDID(vbeInfoPtr pVbe, pointer pDDCModule)
     return pMonitor;
 }
 
-
 VbeInfoBlock *
 VBEGetVBEInfo(vbeInfoPtr pVbe)
 {
-    VbeInfoBlock *block = NULL;
-    int i, pStr, pModes;
-    char *str;
-    CARD16 major, *modes;
-
-    bzero(pVbe->memory, sizeof(VbeInfoBlock));
-
     /*
     Input:
 	AH    := 4Fh	Super VGA support
@@ -420,10 +413,13 @@ VBEGetVBEInfo(vbeInfoPtr pVbe)
 	(All other registers are preserved)
      */
 
-    ((char*)pVbe->memory)[0] = 'V';
-    ((char*)pVbe->memory)[1] = 'B';
-    ((char*)pVbe->memory)[2] = 'E';
-    ((char*)pVbe->memory)[3] = '2';
+    VbeInfoBlock *block = NULL;
+    int i, pStr, pModes;
+    char *str, *pBlock = pVbe->memory;
+    CARD16 *modes;
+
+    (void) memset(pBlock, 0, sizeof(VbeInfoBlock));
+    (void) memcpy(pBlock, vbeVersionString, 4);
 
     pVbe->pInt10->num = 0x10;
     pVbe->pInt10->ax = 0x4f00;
@@ -432,27 +428,29 @@ VBEGetVBEInfo(vbeInfoPtr pVbe)
     xf86ExecX86int10(pVbe->pInt10);
 
     if (R16(pVbe->pInt10->ax) != 0x4f)
-	return (NULL);
+	return NULL;
 
     block = xnfcalloc(sizeof(VbeInfoBlock), 1);
-    block->VESASignature[0] = ((char*)pVbe->memory)[0];
-    block->VESASignature[1] = ((char*)pVbe->memory)[1];
-    block->VESASignature[2] = ((char*)pVbe->memory)[2];
-    block->VESASignature[3] = ((char*)pVbe->memory)[3];
+    block->VESASignature[0] = pBlock[0];
+    block->VESASignature[1] = pBlock[1];
+    block->VESASignature[2] = pBlock[2];
+    block->VESASignature[3] = pBlock[3];
 
-    block->VESAVersion = B_O16(((char*)pVbe->memory)[4]);
-    major = (unsigned)block->VESAVersion >> 8;
+    block->VESAVersion = B_O16(pBlock[4]);
 
-    pStr = B_O32(((char*)pVbe->memory)[6]);
+    pStr = B_O32(pBlock[6]);
     str = xf86int10Addr(pVbe->pInt10, FARP(pStr));
     block->OEMStringPtr = strdup(str);
 
-    block->Capabilities[0] = ((char*)pVbe->memory)[10];
-    block->Capabilities[1] = ((char*)pVbe->memory)[11];
-    block->Capabilities[2] = ((char*)pVbe->memory)[12];
-    block->Capabilities[3] = ((char*)pVbe->memory)[13];
+    block->Capabilities[0] = pBlock[10];
+    block->Capabilities[1] = pBlock[11];
+    block->Capabilities[2] = pBlock[12];
+    block->Capabilities[3] = pBlock[13];
 
-    pModes = B_O32(((char*)pVbe->memory)[14]);
+    /*
+     * XXX This doesn't check if the mode list overflows.
+     */
+    pModes = B_O32(pBlock[14]);
     modes = xf86int10Addr(pVbe->pInt10, FARP(pModes));
     for (i = 0;  modes[i] != 0xffff;  i++);
     block->VideoModePtr = xnfalloc(sizeof(CARD16) * i + 1);
@@ -460,31 +458,35 @@ VBEGetVBEInfo(vbeInfoPtr pVbe)
 	block->VideoModePtr[i] = B_O16(modes[i]);
     block->VideoModePtr[i] = 0xffff;
 
-    block->TotalMemory = B_O16(((char*)pVbe->memory)[18]);
+    block->TotalMemory = B_O16(pBlock[18]);
     block->TotalMemory += block->TotalMemory & 1U;
 
-    if (major < 2) {
-	memcpy(&block->OemSoftwareRev, (char*)pVbe->memory + 20, 236);
+    if (block->VESAVersion < 0x0200) {
+	(void) memcpy(&block->OemSoftwareRev, pBlock + 20, 236);
     } else {
-	block->OemSoftwareRev = B_O16(((char*)pVbe->memory)[20]);
+	block->OemSoftwareRev = B_O16(pBlock[20]);
 
-	pStr = B_O32(((char*)pVbe->memory)[22]);
+	/*
+	 * XXX Consider using strndup for these three.
+	 */
+
+	pStr = B_O32(pBlock[22]);
 	str = xf86int10Addr(pVbe->pInt10, FARP(pStr));
 	block->OemVendorNamePtr = strdup(str);
 
-	pStr = B_O32(((char*)pVbe->memory)[26]);
+	pStr = B_O32(pBlock[26]);
 	str = xf86int10Addr(pVbe->pInt10, FARP(pStr));
 	block->OemProductNamePtr = strdup(str);
 
-	pStr = B_O32(((char*)pVbe->memory)[30]);
+	pStr = B_O32(pBlock[30]);
 	str = xf86int10Addr(pVbe->pInt10, FARP(pStr));
 	block->OemProductRevPtr = strdup(str);
 
-	memcpy(&block->Reserved, (char*)pVbe->memory + 34, 222);
-	memcpy(&block->OemData, (char*)pVbe->memory + 256, 256);
+	(void) memcpy(&block->Reserved, pBlock + 34, 222);
+	(void) memcpy(&block->OemData, pBlock + 256, 256);
     }
 
-    return (block);
+    return block;
 }
 
 void
@@ -525,13 +527,15 @@ VBESetVBEMode(vbeInfoPtr pVbe, int mode, VbeCRTCInfoBlock *block)
     Output: AX = Status
 	(All other registers are preserved)
     */
+
     xf86Int10InfoPtr pInt10 = pVbe->pInt10;
-    CARD8 *pBlock = pVbe->memory;
 
     pInt10->num = 0x10;
     pInt10->ax = 0x4f02;
     pInt10->bx = mode & ~(1 << 11);
     if (block) {
+	CARD8 *pBlock = pVbe->memory;
+
 	pInt10->bx |= 1 << 11;
 	pInt10->es = SEG_ADDR(pVbe->real_mode_base);
 	pInt10->di = SEG_OFF(pVbe->real_mode_base);
@@ -560,7 +564,7 @@ VBESetVBEMode(vbeInfoPtr pVbe, int mode, VbeCRTCInfoBlock *block)
 	pBlock[17] = block->RefreshRate;
 	pBlock[18] = block->RefreshRate >> 8;
 
-	(void)memcpy(pBlock + 19, block->Reserved, 40);
+	(void) memcpy(pBlock + 19, block->Reserved, 40);
     }
 
     xf86ExecX86int10(pInt10);
@@ -581,40 +585,39 @@ VBEGetVBEMode(vbeInfoPtr pVbe, int *mode)
 	BX := Current video mode
 	(All other registers are preserved)
     */
+
     pVbe->pInt10->num = 0x10;
     pVbe->pInt10->ax = 0x4f03;
 
     xf86ExecX86int10(pVbe->pInt10);
 
-    if (R16(pVbe->pInt10->ax) == 0x4f) {
-	*mode = R16(pVbe->pInt10->bx);
+    if (R16(pVbe->pInt10->ax) != 0x4f)
+	return FALSE;
 
-	return (TRUE);
-    }
-
-    return (FALSE);
+    *mode = R16(pVbe->pInt10->bx);
+    return TRUE;
 }
 
 VbeModeInfoBlock *
 VBEGetModeInfo(vbeInfoPtr pVbe, int mode)
 {
-    VbeModeInfoBlock *block = NULL;
-
-    bzero(pVbe->memory, sizeof(VbeModeInfoBlock));
-
     /*
     Input:
 	AH    := 4Fh	Super VGA support
 	AL    := 01h	Return Super VGA mode information
 	CX    :=	Super VGA video mode
-			(mode number must be one of those returned by Function 0)
+			(mode number must be one returned by Function 0)
 	ES:DI := Pointer to buffer
 
     Output:
 	AX    := status
 	(All other registers are preserved)
      */
-    (void) memset(pVbe->memory, 0, 256);
+
+    VbeModeInfoBlock *block;
+    char *pBlock = pVbe->memory;
+
+    (void) memset(pBlock, 0, 256);
 
     pVbe->pInt10->num = 0x10;
     pVbe->pInt10->ax = 0x4f01;
@@ -623,73 +626,75 @@ VBEGetModeInfo(vbeInfoPtr pVbe, int mode)
     pVbe->pInt10->di = SEG_OFF(pVbe->real_mode_base);
     xf86ExecX86int10(pVbe->pInt10);
     if (R16(pVbe->pInt10->ax) != 0x4f)
-	return (NULL);
+	return NULL;
 
     block = xnfcalloc(sizeof(VbeModeInfoBlock), 1);
 
-    block->ModeAttributes = B_O16(((char*)pVbe->memory)[0]);
-    block->WinAAttributes = ((char*)pVbe->memory)[2];
-    block->WinBAttributes = ((char*)pVbe->memory)[3];
-    block->WinGranularity = B_O16(((char*)pVbe->memory)[4]);
-    block->WinSize = B_O16(((char*)pVbe->memory)[6]);
-    block->WinASegment = B_O16(((char*)pVbe->memory)[8]);
-    block->WinBSegment = B_O16(((char*)pVbe->memory)[10]);
-    block->WinFuncPtr = B_O32(((char*)pVbe->memory)[12]);
-    block->BytesPerScanline = B_O16(((char*)pVbe->memory)[16]);
+    block->ModeAttributes = B_O16(pBlock[0]);
+    block->WinAAttributes = pBlock[2];
+    block->WinBAttributes = pBlock[3];
+    block->WinGranularity = B_O16(pBlock[4]);
+    block->WinSize = B_O16(pBlock[6]);
+    block->WinASegment = B_O16(pBlock[8]);
+    block->WinBSegment = B_O16(pBlock[10]);
+    block->WinFuncPtr = B_O32(pBlock[12]);
+    block->BytesPerScanline = B_O16(pBlock[16]);
 
     /* mandatory information for VBE 1.2 and above */
-    block->XResolution = B_O16(((char*)pVbe->memory)[18]);
-    block->YResolution = B_O16(((char*)pVbe->memory)[20]);
-    block->XCharSize = ((char*)pVbe->memory)[22];
-    block->YCharSize = ((char*)pVbe->memory)[23];
-    block->NumberOfPlanes = ((char*)pVbe->memory)[24];
-    block->BitsPerPixel = ((char*)pVbe->memory)[25];
-    block->NumberOfBanks = ((char*)pVbe->memory)[26];
-    block->MemoryModel = ((char*)pVbe->memory)[27];
-    block->BankSize = ((char*)pVbe->memory)[28];
-    block->NumberOfImages = ((char*)pVbe->memory)[29];
-    block->Reserved = ((char*)pVbe->memory)[30];
+    block->XResolution = B_O16(pBlock[18]);
+    block->YResolution = B_O16(pBlock[20]);
+    block->XCharSize = pBlock[22];
+    block->YCharSize = pBlock[23];
+    block->NumberOfPlanes = pBlock[24];
+    block->BitsPerPixel = pBlock[25];
+    block->NumberOfBanks = pBlock[26];
+    block->MemoryModel = pBlock[27];
+    block->BankSize = pBlock[28];
+    block->NumberOfImages = pBlock[29];
+    block->Reserved = pBlock[30];
 
     /* Direct color fields (required for direct/6 and YUV/7 memory models) */
-    block->RedMaskSize = ((char*)pVbe->memory)[31];
-    block->RedFieldPosition = ((char*)pVbe->memory)[32];
-    block->GreenMaskSize = ((char*)pVbe->memory)[33];
-    block->GreenFieldPosition = ((char*)pVbe->memory)[34];
-    block->BlueMaskSize = ((char*)pVbe->memory)[35];
-    block->BlueFieldPosition = ((char*)pVbe->memory)[36];
-    block->RsvdMaskSize = ((char*)pVbe->memory)[37];
-    block->RsvdFieldPosition = ((char*)pVbe->memory)[38];
-    block->DirectColorModeInfo = ((char*)pVbe->memory)[39];
+    block->RedMaskSize = pBlock[31];
+    block->RedFieldPosition = pBlock[32];
+    block->GreenMaskSize = pBlock[33];
+    block->GreenFieldPosition = pBlock[34];
+    block->BlueMaskSize = pBlock[35];
+    block->BlueFieldPosition = pBlock[36];
+    block->RsvdMaskSize = pBlock[37];
+    block->RsvdFieldPosition = pBlock[38];
+    block->DirectColorModeInfo = pBlock[39];
+
+    if (pVbe->version < 0x0200) {
+	(void) memcpy(&block->PhysBasePtr, pBlock + 40, 216);
+	return block;
+    }
 
     /* Mandatory information for VBE 2.0 and above */
-    if (pVbe->version >= 0x200) {
-	block->PhysBasePtr = B_O32(((char*)pVbe->memory)[40]);
-	block->Reserved32 = B_O32(((char*)pVbe->memory)[44]);
-	block->Reserved16 = B_O16(((char*)pVbe->memory)[48]);
+    block->PhysBasePtr = B_O32(pBlock[40]);
+    block->Reserved32 = B_O32(pBlock[44]);
+    block->Reserved16 = B_O16(pBlock[48]);
 
-	/* Mandatory information for VBE 3.0 and above */
-	if (pVbe->version >= 0x300) {
-	    block->LinBytesPerScanLine = B_O16(((char*)pVbe->memory)[50]);
-	    block->BnkNumberOfImagePages = ((char*)pVbe->memory)[52];
-	    block->LinNumberOfImagePages = ((char*)pVbe->memory)[53];
-	    block->LinRedMaskSize = ((char*)pVbe->memory)[54];
-	    block->LinRedFieldPosition = ((char*)pVbe->memory)[55];
-	    block->LinGreenMaskSize = ((char*)pVbe->memory)[56];
-	    block->LinGreenFieldPosition = ((char*)pVbe->memory)[57];
-	    block->LinBlueMaskSize = ((char*)pVbe->memory)[58];
-	    block->LinBlueFieldPosition = ((char*)pVbe->memory)[59];
-	    block->LinRsvdMaskSize = ((char*)pVbe->memory)[60];
-	    block->LinRsvdFieldPosition = ((char*)pVbe->memory)[61];
-	    block->MaxPixelClock = B_O32(((char*)pVbe->memory)[62]);
-	    memcpy(&block->Reserved2, (char*)pVbe->memory + 66, 188);
-	}
-	else
-	memcpy(&block->LinBytesPerScanLine, (char*)pVbe->memory + 50, 206);
+    if (pVbe->version < 0x0300) {
+	(void) memcpy(&block->LinBytesPerScanLine, pBlock + 50, 206);
+	return block;
     }
-    else
-	memcpy(&block->PhysBasePtr, (char*)pVbe->memory + 40, 216);
 
-    return (block);
+    /* Mandatory information for VBE 3.0 and above */
+    block->LinBytesPerScanLine = B_O16(pBlock[50]);
+    block->BnkNumberOfImagePages = pBlock[52];
+    block->LinNumberOfImagePages = pBlock[53];
+    block->LinRedMaskSize = pBlock[54];
+    block->LinRedFieldPosition = pBlock[55];
+    block->LinGreenMaskSize = pBlock[56];
+    block->LinGreenFieldPosition = pBlock[57];
+    block->LinBlueMaskSize = pBlock[58];
+    block->LinBlueFieldPosition = pBlock[59];
+    block->LinRsvdMaskSize = pBlock[60];
+    block->LinRsvdFieldPosition = pBlock[61];
+    block->MaxPixelClock = B_O32(pBlock[62]);
+    (void) memcpy(&block->Reserved2, pBlock + 66, 188);
+
+    return block;
 }
 
 void
@@ -718,7 +723,6 @@ VBESaveRestore(vbeInfoPtr pVbe, vbeSaveRestoreFunction function,
 	BX = Number of 64-byte blocks to hold the state buffer
 	(All other registers are preserved)
 
-
     Input:
 	AH    := 4Fh	Super VGA support
 	AL    := 04h	Save/restore Super VGA video state
@@ -729,7 +733,6 @@ VBESaveRestore(vbeInfoPtr pVbe, vbeSaveRestoreFunction function,
     Output:
 	AX    := Status
 	(All other registers are preserved)
-
 
     Input:
 	AH    := 4Fh	Super VGA support
@@ -743,58 +746,65 @@ VBESaveRestore(vbeInfoPtr pVbe, vbeSaveRestoreFunction function,
 	(All other registers are preserved)
      */
 
-    if ((pVbe->version & 0xff00) > 0x100) {
-	int screen = pVbe->pInt10->scrnIndex;
-	if (function == MODE_QUERY ||
-	    (function == MODE_SAVE && !*memory)) {
-	    /* Query amount of memory to save state */
+    xf86Int10InfoPtr pInt10;
 
-	    pVbe->pInt10->num = 0x10;
-	    pVbe->pInt10->ax = 0x4f04;
-	    pVbe->pInt10->dx = 0;
-	    pVbe->pInt10->cx = 0x000f;
-	    xf86ExecX86int10(pVbe->pInt10);
-	    if (R16(pVbe->pInt10->ax) != 0x4f)
-		return (FALSE);
+    /* Earlier VBE versions won't give us an error indication */
+    if (pVbe->version < 0x0200)
+	return TRUE;
 
-	    if (function == MODE_SAVE) {
-		int npages = (R16(pVbe->pInt10->bx) * 64) / 4096 + 1;
-		if ((*memory = xf86Int10AllocPages(pVbe->pInt10, npages,
-						   real_mode_pages)) == NULL) {
-		    xf86DrvMsg(screen, X_ERROR,
-			       "Cannot allocate memory to save SVGA state.\n");
-		    return (FALSE);
-		}
+    pInt10 = pVbe->pInt10;
+
+    if ((function == MODE_QUERY) || ((function == MODE_SAVE) && !*memory)) {
+	/* Query amount of memory to save state */
+
+	pInt10->num = 0x10;
+	pInt10->ax = 0x4f04;
+	pInt10->dx = 0;
+	pInt10->cx = 0x000f;
+	xf86ExecX86int10(pInt10);
+	if (R16(pInt10->ax) != 0x4f)
+	    return FALSE;
+
+	if (function == MODE_SAVE) {
+	    int npages = (R16(pInt10->bx) * 64) / 4096 + 1;
+
+	    *memory = xf86Int10AllocPages(pInt10, npages, real_mode_pages);
+	    if (!*memory) {
+		xf86DrvMsg(pInt10->scrnIndex, X_ERROR,
+			   "Cannot allocate memory to save SVGA state.\n");
+		return FALSE;
 	    }
-	    *size = pVbe->pInt10->bx * 64;
 	}
 
-	/* Save/Restore Super VGA state */
-	if (function != MODE_QUERY) {
+	*size = pInt10->bx * 64;
 
-	    if (!*memory) return FALSE;
-	    pVbe->pInt10->num = 0x10;
-	    pVbe->pInt10->ax = 0x4f04;
-	    switch (function) {
-	    case MODE_SAVE:
-	      pVbe->pInt10->dx = 1;
-	      break;
-	    case MODE_RESTORE:
-	      pVbe->pInt10->dx = 2;
-	      break;
-	    case MODE_QUERY:
-	      return FALSE;
-	    }
-	    pVbe->pInt10->cx = 0x000f;
-
-	    pVbe->pInt10->es = SEG_ADDR(*real_mode_pages);
-	    pVbe->pInt10->bx = SEG_OFF(*real_mode_pages);
-	    xf86ExecX86int10(pVbe->pInt10);
-	    return (R16(pVbe->pInt10->ax) == 0x4f);
-
-	}
+	if (function == MODE_QUERY)
+	    return TRUE;
     }
-    return TRUE;
+
+    /* Save/Restore Super VGA state */
+    if (!*memory)
+	return FALSE;
+
+    pInt10->num = 0x10;
+    pInt10->ax = 0x4f04;
+    pInt10->cx = 0x000f;
+    pInt10->es = SEG_ADDR(*real_mode_pages);
+    pInt10->bx = SEG_OFF(*real_mode_pages);
+
+    switch (function) {
+    case MODE_SAVE:
+	pInt10->dx = 1;
+	break;
+    case MODE_RESTORE:
+	pInt10->dx = 2;
+	break;
+    default:
+	return FALSE;
+    }
+
+    xf86ExecX86int10(pInt10);
+    return (R16(pInt10->ax) == 0x4f);
 }
 
 Bool
@@ -804,28 +814,30 @@ VBEBankSwitch(vbeInfoPtr pVbe, unsigned int iBank, int window)
     Input:
 	AH    := 4Fh	Super VGA support
 	AL    := 05h
+	BH    := 00h	Set memory window
+	      := 01h	Get memory window
+	BL    := 00h	Window A
+	      := 01h	Window B
+	DX    := Window number to set
 
     Output:
+	AX    := Status
+	DX    := Window number retrieved
      */
+
     pVbe->pInt10->num = 0x10;
     pVbe->pInt10->ax = 0x4f05;
     pVbe->pInt10->bx = window;
     pVbe->pInt10->dx = iBank;
     xf86ExecX86int10(pVbe->pInt10);
 
-    if (R16(pVbe->pInt10->ax) != 0x4f)
-	return (FALSE);
-
-    return (TRUE);
+    return (R16(pVbe->pInt10->ax) == 0x4f);
 }
 
 Bool
 VBESetGetLogicalScanlineLength(vbeInfoPtr pVbe, vbeScanwidthCommand command,
 				int width, int *pixels, int *bytes, int *max)
 {
-    if (command < SCANWID_SET || command > SCANWID_GET_MAX)
-	return (FALSE);
-
     /*
     Input:
 	AX := 4F06h VBE Set/Get Logical Scan Line Length
@@ -845,6 +857,9 @@ VBESetGetLogicalScanlineLength(vbeInfoPtr pVbe, vbeScanwidthCommand command,
 	DX := Maximum Number of Scan Lines
      */
 
+    if (command < SCANWID_SET || command > SCANWID_GET_MAX)
+	return FALSE;
+
     pVbe->pInt10->num = 0x10;
     pVbe->pInt10->ax = 0x4f06;
     pVbe->pInt10->bx = command;
@@ -853,7 +868,7 @@ VBESetGetLogicalScanlineLength(vbeInfoPtr pVbe, vbeScanwidthCommand command,
     xf86ExecX86int10(pVbe->pInt10);
 
     if (R16(pVbe->pInt10->ax) != 0x4f)
-	return (FALSE);
+	return FALSE;
 
     if (command == SCANWID_GET || command == SCANWID_GET_MAX) {
 	if (pixels)
@@ -864,7 +879,7 @@ VBESetGetLogicalScanlineLength(vbeInfoPtr pVbe, vbeScanwidthCommand command,
 	    *max = R16(pVbe->pInt10->dx);
     }
 
-    return (TRUE);
+    return TRUE;
 }
 
 Bool
@@ -877,10 +892,7 @@ VBESetDisplayStart(vbeInfoPtr pVbe, int x, int y, Bool wait_retrace)
     pVbe->pInt10->dx = y;
     xf86ExecX86int10(pVbe->pInt10);
 
-    if (R16(pVbe->pInt10->ax) != 0x4f)
-	return (FALSE);
-
-    return (TRUE);
+    return (R16(pVbe->pInt10->ax) == 0x4f);
 }
 
 Bool
@@ -892,12 +904,12 @@ VBEGetDisplayStart(vbeInfoPtr pVbe, int *x, int *y)
     xf86ExecX86int10(pVbe->pInt10);
 
     if (R16(pVbe->pInt10->ax) != 0x4f)
-	return (FALSE);
+	return FALSE;
 
     *x = pVbe->pInt10->cx;
     *y = pVbe->pInt10->dx;
 
-    return (TRUE);
+    return TRUE;
 }
 
 int
@@ -925,7 +937,7 @@ VBESetGetDACPaletteFormat(vbeInfoPtr pVbe, int bits)
     xf86ExecX86int10(pVbe->pInt10);
 
     if (R16(pVbe->pInt10->ax) != 0x4f)
-	return (0);
+	return 0;
 
     return (bits != 0 ? bits : (pVbe->pInt10->bx >> 8) & 0x00ff);
 }
@@ -936,7 +948,6 @@ VBESetGetPaletteData(vbeInfoPtr pVbe, Bool set, int first, int num,
 {
     /*
     Input:
-    (16-bit)
 	AX    := 4F09h VBE Load/Unload Palette Data
 	BL    := 00h Set Palette Data
 	      := 01h Get Palette Data
@@ -949,16 +960,6 @@ VBESetGetPaletteData(vbeInfoPtr pVbe, Bool set, int first, int num,
 
     Output:
 	AX    := VBE Return Status
-
-
-    Input:
-    (32-bit)
-	BL     := 00h Set Palette Data
-	       := 80h Set Palette Data during Vertical Retrace
-	CX     := Number of palette registers to update (to a maximum of 256)
-	DX     := First of the palette registers to update (start)
-	ES:EDI := Table of palette values (see below for format)
-	DS     := Selector for memory mapped registers
      */
 
     pVbe->pInt10->num = 0x10;
@@ -972,26 +973,24 @@ VBESetGetPaletteData(vbeInfoPtr pVbe, Bool set, int first, int num,
     pVbe->pInt10->es = SEG_ADDR(pVbe->real_mode_base);
     pVbe->pInt10->di = SEG_OFF(pVbe->real_mode_base);
     if (set)
-	memcpy(pVbe->memory, data, num * sizeof(CARD32));
+	(void) memcpy(pVbe->memory, data, num * sizeof(CARD32));
     xf86ExecX86int10(pVbe->pInt10);
 
     if (R16(pVbe->pInt10->ax) != 0x4f)
-	return (NULL);
+	return NULL;
 
     if (set)
-	return (data);
+	return data;
 
     data = xnfalloc(num * sizeof(CARD32));
-    memcpy(data, pVbe->memory, num * sizeof(CARD32));
+    (void) memcpy(data, pVbe->memory, num * sizeof(CARD32));
 
-    return (data);
+    return data;
 }
 
 VBEpmi *
 VBEGetVBEpmi(vbeInfoPtr pVbe)
 {
-    VBEpmi *pmi;
-
     /*
     Input:
 	AH    := 4Fh	Super VGA support
@@ -1002,9 +1001,12 @@ VBEGetVBEpmi(vbeInfoPtr pVbe)
 	AX    := Status
 	ES    := Real Mode Segment of Table
 	DI    := Offset of Table
-	CX    := Lenght of Table including protected mode code in bytes (for copying purposes)
+	CX    := Length of Table including protected mode code in bytes
+		 (for copying purposes)
 	(All other registers are preserved)
      */
+
+    VBEpmi *pmi;
 
     pVbe->pInt10->num = 0x10;
     pVbe->pInt10->ax = 0x4f0a;
@@ -1013,14 +1015,14 @@ VBEGetVBEpmi(vbeInfoPtr pVbe)
     xf86ExecX86int10(pVbe->pInt10);
 
     if (R16(pVbe->pInt10->ax) != 0x4f)
-	return (NULL);
+	return NULL;
 
     pmi = xnfalloc(sizeof(VBEpmi));
     pmi->seg_tbl = R16(pVbe->pInt10->es);
     pmi->tbl_off = R16(pVbe->pInt10->di);
     pmi->tbl_len = R16(pVbe->pInt10->cx);
 
-    return (pmi);
+    return pmi;
 }
 
 int
@@ -1046,9 +1048,9 @@ VBEGetPixelClock(vbeInfoPtr pVbe, int mode, int clock)
     xf86ExecX86int10(pVbe->pInt10);
 
     if (R16(pVbe->pInt10->ax) != 0x4f)
-	return (0);
+	return 0;
 
-    return (pVbe->pInt10->cx);
+    return pVbe->pInt10->cx;
 }
 
 Bool

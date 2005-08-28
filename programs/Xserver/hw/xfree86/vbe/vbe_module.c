@@ -1,30 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe_module.c,v 1.4 2002/09/16 18:06:15 eich Exp $ */
-
-#include "xf86.h"
-#include "xf86str.h"
-#include "vbe.h"
-
-extern const char *vbe_ddcSymbols[];
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe_module.c,v 1.1 2003/02/17 17:06:46 dawes Exp $ */
 
 #ifdef XFree86LOADER
 
-static MODULESETUPPROTO(vbeSetup);
+#include "xf86.h"
+#include "vbe.h"
 
-static XF86ModuleVersionInfo vbeVersRec =
-{
-    "vbe",
-    MODULEVENDORSTRING,
-    MODINFOSTRING1,
-    MODINFOSTRING2,
-    XF86_VERSION_CURRENT,
-    1, 1, 0,
-    ABI_CLASS_VIDEODRV,		/* needs the video driver ABI */
-    ABI_VIDEODRV_VERSION,
-    MOD_CLASS_NONE,
-    {0,0,0,0}
-};
-
-XF86ModuleData vbeModuleData = { &vbeVersRec, vbeSetup, NULL };
+extern const char *vbe_ddcSymbols[];
 
 static pointer
 vbeSetup(pointer module, pointer opts, int *errmaj, int *errmin)
@@ -33,11 +14,12 @@ vbeSetup(pointer module, pointer opts, int *errmaj, int *errmin)
     
     if (!setupDone) {
 	setupDone = TRUE;
-	LoaderRefSymLists(vbe_ddcSymbols,NULL);
+
 	/*
 	 * Tell the loader about symbols from other modules that this module
 	 * might refer to.
 	 */
+	LoaderRefSymLists(vbe_ddcSymbols, NULL);
     } 
     /*
      * The return value must be non-NULL on success even though there
@@ -46,5 +28,25 @@ vbeSetup(pointer module, pointer opts, int *errmaj, int *errmin)
     return (pointer)1;
 }
 
-#endif
+static XF86ModuleVersionInfo vbeVersRec =
+{
+    "vbe",			/* modname */
+    MODULEVENDORSTRING,		/* vendor */
+    MODINFOSTRING1,		/* _modinfo1_ */
+    MODINFOSTRING2,		/* _modinfo2_ */
+    XF86_VERSION_CURRENT,	/* xf86version */
+    1, 1, 0,			/* majorversion, minorversion, patchlevel */
+    ABI_CLASS_VIDEODRV,		/* needs the video driver ABI */
+    ABI_VIDEODRV_VERSION,	/* abiversion */
+    MOD_CLASS_NONE,		/* moduleclass */
+    {0,0,0,0}			/* checksum */
+};
 
+XF86ModuleData vbeModuleData =
+{
+    &vbeVersRec,		/* vers */
+    vbeSetup,			/* setup */
+    NULL			/* teardown */
+};
+
+#endif /* XFree86LOADER */
