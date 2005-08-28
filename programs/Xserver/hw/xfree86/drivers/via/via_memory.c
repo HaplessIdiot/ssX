@@ -20,7 +20,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_memory.c,v 1.7 2004/12/15 01:26:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_memory.c,v 1.8 2005/08/28 15:56:08 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -80,7 +80,6 @@ void VIAFreeLinear(VIAMemPtr mem)
 	}
 }
 
-#ifdef XFREE86_44
 static unsigned long offScreenLinear(VIAMemPtr mem, ScrnInfoPtr pScrn,
 				     unsigned long size) {
 
@@ -96,115 +95,57 @@ static unsigned long offScreenLinear(VIAMemPtr mem, ScrnInfoPtr pScrn,
     return Success;
 
 }
-#endif
 
-unsigned long VIAAllocLinear(VIAMemPtr mem, ScrnInfoPtr pScrn, unsigned long size)
+unsigned long VIAAllocLinear(VIAMemPtr mem, ScrnInfoPtr pScrn,
+			     unsigned long size)
 {
-#if defined(XF86DRI) || !defined(XFREE86_44)
-	VIAPtr  pVia = VIAPTR(pScrn);
-#endif
-
 #ifdef XF86DRI
+    VIAPtr  pVia = VIAPTR(pScrn);
     int ret;
 
-
-	if(mem->pool)
-		ErrorF("VIA Double Alloc.\n");
+    if(mem->pool)
+	ErrorF("VIA Double Alloc.\n");
 
     if(pVia->graphicInfo.DRMEnabled) {
-		mem->drm_fd = pVia->drmFD;
-		mem->drm.context = 1;
-		mem->drm.size = size;
-		mem->drm.type = VIDEO;
+	mem->drm_fd = pVia->drmFD;
+	mem->drm.context = 1;
+	mem->drm.size = size;
+	mem->drm.type = VIDEO;
 	ret = drmCommandWrite(mem->drm_fd, DRM_VIA_ALLOCMEM, &mem->drm,
 			      sizeof(drmViaMem));
 	if (ret || (size != mem->drm.size)) {
-#ifdef XFREE86_44
 	    /*
 	     * Try XY Fallback before failing.
 	     */
 
 	    if (Success == offScreenLinear(mem, pScrn, size))
 		return Success;
-#endif
 	    ErrorF("DRM memory allocation failed\n");
 	    return BadAlloc;
-		}
-
-		mem->base = mem->drm.offset;
-		mem->pool = 2;
-		DEBUG(ErrorF("Fulfilled via DRI at %lu\n", mem->base));
-		return 0;
 	}
+
+	mem->base = mem->drm.offset;
+	mem->pool = 2;
+	DEBUG(ErrorF("Fulfilled via DRI at %lu\n", mem->base));
+	return 0;
+    }
 #endif
 
-#ifdef XFREE86_44
-	{
-	if (Success == offScreenLinear(mem, pScrn, size))
-	    return Success;
-	ErrorF("Linear memory allocation failed\n");
-			return BadAlloc;
-		}
-#else
-	{
-		int i;
-		if(size > pVia->SWOVSize)
-			return BadAccess;
-	for(i = 0; i < MEM_BLOCKS; i++) {
-	    if(!pVia->SWOVUsed[i]) {
-				pVia->SWOVUsed[i] = 1;
-				mem->pool = 3;
-				mem->base = pVia->SWOVPool + pVia->SWOVSize * i;
-				mem->pVia = pVia;
-				mem->slot = i;
-				DEBUG(ErrorF("Fulfilled via pool at %lu\n", mem->base));
-				return 0;
-			}
-		}
-	}
-	ErrorF("Out of pools.\n");
-	return BadAlloc;
-#endif
+    if (Success == offScreenLinear(mem, pScrn, size))
+	return Success;
+    ErrorF("Linear memory allocation failed\n");
+    return BadAlloc;
 }
-
-#ifndef XFREE86_44
-
-static void
-VIAInitPool(VIAPtr pVia, unsigned long offset, unsigned long size)
-{
-	DEBUG(ErrorF("VIAInitPool %lu bytes at %lu\n", size, offset));
-
-	size /= 4;
-
-	DEBUG(ErrorF("VIAInitPool %d pools of %lu bytes\n", MEM_BLOCKS, size));
-	pVia->SWOVPool = offset;
-	pVia->SWOVSize = size;
-}
-
-#endif
 
 void VIAInitLinear(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     VIAPtr pVia = VIAPTR(pScrn);
-#ifdef XFREE86_44
     /*
-     * In the 44 path we must take care not to truncate offset and size so
-     * that we get overlaps. If there is available memory below line 2048
-     * we use it.
+     * We must take care not to truncate offset and size so that we get
+     * overlaps.  If there is available memory below line 2048 we use it.
      */
     unsigned long offset = (pVia->FBFreeStart + pVia->Bpp - 1 ) / pVia->Bpp;
     unsigned long size = pVia->FBFreeEnd / pVia->Bpp - offset;
     if (size > 0) xf86InitFBManagerLinear(pScreen, offset, size);
-#else
-    /*
-     * In the 43 path we don't have to care about truncation. just use
-     * all available memory, also below line 2048. The drm module uses
-     * pVia->FBFreeStart as offscreen available start. We do it to.
-     */
-    unsigned long offset = pVia->FBFreeStart;
-    unsigned long size = pVia->FBFreeEnd - offset;
-    if (size > 0 ) VIAInitPool(pVia, offset, size);
-#endif
 }
-

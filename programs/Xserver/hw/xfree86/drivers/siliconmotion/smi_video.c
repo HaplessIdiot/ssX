@@ -41,7 +41,7 @@ Author of changes: Corvin Zahn <zahn@zac.de>
 Date:   2.11.2001
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_video.c,v 1.13 2003/11/10 18:22:26 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_video.c,v 1.14 2003/12/08 16:03:58 alanh Exp $ */
 
 #include "smi.h"
 #include "smi_video.h"
@@ -151,9 +151,6 @@ static int SetAttrSAA7110(ScrnInfoPtr pScrn, int i, int value);
 static int SetAttrSAA7111(ScrnInfoPtr pScrn, int i, int value);
 static void SetKeyReg(SMIPtr pSmi, int reg, int value);
 
-#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
-static Bool RegionsEqual(RegionPtr A, RegionPtr B);
-#endif
 /**
  * Atoms
  */
@@ -455,57 +452,6 @@ static I2CByte SAA7111InitData[] =
     0x17, 0x00,
 
 };
-
-
-/**************************************************************************/
-
-/* To allow this ddx to work on 4_3_0 and above, we need to include this */
-#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
-static Bool
-RegionsEqual(
-	RegionPtr	A,
-	RegionPtr	B
-)
-{
-	int *dataA, *dataB;
-	int num;
-
-	ENTER_PROC("RegionsEqual");
-
-	num = REGION_NUM_RECTS(A);
-	if (num != REGION_NUM_RECTS(B))
-	{
-		LEAVE_PROC("RegionsEqual");
-		return(FALSE);
-	}
-
-	if (   (A->extents.x1 != B->extents.x1)
-		|| (A->extents.y1 != B->extents.y1)
-		|| (A->extents.x2 != B->extents.x2)
-		|| (A->extents.y2 != B->extents.y2)
-	)
-	{
-		LEAVE_PROC("RegionsEqual");
-		return(FALSE);
-	}
-
-	dataA = (int*) REGION_RECTS(A);
-	dataB = (int*) REGION_RECTS(B);
-
-	while (num--)
-	{
-		if ((dataA[0] != dataB[0]) || (dataA[1] != dataB[1]))
-		{
-			return(FALSE);
-		}
-		dataA += 2;
-		dataB += 2;
-	}
-
-	LEAVE_PROC("RegionsEqual");
-	return(TRUE);
-}
-#endif
 
 
 /**
@@ -1292,11 +1238,7 @@ SMI_PutVideo(
     vid_address = (pPort->area->box.y1 * fbPitch);
 
     DEBUG((VERBLEV, "test RegionsEqual\n"));
-#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
-    if (!RegionsEqual(&pPort->clip, clipBoxes))
-#else
     if (!REGION_EQUAL(pScrn->pScreen, &pPort->clip, clipBoxes))
-#endif
     {
 	DEBUG((VERBLEV, "RegionCopy\n"));
         REGION_COPY(pScrn->pScreen, &pPort->clip, clipBoxes);
@@ -1711,11 +1653,7 @@ SMI_PutImage(
         break;
     }
 
-#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
-    if (!RegionsEqual(&pPort->clip, clipBoxes))
-#else
     if (!REGION_EQUAL(pScrn->pScreen, &pPort->clip, clipBoxes))
-#endif
 	{
         REGION_COPY(pScrn->pScreen, &pPort->clip, clipBoxes);
 	xf86XVFillKeyHelper(pScrn->pScreen, pPort->Attribute[XV_COLORKEY],
