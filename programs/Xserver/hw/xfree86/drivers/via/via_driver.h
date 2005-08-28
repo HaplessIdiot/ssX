@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.h,v 1.16 2004/12/10 16:07:03 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.h,v 1.17 2005/08/28 15:56:08 tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -73,17 +73,11 @@
 #endif
 
 #define DRIVER_NAME     "via"
-#define DRIVER_VERSION  "4.1.0"
+#define DRIVER_VERSION  "4.1.31"
 #define VERSION_MAJOR   4
 #define VERSION_MINOR   1
-#define PATCHLEVEL      30
+#define PATCHLEVEL      31
 #define VIA_VERSION     ((VERSION_MAJOR<<24) | (VERSION_MINOR<<16) | PATCHLEVEL)
-
-#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,14,0)
-#undef XFREE86_44
-#else
-#define XFREE86_44 1
-#endif
 
 #define VGAIN8(addr)        MMIO_IN8(pVia->MapBase+0x8000, addr)
 #define VGAIN16(addr)       MMIO_IN16(pVia->MapBase+0x8000, addr)
@@ -101,11 +95,8 @@
 
 #define VIA_MAX_ACCEL_X         (2047)
 #define VIA_MAX_ACCEL_Y         (2047)
-#ifdef XFREE86_44
-#define VIA_PIXMAP_CACHE_SIZE   (4 * (VIA_MAX_ACCEL_X + 1) * (VIA_MAX_ACCEL_Y +1))
-#else
-#define VIA_PIXMAP_CACHE_SIZE   (256 * 1024)
-#endif /* XFREE86_44 */
+#define VIA_PIXMAP_CACHE_SIZE   \
+	(4 * (VIA_MAX_ACCEL_X + 1) * (VIA_MAX_ACCEL_Y +1))
 #define VIA_CURSOR_SIZE         (4 * 1024)
 #define VIA_VQ_SIZE             (256 * 1024)
 

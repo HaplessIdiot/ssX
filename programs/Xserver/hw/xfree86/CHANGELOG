@@ -1,4 +1,6 @@
 XFree86 4.5.99.11 (xx September 2005)
+ 125. Remove cruft in siliconmotion and via drivers that only partially allowed
+      them to be compiled with other XFree86 versions (Marc La France).
 
 XFree86 4.5.99.10 (23 August 2005)
  124. Add basic ACPI Linux support so that events can be passed to the driver.
@@ -19746,7 +19748,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3577 2005/08/22 12:02:30 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3578 2005/08/23 11:02:41 dawes Exp $
 
 
 

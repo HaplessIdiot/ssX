@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.39 2005/08/25 13:27:52 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.40 2005/08/28 15:56:08 tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -2383,9 +2383,7 @@ static Bool VIAScreenInit(int scrnIndex, ScreenPtr pScreen,
 
     if (!pVia->NoAccel) {
 	VIAInitAccel(pScreen);
-    }
-#ifdef XFREE86_44
-    else {
+    } else {
 	/*
 	 * This is needed because xf86InitFBManagerLinear in VIAInitLinear
 	 * needs xf86InitFBManager to have been initialized, and
@@ -2407,7 +2405,6 @@ static Bool VIAScreenInit(int scrnIndex, ScreenPtr pScreen,
 	pVia->FBFreeStart = (AvailFBArea.y2 + 1) * pVia->Bpl;
 	xf86InitFBManager(pScreen, &AvailFBArea);
     }
-#endif
 
     miInitializeBackingStore(pScreen);
     xf86SetBackingStore(pScreen);
