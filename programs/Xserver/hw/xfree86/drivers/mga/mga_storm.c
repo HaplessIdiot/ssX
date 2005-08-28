@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.103 2004/06/01 00:17:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.104tsi Exp $ */
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -69,7 +69,7 @@
 #include "servermd.h"
 
 #ifdef XF86DRI
-#include "cfb.h"
+#include "windowstr.h"
 #include "GL/glxtokens.h"
 #endif
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.59 2004/01/11 04:03:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.60tsi Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -189,14 +189,6 @@ static const char *int10Symbols[] = {
     NULL
 };
 
-#ifdef XFree86LOADER
-static const char *miscfbSymbols[]={
-    "xf1bppScreenInit",
-    "xf4bppScreenInit",
-    NULL
-};
-#endif
-
 static const char *fbSymbols[]={
     "fbScreenInit",
     "fbPictureInit",
@@ -248,8 +240,8 @@ renditionSetup(pointer Module, pointer Options, int *ErrorMajor,
     if (!Initialised) {
         Initialised=TRUE;
         xf86AddDriver(&RENDITION, Module, 0);
-        LoaderRefSymLists(vgahwSymbols, ramdacSymbols, miscfbSymbols,
-			  fbSymbols, xaaSymbols, ddcSymbols, int10Symbols,
+        LoaderRefSymLists(vgahwSymbols, ramdacSymbols, fbSymbols,
+			  xaaSymbols, ddcSymbols, int10Symbols,
 			  shadowfbSymbols, vbeSymbols, NULL);
         return (pointer)TRUE;
     }

@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.61 2003/11/03 05:11:41 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.62tsi Exp $ */
 
 /* everybody includes these */
 #include "xf86.h"
@@ -38,8 +38,6 @@
 
 /* RAC stuff */
 #include "xf86Resources.h"
-
-/*  #include "vgaHW.h" */
 
 /* software cursor */
 #include "mipointer.h"

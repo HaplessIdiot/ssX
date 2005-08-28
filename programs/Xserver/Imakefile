@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.313 2005/06/17 02:16:02 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.314tsi Exp $
 
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -620,7 +620,7 @@ XF1BPPLIB = $(XF86SRC)/xf1bpp/LibraryTargetName(xf1bpp)
 #if XF4Bpp
 XF4BPPLIB = $(XF86SRC)/xf4bpp/LibraryTargetName(xf4bpp)
 #endif
-#if XF8_32Wid
+#if XF8_32Wid && defined(SparcArchitecture)
 XF8_32WIDLIB = $(XF86SRC)/xf8_32wid/LibraryTargetName(xf8_32wid)
 #endif
 #if XF8_32Bpp
@@ -629,7 +629,7 @@ XF8_32BPPLIB = $(XF86SRC)/xf8_32bpp/LibraryTargetName(xf8_32bpp)
 #if XF8_16Bpp
 XF8_16BPPLIB = $(XF86SRC)/xf8_16bpp/LibraryTargetName(xf8_16bpp)
 #endif
-#if XF24_32Bpp
+#if XF24_32Bpp && 0	/* No longer used */
 XF24_32BPPLIB = $(XF86SRC)/xf24_32bpp/LibraryTargetName(xf24_32bpp)
 #endif
 #if XFShadowFB

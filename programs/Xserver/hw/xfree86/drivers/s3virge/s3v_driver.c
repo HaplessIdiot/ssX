@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.95tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.96tsi Exp $ */
 
 /*
  * Copyright (C) 1994-1999 The XFree86 Project, Inc.
@@ -71,7 +71,7 @@
  */
 
 
-	/* Most xf86 commons are already in s3v.h */
+/* Most xf86 commons are already in s3v.h */
 #include	"s3v.h"
 		
 
@@ -234,7 +234,6 @@ typedef enum {
    OPTION_HWCURSOR,
    OPTION_SHADOW_FB,
    OPTION_ROTATE,
-   OPTION_FB_DRAW,
    OPTION_MX_CR3A_FIX,
    OPTION_XVIDEO
 } S3VOpts;
@@ -265,7 +264,6 @@ static const OptionInfoRec S3VOptions[] =
    { OPTION_SWCURSOR,		"SWCursor",     OPTV_BOOLEAN,	{0}, FALSE },
    { OPTION_SHADOW_FB,          "ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
    { OPTION_ROTATE, 	        "Rotate",	OPTV_ANYSTR,	{0}, FALSE },
-   { OPTION_FB_DRAW,            "UseFB",	OPTV_BOOLEAN,	{0}, FALSE },
    { OPTION_MX_CR3A_FIX,        "mxcr3afix",	OPTV_BOOLEAN,	{0}, FALSE },
    { OPTION_XVIDEO,             "XVideo",	OPTV_BOOLEAN,	{0}, FALSE },
    {-1, NULL, OPTV_NONE,	{0}, FALSE}
@@ -367,19 +365,6 @@ static const char *int10Symbols[] = {
 #endif
 
 #ifdef XFree86LOADER
-static const char *cfbSymbols[] = {
-    "cfbScreenInit",
-    "cfb16ScreenInit",
-    "cfb24ScreenInit",
-    "cfb24_32ScreenInit",
-    "cfb32ScreenInit",
-    "cfBresS",
-    "cfb16BresS",
-    "cfb24BresS",
-    "cfb32BresS",
-    NULL
-};
-
 static MODULESETUPPROTO(s3virgeSetup);
 
 static XF86ModuleVersionInfo S3VVersRec =
@@ -422,7 +407,7 @@ s3virgeSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * Tell the loader about symbols from other modules that this module
 	 * might refer to.
 	 */
-	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
+	LoaderRefSymLists(vgahwSymbols, xaaSymbols,
 			  ramdacSymbols, ddcSymbols, i2cSymbols,
 #if USE_INT10
 			  int10Symbols,
@@ -601,8 +586,6 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     int i;
     double real;
     ClockRangePtr clockRanges;
-    char *mod = NULL;
-    const char *reqSym = NULL;
     char *s;
     
     unsigned char config1, config2, m, n, n1, n2, cr66 = 0;
@@ -894,18 +877,6 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 		   "HW cursor not supported with \"rotate\".\n");
 	ps3v->hwcursor = FALSE;
     }
-
-    if (xf86IsOptionSet(ps3v->Options, OPTION_FB_DRAW)) 
-      {
-	if (xf86GetOptValBool(ps3v->Options, OPTION_FB_DRAW ,&ps3v->UseFB))
-	  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using %s.\n",
-		     ps3v->UseFB ? "fb (not cfb)" : "cfb (not fb)");
-      }
-    else
-      {
-	ps3v->UseFB = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, "Using fb.\n");
-      }
 
     if (xf86IsOptionSet(ps3v->Options, OPTION_MX_CR3A_FIX)) 
       {
@@ -1526,47 +1497,12 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     /* Load bpp-specific modules */
-    if( ps3v->UseFB )
+    if( xf86LoadSubModule(pScrn, "fb") == NULL )
       {
-	if( xf86LoadSubModule(pScrn, "fb") == NULL )
-	  {
-	      S3VFreeRec(pScrn);
-	      return FALSE;
-	  }	       
-	xf86LoaderReqSymLists(fbSymbols, NULL);       
-      }
-    else
-      {
-	switch (pScrn->bitsPerPixel) {
-	case 8:
-	  mod = "cfb";
-	  reqSym = "cfbScreenInit";
-	  break;
-	case 16:
-	  mod = "cfb16";
-	  reqSym = "cfb16ScreenInit";
-	  break;
-	case 24:
-	  if (pix24bpp == 24) {
-	    mod = "cfb24";
-	    reqSym = "cfb24ScreenInit";
-	  } else {
-	    mod = "xf24_32bpp";
-	    reqSym = "cfb24_32ScreenInit";
-	  }
-	  break;
-	case 32:
-	  mod = "cfb32";
-	  reqSym = "cfb32ScreenInit";
-	  break;
-	}
-	if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
-	    S3VFreeRec(pScrn);
-	    return FALSE;
-	}	       
-    
-	xf86LoaderReqSymbols(reqSym, NULL);
-      }
+	 S3VFreeRec(pScrn);
+	 return FALSE;
+      }	       
+    xf86LoaderReqSymLists(fbSymbols, NULL);       
 
     /* Load XAA if needed */
     if (!ps3v->NoAccel || ps3v->hwcursor ) {
@@ -2558,7 +2494,7 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * function.  If not, the visuals will need to be setup before calling
      * a fb ScreenInit() function and fixed up after.
      *
-     * For most PC hardware at depths >= 8, the defaults that cfb uses
+     * For most PC hardware at depths >= 8, the defaults that fb uses
      * are not appropriate.  In this driver, we fixup the visuals after.
      */
 
@@ -2616,8 +2552,7 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
   }
 
   /* must be after RGB ordering fixed */
-  if (ps3v->UseFB)
-    fbPictureInit (pScreen, 0, 0);
+  fbPictureInit (pScreen, 0, 0);
     
   	      				/* Initialize acceleration layer */
   if (!ps3v->NoAccel) {
@@ -2750,70 +2685,22 @@ S3VInternalScreenInit( int scrnIndex, ScreenPtr pScreen)
      * pScreen fields.
      */
 
-  if( ps3v->UseFB )
+  switch (pScrn->bitsPerPixel) 
     {
-      xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using FB\n");
-
-      switch (pScrn->bitsPerPixel) 
-	{
-	case 8:
-	case 16:
-	case 24:
-	  ret = fbScreenInit(pScreen, FBStart, pScrn->virtualX,
-			     pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-			     displayWidth, pScrn->bitsPerPixel);
-	  break;
-	default:
-	  xf86DrvMsg(scrnIndex, X_ERROR,
-		     "Internal error: invalid bpp (%d) in S3VScreenInit\n",
-		     pScrn->bitsPerPixel);
-	  ret = FALSE;
-	  break;
-	}
+    case 8:
+    case 16:
+    case 24:
+      ret = fbScreenInit(pScreen, FBStart, pScrn->virtualX,
+			 pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
+			 displayWidth, pScrn->bitsPerPixel);
+      break;
+    default:
+      xf86DrvMsg(scrnIndex, X_ERROR,
+		 "Internal error: invalid bpp (%d) in S3VScreenInit\n",
+		 pScrn->bitsPerPixel);
+      ret = FALSE;
+      break;
     }
-  else
-    {
-      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using CFB\n");
-      switch (pScrn->bitsPerPixel) {
-      case 8:
-	ret = cfbScreenInit(pScreen, FBStart,
-			    width,height,
-			    pScrn->xDpi, pScrn->yDpi,
-			    displayWidth);
-	break;
-      case 16:
-	ret = cfb16ScreenInit(pScreen, FBStart,
-			      width,height,
-			      pScrn->xDpi, pScrn->yDpi,
-			      displayWidth);
-	break;
-      case 24:
-	if (pix24bpp ==24) {
-	  ret = cfb24ScreenInit(pScreen, FBStart,
-			    width,height,
-				  pScrn->xDpi, pScrn->yDpi,
-				  displayWidth);
-	} else {
-	  ret = cfb24_32ScreenInit(pScreen, FBStart,
-				     width,height,
-				     pScrn->xDpi, pScrn->yDpi,
-				     displayWidth);
-	}
-	break;
-      case 32:
-	ret = cfb32ScreenInit(pScreen, FBStart,
-			      width,height,
-			      pScrn->xDpi, pScrn->yDpi,
-			      displayWidth);
-	break;
-      default:
-	xf86DrvMsg(scrnIndex, X_ERROR,
-		   "Internal error: invalid bpp (%d) in S3VScreenInit\n",
-		   pScrn->bitsPerPixel);
-	ret = FALSE;
-	break;
-      } /*switch*/
-    } /*if(fb)*/
   return ret;
 }
 
