@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.148tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.150 2005/07/26 18:32:02 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -1348,7 +1348,6 @@ xf86VDrvMsgVerb(int scrnIndex, MessageType type, int verb, const char *format,
     } else
 	LogVMessageVerb(type, verb, format, args);
 }
-#undef PREFIX_SIZE
 
 /* Print driver messages, with verbose level specified directly */
 void
