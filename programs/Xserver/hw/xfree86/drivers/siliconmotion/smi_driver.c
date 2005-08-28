@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.38tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.39tsi Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -851,7 +851,7 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	    pSmi->pInt10 = xf86InitInt10(pEnt->index);
 	}
 	
-	if (pSmi->pInt10 && xf86LoadSubModule(pScrn, "vbe"))
+	if (pSmi->pInt10 && xf86LoadVBEModule(pScrn))
 	{
 	    xf86LoaderReqSymLists(vbeSymbols, NULL);
 	    pVbe = VBEInit(pSmi->pInt10, pEnt->index);
@@ -3326,7 +3326,7 @@ static void
 SMI_ProbeDDC(ScrnInfoPtr pScrn, int index)
 {
 	vbeInfoPtr pVbe;
-	if (xf86LoadSubModule(pScrn, "vbe"))
+	if (xf86LoadVBEModule(pScrn))
 	{
 		pVbe = VBEInit(NULL, index);
 		ConfiguredMonitor = vbeDoEDID(pVbe, NULL);

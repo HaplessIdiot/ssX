@@ -30,7 +30,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * Copyright 2002 Shigehiro Nomura
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.78 2005/02/18 02:55:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.79tsi Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -3143,7 +3143,7 @@ neoDoDDCVBE(ScrnInfoPtr pScrn)
     Bool ret = FALSE;
 
     VGAwGR(0x09,0x26);
-    if (xf86LoadSubModule(pScrn, "vbe")) {
+    if (xf86LoadVBEModule(pScrn)) {
 	xf86LoaderReqSymLists(vbeSymbols, NULL);
         if ((pVbe = VBEInit(NULL,nPtr->pEnt->index))) {
 	  ret = xf86SetDDCproperties(
@@ -3203,7 +3203,7 @@ neoProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
 
-    if (xf86LoadSubModule(pScrn, "vbe")) {
+    if (xf86LoadVBEModule(pScrn)) {
         if ((pVbe = VBEInit(NULL,index))) {
 	    ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
 	    vbeFree(pVbe);

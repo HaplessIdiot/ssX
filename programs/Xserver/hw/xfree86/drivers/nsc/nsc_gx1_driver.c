@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_driver.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_driver.c,v 1.12tsi Exp $ */
 /*
  * $Workfile: nsc_gx1_driver.c $
  * $Revision$
@@ -425,7 +425,7 @@ GX1ProbeDDC(ScrnInfoPtr pScrn, int index)
 {
    vbeInfoPtr pVbe;
 
-   if (xf86LoadSubModule(pScrn, "vbe")) {
+   if (xf86LoadVBEModule(pScrn)) {
       pVbe = VBEInit(NULL, index);
       ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
       vbeFree(pVbe);

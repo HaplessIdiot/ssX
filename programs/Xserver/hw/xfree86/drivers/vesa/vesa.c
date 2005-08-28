@@ -28,7 +28,7 @@
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *          David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.51 2005/08/19 00:36:10 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.52tsi Exp $
  */
 /*
  * Copyright (c) 2000-2005 by The XFree86 Project, Inc.
@@ -505,16 +505,8 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
     pVesa->device = xf86GetDevFromEntity(pScrn->entityList[0],
 					 pScrn->entityInstanceList[0]);
 
-#if 0
-    /* Load vgahw module */
-    if (!xf86LoadSubModule(pScrn, "vgahw"))
-	return (FALSE);
-
-    xf86LoaderReqSymLists(vgahwSymbols, NULL);
-#endif
-
     /* Load vbe module */
-    if (!xf86LoadSubModule(pScrn, "vbe"))
+    if (!xf86LoadVBEModule(pScrn))
 	return (FALSE);
 
     xf86LoaderReqSymLists(vbeSymbols, NULL);

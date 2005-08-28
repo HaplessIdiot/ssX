@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.h,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.h,v 1.9tsi Exp $ */
 /*
  * Copyright 2000 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -36,14 +36,17 @@ extern const char *ATIint10Symbols[], *ATIddcSymbols[], *ATIvbeSymbols[],
                   *ATIshadowfbSymbols[], *ATIxaaSymbols[], *ATIramdacSymbols[],
                   *ATIi2cSymbols[];
 
-extern pointer ATILoadModule  FunctionPrototype((ScrnInfoPtr, const char *,
-                                                 const char **));
-extern pointer ATILoadModules FunctionPrototype((ScrnInfoPtr, ATIPtr));
+extern pointer ATILoadSubModule  FunctionPrototype((ScrnInfoPtr, const char *,
+                                                    const char **));
+extern pointer ATILoadVBEModule  FunctionPrototype((ScrnInfoPtr));
+
+extern pointer ATILoadSubModules FunctionPrototype((ScrnInfoPtr, ATIPtr));
 
 #else /* XFree86LOADER */
 
-#define ATILoadModule(pScreenInfo, Module, SymboList) ((pointer)1)
-#define ATILoadModules(pScreenInfo, pATI)             ((pointer)1)
+#define ATILoadSubModule(pScreenInfo, Module, SymbolList) ((pointer)1)
+#define ATILoadVBEModule(pScreenInfo)                     ((pointer)1)
+#define ATILoadSubModules(pScreenInfo, pATI)              ((pointer)1)
 
 #endif /* XFree86LOADER */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.87 2005/08/11 13:58:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.88tsi Exp $ */
 /*
  * Copyright 1999 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -636,7 +636,7 @@ ATIPreInit
      */
     xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
         "Initialising int10 interface.\n");
-    pInt10Module = ATILoadModule(pScreenInfo, "int10", ATIint10Symbols);
+    pInt10Module = ATILoadSubModule(pScreenInfo, "int10", ATIint10Symbols);
     if (!pInt10Module)
     {
         xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
@@ -651,7 +651,7 @@ ATIPreInit
     {
         xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
             "Determining BIOS support for VBE.\n");
-        pDDCModule = ATILoadModule(pScreenInfo, "ddc", ATIddcSymbols);
+        pDDCModule = ATILoadSubModule(pScreenInfo, "ddc", ATIddcSymbols);
         if (!pDDCModule)
         {
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
@@ -659,7 +659,7 @@ ATIPreInit
         }
         else
         {
-            pVBEModule = ATILoadModule(pScreenInfo, "vbe", ATIvbeSymbols);
+            pVBEModule = ATILoadVBEModule(pScreenInfo);
             if (!pVBEModule)
             {
                 xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
@@ -3236,7 +3236,7 @@ ATIPreInit
     xf86SetDpi(pScreenInfo, 0, 0);
 
     /* Load required modules */
-    if (!ATILoadModules(pScreenInfo, pATI))
+    if (!ATILoadSubModules(pScreenInfo, pATI))
     {
         ATILock(pATI);
         ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);

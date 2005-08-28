@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.60tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.61tsi Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -1456,7 +1456,7 @@ renditionProbeDDC(ScrnInfoPtr pScreenInfo, int index)
   vbeInfoPtr pVbe;
   xf86MonPtr mon = NULL;
 
-  if (xf86LoadSubModule(pScreenInfo, "vbe")) {
+  if (xf86LoadVBEModule(pScreenInfo)) {
     xf86LoaderReqSymLists(vbeSymbols, NULL);
 
     pVbe = VBEInit(NULL,index);

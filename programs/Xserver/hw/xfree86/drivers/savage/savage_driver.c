@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.53tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.54tsi Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -953,7 +953,7 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 	psav->pInt10 = xf86InitInt10(pEnt->index);
     }
 
-    if (xf86LoadSubModule(pScrn, "vbe")) {
+    if (xf86LoadVBEModule(pScrn)) {
 	xf86LoaderReqSymLists(vbeSymbols, NULL);
 	psav->pVbe = VBEInit(psav->pInt10, pEnt->index);
     }
@@ -3251,7 +3251,7 @@ static void
 SavageProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
-    if (xf86LoadSubModule(pScrn, "vbe")) {
+    if (xf86LoadVBEModule(pScrn)) {
         pVbe = VBEInit(NULL,index);
         ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
 	vbeFree(pVbe);

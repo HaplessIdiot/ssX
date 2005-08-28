@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.73 2003/11/03 05:11:51 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.74tsi Exp $ */
 
 /*
  *
@@ -96,11 +96,7 @@ typedef struct _pattern {
     regex_t rex;
 } PatternRec, *PatternPtr;
 
-/* Prototypes for static functions */
-static char *FindModule(const char *, const char *, const char **,
-			PatternPtr);
-static Bool CheckVersion(const char *, XF86ModuleVersionInfo *,
-			 const XF86ModReqInfo *);
+/* Forward prototypes for static functions */
 static void UnloadModuleOrDriver(ModuleDescPtr mod);
 static char *LoaderGetCanonicalName(const char *, PatternPtr);
 static void RemoveChild(ModuleDescPtr);
@@ -596,6 +592,89 @@ LoaderFreeDirList(char **list)
 }
 
 static Bool
+CheckRequirements(const XF86ModuleVersionInfo * data,
+		  const XF86ModReqInfo * req)
+{
+    if (!req)
+	return TRUE;
+
+    if (!data) {
+	xf86MsgVerb(X_WARNING, 2, "No version information to verify\n");
+	return FALSE;
+    }
+
+    if (req->majorversion != MAJOR_UNSPEC) {
+	if (data->majorversion != req->majorversion) {
+	    xf86MsgVerb(X_WARNING, 2, "Module major version (%d) doesn't match"
+			" required major version (%d)\n",
+			data->majorversion, req->majorversion);
+	    return FALSE;
+	}
+
+	if (req->minorversion != MINOR_UNSPEC) {
+	    if (data->minorversion < req->minorversion) {
+		xf86MsgVerb(X_WARNING, 2, "Module minor version (%d) is less"
+			    " than the required minor version (%d)\n",
+			    data->minorversion, req->minorversion);
+		return FALSE;
+	    }
+
+	    if ((data->minorversion == req->minorversion) &&
+		(req->patchlevel != PATCH_UNSPEC) &&
+		(data->patchlevel < req->patchlevel)) {
+		xf86MsgVerb(X_WARNING, 2, "Module patch level (%d) is less"
+			    " than the required patch level (%d)\n",
+			    data->patchlevel, req->patchlevel);
+		return FALSE;
+	    }
+	}
+    }
+
+    if (req->moduleclass) {
+	if (!data->moduleclass ||
+	    strcmp(req->moduleclass, data->moduleclass)) {
+	    xf86MsgVerb(X_WARNING, 2, "Module class (%s) doesn't match the"
+			" required class (%s)\n",
+			data->moduleclass ? data->moduleclass : "<NONE>",
+			req->moduleclass);
+	    return FALSE;
+	}
+    } else if (req->abiclass != ABI_CLASS_NONE) {
+	if (!data->abiclass || strcmp(req->abiclass, data->moduleclass)) {
+	    xf86MsgVerb(X_WARNING, 2, "ABI class (%s) doesn't match the"
+			" required ABI class (%s)\n",
+			data->abiclass ? data->abiclass : "<NONE>",
+			req->abiclass);
+	    return FALSE;
+	}
+    }
+
+    if ((req->abiclass != ABI_CLASS_NONE) &&
+	(req->abiversion != ABI_VERS_UNSPEC)) {
+	int reqmaj, reqmin, maj, min;
+
+	reqmaj = GET_ABI_MAJOR(req->abiversion);
+	maj = GET_ABI_MAJOR(data->abiversion);
+	if (maj != reqmaj) {
+	    xf86MsgVerb(X_WARNING, 2, "ABI major version (%d) doesn't match"
+			" the required ABI major version (%d)\n",
+			maj, reqmaj);
+	    return FALSE;
+	}
+
+	reqmin = GET_ABI_MINOR(req->abiversion);
+	min = GET_ABI_MINOR(data->abiversion);
+	if (min < reqmin) {
+	    xf86MsgVerb(X_WARNING, 2, "Module ABI minor version (%d) is older"
+			" than that required (%d)\n", min, reqmin);
+	    return FALSE;
+	}
+    }
+
+    return TRUE;
+}
+
+static Bool
 CheckVersion(const char *module, XF86ModuleVersionInfo * data,
 	     const XF86ModReqInfo * req)
 {
@@ -691,70 +770,9 @@ CheckVersion(const char *module, XF86ModuleVersionInfo * data,
     }
 
     /* Check against requirements that the caller has specified */
-    if (req) {
-	if (req->majorversion != MAJOR_UNSPEC) {
-	    if (data->majorversion != req->majorversion) {
-		xf86MsgVerb(X_WARNING, 2, "module major version (%d) "
-			    "doesn't match required major version (%d)\n",
-			    data->majorversion, req->majorversion);
-		return FALSE;
-	    } else if (req->minorversion != MINOR_UNSPEC) {
-		if (data->minorversion < req->minorversion) {
-		    xf86MsgVerb(X_WARNING, 2, "module minor version (%d) "
-				"is less than the required minor version (%d)\n",
-				data->minorversion, req->minorversion);
-		    return FALSE;
-		} else if (data->minorversion == req->minorversion &&
-			   req->patchlevel != PATCH_UNSPEC) {
-		    if (data->patchlevel < req->patchlevel) {
-			xf86MsgVerb(X_WARNING, 2, "module patch level (%d) "
-				    "is less than the required patch level (%d)\n",
-				    data->patchlevel, req->patchlevel);
-			return FALSE;
-		    }
-		}
-	    }
-	}
-	if (req->moduleclass) {
-	    if (!data->moduleclass ||
-		strcmp(req->moduleclass, data->moduleclass)) {
-		xf86MsgVerb(X_WARNING, 2, "Module class (%s) doesn't match "
-			    "the required class (%s)\n",
-			    data->moduleclass ? data->moduleclass : "<NONE>",
-			    req->moduleclass);
-		return FALSE;
-	    }
-	} else if (req->abiclass != ABI_CLASS_NONE) {
-	    if (!data->abiclass || strcmp(req->abiclass, data->moduleclass)) {
-		xf86MsgVerb(X_WARNING, 2, "ABI class (%s) doesn't match the "
-			    "required ABI class (%s)\n",
-			    data->abiclass ? data->abiclass : "<NONE>",
-			    req->abiclass);
-		return FALSE;
-	    }
-	}
-	if ((req->abiclass != ABI_CLASS_NONE) &&
-	    req->abiversion != ABI_VERS_UNSPEC) {
-	    int reqmaj, reqmin, maj, min;
+    if (!CheckRequirements(data, req))
+	return FALSE;
 
-	    reqmaj = GET_ABI_MAJOR(req->abiversion);
-	    reqmin = GET_ABI_MINOR(req->abiversion);
-	    maj = GET_ABI_MAJOR(data->abiversion);
-	    min = GET_ABI_MINOR(data->abiversion);
-	    if (maj != reqmaj) {
-		xf86MsgVerb(X_WARNING, 2, "ABI major version (%d) doesn't "
-			    "match the required ABI major version (%d)\n",
-			    maj, reqmaj);
-		return FALSE;
-	    }
-	    /* XXX Maybe this should be the other way around? */
-	    if (min > reqmin) {
-		xf86MsgVerb(X_WARNING, 2, "module ABI minor version (%d) "
-			    "is new than that available (%d)\n", min, reqmin);
-		return FALSE;
-	    }
-	}
-    }
 #ifdef NOTYET
     if (data->checksum) {
 	/* verify the checksum field */
@@ -764,6 +782,12 @@ CheckVersion(const char *module, XF86ModuleVersionInfo * data,
     }
 #endif
     return TRUE;
+}
+
+void
+LoaderSetParentModuleRequirements(ModuleDescPtr mod, XF86ModReqInfo *req)
+{
+    mod->ParentReq = req;
 }
 
 ModuleDescPtr
@@ -796,8 +820,24 @@ LoadSubModule(ModuleDescPtr parent, const char *module,
     submod = LoadModule(module, NULL, subdirlist, patternlist, options,
 			modreq, errmaj, errmin);
     if (submod) {
-	parent->child = AddSibling(parent->child, submod);
 	submod->parent = parent;
+
+	/* Check requirements against parent modules */
+	while (parent) {
+	    if (!CheckRequirements(parent->VersionInfo, submod->ParentReq)) {
+		UnloadModule(submod);
+		if (errmaj)
+		    *errmaj = LDR_MISMATCH;
+		if (errmin)
+		    *errmin = 0;
+		return NULL;
+	    }
+
+	    parent = parent->parent;
+	}
+
+	parent = submod->parent;
+	parent->child = AddSibling(parent->child, submod);
     }
     return submod;
 }
@@ -830,6 +870,7 @@ DuplicateModule(ModuleDescPtr mod, ModuleDescPtr parent)
     ret->sib = DuplicateModule(mod->sib, parent);
     ret->parent = parent;
     ret->VersionInfo = mod->VersionInfo;
+    ret->ParentReq = mod->ParentReq;
 
     return ret;
 }
@@ -838,7 +879,7 @@ DuplicateModule(ModuleDescPtr mod, ModuleDescPtr parent)
  * LoadModule: load a module
  *
  * module       The module name.  Normally this is not a filename but the
- *              module's "canonical name.  A full pathname is, however,
+ *              module's "canonical" name.  A full pathname is, however,
  *              also accepted.
  * path         A comma separated list of module directories.
  * subdirlist   A NULL terminated list of subdirectories to search.  When
@@ -998,25 +1039,27 @@ LoadModule(const char *module, const char *path, const char **subdirlist,
 	setup = initdata->setup;
 	teardown = initdata->teardown;
 
-	if (!wasLoaded) {
-	    if (vers) {
-		if (!CheckVersion(module, vers, modreq)) {
-		    if (errmaj)
-			*errmaj = LDR_MISMATCH;
-		    if (errmin)
-			*errmin = 0;
-		    goto LoadModule_fail;
-		}
-	    } else {
-		xf86Msg(X_ERROR,
-			"LoadModule: Module %s does not supply"
-			" version information\n", module);
+	/*
+	 * Different loads of the same module may have different versioning
+	 * requirements, so always check.
+	 */
+	if (vers) {
+	    if (!CheckVersion(module, vers, modreq)) {
 		if (errmaj)
-		    *errmaj = LDR_INVALID;
+		    *errmaj = LDR_MISMATCH;
 		if (errmin)
 		    *errmin = 0;
 		goto LoadModule_fail;
 	    }
+	} else {
+	    xf86Msg(X_ERROR,
+		    "LoadModule: Module %s does not supply version"
+		    " information\n", module);
+	    if (errmaj)
+		*errmaj = LDR_INVALID;
+	    if (errmin)
+		*errmin = 0;
+	    goto LoadModule_fail;
 	}
 	if (setup)
 	    ret->SetupProc = setup;
@@ -1179,6 +1222,7 @@ NewModuleDesc(const char *name)
 	mdp->SetupProc = NULL;
 	mdp->TearDownProc = NULL;
 	mdp->TearDownData = NULL;
+	mdp->ParentReq = NULL;
     }
 
     return (mdp);
@@ -1274,7 +1318,7 @@ LoaderErrorMsg(const char *name, const char *modname, int errmaj, int errmin)
 	msg = "module-specific error";
 	break;
     default:
-	msg = "uknown error";
+	msg = "unknown error";
     }
     if (name)
 	xf86Msg(X_ERROR, "%s: Failed to load module \"%s\" (%s, %d)\n",

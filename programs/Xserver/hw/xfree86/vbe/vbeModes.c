@@ -1,6 +1,6 @@
 #define DEBUG_VERB 2
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbeModes.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbeModes.c,v 1.8tsi Exp $ */
 
 /*
  * Copyright © 2002 David Dawes
@@ -78,9 +78,6 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "xf86.h"
-#include "xf86_ansic.h"
-#include "vbe.h"
 #include "vbeModes.h"
 
 static int

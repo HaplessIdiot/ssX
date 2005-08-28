@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.253tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.254tsi Exp $ */
 
 /*
  *
@@ -622,8 +622,11 @@ LOOKUP xfree86LookupTab[] = {
     SYMFUNC(xf86GetModuleVersion)
     SYMFUNC(xf86GetClocks)
     SYMFUNC(xf86SetPriority)
+    SYMFUNC(xf86SetParentModuleRequirements)
     SYMFUNC(xf86LoadDrvSubModule)
+    SYMFUNC(xf86LoadDrvSubModuleWithRequirements)
     SYMFUNC(xf86LoadSubModule)
+    SYMFUNC(xf86LoadSubModuleWithRequirements)
     SYMFUNC(xf86LoadOneModule)
     SYMFUNC(xf86UnloadSubModule)
     SYMFUNC(xf86LoaderCheckSymbol)
@@ -890,6 +893,7 @@ LOOKUP xfree86LookupTab[] = {
 
     /* Loader functions */
     SYMFUNC(LoaderDefaultFunc)
+    SYMFUNC(LoaderSetParentModuleRequirements)
     SYMFUNC(LoadSubModule)
     SYMFUNC(DuplicateModule)
     SYMFUNC(LoaderErrorMsg)
