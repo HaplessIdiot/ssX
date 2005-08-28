@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.h,v 1.8 2005/08/08 20:15:29 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.h,v 1.9 2005/08/20 15:31:02 tsi Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -69,8 +69,10 @@ typedef struct vbeControllerInfoBlock {
     CARD8  OemData[256];
 } vbeControllerInfoRec, *vbeControllerInfoPtr;
 
-#if defined(__GNUC__) || defined(__SCO__) || defined(__USLC__) || \
-	defined(__SUNPRO_C)
+#if defined(__GNUC__) || \
+    defined(__SCO__) || \
+    defined(__USLC__) || \
+    defined(__SUNPRO_C)
 #pragma pack()	/* All GCC versions recognise this syntax */
 #else
 #pragma pack(0)
@@ -90,23 +92,23 @@ typedef struct _VbeCRTCInfoBlock VbeCRTCInfoBlock;
 
 struct _VbeInfoBlock {
     /* VESA 1.2 fields */
-    CARD8 VESASignature[4];		/* VESA */
-    CARD16 VESAVersion;			/* Higher byte major, lower byte minor */
-    /*CARD32*/char *OEMStringPtr;	/* Pointer to OEM string */
-    CARD8 Capabilities[4];		/* Capabilities of the video environment */
+    CARD8 VESASignature[4];	/* VESA */
+    CARD16 VESAVersion;		/* Higher byte major, lower byte minor */
+    char *OEMStringPtr;		/* Pointer to OEM string */
+    CARD8 Capabilities[4];	/* Capabilities of the video environment */
 
-    /*CARD32*/CARD16 *VideoModePtr;	/* pointer to supported Super VGA modes */
+    CARD16 *VideoModePtr;	/* pointer to supported Super VGA modes */
 
-    CARD16 TotalMemory;			/* Number of 64kb memory blocks on board */
+    CARD16 TotalMemory;		/* Number of 64kb memory blocks on board */
     /* if not VESA 2, 236 scratch bytes follow (256 bytes total size) */
 
     /* VESA 2 fields */
-    CARD16 OemSoftwareRev;		/* VBE implementation Software revision */
-    /*CARD32*/char *OemVendorNamePtr;	/* Pointer to Vendor Name String */
-    /*CARD32*/char *OemProductNamePtr;	/* Pointer to Product Name String */
-    /*CARD32*/char *OemProductRevPtr;	/* Pointer to Product Revision String */
-    CARD8 Reserved[222];		/* Reserved for VBE implementation */
-    CARD8 OemData[256];			/* Data Area for OEM Strings */
+    CARD16 OemSoftwareRev;	/* VBE implementation Software revision */
+    char *OemVendorNamePtr;	/* Pointer to Vendor Name String */
+    char *OemProductNamePtr;	/* Pointer to Product Name String */
+    char *OemProductRevPtr;	/* Pointer to Product Revision String */
+    CARD8 Reserved[222];	/* Reserved for VBE implementation */
+    CARD8 OemData[256];		/* Data Area for OEM Strings */
 } __attribute__((packed));
 
 /* Return Super VGA Information */
@@ -125,12 +127,12 @@ struct _VbeModeInfoBlock {
     CARD16 WinSize;			/* window size */
     CARD16 WinASegment;			/* window A start segment */
     CARD16 WinBSegment;			/* window B start segment */
-    CARD32 WinFuncPtr;			/* real mode pointer to window function */
+    CARD32 WinFuncPtr;			/* far pointer to window function */
     CARD16 BytesPerScanline;		/* bytes per scanline */
 
     /* Mandatory information for VBE 1.2 and above */
-    CARD16 XResolution;			/* horizontal resolution in pixels or characters */
-    CARD16 YResolution;			/* vertical resolution in pixels or characters */
+    CARD16 XResolution;			/* horizontal pixels or characters */
+    CARD16 YResolution;			/* vertical pixels or characters */
     CARD8 XCharSize;			/* character cell width in pixels */
     CARD8 YCharSize;			/* character cell height in pixels */
     CARD8 NumberOfPlanes;		/* number of memory planes */
@@ -142,34 +144,36 @@ struct _VbeModeInfoBlock {
     CARD8 Reserved;	/* 1 */		/* reserved for page function */
 
     /* Direct color fields (required for direct/6 and YUV/7 memory models) */
-    CARD8 RedMaskSize;			/* size of direct color red mask in bits */
-    CARD8 RedFieldPosition;		/* bit position of lsb of red mask */
-    CARD8 GreenMaskSize;		/* size of direct color green mask in bits */
-    CARD8 GreenFieldPosition;		/* bit position of lsb of green mask */
-    CARD8 BlueMaskSize;			/* size of direct color blue mask in bits */
-    CARD8 BlueFieldPosition;		/* bit position of lsb of blue mask */
-    CARD8 RsvdMaskSize;			/* size of direct color reserved mask in bits */
-    CARD8 RsvdFieldPosition;		/* bit position of lsb of reserved mask */
+    CARD8 RedMaskSize;			/* bit size of red mask */
+    CARD8 RedFieldPosition;		/* bit position of red mask lsb */
+    CARD8 GreenMaskSize;		/* bit size of green mask */
+    CARD8 GreenFieldPosition;		/* bit position of green mask lsb */
+    CARD8 BlueMaskSize;			/* bit size of blue mask */
+    CARD8 BlueFieldPosition;		/* bit position of blue mask lsb */
+    CARD8 RsvdMaskSize;			/* bit size of reserved mask */
+    CARD8 RsvdFieldPosition;		/* bit position of reserved mask lsb */
     CARD8 DirectColorModeInfo;		/* direct color mode attributes */
 
     /* Mandatory information for VBE 2.0 and above */
-    CARD32 PhysBasePtr;			/* physical address for flat memory frame buffer */
+    CARD32 PhysBasePtr;			/* physical address of linear
+					   framebuffer */
     CARD32 Reserved32;	/* 0 */		/* Reserved - always set to 0 */
     CARD16 Reserved16;	/* 0 */		/* Reserved - always set to 0 */
 
     /* Mandatory information for VBE 3.0 and above */
-    CARD16 LinBytesPerScanLine;		/* bytes per scan line for linear modes */
+    CARD16 LinBytesPerScanLine;		/* bytes per scanline */
     CARD8 BnkNumberOfImagePages;	/* number of images for banked modes */
     CARD8 LinNumberOfImagePages;	/* number of images for linear modes */
-    CARD8 LinRedMaskSize;		/* size of direct color red mask (linear modes) */
-    CARD8 LinRedFieldPosition;		/* bit position of lsb of red mask (linear modes) */
-    CARD8 LinGreenMaskSize;		/* size of direct color green mask (linear modes) */
-    CARD8 LinGreenFieldPosition;	/* bit position of lsb of green mask (linear modes) */
-    CARD8 LinBlueMaskSize;		/* size of direct color blue mask (linear modes) */
-    CARD8 LinBlueFieldPosition;		/* bit position of lsb of blue mask (linear modes) */
-    CARD8 LinRsvdMaskSize;		/* size of direct color reserved mask (linear modes) */
-    CARD8 LinRsvdFieldPosition;		/* bit position of lsb of reserved mask (linear modes) */
-    CARD32 MaxPixelClock;		/* maximum pixel clock (in Hz) for graphics mode */
+    CARD8 LinRedMaskSize;		/* size of direct color red mask */
+    CARD8 LinRedFieldPosition;		/* bit position of red mask lsb */
+    CARD8 LinGreenMaskSize;		/* size of direct color green mask */
+    CARD8 LinGreenFieldPosition;	/* bit position of green mask lsb */
+    CARD8 LinBlueMaskSize;		/* size of direct color blue mask */
+    CARD8 LinBlueFieldPosition;		/* bit position of blue mask lsb */
+    CARD8 LinRsvdMaskSize;		/* size of direct color reserved mask */
+    CARD8 LinRsvdFieldPosition;		/* bit position of reserved mask lsb */
+    CARD32 MaxPixelClock;		/* maximum pixel clock (in Hz) for
+					   graphics mode */
     CARD8 Reserved2[189];		/* remainder of VbeModeInfoBlock */
 } __attribute__((packed));
 
@@ -187,16 +191,16 @@ void VBEFreeModeInfo(VbeModeInfoBlock *block);
 #define CRTC_NVSYNC	(1<<3)
 
 struct _VbeCRTCInfoBlock {
-    CARD16 HorizontalTotal;		/* Horizontal total in pixels */
-    CARD16 HorizontalSyncStart;		/* Horizontal sync start in pixels */
-    CARD16 HorizontalSyncEnd;		/* Horizontal sync end in pixels */
-    CARD16 VerticalTotal;		/* Vertical total in lines */
-    CARD16 VerticalSyncStart;		/* Vertical sync start in lines */
-    CARD16 VerticalSyncEnd;		/* Vertical sync end in lines */
-    CARD8 Flags;			/* Flags (Interlaced, Double Scan etc) */
-    CARD32 PixelClock;			/* Pixel clock in units of Hz */
-    CARD16 RefreshRate;			/* Refresh rate in units of 0.01 Hz */
-    CARD8 Reserved[40];			/* remainder of ModeInfoBlock */
+    CARD16 HorizontalTotal;	/* Horizontal total in pixels */
+    CARD16 HorizontalSyncStart;	/* Horizontal sync start in pixels */
+    CARD16 HorizontalSyncEnd;	/* Horizontal sync end in pixels */
+    CARD16 VerticalTotal;	/* Vertical total in lines */
+    CARD16 VerticalSyncStart;	/* Vertical sync start in lines */
+    CARD16 VerticalSyncEnd;	/* Vertical sync end in lines */
+    CARD8 Flags;		/* Flags (Interlaced, Double Scan etc) */
+    CARD32 PixelClock;		/* Pixel clock in units of Hz */
+    CARD16 RefreshRate;		/* Refresh rate in units of 0.01 Hz */
+    CARD8 Reserved[40];		/* remainder of ModeInfoBlock */
 } __attribute__((packed));
 /* VbeCRTCInfoBlock is in the VESA 3.0 specs */
 
