@@ -28,7 +28,7 @@
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *          David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.50 2005/08/18 15:13:07 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.51 2005/08/19 00:36:10 tsi Exp $
  */
 /*
  * Copyright (c) 2000-2005 by The XFree86 Project, Inc.
@@ -227,6 +227,7 @@ static const char *vbeSymbols[] = {
     "VBEFindSupportedDepths",
     "VBEFreeVBEInfo",
     "VBEGetModeInfo",
+    "VBEGetModePool",
     "VBEGetVBEInfo",
     "VBEGetVBEMode",
     "VBEPrintModes",
