@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vloaduc.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vloaduc.c,v 1.14tsi Exp $ */
 /*
  * includes
  */
@@ -15,8 +15,7 @@
  * defines 
  */
 
-#ifdef X_LITTLE_ENDIAN
-
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
 /* maybe swap word */
 #define SW32(x) lswapl(x)
 #define SW16(x) lswaps(x)

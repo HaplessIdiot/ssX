@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_driver.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_driver.c,v 1.5tsi Exp $ */
 /*
  * XGI driver main code
  *
@@ -86,10 +86,8 @@
 #define DPMS_SERVER
 #include "extensions/dpms.h"
 
-#if (XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,3,99,0,0)) || (defined(XvExtension))
 #include "xf86xv.h"
 #include "Xv.h"
-#endif
 
 #ifdef XF86DRI
 #include "dri.h"
@@ -4264,13 +4262,11 @@ PDEBUG(ErrorF("XGILoadPalette() check-return.  \n"));
 
     pXGI->ResetXv = pXGI->ResetXvGamma = NULL;
 
-#if (XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,3,99,0,0)) || (defined(XvExtension))
     if(!pXGI->NoXvideo) {
         if(pXGI->VGAEngine == XGI_XGX_VGA) {
            XGIInitVideo(pScreen);
         }
     }
-#endif
 
 #ifdef XF86DRI
 /* if(pXGI->loadDRI) { */

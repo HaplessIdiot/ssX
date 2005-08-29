@@ -72,7 +72,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.119tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.120tsi Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -2297,12 +2297,10 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
        */
       pI810->directRenderingEnabled = I810DRIFinishScreenInit(pScreen);
    }
-#ifdef XvMCExtension
    if ((pI810->directRenderingEnabled) && (pI810->numSurfaces)) {
       /* Initialize the hardware motion compensation code */
       I810InitMC(pScreen);
    }
-#endif
 #endif
 
    if (pI810->directRenderingEnabled) {

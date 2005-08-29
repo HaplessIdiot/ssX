@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_driver.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_driver.c,v 1.12tsi Exp $ */
 /*
  * $Workfile: nsc_gx2_driver.c $
  * $Revision$
@@ -181,10 +181,8 @@
 #include "vbe.h"
 
 /* Check for some extensions */
-#ifdef XFreeXDGA
 #define _XF86_DGA_SERVER_
 #include "extensions/xf86dgastr.h"
-#endif /* XFreeXDGA */
 
 #include "globals.h"
 #include "opaque.h"
