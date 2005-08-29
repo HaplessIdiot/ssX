@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.28 2003/09/08 14:25:30 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.29tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -499,7 +499,7 @@ static CARD16
 read_w(xf86Int10InfoPtr pInt, int addr)
 {
 #if X_BYTE_ORDER == X_LITTLE_ENDIAN
-    if (OFF(addr + 1) > 0)
+    if (!(addr & 1))
 	return V_ADDR_RW(addr);
 #endif
     return V_ADDR_RB(addr) | (V_ADDR_RB(addr + 1) << 8);
@@ -509,7 +509,7 @@ static CARD32
 read_l(xf86Int10InfoPtr pInt, int addr)
 {
 #if X_BYTE_ORDER == X_LITTLE_ENDIAN
-    if (OFF(addr + 3) > 2)
+    if (!(addr & 3))
 	return V_ADDR_RL(addr);
 #endif
     return V_ADDR_RB(addr) |
@@ -528,24 +528,30 @@ static void
 write_w(xf86Int10InfoPtr pInt, int addr, CARD16 val)
 {
 #if X_BYTE_ORDER == X_LITTLE_ENDIAN
-    if (OFF(addr + 1) > 0)
-      { V_ADDR_WW(addr, val); }
+    if (!(addr & 1)) {
+	V_ADDR_WW(addr, val);
+    } else
 #endif
-    V_ADDR_WB(addr, val);
-    V_ADDR_WB(addr + 1, val >> 8);
+    {
+	V_ADDR_WB(addr, val);
+	V_ADDR_WB(addr + 1, val >> 8);
+    }
 }
 
 static void
 write_l(xf86Int10InfoPtr pInt, int addr, CARD32 val)
 {
 #if X_BYTE_ORDER == X_LITTLE_ENDIAN
-    if (OFF(addr + 3) > 2)
-      { V_ADDR_WL(addr, val); }
+    if (!(addr & 3)) {
+	V_ADDR_WL(addr, val);
+    } else
 #endif
-    V_ADDR_WB(addr, val);
-    V_ADDR_WB(addr + 1, val >> 8);
-    V_ADDR_WB(addr + 2, val >> 16);
-    V_ADDR_WB(addr + 3, val >> 24);
+    {
+	V_ADDR_WB(addr, val);
+	V_ADDR_WB(addr + 1, val >> 8);
+	V_ADDR_WB(addr + 2, val >> 16);
+	V_ADDR_WB(addr + 3, val >> 24);
+    }
 }
 
 pointer
