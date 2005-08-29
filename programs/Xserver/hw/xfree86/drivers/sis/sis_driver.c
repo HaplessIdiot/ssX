@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.198tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.199tsi Exp $ */
 /* $XdotOrg$ */
 /*
  * SiS driver main code
@@ -88,10 +88,8 @@
 #define DPMS_SERVER
 #include "extensions/dpms.h"
 
-#if (XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,3,99,0,0)) || (defined(XvExtension))
 #include "xf86xv.h"
 #include "Xv.h"
-#endif
 
 #ifdef XF86DRI
 #include "dri.h"
@@ -7538,7 +7536,6 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     
     pSiS->ResetXv = pSiS->ResetXvGamma = NULL;
 
-#if (XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,3,99,0,0)) || (defined(XvExtension))
     if(!pSiS->NoXvideo) {
         if( (pSiS->VGAEngine == SIS_300_VGA) ||
 	    (pSiS->VGAEngine == SIS_315_VGA) ) {
@@ -7595,7 +7592,6 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
         }
     }
-#endif
 
 #ifdef XF86DRI
     if(pSiS->loadDRI) {

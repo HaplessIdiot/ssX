@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_video.c,v 1.19 2005/08/28 15:56:08 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_video.c,v 1.20tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -77,10 +77,6 @@
 #define  IN_FLIP     ( viaVidEng->ramtab & 0x00000003)
 #define  IN_DISPLAY  ( viaVidEng->interruptflag & 0x00000200)
 #define  IN_VBLANK   ( !IN_DISPLAY )
-
-#ifndef XvExtension
-void viaInitVideo(ScreenPtr pScreen) {}
-#else
 
 /*
  *  F U N C T I O N   D E C L A R A T I O N
@@ -1236,5 +1232,3 @@ viaPutVideo(ScrnInfoPtr pScrn,
 
     return Success;
 }
-
-#endif  /* !XvExtension */
