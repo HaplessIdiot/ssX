@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xbiff/xbiff.c,v 1.4 2003/05/27 22:26:59 tsi Exp $ */
+/* $XFree86: xc/programs/xbiff/xbiff.c,v 1.5 2005/03/25 02:22:59 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,6 +36,7 @@ from the X Consortium.
 #include <X11/StringDefs.h>
 #include "Mailbox.h"
 #include <X11/Xaw/Cardinals.h>
+#include <X11/Xaw/Tip.h>
 
 const char *ProgramName;
 
