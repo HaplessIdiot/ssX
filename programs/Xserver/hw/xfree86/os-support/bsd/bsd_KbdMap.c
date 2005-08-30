@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_KbdMap.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_KbdMap.c,v 1.3 2005/08/20 23:09:42 tsi Exp $ */
 
 /*
  * Slightly modified xf86KbdBSD.c which is
@@ -24,7 +24,9 @@
 #include "xf86Keymap.h"
 #include "bsd_kbd.h"
 
+#ifdef WSKBD_TYPE_ADB
 static Bool ADBScanCode(InputInfoPtr, int *);
+#endif
 
 #if (defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)) && defined(GIO_KEYMAP)
 #define KD_GET_ENTRY(i,n) \
@@ -1086,6 +1088,7 @@ KbdGetMapping (InputInfoPtr pInfo, KeySymsPtr pKeySyms, CARD8 *pModMap)
   return;
 }
 
+#ifdef WSKBD_TYPE_ADB
 static Bool
 ADBScanCode(InputInfoPtr pInfo, int *scanCode)
 {
@@ -1111,3 +1114,4 @@ ADBScanCode(InputInfoPtr pInfo, int *scanCode)
 	*scanCode = wsAdb.map[*scanCode - wsAdb.begin];
     return FALSE;	/* continue normal processing */
 }
+#endif
