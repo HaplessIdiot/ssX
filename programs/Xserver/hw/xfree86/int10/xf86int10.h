@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.23 2002/04/04 14:05:51 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.24tsi Exp $ */
 
 /*
  *                   XFree86 int10 module
@@ -43,6 +43,7 @@ typedef struct {
     int stackseg;
     PCITAG Tag;
     IOADDRESS ioBase;
+    IOADDRESS vmwarePort;	/* kludge */
 } xf86Int10InfoRec, *xf86Int10InfoPtr;
 
 typedef struct _int10Mem {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.29tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.30tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -11,6 +11,7 @@
 #define _INT10_PRIVATE
 #include "xf86int10.h"
 #include "int10Defines.h"
+#include "xf86PciInfo.h"
 
 #define ALLOC_ENTRIES(x) ((V_RAM / x) - 1)
 
@@ -99,7 +100,15 @@ xf86ExtendedInitInt10(int entityIndex, int Flags)
     base = INTPriv(pInt)->base = xnfalloc(SYS_BIOS);
 
     pvp = xf86GetPciInfoForEntity(entityIndex);
-    if (pvp) pInt->Tag = ((pciConfigPtr)(pvp->thisCard))->tag;
+    if (pvp) {
+	pInt->Tag = ((pciConfigPtr)(pvp->thisCard))->tag;
+
+	/* Kludge to allow for VMWare's unaligned accesses */
+	/* Do NOT make this x86-specific... */
+	if ((pvp->vendor == PCI_VENDOR_VMWARE) &&
+	    (pvp->chipType == PCI_CHIP_VMWARE0405))
+	    pInt->vmwarePort = pvp->ioBase[0] + 1;
+    }
 
     /*
      * we need to map video RAM MMIO as some chipsets map mmio
