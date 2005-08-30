@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.32 2004/02/05 18:24:59 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.33tsi Exp $ */
 /*
  * linux specific part of the int10 module
  * Copyright 1999 Egbert Eich
@@ -592,19 +592,35 @@ vm86_tst(void)
     int __res;
 
 #ifdef __PIC__
-    /* When compiling with -fPIC, we can't use asm constraint "b" because
-       %ebx is already taken by gcc. */
-    __asm__ __volatile__("pushl %%ebx\n\t"
-			 "movl %2,%%ebx\n\t"
-			 "movl %1,%%eax\n\t"
-			 "int $0x80\n\t"
-			 "popl %%ebx"
-			 :"=a" (__res)
-			 :"n" ((int)113), "r" (NULL));
+    /*
+     * When compiling with -fPIC, we can't use asm constraint "b" because
+     * %ebx is already taken by gcc.
+     */
+    __asm__ __volatile__
+    (
+	"pushl %%ebx\n\t"
+	"push %%gs\n\t"
+	"movl %2,%%ebx\n\t"
+	"movl %1,%%eax\n\t"
+	"int $0x80\n\t"
+	"pop %%gs\n\t"
+	"popl %%ebx"
+	: "=a" (__res)
+	: "n" ((int)113),
+	  "r" (NULL)
+	: "memory"
+    );
 #else
-    __asm__ __volatile__("int $0x80\n\t"
-			 :"=a" (__res):"a" ((int)113),
-			 "b" ((struct vm86_struct *)NULL));
+    __asm__ __volatile__
+    (
+	"push %%gs\n\t"
+	"int $0x80\n\t"
+	"pop %%gs"
+	: "=a" (__res)
+	: "a" ((int)113),
+	  "b" (NULL)
+	: "memory"
+    );
 #endif
 
     if (__res < 0 && __res == -ENOSYS) 
