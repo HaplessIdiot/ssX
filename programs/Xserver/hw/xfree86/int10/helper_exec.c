@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_exec.c,v 1.28tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_exec.c,v 1.29tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -479,7 +479,7 @@ x_inl(CARD16 port)
 {
     CARD32 val;
 
-    if (port & 0x0003U) {
+    if ((port & 0x0003U) && (port != Int10Current->vmwarePort)) {
 	UnalignedIO(Int10Current, "read", port, 4);
 	if (port & 0x0001U) {
 	    val = x_inb(port);
@@ -598,7 +598,7 @@ x_outw(CARD16 port, CARD16 val)
 void
 x_outl(CARD16 port, CARD32 val)
 {
-    if (port & 0x0003U) {
+    if ((port & 0x0003U) && (port != Int10Current->vmwarePort)) {
 	UnalignedIO(Int10Current, "write", port, 4);
 	if (port & 0x0001U) {
 	    x_outb(port, val);
