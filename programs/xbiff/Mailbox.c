@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xbiff/Mailbox.c,v 1.5 2001/10/28 03:34:25 tsi Exp $ */
+/* $XFree86: xc/programs/xbiff/Mailbox.c,v 1.6 2005/03/25 02:22:59 dawes Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -171,6 +171,7 @@ static void Destroy(Widget gw);
 static void Redisplay(Widget gw, XEvent *event, Region region);
 static Boolean SetValues(Widget gcurrent, Widget grequest, Widget gnew,
 			 ArgList args, Cardinal *num_args);
+static void get_tip_text(Widget w, XtPointer client_data, XtPointer call_data);
 
 MailboxClassRec mailboxClassRec = {
     { /* core fields */
@@ -222,6 +223,79 @@ WidgetClass mailboxWidgetClass = (WidgetClass) &mailboxClassRec;
  * widget initialization
  */
 
+static void 
+get_tip_text(Widget gw, XtPointer client_data, XtPointer call_data)
+{
+    MailboxWidget w = (MailboxWidget) gw;
+    Cardinal message_count = 0;
+    char text[64], buf[5000], marker[] = "From ", *p;
+    size_t chars_read;
+    FILE *mbox;
+
+    /* read the file and count new messages */
+    mbox = fopen(w->mailbox.filename, "r");
+    if (mbox == NULL || feof(mbox))
+	return;
+
+    /* the buffer must be big enough to hold the ending of a marker if
+     * it was truncated.  The worst case is when the marker is
+     * splitted this way: "F|rom ", so we need to leave a space for at
+     * least 4 characters + teminating NUL. */
+    while ((chars_read = fread(buf, 1, sizeof(buf) - 4 - 1, mbox)) != 0)
+    {
+	p = &buf[0];
+
+	/* NUL-termination for strstr function */
+	p[chars_read] = '\0';
+
+	while ((p = strstr(p, marker)) != NULL)
+	{
+	    if (p == buf || p[-1] == '\n')
+		message_count++;
+	    p += sizeof(marker);
+	}
+
+	/* manual search for possibly truncated marker */
+	if (chars_read > 4 &&
+	    (buf[chars_read - 1] == 'F' ||
+	     (buf[chars_read - 2] == 'F' && buf[chars_read - 1] == 'r') ||
+	     (buf[chars_read - 3] == 'F' && buf[chars_read - 2] == 'r'
+	      && buf[chars_read - 1] == 'o') ||
+	     (buf[chars_read - 4] == 'F' && buf[chars_read - 3] == 'r'
+	      && buf[chars_read - 2] == 'o' && buf[chars_read - 1] == 'm')))
+	{
+	    /* marker might be splitted, so re-try */
+	    p = &buf[chars_read];
+
+	    /* read the remaining 4 bytes which are guaranteed to fit
+	     * into the buffer. */
+	    if ((chars_read = fread(p, 1, 4, mbox)) != 0)
+	    {
+		/* NUL-termination for strstr function */
+		p[chars_read] = '\0';
+
+		/* step back, so that the marker is not splitted */
+		p -= 4;
+
+		if ((p = strstr(p, marker)) != NULL && p[-1] == '\n')
+		{
+		    message_count++;
+		}
+	    }
+	}
+    }
+
+    fclose(mbox);
+
+    if (message_count == 0)
+	return;
+
+    snprintf(text, sizeof(text), "%d new messag%s", message_count,
+	     (message_count == 1 ? "e" : "es"));
+
+    *((String*) client_data) = XtNewString(text);
+}
+
 static GC
 get_mailbox_gc(MailboxWidget w)
 {
@@ -258,6 +332,7 @@ Initialize(Widget request, Widget new, ArgList args, Cardinal *num_args)
     w->mailbox.empty.pixmap = None;
     w->mailbox.flag_up = FALSE;
     w->mailbox.last_size = 0;
+    XtVaSetValues((Widget) w, XtNtipCallback, &get_tip_text, NULL);
     if (!w->mailbox.filename) GetMailFile (w);
     return;
 }
