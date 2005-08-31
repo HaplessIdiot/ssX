@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.21 2003/10/09 11:43:59 pascal Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.22 2004/02/13 23:58:35 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -261,6 +261,7 @@
 #define KEY_L8           /* Paste                 0x90  */  144
 #define KEY_L9           /* Find                  0x91  */  145
 #define KEY_L10          /* Cut                   0x92  */  146
+#define KEY_Compose      /* Compose               0x93  */  147
 
 /*
  * Fake 'scancodes' in the following ranges are generated for 2-byte

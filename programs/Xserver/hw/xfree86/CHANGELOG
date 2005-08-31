@@ -1,4 +1,6 @@
 XFree86 4.5.99.11 (xx September 2005)
+ 136. Add a Compose keycode to fix build problem introduced by change #123
+      (#8240, Bang Jun-Young).
  135. Implement a workaround in generic int10 to allow unaligned I/O access
       specific to VMWare's second-generation emulated adapter (Marc La France).
  134. Add a tooltip to xbiff that shows the number of messages in a mail
@@ -19769,7 +19771,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3585 2005/08/30 15:24:06 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3586 2005/08/30 16:26:47 tsi Exp $
 
 
 
