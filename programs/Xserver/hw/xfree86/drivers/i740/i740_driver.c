@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.55tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.56 2005/08/28 20:04:49 tsi Exp $ */
 
 /*
  * Authors:
@@ -674,7 +674,7 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
     }
   }
 
-  xf86DrvMsg(pScrn->scrnIndex, from, "Steve was here! VideoRAM: %d kByte %s\n",
+  xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte %s\n",
 	     pScrn->videoRam, (pI740->HasSGRAM)?"SGRAM":"SDRAM");
   pI740->FbMapSize = pScrn->videoRam*1024;
 
