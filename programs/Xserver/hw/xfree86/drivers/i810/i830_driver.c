@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.81tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.82 2005/08/28 20:04:49 tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -4889,6 +4889,10 @@ I830BIOSAdjustFrame(int scrnIndex, int x, int y, int flags)
    DPRINTF(PFX, "I830BIOSAdjustFrame: y = %d (+ %d), x = %d (+ %d)\n",
 	   x, pI830->xoffset, y, pI830->yoffset);
 
+   /* Sync the engine before adjust frame */
+   if (!pI830->noAccel)
+      (*pI830->AccelInfoRec->Sync)(pScrn);
+
    /* The i830M just happens to have some problems programming offsets via
     * this VESA BIOS call. Especially in dual head configurations which
     * have high resolutions which cause the DSP{A,B}BASE registers to be
@@ -5345,7 +5349,7 @@ I830BIOSSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 
    DPRINTF(PFX, "I830BIOSSwitchMode: mode == %p\n", mode);
 
-   /* Stops head pointer freezes for 845G */
+   /* Sync the engine before mode switch */
    if (!pI830->noAccel)
       (*pI830->AccelInfoRec->Sync)(pScrn);
 
