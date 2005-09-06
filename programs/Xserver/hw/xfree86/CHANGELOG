@@ -1,4 +1,6 @@
 XFree86 4.5.99.11 (xx September 2005)
+ 138. Fix DirectColor visual colormap issues at 16bpp in the i830 driver.
+      (Alan Hourihane).
  137. Sync the accelerator before calling AdjustFrame to avoid lockups in
       the i830 driver (Alan Hourihane).
  136. Add a Compose keycode to fix build problem introduced by change #123
@@ -19773,7 +19775,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3587 2005/08/31 14:39:36 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3588 2005/09/06 10:26:23 alanh Exp $
 
 
 

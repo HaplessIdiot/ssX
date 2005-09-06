@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.82 2005/08/28 20:04:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.83 2005/09/06 10:26:24 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -1734,7 +1734,11 @@ I830LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
       dspbase = DSPBBASE;
    }
 
-   OUTREG(dspreg, INREG(dspreg) | DISPPLANE_GAMMA_ENABLE);
+   /* To ensure gamma is enabled we need to turn off and on the plane */
+   temp = INREG(dspreg);
+   OUTREG(dspreg, temp & ~(1<<31));
+   OUTREG(dspbase, INREG(dspbase));
+   OUTREG(dspreg, temp | DISPPLANE_GAMMA_ENABLE);
    OUTREG(dspbase, INREG(dspbase));
 
    /* It seems that an initial read is needed. */
@@ -1747,19 +1751,18 @@ I830LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
          r = colors[index].red;
          g = colors[index].green;
          b = colors[index].blue;
+	 val = (r << 16) | (g << 8) | b;
          for (j = 0; j < 8; j++) {
-	    val = (r << 16) | (g << 8) | b;
 	    OUTREG(palreg + index * 32 + (j * 4), val);
          }
       }
       break;
    case 16:
       for (i = 0; i < numColors; i++) {
-         index = indices[i / 2];
-         r = colors[index].red;
-         b = colors[index].blue;
          index = indices[i];
-         g = colors[index].green;
+	 r   = colors[index / 2].red;
+	 g   = colors[index].green;
+	 b   = colors[index / 2].blue;
 
 	 val = (r << 16) | (g << 8) | b;
 	 OUTREG(palreg + index * 16, val);
@@ -1767,15 +1770,17 @@ I830LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
 	 OUTREG(palreg + index * 16 + 8, val);
 	 OUTREG(palreg + index * 16 + 12, val);
 
-         i++;
-         index = indices[i];
-         g = colors[index].green;
+   	 if (index <= 31) {
+            r   = colors[index].red;
+	    g   = colors[(index * 2) + 1].green;
+	    b   = colors[index].blue;
 
-	 val = (r << 16) | (g << 8) | b;
-	 OUTREG(palreg + index * 16, val);
-	 OUTREG(palreg + index * 16 + 4, val);
-	 OUTREG(palreg + index * 16 + 8, val);
-	 OUTREG(palreg + index * 16 + 12, val);
+	    val = (r << 16) | (g << 8) | b;
+	    OUTREG(palreg + index * 32, val);
+	    OUTREG(palreg + index * 32 + 4, val);
+	    OUTREG(palreg + index * 32 + 8, val);
+	    OUTREG(palreg + index * 32 + 12, val);
+	 }
       }
       break;
    default:
