@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.84 2005/09/06 10:30:12 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.85 2005/09/08 09:31:55 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -5355,7 +5355,7 @@ I830BIOSSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
    DPRINTF(PFX, "I830BIOSSwitchMode: mode == %p\n", mode);
 
    /* Sync the engine before mode switch */
-   if (!pI830->noAccel)
+   if (!pI830->noAccel && pI830->AccelInfoRec)
       (*pI830->AccelInfoRec->Sync)(pScrn);
 
 #ifndef BINDUNBIND
