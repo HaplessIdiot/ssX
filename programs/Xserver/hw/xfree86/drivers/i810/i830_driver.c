@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.83 2005/09/06 10:26:24 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.84 2005/09/06 10:30:12 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -4895,7 +4895,7 @@ I830BIOSAdjustFrame(int scrnIndex, int x, int y, int flags)
 	   x, pI830->xoffset, y, pI830->yoffset);
 
    /* Sync the engine before adjust frame */
-   if (!pI830->noAccel)
+   if (!pI830->noAccel && pI830->AccelInfoRec)
       (*pI830->AccelInfoRec->Sync)(pScrn);
 
    /* The i830M just happens to have some problems programming offsets via
