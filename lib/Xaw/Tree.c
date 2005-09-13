@@ -1,6 +1,4 @@
 /*
- * $Xorg: Tree.c,v 1.4 2001/02/09 02:03:47 xorgcvs Exp $
- *
 
 Copyright 1990, 1994, 1998  The Open Group
 
@@ -48,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * additional blank space to make the structure of the graph easier to see
  * as well as to support vertical trees.
  */
-/* $XFree86: xc/lib/Xaw/Tree.c,v 1.9 2001/01/17 19:42:35 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Tree.c,v 1.10 2001/12/14 19:54:45 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -58,7 +56,11 @@ in this Software without prior written authorization from The Open Group.
 #include "Private.h"
 
 #define IsHorizontal(tw) ((tw)->tree.gravity == WestGravity || \
-			  (tw)->tree.gravity == EastGravity)
+			  (tw)->tree.gravity == EastGravity || \
+	                  (tw)->tree.gravity == NorthWestGravity || \
+	                  (tw)->tree.gravity == NorthEastGravity || \
+	                  (tw)->tree.gravity == SouthWestGravity || \
+	                  (tw)->tree.gravity == SouthEastGravity)
 
 /*
  * Class Methods
@@ -109,16 +111,20 @@ static XtResource resources[] = {
 	XtOffsetOf(TreeRec, tree.vpad), XtRImmediate, (XtPointer) 0 },
     { XtNforeground, XtCForeground, XtRPixel, sizeof (Pixel),
 	XtOffsetOf(TreeRec, tree.foreground), XtRString,
-	XtDefaultForeground},
+	XtDefaultForeground },
     { XtNlineWidth, XtCLineWidth, XtRDimension, sizeof (Dimension),
 	XtOffsetOf(TreeRec, tree.line_width), XtRImmediate, (XtPointer) 0 },
     { XtNgravity, XtCGravity, XtRGravity, sizeof (XtGravity),
 	XtOffsetOf(TreeRec, tree.gravity), XtRImmediate,
 	(XtPointer) WestGravity },
 #ifndef OLDXAW
-    { XawNdisplayList, XawCDisplayList, XawRDisplayList, sizeof(XawDisplayList*),
+    { XawNdisplayList, XawCDisplayList, XawRDisplayList,
+	sizeof(XawDisplayList*),
 	XtOffsetOf(TreeRec, tree.display_list), XtRImmediate,
 	NULL },
+    { XawNtreeLayout, XawCTreeLayout, XtRInt, sizeof (XawTreeLayout),
+	XtOffsetOf(TreeRec, tree.layout), XtRImmediate,
+	(XtPointer) XawTreeK },
 #endif
 };
 
@@ -317,6 +323,11 @@ delete_node(Widget parent, Widget node)
 static void
 check_gravity(TreeWidget tw, XtGravity grav)
 {
+    if (tw->tree.layout == XawTreeE) {
+	/* This layout supports any gravity. */
+	return;
+    }
+
     switch (tw->tree.gravity) {
       case WestGravity: case NorthGravity: case EastGravity: case SouthGravity:
 	break;
@@ -470,6 +481,7 @@ XawTreeSetValues(Widget gcurrent, Widget grequest, Widget gnew,
 
     if (cnew->tree.vpad != current->tree.vpad ||
 	cnew->tree.hpad != current->tree.hpad ||
+	cnew->tree.layout != current->tree.layout ||
 	cnew->tree.gravity != current->tree.gravity) {
 	layout_tree (cnew, TRUE);
 	redraw = FALSE;
@@ -615,9 +627,13 @@ XawTreeRedisplay(Widget gw, XEvent *event, Region region)
 
 		switch (tw->tree.gravity) {
 		  case WestGravity:
+		  case NorthWestGravity:
+		  case SouthWestGravity:
 		    srcx += child->core.width + child->core.border_width;
 		    /* fall through */
 		  case EastGravity:
+		  case NorthEastGravity:
+		  case SouthEastGravity:
 		    srcy += child->core.height / 2;
 		    break;
 
@@ -632,52 +648,73 @@ XawTreeRedisplay(Widget gw, XEvent *event, Region region)
 		for (j = 0; j < tc->tree.n_children; j++) {
 		    Widget k = tc->tree.children[j];
 		    GC gc = (tc->tree.gc ? tc->tree.gc : tw->tree.gc);
+		    int dstx = 0, dsty = 0, msx = 0, mdx = 0, msy = 0, mdy = 0;
 
 		    switch (tw->tree.gravity) {
 		      case WestGravity:
+		      case NorthWestGravity:
+		      case SouthWestGravity:
 			/*
 			 * right center to left center
 			 */
-			XDrawLine (dpy, w, gc, srcx, srcy,
-				   (int) k->core.x,
-				   (k->core.y + ((int) k->core.border_width) +
-				    ((int) k->core.height) / 2));
+			dstx = (int) k->core.x;
+			dsty = (k->core.y + ((int) k->core.border_width) +
+				((int) k->core.height) / 2);
+			mdx = msx = srcx + (dstx - srcx) / 2;
+			msy = srcy;
+			mdy = dsty;
 			break;
 
 		      case NorthGravity:
 			/*
 			 * bottom center to top center
 			 */
-			XDrawLine (dpy, w, gc, srcx, srcy,
-				   (k->core.x + ((int) k->core.border_width) +
-				    ((int) k->core.width) / 2),
-				   (int) k->core.y);
+			dstx = (k->core.x + ((int) k->core.border_width) +
+				((int) k->core.width) / 2);
+			dsty = (int) k->core.y;
+			msx = srcx;
+			mdy = msy = srcy + (dsty - srcy) / 2;
+			mdx = dstx;
 			break;
 
 		      case EastGravity:
+		      case NorthEastGravity:
+		      case SouthEastGravity:
 			/*
 			 * left center to right center
 			 */
-			XDrawLine (dpy, w, gc, srcx, srcy,
-				   (k->core.x +
-				    (((int) k->core.border_width) << 1) +
-				    (int) k->core.width),
-				   (k->core.y + ((int) k->core.border_width) +
-				    ((int) k->core.height) / 2));
+			dstx = (k->core.x +
+				(((int) k->core.border_width) << 1) +
+				(int) k->core.width);
+			dsty = (k->core.y + ((int) k->core.border_width) +
+				((int) k->core.height) / 2);
+			mdx = msx = srcx + (dstx - srcx) / 2;
+			msy = srcy;
+			mdy = dsty;
 			break;
 
 		      case SouthGravity:
 			/*
 			 * top center to bottom center
 			 */
-			XDrawLine (dpy, w, gc, srcx, srcy,
-				   (k->core.x + ((int) k->core.border_width) +
-				    ((int) k->core.width) / 2),
-				   (k->core.y +
-				    (((int) k->core.border_width) << 1) +
-				    (int) k->core.height));
+			dstx = (k->core.x + ((int) k->core.border_width) +
+				((int) k->core.width) / 2);
+			dsty = (k->core.y +
+				(((int) k->core.border_width) << 1) +
+				(int) k->core.height);
+			msx = srcx;
+			mdy = msy = srcy + (dsty - srcy) / 2;
+			mdx = dstx;
 			break;
 		    }
+
+		    if (tw->tree.layout == XawTreeE) {
+			XDrawLine (dpy, w, gc, srcx, srcy, msx, msy);
+			XDrawLine (dpy, w, gc, msx, msy, mdx, mdy);
+			XDrawLine (dpy, w, gc, mdx, mdy, dstx, dsty);
+		    }
+		    else
+			XDrawLine (dpy, w, gc, srcx, srcy, dstx, dsty);
 		}
 	    }
 	}
@@ -803,6 +840,8 @@ set_positions(TreeWidget tw, Widget w, int level)
 	     */
 	    switch (tw->tree.gravity) {
 	      case EastGravity:
+	      case NorthEastGravity:
+	      case SouthEastGravity:
 		tc->tree.x = (((Position) tw->tree.maxwidth) -
 			      ((Position) w->core.width) - tc->tree.x);
 		break;
@@ -907,6 +946,20 @@ arrange_subtree(TreeWidget tree, Widget w, int depth, int x, int y)
 	Position adjusted;
 	firstcc = TREE_CONSTRAINT (tc->tree.children[0]);
 	lastcc = TREE_CONSTRAINT (child);
+
+	if (tree->tree.gravity == NorthWestGravity ||
+	    tree->tree.gravity == NorthEastGravity) {
+	    tc->tree.x = x;
+	    tc->tree.y = firstcc->tree.y;
+	    return;
+	}
+
+	if (tree->tree.gravity == SouthWestGravity ||
+	    tree->tree.gravity == SouthEastGravity) {
+	    tc->tree.x = x;
+	    tc->tree.y = lastcc->tree.y;
+	    return;
+	}
 
 	/* Adjustments are disallowed if they result in a position above
          * or to the left of the originally requested position, because

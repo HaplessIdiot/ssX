@@ -1,4 +1,6 @@
 XFree86 4.5.99.12 (xx September 2005)
+ 140. Add a new layout property to Xaw's tree widget (Bugzilla #1609,
+      Alexander Pohoyda).
  139. Fix some man page typos (Bugzilla #1610, Alexander Pohoyda).
 
 XFree86 4.5.99.11 (8 September 2005)
@@ -19778,7 +19780,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3590 2005/09/08 11:02:50 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3591 2005/09/13 02:02:24 dawes Exp $
 
 
 
