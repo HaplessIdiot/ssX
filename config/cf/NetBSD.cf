@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.127 2005/02/04 02:58:27 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.128 2005/06/22 03:28:49 dawes Exp $
 
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -516,9 +516,7 @@ all:: file.0								@@\
 file.0:: file.$(MANNEWSUFFIX)						@@\
 	@if [ -f file.$(MANNEWSUFFIX) ]; \				@@\
 	then \								@@\
-	cat file.$(MANNEWSUFFIX) | $(NEQN) | $(TBL) | $(NROFF) $(MANMACROS) | $(COL) >/tmp/$$$$.man; \	@@\
-	cp /tmp/$$$$.man file.0; \					@@\
-	$(RM) /tmp/$$$$.man; \						@@\
+	cat file.$(MANNEWSUFFIX) | $(NEQN) | $(TBL) | $(NROFF) $(MANMACROS) | $(COL) > file.0; \	@@\
 	fi 								@@\
 									@@\
 install.man::                                                           @@\
