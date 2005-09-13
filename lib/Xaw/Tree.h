@@ -1,6 +1,4 @@
 /*
- * $Xorg: Tree.h,v 1.4 2001/02/09 02:03:47 xorgcvs Exp $
- *
 
 Copyright 1990, 1994, 1998  The Open Group
 
@@ -48,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * additional blank space to make the structure of the graph easier to see
  * as well as to support vertical trees.
  */
-/* $XFree86: xc/lib/Xaw/Tree.h,v 1.6 2001/01/17 19:42:35 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Tree.h,v 1.7 2001/12/14 19:54:45 dawes Exp $ */
 
 
 #ifndef _XawTree_h
@@ -74,6 +72,7 @@ in this Software without prior written authorization from The Open Group.
  *  hSpace              HSpace             Dimension       20
  *  lineWidth           LineWidth          Dimension       0
  *  vSpace              VSpace             Dimension       6
+ *  layout              Layout             XawTreeLayout   XawTreeK
  * 
  * 
  * Constraint Resources attached to children:
@@ -119,7 +118,33 @@ in this Software without prior written authorization from The Open Group.
 #ifndef XawRDisplayList
 #define XawRDisplayList "XawDisplayList"
 #endif
-#endif
+
+#define XawNtreeLayout "layout"
+#define XawCTreeLayout "Layout"
+
+#endif /* OLDXAW */
+
+
+typedef enum {
+    /*
+     *                                      -[node]
+     *                                     /
+     * K-layout looks like this:    [node]<--[node]
+     *                                     \
+     *                                      -[node]
+     */
+    XawTreeK,
+
+    /*
+     *                                     +-[node]
+     *                                     |
+     * E-layout looks like this:    [node]-+-[node]
+     *                                     |
+     *                                     +-[node]
+     */
+    XawTreeE,
+} XawTreeLayout;
+
                                         /* external declarations */
 extern WidgetClass treeWidgetClass;
 
