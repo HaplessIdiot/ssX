@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/drivers/osmesa/Imakefile,v 1.7 2004/12/10 16:06:58 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/osmesa/Imakefile,v 1.8tsi Exp $
 
 /*
  * Copyright (c) 2000-2005 by The XFree86 Project, Inc.
@@ -113,7 +113,7 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
 
 #ifdef SharedOSMesaReqs
  REQUIREDLIBS = SharedOSMesaReqs
-#elif !GlxUseBuiltInDRIDriver
+#elif !BuildXF86DRI || !GlxUseBuiltInDRIDriver
  REQUIREDLIBS = $(LDPRELIB) $(GLXLIB)
 #endif
 

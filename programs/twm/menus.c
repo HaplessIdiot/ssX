@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/menus.c,v 1.21 2005/05/19 01:02:44 dawes Exp $ */
+/* $XFree86: xc/programs/twm/menus.c,v 1.22tsi Exp $ */
 /*****************************************************************************/
 /*
 
@@ -2538,7 +2538,7 @@ System (s)
     int pid, status;
     if ((pid = fork ()) == 0) {
 	(void) setpgrp();
-	execl ("/bin/sh", "sh", "-c", s, 0);
+	execl ("/bin/sh", "sh", "-c", s, (void *)0);
     } else
 	waitpid (pid, &status, 0);
     return status;

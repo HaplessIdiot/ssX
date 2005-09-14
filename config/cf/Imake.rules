@@ -1,6 +1,6 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.142 2005/01/23 17:05:23 tsi Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.143tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -2296,7 +2296,7 @@ LintLibReferences(varname,libname,libsource)
  * LibObjCompile - compile fragment for unshared/profiled/debugged objects
  */
 #ifndef LibObjCompile
-#if HasGcc || HasGcc2
+#if HasGcc || HasGcc2 || HasGcc3 || HasGcc4
 #define LibObjCompile(dir,options) RemoveFiles($@ dir/$@)		@@\
 	ClearmakeOSName \
 	$(CC) -c $(CCOPTIONS) $(THREADS_CFLAGS) $(ALLDEFINES) \
@@ -2322,7 +2322,7 @@ LintLibReferences(varname,libname,libsource)
 #endif
 
 #ifndef LibObjCplusplusCompile
-#if HasGcc || HasGcc2
+#if HasGcc || HasGcc2 || HasGcc3 || HasGcc4
 #define LibObjCplusplusCompile(dir,options) RemoveFiles($@ dir/$@)	@@\
 	ClearmakeOSName \
 	$(CXX) -c $(CXXOPTIONS) $(THREADS_CXXFLAGS) $(CXXDEFINES) \

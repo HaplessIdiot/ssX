@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.282 2005/06/22 03:28:49 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.283tsi Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -922,7 +922,7 @@ VENDORMANVERSION = XVendorManVersionString
  *        ExtraConnectionDefs.  Here, we choose the later in order to
  *        maximise exposure of the IPv6 code (a number of <OS>.def files
  *        contain ConnectionFlags overrides).  Mind you, this might not
- *        the right thing to do when HasStreams is asserted.
+ *        be the right thing to do when HasStreams is asserted.
  */
 #ifndef BuildIPv6		/* If the OS also #define's AF_INET6 */
 #define BuildIPv6		YES
@@ -1401,7 +1401,7 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 
 #ifndef MesaUseX86Asm
 /* The current Mesa X86 ASM code doesn't work well with SVR4 shared libs. */
-# if HasX86Support && !SystemV4
+# if defined(i386Architecture) && HasX86Support && !SystemV4
 #  define MesaUseX86Asm YES
 # else
 #  define MesaUseX86Asm NO
@@ -1680,7 +1680,7 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #endif
 
 #ifndef ForceNormalLib
-#define ForceNormalLib (HasGcc && !HasGcc2)
+#define ForceNormalLib (HasGcc && !HasGcc2 && !HasGcc3 && !HasGcc4)
 #endif
 
 #ifndef XkbComp

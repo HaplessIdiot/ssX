@@ -1,5 +1,5 @@
 XCOMM site:  $Xorg: site.sample,v 1.3 2000/08/17 19:41:48 cpqbld Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/config/cf/site.sample,v 1.5tsi Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -11,9 +11,6 @@ XCOMM $XFree86$
  * after-half should be protected by #ifdef AfterVendorCF.                 *
  *                                                                         *
  * The before-half should only set things that the .cf file depends on.    *
- * For the .cf files shipped in this release, the main variables in this   *
- * category are HasGcc, HasGcc2, HasCplusplus, OSMajorVersion,             *
- * OSMinorVersion, and OSTeenyVersion.                                     *
  *                                                                         *
  * The after-half should contain all other definitions.  For example,      *
  * place your ProjectRoot definition here.                                 *
@@ -50,12 +47,6 @@ XCOMM $XFree86$
 #   define ProjectTmplFile	<X11.tmpl>
 #  endif
 # endif
-
-/*
-#ifndef HasGcc2
-#define HasGcc2 YES
-#endif
-*/
 
 #endif /* BeforeVendorCF */
 

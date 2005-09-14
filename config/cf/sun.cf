@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.79tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.80tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -71,7 +71,8 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  *
  * For SunPro C, define HasSunC to YES in site.def.  
  * For CenterLine C, define HasCenterLineC to YES in site.def
- * For gcc, gcc2 or gcc3, define HasGcc, HasGcc2 or HasGcc3 to YES in site.def
+ * For gcc, gcc2, gcc3 or gcc4, define HasGcc, HasGcc2, HasGcc3 or HasGcc4 to
+ *    YES in site.def
  * For other compilers, define HasSunC to NO in site.def, then 
  *    provide appropriate values for the various compiler related
  *    configuration varibles used here.
@@ -97,8 +98,11 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  *
  */
 
+#ifndef HasGcc4
+#define HasGcc4 NO
+#endif
 #ifndef HasGcc3
-#define HasGcc3 NO
+#define HasGcc3 HasGcc4
 #endif
 #ifndef HasGcc2
 #define HasGcc2 HasGcc3
@@ -108,7 +112,8 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 
 #ifndef HasSunC
-# if HasCenterLineC || HasGcc || HasGcc2 || HasGcc3 || (OSMajorVersion < 5)
+# if HasCenterLineC || HasGcc || HasGcc2 || HasGcc3 || HasGcc4 || \
+     (OSMajorVersion < 5)
 #  define HasSunC NO
 # else
 #  define HasSunC YES

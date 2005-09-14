@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.497 2005/06/22 03:28:49 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.498tsi Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1802,8 +1802,11 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 /*
  * GNU Compiler stuff
  */
+#ifndef HasGcc4
+# define HasGcc4 NO
+#endif
 #ifndef HasGcc3
-# define HasGcc3 NO
+# define HasGcc3 HasGcc4
 #endif
 #ifndef HasGcc2
 # define HasGcc2 HasGcc3

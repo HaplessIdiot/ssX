@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/dmx/input/Imakefile,v 1.2tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/dmx/input/Imakefile,v 1.3tsi Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -6,12 +6,12 @@ XCOMM $XFree86: xc/programs/Xserver/hw/dmx/input/Imakefile,v 1.2tsi Exp $
 #ifdef LinuxArchitecture
 RAWSRCS = lnx-keyboard.c lnx-ms.c lnx-ps2.c
 RAWOBJS = lnx-keyboard.o lnx-ms.o lnx-ps2.o
-#endif
 
 #if HasLinuxInput
 USB_DEFINES = -DHAS_LINUX_INPUT
 USBSRCS = usb-keyboard.c usb-mouse.c usb-other.c usb-common.c
 USBOBJS = usb-keyboard.o usb-mouse.o usb-other.o usb-common.o
+#endif
 #endif
 
 DRVSRCS = dmxdummy.c dmxbackend.c dmxconsole.c dmxcommon.c

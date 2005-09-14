@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miarc.c,v 3.15 2003/12/06 18:46:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miarc.c,v 3.16tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -106,13 +106,13 @@ ICEILTEMPDECL
 #endif
 
 #ifdef USE_INLINE
-inline static const int
+inline static int
 max(const int x, const int y)
 {
 	return x>y? x:y;
 }
 
-inline static const int
+inline static int
 min (const int x, const int y)
 {
 	return x<y? x:y;

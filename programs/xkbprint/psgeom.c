@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbprint/psgeom.c,v 1.5 2001/07/25 15:05:25 dawes Exp $ */
+/* $XFree86: xc/programs/xkbprint/psgeom.c,v 1.6tsi Exp $ */
 
 #define	XK_TECHNICAL
 #define	XK_PUBLISHING
@@ -1386,7 +1386,7 @@ int	eG,nG,gI,l,g;
 		else			sprintf((char *)buf,"%c",(char)sym);
 		top->font[(g*2)+l]= FONT_LATIN1;
 		top->size[(g*2)+l]= SZ_MEDIUM;
-		switch (buf[0]) {
+		switch ((char)buf[0]) {
 		    case '.': case ':': case ',': case ';':
 		    case '\'': case '"': case '`': case '~':
  		    case '^': case '\250': case '\270': case '\267':

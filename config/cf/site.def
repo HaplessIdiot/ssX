@@ -10,9 +10,6 @@ XCOMM site:  $TOG: site.sample /main/r64_final/1 1998/02/05 16:28:49 kaleb $
  * after-half should be protected by #ifdef AfterVendorCF.                 *
  *                                                                         *
  * The before-half should only set things that the .cf file depends on.    *
- * For the .cf files shipped in this release, the main variables in this   *
- * category are HasGcc, HasGcc2, HasCplusplus, OSMajorVersion,             *
- * OSMinorVersion, and OSTeenyVersion.                                     *
  *                                                                         *
  * The after-half should contain all other definitions.  For example,      *
  * place your ProjectRoot definition here.                                 *
@@ -21,7 +18,7 @@ XCOMM site:  $TOG: site.sample /main/r64_final/1 1998/02/05 16:28:49 kaleb $
  * .cf file, not overridden in site.def.                                   *
  *                                                                         *
  ***************************************************************************/
-XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.25 2002/02/27 00:51:12 dawes Exp $
+XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.26tsi Exp $
 
 /* if you want host-specific customization, this is one way to do it */
 /*
@@ -60,12 +57,6 @@ XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.25 2002/02/27 00:51:12 dawes Ex
 #   define ProjectTmplFile	<X11.tmpl>
 #  endif
 # endif
-
-/*
-#ifndef HasGcc2
-#define HasGcc2 YES
-#endif
-*/
 
 #endif /* BeforeVendorCF */
 

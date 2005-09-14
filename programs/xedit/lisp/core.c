@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.72 2003/05/27 22:27:01 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.73tsi Exp $ */
 
 #include "lisp/io.h"
 #include "lisp/core.h"
@@ -111,14 +111,14 @@ extern void unsetenv(const char *name);
 
 /* Call directly LispObjectCompare() if possible */
 #define FCODE(predicate)					\
-    predicate == Oeql ? FEQL :					\
+    (predicate == Oeql ? FEQL :					\
 	predicate == Oequal ? FEQUAL :				\
 	    predicate == Oeq ? FEQ :				\
-		predicate == Oequalp ? FEQUALP : 0
+		predicate == Oequalp ? FEQUALP : 0)
 #define FCOMPARE(predicate, left, right, code)			\
-    code == FEQ ? left == right :				\
+    (code == FEQ ? left == right :				\
 	code ? LispObjectCompare(left, right, code) != NIL :	\
-	       APPLY2(predicate, left, right) != NIL
+	       APPLY2(predicate, left, right) != NIL)
 
 #define FUNCTION_CHECK(predicate)				\
     if (FUNCTIONP(predicate))					\
