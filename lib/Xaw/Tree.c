@@ -46,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * additional blank space to make the structure of the graph easier to see
  * as well as to support vertical trees.
  */
-/* $XFree86: xc/lib/Xaw/Tree.c,v 1.10 2001/12/14 19:54:45 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Tree.c,v 1.11tsi Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -323,10 +323,12 @@ delete_node(Widget parent, Widget node)
 static void
 check_gravity(TreeWidget tw, XtGravity grav)
 {
+#ifndef OLDXAW
     if (tw->tree.layout == XawTreeE) {
 	/* This layout supports any gravity. */
 	return;
     }
+#endif
 
     switch (tw->tree.gravity) {
       case WestGravity: case NorthGravity: case EastGravity: case SouthGravity:
@@ -481,7 +483,9 @@ XawTreeSetValues(Widget gcurrent, Widget grequest, Widget gnew,
 
     if (cnew->tree.vpad != current->tree.vpad ||
 	cnew->tree.hpad != current->tree.hpad ||
+#ifndef OLDXAW
 	cnew->tree.layout != current->tree.layout ||
+#endif
 	cnew->tree.gravity != current->tree.gravity) {
 	layout_tree (cnew, TRUE);
 	redraw = FALSE;
@@ -708,12 +712,14 @@ XawTreeRedisplay(Widget gw, XEvent *event, Region region)
 			break;
 		    }
 
+#ifndef OLDXAW
 		    if (tw->tree.layout == XawTreeE) {
 			XDrawLine (dpy, w, gc, srcx, srcy, msx, msy);
 			XDrawLine (dpy, w, gc, msx, msy, mdx, mdy);
 			XDrawLine (dpy, w, gc, mdx, mdy, dstx, dsty);
 		    }
 		    else
+#endif
 			XDrawLine (dpy, w, gc, srcx, srcy, dstx, dsty);
 		}
 	    }
