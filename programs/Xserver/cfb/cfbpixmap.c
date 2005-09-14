@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbpixmap.c,v 1.5 2001/12/14 19:59:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbpixmap.c,v 1.6tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -67,6 +67,9 @@ cfbCreatePixmap(ScreenPtr pScreen, int width, int height, int depth)
     PixmapPtr pPixmap;
     int datasize;
     int paddedWidth;
+
+    if ((width > MAXSHORT) || (height > MAXSHORT))
+	return NullPixmap;
 
     paddedWidth = PixmapBytePad(width, depth);
     datasize = height * paddedWidth;

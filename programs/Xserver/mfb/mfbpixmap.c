@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbpixmap.c,v 1.3tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -71,8 +71,9 @@ mfbCreatePixmap(ScreenPtr pScreen, int width, int height, int depth)
     int datasize;
     int paddedWidth;
 
-    if (depth != 1)
+    if ((depth != 1) || (width > MAXSHORT) || (height > MAXSHORT))
 	return NullPixmap;
+
     paddedWidth = BitmapBytePad(width);
     datasize = height * paddedWidth;
     pPixmap = AllocatePixmap(pScreen, datasize);

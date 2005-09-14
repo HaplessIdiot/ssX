@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbpixmap.c,v 1.9 2001/05/29 04:54:09 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbpixmap.c,v 1.11tsi Exp $ */
 
 #include "fb.h"
 #ifdef IN_MODULE
@@ -36,6 +36,9 @@ fbCreatePixmapBpp (ScreenPtr pScreen, int width, int height, int depth, int bpp)
     int		paddedWidth;
     int		adjust;
     int		base;
+
+    if ((width > MAXSHORT) || (height > MAXSHORT))
+	return NullPixmap;
 
     paddedWidth = ((width * bpp + FB_MASK) >> FB_SHIFT) * sizeof (FbBits);
     datasize = height * paddedWidth;

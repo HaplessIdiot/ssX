@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmpixmap.c,v 3.0tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -77,6 +77,9 @@ ilbmCreatePixmap(pScreen, width, height, depth)
 	PixmapPtr pPixmap;
 	int datasize;
 	int paddedWidth;
+
+	if ((width > MAXSHORT) || (height > MAXSHORT))
+		return NullPixmap;
 
 	paddedWidth = BitmapBytePad(width);
 	datasize = height * paddedWidth * depth;

@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/dix/pixmap.c,v 3.5 2001/12/14 19:59:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/pixmap.c,v 3.6tsi Exp $ */
 
 #include "X.h"
 #include "scrnintstr.h"
@@ -113,7 +113,9 @@ AllocatePixmap(ScreenPtr pScreen, int pixDataSize)
     unsigned size;
     int i;
 
-    pPixmap = (PixmapPtr)xalloc(pScreen->totalPixmapSize + pixDataSize);
+    if (((unsigned)(-1) - pScreen->totalPixmapSize) < (unsigned)pixDataSize)
+	return NullPixmap;
+    pPixmap = xalloc(pScreen->totalPixmapSize + (unsigned)pixDataSize);
     if (!pPixmap)
 	return NullPixmap;
     ppriv = (DevUnion *)(pPixmap + 1);
@@ -131,7 +133,7 @@ AllocatePixmap(ScreenPtr pScreen, int pixDataSize)
 	    ppriv->ptr = (pointer)NULL;
     }
 #else
-    pPixmap = (PixmapPtr)xalloc(sizeof(PixmapRec) + pixDataSize);
+    pPixmap = xalloc(sizeof(PixmapRec) + (unsigned)pixDataSize);
 #endif
     return pPixmap;
 }
