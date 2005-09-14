@@ -37,7 +37,7 @@
 |*                                                                           *|
  \***************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.46 2005/07/09 00:53:00 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.47 2005/08/03 17:39:31 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -313,7 +313,6 @@ static void nv10GetConfig (NVPtr pNv)
            pNv->CrystalFreqKHz = 27000;
     }
 
-    pNv->CursorStart      = (pNv->RamAmountKBytes - 96) * 1024;
     pNv->CURSOR           = NULL;  /* can't set this here */
     pNv->MinVClockFreqKHz = 12000;
     pNv->MaxVClockFreqKHz = pNv->twoStagePLL ? 400000 : 350000;
