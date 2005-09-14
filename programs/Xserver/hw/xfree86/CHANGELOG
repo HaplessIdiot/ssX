@@ -1,4 +1,5 @@
 XFree86 4.5.99.12 (xx September 2005)
+ 142. Fix for CERT Vulnerability Note VU#102441 (Marc La France).
  141. Avoid /tmp files in NetBSD.cf's man page creation (Jeremy C. Reed).
  140. Add a new layout property to Xaw's tree widget (Bugzilla #1609,
       Alexander Pohoyda).
@@ -19781,7 +19782,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3592 2005/09/13 02:05:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3593 2005/09/13 02:10:36 dawes Exp $
 
 
 

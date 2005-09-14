@@ -48,7 +48,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.102 2005/02/03 02:01:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.103tsi Exp $ */
 /*
  * Copyright (c) 1996-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1244,12 +1244,12 @@ void *
 Xalloc(unsigned long amount)
 {
     pointer  ptr;
-	
-    if ((long)amount <= 0)
-	return NULL;
 
     /* aligned extra on long word boundary */
     amount = (amount + (sizeof(long) - 1)) & ~(sizeof(long) - 1);
+
+    if ((long)amount <= 0)
+	return NULL;
 #ifdef MEMBUG
     if (!Must_have_memory && Memory_fail &&
 	((random() % MEM_FAIL_SCALE) < Memory_fail))
@@ -1273,11 +1273,12 @@ XNFalloc(unsigned long amount)
 {
     pointer ptr;
 
-    if ((long)amount <= 0)
-        return NULL;
-
     /* aligned extra on long word boundary */
     amount = (amount + (sizeof(long) - 1)) & ~(sizeof(long) - 1);
+
+    if ((long)amount <= 0)
+        FatalError("Bad request for memory");
+
     ptr = (pointer)malloc(amount);
     if (!ptr)
         FatalError("Out of memory");
@@ -1310,10 +1311,11 @@ XNFcalloc(unsigned long amount)
     unsigned long   *ret;
 
     ret = Xalloc (amount);
-    if (ret)
-	bzero ((char *) ret, (int) amount);
-    else if ((long)amount > 0)
+    if (!ret)
         FatalError("Out of memory");
+
+    bzero ((char *) ret, (int) amount);
+
     return ret;
 }
 
@@ -1336,8 +1338,10 @@ Xrealloc(pointer ptr, unsigned long amount)
 	return NULL;
     }
     amount = (amount + (sizeof(long) - 1)) & ~(sizeof(long) - 1);
+    if ((long)amount <= 0)
+	return NULL;
     if (ptr)
-        ptr = (pointer)realloc((char *)ptr, amount);
+        ptr = (pointer)realloc(ptr, amount);
     else
 	ptr = (pointer)malloc(amount);
     if (ptr)
@@ -1355,12 +1359,12 @@ Xrealloc(pointer ptr, unsigned long amount)
 void *
 XNFrealloc(pointer ptr, unsigned long amount)
 {
-    if (( ptr = (pointer)Xrealloc( ptr, amount ) ) == NULL)
+    if (( ptr = Xrealloc( ptr, amount ) ) == NULL)
     {
 	if ((long)amount > 0)
             FatalError( "Out of memory" );
     }
-    return ((unsigned long *)ptr);
+    return ptr;
 }
 
 /*****************

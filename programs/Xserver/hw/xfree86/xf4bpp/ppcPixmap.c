@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcPixmap.c,v 1.5 2000/04/27 16:26:49 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcPixmap.c,v 1.6tsi Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -84,8 +84,8 @@ xf4bppCreatePixmap(ScreenPtr pScreen, int width, int height, int depth)
     
     TRACE(("xf4bppCreatePixmap(pScreen=0x%x, width=%d, height=%d, depth=%d)\n", pScreen, width, height, depth)) ;
 
-    if ( depth > 8 )
-	return (PixmapPtr) NULL ;
+    if ((depth > 8) || (width > MAXSHORT) || (height > MAXSHORT))
+	return NullPixmap;
 
     size = PixmapBytePad(width, depth);
     pPixmap = AllocatePixmap (pScreen, (height * size));

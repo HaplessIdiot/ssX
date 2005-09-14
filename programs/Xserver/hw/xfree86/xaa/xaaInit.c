@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.34 2001/07/19 14:19:42 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.35tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -479,8 +479,12 @@ XAACreatePixmap(ScreenPtr pScreen, int w, int h, int depth)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     XAAPixmapPtr pPriv;
     PixmapPtr pPix = NULL;
-    int size = w * h;
+    int size;
+
+    if ((w > MAXSHORT) || (h > MAXSHORT))
+	return NullPixmap;
     
+    size = w * h;
     if (!infoRec->offscreenDepthsInitialized)
 	XAAInitializeOffscreenDepths (pScreen);
 
