@@ -39,7 +39,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/hw/sun/sunKbd.c,v 1.8 2001/10/28 03:33:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunKbd.c,v 1.9tsi Exp $ */
 
 #define NEED_EVENTS
 #include "sun.h"
@@ -55,7 +55,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #define SUN_LED_MASK	0x0f
 #define MIN_KEYCODE	7	/* necessary to avoid the mouse buttons */
-#define MAX_KEYCODE	255	/* limited by the protocol */
 #ifndef KB_SUN4 
 #define KB_SUN4		4
 #endif
@@ -632,8 +631,6 @@ int sunKbdProc (
 		workingKeySyms->minKeyCode += MIN_KEYCODE;
 		workingKeySyms->maxKeyCode += MIN_KEYCODE;
 	    }
-	    if (workingKeySyms->maxKeyCode > MAX_KEYCODE)
-		workingKeySyms->maxKeyCode = MAX_KEYCODE;
 	}
 
 	if (!workingModMap) {

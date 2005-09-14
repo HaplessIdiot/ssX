@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.156 2005/03/29 18:17:00 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.157tsi Exp $
 
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -248,7 +248,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #if defined(UseInstalled)
 #define DefaultCCOptions	/**/
 #else
-#if defined(HasGcc3) && HasGcc3
+#if (defined(HasGcc3) && HasGcc3) || (defined(HasGcc4) && HasGcc4)
 #define NoSystemWarn		-Wno-system-headers
 #else
 #define NoSystemWarn

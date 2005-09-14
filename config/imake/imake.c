@@ -1261,10 +1261,10 @@ get_gcc_version(FILE *inFile, char *name)
 #endif
     {
 #if __GNUC__ > 1
-	fprintf (inFile, "#define HasGcc2 1\n");
-# if __GNUC__ > 2
-	fprintf (inFile, "#define HasGcc3 1\n");
-# endif
+	int v;
+
+	for (v = 2;  v <= __GNUC__;  v++)
+	    fprintf (inFile, "#define HasGcc%d 1\n", v);
 #endif
 	fprintf (inFile, "#define GccMajorVersion %d\n", __GNUC__);
 	fprintf (inFile, "#define GccMinorVersion %d\n", __GNUC_MINOR__);
@@ -1290,7 +1290,8 @@ get_gcc(char *cmd)
 # endif
 	"/usr/local/bin/gcc",
 	"/opt/gnu/bin/gcc",
-	"/usr/pkg/bin/gcc"
+	"/usr/pkg/bin/gcc",
+	"/usr/bin/gcc"
     };
 
 #ifdef CROSSCOMPILE
@@ -1917,7 +1918,7 @@ ReadLine(FILE *tmpfd, char *tmpfname)
 	    fprintf (tmpfd, "# %s\n",
 		"$Xorg: imake.c,v 1.6 2001/02/09 02:03:15 xorgcvs Exp $");
 	    fprintf (tmpfd, "# %s\n",
-		"$XFree86: xc/config/imake/imake.c,v 3.65tsi Exp $");
+		"$XFree86: xc/config/imake/imake.c,v 3.66tsi Exp $");
 	}
 
 	for (p1 = pline; p1 < end; p1++) {

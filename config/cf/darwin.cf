@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.52 2004/05/28 07:44:00 torrey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.53tsi Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -49,6 +49,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 #ifndef HasGcc3
 # define HasGcc3                NO
+#endif
+#ifndef HasGcc4
+# define HasGcc4                NO
 #endif
 
 /* Older versions don't really support IPv6, but #define AF_INET6. */

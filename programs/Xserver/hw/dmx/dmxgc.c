@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxgc.c,v 1.1tsi Exp $ */
 /*
  * Copyright 2001-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -381,13 +381,19 @@ void dmxChangeClip(GCPtr pGC, int type, pointer pvalue, int nrects)
 	}
 	break;
 
+#if 0	/* Leave in for reference */
     case CT_PIXMAP:
     case CT_UNSORTED:
     case CT_YSORTED:
     case CT_YXSORTED:
     case CT_YXBANDED:
-	/* These clip types are condensed down to either NONE or REGION
-           in the mi code */
+	/*
+	 * These clip types are condensed down to either NONE or REGION in
+	 * the mi code, and therefore could not have been set as the GC's
+	 * clientClipType.
+	 */
+#endif
+    default:
 	break;
     }
 

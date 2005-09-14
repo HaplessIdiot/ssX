@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.27tsi Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.28tsi Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -777,7 +777,7 @@ void XDGAKeyEventToXKeyEvent(
 
 typedef struct _DGAMapRec{
   mmapOffset physical;
-  unsigned char *virtual;
+  void *virtual;
   CARD32 size;
   int fd;
   int screen;

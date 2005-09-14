@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.27tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.28tsi Exp $ */
 
 /*
 ** License Applicability. Except to the extent portions of this file are
@@ -194,7 +194,9 @@ int __glXDebug = 0;
 */
 int __glXCloseDisplay(Display *dpy, XExtCodes *codes);
 
+#ifdef GLX_DIRECT_RENDERING
 static GLboolean FillInVisuals( __GLXscreenConfigs * psc );
+#endif
 
 /************************************************************************/
 
@@ -363,6 +365,7 @@ static Bool QueryVersion(Display *dpy, int opcode, int *major, int *minor)
     return GL_TRUE;
 }
 
+#ifdef GLX_DIRECT_RENDERING
 
 /**
  * Determine if a \c __GLcontextModes structure has the right mojo to be
@@ -469,6 +472,7 @@ FillInVisuals( __GLXscreenConfigs * psc )
     return (glx_visual_count != 0);
 }
 
+#endif /* GLX_DIRECT_RENDERING */
 
 void 
 __glXInitializeVisualConfigFromTags( __GLcontextModes *config, int count, 
@@ -1516,10 +1520,10 @@ static Bool SendMakeCurrentRequest( Display *dpy, CARD8 opcode,
 }
 
 
+#ifdef GLX_DIRECT_RENDERING
 static Bool BindContextWrapper( Display *dpy, GLXContext gc,
 				GLXDrawable draw, GLXDrawable read )
 {
-#ifdef GLX_DIRECT_RENDERING
     if ( gc->driContext.bindContext3 != NULL ) {
 	return (*gc->driContext.bindContext3)(dpy, gc->screen, draw, read, 
 					      & gc->driContext);
@@ -1528,15 +1532,11 @@ static Bool BindContextWrapper( Display *dpy, GLXContext gc,
 	return (*gc->driContext.bindContext2)(dpy, gc->screen, draw, read,
 					      gc);
     }
-#else
-    return GL_FALSE;
-#endif
 }
 
 
 static Bool UnbindContextWrapper( Display *dpy, GLXContext gc )
 {
-#ifdef GLX_DIRECT_RENDERING
     if ( gc->driContext.unbindContext3 != NULL ) {
 	return (*gc->driContext.unbindContext3)(dpy, gc->screen, 
 						gc->currentDrawable,
@@ -1548,10 +1548,8 @@ static Bool UnbindContextWrapper( Display *dpy, GLXContext gc )
 						gc->currentDrawable,
 						gc->currentReadable, gc);
     }
-#else
-    return GL_FALSE;
-#endif
 }
+#endif
 
 
 /*

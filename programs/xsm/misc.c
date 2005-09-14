@@ -23,7 +23,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/misc.c,v 1.5 2001/07/25 15:05:29 dawes Exp $ */
+/* $XFree86: xc/programs/xsm/misc.c,v 1.6tsi Exp $ */
 
 #include "xsm.h"
 
@@ -110,7 +110,7 @@ System(char *s)
     int pid, status;
     if ((pid = fork ()) == 0) {
 	(void) setpgrp();
-	execl ("/bin/sh", "sh", "-c", s, 0);
+	execl ("/bin/sh", "sh", "-c", s, (void *)0);
     } else
 	waitpid (pid, &status, 0);
     return status;

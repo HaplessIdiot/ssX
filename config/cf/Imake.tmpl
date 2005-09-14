@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.169 2005/02/11 03:02:53 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.170tsi Exp $
 XCOMM ----------------------------------------------------------------------
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -89,6 +89,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #include <site.def>
 #undef BeforeVendorCF
 
+#if defined(HasGcc4) && !defined(HasGcc3)
+# define HasGcc3 HasGcc4
+#endif
 #if defined(HasGcc3) && !defined(HasGcc2)
 # define HasGcc2 HasGcc3
 #endif
@@ -1101,8 +1104,11 @@ TCLIBDIR = TclLibDir
 #ifndef BootstrapCFlags
 #define BootstrapCFlags /**/
 #endif
+#ifndef HasGcc4
+#define HasGcc4 NO
+#endif
 #ifndef HasGcc3
-#define HasGcc3 NO
+#define HasGcc3 HasGcc4
 #endif
 #ifndef HasGcc2
 #define HasGcc2 HasGcc3
@@ -1114,7 +1120,7 @@ TCLIBDIR = TclLibDir
 #define HasBrokenCCForLink NO
 #endif
 #ifndef CcCmd
-#if HasGcc2
+#if HasGcc2 || HasGcc3 || HasGcc4
 #define CcCmd gcc -fpcc-struct-return
 #else
 #if HasGcc
