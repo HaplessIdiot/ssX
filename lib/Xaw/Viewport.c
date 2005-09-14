@@ -1,5 +1,3 @@
-/* $Xorg: Viewport.c,v 1.4 2001/02/09 02:03:47 xorgcvs Exp $ */
-
 /***********************************************************
 
 Copyright 1987, 1988, 1994, 1998  The Open Group
@@ -46,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Viewport.c,v 1.10 2001/08/23 00:03:20 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Viewport.c,v 1.11tsi Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -290,6 +288,12 @@ XawViewportInitialize(Widget request, Widget cnew,
     Dimension clip_height, clip_width;
 
     w->form.default_spacing = 0; /* Reset the default spacing to 0 pixels */
+
+    /*
+     * Get the size from the parent
+     */
+    XtWidth(w) = XtWidth(XtParent(w));
+    XtHeight(w) = XtHeight(XtParent(w));
 
     /*
      * Initialize all widget pointers to NULL
