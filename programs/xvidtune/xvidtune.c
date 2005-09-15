@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.35tsi Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.36 2003/10/24 20:38:24 tsi Exp $ */
 
 /*
 
@@ -1551,9 +1551,7 @@ main (int argc, char** argv)
 	} 
 	else
 	    usage();
-    }
-
-    if (argc > 1) {
+    } else if (argc > 1) {
 	int i = 0;
         
 	if (argc != 2)
