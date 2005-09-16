@@ -46,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * additional blank space to make the structure of the graph easier to see
  * as well as to support vertical trees.
  */
-/* $XFree86: xc/lib/Xaw/Tree.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/lib/Xaw/Tree.c,v 1.12tsi Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -652,7 +652,10 @@ XawTreeRedisplay(Widget gw, XEvent *event, Region region)
 		for (j = 0; j < tc->tree.n_children; j++) {
 		    Widget k = tc->tree.children[j];
 		    GC gc = (tc->tree.gc ? tc->tree.gc : tw->tree.gc);
-		    int dstx = 0, dsty = 0, msx = 0, mdx = 0, msy = 0, mdy = 0;
+		    int dstx = 0, dsty = 0;
+#ifndef OLDXAW
+		    int msx = 0, mdx = 0, msy = 0, mdy = 0;
+#endif
 
 		    switch (tw->tree.gravity) {
 		      case WestGravity:
@@ -664,9 +667,11 @@ XawTreeRedisplay(Widget gw, XEvent *event, Region region)
 			dstx = (int) k->core.x;
 			dsty = (k->core.y + ((int) k->core.border_width) +
 				((int) k->core.height) / 2);
+#ifndef OLDXAW
 			mdx = msx = srcx + (dstx - srcx) / 2;
 			msy = srcy;
 			mdy = dsty;
+#endif
 			break;
 
 		      case NorthGravity:
@@ -676,9 +681,11 @@ XawTreeRedisplay(Widget gw, XEvent *event, Region region)
 			dstx = (k->core.x + ((int) k->core.border_width) +
 				((int) k->core.width) / 2);
 			dsty = (int) k->core.y;
+#ifndef OLDXAW
 			msx = srcx;
 			mdy = msy = srcy + (dsty - srcy) / 2;
 			mdx = dstx;
+#endif
 			break;
 
 		      case EastGravity:
@@ -692,9 +699,11 @@ XawTreeRedisplay(Widget gw, XEvent *event, Region region)
 				(int) k->core.width);
 			dsty = (k->core.y + ((int) k->core.border_width) +
 				((int) k->core.height) / 2);
+#ifndef OLDXAW
 			mdx = msx = srcx + (dstx - srcx) / 2;
 			msy = srcy;
 			mdy = dsty;
+#endif
 			break;
 
 		      case SouthGravity:
@@ -706,9 +715,11 @@ XawTreeRedisplay(Widget gw, XEvent *event, Region region)
 			dsty = (k->core.y +
 				(((int) k->core.border_width) << 1) +
 				(int) k->core.height);
+#ifndef OLDXAW
 			msx = srcx;
 			mdy = msy = srcy + (dsty - srcy) / 2;
 			mdx = dstx;
+#endif
 			break;
 		    }
 
