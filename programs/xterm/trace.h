@@ -1,12 +1,12 @@
-/* $XTermId: trace.h,v 1.32 2004/07/17 14:53:34 tom Exp $ */
+/* $XTermId: trace.h,v 1.34 2005/09/15 23:57:29 tom Exp $ */
 
 /*
- * $XFree86: xc/programs/xterm/trace.h,v 3.15 2004/06/06 22:15:25 dickey Exp $
+ * $XFree86: xc/programs/xterm/trace.h,v 3.16 2004/07/20 01:14:41 dickey Exp $
  */
 
 /************************************************************
 
-Copyright 1997-2003,2004 by Thomas E. Dickey
+Copyright 1997-2004,2005 by Thomas E. Dickey
 
                         All Rights Reserved
 
@@ -53,23 +53,26 @@ extern	void	Trace ( char *, ... )
 extern	char *	visibleChars (PAIRED_CHARS(Char *buf, Char *buf2), unsigned len);
 extern	char *	visibleIChar (IChar *, unsigned);
 
+extern	void	TraceArgv(const char *tag, char **argv);
+#define	TRACE_ARGV(tag,argv) TraceArgv(tag,argv)
+
 extern	char	*trace_who;
 #define TRACE_CHILD int tracing_child = (trace_who = "child") != 0;
 
 extern	void	TraceSizeHints(XSizeHints *);
 #define	TRACE_HINTS(hints) TraceSizeHints(hints)
 
+extern	void	TraceOptions(OptionHelp *options, XrmOptionDescRec *resources, Cardinal count);
+#define	TRACE_OPTS(opts,ress,lens) TraceOptions(opts,ress,lens)
+
 extern	void	TraceTranslations(const char *, Widget);
 #define	TRACE_TRANS(name,w) TraceTranslations(name,w)
 
+extern	void	TraceWMSizeHints(XtermWidget);
+#define	TRACE_WM_HINTS(w) TraceWMSizeHints(w)
+
 extern	void	TraceXtermResources(void);
 #define	TRACE_XRES() TraceXtermResources()
-
-extern	void	TraceArgv(const char *tag, char **argv);
-#define	TRACE_ARGV(tag,argv) TraceArgv(tag,argv)
-
-extern	void	TraceOptions(OptionHelp *options, XrmOptionDescRec *resources, Cardinal count);
-#define	TRACE_OPTS(opts,ress,lens) TraceOptions(opts,ress,lens)
 
 #endif
 

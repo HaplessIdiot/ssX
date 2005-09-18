@@ -1,10 +1,10 @@
-/* $XTermId: util.c,v 1.247 2005/08/04 23:02:24 tom Exp $ */
+/* $XTermId: util.c,v 1.254 2005/09/16 00:37:25 tom Exp $ */
 
 /*
  *	$Xorg: util.c,v 1.3 2000/08/17 19:55:10 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/util.c,v 3.91 2005/07/07 00:46:14 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/util.c,v 3.92 2005/08/05 01:25:40 dickey Exp $ */
 
 /*
  * Copyright 1999-2004,2005 by Thomas E. Dickey
@@ -2439,7 +2439,7 @@ xtermSizeHints(XtermWidget xw, XSizeHints * sizehints, int scrollbarWidth)
 {
     TScreen *screen = &xw->screen;
 
-    TRACE(("computing sizehints\n"));
+    TRACE(("xtermSizeHints\n"));
     TRACE(("   border    %d\n", xw->core.border_width));
     TRACE(("   scrollbar %d\n", scrollbarWidth));
 
@@ -2459,31 +2459,12 @@ xtermSizeHints(XtermWidget xw, XSizeHints * sizehints, int scrollbarWidth)
     sizehints->min_width = sizehints->base_width + sizehints->width_inc;
     sizehints->min_height = sizehints->base_height + sizehints->height_inc;
 
-    sizehints->flags |= (PBaseSize | PMinSize | PResizeInc);
+    sizehints->width = MaxCols(screen) * FontWidth(screen) + sizehints->min_width;
+    sizehints->height = MaxRows(screen) * FontHeight(screen) + sizehints->min_height;
 
-    TRACE(("...sizehints base %dx%d inc %dx%d min %dx%d max %dx%d\n",
-	   sizehints->base_height, sizehints->base_width,
-	   sizehints->height_inc, sizehints->width_inc,
-	   sizehints->min_height, sizehints->min_width,
-	   MaxRows(screen) * FontHeight(screen) + sizehints->min_height,
-	   MaxCols(screen) * FontWidth(screen) + sizehints->min_width));
-}
+    sizehints->flags |= (PSize | PBaseSize | PMinSize | PResizeInc);
 
-/*
- * Note: width and height are not set here because they are
- * obsolete.
- */
-void
-xtermFixupSizes(XtermWidget xw, XSizeHints * sizehints)
-{
-    XtVaSetValues(SHELL_OF(xw),
-		  XtNbaseWidth, sizehints->base_width,
-		  XtNbaseHeight, sizehints->base_height,
-		  XtNwidthInc, sizehints->width_inc,
-		  XtNheightInc, sizehints->height_inc,
-		  XtNminWidth, sizehints->min_width,
-		  XtNminHeight, sizehints->min_height,
-		  (XtPointer) 0);
+    TRACE_HINTS(sizehints);
 }
 
 /*

@@ -1,5 +1,5 @@
--- $XTermId: INSTALL,v 1.81 2005/06/21 00:39:08 tom Exp $
--- $XFree86: xc/programs/xterm/INSTALL,v 3.37 2005/01/14 01:50:02 dickey Exp $
+-- $XTermId: INSTALL,v 1.84 2005/09/18 17:22:05 tom Exp $
+-- $XFree86: xc/programs/xterm/INSTALL,v 3.38 2005/07/07 00:46:13 dickey Exp $
 -- Thomas E. Dickey
 
 Xterm is normally built as part of the X Window System source tree, using
@@ -315,6 +315,17 @@ The options (in alphabetic order):
 	Compile-in code to support experimental bracketed paste mode, i.e.,
 	provide functions for setting/getting the selection data.
 
+	(see ctlseqs.ms description of OSC 52).
+
+  --enable-readline-mouse enable support for mouse in readline applications
+
+	Compile-in code to support experimental bracketed paste mode, i.e.,
+	provide functions for setting/getting the selection data.  Essentially
+	this puts xterm into a mode that sends special function-key strings to
+	bracket the data.
+
+	(See --enable-paste64, which fits xterm's protocol better).
+
   --enable-sco-fkeys      enable support for SCO-style function keys
 
   	Compile-in code to support SCO-style function keys.
@@ -330,6 +341,10 @@ The options (in alphabetic order):
 
   	Compile-in code that builds a toolbar with pulldown menus.  The
 	normal popup menus are still available.
+
+	This is an experimental option.  As of patch #204, it is known to
+	work well with fvwm, but not well with some other window managers,
+	e.g., KDE's Kwin and IceWM.
 
   --enable-trace          test: set to enable debugging traces
 

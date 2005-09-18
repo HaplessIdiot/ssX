@@ -1,10 +1,10 @@
-/* $XTermId: data.h,v 1.88 2005/04/08 23:30:44 tom Exp $ */
+/* $XTermId: data.h,v 1.91 2005/09/05 19:06:26 tom Exp $ */
 
 /*
  *	$Xorg: data.h,v 1.3 2000/08/17 19:55:08 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/data.h,v 3.35 2005/01/14 01:50:02 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/data.h,v 3.36 2005/04/22 00:21:53 dickey Exp $ */
 
 /*
  * Copyright 2002-2004,2005 by Thomas E. Dickey
@@ -126,12 +126,14 @@ extern EventMode eventMode;
 
 extern XtermWidget term;
 
+extern SIG_ATOMIC_T need_cleanup;
+
 #if defined(HAVE_XKB_BELL_EXT)
 #include <X11/XKBlib.h>		/* has the prototype */
 #include <X11/extensions/XKBbells.h>	/* has the XkbBI_xxx definitions */
 #endif
 
-#ifndef XkbBI_Info			
+#ifndef XkbBI_Info
 #define	XkbBI_Info			0
 #define	XkbBI_MinorError		1
 #define	XkbBI_MajorError		2

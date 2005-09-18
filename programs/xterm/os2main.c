@@ -1,4 +1,4 @@
-/* $XTermId: os2main.c,v 1.205 2005/07/23 14:11:36 tom Exp $ */
+/* $XTermId: os2main.c,v 1.208 2005/09/11 15:35:29 tom Exp $ */
 
 /* removed all foreign stuff to get the code more clear (hv)
  * and did some rewrite for the obscure OS/2 environment
@@ -7,7 +7,7 @@
 #ifndef lint
 static char *rid = "$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.78 2005/07/07 00:46:14 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.79 2005/08/05 01:25:40 dickey Exp $ */
 
 /***********************************************************
 
@@ -1438,14 +1438,30 @@ first_map_occurred(void)
 static void
 set_owner(char *device, uid_t uid, gid_t gid, mode_t mode)
 {
+    int why;
+
     if (chown(device, uid, gid) < 0) {
-	if (errno != ENOENT
+	why = errno;
+	if (why != ENOENT
 	    && getuid() == 0) {
-	    fprintf(stderr, "Cannot chown %s to %d,%d: %s\n",
-		    device, uid, gid, strerror(errno));
+	    fprintf(stderr, "Cannot chown %s to %ld,%ld: %s\n",
+		    device, (long) uid, (long) gid, strerror(why));
 	}
     }
-    chmod(device, mode);
+    if (chmod(device, mode) < 0) {
+	why = errno;
+	if (why != ENOENT) {
+	    struct stat sb;
+	    if (stat(device, &sb) < 0) {
+		fprintf(stderr, "Cannot chmod %s to %03o: %s\n",
+			device, mode, strerror(why));
+	    } else {
+		fprintf(stderr,
+			"Cannot chmod %s to %03o currently %03o: %s\n",
+			device, mode, (sb.st_mode & S_IFMT), strerror(why));
+	    }
+	}
+    }
 }
 
 #define THE_PARENT 1
@@ -1955,7 +1971,7 @@ reapchild(int n GCC_UNUSED)
 		fputs("Exiting\n", stderr);
 #endif
 	    if (!hold_screen)
-		Cleanup(0);
+		need_cleanup = TRUE;
 	}
     } while ((pid = nonblocking_wait()) > 0);
 

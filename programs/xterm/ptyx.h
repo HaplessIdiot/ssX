@@ -1,10 +1,10 @@
-/* $XTermId: ptyx.h,v 1.381 2005/08/03 22:53:46 tom Exp $ */
+/* $XTermId: ptyx.h,v 1.385 2005/09/15 23:55:10 tom Exp $ */
 
 /*
  *	$Xorg: ptyx.h,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/ptyx.h,v 3.123 2005/07/07 00:46:14 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/ptyx.h,v 3.124 2005/08/05 01:25:40 dickey Exp $ */
 
 /*
  * Copyright 1999-2004,2005 by Thomas E. Dickey
@@ -263,6 +263,19 @@
  * mouse events into the proper routines. */
 
 typedef enum {NORMAL, LEFTEXTENSION, RIGHTEXTENSION} EventMode;
+
+/*
+ * Indices for menu_font_names[][]
+ */
+typedef enum {
+    fNorm = 0
+    , fBold
+#if OPT_WIDE_CHARS
+    , fWide
+    , fWBold
+#endif
+    , fMAX
+} VTFontEnum;
 
 /*
  * The origin of a screen is 0, 0.  Therefore, the number of rows
@@ -977,49 +990,6 @@ typedef struct {
 
 /***====================================================================***/
 
-#if OPT_TRACE
-#include <trace.h>
-#undef NDEBUG			/* turn on assert's */
-#else
-#ifndef NDEBUG
-#define NDEBUG			/* not debugging, don't do assert's */
-#endif
-#endif
-
-#ifndef TRACE
-#define TRACE(p) /*nothing*/
-#endif
-
-#ifndef TRACE_ARGV
-#define TRACE_ARGV(tag,argv) /*nothing*/
-#endif
-
-#ifndef TRACE_CHILD
-#define TRACE_CHILD /*nothing*/
-#endif
-
-#ifndef TRACE_HINTS
-#define TRACE_HINTS(hints) /*nothing*/
-#endif
-
-#ifndef TRACE_OPTS
-#define TRACE_OPTS(opts,ress,lens) /*nothing*/
-#endif
-
-#ifndef TRACE_TRANS
-#define TRACE_TRANS(name,w) /*nothing*/
-#endif
-
-#ifndef TRACE_XRES
-#define TRACE_XRES() /*nothing*/
-#endif
-
-#ifndef TRACE2
-#define TRACE2(p) /*nothing*/
-#endif
-
-/***====================================================================***/
-
 /* The order of ifdef's matches the logic for num_ptrs in VTInitialize */
 typedef enum {
 	OFF_FLAGS = 0		/* BUF_HEAD */
@@ -1185,6 +1155,7 @@ typedef struct {
 typedef struct {
 	Widget		menu_bar;	/* toolbar, if initialized	*/
 	Dimension	menu_height;	/* ...and its height		*/
+	Dimension	menu_border;	/* ...and its border		*/
 } TbInfo;
 #define VT100_TB_INFO(name) screen.fullVwin.tb_info.name
 #endif
@@ -1534,8 +1505,8 @@ typedef struct {
 	Boolean		backarrow_key;		/* backspace/delete */
 	Boolean		meta_sends_esc;		/* Meta-key sends ESC prefix */
 	Pixmap		menu_item_bitmap;	/* mask for checking items */
-	String		bold_font_names[NMENUFONTS];
-	String		menu_font_names[NMENUFONTS];
+	String		menu_font_names[NMENUFONTS][fMAX];
+#define MenuFontName(n) menu_font_names[n][fNorm]
 	long		menu_font_sizes[NMENUFONTS];
 	int		menu_font_number;
 #if OPT_RENDERFONT
@@ -1958,7 +1929,10 @@ typedef struct _TekWidgetRec {
 #define BorderPixel(w)		((w)->core.border_pixel)
 
 #if OPT_TOOLBAR
-#define ToolbarHeight(w) ((resource.toolBar) ? term->VT100_TB_INFO(menu_height) : 0)
+#define ToolbarHeight(w)	((resource.toolBar) \
+				 ? (term->VT100_TB_INFO(menu_height) \
+				  + term->VT100_TB_INFO(menu_border) * 2) \
+				 : 0)
 #else
 #define ToolbarHeight(w) 0
 #endif
@@ -1990,5 +1964,52 @@ typedef struct Tek_Link
 #endif
 #define	I_SIGNAL	0x02
 #define	I_TEK		0x04
+
+/***====================================================================***/
+
+#if OPT_TRACE
+#include <trace.h>
+#undef NDEBUG			/* turn on assert's */
+#else
+#ifndef NDEBUG
+#define NDEBUG			/* not debugging, don't do assert's */
+#endif
+#endif
+
+#ifndef TRACE
+#define TRACE(p) /*nothing*/
+#endif
+
+#ifndef TRACE_ARGV
+#define TRACE_ARGV(tag,argv) /*nothing*/
+#endif
+
+#ifndef TRACE_CHILD
+#define TRACE_CHILD /*nothing*/
+#endif
+
+#ifndef TRACE_HINTS
+#define TRACE_HINTS(hints) /*nothing*/
+#endif
+
+#ifndef TRACE_OPTS
+#define TRACE_OPTS(opts,ress,lens) /*nothing*/
+#endif
+
+#ifndef TRACE_TRANS
+#define TRACE_TRANS(name,w) /*nothing*/
+#endif
+
+#ifndef TRACE_WM_HINTS
+#define TRACE_WM_HINTS(w) /*nothing*/
+#endif
+
+#ifndef TRACE_XRES
+#define TRACE_XRES() /*nothing*/
+#endif
+
+#ifndef TRACE2
+#define TRACE2(p) /*nothing*/
+#endif
 
 #endif /* included_ptyx_h */
