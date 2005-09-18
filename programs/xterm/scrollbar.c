@@ -1,10 +1,10 @@
-/* $XTermId: scrollbar.c,v 1.105 2005/08/04 23:04:01 tom Exp $ */
+/* $XTermId: scrollbar.c,v 1.111 2005/09/16 00:45:15 tom Exp $ */
 
 /*
  *	$Xorg: scrollbar.c,v 1.4 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/scrollbar.c,v 3.42 2005/07/07 00:46:14 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/scrollbar.c,v 3.43 2005/08/05 01:25:40 dickey Exp $ */
 
 /*
  * Copyright 2000-2004,2005 by Thomas E. Dickey
@@ -156,12 +156,14 @@ DoResizeScreen(XtermWidget xw)
      * to have time to completely rewrite xterm.
      */
 
-    TRACE(("ResizeScreen\n"));
+    TRACE(("DoResizeScreen\n"));
 
 #if 1				/* ndef nothack */
     /*
      * NOTE: the hints and the XtVaSetValues() must match.
      */
+    TRACE(("%s@%d -- ", __FILE__, __LINE__));
+    TRACE_WM_HINTS(xw);
     if (!XGetWMNormalHints(screen->display, XtWindow(SHELL_OF(xw)),
 			   &sizehints, &supp))
 	bzero(&sizehints, sizeof(sizehints));
@@ -173,7 +175,7 @@ DoResizeScreen(XtermWidget xw)
     sizehints.height = MaxRows(screen) * FontHeight(screen) + sizehints.min_height;
 #endif
 
-    xtermFixupSizes(xw, &sizehints);
+    XSetWMNormalHints(screen->display, XtWindow(SHELL_OF(xw)), &sizehints);
 
     reqWidth = MaxCols(screen) * FontWidth(screen) + min_wide;
     reqHeight = MaxRows(screen) * FontHeight(screen) + min_high;
@@ -185,6 +187,12 @@ DoResizeScreen(XtermWidget xw)
 
     geomreqresult = XtMakeResizeRequest((Widget) xw, reqWidth, reqHeight,
 					&repWidth, &repHeight);
+    TRACE(("scrollbar.c XtMakeResizeRequest %dx%d -> %dx%d (status %d)\n",
+	   reqHeight, reqWidth,
+	   repHeight, repWidth,
+	   geomreqresult));
+    TRACE(("%s@%d -- ", __FILE__, __LINE__));
+    TRACE_WM_HINTS(xw);
 
     if (geomreqresult == XtGeometryAlmost) {
 	TRACE(("...almost, retry screensize %dx%d\n", repHeight, repWidth));
@@ -195,9 +203,6 @@ DoResizeScreen(XtermWidget xw)
     if (XtAppPending(app_con))
 	xevents();
 
-#ifndef nothack
-    XSetWMNormalHints(screen->display, XtWindow(SHELL_OF(xw)), &sizehints);
-#endif
 #ifndef NO_ACTIVE_ICON
     WhichVWin(screen) = saveWin;
 #endif /* NO_ACTIVE_ICON */
