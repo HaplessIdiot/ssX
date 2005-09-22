@@ -7,7 +7,7 @@
  * Copyright © 2001 The XFree86 Project, Inc.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_agp.c,v 3.11 2003/04/03 22:47:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_agp.c,v 3.12 2003/09/24 02:43:35 dawes Exp $ */
 
 #include "X.h"
 #include "xf86.h"
@@ -244,6 +244,27 @@ xf86AllocateGARTMemory(int screenNum, unsigned long size, int type,
 	return alloc.key;
 }
 
+Bool
+xf86DeallocateGARTMemory(int screenNum, int key)
+{
+	if (!GARTInit(screenNum) || acquiredScreen != screenNum)
+		return FALSE;
+
+	if (acquiredScreen != screenNum) {
+		xf86DrvMsg(screenNum, X_ERROR,
+                   "xf86UnbindGARTMemory: AGP not acquired by this screen\n");
+		return FALSE;
+	}
+
+	if (ioctl(gartFd, AGPIOC_DEALLOCATE, (char *)key) != 0) {
+		xf86DrvMsg(screenNum, X_WARNING,"xf86DeAllocateGARTMemory: "
+                   "deallocation gart memory with key %d failed\n\t(%s)\n",
+                   key, strerror(errno));
+		return FALSE;
+	}
+
+	return TRUE;
+}
 
 /* Bind GART memory with "key" at "offset" */
 Bool

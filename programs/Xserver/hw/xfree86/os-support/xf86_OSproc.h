@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.56 2003/08/24 17:37:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.57 2003/10/07 23:14:54 herrb Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -194,6 +194,7 @@ extern Bool xf86AcquireGART(int screenNum);
 extern Bool xf86ReleaseGART(int screenNum);
 extern int xf86AllocateGARTMemory(int screenNum, unsigned long size, int type,
 				  unsigned long *physical);
+extern Bool xf86DeallocateGARTMemory(int screenNum, int key);
 extern Bool xf86BindGARTMemory(int screenNum, int key, unsigned long offset);
 extern Bool xf86UnbindGARTMemory(int screenNum, int key);
 extern Bool xf86EnableAGP(int screenNum, CARD32 mode);

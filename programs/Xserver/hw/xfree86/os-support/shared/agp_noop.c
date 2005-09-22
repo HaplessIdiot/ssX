@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/agp_noop.c,v 1.5 2003/08/24 17:37:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/agp_noop.c,v 1.6 2004/02/13 23:58:48 dawes Exp $ */
 /*
  * Copyright (c) 2000-2003 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -97,6 +97,11 @@ xf86AllocateGARTMemory(int screenNum, unsigned long size, int type,
 	return -1;
 }
 
+Bool
+xf86DeallocateGARTMemory(int screenNum, int key)
+{
+	return FALSE;
+}
 
 Bool
 xf86BindGARTMemory(int screenNum, int key, unsigned long offset)
