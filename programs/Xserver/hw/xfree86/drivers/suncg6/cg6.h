@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg6/cg6.h,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg6/cg6.h,v 1.6tsi Exp $ */
 
 #ifndef CG6_H
 #define CG6_H
@@ -45,10 +45,10 @@
 #define CG6_RAM_VOFF	0x70016000
 
 typedef struct {
-	unsigned int fg, bg;			/* FG/BG colors for stipple */
-	unsigned int patalign;                  /* X/Y alignment of bits */
-	unsigned int alu;			/* Transparent/Opaque + rop */
-	unsigned int bits[32];                  /* The stipple bits themselves */
+	unsigned int fg, bg;	/* FG/BG colors for stipple */
+	unsigned int patalign;	/* X/Y alignment of bits */
+	unsigned int alu;	/* Transparent/Opaque + rop */
+	unsigned int bits[32];	/* The stipple bits themselves */
 } Cg6StippleRec, *Cg6StipplePtr;
 
 typedef struct {
@@ -64,6 +64,7 @@ typedef struct {
 	int		width;
 	int		height;
 	int		maxheight;
+	int		vidmem;
 
 	sbusDevicePtr	psdp;
 	Bool		HWCursor;

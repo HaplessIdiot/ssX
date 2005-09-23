@@ -24,7 +24,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.12tsi Exp $ */
 
 #ifndef FFB_H
 #define FFB_H
@@ -230,7 +230,7 @@ extern Bool FFBDacInit(FFBPtr);
 extern void FFBDacFini(FFBPtr);
 extern void FFBDacEnterVT(FFBPtr);
 extern void FFBDacLeaveVT(FFBPtr);
-extern Bool FFBDacSaveScreen(FFBPtr, int);
+extern Bool FFBDacSaveScreen(ScrnInfoPtr, int);
 extern void FFBDacDPMSMode(FFBPtr, int, int);
 
 /* Exported WID layer routines. */

@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg6/cg6_driver.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg6/cg6_driver.c,v 1.13tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -471,13 +471,32 @@ CG6ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pScrn = xf86Screens[pScreen->myNum];
     pCg6 = GET_CG6_FROM_SCRN(pScrn);
     psdp = pCg6->psdp;
-
-    vidmem = max(psdp->width * psdp->height, 1024 * 1024);
+    vidmem = psdp->width * psdp->height;
 
     /* Map CG6 memory areas */
     pCg6->fbc = xf86MapSbusMem(psdp, CG6_FBC_VOFF, sizeof(*pCg6->fbc));
     pCg6->thc = xf86MapSbusMem(psdp, CG6_THC_VOFF, sizeof(*pCg6->thc));
-    pCg6->fb = xf86MapSbusMem(psdp, CG6_RAM_VOFF, vidmem);
+
+    do {
+	if (!pCg6->NoAccel) {
+	    /*
+	     * To allow for off-screen pixmaps, first try mapping 2MB, then
+	     * 1MB, followed by the minimum required.
+	     */
+	    pCg6->vidmem = max(2 * 1024 * 1024, vidmem);
+	    pCg6->fb = xf86MapSbusMem(psdp, CG6_RAM_VOFF, pCg6->vidmem);
+	    if (pCg6->fb || (pCg6->vidmem == vidmem))
+		break;
+
+	    pCg6->vidmem = max(1024 * 1024, vidmem);
+	    pCg6->fb = xf86MapSbusMem(psdp, CG6_RAM_VOFF, pCg6->vidmem);
+	    if (pCg6->fb || (pCg6->vidmem == vidmem))
+		break;
+	}
+
+	pCg6->vidmem = vidmem;
+	pCg6->fb = xf86MapSbusMem(psdp, CG6_RAM_VOFF, pCg6->vidmem);
+    } while (0);
 
     if (!pCg6->fbc || !pCg6->thc || !pCg6->fb) {
 	if (pCg6->fbc) {
@@ -491,12 +510,15 @@ CG6ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
 
 	if (pCg6->fb) {
-	    xf86UnmapSbusMem(psdp, pCg6->fb, psdp->width * psdp->height);
+	    xf86UnmapSbusMem(psdp, pCg6->fb, pCg6->vidmem);
 	    pCg6->fb = NULL;
 	}
 
 	return FALSE;
     }
+
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Mapped %d KB of video memory\n",
+	pCg6->vidmem >> 10);
 
     /* Darken the screen for aesthetic reasons and set the viewport */
     CG6SaveScreen(pScreen, SCREEN_SAVER_ON);
@@ -539,7 +561,7 @@ CG6ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     pCg6->width = pScrn->virtualX;
     pCg6->height = pScrn->virtualY;
-    pCg6->maxheight = (vidmem / pCg6->width) & 0xffff;
+    pCg6->maxheight = (pCg6->vidmem / pCg6->width) & 0xffff;
 
     fbPictureInit(pScreen, 0, 0);
 
@@ -689,7 +711,7 @@ CG6CloseScreen(int scrnIndex, ScreenPtr pScreen)
 
     xf86UnmapSbusMem(psdp, pCg6->fbc, sizeof(*pCg6->fbc));
     xf86UnmapSbusMem(psdp, pCg6->thc, sizeof(*pCg6->thc));
-    xf86UnmapSbusMem(psdp, pCg6->fb, psdp->width * psdp->height);
+    xf86UnmapSbusMem(psdp, pCg6->fb, pCg6->vidmem);
 
     return closed;
 }

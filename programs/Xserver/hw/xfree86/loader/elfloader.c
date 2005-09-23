@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.64 2005/03/21 17:33:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.65tsi Exp $ */
 
 /*
  *
@@ -221,7 +221,17 @@ typedef Elf64_Word Elf_Word;
 #define ELF_ST_BIND ELF64_ST_BIND
 #define ELF_ST_TYPE ELF64_ST_TYPE
 #define ELF_R_SYM ELF64_R_SYM
+
+#if !defined(__sparcv9)
 #define ELF_R_TYPE ELF64_R_TYPE
+#else
+/*
+ * bfd says: Relocations in the 64 bit SPARC ELF ABI are more complex
+ * than in standard ELF, because R_SPARC_OLO10 has secondary addend in
+ * ELF64_R_TYPE_DATA field.
+ */
+#define ELF_R_TYPE(info)	((info) & 0xff)
+#endif
 
 # if defined (__alpha__) || defined (__ia64__)
 /*
@@ -974,7 +984,7 @@ ELFCreateGOT(ELFModulePtr elffile, int maxalign)
 	    ErrorF("ELFCreateGOT() Unable to reallocate memory!!!!\n");
 	    return FALSE;
 	}
-#   if defined(linux) && defined(__ia64__) || defined(__OpenBSD__)
+#   if defined(linux) && defined(__ia64__) || defined(__OpenBSD__) || defined(__NetBSD__)
 	{
 	    unsigned long page_size = getpagesize();
 	    unsigned long round;
@@ -2200,6 +2210,15 @@ Elf_RelocateEntry(ELFModulePtr elffile, Elf_Word secn, Elf_Rel_t *rel,
 	dest64 = (unsigned long *)(secp + rel->r_offset);
 	*dest64 = (unsigned long)secp + rel->r_addend;
 	break;
+
+#ifdef __sparcv9
+    case R_SPARC_OLO10:		/* 33 */
+	dest32 = (unsigned int *)(secp + rel->r_offset);
+	symval += rel->r_addend
+	    + (((ELF64_R_TYPE(rel->r_info) >> 8) ^ 0x800000) - 0x800000);
+	*dest32 = (*dest32 & ~0x3ff) | (symval & 0x3ff);
+	break;
+#endif
 #endif /*__sparc__*/
 #ifdef __ia64__
     case R_IA64_NONE:
@@ -2486,6 +2505,10 @@ Elf_RelocateEntry(ELFModulePtr elffile, Elf_Word secn, Elf_Rel_t *rel,
 # ifdef ELFDEBUG
 	ELFDEBUG("*dest32=%8.8lx\n", *dest32);
 # endif
+#if defined(__NetBSD__)
+            arm_sync_icache(dest32, 4);
+#endif
+
 	break;
 
     case R_ARM_REL32:
@@ -2510,6 +2533,10 @@ Elf_RelocateEntry(ELFModulePtr elffile, Elf_Word secn, Elf_Rel_t *rel,
 # ifdef ELFDEBUG
 	ELFDEBUG("*dest32=%8.8lx\n", *dest32);
 # endif
+#if defined(__NetBSD__)
+            arm_sync_icache(dest32, 4);
+#endif
+
 
 	break;
 
@@ -2524,6 +2551,10 @@ Elf_RelocateEntry(ELFModulePtr elffile, Elf_Word secn, Elf_Rel_t *rel,
 	    *dest32 = (*dest32 & 0xff000000) | (val & 0x00ffffff);
 #ifdef NOTYET
 	    arm_flush_cache(dest32);
+#else
+#if defined(__NetBSD__)
+            arm_sync_icache(dest32, 4);
+#endif
 #endif
 	}
 	break;
@@ -2531,8 +2562,10 @@ Elf_RelocateEntry(ELFModulePtr elffile, Elf_Word secn, Elf_Rel_t *rel,
 #endif /* (__arm__) */
 
     default:
-	ErrorF("Elf_RelocateEntry() Unsupported relocation type %d\n",
-	       (int)ELF_R_TYPE(rel->r_info));
+	ErrorF("Elf_RelocateEntry() \"%s\" Unsupported relocation "
+	       "type %d (0x%x)\n",
+	       ElfGetSymbolName(elffile, ELF_R_SYM(rel->r_info)),
+	       (int)ELF_R_TYPE(rel->r_info), (int)ELF_R_TYPE(rel->r_info));
 	break;
     }
     return 0;
@@ -2830,7 +2863,7 @@ ELFCollectSections(ELFModulePtr elffile, int pass, int *totalsize,
 	elffile->lsection[j].size = SecSize(i);
 	elffile->lsection[j].flags = flags;
 	switch (SecType(i)) {
-#ifdef __OpenBSD__
+#if defined(__OpenBSD__) || defined(__NetBSD__)
 	case SHT_PROGBITS:
 	    mprotect(elffile->lsection[j].saddr, SecSize(i),
 		     PROT_READ | PROT_WRITE | PROT_EXEC);
@@ -3028,7 +3061,7 @@ ELFLoadModule(loaderPtr modrec, int elffd, LOOKUP **ppLookup)
 	ErrorF("Unable to allocate ELF sections\n");
 	return NULL;
     }
-#  if defined(linux) && defined(__ia64__) || defined(__OpenBSD__)
+#  if defined(linux) && defined(__ia64__) || defined(__OpenBSD__) || defined(__NetBSD__)
     {
 	unsigned long page_size = getpagesize();
 	unsigned long round;
