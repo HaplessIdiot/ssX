@@ -22,7 +22,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_asm.s,v 1.1tsi Exp $ */
 
 /* Hardware register offsets */
 #define FFB_BY		0x0060
@@ -53,6 +53,11 @@
 #define SEG_Y1		0x02
 #define SEG_X2		0x04
 #define SEG_Y2		0x06
+
+#if defined(__sparc_v9__) || defined(__sparcv9) || defined(__arch64__)
+	.register %g2, #scratch
+	.register %g3, #scratch
+#endif
 
 	.text
 

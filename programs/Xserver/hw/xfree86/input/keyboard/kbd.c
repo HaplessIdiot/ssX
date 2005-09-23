@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/keyboard/kbd.c,v 1.9 2003/12/18 21:53:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/keyboard/kbd.c,v 1.10tsi Exp $ */
 
 /*
  * Copyright (c) 2002 by The XFree86 Project, Inc.
@@ -580,7 +580,8 @@ PostKbdEvent(InputInfoPtr pInfo, unsigned int scanCode, Bool down)
   /*
    * Now map the scancodes to real X-keycodes ...
    */
-  if (scanCode == KEY_NOTUSED) return;
+  if ((scanCode == KEY_NOTUSED) || (scanCode == KEY_UNKNOWN))
+	return;
   
   keycode = scanCode + MIN_KEYCODE;
   keysym = (keyc->curKeySyms.map +

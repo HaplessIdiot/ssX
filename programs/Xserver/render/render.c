@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/render.c,v 1.30 2004/03/19 16:20:03 alanh Exp $
+ * $XFree86: xc/programs/Xserver/render/render.c,v 1.31tsi Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -1300,7 +1300,7 @@ ProcRenderCompositeGlyphs (ClientPtr client)
 	{
 	    if (buffer + sizeof (GlyphSet) < end)
 	    {
-		gs = *(GlyphSet *) buffer;
+		gs = *(CARD32 *) buffer;
 		glyphSet = (GlyphSetPtr) SecurityLookupIDByType (client,
 								 gs,
 								 GlyphSetType,

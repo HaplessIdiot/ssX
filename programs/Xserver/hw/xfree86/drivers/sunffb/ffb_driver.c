@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_driver.c,v 1.14 2004/12/05 23:06:37 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_driver.c,v 1.15tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -808,9 +808,6 @@ FFBScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    xf86Msg(X_INFO, "%s: ... AFB firmware is loaded\n", psdp->device);
     }
 
-    /* Darken the screen for aesthetic reasons and set the viewport */
-    FFBSaveScreen(pScreen, SCREEN_SAVER_ON);
-
     if (pFfb->NoAccel == TRUE) {
 	    if (!CreatorUnaccelWidInit(pScreen))
 		    return FALSE;
@@ -961,9 +958,6 @@ FFBScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
     }
 
-    /* unblank the screen */
-    FFBSaveScreen(pScreen, SCREEN_SAVER_OFF);
-
     /* Done */
     return TRUE;
 }
@@ -1055,6 +1049,8 @@ FFBCloseScreen(int scrnIndex, ScreenPtr pScreen)
 	    FFBDRICloseScreen(pScreen);
 #endif
 
+    FFBDacCursorEnableDisable(pFfb, 0);
+
     /* Restore kernel ramdac state before we unmap registers. */
     FFBDacFini(pFfb);
 
@@ -1106,13 +1102,12 @@ FFBValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 static Bool
 FFBSaveScreen(ScreenPtr pScreen, int mode)
     /* This function blanks the screen when mode=SCREEN_SAVER_ON and
-       unblanks it when mode=SCREEN_SAVER_OFF.  It is used internally in the
-       FFBScreenInit code `for aesthetic reasons,' and it is used for
+       unblanks it when mode=SCREEN_SAVER_OFF.  It is used for
        blanking if you set "xset s on s blank."  The work (such as it is) is
        done in "ffb_dac.c" `for aesthetic reasons.'
     */
 {
-    return FFBDacSaveScreen(GET_FFB_FROM_SCREEN(pScreen), mode);
+    return FFBDacSaveScreen(xf86Screens[pScreen->myNum], mode);
 }
 
 /*

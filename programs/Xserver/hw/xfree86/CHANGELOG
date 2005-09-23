@@ -1,4 +1,25 @@
 XFree86 4.5.99.12 (xx September 2005)
+ 147. Various changes from NetBSD:
+      - In SPARC-specific Mesa assembler code, increase stack usage and
+        always declare global register usage (Martin Husemann).
+      - Map more of a Sun CG6's video memory for use by the pixmap cache
+        (Marc La France, adapted from Michael Lorenz).
+      - On NetBSD, prevent the sunffb from turning off the FPU
+        (Michael Lorenz).
+      - Declare global register usage in sunffb assembler code
+        (Martin Husemann).
+      - Increase stack usage in sunffb assembler code (Andrey Petrov).
+      - Workaround for VRAM corruption when unblanking FFB1 adapters
+        (Marc La France, adapted from Martin Husemann).
+      - Add DDC2 support for tdfx driver (Michael Lorenz).
+      - Ignore KEY_UNUSED scancode in loadable keyboard driver
+        (Michael Lorenz).
+      - Add loader support for R_SPARC_OLO10 relocations (Valeriy E. Ushakov).
+      - Make error message for unsupported relocations more useful
+        (Martin Husemann).
+      - Fix loader support on NetBSD/arm (Chris Gilbert).
+      - Make loader use mprotect on NetBSD (James Chacon).
+      - Fix unaligned access in RenderCompositeGlyphs request (Michael Lorenz).
  146. Add xf86DeallocateGARTMemory() function.
  145. Xterm patch #205 (Thomas Dickey).
  144. Fix `xvidtune -timeout <n>` (#8295, Evil Mr Henry).
@@ -45,7 +66,7 @@ XFree86 4.5.99.11 (8 September 2005)
 XFree86 4.5.99.10 (23 August 2005)
  124. Add basic ACPI Linux support so that events can be passed to the driver.
       (Alan Hourihane).
- 123. Merge in NetBSD version of os-support/bsd/bsd_KeyMap.c (Michael Macallan,
+ 123. Merge in NetBSD version of os-support/bsd/bsd_KeyMap.c (Michael Lorenz,
       Marc La France).
  122. In the vesa driver, do not call VBE to save/restore adapter state if the
       mode on server entry is not one reported by VBE (i.e. is a VGA or OEM
@@ -212,7 +233,7 @@ XFree86 4.5.99.5 (8 June 2005)
       This works much better with custom modelines (Alan Hourihane).
   52. Update 'X -configure' to detect when wscons support should be used
       for the keyboard on NetBSD, and improve the handling of Sun-specific
-      keys (Michael Macallan).
+      keys (Michael Lorenz).
   51. Fix a bug in xmessage's handling of escapes in button labels
       (Bugzilla #1591, Timothy Musson).
 
@@ -254,7 +275,7 @@ XFree86 4.5.99.3 (11 May 2005)
   35. Change trident driver to not wait for vertical retrace on PC98 systems
       (Satoshi Kimura).
   34. Add screen-to-screen copy, solid fill and CPU-to-screen colour expansion
-      acceleration to the suncg6 driver (Michael Macallan).
+      acceleration to the suncg6 driver (Michael Lorenz).
   33. Cause GCC to warn about format string problems even in modules, and fix
       the warnings that result (Marc La France).
   32. Fix buglet in the decoding of I/O forwarding by Cardbus bridges
@@ -19788,7 +19809,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3597 2005/09/18 23:48:10 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3598 2005/09/22 12:32:33 alanh Exp $
 
 
 
