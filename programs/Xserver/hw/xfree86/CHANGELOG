@@ -1,4 +1,6 @@
 XFree86 4.5.99.13 (xx October 2005)
+ 148. Fix bug that occurs when using cfb to tile 32-bit rectangles on SPARC
+      (Marc La France, Michael Lorenz).
 
 XFree86 4.5.99.12 (23 September 2005)
  147. Various changes from NetBSD:
@@ -19811,7 +19813,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3599 2005/09/23 05:07:49 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3600 2005/09/23 11:02:37 dawes Exp $
 
 
 
