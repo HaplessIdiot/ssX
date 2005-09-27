@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.85 2005/09/08 09:31:55 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.86 2005/09/08 14:52:08 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -2926,8 +2926,10 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
 
    pI830->vesa->monitor = vbeDoEDID(pI830->pVbe, pDDCModule);
 
-   if ((pScrn->monitor->DDC = pI830->vesa->monitor) != NULL)
+   if ((pScrn->monitor->DDC = pI830->vesa->monitor) != NULL) {
+      xf86PrintEDID(pI830->vesa->monitor);
       xf86SetDDCproperties(pScrn, pI830->vesa->monitor);
+   }
    xf86UnloadSubModule(pDDCModule);
 
    /* XXX Move this to a header. */
@@ -3110,23 +3112,25 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
       do {
          int Clock = 100000000; /* incredible value */
 
-         for (pMon = pScrn->monitor->Modes; pMon != NULL; pMon = pMon->next) {
-            if ((pMon->HDisplay != p->HDisplay) ||
-                (pMon->VDisplay != p->VDisplay) ||
-                (pMon->Flags & (V_INTERLACE | V_DBLSCAN | V_CLKDIV2)))
-               continue;
+	 if (p->status == MODE_OK) {
+            for (pMon = pScrn->monitor->Modes; pMon != NULL; pMon = pMon->next) {
+               if ((pMon->HDisplay != p->HDisplay) ||
+                   (pMon->VDisplay != p->VDisplay) ||
+                   (pMon->Flags & (V_INTERLACE | V_DBLSCAN | V_CLKDIV2)))
+                   continue;
 
-            /* Find lowest supported Clock for this resolution */
-            if (Clock > pMon->Clock)
-               Clock = pMon->Clock;
-         } 
+               /* Find lowest supported Clock for this resolution */
+               if (Clock > pMon->Clock)
+                  Clock = pMon->Clock;
+            } 
 
-         if (DDCclock < 2550 && Clock / 1000.0 > DDCclock) {
-            ErrorF("(%s,%s) mode clock %gMHz exceeds DDC maximum %dMHz\n",
+            if (DDCclock < 2550 && Clock / 1000.0 > DDCclock) {
+               ErrorF("(%s,%s) mode clock %gMHz exceeds DDC maximum %dMHz\n",
 		   p->name, pScrn->monitor->id,
 		   Clock/1000.0, DDCclock);
-            p->status = MODE_BAD;
-         } 
+               p->status = MODE_BAD;
+            } 
+ 	 }
          p = p->next;
       } while (p != NULL && p != pScrn->modes);
    }
@@ -3824,6 +3828,7 @@ I830VESASetVBEMode(ScrnInfoPtr pScrn, int mode, VbeCRTCInfoBlock * block)
 		    "Set refresh rate to %dHz on Clone head.\n",
 		    pI830->CloneRefresh);
       }
+
       SetPipeAccess(pScrn);
    }
 
@@ -5074,9 +5079,10 @@ I830DetectMonitorChange(ScrnInfoPtr pScrn)
       xfree(pI830->vesa->monitor);
    pI830->vesa->monitor = vbeDoEDID(pI830->pVbe, pDDCModule);
    xf86UnloadSubModule(pDDCModule);
-   if ((pScrn->monitor->DDC = pI830->vesa->monitor) != NULL)
+   if ((pScrn->monitor->DDC = pI830->vesa->monitor) != NULL) {
+      xf86PrintEDID(pI830->vesa->monitor);
       xf86SetDDCproperties(pScrn, pI830->vesa->monitor);
-   else 
+   } else 
       /* No DDC, so get out of here, and continue to use the current settings */
       return FALSE; 
 
@@ -5114,33 +5120,35 @@ I830DetectMonitorChange(ScrnInfoPtr pScrn)
 			pScrn->display->virtualY,
 			memsize, LOOKUP_BEST_REFRESH);
 
-if (DDCclock > 0) {
-   p = pScrn->modes;
-   if (p == NULL)
-      return FALSE;
-   do {
-      int Clock = 100000000; /* incredible value */
+   if (DDCclock > 0) {
+      p = pScrn->modes;
+      if (p == NULL)
+         return FALSE;
+      do {
+         int Clock = 100000000; /* incredible value */
 
-      for (pMon = pScrn->monitor->Modes; pMon != NULL; pMon = pMon->next) {
-         if ((pMon->HDisplay != p->HDisplay) ||
-             (pMon->VDisplay != p->VDisplay) ||
-             (pMon->Flags & (V_INTERLACE | V_DBLSCAN | V_CLKDIV2)))
-            continue;
+         if (p->status == MODE_OK) {
+            for (pMon = pScrn->monitor->Modes; pMon != NULL; pMon = pMon->next) {
+               if ((pMon->HDisplay != p->HDisplay) ||
+                   (pMon->VDisplay != p->VDisplay) ||
+                   (pMon->Flags & (V_INTERLACE | V_DBLSCAN | V_CLKDIV2)))
+                  continue;
 
-         /* Find lowest supported Clock for this resolution */
-         if (Clock > pMon->Clock)
-            Clock = pMon->Clock;
-      } 
+               /* Find lowest supported Clock for this resolution */
+               if (Clock > pMon->Clock)
+                  Clock = pMon->Clock;
+            } 
 
-      if (DDCclock < 2550 && Clock / 1000.0 > DDCclock) {
-         ErrorF("(%s,%s) mode clock %gMHz exceeds DDC maximum %dMHz\n",
+            if (DDCclock < 2550 && Clock / 1000.0 > DDCclock) {
+               ErrorF("(%s,%s) mode clock %gMHz exceeds DDC maximum %dMHz\n",
 		   p->name, pScrn->monitor->id,
 		   Clock/1000.0, DDCclock);
-         p->status = MODE_BAD;
-      } 
-      p = p->next;
-   } while (p != NULL && p != pScrn->modes);
-}
+               p->status = MODE_BAD;
+            } 
+         }
+         p = p->next;
+      } while (p != NULL && p != pScrn->modes);
+   }
 
    pScrn->displayWidth = displayWidth; /* restore old displayWidth */
 
