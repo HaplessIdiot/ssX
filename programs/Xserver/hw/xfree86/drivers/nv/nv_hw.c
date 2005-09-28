@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_hw.c,v 1.16 2005/09/14 02:28:03 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_hw.c,v 1.17 2005/09/22 20:34:42 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -915,6 +915,7 @@ void NVLoadStateExt (
     RIVA_HW_STATE *state
 )
 {
+    CARD32 tmp;
     int i;
 
     pNv->PMC[0x0140/4] = 0x00000000;
@@ -1168,6 +1169,10 @@ void NVLoadStateExt (
               pNv->PGRAPH[0x0090/4] = 0x00008000;
               pNv->PGRAPH[0x0610/4] = 0x00be3c5f;
 
+              tmp = pNv->REGS[0x1540/4] & 0xff;
+              for(i = 0; tmp && !(tmp & 1); tmp >>= 1, i++);
+              pNv->PGRAPH[0x5000/4] = i;
+    
               if((pNv->Chipset & 0xfff0) == 0x0040) {
                  pNv->PGRAPH[0x09b0/4] = 0x83280fff;
                  pNv->PGRAPH[0x09b4/4] = 0x000000a0;
