@@ -1,4 +1,6 @@
 XFree86 4.5.99.13 (xx October 2005)
+ 150. Fix a graphics acceleration hang that occurred on some NVIDIA
+      GeForce 6xxx cards (Aaron Plattner).
  149. Put back the print code to display the DDC information, and
       remove some bogus DDC messages in the i830 driver (Alan Hourihane).
  148. Fix bug that occurs when using cfb to tile 32-bit rectangles on SPARC
@@ -19815,7 +19817,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3601 2005/09/23 15:41:35 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3602 2005/09/27 09:00:49 alanh Exp $
 
 
 
