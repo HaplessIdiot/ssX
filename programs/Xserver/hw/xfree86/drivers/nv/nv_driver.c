@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.136 2005/08/28 20:04:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.137 2005/09/14 02:28:03 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -82,7 +82,7 @@ DriverRec NV = {
         0
 };
 
-/* Known cards as of 2005/08/31  */
+/* Known cards as of 2005/09/21  */
 
 static SymTabRec NVKnownChipsets[] =
 {
@@ -295,7 +295,7 @@ static SymTabRec NVKnownChipsets[] =
   { 0x10DE0092, "GeForce 7800 GT" },
   { 0x10DE0093, "0x0093" },
   { 0x10DE0094, "0x0094" },
-  { 0x10DE0098, "0x0098" },
+  { 0x10DE0098, "GeForce Go 7800" },
   { 0x10DE0099, "GeForce Go 7800 GTX" },
   { 0x10DE009C, "0x009C" },
   { 0x10DE009D, "Quadro FX 4500" },
