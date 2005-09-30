@@ -7,7 +7,7 @@
  * Copyright © 2001 The XFree86 Project, Inc.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_agp.c,v 3.13 2005/09/22 12:32:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_agp.c,v 3.14 2005/09/22 12:33:59 alanh Exp $ */
 
 #include "X.h"
 #include "xf86.h"
@@ -256,7 +256,7 @@ xf86DeallocateGARTMemory(int screenNum, int key)
 		return FALSE;
 	}
 
-	if (ioctl(gartFd, AGPIOC_DEALLOCATE, (int *)key) != 0) {
+	if (ioctl(gartFd, AGPIOC_DEALLOCATE, key) != 0) {
 		xf86DrvMsg(screenNum, X_WARNING,"xf86DeAllocateGARTMemory: "
                    "deallocation gart memory with key %d failed\n\t(%s)\n",
                    key, strerror(errno));
