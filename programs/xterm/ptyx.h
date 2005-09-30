@@ -4,7 +4,7 @@
  *	$Xorg: ptyx.h,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/ptyx.h,v 3.124 2005/08/05 01:25:40 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/ptyx.h,v 3.125 2005/09/18 23:48:13 dickey Exp $ */
 
 /*
  * Copyright 1999-2004,2005 by Thomas E. Dickey
@@ -257,6 +257,10 @@
 #else
 #define MAXPTTYS 2048
 #endif
+#endif
+
+#ifndef OPT_WIDE_CHARS
+#define OPT_WIDE_CHARS  0 /* true if xterm supports 16-bit characters */
 #endif
 
 /* Until the translation manager comes along, I have to do my own translation of
@@ -617,10 +621,6 @@ typedef struct {
 
 #ifndef OPT_VT52_MODE
 #define OPT_VT52_MODE   1 /* true if xterm supports VT52 emulation */
-#endif
-
-#ifndef OPT_WIDE_CHARS
-#define OPT_WIDE_CHARS  0 /* true if xterm supports 16-bit characters */
 #endif
 
 #ifndef OPT_XMC_GLITCH
