@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.86 2005/09/08 14:52:08 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.87 2005/09/27 09:00:51 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -4992,6 +4992,11 @@ I830BIOSLeaveVT(int scrnIndex, int flags)
    if (pI830->devicesTimer)
       TimerCancel(pI830->devicesTimer);
    pI830->devicesTimer = NULL;
+
+#ifdef I830_XV
+   /* Give the video overlay code a chance to shutdown. */
+   I830VideoSwitchModeBefore(pScrn, NULL);
+#endif
 
    if (pI830->Clone) {
       /* Ensure we don't try and setup modes on a clone head */
