@@ -1,4 +1,6 @@
 XFree86 4.5.99.13 (xx October 2005)
+ 152. Rewrite shadowUpdateRotatePacked() to reduce cache misses
+      (Staffan Ulfberg).
  151. Fix lockup when suspend and resume when playing video on the i830.
       So we shutdown the overlay on LeaveVT (Alan Hourihane).
  150. Fix a graphics acceleration hang that occurred on some NVIDIA
@@ -19819,7 +19821,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3603 2005/09/28 17:46:28 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3604 2005/10/03 09:41:41 alanh Exp $
 
 
 
