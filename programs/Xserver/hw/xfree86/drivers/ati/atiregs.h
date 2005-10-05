@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.28tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.29tsi Exp $ */
 /*
  * Copyright 1994 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1952,6 +1952,19 @@
 #define CRT_HORZ_VERT_LOAD	BlockIOTag(0x151u)	/* VTB/GTB */
 #define AGP_BASE		BlockIOTag(0x152u)	/* GTPro */
 #define AGP_CNTL		BlockIOTag(0x153u)	/* GTPro */
+#define AGP_APER_SIZE_MASK		0x0000003ful
+#define AGP_APER_SIZE_256MB			0x00000000ul
+#define AGP_APER_SIZE_128MB			0x00000020ul
+#define AGP_APER_SIZE_64MB			0x00000030ul
+#define AGP_APER_SIZE_32MB			0x00000038ul
+#define AGP_APER_SIZE_16MB			0x0000003cul
+#define AGP_APER_SIZE_8MB			0x0000003eul
+#define AGP_APER_SIZE_4MB			0x0000003ful
+/*	?				0x000000c0ul */
+#define MAX_IDLE_CLK			0x0000ff00ul
+#define HIGH_PRIORITY_READ_EN		0x00010000ul
+#define AGP_TRDY_MODE			0x00020000ul
+/*	?				0xfffc0000ul */
 #define SCALER_COLOUR_CNTL	BlockIOTag(0x154u)	/* GTPro */
 #define SCALE_BRIGHTNESS		0x0000007ful
 /*	?				0x00000080ul */
