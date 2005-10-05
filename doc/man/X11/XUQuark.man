@@ -40,7 +40,7 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
-.\" $XFree86: xc/doc/man/X11/XUQuark.man,v 1.5 2003/04/28 22:17:57 herrb Exp $
+.\" $XFree86: xc/doc/man/X11/XUQuark.man,v 1.6 2005/02/11 03:02:56 dawes Exp $
 .\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
@@ -153,7 +153,7 @@ XrmQuark XrmUniqueQuark\^(void);
 .br
 \&#define XrmStringToRepresentation(string) XrmStringToQuark(string)
 .HP
-int XrmQuark XrmStringToQuark\^(\^char *\fIstring\fP\^); 
+XrmQuark XrmStringToQuark\^(\^char *\fIstring\fP\^); 
 .HP
 XrmQuark XrmPermStringToQuark\^(\^char *\fIstring\fP\^); 
 .LP
@@ -183,7 +183,7 @@ char *XrmQuarkToString\^(\^XrmQuark \fIquark\fP\^);
 void XrmStringToQuarkList\^(\^char *\fIstring\fP\^, XrmQuarkList
 \fIquarks_return\fP\^); 
 .HP
-XrmStringToBindingQuarkList\^(\^char *\fIstring\fP\^, XrmBindingList
+void XrmStringToBindingQuarkList\^(\^char *\fIstring\fP\^, XrmBindingList
 \fIbindings_return\fP\^, XrmQuarkList \fIquarks_return\fP\^); 
 .SH ARGUMENTS
 .IP \fIbindings_return\fP 1i
