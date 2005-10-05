@@ -1,4 +1,6 @@
 XFree86 4.5.99.13 (xx October 2005)
+ 153. Fix typos in the XrmUniqueQuark(3) man page (Bugzilla #1621,
+      Nicolas Joly).
  152. Rewrite shadowUpdateRotatePacked() to reduce cache misses
       (Staffan Ulfberg).
  151. Fix lockup when suspend and resume when playing video on the i830.
@@ -19821,7 +19823,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3604 2005/10/03 09:41:41 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3605 2005/10/04 16:32:35 tsi Exp $
 
 
 
