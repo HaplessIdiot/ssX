@@ -46,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * additional blank space to make the structure of the graph easier to see
  * as well as to support vertical trees.
  */
-/* $XFree86: xc/lib/Xaw/Tree.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/lib/Xaw/Tree.c,v 1.13 2005/09/16 14:36:07 tsi Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -90,7 +90,7 @@ static void delete_node(Widget, Widget);
 static GC get_tree_gc(TreeWidget);
 static void initialize_dimensions(Dimension**, int*, int);
 static void insert_node(Widget, Widget);
-static void layout_tree(TreeWidget, Bool);
+static void layout_tree(Widget, Bool);
 static void set_positions(TreeWidget, Widget, int);
 static void set_tree_size(TreeWidget, Bool, unsigned int, unsigned int);
 
@@ -139,6 +139,11 @@ static XtResource treeConstraintResources[] = {
 	XtOffsetOf(TreeConstraintsRec, tree.gc), XtRImmediate, NULL },
 };
 
+TreeExtensionClassPart treeExtensionClassPart = {
+    layout_tree,			/* do_layout          */
+    {NULL, NULL, NULL, NULL},		/* padding            */
+    NULL,				/* extension          */
+};
 
 TreeClassRec treeClassRec = {
   {
@@ -195,8 +200,8 @@ TreeClassRec treeClassRec = {
    NULL,				/* extension           */
    },
   {
-					/* Tree class fields */
-    0,					/* ignore              */	
+					/* tree_class fields   */
+    &treeExtensionClassPart,		/* extension           */	
   }
 };
 
@@ -419,7 +424,7 @@ XawTreeConstraintInitialize(Widget request, Widget cnew,
 			    ArgList args, Cardinal *num_args)
 {
     TreeConstraints tc = TREE_CONSTRAINT(cnew);
-    TreeWidget tw = (TreeWidget) cnew->core.parent;
+    TreeWidget tw = (TreeWidget) XtParent(cnew);
 
     /*
      * Initialize the widget to have no sub-nodes.
@@ -487,7 +492,7 @@ XawTreeSetValues(Widget gcurrent, Widget grequest, Widget gnew,
 	cnew->tree.layout != current->tree.layout ||
 #endif
 	cnew->tree.gravity != current->tree.gravity) {
-	layout_tree (cnew, TRUE);
+	(TREE_CLASS_EXTENSION(cnew)->do_layout) (gnew, TRUE);
 	redraw = FALSE;
     }
     return redraw;
@@ -501,7 +506,7 @@ XawTreeConstraintSetValues(Widget current, Widget request, Widget cnew,
 {
     TreeConstraints newc = TREE_CONSTRAINT(cnew);
     TreeConstraints curc = TREE_CONSTRAINT(current);
-    TreeWidget tw = (TreeWidget) cnew->core.parent;
+    TreeWidget tw = (TreeWidget) XtParent(cnew);
 
     /*
      * If the parent field has changed, remove the widget
@@ -519,7 +524,7 @@ XawTreeConstraintSetValues(Widget current, Widget request, Widget cnew,
 	 * compute new layout.
 	 */
 	if (XtIsRealized((Widget)tw))
-	  layout_tree (tw, FALSE);
+	    (TREE_CLASS_EXTENSION(tw)->do_layout) ((Widget)tw, FALSE);
     }
     return False;
 }
@@ -544,11 +549,11 @@ XawTreeConstraintDestroy(Widget w)
 	  tw->tree.tree_root = NULL;
     }
 
-    delete_node (tc->tree.parent, (Widget) w);
+    delete_node (tc->tree.parent, w);
     for (i = 0; i< tc->tree.n_children; i++)
       insert_node (tc->tree.parent, tc->tree.children[i]);
 
-    layout_tree ((TreeWidget) (w->core.parent), FALSE);
+    (TREE_CLASS_EXTENSION(tw)->do_layout) ((Widget)tw, FALSE);
 }
 
 /* ARGSUSED */
@@ -556,8 +561,7 @@ static XtGeometryResult
 XawTreeGeometryManager(Widget w, XtWidgetGeometry *request,
 		       XtWidgetGeometry *reply)
 {
-
-    TreeWidget tw = (TreeWidget) w->core.parent;
+    TreeWidget tw = (TreeWidget) XtParent(w);
 
     /*
      * No position changes allowed!.
@@ -577,24 +581,26 @@ XawTreeGeometryManager(Widget w, XtWidgetGeometry *request,
     if (request->request_mode & CWBorderWidth)
       w->core.border_width = request->border_width;
 
-    if (tw->tree.auto_reconfigure) layout_tree (tw, FALSE);
+    if (tw->tree.auto_reconfigure)
+	(TREE_CLASS_EXTENSION(tw)->do_layout) ((Widget)tw, FALSE);
+
     return (XtGeometryYes);
 }
 
 static void
 XawTreeChangeManaged(Widget gw)
 {
-    layout_tree ((TreeWidget) gw, FALSE);
+    (TREE_CLASS_EXTENSION(gw)->do_layout) (gw, FALSE);
 }
 
 
 static void
 XawTreeDestroy(Widget gw)
 {
-    TreeWidget w = (TreeWidget) gw;
+    TreeWidget tw = (TreeWidget) gw;
 
-    XtReleaseGC (gw, w->tree.gc);
-    if (w->tree.largest) XtFree ((char *) w->tree.largest);
+    XtReleaseGC (gw, tw->tree.gc);
+    if (tw->tree.largest) XtFree ((char *) tw->tree.largest);
 }
 
 
@@ -1026,10 +1032,11 @@ set_tree_size(TreeWidget tw, Bool insetvalues,
 }
 
 static void
-layout_tree(TreeWidget tw, Bool insetvalues)
+layout_tree(Widget w, Bool insetvalues)
 {
     int i;
     Dimension *dp;
+    TreeWidget tw = (TreeWidget) w;
 
     /*
      * Do a depth-first search computing the width and height of the bounding
@@ -1079,6 +1086,6 @@ layout_tree(TreeWidget tw, Bool insetvalues)
 void
 XawTreeForceLayout(Widget tree)
 {
-    layout_tree ((TreeWidget) tree, FALSE);
+    (TREE_CLASS_EXTENSION(tree)->do_layout) (tree, FALSE);
 }
 

@@ -46,13 +46,22 @@ in this Software without prior written authorization from The Open Group.
  * additional blank space to make the structure of the graph easier to see
  * as well as to support vertical trees.
  */
-/* $XFree86: xc/lib/Xaw/TreeP.h,v 1.7 2001/12/14 19:54:45 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TreeP.h,v 1.8 2005/09/13 02:05:04 dawes Exp $ */
 
 
 #ifndef _XawTreeP_h
 #define _XawTreeP_h
 
 #include <X11/Xaw/Tree.h>
+
+typedef void (*TreeLayoutProc)(Widget, Bool);
+
+/* this structure is used to keep binary compatability */
+typedef struct {
+    TreeLayoutProc do_layout;
+    XtPointer pad[4];
+    XtPointer extension;
+} TreeExtensionClassPart;
 
 typedef struct _TreeClassPart {
     XtPointer extension;
@@ -66,6 +75,7 @@ typedef struct _TreeClassRec {
 } TreeClassRec;
 
 extern TreeClassRec treeClassRec;
+
 
 typedef struct {
     /* fields available through resources */
@@ -87,7 +97,6 @@ typedef struct {
     XtPointer pad[3];	/* for future use and keep binary compatability */
 #endif
 } TreePart;
-
 
 typedef struct _TreeRec {
     CorePart core;
@@ -130,11 +139,17 @@ typedef struct _TreeConstraintsRec {
 #define TREE_CONSTRAINT(w) \
                    ((TreeConstraints)((w)->core.constraints))
 
+#define TREE_CLASS_PART(w) \
+                   (((TreeWidgetClass) XtClass(w))->tree_class)
+
+#define TREE_CLASS_EXTENSION(w) \
+    ((TreeExtensionClassPart*) (TREE_CLASS_PART(w).extension))
+
+#define XawInheritTreeLayout ((TreeLayoutProc) _XtInherit)
+
 #define TREE_INITIAL_DEPTH 10		/* for allocating largest array */
 #define TREE_HORIZONTAL_DEFAULT_SPACING 20
 #define TREE_VERTICAL_DEFAULT_SPACING 6
 
 #endif /* _XawTreeP_h */
-
-
 
