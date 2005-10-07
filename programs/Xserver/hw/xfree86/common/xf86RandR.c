@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86RandR.c,v 1.7tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86RandR.c,v 1.8 2003/11/10 16:42:13 tsi Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -186,7 +186,7 @@ xf86RandRSetConfig (ScreenPtr		pScreen,
     if (pScreen == miPointerCurrentScreen ())
     {
 	if (px < pSize->width && py < pSize->height)
-	    (*pScreen->SetCursorPosition) (pScreen, px, py, FALSE);
+	    (*scrp->PointerMoved) (pScreen->myNum, px, py);
     }
     return TRUE;
 }
