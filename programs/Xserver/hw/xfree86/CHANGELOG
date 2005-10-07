@@ -1,5 +1,5 @@
 XFree86 4.5.99.13 (xx October 2005)
- 155. Use PointerMoved instead of SetCursorPosition during RandR rotation, 
+ 155. Use PointerMoved as well as SetCursorPosition during RandR rotation, 
       as PointerMoved will call AdjustFrame to reposition the window if 
       necessary and avoid the cursor ending up offscreen (Alan Hourihane).
  154. Refactor Xaw Tree widget code to aid future extension (Bugzilla #1619,
@@ -19828,7 +19828,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3607 2005/10/05 00:33:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3608 2005/10/07 15:42:28 alanh Exp $
 
 
 
