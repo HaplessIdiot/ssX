@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86RandR.c,v 1.8 2003/11/10 16:42:13 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86RandR.c,v 1.9 2005/10/07 15:42:29 alanh Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -185,8 +185,12 @@ xf86RandRSetConfig (ScreenPtr		pScreen,
      */
     if (pScreen == miPointerCurrentScreen ())
     {
-	if (px < pSize->width && py < pSize->height)
+	if (px < pSize->width && py < pSize->height) {
+	    (*pScreen->SetCursorPosition) (pScreen, px, py, FALSE);
+
+	    /* Ensure AdjustFrame is called */
 	    (*scrp->PointerMoved) (pScreen->myNum, px, py);
+	}
     }
     return TRUE;
 }
