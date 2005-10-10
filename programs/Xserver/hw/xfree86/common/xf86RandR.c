@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86RandR.c,v 1.11 2005/10/07 21:30:18 alanh Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86RandR.c,v 1.12 2005/10/10 09:25:30 alanh Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -185,15 +185,14 @@ xf86RandRSetConfig (ScreenPtr		pScreen,
      */
     if (pScreen == miPointerCurrentScreen ())
     {
-	if (px < pSize->width && py < pSize->height)
-	    (*pScreen->SetCursorPosition) (pScreen, px, py, FALSE);
-
-        if (px >= pScreen->width || py >= pScreen->height) {
+	if (px >= pScreen->width || py >= pScreen->height) {
             px = pScreen->width - 1;
             py = pScreen->height - 1;
         }
 
-        xf86SetViewport(pScreen->myNum, px, py);
+        xf86SetViewport(pScreen, px, py);
+
+        (*pScreen->SetCursorPosition) (pScreen, px, py, FALSE);
     }
     return TRUE;
 }
