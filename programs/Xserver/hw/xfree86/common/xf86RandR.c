@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86RandR.c,v 1.13 2005/10/10 09:31:14 alanh Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86RandR.c,v 1.14 2005/10/10 10:09:25 alanh Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -37,9 +37,10 @@ typedef struct _xf86RandRInfo {
     CloseScreenProcPtr		    CloseScreen;
     int				    virtualX;
     int				    virtualY;
+    Rotation			    rotation;
 } XF86RandRInfoRec, *XF86RandRInfoPtr;
     
-static int	    xf86RandRIndex;
+static int	    xf86RandRIndex = -1;
 static int	    xf86RandRGeneration;
 
 #define XF86RANDRINFO(p)    ((XF86RandRInfoPtr) (p)->devPrivates[xf86RandRIndex].ptr)
@@ -130,6 +131,8 @@ xf86RandRSetMode (ScreenPtr	    pScreen,
     {
 	scrp->virtualX = pScreen->width = oldWidth;
 	scrp->virtualY = pScreen->height = oldHeight;
+        if (pRoot)
+	    xf86EnableDisableFBAccess (pScreen->myNum, TRUE);
 	return FALSE;
     }
     /*
@@ -158,6 +161,7 @@ xf86RandRSetConfig (ScreenPtr		pScreen,
     DisplayModePtr	    mode;
     int			    px, py;
     Bool		    useVirtual = FALSE;
+    Rotation                oldRotation = randrp->rotation;
 
     miPointerPosition (&px, &py);
     for (mode = scrp->modes; ; mode = mode->next)
@@ -178,8 +182,14 @@ xf86RandRSetConfig (ScreenPtr		pScreen,
 	    return FALSE;
 	}
     }
-    if (!xf86RandRSetMode (pScreen, mode, useVirtual))
+
+    randrp->rotation = rotation;
+
+    if (!xf86RandRSetMode (pScreen, mode, useVirtual)) {
+        randrp->rotation = oldRotation;
 	return FALSE;
+    }
+
     /*
      * Move the cursor back where it belongs; SwitchMode repositions it
      */
@@ -240,6 +250,17 @@ xf86RandRCloseScreen (int index, ScreenPtr pScreen)
     return (*pScreen->CloseScreen) (index, pScreen);
 }
 
+Rotation
+xf86GetRotation(ScreenPtr pScreen)
+{
+    XF86RandRInfoPtr randrp;
+
+    if (xf86RandRIndex == -1)
+	return RR_Rotate_0;
+
+    return XF86RANDRINFO(pScreen)->rotation;
+}
+
 Bool
 xf86RandRInit (ScreenPtr    pScreen)
 {
@@ -279,6 +300,8 @@ xf86RandRInit (ScreenPtr    pScreen)
     
     randrp->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = xf86RandRCloseScreen;
+
+    randrp->rotation = RR_Rotate_0;
 
     pScreen->devPrivates[xf86RandRIndex].ptr = randrp;
     return TRUE;
