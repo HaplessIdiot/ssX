@@ -1,8 +1,12 @@
 XFree86 4.5.99.14 (xx October 2005)
+ 157. Fix up error case when rotation fails and framebuffer needs to be
+      re-enabled (Alan Hourihane).
+ 156. Add a new function xf86GetRotation() to allow third party modules to
+      obtain the current rotation (Alan Hourihane).
 
 XFree86 4.5.99.13 (8 October 2005)
- 155. Use PointerMoved as well as SetCursorPosition during RandR rotation, 
-      as PointerMoved will call AdjustFrame to reposition the window if 
+ 155. Use xf86SetViewport as well as SetCursorPosition during RandR rotation, 
+      as xf86SetViewport will call AdjustFrame to reposition the window if 
       necessary and avoid the cursor ending up offscreen (Alan Hourihane).
  154. Refactor Xaw Tree widget code to aid future extension (Bugzilla #1619,
       Alexander Pohoyda).
@@ -19830,7 +19834,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3609 2005/10/07 18:13:48 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3610 2005/10/08 11:02:39 dawes Exp $
 
 
 
