@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.187tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.188 2005/08/28 20:04:46 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -108,6 +108,9 @@
 #include <stdarg.h>
 #else
 #include "xf86_ansic.h"
+#endif
+#ifdef RANDR
+#include <X11/extensions/randr.h>
 #endif
 
 #include "propertyst.h"
@@ -656,6 +659,7 @@ void xf86CollectOptions(ScrnInfoPtr pScrn, pointer extraOpts);
 #ifdef RANDR
 Bool xf86RandRInit (ScreenPtr    pScreen);
 void xf86RandRSetInitialMode (ScreenPtr pScreen);
+Rotation xf86GetRotation(ScreenPtr pScreen);
 #endif
 
 /* xf86VidModeExtentionInit.c */
