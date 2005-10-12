@@ -26,7 +26,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessConfig.h,v 1.1 2003/04/15 01:05:44 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessConfig.h,v 1.2 2003/10/24 00:33:14 torrey Exp $ */
 
 #ifndef _ROOTLESSCONFIG_H
 #define _ROOTLESSCONFIG_H
@@ -40,11 +40,11 @@
 # define ROOTLESS_RESIZE_GRAVITY TRUE
 # undef  ROOTLESS_TRACK_DAMAGE
 
+#endif /* __DARWIN__ */
+
 /* Bit mask for alpha channel with a particular number of bits per
    pixel. Note that we only care for 32bpp data. Mac OS X uses planar
    alpha for 16bpp. */
-# define RootlessAlphaMask(bpp) ((bpp) == 32 ? 0xFF000000 : 0)
-
-#endif /* __DARWIN__ */
+#define RootlessAlphaMask(bpp) ((bpp) == 32 ? 0xFF000000 : 0)
 
 #endif /* _ROOTLESSCONFIG_H */

@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessGC.c,v 1.1 2003/04/15 01:05:44 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessGC.c,v 1.2 2003/10/24 00:33:14 torrey Exp $ */
 
 #include "mi.h"
 #include "scrnintstr.h"
@@ -45,7 +45,7 @@
 
 #include "rootlessCommon.h"
 
-#if ROOTLESS_ACCEL
+#ifdef ROOTLESS_ACCEL
 #include "rlAccel.h"
 #endif
 
@@ -283,7 +283,7 @@ RootlessCreateGC(GCPtr pGC)
             devPrivates[rootlessScreenPrivateIndex].ptr;
     result = s->CreateGC(pGC);
 
-#if ROOTLESS_ACCEL
+#ifdef ROOTLESS_ACCEL
     pGC->ops->FillSpans = rlFillSpans;
     pGC->ops->CopyArea = rlCopyArea;
     pGC->ops->PolyFillRect = rlPolyFillRect;
