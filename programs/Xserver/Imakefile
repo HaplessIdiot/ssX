@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.314tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.315tsi Exp $
 
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -1185,9 +1185,14 @@ CFB8SUBDIR  = cfb
 CFB16SUBDIR = cfb16
 CFB32SUBDIR = cfb32
 #if HasParallelMake
-MakeMutex($(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DEPDIRS))
+MakeMutex($(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) \
+	  $(SHADOWDIR) $(LAYERDIR) $(ROOTLESSDIR) \
+	  $(AFBDIR) $(FBDIR) $(DEPDIRS))
 #endif
-Xnon: $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DEPDIRS)
+all:: Xnon
+Xnon: $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) \
+      $(SHADOWDIR) $(LAYERDIR) $(ROOTLESSDIR) \
+      $(AFBDIR) $(FBDIR) $(DEPDIRS)
 #endif /* XnonServer */
 
 
