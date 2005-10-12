@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86RandR.c,v 1.14 2005/10/10 10:09:25 alanh Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86RandR.c,v 1.15 2005/10/11 14:57:57 alanh Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -253,8 +253,6 @@ xf86RandRCloseScreen (int index, ScreenPtr pScreen)
 Rotation
 xf86GetRotation(ScreenPtr pScreen)
 {
-    XF86RandRInfoPtr randrp;
-
     if (xf86RandRIndex == -1)
 	return RR_Rotate_0;
 
