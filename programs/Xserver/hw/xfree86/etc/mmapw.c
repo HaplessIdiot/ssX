@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapw.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapw.c,v 1.11tsi Exp $ */
 /*
  * Copyright 2002 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -261,7 +261,7 @@ main(int argc, char **argv)
 	{
 	    *(volatile unsigned char *)(ptr)((char *)buffer + Offset) =
 		(unsigned char)data;
-	    data >>= 8 * sizeof(datab);
+	    data >>= 8 * (sizeof(datab) & (sizeof(data) - 1));
 	    Offset += sizeof(datab);
 	    size -= sizeof(datab);
 	} while (size);
@@ -273,7 +273,7 @@ main(int argc, char **argv)
 	{
 	    *(volatile unsigned short *)(ptr)((char *)buffer + Offset) =
 		(unsigned short)data;
-	    data >>= 8 * sizeof(dataw);
+	    data >>= 8 * (sizeof(dataw) & (sizeof(data) - 1));
 	    Offset += sizeof(dataw);
 	    size -= sizeof(dataw);
 	} while (size);
@@ -285,7 +285,7 @@ main(int argc, char **argv)
 	{
 	    *(volatile unsigned int *)(ptr)((char *)buffer + Offset) =
 		(unsigned int)data;
-	    data >>= 8 * sizeof(datal);
+	    data >>= 8 * (sizeof(datal) & (sizeof(data) - 1));
 	    Offset += sizeof(datal);
 	    size -= sizeof(datal);
 	} while (size);
@@ -297,7 +297,7 @@ main(int argc, char **argv)
 	{
 	    *(volatile unsigned long *)(ptr)((char *)buffer + Offset) =
 		(unsigned long)data;
-	    data >>= 8 * sizeof(dataL);
+	    data >>= 8 * (sizeof(dataL) & (sizeof(data) - 1));
 	    Offset += sizeof(dataL);
 	    size -= sizeof(dataL);
 	} while (size);
