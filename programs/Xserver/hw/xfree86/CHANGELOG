@@ -1,4 +1,6 @@
 XFree86 4.5.99.14 (xx October 2005)
+ 158. Change the cpconfig utility to use the same default XF86Config search
+      path as the X server (Marc La France).
  157. Fix up error case when rotation fails and framebuffer needs to be
       re-enabled (Alan Hourihane).
  156. Add a new function xf86GetRotation() to allow third party modules to
@@ -19834,7 +19836,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3610 2005/10/08 11:02:39 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3611 2005/10/11 14:57:56 alanh Exp $
 
 
 
