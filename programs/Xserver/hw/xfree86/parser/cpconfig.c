@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/cpconfig.c,v 1.6 2000/10/20 14:59:03 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/cpconfig.c,v 1.7tsi Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -58,10 +58,6 @@ xrealloc (void *p, int size)
 
 #endif
 
-#define CONFPATH "%A,%R,/etc/X11/%R,%P/etc/X11/%R,%E,%F,/etc/X11/%F," \
-		 "%P/etc/X11/%F,%D/%X,/etc/X11/%X,/etc/%X,%P/etc/X11/%X.%H," \
-		 "%P/etc/X11/%X,%P/lib/X11/%X.%H,%P/lib/X11/%X"
-
 int
 main (int argc, char *argv[])
 {
@@ -73,7 +69,7 @@ main (int argc, char *argv[])
 	{
 		cmdline = argv[1];
 	}
-	if ((filename = xf86openConfigFile (CONFPATH, cmdline, NULL)))
+	if ((filename = xf86openConfigFile (NULL, cmdline, NULL)))
 	{
 		fprintf (stderr, "Opened %s for the config file\n", filename);
 	}
