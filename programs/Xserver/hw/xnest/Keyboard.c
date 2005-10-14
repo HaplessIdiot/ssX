@@ -11,12 +11,12 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Keyboard.c,v 1.10 2003/11/16 05:05:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Keyboard.c,v 1.11tsi Exp $ */
 
 #define NEED_EVENTS
-#include "X.h"
-#include "Xproto.h"
-#include "keysym.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
+#include <X11/keysym.h>
 #include "screenint.h"
 #include "inputstr.h"
 #include "misc.h"

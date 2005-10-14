@@ -1,4 +1,4 @@
-/* $Xorg: init.c,v 1.4 2001/02/09 02:05:31 xorgcvs Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/init.c,v 1.7tsi Exp $ */
 /*
 
 Copyright 1998  The Open Group
@@ -45,7 +45,6 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/di/init.c,v 1.6tsi Exp $ */
 
 /*
  * This file is used for anything that needs to dip into Xlib structures
@@ -61,7 +60,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xlibint.h>
 #include <X11/Xutil.h>
 #include <stdio.h>
-#include "XLbx.h"
+#include <X11/extensions/XLbx.h>
 #include "init.h"
 
 /* Hook up to an X server and set up a multiplexing LBX encoded connection */

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/miext/rootless/Imakefile,v 1.4 2004/03/18 07:07:11 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/miext/rootless/Imakefile,v 1.5tsi Exp $
 
 #include <Server.tmpl>
 
@@ -35,9 +35,8 @@ OBJS =  rootlessCommon.o \
         rootlessGC.o \
         rootlessValTree.o
 
-INCLUDES = -I. -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
-           -I$(XINCLUDESRC) -I$(FONTINCSRC) -I$(SERVERSRC)/render \
-           -I$(EXTINCSRC) $(ACCELINCS)
+INCLUDES = -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
+           -I$(SERVERSRC)/render $(ACCELINCS)
 
 NormalLibraryObjectRule()
 LibraryModuleTarget(rootless,$(OBJS),.)

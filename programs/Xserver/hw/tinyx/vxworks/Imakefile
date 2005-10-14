@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/vxworks/Imakefile,v 1.1 1999/12/30 03:03:21 robin Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/vxworks/Imakefile,v 1.1tsi Exp $
 
 #include <Server.tmpl>
 
@@ -6,9 +6,8 @@ SRCS = vxworks.c vxkbd.c vxkmouse.c
 
 OBJS = vxworks.o vxkbd.o vxkmouse.o
 
-INCLUDES = -I. -I.. -I$(XBUILDINCDIR) -I$(FONTINCSRC) \
-	   -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
-	   -I$(SERVERSRC)/os -I$(EXTINCSRC) -I$(XINCLUDESRC)
+INCLUDES = -I.. -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
+	   -I$(SERVERSRC)/os
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(vxworks,$(OBJS))

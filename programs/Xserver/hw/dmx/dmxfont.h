@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxfont.h,v 1.1tsi Exp $ */
 /*
  * Copyright 2001-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -38,7 +38,7 @@
 #ifndef DMXFONT_H
 #define DMXFONT_H
 
-#include "fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 
 /** Font private area. */
 typedef struct _dmxFontPriv {

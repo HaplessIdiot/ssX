@@ -3,13 +3,11 @@
  * 
  * Copyright 1999 by Andrew C Aitchison <A.C.Aitchison@dpmms.cam.ac.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/ddcProperty.c,v 1.10 2003/11/03 05:11:04 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/ddcProperty.c,v 1.11tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
-/* #include "xf86_ansic.h" */
-/* #include "xf86_OSproc.h" */
-#include "Xatom.h"
+#include <X11/Xatom.h>
 #include "property.h"
 #include "propertyst.h"
 #include "xf86DDC.h"

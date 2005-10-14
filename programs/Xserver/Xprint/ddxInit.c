@@ -76,16 +76,16 @@ copyright holders.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/Xprint/ddxInit.c,v 1.15 2003/06/23 17:35:44 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ddxInit.c,v 1.16tsi Exp $ */
 
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "windowstr.h"
 #include "servermd.h"
-#include "Xos.h"
+#include <X11/Xos.h>
 #include "DiPrint.h"
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * InitOutput --
  *	If this is built as a print-only server, then we must supply
@@ -312,8 +312,8 @@ ddxProcessArgument (
 
 #ifdef XINPUT
 
-#include "XI.h"
-#include "XIproto.h"
+#include <X11/extensions/XI.h>
+#include <X11/extensions/XIproto.h>
 #include "XIstubs.h"
 
 extern  int     BadDevice;

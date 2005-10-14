@@ -1,4 +1,4 @@
-/* $Xorg: Raster.h,v 1.3 2000/08/17 19:48:12 cpqbld Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/raster/Raster.h,v 1.4tsi Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -30,7 +30,6 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/raster/Raster.h,v 1.3 2001/10/31 22:50:29 tsi Exp $ */
 
 /*******************************************************************
 **
@@ -59,7 +58,7 @@ typedef char *XPointer;
 #define True 1
 #define False 0
 #include "misc.h"
-#include <Xfuncproto.h>
+#include <X11/Xfuncproto.h>
 #include <X11/Xresource.h>
 #include "attributes.h"
 

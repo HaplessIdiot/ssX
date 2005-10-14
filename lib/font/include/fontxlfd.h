@@ -1,5 +1,4 @@
-/* $Xorg: fontxlfd.h,v 1.4 2001/02/09 02:04:04 xorgcvs Exp $ */
-
+/* $XFree86: xc/lib/font/include/fontxlfd.h,v 1.6tsi Exp $ */
 /*
 
 Copyright 1990, 1994, 1998  The Open Group
@@ -27,7 +26,6 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/include/fontxlfd.h,v 1.5 2001/01/17 19:43:32 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -36,7 +34,7 @@ from The Open Group.
 #ifndef _FONTXLFD_H_
 #define _FONTXLFD_H_
 
-#include "FSproto.h"
+#include <X11/fonts/FSproto.h>
 
 /* Constants for values_supplied bitmap */
 

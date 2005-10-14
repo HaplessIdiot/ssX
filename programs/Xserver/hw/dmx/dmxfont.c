@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/dmxfont.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxfont.c,v 1.2tsi Exp $ */
 /*
  * Copyright 2001-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -42,7 +42,7 @@
 #include "dmxfont.h"
 #include "dmxlog.h"
 
-#include "fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 #include "dixfont.h"
 #include "dixstruct.h"
 

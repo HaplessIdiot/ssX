@@ -67,10 +67,10 @@ SOFTWARE.
  *      1, and an otherwise arbitrary ID in the low 22 bits, we can create a
  *      resource "owned" by the client.
  */
-/* $XFree86: xc/programs/Xserver/dix/resource.c,v 3.14 2003/11/17 22:20:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/resource.c,v 3.15tsi Exp $ */
 
 #define NEED_EVENTS
-#include "X.h"
+#include <X11/X.h>
 #include "misc.h"
 #include "os.h"
 #include "resource.h"

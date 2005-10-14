@@ -1,4 +1,4 @@
-/* $Xorg: PclFonts.c,v 1.3 2000/08/17 19:48:08 cpqbld Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclFonts.c,v 1.2tsi Exp $ */
 /*******************************************************************
 **
 **    *********************************************************
@@ -13,7 +13,6 @@
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86$ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -47,7 +46,7 @@ copyright holders.
 */
 
 #include "regionstr.h"
-#include "fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 #include "dixfontstr.h"
 #include "scrnintstr.h"
 

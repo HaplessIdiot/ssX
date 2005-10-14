@@ -1,4 +1,4 @@
-/* $Xorg: t1malloc.c,v 1.3 2000/08/17 19:46:34 cpqbld Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1malloc.c,v 1.12tsi Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -26,7 +26,6 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/t1malloc.c,v 1.11 2002/02/18 20:51:57 herrb Exp $ */
  /* MALLOC   CWEB         V0004 LOTS                                 */
 /*
 :h1.MALLOC - Fast Memory Allocation
@@ -39,8 +38,8 @@ routines (malloc/free).
 */
 
 #ifdef FONTMODULE
-#include "Xdefs.h"	/* Bool declaration */
-#include "Xmd.h"	/* INT32 declaration */
+#include <X11/Xdefs.h>	/* Bool declaration */
+#include <X11/Xmd.h>	/* INT32 declaration */
 #include "os.h"
 #include "xf86_ansic.h"
 #else

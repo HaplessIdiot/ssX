@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/iplan2p4/iplscrinit.c,v 3.2 1998/06/27 12:55:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplscrinit.c,v 3.3tsi Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -32,8 +32,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 /* Modified nov 94 by Martin Schaller (Martin_Schaller@maus.r.de) for use with
 interleaved planes */
 
-#include "X.h"
-#include "Xmd.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
 #include "servermd.h"
 #include "scrnintstr.h"
 #include "pixmapstr.h"

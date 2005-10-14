@@ -69,7 +69,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.37 2003/11/17 22:20:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.38tsi Exp $ */
 
 #include "misc.h"
 #include "scrnintstr.h"
@@ -92,11 +92,11 @@ SOFTWARE.
 #include "globals.h"
 
 #ifdef XAPPGROUP
-#include "Xagsrv.h"
+#include <X11/extensions/Xagsrv.h>
 #endif
 #ifdef XCSECURITY
 #define _SECURITY_SERVER
-#include "security.h"
+#include <X11/extensions/security.h>
 #endif
 
 /******

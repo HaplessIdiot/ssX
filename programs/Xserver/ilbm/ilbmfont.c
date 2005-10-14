@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmfont.c,v 3.0tsi Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -51,11 +51,11 @@ SOFTWARE.
 /* Modified jun 95 by Geert Uytterhoeven (Geert.Uytterhoeven@cs.kuleuven.ac.be)
    to use interleaved bitplanes instead of normal bitplanes */
 
-#include "X.h"
-#include "Xmd.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
+#include <X11/Xproto.h>
 #include "ilbm.h"
-#include "fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 #include "dixfontstr.h"
 #include "scrnintstr.h"
 

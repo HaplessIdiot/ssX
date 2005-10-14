@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mifpolycon.c,v 1.3 2001/12/14 20:00:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mifpolycon.c,v 1.4tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 #include <math.h>
-#include "X.h"
+#include <X11/X.h>
 #include "gcstruct.h"
 #include "windowstr.h"
 #include "pixmapstr.h"

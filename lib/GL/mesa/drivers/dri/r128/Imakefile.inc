@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/r128/Imakefile.inc,v 1.4 2004/12/13 18:16:48 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/r128/Imakefile.inc,v 1.5tsi Exp $
 
 #ifndef MesaDrvSrcDir
 #define MesaDrvSrcDir $(MESASRCDIR)/src/mesa/drivers/dri
@@ -18,7 +18,6 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #if BuildXF86DRI
   DRI_DEFINES = GlxDefines -DX_BYTE_ORDER=$(X_BYTE_ORDER)
  DRI_INCLUDES = -I$(GLXLIBSRC)/dri \
-		-I$(XINCLUDESRC) \
 		-I$(GLXLIBSRC)/glx \
 		-I$(GLXLIBSRC)/include \
 		-I$(SERVERSRC)/GL/dri \
@@ -36,7 +35,6 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
 		-I$(MESASRCDIR)/include \
 		-I$(MESADRVSRCDIR)/common \
 		-I$(MESADRVSRCDIR)/r128
-   X_INCLUDES = -I$(XINCLUDESRC) -I$(EXTINCSRC)
 
      R128SRCS = $(MESADRVR128BUILDDIR)r128_context.c \
 		$(MESADRVR128BUILDDIR)r128_dd.c \

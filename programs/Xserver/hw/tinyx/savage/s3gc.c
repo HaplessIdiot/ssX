@@ -20,7 +20,7 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/savage/s3gc.c,v 1.5 2000/08/09 17:52:42 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/savage/s3gc.c,v 1.1tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -71,13 +71,13 @@
 #include	"s3.h"
 #include	"s3draw.h"
 
-#include	"Xmd.h"
+#include	<X11/Xmd.h>
 #include	"gcstruct.h"
 #include	"scrnintstr.h"
 #include	"pixmapstr.h"
 #include	"regionstr.h"
 #include	"mistruct.h"
-#include	"fontstruct.h"
+#include	<X11/fonts/fontstruct.h>
 #include	"dixfontstr.h"
 #include	"migc.h"
 

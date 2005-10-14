@@ -18,7 +18,7 @@
 /***************************************************************************/
 
 /* Modified for XFree86 */
-/* $XFree86: xc/lib/font/FreeType/ftsystem.c,v 1.3 2002/10/01 00:02:10 alanh Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftsystem.c,v 1.4tsi Exp $ */
 
   /*************************************************************************/
   /*                                                                       */
@@ -43,9 +43,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #else
-#include "Xmd.h"
+#include <X11/Xmd.h>
 #define _XTYPEDEF_BOOL
-#include "Xdefs.h"
+#include <X11/Xdefs.h>
 #define DONT_DEFINE_WRAPPERS
 #include "xf86_ansic.h"
 #undef DONT_DEFINE_WRAPPERS

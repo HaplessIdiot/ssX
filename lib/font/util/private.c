@@ -1,5 +1,4 @@
-/* $Xorg: private.c,v 1.4 2001/02/09 02:04:04 xorgcvs Exp $ */
-
+/* $XFree86: xc/lib/font/util/private.c,v 1.9tsi Exp $ */
 /*
 
 Copyright 1991, 1998  The Open Group
@@ -25,14 +24,13 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/util/private.c,v 1.8tsi Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
  */
 
 #include    "fontmisc.h"
-#include    "fontstruct.h"
+#include    <X11/fonts/fontstruct.h>
 
 static int _FontPrivateAllocateIndex = 0;
 

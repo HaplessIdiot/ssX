@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/apple/applewm.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/lib/apple/applewm.c,v 1.4tsi Exp $ */
 /**************************************************************************
 
 Copyright (c) 2002 Apple Computer, Inc.
@@ -31,9 +31,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define NEED_EVENTS
 #define NEED_REPLIES
 #include <X11/Xlibint.h>
-#include "applewmstr.h"
+#include <X11/extensions/applewmstr.h>
 #include <X11/extensions/Xext.h>
-#include "extutil.h"
+#include <X11/extensions/extutil.h>
 #include <stdio.h>
 #include <X11/Xalloca.h>
 

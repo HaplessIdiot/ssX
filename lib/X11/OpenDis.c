@@ -1,4 +1,4 @@
-/* $Xorg: OpenDis.c,v 1.4 2001/02/09 02:03:34 xorgcvs Exp $ */
+/* $XFree86: xc/lib/X11/OpenDis.c,v 3.18tsi Exp $ */
 /*
 
 Copyright 1985, 1986, 1998  The Open Group
@@ -24,7 +24,6 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/OpenDis.c,v 3.16 2003/07/04 16:24:23 eich Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -32,7 +31,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xtrans.h>
 #include <X11/Xatom.h>
 #include <X11/Xresource.h>
-#include "bigreqstr.h"
+#include <X11/extensions/bigreqstr.h>
 #include <stdio.h>
 #include "Xintconn.h"
 

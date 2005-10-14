@@ -1,4 +1,4 @@
-/* $Xorg: XCrAssoc.c,v 1.4 2001/02/09 02:04:05 xorgcvs Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright 1985, 1998 The Open Group.
@@ -25,8 +25,8 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-#include "Xlibint.h"
-#include "X10.h"
+#include <X11/Xlibint.h>
+#include <X11/X10.h>
 
 /*
  * XCreateAssocTable - Create an XAssocTable.  The size argument should be

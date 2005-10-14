@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/x86/Imakefile,v 1.1tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/x86/Imakefile,v 1.2tsi Exp $
 
 /*
  * Need both shared and unshared Mesa objects in the following cases:
@@ -34,7 +34,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #include "Imakefile.inc"
 
       DEFINES = $(ALLOC_DEFINES) GlxDefines $(MESA_ASM_DEFINES)
-     INCLUDES = /*-I$(INCLUDESRC) -I$(EXTINCSRC)*/ -I$(MESASRCDIR)/src/mesa \
+     INCLUDES = -I$(MESASRCDIR)/src/mesa \
 		-I$(MESASRCDIR)/include \
 		-I$(GLXLIBSRC)/include \
 		-I$(MESASRCDIR)/src/mesa/main \

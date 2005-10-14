@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/swapreq.c,v 3.5 2002/02/19 11:09:22 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/swapreq.c,v 3.6tsi Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,10 +46,10 @@ SOFTWARE.
 
 ********************************************************/
 
-#include "X.h"
+#include <X11/X.h>
 #define NEED_EVENTS
-#include "Xproto.h"
-#include "Xprotostr.h"
+#include <X11/Xproto.h>
+#include <X11/Xprotostr.h>
 #include "misc.h"
 #include "dixstruct.h"
 #include "extnsionst.h"	/* for SendEvent */

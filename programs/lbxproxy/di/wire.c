@@ -1,4 +1,4 @@
-/* $Xorg: wire.c,v 1.4 2001/02/09 02:05:32 xorgcvs Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/wire.c,v 1.17tsi Exp $ */
 /*
 
 Copyright 1998  The Open Group
@@ -45,7 +45,6 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/di/wire.c,v 1.16tsi Exp $ */
 
 #include "lbx.h"
 #include <stdio.h>
@@ -76,7 +75,7 @@ in this Software without prior written authorization from The Open Group.
 
 #include <X11/ICE/ICElib.h>
 #ifdef BIGREQS
-#include "bigreqstr.h"
+#include <X11/extensions/bigreqstr.h>
 #endif
 
 /*

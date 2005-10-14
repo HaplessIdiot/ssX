@@ -90,7 +90,7 @@ SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/Xi/stubs.c,v 3.6 2004/06/02 22:42:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/stubs.c,v 3.7tsi Exp $ */
 
 /*
  * stubs.c -- stub routines for the X server side of the XINPUT
@@ -103,11 +103,11 @@ SOFTWARE.
  */
 
 #define	 NEED_EVENTS
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "inputstr.h"
-#include "XI.h"
-#include "XIproto.h"
+#include <X11/extensions/XI.h>
+#include <X11/extensions/XIproto.h>
 #include "XIstubs.h"
 
 #ifdef XINPUT

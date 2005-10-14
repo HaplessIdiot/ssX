@@ -25,10 +25,10 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbrrop.h,v 3.11 2003/10/29 22:44:53 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbrrop.h,v 3.12tsi Exp $ */
 
 #ifndef GXcopy
-#include "X.h"
+#include <X11/X.h>
 #endif
 
 #define RROP_FETCH_GC(gc) \

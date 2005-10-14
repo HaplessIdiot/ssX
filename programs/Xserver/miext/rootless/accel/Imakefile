@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/miext/rootless/accel/Imakefile,v 1.1 2003/10/24 00:33:15 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/miext/rootless/accel/Imakefile,v 1.2tsi Exp $
 
 #include <Server.tmpl>
 
@@ -18,9 +18,8 @@ OBJS =  rlBlt.o \
         rlGlyph.o \
         rlSolid.o
 
-INCLUDES = -I. -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
-           -I$(XINCLUDESRC) -I$(FONTINCSRC) -I$(SERVERSRC)/render \
-           -I$(EXTINCSRC) -I$(SERVERSRC)/Xext -I..
+INCLUDES = -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
+           -I$(SERVERSRC)/render -I$(SERVERSRC)/Xext -I..
 
 NormalLibraryObjectRule()
 LibraryModuleTarget(rlAccel,$(OBJS),.)

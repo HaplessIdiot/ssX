@@ -1,4 +1,4 @@
-/* $Xorg: lbxserve.h,v 1.4 2001/02/09 02:05:17 xorgcvs Exp $ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxserve.h,v 1.5tsi Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -45,7 +45,6 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/lbx/lbxserve.h,v 1.4 2001/08/01 00:44:58 tsi Exp $ */
 
 #ifndef _LBXSERVE_H_
 
@@ -54,9 +53,9 @@ in this Software without prior written authorization from The Open Group.
 
 #define _LBXSERVE_H_
 #define _XLBX_SERVER_
-#include "lbxstr.h"
-#include "lbxdeltastr.h"
-#include "lbxopts.h"
+#include <X11/extensions/lbxstr.h>
+#include <X11/extensions/lbxdeltastr.h>
+#include <X11/extensions/lbxopts.h>
 
 #define MAX_LBX_CLIENTS	MAXCLIENTS
 #define	MAX_NUM_PROXIES	(MAXCLIENTS >> 1)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_map.c,v 1.7 2000/06/27 14:27:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_map.c,v 1.8tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -71,7 +71,7 @@
  *
  */
 
-#include "X.h"
+#include <X11/X.h>
 
 #include "xf86.h"
 #include "xf86Priv.h"

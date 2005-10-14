@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_mouse.c,v 1.3 1999/09/04 13:04:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_mouse.c,v 1.4tsi Exp $ */
 
 /*
  * Copyright 1999 by The XFree86 Project, Inc.
@@ -47,7 +47,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "X.h"
+#include <X11/X.h>
 #include "xf86.h"
 #include "xf86Xinput.h"
 #include "xf86OSmouse.h"

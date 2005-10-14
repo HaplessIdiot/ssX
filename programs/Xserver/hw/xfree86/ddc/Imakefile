@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/ddc/Imakefile,v 1.7 2004/03/18 07:06:40 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/ddc/Imakefile,v 1.8tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -54,8 +54,7 @@ SRCS = xf86DDC.c edid.c interpret_edid.c print_edid.c \
 OBJS = xf86DDC.o edid.o interpret_edid.o print_edid.o \
 	interpret_vdif.o print_vdif.o ddcProperty.o
 
-INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
-           -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/include \
            -I$(XF86SRC)/i2c
 
 ModuleObjectRule()

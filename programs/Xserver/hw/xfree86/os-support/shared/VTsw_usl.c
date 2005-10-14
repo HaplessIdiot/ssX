@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/VTsw_usl.c,v 3.1.4.1 1998/06/05 16:23:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/VTsw_usl.c,v 3.4tsi Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
@@ -23,7 +23,7 @@
  */
 /* $XConsortium: VTsw_usl.c /main/3 1996/02/21 17:53:28 kaleb $ */
 
-#include "X.h"
+#include <X11/X.h>
 
 #include "xf86.h"
 #include "xf86Priv.h"

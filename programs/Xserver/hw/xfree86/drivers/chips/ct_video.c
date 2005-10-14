@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_video.c,v 1.17tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_video.c,v 1.18tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -11,7 +11,7 @@
 #include "regionstr.h"
 
 #include "ct_driver.h"
-#include "Xv.h"
+#include <X11/extensions/Xv.h>
 #include "xaa.h"
 #include "dixstruct.h"
 #include "fourcc.h"

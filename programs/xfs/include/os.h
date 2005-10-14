@@ -1,4 +1,4 @@
-/* $Xorg: os.h,v 1.5 2001/02/09 02:05:44 xorgcvs Exp $ */
+/* $XFree86: xc/programs/xfs/include/os.h,v 3.15tsi Exp $ */
 /*
 Copyright 1987, 1998  The Open Group
 
@@ -47,7 +47,6 @@ in this Software without prior written authorization from The Open Group.
  * $NCDXorg: @(#)os.h,v 4.2 1991/05/10 07:59:16 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/include/os.h,v 3.14 2002/10/15 01:45:03 dawes Exp $ */
 
 #ifndef	_OS_H_
 #define	_OS_H_
@@ -56,7 +55,7 @@ typedef struct _FontPathRec *FontPathPtr;
 typedef struct _alt_server *AlternateServerPtr;
 typedef struct _auth *AuthPtr;
 
-#include "FSproto.h"
+#include <X11/fonts/FSproto.h>
 #include "client.h"
 #include "misc.h"
 

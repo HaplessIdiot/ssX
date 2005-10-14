@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/examples/xinput.c,v 1.1tsi Exp $ */
 /*
  * Copyright 2001,2002 Red Hat Inc., Durham, North Carolina.
  *
@@ -40,7 +40,7 @@
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XKB.h>
 #include <X11/extensions/XKBstr.h>
-#include "dmxext.h"
+#include <X11/extensions/dmxext.h>
 #include <sys/time.h>
 
 static const char *core(DMXInputAttributes *iinf)

@@ -1,4 +1,4 @@
-/* $Xorg: lbxtags.h,v 1.4 2001/02/09 02:05:17 xorgcvs Exp $ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxtags.h,v 1.4tsi Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -46,7 +46,6 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/lbx/lbxtags.h,v 1.3 2001/01/17 22:37:00 dawes Exp $ */
 
 #ifndef _LBXTAGS_H_
 #define _LBXTAGS_H_
@@ -55,8 +54,8 @@ in this Software without prior written authorization from The Open Group.
 #include	"os.h"
 #include	"opaque.h"
 #include	"resource.h"
-#include	"X.h"
-#include	"Xproto.h"
+#include	<X11/X.h>
+#include	<X11/Xproto.h>
 
 typedef struct _tagdata {
     XID         tid;

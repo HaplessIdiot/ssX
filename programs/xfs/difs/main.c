@@ -1,4 +1,4 @@
-/* $Xorg: main.c,v 1.5 2001/02/09 02:05:42 xorgcvs Exp $ */
+/* $XFree86: xc/programs/xfs/difs/main.c,v 3.13tsi Exp $ */
 /*
  * Font server main routine
  */
@@ -46,13 +46,12 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/main.c,v 3.12 2002/10/15 01:45:02 dawes Exp $ */
 
 #include	<stdlib.h>
 #include	<sys/types.h>
 #include	<sys/stat.h>
-#include	"FS.h"
-#include	"FSproto.h"
+#include	<X11/fonts/FS.h>
+#include	<X11/fonts/FSproto.h>
 #include	"clientstr.h"
 #include	"fsresource.h"
 #include	"misc.h"

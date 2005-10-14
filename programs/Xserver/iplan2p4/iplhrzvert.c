@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplhrzvert.c,v 3.0tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -51,7 +51,7 @@ SOFTWARE.
 /* Modified nov 94 by Martin Schaller (Martin_Schaller@maus.r.de) for use with
 interleaved planes */
 
-#include "X.h"
+#include <X11/X.h>
 
 #include "gc.h"
 #include "window.h"

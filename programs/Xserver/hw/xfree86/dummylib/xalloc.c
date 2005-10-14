@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/dummylib/xalloc.c,v 1.2 2002/11/09 09:00:13 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/dummylib/xalloc.c,v 1.3tsi Exp $ */
 
-#include "X.h"
+#include <X11/X.h>
 #include "os.h"
 #include "xf86.h"
 #include "xf86Priv.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.24 2005/06/03 03:18:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.25tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -32,7 +32,7 @@
 #ifndef DPMS_SERVER
 # define DPMS_SERVER
 #endif
-#include "extensions/dpms.h"
+#include <X11/extensions/dpms.h>
 
 /*
  * ATIVGAPreInit --

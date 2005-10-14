@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/examples/xdmx.c,v 1.1tsi Exp $ */
 /*
  * Copyright 2001,2002 Red Hat Inc., Durham, North Carolina.
  *
@@ -35,7 +35,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <X11/Xlib.h>
-#include "dmxext.h"
+#include <X11/extensions/dmxext.h>
 
 static void indent(int level)
 {

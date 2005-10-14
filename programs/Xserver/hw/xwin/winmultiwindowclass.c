@@ -27,9 +27,9 @@
  *
  * Authors:     Earle F. Philhower, III
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winmultiwindowclass.c,v 1.2tsi Exp $ */
 
-#include <Xatom.h>
+#include <X11/Xatom.h>
 #include "propertyst.h"
 #include "windowstr.h"
 #include "winmultiwindowclass.h"

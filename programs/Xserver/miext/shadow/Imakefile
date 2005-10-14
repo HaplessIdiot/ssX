@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/miext/shadow/Imakefile,v 1.9 2004/06/01 00:17:08 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/miext/shadow/Imakefile,v 1.10tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -97,9 +97,8 @@ OBJS =  $(XFMODOBJ) \
 	shrot32pack_270.o
 
    INCLUDES = -I$(SERVERSRC)/miext/shadow -I$(SERVERSRC)/mi -I$(SERVERSRC)/fb \
-	      -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-	      -I$(FONTINCSRC) -I$(XF86SRC)/common $(EXTRAINCLUDES) \
-	      -I$(SERVERSRC)/render -I$(EXTINCSRC)
+	      -I$(SERVERSRC)/include -I$(XF86SRC)/common $(EXTRAINCLUDES) \
+	      -I$(SERVERSRC)/render
    LINTLIBS = $(SERVERSRC)/dix/llib-ldix.ln $(SERVERSRC)/os/llib-los.ln \
 	     $(SERVERSRC)/mi/llib-lmi.ln
 

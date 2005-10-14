@@ -35,7 +35,7 @@ of the copyright holder.
 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/tinyx/linux/agp.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/linux/agp.c,v 1.2tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -87,10 +87,10 @@ of the copyright holder.
  * Author: Pontus Lidman <pontus.lidman@nokia.com> (adaption to TinyX) and others
  */
 
-#include "X.h"
+#include <X11/X.h>
 
-#include "Xdefs.h"
-#include "Xmd.h"
+#include <X11/Xdefs.h>
+#include <X11/Xmd.h>
 
 #include <unistd.h>
 #include <sys/types.h>

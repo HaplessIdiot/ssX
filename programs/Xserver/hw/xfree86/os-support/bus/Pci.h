@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.50 2005/03/29 17:54:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.51tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -124,8 +124,8 @@
 #ifndef _PCI_H
 #define _PCI_H 1
 
-#include "Xarch.h"
-#include "Xfuncproto.h"
+#include <X11/Xarch.h>
+#include <X11/Xfuncproto.h>
 #include "xf86Pci.h"
 #include "xf86PciInfo.h"
 

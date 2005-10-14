@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/xkb/Imakefile,v 3.22tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/xkb/Imakefile,v 3.23tsi Exp $
 
 #define SGIHyperOpt
 #include <Server.tmpl>
@@ -41,7 +41,7 @@ XF86INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC)
 	    xkmread.o xkbtext.o xkbfmisc.o xkberrs.o xkbout.o maprules.o \
 	    XKBMisc.o XKBMAlloc.o XKBAlloc.o XKBGAlloc.o \
 	    $(XKBXI_OBJS) $(DDX_OBJS)
-   INCLUDES = -I../include -I$(XINCLUDESRC) -I$(EXTINCSRC) -I$(SERVERSRC)/Xext \
+   INCLUDES = -I../include -I$(SERVERSRC)/Xext \
 	      -I$(SERVERSRC)/mi $(XF86INCLUDES)
    LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln
 

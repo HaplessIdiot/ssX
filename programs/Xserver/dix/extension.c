@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/extension.c,v 3.12 2002/02/19 11:09:22 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/extension.c,v 3.13tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,10 +46,10 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
+#include <X11/X.h>
 #define NEED_EVENTS
 #define NEED_REPLIES
-#include "Xproto.h"
+#include <X11/Xproto.h>
 #include "misc.h"
 #include "dixstruct.h"
 #include "extnsionst.h"
@@ -58,7 +58,7 @@ SOFTWARE.
 #include "dispatch.h"
 #ifdef XCSECURITY
 #define _SECURITY_SERVER
-#include "security.h"
+#include <X11/extensions/security.h>
 #endif
 #ifdef LBX
 #include "lbxserve.h"

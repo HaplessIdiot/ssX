@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.30 2003/11/05 16:54:28 tsi Exp $
+XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.31tsi Exp $
 
 #if BuildServer && DoLoadableServer
 #define IHaveSubdirs
@@ -13,9 +13,8 @@ DEFINES = ServerExtraDefines StrcasecmpDefines Freetype2BuildDefines \
 FT2SOURCEDIR = $(TOP)/extras/freetype2/src
 FT2INCS = $(FREETYPE2INCLUDES)
 
-INCLUDES = $(FT2INCS) -I. -I$(FONTINCSRC) -I../include -I$(XINCLUDESRC) \
-           -I$(SERVERSRC)/include -I$(FT2SOURCEDIR)/truetype \
-           -I$(INCLUDESRC)
+INCLUDES = $(FT2INCS) -I../include -I$(SERVERSRC)/include \
+	   -I$(FT2SOURCEDIR)/truetype
 
 SRCS = xttcap.c ftfuncs.c ftenc.c fttools.c
 OBJS = xttcap.o ftfuncs.o ftenc.o fttools.o

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.35 2004/03/29 16:25:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.36tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -15,7 +15,7 @@
 #include "mga.h"
 #include "mga_macros.h"
 #include "xf86xv.h"
-#include "Xv.h"
+#include <X11/extensions/Xv.h>
 #include "xaa.h"
 #include "dixstruct.h"
 #include "fourcc.h"

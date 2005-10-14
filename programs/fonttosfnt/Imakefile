@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/fonttosfnt/Imakefile,v 1.8 2003/11/21 05:22:09 dawes Exp $
+XCOMM $XFree86: xc/programs/fonttosfnt/Imakefile,v 1.9tsi Exp $
 
 #if !HasSetenv
     SETENV_SRCS = env.c
@@ -15,12 +15,10 @@ SRCS = fonttosfnt.c read.c write.c struct.c util.c $(SETENV_SRCS)
 
 OBJS = fonttosfnt.o read.o write.o struct.o util.o $(SETENV_OBJS)
 
-FONTENC_INCS = -I$(BUILDINCDIR)/X11/fonts
 FONTENC_LIBS = -lfontenc
 
 DEFINES  = $(SETENV_DEFINES) $(SNPRINTF_DEFINES) -DXFREE86_FT2 
-INCLUDES = $(FONTENC_INCS) \
-	   $(FREETYPE2INCLUDES) $(SNPRINTF_INCLUDES) -I$(XBUILDINCDIR)
+INCLUDES = $(FREETYPE2INCLUDES) $(SNPRINTF_INCLUDES)
 LOCAL_LIBRARIES = $(FREETYPE2LIB) $(FONTENC_LIBS) GzipLibrary MathLibrary
 
 ComplexProgramTarget(fonttosfnt)

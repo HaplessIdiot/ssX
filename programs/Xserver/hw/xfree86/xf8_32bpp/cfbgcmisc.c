@@ -1,14 +1,14 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbgcmisc.c,v 1.3tsi Exp $ */
 
-#include "X.h"
-#include "Xmd.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
+#include <X11/Xproto.h>
 #define PSZ 8
 #include "cfb.h"
 #undef PSZ
 #include "cfb32.h"
 #include "cfb8_32.h"
-#include "fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 #include "dixfontstr.h"
 #include "gcstruct.h"
 #include "windowstr.h"

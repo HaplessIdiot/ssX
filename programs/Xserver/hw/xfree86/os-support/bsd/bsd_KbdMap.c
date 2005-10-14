@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_KbdMap.c,v 1.3 2005/08/20 23:09:42 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_KbdMap.c,v 1.4tsi Exp $ */
 
 /*
  * Slightly modified xf86KbdBSD.c which is
@@ -8,8 +8,8 @@
  * and from xf86KbdCODrv.c by Holger Veit
  */
 
-#include "X.h"
-#include "Xmd.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
 #include "input.h"
 #include "scrnintstr.h"
 

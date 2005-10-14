@@ -1,4 +1,4 @@
-/* $Xorg: util.c,v 1.3 2000/08/17 19:46:34 cpqbld Exp $ */
+/* $XFree86: xc/lib/font/Type1/util.c,v 1.6tsi Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -44,14 +44,13 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/util.c,v 1.5 1999/08/21 13:47:53 dawes Exp $ */
 /* Author: Katherine A. Hitchcock    IBM Almaden Research Laboratory */
  
 #ifndef FONTMODULE
 #include <stdio.h>
 #else
-#include "Xdefs.h"
-#include "Xmd.h"
+#include <X11/Xdefs.h>
+#include <X11/Xmd.h>
 #include "xf86_ansic.h"
 #endif
 #include "util.h"

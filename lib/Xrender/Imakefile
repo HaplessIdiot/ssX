@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xrender/Imakefile,v 1.11 2002/11/14 21:01:18 tsi Exp $
+XCOMM $XFree86: xc/lib/Xrender/Imakefile,v 1.12tsi Exp $
 
 #ifdef UseInstalled
 
@@ -99,9 +99,9 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 
       DEFINES = $(ALLOC_DEFINES)
 #ifdef UseInstalled
-     INCLUDES = -I$(RENDERINCDIR) -I$(INCROOT)/X11 -I$(INCROOT)/X11/extensions
+     INCLUDES = -I$(RENDERINCDIR)
 #else
-     INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
+     INCLUDES = -I$(XLIBSRC)
 #endif
      
          SRCS = Xrender.c \

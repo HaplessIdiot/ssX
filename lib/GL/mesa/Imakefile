@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/Imakefile,v 1.2 2004/10/19 04:27:49 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/Imakefile,v 1.3tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -97,8 +97,7 @@ ASM_SUBDIRS = sparc
 
       DEFINES = $(ALLOC_DEFINES) GlxDefines \
 		$(MESA_ASM_DEFINES) $(MATH_DEFINES)
-     INCLUDES = -I$(INCLUDESRC) -I$(XINCLUDESRC) -I$(EXTINCSRC) \
-		-I$(GLXLIBSRC)/dri \
+     INCLUDES = -I$(GLXLIBSRC)/dri \
 		-I$(MESASRCDIR)/include -I$(GLXLIBSRC)/include
 
 #define IHaveSubdirs

@@ -22,10 +22,10 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbglyph.c,v 1.12 2001/09/07 15:16:00 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/accel/rlGlyph.c,v 1.1tsi Exp $ */
 
 #include "fb.h"
-#include "fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 #include "dixfontstr.h"
 #include "rlAccel.h"
 

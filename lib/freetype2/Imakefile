@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.23tsi Exp $
+XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.24tsi Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -34,7 +34,7 @@ DARWINDEFINES = -DDARWIN_NO_CARBON
 
 DEFINES = $(DARWINDEFINES) Freetype2BuildDefines -DXFREE86_FT2
 
-INCLUDES = -I.\
+INCLUDES = \
 	-I$(FREETYPESRC)\
 	-I$(FREETYPESRC)/base\
 	-I$(FREETYPESRC)/autofit\
@@ -56,8 +56,7 @@ INCLUDES = -I.\
 	-I$(FREETYPESRC)/type1\
 	-I$(FREETYPESRC)/type42\
 	-I$(FREETYPESRC)/winfonts\
-	$(FREETYPE2INCLUDES)\
-	-I$(XBUILDINCDIR)
+	$(FREETYPE2INCLUDES)
 
 SUBDIRS=freetype
 

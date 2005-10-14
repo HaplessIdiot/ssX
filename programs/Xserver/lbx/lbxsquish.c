@@ -1,4 +1,4 @@
-/* $Xorg: lbxsquish.c,v 1.4 2001/02/09 02:05:17 xorgcvs Exp $ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxsquish.c,v 1.4tsi Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -46,18 +46,18 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/lbx/lbxsquish.c,v 1.3 2001/01/17 22:37:00 dawes Exp $ */
+
 #define NEED_REPLIES
 #define NEED_EVENTS
-#include "X.h"
-#include "Xproto.h"
-#include "Xos.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
+#include <X11/Xos.h>
 #include "misc.h"
 #include "colormapst.h"
 #include "propertyst.h"
 #include "lbxserve.h"
 #define _XLBX_SERVER_
-#include "lbxstr.h"
+#include <X11/extensions/lbxstr.h>
 
 /* handles server-side protocol squishing */
 

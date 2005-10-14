@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/animcur.c,v 1.5tsi Exp $
+ * $XFree86: xc/programs/Xserver/render/animcur.c,v 1.6tsi Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -32,8 +32,8 @@
  * delta times between each image.
  */
 
-#include "X.h"
-#include "Xmd.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
 #include "servermd.h"
 #include "scrnintstr.h"
 #include "dixstruct.h"

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfbwindow.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfbwindow.c,v 1.5tsi Exp $ */
 
-#include "X.h"
+#include <X11/X.h>
 #include "windowstr.h"
 #include "regionstr.h"
 #include "pixmapstr.h"

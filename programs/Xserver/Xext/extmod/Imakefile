@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/Xext/extmod/Imakefile,v 1.23 2004/03/18 07:06:38 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/extmod/Imakefile,v 1.24tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -143,8 +143,7 @@ LinkSourceFile(cup.c,..)
     DEFINES = -DEXTMODULE $(EXT_DEFINES)
 
 XF86INCLUDES = -I$(XF86COMSRC)
-    INCLUDES = -I.. -I../../include -I$(XINCLUDESRC) -I$(EXTINCSRC) \
-	       $(XF86INCLUDES) $(FONTCACHEINCLUDES) -I$(FONTINCSRC)
+    INCLUDES = -I.. -I../../include $(XF86INCLUDES) $(FONTCACHEINCLUDES)
     LINTLIBS = ../../dix/llib-ldix.ln ../../os/llib-los.ln
 
 LinkSourceFile(shape.c,..)

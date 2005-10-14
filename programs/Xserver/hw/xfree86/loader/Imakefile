@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.41tsi Exp $ */
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.42tsi Exp $ */
 
 
 
@@ -43,13 +43,12 @@ DEFINES = $(DBMALLOCDEFINE) $(DLOPENDEFINES) $(OS_DEFINES) $(COMPAT_DEFINES) \
 
 MODULEDEFINES = -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"
 
-   INCLUDES = -I. -I.. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86SRC)/vbe \
+   INCLUDES = -I.. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86SRC)/vbe \
 		-I$(SERVERSRC)/dbe -I$(SERVERSRC)/Xext -I$(XF86SRC)/int10 \
 		-I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
-		-I$(SERVERSRC)/os -I$(XINCLUDESRC) -I$(FONTINCSRC) \
 		-I$(FONTLIBSRC)/include -I$(FONTLIBSRC)/fontcache \
-		-I$(EXTINCSRC) -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c \
-		-I$(SERVERSRC)/render
+		-I$(SERVERSRC)/os -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c \
+		-I$(SERVERSRC)/render -I$(XF86SRC)/parser
 
 #ifdef OS2Architecture
 SRCS1 = os2funcs.c

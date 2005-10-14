@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/linux/agp.h,v 1.2tsi Exp $ */
 /* COPYRIGHT AND PERMISSION NOTICE
 
 Copyright (c) 2000, 2001 Nokia Home Communications
@@ -41,7 +41,7 @@ X Window System is a trademark of The Open Group */
 #ifndef _AGP_H_
 #define _AGP_H_
 
-#include "Xdefs.h"
+#include <X11/Xdefs.h>
 
 /* These two definitions must be consistent with the kernel's,
    but using 1 or 2 in driver code is even uglier */

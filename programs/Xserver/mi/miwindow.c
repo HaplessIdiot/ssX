@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miwindow.c,v 1.10 2003/11/10 18:22:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miwindow.c,v 1.11tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
+#include <X11/X.h>
 #include "regionstr.h"
 #include "region.h"
 #include "mi.h"
@@ -138,7 +138,7 @@ miClearToBackground(WindowPtr pWin, int x, int y, int w, int h,
  * The backing-store code must be written to allow for this
  */
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miCheckSubSaveUnder --
  *	Check all the inferiors of a window for coverage by saveUnder
@@ -245,7 +245,7 @@ miCheckSubSaveUnder(
 }
 
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miChangeSaveUnder --
  *	Change the save-under state of a tree of windows. Called when
@@ -284,7 +284,7 @@ miChangeSaveUnder(
     return res;
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miPostChangeSaveUnder --
  *	Actually turn backing-store off for those windows that no longer

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/Type1/module/Imakefile,v 1.8 2004/03/18 07:06:29 dawes Exp $
+XCOMM $XFree86: xc/lib/font/Type1/module/Imakefile,v 1.9tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -49,8 +49,7 @@ XCOMM $XFree86: xc/lib/font/Type1/module/Imakefile,v 1.8 2004/03/18 07:06:29 daw
 #define IHaveModules
 #include <Server.tmpl>
 
-INCLUDES = -I$(FONTINCSRC) -I../ -I../../include -I$(XINCLUDESRC) \
-	   -I$(SERVERSRC)/include
+INCLUDES = -I.. -I../../include -I$(SERVERSRC)/include
 
 #if BuildCID
 CIDSRCS = cidchar.c afm.c

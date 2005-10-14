@@ -1,4 +1,4 @@
-/* $Xorg: ddxFakeMtn.c,v 1.3 2000/08/17 19:53:45 cpqbld Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxFakeMtn.c,v 1.6tsi Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +24,6 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/ddxFakeMtn.c,v 1.5 2003/09/13 16:39:01 dawes Exp $ */
 
 #include <stdio.h>
 #define	NEED_EVENTS 1
@@ -34,8 +33,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "inputstr.h"
 #include "scrnintstr.h"
 #include "windowstr.h"
-#include "XKBsrv.h"
-#include "XI.h"
+#include <X11/extensions/XKBsrv.h>
+#include <X11/extensions/XI.h>
 
 #ifdef PANORAMIX
 #include "panoramiX.h"

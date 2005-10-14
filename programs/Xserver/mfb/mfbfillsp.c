@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbfillsp.c,v 1.9 2001/12/14 20:00:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbfillsp.c,v 1.10tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -47,8 +47,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
-#include "Xmd.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
 #include "gcstruct.h"
 #include "window.h"
 #include "pixmapstr.h"

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/common/Imakefile.inc,v 1.3 2004/12/10 16:06:57 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/common/Imakefile.inc,v 1.4tsi Exp $
 
 #ifndef MesaDrvSrcDir
 #define MesaDrvSrcDir $(MESASRCDIR)/src/mesa/drivers/dri
@@ -19,7 +19,6 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #if BuildXF86DRI
  COMMON_DRI_DEFINES = GlxDefines -DX_BYTE_ORDER=$(X_BYTE_ORDER)
  COMMON_DRI_INCLUDES = -I$(GLXLIBSRC)/dri \
-		-I$(XINCLUDESRC) \
 		-I$(GLXLIBSRC)/glx \
 		-I$(GLXLIBSRC)/include \
 		-I$(SERVERSRC)/GL/dri \
@@ -37,7 +36,6 @@ COMMON_MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
 		-I$(MESADRVSRCDIR)/common \
 		-I$(MESADRVSRCDIR)/../common \
 		-I$(MESASRCDIR)/include
-   COMMON_X_INCLUDES = -I$(XINCLUDESRC) -I$(EXTINCSRC)
 
     COMMONSRCS = $(MESADRVCOMMONBUILDDIR)mm.c \
                  $(MESADRVCOMMONBUILDDIR)utils.c \

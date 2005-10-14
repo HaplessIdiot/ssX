@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/ilbm/ilbmfillsp.c,v 3.0 1996/08/18 01:53:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmfillsp.c,v 3.1tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -52,8 +52,8 @@ SOFTWARE.
 /* Modified jun 95 by Geert Uytterhoeven (Geert.Uytterhoeven@cs.kuleuven.ac.be)
    to use interleaved bitplanes instead of normal bitplanes */
 
-#include "X.h"
-#include "Xmd.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
 #include "gcstruct.h"
 #include "window.h"
 #include "pixmapstr.h"

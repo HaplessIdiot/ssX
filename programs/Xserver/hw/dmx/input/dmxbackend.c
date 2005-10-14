@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/input/dmxbackend.c,v 1.1tsi Exp $ */
 /*
  * Copyright 2001-2003 Red Hat Inc., Durham, North Carolina.
  *
@@ -52,7 +52,7 @@
 
 #include "inputstr.h"
 #include "input.h"
-#include "keysym.h"
+#include <X11/keysym.h>
 #include "mipointer.h"
 #include "scrnintstr.h"
 #include "windowstr.h"

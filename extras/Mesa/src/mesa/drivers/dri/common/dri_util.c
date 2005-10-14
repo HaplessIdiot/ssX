@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/common/dri_util.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/common/dri_util.c,v 1.3tsi Exp $ */
 /**
  * \file dri_util.c
  * DRI utility functions.
@@ -39,8 +39,8 @@
 
 #ifndef DRI_NEW_INTERFACE_ONLY
 # include <X11/Xlibint.h>
-# include <Xext.h>
-# include <extutil.h>
+# include <X11/extensions/Xext.h>
+# include <X11/extensions/extutil.h>
 # include "xf86dri.h"
 # define _mesa_malloc(b) Xmalloc(b)
 # define _mesa_free(m) Xfree(m)

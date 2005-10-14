@@ -1,4 +1,4 @@
-/* $Xorg: io.c,v 1.6 2001/02/09 02:05:33 xorgcvs Exp $ */
+/* $XFree86: xc/programs/lbxproxy/os/io.c,v 1.13tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1989, 1998  The Open Group
@@ -45,7 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/lbxproxy/os/io.c,v 1.12tsi Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -56,7 +55,7 @@ SOFTWARE.
 
 #include <stdio.h>
 #include <X11/Xtrans.h>
-#include "Xos.h"
+#include <X11/Xos.h>
 #include "misc.h"
 #include <errno.h>
 #include <sys/param.h>
@@ -68,7 +67,7 @@ SOFTWARE.
 #include "io.h"
 
 #ifdef BIGREQS
-#include "bigreqstr.h"
+#include <X11/extensions/bigreqstr.h>
 #endif
 
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX

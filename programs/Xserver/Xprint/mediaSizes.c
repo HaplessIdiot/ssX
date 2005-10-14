@@ -1,4 +1,4 @@
-/* $Xorg: mediaSizes.c,v 1.4 2001/03/14 18:44:37 pookie Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/mediaSizes.c,v 1.5tsi Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -30,7 +30,6 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/mediaSizes.c,v 1.4 2001/01/17 22:36:28 dawes Exp $ */
 
 /*******************************************************************
 **
@@ -57,12 +56,12 @@ copyright holders.
 #include <string.h>
 #include <locale.h>
 
-#include "X.h"
+#include <X11/X.h>
 #include "dixstruct.h"
 #include "screenint.h"
 #include "misc.h"
 #include "scrnintstr.h"
-#include "fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 
 #include "DiPrint.h"
 #include "attributes.h"

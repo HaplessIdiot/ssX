@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fb.h,v 1.39 2004/06/10 17:28:10 tsi Exp $
+ * $XFree86: xc/programs/Xserver/fb/fb.h,v 1.40tsi Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -25,7 +25,7 @@
 #ifndef _FB_H_
 #define _FB_H_
 
-#include "X.h"
+#include <X11/X.h>
 #include "scrnintstr.h"
 #include "pixmap.h"
 #include "pixmapstr.h"
@@ -42,7 +42,7 @@
 #include "picturestr.h"
 #else
 #include "picture.h"
-#include "render.h"
+#include <X11/extensions/render.h>
 #endif
 
 /*

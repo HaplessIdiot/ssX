@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_KbdMap.c,v 1.1tsi Exp $ */
 
 /*
  * Slightly modified xf86KbdLnx.c which is
@@ -6,8 +6,8 @@
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  */
 
-#include "X.h"
-#include "Xmd.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
 #include "input.h"
 #include "scrnintstr.h"
 
@@ -21,7 +21,7 @@
 #include "atKeynames.h"
 
 #include "xf86Keymap.h"
-#include "DECkeysym.h"
+#include <X11/DECkeysym.h>
 
 #include "lnx_kbd.h"
 

@@ -1,4 +1,4 @@
-/* $Xorg: spaces.c,v 1.4 2000/08/17 19:46:32 cpqbld Exp $ */
+/* $XFree86: xc/lib/font/Type1/spaces.c,v 3.11tsi Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -26,7 +26,6 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/spaces.c,v 3.10tsi Exp $ */
  /* SPACES   CWEB         V0021 ********                             */
 /*
 :h1 id=spaces.SPACES Module - Handles Coordinate Spaces
@@ -40,8 +39,8 @@ This module is responsible for handling the TYPE1IMAGER "XYspace" object.
 */
 
 #ifdef FONTMODULE
-#include "Xdefs.h"	/* Bool declaration ??? */
-#include "Xmd.h"	/* INT32 declaration ??? */
+#include <X11/Xdefs.h>	/* Bool declaration ??? */
+#include <X11/Xmd.h>	/* INT32 declaration ??? */
 #include "os.h"
 #include "xf86_ansic.h"
 #else

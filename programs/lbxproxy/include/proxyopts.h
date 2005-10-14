@@ -1,4 +1,4 @@
-/* $Xorg: proxyopts.h,v 1.4 2001/02/09 02:05:32 xorgcvs Exp $ */
+/* $XFree86: xc/programs/lbxproxy/include/proxyopts.h,v 1.7tsi Exp $ */
 /*
 
 Copyright 1998  The Open Group
@@ -46,13 +46,12 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/include/proxyopts.h,v 1.6tsi Exp $ */
 
 #ifndef _LBX_PROXYOPTS_H_
 #define _LBX_PROXYOPTS_H_
 
-#include "lbximage.h"
-#include "lbxopts.h"
+#include <X11/extensions/lbximage.h>
+#include <X11/extensions/lbxopts.h>
 
 typedef struct _LbxNegOpts {
     short	proxyDeltaN;

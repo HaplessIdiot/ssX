@@ -1,4 +1,4 @@
-/* $Xorg: InitInput.c,v 1.4 2001/02/09 02:04:44 xorgcvs Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitInput.c,v 3.10tsi Exp $ */
 /*
 
 Copyright 1993, 1998  The Open Group
@@ -26,7 +26,6 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitInput.c,v 3.9 2001/12/14 19:59:45 dawes Exp $ */
 
 #include "X11/X.h"
 #define NEED_EVENTS
@@ -38,7 +37,7 @@ from The Open Group.
 #include "mibstore.h"
 #include "mipointer.h"
 #include "lk201kbd.h"
-#include "keysym.h"
+#include <X11/keysym.h>
 
 Bool
 LegalModifier(unsigned int key, DevicePtr pDev)

@@ -29,12 +29,12 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwinEvents.c,v 1.5 2003/11/03 05:36:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwinEvents.c,v 1.6tsi Exp $ */
 
 #define NEED_EVENTS
-#include   "X.h"
-#include   "Xmd.h"
-#include   "Xproto.h"
+#include   <X11/X.h>
+#include   <X11/Xmd.h>
+#include   <X11/Xproto.h>
 #include   "misc.h"
 #include   "windowstr.h"
 #include   "pixmapstr.h"

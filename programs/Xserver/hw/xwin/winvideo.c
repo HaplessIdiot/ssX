@@ -27,11 +27,11 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winvideo.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winvideo.c,v 1.2tsi Exp $ */
 
 #include "win.h"
-#include "Xv.h"
-#include "Xvproto.h"
+#include <X11/extensions/Xv.h>
+#include <X11/extensions/Xvproto.h>
 
 
 /*
@@ -62,7 +62,7 @@ winInitVideo (ScreenPtr pScreen)
 #include "../xfree86/common/xf86.h"
 #include "../Xext/xvdix.h"
 #include "../xfree86/common/xf86xv.h"
-#include "Xv.h"
+#include <X11/extensions/Xv.h>
 #endif
 
 #include "win.h"

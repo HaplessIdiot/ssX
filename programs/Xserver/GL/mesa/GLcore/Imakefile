@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/GLcore/Imakefile,v 1.7 2004/06/01 00:16:58 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/GLcore/Imakefile,v 1.8tsi Exp $
 /*
  * Copyright (c) 2000-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -91,10 +91,8 @@ SUBDIRS = module
 		../math/DONE ../swrast/DONE ../swrast_setup/DONE \
 		../tnl/DONE ../shader/DONE
 
-     INCLUDES = -I$(INCLUDESRC) -I$(XINCLUDESRC) -I$(EXTINCSRC) \
-		-I$(MESASRCDIR)/include -I$(GLXLIBSRC)/include \
-		-I$(MESASRCDIR)/src/mesa \
-		-I$(SERVERSRC)/include
+     INCLUDES = -I$(MESASRCDIR)/include -I$(GLXLIBSRC)/include \
+		-I$(MESASRCDIR)/src/mesa -I$(SERVERSRC)/include
 
       DEFINES = $(GLX_DEFINES)
 

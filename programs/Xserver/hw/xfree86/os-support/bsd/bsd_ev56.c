@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_ev56.c,v 1.1 2000/03/05 16:59:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_ev56.c,v 1.2tsi Exp $ */
 
-#include "X.h"
+#include <X11/X.h>
 #include "input.h"
 #include "scrnintstr.h"
 #include "compiler.h"

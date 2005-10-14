@@ -23,7 +23,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbActions.c,v 3.14 2003/11/17 22:20:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbActions.c,v 3.15tsi Exp $ */
 
 #include <stdio.h>
 #include <math.h>
@@ -33,7 +33,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/keysym.h>
 #include "misc.h"
 #include "inputstr.h"
-#include "XKBsrv.h"
+#include <X11/extensions/XKBsrv.h>
 #include "xkb.h"
 #include <ctype.h>
 

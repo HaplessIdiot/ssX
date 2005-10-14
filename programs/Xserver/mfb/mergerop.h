@@ -24,13 +24,13 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/mfb/mergerop.h,v 3.14 2001/12/14 20:00:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mergerop.h,v 3.15tsi Exp $ */
 
 #ifndef _MERGEROP_H_
 #define _MERGEROP_H_
 
 #ifndef GXcopy
-#include "X.h"
+#include <X11/X.h>
 #endif
 
 typedef struct _mergeRopBits {

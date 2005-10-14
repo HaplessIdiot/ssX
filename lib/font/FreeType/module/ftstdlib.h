@@ -1,5 +1,5 @@
 /* ftstdlib.h -- modified for XFree86. */
-/* $XFree86: xc/lib/font/FreeType/module/ftstdlib.h,v 1.2tsi Exp $ */
+/* $XFree86: xc/lib/font/FreeType/module/ftstdlib.h,v 1.3tsi Exp $ */
 
 /***************************************************************************/
 /*                                                                         */
@@ -139,9 +139,9 @@
 
 #else
 
-#include "Xmd.h"
+#include <X11/Xmd.h>
 #define _XTYPEDEF_BOOL
-#include "Xdefs.h"
+#include <X11/Xdefs.h>
 #define DONT_DEFINE_WRAPPERS
 #define DEFINE_SETJMP_WRAPPERS
 #include "xf86_ansic.h"

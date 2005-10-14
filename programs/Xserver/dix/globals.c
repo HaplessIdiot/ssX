@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/globals.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/globals.c,v 1.13tsi Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,10 +46,8 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Xorg: globals.c,v 1.4 2001/02/09 02:04:40 xorgcvs Exp $ */
-
-#include "X.h"
-#include "Xmd.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
 #include "misc.h"
 #include "windowstr.h"
 #include "scrnintstr.h"

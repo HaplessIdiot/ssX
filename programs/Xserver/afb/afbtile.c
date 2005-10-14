@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbtile.c,v 3.4 2003/10/29 22:15:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbtile.c,v 3.5tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -48,7 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
+#include <X11/X.h>
 
 #include "windowstr.h"
 #include "regionstr.h"

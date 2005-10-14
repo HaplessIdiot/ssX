@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbline.c,v 1.7 2001/12/14 20:00:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbline.c,v 1.8tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
+#include <X11/X.h>
 
 #include "gcstruct.h"
 #include "windowstr.h"

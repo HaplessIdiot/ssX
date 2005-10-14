@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbpntwin.c,v 1.3tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -47,7 +47,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
+#include <X11/X.h>
 
 #include "windowstr.h"
 #include "regionstr.h"

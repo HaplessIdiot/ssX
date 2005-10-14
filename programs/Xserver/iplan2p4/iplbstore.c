@@ -1,6 +1,6 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplbstore.c,v 3.0tsi Exp $ */
 
-/*-
+/*
  * iplbstore.c --
  *	Functions required by the backing-store implementation in MI.
  *
@@ -25,14 +25,14 @@ static char rcsid[] =
 interleaved planes */
 
 #include    "ipl.h"
-#include    "X.h"
+#include    <X11/X.h>
 #include    "mibstore.h"
 #include    "regionstr.h"
 #include    "scrnintstr.h"
 #include    "pixmapstr.h"
 #include    "windowstr.h"
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * iplSaveAreas --
  *	Function called by miSaveAreas to actually fetch the areas to be
@@ -93,7 +93,7 @@ iplSaveAreas(pPixmap, prgnSave, xorg, yorg, pWin)
     DEALLOCATE_LOCAL (pPtsInit);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * iplRestoreAreas --
  *	Function called by miRestoreAreas to actually fetch the areas to be

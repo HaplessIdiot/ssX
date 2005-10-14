@@ -24,7 +24,7 @@
  * used in advertising or otherwise to promote the sale, use or other dealings
  * in this Software without prior written authorization from Sebastien Marineau.
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/qnx/qnx_init.c,v 1.1.2.2 1999/07/23 13:42:33 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/qnx4/qnx_init.c,v 1.1tsi Exp $
  */
 
 /* This module contains the qnx-specific functions used at server init.
@@ -36,7 +36,7 @@
 #include <sys/mman.h>
 #include <sys/console.h>
 
-#include <X.h>
+#include <X11/X.h>
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"

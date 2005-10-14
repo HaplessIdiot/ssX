@@ -1,5 +1,4 @@
-/* $Xorg: lbxcmap.c,v 1.4 2001/02/09 02:05:16 xorgcvs Exp $ */
-
+/* $XFree86: xc/programs/Xserver/lbx/lbxcmap.c,v 1.10tsi Exp $ */
 /*
 Copyright 1996, 1998  The Open Group
 
@@ -25,14 +24,13 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86: xc/programs/Xserver/lbx/lbxcmap.c,v 1.9 2001/08/23 14:46:57 alanh Exp $ */
 
 #include <sys/types.h>
 #define NEED_REPLIES
 #define NEED_EVENTS
-#include "X.h"
-#include "Xproto.h"
-#include "Xos.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
+#include <X11/Xos.h>
 #include "misc.h"
 #include "os.h"
 #include "dixstruct.h"
@@ -41,9 +39,9 @@ from The Open Group.
 #include "colormapst.h"
 #include "propertyst.h"
 #define _XLBX_SERVER_
-#include "lbxstr.h"
+#include <X11/extensions/lbxstr.h>
 #include "lbxserve.h"
-#include "Xfuncproto.h"
+#include <X11/Xfuncproto.h>
 #include <stdio.h>
 
 static int lbxScreenPrivIndex;		/* lbx screen private index */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/input/lnx-ps2.c,v 1.1 2004/06/30 20:21:44 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/input/lnx-ps2.c,v 1.2tsi Exp $ */
 /* Portions of this file were derived from the following files:
  *
  **********************************************************************
@@ -67,7 +67,7 @@
  * for complete references). */
 
 #include "inputstr.h"
-#include "Xos.h"
+#include <X11/Xos.h>
 #include <errno.h>
 #include <termios.h>
 

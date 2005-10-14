@@ -1,5 +1,4 @@
-/* $Xorg: fontnames.c,v 1.4 2001/02/09 02:04:04 xorgcvs Exp $ */
-
+/* $XFree86: xc/lib/font/util/fontnames.c,v 1.5tsi Exp $ */
 /*
 
 Copyright 1991, 1998  The Open Group
@@ -27,7 +26,6 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/util/fontnames.c,v 1.4 2001/01/17 19:43:33 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -36,7 +34,7 @@ from The Open Group.
  */
 
 #include	"fontmisc.h"
-#include	"fontstruct.h"
+#include	<X11/fonts/fontstruct.h>
 
 void
 FreeFontNames(FontNamesPtr pFN)

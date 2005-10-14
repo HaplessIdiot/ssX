@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbrrop.c,v 1.6 2001/12/14 19:59:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbrrop.c,v 1.7tsi Exp $ */
 /*
  *
 Copyright 1989, 1998  The Open Group
@@ -28,9 +28,9 @@ in this Software without prior written authorization from The Open Group.
 
 /* cfb reduced rasterop computations */
 
-#include "X.h"
-#include "Xmd.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
+#include <X11/Xproto.h>
 #include "cfb.h"
 #include "cfbmskbits.h"
 

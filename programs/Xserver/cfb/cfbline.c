@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbline.c,v 3.6 2001/12/14 19:59:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbline.c,v 3.7tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
+#include <X11/X.h>
 
 #include "gcstruct.h"
 #include "windowstr.h"

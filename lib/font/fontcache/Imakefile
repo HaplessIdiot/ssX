@@ -1,16 +1,11 @@
-XCOMM Id: Imakefile,v 1.2 1999/01/31 13:02:46 akiyama Exp $
-
-
-
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/font/fontcache/Imakefile,v 1.3tsi Exp $
 
 #include <Server.tmpl>
 
 #if BuildFontCache
 FONTCACHE_DEFINES = FontCacheExtensionDefines
 #endif
-        INCLUDES = -I. -I$(FONTINCSRC) -I../include
-         HEADERS = 
+        INCLUDES = -I../include
             SRCS = fontcache.c
             OBJS = fontcache.o
 

@@ -3,7 +3,7 @@
  *
  * This file is very closely based on mivaltree.c.
  */
-/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessValTree.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessValTree.c,v 1.2tsi Exp $ */
 
 /*
  * mivaltree.c --
@@ -84,7 +84,7 @@ in this Software without prior written authorization from The Open Group.
   *		Bob Scheifler -- avoid miComputeClips for unmapped windows,
   *				 valdata changes
   */
-#include    "X.h"
+#include    <X11/X.h>
 #include    "scrnintstr.h"
 #include    "validate.h"
 #include    "windowstr.h"

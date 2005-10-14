@@ -1,5 +1,4 @@
-/* $Xorg: extinit.c,v 1.4 2001/02/09 02:04:34 xorgcvs Exp $ */
-
+/* $XFree86: xc/programs/Xserver/Xi/extinit.c,v 3.7tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -45,7 +44,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/Xi/extinit.c,v 3.6 2001/12/14 19:58:55 dawes Exp $ */
 
 /********************************************************************
  *
@@ -57,13 +55,13 @@ SOFTWARE.
 
 #define	 NEED_EVENTS
 #define	 NEED_REPLIES
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "inputstr.h"
 #include "gcstruct.h"   		/* pointer for extnsionst.h*/
 #include "extnsionst.h"			/* extension entry   */
-#include "XI.h"
-#include "XIproto.h"
+#include <X11/extensions/XI.h>
+#include <X11/extensions/XIproto.h>
 
 #include "dixevents.h"
 #include "exevents.h"

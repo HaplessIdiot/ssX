@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.72tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.73tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -72,40 +72,40 @@ extern Bool dmxNoRender;
 
 #ifdef MITSHM
 #define _XSHM_SERVER_
-#include "shmstr.h"
+#include <X11/extensions/shmstr.h>
 #endif
 #ifdef XTEST
 #define _XTEST_SERVER_
-#include "XTest.h"
+#include <X11/extensions/XTest.h>
 #endif
 #ifdef XKB
-#include "XKB.h"
+#include <X11/extensions/XKB.h>
 #endif
 #ifdef LBX
 #define _XLBX_SERVER_
-#include "lbxstr.h"
+#include <X11/extensions/lbxstr.h>
 #endif
 #ifdef XPRINT
-#include "Print.h"
+#include <X11/extensions/Print.h>
 #endif
 #ifdef XAPPGROUP
 #define _XAG_SERVER_
-#include "Xagstr.h"
+#include <X11/extensions/Xagstr.h>
 #endif
 #ifdef XCSECURITY
 #define _SECURITY_SERVER
-#include "securstr.h"
+#include <X11/extensions/securstr.h>
 #endif
 #ifdef PANORAMIX
-#include "panoramiXproto.h"
+#include <X11/extensions/panoramiXproto.h>
 #endif
 #ifdef XF86BIGFONT
-#include "xf86bigfstr.h"
+#include <X11/extensions/xf86bigfstr.h>
 #endif
 
 #ifndef XFree86LOADER
 #ifdef RES
-#include "XResproto.h"
+#include <X11/extensions/XResproto.h>
 #endif
 #ifdef XRECORD
 #include "recordproc.h"

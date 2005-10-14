@@ -1,4 +1,4 @@
-/* $Xorg: PclInit.c,v 1.3 2000/08/17 19:48:08 cpqbld Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclInit.c,v 1.12tsi Exp $ */
 /*******************************************************************
 **
 **    *********************************************************
@@ -76,7 +76,6 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclInit.c,v 1.11 2001/12/21 21:02:05 dawes Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -86,7 +85,7 @@ copyright holders.
 #include "Pcl.h"
 
 #include "cfb.h"
-#include "Xos.h"	/* for unlink() */
+#include <X11/Xos.h>	/* for unlink() */
 
 #include "attributes.h"
 #include "DiPrint.h"

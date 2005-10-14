@@ -7,9 +7,9 @@
    Mark Vojkovich's work.
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32wid/cfbwindow.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32wid/cfbwindow.c,v 1.3tsi Exp $ */
 
-#include "X.h"
+#include <X11/X.h>
 #include "scrnintstr.h"
 #include "windowstr.h"
 #define PSZ 8

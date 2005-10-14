@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/iplan2p4/iplply1rct.c,v 3.0 1996/08/18 01:55:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplply1rct.c,v 3.1tsi Exp $ */
 /*
  * $XConsortium: iplply1rct.c,v 1.14 94/04/17 20:28:56 dpw Exp $
  *
@@ -31,7 +31,7 @@ in this Software without prior written authorization from the X Consortium.
 /* Modified nov 94 by Martin Schaller (Martin_Schaller@maus.r.de) for use with
 interleaved planes */
 
-#include "X.h"
+#include <X11/X.h>
 
 #include "gcstruct.h"
 #include "windowstr.h"

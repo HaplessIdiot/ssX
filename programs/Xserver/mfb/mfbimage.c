@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbimage.c,v 1.6 2001/12/14 20:00:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbimage.c,v 1.7tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
+#include <X11/X.h>
 
 #include "windowstr.h"
 #include "pixmapstr.h"
@@ -55,7 +55,7 @@ SOFTWARE.
 
 #include "mfb.h"
 #include "mi.h"
-#include "Xmd.h"
+#include <X11/Xmd.h>
 
 #include "maskbits.h"
 

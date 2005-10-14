@@ -1,4 +1,4 @@
-/* $Xorg: difsutils.c,v 1.4 2001/02/09 02:05:42 xorgcvs Exp $ */
+/* $XFree86: xc/programs/xfs/difs/difsutils.c,v 1.8tsi Exp $ */
 /*
  * misc utility routines
  */
@@ -46,7 +46,6 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/difsutils.c,v 1.7tsi Exp $ */
 
 #define	XK_LATIN1
 
@@ -58,7 +57,7 @@ in this Software without prior written authorization from The Open Group.
 #include	"globals.h"
 #include	"clientstr.h"
 #include	"accstr.h"
-#include	"fontstruct.h"
+#include	<X11/fonts/fontstruct.h>
 #include	<X11/keysymdef.h>
 
 #include	"authstr.h"

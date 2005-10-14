@@ -34,19 +34,19 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.23 2004/06/08 22:58:10 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.24tsi Exp $ */
 
 #include "quartzCommon.h"
 
 #define BOOL xBOOL
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "os.h"
 #include "opaque.h"
 #include "darwin.h"
 #include "quartz.h"
 #define _APPLEWM_SERVER_
-#include "applewm.h"
+#include <X11/extensions/applewm.h>
 #include "applewmExt.h"
 #undef BOOL
 

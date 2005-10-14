@@ -1,4 +1,4 @@
-/* $Xorg: TestExt.c,v 1.3 2000/08/17 19:53:28 cpqbld Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/TestExt.c,v 3.6tsi Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -12,7 +12,6 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/TestExt.c,v 3.5 2001/08/27 17:41:00 dawes Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xproto.h>
@@ -25,7 +24,7 @@ is" without express or implied warranty.
 #include "servermd.h"
 #include "mipointer.h"
 #define XTestSERVER_SIDE
-#include "xtestext1.h"
+#include <X11/extensions/xtestext1.h>
 #include "xtest1dd.h"
 
 extern CARD32 lastEventTime;

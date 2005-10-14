@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/chips/chipsdraw.c,v 1.1 2001/09/05 07:12:41 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/chips/chipsdraw.c,v 1.1tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -69,13 +69,13 @@
 
 #include "chips.h"
 
-#include	"Xmd.h"
+#include	<X11/Xmd.h>
 #include	"gcstruct.h"
 #include	"scrnintstr.h"
 #include	"pixmapstr.h"
 #include	"regionstr.h"
 #include	"mistruct.h"
-#include	"fontstruct.h"
+#include	<X11/fonts/fontstruct.h>
 #include	"dixfontstr.h"
 #include	"fb.h"
 #include	"migc.h"

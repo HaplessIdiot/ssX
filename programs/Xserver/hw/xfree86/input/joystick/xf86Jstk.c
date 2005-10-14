@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/joystick/xf86Jstk.c,v 1.6 2001/12/26 21:51:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/joystick/xf86Jstk.c,v 1.7tsi Exp $ */
 
 #include <misc.h>
 #include <xf86.h>
@@ -31,7 +31,7 @@
 #include <xf86Xinput.h>
 #include <xisb.h>
 #include <exevents.h>		/* Needed for InitValuator/Proximity stuff */
-#include <keysym.h>
+#include <X11/keysym.h>
 
 #include <xf86Module.h>
 

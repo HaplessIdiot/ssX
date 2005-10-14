@@ -1,4 +1,4 @@
-/* $Xorg: ValTree.c,v 1.3 2000/08/17 19:48:06 cpqbld Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ValTree.c,v 1.2tsi Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -30,9 +30,8 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86$ */
 
-#include    "X.h"
+#include    <X11/X.h>
 #include    "scrnintstr.h"
 #include    "validate.h"
 #include    "windowstr.h"

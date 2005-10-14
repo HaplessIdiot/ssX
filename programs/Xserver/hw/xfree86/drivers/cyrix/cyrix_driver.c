@@ -50,7 +50,7 @@
  *		(note that most of the data books have been released by
  *		 NatSemi and are downloadable for free as pdf files)
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.33tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.34tsi Exp $ */
 
 #include "fb.h"
 #include "mibank.h"
@@ -74,11 +74,11 @@
 #include "cyrix.h"
 
 #define _XF86DGA_SERVER_
-#include "extensions/xf86dgastr.h"
+#include <X11/extensions/xf86dgastr.h>
 
 #include "opaque.h"
 #define DPMS_SERVER
-#include "extensions/dpms.h"
+#include <X11/extensions/dpms.h>
 
 static const OptionInfoRec * CYRIXAvailableOptions(int chip, int busid);
 static void	CYRIXIdentify(int flags);

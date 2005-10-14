@@ -23,17 +23,17 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbEvents.c,v 3.12 2003/11/17 22:20:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbEvents.c,v 3.13tsi Exp $ */
 
 #include <stdio.h>
 #define NEED_EVENTS 1
 #include <X11/X.h>
 #include <X11/Xproto.h>
 #include <X11/keysym.h>
-#include "XI.h"
+#include <X11/extensions/XI.h>
 #include "inputstr.h"
 #include "windowstr.h"
-#include "XKBsrv.h"
+#include <X11/extensions/XKBsrv.h>
 #include "xkb.h"
 
 /***====================================================================***/

@@ -1,7 +1,5 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/input/dmxeq.c,v 1.1tsi Exp $ */
 /*
- * $Xorg: mieq.c,v 1.4 2001/02/09 02:05:20 xorgcvs Exp $
- *
  * Copyright 1990, 1998  The Open Group
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -78,7 +76,7 @@
 #include "scrnintstr.h"         /* For screenInfo */
 
 #ifdef XINPUT
-#include "XIproto.h"
+#include <X11/extensions/XIproto.h>
 #define EXTENSION_PROC_ARGS void *
 #include "extinit.h"            /* For LookupDeviceIntRec */
 #endif

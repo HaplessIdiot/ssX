@@ -1,7 +1,5 @@
-
-/* $Xorg: sun.h,v 1.3 2000/08/17 19:48:29 cpqbld Exp $ */
-
-/*-
+/* $XFree86: xc/programs/Xserver/hw/sun/sun.h,v 3.13tsi Exp $ */
+/*
  * Copyright (c) 1987 by the Regents of the University of California
  *
  * Permission to use, copy, modify, and distribute this
@@ -13,16 +11,15 @@
  * express or implied warranty.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/sun/sun.h,v 3.12 2001/07/25 15:05:01 dawes Exp $ */
 
 #ifndef _SUN_H_ 
 #define _SUN_H_
 
 /* X headers */
-#include "Xos.h"
+#include <X11/Xos.h>
 #undef index /* don't mangle silly Sun structure member names */
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 
 /* general system headers */
 #ifndef NOSTDHDRS
@@ -391,7 +388,7 @@ extern void sunKbdWait(
     void
 );
 
-/*-
+/*
  * TVTOMILLI(tv)
  *	Given a struct timeval, convert its time into milliseconds...
  */

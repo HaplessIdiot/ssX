@@ -45,7 +45,7 @@
    * Support static loading.  
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.28tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.29tsi Exp $ */
 
 #include "xf86Cursor.h"
 #include "colormapst.h"
@@ -58,7 +58,7 @@
 #include "xf86DDC.h"
 #include "globals.h"
 #define DPMS_SERVER
-#include "extensions/dpms.h"
+#include <X11/extensions/dpms.h>
 #include "fb.h"
 #include "xf86cmap.h"
 #include "shadowfb.h"

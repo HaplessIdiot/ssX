@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/examples/dmxwininfo.c,v 1.1tsi Exp $ */
 /*
  * Copyright (c) 2003 by the XFree86 Project, Inc.
  *
@@ -41,7 +41,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xmu/SysUtil.h>
-#include "dmxext.h"
+#include <X11/extensions/dmxext.h>
 
 static const char *FontName = "fixed";
 

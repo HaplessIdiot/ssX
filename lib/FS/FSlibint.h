@@ -48,7 +48,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/FS/FSlibint.h,v 3.9 2003/09/01 20:50:09 herrb Exp $ */
+/* $XFree86: xc/lib/FS/FSlibint.h,v 3.10tsi Exp $ */
 
 /*
  * FSlib internal decls
@@ -70,7 +70,7 @@ in this Software without prior written authorization from The Open Group.
 #endif /* USG */
 
 #include	"FSlib.h"
-#include	"FSproto.h"
+#include	<X11/fonts/FSproto.h>
 #include	"FSlibos.h"
 #include	<errno.h>
 #include	<stddef.h>

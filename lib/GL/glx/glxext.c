@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.28tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.29tsi Exp $ */
 
 /*
 ** License Applicability. Except to the extent portions of this file are
@@ -46,13 +46,13 @@
 
 #include "packrender.h"
 #include <stdio.h>
-#include <Xext.h>
-#include <extutil.h>
+#include <X11/extensions/Xext.h>
+#include <X11/extensions/extutil.h>
 #include <assert.h>
 #include "indirect_init.h"
 #include "glapi.h"
 #ifdef XTHREADS
-#include "Xthreads.h"
+#include <X11/Xthreads.h>
 #endif
 #include "glxextensions.h"
 #include "glcontextmodes.h"

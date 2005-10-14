@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sigio.c,v 1.18tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sigio.c,v 1.19tsi Exp $ */
 
 /* sigio.c -- Support for SIGIO handler installation and removal
  * Created: Thu Jun  3 15:39:18 1999 by faith@precisioninsight.com
@@ -80,7 +80,7 @@
  */
 
 #ifdef XFree86Server
-# include "X.h"
+# include <X11/X.h>
 # include "xf86.h"
 # include "xf86Priv.h"
 # include "xf86_OSlib.h"

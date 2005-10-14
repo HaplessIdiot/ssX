@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbpolypnt.c,v 3.2 2003/07/16 01:38:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbpolypnt.c,v 3.3tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -48,8 +48,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
-#include "Xprotostr.h"
+#include <X11/X.h>
+#include <X11/Xprotostr.h>
 #include "pixmapstr.h"
 #include "gcstruct.h"
 #include "windowstr.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbfillrct.c,v 1.6 2003/02/18 21:30:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbfillrct.c,v 1.7tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -47,8 +47,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
-#include "Xprotostr.h"
+#include <X11/X.h>
+#include <X11/Xprotostr.h>
 #include "pixmapstr.h"
 #include "gcstruct.h"
 #include "windowstr.h"

@@ -1,4 +1,4 @@
-/* $Xorg: XKBMisc.c,v 1.4 2000/08/17 19:45:02 cpqbld Exp $ */
+/* $XFree86: xc/lib/X11/XKBMisc.c,v 3.6tsi Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +24,6 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/lib/X11/XKBMisc.c,v 3.5 2001/10/28 03:32:33 tsi Exp $ */
 
 #ifndef XKB_IN_SERVER
 
@@ -39,15 +38,15 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #else 
 
 #include <stdio.h>
-#include "X.h"
+#include <X11/X.h>
 #define	NEED_EVENTS
 #define	NEED_REPLIES
-#include "Xproto.h"
+#include <X11/Xproto.h>
 #include "misc.h"
 #include "inputstr.h"
 #include <X11/keysym.h>
 #define	XKBSRV_NEED_FILE_FUNCS
-#include "XKBsrv.h"
+#include <X11/extensions/XKBsrv.h>
 
 #endif /* XKB_IN_SERVER */
 

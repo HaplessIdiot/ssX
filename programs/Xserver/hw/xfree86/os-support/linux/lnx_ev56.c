@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_ev56.c,v 3.5 2000/02/17 13:45:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_ev56.c,v 3.7tsi Exp $ */
 
-#include "X.h"
+#include <X11/X.h>
 #include "input.h"
 #include "scrnintstr.h"
 #include "compiler.h"

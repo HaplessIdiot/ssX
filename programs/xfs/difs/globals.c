@@ -1,4 +1,4 @@
-/* $Xorg: globals.c,v 1.4 2001/02/09 02:05:42 xorgcvs Exp $ */
+/* $XFree86$ */
 /*
  * various font server globals
  */
@@ -50,7 +50,7 @@ in this Software without prior written authorization from The Open Group.
  * @(#)globals.c	4.3	5/3/91
  *
  */
-#include	"FSproto.h"
+#include	<X11/fonts/FSproto.h>
 #include	"clientstr.h"
 #include	"misc.h"
 #include	"site.h"

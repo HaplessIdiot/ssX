@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/os/k5auth.c,v 3.5 2001/12/14 20:00:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/k5auth.c,v 3.6tsi Exp $ */
 
 /*
  * Kerberos V5 authentication scheme
@@ -49,14 +49,14 @@ from The Open Group.
 #undef BITS32
 #undef xfree
 #include <krb5/los-proto.h>
-#include "X.h"
+#include <X11/X.h>
 #include "os.h"
 #include "osdep.h"
-#include "Xproto.h"
-#include "Xfuncs.h"
+#include <X11/Xproto.h>
+#include <X11/Xfuncs.h>
 #include "dixstruct.h"
 #include <com_err.h>
-#include "Xauth.h"
+#include <X11/Xauth.h>
 
 extern int (*k5_Vector[256])();
 extern int SendConnSetup();

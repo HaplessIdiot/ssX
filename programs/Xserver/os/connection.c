@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.67 2004/06/23 19:40:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.68tsi Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -65,8 +65,8 @@ SOFTWARE.
 #ifdef WIN32
 #include <X11/Xwinsock.h>
 #endif
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include <X11/Xtrans.h>
 #include <errno.h>
 #include <signal.h>
@@ -140,11 +140,11 @@ extern __const__ int _nfiles;
 #include "opaque.h"
 #include "dixstruct.h"
 #ifdef XAPPGROUP
-#include "extensions/Xagsrv.h"
+#include <X11/extensions/Xagsrv.h>
 #endif
 #ifdef XCSECURITY
 #define _SECURITY_SERVER
-#include "extensions/security.h"
+#include <X11/extensions/security.h>
 #endif
 #ifdef LBX
 #include "colormapst.h"

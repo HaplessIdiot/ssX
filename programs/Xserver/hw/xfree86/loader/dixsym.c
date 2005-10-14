@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.67 2005/01/26 05:31:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.68tsi Exp $ */
 
 /*
  * Copyright 1995-1998 by Metro Link, Inc.
@@ -90,7 +90,7 @@
 #include "swaprep.h"
 #include "swapreq.h"
 #include "inputstr.h"
-#include "XIproto.h"
+#include <X11/extensions/XIproto.h>
 #include "exevents.h"
 #include "extinit.h"
 #ifdef XV

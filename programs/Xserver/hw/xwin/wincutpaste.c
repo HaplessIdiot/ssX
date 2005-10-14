@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/wincutpaste.c,v 1.2 2001/09/07 08:41:54 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wincutpaste.c,v 1.3tsi Exp $ */
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -43,11 +43,11 @@
 #endif /* MAP_FILE */
 #endif /* HAS_MMAP */
 
-#include "X.h"
-#include "Xos.h"
+#include <X11/X.h>
+#include <X11/Xos.h>
 #include "regionstr.h"
 #include "miscstruct.h"
-#include "keysym.h"
+#include <X11/keysym.h>
 #include <X11/Xlib.h>
 
 #undef MINSHORT
@@ -102,11 +102,11 @@ winInitializeClipboard ()
 
 #if 0
 #define NEED_EVENTS
-#include <X.h>
-#include <Xproto.h>
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "selection.h"
 #include "input.h"
-#include <Xatom.h>
+#include <X11/Xatom.h>
 
 extern WindowPtr *WindowTable; /* Why isn't this in a header file? */
 extern Selection *CurrentSelections;

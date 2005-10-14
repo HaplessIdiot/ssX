@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64xv.c,v 1.8 2004/01/05 16:42:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64xv.c,v 1.9tsi Exp $ */
 /*
  * Copyright 2003 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -28,7 +28,7 @@
 #include "atimach64io.h"
 #include "atimach64xv.h"
 
-#include "Xv.h"
+#include <X11/extensions/Xv.h>
 #include "fourcc.h"
 
 #define MAKE_ATOM(string) MakeAtom(string, strlen(string), TRUE)

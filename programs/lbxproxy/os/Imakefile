@@ -1,9 +1,4 @@
-XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:53:58 cpqbld Exp $
-
-
-
-
-XCOMM $XFree86: xc/programs/lbxproxy/os/Imakefile,v 1.7 2001/01/17 23:44:59 dawes Exp $
+XCOMM $XFree86: xc/programs/lbxproxy/os/Imakefile,v 1.9tsi Exp $
 
 #include <Server.tmpl>
 
@@ -20,8 +15,7 @@ LinkSourceFile(snprintf.c,$(LIBSRC)/misc)
                 AllocateLocalDefines ServerOSDefines $(SIGNAL_DEFINES)
 DEPEND_DEFINES = $(TRANS_INCLUDES) DependDefines
 
-INCLUDES = -I../include -I$(TOP)/include -I$(EXTINCSRC) \
-           -I../../../include/extensions
+INCLUDES = -I../include
 
     SRCS = connection.c io.c WaitFor.c osinit.c transport.c $(SNPRINTF_SRC)
 

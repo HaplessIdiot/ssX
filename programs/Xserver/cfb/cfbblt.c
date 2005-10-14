@@ -1,7 +1,7 @@
 /*
  * cfb copy area
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbblt.c,v 3.14 2003/10/29 22:44:53 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbblt.c,v 3.15tsi Exp $ */
 
 /*
 
@@ -33,9 +33,9 @@ Author: Keith Packard
 
 /* 24-bit bug fixes: Peter Wainwright, 1998/11/28 */
 
-#include	"X.h"
-#include	"Xmd.h"
-#include	"Xproto.h"
+#include	<X11/X.h>
+#include	<X11/Xmd.h>
+#include	<X11/Xproto.h>
 #include	"gcstruct.h"
 #include	"windowstr.h"
 #include	"scrnintstr.h"

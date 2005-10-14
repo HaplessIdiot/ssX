@@ -1,5 +1,4 @@
-/* $Xorg: fntfilst.h,v 1.5 2001/02/09 02:04:04 xorgcvs Exp $ */
-
+/* $XFree86: xc/lib/font/include/fntfilst.h,v 3.9tsi Exp $ */
 /*
 
 Copyright 1991, 1998  The Open Group
@@ -25,7 +24,6 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/include/fntfilst.h,v 3.8 2002/12/09 17:30:00 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -40,7 +38,7 @@ in this Software without prior written authorization from The Open Group.
 #ifndef XP_PSTEXT
 #include "fontmisc.h"
 #endif
-#include "fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 #include "fontxlfd.h"
 #include "fntfil.h"
 

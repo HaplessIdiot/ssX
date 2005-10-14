@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbfont.c,v 1.3tsi Exp $ */
 /*
 
 Copyright 1987, 1998  The Open Group
@@ -46,11 +46,11 @@ SOFTWARE.
 
 */
 
-#include "X.h"
-#include "Xmd.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
+#include <X11/Xproto.h>
 #include "mfb.h"
-#include "fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 #include "dixfontstr.h"
 #include "scrnintstr.h"
 

@@ -1,4 +1,4 @@
-/* $Xorg: xkbPrOtherEv.c,v 1.3 2000/08/17 19:53:48 cpqbld Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbPrOtherEv.c,v 1.2tsi Exp $ */
 /************************************************************
 Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +24,6 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86$ */
 
 #include <stdio.h>
 #include <math.h>
@@ -34,10 +33,10 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/keysym.h>
 #include "misc.h"
 #include "inputstr.h"
-#include "XKBsrv.h"
+#include <X11/extensions/XKBsrv.h>
 
-#include "XI.h"
-#include "XIproto.h"
+#include <X11/extensions/XI.h>
+#include <X11/extensions/XIproto.h>
 
 extern	void	ProcessOtherEvent(
     xEvent *		/* xE */,

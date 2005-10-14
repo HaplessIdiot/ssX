@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/xfs/os/Imakefile,v 3.9 2002/10/15 01:45:03 dawes Exp $
+XCOMM $XFree86: xc/programs/xfs/os/Imakefile,v 3.10tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -63,8 +63,7 @@ SRCS =	connection.c waitfor.c daemon.c io.c utils.c osinit.c \
 OBJS =  connection.o waitfor.o daemon.o io.o utils.o osinit.o \
 	config.o access.o osglue.o error.o $(OBJS1)
 
-INCLUDES = -I../include -I$(FONTINCSRC) -I$(EXTINCSRC) \
-	   -I$(FONTLIBSRC)/include -I$(FONTLIBSRC)/bitmap
+INCLUDES = -I../include -I$(FONTLIBSRC)/include -I$(FONTLIBSRC)/bitmap
 
 CONN_DEFINES = $(CONNECTION_FLAGS) -DFONT_t -DTRANS_SERVER -DTRANS_REOPEN
 

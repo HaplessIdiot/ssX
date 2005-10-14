@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mifillarc.c,v 3.8 2003/07/16 01:38:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mifillarc.c,v 3.9tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -28,8 +28,8 @@ Author:  Bob Scheifler, MIT X Consortium
 ********************************************************/
 
 #include <math.h>
-#include "X.h"
-#include "Xprotostr.h"
+#include <X11/X.h>
+#include <X11/Xprotostr.h>
 #include "regionstr.h"
 #include "gcstruct.h"
 #include "pixmapstr.h"

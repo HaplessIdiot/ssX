@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mibitblt.c,v 3.11 2001/12/14 20:00:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibitblt.c,v 3.12tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -48,8 +48,8 @@ SOFTWARE.
 
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
-#include "X.h"
-#include "Xprotostr.h"
+#include <X11/X.h>
+#include <X11/Xprotostr.h>
 
 #include "misc.h"
 #include "gcstruct.h"
@@ -58,7 +58,7 @@ SOFTWARE.
 #include "scrnintstr.h"
 #include "mi.h"
 #include "regionstr.h"
-#include "Xmd.h"
+#include <X11/Xmd.h>
 #include "servermd.h"
 
 /* MICOPYAREA -- public entry for the CopyArea request 

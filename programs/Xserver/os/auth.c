@@ -1,4 +1,4 @@
-/* $Xorg: auth.c,v 1.5 2001/02/09 02:05:23 xorgcvs Exp $ */
+/* $XFree86: xc/programs/Xserver/os/auth.c,v 1.14tsi Exp $ */
 /*
 
 Copyright 1988, 1998  The Open Group
@@ -26,7 +26,6 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: auth.c,v 1.13 2003/04/27 21:31:08 herrb Exp $ */
 
 /*
  * authorization hooks for the server
@@ -45,10 +44,10 @@ from The Open Group.
 # include   <sys/stat.h>
 #ifdef XCSECURITY
 #define _SECURITY_SERVER
-# include   "extensions/security.h"
+# include   <X11/extensions/security.h>
 #endif
 #ifdef WIN32
-#include "Xw32defs.h"
+#include <X11/Xw32defs.h>
 #endif
 
 struct protocol {

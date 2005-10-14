@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/xf4bpp.h,v 1.9 2003/11/03 05:11:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/xf4bpp.h,v 1.10tsi Exp $ */
 
 
 #ifndef __XF4BPP_H__
@@ -8,7 +8,7 @@
 #include "windowstr.h"
 #include "gcstruct.h"
 #include "colormapst.h"
-#include "fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 #ifndef PixelType
 #define PixelType CARD32
 #endif

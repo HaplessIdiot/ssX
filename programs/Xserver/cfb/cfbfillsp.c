@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbfillsp.c,v 3.8 2003/10/29 22:44:53 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbfillsp.c,v 3.9tsi Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -75,8 +75,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
-#include "Xmd.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
 #include "servermd.h"
 #include "gcstruct.h"
 #include "window.h"

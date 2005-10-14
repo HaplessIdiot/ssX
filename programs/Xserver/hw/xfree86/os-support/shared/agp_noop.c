@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/agp_noop.c,v 1.6 2004/02/13 23:58:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/agp_noop.c,v 1.7tsi Exp $ */
 /*
  * Copyright (c) 2000-2003 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -54,7 +54,7 @@
 #ifdef __UNIXOS2__
 # define I_NEED_OS2_H
 #endif
-#include "X.h"
+#include <X11/X.h>
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"

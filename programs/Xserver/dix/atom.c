@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/atom.c,v 3.4 2002/02/19 11:09:21 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/atom.c,v 3.5tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,8 +46,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
-#include "Xatom.h"
+#include <X11/X.h>
+#include <X11/Xatom.h>
 #include "misc.h"
 #include "resource.h"
 #include "dix.h"

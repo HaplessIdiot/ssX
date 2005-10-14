@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/sis/Imakefile,v 1.6 2004/12/17 12:48:58 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/sis/Imakefile,v 1.7tsi Exp $
 
 /*
  * Copyright (c) 2000-2004 by The XFree86 Project, Inc.
@@ -87,7 +87,7 @@ XCOMM DEBUG_DEFINES = -DSIS_DEBUG
 
       DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(MESA_ASM_DEFINES) \
 		$(DEBUG_DEFINES)
-     INCLUDES = $(X_INCLUDES) $(MESA_INCLUDES) $(DRI_INCLUDES)
+     INCLUDES = $(MESA_INCLUDES) $(DRI_INCLUDES)
 
       DRMOBJS = $(GLXLIBSRC)/dri/drm/xf86drm.o \
 		$(GLXLIBSRC)/dri/drm/xf86drmHash.o \

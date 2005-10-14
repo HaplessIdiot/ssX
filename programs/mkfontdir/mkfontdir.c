@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.20 2002/09/24 21:01:06 tsi Exp $ */
+/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.22tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1988  X Consortium
@@ -46,8 +46,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-
-/* $Xorg: mkfontdir.c,v 1.5 2000/08/17 19:53:59 cpqbld Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -109,7 +107,7 @@ SOFTWARE.
 #include <X11/X.h>
 #include <X11/Xproto.h>
 #include "fntfilst.h"
-#include "fontenc.h"
+#include <X11/fonts/fontenc.h>
 #include "bitmap.h"
 
 #include <errno.h>

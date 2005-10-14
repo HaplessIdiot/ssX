@@ -1,9 +1,4 @@
-XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:53:28 cpqbld Exp $
-
-
-
-
-XCOMM $XFree86: xc/programs/Xserver/hw/xnest/Imakefile,v 3.28 2003/10/02 13:30:08 eich Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xnest/Imakefile,v 3.29tsi Exp $
 
 #include <Server.tmpl>
 
@@ -55,12 +50,11 @@ OBJS =	Args.o \
 	miinitext.o $(OBJS1)
 
 
-INCLUDES = -I. -I$(XBUILDINCDIR) -I$(FONTINCSRC) \
-	   -I../../mi -I../../include -I../../os \
-           -I$(EXTINCSRC) -I$(XINCLUDESRC) -I$(LIBSRC) -I$(SERVERSRC)/Xext
+INCLUDES = -I../../mi -I../../include -I../../os \
+	   -I$(LIBSRC) -I$(SERVERSRC)/Xext
 
 DEFINES = $(OS_DEFINES) $(EXT_DEFINES) -DNO_HW_ONLY_EXTS \
-	  -UXFree86LOADER  -UMITSHM
+	  -UXFree86LOADER -UMITSHM
 
 XKB_DEFINES = -DXKB_BASE_DIRECTORY=\"$(LIBDIR)/xkb/\"
 

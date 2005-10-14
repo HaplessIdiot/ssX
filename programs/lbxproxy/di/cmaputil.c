@@ -1,5 +1,4 @@
-/* $Xorg: cmaputil.c,v 1.5 2001/02/09 02:05:31 xorgcvs Exp $ */
-
+/* $XFree86: xc/programs/lbxproxy/di/cmaputil.c,v 1.13tsi Exp $ */
 /*
 Copyright 1996, 1998  The Open Group
 
@@ -48,7 +47,6 @@ from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/di/cmaputil.c,v 1.12tsi Exp $ */
 
 #include	<stdio.h>
 #include	"misc.h"
@@ -59,7 +57,7 @@ from The Open Group.
 #include	"resource.h"
 #include	"wire.h"
 #define  XK_LATIN1
-#include 	"keysymdef.h"
+#include 	<X11/keysymdef.h>
 #include        "utils.h"
 
 typedef struct {

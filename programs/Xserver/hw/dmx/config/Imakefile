@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/dmx/config/Imakefile,v 1.2tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/dmx/config/Imakefile,v 1.3tsi Exp $
 
 #include <Server.tmpl>
 
@@ -25,8 +25,7 @@ LOCAL_LIBRARIES = -L. -ldmxconfig
 
 #include <dmx.cf>
 
-INCLUDES = -I. -I.. -I$(XBUILDINCDIR) -I$(FONTINCSRC) -I../../../mi \
-	-I../../../include -I../../../render -I$(EXTINCSRC)
+INCLUDES = -I.. -I../../../mi -I../../../include -I../../../render
 
 DEFINES = $(OS_DEFINES) $(EXT_DEFINES) -DDMX_LOG_STANDALONE $(DMX_DEFINES)
 

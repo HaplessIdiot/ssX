@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/mfb/Imakefile,v 3.18 2004/03/18 07:07:11 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/mfb/Imakefile,v 3.19tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -95,7 +95,7 @@ OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
          mfbplywhite.o mfbplyblack.o mfbplyinv.o $(XFMODOBJ)
 
 INCLUDES = -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
-	   -I$(XINCLUDESRC) -I$(FONTINCSRC) $(XF86INCL)
+	   $(XF86INCL)
 LINTDEFS = -DMFBPOLYGLYPHBLT=mfbPolyGlyphBltWhite \
 	   -DMFBIMAGEGLYPHBLT=mfbImageGlyphBltWhite \
 	   -DEQWHOLEWORD=MFB_EQWHOLEWORD_WHITE -DOPEQ=MFB_OPEQ_WHITE

@@ -1,4 +1,4 @@
-/* $Xorg: GetTime.c,v 1.3 2000/08/17 19:53:28 cpqbld Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/GetTime.c,v 1.2tsi Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -28,10 +28,9 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86$ */
 
 
-#include "Xos.h"
+#include <X11/Xos.h>
 #include "os.h"
 #include <time.h>
 

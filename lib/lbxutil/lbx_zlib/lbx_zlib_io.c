@@ -1,5 +1,4 @@
-/* $Xorg: lbx_zlib_io.c,v 1.3 2000/08/17 19:46:41 cpqbld Exp $ */
-
+/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib_io.c,v 1.13tsi Exp $ */
 /*
  * Copyright 1993 Network Computing Devices
  *
@@ -22,7 +21,6 @@
  *
  * Author:  Dale Tonogai, Network Computing Devices
  */
-/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib_io.c,v 1.12 2001/07/25 15:04:57 dawes Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -33,7 +31,7 @@
 #if !defined(WIN32) && !defined(Lynx)
 #include <sys/param.h>
 #endif
-#include "lbxbufstr.h"
+#include <X11/extensions/lbxbufstr.h>
 #include "lbx_zlib.h"
 #include "os.h"
 

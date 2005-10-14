@@ -1,4 +1,4 @@
-/* $XConsortium: lbxdata.h /main/6 1996/11/15 21:15:42 rws $ */
+/* $XFree86$ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -25,10 +25,10 @@
 #ifndef _LBXDATA_H_
 #define _LBXDATA_H_
 #define NEED_REPLIES
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #define _XLBX_SERVER_
-#include "lbxstr.h"
+#include <X11/extensions/lbxstr.h>
 #include "dixfontstr.h"
 
 extern int  lbx_font_private;

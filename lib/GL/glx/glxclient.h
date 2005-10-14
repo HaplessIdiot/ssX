@@ -31,7 +31,7 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 */
-/* $XFree86: xc/lib/GL/glx/glxclient.h,v 1.24 2004/04/22 13:58:38 tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxclient.h,v 1.25tsi Exp $ */
 
 /**
  * \file glxclient.h
@@ -63,7 +63,7 @@
 #include "indirect.h"
 #endif
 #ifdef XTHREADS
-#include "Xthreads.h"
+#include <X11/Xthreads.h>
 #endif
 #ifdef GLX_BUILT_IN_XMESA
 #include "realglx.h"  /* just silences prototype warnings */

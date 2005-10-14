@@ -26,14 +26,14 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xnest/os2Stub.c,v 3.1 2002/05/31 18:46:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/os2Stub.c,v 3.2tsi Exp $ */
 
 /* This below implements select() for calls in xnest. It has been         */
 /* somewhat optimized for improved performance, but assumes a few */
 /* things so it cannot be used as a general select.                             */
 
 #define I_NEED_OS2_H
-#include "Xpoll.h"
+#include <X11/Xpoll.h>
 #include <stdio.h>
 #include <sys/select.h>
 #include <sys/errno.h>

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/tinyx/linux/ps2.c,v 1.1tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/tinyx/linux/ps2.c,v 1.2tsi Exp $
  *
  * Copyright © 1999 Keith Packard
  *
@@ -69,12 +69,12 @@
  */
 
 #define NEED_EVENTS
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "inputstr.h"
 #include "scrnintstr.h"
 #include "tinyx.h"
-#include "Xpoll.h"
+#include <X11/Xpoll.h>
 
 static int
 Ps2ReadBytes (int fd, unsigned char *buf, int len, int min)

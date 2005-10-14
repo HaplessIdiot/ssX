@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/iplan2p4/ipltile32.c,v 3.0 1996/08/18 01:55:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/ipltile32.c,v 3.1tsi Exp $ */
 /*
  * Fill 32 bit tiled rectangles.  Used by both PolyFillRect and PaintWindow.
  * no depth dependencies.
@@ -35,8 +35,8 @@ in this Software without prior written authorization from the X Consortium.
 /* Modified nov 94 by Martin Schaller (Martin_Schaller@maus.r.de) for use with
 interleaved planes */
 
-#include "X.h"
-#include "Xmd.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
 #include "servermd.h"
 #include "gcstruct.h"
 #include "window.h"

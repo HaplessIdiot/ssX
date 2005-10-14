@@ -24,7 +24,7 @@
  * used in advertising or otherwise to promote the sale, use or other dealings
  * in this Software without prior written authorization from Sebastien Marineau.
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/qnx4/qnx_mouse.c,v 1.4 2002/01/07 20:38:29 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/qnx4/qnx_mouse.c,v 1.5tsi Exp $
  */
 
 /* This module contains the qnx-specific functions to access the keyboard
@@ -42,7 +42,7 @@
 #include <sys/proxy.h>
 #include <errno.h>
 
-#include "X.h"
+#include <X11/X.h>
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86Xinput.h"

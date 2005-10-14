@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/27 18:07:43 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Imakefile,v 1.32 2003/10/02 13:30:06 eich Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Imakefile,v 1.33tsi Exp $
 
 #include <Server.tmpl>
 
@@ -133,8 +133,7 @@ PCIARCHOBJ = ia64Pci.o 460gxPCI.o e8870PCI.o zx1PCI.o
 SRCS = Pci.c $(PCIDRVRSRC) $(SBUSDRVSRC) $(PCIARCHSRC)
 OBJS = Pci.o $(PCIDRVROBJ) $(SBUSDRVOBJ) $(PCIARCHOBJ)
 
-INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
-	   -I$(SERVERSRC)/include -I$(XINCLUDESRC)
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/include
 
 NormalLibraryObjectRule()
 SubdirLibraryRule($(OBJS))

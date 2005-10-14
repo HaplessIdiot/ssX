@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile.inc,v 1.7 2005/01/30 17:48:43 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile.inc,v 1.8tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -137,8 +137,7 @@ PLATFORMDEFS = -DXFREE86
 #endif
 
    INCLUDES = -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
-	      -I$(SERVERSRC)/cfb24 -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-	      -I$(FONTINCSRC) -I$(EXTINCSRC) -I$(SERVERSRC)/Xext
+	      -I$(SERVERSRC)/cfb24 -I$(SERVERSRC)/include -I$(SERVERSRC)/Xext
    LINTLIBS = $(SERVERSRC)/dix/llib-ldix.ln $(SERVERSRC)/os/llib-los.ln \
 	     $(SERVERSRC)/mfb/llib-lmfb.ln $(SERVERSRC)/mi/llib-lmi.ln
     DEFINES = $(LMDEFINES) -DPSZ=PixelSize $(PLATFORMDEFS)

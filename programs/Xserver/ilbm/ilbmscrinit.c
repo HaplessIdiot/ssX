@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/ilbm/ilbmscrinit.c,v 3.4 1998/07/26 01:53:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmscrinit.c,v 3.5tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -51,9 +51,9 @@ SOFTWARE.
 /* Modified jun 95 by Geert Uytterhoeven (Geert.Uytterhoeven@cs.kuleuven.ac.be)
    to use interleaved bitplanes instead of normal bitplanes */
 
-#include "X.h"
-#include "Xproto.h"		/* for xColorItem */
-#include "Xmd.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>		/* for xColorItem */
+#include <X11/Xmd.h>
 #include "scrnintstr.h"
 #include "pixmapstr.h"
 #include "windowstr.h"

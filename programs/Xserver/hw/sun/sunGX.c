@@ -1,6 +1,4 @@
-/*
-static char *rid="$Xorg: sunGX.c,v 1.5 2001/02/09 02:04:44 xorgcvs Exp $";
- */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunGX.c,v 1.9tsi Exp $ */
 /*
 Copyright 1991, 1998  The Open Group
 
@@ -27,17 +25,16 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/Xserver/hw/sun/sunGX.c,v 1.8 2003/07/19 13:22:28 tsi Exp $ */
 
 #include	"sun.h"
 
-#include	"Xmd.h"
+#include	<X11/Xmd.h>
 #include	"gcstruct.h"
 #include	"scrnintstr.h"
 #include	"pixmapstr.h"
 #include	"regionstr.h"
 #include	"mistruct.h"
-#include	"fontstruct.h"
+#include	<X11/fonts/fontstruct.h>
 #include	"dixfontstr.h"
 #include	"cfb/cfb.h"
 #include	"cfb/cfbmskbits.h"

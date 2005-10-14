@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/tinyx/linux/ts.c,v 1.11 2004/04/28 16:25:27 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/tinyx/linux/ts.c,v 1.1tsi Exp $
  *
  * Derived from ps2.c by Jim Gettys
  *
@@ -26,12 +26,12 @@
  */
 
 #define NEED_EVENTS
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "inputstr.h"
 #include "scrnintstr.h"
 #include "tinyx.h"
-#include "Xpoll.h"
+#include <X11/Xpoll.h>
 #include <sys/ioctl.h>
 #if 1
 #include <linux/h3600_ts.h>	/* touch screen events */

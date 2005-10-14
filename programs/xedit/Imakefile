@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/xedit/Imakefile,v 1.26 2003/05/20 21:44:48 tsi Exp $
+XCOMM $XFree86: xc/programs/xedit/Imakefile,v 1.27tsi Exp $
 
 #include "lisp/lisp.cf"
 
@@ -33,7 +33,7 @@ STRCCMP_DEFINES = -DNEED_STRCASECMP
        SYS_OBJS = $(RP_OBJS) $(STRCCMP_OBJS)
     SYS_DEFINES = $(RP_DEFINES) $(STRCCMP_DEFINES)
         DEFINES = $(SIGNAL_DEFINES) $(SYS_DEFINES)
-       INCLUDES = -I. -Ilisp/re $(MISC_INCLUDES)
+       INCLUDES = -Ilisp/re $(MISC_INCLUDES)
 
            SRCS = xedit.c commands.c util.c $(SYS_SRCS) ispell.c options.c \
 		  hook.c $(LISP_SRC)

@@ -1,8 +1,4 @@
-XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:12 cpqbld Exp $
-
-
-
-XCOMM $XFree86: xc/programs/xclock/Imakefile,v 1.8tsi Exp $
+XCOMM $XFree86: xc/programs/xclock/Imakefile,v 1.9tsi Exp $
 
 #ifndef XClockUseRender
 #define XClockUseRender BuildRenderLibrary
@@ -12,7 +8,7 @@ XCOMM $XFree86: xc/programs/xclock/Imakefile,v 1.8tsi Exp $
     XRENDERDEFS = -DXRENDER -DXFREE86_FT2
     XRENDERDEPS = XftClientDepLibs
     XRENDERLIBS = XftClientLibs MathLibrary
-    XRENDERINCS = $(XFTINCLUDES) $(XRENDERINCLUDES) -I$(XBUILDINCDIR)
+    XRENDERINCS = $(XFTINCLUDES) $(XRENDERINCLUDES)
 #endif
         DEPLIBS = $(XRENDERDEPS) XkbClientDepLibs XawClientDepLibs
 LOCAL_LIBRARIES = $(XRENDERLIBS) XkbClientLibs XawClientLibs

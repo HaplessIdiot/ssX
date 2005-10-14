@@ -1,4 +1,4 @@
-/* $Xorg: bdfutils.c,v 1.5 2001/02/09 02:04:02 xorgcvs Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bdfutils.c,v 1.11tsi Exp $ */
 /************************************************************************
 Copyright 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -49,7 +49,6 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bdfutils.c,v 1.10 2001/12/14 19:56:45 dawes Exp $ */
 
 #ifndef FONTMODULE
 #include <ctype.h>
@@ -58,7 +57,7 @@ from The Open Group.
 #endif
 
 #include "fntfilst.h"
-#include "fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 /* use bitmap structure */
 #include "bitmap.h"
 #include "bdfint.h"

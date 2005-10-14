@@ -15,7 +15,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/programs/mkcfm/mkcfm.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/mkcfm/mkcfm.c,v 1.14tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,12 +27,12 @@
 #include "os.h"
 
 #include "fntfilst.h"
-#include "FSproto.h"
-#include "FS.h"
-#include "font.h"
-#include "fontenc.h"
-#include "fontstruct.h"
-#include "fsmasks.h"
+#include <X11/fonts/FSproto.h>
+#include <X11/fonts/FS.h>
+#include <X11/fonts/font.h>
+#include <X11/fonts/fontenc.h>
+#include <X11/fonts/fontstruct.h>
+#include <X11/fonts/fsmasks.h>
 #include "range.h"
 #include "objects.h"
 #include "spaces.h"

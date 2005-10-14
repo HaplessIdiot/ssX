@@ -1,4 +1,4 @@
-/* $Xorg: PsPrint.c,v 1.7 2001/03/14 18:28:18 pookie Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsPrint.c,v 1.11tsi Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -73,7 +73,6 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsPrint.c,v 1.10 2001/12/14 19:59:17 dawes Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -85,7 +84,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xprotostr.h>
 
 #define NEED_EVENTS
-#include "Xproto.h"
+#include <X11/Xproto.h>
 #undef NEED_EVENTS
 
 #include "Ps.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbpixmap.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbpixmap.c,v 1.4tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -52,7 +52,7 @@ SOFTWARE.
    on a monchrome device, a pixmap is a bitmap.
 */
 
-#include "Xmd.h"
+#include <X11/Xmd.h>
 #include "scrnintstr.h"
 #include "pixmapstr.h"
 #include "maskbits.h"

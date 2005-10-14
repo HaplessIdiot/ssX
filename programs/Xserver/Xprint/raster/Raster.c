@@ -1,4 +1,4 @@
-/* $Xorg: Raster.c,v 1.4 2001/03/14 18:46:12 pookie Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/raster/Raster.c,v 1.12tsi Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -31,7 +31,6 @@ dealings in this Software without prior written authorization from said
 copyright holders.
 */
 
-/* $XFree86: xc/programs/Xserver/Xprint/raster/Raster.c,v 1.11tsi Exp $ */
 
 /*******************************************************************
 **
@@ -56,12 +55,12 @@ copyright holders.
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include "X.h"
-#include "Xos.h"	/* for SIGCLD on pre-POSIX systems */
+#include <X11/X.h>
+#include <X11/Xos.h>	/* for SIGCLD on pre-POSIX systems */
 #define NEED_EVENTS
-#include "Xproto.h"
+#include <X11/Xproto.h>
 #undef NEED_EVENTS
-#include "Xatom.h"
+#include <X11/Xatom.h>
 #include "misc.h"
 #include "dixstruct.h"
 #include "scrnintstr.h"

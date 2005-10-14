@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miarc.c,v 3.16tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miarc.c,v 3.17tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -56,8 +56,8 @@ SOFTWARE.
 #include <math.h>
 #undef _XOPEN_SOURCE
 #endif
-#include "X.h"
-#include "Xprotostr.h"
+#include <X11/X.h>
+#include <X11/Xprotostr.h>
 #include "misc.h"
 #include "gcstruct.h"
 #include "scrnintstr.h"
@@ -66,7 +66,7 @@ SOFTWARE.
 #include "mifpoly.h"
 #include "mi.h"
 #include "mifillarc.h"
-#include "Xfuncproto.h"
+#include <X11/Xfuncproto.h>
 
 static double miDsin(double a);
 static double miDcos(double a);

@@ -1,4 +1,4 @@
-/* $Xorg: fsio.c,v 1.3 2000/08/17 19:46:36 cpqbld Exp $ */
+/* $XFree86: xc/lib/font/fc/fsio.c,v 3.17tsi Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -23,7 +23,6 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  */
-/* $XFree86: xc/lib/font/fc/fsio.c,v 3.16tsi Exp $ */
 /*
  * font server i/o routines
  */
@@ -34,10 +33,10 @@
 
 #include 	"X11/Xtrans.h"
 #include	"X11/Xpoll.h"
-#include	"FS.h"
-#include	"FSproto.h"
+#include	<X11/fonts/FS.h>
+#include	<X11/fonts/FSproto.h>
 #include	"fontmisc.h"
-#include	"fontstruct.h"
+#include	<X11/fonts/fontstruct.h>
 #include	"fservestr.h"
 
 #include	<stdio.h>

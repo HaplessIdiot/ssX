@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbscrinit.c,v 3.5 1998/11/22 10:36:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbscrinit.c,v 3.6tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -47,9 +47,9 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
-#include "Xproto.h"		/* for xColorItem */
-#include "Xmd.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>		/* for xColorItem */
+#include <X11/Xmd.h>
 #include "scrnintstr.h"
 #include "pixmapstr.h"
 #include "windowstr.h"

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/Speedo/module/Imakefile,v 1.7 2004/03/18 07:06:29 dawes Exp $
+XCOMM $XFree86: xc/lib/font/Speedo/module/Imakefile,v 1.8tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -49,9 +49,7 @@ XCOMM $XFree86: xc/lib/font/Speedo/module/Imakefile,v 1.7 2004/03/18 07:06:29 da
 #define IHaveModules
 #include <Server.tmpl>
 
-        INCLUDES = -I$(FONTINCSRC) -I../../include -I$(SERVERSRC)/include \
-		   -I$(XINCLUDESRC) -I../
-         HEADERS = 
+        INCLUDES = -I../../include -I$(SERVERSRC)/include -I..
          DEFINES = -DFONTMODULE
 
       SPEEDOSRCS = do_char.c do_trns.c out_bl2d.c out_blk.c speedomod.c \

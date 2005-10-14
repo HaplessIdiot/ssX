@@ -32,7 +32,7 @@
    promote the sale, use or other dealings in this Software without
    prior written authorization.
 */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzKeyboard.c,v 1.2 2004/01/19 01:22:47 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzKeyboard.c,v 1.3tsi Exp $ */
 
 #include "quartzCommon.h"
 
@@ -40,7 +40,7 @@
 #include <Carbon/Carbon.h>
 
 #include "darwinKeyboard.h"
-#include "keysym.h"
+#include <X11/keysym.h>
 #include "keysym2ucs.h"
 
 #ifdef HAS_KL_API

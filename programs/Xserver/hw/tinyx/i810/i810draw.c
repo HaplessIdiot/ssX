@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/i810/i810draw.c,v 1.2tsi Exp $ */
 /* COPYRIGHT AND PERMISSION NOTICE
 
 Copyright (c) 2000, 2001 Nokia Home Communications
@@ -89,13 +89,13 @@ X Window System is a trademark of The Open Group */
 #include "i810.h"
 #include "i810_reg.h"
 
-#include	"Xmd.h"
+#include	<X11/Xmd.h>
 #include	"gcstruct.h"
 #include	"scrnintstr.h"
 #include	"pixmapstr.h"
 #include	"regionstr.h"
 #include	"mistruct.h"
-#include	"fontstruct.h"
+#include	<X11/fonts/fontstruct.h>
 #include	"dixfontstr.h"
 #include	"fb.h"
 #include	"migc.h"

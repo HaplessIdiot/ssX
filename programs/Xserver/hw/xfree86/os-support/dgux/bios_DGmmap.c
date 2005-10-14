@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/dgux/bios_DGmmap.c,v 1.3 2000/02/11 22:36:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/dgux/bios_DGmmap.c,v 1.4tsi Exp $ */
 /*
  * INTEL DG/UX RELEASE 4.20 MU03
  * Copyright 1997 Takis Psarogiannakopoulos Cambridge,UK
@@ -19,7 +19,7 @@
  *
  */
 
-#include "X.h"
+#include <X11/X.h>
 #include "input.h"
 #include "scrnintstr.h"
 

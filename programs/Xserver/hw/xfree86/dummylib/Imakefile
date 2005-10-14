@@ -1,9 +1,9 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/dummylib/Imakefile,v 1.5 2004/12/10 16:07:03 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/dummylib/Imakefile,v 1.6tsi Exp $
 
 #include <Server.tmpl>
 
-INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
-	   -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(DRMINCLUDESDIR)
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) \
+	   -I$(SERVERSRC)/include -I$(DRMINCLUDESDIR)
 
 SRCS = \
 	fatalerror.c \

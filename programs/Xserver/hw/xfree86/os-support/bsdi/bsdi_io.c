@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/bsdi_io.c,v 3.13 2002/10/11 01:40:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/bsdi_io.c,v 3.14tsi Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
@@ -25,7 +25,7 @@
  */
 /* $XConsortium: bsdi_io.c /main/10 1996/10/19 18:06:13 kaleb $ */
 
-#include "X.h"
+#include <X11/X.h>
 
 #include "compiler.h"
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/i2c/Imakefile,v 1.5 2004/03/18 07:06:59 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/i2c/Imakefile,v 1.6tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -57,8 +57,7 @@ MODOBJ = xf86i2cmodule.o
 SRCS = xf86i2c.c $(MODSRC)
 OBJS = xf86i2c.o $(MODOBJ)
 
-INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
-           -I$(SERVERSRC)/include -I$(XINCLUDESRC)
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/include
 
 ModuleObjectRule()
 

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmx_glxvisuals.c,v 1.2tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -37,8 +37,8 @@
 #include "dmx.h"
 #include <GL/glx.h>
 #include <GL/glxproto.h>
-#include "Xext.h"
-#include "extutil.h"
+#include <X11/extensions/Xext.h>
+#include <X11/extensions/extutil.h>
 
 #include "dmx_glxvisuals.h"
 

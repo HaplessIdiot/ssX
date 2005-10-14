@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/record/Imakefile,v 1.15 2005/05/13 21:02:32 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/record/Imakefile,v 1.16tsi Exp $
 
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -65,8 +65,7 @@ MODOBJ = recordmod.o
 
        SRCS = record.c set.c $(MODSRC)
        OBJS = record.o set.o $(MODOBJ)
-   INCLUDES = -I$(SERVERSRC)/record -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-	      -I$(EXTINCSRC) -I$(SERVERSRC)/Xext
+   INCLUDES = -I$(SERVERSRC)/record -I$(SERVERSRC)/include -I$(SERVERSRC)/Xext
    LINTLIBS = $(SERVERSRC)/dix/llib-ldix.ln
     DEFINES = -DNDEBUG
 

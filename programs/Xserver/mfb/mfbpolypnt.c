@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbpolypnt.c,v 1.5 2001/12/14 20:00:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbpolypnt.c,v 1.6tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -47,8 +47,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
-#include "Xprotostr.h"
+#include <X11/X.h>
+#include <X11/Xprotostr.h>
 #include "pixmapstr.h"
 #include "gcstruct.h"
 #include "windowstr.h"

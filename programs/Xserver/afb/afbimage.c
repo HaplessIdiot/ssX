@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/afb/afbimage.c,v 3.3 2001/10/28 03:32:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbimage.c,v 3.4tsi Exp $ */
 
-#include "X.h"
+#include <X11/X.h>
 #include "windowstr.h"
 #include "pixmapstr.h"
 #include "scrnintstr.h"

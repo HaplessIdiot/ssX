@@ -48,13 +48,13 @@ in this Software without prior written authorization from the X Consortium.
  * @(#)events.h	4.2	91/05/03
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfs/include/fsevents.h,v 1.3tsi Exp $ */
 
 #ifndef _EVENTS_H_
 #define _EVENTS_H_
 
 #include	<misc.h>
-#include	"FS.h"
+#include	<X11/fonts/FS.h>
 
 extern int ProcGetEventMask(ClientPtr client);
 extern int ProcSetEventMask(ClientPtr client);

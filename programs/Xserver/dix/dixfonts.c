@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.31 2005/02/15 01:09:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.32tsi Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -70,9 +70,9 @@ SOFTWARE.
 
 
 #define NEED_REPLIES
-#include "X.h"
-#include "Xmd.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
+#include <X11/Xproto.h>
 #include "scrnintstr.h"
 #include "resource.h"
 #include "dixstruct.h"
@@ -96,7 +96,7 @@ SOFTWARE.
 
 #ifdef XF86BIGFONT
 #define _XF86BIGFONT_SERVER_
-#include "xf86bigfont.h"
+#include <X11/extensions/xf86bigfont.h>
 #endif
 
 #define QUERYCHARINFO(pci, pr)  *(pr) = (pci)->metrics

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/input/lnx-keyboard.c,v 1.1tsi Exp $ */
 /* Portions of this file were derived from the following files:
  *
  **********************************************************************
@@ -152,7 +152,7 @@
 /*****************************************************************************/
 
 #include "inputstr.h"
-#include "Xos.h"
+#include <X11/Xos.h>
 #include <sys/ioctl.h>
 #include <errno.h>
 #include <signal.h>

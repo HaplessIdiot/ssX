@@ -19,13 +19,13 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/itsy/ts.c,v 1.2 2000/02/23 20:29:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/itsy/ts.c,v 1.1tsi Exp $ */
 
 #define NEED_EVENTS
 #include "itsy.h"
-#include "Xproto.h"
+#include <X11/Xproto.h>
 #include "inputstr.h"
-#include "Xpoll.h"
+#include <X11/Xpoll.h>
 
 int
 itsyTsReadBytes (int fd, char *buf, int len, int min)

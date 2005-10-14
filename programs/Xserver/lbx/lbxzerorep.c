@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/lbx/lbxzerorep.c,v 1.4 2001/12/14 20:00:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxzerorep.c,v 1.5tsi Exp $ */
 
 /*
  * This module handles zeroing out unused pad bytes in core X replies.
@@ -34,7 +34,7 @@ from The Open Group.
  */
 
 #define NEED_REPLIES
-#include "X.h"
+#include <X11/X.h>
 #include <X11/Xproto.h>
 #include "lbxserve.h"
 

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_iop.c,v 1.1tsi Exp $ */
 /*
  * Copyright 2001 by J. Kean Johnston <jkj@caldera.com>
  *
@@ -23,7 +23,7 @@
 /* $XConsortium$ */
 
 
-#include "X.h"
+#include <X11/X.h>
 
 #include "compiler.h"
 

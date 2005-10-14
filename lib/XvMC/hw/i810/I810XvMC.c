@@ -33,7 +33,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **
 **
 ***************************************************************************/
-/* $XFree86: xc/lib/XvMC/hw/i810/I810XvMC.c,v 1.12 2004/12/10 16:06:58 alanh Exp $ */
+/* $XFree86: xc/lib/XvMC/hw/i810/I810XvMC.c,v 1.13tsi Exp $ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -46,10 +46,10 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <sys/ioctl.h>
 #include <X11/Xlibint.h>
 #include <fourcc.h>
-#include <Xv.h>
-#include <Xvlib.h>
-#include <XvMC.h>
-#include <XvMClib.h>
+#include <X11/extensions/Xv.h>
+#include <X11/extensions/Xvlib.h>
+#include <X11/extensions/XvMC.h>
+#include <X11/extensions/XvMClib.h>
 #include "XvMChooks.h"
 #include "I810XvMC.h"
 

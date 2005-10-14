@@ -1,5 +1,4 @@
-/* $Xorg: fontutil.c,v 1.4 2001/02/09 02:04:04 xorgcvs Exp $ */
-
+/* $XFree86: xc/lib/font/util/fontutil.c,v 3.7tsi Exp $ */
 /*
 
 Copyright 1991, 1998  The Open Group
@@ -27,15 +26,14 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/util/fontutil.c,v 3.6 2001/10/28 03:32:46 tsi Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
  */
 
 #include    "fontmisc.h"
-#include    "fontstruct.h"
-#include    "FSproto.h"
+#include    <X11/fonts/fontstruct.h>
+#include    <X11/fonts/FSproto.h>
 #include    "fontutil.h"
 
 /* Define global here...  doesn't hurt the servers, and avoids

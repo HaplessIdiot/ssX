@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbimggblt.c,v 3.2 2003/10/29 22:15:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbimggblt.c,v 3.3tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -48,11 +48,11 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include		"X.h"
-#include		"Xmd.h"
-#include		"Xproto.h"
+#include		<X11/X.h>
+#include		<X11/Xmd.h>
+#include		<X11/Xproto.h>
 #include		"afb.h"
-#include		"fontstruct.h"
+#include		<X11/fonts/fontstruct.h>
 #include		"dixfontstr.h"
 #include		"gcstruct.h"
 #include		"windowstr.h"

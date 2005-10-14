@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/XTrap/Imakefile,v 1.3 2005/03/25 02:22:52 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/XTrap/Imakefile,v 1.4tsi Exp $
 
 /*
  * Copyright (c) 2005 by The XFree86 Project, Inc.
@@ -65,8 +65,7 @@ MODOBJ = xf86XTrapModule.o
 
          SRCS = xtrapddmi.c xtrapdi.c xtrapdiswp.c xtrapditbl.c $(MODSRC)
          OBJS = xtrapddmi.o xtrapdi.o xtrapdiswp.o xtrapditbl.o $(MODOBJ)
-     INCLUDES = -I$(SERVERSRC)/XTrap -I$(SERVERSRC)/include -I$(EXTINCSRC) \
-		-I$(XINCLUDESRC) -I$(SERVERSRC)/Xext
+     INCLUDES = -I$(SERVERSRC)/XTrap -I$(SERVERSRC)/include -I$(SERVERSRC)/Xext
 
 #ifdef IHaveModules
 ModuleObjectRule()

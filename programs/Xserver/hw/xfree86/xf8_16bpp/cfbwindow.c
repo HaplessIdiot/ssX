@@ -4,9 +4,9 @@
    Written by Mark Vojkovich (mvojkovi@ucsd.edu)
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_16bpp/cfbwindow.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_16bpp/cfbwindow.c,v 1.5tsi Exp $ */
 
-#include "X.h"
+#include <X11/X.h>
 #include "scrnintstr.h"
 #include "windowstr.h"
 #define PSZ 8

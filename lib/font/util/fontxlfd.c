@@ -25,14 +25,14 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/util/fontxlfd.c,v 3.18 2004/03/21 11:27:05 herrb Exp $ */
+/* $XFree86: xc/lib/font/util/fontxlfd.c,v 3.19tsi Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
  */
 
 #include	"fontmisc.h"
-#include	"fontstruct.h"
+#include	<X11/fonts/fontstruct.h>
 #include	"fontxlfd.h"
 #include	"fontutil.h"
 #include	<X11/Xos.h>

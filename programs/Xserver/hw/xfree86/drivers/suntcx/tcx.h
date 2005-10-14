@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suntcx/tcx.h,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suntcx/tcx.h,v 1.4tsi Exp $ */
 
 #ifndef TCX_H
 #define TCX_H
@@ -29,7 +29,7 @@
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
 #include "xf86RamDac.h"
-#include "Xmd.h"
+#include <X11/Xmd.h>
 #include "gcstruct.h"
 #include "xf86sbusBus.h"
 #include "tcx_regs.h"

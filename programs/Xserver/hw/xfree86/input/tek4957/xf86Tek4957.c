@@ -21,7 +21,7 @@
  * TORTIOUS ACTIONS, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/tek4957/xf86Tek4957.c,v 1.2 2004/04/26 22:26:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/tek4957/xf86Tek4957.c,v 1.3tsi Exp $ */
 
 #ifndef XFree86LOADER
 #include <unistd.h>
@@ -38,7 +38,7 @@
 #include "xf86_OSproc.h"
 #include "xf86Xinput.h"
 #include "exevents.h"
-#include "keysym.h"
+#include <X11/keysym.h>
 #include "mipointer.h"
 
 #include "xf86Module.h"

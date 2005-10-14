@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.55tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.56tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -33,7 +33,7 @@
 #ifndef DPMS_SERVER
 # define DPMS_SERVER
 #endif
-#include "extensions/dpms.h"
+#include <X11/extensions/dpms.h>
 
 /*
  * ATIMach64PreInit --

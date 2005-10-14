@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.44tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.45tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -124,8 +124,8 @@
 
 #ifndef _XF86PCI_H
 #define _XF86PCI_H 1
-#include "Xarch.h"
-#include "Xfuncproto.h"
+#include <X11/Xarch.h>
+#include <X11/Xfuncproto.h>
 #include "misc.h"
 
 #define PCI_NOT_FOUND	0xFFFFFFFFU

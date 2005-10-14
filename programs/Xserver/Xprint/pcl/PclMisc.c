@@ -1,4 +1,4 @@
-/* $Xorg: PclMisc.c,v 1.3 2000/08/17 19:48:08 cpqbld Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclMisc.c,v 1.11tsi Exp $ */
 /*******************************************************************
 **
 **    *********************************************************
@@ -44,13 +44,12 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclMisc.c,v 1.10tsi Exp $ */
 
 #include <stdlib.h>
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include "Xos.h"	/* for SIGCLD on pre-POSIX systems */
+#include <X11/Xos.h>	/* for SIGCLD on pre-POSIX systems */
 #include "Pcl.h"
 
 #include "cursor.h"

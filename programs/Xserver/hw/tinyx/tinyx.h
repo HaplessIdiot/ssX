@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/tinyx.h,v 1.29 2002/11/13 16:37:39 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/tinyx.h,v 1.1tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -68,10 +68,10 @@
  */
 
 #include <stdio.h>
-#include "X.h"
+#include <X11/X.h>
 #define NEED_EVENTS
-#include "Xproto.h"
-#include "Xos.h"
+#include <X11/Xproto.h>
+#include <X11/Xos.h>
 #include "scrnintstr.h"
 #include "pixmapstr.h"
 #include "windowstr.h"

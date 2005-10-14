@@ -16,7 +16,7 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
-/* $XFree86: xc/lib/font/FreeType/fttypes.h,v 1.4 2003/05/29 03:05:08 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/module/fttypes.h,v 1.1tsi Exp $ */
 
 #ifndef __FTTYPES_H__
 #define __FTTYPES_H__
@@ -30,9 +30,9 @@
 #ifndef FONTMODULE
 #include <stddef.h>
 #else
-#include "Xmd.h"
+#include <X11/Xmd.h>
 #define _XTYPEDEF_BOOL
-#include "Xdefs.h"
+#include <X11/Xdefs.h>
 #include "xf86_ansic.h"
 #ifndef size_t
 #define DONT_DEFINE_WRAPPERS

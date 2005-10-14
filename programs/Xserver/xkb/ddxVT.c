@@ -1,4 +1,4 @@
-/* $Xorg: ddxVT.c,v 1.3 2000/08/17 19:53:46 cpqbld Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxVT.c,v 1.4tsi Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +24,6 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/ddxVT.c,v 1.3 2002/11/23 19:27:50 tsi Exp $ */
 
 #include <stdio.h>
 #define	NEED_EVENTS 1
@@ -34,8 +33,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "inputstr.h"
 #include "scrnintstr.h"
 #include "windowstr.h"
-#include "XKBsrv.h"
-#include "XI.h"
+#include <X11/extensions/XKBsrv.h>
+#include <X11/extensions/XI.h>
 
 #ifdef XF86DDXACTIONS
 #include "xf86.h"

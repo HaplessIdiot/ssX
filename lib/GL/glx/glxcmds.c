@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.36 2004/12/17 16:38:03 tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.37tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -40,14 +40,14 @@
  */
 
 #include "glxclient.h"
-#include <extutil.h>
-#include <Xext.h>
+#include <X11/extensions/extutil.h>
+#include <X11/extensions/Xext.h>
 #include <assert.h>
 #include <string.h>
 #include "glapi.h"
 #ifdef GLX_DIRECT_RENDERING
 #include "indirect_init.h"
-#include <extensions/xf86vmode.h>
+#include <X11/extensions/xf86vmode.h>
 #endif
 #include "glxextensions.h"
 #include "glcontextmodes.h"

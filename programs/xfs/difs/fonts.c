@@ -1,4 +1,4 @@
-/* $Xorg: fonts.c,v 1.5 2001/02/09 02:05:42 xorgcvs Exp $ */
+/* $XFree86: xc/programs/xfs/difs/fonts.c,v 3.15tsi Exp $ */
 /*
  * font control
  */
@@ -46,17 +46,16 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/fonts.c,v 3.13 2001/12/14 20:01:34 dawes Exp $ */
 /*#define DEBUG*/
-#include        "FS.h"
-#include        "FSproto.h"
+#include        <X11/fonts/FS.h>
+#include        <X11/fonts/FSproto.h>
 #include	<stdio.h>
 #include	<stdlib.h>
 #include	<X11/Xos.h>
 #include	"clientstr.h"
 #include	"fsresource.h"
 #include	"difsfnst.h"
-#include	"fontstruct.h"
+#include	<X11/fonts/fontstruct.h>
 #include	"closestr.h"
 #include	"globals.h"
 #include	"difs.h"

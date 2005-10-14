@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/Imakefile,v 1.3tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/Imakefile,v 1.4tsi Exp $
 
 #include <Server.tmpl>
 
@@ -14,9 +14,8 @@ XCOMM $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/Imakefile,v 1.3tsi Exp $
 		compsize.o glxscreens.o glxvisuals.o \
                 glxsingle.o glxvendor.o glxfbconfig.o glxswap.o $(MOBJS)
 
-     INCLUDES = -I. -I$(SERVERSRC)/include -I$(INCLUDESRC) \
-                -I$(XINCLUDESRC) -I$(SERVERSRC)/mi \
-                -I$(EXTINCSRC) -I$(FONTINCSRC) -I$(MESASRCDIR)/include \
+     INCLUDES = -I$(SERVERSRC)/include -I$(SERVERSRC)/mi \
+                -I$(MESASRCDIR)/include \
                 -I$(XF86SRC) -I$(XF86OSSRC) -I$(SERVERSRC)/GL/include \
                 -I$(SERVERSRC)/hw/dmx -I$(SERVERSRC)/Xext \
                 -I$(SERVERSRC)/render -I$(SERVERSRC)/GL/glx

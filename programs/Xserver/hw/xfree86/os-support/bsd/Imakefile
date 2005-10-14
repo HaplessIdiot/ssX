@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.68 2005/03/01 03:48:53 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.69tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -198,9 +198,9 @@ OBJS = bsd_init.o $(VIDEO_OBJ) bsd_io.o bsd_VTsw.o \
        $(RES_OBJ) stdPci.o vidmem.o $(JOYSTICK_OBJ) sigio.o $(APMOBJ) \
        $(AXP_OBJ) $(KMODOBJ) $(AGP_OBJ) $(KBDOBJ)
 
-INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
-           -I$(XINCLUDESRC) -I$(EXTINCSRC) -I$(SERVERSRC)/mi $(APINCLUDES) \
-	    $(LIBUSBINCLUDES) -I$(XF86OSSRC)/shared -I$(DRMINCLUDESDIR)
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/include \
+	   -I$(SERVERSRC)/mi $(APINCLUDES) \
+	   $(LIBUSBINCLUDES) -I$(XF86OSSRC)/shared -I$(DRMINCLUDESDIR)
 
 CONSDEFINES = XFree86ConsoleDefines
 RESDEFINES = -DUSESTDRES

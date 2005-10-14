@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/dix/Imakefile,v 3.21 2005/03/23 03:11:26 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/dix/Imakefile,v 3.22tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -75,8 +75,7 @@ OBJS = atom.o colormap.o cursor.o devices.o dispatch.o dixutils.o events.o \
 	main.o property.o resource.o swaprep.o swapreq.o \
 	tables.o window.o initatoms.o dixfonts.o privates.o pixmap.o $(FFS_OBJ)
 
-    INCLUDES = -I$(SERVERSRC)/dix -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-		-I$(FONTINCSRC) -I$(EXTINCSRC) -I$(SERVERSRC)/Xext \
+    INCLUDES = -I$(SERVERSRC)/dix -I$(SERVERSRC)/include -I$(SERVERSRC)/Xext \
 		-I$(SERVERSRC)/lbx
     LINTLIBS = ../os/llib-los.ln
 

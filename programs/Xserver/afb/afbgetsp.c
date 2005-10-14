@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbgetsp.c,v 3.1 2001/10/28 03:32:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbgetsp.c,v 3.2tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -48,8 +48,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
-#include "Xmd.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
 
 #include "misc.h"
 #include "region.h"

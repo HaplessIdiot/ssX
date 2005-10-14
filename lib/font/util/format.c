@@ -1,4 +1,4 @@
-/* $Xorg: format.c,v 1.4 2001/02/09 02:04:04 xorgcvs Exp $ */
+/* $XFree86: xc/lib/font/util/format.c,v 1.5tsi Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation
@@ -50,11 +50,10 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/util/format.c,v 1.4 2001/01/17 19:43:33 dawes Exp $ */
 
-#include	"FSproto.h"
-#include	"font.h"
-#include	"fontstruct.h"
+#include	<X11/fonts/FSproto.h>
+#include	<X11/fonts/font.h>
+#include	<X11/fonts/fontstruct.h>
 #include	"fontutil.h"
 
 int

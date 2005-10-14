@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbcmap.c,v 3.1 1998/11/22 10:36:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbcmap.c,v 3.2tsi Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -28,8 +28,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "scrnintstr.h"
 #include "colormapst.h"
 #include "resource.h"

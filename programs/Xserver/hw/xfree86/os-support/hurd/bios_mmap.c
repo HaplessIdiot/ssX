@@ -20,11 +20,11 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/bios_mmap.c,v 1.1tsi Exp $ */
 #include<mach.h>
 #include<device/device.h>
 
-#include "X.h"
+#include <X11/X.h>
 
 #include "xf86.h"
 #include "xf86Priv.h"

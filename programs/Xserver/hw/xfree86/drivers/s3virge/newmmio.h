@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/newmmio.h,v 1.5 1999/03/21 07:35:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/newmmio.h,v 1.6tsi Exp $ */
 
 /*
  * Copyright (C) 1994-1999 The XFree86 Project, Inc.
@@ -72,9 +72,7 @@
 #define S3_NEWMMIO_REGSIZE	  0x10000  /* 64KB */
 #define S3V_MMIO_REGSIZE	   0x8000  /* 32KB */
 
-
-/* #include <Xmd.h> */
-
+#include <X11/Xmd.h>
 
 #define int16	CARD16
 #define int32	CARD32

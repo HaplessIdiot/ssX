@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/shadow/shadow.c,v 1.14tsi Exp $
+ * $XFree86: xc/programs/Xserver/miext/shadow/shadow.c,v 1.15tsi Exp $
  *
  * Copyright © 2000 Keith Packard
  *
@@ -23,12 +23,12 @@
  */
 
 
-#include    "X.h"
+#include    <X11/X.h>
 #include    "scrnintstr.h"
 #include    "windowstr.h"
-#include    "font.h"
+#include    <X11/fonts/font.h>
 #include    "dixfontstr.h"
-#include    "fontstruct.h"
+#include    <X11/fonts/fontstruct.h>
 #include    "mi.h"
 #include    "regionstr.h"
 #include    "globals.h"

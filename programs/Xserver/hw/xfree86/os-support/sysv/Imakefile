@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/Imakefile,v 3.26 2004/03/31 18:07:06 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/Imakefile,v 3.27tsi Exp $
 
 
 
@@ -27,8 +27,8 @@ OBJS = sysv_init.o sysv_video.o sysv_io.o $(BIOS_MOD).o VTsw_usl.o \
        libc_wrapper.o stdResource.o stdPci.o vidmem.o sigiostubs.o pm_noop.o \
        kmod_noop.o agp_noop.o
 
-INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
-           -I$(XINCLUDESRC) -I$(EXTINCSRC) -I$(SERVERSRC)/mi
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/include \
+           -I$(SERVERSRC)/mi
 
 RESDEFINES = -DUSESTDRES
 

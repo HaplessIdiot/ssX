@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbbres.c,v 1.5 2001/12/14 20:00:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbbres.c,v 1.6tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -47,7 +47,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
+#include <X11/X.h>
 #include "misc.h"
 #include "mfb.h"
 #include "maskbits.h"

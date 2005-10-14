@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbtegblt.c,v 3.7 2003/10/29 22:44:53 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbtegblt.c,v 3.8tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,11 +46,11 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include	"X.h"
-#include	"Xmd.h"
-#include	"Xproto.h"
+#include	<X11/X.h>
+#include	<X11/Xmd.h>
+#include	<X11/Xproto.h>
 #include	"cfb.h"
-#include	"fontstruct.h"
+#include	<X11/fonts/fontstruct.h>
 #include	"dixfontstr.h"
 #include	"gcstruct.h"
 #include	"windowstr.h"

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/digitaledge/Imakefile,v 1.2 2004/03/18 07:07:01 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/digitaledge/Imakefile,v 1.3tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -54,8 +54,8 @@ OBJS = DigitalEdge.o
 
 DRIVER = digitaledge
 
-INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86SRC)/loader -I$(XF86OSSRC) \
-		 -I$(SERVERSRC)/mi -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(EXTINCSRC)
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) \
+	 -I$(SERVERSRC)/mi -I$(SERVERSRC)/include
 
 #if MakeHasPosixVariableSubstitutions
 SubdirLibraryRule($(OBJS))

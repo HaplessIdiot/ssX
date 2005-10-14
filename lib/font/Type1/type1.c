@@ -1,4 +1,4 @@
-/* $Xorg: type1.c,v 1.4 2000/08/17 19:46:34 cpqbld Exp $ */
+/* $XFree86: xc/lib/font/Type1/type1.c,v 1.11tsi Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -45,7 +45,6 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/type1.c,v 1.10 2003/05/27 22:26:47 tsi Exp $ */
  
 /*********************************************************************/
 /*                                                                   */
@@ -68,8 +67,8 @@
 #include  <stdio.h>          /* a system-dependent include, usually */
 #include  <math.h>
 #else
-#include  "Xdefs.h"
-#include  "Xmd.h"
+#include  <X11/Xdefs.h>
+#include  <X11/Xmd.h>
 #include  "xf86_ansic.h"
 #endif
 #include  "objects.h"

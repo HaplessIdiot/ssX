@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi.h,v 1.2tsi Exp $ */
 /*
  * Main global data and definitions
  *
@@ -173,7 +173,7 @@
 #define NEED_REPLIES  		/* ? */
 #define EXTENSION_PROC_ARGS void *
 #include "extnsionst.h"  	/* required */
-#include "panoramiXproto.h"  	/* required */
+#include <X11/extensions/panoramiXproto.h>  	/* required */
 #endif
 #endif
 

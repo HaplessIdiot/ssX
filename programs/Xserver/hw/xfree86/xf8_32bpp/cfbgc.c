@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbgc.c,v 1.3 2000/02/11 06:33:46 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbgc.c,v 1.4tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -61,11 +61,11 @@ LOWMEMFTPT	False	False	False	False
 
 /* This gets built twice.  Once for 8bpp and another for 32bpp */
 
-#include "X.h"
-#include "Xmd.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
+#include <X11/Xproto.h>
 #include "cfb.h"
-#include "fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 #include "dixfontstr.h"
 #include "gcstruct.h"
 #include "windowstr.h"

@@ -1,4 +1,4 @@
-/* $Xorg: t1funcs.c,v 1.5 2001/02/09 02:04:01 xorgcvs Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.34tsi Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -71,7 +71,6 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.33 2003/07/19 13:16:40 tsi Exp $ */
 
 /*
 
@@ -121,8 +120,8 @@ from The Open Group.
 #include <sys/mman.h>
 #endif
 #else
-#include "Xmd.h"
-#include "Xdefs.h"
+#include <X11/Xmd.h>
+#include <X11/Xdefs.h>
 #endif
 
 #include "os.h"
@@ -133,7 +132,7 @@ from The Open Group.
 
 #include "fntfilst.h"
 #include "fontutil.h"
-#include "FSproto.h"
+#include <X11/fonts/FSproto.h>
 #include "fontenc.h"
 #include "t1unicode.h"
  

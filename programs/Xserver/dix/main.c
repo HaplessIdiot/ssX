@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.46 2005/03/25 02:22:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.47tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -69,9 +69,9 @@ SOFTWARE.
 *****************************************************************/
 
 #define NEED_EVENTS
-#include "X.h"
-#include "Xos.h"   /* for unistd.h  */
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xos.h>   /* for unistd.h  */
+#include <X11/Xproto.h>
 #include "scrnintstr.h"
 #include "misc.h"
 #include "os.h"
@@ -83,7 +83,7 @@ SOFTWARE.
 #include "colormap.h"
 #include "colormapst.h"
 #include "cursorstr.h"
-#include "font.h"
+#include <X11/fonts/font.h>
 #include "opaque.h"
 #include "servermd.h"
 #include "site.h"
@@ -97,7 +97,7 @@ SOFTWARE.
 
 #ifdef DPMSExtension
 #define DPMS_SERVER
-#include "dpms.h"
+#include <X11/extensions/dpms.h>
 #include "dpmsproc.h"
 #endif
 

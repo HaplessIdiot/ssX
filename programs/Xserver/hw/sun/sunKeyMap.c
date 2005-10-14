@@ -1,4 +1,4 @@
-/* $Xorg: sunKeyMap.c,v 1.3 2000/08/17 19:48:30 cpqbld Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunKeyMap.c,v 1.4tsi Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -27,12 +27,11 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/hw/sun/sunKeyMap.c,v 1.3 2001/01/17 22:36:50 dawes Exp $ */
 
 #include	"sun.h"
 #define		XK_KATAKANA
-#include	"keysym.h"
-#include	"Sunkeysym.h"
+#include	<X11/keysym.h>
+#include	<X11/Sunkeysym.h>
 
 /* 
   By default all keyboards are hardcoded on the theory that people

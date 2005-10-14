@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/dmxextension.c,v 1.5 2005/01/30 17:48:43 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxextension.c,v 1.6tsi Exp $ */
 /*
  * Copyright 2003-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -58,7 +58,7 @@
 
 #include "windowstr.h"
 #include "inputstr.h"           /* For DeviceIntRec */
-#include "dmxproto.h"           /* For DMX_BAD_* */
+#include <X11/extensions/dmxproto.h>           /* For DMX_BAD_* */
 #include "cursorstr.h"
 
 /* The default font is declared in dix/globals.c, but is not included in

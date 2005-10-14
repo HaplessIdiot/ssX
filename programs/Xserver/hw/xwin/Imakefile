@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/10 1996/12/02 10:20:33 lehors $
-XCOMM $XFree86: xc/programs/Xserver/hw/xwin/Imakefile,v 1.16 2003/07/29 21:25:15 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xwin/Imakefile,v 1.18tsi Exp $
 
 #include <Server.tmpl>
 
@@ -145,11 +145,9 @@ OBJS =	InitInput.o \
 	winprefsyacc.o \
 	winprefslex.o
 
-INCLUDES = -I. -I$(XBUILDINCDIR) -I$(FONTINCSRC) \
-	   -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi \
+INCLUDES = -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi \
 	   -I$(SERVERSRC)/miext/shadow -I$(SERVERSRC)/miext/layer \
 	   -I$(SERVERSRC)/include -I$(SERVERSRC)/os  \
-           -I$(EXTINCSRC) -I$(XINCLUDESRC) \
 	   -I$(SERVERSRC)/render -I$(SERVERSRC)/randr
 
 DEFINES = $(OS_DEFINES) $(SHMDEF) $(MMAPDEF) -UXFree86LOADER -UXF86DRI \

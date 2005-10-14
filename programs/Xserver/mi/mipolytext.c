@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mipolytext.c,v 1.3 2001/12/14 20:00:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mipolytext.c,v 1.4tsi Exp $ */
 /*******************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -55,12 +55,12 @@ SOFTWARE.
  * Date:	Thu Feb  5 1987
  */
 
-#include	"X.h"
-#include	"Xmd.h"
-#include	"Xproto.h"
+#include	<X11/X.h>
+#include	<X11/Xmd.h>
+#include	<X11/Xproto.h>
 #include	"misc.h"
 #include	"gcstruct.h"
-#include	"fontstruct.h"
+#include	<X11/fonts/fontstruct.h>
 #include	"dixfontstr.h"
 #include	"mi.h"
 

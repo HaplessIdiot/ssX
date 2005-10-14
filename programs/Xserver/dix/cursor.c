@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/cursor.c,v 3.9 2003/11/17 22:20:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/cursor.c,v 3.10tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,8 +46,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
-#include "Xmd.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
 #include "servermd.h"
 #include "scrnintstr.h"
 #include "dixstruct.h"

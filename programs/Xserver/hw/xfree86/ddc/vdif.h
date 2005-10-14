@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/vdif.h,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/vdif.h,v 1.5tsi Exp $ */
 
 #ifndef _VDIF_H
 #define _VDIF_H
@@ -22,7 +22,7 @@
 #define VDIF_POLARITY_NEGATIVE 0
 #define VDIF_POLARITY_POSITIVE 1
 
-#include "Xmd.h"
+#include <X11/Xmd.h>
 
 #undef  CARD32
 #define CARD32 unsigned int	/* ... on all supported platforms */

@@ -1,8 +1,8 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xrandr/test.c,v 1.2tsi Exp $ */
 
 #include <stdio.h>
 #include <X11/Xlib.h>
-#include "Xrandr.h"
+#include <X11/extensions/Xrandr.h>
 
 main (int argc, char **argv)
 

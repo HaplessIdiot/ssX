@@ -1,4 +1,4 @@
-/* $Xorg: epackbits.c,v 1.4 2000/08/17 19:46:41 cpqbld Exp $ */
+/* $XFree86$ */
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992 Sam Leffler
  * Copyright (c) 1991, 1992 Silicon Graphics, Inc.
@@ -24,7 +24,7 @@
  */
 
 #include <X11/Xfuncproto.h>
-#include "lbximage.h"
+#include <X11/extensions/lbximage.h>
 
 /*
  * -------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/Imakefile,v 1.2tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/Imakefile,v 1.3tsi Exp $
 XCOMM
 XCOMM This is an Imakefile for the XGI driver.
 XCOMM
@@ -16,8 +16,7 @@ XCOMM
 DRISRCS = xgi_dri.c
 DRIOBJS = xgi_dri.o
 DRIINCLUDES = -I$(SERVERSRC)/GL/dri -I$(LIBSRC)/GL/dri \
-              -I$(XF86OSSRC)/shared/drm/kernel \
-              -I$(XTOP)/include
+              -I$(XF86OSSRC)/shared/drm/kernel
 DRIDEFINES = $(GLX_DEFINES)
 #endif
 
@@ -33,16 +32,14 @@ OBJS = vb_ext.o vb_init.o vb_setmode.o vb_util.o\
        xgi_video.o xgi_videohw.o $(DRIOBJS)
 
 #if defined(XF86DriverSDK)
-INCLUDES = -I. -I../../include
+INCLUDES = -I../../include
 #else
-INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/Xext \
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/Xext \
            -I$(SERVERSRC)/mi -I$(SERVERSRC)/fb -I$(XF86SRC)/xaa \
            -I$(XF86SRC)/vgahw -I$(XF86SRC)/ramdac \
            -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c -I$(XF86SRC)/vbe \
            -I$(XF86SRC)/rac -I$(XF86SRC)/int10 \
-           -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-           -I$(XTOP)/include/extensions \
-           -I$(SERVERSRC)/render -I$(XF86SRC)/shadowfb \
+           -I$(SERVERSRC)/include -I$(SERVERSRC)/render -I$(XF86SRC)/shadowfb \
            $(DRIINCLUDES)
 #endif
 

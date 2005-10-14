@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.12 2003/11/11 01:29:47 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.13tsi Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -29,10 +29,9 @@ OBJS =  Preferences.o \
         quartzStartup.o \
         pseudoramiX.o
 
-INCLUDES = -I. -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
-           -I$(XINCLUDESRC) -I$(FONTINCSRC) -I$(SERVERSRC)/render \
-           -I$(SERVERSRC)/miext/shadow -I$(EXTINCSRC) -I$(SERVERSRC)/Xext \
-           -I.. -I$(APPLEWMLIBSRC)
+INCLUDES = -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
+           -I$(SERVERSRC)/render -I$(SERVERSRC)/miext/shadow \
+           -I$(SERVERSRC)/Xext -I.. -I$(APPLEWMLIBSRC)
 
 #if defined(XFree86CustomVersion)
 CUSTOMVERSION = XFree86CustomVersion

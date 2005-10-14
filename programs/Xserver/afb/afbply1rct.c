@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbply1rct.c,v 3.2 2001/10/28 03:32:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbply1rct.c,v 3.3tsi Exp $ */
 /*
  *
 Copyright (c) 1990  X Consortium
@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include "X.h"
+#include <X11/X.h>
 
 #include "gcstruct.h"
 #include "windowstr.h"

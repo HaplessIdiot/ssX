@@ -12,9 +12,9 @@ Thanks to Linus Torvalds for contributing this code.
 
 ****************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/BUSmemcpy.c,v 1.3 1999/12/03 19:17:44 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/BUSmemcpy.c,v 1.4tsi Exp $ */
 
-#include "X.h"
+#include <X11/X.h>
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"

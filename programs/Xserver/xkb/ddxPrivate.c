@@ -1,11 +1,11 @@
-/* $XFree86: xc/programs/Xserver/xkb/ddxPrivate.c,v 1.2 2003/04/03 16:20:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxPrivate.c,v 1.3tsi Exp $ */
 
 #include <stdio.h>
 #define NEED_EVENTS 1
 #include <X11/X.h>
 #include "windowstr.h"
 #define XKBSRV_NEED_FILE_FUNCS
-#include "XKBsrv.h"
+#include <X11/extensions/XKBsrv.h>
 
 #ifdef XF86DDXACTIONS
 #include "xf86.h"

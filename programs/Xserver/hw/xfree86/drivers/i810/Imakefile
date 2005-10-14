@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/Imakefile,v 1.37 2005/03/01 03:48:52 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/Imakefile,v 1.38tsi Exp $
 XCOMM
 XCOMM This is the Imakefile for the i810 driver.  
 XCOMM 
@@ -72,7 +72,7 @@ I830DRIOBJS = i830_dri.o
 DRISRCS = $(I810DRISRCS) $(I830DRISRCS)
 DRIOBJS = $(I810DRIOBJS) $(I830DRIOBJS)
 DRIINCLUDES = -I$(SERVERSRC)/GL/dri -I$(LIBSRC)/GL/dri \
-	-I$(XF86OSSRC)/linux/drm/kernel -I$(TOP)/include -I$(DRMINCLUDESDIR)
+	-I$(XF86OSSRC)/linux/drm/kernel -I$(DRMINCLUDESDIR)
 DRIDEFINES = $(GLX_DEFINES)
 #endif
 
@@ -107,20 +107,17 @@ I830XVDEFINES = -DI830_XV
 #endif
 
 #if defined(XF86DriverSDK)
-INCLUDES = -I. -I../../include
+INCLUDES = -I../../include
 #else
-INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC)				\
-           -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi				\
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC)				\
+	   -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi				\
 	   -I$(XF86SRC)/xaa -I$(XF86SRC)/rac				\
 	   -I$(SERVERSRC)/miext/shadow					\
-           -I$(SERVERSRC)/fb -I$(XF86SRC)/xaa -I$(XF86SRC)/ramdac	\
+	   -I$(SERVERSRC)/fb -I$(XF86SRC)/xaa -I$(XF86SRC)/ramdac	\
 	   -I$(XF86SRC)/vgahw -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c		\
-	   -I$(XF86SRC)/vbe -I$(XF86SRC)/int10			\
-	   -I$(XF86SRC)/shadowfb                                \
-	   -I$(SERVERSRC)/Xext 						\
-           -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC)	\
-	   -I$(EXTINCSRC) -I$(SERVERSRC)/render				\
-	   $(DRIINCLUDES)
+	   -I$(XF86SRC)/vbe -I$(XF86SRC)/int10 -I$(XF86SRC)/shadowfb    \
+	   -I$(SERVERSRC)/Xext -I$(SERVERSRC)/include			\
+	   -I$(SERVERSRC)/render $(DRIINCLUDES)
 #endif
 DEFINES = $(DRIDEFINES) $(CHIPDEFINES) $(I830XVDEFINES)
 

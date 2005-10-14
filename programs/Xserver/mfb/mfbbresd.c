@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbbresd.c,v 1.5 2001/12/14 20:00:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbbresd.c,v 1.6tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
+#include <X11/X.h>
 #include "misc.h"
 #include "mfb.h"
 #include "maskbits.h"

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/Imakefile,v 1.26 2004/12/10 16:07:03 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/Imakefile,v 1.27tsi Exp $
 XCOMM
 XCOMM This is the Imakefile for the TDFX driver.  
 XCOMM 
@@ -58,8 +58,7 @@ XCOMM
 #if BuildXF86DRI
 DRISRCS = tdfx_dri.c
 DRIOBJS = tdfx_dri.o
-DRIINCLUDES = -I$(SERVERSRC)/GL/dri -I$(LIBSRC)/GL/dri -I$(TOP)/include \
-	      -I$(DRMINCLUDESDIR)
+DRIINCLUDES = -I$(SERVERSRC)/GL/dri -I$(LIBSRC)/GL/dri -I$(DRMINCLUDESDIR)
 
 DRIDEFINES = $(GLX_DEFINES)
 #endif
@@ -76,17 +75,15 @@ OBJS = tdfx_driver.o tdfx_io.o tdfx_hwcurs.o tdfx_accel.o \
 	tdfx_dga.o tdfx_priv.o tdfx_sli.o $(XVOBJS) $(DRIOBJS)
 
 #if defined(XF86DriverSDK)
-INCLUDES = -I. -I../../include
+INCLUDES = -I../../include
 #else
-INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) \
            -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
-	   -I$(XF86SRC)/xaa -I$(XF86SRC)/rac -I$(XF86SRC)/int10 \
+           -I$(XF86SRC)/xaa -I$(XF86SRC)/rac -I$(XF86SRC)/int10 \
            -I$(SERVERSRC)/fb -I$(XF86SRC)/xaa -I$(XF86SRC)/ramdac \
-	   -I$(XF86SRC)/vgahw -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c \
+           -I$(XF86SRC)/vgahw -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c \
            -I$(XF86SRC)/ddc -I$(XF86SRC)/vbe -I$(SERVERSRC)/Xext \
-           -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-	   -I$(EXTINCSRC) -I$(SERVERSRC)/render \
-	   $(DRIINCLUDES)
+           -I$(SERVERSRC)/include -I$(SERVERSRC)/render $(DRIINCLUDES)
 #endif
 
 DEFINES = $(DRIDEFINES) 

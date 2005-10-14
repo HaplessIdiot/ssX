@@ -1,4 +1,4 @@
-/* $Xorg: xkbPrKeyEv.c,v 1.3 2000/08/17 19:53:48 cpqbld Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbPrKeyEv.c,v 3.9tsi Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +24,6 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbPrKeyEv.c,v 3.8 2001/01/17 22:37:15 dawes Exp $ */
 
 #include <stdio.h>
 #include <math.h>
@@ -34,7 +33,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/keysym.h>
 #include "misc.h"
 #include "inputstr.h"
-#include "XKBsrv.h"
+#include <X11/extensions/XKBsrv.h>
 #include <ctype.h>
 
 

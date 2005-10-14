@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/apple/dri_driver.h,v 1.1 2003/06/30 01:45:10 torrey Exp $ */
+/* $XFree86: xc/lib/GL/apple/dri_driver.h,v 1.2tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -37,7 +37,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _DRI_DRIVER_H_
 
 #include "Xplugin.h"
-#include "Xthreads.h"
+#include <X11/Xthreads.h>
 #include <CoreGraphics/CoreGraphics.h>
 #include <OpenGL/OpenGL.h>
 #include <OpenGL/CGLContext.h>

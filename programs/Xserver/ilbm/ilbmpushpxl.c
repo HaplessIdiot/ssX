@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/ilbm/ilbmpushpxl.c,v 3.0 1996/08/18 01:54:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmpushpxl.c,v 3.1tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -51,7 +51,7 @@ SOFTWARE.
 /* Modified jun 95 by Geert Uytterhoeven (Geert.Uytterhoeven@cs.kuleuven.ac.be)
    to use interleaved bitplanes instead of normal bitplanes */
 
-#include "X.h"
+#include <X11/X.h>
 #include "gcstruct.h"
 #include "scrnintstr.h"
 #include "pixmapstr.h"

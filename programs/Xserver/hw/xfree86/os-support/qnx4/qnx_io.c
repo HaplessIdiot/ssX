@@ -24,7 +24,7 @@
  * used in advertising or otherwise to promote the sale, use or other dealings
  * in this Software without prior written authorization from Sebastien Marineau.
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/qnx4/qnx_io.c,v 1.2 2002/10/11 01:40:36 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/qnx4/qnx_io.c,v 1.3tsi Exp $
  */
 
 /* This module contains the qnx-specific functions to access the keyboard
@@ -39,7 +39,7 @@
 #include <sys/qioctl.h>
 #include <errno.h>
 
-#include <X.h>
+#include <X11/X.h>
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
