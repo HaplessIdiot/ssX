@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/sunLynx/Imakefile,v 3.2tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/sunLynx/Imakefile,v 3.3tsi Exp $
 
 #include <Server.tmpl>
 
@@ -33,8 +33,8 @@ OBJS =	sunLyInit.o \
 	sunGX.o \
 	sunKeyMap.o
 
-   INCLUDES = -I. -I../.. -I../../mi -I../../mfb -I../../cfb -I../../cfb32 \
-	      -I../../include -I../../os -I$(XINCLUDESRC) -I$(FONTINCSRC)
+   INCLUDES = -I../../mi -I../../mfb -I../../cfb -I../../cfb32 \
+	      -I../../include -I../../os
    LINTLIBS = ../../dix/llib-ldix.ln ../../os/llib-los.ln \
 	      ../mfb/llib-lmfb.ln ../mi/llib-lmi.ln ../cfb/llib-lcfb.ln
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/xf86overlay.c,v 1.8 2000/03/25 20:14:43 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/xf86overlay.c,v 1.9tsi Exp $ */
 
 /*
    Copyright (C) 1998.  The XFree86 Project Inc.
@@ -11,7 +11,7 @@
 #include "xf86_ansic.h"
 #include "xf86_OSproc.h"
 
-#include "X.h"
+#include <X11/X.h>
 #include "scrnintstr.h"
 #include "regionstr.h"
 #include "windowstr.h"

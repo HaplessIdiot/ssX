@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DPMS.c,v 1.12 2004/02/13 23:58:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DPMS.c,v 1.13tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
@@ -96,14 +96,14 @@
  * This file contains the DPMS functions required by the extension.
  */
 
-#include "X.h"
+#include <X11/X.h>
 #include "os.h"
 #include "globals.h"
 #include "xf86.h"
 #include "xf86Priv.h"
 #ifdef DPMSExtension
 #define DPMS_SERVER
-#include "extensions/dpms.h"
+#include <X11/extensions/dpms.h>
 #include "dpmsproc.h"
 #endif
 #include "edid.h"

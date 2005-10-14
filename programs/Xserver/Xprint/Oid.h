@@ -1,4 +1,4 @@
-/* $Xorg: Oid.h,v 1.3 2000/08/17 19:48:06 cpqbld Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/Oid.h,v 1.4tsi Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -30,12 +30,11 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/Oid.h,v 1.3 1999/12/16 02:26:24 robin Exp $ */
 
 #ifndef _Xp_Oid_h
 #define _Xp_Oid_h
 
-#include <Xproto.h>
+#include <X11/Xproto.h>
 
 /*
  * include the auto-generated XpOid enum definition

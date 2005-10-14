@@ -1,4 +1,4 @@
-/* $Xorg: lbxgfx.c,v 1.3 2000/08/17 19:53:31 cpqbld Exp $ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxgfx.c,v 1.4tsi Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -21,7 +21,6 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/lbx/lbxgfx.c,v 1.3 2001/01/17 22:36:59 dawes Exp $ */
 
 /* various bits of DIX-level mangling */
 
@@ -29,8 +28,8 @@
 #include <stdio.h>
 #define NEED_REPLIES
 #define NEED_EVENTS
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "misc.h"
 #include "os.h"
 #include "dixstruct.h"
@@ -39,11 +38,11 @@
 #include "windowstr.h"
 #include "scrnintstr.h"
 #define _XLBX_SERVER_
-#include "lbxstr.h"
+#include <X11/extensions/lbxstr.h>
 #include "lbxserve.h"
 #include "lbxtags.h"
-#include "Xfuncproto.h"
-#include "lbximage.h"
+#include <X11/Xfuncproto.h>
+#include <X11/extensions/lbximage.h>
 #include "lbxsrvopts.h"
 
 #define DrawableCache(client)	(LbxClient(client)->drawableCache)

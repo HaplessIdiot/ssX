@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.30tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.31tsi Exp $
 
 XCOMM CDEBUGFLAGS=-g -Wall -ansi -pedantic
 
@@ -123,10 +123,11 @@ DEFINES        = -DXF86CONFIG=\"$(XF86CONFIGFILE)\" $(MODULEDEFINES) \
 DLLIB = DlLibrary
 #endif
 
-INCLUDES       = -I../common -I../scanpci -I../loader -I$(XF86OSSRC) \
-		 -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-		 -I$(FONTLIBSRC)/include
-LOCAL_LIBRARIES = $(XKBUILIB) $(XKBFILELIB) -lxf86config $(XXF86MISCLIB) \
+INCLUDES       = -I$(XF86SRC)/common -I$(XF86SRC)/scanpci \
+		 -I$(XF86SRC)/loader -I$(XF86SRC)/parser -I$(XF86OSSRC) \
+		 -I$(SERVERSRC)/include -I$(FONTLIBSRC)/include
+LOCAL_LIBRARIES = $(XF86SRC)/parser/LibraryTargetName(xf86config) \
+		  $(XKBUILIB) $(XKBFILELIB) $(XXF86MISCLIB) \
 		  $(XXF86VMLIB) $(XAWLIB) $(XMULIB) $(XTOOLLIB) \
 		  $(XPMLIB) $(LOADERLIB) $(DLLIB) $(XLIB) $(CURSESLIB) \
 		  RegexLibrary -lm

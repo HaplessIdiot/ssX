@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaCmap.c,v 1.5 1998/11/22 10:37:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaCmap.c,v 1.7tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -24,8 +24,8 @@
 /* $XConsortium: vgaCmap.c /main/15 1996/10/28 05:13:44 kaleb $ */
 
 
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "windowstr.h"
 #include "compiler.h"
 #include "mipointer.h"
@@ -36,7 +36,7 @@
 #include "xf86_ansic.h"
 
 #define _XF86DGA_SERVER_
-#include "extensions/xf86dgastr.h"
+#include <X11/extensions/xf86dgastr.h>
 #include "dgaproc.h"
 
 

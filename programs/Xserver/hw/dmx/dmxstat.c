@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/dmxstat.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxstat.c,v 1.2tsi Exp $ */
 /*
  * Copyright 2002, 2003 Red Hat Inc., Durham, North Carolina.
  *
@@ -46,7 +46,7 @@
 #include "dmx.h"
 #include "dmxstat.h"
 #include "dmxlog.h"
-#include "Xos.h"                /* For sys/time.h */
+#include <X11/Xos.h>                /* For sys/time.h */
 
 /** Used to compute a running average of value. */
 typedef struct _DMXStatAvg {

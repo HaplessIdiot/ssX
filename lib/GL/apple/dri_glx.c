@@ -26,7 +26,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/apple/dri_glx.c,v 1.2 2004/04/21 04:59:40 torrey Exp $ */
+/* $XFree86: xc/lib/GL/apple/dri_glx.c,v 1.3tsi Exp $ */
 
 /*
  * Authors:
@@ -40,7 +40,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <unistd.h>
 #include <X11/Xlibint.h>
 #include <X11/extensions/Xext.h>
-#include "extutil.h"
+#include <X11/extensions/extutil.h>
 #include "glxclient.h"
 #include "appledri.h"
 #include <stdio.h>

@@ -25,9 +25,9 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/mi/miscrinit.c,v 3.16 2003/04/23 21:51:53 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miscrinit.c,v 3.17tsi Exp $ */
 
-#include "X.h"
+#include <X11/X.h>
 #include "servermd.h"
 #include "misc.h"
 #include "mi.h"
@@ -37,7 +37,7 @@ from The Open Group.
 #include "miline.h"
 #ifdef MITSHM
 #define _XSHM_SERVER_
-#include "XShm.h"
+#include <X11/extensions/XShm.h>
 #endif
 
 /* We use this structure to propogate some information from miScreenInit to

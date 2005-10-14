@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbfont.c,v 3.0 1996/08/18 01:45:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbfont.c,v 3.1tsi Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -47,11 +47,11 @@ SOFTWARE.
 
 */
 
-#include "X.h"
-#include "Xmd.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
+#include <X11/Xproto.h>
 #include "afb.h"
-#include "fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 #include "dixfontstr.h"
 #include "scrnintstr.h"
 

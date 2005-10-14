@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.92tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.93tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -217,7 +217,7 @@
 
 #include <errno.h>
 #include <signal.h>
-#include "Xarch.h"
+#include <X11/Xarch.h>
 #include "compiler.h"
 #include "xf86.h"
 #include "xf86Priv.h"

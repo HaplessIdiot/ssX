@@ -21,19 +21,19 @@
   THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/fttools.c,v 1.7 2003/11/20 22:36:37 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/fttools.c,v 1.8tsi Exp $ */
 
 #include "fontmisc.h"
 #ifndef FONTMODULE
 #include <ctype.h>
 #include <string.h>
 #else
-#include "Xmd.h"
-#include "Xdefs.h"
+#include <X11/Xmd.h>
+#include <X11/Xdefs.h>
 #include "xf86_ansic.h"
 #endif
 
-#include "font.h"
+#include <X11/fonts/font.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_SFNT_NAMES_H

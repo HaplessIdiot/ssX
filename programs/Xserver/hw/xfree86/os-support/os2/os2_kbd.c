@@ -28,11 +28,11 @@
  * in this Software without prior written authorization from Holger Veit.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbd.c,v 1.2tsi Exp $ */
 
 #define I_NEED_OS2_H
-#include "X.h"
-#include "Xpoll.h"
+#include <X11/X.h>
+#include <X11/Xpoll.h>
 #include "compiler.h"
 #include <time.h>
 

@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/fonttosfnt/read.c,v 1.5 2003/12/19 02:05:39 dawes Exp $ */
+/* $XFree86: xc/programs/fonttosfnt/read.c,v 1.6tsi Exp $ */
 
 #include <stdio.h>
 
@@ -28,7 +28,7 @@ THE SOFTWARE.
 #include FT_BDF_H
 #include "X11/Xos.h"
 #include "fonttosfnt.h"
-#include "fontenc.h"
+#include <X11/fonts/fontenc.h>
 
 #define FLOOR2(x, y) ((x) >= 0 ? (x) / (y) : -(((-(x)) + (y) - 1) / (y)))
 #define CEIL2(x, y) (FLOOR2((x) + (y) - 1, (y)))

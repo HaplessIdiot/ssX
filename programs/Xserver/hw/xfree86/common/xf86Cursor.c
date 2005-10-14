@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.41tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.42tsi Exp $ */
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -48,8 +48,8 @@
 
 
 #define NEED_EVENTS
-#include "X.h"
-#include "Xmd.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
 #include "input.h"
 #include "cursor.h"
 #include "mipointer.h"
@@ -63,7 +63,7 @@
 #include "xf86_OSproc.h"
 
 #ifdef XINPUT
-#include "XIproto.h"
+#include <X11/extensions/XIproto.h>
 #include "xf86Xinput.h"
 #endif
 

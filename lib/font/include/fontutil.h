@@ -1,9 +1,9 @@
-/* $XFree86: xc/lib/font/include/fontutil.h,v 1.1 1999/03/14 11:17:49 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/fontutil.h,v 1.2tsi Exp $ */
 
 #ifndef _FONTUTIL_H_
 #define _FONTUTIL_H_
 
-#include "FSproto.h"
+#include <X11/fonts/FSproto.h>
 
 extern int FontCouldBeTerminal(FontInfoPtr);
 extern int CheckFSFormat(fsBitmapFormat, fsBitmapFormatMask, int *, int *,

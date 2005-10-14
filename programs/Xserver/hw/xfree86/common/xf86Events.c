@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.167tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.168tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -74,9 +74,9 @@
 #define I_NEED_OS2_H
 #endif
 
-#include "X.h"
-#include "Xpoll.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xpoll.h>
+#include <X11/Xproto.h>
 #include "misc.h"
 
 #include "compiler.h"
@@ -93,8 +93,8 @@
 #endif
 
 #ifdef XINPUT
-#include "XI.h"
-#include "XIproto.h"
+#include <X11/extensions/XI.h>
+#include <X11/extensions/XIproto.h>
 #else
 #include "inputstr.h"
 #endif
@@ -105,11 +105,11 @@
 
 #ifdef XF86BIGFONT
 #define _XF86BIGFONT_SERVER_
-#include "xf86bigfont.h"
+#include <X11/extensions/xf86bigfont.h>
 #endif
 
 #ifdef XKB
-#include "XKBsrv.h"
+#include <X11/extensions/XKBsrv.h>
 #endif
 
 #define XE_POINTER  1
@@ -130,7 +130,7 @@
 #ifdef XTESTEXT1
 
 #define	XTestSERVER_SIDE
-#include "xtestext1.h"
+#include <X11/extensions/xtestext1.h>
 extern short xtest_mousex;
 extern short xtest_mousey;
 extern int   on_steal_input;          

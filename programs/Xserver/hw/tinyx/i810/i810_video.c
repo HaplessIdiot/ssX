@@ -58,7 +58,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **************************************************************************/
 
 
-/* $XFree86: xc/programs/Xserver/hw/tinyx/i810/i810_video.c,v 1.4 2004/04/14 11:23:27 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/i810/i810_video.c,v 1.1tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -120,7 +120,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "txxv.h"
 #include "i810.h"
 
-#include "Xv.h"
+#include <X11/extensions/Xv.h>
 
 #include "../../xfree86/common/fourcc.h"
 

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbbstore.c,v 1.3tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /*
 
@@ -29,14 +29,14 @@ from The Open Group.
 */
 
 #include    "mfb.h"
-#include    "X.h"
+#include    <X11/X.h>
 #include    "mibstore.h"
 #include    "regionstr.h"
 #include    "scrnintstr.h"
 #include    "pixmapstr.h"
 #include    "windowstr.h"
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * mfbSaveAreas --
  *	Function called by miSaveAreas to actually fetch the areas to be
@@ -89,7 +89,7 @@ mfbSaveAreas(PixmapPtr pPixmap, RegionPtr prgnSave, int xorg, int yorg,
     DEALLOCATE_LOCAL(pPtsInit);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * mfbRestoreAreas --
  *	Function called by miRestoreAreas to actually fetch the areas to be

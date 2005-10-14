@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_sarea.h,v 1.9 2003/10/03 20:11:11 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_sarea.h,v 1.10tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -38,7 +38,7 @@
 #ifndef _R128_SAREA_H_
 #define _R128_SAREA_H_
 
-#include "Xmd.h"
+#include <X11/Xmd.h>
 
 /* WARNING: If you change any of these defines, make sure to change the
  * defines in the kernel file (r128_drm.h)

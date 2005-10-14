@@ -1,4 +1,4 @@
-/* $Xorg: lndir.c,v 1.5 2001/02/09 02:03:17 xorgcvs Exp $ */
+/* $XFree86: xc/config/util/lndir.c,v 3.19tsi Exp $ */
 /* Create shadow link tree (after X11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 
@@ -26,7 +26,6 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/util/lndir.c,v 3.18 2003/06/24 15:44:45 eich Exp $ */
 
 /* From the original /bin/sh script:
 
@@ -44,7 +43,6 @@ in this Software without prior written authorization from The Open Group.
 */
 
 #include <X11/Xos.h>
-#include <X11/Xfuncproto.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>

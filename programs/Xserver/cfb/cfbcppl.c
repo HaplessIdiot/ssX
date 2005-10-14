@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbcppl.c,v 1.7 2003/07/16 01:38:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbcppl.c,v 1.8tsi Exp $ */
 /*
 Copyright 1990, 1998  The Open Group
 
@@ -25,8 +25,8 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include "X.h"
-#include "Xmd.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
 #include "gcstruct.h"
 #include "window.h"
 #include "pixmapstr.h"

@@ -1,4 +1,4 @@
-/* $Xorg: fontstruct.h,v 1.3 2000/08/18 04:05:44 coskrey Exp $ */
+/* $XFree86: xc/include/fonts/fontstruct.h,v 3.4tsi Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -21,13 +21,12 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/include/fonts/fontstruct.h,v 3.3 1999/08/21 13:47:34 dawes Exp $ */
 
 #ifndef FONTSTR_H
 #define FONTSTR_H
 
 #include <X11/Xproto.h>
-#include "font.h"
+#include <X11/fonts/font.h>
 #include <X11/Xfuncproto.h>
 #include <X11/Xdefs.h>
 
@@ -290,6 +289,6 @@ typedef struct _FPEFunctions {
 				(pi)->ink_maxbounds.characterWidth)
 #define FONT_MAX_WIDTH(pi)	(FONT_MAX_RIGHT(pi) - FONT_MIN_LEFT(pi))
 
-#include "fontproto.h"
+#include <X11/fonts/fontproto.h>
 
 #endif				/* FONTSTR_H */

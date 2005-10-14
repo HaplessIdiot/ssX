@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/Imakefile,v 1.6 2004/03/18 07:07:04 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/Imakefile,v 1.7tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -54,9 +54,8 @@ OBJS = mouse.o pnp.o
 
 DRIVER = mouse
 
-INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86SRC)/loader -I$(XF86OSSRC) \
-	   -I$(SERVERSRC)/mi -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-	   -I$(EXTINCSRC)
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) \
+	   -I$(SERVERSRC)/mi -I$(SERVERSRC)/include
 
 DEFINES = -DPNP_MOUSE
 

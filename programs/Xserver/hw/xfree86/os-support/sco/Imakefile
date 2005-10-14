@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/Imakefile,v 3.17 2004/03/31 18:07:06 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/Imakefile,v 3.18tsi Exp $
 
 
 
@@ -17,8 +17,8 @@ OBJS = sco_init.o sco_video.o sco_io.o sco_iop.o sco_mouse.o VTsw_sco.o \
        libc_wrapper.o stdResource.o stdPci.o sigiostubs.o pm_noop.o \
        kmod_noop.o agp_noop.o
 
-INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
-           -I$(SERVERSRC)/mi -I$(XINCLUDESRC) -I$(EXTINCSRC)
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/include \
+           -I$(SERVERSRC)/mi
 
 RESDEFINES = -DUSESTDRES
 

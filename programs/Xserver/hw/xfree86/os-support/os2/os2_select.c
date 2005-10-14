@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_select.c,v 3.9 2003/03/25 04:18:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_select.c,v 3.10tsi Exp $ */
 
 /*
  * (c) Copyright 1996 by Sebastien Marineau
@@ -56,7 +56,7 @@
 #define INCL_DOSMODULEMGR
 
 
-#include "Xpoll.h"
+#include <X11/Xpoll.h>
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"

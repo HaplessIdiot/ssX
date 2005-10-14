@@ -1,4 +1,4 @@
-/* $Xorg: xdmcp.c,v 1.4 2001/01/31 13:37:19 pookie Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.33tsi Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -13,7 +13,6 @@
  * without express or implied warranty.
  *
  */
-/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.32tsi Exp $ */
 
 #ifdef WIN32
 /* avoid conflicting definitions */
@@ -29,7 +28,7 @@
 #undef RT_CURSOR
 #endif
 
-#include "Xos.h"
+#include <X11/Xos.h>
 
 #if !defined(WIN32)
 #ifndef Lynx
@@ -44,10 +43,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "X.h"
-#include "Xmd.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
 #include "misc.h"
-#include "Xpoll.h"
+#include <X11/Xpoll.h>
 #include "osdep.h"
 #include "input.h"
 #include "dixstruct.h"

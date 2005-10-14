@@ -1,4 +1,4 @@
-/* $Xorg: connection.c,v 1.5 2001/02/09 02:05:44 xorgcvs Exp $ */
+/* $XFree86: xc/programs/xfs/os/connection.c,v 3.26tsi Exp $ */
 /*
  * handles connections
  */
@@ -67,7 +67,6 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/connection.c,v 3.25tsi Exp $ */
 
 #include	<stdlib.h>
 #include	<X11/Xtrans.h>
@@ -88,8 +87,8 @@ in this Software without prior written authorization from The Open Group.
 #endif
 #include	<signal.h>
 
-#include	"FS.h"
-#include	"FSproto.h"
+#include	<X11/fonts/FS.h>
+#include	<X11/fonts/FSproto.h>
 #include	"clientstr.h"
 #include	"X11/Xpoll.h"
 #include	"osdep.h"

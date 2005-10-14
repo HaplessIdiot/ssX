@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/input/usb-private.h,v 1.1tsi Exp $ */
 /*
  * Copyright 2002 Red Hat Inc., Durham, North Carolina.
  *
@@ -43,7 +43,7 @@
 
 #include "dmxinputinit.h"
 #include "inputstr.h"
-#include "Xos.h"
+#include <X11/Xos.h>
 #include <errno.h>
 #include <linux/input.h>
 #include "usb-common.h"

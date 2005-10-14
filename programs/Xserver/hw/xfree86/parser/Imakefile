@@ -1,30 +1,13 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Imakefile,v 1.13 2002/05/31 18:46:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Imakefile,v 1.14tsi Exp $ */
 
 
-
-#define DoNormalLib     YES
-#define DoSharedLib     NO
-#define DoDebugLib      NO
-#define DoProfileLib    NO
-#define HasSharedData   NO
-#define LibName         xf86config
-
-#define UseDBMalloc	NO
-
-#if UseDBMalloc
-SYS_LIBRARIES=-ldbmalloc
-DBMALLOCDEFINE=-DDBMALLOC
-#endif
+#include <Server.tmpl>
 
 SYS_LIBRARIES = MathLibrary
 
 XCONFIGFILE = XConfigFile
 XCONFIGDIR = XConfigDir
 XVERS = XFree86Version
-
-INCLUDES = -I. -I$(XF86OSSRC)
-
-HEADERS = xf86Parser.h xf86Optrec.h
 
 SRCS = Device.c Files.c Flags.c Input.c Keyboard.c Layout.c Module.c \
 	Video.c Monitor.c Pointer.c Screen.c Vendor.c read.c scan.c write.c \
@@ -37,7 +20,10 @@ CONFIG_DEFINES = -DXCONFIGDIR=\"$(XCONFIGDIR)\" \
 		 -DXCONFIGFILE=\"$(XCONFIGFILE)\" \
 		 -DXVERSION="$(XVERS)"
 
-#include <Library.tmpl>
+NormalAsmObjectRule()
+
+NormalLibraryObjectRule()
+NormalLibraryTarget(xf86config,$(OBJS))
 
 SpecialCObjectRule(scan,NullParameter,$(CONFIG_DEFINES) $(MODULEDEFINES) $(EXT_DEFINES))
 

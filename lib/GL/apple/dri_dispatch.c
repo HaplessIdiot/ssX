@@ -1,5 +1,5 @@
 /* dri_dispatch.c
-   $Id: dri_dispatch.c,v 1.5 2004/12/10 17:47:24 alanh Exp $
+   $Id: dri_dispatch.c,v 1.6 2005/10/14 15:15:55 tsi Exp $
 
    Copyright (c) 2002 Apple Computer, Inc. All rights reserved.
    Copyright (c) Torrey T. Lyons. All rights reserved.
@@ -28,7 +28,7 @@
    copyright holders shall not be used in advertising or otherwise to
    promote the sale, use or other dealings in this Software without
    prior written authorization. */
-/* $XFree86: xc/lib/GL/apple/dri_dispatch.c,v 1.4 2004/04/21 04:59:40 torrey Exp $ */
+/* $XFree86: xc/lib/GL/apple/dri_dispatch.c,v 1.5tsi Exp $ */
 
 #include <OpenGL/OpenGL.h>
 #include <OpenGL/CGLContext.h>
@@ -46,7 +46,7 @@ typedef ptrdiff_t GLsizeiptrARB;
 #include "glapitable.h"
 #include "glxclient.h"
 
-#include <Xlibint.h>
+#include <X11/Xlibint.h>
 #include <stdio.h>
 
 #ifdef __GNUC__

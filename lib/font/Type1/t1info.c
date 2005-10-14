@@ -1,4 +1,4 @@
-/* $Xorg: t1info.c,v 1.4 2001/02/09 02:04:01 xorgcvs Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1info.c,v 1.19tsi Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -99,7 +99,6 @@ from The Open Group.
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/t1info.c,v 1.18tsi Exp $ */
 
 #include "fntfilst.h"
 #include "fontutil.h"
@@ -111,7 +110,7 @@ from The Open Group.
 #else
 #include "xf86_ansic.h"
 #endif
-#include "FSproto.h"
+#include <X11/fonts/FSproto.h>
 
 #ifdef BUILDCID
 #ifndef FONTMODULE

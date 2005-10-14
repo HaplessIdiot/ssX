@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.151tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.152tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -101,7 +101,7 @@
  * different drivers.
  */
 
-#include "X.h"
+#include <X11/X.h>
 #include "os.h"
 #include "servermd.h"
 #include "pixmapstr.h"

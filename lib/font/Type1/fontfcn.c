@@ -1,4 +1,4 @@
-/* $Xorg: fontfcn.c,v 1.4 2000/08/17 19:46:30 cpqbld Exp $ */
+/* $XFree86: xc/lib/font/Type1/fontfcn.c,v 1.11tsi Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -45,21 +45,20 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/fontfcn.c,v 1.10 2001/04/05 17:42:27 dawes Exp $ */
  
 #ifndef FONTMODULE
 #include <stdio.h>
 #include <string.h>
 #else
-#include "Xmd.h"	/* For INT32 declaration */
-#include "Xdefs.h"	/* For Bool */
+#include <X11/Xmd.h>	/* For INT32 declaration */
+#include <X11/Xdefs.h>	/* For Bool */
 #include "xf86_ansic.h"
 #endif
 #include "t1imager.h"
 #include "util.h"
 #ifdef BUILDCID
 #include "range.h"
-#include "Xdefs.h"
+#include <X11/Xdefs.h>
 #endif
 #include "fntfilst.h"
 #include "fontfcn.h"

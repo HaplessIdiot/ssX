@@ -27,7 +27,7 @@
  *
  * Authors: Alexander Gottwald	
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winconfig.c,v 1.3 2003/10/02 13:30:10 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winconfig.c,v 1.4tsi Exp $ */
 
 #include "win.h"
 #include "winconfig.h"
@@ -36,7 +36,7 @@
 
 #ifdef XKB
 #define XKB_IN_SERVER
-#include "XKBsrv.h"
+#include <X11/extensions/XKBsrv.h>
 #endif
 
 #ifndef CONFIGPATH

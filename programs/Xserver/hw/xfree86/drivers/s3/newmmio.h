@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/newmmio.h,v 1.6 2001/07/02 10:46:04 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/newmmio.h,v 1.7tsi Exp $ */
 
 /*
  *
@@ -52,7 +52,7 @@
 #ifndef _NEWMMIO_H_
 #define _NEWMMIO_H_
 
-#include <Xmd.h>
+#include <X11/Xmd.h>
 
 
 #define int16	CARD16

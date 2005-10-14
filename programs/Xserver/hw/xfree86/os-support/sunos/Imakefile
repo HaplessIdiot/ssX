@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/Imakefile,v 1.8 2005/01/24 21:27:10 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/Imakefile,v 1.9tsi Exp $
 XCOMM
 XCOMM Copyright 2001 The XFree86 Project, Inc.
 XCOMM All rights reserved.
@@ -87,9 +87,8 @@ OBJS = sun_bios.o sun_init.o $(IO_OBJ) $(KBD_OBJS) $(PROWORKS_INOUT_OBJ) \
        sun_mouse.o sun_vid.o agp_noop.o libc_wrapper.o kmod_noop.o pm_noop.o \
        posix_tty.o $(SIGIO).o stdPci.o stdResource.o $(VTSW_OBJ)
 
-INCLUDES = -I. -I$(XF86OSSRC) -I$(XF86COMSRC) \
-	   -I$(SERVERSRC)/mi -I$(SERVERSRC)/include -I$(SERVERSRC)/Xext \
-	   -I$(XINCLUDESRC) -I$(EXTINCSRC)
+INCLUDES = -I$(XF86OSSRC) -I$(XF86COMSRC) \
+	   -I$(SERVERSRC)/mi -I$(SERVERSRC)/include -I$(SERVERSRC)/Xext
 
 DEFINES = -DUSESTDRES -DBSD_COMP
 

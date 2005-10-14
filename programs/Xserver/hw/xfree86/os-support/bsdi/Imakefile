@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/Imakefile,v 3.16 2004/03/31 18:07:05 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/Imakefile,v 3.17tsi Exp $
 
 
 
@@ -20,8 +20,7 @@ OBJS = bsdi_init.o bsdi_video.o bsdi_io.o bios_devmem.o \
        libc_wrapper.o stdResource.o stdPci.o sigiostubs.o pm_noop.o \
        kmod_noop.o agp_noop.o
 
-INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
-           -I$(XINCLUDESRC) -I$(EXTINCSRC)
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/include
 
 RESDEFINES = -DUSESTDRES
 

@@ -1,4 +1,4 @@
-/* $Xorg: spfont.c,v 1.4 2001/02/09 02:04:00 xorgcvs Exp $ */
+/* $XFree86: xc/lib/font/Speedo/spfont.c,v 3.13tsi Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation
@@ -21,7 +21,6 @@
  *
  * Author: Dave Lemke, Network Computing Devices Inc
  */
-/* $XFree86: xc/lib/font/Speedo/spfont.c,v 3.12tsi Exp $ */
 
 /*
 
@@ -55,7 +54,7 @@ from The Open Group.
  * Speedo font loading
  */
 
-#include	"FSproto.h"
+#include	<X11/fonts/FSproto.h>
 #include	"spint.h"
 #include	"servermd.h"
 #include	"fontutil.h"

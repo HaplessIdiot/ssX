@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.19 2003/11/17 22:20:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.20tsi Exp $ */
 /*
  * (c) Copyright 1994,1999 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -30,8 +30,8 @@
 /* $XConsortium: os2_io.c /main/9 1996/05/13 16:38:07 kaleb $ */
 
 #define I_NEED_OS2_H
-#include "X.h"
-#include "Xpoll.h"
+#include <X11/X.h>
+#include <X11/Xpoll.h>
 #include "compiler.h"
 #include <time.h>
 

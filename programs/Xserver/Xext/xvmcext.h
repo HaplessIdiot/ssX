@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/Xext/xvmcext.h,v 1.1 2001/04/07 11:04:21 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvmcext.h,v 1.2tsi Exp $ */
 
 #ifndef _XVMC_H
 #define _XVMC_H
-#include "Xv.h"
+#include <X11/extensions/Xv.h>
 #include "xvdix.h"
 
 typedef struct {

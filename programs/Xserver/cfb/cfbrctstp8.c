@@ -1,7 +1,7 @@
 /*
  * Fill 32 bit stippled rectangles for 8 bit frame buffers
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbrctstp8.c,v 3.6 2001/12/14 19:59:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbrctstp8.c,v 3.7tsi Exp $ */
 /*
 
 Copyright 1989, 1998  The Open Group
@@ -32,8 +32,8 @@ Author: Keith Packard, MIT X Consortium
 
 #if PSZ == 8
 
-#include "X.h"
-#include "Xmd.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
 #include "servermd.h"
 #include "gcstruct.h"
 #include "window.h"

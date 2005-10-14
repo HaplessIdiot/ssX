@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.44 2004/02/24 01:13:04 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.45tsi Exp $ */
 
 #include "fontmisc.h"
 
@@ -34,14 +34,14 @@ THE SOFTWARE.
 #include <string.h>
 #include <math.h>
 #else
-#include "Xmd.h"
-#include "Xdefs.h"
+#include <X11/Xmd.h>
+#include <X11/Xdefs.h>
 #include "xf86_ansic.h"
 #endif
 
 #include "fntfilst.h"
 #include "fontutil.h"
-#include "FSproto.h"
+#include <X11/fonts/FSproto.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_SIZES_H

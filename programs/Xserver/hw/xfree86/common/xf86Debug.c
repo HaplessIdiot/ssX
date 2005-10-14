@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Debug.c,v 1.7 2003/09/24 02:43:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Debug.c,v 1.8tsi Exp $ */
 
 /*
  * Copyright (c) 2000-2003 by The XFree86 Project, Inc.
@@ -53,7 +53,7 @@
 
 #include <sys/time.h>
 #include <unistd.h> 
-#include "X.h"
+#include <X11/X.h>
 #include "os.h"
 #include "xf86.h"
 #include "xf86Priv.h"

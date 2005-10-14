@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.81tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.82tsi Exp $ */
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -99,7 +99,7 @@
  * This file includes helper functions for mode related things.
  */
 
-#include "X.h"
+#include <X11/X.h>
 #include "os.h"
 #include "servermd.h"
 #include "mibank.h"

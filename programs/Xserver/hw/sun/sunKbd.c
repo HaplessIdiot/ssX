@@ -1,5 +1,5 @@
-/* $Xorg: sunKbd.c,v 1.3 2000/08/17 19:48:30 cpqbld Exp $ */
-/*-
+/* $XFree86: xc/programs/Xserver/hw/sun/sunKbd.c,v 1.10tsi Exp $ */
+/*
  * Copyright 1987 by the Regents of the University of California
  *
  * Permission to use, copy, modify, and distribute this
@@ -39,12 +39,11 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/hw/sun/sunKbd.c,v 1.9tsi Exp $ */
 
 #define NEED_EVENTS
 #include "sun.h"
-#include "keysym.h"
-#include "Sunkeysym.h"
+#include <X11/keysym.h>
+#include <X11/Sunkeysym.h>
 #include "mi.h"
 
 #ifdef XKB
@@ -186,7 +185,7 @@ static void ModLight (device, on, led)
     SetLights (ctrl, pPriv->fd);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * sunBell --
  *	Ring the terminal/keyboard bell
@@ -363,7 +362,7 @@ static void DoLEDs(device, ctrl, pPriv)
     SetLights (ctrl, pPriv->fd);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * sunKbdCtrl --
  *	Alter some of the keyboard control parameters
@@ -397,7 +396,7 @@ static void sunKbdCtrl (
 	DoLEDs(device, ctrl, pPriv);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * sunInitKbdNames --
  *	Handle the XKB initialization
@@ -590,7 +589,7 @@ static void sunInitKbdNames (
 }
 #endif /* XKB */
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * sunKbdProc --
  *	Handle the initialization, etc. of a keyboard.
@@ -708,7 +707,7 @@ int sunKbdProc (
     return Success;
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * sunKbdGetEvents --
  *	Return the events waiting in the wings for the given keyboard.
@@ -752,7 +751,7 @@ Firm_event* sunKbdGetEvents (
     return evBuf;
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * sunKbdEnqueueEvent --
  *
@@ -920,7 +919,7 @@ void sunEnqueueAutoRepeat ()
 		    autoRepeatDeltaTv);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * sunChangeKbdTranslation
  *	Makes operating system calls to set keyboard translation 

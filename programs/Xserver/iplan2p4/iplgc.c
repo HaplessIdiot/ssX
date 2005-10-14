@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/iplan2p4/iplgc.c,v 3.0 1996/08/18 01:54:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplgc.c,v 3.1tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -52,11 +52,11 @@ SOFTWARE.
 /* Modified nov 94 by Martin Schaller (Martin_Schaller@maus.r.de) for use with
 interleaved planes */
 
-#include "X.h"
-#include "Xmd.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
+#include <X11/Xproto.h>
 #include "ipl.h"
-#include "fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 #include "dixfontstr.h"
 #include "gcstruct.h"
 #include "windowstr.h"

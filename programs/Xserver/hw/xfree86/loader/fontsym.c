@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/fontsym.c,v 1.15 2004/02/13 23:58:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/fontsym.c,v 1.16tsi Exp $ */
 /*
  * Copyright (c) 1998-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -46,10 +46,10 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "font.h"
+#include <X11/fonts/font.h>
 #include "sym.h"
 #include "fntfilst.h"
-#include "fontenc.h"
+#include <X11/fonts/fontenc.h>
 #ifdef FONTENC_COMPATIBILITY
 #include "fontencc.h"
 #endif

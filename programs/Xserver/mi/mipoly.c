@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mipoly.c,v 1.3 2003/07/16 01:38:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mipoly.c,v 1.4tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -56,7 +56,7 @@ SOFTWARE.
  *  to the appropriate routine to actually scan convert the
  *  polygon.
  */
-#include "X.h"
+#include <X11/X.h>
 #include "windowstr.h"
 #include "gcstruct.h"
 #include "pixmapstr.h"

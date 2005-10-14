@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/input/dmxevents.c,v 1.1tsi Exp $ */
 /*
  * Copyright 2002-2003 Red Hat Inc., Durham, North Carolina.
  *
@@ -48,7 +48,7 @@
 #include "dmxsigio.h"
 #include "dmxmap.h"
 
-#include "keysym.h"
+#include <X11/keysym.h>
 #include "opaque.h"
 #include "inputstr.h"
 #include "mipointer.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbbstore.c,v 3.0 1996/08/18 01:45:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbbstore.c,v 3.1tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /*
 
@@ -31,14 +31,14 @@ from the X Consortium.
 */
 
 #include	"afb.h"
-#include	"X.h"
+#include	<X11/X.h>
 #include	"mibstore.h"
 #include	"regionstr.h"
 #include	"scrnintstr.h"
 #include	"pixmapstr.h"
 #include	"windowstr.h"
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * afbSaveAreas --
  *		Function called by miSaveAreas to actually fetch the areas to be
@@ -90,7 +90,7 @@ afbSaveAreas(PixmapPtr pPixmap, RegionPtr prgnSave, int xorg, int yorg,
 	DEALLOCATE_LOCAL(pPtsInit);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * afbRestoreAreas --
  *		Function called by miRestoreAreas to actually fetch the areas to be

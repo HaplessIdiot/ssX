@@ -27,11 +27,11 @@
  *
  * \author Ian Romanick <idr@us.ibm.com>
  */
-/* $XFree86: xc/lib/GL/glx/glxextensions.c,v 1.5 2004/12/10 16:06:56 alanh Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxextensions.c,v 1.6tsi Exp $ */
 
 #include "glxclient.h"
-#include <extutil.h>
-#include <Xext.h>
+#include <X11/extensions/extutil.h>
+#include <X11/extensions/Xext.h>
 #include <string.h>
 #include "glapi.h"
 #include "glxextensions.h"

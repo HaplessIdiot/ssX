@@ -69,7 +69,7 @@ in this Software without prior written authorization from The Open Group.
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.18 2004/06/02 22:42:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.19tsi Exp $ */
 
 #include "dixstruct.h"
 #include "extnsionst.h"
@@ -80,19 +80,19 @@ in this Software without prior written authorization from The Open Group.
 #include "colormapst.h"
 #include "propertyst.h"
 #define _SECURITY_SERVER
-#include "securstr.h"
+#include <X11/extensions/securstr.h>
 #include <assert.h>
 #include <stdarg.h>
 #ifdef LBX
 #define _XLBX_SERVER_
-#include "XLbx.h"
+#include <X11/extensions/XLbx.h>
 extern unsigned char LbxReqCode;
 #endif
 #ifdef XAPPGROUP
-#include "Xagsrv.h"
+#include <X11/extensions/Xagsrv.h>
 #endif
 #include <stdio.h>  /* for file reading operations */
-#include "Xatom.h"  /* for XA_STRING */
+#include <X11/Xatom.h>  /* for XA_STRING */
 
 #ifndef DEFAULTPOLICYFILE
 # define DEFAULTPOLICYFILE NULL

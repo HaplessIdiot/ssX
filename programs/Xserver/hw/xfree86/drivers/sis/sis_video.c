@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.54tsi Exp $ */
 /* $XdotOrg$ */
 /*
  * Xv driver for SiS 300, 315 and 330 series.
@@ -104,7 +104,7 @@
 
 #include "sis.h"
 #include "xf86xv.h"
-#include "Xv.h"
+#include <X11/extensions/Xv.h>
 #include "xaa.h"
 #include "dixstruct.h"
 #include "fourcc.h"

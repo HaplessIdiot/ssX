@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_driver.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_driver.c,v 1.8tsi Exp $ */
 /*
  * $Workfile: nsc_driver.c $
- * $Revision: 1.8 $
+ * $Revision: 1.9 $
  * $Author: tsi $
  *
  * File Contents: This is the main module configures the interfacing 
@@ -181,12 +181,12 @@
 
 /* Check for some extensions */
 #define _XF86_DGA_SERVER_
-#include "extensions/xf86dgastr.h"
+#include <X11/extensions/xf86dgastr.h>
 
 #include "globals.h"
 #include "opaque.h"
 #define DPMS_SERVER
-#include "extensions/dpms.h"
+#include <X11/extensions/dpms.h>
 
 #define EXTERN
 /* Our private include file (this also includes the durango headers) */

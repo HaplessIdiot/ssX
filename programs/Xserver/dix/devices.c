@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.21 2003/11/17 22:20:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.22tsi Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,12 +46,12 @@ SOFTWARE.
 
 ********************************************************/
 
-#include "X.h"
+#include <X11/X.h>
 #include "misc.h"
 #include "resource.h"
 #define NEED_EVENTS
 #define NEED_REPLIES
-#include "Xproto.h"
+#include <X11/Xproto.h>
 #include "windowstr.h"
 #include "inputstr.h"
 #include "scrnintstr.h"
@@ -60,11 +60,11 @@ SOFTWARE.
 #include "site.h"
 #define	XKB_IN_SERVER
 #ifdef XKB
-#include "XKBsrv.h"
+#include <X11/extensions/XKBsrv.h>
 #endif
 #ifdef XCSECURITY
 #define _SECURITY_SERVER
-#include "security.h"
+#include <X11/extensions/security.h>
 #endif
 #ifdef LBX
 #include "lbxserve.h"

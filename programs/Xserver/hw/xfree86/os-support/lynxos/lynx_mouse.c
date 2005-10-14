@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_mouse.c,v 1.1 1999/05/22 08:40:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_mouse.c,v 1.2tsi Exp $ */
 
 /*
  * Copyright 1999 by The XFree86 Project, Inc.
@@ -47,7 +47,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "X.h"
+#include <X11/X.h>
 #include "xf86.h"
 #include "xf86Xinput.h"
 #include "xf86OSmouse.h"

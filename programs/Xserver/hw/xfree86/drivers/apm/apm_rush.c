@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_rush.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_rush.c,v 1.13tsi Exp $ */
 /*
  * Copyright Loïc Grenié 1999
  */
@@ -308,14 +308,14 @@ Copyright (c) 1998 Daryll Strauss
 
 #define NEED_REPLIES
 #define NEED_EVENTS
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "misc.h"
 #include "dixstruct.h"
 #include "extnsionst.h"
 #include "scrnintstr.h"
 #define _XF86RUSH_SERVER_
-#include "xf86rushstr.h"
+#include <X11/extensions/xf86rushstr.h>
 
 static int RushErrorBase;
 

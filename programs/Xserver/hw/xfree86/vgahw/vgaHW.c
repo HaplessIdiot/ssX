@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.61tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.62tsi Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -55,7 +55,7 @@
 
 #define _NEED_SYSI86
 
-#include "X.h"
+#include <X11/X.h>
 #include "misc.h"
 
 #include "xf86.h"

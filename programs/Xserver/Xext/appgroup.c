@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/appgroup.c,v 1.12 2004/06/02 22:42:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/appgroup.c,v 1.13tsi Exp $ */
 /*
 Copyright 1996, 1998, 2001  The Open Group
 
@@ -74,8 +74,8 @@ from The Open Group.
 
 #define NEED_REPLIES
 #define NEED_EVENTS
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "misc.h"
 #include "dixstruct.h"
 #include "extnsionst.h"
@@ -84,11 +84,11 @@ from The Open Group.
 #include "colormapst.h"
 #include "servermd.h"
 #define _XAG_SERVER_
-#include "Xagstr.h"
-#include "Xagsrv.h"
+#include <X11/extensions/Xagstr.h>
+#include <X11/extensions/Xagsrv.h>
 #define _SECURITY_SERVER
-#include "security.h"
-#include "Xfuncproto.h"
+#include <X11/extensions/security.h>
+#include <X11/Xfuncproto.h>
 
 #define XSERV_t
 #include <X11/Xtrans.h>

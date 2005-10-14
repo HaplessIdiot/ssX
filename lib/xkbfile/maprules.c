@@ -1,4 +1,4 @@
-/* $Xorg: maprules.c,v 1.4 2000/08/17 19:46:43 cpqbld Exp $ */
+/* $XFree86: xc/lib/xkbfile/maprules.c,v 3.18tsi Exp $ */
 /************************************************************
  Copyright (c) 1996 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +24,6 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/lib/xkbfile/maprules.c,v 3.17 2002/11/26 01:43:25 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -60,9 +59,9 @@
 #include "misc.h"
 #include "inputstr.h"
 #include "dix.h"
-#include "XKBstr.h"
+#include <X11/extensions/XKBstr.h>
 #define XKBSRV_NEED_FILE_FUNCS
-#include "XKBsrv.h"
+#include <X11/extensions/XKBsrv.h>
 
 #endif
 

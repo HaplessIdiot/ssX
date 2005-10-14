@@ -1,5 +1,4 @@
-/* $Xorg: lbx_zlib.c,v 1.6 2001/02/09 02:04:05 xorgcvs Exp $ */
-
+/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib.c,v 1.10tsi Exp $ */
 /*
 
 Copyright 1995, 1998  The Open Group
@@ -50,7 +49,6 @@ from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
  */
-/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib.c,v 1.9 2001/08/27 19:01:07 dawes Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -63,10 +61,10 @@ from The Open Group.
 #if !defined(WIN32) && !defined(Lynx)
 #include <sys/param.h>
 #endif
-#include "lbxbufstr.h"
+#include <X11/extensions/lbxbufstr.h>
 #include "lbx_zlib.h"
 #include "os.h"
-#include "lbxzlib.h"
+#include <X11/extensions/lbxzlib.h>
 
 unsigned long stream_out_compressed;
 unsigned long stream_out_uncompressed;

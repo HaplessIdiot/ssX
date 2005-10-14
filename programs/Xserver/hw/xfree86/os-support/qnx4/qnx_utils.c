@@ -1,5 +1,5 @@
 /* This includes various utility functions which are missing otherwise 
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/qnx/qnx_utils.c,v 1.1.2.2 1999/07/23 13:42:39 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/qnx4/qnx_utils.c,v 1.1tsi Exp $
  */
 
 #include <limits.h>
@@ -8,7 +8,7 @@
 #include <conio.h>
 #include <time.h>
 
-#include <X.h>
+#include <X11/X.h>
 #include <xf86.h>
 
 void usleep (unsigned long interval) { delay( interval/1000 ); } 

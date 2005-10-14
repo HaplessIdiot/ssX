@@ -1,9 +1,9 @@
-/* $XFree86: xc/programs/Xserver/Xext/xvmc.c,v 1.9 2003/07/17 16:04:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvmc.c,v 1.10tsi Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "misc.h"
 #include "os.h"
 #include "dixstruct.h"
@@ -11,11 +11,11 @@
 #include "scrnintstr.h"
 #include "extnsionst.h"
 #include "servermd.h"
-#include "Xfuncproto.h"
+#include <X11/Xfuncproto.h>
 #include "xvdix.h"
-#include "XvMC.h"
-#include "Xvproto.h"
-#include "XvMCproto.h"
+#include <X11/extensions/XvMC.h>
+#include <X11/extensions/Xvproto.h>
+#include <X11/extensions/XvMCproto.h>
 #include "xvmcext.h"
 
 int XvMCScreenIndex = -1;

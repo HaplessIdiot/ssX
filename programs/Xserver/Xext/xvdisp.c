@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.29 2003/10/02 13:29:39 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.30tsi Exp $ */
 
 /*
 ** File: 
@@ -47,8 +47,8 @@ SOFTWARE.
 **
 */
 
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "misc.h"
 #include "scrnintstr.h"
 #include "windowstr.h"
@@ -58,12 +58,12 @@ SOFTWARE.
 #include "resource.h"
 #include "opaque.h"
 
-#include "Xv.h"
-#include "Xvproto.h"
+#include <X11/extensions/Xv.h>
+#include <X11/extensions/Xvproto.h>
 #include "xvdix.h"
 #ifdef MITSHM
 #define _XSHM_SERVER_
-#include "shmstr.h"
+#include <X11/extensions/shmstr.h>
 #endif
 
 #ifdef EXTMODULE

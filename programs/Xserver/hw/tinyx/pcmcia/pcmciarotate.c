@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/tinyx/pcmcia/pcmciarotate.c,v 1.1 2002/10/13 19:35:56 keithp Exp $
+ * $XFree86: xc/programs/Xserver/hw/tinyx/pcmcia/pcmciarotate.c,v 1.1tsi Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -68,12 +68,12 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include    "X.h"
+#include    <X11/X.h>
 #include    "scrnintstr.h"
 #include    "windowstr.h"
-#include    "font.h"
+#include    <X11/fonts/font.h>
 #include    "dixfontstr.h"
-#include    "fontstruct.h"
+#include    <X11/fonts/fontstruct.h>
 #include    "mi.h"
 #include    "regionstr.h"
 #include    "globals.h"

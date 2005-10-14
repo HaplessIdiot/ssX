@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.31 2004/04/03 22:26:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.32tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -93,10 +93,10 @@ SOFTWARE.
  */
 
 #include <stdio.h>
-#include "X.h"
+#include <X11/X.h>
 #include "os.h"
 #include "osdep.h"
-#include "Xos.h"
+#include <X11/Xos.h>
 
 #ifdef SMART_SCHEDULE
 #include "dixstruct.h"

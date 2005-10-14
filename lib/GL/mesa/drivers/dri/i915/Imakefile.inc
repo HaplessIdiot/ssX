@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/i915/Imakefile.inc,v 1.3 2004/12/10 18:09:49 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/i915/Imakefile.inc,v 1.4tsi Exp $
 
 #ifndef MesaDrvSrcDir
 #define MesaDrvSrcDir $(MESASRCDIR)/src/mesa/drivers/dri
@@ -18,10 +18,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #if BuildXF86DRI
   DRI_DEFINES = GlxDefines
   DRI_INCLUDES = -I$(GLXLIBSRC)/dri \
-		-I$(XINCLUDESRC) \
 		-I$(GLXLIBSRC)/glx \
-		-I$(INCLUDESRC) \
-		-I$(INCLUDESRC)/GL \
 		-I$(GLXLIBSRC)/dri \
 		-I$(GLXLIBSRC)/include \
 		-I$(SERVERSRC)/GL/dri \
@@ -38,7 +35,6 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
 		-I$(MESASRCDIR)/src/mesa/shader \
 		-I$(MESASRCDIR)/include \
 		-I$(MESADRVSRCDIR)/common
-   X_INCLUDES = -I$(XINCLUDESRC) -I$(EXTINCSRC)
 
      I915SRCS = 	$(MESADRVI915BUILDDIR)i830_metaops.c \
 		$(MESADRVI915BUILDDIR)i830_context.c \

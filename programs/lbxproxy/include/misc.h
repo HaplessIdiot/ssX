@@ -1,5 +1,4 @@
-/* $Xorg: misc.h,v 1.4 2001/02/09 02:05:32 xorgcvs Exp $ */
-
+/* $XFree86: xc/programs/lbxproxy/include/misc.h,v 1.7tsi Exp $ */
 /*
 
 Copyright 1995, 1998  The Open Group
@@ -27,7 +26,6 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/lbxproxy/include/misc.h,v 1.6 2001/08/01 00:45:01 tsi Exp $ */
 
 #ifndef MISC_H
 #define MISC_H 1
@@ -37,13 +35,13 @@ from The Open Group.
 #include <X11/X.h>
 #include <X11/Xproto.h>
 #include <X11/Xmd.h>
-#include "Xos.h"
+#include <X11/Xos.h>
 #define ALLOCATE_LOCAL_FALLBACK(_size) Xalloc(_size)
 #define DEALLOCATE_LOCAL_FALLBACK(_ptr) Xfree(_ptr)
-#include "Xalloca.h"
-#include "Xfuncs.h"
-#include "Xfuncproto.h"
-#include "lbxstr.h"
+#include <X11/Xalloca.h>
+#include <X11/Xfuncs.h>
+#include <X11/Xfuncproto.h>
+#include <X11/extensions/lbxstr.h>
 
 #ifndef TRUE
 #define FALSE 0

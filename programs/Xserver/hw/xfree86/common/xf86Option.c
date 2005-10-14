@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.35 2005/01/28 16:56:43 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.36tsi Exp $ */
 /*
  * Copyright (c) 1998-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -98,7 +98,7 @@
 
 #include <stdlib.h>
 #include <ctype.h>
-#include "X.h"
+#include <X11/X.h>
 #include "os.h"
 #include "xf86.h"
 #include "xf86Xinput.h"

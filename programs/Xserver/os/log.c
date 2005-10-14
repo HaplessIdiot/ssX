@@ -96,9 +96,9 @@ OR PERFORMANCE OF THIS SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/os/log.c,v 1.11 2005/01/26 21:53:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/log.c,v 1.12tsi Exp $ */
 
-#include "Xos.h"
+#include <X11/Xos.h>
 #include <stdio.h>
 #include <time.h>
 #include <sys/stat.h>

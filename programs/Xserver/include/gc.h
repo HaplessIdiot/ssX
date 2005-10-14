@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/gc.h,v 1.5 2001/12/14 19:59:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/gc.h,v 1.6tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,13 +45,12 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: gc.h,v 1.4 2001/02/09 02:05:15 xorgcvs Exp $ */
 
 #ifndef GC_H
 #define GC_H 
 
 #include "X11/X.h"	/* for GContext, Mask */
-#include "Xdefs.h"	/* for Bool */
+#include <X11/Xdefs.h>	/* for Bool */
 #include "X11/Xproto.h"
 #include "screenint.h"	/* for ScreenPtr */
 #include "pixmap.h"	/* for DrawablePtr */

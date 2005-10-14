@@ -1,4 +1,4 @@
-/*-
+/*
  * Copyright (c) 1998-1999 Shunsuke Akiyama <akiyama@jp.FreeBSD.org>.
  * All rights reserved.
  * Copyright (c) 1998-1999 X-TrueType Server Project, All rights
@@ -25,14 +25,14 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $XFree86: xc/programs/Xserver/Xext/fontcache.c,v 1.8 2003/11/17 22:20:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/fontcache.c,v 1.9tsi Exp $ */
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "misc.h"
 #include "dixstruct.h"
 #include "extnsionst.h"
@@ -40,9 +40,9 @@
 #include "inputstr.h"
 #include "servermd.h"
 #define _FONTCACHE_SERVER_
-#include "fontcacheP.h"
-#include "fontcachstr.h"
-#include "Xfuncproto.h"
+#include <X11/extensions/fontcacheP.h>
+#include <X11/extensions/fontcachstr.h>
+#include <X11/Xfuncproto.h>
 
 #include "swaprep.h"
 #include "modinit.h"

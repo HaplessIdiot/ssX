@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/mach64/Imakefile,v 1.2 2001/06/16 05:48:48 keithp Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/mach64/Imakefile,v 1.1tsi Exp $
 
 #include "../TinyX.tmpl"
 
@@ -13,7 +13,7 @@ OBJS = 	mach64.o mach64draw.o mach64stub.o $(XVOBJS)
 
 DEFINES = XvExtensionDefines -DVESA /* -DUSE_PCI*/
 
-INCLUDES = -I. $(TINYXINCLUDES) -I$(TINYXSRC)/vesa
+INCLUDES = $(TINYXINCLUDES) -I$(TINYXSRC)/vesa
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(mach64,$(OBJS))

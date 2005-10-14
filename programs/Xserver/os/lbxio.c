@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/lbxio.c,v 3.18 2003/04/27 21:31:09 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/os/lbxio.c,v 3.19tsi Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -98,7 +98,7 @@ SOFTWARE.
 
 #include <stdio.h>
 #include <X11/Xtrans.h>
-#include "Xmd.h"
+#include <X11/Xmd.h>
 #include <errno.h>
 #ifndef Lynx
 #include <sys/param.h>
@@ -108,10 +108,10 @@ SOFTWARE.
 #else
 #include <uio.h>
 #endif
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "os.h"
-#include "Xpoll.h"
+#include <X11/Xpoll.h>
 #include "osdep.h"
 #include "opaque.h"
 #include "dixstruct.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xtrapddmi.h,v 1.1 2001/11/02 23:29:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XTrap/xtrapddmi.h,v 1.1tsi Exp $ */
 
 #ifndef __XTRAPDDMI__
 #define __XTRAPDDMI__
@@ -43,7 +43,7 @@ SOFTWARE.
  *      is used for this).  The name is historical.
  */
 #include <X11/X.h>
-#include "xtrapbits.h"
+#include <X11/extensions/xtrapbits.h>
 #include "dix.h"
 
 #ifndef MIN

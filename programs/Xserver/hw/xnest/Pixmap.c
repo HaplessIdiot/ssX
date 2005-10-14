@@ -1,4 +1,4 @@
-/* $Xorg: Pixmap.c,v 1.3 2000/08/17 19:53:28 cpqbld Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Pixmap.c,v 3.8tsi Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -12,10 +12,9 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Pixmap.c,v 3.7 2003/07/16 01:38:51 dawes Exp $ */
 
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "regionstr.h"
 #include "pixmapstr.h"
 #include "scrnintstr.h"

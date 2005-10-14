@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/dmx/input/Imakefile,v 1.3tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/dmx/input/Imakefile,v 1.4tsi Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -30,8 +30,7 @@ OBJS = $(RAWOBJS) $(USBOBJS) $(DRVOBJS) $(DMXOBJS) $(LIBOBJS)
 
 #include <dmx.cf>
 
-INCLUDES = -I. -I.. -I$(XBUILDINCDIR) -I$(FONTINCSRC) -I../../../mi \
-	-I../../../include -I../../../render -I$(EXTINCSRC) \
+INCLUDES = -I.. -I../../../mi -I../../../include -I../../../render \
 	-I$(SERVERSRC)/Xext -I$(SERVERSRC)/Xi
 
 DEFINES = $(OS_DEFINES) $(EXT_DEFINES) $(DMX_DEFINES) $(USB_DEFINES)

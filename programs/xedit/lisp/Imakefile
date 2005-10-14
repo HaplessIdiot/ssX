@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/xedit/lisp/Imakefile,v 1.26 2003/05/20 21:44:48 tsi Exp $
+XCOMM $XFree86: xc/programs/xedit/lisp/Imakefile,v 1.27tsi Exp $
 
 #include "lisp.cf"
 #include "lisp.rules"
@@ -97,6 +97,8 @@ OBJS		= $(SYS_OBJS) \
 		time.o \
 		write.o \
 		xedit.o
+
+LOCAL_INCLUDES = /* Don't use -I. */
 
 #include <Library.tmpl>
 

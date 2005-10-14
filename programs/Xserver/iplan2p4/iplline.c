@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/iplan2p4/iplline.c,v 3.0 1996/08/18 01:54:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplline.c,v 3.1tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -51,7 +51,7 @@ SOFTWARE.
 /* Modified nov 94 by Martin Schaller (Martin_Schaller@maus.r.de) for use with
 interleaved planes */
 
-#include "X.h"
+#include <X11/X.h>
 
 #include "gcstruct.h"
 #include "windowstr.h"

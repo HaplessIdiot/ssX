@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/FreeType/module/Imakefile,v 1.21 2004/05/01 01:29:57 dawes Exp $
+XCOMM $XFree86: xc/lib/font/FreeType/module/Imakefile,v 1.22tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -54,9 +54,9 @@ FT2INCDIR = $(TOP)/extras/freetype2/include
 
 DEFINES = -DFONTMODULE Freetype2BuildDefines -DXFREE86_FT2
 
-INCLUDES = -I. -I.. -I$(FONTINCSRC) -I../../include -I$(XINCLUDESRC) \
+INCLUDES = -I.. -I../../include \
            -I$(SERVERSRC)/include \
-	   -I$(FT2INCDIR) \
+           -I$(FT2INCDIR) \
            -I$(FT2SOURCEDIR)/base \
            -I$(FT2SOURCEDIR)/gzip \
            -I$(FT2SOURCEDIR)/lzw \
@@ -70,8 +70,7 @@ INCLUDES = -I. -I.. -I$(FONTINCSRC) -I../../include -I$(XINCLUDESRC) \
            -I$(FT2SOURCEDIR)/pshinter \
            -I$(FT2SOURCEDIR)/autohint \
            -I$(FT2SOURCEDIR)/bdf \
-           -I$(FT2SOURCEDIR)/pcf \
-           -I$(INCLUDESRC)
+           -I$(FT2SOURCEDIR)/pcf
 
 FT2SRCS = ftbase.c ftinit.c ftglyph.c ftbbox.c ftsystem.c fttype1.c ftxf86.c \
           ftgzip.c ftlzw.c raster.c sfnt.c truetype.c cff.c type1.c \

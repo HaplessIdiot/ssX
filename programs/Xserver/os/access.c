@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.58 2004/12/31 02:56:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.59tsi Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -54,8 +54,8 @@ SOFTWARE.
 #include <stdlib.h>
 #include <X11/Xtrans.h>
 #include <X11/Xauth.h>
-#include <X.h>
-#include <Xproto.h>
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "misc.h"
 #include "site.h"
 #include <errno.h>
@@ -180,7 +180,7 @@ SOFTWARE.
 
 #ifdef XCSECURITY
 #define _SECURITY_SERVER
-#include "extensions/security.h"
+#include <X11/extensions/security.h>
 #endif
 
 #ifndef PATH_MAX

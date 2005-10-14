@@ -1,4 +1,4 @@
-/* $Xorg: xdmauth.c,v 1.4 2001/02/09 02:05:24 xorgcvs Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmauth.c,v 1.11tsi Exp $ */
 /*
 
 Copyright 1988, 1998  The Open Group
@@ -26,7 +26,6 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/os/xdmauth.c,v 1.10tsi Exp $ */
 
 /*
  * XDM-AUTHENTICATION-1 (XDMCP authentication) and
@@ -36,8 +35,8 @@ from The Open Group.
  */
 
 #include <stdio.h>
-#include "X.h"
-#include "Xtrans.h"
+#include <X11/X.h>
+#include <X11/Xtrans.h>
 #include "os.h"
 #include "osdep.h"
 #include "dixstruct.h"
@@ -47,9 +46,9 @@ from The Open Group.
 static Bool authFromXDMCP;
 
 #ifdef XDMCP
-#include "Xmd.h"
+#include <X11/Xmd.h>
 #undef REQUEST
-#include "Xdmcp.h"
+#include <X11/Xdmcp.h>
 
 /* XDM-AUTHENTICATION-1 */
 

@@ -1,5 +1,5 @@
 /*
- * Id: file.c,v 1.2 1999/11/02 06:16:47 keithp Exp $
+ * $XFree86: xc/lib/font/builtins/file.c,v 1.5tsi Exp $
  *
  * Copyright 1999 SuSE, Inc.
  *
@@ -17,12 +17,11 @@
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL SuSE
  * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
-/* $XFree86: xc/lib/font/builtins/file.c,v 1.4tsi Exp $ */
 
 #include "builtin.h"
 
@@ -32,11 +31,10 @@ typedef struct _BuiltinIO {
 } BuiltinIORec, *BuiltinIOPtr;
 
 static int
-BuiltinFill (f)
-    BufFilePtr	f;
+BuiltinFill(BufFilePtr f)
 {
-    int	    left, len;
-    BuiltinIOPtr    io = ((BuiltinIOPtr) f->private);
+    int			left, len;
+    BuiltinIOPtr	io = ((BuiltinIOPtr) f->private);
 
     left = io->file->len - io->offset;
     if (left <= 0)
@@ -47,7 +45,7 @@ BuiltinFill (f)
     len = BUFFILESIZE;
     if (len > left)
 	len = left;
-    bcopy (io->file->bits + io->offset, f->buffer, len);
+    bcopy(io->file->bits + io->offset, f->buffer, len);
     io->offset += len;
     f->left = len - 1;
     f->bufp = f->buffer + 1;
@@ -55,14 +53,12 @@ BuiltinFill (f)
 }
 
 static int
-BuiltinSkip (f, count)
-    BufFilePtr	f;
-    int		count;
+BuiltinSkip(BufFilePtr f, int count)
 {
-    BuiltinIOPtr    io = ((BuiltinIOPtr) f->private);
-    int	    curoff;
-    int	    fileoff;
-    int	    todo;
+    BuiltinIOPtr	io = ((BuiltinIOPtr) f->private);
+    int			curoff;
+    int			fileoff;
+    int			todo;
 
     curoff = f->bufp - f->buffer;
     fileoff = curoff + f->left;
@@ -82,19 +78,15 @@ BuiltinSkip (f, count)
 }
 
 static int
-BuiltinClose (f, doClose)
-    BufFilePtr	f;
+BuiltinClose(BufFilePtr f, int doClose)
 {
-    BuiltinIOPtr    io = ((BuiltinIOPtr) f->private);
-    
-    xfree (io);
+    xfree(f->private);
     return 1;
 }
 
 
 FontFilePtr
-BuiltinFileOpen (name)
-    char    *name;
+BuiltinFileOpen(char *name)
 {
     int		    i;
     BuiltinIOPtr    io;
@@ -106,29 +98,29 @@ BuiltinFileOpen (name)
 	    break;
     if (i == builtin_files_count)
 	return NULL;
-    io = (BuiltinIOPtr) xalloc (sizeof (BuiltinIORec));
+    io = xalloc (sizeof (BuiltinIORec));
     if (!io)
 	return NULL;
     io->offset = 0;
     io->file = (void *) &builtin_files[i];
-    raw = BufFileCreate ((char *) io, BuiltinFill, 0, BuiltinSkip, BuiltinClose);
+    raw = BufFileCreate((char *)io, BuiltinFill, 0, BuiltinSkip, BuiltinClose);
     if (!raw)
     {
-	xfree (io);
+	xfree(io);
 	return NULL;
     }
-    if (cooked = BufFilePushCompressed (raw))
+    if ((cooked = BufFilePushCompressed(raw)))
 	raw = cooked;
     else
     {
 	raw->left += raw->bufp - raw->buffer;
 	raw->bufp = raw->buffer;
     }
-    return (FontFilePtr) raw;
+    return (FontFilePtr)raw;
 }
 
-BuiltinFileClose (f)
-    FontFilePtr	f;
+int
+BuiltinFileClose(FontFilePtr f)
 {
-    return BufFileClose ((BufFilePtr) f, TRUE);
+    return BufFileClose((BufFilePtr)f, TRUE);
 }

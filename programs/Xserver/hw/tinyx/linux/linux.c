@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/tinyx/linux/linux.c,v 1.1tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/tinyx/linux/linux.c,v 1.2tsi Exp $
  *
  * Copyright © 1999 Keith Packard
  *
@@ -76,7 +76,7 @@
 #include <linux/kd.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
-#include <keysym.h>
+#include <X11/keysym.h>
 #include <linux/apm_bios.h>
 
 static int  vtno;

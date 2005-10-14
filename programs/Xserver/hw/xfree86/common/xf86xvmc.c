@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xvmc.c,v 1.6 2003/10/08 22:31:59 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xvmc.c,v 1.7tsi Exp $ */
 
 /*
  * Copyright (c) 2001-2003 by The XFree86 Project, Inc.
@@ -51,8 +51,8 @@
 #include "xf86.h"
 #include "xf86_OSproc.h"
 
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "scrnintstr.h"
 #include "resource.h"
 #include "dixstruct.h"

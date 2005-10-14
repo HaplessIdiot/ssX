@@ -1,4 +1,4 @@
-/* $Xorg: dpackbits.c,v 1.4 2000/08/17 19:46:40 cpqbld Exp $ */
+/* $XFree86: xc/lib/lbxutil/image/dpackbits.c,v 1.4tsi Exp $ */
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992 Sam Leffler
  * Copyright (c) 1991, 1992 Silicon Graphics, Inc.
@@ -22,11 +22,10 @@
  * LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE 
  * OF THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/lbxutil/image/dpackbits.c,v 1.3 2000/05/18 23:46:16 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Xfuncproto.h>
-#include "lbximage.h"
+#include <X11/extensions/lbximage.h>
 
 /*
  * -------------------------------------------------------------------------

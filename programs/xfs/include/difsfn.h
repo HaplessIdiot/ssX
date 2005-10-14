@@ -1,4 +1,4 @@
-/* $Xorg: difsfn.h,v 1.4 2001/02/09 02:05:44 xorgcvs Exp $ */
+/* $XFree86: xc/programs/xfs/include/difsfn.h,v 1.5tsi Exp $ */
 /*
 Copyright 1987, 1998  The Open Group
 
@@ -44,12 +44,11 @@ in this Software without prior written authorization from The Open Group.
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/include/difsfn.h,v 1.4 2001/01/17 23:45:31 dawes Exp $ */
 
 #ifndef _DIFSFONT_H_
 #define _DIFSFONT_H_
 #include	"misc.h"
-#include	"font.h"
+#include	<X11/fonts/font.h>
 
 typedef struct _ClientFont *ClientFontPtr;
 typedef struct _FontIDList *FontIDListPtr;

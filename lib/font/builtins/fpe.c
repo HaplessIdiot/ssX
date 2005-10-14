@@ -1,5 +1,5 @@
 /*
- * Id: fpe.c,v 1.2 1999/11/02 06:16:48 keithp Exp $
+ * $XFree86: xc/lib/font/builtins/fpe.c,v 1.5tsi Exp $
  *
  * Copyright 1999 SuSE, Inc.
  *
@@ -17,59 +17,55 @@
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL SuSE
  * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
-/* $XFree86: xc/lib/font/builtins/fpe.c,v 1.4tsi Exp $ */
 
-#include    "fntfilst.h"
+#include "fntfilst.h"
+#include "builtin.h"
 
 const char builtin_fonts[] = "built-ins";
 
 int
-BuiltinNameCheck (name)
-    char    *name;
+BuiltinNameCheck(char *name)
 {
-    return (strcmp (name, builtin_fonts) == 0);
+    return (strcmp(name, builtin_fonts) == 0);
 }
 
 int
-BuiltinInitFPE (fpe)
-    FontPathElementPtr	fpe;
+BuiltinInitFPE(FontPathElementPtr fpe)
 {
     int			status;
     FontDirectoryPtr	dir;
 
-    status = BuiltinReadDirectory (fpe->name, &dir);
+    status = BuiltinReadDirectory(fpe->name, &dir);
 
     if (status == Successful)
-	fpe->private = (pointer) dir;
+	fpe->private = dir;
     return status;
 }
 
 /* ARGSUSED */
 int
-BuiltinResetFPE (fpe)
-    FontPathElementPtr	fpe;
+BuiltinResetFPE(FontPathElementPtr fpe)
 {
     /* builtins can't change! */
     return Successful;
 }
 
 int
-BuiltinFreeFPE (fpe)
-    FontPathElementPtr	fpe;
+BuiltinFreeFPE(FontPathElementPtr fpe)
 {
-    FontFileFreeDir ((FontDirectoryPtr) fpe->private);
+    FontFileFreeDir(fpe->private);
     return Successful;
 }
 
 void
 BuiltinRegisterFpeFunctions(void)
 {
-    BuiltinRegisterFontFileFunctions ();
+    BuiltinRegisterFontFileFunctions();
 
     RegisterFPEFunctions(BuiltinNameCheck,
 			 BuiltinInitFPE,
@@ -80,10 +76,10 @@ BuiltinRegisterFpeFunctions(void)
 			 FontFileListFonts,
 			 FontFileStartListFontsWithInfo,
 			 FontFileListNextFontWithInfo,
-			 (WakeupFpeFunc) 0,
-			 (ClientDiedFunc) 0,
-			 (LoadGlyphsFunc) 0,
-			 (StartLaFunc) 0,
-			 (NextLaFunc) 0,
-			 (SetPathFunc) 0);
+			 (WakeupFpeFunc)0,
+			 (ClientDiedFunc)0,
+			 (LoadGlyphsFunc)0,
+			 (StartLaFunc)0,
+			 (NextLaFunc)0,
+			 (SetPathFunc)0);
 }

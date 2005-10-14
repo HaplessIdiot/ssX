@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/dbe/Imakefile,v 3.12 2005/05/13 21:02:31 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/dbe/Imakefile,v 3.13tsi Exp $
 
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -65,8 +65,7 @@ MODOBJ = dbemodule.o
 
        SRCS = dbe.c midbe.c $(MODSRC)
        OBJS = dbe.o midbe.o $(MODOBJ)
-   INCLUDES = -I$(SERVERSRC)/dbe -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-	      -I$(EXTINCSRC)  $(EXTRAINCLUDES)
+   INCLUDES = -I$(SERVERSRC)/dbe -I$(SERVERSRC)/include $(EXTRAINCLUDES)
    LINTLIBS = $(SERVERSRC)/dix/llib-ldix.ln $(SERVERSRC)/os/llib-los.ln
 
 #ifdef IHaveModules

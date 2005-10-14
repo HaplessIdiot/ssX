@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.155 2004/01/27 01:29:02 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.156tsi Exp $
 
 
 
@@ -171,11 +171,10 @@ OFILES = \
 	xf86IniExt.o
 
    VGAINCLUDES = -I$(XF86SRC)/vgahw
-   INCLUDES =	-I. -I$(XF86OSSRC) -I$(XF86OSSRC)/bus -I$(SERVERSRC)/mfb \
+   INCLUDES =	-I$(XF86OSSRC) -I$(XF86OSSRC)/bus -I$(SERVERSRC)/mfb \
 		-I$(SERVERSRC)/mi -I$(SERVERSRC)/include -I$(SERVERSRC)/os \
-		-I$(XINCLUDESRC) -I$(SERVERSRC)/Xext -I$(EXTINCSRC) \
-		-I$(SERVERSRC)/Xi -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c \
-		-I$(FONTLIBSRC)/include -I$(FONTINCSRC) \
+		-I$(SERVERSRC)/Xext -I$(SERVERSRC)/Xi -I$(XF86SRC)/ddc \
+		-I$(XF86SRC)/i2c -I$(FONTLIBSRC)/include \
 		-I$(XF86SRC) -I$(XF86PARSERSRC) \
 		-I$(XF86SRC)/loader $(VGAINCLUDES) -I$(XF86SRC)/rac \
 	        -I$(XF86SRC)/scanpci -I$(XF86SRC)/vbe -I$(XF86SRC)/int10 \

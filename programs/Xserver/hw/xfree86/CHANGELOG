@@ -1,4 +1,11 @@
 XFree86 4.5.99.14 (xx October 2005)
+ 161. Implement a major #include rework throughout the tree.  Also enforce it
+      for all non-external builds (i.e. in-tree & SDK)  (Marc La France).
+ 160. Rework the building of hw/xfree86/parser to be more in line with the
+      building of other server subdirectories (such as common/)
+      (Marc La France).
+ 159. ANSIfy /xc/lib/font/builtins/, and fix warnings, whitespace & formatting
+      (Marc La France).
  158. Change the cpconfig utility to use the same default XF86Config search
       path as the X server (Marc La France).
  157. Fix up error case when rotation fails and framebuffer needs to be
@@ -19836,7 +19843,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3611 2005/10/11 14:57:56 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3612 2005/10/13 17:27:57 tsi Exp $
 
 
 

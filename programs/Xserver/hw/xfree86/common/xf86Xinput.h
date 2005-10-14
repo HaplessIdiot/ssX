@@ -69,7 +69,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.36 2003/08/24 17:36:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.37tsi Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -80,8 +80,8 @@
 #include "xf86str.h"
 #include "inputstr.h"
 #ifdef XINPUT
-#include "extensions/XI.h"
-#include "extensions/XIproto.h"
+#include <X11/extensions/XI.h>
+#include <X11/extensions/XIproto.h>
 #include "XIstubs.h"
 #endif
 

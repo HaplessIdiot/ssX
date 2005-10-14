@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/tinyx/txaa.c,v 1.1tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/tinyx/txaa.c,v 1.2tsi Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -69,7 +69,7 @@
  */
 
 #include "tinyx.h"
-#include	"fontstruct.h"
+#include	<X11/fonts/fontstruct.h>
 #include	"dixfontstr.h"
 
 int	kaaGeneration;

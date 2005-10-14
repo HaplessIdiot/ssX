@@ -49,13 +49,13 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/sync.c,v 3.14 2003/11/17 22:20:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/sync.c,v 3.15tsi Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
-#include "X.h"
-#include "Xproto.h"
-#include "Xmd.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
+#include <X11/Xmd.h>
 #include "misc.h"
 #include "os.h"
 #include "extnsionst.h"
@@ -63,8 +63,8 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "resource.h"
 #include "opaque.h"
 #define _SYNC_SERVER
-#include "sync.h"
-#include "syncstr.h"
+#include <X11/extensions/sync.h>
+#include <X11/extensions/syncstr.h>
 
 #ifdef EXTMODULE
 #include "xf86_ansic.h"

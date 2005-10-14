@@ -51,7 +51,7 @@ Telephone and Telegraph Company or of the Regents of the
 University of California.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/xtest1dd.c,v 3.7 2003/11/17 22:20:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xtest1dd.c,v 3.8tsi Exp $ */
 
 /***************************************************************
  * include files
@@ -61,14 +61,14 @@ University of California.
 #define	NEED_REPLIES
 
 #include <stdio.h>
-#include "Xos.h"
-#include "X.h"
-#include "Xmd.h"
-#include "Xproto.h"
+#include <X11/Xos.h>
+#include <X11/X.h>
+#include <X11/Xmd.h>
+#include <X11/Xproto.h>
 #include "misc.h"
 #include "dixstruct.h"
 #define  XTestSERVER_SIDE
-#include "xtestext1.h"	
+#include <X11/extensions/xtestext1.h>	
 
 #include "xtest1dd.h"
 

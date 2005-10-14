@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/dmxinit.c,v 1.7 2005/03/07 16:39:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxinit.c,v 1.8tsi Exp $ */
 /*
  * Copyright 2001-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -54,7 +54,7 @@
 #include "dmxpict.h"
 #endif
 
-#include "Xos.h"                /* For gettimeofday */
+#include <X11/Xos.h>                /* For gettimeofday */
 #include "dixstruct.h"
 #include "panoramiXsrv.h"
 
@@ -64,8 +64,8 @@
 #include <GL/glx.h>
 #include <GL/glxint.h>
 #include "dmx_glxvisuals.h"
-#include "Xext.h"
-#include "extutil.h"
+#include <X11/extensions/Xext.h>
+#include <X11/extensions/extutil.h>
 
 extern void GlxSetVisualConfigs(
     int               nconfigs,

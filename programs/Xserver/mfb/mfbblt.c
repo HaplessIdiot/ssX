@@ -1,7 +1,7 @@
 /*
  * mfb copy area
  */
-/* $XFree86: xc/programs/Xserver/mfb/mfbblt.c,v 3.4 2001/12/14 20:00:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbblt.c,v 3.5tsi Exp $ */
 
 /*
 
@@ -31,9 +31,9 @@ Author: Keith Packard
 
 */
 
-#include	"X.h"
-#include	"Xmd.h"
-#include	"Xproto.h"
+#include	<X11/X.h>
+#include	<X11/Xmd.h>
+#include	<X11/Xproto.h>
 #include	"mfb.h"
 #include	"gcstruct.h"
 #include	"windowstr.h"

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/include/Imakefile,v 3.29 2001/08/27 17:40:56 dawes Exp $
+XCOMM $XFree86: xc/include/Imakefile,v 3.30tsi Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags /**/
 
@@ -11,10 +11,6 @@ DPSDIR = DPS
 #endif
 
 SUBDIRS = bitmaps extensions fonts $(GLXDIR) $(DPSDIR)
-
-#ifdef Win32Architecture
-EXTRA_HEADERS = Xw32defs.h Xwinsock.h
-#endif
 
 HEADERS = DECkeysym.h \
 	HPkeysym.h \
@@ -39,7 +35,8 @@ HEADERS = DECkeysym.h \
 	ap_keysym.h \
 	keysym.h \
 	keysymdef.h \
-	$(EXTRA_HEADERS)
+	Xw32defs.h \
+	Xwinsock.h
 
 all::
 

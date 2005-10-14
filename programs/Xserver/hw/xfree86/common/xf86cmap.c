@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.25 2003/10/17 20:02:12 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.26tsi Exp $ */
 /*
  * Copyright (c) 1998-2001 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -54,9 +54,9 @@
 #undef _XOPEN_SOURCE
 #endif
 
-#include "X.h"
+#include <X11/X.h>
 #include "misc.h"
-#include "Xproto.h"
+#include <X11/Xproto.h>
 #include "colormapst.h"
 #include "scrnintstr.h"
 
@@ -69,7 +69,7 @@
 
 #ifdef XFreeXDGA
 #define _XF86DGA_SERVER_
-#include "extensions/xf86dgastr.h"
+#include <X11/extensions/xf86dgastr.h>
 #include "dgaproc.h"
 #endif
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.20tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.21tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -6,7 +6,7 @@
 #include "xf86_OSproc.h"
 #include "servermd.h"
 
-#include "X.h"
+#include <X11/X.h>
 #include "scrnintstr.h"
 #include "mi.h"
 #include "pixmapstr.h"

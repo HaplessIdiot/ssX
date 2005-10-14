@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/mach64/mach64video.c,v 1.12 2004/04/14 11:23:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/mach64/mach64video.c,v 1.1tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -69,7 +69,7 @@
 
 #include "mach64.h"
 
-#include "Xv.h"
+#include <X11/extensions/Xv.h>
 #include "../../xfree86/common/fourcc.h"
 
 #define MAKE_ATOM(a) MakeAtom(a, sizeof(a) - 1, TRUE)

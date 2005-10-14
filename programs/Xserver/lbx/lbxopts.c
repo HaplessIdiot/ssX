@@ -1,4 +1,4 @@
-/* $Xorg: lbxopts.c,v 1.3 2000/08/17 19:53:31 cpqbld Exp $ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxopts.c,v 1.6tsi Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -21,23 +21,22 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/lbx/lbxopts.c,v 1.5 2001/01/17 22:37:00 dawes Exp $ */
 
 #ifdef OPTDEBUG
 #include <stdio.h>
 #endif
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "misc.h"
 #include "colormapst.h"
 #include "propertyst.h"
 #include "lbxserve.h"
-#include "lbxstr.h"
-#include "lbximage.h"
-#include "lbxopts.h"
+#include <X11/extensions/lbxstr.h>
+#include <X11/extensions/lbximage.h>
+#include <X11/extensions/lbxopts.h>
 #include "lbxsrvopts.h"
 #ifndef NO_ZLIB
-#include "lbxzlib.h"
+#include <X11/extensions/lbxzlib.h>
 #endif /* NO_ZLIB */
 
 static int LbxProxyDeltaOpt ( LbxNegOptsPtr pno, unsigned char *popt, 

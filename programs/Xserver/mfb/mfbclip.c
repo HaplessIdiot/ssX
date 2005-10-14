@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbclip.c,v 1.6 2003/07/16 01:38:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbclip.c,v 1.7tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
+#include <X11/X.h>
 #include "regionstr.h"
 #include "pixmapstr.h"
 #include "scrnintstr.h"

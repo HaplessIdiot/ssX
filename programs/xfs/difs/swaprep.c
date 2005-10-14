@@ -1,4 +1,4 @@
-/* $Xorg: swaprep.c,v 1.4 2001/02/09 02:05:43 xorgcvs Exp $ */
+/* $XFree86: xc/programs/xfs/difs/swaprep.c,v 1.5tsi Exp $ */
 /*
  * font server reply swapping
  */
@@ -46,12 +46,11 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/swaprep.c,v 1.4 2001/01/17 23:45:29 dawes Exp $ */
 
 #include	<swaprep.h>
 #include	<swapreq.h>
 
-#include	"FSproto.h"
+#include	<X11/fonts/FSproto.h>
 #include	"clientstr.h"
 
 static void SwapConnSetupAccept(fsConnSetupAccept *pConnSetup, fsConnSetupAccept *pConnSetupT);

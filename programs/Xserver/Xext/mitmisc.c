@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/mitmisc.c,v 3.7 2003/11/17 22:20:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/mitmisc.c,v 3.8tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -28,14 +28,14 @@ in this Software without prior written authorization from The Open Group.
 /* RANDOM CRUFT! THIS HAS NO OFFICIAL X CONSORTIUM OR X PROJECT TEAM  BLESSING */
 
 #define NEED_EVENTS
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "misc.h"
 #include "os.h"
 #include "dixstruct.h"
 #include "extnsionst.h"
 #define _MITMISC_SERVER_
-#include "mitmiscstr.h"
+#include <X11/extensions/mitmiscstr.h>
 #include "modinit.h"
 
 extern Bool permitOldBugs;

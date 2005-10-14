@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.108 2004/11/23 02:25:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.109tsi Exp $ */
 /*
  * Copyright 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -49,12 +49,12 @@
 #if defined(linux) && !defined(__GLIBC__)
 #undef __STRICT_ANSI__
 #endif
-#include <X.h>
+#include <X11/X.h>
 #ifdef __UNIXOS2__
 #define I_NEED_OS2_H
 #endif
-#include <Xmd.h>
-#include <Xos.h>
+#include <X11/Xmd.h>
+#include <X11/Xos.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #if defined(__bsdi__)
@@ -68,7 +68,7 @@
 #endif
 #include <stdarg.h>
 #include <fcntl.h>
-#include "Xfuncproto.h"
+#include <X11/Xfuncproto.h>
 #include "os.h"
 #include <ctype.h>
 #include <unistd.h>

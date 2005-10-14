@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/ilbm/ilbmpixmap.c,v 3.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmpixmap.c,v 3.1tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -57,7 +57,7 @@ SOFTWARE.
 /* Modified jun 95 by Geert Uytterhoeven (Geert.Uytterhoeven@cs.kuleuven.ac.be)
    to use interleaved bitplanes instead of normal bitplanes */
 
-#include "Xmd.h"
+#include <X11/Xmd.h>
 #include "scrnintstr.h"
 #include "pixmapstr.h"
 #include "maskbits.h"

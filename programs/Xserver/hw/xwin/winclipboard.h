@@ -27,7 +27,7 @@
  *
  * Authors:	Harold Hunt
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwindow.c,v 1.5 2002/11/07 10:31:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winclipboard.h,v 1.3tsi Exp $ */
 
 
 #ifndef _WINCLIPBOARD_H_
@@ -44,15 +44,15 @@
 #include <pthread.h>
 
 /* X headers */
-#include "X.h"
-#include "Xatom.h"
+#include <X11/X.h>
+#include <X11/Xatom.h>
 /* NOTE: For some unknown reason, including Xproto.h solves
  * tons of problems with including windows.h.  Unknowns reasons
  * are usually bad, so someone should investigate this.
  */
-#include "Xproto.h"
-#include "Xutil.h"
-#include "Xlocale.h"
+#include <X11/Xproto.h>
+#include <X11/Xutil.h>
+#include <X11/Xlocale.h>
 
 /* Fixups to prevent collisions between Windows and X headers */
 #define ATOM			DWORD

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.20tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.21tsi Exp $ */
 
 
 /* All drivers should typically include these */
@@ -53,7 +53,7 @@
 #include "xf86DDC.h"
 
 #include "xf86xv.h"
-#include "Xv.h"
+#include <X11/extensions/Xv.h>
 
 #ifdef TRUE
 #undef TRUE

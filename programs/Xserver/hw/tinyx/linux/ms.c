@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/linux/ms.c,v 1.2 2001/10/12 06:33:10 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/linux/ms.c,v 1.1tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -69,12 +69,12 @@ THE SOFTWARE.
  */
 
 #define NEED_EVENTS
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "inputstr.h"
 #include "scrnintstr.h"
 #include "tinyx.h"
-#include "Xpoll.h"
+#include <X11/Xpoll.h>
 #include <errno.h>
 #include <termios.h>
 

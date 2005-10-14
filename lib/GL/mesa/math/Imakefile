@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/math/Imakefile,v 1.8 2002/11/25 12:58:55 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/math/Imakefile,v 1.1tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -40,7 +40,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #if BuildXF86DRI
   DRI_DEFINES = GlxDefines
  DRI_INCLUDES = -I../../../dri -I../../../glx -I../../dri -I.. \
-		-I$(INCLUDESRC)/GL -I$(XF86OSSRC) -I$(SERVERSRC)/GL/dri
+		-I$(XF86OSSRC) -I$(SERVERSRC)/GL/dri
 #endif
 
 #if defined(i386Architecture) && MesaUseX86Asm
@@ -76,7 +76,7 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa/main \
 		-I$(MESASRCDIR)/src/mesa \
 		-I$(MESASRCDIR)/src/mesa/$(ASM_DIR) \
 		-I$(MESASRCDIR)/include \
-		-I../../../include -I$(XINCLUDESRC)
+		-I../../../include
 
       DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(ASM_DEFS) $(MATHDEF)
      INCLUDES = $(MESA_INCLUDES) $(DRI_INCLUDES)

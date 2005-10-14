@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.48 2004/08/05 20:37:42 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.49tsi Exp $
 
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -138,7 +138,7 @@ XF86BIGFOBJS = xf86bigfont.o
 #if BuildXinerama
         PNRXSRCS = panoramiX.c panoramiXSwap.c panoramiXprocs.c
         PNRXOBJS = panoramiX.o panoramiXSwap.o panoramiXprocs.o
-    PNRXINCLUDES = -I$(FONTINCSRC) -I$(SERVERSRC)/mi -I$(SERVERSRC)/render
+    PNRXINCLUDES = -I$(SERVERSRC)/mi -I$(SERVERSRC)/render
 #endif
 #if !(BuildSeparateTinyDIX && BuildTinyDIX) && XdmxServer
          DMXSRCS = dmx.c
@@ -181,9 +181,8 @@ XF86BIGFOBJS = xf86bigfont.o
 /* XXX Check if this can be eliminated */
 XF86INCLUDES = -I$(XF86COMSRC)
 #endif
-    INCLUDES = -I$(SERVERSRC)/Xext -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-		-I$(EXTINCSRC) \
-		$(PNRXINCLUDES) $(XF86INCLUDES) -I$(FONTINCSRC) \
+    INCLUDES = -I$(SERVERSRC)/Xext -I$(SERVERSRC)/include \
+		$(PNRXINCLUDES) $(XF86INCLUDES) \
 		$(FONTCACHEINCLUDES) $(DMXINCLUDES)
     LINTLIBS = $(SERVERSRC)/dix/llib-ldix.ln $(SERVERSRC)/os/llib-los.ln
 

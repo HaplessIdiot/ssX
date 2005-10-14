@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/swaprep.c,v 3.8 2003/11/17 22:20:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/swaprep.c,v 3.9tsi Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,13 +46,13 @@ SOFTWARE.
 
 ********************************************************/
 
-#include "X.h"
+#include <X11/X.h>
 #define NEED_REPLIES
 #define NEED_EVENTS
-#include "Xproto.h"
+#include <X11/Xproto.h>
 #include "misc.h"
 #include "dixstruct.h"
-#include "fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 #include "scrnintstr.h"
 #include "swaprep.h"
 #include "globals.h"

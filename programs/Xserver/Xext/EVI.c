@@ -20,15 +20,15 @@ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
 OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/EVI.c,v 3.11 2003/10/28 23:08:43 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/EVI.c,v 3.12tsi Exp $ */
 
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "dixstruct.h"
 #include "extnsionst.h"
 #include "dix.h"
 #define _XEVI_SERVER_
-#include "XEVIstr.h"
+#include <X11/extensions/XEVIstr.h>
 #include "EVIstruct.h"
 #include "modinit.h"
 

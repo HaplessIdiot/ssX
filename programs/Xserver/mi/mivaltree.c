@@ -72,7 +72,7 @@ in this Software without prior written authorization from The Open Group.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/mi/mivaltree.c,v 1.10 2003/11/10 18:22:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mivaltree.c,v 1.11tsi Exp $ */
 
  /* 
   * Aug '86: Susan Angebranndt -- original code
@@ -83,7 +83,7 @@ in this Software without prior written authorization from The Open Group.
   *		Bob Scheifler -- avoid miComputeClips for unmapped windows,
   *				 valdata changes
   */
-#include    "X.h"
+#include    <X11/X.h>
 #include    "scrnintstr.h"
 #include    "validate.h"
 #include    "windowstr.h"

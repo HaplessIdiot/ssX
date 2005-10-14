@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/input/dmxinputinit.c,v 1.3 2004/08/04 20:39:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/input/dmxinputinit.c,v 1.4tsi Exp $ */
 /*
  * Copyright 2002-2003 Red Hat Inc., Durham, North Carolina.
  *
@@ -70,8 +70,8 @@
 #include "windowstr.h"
 
 #ifdef XINPUT
-#include "XI.h"
-#include "XIproto.h"
+#include <X11/extensions/XI.h>
+#include <X11/extensions/XIproto.h>
 #include "exevents.h"
 #define EXTENSION_PROC_ARGS void *
 #include "extinit.h"

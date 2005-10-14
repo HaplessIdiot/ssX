@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaNonTEText.c,v 1.12 2000/04/07 19:11:10 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaNonTEText.c,v 1.14tsi Exp $ */
 
 /********************************************************************
 
@@ -23,8 +23,8 @@
 #include "xf86_ansic.h"
 #include "xf86_OSproc.h"
 
-#include "X.h"
-#include "font.h"
+#include <X11/X.h>
+#include <X11/fonts/font.h>
 #include "scrnintstr.h"
 #include "dixfontstr.h"
 #include "xf86str.h"

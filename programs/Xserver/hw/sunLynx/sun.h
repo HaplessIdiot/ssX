@@ -1,8 +1,8 @@
-/* $Xorg: sun.h,v 1.3 2000/08/17 19:48:36 cpqbld Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sunLynx/sun.h,v 3.8tsi Exp $ */
 
 /* This is sun.h modified for LynxOS */
 
-/*-
+/*
  * Copyright (c) 1987 by the Regents of the University of California
  *
  * Permission to use, copy, modify, and distribute this
@@ -13,16 +13,15 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  */
-/* $XFree86: xc/programs/Xserver/hw/sunLynx/sun.h,v 3.7 2001/07/25 15:05:02 dawes Exp $ */
 
 #ifndef _SUN_H_ 
 #define _SUN_H_
 
 /* X headers */
-#include "Xos.h"
+#include <X11/Xos.h>
 #undef index /* don't mangle silly Sun structure member names */
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 
 /* general system headers */
 #ifndef NOSTDHDRS
@@ -431,7 +430,7 @@ extern void sunKbdWait(
     void
 );
 
-/*-
+/*
  * TVTOMILLI(tv)
  *	Given a struct timeval, convert its time into milliseconds...
  */

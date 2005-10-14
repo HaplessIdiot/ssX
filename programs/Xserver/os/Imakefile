@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/os/Imakefile,v 3.44 2005/02/03 02:01:14 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/os/Imakefile,v 3.45tsi Exp $
 /*
  * Copyright (c) 1996-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -196,9 +196,8 @@ STRLCAT_DEFINES = -DNEED_STRLCAT
 		  $(KRB5_DEFINES) $(RGB_DEFINES) $(GETPEEREID_DEFINES) \
 		  $(STRLCAT_DEFINES) $(RANDOM_DEFINES) $(TINY_DEFINES) \
 		  $(ASPRINTF_DEFINES)
-       INCLUDES = -I$(SERVERSRC)/os -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-		  -I$(EXTINCSRC) \
-		  -I$(SERVERSRC)/Xext -I$(FONTINCSRC) -I$(SERVERSRC)/render \
+       INCLUDES = -I$(SERVERSRC)/os -I$(SERVERSRC)/include \
+		  -I$(SERVERSRC)/Xext -I$(SERVERSRC)/render \
 		  -I$(TOP)/lib/Xau -I$(SERVERSRC)/lbx Krb5Includes
  DEPEND_DEFINES = $(DBM_DEFINES) $(XDMCP_DEFINES) $(EXT_DEFINES) \
 		  $(TRANS_INCLUDES) $(CONNECTION_FLAGS) DependDefines

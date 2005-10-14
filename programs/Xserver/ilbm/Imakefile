@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/ilbm/Imakefile,v 3.8 2004/03/18 07:07:11 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/ilbm/Imakefile,v 3.9tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -67,8 +67,7 @@ OBJS =   ilbmgc.o ilbmwindow.o ilbmfont.o ilbmpixmap.o ilbmfillsp.o \
 	 ilbmpntwin.o ilbmpntarea.o ilbmbres.o ilbmhrzvert.o ilbmline.o \
 	 ilbmseg.o
 
-INCLUDES = -I. -I../cfb -I../mfb -I../mi -I../include -I$(XINCLUDESRC) \
-	   -I$(FONTINCSRC) $(EXTRAINCLUDES)
+INCLUDES = -I../cfb -I../mfb -I../mi -I../include $(EXTRAINCLUDES)
 LINTDEFS = -DMFBPOLYGLYPHBLT=ilbmPolyGlyphBltWhite \
 	   -DMFBIMAGEGLYPHBLT=ilbmImageGlyphBltWhite \
 	   -DEQWHOLEWORD=MFB_EQWHOLEWORD_WHITE -DOPEQ=MFB_OPEQ_WHITE

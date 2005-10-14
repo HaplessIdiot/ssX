@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/Imakefile,v 1.18 2003/03/15 18:02:08 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/iokit/Imakefile,v 1.1tsi Exp $
 
 #include <Server.tmpl>
 
@@ -10,10 +10,9 @@ OBJS =	xfIOKit.o \
         xfIOKitCursor.o \
         xfIOKitStartup.o
 
-INCLUDES = -I. -I$(SERVERSRC)/mi -I$(SERVERSRC)/fb -I$(EXTINCSRC) \
-           -I$(SERVERSRC)/render -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-           -I$(SERVERSRC)/os -I$(INCLUDESRC) -I$(FONTINCSRC) \
-           -I$(SERVERSRC)/miext/shadow -I..
+INCLUDES = -I$(SERVERSRC)/mi -I$(SERVERSRC)/fb -I$(SERVERSRC)/render \
+	   -I$(SERVERSRC)/include -I$(SERVERSRC)/os \
+	   -I$(SERVERSRC)/miext/shadow -I..
 
 #if DarwinQuartzSupport
 DEFINES = -DDARWIN_WITH_QUARTZ

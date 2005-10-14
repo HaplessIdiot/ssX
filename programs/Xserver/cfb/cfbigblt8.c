@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbigblt8.c,v 1.6 2001/12/14 19:59:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbigblt8.c,v 1.7tsi Exp $ */
 /*
  *
 Copyright 1990, 1998  The Open Group
@@ -27,12 +27,12 @@ in this Software without prior written authorization from The Open Group.
  */
 
 
-#include	"X.h"
-#include	"Xmd.h"
-#include	"Xproto.h"
+#include	<X11/X.h>
+#include	<X11/Xmd.h>
+#include	<X11/Xproto.h>
 #include	"mi.h"
 #include	"cfb.h"
-#include	"fontstruct.h"
+#include	<X11/fonts/fontstruct.h>
 #include	"dixfontstr.h"
 #include	"gcstruct.h"
 #include	"windowstr.h"

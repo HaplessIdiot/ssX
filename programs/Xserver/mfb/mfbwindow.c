@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbwindow.c,v 1.4 2003/11/03 05:36:35 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbwindow.c,v 1.5tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -47,7 +47,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
+#include <X11/X.h>
 #include "scrnintstr.h"
 #include "windowstr.h"
 #include "mfb.h"

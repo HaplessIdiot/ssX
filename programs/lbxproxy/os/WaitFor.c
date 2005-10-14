@@ -1,4 +1,4 @@
-/* $Xorg: WaitFor.c,v 1.4 2001/02/09 02:05:33 xorgcvs Exp $ */
+/* $XFree86: xc/programs/lbxproxy/os/WaitFor.c,v 1.10tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/lbxproxy/os/WaitFor.c,v 1.9tsi Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -55,7 +54,7 @@ SOFTWARE.
  *
  *****************************************************************/
 
-#include "Xos.h"			/* for strings, fcntl, time */
+#include <X11/Xos.h>			/* for strings, fcntl, time */
 
 #include <errno.h>
 #include <stdio.h>

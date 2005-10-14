@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_kbd.c,v 1.8 2004/06/01 00:17:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_kbd.c,v 1.9tsi Exp $ */
 
 /*
  * Copyright (c) 2002 by The XFree86 Project, Inc.
@@ -56,7 +56,7 @@
  */
 
 #define NEED_EVENTS
-#include "X.h"
+#include <X11/X.h>
 
 #include "compiler.h"
 

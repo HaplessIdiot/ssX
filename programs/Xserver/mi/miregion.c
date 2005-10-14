@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miregion.c,v 1.10 2003/07/16 01:38:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miregion.c,v 1.11tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1988, 1989, 1998  The Open Group
@@ -70,7 +70,7 @@ SOFTWARE.
 *****************************************************************/
 
 #include "regionstr.h"
-#include "Xprotostr.h"
+#include <X11/Xprotostr.h>
 #include "gc.h"
 #include "mi.h"
 #include "mispans.h"
@@ -467,7 +467,7 @@ miRegionCopy(RegionPtr dst, RegionPtr src)
  *	    Generic Region Operator
  *====================================================================*/
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miCoalesce --
  *	Attempt to merge the boxes in the current band with those in the
@@ -552,7 +552,7 @@ miCoalesce (
 	prevBand = curBand;						\
     }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miAppendNonO --
  *	Handle a non-overlapping band for the union and subtract operations.
@@ -618,7 +618,7 @@ miAppendNonO (
     }									\
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miRegionOp --
  *	Apply an operation to two regions. Called by miUnion, miInverse,
@@ -877,7 +877,7 @@ miRegionOp(
     return TRUE;
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miSetExtents --
  *	Reset the extents of a region to what they should be. Called by
@@ -936,7 +936,7 @@ miSetExtents(RegionPtr pReg)
 /*======================================================================
  *	    Region Intersection
  *====================================================================*/
-/*-
+/*
  *-----------------------------------------------------------------------
  * miIntersectO --
  *	Handle an overlapping band for miIntersect.
@@ -1078,7 +1078,7 @@ miIntersect(
  *	    Region Union
  *====================================================================*/
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miUnionO --
  *	Handle an overlapping band for the union operation. Picks the
@@ -1235,7 +1235,7 @@ miUnion(
  *	    Batch Rectangle Union
  *====================================================================*/
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miRegionAppend --
  * 
@@ -1404,7 +1404,7 @@ QuickSortRects(
     } while (numRects > 1);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miRegionValidate --
  * 
@@ -1708,7 +1708,7 @@ miRectsToRegion(int nrects, xRectangle *prect, int ctype)
  *====================================================================*/
 
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miSubtractO --
  *	Overlapping band subtraction. x1 is the left-most point not yet
@@ -1833,7 +1833,7 @@ miSubtractO (
     return TRUE;
 }
 	
-/*-
+/*
  *-----------------------------------------------------------------------
  * miSubtract --
  *	Subtract regS from regM and leave the result in regD.
@@ -1894,7 +1894,7 @@ miSubtract(RegionPtr regD, RegionPtr regM, RegionPtr regS)
  *	    Region Inversion
  *====================================================================*/
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miInverse --
  *	Take a region and a box and return a region that is everything

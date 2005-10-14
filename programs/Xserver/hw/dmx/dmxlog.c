@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxlog.c,v 1.1tsi Exp $ */
 /*
  * Copyright 2001 Red Hat Inc., Durham, North Carolina.
  *
@@ -40,8 +40,8 @@
 #include "dmxlog.h"
 #include "dmxinput.h"
 #ifdef XINPUT
-#include "XI.h"
-#include "XIproto.h"
+#include <X11/extensions/XI.h>
+#include <X11/extensions/XIproto.h>
 #endif
 
 static dmxLogLevel dmxCurrentLogLevel = dmxDebug;

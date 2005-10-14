@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.18tsi Exp $
+XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.19tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -298,7 +298,7 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 									@@\
 src.o: src.S								@@\
 	RemoveFile(src.o)						@@\
-	$(CC) -c AsmDefines $(DEFINES) $(INCLUDES) flags src.S
+	$(CC) -c AsmDefines $(ALLDEFINES) flags src.S
 
 #include <scoLib.rules>  /* minor changes to sv4Lib.rules */
 #include <sv4Lib.rules>

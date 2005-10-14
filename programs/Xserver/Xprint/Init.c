@@ -1,4 +1,4 @@
-/* $Xorg: Init.c,v 1.5 2001/03/07 17:31:33 pookie Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/Init.c,v 1.15tsi Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -50,7 +50,6 @@ copyright holders.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/Init.c,v 1.14tsi Exp $ */
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -65,9 +64,9 @@ copyright holders.
 #include <sys/sysmacros.h>
 #endif
 
-#include "X.h"
+#include <X11/X.h>
 #define NEED_EVENTS 1
-#include "Xproto.h"
+#include <X11/Xproto.h>
 #include <servermd.h>
 
 #include "screenint.h"
@@ -78,14 +77,14 @@ copyright holders.
 #include "inputstr.h"
 
 #include "gcstruct.h"
-#include "fonts/fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 #include "errno.h"
 
 typedef char *XPointer;
 #define HAVE_XPointer 1
 
 #define Status int
-#include <Xresource.h>
+#include <X11/Xresource.h>
 
 #include "DiPrint.h"
 #include "attributes.h"

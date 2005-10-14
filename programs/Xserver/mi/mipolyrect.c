@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mipolyrect.c,v 1.4 2003/07/16 01:38:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mipolyrect.c,v 1.5tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,8 +46,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
-#include "Xprotostr.h"
+#include <X11/X.h>
+#include <X11/Xprotostr.h>
 #include "regionstr.h"
 #include "gcstruct.h"
 #include "pixmap.h"

@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.h,v 1.5 2001/01/03 02:54:17 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.h,v 1.6tsi Exp $ */
 
 /* THIS IS NOT AN X PROJECT TEAM SPECIFICATION */
 
@@ -30,7 +30,7 @@
 #ifndef _PANORAMIX_H_
 #define _PANORAMIX_H_
 
-#include "panoramiXext.h"
+#include <X11/extensions/panoramiXext.h>
 #include "gcstruct.h"
 
 

@@ -71,7 +71,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/lib/X11/XKBMAlloc.c,v 3.12 2003/11/17 22:20:09 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBMAlloc.c,v 3.13tsi Exp $ */
 
 #ifndef XKB_IN_SERVER
 
@@ -86,15 +86,15 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #else 
 
 #include <stdio.h>
-#include "X.h"
+#include <X11/X.h>
 #define	NEED_EVENTS
 #define	NEED_REPLIES
-#include "Xproto.h"
+#include <X11/Xproto.h>
 #include "misc.h"
 #include "inputstr.h"
 #include <X11/keysym.h>
 #define	XKBSRV_NEED_FILE_FUNCS
-#include "XKBsrv.h"
+#include <X11/extensions/XKBsrv.h>
 
 #endif /* XKB_IN_SERVER */
 

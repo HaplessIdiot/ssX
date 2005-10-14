@@ -1,6 +1,6 @@
 /*
    quartzKeyboard.c
-   $Id: quartzKeyboard.c,v 1.3 2004/03/31 22:29:10 torrey Exp $
+   $Id: quartzKeyboard.c,v 1.4 2005/10/14 15:16:24 tsi Exp $
 
    Code to build a keymap using the Carbon Keyboard Layout API,
    which is supported on Mac OS X 10.2 and newer.
@@ -32,7 +32,7 @@
    promote the sale, use or other dealings in this Software without
    prior written authorization.
 */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzKeyboard.c,v 1.2 2004/01/19 01:22:47 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzKeyboard.c,v 1.3tsi Exp $ */
 
 #include "quartzCommon.h"
 
@@ -40,7 +40,7 @@
 #include <Carbon/Carbon.h>
 
 #include "darwinKeyboard.h"
-#include "keysym.h"
+#include <X11/keysym.h>
 #include "keysym2ucs.h"
 
 #ifdef HAS_KL_API

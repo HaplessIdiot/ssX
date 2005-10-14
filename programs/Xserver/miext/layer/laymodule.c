@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/miext/layer/laymodule.c,v 1.1tsi Exp $
  *
  * Copyright © 2000 Keith Packard
  *
@@ -25,12 +25,12 @@
 #ifdef XFree86LOADER
 
 #include "xf86Module.h"
-#include    "X.h"
+#include    <X11/X.h>
 #include    "scrnintstr.h"
 #include    "windowstr.h"
-#include    "font.h"
+#include    <X11/fonts/font.h>
 #include    "dixfontstr.h"
-#include    "fontstruct.h"
+#include    <X11/fonts/fontstruct.h>
 #include    "mi.h"
 #include    "regionstr.h"
 #include    "globals.h"

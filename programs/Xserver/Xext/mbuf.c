@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/mbuf.c,v 3.16 2003/11/17 22:20:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/mbuf.c,v 3.17tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -27,8 +27,8 @@ in this Software without prior written authorization from The Open Group.
 
 #define NEED_REPLIES
 #define NEED_EVENTS
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "window.h"
 #include "os.h"
 #include "windowstr.h"
@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
 #include "sleepuntil.h"
 #include "modinit.h"
 #define _MULTIBUF_SERVER_	/* don't want Xlib structures */
-#include "multibufst.h"
+#include <X11/extensions/multibufst.h>
 #include "mbufproc.h"
 
 #ifdef EXTMODULE

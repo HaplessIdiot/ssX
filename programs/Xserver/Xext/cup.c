@@ -23,12 +23,12 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/cup.c,v 1.12 2003/10/28 23:08:43 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/cup.c,v 1.13tsi Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "misc.h"
 #include "dixstruct.h"
 #include "extnsionst.h"
@@ -37,8 +37,8 @@ in this Software without prior written authorization from The Open Group.
 #include "servermd.h"
 #include "swapreq.h"
 #define _XCUP_SERVER_
-#include "Xcupstr.h"
-#include "Xfuncproto.h"
+#include <X11/extensions/Xcupstr.h>
+#include <X11/Xfuncproto.h>
 
 #ifndef EXTMODULE
 #include "../os/osdep.h"

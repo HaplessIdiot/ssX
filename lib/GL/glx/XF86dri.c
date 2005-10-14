@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/XF86dri.c,v 1.1 2004/12/10 16:06:56 alanh Exp $ */
+/* $XFree86: xc/lib/GL/glx/XF86dri.c,v 1.2tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -41,7 +41,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <X11/Xlibint.h>
 #include "xf86dristr.h"
 #include <X11/extensions/Xext.h>
-#include "extutil.h"
+#include <X11/extensions/extutil.h>
 
 static XExtensionInfo _xf86dri_info_data;
 static XExtensionInfo *xf86dri_info = &_xf86dri_info_data;

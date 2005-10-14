@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Xrenderint.h,v 1.3 2002/09/26 02:56:52 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Xrenderint.h,v 1.4tsi Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -30,10 +30,10 @@
 #define NEED_REPLIES
 #include <X11/Xlibint.h>
 #include <X11/Xutil.h>
-#include "Xext.h"			/* in ../include */
-#include "extutil.h"			/* in ../include */
-#include "Xrender.h"
-#include "renderproto.h"
+#include <X11/extensions/Xext.h>
+#include <X11/extensions/extutil.h>
+#include <X11/extensions/Xrender.h>
+#include <X11/extensions/renderproto.h>
 
 typedef struct {
     Visual		*visual;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.16tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.17tsi Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -58,9 +58,9 @@
  */
 
 #include "vbe.h"
-#include "Xarch.h"
+#include <X11/Xarch.h>
 #define DPMS_SERVER
-#include "extensions/dpms.h"
+#include <X11/extensions/dpms.h>
 
 #define VERSION(x) VBE_VERSION_MAJOR(x), VBE_VERSION_MINOR(x)
 

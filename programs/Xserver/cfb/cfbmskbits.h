@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.14 2003/10/29 22:44:53 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.15tsi Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -30,8 +30,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 /* Optimizations for PSZ == 32 added by Kyle Marvin (marvin@vitec.com) */
 
-#include	"X.h"
-#include	"Xmd.h"
+#include	<X11/X.h>
+#include	<X11/Xmd.h>
 #include	"servermd.h"
 #if defined(XFREE86) || ( defined(__OpenBSD__) && defined(__alpha__) ) \
 	|| (defined(__bsdi__))

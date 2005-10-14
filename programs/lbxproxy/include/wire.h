@@ -1,4 +1,4 @@
-/* $Xorg: wire.h,v 1.4 2001/02/09 02:05:32 xorgcvs Exp $ */
+/* $XFree86: xc/programs/lbxproxy/include/wire.h,v 1.9tsi Exp $ */
 /*
 
 Copyright 1998  The Open Group
@@ -45,7 +45,6 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/include/wire.h,v 1.8tsi Exp $ */
 
 #ifdef DEBUG 		/* Need this here because lbx.h undef's DEBUG */
 #define LBX_DEBUG
@@ -54,8 +53,8 @@ extern int lbxDebug;
 
 #include "misc.h"
 #include "lbx.h"
-#include "lbxdeltastr.h"
-#include "lbximage.h"
+#include <X11/extensions/lbxdeltastr.h>
+#include <X11/extensions/lbximage.h>
 #include "proxyopts.h"
 #include "colormap.h"
 #include "atomcache.h"

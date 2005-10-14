@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/dmx.c,v 1.4 2005/01/28 16:56:43 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/dmx.c,v 1.5tsi Exp $ */
 /*
  * Copyright 2002-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -43,8 +43,8 @@
  * Please see the Client-to-Server DMX Extension to the X Protocol
  * document for details about the protocol.  */
 
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "misc.h"
 #include "os.h"
 #include "dixstruct.h"
@@ -53,10 +53,10 @@
 #include "opaque.h"
 
 #include "dmxextension.h"
-#include "dmxproto.h"
+#include <X11/extensions/dmxproto.h>
 
 #define _DMX_SERVER_
-#include "dmxext.h"
+#include <X11/extensions/dmxext.h>
 
 #ifdef PANORAMIX
 #include "panoramiX.h"

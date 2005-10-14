@@ -1,5 +1,4 @@
-/* $Xorg: reqstats.c,v 1.4 2001/02/09 02:04:05 xorgcvs Exp $ */
-
+/* $XFree86: xc/lib/lbxutil/lbx_zlib/reqstats.c,v 1.6tsi Exp $ */
 /*
 
 Copyright 1996  The Open Group
@@ -27,7 +26,6 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/lbxutil/lbx_zlib/reqstats.c,v 1.5 2001/08/27 19:01:07 dawes Exp $ */
 
 #include "reqstats.h"
 
@@ -36,7 +34,7 @@ from The Open Group.
 #include <X11/Xfuncs.h>
 #include <X11/Xproto.h>
 #define _XLBX_SERVER_
-#include "XLbx.h"
+#include <X11/extensions/XLbx.h>
 #include "lbx_zlib.h"
 #include <signal.h>
 #include <stdio.h>

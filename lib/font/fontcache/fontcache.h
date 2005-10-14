@@ -1,4 +1,4 @@
-/*-
+/*
  * Copyright (c) 1998-1999 Shunsuke Akiyama <akiyama@jp.FreeBSD.org>.
  * All rights reserved.
  * Copyright (c) 1998-1999 X-TrueType Server Project, All rights reserved.
@@ -26,13 +26,13 @@
  *
  *	Id: fontcache.h,v 1.12 1999/01/09 06:24:30 akiyama Exp $
  */
-/* $XFree86: xc/lib/font/fontcache/fontcache.h,v 1.6 2002/11/08 00:46:27 alanh Exp $ */
+/* $XFree86: xc/lib/font/fontcache/fontcache.h,v 1.7tsi Exp $ */
 
 #ifndef _FONTCACHE_H_
 #define _FONTCACHE_H_
 
 #include "fontmisc.h"
-#include "fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 #include "fcqueue.h"
 #define _FONTCACHE_SERVER_
 #include <X11/extensions/fontcacheP.h>

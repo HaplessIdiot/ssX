@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.24tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.25tsi Exp $ */
 
 /*
  *
@@ -15,7 +15,7 @@
  *
  */
 
-#include "Xarch.h"
+#include <X11/Xarch.h>
 #include "xaarop.h"
 #include "miline.h"
 

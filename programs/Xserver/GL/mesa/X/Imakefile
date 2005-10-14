@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/X/Imakefile,v 1.5 2004/12/15 01:26:50 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/X/Imakefile,v 1.6tsi Exp $
 
 #if DoLoadableServer
 #if !BuildModuleInSubdir
@@ -43,16 +43,18 @@ GLXSRV_DEFINES = -DXFree86Server -DXFree86FakeServer
          SRCS = $(DRIVER_SRCS) $(GLX_SRCS) $(COMMON_SRCS)
          OBJS = $(DRIVER_OBJS) $(GLX_OBJS) $(COMMON_OBJS)
 
-     INCLUDES = -I$(SERVERSRC)/GL/mesa/X -I$(XINCLUDESRC) \
-		-I$(EXTINCSRC) \
+     INCLUDES = -I$(SERVERSRC)/GL/mesa/X \
 		-I$(MESASRCDIR)/src/mesa \
 		-I$(MESASRCDIR)/src/mesa/main \
 		-I$(MESASRCDIR)/src/mesa/glapi \
 		-I$(MESASRCDIR)/src/mesa/shader \
-		-I$(MESASRCDIR)/src -I$(MESASRCDIR)/src/mesa/drivers/x11 \
+		-I$(MESASRCDIR)/src \
+		-I$(MESASRCDIR)/src/mesa/drivers/x11 \
 		-I$(MESASRCDIR)/include \
-		-I$(LIBSRC)/GL/glx -I$(LIBSRC)/GL/include \
-		-I$(SERVERSRC)/include -I$(SERVERSRC)/GL/include \
+		-I$(LIBSRC)/GL/glx \
+		-I$(LIBSRC)/GL/include \
+		-I$(SERVERSRC)/include \
+		-I$(SERVERSRC)/GL/include \
 		-I$(SERVERSRC)/GL/glx \
 		-I$(XF86OSSRC) \
 		-I$(DRMINCLUDESDIR)

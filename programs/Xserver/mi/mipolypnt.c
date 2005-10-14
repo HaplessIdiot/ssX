@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mipolypnt.c,v 1.3 2001/12/14 20:00:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mipolypnt.c,v 1.4tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,8 +46,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
-#include "Xprotostr.h"
+#include <X11/X.h>
+#include <X11/Xprotostr.h>
 #include "pixmapstr.h"
 #include "gcstruct.h"
 #include "windowstr.h"

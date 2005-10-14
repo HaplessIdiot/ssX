@@ -1,4 +1,4 @@
-/* $Xorg: lbx.h,v 1.4 2001/02/09 02:05:32 xorgcvs Exp $ */
+/* $XFree86: xc/programs/lbxproxy/include/lbx.h,v 1.8tsi Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -45,14 +45,13 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/include/lbx.h,v 1.7tsi Exp $ */
 
 #ifndef _LBX_H_
 #define _LBX_H_
 #include "misc.h"
 #include "os.h"
 #include "util.h"
-#include "lbxstr.h"
+#include <X11/extensions/lbxstr.h>
 
 /* we keep the ifdefs in the code as a guide to what's going on */
 /* but we want the proxy to work with all possible servers */

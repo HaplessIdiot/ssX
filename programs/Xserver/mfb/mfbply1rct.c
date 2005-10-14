@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbply1rct.c,v 1.8 2002/12/09 04:10:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbply1rct.c,v 1.9tsi Exp $ */
 /*
  *
 Copyright 1990, 1998  The Open Group
@@ -27,7 +27,7 @@ in this Software without prior written authorization from The Open Group.
  */
 
 
-#include "X.h"
+#include <X11/X.h>
 
 #include "gcstruct.h"
 #include "windowstr.h"

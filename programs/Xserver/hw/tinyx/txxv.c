@@ -35,7 +35,7 @@ of the copyright holder.
 
 */
 
-/* $XFree86: xc/programs/Xserver/hw/tinyx/txxv.c,v 1.6 2004/04/14 11:23:27 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/txxv.c,v 1.1tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -95,8 +95,8 @@ of the copyright holder.
 #include "gcstruct.h"
 #include "dixstruct.h"
 
-#include "Xv.h"
-#include "Xvproto.h"
+#include <X11/extensions/Xv.h>
+#include <X11/extensions/Xvproto.h>
 
 #include "txxv.h"
 

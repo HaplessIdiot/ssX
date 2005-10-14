@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbply1rct.c,v 3.11 2003/10/30 14:53:39 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbply1rct.c,v 3.12tsi Exp $ */
 /*
  *
 Copyright 1990, 1998  The Open Group
@@ -26,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include "X.h"
+#include <X11/X.h>
 
 #include "gcstruct.h"
 #include "windowstr.h"

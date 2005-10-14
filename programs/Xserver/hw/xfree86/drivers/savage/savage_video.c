@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.19tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.20tsi Exp $ */
 
-#include "Xv.h"
+#include <X11/extensions/Xv.h>
 #include "dix.h"
 #include "dixstruct.h"
 #include "fourcc.h"

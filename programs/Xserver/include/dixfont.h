@@ -1,4 +1,4 @@
-/* $Xorg: dixfont.h,v 1.3 2000/08/17 19:53:29 cpqbld Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dixfont.h,v 3.8tsi Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -21,15 +21,14 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/dixfont.h,v 3.7 2001/02/02 21:39:02 herrb Exp $ */
 
 #ifndef DIXFONT_H
 #define DIXFONT_H 1
 
 #include "dix.h"
-#include "font.h"
+#include <X11/fonts/font.h>
 #include "closure.h"
-#include "fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 
 #define NullDIXFontProp ((DIXFontPropPtr)0)
 

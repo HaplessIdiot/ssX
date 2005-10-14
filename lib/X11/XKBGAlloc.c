@@ -1,4 +1,4 @@
-/* $Xorg: XKBGAlloc.c,v 1.3 2000/08/17 19:45:01 cpqbld Exp $ */
+/* $XFree86: xc/lib/X11/XKBGAlloc.c,v 3.5tsi Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +24,6 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/lib/X11/XKBGAlloc.c,v 3.4 2001/01/17 19:41:48 dawes Exp $ */
 
 #define	NEED_EVENTS
 #define	NEED_REPLIES
@@ -40,12 +39,12 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #else 
 
 #include <stdio.h>
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "misc.h"
 #include "inputstr.h"
-#include "XKBsrv.h"
-#include "XKBgeom.h"
+#include <X11/extensions/XKBsrv.h>
+#include <X11/extensions/XKBgeom.h>
 
 #endif /* XKB_IN_SERVER */
 

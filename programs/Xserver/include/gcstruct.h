@@ -1,4 +1,4 @@
-/* $Xorg: gcstruct.h,v 1.4 2001/02/09 02:05:15 xorgcvs Exp $ */
+/* $XFree86: xc/programs/Xserver/include/gcstruct.h,v 1.8tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,9 +46,6 @@ SOFTWARE.
 
 ******************************************************************/
 
-
-/* $XFree86: xc/programs/Xserver/include/gcstruct.h,v 1.7 2003/04/27 21:31:04 herrb Exp $ */
-
 #ifndef GCSTRUCT_H
 #define GCSTRUCT_H
 
@@ -58,7 +55,7 @@ SOFTWARE.
 #include "region.h"
 #include "pixmap.h"
 #include "screenint.h"
-#include "Xprotostr.h"
+#include <X11/Xprotostr.h>
 
 /*
  * functions which modify the state of the GC

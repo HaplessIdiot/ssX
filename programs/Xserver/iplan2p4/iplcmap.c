@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/iplan2p4/iplcmap.c,v 3.0 1996/08/18 01:54:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplcmap.c,v 3.1tsi Exp $ */
 /* $XConsortium: iplcmap.c,v 4.19 94/04/17 20:28:46 dpw Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -32,8 +32,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 /* Modified nov 94 by Martin Schaller (Martin_Schaller@maus.r.de) for use with
 interleaved planes */
 
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "scrnintstr.h"
 #include "colormapst.h"
 #include "resource.h"

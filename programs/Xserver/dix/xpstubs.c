@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/xpstubs.c,v 1.4 2001/12/20 19:41:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/xpstubs.c,v 1.5tsi Exp $ */
 /*
 Copyright 1996, 1998  The Open Group
 
@@ -26,8 +26,8 @@ from The Open Group.
 */
 
 #include "misc.h"
-#include "font.h"
-#include "fontstruct.h"
+#include <X11/fonts/font.h>
+#include <X11/fonts/fontstruct.h>
 #include "DiPrint.h"
 
 Bool

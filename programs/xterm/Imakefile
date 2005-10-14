@@ -9,7 +9,7 @@ XCOMM Xterm assumes that bcopy can handle overlapping arguments.  If your
 XCOMM bcopy (or memcpy) cannot, write a routine called bcopy and link it in
 XCOMM or add -Dbcopy=mybcopy to the DEFINES list below.
 XCOMM
-XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.57 2005/01/17 20:40:01 dickey Exp $
+XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.58tsi Exp $
 XCOMM
 
 /* Uncomment SCROLLBAR_RIGHT if you want the scroll bar to be on the right */
@@ -108,7 +108,7 @@ module.o: ; $(CC) -c defines $(CFLAGS) module.c
          XRFDEF = -DXRENDERFONT -DXFREE86_FT2
         XRFLIBS = XftClientLibs
      XRFDEPLIBS = XftClientDepLibs
-    XRFINCLUDES = $(XFTINCLUDES) -I$(XBUILDINCDIR)
+    XRFINCLUDES = $(XFTINCLUDES)
 #endif
 #if !HasPutenv
       PUTENVDEF = -DNOPUTENV
@@ -123,7 +123,7 @@ module.o: ; $(CC) -c defines $(CFLAGS) module.c
     XKB_DEFINES = XkbClientDefines
    PATH_DEFINES = -DPROJECTROOT=$(PROJECTROOT)
         DEFINES = $(XKB_DEFINES) $(TERMCAPDEFINES) $(FEATURE_DEFINES) $(SCROLLBAR_RIGHT) $(UTF8_OPTION) $(XRFDEF) $(PATH_DEFINES) $(PUTENVDEF) $(TRACEDEF)
-       INCLUDES = -I. $(XRFINCLUDES)
+       INCLUDES = $(XRFINCLUDES)
 
 #ifdef OS2Architecture
         MAINSRC = os2main.c

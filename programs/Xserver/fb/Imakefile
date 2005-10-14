@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/fb/Imakefile,v 1.19 2004/06/01 00:16:59 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/fb/Imakefile,v 1.20tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -139,9 +139,8 @@ OBJS =	$(XFMODOBJ) \
 	fbpict.o
 
    INCLUDES = -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
-	      -I$(XINCLUDESRC) \
-	      -I$(FONTINCSRC) -I$(XF86SRC)/common $(EXTRAINCLUDES) \
-	      -I$(SERVERSRC)/render -I$(EXTINCSRC) -I$(SERVERSRC)/Xext
+	      -I$(XF86SRC)/common $(EXTRAINCLUDES) \
+	      -I$(SERVERSRC)/render -I$(SERVERSRC)/Xext
    LINTLIBS = $(SERVERSRC)/dix/llib-ldix.ln $(SERVERSRC)/os/llib-los.ln \
 	     $(SERVERSRC)/mi/llib-lmi.ln
 

@@ -1,4 +1,4 @@
-/* $Xorg: sunLyKbd.c,v 1.3 2000/08/17 19:48:37 cpqbld Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyKbd.c,v 3.7tsi Exp $ */
 /*
  * This is sunKbd.c modified for LynxOS
  * Copyright 1996 by Thomas Mueller
@@ -22,9 +22,8 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyKbd.c,v 3.6 2001/08/01 00:44:49 tsi Exp $ */
 
-/*-
+/*
  * Copyright 1987 by the Regents of the University of California
  *
  * Permission to use, copy, modify, and distribute this
@@ -67,11 +66,11 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #define NEED_EVENTS
 #include "sun.h"
-#include "keysym.h"
-#include "Sunkeysym.h"
+#include <X11/keysym.h>
+#include <X11/Sunkeysym.h>
 #include "osdep.h"
 
-#include "Xpoll.h"
+#include <X11/Xpoll.h>
 
 #ifdef XKB
 #include <X11/extensions/XKB.h>
@@ -217,7 +216,7 @@ static void ModLight (device, on, led)
     SetLights (ctrl, pPriv->fd);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * sunBell --
  *	Ring the terminal/keyboard bell
@@ -384,7 +383,7 @@ static void DoLEDs(device, ctrl, pPriv)
     SetLights (ctrl, pPriv->fd);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * sunKbdCtrl --
  *	Alter some of the keyboard control parameters
@@ -420,7 +419,7 @@ static void sunKbdCtrl (
 	DoLEDs(device, ctrl, pPriv);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * sunInitKbdNames --
  *	Handle the XKB initialization
@@ -561,7 +560,7 @@ static void sunInitKbdNames (
 }
 #endif /* XKB */
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * sunKbdProc --
  *	Handle the initialization, etc. of a keyboard.
@@ -705,7 +704,7 @@ int sunKbdProc (
     return Success;
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * sunKbdGetEvents --
  *	Return the events waiting in the wings for the given keyboard.
@@ -765,7 +764,7 @@ Firm_event* sunKbdGetEvents (
     return evBuf;
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * sunKbdEnqueueEvent --
  *
@@ -933,7 +932,7 @@ void sunEnqueueAutoRepeat ()
 		    autoRepeatDeltaTv);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * sunChangeKbdTranslation
  *	Makes operating system calls to set keyboard translation 

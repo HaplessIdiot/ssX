@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbpntwin.c,v 3.0 1996/08/18 01:45:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbpntwin.c,v 3.1tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -48,7 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
+#include <X11/X.h>
 
 #include "windowstr.h"
 #include "regionstr.h"

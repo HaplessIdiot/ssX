@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/mbufbf.c,v 3.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/mbufbf.c,v 3.6tsi Exp $ */
 /*
 
 Copyright 1989, 1998  The Open Group
@@ -25,13 +25,11 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $Xorg: mbufbf.c,v 1.4 2001/02/09 02:04:32 xorgcvs Exp $ */
-
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "misc.h"
 #include "os.h"
 #include "windowstr.h"
@@ -49,7 +47,7 @@ in this Software without prior written authorization from The Open Group.
 
 #define _MULTIBUF_SERVER_	/* don't want Xlib structures */
 #define _MULTIBUF_BUFFER_
-#include "multibufst.h"
+#include <X11/extensions/multibufst.h>
 
 /* 
 Support for doublebuffer hardare

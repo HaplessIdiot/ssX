@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/dmx/Imakefile,v 1.2 2005/01/21 21:22:45 tsi Exp $
+XCOMM $XFree86: xc/lib/dmx/Imakefile,v 1.3tsi Exp $
 
 #define DoNormalLib NormalLibDmx
 #define DoExtraLib ExtraLibDmx
@@ -21,7 +21,6 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
       DEFINES = $(ALLOC_DEFINES)
-     INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
          SRCS = dmx.c
          OBJS = dmx.o
      LINTLIBS = $(LINTXLIB)

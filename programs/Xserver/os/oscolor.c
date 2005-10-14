@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/oscolor.c,v 3.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/oscolor.c,v 3.14tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -99,7 +99,7 @@ SOFTWARE.
 #include "oscolor.h"
 #include "dix.h"
 #define XK_LATIN1
-#include "keysymdef.h"
+#include <X11/keysymdef.h>
 
 static dbEntryPtr *colorTab = NULL;
 static dbEntryPtr hashTab[HASHSIZE];

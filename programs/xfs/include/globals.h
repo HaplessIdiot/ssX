@@ -1,4 +1,4 @@
-/* $Xorg: globals.h,v 1.4 2001/02/09 02:05:44 xorgcvs Exp $ */
+/* $XFree86$ */
 /*
 Copyright 1987, 1998  The Open Group
 
@@ -51,7 +51,7 @@ in this Software without prior written authorization from The Open Group.
 #ifndef _GLOBALS_H_
 #define _GLOBALS_H_
 
-#include	"FSproto.h"	/* for fsResolution */
+#include	<X11/fonts/FSproto.h>	/* for fsResolution */
 
 extern long TimeOutValue;
 extern long ReapClientTime;

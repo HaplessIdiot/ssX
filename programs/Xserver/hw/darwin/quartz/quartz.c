@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.15 2004/06/08 22:58:10 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.16tsi Exp $ */
 
 #include "quartzCommon.h"
 #include "quartz.h"
@@ -37,7 +37,7 @@
 #include "quartzAudio.h"
 #include "pseudoramiX.h"
 #define _APPLEWM_SERVER_
-#include "applewm.h"
+#include <X11/extensions/applewm.h>
 #include "applewmExt.h"
 
 // X headers

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aout.h,v 1.7 2002/05/31 18:46:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aout.h,v 1.8tsi Exp $ */
 
 /*
  * Borrowed from NetBSD's exec_aout.h
@@ -35,7 +35,7 @@
 #ifndef _AOUT_H
 #define _AOUT_H
 
-#include "Xos.h"
+#include <X11/Xos.h>
 
 /* Get prototype for ntohl. */
 #include <ctype.h>

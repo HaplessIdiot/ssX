@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86bigfont.h,v 1.1 2000/02/08 17:18:25 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86bigfont.h,v 1.2tsi Exp $ */
 /*
  * Declarations for the BIGFONT extension.
  *
@@ -24,7 +24,7 @@
 
 _XFUNCPROTOBEGIN
 
-#include "font.h"
+#include <X11/fonts/font.h>
 
 extern void XFree86BigfontExtensionInit(void);
 extern void XF86BigfontFreeFontShm(FontPtr);

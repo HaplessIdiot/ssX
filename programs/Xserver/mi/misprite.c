@@ -28,16 +28,16 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/programs/Xserver/mi/misprite.c,v 3.11 2002/12/09 04:10:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/misprite.c,v 3.12tsi Exp $ */
 
-# include   "X.h"
-# include   "Xproto.h"
+# include   <X11/X.h>
+# include   <X11/Xproto.h>
 # include   "misc.h"
 # include   "pixmapstr.h"
 # include   "input.h"
 # include   "mi.h"
 # include   "cursorstr.h"
-# include   "font.h"
+# include   <X11/fonts/font.h>
 # include   "scrnintstr.h"
 # include   "colormapst.h"
 # include   "windowstr.h"
@@ -45,7 +45,7 @@ in this Software without prior written authorization from The Open Group.
 # include   "mipointer.h"
 # include   "mispritest.h"
 # include   "dixfontstr.h"
-# include   "fontstruct.h"
+# include   <X11/fonts/fontstruct.h>
 #ifdef RENDER
 # include   "mipict.h"
 #endif

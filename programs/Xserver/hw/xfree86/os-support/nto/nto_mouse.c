@@ -1,10 +1,10 @@
 /*
  * Written by Frank Liu Oct 10, 2001
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/nto/nto_mouse.c,v 1.2 2003/11/17 22:20:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/nto/nto_mouse.c,v 1.3tsi Exp $ */
 
 
-#include "X.h"
+#include <X11/X.h>
 #include "xf86.h"
 #include "xf86Xinput.h"
 #include "xf86OSmouse.h"

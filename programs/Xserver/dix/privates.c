@@ -25,9 +25,9 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/dix/privates.c,v 3.8 2001/12/14 19:59:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/privates.c,v 3.9tsi Exp $ */
 
-#include "X.h"
+#include <X11/X.h>
 #include "scrnintstr.h"
 #include "misc.h"
 #include "os.h"

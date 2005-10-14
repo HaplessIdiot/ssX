@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.h,v 1.13 2003/10/30 17:37:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.h,v 1.14tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -43,7 +43,7 @@
 #include "xf86DDC.h"
 
 #define _XF86MISC_SERVER_
-#include "xf86misc.h"
+#include <X11/extensions/xf86misc.h>
 
 typedef struct
 {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.22 2004/02/13 23:58:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.23tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -75,8 +75,8 @@
 
 #define XK_TECHNICAL
 #define	XK_KATAKANA
-#include "keysym.h"
-#include "XF86keysym.h"
+#include <X11/keysym.h>
+#include <X11/XF86keysym.h>
 
 #define GLYPHS_PER_KEY	4
 #define NUM_KEYCODES	248

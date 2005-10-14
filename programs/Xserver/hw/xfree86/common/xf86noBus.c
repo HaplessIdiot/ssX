@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86noBus.c,v 1.3 2004/02/13 23:58:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86noBus.c,v 1.4tsi Exp $ */
 
 /*
  * Copyright (c) 2000-2002 by The XFree86 Project, Inc.
@@ -54,7 +54,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "X.h"
+#include <X11/X.h>
 #include "os.h"
 #include "xf86.h"
 #include "xf86Priv.h"

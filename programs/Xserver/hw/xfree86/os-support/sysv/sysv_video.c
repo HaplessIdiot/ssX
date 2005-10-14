@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.20tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.21tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -25,7 +25,7 @@
  */
 /* $XConsortium: sysv_video.c /main/8 1996/10/25 11:38:09 kaleb $ */
 
-#include "X.h"
+#include <X11/X.h>
 
 #define _NEED_SYSI86
 #include "xf86.h"

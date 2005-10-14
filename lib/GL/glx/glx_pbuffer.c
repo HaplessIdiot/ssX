@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glx_pbuffer.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/glx_pbuffer.c,v 1.3tsi Exp $ */
 /*
  * (C) Copyright IBM Corporation 2004
  * All Rights Reserved.
@@ -31,8 +31,8 @@
  */
 
 #include "glxclient.h"
-#include <extutil.h>
-#include <Xext.h>
+#include <X11/extensions/extutil.h>
+#include <X11/extensions/Xext.h>
 #include <assert.h>
 #include <string.h>
 #include "glapi.h"

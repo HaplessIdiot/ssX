@@ -1,14 +1,8 @@
-XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:53:54 cpqbld Exp $
-
-
-
-
-XCOMM $XFree86: xc/programs/lbxproxy/di/Imakefile,v 1.2tsi Exp $
+XCOMM $XFree86: xc/programs/lbxproxy/di/Imakefile,v 1.3tsi Exp $
 
 #include <Server.tmpl>
 
-INCLUDES = -I../include -I$(TOP)/include -I$(EXTINCSRC) \
-           -I../../../include/extensions
+INCLUDES = -I../include
 
     SRCS = main.c dispatch.c wire.c globals.c \
 		utils.c tables.c init.c \

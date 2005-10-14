@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbwindow.c,v 3.1 2003/09/13 21:33:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbwindow.c,v 3.2tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -48,7 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
+#include <X11/X.h>
 #include "scrnintstr.h"
 #include "windowstr.h"
 #include "afb.h"

@@ -30,7 +30,7 @@
 
 Notice===
  */
-/* $XFree86: xc/lib/font/FreeType/xttcap.c,v 1.1 2003/10/19 18:53:50 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/xttcap.c,v 1.2tsi Exp $ */
 
 /*
 #include "xttversion.h"
@@ -45,8 +45,8 @@ static char const * const releaseID =
 #include <ctype.h>
 #include <math.h>
 #else
-#include "Xmd.h"
-#include "Xdefs.h"
+#include <X11/Xmd.h>
+#include <X11/Xdefs.h>
 #include "xf86_ansic.h"
 #endif
 /*

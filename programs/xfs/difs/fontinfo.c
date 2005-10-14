@@ -1,4 +1,4 @@
-/* $Xorg: fontinfo.c,v 1.4 2001/02/09 02:05:42 xorgcvs Exp $ */
+/* $XFree86: xc/programs/xfs/difs/fontinfo.c,v 1.11tsi Exp $ */
 /*
  * font data query
  */
@@ -46,15 +46,14 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/fontinfo.c,v 1.10 2001/12/14 20:01:34 dawes Exp $ */
 
-#include        "FS.h"
-#include        "FSproto.h"
+#include        <X11/fonts/FS.h>
+#include        <X11/fonts/FSproto.h>
 #include        <stdio.h>
 #include        <X11/Xos.h>
 #include        "clientstr.h"
 #include        "difsfnst.h"
-#include        "fontstruct.h"
+#include        <X11/fonts/fontstruct.h>
 #include        "closestr.h"
 #include        "globals.h"
 #include	"difs.h"

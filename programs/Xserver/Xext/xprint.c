@@ -63,13 +63,13 @@ copyright holders.
 **    *********************************************************
 **
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xprint.c,v 1.15 2003/10/28 23:08:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xprint.c,v 1.16tsi Exp $ */
 
 #define _XP_PRINT_SERVER_
-#include "X.h"
-#include "Xos.h"
+#include <X11/X.h>
+#include <X11/Xos.h>
 #define NEED_EVENTS
-#include "Xproto.h"
+#include <X11/Xproto.h>
 #undef NEED_EVENTS
 #include "misc.h"
 #include "windowstr.h"
@@ -77,9 +77,9 @@ copyright holders.
 #include "pixmapstr.h"
 #include "extnsionst.h"
 #include "dixstruct.h"
-#include "Xatom.h"
-#include "Print.h"
-#include "Printstr.h"
+#include <X11/Xatom.h>
+#include <X11/extensions/Print.h>
+#include <X11/extensions/Printstr.h>
 #include "../Xprint/DiPrint.h"
 #include "../Xprint/attributes.h"
 #include "modinit.h"

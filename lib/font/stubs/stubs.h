@@ -1,10 +1,10 @@
-/* $XFree86: xc/lib/font/stubs/stubs.h,v 1.3 1999/12/15 01:14:36 robin Exp $ */
+/* $XFree86: xc/lib/font/stubs/stubs.h,v 1.4tsi Exp $ */
 
 /* This directory includes dummy entry for bdftopcf and mkfontdir */
 
 #include <stdio.h>
 #include "fntfilst.h"
-#include "font.h"
+#include <X11/fonts/font.h>
 
 
 #ifndef True

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xrandr/Imakefile,v 1.1 2001/05/23 03:29:44 keithp Exp $
+XCOMM $XFree86: xc/lib/Xrandr/Imakefile,v 1.2tsi Exp $
 
 
 #define DoNormalLib NormalLibXrandr
@@ -21,7 +21,6 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
       DEFINES = $(ALLOC_DEFINES)
-     INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
          SRCS = Xrandr.c
          OBJS = Xrandr.o
      LINTLIBS = $(LINTXLIB)

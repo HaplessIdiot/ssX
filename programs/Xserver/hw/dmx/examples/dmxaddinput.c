@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/examples/dmxaddinput.c,v 1.1tsi Exp $ */
 /*
  * Copyright 2003,2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -35,7 +35,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <X11/Xlib.h>
-#include "dmxext.h"
+#include <X11/extensions/dmxext.h>
 
 int main(int argc, char **argv)
 {

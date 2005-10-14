@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfb8bit.c,v 1.5 2001/12/14 19:59:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb8bit.c,v 1.6tsi Exp $ */
 /*
 
 Copyright 1989, 1994, 1998  The Open Group
@@ -36,9 +36,9 @@ from The Open Group.
 
 #if PSZ == 8
 
-#include	"X.h"
-#include	"Xmd.h"
-#include	"Xproto.h"
+#include	<X11/X.h>
+#include	<X11/Xmd.h>
+#include	<X11/Xproto.h>
 #include	"gcstruct.h"
 #include	"windowstr.h"
 #include	"scrnintstr.h"

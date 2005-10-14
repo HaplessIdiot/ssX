@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiproto.h,v 1.9 2004/01/05 16:42:04 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiproto.h,v 1.10tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -24,7 +24,7 @@
 #ifndef ___ATIPROTO_H___
 #define ___ATIPROTO_H___ 1
 
-#include "Xfuncproto.h"
+#include <X11/Xfuncproto.h>
 
 /*
  * This isn't quite ready for Xfuncproto.h yet.

@@ -3,13 +3,13 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.21 2005/01/20 17:53:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.22tsi Exp $ */
 
 
 #define NEED_REPLIES
 #define NEED_EVENTS
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "misc.h"
 #include "dixstruct.h"
 #include "dixevents.h"
@@ -20,8 +20,8 @@
 #include "scrnintstr.h"
 #include "servermd.h"
 #define _XF86DGA_SERVER_
-#include "xf86dga.h"
-#include "xf86dgastr.h"
+#include <X11/extensions/xf86dga.h>
+#include <X11/extensions/xf86dgastr.h>
 #include "swaprep.h"
 #include "dgaproc.h"
 #include "xf86dgaext.h"

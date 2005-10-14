@@ -31,7 +31,7 @@
  *		Harold L Hunt II
  *		Kensuke Matsuzaki
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.37 2003/10/02 13:30:09 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.38tsi Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -142,10 +142,10 @@
 #endif /* MAP_FILE */
 #endif /* HAS_MMAP */
 
-#include "X.h"
-#include "Xproto.h"
-#include "Xos.h"
-#include "Xprotostr.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
+#include <X11/Xos.h>
+#include <X11/Xprotostr.h>
 #include "scrnintstr.h"
 #include "pixmapstr.h"
 #include "pixmap.h"
@@ -164,7 +164,7 @@
 #include "mibstore.h"
 #include "input.h"
 #include "mipointer.h"
-#include "keysym.h"
+#include <X11/keysym.h>
 #include "mibstore.h"
 #include "micoord.h"
 #include "dix.h"

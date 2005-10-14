@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/shader/Imakefile,v 1.1 2004/12/10 16:07:00 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/shader/Imakefile,v 1.2tsi Exp $
 
 #if DoLoadableServer
 #if !BuildModuleInSubdir
@@ -29,10 +29,11 @@ SUBDIRS = module
 		-I$(MESASRCDIR)/src/mesa/glapi \
 		-I$(MESASRCDIR)/src/mesa/shader \
 		-I$(MESASRCDIR)/include \
-                -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-                -I$(SERVERSRC)/GL/include -I$(SERVERSRC)/GL/glx \
-                -I$(LIBSRC)/GL/include \
-                -I$(XF86SRC) -I$(INCLUDESRC)
+		-I$(SERVERSRC)/include \
+		-I$(SERVERSRC)/GL/include \
+		-I$(SERVERSRC)/GL/glx \
+		-I$(LIBSRC)/GL/include \
+		-I$(XF86SRC)
 
       DEFINES = $(GLX_DEFINES) /*-DUSE_X86_ASM*/ /*-DUSE_SPARC_ASM*/
 

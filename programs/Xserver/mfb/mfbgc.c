@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbgc.c,v 1.10 2003/07/16 03:35:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbgc.c,v 1.11tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,12 +46,12 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
-#include "Xmd.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
+#include <X11/Xproto.h>
 #include "mfb.h"
 #include "dixfontstr.h"
-#include "fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 #include "gcstruct.h"
 #include "windowstr.h"
 #include "pixmapstr.h"

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.35 2003/11/06 18:38:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.36tsi Exp $ */
 
 
 /* All drivers should typically include these */
@@ -60,7 +60,7 @@
 #include "fb.h"
 
 #include "xf86xv.h"
-#include "Xv.h"
+#include <X11/extensions/Xv.h>
 
 /* driver specific includes */
 #include "i128.h"

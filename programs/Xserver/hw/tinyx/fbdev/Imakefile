@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/fbdev/Imakefile,v 1.5 2001/05/24 19:31:46 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/fbdev/Imakefile,v 1.1tsi Exp $
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -56,7 +56,7 @@ SRCS = 	fbdev.c fbinit.c
 
 OBJS = 	fbdev.o fbinit.o
 
-INCLUDES = $(TINYXINCLUDES) -I.
+INCLUDES = $(TINYXINCLUDES)
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(fbdev,$(OBJS))

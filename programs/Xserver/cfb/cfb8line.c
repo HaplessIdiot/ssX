@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfb8line.c,v 3.20 2004/09/15 15:01:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb8line.c,v 3.21tsi Exp $ */
 
 /*
 Copyright 1990, 1998  The Open Group
@@ -76,7 +76,7 @@ in this Software without prior written authorization from The Open Group.
  */
 
 
-#include "X.h"
+#include <X11/X.h>
 
 #include "gcstruct.h"
 #include "windowstr.h"

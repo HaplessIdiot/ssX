@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/tinyx/linux/mouse.c,v 1.6 2002/08/02 16:11:35 keithp Exp $
+ * $XFree86: xc/programs/Xserver/hw/tinyx/linux/mouse.c,v 1.1tsi Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -69,12 +69,12 @@
  */
 
 #define NEED_EVENTS
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "inputstr.h"
 #include "scrnintstr.h"
 #include "tinyx.h"
-#include "Xpoll.h"
+#include <X11/Xpoll.h>
 #include <errno.h>
 #include <termios.h>
 

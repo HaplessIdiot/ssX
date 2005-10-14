@@ -1,4 +1,4 @@
-/* $Xorg: bdftopcf.c,v 1.4 2001/02/09 02:05:28 xorgcvs Exp $ */
+/* $XFree86: xc/programs/bdftopcf/bdftopcf.c,v 1.6tsi Exp $ */
 /*
 
 Copyright 1991, 1993, 1998  The Open Group
@@ -27,12 +27,10 @@ from The Open Group.
 
 */
 
-/* $XFree86: xc/programs/bdftopcf/bdftopcf.c,v 1.5 2001/12/14 20:00:39 dawes Exp $ */
-
 #include <X11/X.h>
 #include <X11/Xproto.h>
 #include "fontmisc.h"
-#include "fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 #include "fntfilio.h"
 #include "fntfil.h"
 #include "bdfint.h"

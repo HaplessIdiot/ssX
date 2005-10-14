@@ -1,4 +1,4 @@
-/* $Xorg: fserve.c,v 1.4 2001/02/09 02:04:02 xorgcvs Exp $ */
+/* $XFree86: xc/lib/font/fc/fserve.c,v 3.27tsi Exp $ */
 /*
 
 Copyright 1990, 1998  The Open Group
@@ -24,7 +24,6 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fc/fserve.c,v 3.26tsi Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices
@@ -57,12 +56,12 @@ in this Software without prior written authorization from The Open Group.
 #endif
 #include	"X11/Xtrans.h"
 #include	"X11/Xpoll.h"
-#include	"FS.h"
-#include	"FSproto.h"
+#include	<X11/fonts/FS.h>
+#include	<X11/fonts/FSproto.h>
 #include	<X11/X.h>
 #include	<X11/Xos.h>
 #include	"fontmisc.h"
-#include	"fontstruct.h"
+#include	<X11/fonts/fontstruct.h>
 #include	"fservestr.h"
 #include	"fontutil.h"
 #include	<errno.h>

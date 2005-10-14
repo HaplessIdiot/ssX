@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.19 2003/11/17 22:20:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.20tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -27,8 +27,8 @@ in this Software without prior written authorization from The Open Group.
 
 #define NEED_REPLIES
 #define NEED_EVENTS
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "misc.h"
 #include "os.h"
 #include "windowstr.h"
@@ -39,7 +39,7 @@ in this Software without prior written authorization from The Open Group.
 #include "resource.h"
 #include "opaque.h"
 #define _SHAPE_SERVER_	/* don't want Xlib structures */
-#include "shapestr.h"
+#include <X11/extensions/shapestr.h>
 #include "regionstr.h"
 #include "gcstruct.h"
 #ifdef EXTMODULE

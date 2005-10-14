@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.18 2001/03/21 16:21:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/dri.h,v 1.1tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -37,7 +37,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifndef _DRI_H_
 
-#include "Xdefs.h"
+#include <X11/Xdefs.h>
 #include "scrnintstr.h"
 #define _APPLEDRI_SERVER_
 #include "appledri.h"

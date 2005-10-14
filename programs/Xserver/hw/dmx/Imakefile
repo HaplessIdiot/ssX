@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/dmx/Imakefile,v 1.8tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/dmx/Imakefile,v 1.9tsi Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -103,10 +103,9 @@ VENDOR_DEFINES = $(VENDOR_STRING) $(VENDOR_RELEASE)
       OSVENDOR = OSVendor
 OSNAME_DEFINES = -DOSNAME='"$(OSNAME)"' -DOSVENDOR='"$(OSVENDOR)"'
 
-INCLUDES = -I. -I$(XBUILDINCDIR) -I$(FONTINCSRC) \
-	   -I../../mi -I../../include -I../../os \
+INCLUDES = -I../../mi -I../../include -I../../os \
 	   -I../../fb -I../../miext/shadow -I../../render \
-	   -I$(EXTINCSRC) -I$(XINCLUDESRC) -I$(SERVERSRC)/Xext
+	   -I$(SERVERSRC)/Xext
 
 DEFINES = $(OS_DEFINES) $(EXT_DEFINES) -DDMXEXT -DXTEST \
 	  $(DMX_GLX_DEFINES) $(DMX_DEFINES) $(VENDOR_DEFINES) \

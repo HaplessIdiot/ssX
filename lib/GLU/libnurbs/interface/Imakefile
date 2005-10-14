@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GLU/libnurbs/interface/Imakefile,v 1.2 2001/01/15 22:25:09 dawes Exp $
+XCOMM $XFree86: xc/lib/GLU/libnurbs/interface/Imakefile,v 1.3tsi Exp $
 
 XCOMM License Applicability. Except to the extent portions of this file are
 XCOMM made subject to an alternative license as permitted in the SGI Free
@@ -65,12 +65,9 @@ OBJS = \
 	insurfeval.o
 
 INCLUDES = \
-	-I. \
 	-I../internals \
 	-I../nurbtess \
-	-I../../include \
-	-I$(TOP)/include \
-	-I$(TOP)/include/GL
+	-I../../include
 
 DEFINES = \
 	-DLIBRARYBUILD \

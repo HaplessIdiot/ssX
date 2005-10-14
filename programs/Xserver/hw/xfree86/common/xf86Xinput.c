@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.70 2003/11/03 05:11:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.71tsi Exp $ */
 /*
  * Copyright 1995-1999 by Frederic Lepied, France. <Lepied@XFree86.org>
  *                                                                            
@@ -69,11 +69,11 @@
  */
 /* $XConsortium: xf86Xinput.c /main/14 1996/10/27 11:05:25 kaleb $ */
 
-#include "Xfuncproto.h"
-#include "Xmd.h"
+#include <X11/Xfuncproto.h>
+#include <X11/Xmd.h>
 #ifdef XINPUT
-#include "XI.h"
-#include "XIproto.h"
+#include <X11/extensions/XI.h>
+#include <X11/extensions/XIproto.h>
 #endif
 #include "xf86.h"
 #include "xf86Priv.h"
@@ -86,7 +86,7 @@
 
 #ifdef DPMSExtension
 #define DPMS_SERVER
-#include "extensions/dpms.h"
+#include <X11/extensions/dpms.h>
 #include "dpmsproc.h"
 #endif
 
@@ -106,7 +106,7 @@
 #include <stdarg.h>
 
 #include "osdep.h"		/* EnabledDevices */
-#include "Xpoll.h"
+#include <X11/Xpoll.h>
 #include "xf86_OSproc.h"	/* sigio stuff */
 
 /******************************************************************************

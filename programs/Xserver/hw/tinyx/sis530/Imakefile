@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/sis530/Imakefile,v 1.2 2000/09/03 05:11:19 keithp Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/sis530/Imakefile,v 1.1tsi Exp $
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -52,7 +52,7 @@ SRCS = 	sis.c sisclock.c siscmap.c siscurs.c sisdraw.c sisstub.c
 
 OBJS = 	sis.o sisclock.o siscmap.o siscurs.o sisdraw.o sisstub.o
 
-INCLUDES = -I. $(TINYXINCLUDES)
+INCLUDES = $(TINYXINCLUDES)
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(sis530,$(OBJS))

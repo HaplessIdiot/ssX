@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/miext/layer/Imakefile,v 1.5 2004/03/18 07:07:11 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/miext/layer/Imakefile,v 1.6tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -73,9 +73,8 @@ OBJS = layergc.o \
        layerwin.o \
        $(XFMODOBJ)
 
-   INCLUDES = -I. -I../shadow -I../../mi -I../../fb -I../../include -I$(XINCLUDESRC) \
-	      -I$(FONTINCSRC) -I$(XF86SRC)/common $(EXTRAINCLUDES) \
-	      -I../../render -I$(EXTINCSRC)
+   INCLUDES = -I../shadow -I../../mi -I../../fb -I../../include \
+	      -I$(XF86SRC)/common $(EXTRAINCLUDES) -I../../render
    LINTLIBS = ../../dix/llib-ldix.ln ../../os/llib-los.ln \
 	     ../../mi/llib-lmi.ln
 

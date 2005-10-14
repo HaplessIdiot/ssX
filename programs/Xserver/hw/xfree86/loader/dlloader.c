@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.13 2003/10/15 16:29:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.14tsi Exp $ */
 
 /*
  * Copyright (c) 1997 The XFree86 Project, Inc.
@@ -51,7 +51,7 @@
 #include <stdlib.h>
 #include <dlfcn.h>
 
-#include "Xos.h"
+#include <X11/Xos.h>
 #include "os.h"
 
 #include "sym.h"

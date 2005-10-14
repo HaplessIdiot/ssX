@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/mitmiscstr.h,v 1.3tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -27,12 +27,10 @@ in this Software without prior written authorization from The Open Group.
 
 /* RANDOM CRUFT! THIS HAS NO OFFICIAL X CONSORTIUM OR X PROJECT TEAM BLESSING */
 
-/* $Xorg: mitmiscstr.h,v 1.4 2001/02/09 02:03:24 xorgcvs Exp $ */
-
 #ifndef _MITMISCSTR_H_
 #define _MITMISCSTR_H_
 
-#include "MITMisc.h"
+#include <X11/extensions/MITMisc.h>
 
 #define MITMISCNAME "MIT-SUNDRY-NONSTANDARD"
 

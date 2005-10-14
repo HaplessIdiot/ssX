@@ -29,7 +29,7 @@
  *     Header file for DIX-related DBE
  *
  *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/dbe/dbestruct.h,v 3.2 2003/11/17 22:20:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dbe/dbestruct.h,v 3.3tsi Exp $ */
 
 
 #ifndef DBE_STRUCT_H
@@ -39,7 +39,7 @@
 /* INCLUDES */
 
 #define NEED_DBE_PROTOCOL
-#include "Xdbeproto.h"
+#include <X11/extensions/Xdbeproto.h>
 #include "windowstr.h"
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbmisc.c,v 3.0 1996/08/18 01:45:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbmisc.c,v 3.1tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -47,7 +47,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
+#include <X11/X.h>
 #include "misc.h"
 #include "cursor.h"
 #include "scrnintstr.h"

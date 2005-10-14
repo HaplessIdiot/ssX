@@ -1,5 +1,4 @@
-/* $Xorg: pcf.h,v 1.4 2001/02/09 02:04:02 xorgcvs Exp $ */
-
+/* $XFree86: xc/lib/font/bitmap/pcf.h,v 1.5tsi Exp $ */
 /*
 
 Copyright 1991, 1998  The Open Group
@@ -27,7 +26,6 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/pcf.h,v 1.4 2001/12/14 19:56:47 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -35,6 +33,9 @@ from The Open Group.
 
 #ifndef _PCF_H_
 #define _PCF_H_
+
+#include <X11/fonts/font.h>
+#include "fntfilio.h"
 
 /*
  * Information used to read/write PCF fonts

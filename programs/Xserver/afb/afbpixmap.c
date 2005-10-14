@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbpixmap.c,v 3.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbpixmap.c,v 3.3tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -53,7 +53,7 @@ SOFTWARE.
    on a monchrome device, a pixmap is a bitmap.
 */
 
-#include "Xmd.h"
+#include <X11/Xmd.h>
 #include "scrnintstr.h"
 #include "pixmapstr.h"
 #include "maskbits.h"

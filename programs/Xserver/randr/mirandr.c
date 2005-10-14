@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/mirandr.c,v 1.5 2001/06/04 09:45:40 keithp Exp $
+ * $XFree86: xc/programs/Xserver/randr/mirandr.c,v 1.7tsi Exp $
  *
  * Copyright © 2000, Compaq Computer Corporation, 
  * Copyright © 2002, Hewlett Packard, Inc.
@@ -27,7 +27,7 @@
 
 #include "scrnintstr.h"
 #include "mi.h"
-#include "randr.h"
+#include <X11/extensions/randr.h>
 #include "randrstr.h"
 #include <stdio.h>
 

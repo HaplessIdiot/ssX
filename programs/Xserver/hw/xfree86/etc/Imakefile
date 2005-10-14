@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/24 1996/10/28 04:24:12 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.52tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.53tsi Exp $
 #include <Server.tmpl>
 
 #if SystemV
@@ -54,8 +54,8 @@ XINST = Xinstall.sh
        FILES = $(CONFIGFILES) $(TERMFILES) \
                $(PATCHFILES) $(XDMCONF) \
                xmodmap.std $(MISCFILES) $(XINST)
-    INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
-	       -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(XF86SRC)/scanpci \
+    INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) \
+	       -I$(SERVERSRC)/include -I$(XF86SRC)/scanpci \
 	       -I$(XF86SRC)/dummylib -I$(XF86OSSRC)/bus
 
 #ifdef ServerExtraSysLibs

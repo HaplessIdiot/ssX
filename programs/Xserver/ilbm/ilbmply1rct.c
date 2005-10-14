@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/ilbm/ilbmply1rct.c,v 3.0 1996/08/18 01:54:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmply1rct.c,v 3.1tsi Exp $ */
 /*
  * $XConsortium: ilbmply1rct.c,v 1.9 94/04/17 20:28:28 dpw Exp $
  *
@@ -31,7 +31,7 @@ in this Software without prior written authorization from the X Consortium.
 /* Modified jun 95 by Geert Uytterhoeven (Geert.Uytterhoeven@cs.kuleuven.ac.be)
    to use interleaved bitplanes instead of normal bitplanes */
 
-#include "X.h"
+#include <X11/X.h>
 
 #include "gcstruct.h"
 #include "windowstr.h"

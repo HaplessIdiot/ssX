@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/7 1996/09/28 17:24:18 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/Imakefile,v 3.22 2004/03/31 18:07:05 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/Imakefile,v 3.23tsi Exp $
 #include <Server.tmpl>
 
 BIOS_MOD = os2_bios
@@ -21,8 +21,8 @@ OBJS = os2_init.o os2_video.o os2_io.o $(BIOS_MOD).o \
        vidmem.o sigiostubs.o pm_noop.o kmod_noop.o agp_noop.o os2_serial.o \
        os2_kbd.o
 
-INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
-           -I$(SERVERSRC)/mi -I$(XINCLUDESRC) -I$(EXTINCSRC)
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/include \
+           -I$(SERVERSRC)/mi
 
 RESDEFINES = -DUSESTDRES
 

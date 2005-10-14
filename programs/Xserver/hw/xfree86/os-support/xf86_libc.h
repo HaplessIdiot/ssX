@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.65tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.66tsi Exp $ */
 /*
  * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -64,7 +64,7 @@
 #ifndef	XF86_LIBC_H
 #define XF86_LIBC_H 1
 
-#include "Xfuncs.h"
+#include <X11/Xfuncs.h>
 #include <stddef.h>
 
 /*

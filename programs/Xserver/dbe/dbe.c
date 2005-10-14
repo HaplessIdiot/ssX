@@ -29,14 +29,14 @@
  *     DIX DBE code
  *
  *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/dbe/dbe.c,v 3.11 2001/10/28 03:33:04 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dbe/dbe.c,v 3.12tsi Exp $ */
 
 
 /* INCLUDES */
 
 #define NEED_EVENTS
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "scrnintstr.h"
 #include "extnsionst.h"
 #include "gcstruct.h"

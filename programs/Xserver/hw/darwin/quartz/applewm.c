@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/applewm.c,v 1.2 2003/09/16 00:36:13 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/applewm.c,v 1.3tsi Exp $ */
 /**************************************************************************
 
 Copyright (c) 2002 Apple Computer, Inc. All Rights Reserved.
@@ -40,10 +40,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "windowstr.h"
 #include "servermd.h"
 #include "swaprep.h"
-#include "Xatom.h"
+#include <X11/Xatom.h>
 #include "darwin.h"
 #define _APPLEWM_SERVER_
-#include "applewmstr.h"
+#include <X11/extensions/applewmstr.h>
 #include "applewmExt.h"
 
 #define DEFINE_ATOM_HELPER(func,atom_name)			\

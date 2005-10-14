@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplrrop.c,v 3.0tsi Exp $ */
 /*
  * $XConsortium: iplrrop.c,v 1.8 94/04/17 20:28:59 dpw Exp $
  *
@@ -33,9 +33,9 @@ interleaved planes */
 
 /* ipl reduced rasterop computations */
 
-#include "X.h"
-#include "Xmd.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
+#include <X11/Xproto.h>
 #include "ipl.h"
 
 #include "iplmskbits.h"

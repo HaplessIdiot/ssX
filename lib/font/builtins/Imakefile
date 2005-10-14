@@ -1,15 +1,14 @@
-XCOMM $XFree86: xc/lib/font/builtins/Imakefile,v 1.3tsi Exp $
+XCOMM $XFree86: xc/lib/font/builtins/Imakefile,v 1.4tsi Exp $
 XCOMM 
 XCOMM 
 XCOMM $XConsortium: Imakefile /main/14 1996/11/03 19:58:41 kaleb $
 
 #include <Server.tmpl>
 
-   INCLUDES = -I$(FONTINCSRC) -I../include -I$(SERVERSRC)/include
-    HEADERS = 
+   INCLUDES = -I../include -I../bitmap
 
-       SRCS = dir.c	  file.c    fonts.c   fpe.c	render.c
-       OBJS = dir.o	  file.o    fonts.o   fpe.o	render.o
+       SRCS = dir.c file.c fonts.c fpe.c render.c
+       OBJS = dir.o file.o fonts.o fpe.o render.o
 
 #define DoNormalLib NormalLibFont
 #define DoSharedLib SharedLibFont

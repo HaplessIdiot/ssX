@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.31 2004/02/13 23:58:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.32tsi Exp $ */
 /*
  * Copyright 1993-2003 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -75,7 +75,7 @@
 
 /* $XConsortium: posix_tty.c /main/7 1996/10/19 18:07:47 kaleb $ */
 
-#include "X.h"
+#include <X11/X.h>
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"

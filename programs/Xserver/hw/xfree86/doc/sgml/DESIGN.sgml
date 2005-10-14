@@ -27,7 +27,7 @@
 
 <title>XFree86&reg; server 4.x Design (DRAFT)
 <author>The XFree86 Project, Inc
-<date>18 August 2005
+<date>13 October 2005
 
 
 
@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.57tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.58tsi Exp $
 </ident>
 
 
@@ -2791,7 +2791,7 @@ All modules must NOT include any system include files, or the following:
     &s.code;"xf86Priv.h"&nl;
     "xf86Privstr.h"&nl;
     "xf86_OSlib.h"&nl;
-    "Xos.h"&e.code;
+    <X11/Xos.h>&e.code;
  </quote>
 
 In addition, "xf86_libc.h" must not be included explicitly.  It is
@@ -6384,7 +6384,7 @@ of a staticly built server.
     "xf86Privstr.h"&nl;
     "xf86_libc.h"&nl;
     "xf86_OSlib.h"&nl;
-    "Xos.h"&e.code;&nl;
+    <X11/Xos.h>&e.code;&nl;
     any OS header
  </quote>
 

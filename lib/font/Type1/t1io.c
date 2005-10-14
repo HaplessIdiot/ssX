@@ -1,4 +1,4 @@
-/* $Xorg: t1io.c,v 1.3 2000/08/17 19:46:33 cpqbld Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1io.c,v 3.9tsi Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -45,7 +45,6 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/t1io.c,v 3.8 2001/01/17 19:43:23 dawes Exp $ */
 /*******************************************************************
 *  I/O package for Type 1 font reading
 ********************************************************************/
@@ -58,8 +57,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #else
-#include "Xdefs.h"	/* Bool declaration */
-#include "Xmd.h"	/* INT32 declaration */
+#include <X11/Xdefs.h>	/* Bool declaration */
+#include <X11/Xmd.h>	/* INT32 declaration */
 #include "xf86_ansic.h"
 #endif
 #include "t1stdio.h"
@@ -67,7 +66,7 @@
 #ifdef WIN32
 #include <X11/Xw32defs.h>
 #endif
-#include "Xdefs.h"
+#include <X11/Xdefs.h>
 
 /* Constants and variables used in the decryption */
 #define c1 ((unsigned short)52845)

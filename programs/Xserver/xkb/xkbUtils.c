@@ -71,7 +71,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/xkb/xkbUtils.c,v 3.19 2005/04/14 12:31:58 pascal Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbUtils.c,v 3.20tsi Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -85,8 +85,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "inputstr.h"
 
 #define	XKBSRV_NEED_FILE_FUNCS
-#include "XKBsrv.h"
-#include "extensions/XKBgeom.h"
+#include <X11/extensions/XKBsrv.h>
+#include <X11/extensions/XKBgeom.h>
 #include "xkb.h"
 
 #ifdef MODE_SWITCH

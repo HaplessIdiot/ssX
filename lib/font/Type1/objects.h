@@ -1,4 +1,4 @@
-/* $Xorg: objects.h,v 1.3 2000/08/17 19:46:31 cpqbld Exp $ */
+/* $XFree86: xc/lib/font/Type1/objects.h,v 1.15tsi Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -43,12 +43,11 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/objects.h,v 1.14tsi Exp $ */
 /*SHARED*/
  
 /*END SHARED*/
-#include <Xdefs.h>
-#include <Xfuncproto.h>
+#include <X11/Xdefs.h>
+#include <X11/Xfuncproto.h>
 #ifndef FONTMODULE
 #include <stdlib.h>
 #endif

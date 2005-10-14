@@ -24,7 +24,7 @@ in this Software without prior written authorization from The Open Group.
 
 ********************************************************/
 
-/* $Xorg: shapestr.h,v 1.4 2001/02/09 02:03:24 xorgcvs Exp $ */
+/* $XFree86$ */
 
 #ifndef _SHAPESTR_H_
 #define _SHAPESTR_H_
@@ -34,7 +34,7 @@ in this Software without prior written authorization from The Open Group.
  * These would really be in SHAPE's X.h and Xproto.h equivalents
  */
 
-#include "shape.h"
+#include <X11/extensions/shape.h>
 
 #define Window CARD32
 #define Time CARD32

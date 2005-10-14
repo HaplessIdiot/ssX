@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbbitblt.c,v 3.6 2003/11/10 18:21:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbbitblt.c,v 3.7tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -48,8 +48,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
-#include "Xprotostr.h"
+#include <X11/X.h>
+#include <X11/Xprotostr.h>
 
 #include "regionstr.h"
 #include "gcstruct.h"

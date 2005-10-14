@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/stdPci.c,v 3.4 2003/08/24 17:37:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/stdPci.c,v 3.5tsi Exp $ */
 /*
  * Copyright (c) 1999-2003 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -49,7 +49,7 @@
 #ifdef __UNIXOS2__
 # define I_NEED_OS2_H
 #endif
-#include "X.h"
+#include <X11/X.h>
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86Privstr.h"

@@ -30,13 +30,13 @@ This work benefited from earlier work done by Martha Zimet of NCD
 and Jim Haggerty of Metheus.
 
 */
-/* $XFree86: xc/programs/Xserver/record/record.c,v 1.12 2003/11/17 22:20:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/record/record.c,v 1.13tsi Exp $ */
 
 #define NEED_EVENTS
 #include "dixstruct.h"
 #include "extnsionst.h"
 #define _XRECORD_SERVER_
-#include "recordstr.h"
+#include <X11/extensions/recordstr.h>
 #include "set.h"
 
 #ifndef XFree86LOADER

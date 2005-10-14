@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xi/getselev.c,v 3.5 2001/10/28 03:32:53 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/getselev.c,v 3.6tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -45,8 +45,6 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Xorg: getselev.c,v 1.4 2001/02/09 02:04:34 xorgcvs Exp $ */
-
 /***********************************************************************
  *
  * Extension function to get the current selected events for a given window.
@@ -55,10 +53,10 @@ SOFTWARE.
 
 #define	 NEED_EVENTS
 #define	 NEED_REPLIES
-#include "X.h"				/* for inputstr.h    */
-#include "Xproto.h"			/* Request macro     */
-#include "XI.h"
-#include "XIproto.h"
+#include <X11/X.h>				/* for inputstr.h    */
+#include <X11/Xproto.h>			/* Request macro     */
+#include <X11/extensions/XI.h>
+#include <X11/extensions/XIproto.h>
 #include "inputstr.h"			/* DeviceIntPtr	     */
 #include "windowstr.h"			/* window struct     */
 #include "extnsionst.h"

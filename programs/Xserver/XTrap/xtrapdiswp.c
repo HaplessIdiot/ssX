@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/XTrap/xtrapdiswp.c,v 1.1 2001/11/02 23:29:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XTrap/xtrapdiswp.c,v 1.2tsi Exp $ */
 /****************************************************************************
 Copyright 1987, 1988, 1989, 1990, 1991, 1992 by 
 
@@ -97,7 +97,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define NEED_EVENTS
 #include <X11/Xproto.h>
 #include <X11/Xprotostr.h>
-#include "xtrapdi.h"
+#include <X11/extensions/xtrapdi.h>
 #include "input.h"          /* Server DevicePtr definitions */
 #include "misc.h"
 #include "dixstruct.h"

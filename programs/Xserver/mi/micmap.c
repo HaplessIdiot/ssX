@@ -26,7 +26,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/mi/micmap.c,v 1.12 2004/06/30 20:21:46 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/micmap.c,v 1.13tsi Exp $ */
 
 /*
  * This is based on cfbcmap.c.  The functions here are useful independently
@@ -35,8 +35,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "scrnintstr.h"
 #include "colormapst.h"
 #include "resource.h"

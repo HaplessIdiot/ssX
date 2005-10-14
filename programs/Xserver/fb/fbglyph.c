@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbglyph.c,v 1.12tsi Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbglyph.c,v 1.13tsi Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -23,7 +23,7 @@
  */
 
 #include "fb.h"
-#include	"fontstruct.h"
+#include	<X11/fonts/fontstruct.h>
 #include	"dixfontstr.h"
 
 #define dummyScreen screenInfo.screens[0]

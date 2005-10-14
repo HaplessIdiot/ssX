@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/microtouch/Imakefile,v 1.7 2004/03/18 07:07:04 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/microtouch/Imakefile,v 1.8tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -54,8 +54,7 @@ OBJS = microtouch.o
 
 DRIVER = microtouch
 
-INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86SRC)/loader -I$(XF86OSSRC) \
-			-I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(EXTINCSRC)
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/include
 
 #if MakeHasPosixVariableSubstitutions
 SubdirLibraryRule($(OBJS))

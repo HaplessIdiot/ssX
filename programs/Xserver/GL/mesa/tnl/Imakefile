@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/tnl/Imakefile,v 1.2tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/tnl/Imakefile,v 1.3tsi Exp $
 
 #if DoLoadableServer
 #if !BuildModuleInSubdir
@@ -20,7 +20,6 @@ SUBDIRS = module
 #include "../../../../../../lib/GL/mesa/tnl/Imakefile.inc"
 #endif
 
-
          SRCS = $(MESA_TNL_SRCS)
          OBJS = $(MESA_TNL_OBJS)
 
@@ -32,10 +31,11 @@ SUBDIRS = module
 		-I$(MESASRCDIR)/src/mesa/shader \
 		-I$(MESASRCDIR)/src/mesa/tnl \
 		-I$(MESASRCDIR)/include \
-                -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-                -I$(SERVERSRC)/GL/include -I$(SERVERSRC)/GL/glx \
-                -I$(LIBSRC)/GL/include \
-                -I$(XF86SRC) -I$(INCLUDESRC)
+		-I$(SERVERSRC)/include \
+		-I$(SERVERSRC)/GL/include \
+		-I$(SERVERSRC)/GL/glx \
+		-I$(LIBSRC)/GL/include \
+		-I$(XF86SRC)
 
       DEFINES = $(GLX_DEFINES) /*-DUSE_X86_ASM*/ /*-DUSE_SPARC_ASM*/
 

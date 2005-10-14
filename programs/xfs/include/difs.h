@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xfs/include/difs.h,v 1.4 2001/08/01 00:45:04 tsi Exp $ */
+/* $XFree86: xc/programs/xfs/include/difs.h,v 1.5tsi Exp $ */
 /*
  * Copyright (C) 1999 The XFree86 Project, Inc.
  * All rights reserved.
@@ -50,7 +50,7 @@
 
 #include "difsfn.h"
 #include "globals.h"
-#include "fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 
 typedef int (*InitialFunc)(ClientPtr);
 typedef int (*ProcFunc)(ClientPtr);

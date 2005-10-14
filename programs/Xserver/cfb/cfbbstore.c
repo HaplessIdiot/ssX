@@ -1,5 +1,5 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbbstore.c,v 1.5 2001/01/17 22:36:34 dawes Exp $ */
-/*-
+/* $XFree86: xc/programs/Xserver/cfb/cfbbstore.c,v 1.6tsi Exp $ */
+/*
  * cfbbstore.c --
  *	Functions required by the backing-store implementation in MI.
  *
@@ -17,14 +17,14 @@
  */
 
 #include    "cfb.h"
-#include    "X.h"
+#include    <X11/X.h>
 #include    "mibstore.h"
 #include    "regionstr.h"
 #include    "scrnintstr.h"
 #include    "pixmapstr.h"
 #include    "windowstr.h"
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * cfbSaveAreas --
  *	Function called by miSaveAreas to actually fetch the areas to be
@@ -78,7 +78,7 @@ cfbSaveAreas(PixmapPtr pPixmap, RegionPtr prgnSave, int xorg, int yorg,
     DEALLOCATE_LOCAL (pPtsInit);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * cfbRestoreAreas --
  *	Function called by miRestoreAreas to actually fetch the areas to be

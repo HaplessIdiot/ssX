@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbwindow.c,v 1.6 2003/11/10 18:21:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbwindow.c,v 1.7tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
+#include <X11/X.h>
 #include "scrnintstr.h"
 #include "windowstr.h"
 #include "cfb.h"

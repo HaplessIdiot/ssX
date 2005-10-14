@@ -1,4 +1,4 @@
-/* $Xorg: PsFonts.c,v 1.6 2001/03/06 16:30:15 pookie Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsFonts.c,v 1.7tsi Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -57,7 +57,6 @@ in this Software without prior written authorization from The Open Group.
  * or other dealings in this Software without prior written authorization
  * from said copyright holders.
  */
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsFonts.c,v 1.6 2001/12/19 21:55:59 dawes Exp $ */
 
 /*******************************************************************
 **
@@ -76,7 +75,7 @@ in this Software without prior written authorization from The Open Group.
 ********************************************************************/
 
 #include "regionstr.h"
-#include "fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 #include "dixfontstr.h"
 #include "scrnintstr.h"
 #include "fontxlfd.h"

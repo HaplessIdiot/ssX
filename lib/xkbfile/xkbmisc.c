@@ -1,4 +1,4 @@
-/* $Xorg: xkbmisc.c,v 1.4 2000/08/17 19:46:44 cpqbld Exp $ */
+/* $XFree86: xc/lib/xkbfile/xkbmisc.c,v 1.8tsi Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +24,6 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/lib/xkbfile/xkbmisc.c,v 1.7 2003/07/16 02:31:10 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -44,16 +43,16 @@
 
 #else
 
-#include "X.h"
+#include <X11/X.h>
 #define	NEED_EVENTS
 #include <X11/keysym.h>
-#include "Xproto.h"
+#include <X11/Xproto.h>
 #include "misc.h"
 #include "inputstr.h"
 #include "dix.h"
-#include "XKBstr.h"
+#include <X11/extensions/XKBstr.h>
 #define XKBSRV_NEED_FILE_FUNCS	1
-#include "XKBsrv.h"
+#include <X11/extensions/XKBsrv.h>
 #include <X11/extensions/XKBgeom.h>
 #include "xkb.h"
 

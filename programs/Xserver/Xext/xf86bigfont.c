@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.19 2004/04/03 22:26:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.20tsi Exp $ */
 /*
  * BIGFONT extension for sharing font metrics between clients (if possible)
  * and for transmitting font metrics to clients in a compressed form.
@@ -60,8 +60,8 @@
 #include <errno.h>
 #endif
 
-#include "X.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "misc.h"
 #include "os.h"
 #include "dixstruct.h"
@@ -70,7 +70,7 @@
 #include "extnsionst.h"
 
 #define _XF86BIGFONT_SERVER_
-#include "xf86bigfstr.h"
+#include <X11/extensions/xf86bigfstr.h>
 
 static void XF86BigfontResetProc(
     ExtensionEntry *	/* extEntry */

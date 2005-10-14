@@ -48,7 +48,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.104tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.105tsi Exp $ */
 /*
  * Copyright (c) 1996-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -104,10 +104,10 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #if defined(WIN32) && !defined(__CYGWIN__)
 #include <X11/Xwinsock.h>
 #endif
-#include "Xos.h"
+#include <X11/Xos.h>
 #include <stdio.h>
 #include "misc.h"
-#include "X.h"
+#include <X11/X.h>
 #include <X11/Xtrans.h>
 #include "input.h"
 #include "dixfont.h"
@@ -154,11 +154,11 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #endif
 
 #ifdef XKB
-#include "XKBsrv.h"
+#include <X11/extensions/XKBsrv.h>
 #endif
 #ifdef XCSECURITY
 #define _SECURITY_SERVER
-#include "security.h"
+#include <X11/extensions/security.h>
 #endif
 
 #ifdef RENDER

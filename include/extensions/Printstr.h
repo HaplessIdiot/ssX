@@ -1,4 +1,4 @@
-/* $Xorg: Printstr.h,v 1.3 2000/08/18 04:05:44 coskrey Exp $ */
+/* $XFree86: xc/include/extensions/Printstr.h,v 1.6tsi Exp $ */
 /******************************************************************************
  ******************************************************************************
  **
@@ -43,7 +43,6 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86: xc/include/extensions/Printstr.h,v 1.5 2001/08/01 00:44:35 tsi Exp $ */
 
 
 #ifndef _XpPrintstr_H_
@@ -764,7 +763,7 @@ typedef struct _XpContext {
 	int imageRes;
 } XpContextRec, *XpContextPtr;
 
-#include "fontstruct.h"	/* FontResolutionPtr */
+#include <X11/fonts/fontstruct.h>	/* FontResolutionPtr */
 
 extern Bool XpAllocateContextPrivate(int, unsigned);
 extern FontResolutionPtr XpGetClientResolutions(ClientPtr, int *);

@@ -1,5 +1,4 @@
-/* $Xorg: fontaccel.c,v 1.4 2001/02/09 02:04:04 xorgcvs Exp $ */
-
+/* $XFree86: xc/lib/font/util/fontaccel.c,v 1.7tsi Exp $ */
 /*
 
 Copyright 1990, 1998  The Open Group
@@ -27,14 +26,13 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/util/fontaccel.c,v 1.6 2001/01/17 19:43:33 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
  */
 
 #include    "fontmisc.h"
-#include    "fontstruct.h"
+#include    <X11/fonts/fontstruct.h>
 #include    "fontutil.h"
 
 void

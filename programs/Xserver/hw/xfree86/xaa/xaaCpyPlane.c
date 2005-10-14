@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyPlane.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyPlane.c,v 1.14tsi Exp $ */
 
 /*
    A CopyPlane function that handles bitmap->screen copies and
@@ -16,7 +16,7 @@
 #include "xf86_OSproc.h"
 #include "servermd.h"
 
-#include "X.h"
+#include <X11/X.h>
 #include "scrnintstr.h"
 #include "mi.h"
 #include "pixmapstr.h"

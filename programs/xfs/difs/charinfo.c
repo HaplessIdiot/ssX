@@ -1,4 +1,4 @@
-/* $Xorg: charinfo.c,v 1.4 2001/02/09 02:05:42 xorgcvs Exp $ */
+/* $XFree86: xc/programs/xfs/difs/charinfo.c,v 1.12tsi Exp $ */
 /*
  
 Copyright 1990, 1991, 1998  The Open Group
@@ -49,15 +49,14 @@ in this Software without prior written authorization from The Open Group.
  * This file was once on the other side of
  * the font library interface as util/fsfuncs.c.
  */
-/* $XFree86: xc/programs/xfs/difs/charinfo.c,v 1.11 2001/10/28 03:34:34 tsi Exp $ */
 
 #include <X11/Xos.h>
 #include "misc.h"
-#include "fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 #include "fontutil.h"
 #include "clientstr.h"
 #define FSMD_H
-#include "FSproto.h"
+#include <X11/fonts/FSproto.h>
 #include "difs.h"
 
 extern void TwoByteSwap(unsigned char *, int);

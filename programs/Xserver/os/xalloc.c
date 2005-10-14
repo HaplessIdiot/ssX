@@ -26,7 +26,7 @@ dealings in this Software without prior written authorization from
 Pascal Haible.
 */
 
-/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.38 2005/03/28 02:51:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.39tsi Exp $ */
 
 /* Only used if INTERNAL_MALLOC is defined
  * - otherwise xalloc() in utils.c is used
@@ -35,9 +35,9 @@ Pascal Haible.
 
 #include <stdlib.h>	/* for malloc() etc. */
 
-#include "Xos.h"
+#include <X11/Xos.h>
 #include "misc.h"
-#include "X.h"
+#include <X11/X.h>
 
 #ifdef XALLOC_LOG
 #include <stdio.h>

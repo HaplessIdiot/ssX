@@ -23,7 +23,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/ddxList.c,v 3.9 2003/11/17 22:20:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxList.c,v 3.10tsi Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -37,8 +37,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "scrnintstr.h"
 #include "windowstr.h"
 #define	XKBSRV_NEED_FILE_FUNCS
-#include "XKBsrv.h"
-#include "XI.h"
+#include <X11/extensions/XKBsrv.h>
+#include <X11/extensions/XI.h>
 
 #ifndef PATH_MAX
 #ifdef MAXPATHLEN

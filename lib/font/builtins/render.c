@@ -1,5 +1,5 @@
 /*
- * Id: render.c,v 1.2 1999/11/02 06:16:48 keithp Exp $
+ * $XFree86: xc/lib/font/builtins/render.c,v 1.5tsi Exp $
  *
  * Copyright 1999 SuSE, Inc.
  *
@@ -17,18 +17,19 @@
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL SuSE
  * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
-/* $XFree86: xc/lib/font/builtins/render.c,v 1.4tsi Exp $ */
 
-#include    "fntfilst.h"
-#include    "builtin.h"
+#include "pcf.h"
+#include "fntfilst.h"
+#include "fontutil.h"
+#include "builtin.h"
 
-int
-BuiltinOpenBitmap (
+static int
+BuiltinOpenBitmap(
     FontPathElementPtr	fpe,
     FontPtr		*ppFont,
     int			flags,
@@ -42,9 +43,9 @@ BuiltinOpenBitmap (
     FontPtr     pFont;
     int         ret;
     int         bit,
-                byte,
-                glyph,
-                scan,
+		byte,
+		glyph,
+		scan,
 		image;
 
     file = BuiltinFileOpen (fileName);
@@ -52,7 +53,7 @@ BuiltinOpenBitmap (
 	return BadFontName;
     pFont = (FontPtr) xalloc(sizeof(FontRec));
     if (!pFont) {
-	BuiltinFileClose (file);
+	BuiltinFileClose(file);
 	return AllocError;
     }
     /* set up default values */
@@ -65,9 +66,9 @@ BuiltinOpenBitmap (
     pFont->maxPrivate = -1;
     pFont->devPrivates = (pointer *) 0;
 
-    ret = pcfReadFont (pFont, file, bit, byte, glyph, scan);
+    ret = pcfReadFont(pFont, file, bit, byte, glyph, scan);
 
-    BuiltinFileClose (file);
+    BuiltinFileClose(file);
     if (ret != Successful)
 	xfree(pFont);
     else
@@ -75,35 +76,34 @@ BuiltinOpenBitmap (
     return ret;
 }
 
-BuiltinGetInfoBitmap (fpe, pFontInfo, entry, fileName)
-    FontPathElementPtr	fpe;
-    FontInfoPtr		pFontInfo;
-    FontEntryPtr	entry;
-    char		*fileName;
+static int
+BuiltinGetInfoBitmap(
+    FontPathElementPtr	fpe,
+    FontInfoPtr		pFontInfo,
+    FontEntryPtr	entry,
+    char		*fileName)
 {
     FontFilePtr file;
     int		ret;
 
-    file = BuiltinFileOpen (fileName);
+    file = BuiltinFileOpen(fileName);
     if (!file)
 	return BadFontName;
-    ret = pcfReadFontInfo (pFontInfo, file);
-    BuiltinFileClose (file);
+    ret = pcfReadFontInfo(pFontInfo, file);
+    BuiltinFileClose(file);
     return ret;
 }
 
 static FontRendererRec renderers[] = {
-    ".builtin", 8,
-    BuiltinOpenBitmap, 0, BuiltinGetInfoBitmap, 0, 0
+    {".builtin", 8, BuiltinOpenBitmap, 0, BuiltinGetInfoBitmap, 0, 0}
 };
 
-#define numRenderers	(sizeof renderers / sizeof renderers[0])
+#define numRenderers (sizeof renderers / sizeof renderers[0])
 
 void
-BuiltinRegisterFontFileFunctions()
+BuiltinRegisterFontFileFunctions(void)
 {
     int	i;
     for (i = 0; i < numRenderers; i++)
-	FontFileRegisterRenderer ((FontRendererRec *) &renderers[i]);
+	FontFileRegisterRenderer(&renderers[i]);
 }
-

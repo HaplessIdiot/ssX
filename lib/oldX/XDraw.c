@@ -1,5 +1,4 @@
-/* $Xorg: XDraw.c,v 1.4 2001/02/09 02:04:05 xorgcvs Exp $ */
-
+/* $XFree86: xc/lib/oldX/XDraw.c,v 1.6tsi Exp $ */
 /*
 
 Copyright 1987, 1998  The Open Group
@@ -26,11 +25,10 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/oldX/XDraw.c,v 1.5tsi Exp $ */
 
-#include "Xlibint.h"
-#include "Xlib.h"
-#include "X10.h"
+#include <X11/Xlibint.h>
+#include <X11/Xlib.h>
+#include <X11/X10.h>
 
 #define OK_RETURN 1
 #define ERR_RETURN 0

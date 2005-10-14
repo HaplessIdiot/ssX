@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/Imakefile,v 3.16 2004/04/05 02:33:15 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/Imakefile,v 3.17tsi Exp $
 
 
 
@@ -33,8 +33,7 @@ SRCS = xf86_Util.c Delay.c $(ILHACKSRCS) $(XSRCS)
 
 OBJS = xf86_Util.o Delay.o $(ILHACKOBJS) $(XOBJS)
 
-INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
-           -I$(XINCLUDESRC)
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/include
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/randrstr.h,v 1.5 2002/09/29 23:39:45 keithp Exp $
+ * $XFree86: xc/programs/Xserver/randr/randrstr.h,v 1.7tsi Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation
  *
@@ -25,7 +25,7 @@
 #ifndef _RANDRSTR_H_
 #define _RANDRSTR_H_
 
-#include "randr.h"
+#include <X11/extensions/randr.h>
 
 typedef struct _rrScreenRate {
     int		    rate;

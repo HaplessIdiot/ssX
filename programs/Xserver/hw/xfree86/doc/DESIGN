@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                               18 August 2005
+                               13 October 2005
 
 NOTE: This is a DRAFT document, and the interfaces described here are subject
 to change without notice.
@@ -2313,7 +2313,7 @@ All modules must NOT include any system include files, or the following:
 
      "xf86_OSlib.h"
 
-     "Xos.h"
+     <X11/Xos.h>
 
 In addition, "xf86_libc.h" must not be included explicitly.  It is included
 implicitly by "xf86_ansic.h".
@@ -5437,7 +5437,7 @@ Drivers must NOT include the following:
 
      "xf86_OSlib.h"
 
-     "Xos.h"
+     <X11/Xos.h>
 
      any OS header
 
@@ -6391,7 +6391,7 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.58 tsi Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.59 tsi Exp $
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/DESIGN,v 1.54tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/DESIGN,v 1.55tsi Exp $

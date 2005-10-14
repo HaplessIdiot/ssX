@@ -1,4 +1,4 @@
-/* $Xorg: secauth.c,v 1.4 2001/02/09 02:05:23 xorgcvs Exp $ */
+/* $XFree86: xc/programs/Xserver/os/secauth.c,v 1.13tsi Exp $ */
 /*
 Copyright 1996, 1998  The Open Group
 
@@ -24,9 +24,8 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86: xc/programs/Xserver/os/secauth.c,v 1.12tsi Exp $ */
 
-#include "X.h"
+#include <X11/X.h>
 #include "os.h"
 #include "osdep.h"
 #include "dixstruct.h"
@@ -34,7 +33,7 @@ from The Open Group.
 
 #ifdef XCSECURITY
 #define _SECURITY_SERVER
-#include "extensions/security.h"
+#include <X11/extensions/security.h>
 
 static char InvalidPolicyReason[] = "invalid policy specification";
 static char PolicyViolationReason[] = "policy violation";

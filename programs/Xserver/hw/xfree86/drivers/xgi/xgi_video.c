@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_video.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_video.c,v 1.3tsi Exp $ */
 /***************************************************************************
 
 Copyright 2004 eXtreme Graphics Innovation Corp, Inc., HsinChu, Taiwan.
@@ -53,7 +53,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "xgi.h"
 #include "xf86xv.h"
-#include "Xv.h"
+#include <X11/extensions/Xv.h>
 #include "xaa.h"
 #include "xaalocal.h"
 #include "dixstruct.h"

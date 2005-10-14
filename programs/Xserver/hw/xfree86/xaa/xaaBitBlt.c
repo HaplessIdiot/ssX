@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaBitBlt.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaBitBlt.c,v 1.4tsi Exp $ */
 
 /* 
    This is a lighter version of cfbBitBlt.  We calculate the boxes
@@ -12,7 +12,7 @@
 #include "xf86_ansic.h"
 #include "xf86_OSproc.h"
 
-#include "X.h"
+#include <X11/X.h>
 #include "mi.h"
 #include "pixmapstr.h"
 #include "gcstruct.h"

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxpict.c,v 1.1tsi Exp $ */
 /*
  * Copyright 2001-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -46,8 +46,8 @@
 #include "pixmapstr.h"
 #include "dixstruct.h"
 
-#include "render.h"
-#include "renderproto.h"
+#include <X11/extensions/render.h>
+#include <X11/extensions/renderproto.h>
 #include "picture.h"
 #include "picturestr.h"
 #include "mipict.h"

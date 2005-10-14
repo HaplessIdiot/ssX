@@ -24,7 +24,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.13tsi Exp $ */
 
 #ifndef FFB_H
 #define FFB_H
@@ -33,7 +33,7 @@
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
 #include "xf86RamDac.h"
-#include "Xmd.h"
+#include <X11/Xmd.h>
 #include "gcstruct.h"
 #include "windowstr.h"
 #include "ffb_regs.h"
@@ -46,7 +46,7 @@
 #ifndef  DPMS_SERVER
 #define  DPMS_SERVER
 #endif   /* DPMS_SERVER */
-#include "extensions/dpms.h"
+#include <X11/extensions/dpms.h>
 
 
 /* Various offsets in virtual (ie. mmap()) spaces Linux and Solaris support. */

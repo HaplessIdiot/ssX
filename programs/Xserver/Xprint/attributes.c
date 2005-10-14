@@ -1,4 +1,4 @@
-/* $Xorg: attributes.c,v 1.3 2000/08/17 19:48:07 cpqbld Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.22tsi Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -44,7 +44,6 @@ copyright holders.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.21 2003/12/19 02:05:38 dawes Exp $ */
 
 #include <X11/Xproto.h>
 #include <string.h>
@@ -62,8 +61,8 @@ copyright holders.
 
 #include "attributes.h"
 
-#include "Xlib.h"
-#include "Xresource.h"
+#include <X11/Xlib.h>
+#include <X11/Xresource.h>
 #include "Xrm.c"
 
 static XrmDatabase CopyDb(XrmDatabase inDb);

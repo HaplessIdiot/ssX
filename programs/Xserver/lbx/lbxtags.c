@@ -1,4 +1,4 @@
-/* $Xorg: lbxtags.c,v 1.4 2001/02/09 02:05:17 xorgcvs Exp $ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxtags.c,v 1.4tsi Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -46,9 +46,8 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/lbx/lbxtags.c,v 1.3 2001/01/17 22:37:00 dawes Exp $ */
 
-#include "X.h"
+#include <X11/X.h>
 #include "misc.h"
 #include "lbxdata.h"
 #include "resource.h"
@@ -56,7 +55,7 @@ in this Software without prior written authorization from The Open Group.
 #include "propertyst.h"
 #include "lbxtags.h"
 #define _XLBX_SERVER_
-#include "lbxstr.h"
+#include <X11/extensions/lbxstr.h>
 #include "propertyst.h"
 
 static RESTYPE TagResType;

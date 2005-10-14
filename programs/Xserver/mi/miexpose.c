@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miexpose.c,v 3.10 2003/11/10 18:22:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miexpose.c,v 3.11tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,10 +46,10 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "X.h"
+#include <X11/X.h>
 #define NEED_EVENTS
-#include "Xproto.h"
-#include "Xprotostr.h"
+#include <X11/Xproto.h>
+#include <X11/Xprotostr.h>
 
 #include "misc.h"
 #include "regionstr.h"
@@ -61,7 +61,7 @@ SOFTWARE.
 
 #include "dixstruct.h"
 #include "mi.h"
-#include "Xmd.h"
+#include <X11/Xmd.h>
 
 #include "globals.h"
 

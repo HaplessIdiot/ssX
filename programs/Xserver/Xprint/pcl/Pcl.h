@@ -1,4 +1,4 @@
-/* $Xorg: Pcl.h,v 1.3 2000/08/17 19:48:07 cpqbld Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/Pcl.h,v 1.13tsi Exp $ */
 /*******************************************************************
 **
 **    *********************************************************
@@ -44,7 +44,6 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/Pcl.h,v 1.12 2001/12/21 21:02:05 dawes Exp $ */
 
 #ifndef _PCL_H_
 #define _PCL_H_
@@ -60,7 +59,7 @@ copyright holders.
 #include <X11/extensions/Printstr.h>
 
 #include "regionstr.h"
-#include "fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 #include "dixfontstr.h"
 #include "gcstruct.h"
 

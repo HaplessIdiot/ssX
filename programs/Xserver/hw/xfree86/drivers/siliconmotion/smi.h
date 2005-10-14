@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from the XFree86 Project and Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi.h,v 1.14tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi.h,v 1.15tsi Exp $ */
 
 #ifndef _SMI_H
 #define _SMI_H
@@ -54,7 +54,7 @@ authorization from the XFree86 Project and Silicon Motion.
 #include "vbe.h"
 
 #include "xf86xv.h"
-#include "Xv.h"
+#include <X11/extensions/Xv.h>
 
 /******************************************************************************/
 /*			D E F I N I T I O N S				      */

@@ -2,7 +2,7 @@
  * cfb copy area
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.21 2004/04/11 20:33:48 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.22tsi Exp $ */
 
 /*
 
@@ -32,9 +32,9 @@ Author: Keith Packard
 
 */
 
-#include	"X.h"
-#include	"Xmd.h"
-#include	"Xproto.h"
+#include	<X11/X.h>
+#include	<X11/Xmd.h>
+#include	<X11/Xproto.h>
 #include	"gcstruct.h"
 #include	"windowstr.h"
 #include	"scrnintstr.h"

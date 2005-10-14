@@ -41,19 +41,19 @@ implied warranty.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/Xserver/mi/mibstore.c,v 1.11 2003/11/10 18:22:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibstore.c,v 1.12tsi Exp $ */
 
 #define NEED_EVENTS
-#include "X.h"
-#include "Xmd.h"
-#include "Xproto.h"
+#include <X11/X.h>
+#include <X11/Xmd.h>
+#include <X11/Xproto.h>
 #include "misc.h"
 #include "regionstr.h"
 #include "scrnintstr.h"
 #include "gcstruct.h"
 #include "windowstr.h"
 #include "pixmapstr.h"
-#include "fontstruct.h"
+#include <X11/fonts/fontstruct.h>
 #include "dixfontstr.h"
 #include "dixstruct.h"		/* For requestingClient */
 #include "mi.h"
@@ -67,7 +67,7 @@ implied warranty.
  */
 /* #define BSEAGER */
 
-/*-
+/*
  * NOTES ON USAGE:
  *
  * The functions in this file implement a machine-independent backing-store
@@ -904,7 +904,7 @@ miBSDestroyGCPrivate(GCPtr pGC)
  * GC ops -- wrap each GC operation with our own function
  */
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSFillSpans --
  *	Perform a FillSpans, routing output to backing-store as needed.
@@ -964,7 +964,7 @@ miBSFillSpans(DrawablePtr pDrawable, GCPtr pGC,
     EPILOGUE (pGC);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSSetSpans --
  *	Perform a SetSpans, routing output to backing-store as needed.
@@ -1020,7 +1020,7 @@ miBSSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *psrc,
     EPILOGUE (pGC);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSPutImage --
  *	Perform a PutImage, routing output to backing-store as needed.
@@ -1054,7 +1054,7 @@ typedef RegionPtr (* CopyAreaProcPtr)(DrawablePtr, DrawablePtr, GCPtr,
 typedef RegionPtr (* CopyPlaneProcPtr)(DrawablePtr, DrawablePtr, GCPtr,
 				      int, int, int, int, int, int,
 				      unsigned long bitPlane);
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSDoCopy --
  *	Perform a CopyArea or CopyPlane within a window that has backing
@@ -1417,7 +1417,7 @@ miBSDoCopy(
     return (TRUE);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSCopyArea --
  *	Perform a CopyArea from the source to the destination, extracting
@@ -1524,7 +1524,7 @@ miBSCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
     return winExposed;
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSCopyPlane --
  *
@@ -1630,7 +1630,7 @@ miBSCopyPlane(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
     return winExposed;
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSPolyPoint --
  *	Perform a PolyPoint, routing output to backing-store as needed.
@@ -1667,7 +1667,7 @@ miBSPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
     EPILOGUE (pGC);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSPolyLines --
  *	Perform a Polylines, routing output to backing-store as needed.
@@ -1701,7 +1701,7 @@ miBSPolylines(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
     EPILOGUE (pGC);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSPolySegment --
  *	Perform a PolySegment, routing output to backing-store as needed.
@@ -1737,7 +1737,7 @@ miBSPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSegs)
     EPILOGUE (pGC);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSPolyRectangle --
  *	Perform a PolyRectangle, routing output to backing-store as needed.
@@ -1773,7 +1773,7 @@ miBSPolyRectangle(DrawablePtr pDrawable, GCPtr pGC, int nrects,
     EPILOGUE (pGC);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSPolyArc --
  *	Perform a PolyArc, routing output to backing-store as needed.
@@ -1807,7 +1807,7 @@ miBSPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
     EPILOGUE (pGC);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSFillPolygon --
  *	Perform a FillPolygon, routing output to backing-store as needed.
@@ -1843,7 +1843,7 @@ miBSFillPolygon(DrawablePtr pDrawable, GCPtr pGC, int shape, int mode,
     EPILOGUE (pGC);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSPolyFillRect --
  *	Perform a PolyFillRect, routing output to backing-store as needed.
@@ -1880,7 +1880,7 @@ miBSPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill,
     EPILOGUE (pGC);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSPolyFillArc --
  *	Perform a PolyFillArc, routing output to backing-store as needed.
@@ -1914,7 +1914,7 @@ miBSPolyFillArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc *parcs)
 }
 
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSPolyText8 --
  *	Perform a PolyText8, routing output to backing-store as needed.
@@ -1943,7 +1943,7 @@ miBSPolyText8(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count,
     return result;
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSPolyText16 --
  *	Perform a PolyText16, routing output to backing-store as needed.
@@ -1973,7 +1973,7 @@ miBSPolyText16(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count,
     return result;
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSImageText8 --
  *	Perform a ImageText8, routing output to backing-store as needed.
@@ -1999,7 +1999,7 @@ miBSImageText8(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count,
     EPILOGUE (pGC);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSImageText16 --
  *	Perform a ImageText16, routing output to backing-store as needed.
@@ -2025,7 +2025,7 @@ miBSImageText16(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int count,
     EPILOGUE (pGC);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSImageGlyphBlt --
  *	Perform a ImageGlyphBlt, routing output to backing-store as needed.
@@ -2052,7 +2052,7 @@ miBSImageGlyphBlt(DrawablePtr pDrawable, GCPtr pGC, int x, int y,
     EPILOGUE (pGC);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSPolyGlyphBlt --
  *	Perform a PolyGlyphBlt, routing output to backing-store as needed.
@@ -2078,7 +2078,7 @@ miBSPolyGlyphBlt(DrawablePtr pDrawable, GCPtr pGC, int x, int y,
     EPILOGUE (pGC);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSPushPixels --
  *	Perform a PushPixels, routing output to backing-store as needed.
@@ -2109,7 +2109,7 @@ miBSPushPixels(GCPtr pGC, PixmapPtr pBitMap, DrawablePtr pDst,
 }
 
 #ifdef NEED_LINEHELPER
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSLineHelper --
  *
@@ -2126,7 +2126,7 @@ miBSLineHelper()
 }
 #endif
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSClearBackingStore --
  *	Clear the given area of the backing pixmap with the background of
@@ -2421,7 +2421,7 @@ miBSFillVirtualBits(DrawablePtr pDrawable, GCPtr pGC, RegionPtr pRgn,
     DEALLOCATE_LOCAL (pRect);
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSAllocate --
  *	Create and install backing store info for a window
@@ -2515,7 +2515,7 @@ miBSAllocate(WindowPtr pWin)
     }
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSFree --
  *	Destroy and free all the stuff associated with the backing-store
@@ -2549,7 +2549,7 @@ miBSFree(WindowPtr pWin)
     }
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miResizeBackingStore --
  *	Alter the size of the backing pixmap as necessary when the
@@ -2658,7 +2658,7 @@ miResizeBackingStore(
     }
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSSaveDoomedAreas --
  *	Saved the areas of the given window that are about to be
@@ -2755,7 +2755,7 @@ miBSSaveDoomedAreas(WindowPtr pWin, RegionPtr pObscured, int dx, int dy)
     }
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSRestoreAreas --
  *	Restore areas from backing-store that are no longer obscured.
@@ -2909,7 +2909,7 @@ miBSRestoreAreas(WindowPtr pWin, RegionPtr prgnExposed)
 }
 
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSTranslateBackingStore --
  *	Shift the backing-store in the given direction. Called when bit
@@ -3185,7 +3185,7 @@ miBSDrawGuarantee(WindowPtr pWin, GCPtr pGC, int guarantee)
 		       GCClipMask|GCSubwindowMode| \
 		       GCTileStipXOrigin|GCTileStipYOrigin)
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSValidateGC --
  *	Wrapper around output-library's ValidateGC routine
@@ -3646,7 +3646,7 @@ miCreateBSPixmap(WindowPtr pWin, BoxPtr pExtents)
     }
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miBSExposeCopy --
  *	Handle the restoration of areas exposed by graphics operations.
