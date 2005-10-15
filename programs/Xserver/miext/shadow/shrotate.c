@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/shadow/shrotate.c,v 1.6tsi Exp $
+ * $XFree86: xc/programs/Xserver/miext/shadow/shrotate.c,v 1.7tsi Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -159,7 +159,7 @@ shadowUpdateRotatePacked (ScreenPtr	pScreen,
     int		shaXoff, shaYoff;
     int		box_x1, box_x2, box_y1, box_y2;
     int		sha_x1 = 0, sha_y1 = 0;
-    int		scr_x1 = 0, scr_x2 = 0, scr_y1 = 0, scr_y2 = 0, scr_w, scr_h;
+    int		scr_x1 = 0, scr_x2 = 0, scr_y1 = 0, scr_y2 = 0;
     int		scr_x, scr_y;
     int		pixelsPerBits;
     int		pixelsMask;
@@ -307,8 +307,6 @@ shadowUpdateRotatePacked (ScreenPtr	pScreen,
 	    sha_x1 = box_x1;
 	    break;
 	}
-	scr_w = ((scr_x2 - scr_x1) * shaBpp) >> FB_SHIFT;
-	scr_h = scr_y2 - scr_y1;
 	scr_y = scr_y1;
 
 	/* shift amount for first pixel on screen */ 
