@@ -3,7 +3,7 @@
  *
  * This file is very closely based on mivaltree.c.
  */
-/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessValTree.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessValTree.c,v 1.3tsi Exp $ */
 
 /*
  * mivaltree.c --
@@ -568,8 +568,8 @@ RootlessTreeObscured(pParent)
    and that top-level windows aren't clipped to the root window.
 */
 /*ARGSUSED*/
-// fixme this is ugly
-// Xprint/ValTree.c doesn't work, but maybe that method can?
+/* fixme this is ugly */
+/* Xprint/ValTree.c doesn't work, but maybe that method can? */
 int
 RootlessMiValidateTree (pRoot, pChild, kind)
     WindowPtr	  	pRoot;      /* Parent to validate */
@@ -593,7 +593,7 @@ RootlessMiValidateTree (pRoot, pChild, kind)
     if (REGION_BROKEN (pScreen, &pRoot->clipList) &&
 	!REGION_BROKEN (pScreen, &pRoot->borderClip))
     {
-        // fixme this might not work, but hopefully doesn't happen anyway.
+        /* fixme this might not work, but hopefully doesn't happen anyway */
         kind = VTBroken;
         REGION_EMPTY (pScreen, &pRoot->clipList);
         ErrorF("ValidateTree: BUSTED!\n");
