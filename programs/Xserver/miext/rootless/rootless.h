@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/miext/rootless/rootless.h,v 1.6 2003/10/24 00:33:14 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootless.h,v 1.7tsi Exp $ */
 
 #ifndef _ROOTLESS_H
 #define _ROOTLESS_H
@@ -49,16 +49,16 @@ typedef void * RootlessFrameID;
  *  Each top-level X window has one RootlessWindowRec associated with it.
  */
 typedef struct _RootlessWindowRec {
-    // Position and size includes the window border
-    // Position is in per-screen coordinates
+    /* Position and size includes the window border */
+    /* Position is in per-screen coordinates */
     int x, y;
     unsigned int width, height;
     unsigned int borderWidth;
 
-    RootlessFrameID wid;	// implementation specific frame id
-    WindowPtr win;		// underlying X window
+    RootlessFrameID wid;	/* implementation specific frame id */
+    WindowPtr win;		/* underlying X window */
 
-    // Valid only when drawing (ie. is_drawing is set)
+    /* Valid only when drawing (ie. is_drawing is set) */
     char *pixelData;
     int bytesPerRow;
 
@@ -69,7 +69,7 @@ typedef struct _RootlessWindowRec {
     RegionRec damage;
 #endif
 
-    unsigned int is_drawing :1;	// Currently drawing?
+    unsigned int is_drawing :1;	/* Currently drawing? */
     unsigned int is_reorder_pending :1;
 } RootlessWindowRec, *RootlessWindowPtr;
 
@@ -90,7 +90,7 @@ extern unsigned int rootless_CopyWindow_threshold;
 /* Operations used by CompositePixels */
 enum rl_composite_op_enum {
     RL_COMPOSITE_SRC = 0,
-    RL_COMPOSITE_OVER,
+    RL_COMPOSITE_OVER
 };
 
 /* Data formats for depth field and composite functions */
@@ -99,7 +99,7 @@ enum rl_depth_enum {
     RL_DEPTH_ARGB8888,
     RL_DEPTH_RGB555,
     RL_DEPTH_A8,			/* for masks when compositing */
-    RL_DEPTH_INDEX8,
+    RL_DEPTH_INDEX8
 };
 
 /* Macro to form the composite function for CompositePixels */
@@ -113,7 +113,7 @@ enum rl_gravity_enum {
     RL_GRAVITY_NORTH_WEST       = 1,	/* anchor to top-left corner */
     RL_GRAVITY_NORTH_EAST       = 2,	/* anchor to top-right corner */
     RL_GRAVITY_SOUTH_EAST       = 3,	/* anchor to bottom-right corner */
-    RL_GRAVITY_SOUTH_WEST       = 4,	/* anchor to bottom-left corner */
+    RL_GRAVITY_SOUTH_WEST       = 4	/* anchor to bottom-left corner */
 };
 
 

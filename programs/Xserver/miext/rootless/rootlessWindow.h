@@ -26,7 +26,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessWindow.h,v 1.1 2003/04/15 01:05:44 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessWindow.h,v 1.2tsi Exp $ */
 
 #ifndef _ROOTLESSWINDOW_H
 #define _ROOTLESSWINDOW_H
@@ -39,7 +39,7 @@ Bool RootlessDestroyWindow(WindowPtr pWin);
 
 #ifdef SHAPE
 void RootlessSetShape(WindowPtr pWin);
-#endif // SHAPE
+#endif /* SHAPE */
 
 Bool RootlessChangeWindowAttributes(WindowPtr pWin, unsigned long vmask);
 Bool RootlessPositionWindow(WindowPtr pWin, int x, int y);
