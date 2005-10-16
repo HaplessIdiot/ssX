@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/glx/Imakefile,v 1.17tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/glx/Imakefile,v 1.18tsi Exp $
 /*
  * Copyright (c) 2000-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -91,7 +91,7 @@ LinkSourceFile(glcontextmodes.h, $(MESASRCDIR)/src/mesa/drivers/dri/common)
 
      INCLUDES = -I$(SERVERSRC)/GL/glx -I$(SERVERSRC)/GL/include \
                 -I$(SERVERSRC)/include -I$(MESASRCDIR)/include \
-                -I$(SERVERSRC)/mi -I$(LIBSRC)/GL/include -I$(XF86SRC)
+                -I$(SERVERSRC)/mi -I$(LIBSRC)/GL/include
 
 #if defined(DarwinArchitecture) && ((OSMajorVersion == 6 && OSMinorVersion < 3) || OSMajorVersion < 6)
   NO_EXT_DEFS = -DMISSING_GL_EXTS

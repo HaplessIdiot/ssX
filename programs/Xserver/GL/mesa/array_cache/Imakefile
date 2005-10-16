@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/array_cache/Imakefile,v 1.1tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/array_cache/Imakefile,v 1.2tsi Exp $
 
 #if DoLoadableServer
 #if !BuildModuleInSubdir
@@ -32,8 +32,7 @@ SUBDIRS = module
 		-I$(SERVERSRC)/include \
 		-I$(SERVERSRC)/GL/include \
 		-I$(SERVERSRC)/GL/glx \
-		-I$(LIBSRC)/GL/include \
-		-I$(XF86SRC)
+		-I$(LIBSRC)/GL/include
 
       DEFINES = $(GLX_DEFINES) /*-DUSE_X86_ASM*/ /*-DUSE_SPARC_ASM*/
 
