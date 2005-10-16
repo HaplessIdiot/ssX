@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xbsd/Berklib.c,v 3.10tsi Exp $ */
+/* $XFree86: xc/lib/Xbsd/Berklib.c,v 3.11tsi Exp $ */
 
 
 /*
@@ -52,7 +52,7 @@ from The Open Group.
 #define WANT_RANDOM
 #endif
 
-#if defined(SVR4) && !defined(__SCO__) && !defined(sgi)
+#if defined(SVR4) && !defined(__SCO__) && !defined(sgi) && !defined(sun)
 #define WANT_BFUNCS
 #define WANT_FFS
 #define WANT_RANDOM

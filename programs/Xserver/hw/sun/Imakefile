@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/sun/Imakefile,v 1.9tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/sun/Imakefile,v 1.10tsi Exp $
 
 #include <Server.tmpl>
 
@@ -53,7 +53,8 @@ OBJS = $(OBJS1) $(OBJS2)
 
    INCLUDES = -I$(SERVERSRC)/mi -I$(SERVERSRC)/mfb \
 	      -I$(SERVERSRC)/cfb -I$(SERVERSRC)/cfb32 \
-	      -I$(SERVERSRC)/dbe -I$(SERVERSRC)/record -I$(SERVERSRC)/include
+	      -I$(SERVERSRC)/dbe -I$(SERVERSRC)/record \
+	      -I$(SERVERSRC)/include -I$(SERVERSRC)
    LINTLIBS = $(SERVERSRC)/dix/llib-ldix.ln $(SERVERSRC)/os/llib-los.ln \
 	      $(SERVERSRC)/mfb/llib-lmfb.ln $(SERVERSRC)/mi/llib-lmi.ln \
 	      $(SERVERSRC)/cfb/llib-lcfb.ln
