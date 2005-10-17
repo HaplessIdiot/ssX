@@ -91,7 +91,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.195 2005/08/05 01:25:39 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.196 2005/09/18 23:48:12 dickey Exp $ */
 
 /* main.c */
 
@@ -2757,11 +2757,12 @@ set_owner(char *device, uid_t uid, gid_t gid, mode_t mode)
 	    struct stat sb;
 	    if (stat(device, &sb) < 0) {
 		fprintf(stderr, "Cannot chmod %s to %03o: %s\n",
-			device, mode, strerror(why));
+			device, (int)mode, strerror(why));
 	    } else {
 		fprintf(stderr,
 			"Cannot chmod %s to %03o currently %03o: %s\n",
-			device, mode, (sb.st_mode & S_IFMT), strerror(why));
+			device, (int)mode, (int)(sb.st_mode & S_IFMT),
+			strerror(why));
 	    }
 	}
     }
