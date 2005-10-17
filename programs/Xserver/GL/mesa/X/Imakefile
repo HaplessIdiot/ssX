@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/X/Imakefile,v 1.7tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/X/Imakefile,v 1.8tsi Exp $
 
 #if DoLoadableServer
 #if !BuildModuleInSubdir
@@ -30,7 +30,11 @@ LinkSourceFile(compsize.c,$(LIBSRC)/GL/glx)
   COMMON_SRCS = driverfuncs.c
   COMMON_OBJS = driverfuncs.o
 
-#ifndef XFree86Version
+#ifdef XFree86Version
+
+        X_INCS = -I$(XF86OSSRC)
+
+#else
 
 /* This appears to be the quickest way to build a non-XFree86 server */
 GLXSRV_DEFINES = -DXFree86Server -DXFree86FakeServer
@@ -56,7 +60,7 @@ GLXSRV_DEFINES = -DXFree86Server -DXFree86FakeServer
 		-I$(SERVERSRC)/include \
 		-I$(SERVERSRC)/GL/include \
 		-I$(SERVERSRC)/GL/glx \
-		-I$(DRMINCLUDESDIR)
+		-I$(DRMINCLUDESDIR) $(X_INCS)
 
       DEFINES = $(GLX_DEFINES) $(GLXSRV_DEFINES) /*-DUSE_X86_ASM*/ /*-DUSE_SPARC_ASM*/
 
