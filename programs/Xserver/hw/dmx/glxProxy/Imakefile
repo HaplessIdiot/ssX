@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/Imakefile,v 1.4tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/Imakefile,v 1.5tsi Exp $
 
 #include <Server.tmpl>
 
@@ -16,7 +16,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/Imakefile,v 1.4tsi Exp $
 
      INCLUDES = -I$(SERVERSRC)/include -I$(SERVERSRC)/mi \
                 -I$(MESASRCDIR)/include \
-                -I$(XF86SRC) -I$(XF86OSSRC) -I$(SERVERSRC)/GL/include \
+                -I$(SERVERSRC)/GL/include \
                 -I$(SERVERSRC)/hw/dmx -I$(SERVERSRC)/Xext \
                 -I$(SERVERSRC)/render -I$(SERVERSRC)/GL/glx
 

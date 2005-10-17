@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/X/Imakefile,v 1.6tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/X/Imakefile,v 1.7tsi Exp $
 
 #if DoLoadableServer
 #if !BuildModuleInSubdir
@@ -56,7 +56,6 @@ GLXSRV_DEFINES = -DXFree86Server -DXFree86FakeServer
 		-I$(SERVERSRC)/include \
 		-I$(SERVERSRC)/GL/include \
 		-I$(SERVERSRC)/GL/glx \
-		-I$(XF86OSSRC) \
 		-I$(DRMINCLUDESDIR)
 
       DEFINES = $(GLX_DEFINES) $(GLXSRV_DEFINES) /*-DUSE_X86_ASM*/ /*-DUSE_SPARC_ASM*/
