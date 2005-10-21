@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.21tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.22 2005/06/07 01:33:38 tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -157,6 +157,7 @@ ATIDACPreInit
      * Set colour lookup table.  The first entry has already been zeroed out.
      */
     if (pATI->depth > 8)
+    {
         for (Index = 1;  Index < (NumberOf(pATIHW->lut) / 3);  Index++)
         {
             Index2 = Index * 3;
@@ -164,6 +165,7 @@ ATIDACPreInit
                 pATIHW->lut[Index2 + 1] =
                 pATIHW->lut[Index2 + 2] = Index;
         }
+    }
     else
     {
         /*
