@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xfs/os/connection.c,v 3.26tsi Exp $ */
+/* $XFree86: xc/programs/xfs/os/connection.c,v 3.27 2005/10/14 15:17:33 tsi Exp $ */
 /*
  * handles connections
  */
@@ -70,7 +70,6 @@ in this Software without prior written authorization from The Open Group.
 
 #include	<stdlib.h>
 #include	<X11/Xtrans.h>
-#include	<stdlib.h>
 #include	"misc.h"
 #include	<stdio.h>
 #include	<errno.h>
