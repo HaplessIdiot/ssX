@@ -1,4 +1,6 @@
-XFree86 4.5.99.14 (xx October 2005)
+XFree86 4.5.99.15 (xx November 2005)
+
+XFree86 4.5.99.14 (23 October 2005)
  161. Implement a major #include rework throughout the tree.  Also enforce it
       for all non-external builds (i.e. in-tree & SDK)  (Marc La France).
  160. Rework the building of hw/xfree86/parser to be more in line with the
@@ -19843,7 +19845,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3612 2005/10/13 17:27:57 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3613 2005/10/14 15:16:30 tsi Exp $
 
 
 
