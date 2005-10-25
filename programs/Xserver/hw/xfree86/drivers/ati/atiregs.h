@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.29tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.30tsi Exp $ */
 /*
  * Copyright 1994 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -926,8 +926,8 @@
 #define CLOCK_SELECT			0x0000000ful
 #define CLOCK_DIVIDER			0x00000030ul
 #define CLOCK_STROBE			0x00000040ul
-#define CLOCK_DATA			0x00000080ul
-/*	?				0x00000100ul */
+#define CLOCK_SERIAL_DATA_EN		0x00000080ul
+#define CLOCK_SERIAL_DATA		0x00000100ul
 #define PLL_WR_EN			0x00000200ul	/* For internal PLL */
 #define PLL_ADDR			0x0000fc00ul	/* For internal PLL */
 #define PLL_DATA			0x00ff0000ul	/* For internal PLL */
