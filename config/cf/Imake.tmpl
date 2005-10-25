@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.171tsi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.172 2005/10/14 15:15:52 tsi Exp $
 XCOMM ----------------------------------------------------------------------
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -998,6 +998,10 @@ TCLIBDIR = TclLibDir
 #endif
 #endif
 
+#ifndef PkgConfigDirectory
+#define PkgConfigDirectory $(USRLIBDIR)/pkgconfig
+#endif
+
 #ifndef ConfigSrc
 #define ConfigSrc $(TOP)/config
 #endif
@@ -1778,6 +1782,8 @@ TCLIBDIR = TclLibDir
 #ifdef VarDbDirectory
          VARDBDIR = VarDbDirectory	/* OS location of db/state files */
 #endif
+     PKGCONFIGDIR = PkgConfigDirectory
+
 #ifdef CrossCompileDir
                AR = CrossArCmd
 #else

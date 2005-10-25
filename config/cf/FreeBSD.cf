@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.157tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.158 2005/09/14 14:23:13 tsi Exp $
 
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -519,6 +519,10 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define DefaultSystemPath	/bin:/usr/bin:/sbin:/usr/sbin:$(BINDIR)
 #ifndef SystemManDirectory
 #define SystemManDirectory	/usr/share/man
+#endif
+
+#ifndef PkgConfigDirectory
+#define PkgConfigDirectory	$(LIBDATADIR)/pkgconfig
 #endif
 
 #define InstKmemFlags	-g kmem -m 2755

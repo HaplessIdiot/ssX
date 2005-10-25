@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/fontconfig/Imakefile,v 1.19tsi Exp $
+XCOMM $XFree86: xc/lib/fontconfig/Imakefile,v 1.20 2005/10/14 15:16:06 tsi Exp $
 
 #define DoNormalLib NormalLibFontconfig
 #define DoSharedLib SharedLibFontconfig
@@ -109,7 +109,7 @@ fontconfig.pc: fontconfig.pc.in
 	RemoveFile($@)
 	$(CONFIG_SUBST_PROG) $(SUBSTVARS) < fontconfig.pc.in > $@
 
-InstallNonExecFile(fontconfig.pc,$(USRLIBDIR)/pkgconfig)
+InstallNonExecFile(fontconfig.pc,$(PKGCONFIGDIR))
 
 clean::
 	RemoveFile(fontconfig.pc)
