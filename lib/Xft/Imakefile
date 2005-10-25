@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.30tsi Exp $
+XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.31 2005/10/14 15:15:59 tsi Exp $
 
 #define DoNormalLib NormalLibXft
 #define DoSharedLib SharedLibXft
@@ -135,7 +135,7 @@ xft.pc: xft.pc.in
 	RemoveFile($@)
 	sh config/config-subst $(SUBSTVARS) < xft.pc.in > $@
 
-InstallNonExecFile(xft.pc,$(USRLIBDIR)/pkgconfig)
+InstallNonExecFile(xft.pc,$(PKGCONFIGDIR))
 
 clean::
 	RemoveFile(xft.pc)

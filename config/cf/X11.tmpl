@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.283tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.284 2005/09/14 14:23:13 tsi Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1564,6 +1564,13 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #define LibexecDir /usr/X11/libexec
 #endif
 #endif
+#ifndef LibdataDir
+#ifdef ProjectRoot
+#define LibdataDir Concat(ProjectRoot,/libdata)
+#else
+#define LibdataDir /usr/X11/libdata
+#endif
+#endif
 #ifndef ConfigDir
 #define ConfigDir $(LIBDIR)/config
 #endif
@@ -1725,6 +1732,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
            ADMDIR = AdmDir		/* server log files */
            LIBDIR = LibDir		/* rgb, XErrorDB, etc. */
        LIBEXECDIR = LibexecDir
+       LIBDATADIR = LibdataDir
         MODULEDIR = ModuleDir
    TOP_X_INCLUDES = TopXInclude
 
