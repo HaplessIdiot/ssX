@@ -7,7 +7,7 @@
  * Copyright © 2001 The XFree86 Project, Inc.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_agp.c,v 3.15tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_agp.c,v 3.16tsi Exp $ */
 
 #include <X11/X.h>
 #include "xf86.h"
@@ -17,7 +17,12 @@
 
 #if defined(linux)
 #include <asm/ioctl.h>
-#include <linux/agpgart.h>
+#include <linux/version.h>
+
+#if defined(LINUX_VERSION_CODE) && defined(KERNEL_VERSION) && \
+    LINUX_VERSION_CODE >= KERNEL_VERSION(2,3,31)
+# include <linux/agpgart.h>
+#endif
 #elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #include <sys/ioctl.h>
 #include <sys/agpio.h>
@@ -58,6 +63,7 @@ xf86GARTCloseScreen(int screenNum)
 static Bool
 GARTInit(int screenNum)
 {
+#ifdef AGPIOC_INFO
 	struct _agp_info agpinf;
 
 	if (initDone)
@@ -109,8 +115,10 @@ GARTInit(int screenNum)
 		return FALSE;
 	}
 #endif
-	
 	return TRUE;
+#else
+	return FALSE;
+#endif
 }
 
 Bool
@@ -122,6 +130,7 @@ xf86AgpGARTSupported()
 AgpInfoPtr
 xf86GetAGPInfo(int screenNum)
 {
+#ifdef AGPIOC_INFO
 	struct _agp_info agpinf;
 	AgpInfoPtr info;
 
@@ -151,6 +160,9 @@ xf86GetAGPInfo(int screenNum)
 	info->usedPages = agpinf.pg_used;
 
 	return info;
+#else
+	return NULL;
+#endif
 }
 
 /*
@@ -161,6 +173,7 @@ xf86GetAGPInfo(int screenNum)
 Bool
 xf86AcquireGART(int screenNum)
 {
+#ifdef AGPIOC_ACQUIRE
 	if (screenNum != -1 && !GARTInit(screenNum))
 		return FALSE;
 
@@ -174,11 +187,15 @@ xf86AcquireGART(int screenNum)
 		acquiredScreen = screenNum;
 	}
 	return TRUE;
+#else
+	return FALSE;
+#endif
 }
 
 Bool
 xf86ReleaseGART(int screenNum)
 {
+#ifdef AGPIOC_RELEASE
 	if (screenNum != -1 && !GARTInit(screenNum))
 		return FALSE;
 
@@ -203,6 +220,7 @@ xf86ReleaseGART(int screenNum)
 	    }
 	    return TRUE;
 	}
+#endif
 	return FALSE;
 }
 
@@ -210,6 +228,7 @@ int
 xf86AllocateGARTMemory(int screenNum, unsigned long size, int type,
 			unsigned long *physical)
 {
+#ifdef AGPIOC_ALLOCATE
 	struct _agp_allocate alloc;
 	int pages;
 
@@ -242,11 +261,15 @@ xf86AllocateGARTMemory(int screenNum, unsigned long size, int type,
 		*physical = alloc.physical;
 
 	return alloc.key;
+#else
+	return -1;
+#endif
 }
 
 Bool
 xf86DeallocateGARTMemory(int screenNum, int key)
 {
+#ifdef AGPIOC_DEALLOCATE
 	if (!GARTInit(screenNum) || acquiredScreen != screenNum)
 		return FALSE;
 
@@ -264,12 +287,16 @@ xf86DeallocateGARTMemory(int screenNum, int key)
 	}
 
 	return TRUE;
+#else
+	return FALSE;
+#endif
 }
 
 /* Bind GART memory with "key" at "offset" */
 Bool
 xf86BindGARTMemory(int screenNum, int key, unsigned long offset)
 {
+#ifdef AGPIOC_BIND
 	struct _agp_bind bind;
 	int pageOffset;
 
@@ -306,6 +333,9 @@ xf86BindGARTMemory(int screenNum, int key, unsigned long offset)
 	}
 
 	return TRUE;
+#else
+	return FALSE;
+#endif
 }
 
 
@@ -313,6 +343,7 @@ xf86BindGARTMemory(int screenNum, int key, unsigned long offset)
 Bool
 xf86UnbindGARTMemory(int screenNum, int key)
 {
+#ifdef AGPIOC_UNBIND
 	struct _agp_unbind unbind;
 
 	if (!GARTInit(screenNum) || acquiredScreen != screenNum)
@@ -338,6 +369,9 @@ xf86UnbindGARTMemory(int screenNum, int key)
 		       "xf86UnbindGARTMemory: unbind key %d\n", key);
 
 	return TRUE;
+#else
+	return FALSE;
+#endif
 }
 
 
@@ -345,6 +379,7 @@ xf86UnbindGARTMemory(int screenNum, int key)
 Bool
 xf86EnableAGP(int screenNum, CARD32 mode)
 {
+#ifdef AGPIOC_SETUP
 	agp_setup setup;
 
 	if (!GARTInit(screenNum) || acquiredScreen != screenNum)
@@ -359,5 +394,8 @@ xf86EnableAGP(int screenNum, CARD32 mode)
 	}
 
 	return TRUE;
+#else
+	return FALSE;
+#endif
 }
 
