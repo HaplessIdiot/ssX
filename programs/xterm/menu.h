@@ -1,4 +1,4 @@
-/* $XTermId: menu.h,v 1.92 2005/09/18 19:38:08 tom Exp $ */
+/* $XTermId: menu.h,v 1.95 2005/10/28 00:46:57 tom Exp $ */
 
 /* $Xorg: menu.h,v 1.4 2001/02/09 02:06:03 xorgcvs Exp $ */
 /*
@@ -50,7 +50,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xterm/menu.h,v 3.36 2005/07/07 00:46:14 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/menu.h,v 3.37 2005/09/18 23:48:13 dickey Exp $ */
 
 #ifndef included_menu_h
 #define included_menu_h
@@ -127,7 +127,6 @@ extern void DoSecureKeyboard (Time tp);
 extern void SetupMenus (Widget shell, Widget *forms, Widget *menus);
 
 #if OPT_TOOLBAR
-extern void SetupToolbar(void);
 extern void ShowToolbar(Bool);
 #endif
 
