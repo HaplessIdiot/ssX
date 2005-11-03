@@ -1,4 +1,4 @@
-/* $XTermId: ptyx.h,v 1.385 2005/09/15 23:55:10 tom Exp $ */
+/* $XTermId: ptyx.h,v 1.389 2005/10/26 23:56:05 tom Exp $ */
 
 /*
  *	$Xorg: ptyx.h,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
@@ -139,7 +139,7 @@
 #define USE_PTY_DEVICE 1
 #define USE_PTY_SEARCH 1
 
-#if defined(__osf__) || (defined(linux) && defined(__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 1)) || defined(__NetBSD__)
+#if defined(__osf__) || (defined(linux) && defined(__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 1)) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #undef USE_PTY_DEVICE
 #undef USE_PTY_SEARCH
 #define USE_PTS_DEVICE 1
@@ -259,27 +259,10 @@
 #endif
 #endif
 
-#ifndef OPT_WIDE_CHARS
-#define OPT_WIDE_CHARS  0 /* true if xterm supports 16-bit characters */
-#endif
-
 /* Until the translation manager comes along, I have to do my own translation of
  * mouse events into the proper routines. */
 
 typedef enum {NORMAL, LEFTEXTENSION, RIGHTEXTENSION} EventMode;
-
-/*
- * Indices for menu_font_names[][]
- */
-typedef enum {
-    fNorm = 0
-    , fBold
-#if OPT_WIDE_CHARS
-    , fWide
-    , fWBold
-#endif
-    , fMAX
-} VTFontEnum;
 
 /*
  * The origin of a screen is 0, 0.  Therefore, the number of rows
@@ -623,6 +606,10 @@ typedef struct {
 #define OPT_VT52_MODE   1 /* true if xterm supports VT52 emulation */
 #endif
 
+#ifndef OPT_WIDE_CHARS
+#define OPT_WIDE_CHARS  0 /* true if xterm supports 16-bit characters */
+#endif
+
 #ifndef OPT_XMC_GLITCH
 #define OPT_XMC_GLITCH	0 /* true if xterm supports xmc (magic cookie glitch) */
 #endif
@@ -688,6 +675,19 @@ typedef struct {
 #endif
 
 /***====================================================================***/
+
+/*
+ * Indices for menu_font_names[][]
+ */
+typedef enum {
+    fNorm = 0
+    , fBold
+#if OPT_WIDE_CHARS
+    , fWide
+    , fWBold
+#endif
+    , fMAX
+} VTFontEnum;
 
 /* indices for the normal terminal colors in screen.Tcolors[] */
 typedef enum {
@@ -1250,6 +1250,7 @@ typedef struct {
 	Boolean		c1_printable;	/* true if we treat C1 as print	*/
 #endif
 	int		border;		/* inner border			*/
+	int		scrollBarBorder; /* scrollBar border		*/
 	Cursor		arrow;		/* arrow cursor			*/
 	unsigned long	event_mask;
 	unsigned short	send_mouse_pos;	/* user wants mouse transition  */

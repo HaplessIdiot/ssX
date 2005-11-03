@@ -1,7 +1,7 @@
-/* $XTermId: fontutils.c,v 1.180 2005/09/12 18:44:46 tom Exp $ */
+/* $XTermId: fontutils.c,v 1.183 2005/11/03 01:49:20 tom Exp $ */
 
 /*
- * $XFree86: xc/programs/xterm/fontutils.c,v 1.53 2005/08/05 01:25:39 dickey Exp $
+ * $XFree86: xc/programs/xterm/fontutils.c,v 1.54 2005/09/18 23:48:12 dickey Exp $
  */
 
 /************************************************************
@@ -666,7 +666,7 @@ xtermLoadFont(XtermWidget xw,
     Pixel new_normal;
     Pixel new_revers;
     char *tmpname = NULL;
-    char normal[MAX_FONTNAME], bold[MAX_FONTNAME];
+    char normal[MAX_FONTNAME];
     Bool proportional = False;
 
     memset(&myfonts, 0, sizeof(myfonts));
@@ -729,6 +729,8 @@ xtermLoadFont(XtermWidget xw,
      * and 12x13ja as the corresponding fonts for 9x18 and 6x13.
      */
     if_OPT_WIDE_CHARS(screen, {
+	char bold[MAX_FONTNAME];
+
 	if (myfonts.f_w != 0) {
 	    cache_menu_font_name(screen, fontnum, fWide, myfonts.f_w);
 	} else if (!is_double_width_font(nfs)) {
@@ -1350,6 +1352,7 @@ xtermComputeFontInfo(XtermWidget xw,
 				(void *) 0);
 		bold = xtermOpenXft(dpy, pat, "bold");
 
+#if OPT_ISO_COLORS
 		if (screen->italicULMode) {
 		    XftPatternBuild(pat,
 				    XFT_SLANT, XftTypeInteger, XFT_SLANT_ITALIC,
@@ -1357,6 +1360,7 @@ xtermComputeFontInfo(XtermWidget xw,
 				    (void *) 0);
 		    ital = xtermOpenXft(dpy, pat, "italic");
 		}
+#endif /* OPT_ISO_COLORS */
 
 		/*
 		 * FIXME:  just assume that the corresponding font has no
