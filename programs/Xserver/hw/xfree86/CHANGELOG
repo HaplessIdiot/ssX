@@ -1,4 +1,6 @@
-XFree86 4.5.99.15 (xx November 2005)
+XFree86 4.5.99.16 (xx November 2005)
+
+XFree86 4.5.99.15 (8 November 2005)
  164. Xterm patch #206 (Thomas Dickey).
  163. Update location of pkgconfig files for FreeBSD (David Dawes).
  162. Fix typo in xsm man page (Tobias Stoeckmann).
@@ -19848,7 +19850,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3616 2005/10/25 16:58:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3617 2005/11/03 13:17:26 dickey Exp $
 
 
 
