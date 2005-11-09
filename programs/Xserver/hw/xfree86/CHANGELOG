@@ -1,4 +1,6 @@
 XFree86 4.5.99.16 (xx November 2005)
+ 165. Fix TinyX build issue under !XserverStaticFontLib (Marc La France,
+      Bugzilla #1632).
 
 XFree86 4.5.99.15 (8 November 2005)
  164. Xterm patch #206 (Thomas Dickey).
@@ -19850,7 +19852,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3617 2005/11/03 13:17:26 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3618 2005/11/08 12:02:48 dawes Exp $
 
 
 
