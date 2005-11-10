@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.190 2004/06/30 20:21:35 martin Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.191tsi Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -95,13 +95,14 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.190 2004/06/30 20:21:35 martin Exp
  * will be included in it.  When building the loadable server each of these
  * modules will be built.
  *
-#define XF86CardDrivers		mga glint nv tga s3virge sis rendition \
+#define XF86CardDrivers		mga glint nv tga s3 s3virge sis xgi rendition \
 				neomagic i740 tdfx savage \
-				cirrus vmware tseng trident chips apm \
+				cirrus vmware tseng trident chips ast apm \
 				GlideDriver fbdev i128 \
-				ati AgpGartDrivers DevelDrivers ark cyrix \
-				siliconmotion \
-				vesa vga XF86OSCardDrivers XF86ExtraCardDrivers
+				ati i810 AgpGartDrivers DevelDrivers ark cyrix \
+				siliconmotion via \
+				vesa vga \
+				dummy XF86OSCardDrivers XF86ExtraCardDrivers
  */
 
 /*

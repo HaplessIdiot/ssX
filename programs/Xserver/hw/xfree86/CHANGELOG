@@ -1,4 +1,6 @@
 XFree86 4.5.99.16 (xx November 2005)
+ 166. Add a driver for ASPEED Technologies's AST2000 graphics chips (derived
+      from Y. C. Chen at ASPEED Technologies, Bugzilla #1628).
  165. Fix TinyX build issue under !XserverStaticFontLib (Marc La France,
       Bugzilla #1632).
 
@@ -19852,7 +19854,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3618 2005/11/08 12:02:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3619 2005/11/09 17:06:37 tsi Exp $
 
 
 
