@@ -1,10 +1,10 @@
-/* $XTermId: charproc.c,v 1.624 2005/11/02 23:41:19 tom Exp $ */
+/* $XTermId: charproc.c,v 1.626 2005/11/10 00:36:49 tom Exp $ */
 
 /*
  * $Xorg: charproc.c,v 1.6 2001/02/09 02:06:02 xorgcvs Exp $
  */
 
-/* $XFree86: xc/programs/xterm/charproc.c,v 3.175 2005/09/18 23:48:12 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/charproc.c,v 3.176 2005/11/03 13:17:27 dickey Exp $ */
 
 /*
 
@@ -393,12 +393,6 @@ static XtActionsRec actionsList[] = {
 };
 /* *INDENT-ON* */
 
-#ifdef VMS
-#define OS_DEPENDENT_PRINT_COMMAND "print/delete/noflag"
-#else /* VMS */
-#define OS_DEPENDENT_PRINT_COMMAND "lpr"
-#endif /* VMS */
-
 static XtResource resources[] =
 {
     Bres(XtNallowSendEvents, XtCAllowSendEvents, screen.allowSendEvent0, False),
@@ -474,7 +468,7 @@ static XtResource resources[] =
     Sres(XtNfont, XtCFont, misc.default_font.f_n, DEFFONT),
     Sres(XtNgeometry, XtCGeometry, misc.geo_metry, NULL),
     Sres(XtNkeyboardDialect, XtCKeyboardDialect, screen.keyboard_dialect, DFT_KBD_DIALECT),
-    Sres(XtNprinterCommand, XtCPrinterCommand, screen.printer_command, OS_DEPENDENT_PRINT_COMMAND),
+    Sres(XtNprinterCommand, XtCPrinterCommand, screen.printer_command, ""),
     Sres(XtNtekGeometry, XtCGeometry, misc.T_geometry, NULL),
 
     Tres(XtNcursorColor, XtCCursorColor, TEXT_CURSOR, XtDefaultForeground),
