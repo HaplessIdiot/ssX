@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.23 2003/04/21 16:34:27 herrb Exp $ */
+/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.24 2004/05/05 00:07:03 dickey Exp $ */
 
 /*
 
@@ -72,6 +72,10 @@ in this Software without prior written authorization from The Open Group.
 #endif /* VMS */
 
 #include <stdlib.h>
+
+#ifdef XT_GEO_TATTLER
+#include <stdio.h>
+#endif
 
 String XtCXtToolkitError = "XtToolkitError";
 
