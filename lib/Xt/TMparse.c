@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/TMparse.c,v 3.11 2003/05/27 22:26:43 tsi Exp $ */
+/* $XFree86: xc/lib/Xt/TMparse.c,v 3.12 2004/05/05 00:07:03 dickey Exp $ */
 
 /*
 
@@ -1527,6 +1527,7 @@ static String ParseEventSeq(
     EventSeqPtr *nextEvent = eventSeqP;
 
     *eventSeqP = NULL;
+    *actionsP = NULL;
 
     while ( *str != '\0' && !IsNewline(*str)) {
 	static Event	nullEvent =
@@ -1612,6 +1613,7 @@ static String ParseActionProc(
     if (str-start >= 199) {
 	Syntax("Action procedure name is longer than 199 chars","");
 	*error = TRUE;
+	*actionProcNameP = 0;
 	return str;
     }
     (void) memmove(procName, start, str-start);

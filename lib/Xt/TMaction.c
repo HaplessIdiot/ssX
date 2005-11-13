@@ -59,7 +59,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/TMaction.c,v 3.9 2004/05/05 00:07:03 dickey Exp $ */
+/* $XFree86: xc/lib/Xt/TMaction.c,v 3.10 2004/05/26 22:24:40 dickey Exp $ */
 
 /* TMaction.c -- maintains the state table of actions for the translation
  *              manager.
@@ -630,6 +630,7 @@ void _XtBindActions(
 		int			localUnbound;
 		TMBindCacheStatusRec	bcStatusRec;
 
+		bcStatusRec.refCount = 0;
 		procs = (XtActionProc *)
 		  XtStackAlloc(stateTree->numQuarks * sizeof(XtActionProc),
 			       stackProcs);
