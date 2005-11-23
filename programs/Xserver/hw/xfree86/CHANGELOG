@@ -1,4 +1,6 @@
-XFree86 4.5.99.16 (xx November 2005)
+XFree86 4.5.99.17 (xx December 2005)
+
+XFree86 4.5.99.16 (23 November 2005)
  167. Xterm patch #207 (Thomas Dickey).
  166. Add a driver for ASPEED Technologies's AST2000 graphics chips (derived
       from Y. C. Chen at ASPEED Technologies, Bugzilla #1628).
@@ -19855,7 +19857,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3620 2005/11/10 15:37:02 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3621 2005/11/13 23:10:33 dickey Exp $
 
 
 
