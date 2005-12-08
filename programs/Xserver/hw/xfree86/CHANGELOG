@@ -1,4 +1,6 @@
-XFree86 4.5.99.17 (xx December 2005)
+XFree86 4.5.99.18 (xx December 2005)
+
+XFree86 4.5.99.17 (8 December 2005)
  168. Fix an offset problem in Xv for the trident driver and later 
       generation chipsets after and including the Cyber9397 (Alan Hourihane).
 
@@ -19859,7 +19861,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3622 2005/11/23 12:02:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3623 2005/11/29 17:22:50 alanh Exp $
 
 
 
