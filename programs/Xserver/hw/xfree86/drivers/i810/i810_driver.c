@@ -72,7 +72,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.121tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.122 2005/10/14 15:16:40 tsi Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -434,8 +434,8 @@ i810Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 			I810drmSymbols,
 			I810driSymbols,
 			I810shadowSymbols,
-			I810shadowFBSymbols,
 #endif
+			I810shadowFBSymbols,
 			I810vbeSymbols, vbeOptionalSymbols,
 			I810ddcSymbols, I810int10Symbols, NULL);
 

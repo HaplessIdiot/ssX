@@ -1,4 +1,6 @@
 XFree86 4.5.99.18 (xx December 2005)
+ 171. Fix an unresolved symbol warning with the i810 driver on some platforms
+      (Bugzilla #1627, Nicolas Joly).
  170. Increase xclock's tooltip time string buffer size (Bugzilla #1635,
       Alexander Pohoyda).
  169. Convert block macros in the trident driver to forms that can be
@@ -19866,7 +19868,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3625 2005/12/17 00:43:08 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3626 2005/12/17 00:47:31 dawes Exp $
 
 
 
