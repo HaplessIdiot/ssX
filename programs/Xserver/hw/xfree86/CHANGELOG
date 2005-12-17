@@ -1,4 +1,7 @@
 XFree86 4.5.99.18 (xx December 2005)
+ 173. Add a dvorak_intl xkb map (Bugzilla #1624, Conrad Schuler).
+ 172. Add Eszett (ssharp) to the us_intl xkb map (Bugzilla #1624,
+      Conrad Schuler).
  171. Fix an unresolved symbol warning with the i810 driver on some platforms
       (Bugzilla #1627, Nicolas Joly).
  170. Increase xclock's tooltip time string buffer size (Bugzilla #1635,
@@ -19868,7 +19871,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3626 2005/12/17 00:47:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3627 2005/12/17 00:49:31 dawes Exp $
 
 
 
