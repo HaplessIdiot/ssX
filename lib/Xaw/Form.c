@@ -47,7 +47,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xaw/Form.c,v 1.20 2001/02/05 22:38:04 paulo Exp $ */
+/* $XFree86: xc/lib/Xaw/Form.c,v 1.21 2001/12/14 19:54:39 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -448,6 +448,12 @@ XawFormInitialize(Widget request, Widget cnew,
 		  ArgList args, Cardinal *num_args)
 {
     FormWidget fw = (FormWidget)cnew;
+
+    /*
+     * Get the size from the parent
+     */
+    if (XtWidth(fw) == 0) XtWidth(fw) = XtWidth(XtParent(fw));
+    if (XtHeight(fw) == 0) XtHeight(fw) = XtHeight(XtParent(fw));
 
     fw->form.old_width = fw->form.old_height = 0;
     fw->form.no_refigure = False;

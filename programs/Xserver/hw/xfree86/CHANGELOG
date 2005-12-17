@@ -1,4 +1,6 @@
 XFree86 4.5.99.18 (xx December 2005)
+ 174. Make Xaw Form widgets inherit dimensions from their parent at
+      widget initialisation time.  (Bugzilla #1623, Alexander Pohoyda).
  173. Add a dvorak_intl xkb map (Bugzilla #1624, Conrad Schuler).
  172. Add Eszett (ssharp) to the us_intl xkb map (Bugzilla #1624,
       Conrad Schuler).
@@ -19871,7 +19873,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3627 2005/12/17 00:49:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3628 2005/12/17 01:07:21 dawes Exp $
 
 
 

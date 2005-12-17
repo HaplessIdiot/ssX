@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Viewport.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/lib/Xaw/Viewport.c,v 1.12 2005/09/14 16:01:54 tsi Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -288,12 +288,6 @@ XawViewportInitialize(Widget request, Widget cnew,
     Dimension clip_height, clip_width;
 
     w->form.default_spacing = 0; /* Reset the default spacing to 0 pixels */
-
-    /*
-     * Get the size from the parent
-     */
-    XtWidth(w) = XtWidth(XtParent(w));
-    XtHeight(w) = XtHeight(XtParent(w));
 
     /*
      * Initialize all widget pointers to NULL
