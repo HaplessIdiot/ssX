@@ -1,9 +1,4 @@
-XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:42 cpqbld Exp $
-
-
-
-
-XCOMM $XFree86: xc/programs/xkbcomp/symbols/Imakefile,v 3.64 2004/10/25 21:23:58 dawes Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/symbols/Imakefile,v 3.65 2005/02/25 18:25:36 dawes Exp $
 
 #define IHaveSubdirs
 
@@ -13,7 +8,7 @@ XCOMM $XFree86: xc/programs/xkbcomp/symbols/Imakefile,v 3.64 2004/10/25 21:23:58
 		 be ben bg br bs by \
 		 ca ca_enhanced compose ctrl \
 		 czsk cz cz_qwerty \
-		 de de_CH dev dk dvorak \
+		 de de_CH dev dk dvorak dvorak_intl \
 		 ee el en_US es \
 		 fi fo fr fr_CH \
 		 gb ge_la ge_ru group guj gur \

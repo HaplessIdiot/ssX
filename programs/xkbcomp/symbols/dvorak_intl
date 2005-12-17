@@ -1,5 +1,9 @@
 //
-// $XFree86: xc/programs/xkbcomp/symbols/us_intl,v 1.8 2003/12/18 22:10:41 dawes Exp $
+// $XFree86$
+//
+// Based on symbols/us_intl keyboard map:
+// remapped from us to dvorak by Conrad Schuler
+// (conrad_schuler@yahoo.com)
 //
 // Dead-keys definition for a very simple US/ASCII layout.
 // by Conectiva (http://www.conectiva.com.br)
@@ -33,7 +37,7 @@
 partial default alphanumeric_keys
 xkb_symbols "basic" {
 
-    name[Group1]= "US/ASCII";
+    name[Group1]= "Dvorak";
 
     // Alphanumeric section
     key <TLDE> {	[ dead_grave,	dead_tilde	],
@@ -46,27 +50,27 @@ xkb_symbols "basic" {
 			[  dead_breve,	dead_breve	]	};
     key <AE10> {	[	  0,	parenright	],
 			[dead_abovering, dead_abovering	]	};
-    key <AE11> {	[     minus,	underscore	],
-			[ dead_macron,	dead_belowdot	]	};
-    key <AE12> {	[     equal,	plus		],
+
+    key <AD01> {	[ dead_acute,	dead_diaeresis	],
+			[ apostrophe,	quotedbl	]	};
+    key <AD02> {	[     comma,	less		],
+			[ dead_cedilla,	dead_caron	]	};
+    key <AD03> {	[    period,	greater		],
+			[ dead_abovedot,dead_circumflex	]	};
+    key <AD11> {	[     slash,	question	],
+			[   dead_hook,	dead_hook	]	};
+    key <AD12> {	[     equal,	plus		],
 			[ dead_doubleacute, dead_horn	]	};
 
-    key <AD03>  {	[         e,    E		],
+    key <AC03>  {	[         e,    E		],
 			[  EuroSign,    cent		]	};
-
-    key <AC02>  {	[         s,    S		],
+    key <AC10>  {	[         s,    S		],
 			[    ssharp     		]	};
-    key <AC10> {	[ semicolon,	colon		],
+    key <AC11> {	[     minus,	underscore	],
+			[ dead_macron,	dead_belowdot	]	};
+
+    key <AB01> {	[ semicolon,	colon		],
 			[ dead_ogonek,	dead_diaeresis	]	};
-    key <AC11> {	[ dead_acute,	dead_diaeresis	],
-			[ apostrophe,	quotedbl	]	};
-			
-    key <AB08> {	[     comma,	less		],
-			[ dead_cedilla,	dead_caron	]	};
-    key <AB09> {	[    period,	greater		],
-			[ dead_abovedot,dead_circumflex	]	};
-    key <AB10> {	[     slash,	question	],
-			[   dead_hook,	dead_hook	]	};
 
     key <RALT> {	[ Mode_switch,	Multi_key	]	};
 
