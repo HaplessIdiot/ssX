@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.27 2003/09/05 22:07:29 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.28 2004/01/21 22:51:19 alanh Exp $ */
 
 #define DEBUG 1
 
@@ -202,10 +202,10 @@
 
 /* Wait for VSync */
 #define WAITFORVSYNC \
- { \
+ do { \
     while (hwp->readST01(hwp)&0x8) {}; \
     while (!(hwp->readST01(hwp)&0x8)) {}; \
- }
+ } while (0)
 
 /* Defines for IMAGE Graphics Engine */
 #define IMAGE_GE_STATUS 	0x2164
@@ -216,7 +216,7 @@
 #define BLADE_XP_GER_OPERMODE	0x2125
 
 #define REPLICATE(r)						\
-{								\
+do {								\
 	if (pScrn->bitsPerPixel == 16) {			\
 		r = ((r & 0xFFFF) << 16) | (r & 0xFFFF);	\
 	} else							\
@@ -225,16 +225,18 @@
 		r |= (r<<8);					\
 		r |= (r<<16);					\
 	}							\
-}
+} while (0)
 
 #define CHECKCLIPPING					\
+do {							\
 	if (pTrident->Clipping)	{			\
 		pTrident->Clipping = FALSE;		\
 		if (pTrident->Chipset < PROVIDIA9682) { \
 			TGUI_SRCCLIP_XY(0,0);		\
 			TGUI_DSTCLIP_XY(4095,2047);	\
 		}					\
-	}
+	}						\
+} while (0)
 
 
 /* Merge XY */
@@ -250,21 +252,21 @@
         MMIO_IN32(pTrident->IOBase,(r))
 
 #define OUTB(addr, data) \
-{ \
+do { \
 	if (IsPciCard && UseMMIO) { \
             MMIO_OUT8(pTrident->IOBase, addr, data); \
 	} else { \
 	    outb(pTrident->PIOBase + (addr), data); \
 	} \
-}
+} while (0)
 #define OUTW(addr, data) \
-{ \
+do { \
 	if (IsPciCard && UseMMIO) { \
             MMIO_OUT16(pTrident->IOBase, addr, data); \
 	} else { \
 	    outw(pTrident->PIOBase + (addr), data); \
 	} \
-}
+} while (0)
 #define INB(addr) \
 ( \
 	(IsPciCard && UseMMIO) ? \
@@ -289,12 +291,14 @@
     	tridentReg->tridentRegs3CE[reg] = INB(0x3CF);
 
 #define VIDEOOUT(val,reg) \
+do {							\
 	if (pTrident->Chipset >= CYBER9397) { 		\
 		OUTW(0x3C4, (val << 8) | reg); 		\
 	} else {					\
 		OUTB(0x83C8, reg);			\
 		OUTB(0x83C6, val);			\
-	}
+	}						\
+} while (0)
 
 
 #define BLTBUSY(b) \
@@ -313,11 +317,11 @@
 	MMIO_OUT8(pTrident->IOBase, BLADE_XP_GER_OPERMODE, (c))
 /* XXX */
 #define OLDTGUI_OPERMODE(c) \
-	{ \
+	do { \
 		MMIO_OUT16(pTrident->IOBase, OLDGER_MWIDTH, \
 			            vga256InfoRec.displayWidth - 1); \
 		MMIO_OUT8(pTrident->IOBase, OLDGER_MFORMAT, (c)); \
-	}
+	} while (0)
 #define TGUI_FCOLOUR(c) \
 	MMIO_OUT32(pTrident->IOBase, GER_FCOLOUR, (c))
 #define TGUI_FPATCOL(c) \
