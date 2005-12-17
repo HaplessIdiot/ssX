@@ -29,7 +29,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86: xc/programs/xclock/xclock.c,v 1.17 2003/12/29 09:10:37 herrb Exp $ */
+/* $XFree86: xc/programs/xclock/xclock.c,v 1.18 2005/05/19 01:02:44 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -108,22 +108,20 @@ static void
 get_tip_text(Widget w, XtPointer client_data, XtPointer call_data)
 {
     time_t tloc;
-    char ctime[12 + 1];
+    char ctime[100 + 1];
     String strTime = NULL;
-    Arg arg;
 
-    XtSetArg(arg, XtNstrftime, &strTime);
-    XtGetValues(w, &arg, ONE);
+    XtVaGetValues(w, XtNstrftime, &strTime, NULL);
     if (strTime == NULL || strcmp(strTime, "") == 0)
     {
 	strTime = "%F";
     }
 
     time(&tloc);
-    strftime(ctime, sizeof(ctime), strTime, localtime(&tloc));
-    ctime[12] = '\0';
-
-    *((String*) client_data) = XtNewString(ctime);
+    if (strftime(ctime, sizeof(ctime), strTime, localtime(&tloc)) != 0)
+    {
+	*((String*) client_data) = XtNewString(ctime);
+    }
 }
 
 static void 
