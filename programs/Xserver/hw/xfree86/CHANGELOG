@@ -1,4 +1,7 @@
 XFree86 4.5.99.18 (xx December 2005)
+ 169. Convert block macros in the trident driver to forms that can be
+      used as statements, fixing a problem exposed by change #168
+      (David Dawes, Bugzilla #1636 reported by Jeff Chua and Pierre).
 
 XFree86 4.5.99.17 (8 December 2005)
  168. Fix an offset problem in Xv for the trident driver and later 
@@ -19861,7 +19864,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3623 2005/11/29 17:22:50 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3624 2005/12/08 12:02:43 dawes Exp $
 
 
 
