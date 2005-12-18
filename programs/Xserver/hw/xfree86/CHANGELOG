@@ -1,4 +1,6 @@
 XFree86 4.5.99.18 (xx December 2005)
+ 175. Modify hardware cursor handling in ast driver
+      (Y.C. Chen, Bugzilla #1628).
  174. Make Xaw Form widgets inherit dimensions from their parent at
       widget initialisation time.  (Bugzilla #1623, Alexander Pohoyda).
  173. Add a dvorak_intl xkb map (Bugzilla #1624, Conrad Schuler).
@@ -19873,7 +19875,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3628 2005/12/17 01:07:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3629 2005/12/17 01:10:25 dawes Exp $
 
 
 
