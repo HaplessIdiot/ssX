@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast.h,v 1.1tsi Exp $ */
 
 #ifndef __AST_H__
 #define __AST_H__ 1
@@ -46,7 +46,7 @@
 #define AST_NAME			"AST"
 #define AST_DRIVER_NAME			"ast"
 #define AST_MAJOR_VERSION		0
-#define AST_MINOR_VERSION		51
+#define AST_MINOR_VERSION		60
 #define AST_PATCH_VERSION		0
 #define AST_VERSION	\
 	((AST_MAJOR_VERSION << 20) | (AST_MINOR_VERSION << 10) | AST_PATCH_VERSION)

@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_cursor.c,v 1.1tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -135,6 +135,13 @@ ASTSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     ASTRecPtr	pAST = ASTPTR(pScrn);
     DisplayModePtr mode = pAST->ModePtr;
     int		x_offset, y_offset;
+    UCHAR     *pjSignature;
+
+    /* Set cursor info to Offscreen */
+    pjSignature = (UCHAR *) pAST->HWCInfo.pjHWCVirtualAddr + (HWC_SIZE+HWC_SIGNATURE_SIZE)*pAST->HWCInfo.HWC_NUM_Next + HWC_SIZE;
+    *((ULONG *) (pjSignature + HWC_SIGNATURE_X)) = x;
+    *((ULONG *) (pjSignature + HWC_SIGNATURE_Y)) = y;
+
 
     x_offset = pAST->HWCInfo.offset_x;
     y_offset = pAST->HWCInfo.offset_y;
@@ -225,6 +232,10 @@ ASTLoadCursorImage(ScrnInfoPtr pScrn, UCHAR *src)
     /* Write Checksum as signature */
     pjDstData = (UCHAR *) pAST->HWCInfo.pjHWCVirtualAddr + (HWC_SIZE+HWC_SIGNATURE_SIZE)*pAST->HWCInfo.HWC_NUM_Next + HWC_SIZE;
     *((ULONG *) pjDstData) = ulCheckSum;
+    *((ULONG *) (pjDstData + HWC_SIGNATURE_SizeX)) = pAST->HWCInfo.width;
+    *((ULONG *) (pjDstData + HWC_SIGNATURE_SizeY)) = pAST->HWCInfo.height;
+    *((ULONG *) (pjDstData + HWC_SIGNATURE_HOTSPOTX)) = 0;
+    *((ULONG *) (pjDstData + HWC_SIGNATURE_HOTSPOTY)) = 0;
 
     /* set pattern offset */
     ulPatternAddr = ((pAST->HWCInfo.ulHWCOffsetAddr+(HWC_SIZE+HWC_SIGNATURE_SIZE)*pAST->HWCInfo.HWC_NUM_Next) >> 3);
@@ -322,6 +333,10 @@ ASTLoadCursorARGB(ScrnInfoPtr pScrn, CursorPtr pCurs)
     /* Write Checksum as signature */
     pjDstXor = (UCHAR *) pAST->HWCInfo.pjHWCVirtualAddr + (HWC_SIZE+HWC_SIGNATURE_SIZE)*pAST->HWCInfo.HWC_NUM_Next + HWC_SIZE;
     *((ULONG *) pjDstXor) = ulCheckSum;
+    *((ULONG *) (pjDstXor + HWC_SIGNATURE_SizeX)) = pAST->HWCInfo.width;
+    *((ULONG *) (pjDstXor + HWC_SIGNATURE_SizeY)) = pAST->HWCInfo.height;
+    *((ULONG *) (pjDstXor + HWC_SIGNATURE_HOTSPOTX)) = 0;
+    *((ULONG *) (pjDstXor + HWC_SIGNATURE_HOTSPOTY)) = 0;
 
     /* set pattern offset */
     ulPatternAddr = ((pAST->HWCInfo.ulHWCOffsetAddr +(HWC_SIZE+HWC_SIGNATURE_SIZE)*pAST->HWCInfo.HWC_NUM_Next) >> 3);
