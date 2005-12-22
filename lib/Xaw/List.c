@@ -1,4 +1,4 @@
-/* $Xorg: List.c,v 1.4 2001/02/09 02:03:44 xorgcvs Exp $ */
+/* $XFree86: xc/lib/Xaw/List.c,v 1.17tsi Exp $ */
 
 /*
 Copyright 1989, 1994, 1998  The Open Group
@@ -23,7 +23,6 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/lib/Xaw/List.c,v 1.16 2001/01/17 19:42:27 dawes Exp $ */
 
 /*
  * List.c - List widget
@@ -31,7 +30,7 @@ in this Software without prior written authorization from The Open Group.
  * This is a List widget.  It allows the user to select an item in a list and
  * notifies the application through a callback function.
  *
- *	Created: 	8/13/88
+ *	Created:	8/13/88
  *	By:		Chris D. Peterson
  *                      MIT X Consortium
  */
@@ -81,7 +80,7 @@ static Bool Layout(Widget, Bool, Bool, Dimension*, Dimension*);
 static void PaintItemName(Widget, int);
 static void ResetList(Widget, Bool, Bool);
 
-/* 
+/*
  * Actions
  */
 static void Notify(Widget, XEvent*, String*, Cardinal*);
@@ -91,7 +90,7 @@ static void Unset(Widget, XEvent*, String*, Cardinal*);
 /*
  * Initialization
  */
-static char defaultTranslations[] =  
+static char defaultTranslations[] =
 "<Btn1Down>:"	"Set()\n"
 "<Btn1Up>:"	"Notify()\n"
 ;
@@ -337,7 +336,7 @@ GetGCs(Widget w)
     else
 	lw->list.revgc = XtGetGC(w, GCForeground | GCFont, &values);
 
-    values.tile       = XmuCreateStippledPixmap(XtScreen(w), 
+    values.tile       = XmuCreateStippledPixmap(XtScreen(w),
 						lw->list.foreground,
 						lw->core.background_pixel,
 						lw->core.depth);
@@ -374,10 +373,10 @@ CalculatedValues(Widget w)
 	for (i = 0 ; i < lw->list.nitems; i++) {
 	    if (lw->simple.international == True)
 		len = XmbTextEscapement(lw->list.fontset, lw->list.list[i],
-			 		strlen(lw->list.list[i]));
+					strlen(lw->list.list[i]));
 	    else
 		len = XTextWidth(lw->list.font, lw->list.list[i],
-			 	 strlen(lw->list.list[i]));
+				 strlen(lw->list.list[i]));
 	    if (len > lw->list.longest)
 		lw->list.longest = len;
 	}
@@ -466,7 +465,7 @@ ChangeSize(Widget w, unsigned int width, unsigned int height)
 }
 
 /*ARGSUSED*/
-static void 
+static void
 XawListInitialize(Widget temp1, Widget cnew, ArgList args, Cardinal *num_args)
 {
     ListWidget lw = (ListWidget)cnew;
@@ -520,7 +519,7 @@ CvtToItem(Widget w, int xloc, int yloc, int *item)
 
     if (lw->list.vertical_cols) {
 	one = lw->list.nrows * ((xloc - (int)lw->list.internal_width)
-			        / lw->list.col_width);
+				/ lw->list.col_width);
 	another = (yloc - (int)lw->list.internal_height) / lw->list.row_height;
 	/* If out of range, return minimum possible value */
 	if (another >= lw->list.nrows) {
@@ -534,10 +533,10 @@ CvtToItem(Widget w, int xloc, int yloc, int *item)
 	/* If in right margin handle things right */
 	another = (xloc - (int)lw->list.internal_width) / lw->list.col_width;
 	if (another >= lw->list.ncols) {
-	    another = lw->list.ncols - 1; 
+	    another = lw->list.ncols - 1;
 	    ret_val = OUT_OF_RANGE;
 	}
-    }  
+    }
     if (xloc < 0 || yloc < 0)
 	ret_val = OUT_OF_RANGE;
     if (one < 0)
@@ -596,8 +595,8 @@ ItemInRectangle(Widget w, int ul, int lr, int item)
     ListWidget lw = (ListWidget)w;
     int mod_item;
     int things;
-    
-    if (item < ul || item > lr) 
+
+    if (item < ul || item > lr)
       return (False);
     if (lw->list.vertical_cols)
 	things = lw->list.nrows;
@@ -712,7 +711,7 @@ PaintItemName(Widget w, int item)
 	    HighlightBackground(w, x, y, lw->list.normgc);
 	}
 	else {
-	    if (XtIsSensitive(w)) 
+	    if (XtIsSensitive(w))
 		gc = lw->list.normgc;
 	    else
 		gc = lw->list.graygc;
@@ -727,7 +726,7 @@ PaintItemName(Widget w, int item)
 	    lw->list.is_highlighted = item;
 	}
 	else {
-	    if (XtIsSensitive(w)) 
+	    if (XtIsSensitive(w))
 		gc = lw->list.normgc;
 	    else
 		gc = lw->list.graygc;
@@ -755,7 +754,7 @@ PaintItemName(Widget w, int item)
     XSetClipMask(XtDisplay(w), gc, None);
 }
 
-static void 
+static void
 XawListRedisplay(Widget w, XEvent *event, Region region)
 {
     int item;			/* an item to work with */
@@ -772,7 +771,7 @@ XawListRedisplay(Widget w, XEvent *event, Region region)
 
     if (Superclass->core_class.expose)
     (Superclass->core_class.expose)(w, event, region);
-    
+
     for (item = ul_item; item <= lr_item && item < lw->list.nitems; item++)
 	if (ItemInRectangle(w, ul_item, lr_item, item))
 	    PaintItemName(w, item);
@@ -785,13 +784,13 @@ XawListRedisplay(Widget w, XEvent *event, Region region)
  * w - the widget.
  * intended - what the parent intends to do with us.
  * requested - what we want to happen */
-static XtGeometryResult 
+static XtGeometryResult
 XawListQueryGeometry(Widget w, XtWidgetGeometry *intended,
 		     XtWidgetGeometry *requested)
 {
     Dimension new_width, new_height;
     Bool change, width_req, height_req;
-    
+
     width_req = intended->request_mode & CWWidth;
     height_req = intended->request_mode & CWHeight;
 
@@ -806,13 +805,13 @@ XawListQueryGeometry(Widget w, XtWidgetGeometry *intended,
 	new_height = XtHeight(w);
 
     requested->request_mode = 0;
-    
+
    /*
     * We only care about our height and width
     */
     if (!width_req && !height_req)
 	return (XtGeometryYes);
-    
+
     change = Layout(w, !width_req, !height_req, &new_width, &new_height);
 
     requested->request_mode |= CWWidth;
@@ -849,7 +848,7 @@ XawListResize(Widget w)
  * width, height- the is the current width and height that we are going
  *		we are going to layout the list widget to,
  *		depending on xfree and yfree of course.
- *			       
+ *
  * Return:
  *	True if width or height have been changed */
 static Bool
@@ -873,7 +872,7 @@ Layout(Widget w, Bool xfree, Bool yfree, Dimension *width, Dimension *height)
 	       of inter-column column_space 's as columns.  There should thus
 	       be a half column_space margin on each side of each column...*/
 	    width2 = lw->list.ncols * lw->list.col_width +
-	    	     (lw->list.internal_width << 1);
+		     (lw->list.internal_width << 1);
 	    change = True;
 	}
 	if (yfree) {
@@ -944,7 +943,7 @@ Layout(Widget w, Bool xfree, Bool yfree, Dimension *width, Dimension *height)
 	while (1) {
 	    lw->list.nrows = ((lw->list.nitems - 1) / lw->list.ncols) + 1;
 	    width2 = lw->list.ncols * lw->list.col_width +
-	    	     (lw->list.internal_width << 1);
+		     (lw->list.internal_width << 1);
 	    height2 = lw->list.nrows * lw->list.row_height +
 		      (lw->list.internal_height << 1);
 	    if (width2 >= MaxSize && height2 >= MaxSize)
@@ -980,7 +979,7 @@ Notify(Widget w, XEvent *event, String *params, Cardinal *num_params)
 
     /*
      * Find item and if out of range then unhighlight and return
-     * 
+     *
      * If the current item is unhighlighted then the user has aborted the
      * notify, so unhighlight and return
      */
@@ -1010,7 +1009,7 @@ Notify(Widget w, XEvent *event, String *params, Cardinal *num_params)
      */
     ret_value.string = lw->list.list[item];
     ret_value.list_index = item;
-    
+
     XtCallCallbacks(w, XtNcallback, (XtPointer)&ret_value);
 }
 
@@ -1047,7 +1046,7 @@ Set(Widget w, XEvent *event, String *params, Cardinal *num_params)
  * Set specified arguments into widget
  */
 /*ARGSUSED*/
-static Boolean 
+static Boolean
 XawListSetValues(Widget current, Widget request, Widget cnew,
 		 ArgList args, Cardinal *num_args)
 {
@@ -1138,7 +1137,7 @@ XawListSetValues(Widget current, Widget request, Widget cnew,
 	nl->list.highlight = NO_HIGHLIGHT;
 	redraw = True;
     }
-    
+
     return (redraw);
 }
 
@@ -1147,7 +1146,7 @@ XawListDestroy(Widget w)
 {
     ListWidget lw = (ListWidget)w;
     XGCValues values;
-    
+
     XGetGCValues(XtDisplay(w), lw->list.graygc, GCTile, &values);
     XmuReleaseStippledPixmap(XtScreen(w), values.tile);
     XtReleaseGC(w, lw->list.graygc);
@@ -1229,7 +1228,7 @@ void
 XawListHighlight(Widget w, int item)
 {
     ListWidget lw = (ListWidget)w;
-    
+
     if (XtIsSensitive(w)) {
 	lw->list.highlight = item;
 	if (lw->list.is_highlighted != NO_HIGHLIGHT)
@@ -1254,8 +1253,10 @@ XawListShowCurrent(Widget w)
     ListWidget lw = (ListWidget)w;
     XawListReturnStruct *ret_val;
 
-    ret_val = (XawListReturnStruct *)XtMalloc(sizeof(XawListReturnStruct));
-    
+    ret_val = (XawListReturnStruct*) XtMalloc(sizeof(XawListReturnStruct));
+    if (ret_val == NULL)
+	return NULL;
+
     ret_val->list_index = lw->list.highlight;
     if (ret_val->list_index == XAW_LIST_NONE)
 	ret_val->string = "";
