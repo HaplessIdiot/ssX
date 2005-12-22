@@ -1,4 +1,4 @@
-/* $Xorg: FormP.h,v 1.4 2001/02/09 02:03:43 xorgcvs Exp $ */
+/* $XFree86: xc/lib/Xaw/FormP.h,v 1.14tsi Exp $ */
 
 /***********************************************************
 
@@ -27,15 +27,15 @@ in this Software without prior written authorization from The Open Group.
 
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts.
 
-                        All Rights Reserved
+			All Rights Reserved
 
-Permission to use, copy, modify, and distribute this software and its 
-documentation for any purpose and without fee is hereby granted, 
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted,
 provided that the above copyright notice appear in all copies and that
-both that copyright notice and this permission notice appear in 
+both that copyright notice and this permission notice appear in
 supporting documentation, and that the name of Digital not be
 used in advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.  
+software without specific, written prior permission.
 
 DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
 ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
@@ -46,7 +46,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/FormP.h,v 1.13 2001/12/14 19:54:40 dawes Exp $ */
 
 /* Form widget private definitions */
 
@@ -68,8 +67,8 @@ typedef enum {
     LayoutDone
 } LayoutState;
 
-#define XtInheritLayout							\
-((Boolean (*)(FormWidget, unsigned int, unsigned int, Bool))_XtInherit)
+#define XtInheritLayout						\
+    ((Boolean (*)(FormWidget, unsigned int, unsigned int, Bool))_XtInherit)
 
 typedef struct {
     Boolean(*layout)(FormWidget, unsigned int, unsigned int, Bool);
@@ -114,22 +113,20 @@ typedef struct _FormRec {
 typedef struct _FormConstraintsPart {
     /* resources */
     XtEdgeType top, bottom, left, right;/* where to drag edge on resize */
-    int		dx;		/* desired horiz offset			*/
-    int		dy;		/* desired vertical offset		*/
+    int		dx, dy;		/* desired horizontal/vertical offset	*/
     Widget	horiz_base;	/* measure dx from here if non-null	*/
     Widget	vert_base;	/* measure dy from here if non-null	*/
     Boolean	allow_resize;	/* True if child may request resize	*/
 
     /* private */
-    short	virtual_width, virtual_height;
+    Dimension	virtual_width, virtual_height;
     Position	new_x, new_y;
     LayoutState	layout_state;	/* temporary layout state		*/
     Boolean	deferred_resize;/* was resized while no_refigure is set */
 #ifndef OLDXAW
-    short	virtual_x, virtual_y;
+    Position	virtual_x, virtual_y;
     XtPointer	pad[2];		/* leave some space for further optimizations
-				 * in the form widget geometry
-				 */
+				 * in the form widget geometry		*/
 #endif
 } FormConstraintsPart;
 

@@ -1,4 +1,6 @@
 XFree86 4.5.99.18 (xx December 2005)
+ 176. Some cleanups and typo fixes in libXaw (Alexander Pohoyda, Bugzilla
+      #1637, Marc La France).
  175. Modify hardware cursor handling in ast driver
       (Y.C. Chen, Bugzilla #1628).
  174. Make Xaw Form widgets inherit dimensions from their parent at
@@ -19875,7 +19877,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3629 2005/12/17 01:10:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3630 2005/12/18 01:00:45 tsi Exp $
 
 
 
