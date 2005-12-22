@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.73tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.74 2005/10/14 15:17:23 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -155,9 +155,6 @@ extern void RRExtensionInit(INITARGS);
 #endif
 
 #ifndef XFree86LOADER
-#ifdef BEZIER
-extern void BezierExtensionInit(INITARGS);
-#endif
 #ifdef SHAPE
 extern void ShapeExtensionInit(INITARGS);
 #endif
@@ -172,9 +169,6 @@ extern void BigReqExtensionInit(INITARGS);
 #endif
 #ifdef MITMISC
 extern void MITMiscExtensionInit(INITARGS);
-#endif
-#ifdef XIDLE
-extern void XIdleExtensionInit(INITARGS);
 #endif
 #ifdef XTRAP
 extern void DEC_XTRAPInit(INITARGS);
@@ -244,9 +238,6 @@ InitExtensions(int argc, char *argv[])
   if (!noPanoramiXExtension) PanoramiXExtensionInit();
 # endif
 #endif
-#ifdef BEZIER
-    BezierExtensionInit();
-#endif
 #ifdef XTESTEXT1
     if (!noTestExtensions) XTestExtension1Init();
 #endif
@@ -273,9 +264,6 @@ InitExtensions(int argc, char *argv[])
 #endif
 #ifdef MITMISC
     MITMiscExtensionInit();
-#endif
-#ifdef XIDLE
-    XIdleExtensionInit();
 #endif
 #ifdef XTRAP
     if (!noTestExtensions) DEC_XTRAPInit();
@@ -390,9 +378,6 @@ InitVisualWrap()
 
 /* List of built-in (statically linked) extensions */
 static ExtensionModule staticExtensions[] = {
-#ifdef BEZIER
-    { BezierExtensionInit, "BEZIER", NULL, NULL, NULL },
-#endif
 #ifdef XTESTEXT1
     { XTestExtension1Init, "XTEST1", &noTestExtensions, NULL, NULL },
 #endif
@@ -404,9 +389,6 @@ static ExtensionModule staticExtensions[] = {
 #endif
 #ifdef XTEST
     { XTestExtensionInit, XTestExtensionName, &noTestExtensions, NULL, NULL },
-#endif
-#ifdef XIDLE
-    { XIdleExtensionInit, "XIDLE", NULL, NULL, NULL },
 #endif
 #ifdef XKB
     { XkbExtensionInit, XkbName, &noXkbExtension, NULL, NULL },
