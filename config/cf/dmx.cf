@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/dmx.cf,v 1.1tsi Exp $
+XCOMM $XFree86: xc/config/cf/dmx.cf,v 1.2 2005/07/05 16:43:54 tsi Exp $
  
 /*
  * This file contains DMX server specific defines
@@ -36,7 +36,6 @@ XCOMM $XFree86: xc/config/cf/dmx.cf,v 1.1tsi Exp $
 #define XVendorRelease	DMX_VENDOR_RELEASE(1,2,2004,6,30)
 
 EXTENSIONS_NOT_SUPPORTED = \
-	-UBEZIER \
 	-UMULTIBUFFER \
 	-UXV \
 	-UDBE \
