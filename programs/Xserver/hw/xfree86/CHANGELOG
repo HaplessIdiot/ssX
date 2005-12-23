@@ -1,4 +1,6 @@
-XFree86 4.5.99.18 (xx December 2005)
+XFree86 4.5.99.19 (xx January 2006)
+
+XFree86 4.5.99.18 (23 December 2005)
  176. Some cleanups and typo fixes in libXaw (Alexander Pohoyda, Bugzilla
       #1637, Marc La France).
  175. Modify hardware cursor handling in ast driver
@@ -19877,7 +19879,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3630 2005/12/18 01:00:45 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3631 2005/12/22 17:52:11 tsi Exp $
 
 
 
