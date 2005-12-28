@@ -1,4 +1,4 @@
-/* $Xorg: Xdbeproto.h,v 1.3 2000/08/18 04:05:45 coskrey Exp $ */
+/* $XFree86$ */
 /******************************************************************************
  * 
  * Copyright (c) 1994, 1995  Hewlett-Packard Company
@@ -37,6 +37,8 @@
 
 /* INCLUDES */
 
+#include <X11/X.h>
+#include <X11/Xmd.h>
 
 /* DEFINES */
 
