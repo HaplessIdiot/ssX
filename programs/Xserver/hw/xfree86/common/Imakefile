@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.156tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.157 2005/10/14 15:16:32 tsi Exp $
 
 
 
@@ -208,9 +208,9 @@ XCONFIGUREDEFINES = -DXF86CONFIGFILE='"$(XF86CONFIGFILE)"'
 AllTarget($(OFILES))
 
 SpecialCObjectRule(xf86Bus,NullParameter,$(BUGMSG) $(VGAINCLUDES))
-SpecialCObjectRule(xf86Init,$(ICONFIGFILES),$(OSNAMEDEF) $(BUILDERMSG) $(BUGMSG) $(CUSTOMVERDEF) $(EXT_DEFINES) $(BETADEFS) $(MDEBUGDEFS))
-SpecialCObjectRule(xf86Events,$(ICONFIGFILES),$(EXT_DEFINES) $(MDEBUGDEFS))
-SpecialCObjectRule(xf86Globals,$(ICONFIGFILES),$(EXT_DEFINES) $(MODPATHDEFINES) $(LOGDEFINES))
+SpecialCObjectRule(xf86Init,$(ICONFIGFILES),$(OSNAMEDEF) $(BUILDERMSG) $(BUGMSG) $(CUSTOMVERDEF) $(BETADEFS) $(MDEBUGDEFS))
+SpecialCObjectRule(xf86Events,$(ICONFIGFILES),$(MDEBUGDEFS))
+SpecialCObjectRule(xf86Globals,$(ICONFIGFILES),$(MODPATHDEFINES) $(LOGDEFINES))
 SpecialCObjectRule(xf86AutoConfig,$(ICONFIGFILES),$(XCONFIGDEFINES))
 SpecialCObjectRule(xf86Config,$(ICONFIGFILES),$(XCONFIGDEFINES))
 SpecialCObjectRule(xf86Configure,$(ICONFIGFILES),$(XCONFIGUREDEFINES))
@@ -219,7 +219,7 @@ SpecialCObjectRule(xf86Configure,$(ICONFIGFILES),$(XCONFIGUREDEFINES))
 SpecialCObjectRule($(BETAOBJ),NullParameter,$(EXP_DEFINES))
 #endif
 
-SpecialCObjectRule(xf86IniExt,$(ICONFIGFILES),$(EXT_DEFINES) $(EXT_MODULES_DEFINES))
+SpecialCObjectRule(xf86IniExt,$(ICONFIGFILES),$(EXT_MODULES_DEFINES))
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(xf86,$(OBJS))
