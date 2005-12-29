@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/Xext/extmod/Imakefile,v 1.24tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/extmod/Imakefile,v 1.25tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -161,7 +161,7 @@ ModuleObjectRule()
 SpecialCObjectRule(xf86vmode,NullParameter,-O0)
 #endif
 
-SpecialCObjectRule(modinit,$(ICONFIGFILES),$(EXT_DEFINES))
+SpecialCObjectRule(modinit,$(ICONFIGFILES),NullParameter)
 LibraryModuleTarget(extmod,$(MOBJS),extensions)
 NormalLintTarget($(SRCS))
 
