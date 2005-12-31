@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/X11/xlibi18n/lc/def/Imakefile,v 1.5tsi Exp $
+XCOMM $XFree86: xc/lib/X11/xlibi18n/lc/def/Imakefile,v 1.6 2005/03/29 17:38:11 tsi Exp $
 /*
  * Copyright (c) 2000-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -45,8 +45,6 @@ XCOMM $XFree86: xc/lib/X11/xlibi18n/lc/def/Imakefile,v 1.5tsi Exp $
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-/* $XOZ$ */
 
 
  EXTRA_INCLUDES = -I../../..
