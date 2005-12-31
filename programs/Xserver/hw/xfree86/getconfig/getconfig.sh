@@ -1,7 +1,5 @@
 #!/bin/sh
 
-# $DHD: xc/programs/Xserver/hw/xfree86/getconfig/getconfig.sh,v 1.2 2003/09/20 01:45:57 dawes Exp $
-
 #
 # Copyright 2003-2005 by David H. Dawes.
 # Copyright 2003-2005 by X-Oz Technologies.
@@ -49,7 +47,7 @@
 # Author: David Dawes <dawes@XFree86.Org>.
 #
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/getconfig/getconfig.sh,v 1.4 2005/02/01 04:11:23 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/getconfig/getconfig.sh,v 1.5 2005/02/09 20:55:57 dawes Exp $
 
 # A simple wrapper to execute the real getconfig program.  So long as perl
 # is in $PATH, we don't need to know where it is this way.
