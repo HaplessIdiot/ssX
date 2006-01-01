@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.67tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.68 2005/07/19 14:37:30 tsi Exp $ */
 /*
  * Copyright 1997 through 2005 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -164,7 +164,7 @@ ATIScanPCIBases
                     (*nPCIPort)++;
                     *PCIPorts = (PortPtr)xnfrealloc(*PCIPorts,
                         *nPCIPort * SizeOf(PortRec));
-                    (*PCIPorts)[i].Domain = Domain;
+                    (*PCIPorts)[j].Domain = Domain;
                     (*PCIPorts)[j].Base = Base;
                     (*PCIPorts)[j].Size = (CARD8)*pSize;
                     (*PCIPorts)[j].Flag = ProbeFlag;
