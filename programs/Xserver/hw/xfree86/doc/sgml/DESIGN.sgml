@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.58tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.59tsi Exp $
 </ident>
 
 
@@ -2791,7 +2791,7 @@ All modules must NOT include any system include files, or the following:
     &s.code;"xf86Priv.h"&nl;
     "xf86Privstr.h"&nl;
     "xf86_OSlib.h"&nl;
-    <X11/Xos.h>&e.code;
+    &lt;X11/Xos.h&gt;&e.code;
  </quote>
 
 In addition, "xf86_libc.h" must not be included explicitly.  It is
@@ -6384,7 +6384,7 @@ of a staticly built server.
     "xf86Privstr.h"&nl;
     "xf86_libc.h"&nl;
     "xf86_OSlib.h"&nl;
-    <X11/Xos.h>&e.code;&nl;
+    &lt;X11/Xos.h&gt;&e.code;&nl;
     any OS header
  </quote>
 
