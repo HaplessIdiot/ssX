@@ -1,4 +1,4 @@
-/* $XTermId: os2main.c,v 1.212 2005/11/01 23:28:04 tom Exp $ */
+/* $XTermId: os2main.c,v 1.214 2006/01/02 20:52:47 tom Exp $ */
 
 /* removed all foreign stuff to get the code more clear (hv)
  * and did some rewrite for the obscure OS/2 environment
@@ -7,7 +7,7 @@
 #ifndef lint
 static char *rid = "$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.80 2005/09/18 23:48:13 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.81 2005/11/03 13:17:28 dickey Exp $ */
 
 /***********************************************************
 
@@ -1624,7 +1624,7 @@ spawn(void)
     }
 
     /* avoid double MapWindow requests */
-    XtSetMappedWhenManaged(XtParent(CURRENT_EMU(screen)), False);
+    XtSetMappedWhenManaged(SHELL_OF(CURRENT_EMU(screen)), False);
 
     wm_delete_window = XInternAtom(XtDisplay(toplevel), "WM_DELETE_WINDOW",
 				   False);
@@ -1640,7 +1640,7 @@ spawn(void)
 	XmuGetHostname(mit_console_name + MIT_CONSOLE_LEN, 255);
 	mit_console = XInternAtom(screen->display, mit_console_name, False);
 	/* the user told us to be the console, so we can use CurrentTime */
-	XtOwnSelection(XtParent(CURRENT_EMU(screen)),
+	XtOwnSelection(SHELL_OF(CURRENT_EMU(screen)),
 		       mit_console, CurrentTime,
 		       ConvertConsoleSelection, NULL, NULL);
     }
