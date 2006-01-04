@@ -1,12 +1,12 @@
-/* $XTermId: fontutils.c,v 1.183 2005/11/03 01:49:20 tom Exp $ */
+/* $XTermId: fontutils.c,v 1.185 2006/01/04 02:02:34 tom Exp $ */
 
 /*
- * $XFree86: xc/programs/xterm/fontutils.c,v 1.54 2005/09/18 23:48:12 dickey Exp $
+ * $XFree86: xc/programs/xterm/fontutils.c,v 1.55 2005/11/03 13:17:27 dickey Exp $
  */
 
 /************************************************************
 
-Copyright 1998-2004,2005 by Thomas E. Dickey
+Copyright 1998-2005,2006 by Thomas E. Dickey
 
                         All Rights Reserved
 
@@ -1815,6 +1815,7 @@ xtermDrawBoxChar(XtermWidget xw,
 	    ? "-BAD"
 	    : "")));
 
+    memset(&values, 0, sizeof(values));
     if (!XGetGCValues(screen->display, gc, GCBackground, &values))
 	return;
 
