@@ -1,4 +1,6 @@
-XFree86 4.5.99.19 (xx January 2006)
+XFree86 4.5.99.20 (xx January 2006)
+
+XFree86 4.5.99.19 (8 January 2006)
  178. Xterm patch #208 (Thomas Dickey).
  177. Fix odd crash in ATI driver probe (David Dawes).
 
@@ -19881,7 +19883,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3633 2006/01/01 04:05:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3634 2006/01/04 02:10:12 dickey Exp $
 
 
 
