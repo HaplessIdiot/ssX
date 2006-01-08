@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/dummylib/Imakefile,v 1.6tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/dummylib/Imakefile,v 1.7 2005/10/14 15:16:50 tsi Exp $
 
 #include <Server.tmpl>
 
@@ -52,6 +52,12 @@ OBJS = \
 	xf86servisinit.o \
 	xf86verbose.o \
 	sigiostubs.o
+
+#if HasAsprintf
+ASPRINTF_DEFINES = -DHAS_ASPRINTF
+#endif
+
+DEFINES = $(ASPRINTF_DEFINES)
 
 LinkSourceFile(sigiostubs.c,../os-support/shared)
 NormalLibraryObjectRule()
