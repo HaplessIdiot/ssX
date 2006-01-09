@@ -24,9 +24,8 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	Id: fontcache.h,v 1.12 1999/01/09 06:24:30 akiyama Exp $
  */
-/* $XFree86: xc/lib/font/fontcache/fontcache.h,v 1.7tsi Exp $ */
+/* $XFree86: xc/lib/font/fontcache/fontcache.h,v 1.8 2005/10/14 15:16:06 tsi Exp $ */
 
 #ifndef _FONTCACHE_H_
 #define _FONTCACHE_H_

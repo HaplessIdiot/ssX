@@ -1,7 +1,5 @@
-/* $XFree86: xc/programs/Xserver/lbx/Imakefile,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/lbx/Imakefile,v 1.6 2005/10/14 15:17:19 tsi Exp $ */
 /*
- * $NCDXorg: @(#)Imakefile,v 1.16 1994/11/18 20:32:34 lemke Exp $
- *
  * Copyright 1992 Network Computing Devices
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

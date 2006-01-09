@@ -1,4 +1,3 @@
-/* $XConsortium: showfont.c,v 1.13 94/04/17 20:44:07 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -49,7 +48,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/showfont/showfont.c,v 1.3 2000/02/18 12:20:17 tsi Exp $ */
+/* $XFree86: xc/programs/showfont/showfont.c,v 1.4 2001/08/27 17:41:01 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<stdlib.h>

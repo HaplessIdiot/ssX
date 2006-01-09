@@ -1,7 +1,4 @@
 /*
- * $XConsortium: externs.h /main/36 1996/01/14 16:51:37 kaleb $
- *
- *
  *		       COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
@@ -25,7 +22,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xmh/externs.h,v 1.4 2001/10/28 03:34:38 tsi Exp $ */
+/* $XFree86: xc/programs/xmh/externs.h,v 1.5 2002/04/05 21:06:28 dickey Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <errno.h>

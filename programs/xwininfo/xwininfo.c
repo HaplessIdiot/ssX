@@ -1,4 +1,3 @@
-/* $Xorg: xwininfo.c,v 1.4 2001/02/09 02:06:04 xorgcvs Exp $ */
 /*
 
 Copyright 1987, 1998  The Open Group
@@ -29,7 +28,7 @@ or other dealings in this Software without prior written authorization
 of the copyright holder.
 
 */
-/* $XFree86: xc/programs/xwininfo/xwininfo.c,v 1.9 2003/09/09 22:08:25 herrb Exp $ */
+/* $XFree86: xc/programs/xwininfo/xwininfo.c,v 1.10 2003/09/20 16:08:32 herrb Exp $ */
 
 
 /*

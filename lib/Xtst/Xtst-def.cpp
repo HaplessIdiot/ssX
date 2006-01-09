@@ -16,3 +16,17 @@ EXPORTS
  XTestQueryExtension
  XTestSetGContextOfGC
  XTestSetVisualIDOfVisual
+ XRecordQueryVersion
+ XRecordCreateContext
+ XRecordAllocRange
+ XRecordRegisterClients
+ XRecordUnregisterClients
+ XRecordGetContext
+ XRecordFreeState
+ XRecordEnableContext
+ XRecordEnableContextAsync
+ XRecordProcessReplies
+ XRecordFreeData
+ XRecordDisableContext
+ XRecordFreeContext
+/* $XFree86$ */

@@ -1,7 +1,3 @@
-/*
- * $Xorg: ErrDes.c,v 1.4 2001/02/09 02:03:32 xorgcvs Exp $
- */
-
 /***********************************************************
 
 Copyright 1987, 1988, 1998  The Open Group
@@ -48,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/ErrDes.c,v 3.11 2003/08/06 14:03:59 eich Exp $ */
+/* $XFree86: xc/lib/X11/ErrDes.c,v 3.12 2003/11/17 22:20:06 dawes Exp $ */
 
 #include "Xlibint.h"
 #include <X11/Xos.h>

@@ -1,4 +1,3 @@
-/* $Xorg: imEvToWire.c,v 1.3 2000/08/17 19:45:12 cpqbld Exp $ */
 /***********************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 
@@ -21,7 +20,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/imEvToWire.c,v 1.2 2003/04/13 19:22:20 dawes Exp $ */
 
 #define NEED_EVENTS
 #include <X11/Xlibint.h>

@@ -35,8 +35,6 @@
 /*
  * bin.h
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 #ifndef __glubin_h_

@@ -1,5 +1,4 @@
-/* $XConsortium: keys.h,v 1.3 93/10/28 15:27:11 gildea Exp $ */
-
+/* $XFree86$ */
 /*
 
 Copyright 1989-1991, Bitstream Inc., Cambridge, MA.

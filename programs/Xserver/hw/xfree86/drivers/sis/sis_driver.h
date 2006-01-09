@@ -1,5 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.h,v 1.40 2004/06/29 10:17:46 twini Exp $ */
-/* $XdotOrg$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.h,v 1.41 2005/02/19 01:03:23 dawes Exp $ */
 /*
  * Global data and definitions
  *

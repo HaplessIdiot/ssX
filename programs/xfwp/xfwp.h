@@ -1,5 +1,3 @@
-/* $Xorg: xfwp.h,v 1.6 2001/02/09 02:05:46 xorgcvs Exp $ */
-
 /*
 Copyright 1996, 1998  The Open Group
 
@@ -25,7 +23,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86: xc/programs/xfwp/xfwp.h,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/xfwp/xfwp.h,v 1.11 2004/12/31 02:56:03 tsi Exp $ */
 
 #ifndef _XFWP_H
 #define _XFWP_H

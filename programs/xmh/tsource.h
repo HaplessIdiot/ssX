@@ -1,5 +1,3 @@
-/* $XConsortium: tsource.h,v 1.3 94/04/17 20:24:04 converse Exp $ */
-
 /***********************************************************
 
 Copyright (c) 1987, 1988  X Consortium
@@ -47,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/xmh/tsource.h,v 1.3 2002/07/01 02:26:05 tsi Exp $ */
 
 #ifndef _tsource_h
 #define _tsource_h

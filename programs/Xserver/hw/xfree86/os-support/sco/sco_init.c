@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_init.c,v 3.15tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_init.c,v 3.16 2005/10/14 15:17:07 tsi Exp $ */
 /*
  * Copyright 2001 by J. Kean Johnston <jkj@sco.com>
  *
@@ -20,7 +20,6 @@
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XConsortium$ */
 
 /* Re-written May 2001 to represent the current state of reality */
 

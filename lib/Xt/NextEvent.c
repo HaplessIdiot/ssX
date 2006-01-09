@@ -1,5 +1,3 @@
-/* $Xorg: NextEvent.c,v 1.8 2001/02/09 02:03:55 xorgcvs Exp $ */
-
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -58,7 +56,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.28 2004/04/03 22:26:21 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.29 2004/05/05 00:07:03 dickey Exp $ */
 
 #include "IntrinsicI.h"
 #include <stdio.h>

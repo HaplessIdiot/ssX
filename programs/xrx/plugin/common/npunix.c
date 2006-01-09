@@ -1,4 +1,3 @@
-/* $Xorg: npunix.c,v 1.3 2000/08/17 19:54:59 cpqbld Exp $ */
 /*
  * npunix.c
  *
@@ -12,7 +11,7 @@
  *	YOU WILL NOT NEED TO EDIT THIS FILE.
  *----------------------------------------------------------------------
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xrx/plugin/common/npunix.c,v 1.2 2004/04/03 22:38:55 tsi Exp $ */
 
 #define XP_UNIX 1
 

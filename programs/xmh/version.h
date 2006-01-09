@@ -1,4 +1,4 @@
-/* $XConsortium: version.h,v 1.2 94/04/17 20:24:05 gildea Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -29,4 +29,4 @@ from the X Consortium.
 
 */
 
-#define XMH_VERSION "xmh    X Consortium    R6"
+#define XMH_VERSION "xmh    X Consortium    R6.3"

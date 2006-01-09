@@ -1,8 +1,4 @@
 /*
- *	$Xorg: Tekparse.h,v 1.3 2000/08/17 19:55:07 cpqbld Exp $
- */
-
-/*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
  *                         All Rights Reserved
@@ -24,7 +20,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/programs/xterm/Tekparse.h,v 1.3 1998/10/25 12:48:08 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/Tekparse.h,v 1.4 2001/01/17 23:46:34 dawes Exp $ */
 
 
 /* @(#)Tekparse.h	X10/6.6	11/7/86 */

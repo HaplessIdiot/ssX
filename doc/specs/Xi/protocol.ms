@@ -1,4 +1,4 @@
-.\" $XConsortium: protocol.ms,v 1.13 94/04/17 23:56:45 rws Exp $
+.\" $XFree86$
 .\" Input Extension
 .EH ''''
 .OH ''''
@@ -17,7 +17,7 @@ Version 1.0
 .sp 1
 X Consortium Standard
 .sp 1
-X Version 11, Release 6
+X Version 11, Release 6.4
 .sp 16
 .ps 15
 \fBMark Patrick\0\0\0\0Ardent Computer
@@ -66,10 +66,10 @@ in this Software without prior written authorization from the X Consortium.
 .ps
 .vs
 .bp 1
-.EH '\fBX Input Extension Protocol Specification\fP''\fBX11, Release 6\fP'
-.OH '\fBX Input Extension Protocol Specification\fP''\fBX11, Release 6\fP'
-.EF ''\fB % \fP''
-.OF ''\fB % \fP''
+.EH '\fBX Input Extension Protocol Specification\fP''\fBX11, Release 6.4\fP'
+.OH '\fBX Input Extension Protocol Specification\fP''\fBX11, Release 6.4\fP'
+.EF ''\fB\\\\n(PN\fP''
+.OF ''\fB\\\\n(PN\fP''
 .\"  Force the heading counter for level 1 to one
 .\"
 .nr Ej 1
@@ -82,6 +82,7 @@ in this Software without prior written authorization from the X Consortium.
 .\"  Page eject for each level 1 heading
 .\"
 .nr H1 1
+.if \n(GS .nr nh*hl 1
 .nr P 1
 .\"
 .\"  Define Ch to contain the chapter string.
@@ -317,7 +318,7 @@ whether that device is connected to the X server.  This is done through the
 can be opened by the X server.
 .sp 1.5
 ListInputDevices
-.in -.5i
+.br
 =>
 .in +.5i
 .br
@@ -2179,7 +2180,9 @@ T}	T{
 .br
 \ key: KEYCODE
 .br
-\ auto_repeat_mode: {AutoRepeatModeOn, AutoRepeatModeOff, AutoRepeatModeDefault}]
+\ auto_repeat_mode: {AutoRepeatModeOn,
+.br
+\ \ AutoRepeatModeOff, AutoRepeatModeDefault}]
 T}
 .TE
 .in -.5i
@@ -2216,7 +2219,7 @@ T}	T{
 .br
 \ accelNumerator: INT16
 .br
-accelDenominator: INT16
+\ accelDenominator: INT16
 .br
 \ threshold: INT16]
 T}
@@ -2346,7 +2349,7 @@ feedbackid: CARD8
 .br
 percent: INT8
 .br
-.in -.5i
+.sp
 Errors: Device, Value
 .br
 .in -.5i

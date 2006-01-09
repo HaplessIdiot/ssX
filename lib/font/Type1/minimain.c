@@ -1,5 +1,4 @@
-/* $Xorg: minimain.c,v 1.4 2001/02/09 02:04:01 xorgcvs Exp $ */
-
+/* $XFree86$ */
 /*
 
 Copyright 1993, 1994, 1998  The Open Group

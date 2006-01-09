@@ -1,5 +1,3 @@
-/* $Xorg: StripChart.h,v 1.5 2001/02/09 02:03:46 xorgcvs Exp $ */
-
 /***********************************************************
 
 Copyright 1987, 1988, 1998  The Open Group
@@ -46,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/StripChart.h,v 1.5 2001/01/17 19:42:32 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/StripChart.h,v 1.6 2001/12/14 19:54:44 dawes Exp $ */
 
 #ifndef _XawStripChart_h
 #define _XawStripChart_h

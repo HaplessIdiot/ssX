@@ -1,6 +1,6 @@
 XCOMM! /bin/sh
 XCOMM
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/x11perf/x11pcomp.cpp,v 1.5 2002/11/25 14:05:05 eich Exp $
 XCOMM
 XCOMM Collects multiple outputs of x11perf.  Just feed it a list of files, each
 XCOMM containing the output from an x11perf run, and this shell will extract the
@@ -19,7 +19,6 @@ XCOMM
 XCOMM Mark Moraes, University of Toronto <moraes@csri.toronto.edu>
 XCOMM Joel McCormack, DEC Western Research Lab <joel@decwrl.dec.com>
 XCOMM
-XCOMM $Xorg: x11pcomp.cpp,v 1.3 2000/08/17 19:54:10 cpqbld Exp $
 
 PATH=LIBPATH:.:$PATH
 export PATH

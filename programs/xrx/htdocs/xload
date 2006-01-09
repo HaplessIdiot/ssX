@@ -1,4 +1,4 @@
-<!-- $XConsortium: xload /main/2 1996/10/22 14:45:14 lehors $ -->
+<!-- $XFree86$ -->
 <PARAM Name=VERSION Value=1.0>
 <PARAM Name=REQUIRED-SERVICES Value=UI>
 <PARAM Name=UI Value=X>

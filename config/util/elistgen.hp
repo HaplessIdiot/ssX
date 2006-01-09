@@ -1,5 +1,5 @@
 XCOMM!/bin/sh
-XCOMM $XConsortium: elistgen.hp /main/2 1996/12/04 10:13:14 swick $
+XCOMM $XFree86$
 XCOMM
 XCOMM #########################################################################
 XCOMM Construct shared-library export lists for HP-UX based on standardized

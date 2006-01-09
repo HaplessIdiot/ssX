@@ -1,5 +1,3 @@
-/* $Xorg: DrawLogo.c,v 1.4 2001/02/09 02:03:52 xorgcvs Exp $ */
-
 /*
 
 Copyright 1988, 1998  The Open Group
@@ -25,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xlogo/RenderLogo.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/xlogo/RenderLogo.c,v 1.4 2003/05/29 15:20:57 tsi Exp $ */
 
 #include <stdio.h>
 

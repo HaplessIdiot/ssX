@@ -51,15 +51,13 @@
  * All Rights Reserved
  */
 
-/* $XFree86: xc/lib/misc/snprintf.c,v 3.1tsi Exp $ */
+/* $XFree86: xc/lib/misc/snprintf.c,v 3.2 2005/02/07 01:01:16 tsi Exp $ */
 
 
 /*
  * Assumption: systems that don't have snprintf and vsnprintf do have
  * ecvt, fcvt and gcvt.
  */
-
-/* From: Id: sprint.c,v 1.5 1995/09/10 18:35:09 chuck Exp */
 
 #include <ctype.h>
 #include <stdlib.h>

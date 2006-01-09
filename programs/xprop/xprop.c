@@ -1,4 +1,3 @@
-/* $Xorg: xprop.c,v 1.6 2001/02/09 02:05:56 xorgcvs Exp $ */
 /*
 
 Copyright 1990, 1998  The Open Group
@@ -27,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xprop/xprop.c,v 1.15 2003/09/24 02:43:38 dawes Exp $ */
+/* $XFree86: xc/programs/xprop/xprop.c,v 1.16 2003/10/31 21:49:48 herrb Exp $ */
 
 
 #include <X11/Xlib.h>

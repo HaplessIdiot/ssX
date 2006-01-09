@@ -1,4 +1,3 @@
-/* $Xorg: lbxutil.c,v 1.4 2000/08/17 19:53:55 cpqbld Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -21,7 +20,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/di/lbxutil.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/lbxutil.c,v 1.6 2004/04/03 22:38:53 tsi Exp $ */
 
 /*
  * utility routines for LBX requests

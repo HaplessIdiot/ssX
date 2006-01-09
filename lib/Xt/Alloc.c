@@ -1,5 +1,3 @@
-/* $Xorg: Alloc.c,v 1.4 2001/02/09 02:03:53 xorgcvs Exp $ */
-
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -58,7 +56,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/Alloc.c,v 1.10 2003/12/30 01:45:07 tsi Exp $ */
+/* $XFree86: xc/lib/Xt/Alloc.c,v 1.11 2004/05/05 00:07:02 dickey Exp $ */
 
 /*
  * X Toolkit Memory Allocation Routines

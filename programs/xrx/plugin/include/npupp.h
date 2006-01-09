@@ -1,10 +1,9 @@
-/* $Xorg: npupp.h,v 1.3 2000/08/17 19:55:02 cpqbld Exp $ */
 /* -*- Mode: C; tab-width: 4; -*- */
 /*
  *  npupp.h Revision: 1.37
  *  function call mecahnics needed by platform specific glue code.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xrx/plugin/include/npupp.h,v 1.2 2004/04/03 22:38:56 tsi Exp $ */
 
 #ifndef _NPUPP_H_
 #define _NPUPP_H_

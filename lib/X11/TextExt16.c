@@ -1,4 +1,3 @@
-/* $Xorg: TextExt16.c,v 1.4 2001/02/09 02:03:37 xorgcvs Exp $ */
 /*
 
 Copyright 1989, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/TextExt16.c,v 1.4 2001/12/14 19:54:07 dawes Exp $ */
+/* $XFree86: xc/lib/X11/TextExt16.c,v 1.5 2003/11/17 22:20:08 dawes Exp $ */
 /*
  * Copyright 1995 by FUJITSU LIMITED
  * This is source code modified by FUJITSU LIMITED under the Joint

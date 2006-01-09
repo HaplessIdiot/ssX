@@ -1,4 +1,3 @@
-/* $XConsortium: ScrollByL.c,v 1.30 94/04/17 20:43:46 rws Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium
@@ -28,11 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/ScrollByL.c,v 1.7 2003/05/27 22:27:07 tsi Exp $ */
-
-#if !defined(lint) && !defined(SABER) && 0
-  static char rcs_version[] = "$Athena: ScrollByL.c,v 4.5 88/12/19 13:46:04 kit Exp $";
-#endif
+/* $XFree86: xc/programs/xman/ScrollByL.c,v 1.8 2004/03/12 02:17:55 dickey Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>

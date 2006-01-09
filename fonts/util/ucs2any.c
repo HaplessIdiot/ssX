@@ -33,7 +33,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/fonts/util/ucs2any.c,v 1.1 2003/09/21 10:54:14 herrb Exp $ */
 /*
  * This utility allows you to generate from an ISO10646-1 encoded
  * BDF font other BDF fonts in any possible encoding. This way, you can
@@ -631,7 +631,7 @@ main(int argc, char *argv[])
 				spacing_index = ++nextheader;
 				da_add_str(headers, spacing_index, NULL);
 			} else if ((nextc = startswith(l, "COMMENT")) != NULL) {
-				if (strncmp(nextc, "$Id: ", 5)==0) {
+				if (strncmp(nextc, "$XFree86: ", 5)==0) {
 					char *header = NULL;
 					char *id = NULL, *end = NULL;
 					id = zstrdup(nextc + 5);

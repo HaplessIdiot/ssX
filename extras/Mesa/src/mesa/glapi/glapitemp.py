@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-# $Id$
-
 # Mesa 3-D graphics library
 # Version:  4.1
 # 
@@ -67,16 +65,13 @@ def PrintHead():
  */
 
 
+#if defined( NAME )
 #ifndef KEYWORD1
 #define KEYWORD1
 #endif
 
 #ifndef KEYWORD2
 #define KEYWORD2
-#endif
-
-#ifndef NAME
-#error NAME must be defined
 #endif
 
 #ifndef DISPATCH
@@ -231,6 +226,7 @@ def EmitFunction(name, returnType, argTypeList, argNameList, alias, offset):
 
 def PrintInitDispatch():
 	print """
+#endif /* defined( NAME ) */
 
 /*
  * This is how a dispatch table can be initialized with all the functions

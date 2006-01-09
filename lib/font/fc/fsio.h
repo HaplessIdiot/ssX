@@ -1,4 +1,3 @@
-/* $Xorg: fsio.h,v 1.3 2000/08/17 19:46:36 cpqbld Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -23,7 +22,7 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  */
-/* $XFree86: xc/lib/font/fc/fsio.h,v 1.5 1999/12/30 02:39:06 robin Exp $ */
+/* $XFree86: xc/lib/font/fc/fsio.h,v 1.6 2001/01/17 19:43:29 dawes Exp $ */
 
 #ifndef	_FSIO_H_
 #define	_FSIO_H_

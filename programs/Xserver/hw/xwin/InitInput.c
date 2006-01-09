@@ -1,4 +1,3 @@
-/* $TOG: InitInput.c /main/12 1998/02/10 13:23:52 kaleb $ */
 /*
 
   Copyright 1993, 1998  The Open Group
@@ -26,7 +25,7 @@
   from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitInput.c,v 1.11 2002/07/05 09:19:25 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitInput.c,v 1.13 2003/07/29 21:25:15 dawes Exp $ */
 
 #include "win.h"
 #include "../../Xext/xf86miscproc.h"

@@ -1,5 +1,3 @@
-/* $Xorg: Clock.c,v 1.4 2001/02/09 02:05:39 xorgcvs Exp $ */
-
 /***********************************************************
 
 Copyright 1987, 1988, 1998  The Open Group
@@ -46,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xclock/Clock.c,v 3.27 2004/10/23 15:29:32 dawes Exp $ */
+/* $XFree86: xc/programs/xclock/Clock.c,v 3.28 2005/05/19 01:02:44 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/StringDefs.h>

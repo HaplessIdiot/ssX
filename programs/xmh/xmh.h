@@ -1,7 +1,4 @@
 /*
- * $XConsortium: xmh.h,v 2.32 93/09/08 15:31:11 kaleb Exp $
- *
- *
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
@@ -24,7 +21,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xmh/xmh.h,v 1.3 2002/07/01 02:26:05 tsi Exp $ */
 
 #ifndef _xmh_h
 #define _xmh_h

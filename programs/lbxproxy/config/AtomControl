@@ -1,4 +1,4 @@
-! $XConsortium: AtomControl /main/4 1996/11/19 14:23:29 rws $
+! $XFree86$
 !
 ! z <number>
 ! means do not cache property data smaller than this many bytes

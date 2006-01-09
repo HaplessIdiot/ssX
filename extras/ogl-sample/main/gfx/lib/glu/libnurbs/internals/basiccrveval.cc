@@ -35,8 +35,6 @@
 /*
  * basiccrveval.c++
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 #include "mystdio.h"

@@ -35,8 +35,6 @@
 /*
  * flistsorter.h
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 #ifndef __gluflistsorter_h_

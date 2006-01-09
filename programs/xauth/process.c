@@ -1,4 +1,3 @@
-/* $Xorg: process.c,v 1.6 2001/02/09 02:05:38 xorgcvs Exp $ */
 /*
 
 Copyright 1989, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xauth/process.c,v 3.23 2003/11/25 03:15:04 dawes Exp $ */
+/* $XFree86: xc/programs/xauth/process.c,v 3.24 2004/01/21 23:49:40 herrb Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium

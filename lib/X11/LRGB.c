@@ -1,5 +1,3 @@
-/* $Xorg: LRGB.c,v 1.3 2000/08/17 19:44:39 cpqbld Exp $ */
-
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
@@ -35,7 +33,7 @@
  *		    4. RGB intensity to CIE XYZ
  *
  */
-/* $XFree86: xc/lib/X11/LRGB.c,v 3.6 2003/04/13 19:22:16 dawes Exp $ */
+/* $XFree86: xc/lib/X11/LRGB.c,v 3.7 2003/11/03 03:46:26 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xos.h>

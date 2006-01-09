@@ -1,10 +1,9 @@
-/* $Xorg: npapi.h,v 1.3 2000/08/17 19:55:02 cpqbld Exp $ */
 /* -*- Mode: C; tab-width: 4; -*- */
 /*
  *  npapi.h Revision: 1.76
  *  Netscape client plug-in API spec
  */
-/* $XFree86: xc/programs/xrx/plugin/include/npapi.h,v 1.4 2001/01/17 23:46:25 dawes Exp $ */
+/* $XFree86: xc/programs/xrx/plugin/include/npapi.h,v 1.5 2001/07/25 15:05:28 dawes Exp $ */
 
 #ifndef _NPAPI_H_
 #define _NPAPI_H_

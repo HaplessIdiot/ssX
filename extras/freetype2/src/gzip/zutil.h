@@ -8,9 +8,7 @@
    subject to change. Applications should only use zlib.h.
  */
 
-/* @(#) $Id$ */
-
-/* $XFree86: xc/extras/freetype2/src/gzip/zutil.h,v 1.2 2003/05/29 14:53:28 dawes Exp $ */
+/* $XFree86: xc/extras/freetype2/src/gzip/zutil.h,v 1.3 2004/04/26 16:15:54 dawes Exp $ */
 
 #ifndef _Z_UTIL_H
 #define _Z_UTIL_H

@@ -1,4 +1,3 @@
-/* $Xorg: XPanoramiX.c,v 1.4 2000/08/17 19:45:51 cpqbld Exp $ */
 /*****************************************************************
 Copyright (c) 1991, 1997 Digital Equipment Corporation, Maynard, Massachusetts.
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,7 +22,7 @@ shall not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 ******************************************************************/
-/* $XFree86: xc/lib/Xinerama/Xinerama.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/lib/Xinerama/Xinerama.c,v 1.4 2004/04/03 22:38:52 tsi Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES

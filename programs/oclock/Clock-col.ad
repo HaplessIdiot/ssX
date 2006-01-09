@@ -1,4 +1,4 @@
-! $XConsortium: Clock-col.ad,v 1.3 94/02/09 19:43:58 gildea Exp $
+! $XFree86$
 Clock*Background:	grey
 Clock*BorderColor:	light blue
 Clock*hour:		yellow

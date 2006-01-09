@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/fonts/font.h,v 3.5tsi Exp $ */
+/* $XFree86: xc/include/fonts/font.h,v 3.6 2005/10/14 15:15:54 tsi Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -21,7 +21,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $NCDXorg: @(#)font.h,v 1.7 1991/06/24 17:00:23 lemke Exp $ */
 
 #ifndef FONT_H
 #define FONT_H

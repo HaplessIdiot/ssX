@@ -1,5 +1,5 @@
 XCOMM!/bin/sh
-XCOMM $XConsortium: elistgen.ibm /main/2 1996/12/04 10:13:18 swick $
+XCOMM $XFree86$
 XCOMM
 XCOMM #########################################################################
 XCOMM Construct shared-library export lists for IBM-AIX based on standardized

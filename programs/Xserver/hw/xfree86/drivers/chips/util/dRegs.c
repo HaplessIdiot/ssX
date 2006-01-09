@@ -1,10 +1,4 @@
-/* $XConsortium: dRegs.c /main/2 1996/10/27 11:49:40 kaleb $ */
-
-
-
-
-
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/util/dRegs.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/util/dRegs.c,v 1.11 2004/11/28 02:13:46 tsi Exp $ */
 
 #include "compiler.h"
 #include "xf86_OSproc.h"

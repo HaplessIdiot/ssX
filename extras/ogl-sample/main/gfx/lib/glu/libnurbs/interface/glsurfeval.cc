@@ -31,13 +31,11 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 */
-/* $XFree86$ */
+/* $XFree86: xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/interface/glsurfeval.cc,v 1.2 2003/10/22 19:20:55 tsi Exp $ */
 
 /*
  * glsurfeval.c++
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 /* Polynomial Evaluator Interface */

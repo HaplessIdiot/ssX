@@ -1,4 +1,4 @@
-.\" $XConsortium: design.ms,v 1.6 94/04/17 20:06:15 gildea Exp $
+.\" $XFree86$
 .\" roff -ms
 .de Ip
 .IP \(bu 3

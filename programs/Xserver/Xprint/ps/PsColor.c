@@ -1,4 +1,3 @@
-/* $Xorg: PsColor.c,v 1.4 2001/02/09 02:04:36 xorgcvs Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -73,7 +72,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsColor.c,v 1.2 2001/10/28 03:32:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsColor.c,v 1.3 2001/12/14 19:59:15 dawes Exp $ */
 
 #include "Ps.h"
 #include "gcstruct.h"

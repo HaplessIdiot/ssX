@@ -35,8 +35,6 @@
 /*
  * glcurveval.h
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 #ifndef __gluglcurveval_h_

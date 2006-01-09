@@ -1,6 +1,5 @@
-/* $XFree86: xc/programs/Xserver/iplan2p4/iplallpriv.c,v 3.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplallpriv.c,v 3.1 2005/10/14 15:17:18 tsi Exp $ */
 /*
- * $XConsortium: iplallpriv.c,v 1.5 94/04/17 20:28:42 dpw Exp $
  *
 Copyright (c) 1991  X Consortium
 

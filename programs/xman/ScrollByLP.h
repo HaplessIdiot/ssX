@@ -1,4 +1,3 @@
-/* $XConsortium: ScrollByLP.h,v 1.9 94/04/17 20:43:49 keith Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium
@@ -28,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xman/ScrollByLP.h,v 1.3 2004/04/22 14:15:05 tsi Exp $ */
 
 
 #ifndef _XtScrollByLinePrivate_h

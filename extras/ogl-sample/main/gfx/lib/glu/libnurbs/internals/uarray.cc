@@ -35,8 +35,6 @@
 /*
  * uarray.c++
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 #include "glimports.h"

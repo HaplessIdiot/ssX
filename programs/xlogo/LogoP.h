@@ -1,4 +1,3 @@
-/* $Xorg: LogoP.h,v 1.4 2001/02/09 02:05:54 xorgcvs Exp $ */
 /*
 
 Copyright 1988, 1993, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xlogo/LogoP.h,v 1.4 2002/07/01 02:26:04 tsi Exp $ */
 
 #ifndef _XawLogoP_h
 #define _XawLogoP_h

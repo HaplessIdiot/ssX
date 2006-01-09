@@ -1,5 +1,3 @@
-/* Header:   //Mercury/Projects/archives/XFree86/4.0/smi_dga.c-arc   1.5   27 Nov 2000 15:47:18   Frido  $ */
-
 /*
 Copyright (C) 1994-2000 The XFree86 Project, Inc.  All Rights Reserved.
 Copyright (C) 2000 Silicon Motion, Inc.  All Rights Reserved.
@@ -26,7 +24,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from the XFree86 Project and Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_dga.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_dga.c,v 1.4 2004/12/07 15:59:20 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"

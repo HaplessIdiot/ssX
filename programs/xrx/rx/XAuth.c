@@ -1,4 +1,3 @@
-/* $Xorg: XAuth.c,v 1.4 2001/02/09 02:05:58 xorgcvs Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization from
 The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xrx/rx/XAuth.c,v 1.3 2004/04/03 22:38:56 tsi Exp $ */
 
 #include "RxI.h"
 #ifdef XFUNCPROTO_NOT_AVAILABLE

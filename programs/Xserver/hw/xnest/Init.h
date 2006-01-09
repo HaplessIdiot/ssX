@@ -1,4 +1,4 @@
-/* $XConsortium: Init.h,v 1.1 93/07/12 15:28:35 rws Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright 1993 by Davor Matic

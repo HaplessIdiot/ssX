@@ -1,4 +1,4 @@
-.\" $XConsortium: CH05,v 1.9 94/04/18 18:48:11 rws Exp $
+.\" $XFree86$
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -53,7 +53,7 @@
 .nr H5 0
 .LP
 .XS
-Chapter 5 \- Pop-Up Widgets
+Chapter 5 \(em Pop-Up Widgets
 .XE
 Pop-up widgets are used to create windows outside of the
 window hierarchy defined by the widget tree.
@@ -127,7 +127,7 @@ as a modal pop-up and as a spring-loaded pop-up within the same application.
 The main difference is that spring-loaded pop-ups are brought up
 with the pointer and, because of the grab that the pointer button causes,
 require different processing by the \*(xI.
-Further, all user input remap events occurring outside the spring-loaded
+Furthermore, all user input remap events occurring outside the spring-loaded
 pop-up (e.g., in a descendant) are also delivered to the spring-loaded
 pop-up after they have been dispatched to the appropriate descendant, so
 that, for example, button-up can take down a spring-loaded pop-up no
@@ -167,7 +167,9 @@ not the child.
 .LP
 To create a pop-up shell, use
 .PN XtCreatePopupShell .
+.LP
 .IN "XtCreatePopupShell" "" "@DEF@"
+.sM
 .FD 0
 Widget XtCreatePopupShell(\fIname\fP, \fIwidget_class\fP, \fIparent\fP, \
 \fIargs\fP, \fInum_args\fP)
@@ -193,6 +195,7 @@ Specifies the argument list to override any other resource specifications.
 .IP \fInum_args\fP 1i
 Specifies the number of entries in the argument list.
 .LP
+.eM
 The
 .PN XtCreatePopupShell
 function ensures that the specified class is a subclass of
@@ -209,7 +212,7 @@ is queried for the resource \fIname\fP.screen, class
 \fIClass\fP.Screen where \fIClass\fP is the \fIclass_name\fP
 field from the
 .PN CoreClassPart
-of the specified \fIwidget_class\fP .
+of the specified \fIwidget_class\fP.
 If this query fails, the parent's screen is used.
 Once the screen is determined,
 the resource database associated with that screen is used to retrieve
@@ -232,7 +235,9 @@ currently popped up) exists and create a new shell if needed.
 .LP
 To create a pop-up shell using varargs lists, use
 .PN XtVaCreatePopupShell .
+.LP
 .IN "XtVaCreatePopupShell" "" "@DEF@"
+.sM
 .FD 0
 Widget XtVaCreatePopupShell(\fIname\fP, \fIwidget_class\fP, \fIparent\fP, ...)
 .br
@@ -252,6 +257,7 @@ Specifies the parent widget.  \*(cI
 Specifies the variable argument list to override any other
 resource specifications.
 .LP
+.eM
 .PN XtVaCreatePopupShell
 is identical in function to
 .PN XtCreatePopupShell
@@ -333,17 +339,21 @@ Some of these routines take an argument of type
 .PN XtGrabKind ,
 which is defined as
 .sp
+.sM
 .Ds 0
 typedef enum {XtGrabNone, XtGrabNonexclusive, XtGrabExclusive} XtGrabKind;
 .De
 .sp
+.eM
 .LP
 The create_popup_child_proc procedure pointer
 in the shell widget instance record is of type
 .PN XtCreatePopupChildProc .
+.LP
 .IN "create_popup_child_proc"
 .IN "Shell" "create_popup_child_proc"
 .IN "XtCreatePopupChildProc" "" "@DEF@"
+.sM
 .FD 0
 typedef void (*XtCreatePopupChildProc)(Widget);
 .br
@@ -351,11 +361,13 @@ typedef void (*XtCreatePopupChildProc)(Widget);
 .FN
 .IP \fIw\fP 1i
 Specifies the shell widget being popped up.
-.sp
 .LP
+.eM
 To map a pop-up from within an application, use
 .PN XtPopup .
+.LP
 .IN "XtPopup" "" "@DEF@"
+.sM
 .FD 0
 void XtPopup(\fIpopup_shell\fP, \fIgrab_kind\fP)
 .br
@@ -368,6 +380,7 @@ Specifies the shell widget.
 .IP \fIgrab_kind\fP 1i
 Specifies the way in which user events should be constrained.
 .LP
+.eM
 The
 .PN XtPopup
 function performs the following:
@@ -415,7 +428,9 @@ with the window of \fIpopup_shell\fP.
 .LP
 To map a spring-loaded pop-up from within an application, use
 .PN XtPopupSpringLoaded .
+.LP
 .IN "XtPopupSpringLoaded" "" @DEF@"
+.sM
 .FD 0
 void XtPopupSpringLoaded(\fIpopup_shell\fP)
 .br
@@ -424,6 +439,7 @@ void XtPopupSpringLoaded(\fIpopup_shell\fP)
 .IP \fIpopup_shell\fP 1i
 Specifies the shell widget to be popped up.
 .LP
+.eM
 The
 .PN XtPopupSpringLoaded
 function performs exactly as
@@ -446,7 +462,9 @@ or
 .PN XtCallbackExclusive
 convenience routines as callbacks, using the pop-up shell widget as the
 client data.
+.LP
 .IN "XtCallbackNone" "" "@DEF@"
+.sM
 .FD 0
 void XtCallbackNone(\fIw\fP, \fIclient_data\fP, \fIcall_data\fP)
 .br
@@ -502,6 +520,7 @@ Specifies the pop-up shell.
 Specifies the callback data argument,
 which is not used by this procedure.
 .LP
+.eM
 The
 .PN XtCallbackNone ,
 .PN XtCallbackNonexclusive ,
@@ -539,8 +558,10 @@ or its synonym,
 .PN MenuPopup .
 From a translation writer's point of view,
 the definition for this translation action is
+.LP
 .IN "MenuPopup" "" "@DEF@"
 .IN "XtMenuPopup" "" "@DEF@"
+.sM
 .FD 0
 void XtMenuPopup(\fIshell_name\fP)
 .br
@@ -549,6 +570,7 @@ void XtMenuPopup(\fIshell_name\fP)
 .IP \fIshell_name\fP 1i
 Specifies the name of the shell widget to pop up.
 .LP
+.eM
 .PN XtMenuPopup
 is known to the translation manager,
 which registers the corresponding built-in action procedure
@@ -616,7 +638,9 @@ The standard translation action
 .LP
 To unmap a pop-up from within an application, use
 .PN XtPopdown .
+.LP
 .IN "XtPopdown" "" "@DEF@"
+.sM
 .FD 0
 void XtPopdown(\fIpopup_shell\fP)
 .br
@@ -625,6 +649,7 @@ void XtPopdown(\fIpopup_shell\fP)
 .IP \fIpopup_shell\fP 1i
 Specifies the shell widget to pop down.
 .LP
+.eM
 The
 .PN XtPopdown
 function performs the following:
@@ -663,7 +688,9 @@ as the \fIcall_data\fP argument.
 .LP
 To pop down a pop-up from a callback list, you may use the callback 
 .PN XtCallbackPopdown .
+.LP
 .IN "XtCallbackPopdown" "" "@DEF@"
+.sM
 .FD 0
 void XtCallbackPopdown(\fIw\fP, \fIclient_data\fP, \fIcall_data\fP)
 .br
@@ -683,11 +710,13 @@ structure.
 Specifies the callback data argument,
 which is not used by this procedure.
 .LP
+.eM
 The
 .PN XtCallbackPopdown
 function casts the \fIclient_data\fP parameter to a pointer of type
 .PN XtPopdownID .
 .LP
+.sM
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -696,6 +725,8 @@ typedef struct {
 	Widget enable_widget;
 } XtPopdownIDRec, *XtPopdownID;
 .De
+.LP
+.eM
 The \fIshell_widget\fP is the pop-up shell to pop down,
 and the \fIenable_widget\fP is usually the widget that was used to pop it up
 in one of the pop-up callback convenience procedures.
@@ -718,8 +749,10 @@ or its synonym,
 .PN MenuPopdown .
 From a translation writer's point of view,
 the definition for this translation action is
+.LP
 .IN "XtMenuPopdown" "" "@DEF@"
 .IN "MenuPopdown" "" "@DEF@"
+.sM
 .FD 0
 void XtMenuPopdown(\fIshell_name\fP)
 .br
@@ -728,6 +761,7 @@ void XtMenuPopdown(\fIshell_name\fP)
 .IP \fIshell_name\fP 1i
 Specifies the name of the shell widget to pop down.
 .LP
+.eM
 If a shell name is not given,
 .PN XtMenuPopdown
 calls

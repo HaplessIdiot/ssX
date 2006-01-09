@@ -1,5 +1,4 @@
 /*
- * $XConsortium: b4light.c,v 1.3 94/04/17 20:59:38 rws Exp $
  *
 Copyright (c) 1992  X Consortium
 
@@ -26,7 +25,7 @@ in this Software without prior written authorization from the X Consortium.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/beforelight/b4light.c,v 3.7tsi Exp $ */
+/* $XFree86: xc/programs/beforelight/b4light.c,v 3.8 2004/04/03 22:38:53 tsi Exp $ */
 
 #include <X11/Xatom.h>
 #include <X11/Intrinsic.h>

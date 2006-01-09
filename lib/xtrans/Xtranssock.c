@@ -1,4 +1,3 @@
-/* $Xorg: Xtranssock.c,v 1.11 2001/02/09 02:04:06 xorgcvs Exp $ */
 /*
 
 Copyright 1993, 1994, 1998  The Open Group
@@ -27,7 +26,7 @@ other dealings in this Software without prior written authorization
 from the copyright holders.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.70 2004/04/03 22:26:22 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.71 2005/03/25 02:22:52 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *

@@ -1,5 +1,3 @@
-/* $Xorg: miscutil.c,v 1.4 2001/02/09 02:04:04 xorgcvs Exp $ */
-
 /*
 
 Copyright 1991, 1994, 1998  The Open Group
@@ -27,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/util/miscutil.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/lib/font/util/miscutil.c,v 1.9 2005/01/11 23:01:12 tsi Exp $ */
 
 #include <X11/Xosdefs.h>
 #include <stdlib.h>

@@ -1,4 +1,3 @@
-/* $Xorg: XKBSetGeom.c,v 1.3 2000/08/17 19:45:03 cpqbld Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +23,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/lib/X11/XKBSetGeom.c,v 3.5 2003/05/27 22:26:25 tsi Exp $ */
+/* $XFree86: xc/lib/X11/XKBSetGeom.c,v 3.6 2003/11/17 22:20:10 dawes Exp $ */
 
 #ifdef DEBUG
 #include <stdio.h>

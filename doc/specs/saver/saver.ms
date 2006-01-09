@@ -1,6 +1,5 @@
 .\" Use tbl, -ms
-.\" $XConsortium: saver.ms,v 1.5 92/02/11 17:05:26 keith Exp $
-.\" $NCDId: @(#)screensaver.ms,v 1.24 1992/02/22 14:00:00 jim Exp jim $
+.\" $XFree86$
 .EH ''''
 .OH ''''
 .EF ''''

@@ -1,4 +1,4 @@
-.\" $XConsortium: CH12,v 1.8 94/04/19 17:59:21 converse Exp $
+.\" $XFree86$
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -53,7 +53,7 @@
 .nr H5 0
 .LP
 .XS
-Chapter 12 \- Nonwidget Objects
+Chapter 12 \(em Nonwidget Objects
 .XE
 .LP
 Although widget writers are free to treat
@@ -62,8 +62,8 @@ as the base class of
 the widget hierarchy, there are actually three classes above it.
 These classes are
 Object,
-RectObj,
-(Rectangle Object) and (\fIunnamed\fP)
+RectObj
+(Rectangle Object), and (\fIunnamed\fP),
 and members of these classes
 are referred to generically as \fIobjects\fP.  By convention, the term
 \fIwidget\fP refers only to objects that are a subclass of
@@ -114,7 +114,6 @@ ObjectClassPart Structure
 .XS
 \*(SN ObjectClassPart Structure
 .XE
-
 .LP
 The common fields for all object classes are defined in the
 .PN ObjectClassPart
@@ -127,8 +126,9 @@ used for Object,
 but exist to pad the data structure so that it matches Core's class
 record.  The class record initialization must fill all
 obj\fI\s+1n\s-1\fP fields with NULL or zero as appropriate to the type.
-
+.LP
 .IN "ObjectClassPart" "" "@DEF@"
+.sM
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -168,14 +168,16 @@ typedef struct _ObjectClassPart {
 } ObjectClassPart;
 .De
 .LP
+.eM
 The extension record defined for
 .PN ObjectClassPart
 with a \fIrecord_type\fP equal to 
 .PN \s-1NULLQUARK\s+1
 is
 .PN ObjectClassExtensionRec .
-
+.LP
 .IN "ObjectClassExtensionRec" "" "@DEF@"
+.sM
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -189,14 +191,16 @@ typedef struct {
 } ObjectClassExtensionRec, *ObjectClassExtension;
 .De
 .LP
+.eM
 The prototypical
 .PN ObjectClass
 consists of just the
 .PN ObjectClassPart .
-
+.LP
 .IN "ObjectClassRec" "" "@DEF@"
 .IN "ObjectClass" "" "@DEF@"
 .IN "objectClass" "" "@DEF@"
+.sM
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -204,23 +208,28 @@ typedef struct _ObjectClassRec {
 	ObjectClassPart object_class;
 } ObjectClassRec, *ObjectClass;
 .De
-
+.LP
+.eM
 The predefined class record and pointer for
 .PN ObjectClassRec
 are
 .LP
 In
 .PN IntrinsicP.h :
+.sM
 .Ds 0
 extern ObjectClassRec objectClassRec;
 .De
 .LP
+.eM
 In
 .PN Intrinsic.h :
+.sM
 .Ds 0
 extern WidgetClass objectClass;
 .De
 .LP
+.eM
 The opaque types
 .PN Object
 and
@@ -237,24 +246,26 @@ version identifier is
 uses an incomplete structure definition to ensure that the
 compiler catches attempts to access private data:
 .LP
+.sM
 .Ds 0
 typedef struct _ObjectClassRec* ObjectClass;
 .De
+.LP
+.eM
 
 .NH 3
 ObjectPart Structure
 .XS
 \*(SN ObjectPart Structure
 .XE
-
 .LP
 The common fields for all object instances are defined in the
 .PN ObjectPart
 structure.  All fields have the same meaning as the
 corresponding fields in
 .PN CorePart .
-
 .LP
+.sM
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -269,6 +280,7 @@ typedef struct _ObjectPart {
 } ObjectPart;
 .De
 .LP
+.eM
 All object instances have the
 Object
 fields as their first component.  The prototypical type
@@ -276,10 +288,11 @@ fields as their first component.  The prototypical type
 is defined with only this set of fields.
 Various routines can cast object pointers, as needed, to specific
 object types.
-
 .LP
 In
 .PN IntrinsicP.h :
+.LP
+.sM
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -287,13 +300,18 @@ typedef struct _ObjectRec {
 	ObjectPart object;
 } ObjectRec, *Object;
 .De
-.IN "ObjectRec" "" "@DEF@"
 .LP
+.eM
+.IN "ObjectRec" "" "@DEF@"
 In
 .PN Intrinsic.h :
+.LP
+.sM
 .Ds 0
 typedef struct _ObjectRec *Object;
 .De
+.LP
+.eM
 
 .NH 3
 Object Resources
@@ -303,7 +321,7 @@ Object Resources
 .LP
 The resource names, classes, and representation types specified in the
 .PN objectClassRec
-resource list are
+resource list are:
 .LP
 .TS
 lw(1.5i) lw(1.5i) lw(2.5i) .
@@ -330,9 +348,9 @@ have the same default values as the corresponding fields in
 .PN CorePart .
 
 .NH 3
-Object Arguments To \*(xI Routines
+Object Arguments to \*(xI Routines
 .XS
-\*(SN Object Arguments To \*(xI Routines
+\*(SN Object Arguments to \*(xI Routines
 .XE
 .LP
 The WidgetClass arguments to the following procedures may be
@@ -464,7 +482,7 @@ class exists to enable programmers to use the \*(xI'
 classing and resource-handling mechanisms for things smaller
 and simpler than widgets.
 Objects make obsolete many common uses of subresources as described in
-sections 9.4, 9.7.2.4, and 9.7.2.5.
+Sections 9.4, 9.7.2.4, and 9.7.2.5.
 .LP
 Composite
 widget classes that wish to accept nonwidget children must
@@ -502,7 +520,7 @@ The class of rectangle objects is a subclass of
 Object
 that represents
 rectangular areas.  It encapsulates the mechanisms for geometry
-management, and is called RectObj
+management and is called RectObj
 .IN "RectObj" "" "@DEF@"
 to avoid conflict with the Xlib
 .PN Rectangle
@@ -523,11 +541,12 @@ purpose and function as the corresponding fields in
 .PN CoreClassPart ;
 fields whose names are rect\fI\s+1n\s-1\fP for some integer
 \fI\s+1n\s-1\fP are not used for
-RectObj but exist to pad the data structure so that it matches
+RectObj, but exist to pad the data structure so that it matches
 Core's
 class record.  The class record initialization must fill all
 rect\fI\s+1n\s-1\fP fields with NULL or zero as appropriate to the type.
 .LP
+.sM
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -568,11 +587,13 @@ typedef struct _RectObjClassPart {
 } RectObjClassPart;
 .De
 .LP
+.eM
 The
 RectObj
 class record consists of just the
 .PN RectObjClassPart .
 .LP
+.sM
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -583,22 +604,29 @@ typedef struct _RectObjClassRec {
 } RectObjClassRec, *RectObjClass;
 .De
 .LP
+.eM
 The predefined class record and pointer for
 .PN RectObjClassRec
 are
 .LP
 In
 .PN Intrinsic.h :
+.LP
+.sM
 .Ds 0
 extern RectObjClassRec rectObjClassRec;
 .De
 .LP
+.eM
 In
 .PN Intrinsic.h :
+.LP
+.sM
 .Ds 0
 extern WidgetClass rectObjClass;
 .De
 .LP
+.eM
 The opaque types
 .PN RectObj
 and
@@ -612,9 +640,12 @@ RectObj.
 uses an incomplete structure definition to ensure that the compiler
 catches attempts to access private data:
 .LP
+.sM
 .Ds 0
 typedef struct _RectObjClassRec* RectObjClass;
 .De
+.LP
+.eM
 
 .NH 3
 RectObjPart Structure
@@ -631,6 +662,7 @@ objects have the following fields defined in the
 structure.  All fields have the same meaning as the corresponding field in
 .PN CorePart .
 .LP
+.sM
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -645,9 +677,11 @@ typedef struct _RectObjPart {
 } RectObjPart;
 .De
 .LP
+.eM
 RectObj
 objects have the RectObj fields immediately following the Object fields.
 .LP
+.sM
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -658,11 +692,16 @@ typedef struct _RectObjRec {
 } RectObjRec, *RectObj;
 .De
 .LP
+.eM
 In
 .PN Intrinsic.h :
+.LP
+.sM
 .Ds 0
 typedef struct _RectObjRec* RectObj;
 .De
+.LP
+.eM
 
 .NH 3
 RectObj Resources
@@ -672,7 +711,7 @@ RectObj Resources
 .LP
 The resource names, classes, and representation types that are specified in the
 .PN rectObjClassRec
-resource list are
+resource list are:
 .TS
 lw(1.5i) lw(1.5i) lw(2.5i) .
 _
@@ -704,9 +743,9 @@ have the same default values as the corresponding fields in
 .PN CorePart .
 
 .NH 3
-Widget Arguments To \*(xI Routines
+Widget Arguments to \*(xI Routines
 .XS
-\fB\*(SNWidget Arguments To \*(xI Routines\fP
+\fB\*(SN Widget Arguments to \*(xI Routines\fP
 .XE
 .LP
 The WidgetClass arguments to the following procedures may be
@@ -759,14 +798,14 @@ Use of Rectangle Objects
 .LP
 RectObj
 can be subclassed to provide widgetlike objects (sometimes
-called gadgets) that do not use windows and do not have
-features often unused in simple widgets.  This can save memory
+called gadgets) that do not use windows and do not have those
+features that are seldom used in simple widgets.  This can save memory
 resources both in the server and in applications
 but requires additional support code in the parent.
 In the following
 discussion, \fIrectobj\fP refers only to objects
 whose class is RectObj or a subclass of
-RectObj
+RectObj,
 but not Core or a subclass of
 Core. 
 .LP
@@ -836,7 +875,7 @@ geometries, including the border, if the geometry changes.
 .IP \(bu 5
 In a call to
 .PN XtResizeWidget
-on a rectobj child, an single
+on a rectobj child, a single
 rectangle will be cleared corresponding to the larger of the
 old and the new child geometries if they are different.
 .IP \(bu 5
@@ -872,11 +911,11 @@ Core
 for possible future use by the X Consortium. The only assumptions that
 may be made about the unnamed class are
 .IP \(bu 5
-the \fIcore_class.superclass\fP field of
+The \fIcore_class.superclass\fP field of
 .PN coreWidgetClassRec
 contains a pointer to the unnamed class record.
 .IP \(bu 5
-a pointer to the unnamed class record when dereferenced as an
+A pointer to the unnamed class record when dereferenced as an
 .PN ObjectClass
 will contain a pointer to
 .PN rectObjClassRec
@@ -887,9 +926,9 @@ and the result of an attempt to subclass or to create a widget of this
 unnamed class are undefined.
 
 .NH 2
-Widget Arguments To \*(xI Routines
+Widget Arguments to \*(xI Routines
 .XS
-\*(SN Widget Arguments To \*(xI Routines
+\*(SN Widget Arguments to \*(xI Routines
 .XE
 .LP
 The WidgetClass arguments to the following procedures must be of class
@@ -1016,7 +1055,7 @@ or a subclass:
 .sp
 .LP
 The return value of the following procedures will be of a subclass of
-Shell :
+Shell:
 .sp
 .IP
 .PN XtAppCreateShell ,

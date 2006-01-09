@@ -1,6 +1,4 @@
-/*
- * $XConsortium: PclAttVal.c /main/1 1996/09/28 17:00:37 rws $
- */
+/* $XFree86$ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.

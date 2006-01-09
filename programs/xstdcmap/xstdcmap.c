@@ -1,6 +1,4 @@
 /*
- * $Xorg: xstdcmap.c,v 1.5 2001/02/09 02:06:01 xorgcvs Exp $
- *
  * 
 Copyright 1989, 1998  The Open Group
 
@@ -26,7 +24,7 @@ in this Software without prior written authorization from The Open Group.
  * *
  * Author:  Donna Converse, MIT X Consortium
  */
-/* $XFree86: xc/programs/xstdcmap/xstdcmap.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/xstdcmap/xstdcmap.c,v 1.10 2004/03/31 16:37:10 tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>

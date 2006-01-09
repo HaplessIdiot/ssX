@@ -1,4 +1,3 @@
-/* $XConsortium: Dvi.c,v 1.21 94/04/17 20:43:34 keith Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -28,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xditview/Dvi.c,v 1.3 2001/08/01 00:45:03 tsi Exp $ */
+/* $XFree86: xc/programs/xditview/Dvi.c,v 1.4 2001/08/27 23:35:12 dawes Exp $ */
 
 
 /*

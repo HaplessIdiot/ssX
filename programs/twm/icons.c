@@ -22,11 +22,9 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  * */
-/* $XFree86: xc/programs/twm/icons.c,v 1.7 2002/12/10 22:29:54 tsi Exp $ */
+/* $XFree86: xc/programs/twm/icons.c,v 1.8 2004/06/08 01:17:02 dawes Exp $ */
 
 /**********************************************************************
- *
- * $Xorg: icons.c,v 1.4 2001/02/09 02:05:36 xorgcvs Exp $
  *
  * Icon releated routines
  *

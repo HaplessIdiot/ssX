@@ -35,8 +35,6 @@
 /*
  * arctess.h
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 #ifndef __gluarctess_h_

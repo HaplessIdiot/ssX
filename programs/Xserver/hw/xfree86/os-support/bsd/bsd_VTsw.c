@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_VTsw.c,v 3.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_VTsw.c,v 3.7 2005/10/14 15:17:00 tsi Exp $ */
 /*
  * Derived from VTsw_usl.c which is
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -23,7 +23,6 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: bsd_VTsw.c /main/4 1996/02/21 17:50:57 kaleb $ */
 
 #include <X11/X.h>
 #include "xf86.h"

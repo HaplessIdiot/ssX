@@ -1,4 +1,4 @@
-.\" $XConsortium: CH08,v 1.9 94/04/18 18:48:22 rws Exp $
+.\" $XFree86$
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -53,7 +53,7 @@
 .nr H5 0
 .LP
 .XS
-Chapter 8 \- Callbacks
+Chapter 8 \(em Callbacks
 .XE
 .IN "Destroy Callbacks"
 Applications and other widgets often need to register a procedure
@@ -82,7 +82,9 @@ Using Callback Procedure and Callback List Definitions
 .LP
 Callback procedure pointers for use in callback lists are of type
 .PN XtCallbackProc .
+.LP
 .IN "XtCallbackProc" "" "@DEF@"
+.sM
 .FD 0
 typedef void (*XtCallbackProc)(Widget, XtPointer, XtPointer);
 .br
@@ -102,6 +104,7 @@ Specifies any callback-specific data the widget wants to pass to the client.
 For example,  when Scrollbar executes its XtNthumbChanged callback list,
 it passes the new position of the thumb.
 .LP
+.eM
 The \fIclient_data\fP argument provides a way for the
 client registering the callback procedure also to register client-specific data,
 for example, a pointer to additional information about the widget, 
@@ -127,6 +130,7 @@ of a NULL-terminated array of type
 .IN "XtCallbackList" "" "@DEF@"
 .IN "XtCallbackRec" "" "@DEF@"
 .LP
+.sM
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -136,6 +140,7 @@ typedef struct {
 } XtCallbackRec, *XtCallbackList;
 .De
 .LP
+.eM
 For example, the callback list for procedures A and B with client data
 clientDataA and clientDataB, respectively, is
 .LP
@@ -199,7 +204,9 @@ Adding Callback Procedures
 .LP
 To add a callback procedure to a widget's callback list, use
 .PN XtAddCallback .
+.LP
 .IN "XtAddCallback" "" "@DEF@"
+.sM
 .FD 0
 void XtAddCallback(\fIw\fP, \fIcallback_name, \fP\fIcallback\fP, \
 \fIclient_data\fP)
@@ -223,12 +230,15 @@ Specifies additional data to be passed to the specified procedure
 when it is invoked,
 or NULL.
 .LP
+.eM
 A callback will be invoked as many times as it occurs in the callback list.
 .sp
 .LP
 To add a list of callback procedures to a given widget's callback list, use
 .PN XtAddCallbacks .
+.LP
 .IN "XtAddCallbacks" "" "@DEF@"
+.sM
 .FD 0
 void XtAddCallbacks(\fIw\fP, \fIcallback_name, \fP\fIcallbacks\fP)
 .br
@@ -245,7 +255,8 @@ Specifies the callback list to which the procedures are to be appended.
 .IP \fIcallbacks\fP 1i
 Specifies the null-terminated list of callback procedures and corresponding
 client data.
-
+.LP
+.eM
 .NH 2
 Removing Callback Procedures
 .XS
@@ -254,7 +265,9 @@ Removing Callback Procedures
 .LP
 To delete a callback procedure from a widget's callback list, use
 .PN XtRemoveCallback .
+.LP
 .IN "XtRemoveCallback" "" "@DEF@"
+.sM
 .FD 0
 void XtRemoveCallback(\fIw\fP, \fIcallback_name\fP, \fIcallback\fP, \
 \fIclient_data\fP)
@@ -276,6 +289,7 @@ Specifies the callback procedure.
 .IP \fIclient_data\fP 1i
 Specifies the client data to match with the registered callback entry.
 .LP
+.eM
 The
 .PN XtRemoveCallback
 function removes a callback only if both the procedure and the client
@@ -284,7 +298,9 @@ data match.
 .LP
 To delete a list of callback procedures from a given widget's callback list, use
 .PN XtRemoveCallbacks .
+.LP
 .IN "XtRemoveCallbacks" "" "@DEF@"
+.sM
 .FD 0
 void XtRemoveCallbacks(\fIw\fP, \fIcallback_name\fP, \fIcallbacks\fP)
 .br
@@ -301,12 +317,14 @@ Specifies the callback list from which the procedures are to be deleted.
 .IP \fIcallbacks\fP 1i
 Specifies the null-terminated list of callback procedures and corresponding
 client data.
-.sp
 .LP
+.eM
 To delete all callback procedures from a given widget's callback list
 and free all storage associated with the callback list, use
 .PN XtRemoveAllCallbacks .
+.LP
 .IN "XtRemoveAllCallbacks" "" "@DEF@"
+.sM
 .FD 0
 void XtRemoveAllCallbacks(\fIw\fP, \fIcallback_name\fP)
 .br
@@ -318,7 +336,8 @@ void XtRemoveAllCallbacks(\fIw\fP, \fIcallback_name\fP)
 Specifies the widget.  \*(oI
 .IP \fIcallback_name\fP 1i
 Specifies the callback list to be cleared.
-
+.LP
+.eM
 .NH 2
 Executing Callback Procedures
 .XS
@@ -328,7 +347,9 @@ Executing Callback Procedures
 To execute the procedures in a given widget's callback list,
 specifying the callback list by resource name, use
 .PN XtCallCallbacks .
+.LP
 .IN "XtCallCallbacks" "" "@DEF@"
+.sM
 .FD 0
 void XtCallCallbacks(\fIw\fP, \fIcallback_name\fP, \fIcall_data\fP)
 .br
@@ -345,7 +366,8 @@ Specifies the callback list to be executed.
 .IP \fIcall_data\fP 1i
 Specifies a callback-list-specific data value to pass to each of the callback
 procedure in the list, or NULL.
-.sp
+.LP
+.eM
 .LP
 .PN XtCallCallbacks
 calls each of the callback procedures in the list
@@ -356,7 +378,9 @@ data registered with the procedure and \fIcall-data\fP.
 To execute the procedures in a callback list, specifying the callback
 list by address, use
 .PN XtCallCallbackList .
+.LP
 .IN "XtCallCallbackList" "" "@DEF@"
+.sM
 .FD 0
 void XtCallCallbackList(\fIwidget\fP, \fIcallbacks\fP, \fIcall_data\fP)
 .br
@@ -374,6 +398,7 @@ Specifies the callback list to be executed.
 Specifies a callback-list-specific data value to pass
 to each of the callback procedures in the list, or NULL.
 .LP
+.eM
 The \fIcallbacks\fP parameter must specify the contents of a widget or
 object resource declared with representation type
 .PN XtRCallback .
@@ -390,8 +415,10 @@ Checking the Status of a Callback List
 .LP
 To find out the status of a given widget's callback list, use
 .PN XtHasCallbacks .
+.LP
 .IN "XtHasCallbacks" "" "@DEF@"
 .sp
+.sM
 .FD 0
 typedef enum {XtCallbackNoList, XtCallbackHasNone, XtCallbackHasSome} \
 XtCallbackStatus;
@@ -407,6 +434,7 @@ Specifies the widget.  \*(oI
 .IP \fIcallback_name\fP 1i
 Specifies the callback list to be checked.
 .LP
+.eM
 The
 .PN XtHasCallbacks
 function first checks to see if the widget has a callback list identified 

@@ -4,8 +4,6 @@
  * internal structure definitions for mi backing store
  */
 
-/* $Xorg: mibstorest.h,v 1.4 2001/02/09 02:05:20 xorgcvs Exp $ */
-
 /*
 
 Copyright 1989, 1998  The Open Group
@@ -31,7 +29,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
 
-/* $XFree86: xc/programs/Xserver/mi/mibstorest.h,v 1.4 2001/01/17 22:37:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibstorest.h,v 1.5 2001/12/14 20:00:21 dawes Exp $ */
 
 #include "mibstore.h"
 #include "regionstr.h"

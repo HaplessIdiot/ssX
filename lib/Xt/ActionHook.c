@@ -1,5 +1,3 @@
-/* $Xorg: ActionHook.c,v 1.4 2001/02/09 02:03:53 xorgcvs Exp $ */
-
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -60,7 +58,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/ActionHook.c,v 1.3 2001/12/14 19:56:05 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/ActionHook.c,v 1.4 2004/05/05 00:07:02 dickey Exp $ */
 
 /*
  * Contains XtAppAddActionHook, XtRemoveActionHook

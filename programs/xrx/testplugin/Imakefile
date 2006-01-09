@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile /main/9 1996/12/06 10:28:04 kaleb $
+XCOMM $XFree86$
 
 XCOMM where and which is the plugin to test
 PLUGINDIR = ../plugin

@@ -35,8 +35,6 @@
 /*
  * quilt.h
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 #ifndef __gluquilt_h_

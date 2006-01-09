@@ -1,9 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_accel.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_accel.c,v 1.6 2004/03/29 16:25:17 tsi Exp $ */
 /*
- * $Workfile: nsc_gx2_accel.c $
- * $Revision$
- * $Author$
- *
  * File Contents: This file is consists of main Xfree
  *                acceleration supported routines like solid fill used
  *                here.

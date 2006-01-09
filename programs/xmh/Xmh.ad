@@ -1,4 +1,4 @@
-! $XConsortium: Xmh.ad,v 1.32 94/02/09 19:44:06 gildea Exp $
+! $XFree86$
 ! AppDefaultsVersion should only be defined in the site-wide file
 Xmh.AppDefaultsVersion:		1
 

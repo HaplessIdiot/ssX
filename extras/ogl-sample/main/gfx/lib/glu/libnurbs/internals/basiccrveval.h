@@ -35,8 +35,6 @@
 /*
  * basiccurveeval.h
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 #ifndef __glubasiccrveval_h_

@@ -1,4 +1,4 @@
-/* $XConsortium: LEDP.h /main/1 1995/11/30 19:20:21 kaleb $ */
+/* $XFree86$ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 

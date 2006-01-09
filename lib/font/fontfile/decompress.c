@@ -1,7 +1,4 @@
-/* $XFree86: xc/lib/font/fontfile/decompress.c,v 1.6tsi Exp $ */
-/**	$MirOS: X11/xc/lib/font/fontfile/decompress.c,v 1.2 2005/04/14 18:06:24 tg Exp $ */
-/*	$OpenBSD: zopen.c,v 1.14 2003/08/03 01:26:46 deraadt Exp $	*/
-/*	$NetBSD: zopen.c,v 1.5 1995/03/26 09:44:53 glass Exp $	*/
+/* $XFree86: xc/lib/font/fontfile/decompress.c,v 1.7 2005/06/07 01:33:38 tsi Exp $ */
 
 /*-
  * Copyright (c) 2005
@@ -83,11 +80,6 @@
 
 #ifndef MIN
 #define	MIN(a, b)	(((a) < (b)) ? (a) : (b))
-#endif
-
-#ifdef UNUSED
-static const char __sccsid[] = "@(#)zopen.c	8.1 (Berkeley) 6/27/93";
-static const char __rcsid[] = "$MirOS: X11/xc/lib/font/fontfile/decompress.c,v 1.2 2005/04/14 18:06:24 tg Exp $";
 #endif
 
 #define	BITS		16		/* Default bits. */

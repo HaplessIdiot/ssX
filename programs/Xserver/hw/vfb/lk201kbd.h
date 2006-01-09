@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -44,8 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-
-/* $Xorg: lk201kbd.h,v 1.4 2001/02/09 02:04:45 xorgcvs Exp $ */
 
 #define MIN_LK201_KEY            86
 #define MAX_LK201_KEY           251

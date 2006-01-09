@@ -1,4 +1,3 @@
-/* $Xorg: connection.c,v 1.5 2001/02/09 02:05:33 xorgcvs Exp $ */
 /***********************************************************
 
 Copyright 1987, 1989, 1998  The Open Group
@@ -60,7 +59,7 @@ SOFTWARE.
  *      socket ids aren't small nums (0 - 2^8)
  *
  *****************************************************************/
-/* $XFree86: xc/programs/lbxproxy/os/connection.c,v 1.19tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/os/connection.c,v 1.20 2004/04/03 22:38:55 tsi Exp $ */
 
 #include "misc.h"
 #include <X11/Xtrans.h>

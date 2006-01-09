@@ -1,4 +1,3 @@
-/* $Xorg: PclPixel.c,v 1.3 2000/08/17 19:48:08 cpqbld Exp $ */
 /*******************************************************************
 **
 **    *********************************************************
@@ -44,7 +43,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclPixel.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclPixel.c,v 1.7 2003/10/29 22:11:00 tsi Exp $ */
 
 #include <stdio.h>
 

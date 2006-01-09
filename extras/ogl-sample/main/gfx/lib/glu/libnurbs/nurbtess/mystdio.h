@@ -35,10 +35,8 @@
 /*
  * mystdio.h
  *
- * $Date$ $Revision$
- * $Header$
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/nurbtess/mystdio.h,v 1.2 2003/10/22 19:20:57 tsi Exp $ */
 
 #ifndef __glumystdio_h_
 #define __glumystdio_h_

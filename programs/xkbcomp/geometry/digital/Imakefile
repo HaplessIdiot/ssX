@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile /main/1 1996/01/22 18:01:14 kaleb $
+XCOMM $XFree86$
 
 #undef lk
 #undef pc

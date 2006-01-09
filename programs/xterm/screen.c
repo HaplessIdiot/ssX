@@ -1,10 +1,6 @@
 /* $XTermId: screen.c,v 1.186 2006/01/04 00:53:20 tom Exp $ */
 
 /*
- *	$Xorg: screen.c,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
- */
-
-/*
  * Copyright 1999-2005,2006 by Thomas E. Dickey
  *
  *                         All Rights Reserved
@@ -56,7 +52,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86: xc/programs/xterm/screen.c,v 3.73 2005/11/03 13:17:28 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/screen.c,v 3.74 2006/01/04 02:10:26 dickey Exp $ */
 
 /* screen.c */
 

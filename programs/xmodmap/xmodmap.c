@@ -1,4 +1,3 @@
-/* $Xorg: xmodmap.c,v 1.4 2001/02/09 02:05:56 xorgcvs Exp $ */
 /*
 
 Copyright 1988, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xmodmap/xmodmap.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/xmodmap/xmodmap.c,v 1.9 2003/05/27 22:27:08 tsi Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Xlib.h>

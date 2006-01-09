@@ -1,4 +1,4 @@
-<!-- $XConsortium: excel /main/1 1996/12/03 19:37:28 rws $ -->
+<!-- $XFree86$ -->
 <PARAM Name=VERSION Value=1.0>
 <PARAM Name=REQUIRED-SERVICES Value=UI>
 <PARAM Name=UI Value=X>

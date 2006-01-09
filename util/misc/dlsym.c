@@ -1,4 +1,4 @@
-/* $XConsortium: dlsym.c,v 1.1 93/12/06 16:24:15 kaleb Exp $ */
+/* $XFree86$ */
 /*
  * Stub interface to dynamic linker routines
  * that SunOS uses but didn't ship with 4.1.

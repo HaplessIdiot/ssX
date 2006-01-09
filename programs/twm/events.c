@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/events.c,v 1.14 2004/06/08 01:17:02 dawes Exp $ */
+/* $XFree86: xc/programs/twm/events.c,v 1.15 2005/05/19 01:02:44 dawes Exp $ */
 /*****************************************************************************/
 /*
 
@@ -52,8 +52,6 @@ in this Software without prior written authorization from The Open Group.
 
 
 /***********************************************************************
- *
- * $Xorg: events.c,v 1.4 2001/02/09 02:05:36 xorgcvs Exp $
  *
  * twm event handling
  *

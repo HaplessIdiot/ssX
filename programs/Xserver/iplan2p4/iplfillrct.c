@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/iplan2p4/iplfillrct.c,v 3.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplfillrct.c,v 3.2 2005/10/14 15:17:18 tsi Exp $ */
 /*
  * Fill rectangles.
  */
@@ -28,8 +28,6 @@ Except as contained in this notice, the name of the X Consortium shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
-
-/* $XConsortium: iplfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
 
 /* Modified nov 94 by Martin Schaller (Martin_Schaller@maus.r.de) for use with
 interleaved planes */

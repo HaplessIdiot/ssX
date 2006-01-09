@@ -1,7 +1,6 @@
 #ifndef _XKBPRINT_H_
 #define	_XKBPRINT_H_ 1
 
-/* $Xorg: xkbprint.h,v 1.3 2000/08/17 19:54:50 cpqbld Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -27,7 +26,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/xkbprint/xkbprint.h,v 1.2 2003/11/17 22:20:53 dawes Exp $ */
 
 #define	LABEL_AUTO	-1
 #define	LABEL_NONE	0

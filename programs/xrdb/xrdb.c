@@ -1,7 +1,5 @@
 /*
  * xrdb - X resource manager database utility
- *
- * $Xorg: xrdb.c,v 1.6 2000/08/17 19:54:56 cpqbld Exp $
  */
 
 /*
@@ -30,7 +28,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xrdb/xrdb.c,v 3.16tsi Exp $ */
+/* $XFree86: xc/programs/xrdb/xrdb.c,v 3.17 2003/07/20 16:12:20 tsi Exp $ */
 
 /*
  * this program is used to load, or dump the resource manager database

@@ -1,5 +1,3 @@
-/* $XConsortium: commands.c,v 1.33 91/10/21 14:32:18 eswu Exp $ */
-
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -24,7 +22,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/commands.c,v 1.29tsi Exp $ */
+/* $XFree86: xc/programs/xedit/commands.c,v 1.30 2003/05/27 22:27:01 tsi Exp $ */
 
 #include <X11/Xfuncs.h>
 #include <X11/Xos.h>

@@ -1,4 +1,3 @@
-/* $XConsortium: Xstreams.h,v 1.6 91/07/19 23:22:53 gildea Exp $ */
 /*	Copyright (c) 1990, 1991 UNIX System Laboratories, Inc. */
 /*	Copyright (c) 1988 AT&T */
 /*	  All Rights Reserved	*/
@@ -22,7 +21,7 @@
  * NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/dps/Xstreams.h,v 1.1 2000/02/15 14:51:21 dawes Exp $ */
 
 
 #ifndef _XSTREAMS_H_

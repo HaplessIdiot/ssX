@@ -1,5 +1,3 @@
-/* $Xorg: Text.c,v 1.4 2001/02/09 02:03:46 xorgcvs Exp $ */
-
 /***********************************************************
 
 Copyright 1987, 1988, 1994, 1998  The Open Group
@@ -74,7 +72,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.53tsi Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.54 2003/12/22 17:48:04 tsi Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>

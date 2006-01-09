@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: shapelib.ms /main/2 1996/12/11 15:00:45 kaleb $
+.\" $XFree86$
 .\" edited for DP edits and code consistency w/ core protocol/xlib 4/1/96
 .EH ''''
 .OH ''''
@@ -17,7 +17,7 @@ Shape Extension Library\fP\s-2
 .ce 3
 Version 1.0
 X Consortium Standard
-X Version 11, Release 6.3
+X Version 11, Release 6.4
 .sp 6
 .ce 4
 \s-1Keith Packard

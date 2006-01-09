@@ -35,8 +35,6 @@
 /*
  * glsurfeval.h
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 #ifndef __gluglsurfeval_h_

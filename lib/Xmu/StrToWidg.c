@@ -1,5 +1,3 @@
-/* $Xorg: StrToWidg.c,v 1.4 2001/02/09 02:03:53 xorgcvs Exp $ */
-
 /*
 
 Copyright 1994, 1998  The Open Group
@@ -25,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/StrToWidg.c,v 1.7 2001/12/14 19:55:53 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/StrToWidg.c,v 1.8 2004/10/23 15:29:26 dawes Exp $ */
 
 /*
  * XmuCvtStringToWidget

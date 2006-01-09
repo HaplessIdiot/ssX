@@ -1,10 +1,18 @@
-XCOMM platform:  $XConsortium: convex.cf,v 1.1 91/07/29 10:31:44 rws Exp $
+XCOMM platform:  $XFree86$
 
+#ifndef OSName
 #define OSName            	ConvexOS V9.0
+#endif
 XCOMM operating system:  OSName
+#ifndef OSMajorVersion
 #define OSMajorVersion		9
+#endif
+#ifndef OSMinorVersion
 #define OSMinorVersion		0 
+#endif
+#ifndef VersionNumber
 #define VersionNumber 		0.0.0.0
+#endif
 
 #define BootstrapCFlags   	-tm c1
 #define SetTtyGroup		YES
@@ -14,7 +22,7 @@ XCOMM operating system:  OSName
 #define XdmDir			$(LIBDIR)/xdm-sample
 #define XdmServersType	fs	/* one tab here */
 #define HasXmWidgets		NO
-#define InstKmemFlags		-g kmem -m 2755 -v $(VERSION)
+#define InstKmemFlags		-g kmem -m 2711 -v $(VERSION)
 #define InstScriptFlags		-m 0755 -g bin
 #define InstManFlags		-m 0444 -g bin
 #define DefaultCCOptions    	-fn -tm c1 

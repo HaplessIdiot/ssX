@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile /main/1 1996/02/02 14:21:11 kaleb $
+XCOMM $XFree86$
 
      DATAFILES = us 
 

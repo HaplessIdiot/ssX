@@ -1,4 +1,4 @@
-// $XConsortium: mousekeys /main/2 1995/12/07 21:44:51 kaleb $
+// $XFree86$
 // 
 partial default xkb_types "default" {
     virtual_modifiers Alt;

@@ -1,5 +1,3 @@
-/* $Xorg: KeysymStr.c,v 1.5 2001/02/09 02:03:34 xorgcvs Exp $ */
-
 /*
 
 Copyright 1990, 1998  The Open Group
@@ -25,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/KeysymStr.c,v 3.9 2003/04/13 19:22:16 dawes Exp $ */
+/* $XFree86: xc/lib/X11/KeysymStr.c,v 3.10 2003/11/17 22:20:07 dawes Exp $ */
 
 #include "Xlibint.h"
 #include <X11/Xresource.h>

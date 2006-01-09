@@ -1,4 +1,4 @@
-/* $XConsortium: bitmaps.c,v 1.6 92/11/11 17:02:11 rws Exp $ */
+/* $XFree86$ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 

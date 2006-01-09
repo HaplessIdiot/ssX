@@ -1,4 +1,4 @@
-/* $Id$
+/*
  *
  * Name:
  *	http-rman.c -- a rudimentary man-page HTTP server

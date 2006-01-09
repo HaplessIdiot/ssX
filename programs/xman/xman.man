@@ -1,6 +1,4 @@
-.\" $XConsortium: xman.man,v 1.23 94/04/17 20:44:02 matt Exp $
-.\"
-.\" $XFree86: xc/programs/xman/xman.man,v 1.5 2004/03/12 02:17:55 dickey Exp $
+.\" $XFree86: xc/programs/xman/xman.man,v 1.6 2005/02/11 03:03:20 dawes Exp $
 .\"
 .TH XMAN 1 __vendorversion__
 .SH NAME

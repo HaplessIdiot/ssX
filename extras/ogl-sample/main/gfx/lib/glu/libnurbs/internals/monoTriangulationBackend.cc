@@ -31,12 +31,8 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 **
-** $Date$ $Revision$
 */
-/*
-** $Header$
-*/
-/* $XFree86$ */
+/* $XFree86: xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/monoTriangulationBackend.cc,v 1.2 2003/10/22 19:20:57 tsi Exp $ */
 
 #include "monoTriangulation.h"
 #include "polyUtil.h"

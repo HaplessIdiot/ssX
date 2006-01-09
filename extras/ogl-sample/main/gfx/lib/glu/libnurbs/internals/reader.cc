@@ -35,8 +35,6 @@
 /*
  *  reader.c++
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 #include <stdio.h>

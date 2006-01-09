@@ -1,4 +1,3 @@
-/* $Xorg: auth.c,v 1.5 2001/02/09 02:05:40 xorgcvs Exp $ */
 /*
 
 Copyright 1988, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/auth.c,v 3.35 2004/04/03 22:13:52 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.36 2004/04/03 22:26:26 dawes Exp $ */
 
 /*
  * xdm - display manager daemon

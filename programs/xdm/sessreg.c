@@ -1,6 +1,4 @@
 /*
- * $Xorg: sessreg.c,v 1.5 2000/08/17 19:54:15 cpqbld Exp $
- *
  * Copyright 1990, 1998  The Open Group
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -30,7 +28,7 @@
  *   by Andreas Stolcke <stolcke@icsi.berkeley.edu>
  */
 
-/* $XFree86: xc/programs/xdm/sessreg.c,v 3.20 2004/04/06 21:40:15 tsi Exp $ */
+/* $XFree86: xc/programs/xdm/sessreg.c,v 3.21 2005/01/26 04:18:53 dawes Exp $ */
 
 /*
  * sessreg

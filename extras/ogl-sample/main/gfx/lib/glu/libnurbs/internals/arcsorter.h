@@ -35,8 +35,6 @@
 /*
  * arcsorter.h
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 #ifndef __gluarcsorter_h_

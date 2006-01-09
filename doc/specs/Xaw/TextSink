@@ -1,3 +1,4 @@
+.\" $XFree86$
 .NH 2
 TextSink Object
 .LP
@@ -18,7 +19,7 @@ Class		textSinkObjectClass
 Class Name	TextSink
 .IN "TextSink object" "class name"
 Superclass	Object
-.sp 1
+.De
 .LP
 The TextSink object is the root object for all text sinks.  Any new text
 sink objects should be subclasses of the TextSink Object.  The TextSink
@@ -27,7 +28,6 @@ export.
 .LP
 Since all text sinks will have some resources in common, the TextSink
 defines a few new resources.
-.De
 .NH 3
 Resources
 .LP
@@ -35,10 +35,6 @@ When creating an TextSink object instance, the following resources are
 retrieved from the argument list or from the resource database:
 .LP
 .IN "AsciiSink object" "resources"
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
 lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
@@ -56,10 +52,6 @@ foreground	Foreground	Pixel		XtDefaultForeground
 .sp 3p
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 .Bg Bold
 .Dc
 .Sg Bold
@@ -74,10 +66,6 @@ specify\fP some of them as TextSink does contain enough information to
 be a valid text sink by itself.  Do not try to use 
 the TextSink as a valid sink for the Text widget; it is not intended
 to be used as a sink by itself.
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
 lw(1i) lw(1.5i) lw(2i) lw(1i).
 _
@@ -121,10 +109,6 @@ GetCursorBounds	XtInheritGetCursorBounds	XawTextSinkGetCursorBounds	yes
 .IN "XawTextSinkGetCursorBounds" ""
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 .NH 4
 Displaying Text
 .LP

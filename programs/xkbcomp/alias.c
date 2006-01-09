@@ -1,4 +1,3 @@
-/* $Xorg: alias.c,v 1.3 2000/08/17 19:54:30 cpqbld Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +23,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/xkbcomp/alias.c,v 1.5 2002/07/01 02:26:00 tsi Exp $ */
 
 #include "xkbcomp.h"
 #include "misc.h"

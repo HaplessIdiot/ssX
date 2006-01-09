@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-# $Id$
-
 # Mesa 3-D graphics library
 # Version:  4.1
 # 

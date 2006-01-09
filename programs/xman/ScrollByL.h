@@ -1,4 +1,3 @@
-/* $XConsortium: ScrollByL.h,v 1.7 94/04/17 20:43:48 dave Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium
@@ -28,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xman/ScrollByL.h,v 1.3 2004/04/22 14:15:05 tsi Exp $ */
 
 #ifndef _XtScrollByLine_h
 #define _XtScrollByLine_h

@@ -1,5 +1,4 @@
-/* $Xorg: k5encode.c,v 1.4 2001/02/09 02:03:42 xorgcvs Exp $ */
-
+/* $XFree86$ */
 /*
 
 Copyright 1993, 1994, 1998  The Open Group

@@ -1,4 +1,4 @@
-.\" $XConsortium: Trans.ms,v 1.3 94/04/18 16:02:17 rws Exp $
+.\" $XFree86$
 .\" To print this out, type tbl macros.t This File | troff -ms
 .EH ''''
 .OH ''''
@@ -16,7 +16,7 @@
 .sp
 \fBRevision 0.1\fP
 .sp
-\fBX Version 11, Release 6\fP
+\fBX Version 11, Release 6.4\fP
 .sp 3
 .AU
 Takashi Fujiwara
@@ -75,8 +75,8 @@ in this Software without prior written authorization from the X Consortium.
 .ps 11
 .nr PS 11
 .bp 1
-.EH '\fBXIM Transport Specification\fP''\fBX11, Release 6\fP'
-.OH '\fBXIM Transport Specification\fP''\fBX11, Release 6\fP'
+.EH '\fBXIM Transport Specification\fP''\fBX11, Release 6.4\fP'
+.OH '\fBXIM Transport Specification\fP''\fBX11, Release 6.4\fP'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
 .NH 1

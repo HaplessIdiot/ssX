@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaReg.h,v 1.3 1999/06/06 08:49:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaReg.h,v 1.4 2002/01/25 21:56:22 tsi Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -21,8 +21,6 @@
  * SOFTWARE.
  *
 */
-
-/* $XConsortium: vgaReg.h /main/4 1996/02/21 17:59:02 kaleb $ */
 
 #define SET_BYTE_REGISTER( ioport, value )	outb( ioport, value )
 #define SET_INDEX_REGISTER( ioport, value ) SET_BYTE_REGISTER( ioport, value )

@@ -1,4 +1,3 @@
-/* $Xorg: DiPrint.h,v 1.3 2000/08/17 19:48:04 cpqbld Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -30,7 +29,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/DiPrint.h,v 1.3 1999/12/16 02:26:24 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/DiPrint.h,v 1.4 2001/01/17 22:36:28 dawes Exp $ */
 
 /*
  * The XpDiListEntry struct is the type of each element of the array

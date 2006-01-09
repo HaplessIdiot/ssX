@@ -35,8 +35,6 @@
 /*
  * knotvector.h
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 #ifndef __gluknotvector_h_

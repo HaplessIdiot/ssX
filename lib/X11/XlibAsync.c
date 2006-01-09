@@ -1,4 +1,4 @@
-/* $Xorg: XlibAsync.c,v 1.4 2001/02/09 02:03:38 xorgcvs Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright 1992, 1998  The Open Group

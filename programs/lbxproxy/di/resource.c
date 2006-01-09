@@ -1,4 +1,3 @@
-/* $Xorg: resource.c,v 1.4 2000/08/17 19:53:56 cpqbld Exp $ */
 /*
 
 Copyright 1987, 1998  The Open Group
@@ -72,7 +71,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/lbxproxy/di/resource.c,v 1.6 2004/04/03 22:38:54 tsi Exp $ */
 
 #include <stdio.h>
 #include "misc.h"

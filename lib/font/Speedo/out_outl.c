@@ -1,5 +1,4 @@
-/* $XConsortium: out_outl.c,v 1.2 91/05/11 09:52:48 rws Exp $ */
-
+/* $XFree86$ */
 /*
 
 Copyright 1989-1991, Bitstream Inc., Cambridge, MA.

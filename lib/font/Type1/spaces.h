@@ -1,4 +1,3 @@
-/* $Xorg: spaces.h,v 1.3 2000/08/17 19:46:32 cpqbld Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -26,7 +25,7 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/spaces.h,v 3.3 1999/08/22 08:58:53 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/spaces.h,v 3.4 2001/01/17 19:43:23 dawes Exp $ */
 
 /*SHARED*/
  

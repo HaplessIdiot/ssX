@@ -1,9 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_cursor.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_cursor.c,v 1.6 2003/11/03 05:11:20 tsi Exp $ */
 /*
- * $Workfile: nsc_gx1_cursor.c $
- * $Revision$
- * $Author$
- *
  * File Contents: Xfree cursor implementation routines
  *                for geode HWcursor init.setting cursor color,image etc
  *                are done here.

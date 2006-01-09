@@ -1,4 +1,4 @@
-.\" $XConsortium: protocol.ms,v 1.14 94/04/17 23:59:31 rws Exp $
+.\" $XFree86$
 .\" Use tbl, -ms, and macros.t
 .EH ''''
 .OH ''''
@@ -14,10 +14,12 @@
 \fBVersion 2.0\fP
 \fBX Consortium Standard\fR
 .sp
-\fBX Version 11, Release 6\fR
+\fBX Version 11, Release 6.4\fR
 .sp 6
 Jim Fulton
 Network Computing Devices, Inc.
+.sp 6
+Revised May 2, 1994
 .ce 0
 .bp
 .br
@@ -61,8 +63,8 @@ in this Software without prior written authorization from the X Consortium.
 .ps 11
 .nr PS 11
 .bp 1
-.EH '\fBX Font Service Protocol\fP''\fBX11, Release 6\fP'
-.OH '\fBX Font Service Protocol\fP''\fBX11, Release 6\fP'
+.EH '\fBX Font Service Protocol\fP''\fBX11, Release 6.4\fP'
+.OH '\fBX Font Service Protocol\fP''\fBX11, Release 6.4\fP'
 .EF ''\fB\\\\n(PN\fP''
 .OF ''\fB\\\\n(PN\fP''
 .NH 1
@@ -224,7 +226,7 @@ However, for environments that lack appropriate name services
 transport-specific names are necessary.  Since these names do occur in the
 protocol, clients and servers should support at least the applicable formats
 described below.  Formats for additional transports may be registered with the
-MIT X Consortium.
+X Consortium.
 .NH 2
 TCP/IP Names
 .XS
@@ -1354,8 +1356,10 @@ error is returned.
   =>
 .IP
 \fIstatus\fP\^:  	{ Success, Continue, Denied }
-	authorization-index:		CARD8
-	authorization-data:		LISTofBYTE
+.br
+\fIauthorization-index\fP\^:		CARD8
+.br
+\fIauthorization-data\fP\^:		LISTofBYTE
 .IP
 Errors:
 .PN IDChoice
@@ -1393,11 +1397,10 @@ the indicated response from the server.  This continues
 until STATUS is set to either Success or Denied.
 .RS
 .DS
-
-	->
+	\->
 	more-authorization-data:		STRING8
 	=>
-	status:					{ Success, Continue, Denied }
+	status:				{ Success, Continue, Denied }
 	more-authorization-data:		LISTofBYTE
 .DE
 .RE
@@ -1678,20 +1681,6 @@ request.
 .sp
 If OTHERID is set to None, then OTHERID-VALID should be set
 to False.
-.sp
-If the client is allowed to access the font and the server is
-able and willing to detect that the client has already
-successfully opened the font (possibly under a different name), 
-OTHERID may be set to a font identifier used to previously
-open the font.  If the font is currently open and associated
-with one or more identifiers, one of those FONTIDs should be
-used for OTHERID and OTHERID-VALID should be set to True.
-If the font is not currently open
-to another valid font identifier that the client currently has
-associated with this font and OTHERID-VALID is set to True.  
-If the 
-Otherwise, OTHERID is set to
-None.
 .sp
 The FORMAT-MASK indicates which fields in FORMAT-HINT
 the client is likely to use in subsequent 
@@ -2568,7 +2557,7 @@ INT32
 OFFSET32
 .br
 .TA .75i .75i .75i .75i
-4	CARD32	position
+4	CARD32	position (or integer value)
 .br
 4	CARD32	length
 .sp 18p
@@ -2583,8 +2572,6 @@ PROPINFO
 20*n	PROPOFFSET	property offsets into data block
 .br
 m	LISTofBYTE	property data block
-.br
-p				unused, p = pad(m)
 .sp 18p
 .LP
 PROPOFFSET
@@ -3124,6 +3111,7 @@ QueryXInfo
 2@CARD16@sequence-number
 4@2+f/4@length
 f@XFONTINFO@font info
+p@@unused, p=pad(f\^)
 .TE
 .sp 12p
 .TS
@@ -3511,13 +3499,14 @@ References
 \*(SN References
 .XE
 .LP
-All of the following documents are X Consortium standards available from MIT:
+All of the following documents are X Consortium standards available from
+the X Consortium.
 .LP
 [1]  Scheifler, Robert W.  ``X Window System Protocol Version 11''
 .LP
 [2]  Adobe Systems.  ``Bitmap Distribution Format 2.1''
 .LP
-[3]  MIT X Consortium.  ``X Logical Font Description Conventions, Version 1.4''
+[3]  X Consortium.  ``X Logical Font Description Conventions, Version 1.5''
 .bp
 .XS
 Appendix A \- Suggested Licensing Policies
@@ -3546,7 +3535,7 @@ sufficient.
 .IP "b."
 Per-machine - only those clients connecting from a known set of
 machines are permitted access.  The server could get the address 
-of the connection and look in a list of	allowed machines. 
+of the connection and look in a list of allowed machines. 
 .IP "c."
 Per-user - only a known set of users may access the fonts.  The
 server can use the authorization data (such as a Kerberos ticket

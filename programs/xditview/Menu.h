@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Menu.h,v 1.2 89/07/21 14:22:10 jim Exp $
+ * $XFree86$
  */
 
 #ifndef _XtMenu_h

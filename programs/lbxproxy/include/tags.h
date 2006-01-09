@@ -1,4 +1,3 @@
-/* $Xorg: tags.h,v 1.4 2001/02/09 02:05:32 xorgcvs Exp $ */
 /*
 
 Copyright 1998  The Open Group
@@ -46,7 +45,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/lbxproxy/include/tags.h,v 1.6 2003/11/17 22:20:49 dawes Exp $ */
 
 #ifndef _TAGS_H_
 #define _TAGS_H_

@@ -1,4 +1,4 @@
-.\" $XFree86$
+.\" $XFree86: xc/doc/specs/Xi/library.ms,v 1.2 2005/10/14 15:15:53 tsi Exp $
 .\" Input Extension			now coded to macros.t
 .\" edited for DP edits and code consistency w/ core protocol/xlib 4/5/96
 .EH ''''
@@ -5076,7 +5076,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/include/extensions/XInput.h,v 1.5 2005/01/27 02:28:58 dawes Exp $ */
+/* $XFree86: xc/doc/specs/Xi/library.ms,v 1.2 2005/10/14 15:15:53 tsi Exp $ */
 
 /* Definitions used by the library and client */
 
@@ -6162,8 +6162,6 @@ _XFUNCPROTOEND
 
 #endif /* _XINPUT_H_ */
 
-/* $Xorg: XI.h,v 1.4 2001/02/09 02:03:23 xorgcvs Exp $ */
-
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -6209,7 +6207,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/include/extensions/XI.h,v 1.5 2001/12/14 19:53:28 dawes Exp $ */
+/* $XFree86: xc/doc/specs/Xi/library.ms,v 1.2 2005/10/14 15:15:53 tsi Exp $ */
 
 /* Definitions used by the server, library and client */
 

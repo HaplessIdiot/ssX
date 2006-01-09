@@ -1,6 +1,4 @@
 #! /bin/sh
-#$Xorg: Xmark.sh,v 1.3 2000/08/17 19:54:08 cpqbld Exp $
-#XPC Header: Xmark,v 1.15 93/04/12 10:10:07 hmgr Exp
 #
 ############################################################
 # Xmark version XPC Revision: 1.15
@@ -8,7 +6,7 @@
 # Usage: Xmark datafile
 #
 ############################################################
-# $XFree86: xc/programs/x11perf/Xmark.sh,v 1.2 1997/01/04 12:20:20 dawes Exp $
+# $XFree86: xc/programs/x11perf/Xmark.sh,v 1.3 2001/01/17 23:45:10 dawes Exp $
 #
 #
 # CHANGE HISTORY:

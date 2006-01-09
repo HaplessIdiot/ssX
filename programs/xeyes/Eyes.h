@@ -1,6 +1,6 @@
 /*
-* $XConsortium: Eyes.h,v 1.7 90/12/01 13:04:51 rws Exp $
-*/
+ * $XFree86$
+ */
 
 #ifndef _XtEyes_h
 #define _XtEyes_h

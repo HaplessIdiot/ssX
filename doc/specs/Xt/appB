@@ -1,4 +1,4 @@
-.\" $XConsortium: appB,v 1.7 94/04/18 20:20:54 rws Exp $
+.\" $XFree86$
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -49,7 +49,7 @@
 .sp 2
 .LP
 .XS
-\fBAppendix B \- Translation Table Syntax\fP
+\fBAppendix B \(em Translation Table Syntax\fP
 .XE
 .IN "Translation tables"
 .SH
@@ -171,9 +171,9 @@ Briefly:
 .Ds 0
 .TA 2.5i
 .ta 2.5i
-No Modifiers:	None <event> detail
-Any Modifiers:	<event> detail
-Only these Modifiers:	! mod1 mod2 <event> detail
+No modifiers:	None <event> detail
+Any modifiers:	<event> detail
+Only these modifiers:	! mod1 mod2 <event> detail
 These modifiers and any others:	mod1 mod2 <event> detail
 .De
 .LP
@@ -498,7 +498,7 @@ For the
 .PN PropertyNotify ,
 .PN SelectionClear ,
 .PN SelectionRequest ,
-.PN SelectionNotify
+.PN SelectionNotify ,
 and
 .PN ClientMessage
 events the detail field is specified
@@ -507,7 +507,7 @@ as an atom name; for example, <Message>WM_PROTOCOLS.  For the
 .PN EnterNotify ,
 .PN LeaveNotify ,
 .PN FocusIn ,
-.PN FocusOut
+.PN FocusOut ,
 and
 .PN MappingNotify
 events, either the symbolic constants as defined by
@@ -519,7 +519,7 @@ accepted as a match.
 .LP
 A KeySym can be specified as any of the standard KeySym names, 
 a hexadecimal number prefixed with ``0x'' or ``0X'', 
-an octal number prefixed with ``0'' or a decimal number.
+an octal number prefixed with ``0'', or a decimal number.
 A KeySym expressed as a single digit is interpreted as the
 corresponding Latin 1 KeySym, for example, ``0'' is the KeySym XK_0.
 Other single character KeySyms are treated as literal constants from Latin 1,
@@ -548,7 +548,7 @@ modifier	= [``~''] modifier_name
 count	= (``1'' | ``2'' | ``3'' | ``4'' | ...)
 modifier_name	= ``@'' <keysym> | <see canonical modifier names below>
 event_type	= <see canonical event types below>
-detail	= <event specific details>
+detail	= <event-specific details>
 rhs	= { name ``('' [params] ``)'' }
 name	= namechar { namechar }
 namechar	= { ``a''-``z'' | ``A''-``Z'' | ``0''-``9'' | ``_'' | ``-'' }

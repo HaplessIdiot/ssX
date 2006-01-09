@@ -1,8 +1,4 @@
 /*
- *	rcs_id[] = "$XConsortium: xedit.h,v 1.19 89/10/07 14:59:46 kit Exp $";
- */
- 
-/*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
@@ -26,7 +22,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/xedit.h,v 1.17 2002/10/06 17:11:39 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.h,v 1.18 2002/11/10 23:21:57 paulo Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>

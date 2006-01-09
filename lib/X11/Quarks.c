@@ -1,5 +1,3 @@
-/* $Xorg: Quarks.c,v 1.5 2001/02/09 02:03:35 xorgcvs Exp $ */
-
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard,
 
@@ -49,7 +47,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Quarks.c,v 1.6 2003/04/13 19:22:17 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Quarks.c,v 1.7 2003/11/17 22:20:08 dawes Exp $ */
 
 #include "Xlibint.h"
 #include <X11/Xresource.h>

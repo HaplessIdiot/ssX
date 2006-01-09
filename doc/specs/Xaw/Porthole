@@ -1,3 +1,4 @@
+.\" $XFree86$
 .NH 2
 Porthole Widget
 .LP
@@ -32,11 +33,8 @@ When creating a Porthole widget instance, the following resources are
 retrieved from the argument list or from the resource database:
 .LP
 .IN "Porthole widget" "resources"
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
+expand;
 lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
@@ -71,10 +69,6 @@ y	Position	Position		0
 .sp 3p
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 .Ac
 .As
 .Bg

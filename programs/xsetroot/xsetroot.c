@@ -1,5 +1,4 @@
 /*
- * $Xorg: xsetroot.c,v 1.4 2001/02/09 02:05:59 xorgcvs Exp $
  *
 Copyright 1987, 1998  The Open Group
 
@@ -32,7 +31,7 @@ in this Software without prior written authorization from The Open Group.
  *  Author:	Mark Lillibridge, MIT Project Athena
  *		11-Jun-87
  */
-/* $XFree86: xc/programs/xsetroot/xsetroot.c,v 1.7 2001/04/01 14:00:24 tsi Exp $ */
+/* $XFree86: xc/programs/xsetroot/xsetroot.c,v 1.8 2001/12/14 20:02:23 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>

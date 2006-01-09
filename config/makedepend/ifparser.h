@@ -1,6 +1,4 @@
 /*
- * $Xorg: ifparser.h,v 1.3 2000/08/17 19:41:51 cpqbld Exp $
- *
  * Copyright 1992 Network Computing Devices, Inc.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -32,7 +30,7 @@
  *     ParseIfExpression		parse a string for #if
  */
 
-/* $XFree86: xc/config/makedepend/ifparser.h,v 3.5tsi Exp $ */
+/* $XFree86: xc/config/makedepend/ifparser.h,v 3.6 2004/03/05 16:02:58 tsi Exp $ */
 
 #include <stdio.h>
 

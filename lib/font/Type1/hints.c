@@ -1,4 +1,3 @@
-/* $Xorg: hints.c,v 1.3 2000/08/17 19:46:30 cpqbld Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -26,7 +25,7 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/hints.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/lib/font/Type1/hints.c,v 1.8 2003/05/27 22:26:45 tsi Exp $ */
 
  /* HINTS    CWEB         V0006 ********                             */
 /*

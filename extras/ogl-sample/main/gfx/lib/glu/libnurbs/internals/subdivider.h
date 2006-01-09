@@ -35,8 +35,6 @@
 /*
  * subdivider.h
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 #ifndef __glusubdivider_h_

@@ -1,5 +1,4 @@
-/* $XFree86: xc/programs/Xserver/iplan2p4/iplpixmap.c,v 3.2tsi Exp $ */
-/* $XConsortium: iplpixmap.c,v 5.14 94/04/17 20:28:56 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplpixmap.c,v 3.3 2005/10/14 15:17:18 tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

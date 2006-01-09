@@ -1,4 +1,3 @@
-/* $Xorg: imDefIc.c,v 1.5 2000/08/17 19:45:11 cpqbld Exp $ */
 /******************************************************************
 
            Copyright 1991, 1992 by Sun Microsystems, Inc.
@@ -28,7 +27,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imDefIc.c,v 3.9 2003/04/13 19:22:20 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imDefIc.c,v 3.10 2003/11/17 22:20:11 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"

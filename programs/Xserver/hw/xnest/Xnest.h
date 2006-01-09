@@ -1,4 +1,3 @@
-/* $Xorg: Xnest.h,v 1.3 2000/08/17 19:53:28 cpqbld Exp $ */
 /*
 
 Copyright (c) 1995  X Consortium
@@ -28,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Xnest.h,v 1.3 2001/08/28 16:48:08 tsi Exp $ */
 
 /* 
 ** Machines with a 64 bit library interface and a 32 bit server require

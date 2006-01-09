@@ -1,4 +1,3 @@
-/* $Xorg: indicators.h,v 1.3 2000/08/17 19:54:32 cpqbld Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +23,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/xkbcomp/indicators.h,v 1.3 2002/07/01 02:26:01 tsi Exp $ */
 
 #ifndef INDICATORS_H
 #define INDICATORS_H 1

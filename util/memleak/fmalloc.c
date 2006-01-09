@@ -1,5 +1,4 @@
 /*
- * $Xorg: fmalloc.c,v 1.5 2001/02/09 02:06:19 xorgcvs Exp $
  *
 Copyright 1992, 1998  The Open Group
 
@@ -26,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/util/memleak/fmalloc.c,v 3.12 2001/02/16 13:24:10 eich Exp $ */
+/* $XFree86: xc/util/memleak/fmalloc.c,v 3.14 2002/04/04 14:06:00 eich Exp $ */
 
 
 /*

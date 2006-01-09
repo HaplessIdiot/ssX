@@ -1,4 +1,4 @@
-/* $XConsortium: thr_stubs.c,v 1.3 94/01/13 13:59:50 kaleb Exp $ */
+/* $XFree86$ */
 /*
  * Stub interface to thread routines that Solaris needs but shipped
  * broken/buggy versions in 5.2 and 5.3

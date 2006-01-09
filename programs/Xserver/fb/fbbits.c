@@ -1,6 +1,4 @@
 /*
- * Id: fbbits.c,v 1.1 1999/11/02 03:54:45 keithp Exp $
- *
  * Copyright © 1998 Keith Packard
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -21,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbbits.c,v 1.5 2000/02/17 14:16:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbits.c,v 1.6 2000/02/23 20:29:41 dawes Exp $ */
 
 #include "fb.h"
 #include "miline.h"

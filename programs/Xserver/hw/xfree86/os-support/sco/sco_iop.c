@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_iop.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_iop.c,v 1.2 2005/10/14 15:17:07 tsi Exp $ */
 /*
  * Copyright 2001 by J. Kean Johnston <jkj@caldera.com>
  *
@@ -20,8 +20,6 @@
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XConsortium$ */
-
 
 #include <X11/X.h>
 

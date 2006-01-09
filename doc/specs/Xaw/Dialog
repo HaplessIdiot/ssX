@@ -1,3 +1,4 @@
+.\" $XFree86$
 .NH 2
 Dialog Widget
 .LP
@@ -40,11 +41,8 @@ Resources
 When creating a Dialog widget instance, the following resources are
 retrieved from the argument list or the resource database:
 .IN "Dialog widget" "resources"
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
+expand;
 lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
@@ -82,10 +80,6 @@ y	Position	Position		0
 .sp 3p
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 .Ac
 .As
 .Bg
@@ -124,10 +118,6 @@ Each child of the Dialog widget may request special layout resources
 be applied to it.  These \fIconstraint\fP resources allow the Dialog
 widget's children to specify individual layout requirements.
 .LP
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
 lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
@@ -153,10 +143,6 @@ vertDistance	Thickness	int		\fBdefaultDistance\fP resource
 .sp 3p
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 .Bt
 .Fh
 .Hd
@@ -167,10 +153,6 @@ Layout Semantics
 .LP
 .Lt Dialog
 .LP
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
 lw(1.5i) lw(1i) lw(3i).
 _
@@ -195,10 +177,6 @@ XawRubber	Rubber	Edges will move a proportional distance
 .sp 3p
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 .NH 4
 Example
 .LP
@@ -289,16 +267,14 @@ Specifies the client_data to be passed to the \fIfunc\fP.
 .LP
 This function is merely a shorthand for the code sequence:
 .sp
-.ps 9
-.nr PS 9
 .Ds 0
+.SM
 .TA 1i 2i
 .ta 1i 2i
 {
 	Widget button = XtCreateManagedWidget(name, commandWidgetClass, w, NULL, ZERO);
 	XtAddCallback(button, XtNcallback, func, client_data);
 }
+.NL
 .De
-.ps 11
-.nr PS 11
 .sp

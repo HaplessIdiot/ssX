@@ -1,8 +1,6 @@
 #!/usr/bin/perl -w
 #!/citi/gtfd/mach/bin/perl -w
 ###############
-# $Id$
-# $Source$
 ############################################
 # TODO:
 #	reorganize location of man pages - move 3x stuff from man3 to man3x

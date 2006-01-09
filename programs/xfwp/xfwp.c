@@ -1,5 +1,4 @@
-/* $Xorg: xfwp.c,v 1.4 2001/02/09 02:05:45 xorgcvs Exp $ */
-
+/* $XFree86$ */
 /*
 Copyright 1996, 1998  The Open Group
 

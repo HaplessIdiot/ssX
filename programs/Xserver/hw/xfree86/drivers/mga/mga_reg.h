@@ -1,10 +1,4 @@
-/* $XConsortium: mgareg.h /main/2 1996/10/25 10:33:21 kaleb $ */
-
-
-
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.17 2001/04/25 14:23:00 dawes Exp $ */
-
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.18 2001/09/26 12:59:18 alanh Exp $ */
 
 /*
  * MGA Millennium (MGA2064W) functions

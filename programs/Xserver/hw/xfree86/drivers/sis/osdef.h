@@ -1,5 +1,4 @@
-/* $XFree86$ */
-/* $XdotOrg$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/osdef.h,v 1.11 2004/06/21 00:43:22 twini Exp $ */
 /*
  * OS depending defines
  *

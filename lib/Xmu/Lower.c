@@ -1,5 +1,3 @@
-/* $Xorg: Lower.c,v 1.4 2001/02/09 02:03:53 xorgcvs Exp $ */
-
 /* 
  
 Copyright 1988, 1998  The Open Group
@@ -26,7 +24,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xmu/Lower.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/lib/Xmu/Lower.c,v 1.13 2005/02/07 01:01:16 tsi Exp $ */
 
 #define  XK_LATIN1
 #include <X11/keysymdef.h>

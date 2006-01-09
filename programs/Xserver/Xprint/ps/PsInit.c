@@ -1,4 +1,3 @@
-/* $Xorg: PsInit.c,v 1.4 2001/02/09 02:04:36 xorgcvs Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -73,7 +72,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 **
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsInit.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsInit.c,v 1.14 2003/10/29 22:11:55 tsi Exp $ */
 
 #include <stdio.h>
 #include <string.h>

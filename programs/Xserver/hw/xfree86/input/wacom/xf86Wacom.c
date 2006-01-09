@@ -1,4 +1,5 @@
-/* $XConsortium: xf86Wacom.c /main/20 1996/10/27 11:05:20 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.48 2005/10/14 15:16:58 tsi Exp $ */
+
 /*
  * Copyright 1995-2001 by Frederic Lepied, France. <Lepied@XFree86.org>
  *                                                                            
@@ -21,8 +22,6 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.47tsi Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.

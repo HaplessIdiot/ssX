@@ -1,6 +1,5 @@
 /* $XTermId: menu.c,v 1.190 2005/11/10 00:45:52 tom Exp $ */
 
-/* $Xorg: menu.c,v 1.4 2001/02/09 02:06:03 xorgcvs Exp $ */
 /*
 
 Copyright 1999-2004,2005 by Thomas E. Dickey
@@ -47,7 +46,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xterm/menu.c,v 3.63 2005/11/03 13:17:27 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/menu.c,v 3.64 2005/11/13 23:10:36 dickey Exp $ */
 
 #include <xterm.h>
 #include <data.h>

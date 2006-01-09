@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcSpMcro.h,v 1.1.2.1 1998/06/27 14:48:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcSpMcro.h,v 1.2 1998/07/25 16:59:42 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -21,7 +21,6 @@
  * SOFTWARE.
  *
 */
-/* $XConsortium: ppcSpMcro.h /main/3 1996/02/21 17:58:36 kaleb $ */
 
 /* This screwy macro is used in all the spans routines and you find
    it all over the place, so it is a macro just to tidy things up.

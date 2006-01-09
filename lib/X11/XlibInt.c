@@ -1,4 +1,3 @@
-/* $Xorg: XlibInt.c,v 1.8 2001/02/09 02:03:38 xorgcvs Exp $ */
 /*
 
 Copyright 1985, 1986, 1987, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.38 2003/10/30 21:55:05 alanh Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.39 2003/11/17 22:20:10 dawes Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine

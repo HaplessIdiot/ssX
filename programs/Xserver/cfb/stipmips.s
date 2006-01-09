@@ -1,5 +1,5 @@
+/* $XFree86$ */
 /*
- * $Xorg: stipmips.s,v 1.4 2001/02/09 02:04:39 xorgcvs Exp $
  *
 Copyright 1990, 1998  The Open Group
 

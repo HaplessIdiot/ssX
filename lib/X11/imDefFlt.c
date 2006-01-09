@@ -1,4 +1,3 @@
-/* $Xorg: imDefFlt.c,v 1.4 2000/08/17 19:45:11 cpqbld Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -26,7 +25,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imDefFlt.c,v 1.4 2001/01/17 19:41:51 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imDefFlt.c,v 1.5 2003/04/13 19:22:20 dawes Exp $ */
 
 #include <X11/Xatom.h>
 #define NEED_EVENTS

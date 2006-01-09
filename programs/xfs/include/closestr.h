@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfs/include/closestr.h,v 1.3 2005/10/14 15:17:33 tsi Exp $ */
 /*
 Copyright 1987, 1998  The Open Group
 
@@ -43,8 +43,6 @@ in this Software without prior written authorization from The Open Group.
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * $NCDXorg: @(#)closestr.h,v 4.1 1991/05/02 04:15:46 lemke Exp $
  *
  */
 

@@ -1,4 +1,4 @@
-.\" $XConsortium: CH04,v 1.15 94/04/19 19:44:54 converse Exp $
+.\" $XFree86$
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -53,7 +53,7 @@
 .nr H5 0
 .LP
 .XS
-Chapter 4 \- Shell Widgets
+Chapter 4 \(em Shell Widgets
 .XE
 .IN "Shell" "" "@DEF@"
 .LP
@@ -136,7 +136,7 @@ encapsulate other widgets and can allow a widget to avoid the
 geometry clipping imposed by the parent-child window relationship.
 They also can provide a layer of communication with the window manager.
 .LP
-The eight different types of shells are
+The eight different types of shells are:
 .TS
 lw(1.5i) lw(4.5i).
 T{
@@ -160,7 +160,7 @@ T{
 .PN WMShell
 T}	T{
 A subclass of Shell; contains fields needed by the
-common window manager protocol .
+common window manager protocol.
 T}
 .sp 6p
 T{
@@ -182,7 +182,7 @@ T}
 T{
 .PN TopLevelShell
 T}	T{
-A subclass of VendorShell; used for normal top level windows.
+A subclass of VendorShell; used for normal top-level windows.
 T}
 .sp 6p
 T{
@@ -228,144 +228,151 @@ class has additional class fields, which are all contained in the
 None of the other Shell classes have any additional class fields:
 .LP
 .KS
+.sM
 .Ds 0
-.TA .5i 3i
-.ta .5i 3i
-typedef struct { XtPointer extension; } ShellClassPart, OverrideShellClassPart,
-	WMShellClassPart, VendorShellClassPart, TransientShellClassPart,
-	TopLevelShellClassPart, ApplicationShellClassPart, SessionShellClassPart;
+.TA .5i 2.5i 4.5i
+.ta .5i 2.5i 4.5i
+typedef struct {
+        XtPointer extension;
+} ShellClassPart, OverrideShellClassPart,
+WMShellClassPart, VendorShellClassPart, TransientShellClassPart,
+TopLevelShellClassPart, ApplicationShellClassPart, SessionShellClassPart;
 .De
-.KE
 .LP
-The full Shell class record definitions are
+.eM
+.KE
+The full Shell class record definitions are:
 .IN "ShellClassExtension" "" "@DEF@"
 .IN "ShellClassExtensionRec" "" "@DEF@"
 .LP
 .KS
+.sM
 .Ds 0
-.TA .5i 4i
-.ta .5i 4i
+.TA .5i 2.5i 4.5i
+.ta .5i 2.5i 4.5i
 typedef struct _ShellClassRec {
-	CoreClassPart core_class;
-	CompositeClassPart composite_class;
-	ShellClassPart shell_class;
+	CoreClassPart	core_class;
+	CompositeClassPart	composite_class;
+	ShellClassPart	shell_class;
 } ShellClassRec;
 .De
 .KE
 .KS
 .Ds 0
-.TA .5i 4i
-.ta .5i 4i
+.TA .5i 2.5i 4.5i
+.ta .5i 2.5i 4.5i
 typedef struct {
-	XtPointer next_extension;	See Section 1.6.12
-	XrmQuark record_type;	See Section 1.6.12
-	long version;	See Section 1.6.12
-	Cardinal record_size;	See Section 1.6.12
-	XtGeometryHandler root_geometry_manager;	See below
+	XtPointer	next_extension;	See Section 1.6.12
+	XrmQuark	record_type;	See Section 1.6.12
+	long	version;	See Section 1.6.12
+	Cardinal	record_size;	See Section 1.6.12
+	XtGeometryHandler	root_geometry_manager;	See below
 } ShellClassExtensionRec, *ShellClassExtension;
 .De
 .KE
 .KS
 .Ds 0
-.TA .5i 4i
-.ta .5i 4i
+.TA .5i 2.5i 4.5i
+.ta .5i 2.5i 4.5i
 typedef struct _OverrideShellClassRec {
-	CoreClassPart core_class;
-	CompositeClassPart composite_class;
-	ShellClassPart shell_class;
-	OverrideShellClassPart override_shell_class;
+	CoreClassPart	core_class;
+	CompositeClassPart	composite_class;
+	ShellClassPart	shell_class;
+	OverrideShellClassPart	override_shell_class;
 } OverrideShellClassRec;
 .De
 .KE
 .KS
 .Ds 0
-.TA .5i 3i
-.ta .5i 3i
+.TA .5i 2.5i 4.5i
+.ta .5i 2.5i 4.5i
 typedef struct _WMShellClassRec {
-	CoreClassPart core_class;
-	CompositeClassPart composite_class;
-	ShellClassPart shell_class;
-	WMShellClassPart wm_shell_class;
+	CoreClassPart	core_class;
+	CompositeClassPart	composite_class;
+	ShellClassPart	shell_class;
+	WMShellClassPart	wm_shell_class;
 } WMShellClassRec;
 .De
 .KE
 .KS
 .Ds 0
-.TA .5i 3i
-.ta .5i 3i
+.TA .5i 2.5i 4.5i
+.ta .5i 2.5i 4.5i
 typedef struct _VendorShellClassRec {
-	CoreClassPart core_class;
-	CompositeClassPart composite_class;
-	ShellClassPart shell_class;
-	WMShellClassPart wm_shell_class;
-	VendorShellClassPart vendor_shell_class;
+	CoreClassPart	core_class;
+	CompositeClassPart	composite_class;
+	ShellClassPart	shell_class;
+	WMShellClassPart	wm_shell_class;
+	VendorShellClassPart	vendor_shell_class;
 } VendorShellClassRec;
 .De
 .KE
 .KS
 .Ds 0
-.TA .5i 3i
-.ta .5i 3i
+.TA .5i 2.5i 4.5i
+.ta .5i 2.5i 4.5i
 typedef struct _TransientShellClassRec {
-	CoreClassPart core_class;
-	CompositeClassPart composite_class;
-	ShellClassPart shell_class;
-	WMShellClassPart wm_shell_class;
-	VendorShellClassPart vendor_shell_class;
-	TransientShellClassPart transient_shell_class;
+	CoreClassPart	core_class;
+	CompositeClassPart	composite_class;
+	ShellClassPart	shell_class;
+	WMShellClassPart	wm_shell_class;
+	VendorShellClassPart	vendor_shell_class;
+	TransientShellClassPart	transient_shell_class;
 } TransientShellClassRec;
 .De
 .KE
 .KS
 .Ds 0
-.TA .5i 3i
-.ta .5i 3i
+.TA .5i 2.5i 4.5i
+.ta .5i 2.5i 4.5i
 typedef struct _TopLevelShellClassRec {
-	CoreClassPart core_class;
-	CompositeClassPart composite_class;
-	ShellClassPart shell_class;
-	WMShellClassPart wm_shell_class;
-	VendorShellClassPart vendor_shell_class;
-	TopLevelShellClassPart top_level_shell_class;
+	CoreClassPart	core_class;
+	CompositeClassPart	composite_class;
+	ShellClassPart	shell_class;
+	WMShellClassPart	wm_shell_class;
+	VendorShellClassPart	vendor_shell_class;
+	TopLevelShellClassPart	top_level_shell_class;
 } TopLevelShellClassRec;
 .De
 .KE
 .KS
 .Ds 0
-.TA .5i 3i
-.ta .5i 3i
+.TA .5i 2.5i 4.5i
+.ta .5i 2.5i 4.5i
 typedef struct _ApplicationShellClassRec {
-	CoreClassPart core_class;
-	CompositeClassPart composite_class;
-	ShellClassPart shell_class;
-	WMShellClassPart wm_shell_class;
-	VendorShellClassPart vendor_shell_class;
-	TopLevelShellClassPart top_level_shell_class;
-	ApplicationShellClassPart application_shell_class;
+	CoreClassPart	core_class;
+	CompositeClassPart	composite_class;
+	ShellClassPart	shell_class;
+	WMShellClassPart	wm_shell_class;
+	VendorShellClassPart	vendor_shell_class;
+	TopLevelShellClassPart	top_level_shell_class;
+	ApplicationShellClassPart	application_shell_class;
 } ApplicationShellClassRec;
 .De
 .KE
 .KS
 .Ds 0
-.TA .5i 3i
-.ta .5i 3i
+.TA .5i 2.5i 4.5i
+.ta .5i 2.5i 4.5i
 typedef struct _SessionShellClassRec {
-	CoreClassPart core_class;
-	CompositeClassPart composite_class;
-	ShellClassPart shell_class;
-	WMShellClassPart wm_shell_class;
-	VendorShellClassPart vendor_shell_class;
-	TopLevelShellClassPart top_level_shell_class;
-	ApplicationShellClassPart application_shell_class;
-	SessionShellClassPart session_shell_class;
+	CoreClassPart	core_class;
+	CompositeClassPart	composite_class;
+	ShellClassPart	shell_class;
+	WMShellClassPart	wm_shell_class;
+	VendorShellClassPart	vendor_shell_class;
+	TopLevelShellClassPart	top_level_shell_class;
+	ApplicationShellClassPart	application_shell_class;
+	SessionShellClassPart	session_shell_class;
 } SessionShellClassRec;
 .De
-.KE
 .LP
+.eM
+.KE
 .KS
 The single occurrences of the class records and pointers for creating
-instances of shells are
+instances of shells are:
 .LP
+.sM
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -377,7 +384,7 @@ extern TransientShellClassRec transientShellClassRec;
 extern TopLevelShellClassRec topLevelShellClassRec;
 extern ApplicationShellClassRec applicationShellClassRec;
 extern SessionShellClassRec sessionShellClassRec;
-
+.sp
 extern WidgetClass shellWidgetClass;
 extern WidgetClass overrideShellWidgetClass;
 extern WidgetClass wmShellWidgetClass;
@@ -387,8 +394,9 @@ extern WidgetClass topLevelShellWidgetClass;
 extern WidgetClass applicationShellWidgetClass;
 extern WidgetClass sessionShellWidgetClass;
 .De
-.KE
 .LP
+.eM
+.KE
 .KS
 The following opaque types and opaque variables are defined
 for generic operations on widgets whose class is a subclass of
@@ -491,16 +499,16 @@ procedure should
 return
 .PN XtGeometryYes ;
 if the window manager denies the geometry
-request or it does not change the window geometry within some timeout
+request or does not change the window geometry within some timeout
 interval (equal to \fIwm_timeout\fP in the case of WMShells), the
 .IN "Shell" "wm_timeout" "@DEF@"
 .IN "wm_timeout" "" "@DEF@"
 root_geometry_manager procedure should return
 .PN XtGeometryNo .
 If the window manager makes some alternative geometry change, the
-root_geometry_manager procedure may either return
+root_geometry_manager procedure may return either
 .PN XtGeometryNo
-and handle the new geometry as a resize, or may return
+and handle the new geometry as a resize or
 .PN XtGeometryAlmost
 in anticipation that the shell will accept the compromise.  If the
 compromise is not accepted, the new size must then be handled as a
@@ -532,229 +540,237 @@ their widget records:
 .LP
 .IN "ShellPart" "" "@DEF@"
 .KS
+.sM
 .Ds 0
-.TA .5i 3i
-.ta .5i 3i
+.TA .5i 2.5i 4.5i
+.ta .5i 2.5i 4.5i
 typedef struct {
-	String geometry;
-	XtCreatePopupChildProc create_popup_child_proc;
-	XtGrabKind grab_kind;
-	Boolean spring_loaded;
-	Boolean popped_up;
-	Boolean allow_shell_resize;
-	Boolean client_specified;
-	Boolean save_under;
-	Boolean override_redirect;
-	XtCallbackList popup_callback;
-	XtCallbackList popdown_callback;
-	Visual* visual;
+	String	geometry;
+	XtCreatePopupChildProc	create_popup_child_proc;
+	XtGrabKind	grab_kind;
+	Boolean	spring_loaded;
+	Boolean	popped_up;
+	Boolean	allow_shell_resize;
+	Boolean	client_specified;
+	Boolean	save_under;
+	Boolean	override_redirect;
+	XtCallbackList	popup_callback;
+	XtCallbackList	popdown_callback;
+	Visual *	visual;
 } ShellPart;
 .De
 .KE
 .Ds 0
-.TA .5i 3i
-.ta .5i 3i
-typedef struct { int empty; } OverrideShellPart;
+.TA .5i 2.5i 4.5i
+.ta .5i 2.5i 4.5i
+typedef struct {
+	int	empty;
+} OverrideShellPart;
 .De
 .Ds 0
-.TA .5i 1i 1.5i 2i
-.ta .5i 1i 1.5i 2i
+.TA .5i 1i 1.5i 2.5i
+.ta .5i 1i 1.5i 2.5i
 typedef struct {
-	String title;
-	int wm_timeout;
-	Boolean wait_for_wm;
-	Boolean transient;
-	Boolean urgency;
-	Widget	client_leader;
-	String	window_role;
+	String			title;
+	int			wm_timeout;
+	Boolean			wait_for_wm;
+	Boolean			transient;
+	Boolean			urgency;
+	Widget			client_leader;
+	String			window_role;
 	struct _OldXSizeHints {
-		long flags;
-		int x, y;
-		int width, height;
-		int min_width, min_height;
-		int max_width, max_height;
-		int width_inc, height_inc;
+		long		flags;
+		int		 x, y;
+		int		width, height;
+		int		min_width, min_height;
+		int		max_width, max_height;
+		int		width_inc, height_inc;
 		struct {
-			int x;
-			int y;
+			int	x;
+			int	y;
 		} min_aspect, max_aspect;
 	} size_hints;
-	XWMHints wm_hints;
-	int base_width, base_height, win_gravity;
-	Atom title_encoding;
+	XWMHints			wm_hints;
+	int			base_width, base_height, win_gravity;
+	Atom			title_encoding;
 } WMShellPart;
 .De
 .KS
 .Ds 0
-.TA .5i 3i
-.ta .5i 3i
+.TA .5i 2.5i 4.5i
+.ta .5i 2.5i 4.5i
 typedef struct {
-	int vendor_specific;
+	int	vendor_specific;
 } VendorShellPart;
 .De
 .KE
 .Ds 0
-.TA .5i 3i
-.ta .5i 3i
+.TA .5i 2.5i 4.5i
+.ta .5i 2.5i 4.5i
 typedef struct {
-	Widget transient_for;
+	Widget	transient_for;
 } TransientShellPart;
 
 typedef struct {
-	String icon_name;
-	Boolean iconic;
-	Atom icon_name_encoding;
+	String	icon_name;
+	Boolean	iconic;
+	Atom	icon_name_encoding;
 } TopLevelShellPart;
 .De
 .KS
 .Ds 0
-.TA .5i 3i
-.ta .5i 3i
+.TA .5i 2.5i 4.5i
+.ta .5i 2.5i 4.5i
 typedef struct {
-	char *class;
-	XrmClass xrm_class;
-	int argc;
-	char **argv;
+	char *	class;
+	XrmClass	xrm_class;
+	int	argc;
+	char **	argv;
 } ApplicationShellPart;
 .De
 .KE
 .KS
 .Ds 0
-.TA .5i 3i
-.ta .5i 3i
+.TA .5i 2.5i 4.5i
+.ta .5i 2.5i 4.5i
 typedef struct {
-	SmcConn connection;
-	String session_id;
-	String * restart_command;
-	String * clone_command;
-	String * discard_command;
-	String * resign_command;
-	String * shutdown_command;
-	String * environment;
-	String current_dir;
-	String program_path;
-	unsigned char restart_style;
-	Boolean join_session;
-	XtCallbackList save_callbacks;
-	XtCallbackList interact_callbacks;
-	XtCallbackList cancel_callbacks;
-	XtCallbackList save_complete_callbacks;
-	XtCallbackList die_callbacks;
-	XtCallbackList error_callbacks;
+	SmcConn	connection;
+	String	session_id;
+	String *	restart_command;
+	String *	clone_command;
+	String *	discard_command;
+	String *	resign_command;
+	String *	shutdown_command;
+	String *	environment;
+	String	current_dir;
+	String	program_path;
+	unsigned char	restart_style;
+	Boolean	join_session;
+	XtCallbackList	save_callbacks;
+	XtCallbackList	interact_callbacks;
+	XtCallbackList	cancel_callbacks;
+	XtCallbackList	save_complete_callbacks;
+	XtCallbackList	die_callbacks;
+	XtCallbackList	error_callbacks;
 } SessionShellPart;
 .De
+.LP
+.eM
 .KE
 .KS
-The full shell widget instance record definitions are
+The full shell widget instance record definitions are:
 .LP
 .IN "ShellWidget" "" "@DEF@"
+.sM
 .Ds 0
-.TA .5i 3i
-.ta .5i 3i
+.TA .5i 2.5i 4.5i
+.ta .5i 2.5i 4.5i
 typedef struct {
-	CorePart core;
-	CompositePart composite;
-	ShellPart shell;
+	CorePart	core;
+	CompositePart	composite;
+	ShellPart	shell;
 } ShellRec, *ShellWidget;
 .De
 .KE
 .KS
 .Ds 0
-.TA .5i 3i
-.ta .5i 3i
+.TA .5i 2.5i 4.5i
+.ta .5i 2.5i 4.5i
 typedef struct {
-	CorePart core;
-	CompositePart composite;
-	ShellPart shell;
-	OverrideShellPart override;
+	CorePart	core;
+	CompositePart	composite;
+	ShellPart	shell;
+	OverrideShellPart	override;
 } OverrideShellRec, *OverrideShellWidget;
 .De
 .KE
 .KS
 .Ds 0
-.TA .5i 3i
-.ta .5i 3i
+.TA .5i 2.5i 4.5i
+.ta .5i 2.5i 4.5i
 typedef struct {
-	CorePart core;
-	CompositePart composite;
-	ShellPart shell;
-	WMShellPart wm;
+	CorePart	core;
+	CompositePart	composite;
+	ShellPart	shell;
+	WMShellPart	wm;
 } WMShellRec, *WMShellWidget;
 .De
 .KE
 .KS
 .Ds 0
-.TA .5i 3i
-.ta .5i 3i
+.TA .5i 2.5i 4.5i
+.ta .5i 2.5i 4.5i
 typedef struct {
-	CorePart core;
-	CompositePart composite;
-	ShellPart shell;
-	WMShellPart wm;
-	VendorShellPart vendor;
+	CorePart	core;
+	CompositePart	composite;
+	ShellPart	shell;
+	WMShellPart	wm;
+	VendorShellPart	vendor;
 } VendorShellRec, *VendorShellWidget;
 .De
 .KE
 .KS
 .Ds 0
-.TA .5i 3i
-.ta .5i 3i
+.TA .5i 2.5i 4.5i
+.ta .5i 2.5i 4.5i
 typedef struct {
-	CorePart core;
-	CompositePart composite;
-	ShellPart shell;
-	WMShellPart wm;
-	VendorShellPart vendor;
-	TransientShellPart transient;
+	CorePart	core;
+	CompositePart	composite;
+	ShellPart	shell;
+	WMShellPart	wm;
+	VendorShellPart	vendor;
+	TransientShellPart	transient;
 } TransientShellRec, *TransientShellWidget;
 .De
 .KE
 .KS
 .Ds 0
-.TA .5i 3i
-.ta .5i 3i
+.TA .5i 2.5i 4.5i
+.ta .5i 2.5i 4.5i
 typedef struct {
-	CorePart core;
-	CompositePart composite;
-	ShellPart shell;
-	WMShellPart wm;
-	VendorShellPart vendor;
-	TopLevelShellPart topLevel;
+	CorePart	core;
+	CompositePart	composite;
+	ShellPart	shell;
+	WMShellPart	wm;
+	VendorShellPart	vendor;
+	TopLevelShellPart	topLevel;
 } TopLevelShellRec, *TopLevelShellWidget;
 .De
 .KE
 .KS
 .Ds 0
-.TA .5i 3i
-.ta .5i 3i
+.TA .5i 2.5i 4.5i
+.ta .5i 2.5i 4.5i
 .IN "ApplicationShellWidget" "" "@DEF@"
 typedef  struct {
-	CorePart  core;
-	CompositePart  composite;
-	ShellPart  shell;
-	WMShellPart wm;
-	VendorShellPart vendor;
-	TopLevelShellPart topLevel;
-	ApplicationShellPart application;
+	CorePart	core;
+	CompositePart	composite;
+	ShellPart	shell;
+	WMShellPart	wm;
+	VendorShellPart	vendor;
+	TopLevelShellPart	topLevel;
+	ApplicationShellPart	application;
 } ApplicationShellRec, *ApplicationShellWidget;
 .De
 .KE
 .KS
 .IN "SessionShellWidget" "" "@DEF@"
 .Ds 0
-.TA .5i 3i
-.ta .5i 3i
+.TA .5i 2.5i 4.5i
+.ta .5i 2.5i 4.5i
 typedef  struct {
-	CorePart core;
-	CompositePart composite;
-	ShellPart shell;
-	WMShellPart wm;
-	VendorShellPart vendor;
-	TopLevelShellPart topLevel;
-	ApplicationShellPart application;
-	SessionShellPart session;
+	CorePart	core;
+	CompositePart	composite;
+	ShellPart	shell;
+	WMShellPart	wm;
+	VendorShellPart	vendor;
+	TopLevelShellPart	topLevel;
+	ApplicationShellPart	application;
+	SessionShellPart	session;
 } SessionShellRec, *SessionShellWidget;
 .De
+.LP
+.eM
 .KE
 
 .NH 3
@@ -767,7 +783,7 @@ Shell Resources
 The resource names, classes, and representation types specified in
 the
 .PN shellClassRec
-resource list are
+resource list are:
 .LP
 .TS
 lw(1.7i) lw(1.7i) lw(1.2i) .
@@ -797,7 +813,7 @@ The resource names, classes, and representation types specified in
 the
 .PN wmShellClassRec
 .IN "WMShell" "resources"
-resource list are
+resource list are:
 .LP
 .TS
 lw(2.1i) lw(2.1i) lw(1.2i) .
@@ -847,7 +863,7 @@ is implementation-defined.
 The resource names, classes, and representation types that are specified in the
 .PN transient\%ShellClassRec
 .IN "TransientShell" "resources"
-resource list are
+resource list are:
 .LP
 .TS
 lw(1.7i) lw(1.7i) lw(1.2i) .
@@ -865,7 +881,7 @@ _
 The resource names, classes, and representation types that are specified in the
 .PN topLevelShellClassRec
 .IN "TopLevelShell" "resources"
-resource list are
+resource list are:
 .LP
 .TS
 lw(1.7i) lw(1.7i) lw(1.2i) .
@@ -884,7 +900,7 @@ _
 .LP
 The resource names, classes, and representation types that are specified in the
 .PN application\%ShellClassRec
-resource list are
+resource list are:
 .LP
 .TS
 lw(1.7i) lw(1.7i) lw(1.2i) .
@@ -904,7 +920,7 @@ _
 The resource names, classes, and representation types that are specified
 in the
 .PN sessionShellClassRec
-resource list are
+resource list are:
 .LP
 .TS
 lw(1.7i) lw(1.7i) lw(1.2i) .
@@ -946,7 +962,7 @@ The default values for fields common to all classes of public shells
 Shell
 resource lists and the 
 Shell 
-initialize procedures) are
+initialize procedures) are:
 .TS
 lw(1.75i) lw(3i).
 _
@@ -1019,7 +1035,7 @@ The geometry string is not copied by any of the \*(xI
 Shell classes; a client specifying the string in an arglist
 or varargs list must ensure
 that the value remains valid until the shell widget is realized.
-For further information on the geometry string, see Section 10.3
+For further information on the geometry string, see Section 16.4
 in \fI\*(xL\fP.
 .LP
 The \fIcreate_popup_child_proc\fP procedure is called by the
@@ -1073,7 +1089,7 @@ if it needs the actual visual type.
 .LP
 The default values for Shell fields in
 WMShell
-and its subclasses are
+and its subclasses are:
 .LP
 .IN "XtUnspecifiedShellInt" "" "@DEF@"
 .IN "XtUnspecifiedWindow"
@@ -1086,9 +1102,9 @@ Field	Default Value
 _
 .sp 6p
 title	T{
-Icon name, if specified, otherwise the application's name.
+Icon name, if specified, otherwise the application's name
 T}
-wm_timeout	Five seconds, in units of milliseconds.
+wm_timeout	Five seconds, in units of milliseconds
 wait_for_wm	T{
 .PN True
 T}
@@ -1157,7 +1173,7 @@ and sets \fIwait_for_wm\fP to
 (later events may reset this value).
 When \fIwait_for_wm\fP is 
 .PN False ,
-the shell does not wait for a response but relies on asynchronous 
+the shell does not wait for a response, but relies on asynchronous 
 notification.
 If \fItransient\fP is
 .PN True ,
@@ -1194,7 +1210,7 @@ and the window manager size hints.
 The realize and set_values procedures of
 WMShell
 set the corresponding flag bits in the
-hints if any of the fields contain non-default values.  In addition, if
+hints if any of the fields contain nondefault values.  In addition, if
 a flag bit is set that refers to a field with the value
 .PN XtUnspecifiedShellInt ,
 the value of the field is modified as follows:
@@ -1216,7 +1232,7 @@ min_aspect_x, min_aspect_y	-1
 max_aspect_x, max_aspect_y	-1
 icon_x, icon_y	-1
 win_gravity	T{
-value returned by
+Value returned by
 .PN XWMGeometry
 if called,
 else \fBNorthWestGravity\fP
@@ -1238,11 +1254,11 @@ root widget is realized. The symbolic constant
 .IN "XtUnspecifiedWindowGroup" "" "@DEF@"
 may be used to indicate that the \fIwindow_group\fP hint flag bit is not
 to be set.  If \fItransient\fP is
-.PN True
-and the shell's class is not a subclass of
-TransientShell
+.PN True ,
+the shell's class is not a subclass of
+TransientShell,
 and \fIwindow_group\fP is not
-.PN XtUnspecifiedWindowGroup
+.PN XtUnspecifiedWindowGroup ,
 the WMShell realize and set_values procedures then store the
 .PN \s-1WM_TRANSIENT_FOR\s+1
 property with the value of \fIwindow_group\fP.
@@ -1306,7 +1322,7 @@ current locale and the encoding of the
 .PN \s-1WM_ICON_NAME\s+1
 property is set to
 .PN XStdICCTextStyle .
-If a language procedure has not been set
+If a language procedure has not been set,
 the default value of \fIicon_name_encoding\fP is
 \fB\s-1XA_STRING\s+1\fP, otherwise the default value is
 .PN None .
@@ -1319,7 +1335,7 @@ message (as specified by the \fI\*(xC\fP)
 if this resource is changed from
 .PN False
 to
-.PN True ,
+.PN True
 and will call
 .PN XtPopup
 specifying \fIgrab_kind\fP as
@@ -1339,6 +1355,8 @@ if \fIiconic\fP is
 .LP
 Application
 shells have the following additional resources:
+.br
+.ne 4
 .TS
 l l.
 _
@@ -1381,12 +1399,12 @@ interact_callbacks	NULL
 join_session	T{
 .PN True
 T}
+program_path	See text
 resign_command	NULL
 restart_command	See text
 restart_style	T{
 .PN SmRestartIfRunning
 T}
-program_path	See text
 save_callbacks	NULL
 save_complete_callbacks	NULL
 session_id	NULL
@@ -1395,7 +1413,7 @@ shutdown_command	NULL
 _
 .TE
 .LP
-The \fIconnection\fP field contains the session connection object, or NULL
+The \fIconnection\fP field contains the session connection object or NULL
 if a session connection is not being managed by this widget.
 .LP
 The \fIsession_id\fP is an identification assigned to the session
@@ -1405,7 +1423,7 @@ manager as the client identifier of the previous session.
 When a connection is established with the session manager, 
 the client id assigned by the session manager is stored
 in the \fIsession_id\fP field.
-When not NULL, the \fIsession_id\fP of the Session shell widget which
+When not NULL, the \fIsession_id\fP of the Session shell widget that
 is at the root of the widget tree of the client leader widget will be
 used to create the
 .PN \s-1SM_CLIENT_ID\s+1
@@ -1415,7 +1433,7 @@ If \fIjoin_session\fP is
 .PN False ,
 the widget will not attempt to establish a
 connection to the session manager at shell creation time.
-See sections 4.3 and 4.6
+See Sections 4.2.1 and 4.2.4
 for more information on the functionality of this resource.
 .LP
 The \fIrestart_command\fP, \fIclone_command\fP, \fIdiscard_command\fP,
@@ -1452,10 +1470,11 @@ The possible values of \fIrestart_style\fP are
 and
 .PN SmRestartNever .
 A resource converter is registered for this resource; 
-for the strings that it recognizes
-see section 9.6.1.
+for the strings that it recognizes,
+see Section 9.6.1.
 .LP
-The resource type EnvironmentArray is an array of pointers to strings;
+The resource type EnvironmentArray is a NULL-terminated array of
+pointers to strings;
 each string has the format "name=value".
 The `=' character may not appear in the name,
 and the string is terminated by a null character.
@@ -1473,7 +1492,7 @@ Protocol\fP and the \fIX Session Management Library\fP.
 When a widget of
 .PN sessionShellWidgetClass
 or a subclass is created, the widget provides support for the application
-as a session participant, and continues to provide support until the
+as a session participant and continues to provide support until the
 widget is destroyed.
 
 .NH 3
@@ -1498,7 +1517,7 @@ session connection ID as the \fIconnection\fP resource value
 when creating the Session shell,
 and if the other creation-time conditions on session participation are met,
 the widget will maintain the connection with the session manager.
-The application must insure that only one
+The application must ensure that only one
 Session shell manages the connection.
 .LP
 In the Session shell set_values procedure,
@@ -1541,7 +1560,7 @@ or
 .PN Die
 message is received from the session manager, the Session shell will
 call out to application callback procedures registered
-on the respective callback list of the Session shell, and will
+on the respective callback list of the Session shell and will
 send 
 .PN SaveYourselfPhase2Request ,
 .PN InteractRequest ,
@@ -1587,9 +1606,10 @@ in the \fIcall_data\fP parameter.
 .KS
 The checkpoint token in the \fIcall_data\fP parameter is of type
 .PN XtCheckpointToken .
+.LP
 .IN "XtCheckpointToken" "" "@DEF@"
 .IN "XtCheckpointTokenRec" "" "@DEF@"
-.LP
+.sM
 .Ds 0
 .TA .5i 2i 4i
 .ta .5i 2i 4i
@@ -1605,9 +1625,10 @@ typedef struct {
 	Boolean	request_next_phase;	/* return */
 	Boolean	save_success;	/* return */
 } XtCheckpointTokenRec, *XtCheckpointToken;
-.KE
 .De
 .LP
+.eM
+.KE
 The \fIsave_type\fP, \fIinteract_style\fP, \fIshutdown\fP, and \fIfast\fP
 fields of the token contain the parameters of the
 .PN SaveYourself
@@ -1624,7 +1645,7 @@ The possible values of \fIinteract_style\fP are
 and
 .PN SmInteractStyleAny ;
 these indicate whether user interaction would be permitted
-and if so, what kind of interaction.
+and, if so, what kind of interaction.
 If \fIshutdown\fP is
 .PN True ,
 the checkpoint is being performed in preparation for the end of the session.
@@ -1635,7 +1656,7 @@ If \fIcancel_shutdown\fP is
 .PN True ,
 a 
 .PN ShutdownCancelled
-message has been received for the current save operation.  (See section 4.4.4.)
+message has been received for the current save operation.  (See Section 4.4.4.)
 The \fIphase\fP is used by manager clients, such as a window manager,
 to distinguish between the first and second phase of a save operation.
 The \fIphase\fP will be either 1 or 2.
@@ -1653,9 +1674,9 @@ fields in the token have the following initial values:
 and \fIsave_success\fP is
 .PN True .
 When a token is returned with any of the four return fields containing
-a non-initial value, and when the field is applicable, subsequent tokens
+a noninitial value, and when the field is applicable, subsequent tokens
 passed to the application during the current save operation
-will always contain the non-initial value.
+will always contain the noninitial value.
 .LP
 The purpose of the token's \fIsave_success\fP field is to 
 indicate the outcome of the entire operation to the
@@ -1675,7 +1696,7 @@ session manager, it will indicate failure to save application state
 if any token was returned with \fIsave_success\fP 
 .PN False .
 .LP
-Session participants which manage and save the state of other clients
+Session participants that manage and save the state of other clients
 should structure their save or interact callbacks to
 set \fIrequest_next_phase\fP to 
 .PN True
@@ -1693,10 +1714,12 @@ and these additional tokens must be returned by an explicit call.
 .sp
 .LP
 .KS
-To request an additional token for a save callback response which has a
+To request an additional token for a save callback response that has a
 deferred outcome, use
 .PN XtSessionGetToken .
+.LP
 .IN "XtSessionGetToken" "" "@DEF@"
+.sM
 .FD 0
 XtCheckpointToken XtSessionGetToken(\fIwidget\fP)
 .br
@@ -1705,6 +1728,7 @@ XtCheckpointToken XtSessionGetToken(\fIwidget\fP)
 .IP \fIwidget\fP 1i
 Specifies the Session shell widget which manages session participation.
 .LP
+.eM
 The 
 .PN XtSessionGetToken
 function will return NULL if no checkpoint operation is currently under way.
@@ -1716,20 +1740,23 @@ To indicate the completion of checkpoint processing including user
 interaction, the application must signal the Session shell
 by returning all tokens.
 (See Sections 4.2.2.2 and 4.2.2.4).
-To return a token use
+To return a token, use
 .PN  XtSessionReturnToken .
+.LP
 .IN "XtSessionReturnToken" "" "@DEF@"
+.sM
 .FD 0
 void XtSessionReturnToken(\fItoken\fP)
 .br
       XtCheckpointToken \fItoken\fP;
 .FN
 .IP \fItoken\fP 1i
-Specifies a token which was received as the \fIcall_data\fP by a procedure
-on the interact callback list, or a token which was received by a call to
+Specifies a token that was received as the \fIcall_data\fP by a procedure
+on the interact callback list or a token that was received by a call to
 .PN XtSessionGetToken .
+.LP
+.eM
 .KE
-.sp
 .LP
 Tokens passed as \fIcall_data\fP to save callbacks are implicitly
 returned when the save callback procedure returns.
@@ -1750,7 +1777,7 @@ to interact.
 Applications request permission to interact with the user during the
 checkpointing operation by registering a procedure on the Session
 shell's interact callback list.  When all save callback procedures have
-returned, and each time a token which was granted by a call to 
+returned, and each time a token that was granted by a call to 
 .PN XtSessionGetToken
 is returned, the Session shell examines the interact callback list.
 If interaction is permitted and the interact callback list is not empty,
@@ -1787,9 +1814,9 @@ This is also true of tokens received through a call to
 .PN XtSessionGetToken .
 
 .NH 4
-Interacting with the User
+Interacting with the User during a Checkpoint
 .XS
-\fB\*(SN Interacting with the User During a Checkpoint\fP
+\fB\*(SN Interacting with the User during a Checkpoint\fP
 .XE
 .LP
 When the session manager grants the application's request for user interaction,
@@ -1807,7 +1834,7 @@ The interact callback will typically pop up a dialog box and return.
 When the user interaction and associated application checkpointing has
 completed, the application must return the token by calling
 .PN XtSessionReturnToken .
-Returning the token completes the current step, and triggers the next step
+Returning the token completes the current step and triggers the next step
 in the sequence.
 .LP
 During interaction the client may request cancellation of a shutdown.
@@ -1919,7 +1946,7 @@ The callbacks on this list should do whatever is appropriate to quit
 the application.
 Before executing procedures on the die callback list,
 the Session shell will close the connection to the session manager
-and will remove the handler which watches for protocol messages.
+and will remove the handler that watches for protocol messages.
 The \fIcall_data\fP for these callbacks is NULL.
 
 .NH 3
@@ -1931,8 +1958,8 @@ Resigning from a Session
 When the Session shell widget is destroyed, the destroy method will
 close the connection to the session manager by sending a
 .PN ConnectionClosed 
-protocol message, and will remove the input callback
-which was watching for session protocol messages.
+protocol message and will remove the input callback
+that was watching for session protocol messages.
 .LP
 When
 .PN XtSetValues
@@ -1943,7 +1970,7 @@ connection to the session manager if one exists by sending a
 .PN ConnectionClosed 
 message, and \fIconnection\fP will be set to NULL.
 .LP
-Applications which exit in response to user actions and which do not
+Applications that exit in response to user actions and that do not
 wait for phase 2 destroy to complete on
 the Session shell should set \fIjoin_session\fP to
 .PN False
@@ -1953,10 +1980,10 @@ When
 .PN XtSetValues 
 is used to set \fIconnection\fP to NULL,
 the Session shell will stop managing the connection, if one exists.
-However that session connection will not be closed.
+However, that session connection will not be closed.
 .LP
-Applications which wish to ensure continuation of a session connection
-beyond the destruction of the shell, should first retrieve the 
+Applications that wish to ensure continuation of a session connection
+beyond the destruction of the shell should first retrieve the 
 \fIconnection\fP resource value,
 then set the \fIconnection\fP resource to NULL, 
 and then they may safely destroy the widget without losing control

@@ -1,7 +1,4 @@
 /*
- * $XConsortium: compfuncs.c,v 2.18 92/04/08 12:20:08 rws Exp $
- *
- *
  * 		      COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
@@ -24,7 +21,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xmh/compfuncs.c,v 1.2 2001/08/01 00:45:06 tsi Exp $ */
+/* $XFree86: xc/programs/xmh/compfuncs.c,v 1.3 2002/04/05 21:06:28 dickey Exp $ */
 
 /* comp.c -- action procedures to handle composition buttons. */
 

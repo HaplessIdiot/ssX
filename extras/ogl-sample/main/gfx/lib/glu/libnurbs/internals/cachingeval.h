@@ -35,8 +35,6 @@
 /*
  * cachingeval.h
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 #ifndef __glucachingval_h_

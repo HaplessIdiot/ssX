@@ -1,5 +1,3 @@
-/* $Xorg: fntfil.h,v 1.4 2001/02/09 02:04:04 xorgcvs Exp $ */
-
 /*
 
 Copyright 1991, 1998  The Open Group
@@ -25,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/include/fntfil.h,v 1.9 2001/12/14 19:56:54 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/fntfil.h,v 1.10 2002/12/09 17:30:00 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium

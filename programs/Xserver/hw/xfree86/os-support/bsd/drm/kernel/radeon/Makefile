@@ -1,4 +1,4 @@
-# $FreeBSD$
+# $XFree86$
 
 .PATH:	${.CURDIR}/..
 KMOD	= radeon

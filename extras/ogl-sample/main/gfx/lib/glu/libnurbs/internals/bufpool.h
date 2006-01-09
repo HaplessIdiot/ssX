@@ -35,8 +35,6 @@
 /*
  * bufpool.h
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 #ifndef __glubufpool_h_

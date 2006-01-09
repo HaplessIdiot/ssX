@@ -1,5 +1,4 @@
-/* $Xorg: Withdraw.c,v 1.4 2001/02/09 02:03:37 xorgcvs Exp $ */
-
+/* $XFree86$ */
 /***********************************************************
 Copyright 1988 by Wyse Technology, Inc., San Jose, Ca.,
 

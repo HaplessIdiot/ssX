@@ -1,10 +1,6 @@
 /* $XTermId: misc.c,v 1.281 2006/01/02 13:50:14 tom Exp $ */
 
-/*
- *	$Xorg: misc.c,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
- */
-
-/* $XFree86: xc/programs/xterm/misc.c,v 3.101 2005/11/03 13:17:28 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/misc.c,v 3.102 2006/01/04 02:10:25 dickey Exp $ */
 
 /*
  *

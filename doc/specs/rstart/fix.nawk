@@ -1,5 +1,5 @@
 #! /bin/nawk -f
-# $XConsortium: fix.nawk,v 1.2 94/02/06 16:38:05 mor Exp $
+# $XFree86$
 #
 
 BEGIN {

@@ -1,5 +1,3 @@
-/* Header:   //Mercury/Projects/archives/XFree86/4.0/smi_shadow.c-arc   1.10   30 Nov 2000 11:40:38   Frido  $ */
-
 /*
 Copyright (C) 1994-2000 The XFree86 Project, Inc.  All Rights Reserved.
 Copyright (C) 2000 Silicon Motion, Inc.  All Rights Reserved.
@@ -26,7 +24,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from the XFree86 Project and Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_shadow.c,v 1.1 2000/11/28 20:59:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_shadow.c,v 1.3 2003/10/08 11:13:01 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"

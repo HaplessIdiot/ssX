@@ -1,4 +1,3 @@
-/* $Xorg: ccimake.c,v 1.4 2001/02/09 02:03:15 xorgcvs Exp $ */
 /*
 
 Copyright (c) 1993, 1994, 1998  The Open Group
@@ -24,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group .
 
 */
-/* $XFree86: xc/config/imake/ccimake.c,v 1.4 2002/04/04 14:05:34 eich Exp $ */
+/* $XFree86: xc/config/imake/ccimake.c,v 1.5 2004/03/05 04:02:09 dawes Exp $ */
 
 /* 
  * Warning:  This file must be kept as simple as possible so that it can 

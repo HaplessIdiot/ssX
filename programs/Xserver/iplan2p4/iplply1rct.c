@@ -1,6 +1,5 @@
-/* $XFree86: xc/programs/Xserver/iplan2p4/iplply1rct.c,v 3.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplply1rct.c,v 3.2 2005/10/14 15:17:18 tsi Exp $ */
 /*
- * $XConsortium: iplply1rct.c,v 1.14 94/04/17 20:28:56 dpw Exp $
  *
 Copyright (c) 1990  X Consortium
 

@@ -35,8 +35,6 @@
 /*
  * hull.h
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 #ifndef __gluhull_h_

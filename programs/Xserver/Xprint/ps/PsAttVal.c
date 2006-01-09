@@ -1,7 +1,4 @@
 /*
- * $Xorg: PsAttVal.c,v 1.5 2001/03/13 18:45:31 pookie Exp $
- */
-/*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
 (c) Copyright 1996 Sun Microsystems, Inc.
@@ -32,7 +29,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsAttVal.c,v 1.4 2001/01/17 22:36:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsAttVal.c,v 1.5 2001/12/19 21:28:44 dawes Exp $ */
 
 #include "Ps.h"
 #include "AttrValid.h"

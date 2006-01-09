@@ -1,5 +1,3 @@
-/* $Xorg: resource.h,v 1.4 2001/02/09 02:05:32 xorgcvs Exp $ */
-
 /*
 
 Copyright 1995, 1998  The Open Group
@@ -27,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/lbxproxy/include/resource.h,v 1.6 2003/11/17 22:20:49 dawes Exp $ */
 
 #ifndef RESOURCE_H
 #define RESOURCE_H 1

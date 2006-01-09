@@ -1,4 +1,3 @@
-/* $Xorg: psout.c,v 1.9 2001/03/26 15:25:12 coskrey Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -73,7 +72,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 **
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/psout.c,v 1.11 2001/12/19 21:55:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/psout.c,v 1.12 2001/12/21 21:02:06 dawes Exp $ */
 
 /*      
  * For XFree86 3.3.3:  

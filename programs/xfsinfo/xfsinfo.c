@@ -2,7 +2,6 @@
  * xfsinfo -- report info about a font server
  */
 
-/* $TOG: fsinfo.c /main/7 1998/02/09 13:43:08 kaleb $ */
 /*
 
 Portions Copyright 1987, 1998  The Open Group
@@ -30,7 +29,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xfsinfo/xfsinfo.c,v 1.3 2001/08/27 17:41:02 dawes Exp $ */
+/* $XFree86: xc/programs/xfsinfo/xfsinfo.c,v 1.4 2001/12/14 20:01:42 dawes Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;

@@ -1,5 +1,3 @@
-/* $Xorg: IntrinsicI.h,v 1.4 2001/02/09 02:03:55 xorgcvs Exp $ */
-
 /***********************************************************
 
 Copyright 1987, 1988, 1994, 1998  The Open Group
@@ -46,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/IntrinsicI.h,v 3.10 2004/05/05 00:07:03 dickey Exp $ */
+/* $XFree86: xc/lib/Xt/IntrinsicI.h,v 3.11 2004/05/26 22:24:40 dickey Exp $ */
 
 #ifndef _XtintrinsicI_h
 #define _XtintrinsicI_h

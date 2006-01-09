@@ -1,4 +1,3 @@
-/* $Xorg: midbe.h,v 1.3 2000/08/17 19:48:16 cpqbld Exp $ */
 /******************************************************************************
  * 
  * Copyright (c) 1994, 1995  Hewlett-Packard Company
@@ -30,7 +29,7 @@
  *     Header file for users of machine-independent DBE code
  *
  *****************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/dbe/midbe.h,v 3.2 2003/11/17 22:20:32 dawes Exp $ */
 
 
 #ifndef MIDBE_H

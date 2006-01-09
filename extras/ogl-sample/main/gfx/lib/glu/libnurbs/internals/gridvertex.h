@@ -35,8 +35,6 @@
 /*
  * gridvertex.h
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 #ifndef __glugridvertex_h_

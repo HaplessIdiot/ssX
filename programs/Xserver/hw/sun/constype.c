@@ -1,6 +1,4 @@
 /*
- * $Xorg: constype.c,v 1.3 2000/08/17 19:48:29 cpqbld Exp $
- *
  * consoletype - utility to print out string identifying Sun console type
  *
  * Copyright 1988 SRI
@@ -17,7 +15,7 @@
  *
  * Author:  Doug Moran, SRI
  */
-/* $XFree86: xc/programs/Xserver/hw/sun/constype.c,v 3.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/constype.c,v 3.10 2004/03/08 15:37:04 tsi Exp $ */
 
 /*
 SUN-SPOTS DIGEST         Thursday, 17 March 1988       Volume 6 : Issue 31

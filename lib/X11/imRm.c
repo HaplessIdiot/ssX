@@ -1,4 +1,3 @@
-/* $Xorg: imRm.c,v 1.4 2000/08/17 19:45:14 cpqbld Exp $ */
 /******************************************************************
 
 	  Copyright 1990, 1991, 1992,1993, 1994 by FUJITSU LIMITED
@@ -30,7 +29,7 @@ PERFORMANCE OF THIS SOFTWARE.
 			       makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imRm.c,v 3.12 2003/04/13 19:22:21 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imRm.c,v 3.13 2003/11/17 22:20:12 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xlib.h>

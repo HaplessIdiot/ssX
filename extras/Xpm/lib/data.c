@@ -31,18 +31,11 @@
 *                                                                             *
 *  Developed by Arnaud Le Hors                                                *
 \*****************************************************************************/
-/* $XFree86: xc/extras/Xpm/lib/data.c,v 1.5 2004/09/15 16:00:37 herrb Exp $ */
+/* $XFree86: xc/extras/Xpm/lib/data.c,v 1.6 2004/11/18 21:30:51 herrb Exp $ */
 
 /* October 2004, source code review by Thomas Biege <thomas@suse.de> */
 
 #ifndef CXPMPROG
-#if 0
-/* Official version number */
-static char *RCS_Version = "$XpmVersion: 3.4k $";
-
-/* Internal version number */
-static char *RCS_Id = "Id: xpm.shar,v 3.71 1998/03/19 19:47:14 lehors Exp $";
-#endif
 #include "XpmI.h"
 #endif
 #include <ctype.h>

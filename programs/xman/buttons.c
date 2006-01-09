@@ -1,4 +1,3 @@
-/* $XConsortium: buttons.c,v 1.33 94/04/17 20:43:50 dave Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium
@@ -28,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/buttons.c,v 1.4 2003/01/19 04:44:45 paulo Exp $ */
+/* $XFree86: xc/programs/xman/buttons.c,v 1.5 2004/03/12 02:17:55 dickey Exp $ */
 
 /*
  * xman - X window system manual page display program.

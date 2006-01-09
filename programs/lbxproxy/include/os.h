@@ -1,5 +1,3 @@
-/* $Xorg: os.h,v 1.4 2001/02/09 02:05:32 xorgcvs Exp $ */
-
 /*
 
 Copyright 1995, 1998  The Open Group
@@ -27,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/lbxproxy/include/os.h,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/include/os.h,v 1.9 2004/04/03 22:38:54 tsi Exp $ */
 
 #ifndef OS_H
 #define OS_H

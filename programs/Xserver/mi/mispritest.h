@@ -4,8 +4,6 @@
  * mi sprite structures
  */
 
-/* $Xorg: mispritest.h,v 1.4 2001/02/09 02:05:22 xorgcvs Exp $ */
-
 /*
 
 Copyright 1989, 1998  The Open Group
@@ -30,7 +28,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/programs/Xserver/mi/mispritest.h,v 1.4 2001/01/17 22:37:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mispritest.h,v 1.5 2001/12/14 20:00:27 dawes Exp $ */
 
 # include   "misprite.h"
 #ifdef RENDER

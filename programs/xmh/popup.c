@@ -1,6 +1,4 @@
-/* $XConsortium: popup.c,v 2.38 94/08/26 18:04:22 swick Exp $
- *
- *
+/*
  *			  COPYRIGHT 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
@@ -23,7 +21,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xmh/popup.c,v 1.3 2002/07/01 02:26:05 tsi Exp $ */
 
 /* popup.c -- Handle pop-up widgets. */
 

@@ -1,5 +1,4 @@
 /*
- * $XConsortium: menu.c,v 1.7 94/04/17 20:24:02 kaleb Exp $
  *
 Copyright (c) 1989  X Consortium
 
@@ -25,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
  *
  */
-/* $XFree86: xc/programs/xmh/menu.c,v 1.2 2001/08/01 00:45:06 tsi Exp $ */
+/* $XFree86: xc/programs/xmh/menu.c,v 1.3 2001/10/28 03:34:38 tsi Exp $ */
 
 #include "xmh.h"
 #include "bboxint.h"

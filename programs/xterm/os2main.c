@@ -4,10 +4,7 @@
  * and did some rewrite for the obscure OS/2 environment
  */
 
-#ifndef lint
-static char *rid = "$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
-#endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.81 2005/11/03 13:17:28 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.82 2006/01/04 02:10:26 dickey Exp $ */
 
 /***********************************************************
 

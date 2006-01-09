@@ -1,9 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_galfns.c,v 1.2 2003/01/14 09:34:30 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_galfns.c,v 1.3 2003/02/05 18:38:42 alanh Exp $ */
 /*
- * $Workfile: nsc_galfns.c $
- * $Revision$
- * $Author$
- *
  * File Contents: This file contains the main functions of the Geode 
  *                frame buffer device drivers GAL function definitions.
  *

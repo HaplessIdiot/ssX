@@ -35,8 +35,6 @@
 /*
  * arc.h
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 #ifndef __gluarc_h_

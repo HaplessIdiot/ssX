@@ -1,5 +1,3 @@
-/* $XConsortium: Label.c,v 1.97 94/04/17 20:12:12 kaleb Exp $ */
-
 /***********************************************************
 
 Copyright (c) 1987, 1988, 1994  X Consortium
@@ -47,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xfontsel/ULabel.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/xfontsel/ULabel.c,v 1.5 2004/04/03 22:38:55 tsi Exp $ */
 
 /*
  * ULabel.c - UCSLabel widget

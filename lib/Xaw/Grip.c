@@ -1,5 +1,3 @@
-/* $Xorg: Grip.c,v 1.4 2001/02/09 02:03:43 xorgcvs Exp $ */
-
 /***********************************************************
 
 Copyright 1987, 1988, 1994, 1998  The Open Group
@@ -46,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Grip.c,v 1.7 2001/01/17 19:42:26 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Grip.c,v 1.8 2001/12/14 19:54:40 dawes Exp $ */
 
 /*
  * Grip.c - Grip Widget (Used by Paned Widget)

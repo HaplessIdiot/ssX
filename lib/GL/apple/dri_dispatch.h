@@ -1,6 +1,5 @@
 /* dri_dispatch.h -- built automatically, DO NOT EDIT
-   $Id$
-   $XFree86: $ */
+   $XFree86: xc/lib/GL/apple/dri_dispatch.h,v 1.7 2004/12/10 17:47:24 alanh Exp $ */
 /*
    Actually, this file has been edited to add necessary
    dependencies on the version of Mac OS X. Someday the

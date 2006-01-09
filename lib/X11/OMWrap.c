@@ -1,4 +1,3 @@
-/* $Xorg: OMWrap.c,v 1.4 2000/08/17 19:44:47 cpqbld Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -23,7 +22,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/OMWrap.c,v 1.4 2001/07/25 15:04:44 dawes Exp $ */
+/* $XFree86: xc/lib/X11/OMWrap.c,v 1.5 2003/11/17 22:20:08 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"

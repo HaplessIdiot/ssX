@@ -25,14 +25,12 @@ in this Software without prior written authorization from The Open Group.
 
 /***********************************************************************
  *
- * $Xorg: screen.h,v 1.4 2001/02/09 02:05:37 xorgcvs Exp $
- *
  * twm per-screen data include file
  *
  * 11-3-88 Dave Payne, Apple Computer			File created
  *
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/screen.h,v 1.6 2003/08/04 10:32:30 eich Exp $ */
+/* $XFree86: xc/programs/twm/screen.h,v 1.7 2004/06/08 01:17:02 dawes Exp $ */
 
 #ifndef _SCREEN_
 #define _SCREEN_

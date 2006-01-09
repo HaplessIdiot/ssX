@@ -1,4 +1,4 @@
-.\" $XConsortium: TPage_Credits,v 1.17 94/04/17 18:40:03 rws Exp $
+.\" $XFree86$
 .ds CH
 .ds CF
 .ps 11
@@ -10,7 +10,7 @@
 
 \s+1\fBX Window System\fP\s-1
 
-\s+1\fBX Version 11, Release 6\fP\s-1
+\s+1\fBX Version 11, Release 6.4\fP\s-1
 
 .sp 6
 .ce 4
@@ -60,9 +60,11 @@ to distribution of the software without specific, written prior permission.
 Digital makes no representations about the suitability of the
 software described herein for any purpose.
 It is provided ``as is'' without express or implied warranty.
-.ps 9
-.nr PS 9
-.bp 
+.ps 11
+.nr PS 11
+.bp 5
+.af PN i
+.ds CF \fB\\n(PN\fP
 .XS v
 Acknowledgments
 .XE
@@ -149,9 +151,3 @@ the X11R5/contrib/lib/Xaw internationalization that inspired this version.
 Frank Sheeran
 Omron Corporation 1994
 .De
-.ps 11
-.nr PS 11
-.ds LH \fBAthena Widget Set\fP
-.ds CH
-.ds RH \fBX11, Release 6\fP
-.ds CF \fB % \fP

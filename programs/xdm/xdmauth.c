@@ -1,4 +1,3 @@
-/* $Xorg: xdmauth.c,v 1.4 2001/02/09 02:05:41 xorgcvs Exp $ */
 /*
 
 Copyright 1988, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/xdmauth.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/xdm/xdmauth.c,v 1.8 2004/06/24 02:21:16 tsi Exp $ */
 /*
  * xdm - display manager daemon
  * Author:  Keith Packard, MIT X Consortium

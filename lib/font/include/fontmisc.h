@@ -1,5 +1,3 @@
-/* $Xorg: fontmisc.h,v 1.4 2001/02/09 02:04:04 xorgcvs Exp $ */
-
 /*
 
 Copyright 1991, 1998  The Open Group
@@ -25,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/include/fontmisc.h,v 3.19 2005/01/27 16:06:13 tsi Exp $ */
+/* $XFree86: xc/lib/font/include/fontmisc.h,v 3.20 2005/01/27 22:50:40 tsi Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium

@@ -1,4 +1,3 @@
-/* $Xorg: imLcLkup.c,v 1.3 2000/08/17 19:45:14 cpqbld Exp $ */
 /******************************************************************
 
               Copyright 1992 by Fuji Xerox Co., Ltd.
@@ -29,7 +28,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imLcLkup.c,v 3.8 2003/06/23 17:35:43 eich Exp $ */
+/* $XFree86: xc/lib/X11/imLcLkup.c,v 3.9 2003/07/08 15:39:47 tsi Exp $ */
 
 #include <stdio.h>
 #include <X11/Xatom.h>

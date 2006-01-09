@@ -1,43 +1,33 @@
 STARTFONT 2.1
-COMMENT $XConsortium: symb24.bdf,v 1.4 94/04/10 21:49:19 gildea Exp $
-COMMENT 
-COMMENT  Copyright 1984, 1987 Adobe Systems, Inc.
-COMMENT  Portions Copyright 1988 Digital Equipment Corporation
-COMMENT 
-COMMENT  Adobe is a registered trademark of Adobe Systems, Inc.  Permission 
-COMMENT  to use these trademarks is hereby granted only in association with the
-COMMENT  images described in this file.
-COMMENT 
-COMMENT  Permission to use, copy, modify, and distribute this software and
-COMMENT  its documentation for any purpose and without fee is hereby granted,
-COMMENT  provided that the above copyright notices appear in all copies and
-COMMENT  that both those copyright notices and this permission notice appear
-COMMENT  in supporting documentation, and that the names of Adobe Systems and
-COMMENT  Digital Equipment Corporation not be used in advertising or
-COMMENT  publicity pertaining to distribution of the software without
-COMMENT  specific, written prior permission.  Adobe Systems and Digital
-COMMENT  Equipment Corporation make no representations about the suitability
-COMMENT  of this software for any purpose.  It is provided "as is" without
-COMMENT  express or implied warranty.
-COMMENT 
-COMMENT  ADOBE SYSTEMS AND DIGITAL EQUIPMENT CORPORATION DISCLAIM ALL
-COMMENT  WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED
-COMMENT  WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL ADOBE
-COMMENT  SYSTEMS AND DIGITAL EQUIPMENT CORPORATION BE LIABLE FOR ANY SPECIAL,
-COMMENT  INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
-COMMENT  RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
-COMMENT  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
-COMMENT  CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-COMMENT 
-COMMENT 
-FONT -Adobe-Symbol-Medium-R-Normal--34-240-100-100-P-191-ADOBE-FONTSPECIFIC
+FONT -Adobe-Symbol-Medium-R-Normal--34-240-100-100-P-191-Adobe-FontSpecific
 SIZE 24 100 100
 FONTBOUNDINGBOX 40 34 -5 -7
-STARTPROPERTIES 22
-COMMENT Begin LogicalFontDescription
-FONTNAME_REGISTRY ""
-FAMILY_NAME "Symbol"
+COMMENT $XFree86$
+COMMENT 
+COMMENT +
+COMMENT  Copyright 1984-1989, 1994 Adobe Systems Incorporated.
+COMMENT  Copyright 1988, 1994 Digital Equipment Corporation.
+COMMENT
+COMMENT  Adobe is a trademark of Adobe Systems Incorporated which may be
+COMMENT  registered in certain jurisdictions.
+COMMENT  Permission to use these trademarks is hereby granted only in
+COMMENT  association with the images described in this file.
+COMMENT
+COMMENT  Permission to use, copy, modify, distribute and sell this software
+COMMENT  and its documentation for any purpose and without fee is hereby
+COMMENT  granted, provided that the above copyright notices appear in all
+COMMENT  copies and that both those copyright notices and this permission
+COMMENT  notice appear in supporting documentation, and that the names of
+COMMENT  Adobe Systems and Digital Equipment Corporation not be used in
+COMMENT  advertising or publicity pertaining to distribution of the software
+COMMENT  without specific, written prior permission.  Adobe Systems and
+COMMENT  Digital Equipment Corporation make no representations about the
+COMMENT  suitability of this software for any purpose.  It is provided "as
+COMMENT  is" without express or implied warranty.
+COMMENT -
+STARTPROPERTIES 27
 FOUNDRY "Adobe"
+FAMILY_NAME "Symbol"
 WEIGHT_NAME "Medium"
 SLANT "R"
 SETWIDTH_NAME "Normal"
@@ -48,26 +38,30 @@ RESOLUTION_X 100
 RESOLUTION_Y 100
 SPACING "P"
 AVERAGE_WIDTH 191
-CHARSET_REGISTRY "ADOBE"
-CHARSET_ENCODING "FONTSPECIFIC"
-COMMENT END LogicalFontDescription
-CHARSET_COLLECTIONS "FONTSPECIFIC"
-FONT_DESCENT 5
-FONT_ASCENT 19
-CAP_HEIGHT 18
-X_HEIGHT 12
+CHARSET_REGISTRY "Adobe"
+CHARSET_ENCODING "FontSpecific"
+CAP_HEIGHT 23
+X_HEIGHT 17
+FONT_ASCENT 26
+FONT_DESCENT 7
 FACE_NAME "Symbol"
-COPYRIGHT "Copyright (c) 1987 Adobe Systems, Inc., Portions Copyright 1988 Digital Equipment Corp."
-COMMENT ***** end of inserted font properties
-ENDPROPERTIES 
+COPYRIGHT "Copyright (c) 1984, 1987 Adobe Systems Incorporated. All Rights Reserved. Copyright (c) 1988, 1991 Digital Equipment Corporation. All Rights Reserved."
+NOTICE "No mark"
+_DEC_DEVICE_FONTNAMES "PS=Symbol"
+_DEC_PRODUCTINFO "DECwindows Fonts V2.2-1, 18-Nov-1991"
+DEFAULT_CHAR 32
+RELATIVE_SETWIDTH 50
+RELATIVE_WEIGHT 50
+FULL_NAME "Symbol"
+ENDPROPERTIES
 CHARS 189
 STARTCHAR space
 ENCODING 32
 SWIDTH 250 0
 DWIDTH 8 0
-BBX 1 1 1 0
+BBX 1 1 0 0
 BITMAP
-E0
+00
 ENDCHAR
 STARTCHAR exclam
 ENCODING 33
@@ -4920,40 +4914,6 @@ C0
 C0
 C0
 ENDCHAR
-STARTCHAR apple
-ENCODING 240
-SWIDTH 790 0
-DWIDTH 26 0
-BBX 21 27 2 0
-BITMAP
-0001C0
-000780
-000F00
-000F00
-001E00
-001C00
-0787C0
-1FFFF0
-3FFFF8
-7FFFF0
-7FFFE0
-FFFFE0
-FFFFC0
-FFFFC0
-FFFFC0
-FFFFC0
-FFFFE0
-FFFFE0
-7FFFF0
-7FFFF8
-7FFFF8
-3FFFF8
-3FFFF0
-1FFFF0
-0FFFE0
-0FFFC0
-038780
-ENDCHAR
 STARTCHAR angleright
 ENCODING 241
 SWIDTH 329 0
@@ -5521,5 +5481,39 @@ BITMAP
 1C
 78
 E0
+ENDCHAR
+STARTCHAR apple
+ENCODING -1
+SWIDTH 790 0
+DWIDTH 26 0
+BBX 21 27 2 0
+BITMAP
+0001C0
+000780
+000F00
+000F00
+001E00
+001C00
+0787C0
+1FFFF0
+3FFFF8
+7FFFF0
+7FFFE0
+FFFFE0
+FFFFC0
+FFFFC0
+FFFFC0
+FFFFC0
+FFFFE0
+FFFFE0
+7FFFF0
+7FFFF8
+7FFFF8
+3FFFF8
+3FFFF0
+1FFFF0
+0FFFE0
+0FFFC0
+038780
 ENDCHAR
 ENDFONT

@@ -1,4 +1,3 @@
-/* $XConsortium: vendor.h,v 1.12 94/04/17 20:44:00 rws Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -28,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/vendor.h,v 1.13 2003/07/29 21:16:56 dawes Exp $ */
+/* $XFree86: xc/programs/xman/vendor.h,v 1.14 2004/03/12 02:17:55 dickey Exp $ */
 
 /* Vendor-specific definitions */
 

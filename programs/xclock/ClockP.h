@@ -1,8 +1,3 @@
-/*
-* $Xorg: ClockP.h,v 1.4 2001/02/09 02:05:39 xorgcvs Exp $
-*/
-
-
 /***********************************************************
 
 Copyright 1987, 1988, 1998  The Open Group
@@ -49,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xclock/ClockP.h,v 1.11 2002/10/17 01:00:01 dawes Exp $ */
+/* $XFree86: xc/programs/xclock/ClockP.h,v 1.12 2002/10/21 13:33:08 alanh Exp $ */
 
 #ifndef _XawClockP_h
 #define _XawClockP_h

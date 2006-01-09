@@ -1,5 +1,4 @@
-/* $XConsortium: lex.l,v 1.8 94/03/31 20:40:44 rws Exp $ */
-/* $XFree86: xc/programs/xgc/lex.l,v 1.4 2002/05/31 18:46:13 dawes Exp $ */
+/* $XFree86: xc/programs/xgc/lex.l,v 1.5 2005/03/25 02:22:59 dawes Exp $ */
 /*
 ** lex file for xgc syntax
 */

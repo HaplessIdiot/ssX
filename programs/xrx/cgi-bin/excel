@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl
-# $XConsortium: excel /main/3 1996/12/03 20:15:31 rws $
+# $XFree86$
 # CGI script to launch excel
 #
 
@@ -173,6 +173,8 @@ if ($query)
 	}
 	# add display specification to the command line
 	$command .= " -display $xdisplay";
+	# and put it in the environment too for good measure.
+	$ENV{'DISPLAY'} = $xdisplay;
     }
     if ($width && $height) {
 	# add geometry specification to the command line

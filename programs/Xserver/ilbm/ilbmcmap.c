@@ -1,5 +1,4 @@
-/* $XFree86: xc/programs/Xserver/ilbm/ilbmcmap.c,v 3.1tsi Exp $ */
-/* $XConsortium: ilbmcmap.c,v 4.19 94/04/17 20:28:46 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmcmap.c,v 3.2 2005/10/14 15:17:16 tsi Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 

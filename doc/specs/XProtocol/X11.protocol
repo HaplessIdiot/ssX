@@ -1,9 +1,4 @@
-.\" $Xorg: X11.protocol,v 1.4 $
-.\"
-.\"
-.\"
-.\"
-.\" $XFree86: xc/doc/specs/XProtocol/X11.protocol,v 1.4 2003/07/09 15:27:26 tsi Exp $
+.\" $XFree86: xc/doc/specs/XProtocol/X11.protocol,v 1.5 2003/12/11 21:24:37 herrb Exp $
 .EH ''''
 .OH ''''
 .EF ''''

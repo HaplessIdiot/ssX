@@ -1,4 +1,3 @@
-/* $Xorg: printhex.c,v 1.4 2001/02/09 02:06:01 xorgcvs Exp $ */
 /******************************************************************************
 
 Copyright 1993, 1998  The Open Group
@@ -23,7 +22,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/xsm/printhex.c,v 1.3 2004/04/03 22:38:56 tsi Exp $ */
 
 #include <stdio.h>
 

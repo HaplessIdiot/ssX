@@ -1,4 +1,4 @@
-.\" $XConsortium: List,v 1.22 94/04/14 18:16:57 kaleb Exp $
+.\" $XFree86$
 .NH 2
 List Widget
 .LP
@@ -34,10 +34,6 @@ When creating a List widget instance, the following resources are
 retrieved from the argument list or from the resource database:
 .LP
 .IN "List widget" "resources"
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
 expand;
 lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
@@ -92,10 +88,6 @@ y	Position	Position		0
 .sp 3p
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 .Ac
 .As
 .Bg

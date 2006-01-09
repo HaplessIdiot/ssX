@@ -1,4 +1,4 @@
-! $XConsortium: XLogo-co.ad,v 1.2 94/02/09 19:44:04 gildea Exp $
+! $XFree86$
 #include "XLogo"
 ! MIT colors are Cardinal Red (Pantone 201c) and Silver Grey (Pantone 421c)
 XLogo*background: rgb:d2/22/32

@@ -1,10 +1,6 @@
 /* $XTermId: main.h,v 1.28 2005/11/26 01:50:15 tom Exp $ */
 
-/*
- *	$Xorg: main.h,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
- */
-
-/* $XFree86: xc/programs/xterm/main.h,v 3.12 2004/12/01 01:27:47 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/main.h,v 3.13 2006/01/04 02:10:25 dickey Exp $ */
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.

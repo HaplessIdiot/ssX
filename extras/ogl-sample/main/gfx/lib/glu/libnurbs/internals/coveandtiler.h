@@ -35,8 +35,6 @@
 /*
  * coveandtiler.h
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 #ifndef __glucoveandtiler_h

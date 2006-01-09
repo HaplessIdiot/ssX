@@ -1,4 +1,3 @@
-/* $Xorg: registry,v 1.7 2001/06/01 18:55:58 coskrey Exp $ */
 
 				  X Registry
 
@@ -1688,4 +1687,4 @@ REFERENCES
         property type and selection target.  The ICCCM spec will be updated
         in a future release to fully specify UTF8_STRING.
 
-/* $XFree86: xc/registry,v 1.7tsi Exp $ */
+/* $XFree86: xc/registry,v 1.8 2003/07/09 15:27:23 tsi Exp $ */

@@ -1,5 +1,3 @@
-/* $XConsortium: Label.h,v 1.34 94/04/17 20:12:13 rws Exp $ */
-
 /***********************************************************
 
 Copyright (c) 1987, 1988, 1994  X Consortium
@@ -47,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: contrib/programs/xfontsel/ULabel.h,v 1.1 1999/04/29 09:12:39 dawes Exp $ */
+/* $XFree86: xc/programs/xfontsel/ULabel.h,v 1.1 2000/02/13 03:26:24 dawes Exp $ */
 
 #ifndef _XawUCSLabel_h
 #define _XawUCSLabel_h

@@ -1,5 +1,3 @@
-/* $Xorg: SetHints.c,v 1.5 2001/02/09 02:03:36 xorgcvs Exp $ */
-
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/SetHints.c,v 1.4 2001/12/14 19:54:06 dawes Exp $ */
+/* $XFree86: xc/lib/X11/SetHints.c,v 1.5 2003/11/17 22:20:08 dawes Exp $ */
 
 #include <X11/Xlibint.h>
 #include <X11/Xutil.h>

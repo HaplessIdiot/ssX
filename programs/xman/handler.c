@@ -1,4 +1,3 @@
-/* $XConsortium: handler.c,v 1.22 94/12/16 21:36:53 gildea Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium
@@ -28,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/handler.c,v 1.7 2003/04/09 20:31:31 herrb Exp $ */
+/* $XFree86: xc/programs/xman/handler.c,v 1.8 2004/03/12 02:17:55 dickey Exp $ */
 
 /*
  * xman - X window system manual page display program.

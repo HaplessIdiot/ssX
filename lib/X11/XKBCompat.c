@@ -1,4 +1,3 @@
-/* $Xorg: XKBCompat.c,v 1.3 2000/08/17 19:45:00 cpqbld Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +23,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/XKBCompat.c,v 3.2 2003/11/17 22:20:09 dawes Exp $ */
 
 #include <stdio.h>
 #define NEED_REPLIES

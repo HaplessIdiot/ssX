@@ -35,8 +35,6 @@
 /*
  * displaylist.h
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 #ifndef __gludisplaylist_h_

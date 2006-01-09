@@ -35,8 +35,6 @@
 /*
  * nurbstess.h
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 #ifndef __glunurbstess_h_

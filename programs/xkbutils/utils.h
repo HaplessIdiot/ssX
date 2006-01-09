@@ -2,7 +2,6 @@
 #define	UTILS_H 1
 
   /*\
-   * $Xorg: utils.h,v 1.3 2000/08/17 19:54:51 cpqbld Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION
@@ -27,7 +26,7 @@
    * used in advertising or publicity pertaining to distribution of the 
    * software without specific, written prior permission.
   \*/
-/* $XFree86: xc/programs/xkbutils/utils.h,v 1.5 2001/07/25 15:05:26 dawes Exp $ */
+/* $XFree86: xc/programs/xkbutils/utils.h,v 1.6 2003/11/17 22:20:53 dawes Exp $ */
 
 /***====================================================================***/
 

@@ -35,8 +35,6 @@
 /*
  * reader.h
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 #ifndef __glureader_h_

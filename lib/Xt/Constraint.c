@@ -1,5 +1,3 @@
-/* $Xorg: Constraint.c,v 1.4 2001/02/09 02:03:54 xorgcvs Exp $ */
-
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
 Copyright 1993 by Sun Microsystems, Inc. Mountain View CA.
@@ -58,7 +56,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/Constraint.c,v 1.3 2001/12/14 19:56:09 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Constraint.c,v 1.4 2004/05/05 00:07:02 dickey Exp $ */
 
 #define CONSTRAINT
 #include "IntrinsicI.h"

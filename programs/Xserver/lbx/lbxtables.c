@@ -1,4 +1,3 @@
-/* $Xorg: lbxtables.c,v 1.3 2000/08/17 19:53:32 cpqbld Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -21,7 +20,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/lbx/lbxtables.c,v 1.2 2000/05/18 23:46:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxtables.c,v 1.3 2001/01/17 22:37:00 dawes Exp $ */
 #include "dix.h"
 
 extern int ProcInitialConnection(ClientPtr client);

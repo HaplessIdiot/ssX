@@ -1,4 +1,3 @@
-/* $Xorg: lbxfax.h,v 1.3 2000/08/17 19:46:41 cpqbld Exp $ */
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992 Sam Leffler
  * Copyright (c) 1991, 1992 Silicon Graphics, Inc.
@@ -22,7 +21,7 @@
  * LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE 
  * OF THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/lbxutil/image/lbxfax.h,v 1.5 2001/03/05 01:05:12 tsi Exp $ */
 
 /*
  * This header file contains various constants and tables needed

@@ -1,5 +1,3 @@
-/* $Xorg: GetResList.c,v 1.4 2001/02/09 02:03:55 xorgcvs Exp $ */
-
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -32,7 +30,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/GetResList.c,v 3.6 2001/12/14 19:56:16 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/GetResList.c,v 3.7 2004/05/05 00:07:03 dickey Exp $ */
 
 /*
 

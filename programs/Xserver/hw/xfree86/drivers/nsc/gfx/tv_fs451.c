@@ -1,8 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/tv_fs451.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/tv_fs451.c,v 1.2 2003/11/03 05:11:23 tsi Exp $ */
 /*
- * $Workfile: tv_fs451.c $
- * $Revision$
- *
  * This file contains routines to control the FS451 tvout encoder.
  *
  * NSC_LIC_ALTERNATIVE_PREAMBLE

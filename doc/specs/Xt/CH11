@@ -1,4 +1,4 @@
-.\" $XConsortium: CH11,v 1.21 94/04/19 17:58:41 converse Exp $
+.\" $XFree86$
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -53,7 +53,7 @@
 .nr H5 0
 .LP
 .XS
-Chapter 11 \- Utility Functions
+Chapter 11 \(em Utility Functions
 .XE
 The \*(xI provide a number of utility functions that you can use to
 .IP \(bu 5
@@ -91,7 +91,9 @@ Determining the Number of Elements in an Array
 .LP
 To determine the number of elements in a fixed-size array, use
 .PN XtNumber .
+.LP
 .IN "XtNumber" "" "@DEF@"
+.sM
 .FD 0
 Cardinal XtNumber(\fIarray\fP)
 .br
@@ -100,6 +102,7 @@ Cardinal XtNumber(\fIarray\fP)
 .IP \fIarray\fP 1i
 Specifies a fixed-size array of arbitrary type.
 .LP
+.eM
 The
 .PN XtNumber
 macro returns the number of elements allocated to the array.
@@ -112,7 +115,9 @@ Translating Strings to Widget Instances
 .LP
 To translate a widget name to a widget instance, use
 .PN XtNameToWidget .
+.LP
 .IN "XtNameToWidget" "" "@DEF@"
+.sM
 .FD 0
 Widget XtNameToWidget(\fIreference\fP, \fInames\fP)
 .br
@@ -125,6 +130,7 @@ Specifies the widget from which the search is to start.  \*(cI
 .IP \fInames\fP 1i
 Specifies the partially qualified name of the desired widget.
 .LP
+.eM
 The
 .PN XtNameToWidget
 function searches for a descendant of the \fIreference\fP
@@ -139,13 +145,13 @@ Composite :
 .IP \(bu 5
 Enumerate the object subtree rooted at the reference widget in
 breadth-first order, qualifying the name of each object with the
-names of all its ancestors up to but not including the reference
+names of all its ancestors up to, but not including, the reference
 widget.  The ordering between children of a common parent is
 not defined.
 .IP \(bu 5
 Return the first object in the enumeration that matches the
 specified name, where each component of \fInames\fP matches exactly the
-corresponding component of the qualified object name, and asterisk
+corresponding component of the qualified object name and asterisk
 matches any series of components, including none.
 .IP \(bu 5
 If no match is found, return NULL.
@@ -168,7 +174,7 @@ Managing Memory Usage
 \fB\*(SN Managing Memory Usage\fP
 .XE
 .LP
-The \*(xI' memory management functions provide uniform checking for
+The \*(xI memory management functions provide uniform checking for
 null pointers and error reporting on memory allocation errors.
 These functions are completely compatible with their standard C language 
 runtime counterparts
@@ -202,7 +208,9 @@ for more information.
 .LP
 To allocate storage, use
 .PN XtMalloc .
+.LP
 .IN "XtMalloc" "" "@DEF@"
+.sM
 .FD 0
 char *XtMalloc(\fIsize\fP)
 .br
@@ -211,6 +219,7 @@ char *XtMalloc(\fIsize\fP)
 .IP \fIsize\fP 1i
 Specifies the number of bytes desired.
 .LP
+.eM
 The
 .PN XtMalloc
 function returns a pointer to a block of storage of at least 
@@ -223,7 +232,9 @@ calls
 .LP
 To allocate and initialize an array, use
 .PN XtCalloc .
+.LP
 .IN "XtCalloc" "" "@DEF@"
+.sM
 .FD 0
 char *XtCalloc(\fInum\fP, \fIsize\fP)
 .br
@@ -236,6 +247,7 @@ Specifies the number of array elements to allocate.
 .IP \fIsize\fP 1i
 Specifies the size of each array element in bytes.
 .LP
+.eM
 The
 .PN XtCalloc
 function allocates space for the specified number of array elements 
@@ -250,7 +262,9 @@ returns the address of the allocated storage.
 .LP
 To change the size of an allocated block of storage, use
 .PN XtRealloc .
+.LP
 .IN "XtRealloc" "" "@DEF@"
+.sM
 .FD 0
 char *XtRealloc(\fIptr\fP, \fInum\fP)
 .br
@@ -268,6 +282,7 @@ or NULL.
 .IP \fInum\fP 1i
 Specifies number of bytes desired in new storage.
 .LP
+.eM
 The
 .PN XtRealloc
 function changes the size of a block of storage, possibly moving it.
@@ -287,7 +302,9 @@ then returns the address of the new block.
 .LP
 To free an allocated block of storage, use
 .PN XtFree .
+.LP
 .IN "XtFree" "" "@DEF@"
+.sM
 .FD 0
 void XtFree(\fIptr\fP)
 .br
@@ -301,6 +318,7 @@ or
 .PN XtRealloc ,
 or NULL.
 .LP
+.eM
 The
 .PN XtFree
 function returns storage, allowing it to be reused.
@@ -311,7 +329,9 @@ returns immediately.
 .LP
 To allocate storage for a new instance of a type, use
 .PN XtNew .
+.LP
 .IN "XtNew" "" "@DEF@"
+.sM
 .FD 0
 \fItype\fP *XtNew(\fItype\fP)
 .br
@@ -320,6 +340,7 @@ To allocate storage for a new instance of a type, use
 .IP \fItype\fP 1i
 Specifies a previously declared type.
 .LP
+.eM
 .PN XtNew
 returns a pointer to the allocated storage.
 If there is insufficient memory to allocate the new block,
@@ -345,7 +366,9 @@ should be freed using
 .LP
 To copy an instance of a string, use
 .PN XtNewString .
+.LP
 .IN "XtNewString" "" "@DEF@"
+.sM
 .FD 0
 String XtNewString(\fIstring\fP)
 .br
@@ -354,6 +377,7 @@ String XtNewString(\fIstring\fP)
 .IP \fIstring\fP 1i
 Specifies a previously declared string.
 .LP
+.eM
 .PN XtNewString
 returns a pointer to the allocated storage.
 If there is insufficient memory to allocate the new block,
@@ -391,7 +415,9 @@ fields of the shared GCs.
 .LP
 To obtain a shareable GC with modifiable fields, use
 .PN XtAllocateGC .
+.LP
 .IN "XtAllocateGC" "" "@DEF@"
+.sM
 .FD 0
 GC XtAllocateGC(\fIwidget\fP, \fIdepth\fP, \fIvalue_mask\fP, \fIvalues\fP, \
 \fIdynamic_mask\fP, \fIunused_mask\fP)
@@ -418,11 +444,11 @@ Specifies fields of the GC that are initialized from \fIvalues\fP.
 .IP \fIvalues\fP 1i
 Specifies the values for the initialized fields.
 .IP \fIdynamic_mask\fP 1i
-Specifies fields of the GC that may be modified by the caller.
+Specifies fields of the GC that will be modified by the caller.
 .IP \fIunused_mask\fP 1i
-Specifies fields of the GC that will not be used by the caller.
-
+Specifies fields of the GC that will not be needed by the caller.
 .LP
+.eM
 The
 .PN XtAllocateGC
 function returns a shareable GC that may be
@@ -430,15 +456,15 @@ modified by the client.  The \fIscreen\fP field of the specified
 widget or of the nearest widget ancestor of the specified
 object and the specified \fIdepth\fP argument supply
 the root and drawable depths for which the GC is to be
-valid.  If \fIdepth\fP is zero the depth is taken from the
+valid.  If \fIdepth\fP is zero, the depth is taken from the
 \fIdepth\fP field of the specified widget or of the nearest
 widget ancestor of the specified object.
-
+.LP
 The \fIvalue_mask\fP argument specifies fields of the GC
 that are initialized with the respective member of the
 \fIvalues\fP structure.  The \fIdynamic_mask\fP argument specifies fields
 that the caller intends to modify during program execution.
-The caller must insure that the corresponding GC field is set
+The caller must ensure that the corresponding GC field is set
 prior to each use of the GC.  The \fIunused_mask\fP argument
 specifies fields of the GC that are of no interest to the
 caller.  The caller may make no assumptions about the contents
@@ -451,7 +477,7 @@ the effect is as if it were specified only in \fIdynamic_mask\fP
 and then immediately set to the value in \fIvalues\fP.  If a field
 is set in \fIunused_mask\fP and also in either \fIvalue_mask\fP or
 \fIdynamic_mask\fP, the specification in \fIunused_mask\fP is ignored.
-
+.LP
 .PN XtAllocateGC
 tries to minimize the number of unique GCs
 created by comparing the arguments with those of previous
@@ -460,13 +486,13 @@ conflicts.
 .PN XtAllocateGC
 may modify and return an existing GC if it was allocated with a
 nonzero \fIunused_mask\fP.
-
 .sp
 .LP
 To obtain a shareable GC with no modifiable fields, use
 .PN XtGetGC .
-
+.LP
 .IN "XtGetGC" "" "@DEF@"
+.sM
 .FD 0
 GC XtGetGC(\fIobject\fP, \fIvalue_mask\fP, \fIvalues\fP)
 .br
@@ -484,6 +510,7 @@ Specifies which fields of the \fIvalues\fP structure are specified.
 .IP \fIvalues\fP 1i
 Specifies the actual values for this GC.
 .LP
+.eM
 The
 .PN XtGetGC
 function returns a shareable, read-only GC.
@@ -503,12 +530,13 @@ In particular, it does not use the \fIvalue_mask\fP provided to
 determine which fields of the GC a widget considers relevant.
 The \fIvalue_mask\fP is used only to tell the server which fields should be
 filled in from \fIvalues\fP and which it should fill in with default values.
-
 .sp
 .LP
 To deallocate a shared GC when it is no longer needed, use
 .PN XtReleaseGC .
+.LP
 .IN "XtReleaseGC" "" "@DEF@"
+.sM
 .FD 0
 void XtReleaseGC(\fIobject\fP, \fIgc\fP)
 .br
@@ -524,6 +552,7 @@ Specifies the shared GC obtained with either
 or
 .PN XtGetGC .
 .LP
+.eM
 References to shareable GCs are counted and a free request is generated to the
 server when the last user of a given GC releases it.
 
@@ -544,7 +573,7 @@ The incremental interface is provided for a selection owner or
 selection requestor that cannot or prefers not to pass the selection
 value to and from the \*(xI in a single call.  For instance,
 either an application that is running on a machine with limited memory
-may not be able to store the entire selection value in memory, or a
+may not be able to store the entire selection value in memory or a
 selection owner may already have the selection value available in
 discrete chunks, and it would be more efficient not to have to
 allocate additional storage to copy the pieces contiguously.  Any
@@ -553,7 +582,7 @@ segments can use the incremental interfaces to do so.
 The transfer between the selection owner or requestor and the \*(xI is not
 required to match the underlying
 transport protocol between the application and the X server;
-the \*(xI will break a too large selection 
+the \*(xI will break too large a selection 
 into smaller pieces for transport if necessary
 and will coalesce a selection transmitted incrementally if the value
 was requested atomically.
@@ -566,7 +595,9 @@ Setting and Getting the Selection Timeout Value
 .LP
 To set the \*(xI selection timeout, use
 .PN XtAppSetSelectionTimeout .
+.LP
 .IN "XtAppSetSelectionTimeout" "" "@DEF@"
+.sM
 .FD 0
 void XtAppSetSelectionTimeout(\fIapp_context\fP, \fItimeout\fP)
 .br
@@ -578,11 +609,13 @@ void XtAppSetSelectionTimeout(\fIapp_context\fP, \fItimeout\fP)
 Specifies the application context.
 .IP \fItimeout\fP 1i
 Specifies the selection timeout in milliseconds.
-.sp
+.eM
 .LP
 To get the current selection timeout value, use
 .PN XtAppGetSelectionTimeout .
+.LP
 .IN "XtAppGetSelectionTimeout" "" "@DEF@"
+.sM
 .FD 0
 unsigned long XtAppGetSelectionTimeout(\fIapp_context\fP)
 .br
@@ -591,9 +624,10 @@ unsigned long XtAppGetSelectionTimeout(\fIapp_context\fP)
 .IP \fIapp_context\fP 1i
 Specifies the application context.
 .LP
+.eM
 The
 .PN XtAppGetSelectionTimeout
-function returns the current selection timeout value, in milliseconds.
+function returns the current selection timeout value in milliseconds.
 The selection timeout is the time within which the two communicating 
 applications must respond to one another.
 The initial timeout value is set by the 
@@ -633,6 +667,7 @@ data to the \*(xI is of type
 .PN XtConvertSelectionProc .
 .LP
 .IN "XtConvertSelectionProc" "" "@DEF@"
+.sM
 .FD 0
 typedef Boolean (*XtConvertSelectionProc)(Widget, Atom*, Atom*, Atom*,
 .br
@@ -688,6 +723,7 @@ each of size indicated by \fIformat_return\fP, is to be stored.
 Specifies a pointer into which the size in bits of the data elements 
 of the selection value is to be stored.
 .LP
+.eM
 This procedure is called by the \*(xI selection mechanism 
 to get the value of a selection as a given type 
 from the current selection owner.
@@ -731,7 +767,9 @@ event that triggered the
 .PN XtConvertSelectionProc
 procedure, use
 .PN XtGetSelectionRequest .
+.LP
 .IN "XtGetSelectionRequest" "" "@DEF@"
+.sM
 .FD 0
 XSelectionRequestEvent *XtGetSelectionRequest(\fIw\fP, \fIselection\fP, \
 \fIrequest_id\fP)
@@ -750,8 +788,9 @@ Specifies the selection being processed.
 Specifies the requestor id in the case of incremental
 selections, or NULL in the case of atomic transfers.
 .LP
+.eM
 .PN XtGetSelectionRequest
-may only be called from within an
+may be called only from within an
 .PN XtConvertSelectionProc
 procedure and returns a pointer to the
 .PN SelectionRequest
@@ -771,6 +810,7 @@ notification upon losing ownership is of type
 .PN XtLoseSelectionProc .
 .LP
 .IN "XtLoseSelectionProc" "" "@DEF@"
+.sM
 .FD 0
 typedef void (*XtLoseSelectionProc)(Widget, Atom*);
 .br
@@ -783,6 +823,7 @@ Specifies the widget that has lost selection ownership.
 .IP \fIselection\fP 1i
 Specifies the atom naming the selection.
 .LP
+.eM
 This procedure is called by the \*(xI selection mechanism
 to inform the specified widget that it has lost the given selection.
 Note that this procedure does not ask the widget to relinquish the 
@@ -795,6 +836,7 @@ containing the data is of type
 .PN XtSelectionDoneProc .
 .LP
 .IN "XtSelectionDoneProc" "" "@DEF@"
+.sM
 .FD 0
 typedef void (*XtSelectionDoneProc)(Widget, Atom*, Atom*);
 .br
@@ -811,6 +853,7 @@ Specifies the atom naming the selection that was converted.
 .IP \fItarget\fP 1i
 Specifies the target type to which the conversion was done.
 .LP
+.eM
 This procedure is called by the \*(xI selection mechanism
 to inform the selection owner that a selection requestor has successfully
 retrieved a selection value.
@@ -835,6 +878,7 @@ selection data from the \*(xI is of type
 .PN XtSelectionCallbackProc .
 .LP
 .IN "XtSelectionCallbackProc" "" "@DEF@"
+.sM
 .FD 0
 typedef void (*XtSelectionCallbackProc)(Widget, XtPointer, Atom*, Atom*, \
 XtPointer, unsigned long*, int*);
@@ -864,7 +908,7 @@ Specifies the name of the selection that was requested.
 Specifies the representation type of the selection value (for example,
 .PN XA_STRING ).
 Note that it is not the target that was requested (which the client
-must remember for itself) but the type that
+must remember for itself), but the type that
 is used to represent the target.
 The special symbolic constant
 .PN XT_CONVERT_FAIL 
@@ -882,6 +926,7 @@ Specifies the number of elements in \fIvalue\fP.
 .IP \fIformat\fP 1i
 Specifies the size in bits of the data in each element of \fIvalue\fP.
 .LP
+.eM
 This procedure is called by the \*(xI selection mechanism to deliver the
 requested selection to the requestor.
 .LP
@@ -899,7 +944,9 @@ To obtain the selection value in a single logical unit, use
 .PN XtGetSelectionValue
 or
 .PN XtGetSelectionValues .
+.LP
 .IN "XtGetSelectionValue" "" "@DEF@"
+.sM
 .FD 0
 void XtGetSelectionValue(\fIw\fP, \fIselection\fP, \fItarget\fP, \
 \fIcallback\fP, \fIclient_data\fP, \fItime\fP)
@@ -938,13 +985,14 @@ the value
 .PN CurrentTime 
 is not acceptable.
 .LP
+.eM
 The
 .PN XtGetSelectionValue
 function requests the value of the selection converted to 
 the target type. 
 The specified callback is called at some time after 
 .PN XtGetSelectionValue 
-is called, when the selection data is received from the X server.
+is called, when the selection value is received from the X server.
 It may be called before or after 
 .PN XtGetSelectionValue 
 returns.
@@ -953,6 +1001,7 @@ For more information about \fIselection\fP, \fItarget\fP, and
 .sp
 .LP
 .IN "XtGetSelectionValues" "" "@DEF@"
+.sM
 .FD 0
 void XtGetSelectionValues(\fIw\fP, \fIselection\fP, \fItargets\fP, \
 \fIcount\fP, \fIcallback\fP, \fIclient_data\fP, \fItime\fP)
@@ -995,6 +1044,7 @@ the value
 .PN CurrentTime
 is not acceptable.
 .LP
+.eM
 The
 .PN XtGetSelectionValues
 function is similar to multiple calls to
@@ -1004,7 +1054,7 @@ between requests and therefore that all the conversions will refer to
 the same selection value.  The callback is invoked once for each
 target value with the corresponding client data.
 For more information about \fIselection\fP, \fItarget\fP, and
-\fItime\fP see Section 2.6 in the \fI\*(xC\fP.
+\fItime\fP, see Section 2.6 in the \fI\*(xC\fP.
 
 .NH 4
 Setting the Selection Owner
@@ -1015,7 +1065,9 @@ Setting the Selection Owner
 To set the selection owner and indicate that the selection value will
 be provided in one piece, use
 .PN XtOwnSelection .
+.LP
 .IN "XtOwnSelection" "" "@DEF@"
+.sM
 .FD 0
 Boolean XtOwnSelection(\fIw\fP, \fIselection\fP, \fItime\fP, \
 \fIconvert_proc\fP, \fIlose_selection\fP, \fIdone_proc\fP)
@@ -1057,6 +1109,7 @@ after the requestor has received the selection value, or NULL if the
 owner is not
 interested in being called back.
 .LP
+.eM
 The
 .PN XtOwnSelection
 function informs the \*(xI selection mechanism that a
@@ -1091,10 +1144,13 @@ the \*(xI selection mechanism informs the previous owner that it
 has lost ownership of the selection.
 However, in response to some user actions 
 (for example, when a user deletes the information selected),
-the application may wish to explicitly inform the \*(xI that it
-no longer is to be the selection owner by using
-.PN XtDisownSelection .
+the application may wish to explicitly inform the \*(xI
+by using
+.PN XtDisownSelection
+that it no longer is to be the selection owner.
+.LP
 .IN "XtDisownSelection" "" "@DEF@"
+.sM
 .FD 0
 void XtDisownSelection(\fIw\fP, \fIselection\fP, \fItime\fP)
 .br
@@ -1112,6 +1168,7 @@ Specifies the atom naming the selection being given up.
 Specifies the timestamp that indicates when the request to
 relinquish selection ownership was initiated.
 .LP
+.eM
 The
 .PN XtDisownSelection
 function informs the \*(xI selection mechanism that
@@ -1172,7 +1229,7 @@ The procedure pointer specified by the incremental owner to supply the
 selection data to the \*(xI is of type
 .PN XtConvertSelectionIncrProc .
 .LP
-.sp
+.sM
 .Ds 0
 typedef XtPointer XtRequestId;
 .De
@@ -1235,6 +1292,7 @@ took ownership of the selection.
 .IP \fIrequest_id\fP 1i
 Specifies an opaque identification for a specific request.
 .LP
+.eM
 This procedure is called repeatedly by the \*(xI selection mechanism to get
 the next incremental chunk of data from a selection owner who has
 called
@@ -1266,7 +1324,9 @@ The procedure pointer specified by the incremental selection owner
 when it desires notification upon no longer having ownership is of
 type
 .PN XtLoseSelectionIncrProc .
+.LP
 .IN "XtLoseSelectionIncrProc" "" "@DEF@"
+.sM
 .FD 0
 typedef void (*XtLoseSelectionIncrProc)(Widget, Atom*, XtPointer);
 .br
@@ -1284,6 +1344,7 @@ Specifies the atom that names the selection.
 Specifies the value passed in by the widget when it
 took ownership of the selection.
 .LP
+.eM
 This procedure, which is optional, is called by the \*(xI to
 inform the selection owner that it no longer owns the selection.
 .sp
@@ -1292,7 +1353,9 @@ The procedure pointer specified by the incremental selection owner
 when it desires notification of receipt of the data or when it manages
 the storage containing the data is of type
 .PN XtSelectionDoneIncrProc .
+.LP
 .IN "XtSelectionDoneIncrProc" "" "@DEF@"
+.sM
 .FD 0
 typedef void (*XtSelectionDoneIncrProc)(Widget, Atom*, Atom*, \
 XtRequestId*, XtPointer);
@@ -1319,6 +1382,7 @@ Specifies an opaque identification for a specific request.
 Specified the value passed in by the widget when it
 took ownership of the selection.
 .LP
+.eM
 This procedure, which is optional, is called by the \*(xI after
 the requestor has retrieved the final (zero-length) segment of the
 incremental transfer to indicate that the entire transfer is complete.
@@ -1330,7 +1394,9 @@ final value returned by the selection owner using
 The procedure pointer specified by the incremental selection owner to
 notify it if a transfer should be terminated prematurely is of type
 .PN XtCancelConvertSelectionProc .
+.LP
 .IN "XtCancelConvertSelectionProc" "" "@DEF@"
+.sM
 .FD 0
 typedef void (*XtCancelConvertSelectionProc)(Widget, Atom*, Atom*, \
 XtRequestId*, XtPointer);
@@ -1357,6 +1423,7 @@ Specifies an opaque identification for a specific request.
 Specifies the value passed in by the widget when it took ownership of
 the selection.
 .LP
+.eM
 This procedure is called by the \*(xI when it has been determined
 by means of a timeout or other mechanism that any remaining segments
 of the selection no longer need to be transferred.  Upon receiving
@@ -1374,7 +1441,9 @@ To obtain the value of the selection using incremental transfers, use
 .PN XtGetSelectionValueIncremental
 or
 .PN XtGetSelectionValuesIncremental .
+.LP
 .IN "XtGetSelectionValueIncremental" "" "@DEF@"
+.sM
 .FD 0
 void XtGetSelectionValueIncremental(\fIw\fP, \fIselection\fP, \fItarget\fP, \
 \fIselection_callback\fP, \fIclient_data\fP, \fItime\fP)
@@ -1412,6 +1481,7 @@ the value
 .PN CurrentTime
 is not acceptable.
 .LP
+.eM
 The
 .PN XtGetSelectionValueIncremental
 function is similar to
@@ -1422,7 +1492,7 @@ selection value.  The end of the selection value is indicated when
 \fIselection_callback\fP is called with a non-NULL value of length zero,
 which must still be freed by the client.  If the
 transfer of the selection is aborted in the middle of a transfer
-(for example, because to timeout), the selection_callback procedure is
+(for example, because of a timeout), the selection_callback procedure is
 called with a type value equal to the symbolic constant
 .PN XT_CONVERT_FAIL
 so that the requestor can dispose
@@ -1433,8 +1503,9 @@ the requesting client must determine
 for itself whether or not a partially completed data transfer is meaningful.
 For more information about \fIselection\fP, \fItarget\fP, and
 \fItime\fP, see Section 2.6 in the \fI\*(xC\fP.
-.sp
+.LP
 .IN "XtGetSelectionValuesIncremental" "" "@DEF@"
+.sM
 .FD 0
 void XtGetSelectionValuesIncremental(\fIw\fP, \fIselection\fP, \fItargets\fP, \
 \fIcount\fP, \fIselection_callback\fP, \fIclient_data\fP, \fItime\fP)
@@ -1477,6 +1548,7 @@ the value
 .PN CurrentTime
 is not acceptable.
 .LP
+.eM
 The
 .PN XtGetSelectionValuesIncremental
 function is similar to
@@ -1503,7 +1575,9 @@ Setting the Selection Owner for Incremental Transfers
 .LP
 To set the selection owner when using incremental transfers, use
 .PN XtOwnSelectionIncremental .
+.LP
 .IN "XtOwnSelectionIncremental" "" "@DEF@"
+.sM
 .FD 0
 Boolean XtOwnSelectionIncremental(\fIw\fP, \fIselection\fP, \fItime\fP, \
 \fIconvert_callback\fP, \fIlose_callback\fP,
@@ -1555,6 +1629,7 @@ or NULL if the owner is not interested in being notified.
 Specifies the argument to be passed to each of
 the callback procedures when they are called.
 .LP
+.eM
 The
 .PN XtOwnSelectionIncremental
 procedure informs the \*(xI
@@ -1600,7 +1675,9 @@ Setting and Retrieving Selection Target Parameters
 To specify target parameters for a selection request with a single target,
 use
 .PN XtSetSelectionParameters .
+.LP
 .IN "XtSetSelectionParameters" "" "@DEF@"
+.sM
 .FD 0
 void XtSetSelectionParameters(\fIrequestor\fP, \fIselection\fP, \fItype\fP, \
 \fIvalue\fP, \fIlength\fP, \fIformat\fP)
@@ -1646,6 +1723,7 @@ is called more than once with the same widget and selection without
 a call to specify a request, the most recently specified parameters
 are used in the subsequent request.
 .LP
+.eM
 The possible values of \fIformat\fP are 8, 16, or 32.  If the format is 8,
 the elements of \fIvalue\fP are assumed to be sizeof(char);
 if 16, sizeof(short); if 32, sizeof(long).
@@ -1671,7 +1749,9 @@ cannot be used to make selection requests with parameterized targets.
 To retrieve any target parameters needed to perform a selection conversion,
 the selection owner calls 
 .PN XtGetSelectionParameters .
+.LP
 .IN "XtGetSelectionParameters" "" "@DEF@"
+.sM
 .FD 0
 void XtGetSelectionParameters(\fIowner\fP, \fIselection\fP, \
 \fIrequest_id\fP, \fItype_return\fP, \fIvalue_return\fP,
@@ -1701,9 +1781,9 @@ Specifies the requestor id in the case of incremental selections,
 or NULL in the case of atomic transfers.
 .IP \fItype_return\fP 1i
 Specifies a pointer to an atom in which the property type
-of the parameters are stored.
+of the parameters is stored.
 .IP \fIvalue_return\fP 1i
-Specifies a pointer into which a pointer to the parameters are to be stored.
+Specifies a pointer into which a pointer to the parameters is to be stored.
 A NULL is stored if no parameters accompany the request.
 .IP \fIlength_return\fP 1i
 Specifies a pointer into which the number of data elements
@@ -1712,12 +1792,17 @@ in \fIvalue_return\fP of size indicated by \fIformat_return\fP are stored.
 Specifies a pointer into which the size in bits of the parameter data
 in the elements of \fIvalue\fP is stored.
 .LP
-.PN XtGetSelectionParameter
-may only be called from within an
+.eM
+.PN XtGetSelectionParameters
+may be called only from within an
 .PN XtConvertSelectionProc
 or from within the first call to an 
 .PN XtConvertSelectionIncrProc
 with a new request_id.
+.LP
+It is the responsibility of the caller to free the returned parameters using
+.PN XtFree
+when the parameters are no longer needed.
 
 .NH 3
 Generating MULTIPLE Requests
@@ -1726,10 +1811,13 @@ Generating MULTIPLE Requests
 .XE
 .LP
 To have the \*(xI bundle multiple calls to make selection requests into
-a single request using a MULTIPLE target, use 
+a single request using a \s-1MULTIPLE\s+1 target, use 
 .PN XtCreateSelectionRequest
 and
 .PN XtSendSelectionRequest .
+.LP
+.IN "XtCreateSelectionRequest" "" "@DEF@"
+.sM
 .FD 0
 void XtCreateSelectionRequest(\fIrequestor\fP, \fIselection\fP)
 .br
@@ -1742,20 +1830,23 @@ Specifies the widget making the request.  \*(cI
 .IP \fIselection\fP 1i
 Specifies the particular selection desired.
 .LP
+.eM
 When 
 .PN XtCreateSelectionRequest
 is called, subsequent calls to 
 .PN XtGetSelectionValue ,
 .PN XtGetSelectionValueIncremental ,
-.PN XtGetSelectionValues
+.PN XtGetSelectionValues ,
 and
 .PN XtGetSelectionValuesIncremental ,
 with the requestor and selection as specified to 
-.PN XtCreateSelectionRequest
+.PN XtCreateSelectionRequest ,
 are bundled into a single selection request with
 multiple targets.  The request is made by calling 
 .PN XtSendSelectionRequest .
-.sp
+.LP
+.IN "XtSendSelectionRequest" "" "@DEF@"
+.sM
 .FD 0
 void XtSendSelectionRequest(\fIrequestor\fP, \fIselection\fP, \fItime\fP)
 .br
@@ -1775,6 +1866,7 @@ initiated.  The value
 .PN CurrentTime
 is not acceptable.
 .LP
+.eM
 When 
 .PN XtSendSelectionRequest
 is called with a value of \fIrequestor\fP and \fIselection\fP matching
@@ -1787,7 +1879,7 @@ with a target of MULTIPLE using the specified timestamp.
 As the values are returned, the callbacks specified in
 .PN XtGetSelectionValue ,
 .PN XtGetSelectionValueIncremental ,
-.PN XtGetSelectionValues
+.PN XtGetSelectionValues ,
 and
 .PN XtGetSelectionValueIncremental
 are invoked.
@@ -1804,7 +1896,9 @@ and selection.
 .LP
 To relinquish the composition of a MULTIPLE request without sending it, use
 .PN XtCancelSelectionRequest .
+.LP
 .IN "XtCancelSelectionRequest" "" "@DEF@"
+.sM
 .FD 0
 void XtCancelSelectionRequest(\fIrequestor\fP, \fIselection\fP)
 .br
@@ -1817,6 +1911,7 @@ Specifies the widget making the request.  \*(cI
 .IP \fIselection\fP 1i
 Specifies the particular selection desired.
 .LP
+.eM
 When
 .PN XtCancelSelectionRequest
 is called, any requests queued since the last call to
@@ -1829,7 +1924,7 @@ will not result in any request being made.
 Subsequent calls to
 .PN XtGetSelectionValue ,
 .PN XtGetSelectionValues ,
-.PN XtGetSelectionValueIncremental
+.PN XtGetSelectionValueIncremental ,
 or
 .PN XtGetSelectionValuesIncremental
 will not be deferred.
@@ -1849,7 +1944,9 @@ the \*(xI provides two interfaces for acquiring temporary property names.
 To acquire a temporary property name atom for use in a selection
 request, the client may call
 .PN XtReservePropertyAtom .
-.sp
+.LP
+.IN "XtReservePropertyAtom" "" "@DEF@"
+.sM
 .FD 0
 Atom XtReservePropertyAtom(\fIw\fP)
 .br
@@ -1858,17 +1955,19 @@ Atom XtReservePropertyAtom(\fIw\fP)
 .IP \fIw\fP 1i
 Specifies the widget making a selection request.
 .LP
+.eM
 .PN XtReservePropertyAtom
 returns an atom that may be used as a property name during selection
 requests involving the specified widget. 
 As long as the atom remains reserved, it is unique with respect to all
 other reserved atoms for the widget.
-.sp
 .LP
 To return a temporary property name atom for reuse and to delete
 the property named by that atom, use
 .PN XtReleasePropertyAtom .
-.sp
+.LP
+.IN "XtReleasePropertyAtom" "" "@DEF@"
+.sM
 .FD 0
 void XtReleasePropertyAtom(\fIw\fP, \fIatom\fP)
 .br
@@ -1883,9 +1982,10 @@ Specifies the property name atom returned by
 .PN XtReservePropertyAtom
 that is to be released for reuse.
 .LP
+.eM
 .PN XtReleasePropertyAtom
 marks the specified property name atom as
-no longer in use and insures that any property having that name
+no longer in use and ensures that any property having that name
 on the specified widget's window is deleted.  If \fIatom\fP does not
 specify a value returned by
 .PN XtReservePropertyAtom
@@ -1901,7 +2001,9 @@ To retrieve the timestamp from the most recent call to
 .PN XtDispatchEvent
 that contained a timestamp, use
 .PN XtLastTimestampProcessed .
+.LP
 .IN "XtLastTimestampProcessed" "" "@DEF@"
+.sM
 .FD 0
 Time XtLastTimestampProcessed(\fIdisplay\fP)
 .br
@@ -1910,6 +2012,7 @@ Time XtLastTimestampProcessed(\fIdisplay\fP)
 .IP \fIdisplay\fP 1i
 Specifies an open display connection.
 .LP
+.eM
 If no
 .PN KeyPress ,
 .PN KeyRelease ,
@@ -1937,7 +2040,9 @@ To retrieve the event from the most recent call to
 .PN XtDispatchEvent
 for a specific display, use
 .PN XtLastEventProcessed .
+.LP
 .IN "XtLastEventProcessed" "" "@DEF@"
+.sM
 .FD 0
 XEvent *XtLastEventProcessed(\fIdisplay\fP)
 .br
@@ -1946,6 +2051,7 @@ XEvent *XtLastEventProcessed(\fIdisplay\fP)
 .IP \fIdisplay\fP 1i
 Specifies the display connection from which to retrieve the event.
 .LP
+.eM
 Returns the last event passed to
 .PN XtDispatchEvent
 for the specified display.  Returns NULL if there is no such event.
@@ -1975,7 +2081,9 @@ and
 .PN GraphicsExpose
 events into a region, use
 .PN XtAddExposureToRegion .
+.LP
 .IN "XtAddExposureToRegion" "" "@DEF@"
+.sM
 .FD 0
 void XtAddExposureToRegion(\fIevent\fP, \fIregion\fP)
 .br
@@ -1993,6 +2101,7 @@ event.
 Specifies the region object (as defined in
 .Pn < X11/Xutil.h >).
 .LP
+.eM
 The
 .PN XtAddExposureToRegion
 function computes the union of the rectangle defined by the exposure
@@ -2018,7 +2127,9 @@ Translating Widget Coordinates
 To translate an x-y coordinate pair from widget coordinates to root
 window absolute coordinates, use
 .PN XtTranslateCoords .
+.LP
 .IN "XtTranslateCoords" "" "@DEF@"
+.sM
 .FD 0
 void XtTranslateCoords(\fIw\fP, \fIx\fP, \fIy\fP, \fIrootx_return\fP, \
 \fIrooty_return\fP)
@@ -2042,6 +2153,7 @@ Specify the widget-relative x and y coordinates.
 .IP \fIrooty_return\fP 1i
 Return the root-relative x and y coordinates.
 .LP
+.eM
 While
 .PN XtTranslateCoords
 is similar to the Xlib
@@ -2057,7 +2169,9 @@ Translating a Window to a Widget
 .LP
 To translate a given window and display pointer into a widget instance, use
 .PN XtWindowToWidget .
+.LP
 .IN "XtWindowToWidget" "" "@DEF@"
+.sM
 .FD 0
 Widget XtWindowToWidget(\fIdisplay\fP, \fIwindow\fP)
 .br
@@ -2070,6 +2184,7 @@ Specifies the display on which the window is defined.
 .IP \fIwindow\fP 1i
 Specifies the drawable for which you want the widget.
 .LP
+.eM
 If there is a realized widget whose window is the specified drawable on
 the specified \fIdisplay\fP,
 .PN XtWindowToWidget
@@ -2086,7 +2201,7 @@ Handling Errors
 \fB\*(SN Handling Errors\fP
 .XE
 .LP
-The \*(xI allow a client to register procedures that is called
+The \*(xI allow a client to register procedures that are called
 whenever a fatal or nonfatal error occurs.
 These facilities are intended for both error reporting and logging
 and for error correction or recovery.
@@ -2102,9 +2217,9 @@ A low-level interface that takes a simple string to display.
 The high-level functions construct a string to pass to the lower-level
 interface.
 The strings may be specified in application code and are
-overridden by the contents of an external system-wide file,
-the ``error database file''.  The location and name of this file is
-implementation dependent.
+overridden by the contents of an external systemwide file,
+the ``error database file''.  The location and name of this file are
+implementation-dependent.
 .NT
 The application-context-specific error handling is not
 implemented on many systems, although the interfaces are
@@ -2119,7 +2234,9 @@ the ones registered last will prevail.
 To obtain the error database (for example, to merge with
 an application- or widget-specific database), use
 .PN XtAppGetErrorDatabase .
+.LP
 .IN "XtAppGetErrorDatabase" "" "@DEF@"
+.sM
 .FD 0
 XrmDatabase *XtAppGetErrorDatabase(\^\fIapp_context\fP\^)
 .br
@@ -2128,6 +2245,7 @@ XrmDatabase *XtAppGetErrorDatabase(\^\fIapp_context\fP\^)
 .IP \fIapp_context\fP 1i
 Specifies the application context.
 .LP
+.eM
 The
 .PN XtAppGetErrorDatabase
 function returns the address of the error database.
@@ -2143,6 +2261,7 @@ The high-level error and warning handler procedure pointers are of type
 .PN XtErrorMsgHandler .
 .LP
 .IN "XtErrorMsgHandler" "" "@DEF@"
+.sM
 .FD 0
 typedef void (*XtErrorMsgHandler)(String, String, String, String, \
 String*, Cardinal*);
@@ -2174,6 +2293,7 @@ Specifies a pointer to a list of parameters to be substituted in the message.
 .IP \fInum_params\fP 1i
 Specifies the number of entries in \fIparams\fP.
 .LP
+.eM
 The specified name can be a general kind of error, 
 like ``invalidParameters'' or ``invalidWindow'', 
 and the specified type gives extra information
@@ -2186,7 +2306,9 @@ notation is used to substitute the parameters into the message.
 An error message handler can obtain the error database text for an
 error or a warning by calling
 .PN XtAppGetErrorDatabaseText .
+.LP
 .IN "XtAppGetErrorDatabaseText" "" "@DEF@"
+.sM
 .FD 0
 void XtAppGetErrorDatabaseText(\fIapp_context\fP, \fIname\fP, \fItype\fP, \fIclass\fP, \fIdefault\fP, \fIbuffer_return\fP, \fInbytes\fP, \fIdatabase\fP)
 .br
@@ -2222,6 +2344,7 @@ Specifies the size of the buffer in bytes.
 Specifies the name of the alternative database to be used,
 or NULL if the application context's error database is to be used.
 .LP
+.eM
 The
 .PN XtAppGetErrorDatabaseText
 returns the appropriate message from the error database
@@ -2231,14 +2354,15 @@ To form the full resource name and class when querying the database,
 the \fIname\fP and \fItype\fP are concatenated with a single ``.''
 between them and the \fIclass\fP is concatenated with itself with a
 single ``.'' if it does not already contain a ``.''.
-
 .sp
 .LP
 To return the application name and class as passed to
 .PN XtDisplayInitialize
 for a particular Display, use
 .PN XtGetApplicationNameAndClass .
+.LP
 .IN "XtGetApplicationNameAndClass" "" "@DEF@"
+.sM
 .FD 0
 void XtGetApplicationNameAndClass(\fIdisplay\fP, \fIname_return\fP, \
 \fIclass_return\fP)
@@ -2257,6 +2381,7 @@ Returns the application name.
 .IP \fIclass_return\fP 1i
 Returns the application class.
 .LP
+.eM
 .PN XtGetApplicationNameAndClass
 returns the application name and class passed to
 .PN XtDisplayInitialize
@@ -2268,7 +2393,9 @@ or freed by the caller.
 .LP
 To register a procedure to be called on fatal error conditions, use
 .PN XtAppSetErrorMsgHandler .
+.LP
 .IN "XtAppSetErrorMsgHandler" "" "@DEF@"
+.sM
 .FD 0
 XtErrorMsgHandler XtAppSetErrorMsgHandler(\fIapp_context\fP, \fImsg_handler\fP)
 .br
@@ -2281,6 +2408,7 @@ Specifies the application context.
 .IP \fImsg_handler\fP 1i
 Specifies the new fatal error procedure, which should not return.
 .LP
+.eM
 .PN XtAppSetErrorMsgHandler
 returns a pointer to the previously
 installed high-level fatal error handler.
@@ -2296,7 +2424,9 @@ subsequent \*(xI behavior is undefined.
 .LP
 To call the high-level error handler, use
 .PN XtAppErrorMsg .
+.LP
 .IN "XtAppErrorMsg" "" "@DEF@"
+.sM
 .FD 0
 void XtAppErrorMsg(\fIapp_context\fP, \fIname\fP, \fItype\fP, \fIclass\fP, \
 \fIdefault\fP, \ \fIparams\fP, \fInum_params\fP)
@@ -2330,13 +2460,16 @@ Specifies a pointer to a list of values to be stored in the message.
 .IP \fInum_params\fP 1i
 Specifies the number of entries in \fIparams\fP.
 .LP
+.eM
 The \*(xI internal errors all have class
 ``XtToolkitError''.
 .sp
 .LP
 To register a procedure to be called on nonfatal error conditions, use
 .PN XtAppSetWarningMsgHandler .
+.LP
 .IN "XtAppSetWarningMsgHandler" "" "@DEF@"
+.sM
 .FD 0
 XtErrorMsgHandler XtAppSetWarningMsgHandler(\fIapp_context\fP, \fImsg_handler\fP)
 .br
@@ -2349,6 +2482,7 @@ Specifies the application context.
 .IP \fImsg_handler\fP 1i
 Specifies the new nonfatal error procedure, which usually returns.
 .LP
+.eM
 .PN XtAppSetWarningMsgHandler
 returns a pointer to the previously
 installed high-level warning handler.
@@ -2362,7 +2496,9 @@ from the error resource database and calls
 .LP
 To call the installed high-level warning handler, use
 .PN XtAppWarningMsg .
+.LP
 .IN "XtAppWarningMsg" "" "@DEF@"
+.sM
 .FD 0
 void XtAppWarningMsg(\fIapp_context\fP, \fIname\fP, \fItype\fP, \fIclass\fP, \fIdefault\fP, \fIparams\fP, \fInum_params\fP)
 .br
@@ -2395,13 +2531,16 @@ Specifies a pointer to a list of values to be stored in the message.
 .IP \fInum_params\fP 1i
 Specifies the number of entries in \fIparams\fP.
 .LP
+.eM
 The \*(xI internal warnings all have class
 ``XtToolkitError''.
 .sp
 .LP
 The low-level error and warning handler procedure pointers are of type
 .PN XtErrorHandler .
+.LP
 .IN "XtErrorHandler" "" "@DEF@"
+.sM
 .FD 0
 typedef void (*XtErrorHandler)(String);
 .br
@@ -2410,12 +2549,15 @@ typedef void (*XtErrorHandler)(String);
 .IP \fImessage\fP 1i
 Specifies the error message.
 .LP
+.eM
 The error handler should display the message string in some appropriate fashion.
 .sp
 .LP
 To register a procedure to be called on fatal error conditions, use
 .PN XtAppSetErrorHandler .
+.LP
 .IN "XtAppSetErrorHandler" "" "@DEF@"
+.sM
 .FD 0
 XtErrorHandler XtAppSetErrorHandler(\fIapp_context\fP, \fIhandler\fP)
 .br
@@ -2428,6 +2570,7 @@ Specifies the application context.
 .IP \fIhandler\fP 1i
 Specifies the new fatal error procedure, which should not return.
 .LP
+.eM
 .PN XtAppSetErrorHandler
 returns a pointer to the previously installed
 low-level fatal error handler.
@@ -2443,7 +2586,9 @@ subsequent \*(xI behavior is undefined.
 .LP
 To call the installed fatal error procedure, use
 .PN XtAppError .
+.LP
 .IN "XtAppError" "" "@DEF@"
+.sM
 .FD 0
 void XtAppError(\fIapp_context\fP, \fImessage\fP)
 .br
@@ -2456,6 +2601,7 @@ Specifies the application context.
 .IP \fImessage\fP 1i
 Specifies the message to be reported.
 .LP
+.eM
 Most programs should use
 .PN XtAppErrorMsg ,
 not
@@ -2465,7 +2611,9 @@ to provide for customization and internationalization of error messages.
 .LP
 To register a procedure to be called on nonfatal error conditions, use
 .PN XtAppSetWarningHandler .
+.LP
 .IN "XtAppSetWarningHandler" "" "@DEF@"
+.sM
 .FD 0
 XtErrorHandler XtAppSetWarningHandler(\fIapp_context\fP, \fIhandler\fP)
 .br
@@ -2478,6 +2626,7 @@ Specifies the application context.
 .IP \fIhandler\fP 1i
 Specifies the new nonfatal error procedure, which usually returns.
 .LP
+.eM
 .PN XtAppSetWarningHandler
 returns a pointer to the previously installed
 low-level warning handler.
@@ -2490,7 +2639,9 @@ it prints the message to standard error and returns to the caller.
 .LP
 To call the installed nonfatal error procedure, use
 .PN XtAppWarning .
+.LP
 .IN "XtAppWarning" "" "@DEF@"
+.sM
 .FD 0
 void XtAppWarning(\fIapp_context\fP, \fImessage\fP)
 .br
@@ -2503,6 +2654,7 @@ Specifies the application context.
 .IP \fImessage\fP 1i
 Specifies the nonfatal error message to be reported.
 .LP
+.eM
 Most programs should use
 .PN XtAppWarningMsg ,
 not
@@ -2519,7 +2671,9 @@ A client may set the value of the \s-1WM_COLORMAP_WINDOWS\s+1
 .IN "WM_COLORMAP_WINDOWS" "" "@DEF@"
 property on a widget's window by calling
 .PN XtSetWMColormapWindows .
+.LP
 .IN "XtSetWMColormapWindows" "" "@DEF@"
+.sM
 .FD 0
 void XtSetWMColormapWindows(\fIwidget\fP, \fIlist\fP, \fIcount\fP)
 .br
@@ -2538,6 +2692,7 @@ listed in the \s-1WM_COLORMAP_WINDOWS\s+1 property.
 .IP \fIcount\fP 1i
 Specifies the number of widgets in \fIlist\fP.
 .LP
+.eM
 .PN XtSetWMColormapWindows
 returns immediately if \fIwidget\fP is not realized or if \fIcount\fP is 0.
 Otherwise,
@@ -2580,7 +2735,8 @@ A string substitution is defined by a list of
 .PN Substitution
 .IN "Substitution" "" "@DEF@"
 entries.
-.sp
+.LP
+.sM
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -2589,12 +2745,15 @@ typedef struct {
 	String substitution;
 } SubstitutionRec, *Substitution;
 .De
+.eM
 .LP
 File name evaluation is handled in an operating-system-dependent
 fashion by an
 .PN XtFilePredicate
 .IN "XtFilePredicate" "" "@DEF@"
 procedure.
+.LP
+.sM
 .FD 0
 typedef Boolean (*XtFilePredicate)(String);
 .br
@@ -2603,6 +2762,7 @@ typedef Boolean (*XtFilePredicate)(String);
 .IP \fIfilename\fP 1i
 Specifies a potential filename.
 .LP
+.eM
 A file predicate procedure is called with a string that is
 potentially a file name.  It should return
 .PN True 
@@ -2613,7 +2773,9 @@ otherwise.
 .LP
 To search for a file using substitutions in a path list, use
 .PN XtFindFile .
+.LP
 .IN "XtFindFile" "" "@DEF@"
+.sM
 .FD 0
 String XtFindFile(\fIpath\fP, \fIsubstitutions\fP, \fInum_substitutions\fP, \
 \fIpredicate\fP)
@@ -2635,6 +2797,7 @@ Specifies the number of substitutions passed in.
 .IP \fIpredicate\fP 1.2i
 Specifies a procedure called to judge each potential file name, or NULL.
 .LP
+.eM
 The \fIpath\fP parameter specifies a string that consists of a series of
 potential file names delimited by colons.  Within each name, the
 percent character specifies a string substitution selected by the
@@ -2646,8 +2809,9 @@ replaced by a single percent character.  If a percent character is
 followed by any other character,
 .PN XtFindFile
 looks through the
-specified \fIsubstitutions\fP for that character in the \fImatch\fP field and if
-found replaces the percent and match characters with the string in the
+specified \fIsubstitutions\fP for that character in the \fImatch\fP field
+and, if found,
+replaces the percent and match characters with the string in the
 corresponding \fIsubstitution\fP field.  A \fIsubstitution\fP field entry of NULL
 is equivalent to a pointer to an empty string.  If the operating
 system does not interpret multiple embedded name separators in the
@@ -2680,7 +2844,9 @@ when it is no longer needed.
 .LP
 To search for a file using standard substitutions in a path list, use
 .PN XtResolvePathname .
+.LP
 .IN "XtResolvePathname" "" "@DEF@"
+.sM
 .FD 0
 String XtResolvePathname(\fIdisplay\fP, \fItype\fP, \fIfilename\fP, \fIsuffix\fP, \
 \fIpath\fP, \fIsubstitutions\fP, \fInum_substitutions\fP, \fIpredicate\fP)
@@ -2714,6 +2880,7 @@ Specifies the number of entries in \fIsubstitutions\fP.
 .IP \fIpredicate\fP 1.2i
 Specifies a procedure called to judge each potential file name, or NULL.
 .LP
+.eM
 The substitutions specified by
 .PN XtResolvePathname
 are determined from the value of the language string retrieved by
@@ -2727,7 +2894,7 @@ The format and content of the language string are
 implementation-defined.   One suggested syntax is to compose
 the language string of three parts;  a  ``language  part'',  a
 ``territory  part'' and a ``codeset part''.  The manner in which
-this composition is accomplished is implementation-defined
+this composition is accomplished is implementation-defined,
 and the \*(xI make no interpretation of the parts other
 than to use them in substitutions as described below.
 .LP
@@ -2770,7 +2937,7 @@ environment variable is passed to
 If
 .PN \s-1XFILESEARCHPATH\s+1
 is not defined, an implementation-specific default path is used
-which contains at least 6 entries.  These entries
+that contains at least six entries.  These entries
 must contain the following substitutions:
 
 .nf
@@ -2784,8 +2951,8 @@ must contain the following substitutions:
 .fi
 
 The order of these six entries within the path must be as given above.
-The order and use of substitutions within a given entry is implementation
-dependent.
+The order and use of substitutions within a given entry
+are implementation-dependent.
 If the path begins
 with a colon, it is preceded by %N%S.  If the path includes two
 adjacent colons, \fB%N%S\fP is inserted between them.
@@ -2829,7 +2996,7 @@ The customization string is obtained by querying the resource database
 currently associated with the display (the database returned by
 .PN XrmGetDatabase )
 for the resource \fIapplication_name\fP.customization, class
-\fIapplication_class\fP.Customization where \fIapplication_name\fP
+\fIapplication_class\fP.Customization, where \fIapplication_name\fP
 and \fIapplication_class\fP are the values returned by
 .PN XtGetApplicationNameAndClass .
 If no value is specified in the database, the empty string is used.
@@ -2845,17 +3012,19 @@ Hooks for External Agents
 .XE
 .LP
 Applications may register
-functions which are called at a particular control points in the \*(xI.
+functions that are called at a particular control points in the \*(xI.
 These functions are intended to be used to provide notification
-of an \*Q\*(tk event\*U, e.g. widget creation, to an external agent,
-e.g. an interactive resource editor, drag-and-drop server, or
+of an \*Q\*(tk event\*U, such as widget creation, to an external agent,
+such as an interactive resource editor, drag-and-drop server, or
 an aid for physically challenged users.
 The control points containing such registration hooks are identified
 in a \*Qhook registration\*U object.
 .LP
 To retrieve the hook registration widget, use
 .PN XtHooksOfDisplay .
+.LP
 .IN "XtHooksOfDisplay" "" "@DEF@"
+.sM
 .FD 0
 Widget XtHooksOfDisplay(\fIdisplay\fP)
 .br
@@ -2864,13 +3033,14 @@ Widget XtHooksOfDisplay(\fIdisplay\fP)
 .IP \fIdisplay\fP 1i
 Specifies the desired display.
 .LP
-The class of this object is a private, implementation-dependent,
+.eM
+The class of this object is a private, implementation-dependent
 subclass of
 .PN Object .
 The hook object has no parent.  The resources of this object are 
-the callback lists for hooks, and the read-only resources for getting 
+the callback lists for hooks and the read-only resources for getting 
 a list of parentless shells.  All of the callback lists are initially 
-empty.  When a display is closed the hook object associated with it 
+empty.  When a display is closed, the hook object associated with it 
 is destroyed. 
 .LP
 The following procedures can be called with the hook registration object
@@ -2925,7 +3095,7 @@ Hook Object Resources
 .XE
 .LP
 The resource names, classes, and representation types that are specified
-in the hook object resource list are
+in the hook object resource list are:
 .KS
 .TS
 lw(1.5i) lw(1.5i) lw(2.5i) .
@@ -2959,8 +3129,9 @@ and their corresponding varargs versions.
 The \fIcall_data\fP parameter in a createHook callback may be 
 cast to type
 .PN XtCreateHookData .
+.LP
 .IN "XtCreateHookData" "" "@DEF@"
-.sp
+.sM
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -2971,12 +3142,13 @@ typedef struct {
 	Cardinal num_args;
 } XtCreateHookDataRec, *XtCreateHookData;
 .De
+.eM
 .LP
 The \fItype\fP is set to
 .PN XtHcreate ,
-\fIwidget\fP is the newly created widget, \fIargs\fP and \fInum_args\fP
+\fIwidget\fP is the newly created widget, and \fIargs\fP and \fInum_args\fP
 are the arguments passed to the create function. The callbacks are 
-called before returning from the the create function.
+called before returning from the create function.
 .LP
 The XtNchangeHook callback list is called from:
 .IP
@@ -3018,8 +3190,9 @@ The \fIcall_data\fP parameter in a changeHook callback may
 be cast to type
 .PN XtChangeHookData .
 .IN "XtChangeHookData" "" "@DFEF@"
-.sp
+.LP
 .KS
+.sM
 .Ds 0
 .TA .5i 2.5i
 .ta .5i 2.5i
@@ -3030,6 +3203,7 @@ typedef struct {
 	Cardinal num_event_data;
 } XtChangeHookDataRec, *XtChangeHookData;
 .De
+.eM
 .KE
 .LP
 When the changeHook callbacks are called as a result of a call to
@@ -3042,8 +3216,9 @@ or
 \fIevent_data\fP may be cast to type 
 .PN XtChangeHookSetValuesData .
 .IN "XtChangeHookSetValuesData" "" "@DEF@"
-.sp
+.LP
 .KS
+.sM
 .Ds 0
 .TA .5i 2.5i
 .ta .5i 2.5i
@@ -3053,6 +3228,7 @@ typedef struct {
 	Cardinal num_args;
 } XtChangeHookSetValuesDataRec, *XtChangeHookSetValuesData;
 .De
+.eM
 .KE
 .LP
 The \fIold\fP, \fIreq\fP, \fIargs\fP, and \fInum_args\fP are the
@@ -3084,28 +3260,28 @@ The callbacks are called after the children have been unmanaged.
 The changeHook callbacks are called twice as a result of a call to
 .PN XtChangeManagedSet ,
 once after unmanaging and again after managing.
-When the callbacks are called the first time \fItype\fP is set to
+When the callbacks are called the first time, \fItype\fP is set to
 .PN XtHunmanageSet , 
 \fIwidget\fP is the parent, \fIevent_data\fP may be cast to type 
 WidgetList and is a list of the children being unmanaged, and 
 \fInum_event_data\fP is the length of the widget list.
-When the callbacks are called the second time the \fItype\fP is set to
+When the callbacks are called the second time, the \fItype\fP is set to
 .PN XtHmanageSet , 
 \fIwidget\fP is the parent, \fIevent_data\fP may be cast to type 
 WidgetList and is a list of the children being managed, and 
 \fInum_event_data\fP is the length of the widget list.
 .LP
 When the changeHook callbacks are called as a result of a call to
-.PN XtRealizeWidget 
-The \fItype\fP is set to
+.PN XtRealizeWidget ,
+the \fItype\fP is set to
 .PN XtHrealizeWidget 
 and \fIwidget\fP is the widget being realized.
 The callbacks are called after the widget has been realized.
 .LP
 When the changeHook callbacks are called as a result of a call to
-.PN XtUnrealizeWidget 
+.PN XtUnrealizeWidget ,
 the \fItype\fP is set to
-.PN XtHunrealizeWidget
+.PN XtHunrealizeWidget ,
 and \fIwidget\fP is the widget being unrealized.
 The callbacks are called after the widget has been unrealized.
 .LP
@@ -3119,7 +3295,7 @@ callback being added.
 The callbacks are called after the callback has been added to the widget.
 .LP
 When the changeHook callbacks are called as a result of a call to
-.PN XtAddCallbacks 
+.PN XtAddCallbacks ,
 the \fItype\fP is set to
 .PN XtHaddCallbacks ,
 \fIwidget\fP is the widget to which the callbacks are being added, and
@@ -3128,7 +3304,7 @@ callbacks being added.
 The callbacks are called after the callbacks have been added to the widget.
 .LP
 When the changeHook callbacks are called as a result of a call to
-.PN XtRemoveCallback 
+.PN XtRemoveCallback ,
 the \fItype\fP is set to
 .PN XtHremoveCallback ,
 \fIwidget\fP is the widget from which the callback is being removed, and
@@ -3146,7 +3322,7 @@ callbacks being removed.  The callbacks are called after the callbacks
 have been removed from the widget.
 .LP
 When the changeHook callbacks are called as a result of a call to
-.PN XtRemoveAllCallbacks 
+.PN XtRemoveAllCallbacks ,
 the \fItype\fP is set to
 .PN XtHremoveAllCallbacks
 and \fIwidget\fP is the widget from which the callbacks are being removed.
@@ -3154,7 +3330,7 @@ The callbacks are called after the callbacks have been removed from the
 widget.
 .LP
 When the changeHook callbacks are called as a result of a call to
-.PN XtAugmentTranslations
+.PN XtAugmentTranslations ,
 the \fItype\fP is set to
 .PN XtHaugmentTranslations
 and \fIwidget\fP is the widget whose translations are being modified.
@@ -3162,7 +3338,7 @@ The callbacks are called after the widget's translations have been
 modified.
 .LP
 When the changeHook callbacks are called as a result of a call to
-.PN XtOverrideTranslations
+.PN XtOverrideTranslations ,
 the \fItype\fP is set to
 .PN XtHoverrideTranslations
 and \fIwidget\fP is the widget whose translations are being modified.
@@ -3170,7 +3346,7 @@ The callbacks are called after the widget's translations have been
 modified.
 .LP
 When the changeHook callbacks are called as a result of a call to
-.PN XtUninstallTranslations
+.PN XtUninstallTranslations ,
 The \fItype\fP is
 .PN XtHuninstallTranslations
 and \fIwidget\fP is the widget whose translations are being uninstalled.
@@ -3178,7 +3354,7 @@ The callbacks are called after the widget's translations have been
 uninstalled.
 .LP
 When the changeHook callbacks are called as a result of a call to
-.PN XtSetKeyboardFocus
+.PN XtSetKeyboardFocus ,
 the \fItype\fP is set to
 .PN XtHsetKeyboardFocus
 and \fIevent_data\fP may be cast to type Widget and is the value of 
@@ -3195,8 +3371,8 @@ the list argument passed to \fBXtSetWMColormapWindows\fP, and
 called before returning from \fBXtSetWMColormapWindows\fP.
 .LP
 When the changeHook callbacks are called as a result of a call to
-.PN XtSetMappedWhenManaged
-\fItype\fP is set to
+.PN XtSetMappedWhenManaged ,
+the \fItype\fP is set to
 .PN XtHsetMappedWhenManaged
 and \fIevent_data\fP may be cast to type Boolean and is the value of 
 the mapped_when_managed argument passed to \fBXtSetMappedWhenManaged\fP. 
@@ -3204,22 +3380,22 @@ The callbacks are called after setting the widget's mapped_when_managed
 field and before realizing or unrealizing the widget.
 .LP
 When the changeHook callbacks are called as a result of a call to
-.PN XtMapWidget
-\fItype \fP is set to
+.PN XtMapWidget ,
+the \fItype \fP is set to
 .PN XtHmapWidget
 and \fIwidget\fP is the widget being mapped.
 The callbacks are called after mapping the widget.
 .LP
 When the changeHook callbacks are called as a result of a call to
-.PN XtUnmapWidget
-\fItype \fP is set to
+.PN XtUnmapWidget ,
+the \fItype \fP is set to
 .PN XtHunmapWidget
 and \fIwidget\fP is the widget being unmapped.
 The callbacks are called after unmapping the widget.
 .LP
 When the changeHook callbacks are called as a result of a call to
 .PN XtPopup ,
-\fItype\fP is set to
+the \fItype\fP is set to
 .PN XtHpopup ,
 \fIwidget\fP is the widget being popped up, and \fIevent_data\fP may 
 be cast to type XtGrabKind and is the value of the grab_kind argument 
@@ -3228,7 +3404,7 @@ The callbacks are called before returning from \fBXtPopup\fP.
 .LP
 When the changeHook callbacks are called as a result of a call to
 .PN XtPopupSpringLoaded ,
-\fItype\fP is set to
+the \fItype\fP is set to
 .PN XtHpopupSpringLoaded
 and \fIwidget\fP is the widget being popped up.
 The callbacks are called 
@@ -3236,31 +3412,34 @@ before returning from \fBXtPopupSpringLoaded\fP.
 .LP
 When the changeHook callbacks are called as a result of a call to
 .PN XtPopdown ,
-\fItype\fP is set to
+the \fItype\fP is set to
 .PN XtHpopdown
 and \fIwidget\fP is the widget being popped down.
 The callbacks are called 
 before returning from \fBXtPopdown\fP.
 .LP
-A widget set which exports interfaces which change application state
+A widget set that exports interfaces that change application state
 without employing the \*(xI library should invoke the change hook
 itself.  This is done by:
 .sp
-.Ds 0
+.Ds
 .TA .5i 2i
 .ta .5i 2i
-XtCallCallbacks(XtHooksOfDisplay(dpy), XtNchangeHook, call_data);
+        XtCallCallbacks(XtHooksOfDisplay(dpy), XtNchangeHook, call_data);
 .De
 .sp
 .LP
 The XtNconfigureHook callback list is called any time the \*(xI
-move, resize, or configure a widget, and when
+move, resize, or configure a widget and when
 .PN XtResizeWindow
 is called.
 .LP
 The \fIcall_data\fP parameter may be cast to type
 .PN XtConfigureHookData.
+.LP
 .IN "XtConfigureHookData" "" "@DEF@"
+.KS
+.sM
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -3271,11 +3450,13 @@ typedef struct {
 	XWindowChanges changes;	
 } XtConfigureHookDataRec, *XtConfigureHookData;
 .De
+.eM
+.KE
 .sp
 .LP
-When the configureHook callbacks are called the \fItype\fP is
+When the configureHook callbacks are called, the \fItype\fP is
 .PN XtHconfigure ,
-\fIwidget\fP is the widget being configured, \fIchangeMask\fP and 
+\fIwidget\fP is the widget being configured, and \fIchangeMask\fP and 
 \fIchanges\fP reflect the changes made to the widget. The callbacks 
 are called after changes have been made to the widget.
 .LP
@@ -3287,8 +3468,10 @@ once before and once after geometry negotiation occurs.
 .LP
 The \fIcall_data\fP parameter may be cast to type
 .PN XtGeometryHookData .
+.LP
 .IN "XtGeometryHookData" "" "@DFEF@"
 .LP
+.sM
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -3300,15 +3483,16 @@ typedef struct {
 	XtGeometryResult result;
 } XtGeometryHookDataRec, *XtGeometryHookData;
 .De
+.eM
 .sp
 .LP
 When the geometryHook callbacks are called prior to geometry negotiation, 
-\fItype\fP is
+the \fItype\fP is
 .PN XtHpreGeometry ,
 \fIwidget\fP is the widget for which the request is being made, and
 \fIrequest\fP is the requested geometry.
 When the geometryHook callbacks 
-are called after geometry negotiation, \fItype\fP is
+are called after geometry negotiation, the \fItype\fP is
 .PN XtHpostGeometry ,
 \fIwidget\fP is the widget for which the request was made, \fIrequest\fP
 is the requested geometry, \fIreply\fP is the resulting geometry granted, 
@@ -3317,8 +3501,10 @@ and \fIresult\fP is the value returned from the geometry negotiation.
 The XtNdestroyHook callback list is called when a widget is destroyed.
 The \fIcall_data parameter\fP may be cast to type
 .PN XtDestroyHookData .
+.LP
 .IN "XtDestroyHookData" "" "@DFEF@"
 .sp
+.sM
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -3327,16 +3513,17 @@ typedef struct {
 	Widget widget;
 } XtDestroyHookDataRec, *XtDestroyHookData;
 .De
+.eM
 .sp
 .LP
 When the destroyHook callbacks are called as a result of a call to
 .PN XtDestroyWidget ,
-\fItype\fP is
+the \fItype\fP is
 .PN XtHdestroy
 and \fIwidget\fP is the widget being destroyed. The callbacks are
 called upon completion of phase one destroy for a widget.
 .LP
-The XtNshells and XtnumShells are read-only resources which report a
+The XtNshells and XtnumShells are read-only resources that report a
 list of all parentless shell widgets associated with a display.
 .LP
 Clients who use these hooks must exercise caution in calling \*(xI
@@ -3351,8 +3538,9 @@ Querying Open Displays
 To retrieve a list of the Displays associated with an application context,
 use
 .PN XtGetDisplays .
-.IN "XtGetDisplays" "" "@DEF@"
 .LP
+.IN "XtGetDisplays" "" "@DEF@"
+.sM
 .FD 0
 void XtGetDisplays(\fIapp_context\fP, \fIdpy_return\fP, \fInum_dpy_return\fP)
 .br
@@ -3370,6 +3558,7 @@ context.
 .IP \fInum_dpy_return\fP 1.5i
 Returns the count of open Display connections in \fIdpy_return\fP.
 .LP
+.eM
 \fBXtGetDisplays\fP may be used by an external agent to query the
 list of open displays that belong to an application context. To free 
 the list of displays, use

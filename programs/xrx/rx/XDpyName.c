@@ -1,4 +1,3 @@
-/* $Xorg: XDpyName.c,v 1.5 2001/02/09 02:05:58 xorgcvs Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization from
 The Open Group.
 
 */
-/* $XFree86: xc/programs/xrx/rx/XDpyName.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/xrx/rx/XDpyName.c,v 1.8 2004/04/03 22:38:56 tsi Exp $ */
 
 #ifdef XP_UNIX
 #include "RxPlugin.h"		/* for PluginGlobal */

@@ -1,4 +1,3 @@
-/* $Xorg: spfile.c,v 1.4 2001/02/09 02:04:00 xorgcvs Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation
@@ -49,7 +48,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/Speedo/spfile.c,v 1.13 2001/08/13 21:46:47 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/spfile.c,v 1.14 2001/12/14 19:56:41 dawes Exp $ */
 
 #include "fntfilst.h"
 #include "fontenc.h"

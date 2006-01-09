@@ -1,5 +1,3 @@
-/* $XConsortium: xedit.c,v 1.28 94/03/26 17:06:28 rws Exp $ */
- 
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -24,7 +22,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/xedit.c,v 1.17 2002/09/22 07:09:05 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.c,v 1.18 2002/11/10 23:21:57 paulo Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include "xedit.h"

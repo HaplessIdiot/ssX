@@ -35,8 +35,6 @@
 /*
  * backend.h
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 #ifndef __glubackend_h_

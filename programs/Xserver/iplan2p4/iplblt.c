@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/iplan2p4/iplblt.c,v 3.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplblt.c,v 3.1 2005/10/14 15:17:18 tsi Exp $ */
 /*
  * ipl copy area
  */
@@ -31,7 +31,6 @@ in this Software without prior written authorization from the X Consortium.
 Author: Keith Packard
 
 */
-/* $XConsortium: iplblt.c,v 1.13 94/04/17 20:28:44 dpw Exp $ */
 
 /* Modified nov 94 by Martin Schaller (Martin_Schaller@maus.r.de) for use with
 interleaved planes */

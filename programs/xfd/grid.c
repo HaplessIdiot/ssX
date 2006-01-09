@@ -1,6 +1,4 @@
 /*
- * $Xorg: grid.c,v 1.4 2001/02/09 02:05:41 xorgcvs Exp $
- *
  * 
 Copyright 1989, 1998  The Open Group
 
@@ -26,7 +24,7 @@ in this Software without prior written authorization from The Open Group.
  * *
  * Author:  Jim Fulton, MIT X Consortium
  */
-/* $XFree86: xc/programs/xfd/grid.c,v 1.10 2003/12/19 02:05:39 dawes Exp $ */
+/* $XFree86: xc/programs/xfd/grid.c,v 1.11 2004/10/23 15:29:33 dawes Exp $ */
 
 
 #include <X11/IntrinsicP.h>

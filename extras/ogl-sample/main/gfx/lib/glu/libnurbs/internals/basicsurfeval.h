@@ -35,8 +35,6 @@
 /*
  * basicsurfeval.h
  *
- * $Date$ $Revision$
- * $Header$
  */
 
 #ifndef __glubasicsurfeval_h_

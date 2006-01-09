@@ -1,3 +1,4 @@
+.\" $XFree86$
 .LP
 .NH 2
 Ascii Sink Object and Multi Sink Object
@@ -19,7 +20,7 @@ Class		asciiSinkObjectClass
 Class Name	AsciiSink
 .IN "AsciiSink object" "class name"
 Superclass	TextSink
-.sp 1
+.De
 .LP
 The AsciiSink or MultiSink object is used by a text widget to render the text.
 Depending on its \fBinternational\fP resource, a
@@ -33,7 +34,6 @@ and Carriage Return.  The name has been left as ``AsciiSink'' for compatibility.
 handling Tab and Carriage
 Return.\fP    The source object also reports the text window metrics to the
 text widgets.
-.De
 .NH 3
 Resources
 .LP
@@ -41,10 +41,6 @@ When creating an AsciiSink object instance, the following resources are
 retrieved from the argument list or from the resource database:
 .LP
 .IN "AsciiSink object" "resources"
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
 lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
@@ -66,10 +62,6 @@ foreground	Foreground	Pixel		XtDefaultForeground
 .sp 3p
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 .Bg Bold
 This resource is retrieved by the AsciiSink instead of being copied
 from the Text widget.

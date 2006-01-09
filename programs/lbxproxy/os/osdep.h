@@ -1,4 +1,3 @@
-/* $Xorg: osdep.h,v 1.4 2001/02/09 02:05:33 xorgcvs Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/lbxproxy/os/osdep.h,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/os/osdep.h,v 1.13 2004/04/26 00:23:37 tsi Exp $ */
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096

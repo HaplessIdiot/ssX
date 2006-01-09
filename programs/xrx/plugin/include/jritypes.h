@@ -1,4 +1,4 @@
-/* $XConsortium: jritypes.h /main/2 1996/11/13 09:27:14 kaleb $ */
+/* $XFree86$ */
 /* -*- Mode: C; tab-width: 4; -*- */
 /*******************************************************************************
  * Java Runtime Interface

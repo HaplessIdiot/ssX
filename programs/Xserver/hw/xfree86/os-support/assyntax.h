@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/assyntax.h,v 3.15 2004/04/23 20:44:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/assyntax.h,v 3.16 2005/02/01 03:53:49 dawes Exp $ */
 #ifndef __ASSYNTAX_H__
 #define __ASSYNTAX_H__
 
@@ -69,8 +69,6 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-/* $XConsortium: assyntax.h /main/5 1996/02/21 17:50:49 kaleb $ */
 
 /*
  * assyntax.h

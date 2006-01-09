@@ -1,4 +1,3 @@
-/* $Xorg: xhost.c,v 1.4 2001/02/09 02:05:46 xorgcvs Exp $ */
 /*
 
 Copyright 1985, 1986, 1987, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xhost/xhost.c,v 3.27 2003/07/29 07:23:27 herrb Exp $ */
+/* $XFree86: xc/programs/xhost/xhost.c,v 3.28 2004/05/06 21:10:58 herrb Exp $ */
 
 #if defined(TCPCONN) || defined(STREAMSCONN)
 #define NEEDSOCKETS

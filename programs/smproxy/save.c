@@ -1,4 +1,3 @@
-/* $Xorg: save.c,v 1.4 2001/02/09 02:05:35 xorgcvs Exp $ */
 /******************************************************************************
 
 Copyright 1994, 1998  The Open Group
@@ -25,7 +24,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author:  Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/programs/smproxy/save.c,v 1.7 2001/01/17 23:45:04 dawes Exp $ */
+/* $XFree86: xc/programs/smproxy/save.c,v 1.8 2001/12/14 20:01:05 dawes Exp $ */
 
 #include "smproxy.h"
 #ifdef HAS_MKSTEMP

@@ -1,4 +1,3 @@
-/* $Xorg: regions.c,v 1.3 2000/08/17 19:46:31 cpqbld Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -26,7 +25,7 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/regions.c,v 3.8tsi Exp $ */
+/* $XFree86: xc/lib/font/Type1/regions.c,v 3.9 2003/05/27 22:26:46 tsi Exp $ */
  /* REGIONS  CWEB         V0023 LOTS                                 */
 /*
 :h1 id=regions.REGIONS Module - Regions Operator Handler

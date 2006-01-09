@@ -1,4 +1,4 @@
-/* $XConsortium: tokens.h /main/2 1995/12/07 21:28:01 kaleb $ */
+/* $XFree86$ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 

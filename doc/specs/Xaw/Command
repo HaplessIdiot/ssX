@@ -1,4 +1,4 @@
-.\" $XConsortium: Command,v 1.22 94/04/14 18:16:52 kaleb Exp $
+.\" $XFree86$
 .NH 2
 Command Widget
 .XS
@@ -41,10 +41,6 @@ When creating a Command widget instance, the following resources are
 retrieved from the argument list or from the resource database:
 .LP
 .IN "Command widget" "resources"
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
 expand;
 lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
@@ -98,10 +94,6 @@ y	Position	Position		0
 .sp 3p
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 \" Resource Descriptions
 .Ac
 .As
@@ -152,7 +144,6 @@ Processing application callbacks with \fBnotify\fP
 .IP \(bu 5
 Switching the internal border between highlighted
 and unhighlighted states with \fBhighlight\fP and \fBunhighlight\fP
-.LE
 .LP
 .IN "Command widget" "translation bindings"
 The following are the default translation bindings used by the

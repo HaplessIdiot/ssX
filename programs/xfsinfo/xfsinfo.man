@@ -1,4 +1,3 @@
-.\" $TOG: fsinfo.man /main/10 1998/02/09 13:43:12 kaleb $
 .\" Copyright 1991, Network Computing Devices, Inc
 .\" Copyright 1993, 1998  The Open Group
 .\" 
@@ -24,7 +23,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86: xc/programs/xfsinfo/xfsinfo.man,v 1.5 2001/12/14 20:01:42 dawes Exp $
+.\" $XFree86: xc/programs/xfsinfo/xfsinfo.man,v 1.6 2005/02/11 03:03:19 dawes Exp $
 .\"
 .TH XFSINFO 1 __vendorversion__
 .SH NAME

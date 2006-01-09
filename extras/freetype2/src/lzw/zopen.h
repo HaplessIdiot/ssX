@@ -1,5 +1,3 @@
-/*	$NetBSD: zopen.c,v 1.8 2003/08/07 11:13:29 agc Exp $	*/
-
 /*-
  * Copyright (c) 1985, 1986, 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -41,14 +39,6 @@
  * Modified to work with FreeType's PCF driver.
  *
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)zopen.c	8.1 (Berkeley) 6/27/93";
-#else
-static char rcsid[] = "$NetBSD: zopen.c,v 1.8 2003/08/07 11:13:29 agc Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
 

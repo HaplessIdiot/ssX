@@ -1,5 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.46 2004/06/29 10:17:46 twini Exp $ */
-/* $XdotOrg$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.47 2004/12/10 16:07:02 alanh Exp $ */
 /*
  * DRI wrapper for 300 and 315 series
  *

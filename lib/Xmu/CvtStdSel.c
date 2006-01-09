@@ -1,5 +1,3 @@
-/* $Xorg: CvtStdSel.c,v 1.4 2001/02/09 02:03:52 xorgcvs Exp $ */
-
 /*
  
 Copyright 1988, 1998  The Open Group
@@ -25,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.19 2001/11/21 16:22:59 tsi Exp $ */
+/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.20 2001/12/14 19:55:39 dawes Exp $ */
 
 /*
  * This file contains routines to handle common selection targets.

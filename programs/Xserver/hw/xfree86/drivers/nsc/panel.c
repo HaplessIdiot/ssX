@@ -1,9 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/panel.c,v 1.2 2002/12/11 22:51:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/panel.c,v 1.3 2003/01/14 09:34:32 alanh Exp $ */
 /*
- * $Workfile: panel.c $
- * $Revision$
- * $Author$
- *
  * File Contents: This file contailns the panel include files and 
  *                external pointer to the hardware.
  *

@@ -1,4 +1,3 @@
-/* $Xorg: swaprep.c,v 1.4 2001/02/09 02:05:32 xorgcvs Exp $ */
 /*
 
 Copyright 1998  The Open Group
@@ -47,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/lbxproxy/di/swaprep.c,v 1.6 2004/04/03 22:38:54 tsi Exp $ */
 
 #include	<stdio.h>
 #include	"misc.h"

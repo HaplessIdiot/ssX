@@ -1,7 +1,7 @@
 
                            Mesa 6.1 release notes
 
-                             Month day, 2004
+                              August 18, 2004
 
                               PLEASE READ!!!!
 
@@ -18,7 +18,38 @@ Even numbered versions (such as 6.0) designate stable releases.
 New Features
 ------------
 
-TBD
+Half-precision floating point (GLhalf) pixel formats are supported
+in Mesa, but the feature isn't exposed yet since the ARB extension
+hasn't been finalized yet.
+
+
+Texture image handling
+----------------------
+
+The code which implements image conversion, pixel transfer ops, etc
+for glTexImage commands has been rewritten.
+
+Now the gl_texture_format struct has a new StoreImage function
+pointer.  Each texture format must implement this function.  The
+function is totally responsible for converting the user's texture
+image into the specific format.  A few helper functions makes this
+relatively simple.
+
+Overall, the code is much simpler, cleaner and easier to work with
+now.  Adding new texture formats is straight-forward and there's no
+longer any distinction between "hardware" and "software" formats.
+
+Finally, the code for compressed texture images has been reorganized
+as well.
+
+Removed files:
+  texutil.c
+  texutil.h
+  texutil_tmp.h
+
+New files:
+  texcompress_s3tc.c
+  texcompress_fxt1.c
 
 
 
@@ -41,7 +72,6 @@ be initialized in _mesa_init_driver_functions() rather than in _all_ the
 drivers.
 
 
-
 Device Drivers
 --------------
 
@@ -60,7 +90,7 @@ Driver			Status
 ----------------------	---------------------
 XMesa (Xlib)		implements OpenGL 1.5
 OSMesa (off-screen)	implements OpenGL 1.5
-FX (3dfx Voodoo1/2)	implements OpenGL 1.3
+Glide (3dfx Voodoo1/2)	implements OpenGL 1.3
 SVGA			implements OpenGL 1.3
 Wind River UGL		implements OpenGL 1.3
 Windows/Win32		implements OpenGL 1.5
@@ -79,4 +109,3 @@ See the VERSIONS file for more details about bug fixes, etc. in Mesa 6.1.
 
 
 ----------------------------------------------------------------------
-$Id$

@@ -36,8 +36,6 @@
 #  Declare the language and type map to use and initialize any special tables
 #  required for processing.
 #
-#   $Date$ $Revision$
-#   $Header$
 
 function initialize() {
 

@@ -1,4 +1,4 @@
-// $XConsortium: mod_compat /main/1 1995/11/30 19:16:27 kaleb $
+// $XFree86$
 xkb_compatibility "torture" 
 
 virtual_modifiers NumLock,AltGr;

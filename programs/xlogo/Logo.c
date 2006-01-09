@@ -1,4 +1,3 @@
-/* $Xorg: Logo.c,v 1.4 2001/02/09 02:05:54 xorgcvs Exp $ */
 /*
 
 Copyright 1988, 1994, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xlogo/Logo.c,v 1.7 2003/12/19 02:05:40 dawes Exp $ */
+/* $XFree86: xc/programs/xlogo/Logo.c,v 1.8 2004/10/23 15:29:33 dawes Exp $ */
 
 #include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>

@@ -48,12 +48,10 @@ in this Software without prior written authorization from The Open Group.
 /**    TORTIOUS ACTION, ARISING OUT OF OR IN  CONNECTION  WITH  THE  USE    **/
 /**    OR PERFORMANCE OF THIS SOFTWARE.                                     **/
 /*****************************************************************************/
-/* $XFree86: xc/programs/twm/add_window.h,v 1.5 2001/08/27 21:11:39 dawes Exp $ */
+/* $XFree86: xc/programs/twm/add_window.h,v 1.6 2001/12/14 20:01:06 dawes Exp $ */
 
 
 /**********************************************************************
- *
- * $Xorg: add_window.h,v 1.4 2001/02/09 02:05:36 xorgcvs Exp $
  *
  * AddWindow include file
  *

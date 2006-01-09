@@ -1,4 +1,4 @@
-.\" $XConsortium: appA,v 1.6 94/04/18 18:49:01 rws Exp $
+.\" $XFree86$
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -49,7 +49,7 @@
 .sp 2
 .LP
 .XS
-\fBAppendix A \- Resource File Format\fP
+\fBAppendix A \(em Resource File Format\fP
 .XE
 A resource file contains text representing the default resource values for an
 application or set of applications.

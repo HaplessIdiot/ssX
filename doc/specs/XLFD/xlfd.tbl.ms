@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t	-*- Nroff -*-
-.\" $XConsortium: xlfd.tbl.ms,v 1.42 94/04/18 14:02:59 gildea Exp $
+.\" $XFree86$
 .nr sM 4		\" section on Matrix Transformations
 .nr sS 5		\" section on Scalable fonts
 .nr sP 6		\" section on Polymorphic font support
@@ -19,7 +19,7 @@
 
 \fBX Consortium Standard\fP
 
-\fBX Version 11, Release 6\fP
+\fBX Version 11, Release 6.4\fP
 .sp 6
 \s+1Jim Flowers\s-1
 .sp 6p
@@ -88,8 +88,8 @@ This documentation is provided as is without express or implied warranty.
 .ps 11
 .nr PS 11
 .bp 1
-.EH '\fBX Logical Font Description Conventions\fP''\fBX11, Release 6\fP'
-.OH '\fBX11, Release 6\fP''\fBX Logical Font Description Conventions\fP'
+.EH '\fBX Logical Font Description Conventions\fP''\fBX11, Release 6.4\fP'
+.OH '\fBX Logical Font Description Conventions\fP''\fBX11, Release 6.4\fP'
 .EF ''\fB\\\\n(PN\fP''
 .OF ''\fB\\\\n(PN\fP''
 .NH 1 
@@ -108,7 +108,7 @@ nor provide adequate font properties for logically describing typographic fonts.
 .LP
 X clients must be able to dynamically determine the fonts available 
 on any given server so that understandable information can be presented 
-to the user or that intelligent font fallbacks can be chosen.
+to the user or so that intelligent font fallbacks can be chosen.
 It is desirable for the most common queries to be accomplished 
 without the overhead of opening each font and inspecting font properties, 
 by means of simple 
@@ -145,7 +145,7 @@ Requirements and Goals
 \*(SN Requirements and Goals
 .XE
 .LP 
-The XLFD meets the short and long-term goals to have a 
+The XLFD meets the short-term and long-term goals to have a 
 standard logical font description that:
 .IP \(bu 5
 Provides unique, descriptive font names that support simple pattern
@@ -217,7 +217,7 @@ Support Transformations and Subsetting of Fonts
 Arbitrary two-dimensional linear transformations of fonts should be
 able to be requested by applications.  Since such transformed fonts
 may be used for special effects requiring a few characters from each
-of many differently-transformed fonts, it should be possible to
+of many differently transformed fonts, it should be possible to
 request only a few characters from a font for efficiency.
 .NH 2
 Be Independent of X Server and Operating or File System Implementations
@@ -242,7 +242,7 @@ Support Arbitrarily Complex Font Matching and Substitution
 .LP
 In addition to the font name, 
 the XLFD should define a standard list of descriptive font properties,
-with agreed upon fallbacks for all fonts.
+with agreed-upon fallbacks for all fonts.
 This allows client applications to derive font-specific formatting 
 or display data and to perform font matching or substitution 
 when asked to handle potentially unknown fonts, as required.
@@ -529,7 +529,7 @@ that is, the nominal blackness of the font,
 according to the FOUNDRY's judgment.
 This name must be human-understandable and suitable for presentation to a 
 font user.
-The value \*Q0\*U is used to indicate a polymorphic font; see section \n(sP.
+The value \*Q0\*U is used to indicate a polymorphic font (see section \n(sP).
 .LP
 The interpretation of this field is somewhat problematic 
 because the typographic judgment of weight has traditionally 
@@ -595,7 +595,7 @@ SETWIDTH_NAME Field
 SETWIDTH_NAME is a string that gives the font's typographic 
 proportionate width, that is, the nominal width per horizontal unit of the 
 font, according to the FOUNDRY's judgment.
-The value \*Q0\*U is used to indicate a polymorphic font; see section \n(sP.
+The value \*Q0\*U is used to indicate a polymorphic font (see section \n(sP).
 .LP
 As with WEIGHT_NAME, the interpretation of this field or font property is 
 somewhat problematic, because the designer's judgment of setwidth has 
@@ -625,7 +625,7 @@ ADD_STYLE_NAME is a string that identifies additional typographic
 style information that is not captured by other fields but is needed 
 to identify the particular font.
 The character \*Q[\*U anywhere in the field is used to indicate a
-polymorphic font; see section \n(sP.
+polymorphic font (see section \n(sP).
 .LP
 ADD_STYLE_NAME is not a typeface classification field 
 and is only used for uniqueness.
@@ -650,13 +650,13 @@ PIXEL_SIZE
 gives the body size of the font at a particular 
 POINT_SIZE and RESOLUTION_Y.
 PIXEL_SIZE is either an integer-string or a string beginning
-with \*Q[\*U.  A string beginning with \*Q[\*U represents a matrix;
-see section \n(sM.
+with \*Q[\*U.  A string beginning with \*Q[\*U represents a matrix
+(see section \n(sM).
 PIXEL_SIZE usually incorporates additional vertical spacing 
 that is considered part of the font design.
 (Note, however, that this value is not necessarily equivalent to the height 
 of the font bounding box.)
-Zero is used to indicate a scalable font; see section \n(sS.
+Zero is used to indicate a scalable font (see section \n(sS).
 .LP
 PIXEL_SIZE usually is used by X client applications that need to 
 query fonts according to device-dependent size, 
@@ -671,15 +671,15 @@ POINT_SIZE Field
 POINT_SIZE gives the body size 
 for which the font was designed.
 POINT_SIZE is either an integer-string or a string beginning
-with \*Q[\*U.  A string beginning with \*Q[\*U represents a matrix;
-see section \n(sM.
+with \*Q[\*U.  A string beginning with \*Q[\*U represents a matrix
+(see section \n(sM).
 This field usually incorporates additional vertical spacing 
 that is considered part of the font design.
 (Note, however, that POINT_SIZE is not necessarily equivalent to the height 
 of the font bounding box.) 
 POINT_SIZE is expressed in decipoints (where points are as defined 
 in the X protocol or 72.27 points equal 1 inch).
-Zero is used to indicate a scalable font; see section \n(sS.
+Zero is used to indicate a scalable font (see section \n(sS).
 .LP
 POINT_SIZE and RESOLUTION_Y are used by X clients to query fonts 
 according to device-independent size to maintain constant text 
@@ -694,7 +694,7 @@ RESOLUTION_X and RESOLUTION_Y are unsigned integer-strings that give
 the horizontal and vertical resolution,
 measured in pixels or dots per inch (dpi),
 for which the font was designed.
-Zero is used to indicate a scalable font; see section \n(sS.
+Zero is used to indicate a scalable font (see section \n(sS).
 Horizontal and vertical values are required 
 because a separate bitmap font must be designed 
 for displays with very different aspect ratios
@@ -704,8 +704,8 @@ The separation of pixel or point size and resolution is necessary
 because X allows for servers with very different video characteristics 
 (for example, horizontal and vertical resolution, screen and pixel size, 
 pixel shape, and so on) to potentially access the same font library.
-The font name, for example, must differentiate between a 14 point font designed
-for 75 dpi (body size of about 14 pixels) or a 14 point font designed 
+The font name, for example, must differentiate between a 14-point font designed
+for 75 dpi (body size of about 14 pixels) or a 14-point font designed 
 for 150 dpi (body size of about 28 pixels).
 Further, in servers that implement some or all fonts as continuously scaled 
 and scan-converted outlines,
@@ -721,7 +721,7 @@ SPACING Field
 SPACING is a code-string that indicates the escapement class of the font, 
 that is, monospace (fixed pitch), proportional (variable pitch), 
 or charcell (a special monospaced font that conforms to the traditional 
-data processing character cell font model).
+data-processing character cell font model).
 The encoding is as follows:
 .ne 5
 .SM
@@ -750,15 +750,15 @@ T}
 A monospaced font that follows the standard typewriter character cell model
 (that is, the glyphs of the font can be modeled by X clients as \*Qboxes\*U 
 of the same width and height that are imaged side-by-side 
-to form text strings or top-to-bottom to form text lines.
+to form text strings or top-to-bottom to form text lines).
 By definition, 
 all glyphs have the same logical character width, 
 and no glyphs have \*Qink\*U outside of the character cell.
-There is no kerning (that is, on a per character basis with positive metrics: 
+There is no kerning (that is, on a per-character basis with positive metrics: 
 0 <= left-bearing <= right-bearing <= width; 
 with negative metrics: width <= left-bearing <= right-bearing <= zero).
 Also, the vertical extents of the font do not exceed the vertical spacing 
-(that is, on a per character basis: 
+(that is, on a per-character basis: 
 ascent <= font-ascent and descent <= font-descent).
 The cell height = font-descent + font-ascent, and the width = AVERAGE_WIDTH.
 T}
@@ -780,7 +780,7 @@ writing direction for the font is right-to-left.
 A leading \*Q\^~\^\*U (TILDE) indicates a negative value.
 For monospaced and character cell fonts, 
 this is the width of all glyphs in the font.
-Zero is used to indicate a scalable font; see section \n(sS.
+Zero is used to indicate a scalable font (see section \n(sS).
 .NH 4
 CHARSET_REGISTRY and CHARSET_ENCODING Fields
 .XS
@@ -922,7 +922,7 @@ _
 .sp 6p
 .TH
 .R
-\fB75 dpi Fonts\fP
+\fB75-dpi Fonts\fP
 .sp 3p
 T{
 Charter 12 pt
@@ -965,7 +965,7 @@ T}	T{
 T}
 .sp 3p
 .ne 2
-\fB100 dpi Fonts\fP
+\fB100-dpi Fonts\fP
 .sp 3p
 T{
 Symbol 10 pt
@@ -1171,7 +1171,7 @@ PIXEL_SIZE is as defined in the
 except that the property type is INT32.
 .LP
 X clients requiring pixel values for the various typographic fixed 
-spaces (em space, en space and thin space), can use the following 
+spaces (em space, en space, and thin space) can use the following 
 algorithm for computing these values from other properties specified 
 for a font:
 .LP
@@ -1772,7 +1772,7 @@ that gives the coded proportionate width of the font,
 relative to all known fonts of the same typeface family, 
 according to the type designer's or FOUNDRY's judgment.
 .LP
-RELATIVE_SETWIDTH ranges from 10 to 90, or is 0 if undefined or unknown.
+RELATIVE_SETWIDTH ranges from 10 to 90 or is 0 if undefined or unknown.
 The following reference values are defined:
 .TS H
 lw(.5i) lw(1i) lw(2.75i).
@@ -1831,7 +1831,7 @@ that gives the coded weight of the font,
 relative to all known fonts of the same typeface family, 
 according to the type designer's or FOUNDRY's judgment.
 .LP
-RELATIVE_WEIGHT ranges from 10 to 90, or is 0 if undefined or unknown.
+RELATIVE_WEIGHT ranges from 10 to 90 or is 0 if undefined or unknown.
 The following reference values are defined:
 .TS H
 lw(.5i) lw(1i) lw(3.75i).
@@ -2018,10 +2018,10 @@ _
 .R
 0	WYSIWYG	T{
 The font is optimized to match the typographic design and metrics of an 
-equivalent printer font
+equivalent printer font.
 T}
 1	Video text	T{
-The font is optimized for screen legibility and readability
+The font is optimized for screen legibility and readability.
 T}
 .sp 6p
 _
@@ -2033,14 +2033,14 @@ FONT_TYPE
 \*(SN FONT_TYPE
 .XE
 .LP
-FONT_TYPE is a human-understandable string (of type ATOM) which
+FONT_TYPE is a human-understandable string (of type ATOM) that
 describes the format of
-the font data as it is read from permanent storage by the current font source.
+the font data as they are read from permanent storage by the current font source.
 It is a static attribute of the source data.  It can be used
 by clients to select a type of bitmap or outline font
 without regard to the rasterizer used to render the font.
 .LP
-Predefined values are
+Predefined values are as follows:
 .TS H
 l lw(5i).
 _
@@ -2054,16 +2054,16 @@ _
 .R
 \*QBitmap\*U	T{
 Hand-tuned bitmap fonts.  Some
-attempt has been made to optimized
+attempt has been made to optimize
 the visual appearance of the font
 for the requested size and
 resolution.
 T}
 \*QPrebuilt\*U	T{
-All bitmap format fonts which
+All bitmap format fonts that
 cannot be described as \*QBitmap\*U,
 that is, hand-tuned.  For example,
-a bitmap format font which was
+a bitmap format font that was
 generated mechanically using a
 scalable font rasterizer
 would be considered \*QPrebuilt\*U, not \*QBitmap\*U.
@@ -2084,7 +2084,7 @@ FONT_VERSION
 .XE
 .LP
 FONT_VERSION is a human-understandable string (of type ATOM)
-which describes the formal or informal version of the font.
+that describes the formal or informal version of the font.
 \fBNone\fP is a valid value.
 .NH 3
 RASTERIZER_NAME
@@ -2093,7 +2093,7 @@ RASTERIZER_NAME
 .XE
 .LP
 RASTERIZER_NAME is a human-understandable string (of type ATOM)
-which is the specific name of the
+that is the specific name of the
 rasterizer that has performed some rasterization operation
 (such as scaling from outlines) on this font.
 .LP
@@ -2134,7 +2134,7 @@ RASTERIZER_VERSION
 .XE
 .LP
 RASTERIZER_VERSION is a human-understandable string (of type
-ATOM) which represents the formal or informal version of a
+ATOM) that represents the formal or informal version of a
 font rasterizer.
 The RASTERIZER_VERSION should match the corresponding
 product version number known to users, when applicable.
@@ -2145,8 +2145,8 @@ RAW_ASCENT
 .XE
 .LP
 For a font with a transformation matrix, RAW_ASCENT is the font ascent
-in 1000 pixel metrics.
-See section \n(sM.1.
+in 1000 pixel metrics
+(see section \n(sM.1).
 .NH 3
 RAW_DESCENT
 .XS
@@ -2154,8 +2154,8 @@ RAW_DESCENT
 .XE
 .LP
 For a font with a transformation matrix, RAW_DESCENT is the font
-descent in 1000 pixel metrics.
-See section \n(sM.1.
+descent in 1000 pixel metrics
+(see section \n(sM.1).
 .NH 3
 RAW_*
 .XS
@@ -2166,7 +2166,7 @@ For a font with a transformation matrix,
 all font properties that represent horizontal or vertical sizes or
 displacements will be accompanied by a new property, named as the
 original except prefixed with \*QRAW_\*U, that is computed as
-described in section \n(sM.1, Metrics and Font Properties.
+described in section \n(sM.1.
 .NH 3
 AXIS_NAMES
 .XS
@@ -2175,8 +2175,8 @@ AXIS_NAMES
 .LP
 AXIS_NAMES is a list of all the
 names of the axes for a polymorphic font, separated by a null (0) byte.
-These names are suitable for presentation in a user interface.
-See section \n(sP, Polymorphic Fonts.
+These names are suitable for presentation in a user interface
+(see section \n(sP).
 .NH 3
 AXIS_LIMITS
 .XS
@@ -2185,8 +2185,8 @@ AXIS_LIMITS
 .LP
 AXIS_LIMITS is a list of integers, two for each axis,
 giving the minimum and maximum allowable values for that axis of a
-polymorphic font.
-See section \n(sP, Polymorphic Fonts.
+polymorphic font
+(see section \n(sP).
 .NH 3
 AXIS_TYPES
 .XS
@@ -2194,8 +2194,8 @@ AXIS_TYPES
 .XE
 .LP
 AXIS_TYPES is like AXIS_NAMES,
-but can be registered as having specific semantics.
-See section \n(sP, Polymorphic Fonts.
+but can be registered as having specific semantics
+(see section \n(sP).
 .NH 2
 Built-in Font Property Atoms
 .XS
@@ -2259,7 +2259,7 @@ from the \*Q[\*U and \*Q]\*U characters.  Numbers use standard floating point
 syntax but use the character \*Q\^~\^\*U to represent a minus sign in the mantissa
 or exponent.
 .LP
-The BNF for a matrix transformation string is
+The BNF for a matrix transformation string is as follows:
 .SM
 .TS
 rw(1.5i) l.
@@ -2315,7 +2315,7 @@ where
 	Sy = RESOLUTION_Y / 72.27
 .LP
 If either the POINT_SIZE or PIXEL_SIZE field is unspecified (either \*Q0\*U or
-wildcarded) the preceding formulas can be used to compute one from the
+wildcarded), the preceding formulas can be used to compute one from the
 other.
 .\"
 .NH 2
@@ -2329,7 +2329,7 @@ metrics that would be obtained if the rasterizer took the base untransformed
 design used to generate the transformed font and scaled it linearly to a
 height of 1000 pixels, with no rotation component.  Note that there may be no
 way for the application to actually request this font since the rasterizer
-may use different outlines or rasterization techniques at that size than the
+may use different outlines or rasterization techniques at that size from the
 ones used to generate the transformed font.
 .LP
 Notes on properties and metrics:
@@ -2535,7 +2535,7 @@ other data in the field.
 It is recommended that the polymorphic values
 be at the end of the ADD_STYLE_NAME field.
 .LP
-The font matching algorithms for a font with polymorphic fields are
+The font-matching algorithms for a font with polymorphic fields are
 identical to the matching algorithms for a font with scalable fields.
 .LP
 There are three new font properties to describe the axes of variation,
@@ -2761,7 +2761,7 @@ that gives the recommended typographic ascent above the baseline
 for determining interline spacing.
 Specific glyphs of the font may extend beyond this.
 If the current position point for line \fIn\fP is at [X,Y], 
-then the origin of the next line \fIm = n+1\fP
+then the origin of the next line \fIm = n + 1\fP
 (allowing for a possible font change) is 
 [X, Y + FONT_DESCENTn + FONT_ASCENTm].
 .LP
@@ -2811,7 +2811,7 @@ The DEFAULT_CHAR is an unsigned integer value (of type CARD32)
 that specifies the index
 of the default character to be used by the X server when an attempt
 is made to display an undefined or nonexistent character in the font.
-(For a font using two-byte matrix format,
+(For a font using a 2-byte matrix format,
 the index bytes are encoded in the integer as byte1 * 65536 + byte2.)
 If the DEFAULT_CHAR itself specifies an undefined or nonexistent character 
 in the font, 

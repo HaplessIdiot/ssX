@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.32tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.33 2005/10/14 15:17:07 tsi Exp $ */
 /*
  * Copyright 1993-2003 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -72,8 +72,6 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-
-/* $XConsortium: posix_tty.c /main/7 1996/10/19 18:07:47 kaleb $ */
 
 #include <X11/X.h>
 #include "xf86.h"

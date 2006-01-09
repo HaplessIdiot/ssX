@@ -1,4 +1,3 @@
-/* $Xorg: xdmcp.c,v 1.4 2001/02/09 02:05:41 xorgcvs Exp $ */
 /*
 
 Copyright 1988, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.26tsi Exp $ */
+/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.27 2004/03/30 17:22:46 tsi Exp $ */
 
 /*
  * xdm - display manager daemon

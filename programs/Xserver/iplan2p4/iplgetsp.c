@@ -1,5 +1,4 @@
-/* $XFree86: xc/programs/Xserver/iplan2p4/iplgetsp.c,v 3.0tsi Exp $ */
-/* $XConsortium: iplgetsp.c,v 5.14 94/04/17 20:28:50 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplgetsp.c,v 3.1 2005/10/14 15:17:18 tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

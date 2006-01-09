@@ -1,5 +1,3 @@
-/* $Xorg: Keyboard.c,v 1.5 2001/02/09 02:03:55 xorgcvs Exp $ */
-
 /********************************************************
 
 Copyright 1988 by Hewlett-Packard Company
@@ -59,7 +57,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/Keyboard.c,v 3.5 2004/05/05 00:07:03 dickey Exp $ */
+/* $XFree86: xc/lib/Xt/Keyboard.c,v 3.6 2004/10/23 15:29:26 dawes Exp $ */
 
 #include "IntrinsicI.h"
 

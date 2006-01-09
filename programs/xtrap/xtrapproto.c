@@ -1,19 +1,14 @@
-/* $XFree86: xc/programs/xtrap/xtrapproto.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/xtrap/xtrapproto.c,v 1.4 2003/05/27 22:27:13 tsi Exp $ */
 /*
  * @DEC_COPYRIGHT@
  */
 /*
  * HISTORY
- * Log: xtrapproto.c,v $
  * Revision 1.1.2.2  1993/12/14  12:37:32  Kenneth_Miller
  * 	ANSI-standardize code and turn client build on
  * 	[1993/12/09  20:16:08  Kenneth_Miller]
  *
- * EndLog$
  */
-#if !defined(lint) && 0
-static char *rcsid = "@(#)RCSfile: xtrapproto.c,v $ Revision: 1.1.2.2 $ (DEC) Date: 1993/12/14 12:37:32 $";
-#endif
 /*****************************************************************************
 Copyright 1987, 1988, 1989, 1990, 1991, 1992, 1993 by Digital Equipment Corp., 
 Maynard, MA

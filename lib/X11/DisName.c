@@ -1,5 +1,3 @@
-/* $Xorg: DisName.c,v 1.4 2001/02/09 02:03:32 xorgcvs Exp $ */
-
 /*
 
 Copyright 1994, 1998  The Open Group
@@ -27,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/DisName.c,v 1.3 2003/04/13 19:22:15 dawes Exp $ */
 
 /* XDisplayName.c */
 /* 

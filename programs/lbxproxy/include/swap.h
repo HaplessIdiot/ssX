@@ -1,6 +1,4 @@
 /*
- * $Xorg: swap.h,v 1.3 2000/08/17 19:53:58 cpqbld Exp $
- *
  * Copyright 1994 Network Computing Devices, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and
@@ -22,7 +20,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/include/swap.h,v 1.2 2001/08/01 00:45:01 tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/include/swap.h,v 1.3 2003/11/17 22:20:49 dawes Exp $ */
 
 #ifndef _SWAP_H_
 #define _SWAP_H_

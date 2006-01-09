@@ -1,4 +1,4 @@
-! $TOG: pmconfig.cpp /main/6 1997/07/21 08:35:31 barstow $
+! $XFree86$
 ! proxy manager config file
 !
 ! Each line has the format:

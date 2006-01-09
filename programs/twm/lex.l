@@ -52,14 +52,12 @@ in this Software without prior written authorization from The Open Group.
 
 /***********************************************************************
  *
- * $Xorg: lex.l,v 1.4 2001/02/09 02:05:36 xorgcvs Exp $
- *
  * .twmrc lex file
  *
  * 12-Nov-87 Thomas E. LaStrange		File created
  *
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/lex.l,v 3.14 2001/12/14 20:01:08 dawes Exp $ */
+/* $XFree86: xc/programs/twm/lex.l,v 3.15 2005/03/25 02:22:59 dawes Exp $ */
 
 /* #include <stdio.h> */		/* lex already includes stdio.h */
 #include "twm.h"

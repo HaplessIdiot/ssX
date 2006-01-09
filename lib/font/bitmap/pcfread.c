@@ -1,4 +1,3 @@
-/* $Xorg: pcfread.c,v 1.5 2001/02/09 02:04:02 xorgcvs Exp $ */
 /*
 
 Copyright 1990, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.21 2003/11/17 22:20:22 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.22 2003/11/18 01:17:04 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium

@@ -1,4 +1,4 @@
-// $XConsortium: indicator3 /main/1 1995/11/30 19:16:24 kaleb $
+// $XFree86$
 xkb_compatibility "torture3" 
 
 indicator "Mouse Keys" {

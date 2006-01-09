@@ -1,7 +1,4 @@
-/* 
- * Id: newport.h,v 1.4 2000/11/29 20:58:10 agx Exp $
- */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport.h,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport.h,v 1.11 2005/08/28 17:48:01 tsi Exp $ */
 
 #ifndef __NEWPORT_H__
 #define __NEWPORT_H__

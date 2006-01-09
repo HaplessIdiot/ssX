@@ -27,9 +27,6 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/* $Id$ */
-
-
 #include "glheader.h"
 #include "imports.h"
 #include "context.h"

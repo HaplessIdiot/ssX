@@ -1,4 +1,3 @@
-/* $Xorg: Logo.h,v 1.4 2001/02/09 02:05:54 xorgcvs Exp $ */
 /*
 
 Copyright 1988, 1990, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xlogo/RenderLogo.h,v 1.2 2002/07/01 02:26:04 tsi Exp $ */
 
 #ifndef _RenderLogo_h
 #define _RenderLogo_h

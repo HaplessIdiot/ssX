@@ -1,5 +1,4 @@
 /* dri_dispatch.c
-   $Id$
 
    Copyright (c) 2002 Apple Computer, Inc. All rights reserved.
    Copyright (c) Torrey T. Lyons. All rights reserved.
@@ -28,7 +27,7 @@
    copyright holders shall not be used in advertising or otherwise to
    promote the sale, use or other dealings in this Software without
    prior written authorization. */
-/* $XFree86: xc/lib/GL/apple/dri_dispatch.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/lib/GL/apple/dri_dispatch.c,v 1.6 2005/10/14 15:15:55 tsi Exp $ */
 
 #include <OpenGL/OpenGL.h>
 #include <OpenGL/CGLContext.h>

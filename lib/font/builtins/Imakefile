@@ -1,7 +1,4 @@
-XCOMM $XFree86: xc/lib/font/builtins/Imakefile,v 1.4tsi Exp $
-XCOMM 
-XCOMM 
-XCOMM $XConsortium: Imakefile /main/14 1996/11/03 19:58:41 kaleb $
+XCOMM $XFree86: xc/lib/font/builtins/Imakefile,v 1.5 2005/10/14 15:16:05 tsi Exp $
 
 #include <Server.tmpl>
 
