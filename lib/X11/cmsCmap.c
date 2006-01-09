@@ -1,5 +1,3 @@
-/* $Xorg: cmsCmap.c,v 1.3 2000/08/17 19:45:09 cpqbld Exp $ */
-
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
@@ -33,7 +31,7 @@
  *
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/cmsCmap.c,v 3.2 2003/04/13 19:22:20 dawes Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES

@@ -1,5 +1,4 @@
-/* $XFree86$ */
-/*	$NetBSD: zopen.c,v 1.8 2003/08/07 11:13:29 agc Exp $	*/
+/* $XFree86: xc/extras/freetype2/src/lzw/zopen.c,v 1.2 2004/12/16 22:15:48 tsi Exp $ */
 
 /*-
  * Copyright (c) 1985, 1986, 1992, 1993
@@ -42,14 +41,6 @@
  * Modified to work with FreeType's PCF driver.
  *
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)zopen.c	8.1 (Berkeley) 6/27/93";
-#else
-static char rcsid[] = "$NetBSD: zopen.c,v 1.8 2003/08/07 11:13:29 agc Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
 
 /*-
  * fcompress.c - File compression ala IEEE Computer, June 1984.

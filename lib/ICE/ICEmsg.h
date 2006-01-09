@@ -1,4 +1,3 @@
-/* $Xorg: ICEmsg.h,v 1.4 2001/02/09 02:03:26 xorgcvs Exp $ */
 /******************************************************************************
 
 
@@ -26,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/ICEmsg.h,v 1.6tsi Exp $ */
+/* $XFree86: xc/lib/ICE/ICEmsg.h,v 1.7 2004/10/26 22:10:17 tsi Exp $ */
 
 #ifndef _ICEMSG_H_
 #define _ICEMSG_H_

@@ -2218,7 +2218,7 @@
   > # end of Pgf
   <ParaLine 
    <TextRectID 5>
-   <String `$XConsortium: lbxalg.mif /main/1 1996/12/19 15:24:03 ray $'>
+   <String `$XFree86$'>
   >
  > # end of Para
 > # end of TextFlow
@@ -2255,7 +2255,7 @@
    <PgfAlignment Center >
   > # end of Pgf
   <ParaLine 
-   <String `$XConsortium: lbxalg.mif /main/1 1996/12/19 15:24:03 ray $'>
+   <String `$XFree86$'>
   >
  > # end of Para
  <Para 
@@ -2275,7 +2275,7 @@
    <String `document describes the algorithms used in the Consortium implementation of LBX in the X11 '>
   >
   <ParaLine 
-   <String `Release 6.3. '>
+   <String `Release 6.4. '>
   >
  > # end of Para
  <Para 

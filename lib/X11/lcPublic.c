@@ -1,4 +1,3 @@
-/* $Xorg: lcPublic.c,v 1.4 2000/12/12 12:44:05 coskrey Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -23,7 +22,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/lcPublic.c,v 1.11 2001/11/16 00:52:28 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcPublic.c,v 1.12 2003/04/13 19:22:21 dawes Exp $ */
 
 #include <stdio.h>
 #include "Xlibint.h"

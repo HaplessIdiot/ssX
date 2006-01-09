@@ -31,13 +31,11 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 */
-/* $XFree86$ */
+/* $XFree86: xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/interface/glcurveval.cc,v 1.2 2001/01/21 21:19:07 tsi Exp $ */
 
 /*
  * glcurveval.c++
  *
- * $Date: 2001/01/21 21:19:07 $ $Revision: 1.2 $
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/interface/glcurveval.cc,v 1.2 2001/01/21 21:19:07 tsi Exp $
  */
 
 /* Polynomial Evaluator Interface */

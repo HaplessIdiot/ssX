@@ -1,5 +1,4 @@
 /*
- * $Xorg: xlogo.c,v 1.4 2001/02/09 02:05:54 xorgcvs Exp $
  *
 Copyright 1989, 1998  The Open Group
 
@@ -25,7 +24,7 @@ in this Software without prior written authorization from The Open Group.
  *
  */
 
-/* $XFree86: xc/programs/xlogo/xlogo.c,v 3.7 2001/07/25 15:05:26 dawes Exp $ */
+/* $XFree86: xc/programs/xlogo/xlogo.c,v 3.9 2002/05/23 23:53:59 keithp Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>

@@ -1,9 +1,15 @@
-XCOMM platform:  $XConsortium: pegasus.cf,v 1.36 94/02/10 12:16:24 rws Exp $
+XCOMM platform:  $XFree86$
 
+#ifndef OSName
 #define OSName             UTek 4.0
+#endif
 XCOMM operating system:  OSName
+#ifndef OSMajorVersion
 #define OSMajorVersion     4
+#endif
+#ifndef OSMinorVersion
 #define OSMinorVersion     0
+#endif
 
 #define HasNdbm		   YES
 #define HasVoidSignalReturn NO

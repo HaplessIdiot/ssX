@@ -35,8 +35,6 @@
 /*
  * mapdesc.c++
  *
- * $Date: 2001/01/15 21:48:31 $ $Revision: 1.1 $
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/mapdesc.cc,v 1.1 2001/01/15 21:48:31 dawes Exp $
  */
 
 #include <stdio.h>

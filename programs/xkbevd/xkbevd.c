@@ -1,4 +1,3 @@
-/* $Xorg: xkbevd.c,v 1.4 2000/08/17 19:54:49 cpqbld Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +23,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbevd/xkbevd.c,v 3.10tsi Exp $ */
+/* $XFree86: xc/programs/xkbevd/xkbevd.c,v 3.11 2004/12/17 16:38:03 tsi Exp $ */
 
 #define	DEBUG_VAR xkbevdDebug
 #include <X11/Xosdefs.h>

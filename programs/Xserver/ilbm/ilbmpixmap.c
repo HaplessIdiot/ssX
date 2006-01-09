@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/ilbm/ilbmpixmap.c,v 3.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmpixmap.c,v 3.2 2005/10/14 15:17:17 tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -46,7 +46,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: ilbmpixmap.c,v 5.13 94/04/17 20:28:28 dpw Exp $ */
 
 /* pixmap management
    written by drewry, september 1986

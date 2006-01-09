@@ -35,8 +35,6 @@
 /*
  * trimregion.h
  *
- * $Date: 2001/01/15 21:48:46 $ $Revision: 1.1 $
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/trimregion.h,v 1.1 2001/01/15 21:48:46 dawes Exp $
  */
 
 #ifndef __glutrimregion_h_

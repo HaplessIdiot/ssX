@@ -1,5 +1,3 @@
-/*	$NetBSD: descr.c,v 1.7 1999/10/13 17:48:04 drochner Exp $	*/
-
 /*
  * Copyright (c) 1999 Lennart Augustsson <augustss@netbsd.org>
  * All rights reserved.
@@ -25,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/libusb/descr.c,v 1.1.2.2 1999/12/03 10:12:42 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/libusb/descr.c,v 1.1 2000/02/11 18:06:50 dawes Exp $ */
 
 #include <sys/types.h>
 

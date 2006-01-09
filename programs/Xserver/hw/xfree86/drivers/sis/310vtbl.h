@@ -1,5 +1,4 @@
-/* $XFree86$ */
-/* $XdotOrg$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/310vtbl.h,v 1.27 2004/06/21 00:43:21 twini Exp $ */
 /*
  * Register settings for SiS 315/330 series
  *

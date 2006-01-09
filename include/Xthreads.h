@@ -1,6 +1,4 @@
 /*
- * $Xorg: Xthreads.h,v 1.5 2001/02/09 02:03:23 xorgcvs Exp $
- *
  * 
 Copyright 1993, 1998  The Open Group
 
@@ -25,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  * *
  */
-/* $XFree86: Xthreads.h,v 3.10 2001/12/14 19:53:26 dawes Exp $ */
+/* $XFree86: xc/include/Xthreads.h,v 3.11 2003/03/08 19:14:53 herrb Exp $ */
 
 #ifndef _XTHREADS_H_
 #define _XTHREADS_H_

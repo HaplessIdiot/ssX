@@ -1,4 +1,3 @@
-/* $Xorg: dpmsstr.h,v 1.3 2000/08/18 04:05:45 coskrey Exp $ */
 /*****************************************************************
 
 Copyright (c) 1996 Digital Equipment Corporation, Maynard, Massachusetts.
@@ -26,7 +25,7 @@ dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/dpmsstr.h,v 3.4 2003/07/16 01:38:24 dawes Exp $ */
 
 /*
  * HISTORY

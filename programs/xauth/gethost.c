@@ -1,5 +1,4 @@
 /*
- * $Xorg: gethost.c,v 1.5 2001/02/09 02:05:38 xorgcvs Exp $
  * 
 Copyright 1989, 1998  The Open Group
 
@@ -26,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xauth/gethost.c,v 3.22 2004/04/03 22:26:25 dawes Exp $ */
+/* $XFree86: xc/programs/xauth/gethost.c,v 3.23 2005/03/23 03:11:28 dawes Exp $ */
 
 /* sorry, streams support does not really work yet */
 #if defined(STREAMSCONN) && defined(SVR4)

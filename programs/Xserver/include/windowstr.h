@@ -1,4 +1,3 @@
-/* $Xorg: windowstr.h,v 1.4 2001/02/09 02:05:16 xorgcvs Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/windowstr.h,v 1.6 2001/12/14 19:59:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/windowstr.h,v 1.7 2003/04/27 21:31:05 herrb Exp $ */
 
 #ifndef WINDOWSTRUCT_H
 #define WINDOWSTRUCT_H

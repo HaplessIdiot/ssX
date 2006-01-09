@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: nec.cf,v 1.2 94/04/11 21:18:22 rws Exp $
+XCOMM platform:  $XFree86$
 
 #ifdef nec_ews_svr2
 # define NecCISCArchitecture
@@ -21,9 +21,15 @@ XCOMM platform:  $XConsortium: nec.cf,v 1.2 94/04/11 21:18:22 rws Exp $
 #endif /* !defined(nec_ews_svr2) */
 
 #ifdef NecCISCArchitecture
+#ifndef OSName
 #define OSName            	EWS-UX/V
+#endif
+#ifndef OSMajorVersion
 #define OSMajorVersion    	10
+#endif
+#ifndef OSMinorVersion
 #define OSMinorVersion    	1
+#endif
 #define HasSharedLibraries	NO
 #define HasVoidSignalReturn	NO
 #define HasSockets		YES
@@ -36,13 +42,25 @@ XCOMM platform:  $XConsortium: nec.cf,v 1.2 94/04/11 21:18:22 rws Exp $
 
 #ifdef NecRISCArchitecture
 # ifdef _nec_up
+#ifndef OSName
 #define OSName            	UP-UX/V
+#endif
+#ifndef OSMajorVersion
 #define OSMajorVersion    	5
+#endif
+#ifndef OSMinorVersion
 #define OSMinorVersion    	1
+#endif
 # else
+#ifndef OSName
 #define OSName            	EWS-UX/V\(Rel4.2\)
+#endif
+#ifndef OSMajorVersion
 #define OSMajorVersion    	9
+#endif
+#ifndef OSMinorVersion
 #define OSMinorVersion    	1
+#endif
 # endif
 #define HasSharedLibraries	YES
 #define HasVoidSignalReturn 	YES
@@ -51,18 +69,30 @@ XCOMM platform:  $XConsortium: nec.cf,v 1.2 94/04/11 21:18:22 rws Exp $
 #endif
 
 #ifdef NecSX3Architecture
+#ifndef OSName
 #define OSName		 	SUPER-UX
+#endif
+#ifndef OSMajorVersion
 #define OSMajorVersion	 	3
+#endif
+#ifndef OSMinorVersion
 #define OSMinorVersion		1
+#endif
 #define SystemV			YES
 #define HasSharedLibraries 	NO
 #define HasVoidSignalReturn	YES
 #endif
 
 #ifdef NecFaultTolerantArchitecture
+#ifndef OSName
 #define OSName			FT-UX/V
+#endif
+#ifndef OSMajorVersion
 #define OSMajorVersion		5
+#endif
+#ifndef OSMinorVersion
 #define OSMinorVersion		1
+#endif
 #define HasSharedLibraries	YES
 #define HasVoidSignalReturn	YES
 #define SystemV4		YES
@@ -70,9 +100,15 @@ XCOMM platform:  $XConsortium: nec.cf,v 1.2 94/04/11 21:18:22 rws Exp $
 #endif
 
 #ifdef NecPCArchitecture
+#ifndef OSName
 #define OSName			PC-UX/V
+#endif
+#ifndef OSMajorVersion
 #define OSMajorVersion		3
+#endif
+#ifndef OSMinorVersion
 #define OSMinorVersion		1
+#endif
 #define HasSharedLibraries	NO
 #define HasVoidSignalReturn	NO
 #define SystemV			YES

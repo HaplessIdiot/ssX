@@ -1,5 +1,4 @@
-/* $XFree86: xc/programs/Xserver/iplan2p4/ipltegblt.c,v 3.0tsi Exp $ */
-/* $XConsortium: ipltegblt.c,v 5.9 94/04/17 20:29:03 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/ipltegblt.c,v 3.1 2005/10/14 15:17:19 tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

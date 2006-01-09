@@ -1,4 +1,3 @@
-/* $Xorg: pm.c,v 1.5 2001/02/09 02:05:31 xorgcvs Exp $ */
 /*
 Copyright 1996, 1998  The Open Group
 
@@ -24,7 +23,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86: xc/programs/lbxproxy/di/pm.c,v 1.15tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/pm.c,v 1.16 2004/04/03 22:38:54 tsi Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>

@@ -1,5 +1,3 @@
-/* $Xorg: SetValues.c,v 1.4 2001/02/09 02:03:58 xorgcvs Exp $ */
-
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -58,7 +56,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/SetValues.c,v 1.3 2001/12/14 19:56:30 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/SetValues.c,v 1.4 2004/05/05 00:07:03 dickey Exp $ */
 
 #include "IntrinsicI.h"
 

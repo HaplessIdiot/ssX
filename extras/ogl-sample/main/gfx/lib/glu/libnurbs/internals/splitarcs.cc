@@ -35,8 +35,6 @@
 /*
  * splitarcs.c++
  *
- * $Date: 2001/01/15 21:48:40 $ $Revision: 1.1 $
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/splitarcs.cc,v 1.1 2001/01/15 21:48:40 dawes Exp $
  */
 
 #include "glimports.h"

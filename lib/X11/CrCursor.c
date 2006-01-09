@@ -1,4 +1,3 @@
-/* $Xorg: CrCursor.c,v 1.4 2001/02/09 02:03:32 xorgcvs Exp $ */
 /*
 
 Copyright 1986, 1998  The Open Group
@@ -24,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/CrCursor.c,v 1.4 2002/11/23 19:27:48 tsi Exp $ */
 
 #include "Xlibint.h"
 

@@ -1,5 +1,3 @@
-/* $Xorg: FSlibos.h,v 1.4 2001/02/09 02:03:25 xorgcvs Exp $ */
-
 /* @(#)FSlibos.h	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation
@@ -50,7 +48,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/FS/FSlibos.h,v 3.11 2003/12/19 02:05:37 dawes Exp $ */
+/* $XFree86: xc/lib/FS/FSlibos.h,v 3.12 2004/04/03 22:26:20 dawes Exp $ */
 
 /*
  * FSlib networking & os include file

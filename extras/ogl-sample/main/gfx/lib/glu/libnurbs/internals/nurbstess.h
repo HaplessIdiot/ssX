@@ -35,8 +35,6 @@
 /*
  * nurbstess.h
  *
- * $Date: 2001/01/15 21:48:36 $ $Revision: 1.1 $
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/nurbstess.h,v 1.1 2001/01/15 21:48:36 dawes Exp $
  */
 
 #ifndef __glunurbstess_h_

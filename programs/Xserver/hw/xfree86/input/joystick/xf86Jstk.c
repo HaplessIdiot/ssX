@@ -1,4 +1,5 @@
-/* $XConsortium: xf86Jstk.c /main/14 1996/10/25 14:11:36 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/joystick/xf86Jstk.c,v 1.8 2005/10/14 15:16:56 tsi Exp $ */
+
 /*
  * Copyright 1995-1999 by Frederic Lepied, France. <Lepied@XFree86.org>       
  *                                                                            
@@ -21,8 +22,6 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/joystick/xf86Jstk.c,v 1.7tsi Exp $ */
 
 #include <misc.h>
 #include <xf86.h>

@@ -1,4 +1,3 @@
-/* $Xorg: udcInf.c,v 1.7 2001/02/09 02:03:40 xorgcvs Exp $ */
 /*
 Copyright 1996, 1998  The Open Group
 
@@ -33,7 +32,7 @@ from The Open Group.
  *
  */
 
-/* $XFree86: xc/lib/X11/udcInf.c,v 1.6 2001/01/17 19:41:57 dawes Exp $ */
+/* $XFree86: xc/lib/X11/udcInf.c,v 1.7 2001/12/14 19:54:11 dawes Exp $ */
 
 #include <stdio.h>
 #include <locale.h>

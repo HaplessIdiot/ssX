@@ -1,4 +1,4 @@
-.\" $XConsortium: Xtk.intr.front,v 1.12 94/04/19 18:55:15 rws Exp $
+.\" $XFree86$
 .\" MIT header page and copyright notice
 .\" MIT page header and footers
 .\"
@@ -92,11 +92,11 @@ software described herein for any purpose.
 It is provided ``as is'' without express or implied warranty.
 .ps 11
 .nr PS 11
-.bp 10
+.bp 11
 .EF ''\fB \\\\n(PN \fP''
 .OF ''\fB \\\\n(PN \fP''
 .af PN i
-.XS x
+.XS ix
 Acknowledgments
 .XE
 \&
@@ -147,7 +147,7 @@ Mike Gancarz (Digital UEG)
 Kathleen Langone  (Digital UEG)
 .De
 These widgets provided a checklist of requirements that we
-had to address in the X11 intrinsics.
+had to address in the X11 Intrinsics.
 .LP
 Thanks go to Al Mento of Digital's UEG Documentation Group for 
 formatting and generally improving this document
@@ -164,7 +164,7 @@ Joel McCormack
 Western Software Laboratory
 Digital Equipment Corporation
 
-March, 1988
+March 1988
 .De
 .bp
 .LP
@@ -197,7 +197,7 @@ External Research Group
 Digital Equipment Corporation
 MIT Project Athena
 
-June, 1988
+June 1988
 .De
 .sp
 .LP
@@ -218,7 +218,7 @@ Richard Probst (Sun)	Larry Cable (Sun)
 .LP
 In Release 5, the effort to define the internationalization additions was
 headed by Bill McMahon of Hewlett Packard and Frank Rojas of IBM.  This
-has been an educational process for many of us and Bill and Frank's
+has been an educational process for many of us, and Bill and Frank's
 tutelage has carried us through.  Vania Joloboff of the OSF also contributed
 to the internationalization additions.  The implementation efforts of
 Bill, Gabe Beged-Dov, and especially Donna Converse for this release
@@ -227,9 +227,9 @@ are also gratefully acknowledged.
 .Ds 0
 Ralph R. Swick
 
-December, 1989
+December 1989
 and
-July, 1991
+July 1991
 .De
 .bp
 .LP
@@ -267,10 +267,10 @@ the implementation and the specification work.
 .Ds 0
 Donna Converse
 X Consortium
-April, 1994
+April 1994
 .De
 .bp
-.XS xiii
+.XS xii
 About This Manual
 .XE
 \&
@@ -287,7 +287,7 @@ for one of the widget sets.
 Not all the information in this manual, however, applies to both audiences.
 That is, because the application programmer is likely to use only a number of
 the \*(xI functions in writing an application and because the widget programmer
-is is likely to use many more, if not all, of the \*(xI functions in building 
+is likely to use many more, if not all, of the \*(xI functions in building 
 a widget,
 an attempt has been made to highlight those areas of information that are
 deemed to be of special interest for the application programmer.
@@ -297,10 +297,11 @@ Therefore, all entries in the table of contents that are printed in \fBbold\fP
 indicate the information that should be of special interest to an 
 application programmer.
 .LP
-It is also assumed that as application programmers become more familiar with the
-concepts discussed in this manual they will find it more convenient to implement
+It is also assumed that, as application programmers become
+more familiar with the concepts discussed in this manual,
+they will find it more convenient to implement
 portions of their applications as special-purpose or custom widgets.
-It is possible, none the less, to use widgets without knowing how to build them.
+It is possible, nonetheless, to use widgets without knowing how to build them.
 .SH
 Conventions Used in this Manual
 .LP

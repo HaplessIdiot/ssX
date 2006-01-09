@@ -1,4 +1,4 @@
-.\" $XConsortium: CH03,v 1.14 94/04/19 17:45:41 converse Exp $
+.\" $XFree86$
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -53,7 +53,7 @@
 .nr H5 0
 .LP
 .XS
-Chapter 3 \- Composite Widgets and Their Children
+Chapter 3 \(em Composite Widgets and Their Children
 .XE
 .IN "Composite widgets"
 Composite widgets (widgets whose class is a subclass of 
@@ -61,7 +61,7 @@ Composite widgets (widgets whose class is a subclass of
 can have an arbitrary number of children.
 Consequently, they are responsible for much more than primitive widgets.
 Their responsibilities (either implemented directly by the widget class
-or indirectly by \*(xI functions) include
+or indirectly by \*(xI functions) include:
 .IP \(bu 5
 Overall management of children from creation to destruction.
 .IP \(bu 5
@@ -89,7 +89,7 @@ the geometry manager and hence possibly visible.
 For example, a composite editor widget
 supporting multiple editing buffers might allocate one child
 widget for each file buffer,
-but it might only display a small number of the existing buffers.
+but it might display only a small number of the existing buffers.
 Widgets that are in this displayable subset are called managed widgets
 and enter into geometry manager calculations.
 The other children are called unmanaged widgets
@@ -142,7 +142,7 @@ because the window may be resized, but is expressed rather
 in terms of the relationship between a child
 and the parent or between the child and other specific children.
 The class of heterogeneous boxes is usually a subclass of
-Constraint .
+Constraint.
 .IP "Shell boxes" 1.6i
 Shell boxes typically have only one child,
 and the child's size is usually
@@ -153,9 +153,9 @@ and the box must also accept
 events when the window size is changed by the window manager.
 
 .NH 2
-Addition of Children to a Composite Widget: the insert_child Procedure
+Addition of Children to a Composite Widget: The insert_child Procedure
 .XS
-\*(SN Addition of Children to a Composite Widget: the insert_child Procedure
+\*(SN Addition of Children to a Composite Widget: The insert_child Procedure
 .XE
 .LP
 .IN "insert_child procedure"
@@ -165,7 +165,9 @@ the parent's list of children, the
 function calls the parent's class routine insert_child.
 The insert_child procedure pointer in a composite widget is of type
 .PN XtWidgetProc .
+.LP
 .IN "insert_child procedure" "" "@DEF@"
+.sM
 .FD 0
 typedef void (*XtWidgetProc)(Widget);
 .br
@@ -174,6 +176,7 @@ typedef void (*XtWidgetProc)(Widget);
 .IP \fIw\fP 1i
 Passes the newly created child.
 .LP
+.eM
 Most composite widgets inherit their superclass's operation.
 The insert_child routine in
 .PN CompositeWidgetClass calls the insert_position procedure
@@ -188,7 +191,7 @@ A composite widget class that wishes
 to allow nonwidget children (see Chapter 12) must specify a
 .PN CompositeClassExtension
 extension record as described
-in section 1.4.2.1 and set the \fIaccepts_objects\fP field in this record to
+in Section 1.4.2.1 and set the \fIaccepts_objects\fP field in this record to
 .PN True .
 If the
 .PN CompositeClassExtension
@@ -206,9 +209,9 @@ The insert_child procedure then places the child at the appropriate position
 in the array and increments the \fInum_children\fP field.
 
 .NH 2
-Insertion Order of Children: the insert_position Procedure
+Insertion Order of Children: The insert_position Procedure
 .XS
-\fB\*(SN Insertion Order of Children: the insert_position Procedure\fP
+\fB\*(SN Insertion Order of Children: The insert_position Procedure\fP
 .XE
 .LP
 Instances of composite widgets sometimes need to specify more about the order in which
@@ -227,7 +230,9 @@ XtNinsertPosition
 resource.
 The insert_position procedure pointer in a composite widget instance is of type
 .PN XtOrderProc .
+.LP
 .IN "XtOrderProc" "" "@DEF@"
+.sM
 .FD 0
 typedef Cardinal (*XtOrderProc)(Widget);
 .br
@@ -236,6 +241,7 @@ typedef Cardinal (*XtOrderProc)(Widget);
 .IP \fIw\fP 1i
 Passes the newly created widget.
 .LP
+.eM
 Composite widgets that allow clients to order their children (usually
 homogeneous boxes) can call their widget instance's insert_position
 procedure from the class's insert_child procedure to determine where a new
@@ -253,9 +259,9 @@ and can be overridden by a specific composite widget's resource list
 or by the argument list provided when the composite widget is created.
 
 .NH 2
-Deletion of Children: the delete_child Procedure
+Deletion of Children: The delete_child Procedure
 .XS
-\*(SN Deletion of Children: the delete_child Procedure
+\*(SN Deletion of Children: The delete_child Procedure
 .XE
 .LP
 .IN "delete_child procedure"
@@ -266,6 +272,9 @@ function eventually causes a call to the Composite parent's class delete_child
 procedure.
 The delete_child procedure pointer is of type
 .PN XtWidgetProc .
+.LP
+.IN "delete_child procedure" "" "@DEF@"
+.sM
 .FD 0
 typedef void (*XtWidgetProc)(Widget);
 .br
@@ -274,6 +283,7 @@ typedef void (*XtWidgetProc)(Widget);
 .IP \fIw\fP
 Passes the child being deleted.
 .LP
+.eM
 Most widgets inherit the delete_child procedure from their superclass.
 Composite widgets that create companion widgets define their own
 delete_child procedure to remove these companion widgets.
@@ -303,7 +313,9 @@ Managing Children
 To add a list of widgets to the geometry-managed (and hence displayable)
 subset of their Composite parent, use
 .PN XtManageChildren .
+.LP
 .IN "XtManageChildren" "" "@DEF@"
+.sM
 .FD 0
 typedef Widget *WidgetList;
 .sp
@@ -319,6 +331,7 @@ RectObj or any subclass thereof.
 .IP \fInum_children\fP 1i
 Specifies the number of children in the list.
 .LP
+.eM
 The
 .PN XtManageChildren
 function performs the following:
@@ -380,7 +393,9 @@ see Section 6.6.
 .LP
 To add a single child to its parent widget's set of managed children, use
 .PN XtManageChild .
+.LP
 .IN "XtManageChild" "" "@DEF@"
+.sM
 .FD 0
 void XtManageChild(\fIchild\fP)
 .br
@@ -389,6 +404,7 @@ void XtManageChild(\fIchild\fP)
 .IP \fIchild\fP 1i
 Specifies the child.  \*(rI
 .LP
+.eM
 The
 .PN XtManageChild
 function constructs a
@@ -401,7 +417,9 @@ To create and manage a child widget in a single procedure, use
 .PN XtCreateManagedWidget
 or
 .PN XtVaCreateManagedWidget .
+.LP
 .IN "XtCreateManagedWidget" "" "@DEF@"
+.sM
 .FD 0
 Widget XtCreateManagedWidget(\fIname\fP, \fIwidget_class\fP, \fIparent\fP, \
 \fIargs\fP, \fInum_args\fP)
@@ -428,6 +446,7 @@ Specifies the argument list to override any other resource specifications.
 .IP \fInum_args\fP 1i
 Specifies the number of entries in the argument list.
 .LP
+.eM
 The
 .PN XtCreateManagedWidget
 function is a convenience routine that calls
@@ -437,6 +456,7 @@ and
 .sp
 .LP
 .IN "XtVaCreateManagedWidget" "" "@DEF@"
+.sM
 .FD 0
 Widget XtVaCreateManagedWidget(\fIname\fP, \fIwidget_class\fP, \fIparent\fP, ...)
 .br
@@ -457,6 +477,7 @@ subclass thereof.
 Specifies the variable argument list to override any other
 resource specifications.
 .LP
+.eM
 .PN XtVaCreateManagedWidget
 is identical in function to
 .PN XtCreateManagedWidget
@@ -471,7 +492,9 @@ Unmanaging Children
 .LP
 To remove a list of children from a parent widget's managed list, use
 .PN XtUnmanageChildren .
+.LP
 .IN "XtUnmanageChildren" "" "@DEF@"
+.sM
 .FD 0
 void XtUnmanageChildren(\fIchildren\fP, \fInum_children\fP)
 .br
@@ -485,6 +508,7 @@ RectObj or any subclass thereof.
 .IP \fInum_children\fP 1i
 Specifies the number of children.
 .LP
+.eM
 The
 .PN XtUnmanageChildren
 function performs the following:
@@ -522,7 +546,9 @@ see Section 2.9.
 .LP
 To remove a single child from its parent widget's managed set, use
 .PN XtUnmanageChild .
+.LP
 .IN "XtUnmanageChild" "" "@DEF@"
+.sM
 .FD 0
 void XtUnmanageChild(\fIchild\fP)
 .br
@@ -531,6 +557,7 @@ void XtUnmanageChild(\fIchild\fP)
 .IP \fIchild\fP 1i
 Specifies the child.  \*(rI
 .LP
+.eM
 The
 .PN XtUnmanageChild
 function constructs a widget list
@@ -586,7 +613,9 @@ manage, or in just a single invocation.
 To simultaneously remove from and add to the geometry-managed
 set of children of a composite parent, use
 .PN XtChangeManagedSet .
+.LP
 .IN "XtChangeManagedSet" "" "@DEF@"
+.sM
 .FD 0
 void XtChangeManagedSet(\fIunmanage_children\fP, \fInum_unmanage_children\fP,
                                               \fIdo_change_proc\fP, \fIclient_data\fP,
@@ -618,6 +647,7 @@ Specifies the list of widget children to finally add to the managed set.
 .IP \fInum_manage_children\fP 1.8i
 Specifies the number of entries in the \fImanage_children\fP list.
 .LP
+.eM
 The 
 .PN XtChangeManagedSet
 function performs the following:
@@ -627,7 +657,7 @@ Returns immediately if \fInum_unmanage_children\fP and
 .IP \(bu 5
 Issues a warning and returns if the widgets specified in the
 \fImanage_children\fP and
-the \fIunmanage_children\fP lists do not all have the same parent, or if
+the \fIunmanage_children\fP lists do not all have the same parent or if
 that parent is not a subclass of
 .PN compositeWidgetClass .
 .IP \(bu 5
@@ -636,7 +666,7 @@ Returns immediately if the common parent is being destroyed.
 If \fIdo_change_proc\fP is not NULL and the parent's
 .PN CompositeClassExtension
 \fIallows_change_managed_set\fP field is
-.PN False
+.PN False ,
 then
 .PN XtChangeManagedSet
 performs the following:
@@ -657,19 +687,19 @@ Otherwise, the following is performed:
 .RS
 .IP \- 5
 For each child on the \fIunmanage_children\fP list; if the child is
-already unmanaged it is ignored, otherwise it is marked as unmanaged
+already unmanaged it is ignored, otherwise it is marked as unmanaged,
 and if it is realized and its \fImap_when_managed\fP field is
 .PN True ,
 it is unmapped.
 .IP \- 5
-If \fIdo_change_proc\fP is non-NULL the procedure is invoked.
+If \fIdo_change_proc\fP is non-NULL, the procedure is invoked.
 .IP \- 5
 For each child on the \fImanage_children\fP list; if the child is already
-managed or is being destroyed it is ignored, otherwise it is 
+managed or is being destroyed, it is ignored; otherwise it is 
 marked as managed.
 .IP \- 5
 If the parent is realized and after all children have been marked,
-the change_managed method of the parent is invoked and subsequently 
+the change_managed method of the parent is invoked, and subsequently 
 some of the newly managed children are made viewable by calling
 .PN XtRealizeWidget
 on each previously unmanaged child that is unrealized and
@@ -682,7 +712,7 @@ If no
 record is found in the parent's composite class part \fIextension\fP field
 with record type
 .PN \s-1NULLQUARK\s+1
-and version greater than 1 and if
+and version greater than 1, and if
 .PN XtInheritChangeManaged
 was specified in the parent's class record during class initialization,
 the value of the \fIallows_change_managed_set\fP
@@ -693,15 +723,17 @@ for the \fIallows_change_managed_set\fP field is
 .LP
 It is not an error to include a child in both the \fIunmanage_children\fP
 and the \fImanage_children\fP lists.  The effect of such a call is that
-the child remains managed following the call but the \fIdo_change_proc\fP is
+the child remains managed following the call, but the \fIdo_change_proc\fP is
 able to affect the child while it is in an unmanaged state.
 .sp
 .LP
 The \fIdo_change_proc\fP is of type
 .PN XtDoChangeProc .
+.LP
 .IN "XtDoChangeProc" "" "@DEF"
+.sM
 .FD 0
-typedef void (XtDoChangeProc*)(Widget, WidgetList, Cardinal*, WidgetList, Cardinal*, XtPointer);
+typedef void (*XtDoChangeProc)(Widget, WidgetList, Cardinal*, WidgetList, Cardinal*, XtPointer);
 .br
       Widget \fIcomposite_parent\fP;
 .br
@@ -729,29 +761,32 @@ Passes the number of entries in the \fImanage_children\fP list.
 Passes the client data passed to
 .PN XtChangeManagedSet .
 .LP
+.eM
 The \fIdo_change_proc\fP procedure is used by the caller of
 .PN XtChangeManagedSet
 to make changes to one or more children at the point when the
 managed set contains the fewest entries.  These changes may
-involve geometry requests and in this case the caller of
+involve geometry requests, and in this case the caller of
 .PN XtChangeManagedSet
 may take advantage of the fact that the \*(xI internally grant
 geometry requests made by unmanaged children without invoking
 the parent's geometry manager.  To achieve this advantage, if
 the \fIdo_change_proc\fP procedure
-changes the geometry of a child or of a descendant of a child then
+changes the geometry of a child or of a descendant of a child, then
 that child should be included in the \fIunmanage_children\fP and
 \fImanage_children\fP lists.
 
 .NH 3
-Determining If a Widget Is Managed
+Determining if a Widget Is Managed
 .XS
-\fB\*(SN Determining If a Widget Is Managed\fP
+\fB\*(SN Determining if a Widget Is Managed\fP
 .XE
 .LP
 To determine the managed state of a given child widget, use
 .PN XtIsManaged .
+.LP
 .IN "XtIsManaged" "" "@DEF@"
+.sM
 .FD 0
 Boolean XtIsManaged(\fIw\fP)
 .br
@@ -760,6 +795,7 @@ Boolean XtIsManaged(\fIw\fP)
 .IP \fIw\fP 1i
 Specifies the widget.  \*(oI
 .LP
+.eM
 The
 .PN XtIsManaged
 function returns
@@ -785,7 +821,9 @@ or by setting the \fImap_when_managed\fP field to
 .LP
 To change the value of a given widget's \fImap_when_managed\fP field, use
 .PN XtSetMappedWhenManaged .
+.LP
 .IN "XtSetMappedWhenManaged" "" "@DEF@"
+.sM
 .FD 0
 void XtSetMappedWhenManaged(\fIw\fP, \fImap_when_managed\fP)
 .br
@@ -800,12 +838,13 @@ Specifies a Boolean value that indicates the new value
 that is stored into the widget's \fImap_when_managed\fP 
 field.
 .LP
-If the widget is realized and managed
+.eM
+If the widget is realized and managed,
 and if \fImap_when_managed\fP is 
 .PN True ,
 .PN XtSetMappedWhenManaged
 maps the window.
-If the widget is realized and managed
+If the widget is realized and managed,
 and if \fImap_when_managed\fP is 
 .PN False ,
 it unmaps the window.
@@ -829,7 +868,9 @@ explicitly.
 .LP
 To map a widget explicitly, use
 .PN XtMapWidget .
+.LP
 .IN "XtMapWidget" "" "@DEF@"
+.sM
 .FD 0
 XtMapWidget(\fIw\fP)
 .br
@@ -838,10 +879,12 @@ XtMapWidget(\fIw\fP)
 .IP \fIw\fP 1i
 Specifies the widget.  \*(cI
 .LP
-.sp
+.eM
 To unmap a widget explicitly, use
 .PN XtUnmapWidget .
+.LP
 .IN "XtUnmapWidget" "" "@DEF@"
+.sM
 .FD 0
 XtUnmapWidget(\fIw\fP)
 .br
@@ -849,6 +892,8 @@ XtUnmapWidget(\fIw\fP)
 .FN
 .IP \fIw\fP 1i
 Specifies the widget.  \*(cI
+.LP
+.eM
 
 .NH 2
 Constrained Composite Widgets

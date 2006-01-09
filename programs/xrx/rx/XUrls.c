@@ -1,4 +1,3 @@
-/* $Xorg: XUrls.c,v 1.4 2001/02/09 02:05:58 xorgcvs Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization from
 The Open Group.
 
 */
-/* $XFree86: xc/programs/xrx/rx/XUrls.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/xrx/rx/XUrls.c,v 1.12 2003/07/20 16:12:20 tsi Exp $ */
 
 #include "RxI.h"
 #include "XUrls.h"

@@ -1,4 +1,3 @@
-static char*id="$XConsortium: xmessage.c,v 1.6 95/01/04 16:29:54 gildea Exp $";
 /*
 
 Copyright (c) 1988, 1991, 1994  X Consortium
@@ -28,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xmessage/xmessage.c,v 1.4 2000/02/17 16:53:03 dawes Exp $ */
+/* $XFree86: xc/programs/xmessage/xmessage.c,v 1.5 2003/04/14 23:03:13 herrb Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
@@ -120,7 +119,6 @@ NULL};
     fprintf (outf, "where options include:\n");
     for (cpp = options; *cpp; cpp++)
 	fprintf (outf, "%s\n", *cpp);
-    fprintf (outf, "%s\n", id+1);
 }
 
 /*

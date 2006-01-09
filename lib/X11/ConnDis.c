@@ -1,4 +1,3 @@
-/* $Xorg: ConnDis.c,v 1.8 2001/02/09 02:03:31 xorgcvs Exp $ */
 /*
  
 Copyright 1989, 1998  The Open Group
@@ -24,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ConnDis.c,v 3.31tsi Exp $ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.32 2004/06/24 02:21:15 tsi Exp $ */
 
 /* 
  * This file contains operating system dependencies.

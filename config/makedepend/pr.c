@@ -1,4 +1,3 @@
-/* $Xorg: pr.c,v 1.4 2001/02/09 02:03:16 xorgcvs Exp $ */
 /*
 
 Copyright (c) 1993, 1994, 1998 The Open Group
@@ -24,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/pr.c,v 1.4 2001/04/29 23:25:02 tsi Exp $ */
+/* $XFree86: xc/config/makedepend/pr.c,v 1.5 2001/12/14 19:53:21 dawes Exp $ */
 
 #include "def.h"
 

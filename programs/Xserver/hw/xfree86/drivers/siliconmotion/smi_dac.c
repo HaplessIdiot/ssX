@@ -1,5 +1,3 @@
-/* Header:   //Mercury/Projects/archives/XFree86/4.0/smi_dac.c-arc   1.8   27 Nov 2000 15:47:08   Frido  $ */
-
 /*
 Copyright (C) 1994-1998 The XFree86 Project, Inc.  All Rights Reserved.
 Copyright (C) 2000 Silicon Motion, Inc.  All Rights Reserved.
@@ -26,7 +24,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from the XFree86 Project and Silicon Motion.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_dac.c,v 1.2 2001/11/30 12:11:59 eich Exp $ */
 
 #include "smi.h"
 

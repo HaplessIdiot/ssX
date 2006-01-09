@@ -46,3 +46,4 @@ EXPORTS
  _xibadevent
  _xibadmode
  _xidevicebusy
+/* $XFree86$ */

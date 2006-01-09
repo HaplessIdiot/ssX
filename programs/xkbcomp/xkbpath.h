@@ -1,4 +1,3 @@
-/* $XConsortium $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +23,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/xkbpath.h,v 1.3 2002/07/01 02:26:01 tsi Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbpath.h,v 1.4 2002/11/15 03:14:12 dawes Exp $ */
 
 #ifndef _XKBPATH_H_
 #define _XKBPATH_H_ 1

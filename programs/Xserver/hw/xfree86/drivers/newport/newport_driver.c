@@ -1,6 +1,4 @@
 /*
- * Id: newport_driver.c,v 1.2 2000/11/29 20:58:10 agx Exp $ 
- *
  * Driver for the SGI Indy's Newport graphics card
  * 
  * This driver is based on the newport.c & newport_con.c kernel code
@@ -30,7 +28,7 @@
  * Project.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.26tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.27 2005/10/14 15:16:42 tsi Exp $ */
 
 /* function prototypes, common data structures & generic includes */
 #include "newport.h"

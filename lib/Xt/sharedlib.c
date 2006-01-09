@@ -1,5 +1,3 @@
-/* $Xorg: sharedlib.c,v 1.4 2001/02/09 02:03:59 xorgcvs Exp $ */
-
 /*
 
 Copyright 1989, 1994, 1998  The Open Group
@@ -25,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/sharedlib.c,v 3.7 2002/05/31 18:45:46 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/sharedlib.c,v 3.8 2003/04/21 16:34:29 herrb Exp $ */
 
 #if (defined(SUNSHLIB) || defined(AIXSHLIB)) && !defined(SHAREDCODE)
 #include "IntrinsicI.h"

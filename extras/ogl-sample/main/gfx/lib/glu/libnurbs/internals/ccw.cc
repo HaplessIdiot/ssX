@@ -35,8 +35,6 @@
 /*
  * ccw.c++
  *
- * $Date: 2001/01/15 21:48:26 $ $Revision: 1.1 $
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/ccw.cc,v 1.1 2001/01/15 21:48:26 dawes Exp $
  */
 
 #include "glimports.h"

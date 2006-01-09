@@ -1,4 +1,3 @@
-/* $Xorg: xkberrs.c,v 1.3 2000/08/17 19:46:44 cpqbld Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +23,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/lib/xkbfile/xkberrs.c,v 3.4 2001/07/29 05:01:13 tsi Exp $ */
+/* $XFree86: xc/lib/xkbfile/xkberrs.c,v 3.5 2002/11/08 13:35:43 alanh Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>

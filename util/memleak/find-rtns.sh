@@ -1,14 +1,12 @@
 #!/bin/sh
 #
-# $Xorg: find-rtns.sh,v 1.3 2000/08/17 19:55:19 cpqbld Exp $
-#
 # find-routines - convert leak tracer stack traces into file/lineno traces
 #                 modified to work with the an unmodified version of
 #                 gdb-4.18
 #
 # Usage: find-routines <program-name> {leak-tracing-output-files}
 #
-# $XFree86$
+# $XFree86: xc/util/memleak/find-rtns.sh,v 1.4 2002/07/01 02:26:08 tsi Exp $
 #
 
 TMP1=find-routine.tmp1

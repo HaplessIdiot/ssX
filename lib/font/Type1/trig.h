@@ -1,4 +1,3 @@
-/* $Xorg: trig.h,v 1.3 2000/08/17 19:46:34 cpqbld Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -29,7 +28,7 @@
  */
 /*SHARED*/
 
-/* $XFree86: xc/lib/font/Type1/trig.h,v 1.2 1998/07/25 06:57:00 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/trig.h,v 1.3 2001/01/17 19:43:24 dawes Exp $ */
 
 #undef    DegreeCos
 #undef    DegreeSin

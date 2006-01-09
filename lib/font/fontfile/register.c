@@ -1,5 +1,3 @@
-/* $Xorg: register.c,v 1.4 2001/02/09 02:04:03 xorgcvs Exp $ */
-
 /*
 
 Copyright 1994, 1998  The Open Group
@@ -25,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/register.c,v 1.15 2001/12/14 19:56:52 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/register.c,v 1.16 2004/05/01 01:30:02 dawes Exp $ */
 
 /*
  * This is in a separate source file so that small programs

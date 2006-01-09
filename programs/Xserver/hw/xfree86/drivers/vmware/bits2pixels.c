@@ -1,13 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/bits2pixels.c,v 1.1 2001/04/05 19:29:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/bits2pixels.c,v 1.2 2002/12/11 17:07:58 dawes Exp $ */
 /* **********************************************************
  * Copyright (C) 1999-2001 VMware, Inc.
  * All Rights Reserved
  * **********************************************************/
-#ifdef VMX86_DEVEL
-char rcsId_bits2pixels[] = "Id: bits2pixels.c,v 1.6 2001/01/26 23:32:15 yoel Exp $";
-#else
 #define FILECODE "F(814)"
-#endif
 
 /*
  * bits2pixels.c --

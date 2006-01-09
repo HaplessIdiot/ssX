@@ -1,4 +1,3 @@
-/* $Xorg: spencode.c,v 1.4 2001/02/09 02:04:00 xorgcvs Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation
@@ -47,7 +46,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/Speedo/spencode.c,v 1.6 2001/01/17 19:43:18 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/spencode.c,v 1.7 2001/12/14 19:56:41 dawes Exp $ */
 
 #include	"spint.h"
 

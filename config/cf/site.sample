@@ -1,5 +1,4 @@
-XCOMM site:  $Xorg: site.sample,v 1.3 2000/08/17 19:41:48 cpqbld Exp $
-XCOMM $XFree86: xc/config/cf/site.sample,v 1.5tsi Exp $
+XCOMM $XFree86: xc/config/cf/site.sample,v 1.6 2005/09/14 14:23:13 tsi Exp $
 
 /***************************************************************************
  *                                                                         *

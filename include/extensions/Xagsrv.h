@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/Xagsrv.h,v 1.5 2003/07/16 01:38:24 dawes Exp $ */
+/* $XFree86: xc/include/extensions/Xagsrv.h,v 1.6 2003/11/17 22:20:03 dawes Exp $ */
 /*
 Copyright 1996, 1998  The Open Group
 
@@ -24,7 +24,6 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $Xorg: Xagsrv.h,v 1.4 2001/02/09 02:03:24 xorgcvs Exp $ */
 
 #ifndef _XAGSRV_H_
 #define _XAGSRV_H_

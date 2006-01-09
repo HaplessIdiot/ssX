@@ -1,4 +1,3 @@
-/* $Xorg: Xtranstli.c,v 1.4 2001/02/09 02:04:07 xorgcvs Exp $ */
 /*
 
 Copyright 1993, 1994, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranstli.c,v 3.12tsi Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranstli.c,v 3.13 2003/08/26 15:38:39 tsi Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *

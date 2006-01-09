@@ -1,4 +1,3 @@
-/* $XConsortium: events.h,v 1.5 94/04/17 19:55:57 dpw Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 
@@ -48,7 +47,7 @@ in this Software without prior written authorization from the X Consortium.
  * @(#)events.h	4.2	91/05/03
  *
  */
-/* $XFree86: xc/programs/xfs/include/fsevents.h,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/xfs/include/fsevents.h,v 1.4 2005/10/14 15:17:33 tsi Exp $ */
 
 #ifndef _EVENTS_H_
 #define _EVENTS_H_

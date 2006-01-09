@@ -1,4 +1,3 @@
-/* $Xorg: lcGeneric.c,v 1.7 2000/12/12 12:44:05 coskrey Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -28,7 +27,7 @@
  *  This is source code modified by FUJITSU LIMITED under the Joint
  *  Development Agreement for the CDE/Motif PST.
  */
-/* $XFree86: xc/lib/X11/lcGeneric.c,v 3.19 2003/05/27 16:55:27 tsi Exp $ */
+/* $XFree86: xc/lib/X11/lcGeneric.c,v 3.20 2003/09/24 02:43:12 dawes Exp $ */
 
 #include <stdio.h>
 #include "Xlibint.h"

@@ -35,8 +35,6 @@
 /*
  * backend.h
  *
- * $Date: 2001/01/15 21:48:23 $ $Revision: 1.1 $
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/backend.h,v 1.1 2001/01/15 21:48:23 dawes Exp $
  */
 
 #ifndef __glubackend_h_

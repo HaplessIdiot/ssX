@@ -1,6 +1,4 @@
 /*
- * $XConsortium: listres.c,v 1.32 94/04/17 20:43:22 dave Exp $
- *
  * 
 Copyright (c) 1989  X Consortium
 
@@ -27,7 +25,7 @@ in this Software without prior written authorization from the X Consortium.
  * *
  * Author:  Jim Fulton, MIT X Consortium
  */
-/* $XFree86: xc/programs/listres/listres.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/listres/listres.c,v 1.5 2004/04/03 22:38:55 tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>

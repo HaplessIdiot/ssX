@@ -1,5 +1,3 @@
-/* $Xorg: Xpoll.h,v 1.4 2001/02/09 02:03:23 xorgcvs Exp $ */
-
 /*
 
 Copyright 1994, 1998  The Open Group
@@ -27,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/include/Xpoll.h,v 3.9tsi Exp $ */
+/* $XFree86: xc/include/Xpoll.h,v 3.10 2004/03/31 16:37:08 tsi Exp $ */
 
 #ifndef _XPOLL_H_
 #define _XPOLL_H_

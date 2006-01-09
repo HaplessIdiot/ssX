@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/patch.cc,v 1.3 2001/04/27 12:58:28 dawes Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -36,8 +36,6 @@
 /*
  * patch.c++
  *
- * $Date: 2001/04/27 12:58:28 $ $Revision: 1.3 $
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/patch.cc,v 1.3 2001/04/27 12:58:28 dawes Exp $
  */
 
 #include <stdio.h>

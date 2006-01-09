@@ -1,6 +1,5 @@
-/* $XFree86: xc/programs/Xserver/ilbm/ilbmply1rct.c,v 3.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmply1rct.c,v 3.2 2005/10/14 15:17:17 tsi Exp $ */
 /*
- * $XConsortium: ilbmply1rct.c,v 1.9 94/04/17 20:28:28 dpw Exp $
  *
 Copyright (c) 1990  X Consortium
 

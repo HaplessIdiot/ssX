@@ -1,5 +1,4 @@
-/* $Id: xform.S,v 1.3 2005/07/20 00:32:37 dawes Exp $ */
-/* $XFree86: xc/extras/Mesa/src/mesa/sparc/xform.S,v 1.2 2004/04/22 13:58:37 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/sparc/xform.S,v 1.3 2005/07/20 00:32:37 dawes Exp $ */
 
 	/* TODO
 	 *

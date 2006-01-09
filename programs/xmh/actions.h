@@ -1,6 +1,4 @@
 /*
- * $XConsortium: actions.h,v 1.10 94/04/17 20:24:00 converse Exp $
- *
 Copyright (c) 1989  X Consortium
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xmh/actions.h,v 1.3 2002/07/01 02:26:05 tsi Exp $ */
 
 #define XMH_ACTION_ARGS Widget, XEvent *, String *, Cardinal *
 

@@ -1,4 +1,4 @@
-/* $Xorg: RootWinP.h,v 1.4 2001/02/09 02:05:55 xorgcvs Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright 1990, 1998  The Open Group

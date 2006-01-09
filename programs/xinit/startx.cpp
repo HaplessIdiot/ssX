@@ -1,6 +1,5 @@
 XCOMM!/bin/sh
 
-XCOMM $Xorg: startx.cpp,v 1.3 2000/08/17 19:54:29 cpqbld Exp $
 XCOMM
 XCOMM This is just a sample implementation of a slightly less primitive
 XCOMM interface than xinit.  It looks for user .xinitrc and .xserverrc
@@ -11,7 +10,7 @@ XCOMM and pop a clock and serveral xterms.
 XCOMM
 XCOMM Site administrators are STRONGLY urged to write nicer versions.
 XCOMM
-XCOMM $XFree86: xc/programs/xinit/startx.cpp,v 3.16tsi Exp $
+XCOMM $XFree86: xc/programs/xinit/startx.cpp,v 3.18 2003/08/22 19:27:33 eich Exp $
 
 #ifdef SCO
 

@@ -1,4 +1,3 @@
-/* $Xorg: lcJis.c,v 1.3 2000/08/17 19:45:18 cpqbld Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -23,7 +22,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/lcJis.c,v 1.9 2002/04/10 16:20:06 tsi Exp $ */
+/* $XFree86: xc/lib/X11/lcJis.c,v 1.10 2003/01/20 04:05:31 dawes Exp $ */
 
 /*
  * A Japanese JIS locale.

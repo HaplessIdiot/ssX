@@ -1,4 +1,3 @@
-/* $Xorg: dispatch.c,v 1.3 2000/08/17 19:53:55 cpqbld Exp $ */
 /*
  * Copyright 1992 Network Computing Devices
  * Copyright 1996 X Consortium, Inc.
@@ -21,7 +20,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/di/dispatch.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/dispatch.c,v 1.8 2004/04/03 22:38:53 tsi Exp $ */
 
 #include <stdio.h>
 #include "assert.h"

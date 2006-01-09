@@ -1,4 +1,4 @@
-.\" $XFree86$
+.\" $XFree86: xc/doc/specs/Xaw/Xtk.widgets,v 1.2 2005/10/14 15:15:53 tsi Exp $
 \&
 .sp 1
 .ce 3
@@ -5598,7 +5598,6 @@ are:
 ..
 .CB
 .\".so ../../lib/Xaw/Template.h
-/* $Xorg: Template.h,v 1.5 2001/02/09 02:03:46 xorgcvs Exp $ */
 
 /*
 
@@ -5625,7 +5624,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/Template.h,v 1.6 2001/12/14 19:54:44 dawes Exp $ */
+/* $XFree86: xc/doc/specs/Xaw/Xtk.widgets,v 1.2 2005/10/14 15:15:53 tsi Exp $ */
 
 #ifndef _Template_h
 #define _Template_h
@@ -5725,7 +5724,6 @@ The contents of the Template private header file,
 are:
 .CB
 .\".so ../../lib/Xaw/TemplateP.h
-/* $Xorg: TemplateP.h,v 1.5 2001/02/09 02:03:46 xorgcvs Exp $ */
 
 /*
 
@@ -5752,7 +5750,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TemplateP.h,v 1.7 2001/12/14 19:54:44 dawes Exp $ */
+/* $XFree86: xc/doc/specs/Xaw/Xtk.widgets,v 1.2 2005/10/14 15:15:53 tsi Exp $ */
 
 #ifndef _TemplateP_h
 #define _TemplateP_h
@@ -5831,7 +5829,6 @@ The contents of the Template implementation file,
 are:
 .CB
 .\".so ../../lib/Xaw/Template.c
-/* $Xorg: Template.c,v 1.4 2001/02/09 02:03:46 xorgcvs Exp $ */
 
 /*
 
@@ -5858,7 +5855,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/Template.c,v 1.9 2001/12/14 19:54:44 dawes Exp $ */
+/* $XFree86: xc/doc/specs/Xaw/Xtk.widgets,v 1.2 2005/10/14 15:15:53 tsi Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>

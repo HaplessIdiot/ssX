@@ -1,4 +1,3 @@
-/* $TOG: InitOutput.c /main/20 1998/02/10 13:23:56 kaleb $ */
 /*
 
 Copyright 1993, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.35 2003/10/08 11:13:02 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.36 2004/06/02 22:43:05 dawes Exp $ */
 
 #include "win.h"
 #include "winconfig.h"

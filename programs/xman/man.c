@@ -1,4 +1,3 @@
-/* $XConsortium: man.c,v 1.30 94/04/17 20:43:56 rws Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium
@@ -28,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/man.c,v 1.10 2004/04/03 21:42:36 dawes Exp $ */
+/* $XFree86: xc/programs/xman/man.c,v 1.11 2004/04/03 22:26:26 dawes Exp $ */
 
 
 #include "globals.h"

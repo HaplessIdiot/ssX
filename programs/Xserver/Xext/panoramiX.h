@@ -1,4 +1,3 @@
-/* $TOG: panoramiX.h /main/4 1998/03/17 06:51:02 kaleb $ */
 /****************************************************************
 *                                                               *
 *    Copyright (c) Digital Equipment Corporation, 1991, 1997    *
@@ -19,7 +18,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.h,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.h,v 1.7 2005/10/14 15:16:11 tsi Exp $ */
 
 /* THIS IS NOT AN X PROJECT TEAM SPECIFICATION */
 

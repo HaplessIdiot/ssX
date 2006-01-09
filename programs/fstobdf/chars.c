@@ -1,4 +1,3 @@
-/* $Xorg: chars.c,v 1.4 2001/02/09 02:05:30 xorgcvs Exp $ */
 /*
  
 Copyright 1990, 1998  The Open Group
@@ -43,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/fstobdf/chars.c,v 3.8 2001/12/14 20:00:45 dawes Exp $ */
+/* $XFree86: xc/programs/fstobdf/chars.c,v 3.9 2004/10/25 21:23:58 dawes Exp $ */
 
 /* Morten Storgaard Nielsen: chars.c,v 3.2-1 2000/01/30 14:11:19 kat Exp */
 

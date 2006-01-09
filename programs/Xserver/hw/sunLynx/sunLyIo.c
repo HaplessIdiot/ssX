@@ -1,4 +1,3 @@
-/* $Xorg: sunLyIo.c,v 1.3 2000/08/17 19:48:37 cpqbld Exp $ */
 /*-
  * This is sunIo.c modified for LynxOS
  * Copyright 1996 by Thomas Mueller
@@ -22,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyIo.c,v 3.5 2001/05/25 18:40:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyIo.c,v 3.6 2003/11/17 22:20:37 dawes Exp $ */
 
  /*
  *

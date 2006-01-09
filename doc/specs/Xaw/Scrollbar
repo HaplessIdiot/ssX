@@ -1,4 +1,4 @@
-.\" $XConsortium: Scrollbar,v 1.26 94/04/14 18:17:04 kaleb Exp $
+.\" $XFree86$
 .NH 2 
 Scrollbar Widget
 .LP
@@ -65,10 +65,6 @@ When creating a Scrollbar widget instance, the following resources are
 retrieved from the argument list or from the resource database:
 .LP
 .IN "Scrollbar widget" "resources"
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
 expand;
 lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
@@ -125,10 +121,6 @@ y	Position	Position		0
 .sp 3p
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 .Ac
 .As
 .Bg
@@ -369,9 +361,8 @@ the float value to an integer value, usually truncating the important
 information.  The following code fragment is one portable method of
 getting a float into an argument list.
 .sp
-.ps 9
-.nr PS 9
 .Ds 0
+.SM
 .TA 1i 2i
 .ta 1i 2i
 	top = 0.5;
@@ -390,7 +381,6 @@ getting a float into an argument list.
 		XtArgVal * l_top = (XtArgVal *) &top;
 		XtSetArg(args[0], XtNshown, *l_top);
 	}
+.NL
 .De
-.ps 11
-.nr PS 11
 .sp

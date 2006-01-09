@@ -1,4 +1,3 @@
-/* $Xorg: session.c,v 1.8 2001/02/09 02:05:40 xorgcvs Exp $ */
 /*
 
 Copyright 1988, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/session.c,v 3.39 2004/07/25 20:17:04 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.40 2005/03/23 03:11:28 dawes Exp $ */
 
 /*
  * xdm - display manager daemon

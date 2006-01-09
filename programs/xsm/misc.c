@@ -1,4 +1,3 @@
-/* $Xorg: misc.c,v 1.4 2001/02/09 02:06:01 xorgcvs Exp $ */
 /******************************************************************************
 
 Copyright 1993, 1998  The Open Group
@@ -23,7 +22,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/misc.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/xsm/misc.c,v 1.7 2005/09/14 14:23:16 tsi Exp $ */
 
 #include "xsm.h"
 

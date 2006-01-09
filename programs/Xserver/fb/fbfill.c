@@ -1,6 +1,4 @@
 /*
- * Id: fbfill.c,v 1.1 1999/11/02 03:54:45 keithp Exp $
- *
  * Copyright © 1998 Keith Packard
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -21,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbfill.c,v 1.5 2003/01/29 00:43:33 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbfill.c,v 1.6 2003/01/31 00:01:45 torrey Exp $ */
 
 #include "fb.h"
 

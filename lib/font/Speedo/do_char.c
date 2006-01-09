@@ -1,5 +1,3 @@
-/* $Xorg: do_char.c,v 1.3 2000/08/17 19:46:24 cpqbld Exp $ */
-
 /*
 
 Copyright 1989-1991, Bitstream Inc., Cambridge, MA.
@@ -21,7 +19,7 @@ INCIDENTAL OR CONSEQUENTIAL DAMAGES, ARISING OUT OF OR IN ANY WAY CONNECTED
 WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 
 */
-/* $XFree86: xc/lib/font/Speedo/do_char.c,v 1.3 2001/01/17 19:43:17 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/do_char.c,v 1.4 2001/08/27 19:49:50 dawes Exp $ */
 
 /***************************** D O - C H A R . C *****************************
  *                                                                           *

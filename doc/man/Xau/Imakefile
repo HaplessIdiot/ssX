@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/02/10 21:05:51 rws Exp $
+XCOMM $XFree86$
 
 MANDIR = $(LIBMANDIR)
 MANSUFFIX = $(LIBMANSUFFIX)
@@ -6,3 +6,6 @@ MANSUFFIX = $(LIBMANSUFFIX)
 all::
 
 InstallManPage(Xau,$(MANDIR))
+#if ExpandManNames
+InstallManPageAliases(Xau,$(MANDIR),XauFileName XauReadAuth XauLockAuth XauUnlockAuth XauWriteAuth XauDisposeAuth XauGetAuthByAddr XauGetBestAuthByAddr)
+#endif

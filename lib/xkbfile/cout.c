@@ -1,4 +1,3 @@
-/* $Xorg: cout.c,v 1.3 2000/08/17 19:46:43 cpqbld Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +23,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
- /* $XFree86: xc/lib/xkbfile/cout.c,v 3.8 2003/02/03 20:12:00 paulo Exp $ */
+/* $XFree86: xc/lib/xkbfile/cout.c,v 3.9 2003/11/17 22:20:23 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>

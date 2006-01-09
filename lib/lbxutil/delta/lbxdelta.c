@@ -1,6 +1,4 @@
 /*
- * $NCDXorg: @(#)lbxdelta.c,v 1.2 1994/01/22 02:23:40 dct Exp $
- *
  * Copyright 1993 Network Computing Devices
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -22,7 +20,7 @@
  *
  * Author:  Dale Tonogai, Network Computing Devices
  */
-/* $XFree86: xc/lib/lbxutil/delta/lbxdelta.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/lib/lbxutil/delta/lbxdelta.c,v 1.9 2005/10/14 15:16:07 tsi Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xproto.h>

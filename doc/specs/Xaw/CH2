@@ -1,4 +1,4 @@
-.\" $XConsortium: CH2,v 1.18 94/04/14 18:43:18 kaleb Exp $
+.\" $XFree86$
 .bp
 \&
 .sp 1
@@ -83,7 +83,10 @@ a tree of widgets created by this application.
 .IN "fallback resources" "" "@DEF@"
 .FD 0
 Widget XtAppInitialize(\fIapp_context_return\fP, \fIapplication_class\fP, \
-\fIoptions\fP, \fInum_options\fP, \fIargc_in_out\fP, \fIargv_in_out\fP, \fIfallback_resources\fP, \fIargs\fP, \fInum_args\fP)
+\fIoptions\fP, \fInum_options\fP,
+.ta 2i
+	\fIargc_in_out\fP, \fIargv_in_out\fP, \fIfallback_resources\fP, \
+\fIargs\fP, \fInum_args\fP)
 .br
       XtAppContext *\fIapp_context_return\fP;    
 .br
@@ -213,10 +216,6 @@ Widgets will ignore any argument that they do not understand.
 .LP
 The following resources are retrieved from the argument list
 or from the resource database by all of the Athena widgets:
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
 lw(1.5i) lw(1i) lw(1i) lw(2i).
 _
@@ -249,19 +248,11 @@ y	Position	Position	0
 .sp 3p
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 .IN "XtDefaultForeground" "" ""
 .IN "XtDefaultBackground" "" ""
 .LP
 The following additional resources are retrieved from the argument list
 or from the resource database by many of the Athena widgets:
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
 lw(1.5i) lw(1i) lw(1i) lw(2i).
 _
@@ -280,10 +271,6 @@ insensitiveBorder	Insensitive	Pixmap	GreyPixmap
 .sp 3p
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 .IN "XtDefaultForeground" "" ""
 .NH 2
 Resource Conversions
@@ -845,7 +832,7 @@ values; the resource manager, and an argument list passed into
 XtCreateWidget.  While resources values will get updated no matter
 which method you use, the two methods provide slightly different
 functionality. 
-.IP Resource Manager 1.5i
+.IP "Resource Manager" 1.5i
 This method picks up resource definitions described in \fI\*(xL\fP from
 many different locations at run time.  The locations most important to
 the application programmer are the \fIfallback resources\fP and the
@@ -856,7 +843,7 @@ particular needs of each individual user.  These values can also be
 modified without the need to rebuild the application, allowing rapid
 prototyping of user interfaces.  Application programmers should use
 resources in preference to hard-coded values whenever possible.
-.IP Argument Lists 1.5i
+.IP "Argument Lists" 1.5i
 The values passed into the widget at creation time via an argument list
 cannot be modified by the user, and allow no opportunity for
 customization.  It is used to set resources that cannot be specified as

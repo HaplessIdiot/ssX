@@ -1,5 +1,3 @@
-/* $Xorg: StrToOrnt.c,v 1.4 2001/02/09 02:03:53 xorgcvs Exp $ */
-
 /* 
  
 Copyright 1988, 1998  The Open Group
@@ -26,7 +24,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xmu/StrToOrnt.c,v 1.6 2001/01/17 19:42:57 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/StrToOrnt.c,v 1.7 2001/12/14 19:55:52 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>

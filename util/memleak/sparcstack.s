@@ -1,4 +1,4 @@
-# $XConsortium: sparcstack.s,v 1.2 92/04/08 17:19:18 keith Exp $
+# $XFree86$
 	.seg	"text"
 	.proc	16
 	.globl	_getStackPointer

@@ -1,9 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_dga.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_dga.c,v 1.5 2004/12/07 15:59:19 tsi Exp $ */
 /*
- * $Workfile: nsc_gx1_dga.c $
- * $Revision: 1.5 $
- * $Author: tsi $
- * 
  * File contents: DGA(Direct Acess Graphics mode) is feature of
  *                XFree86 that allows the program to access directly to video
  *                memory on the graphics card.DGA supports the double

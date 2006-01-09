@@ -1,5 +1,3 @@
-/* $Xorg: VarargsI.h,v 1.4 2001/02/09 02:03:59 xorgcvs Exp $ */
-
 /*
 
 Copyright 1985, 1986, 1987, 1988, 1989, 1998  The Open Group
@@ -25,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/VarargsI.h,v 3.6 2001/12/14 19:56:32 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/VarargsI.h,v 3.7 2003/04/21 16:34:29 herrb Exp $ */
 
 #ifndef _VarargsI_h_ 
 #define _VarargsI_h_ 

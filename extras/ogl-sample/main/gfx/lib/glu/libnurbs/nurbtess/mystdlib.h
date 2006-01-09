@@ -35,7 +35,6 @@
 /*
  * mystdlib.h
  *
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/nurbtess/mystdlib.h,v 1.1 2001/01/15 21:48:53 dawes Exp $
  */
 
 #ifndef __glumystdlib_h_

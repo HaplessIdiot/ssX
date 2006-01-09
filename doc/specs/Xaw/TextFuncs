@@ -1,3 +1,4 @@
+.\" $XFree86$
 .NH 2
 Text Functions
 .XS
@@ -133,11 +134,15 @@ Specifies the starting character position of the text replacement.
 .IP \fIend\fP 1i
 Specifies the ending character position of the text replacement.
 .IP \fItext\fP 1i
-Specifies the text to be inserted into the file.  This function will not
+Specifies the text to be inserted into the file.
+.LP
+This function will not
 be able to replace text in read-only text widgets.  It will also only
 be able to append text to an append-only text widget.
 .LP
-See section 5.4 for a description of \fBXawTextPosition\fP and \fBXawTextBlock\fP.
+See section 5.4 for a description of \fBXawTextPosition\fP and
+\fBXawTextBlock\fP.
+.LP
 This function may return the following values:
 .IP \fBXawEditDone\fP 1.25i
 .IN "XawEditDone" ""

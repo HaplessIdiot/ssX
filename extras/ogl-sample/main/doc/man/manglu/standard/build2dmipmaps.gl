@@ -30,7 +30,6 @@ _C_ was created using the OpenGL(R) version 1.2.1 Sample Implementation
 _C_ published by SGI, but has not been independently verified as being
 _C_ compliant with the OpenGL(R) version 1.2.1 Specification.
 _C_
-_C_ $Date: 2001/01/15 21:48:00 $ $Revision: 1.1 $
 _C_ The first character in this file must be an '_'!
 _C_ Anything on a line after _C_ is ignored
 _define(_filters,eqn)_C_
@@ -44,8 +43,16 @@ delim $$
 _phead(_param1)
 Specifies the target texture.  Must be _const(TEXTURE_2D).
 _phead(_param2)
-Requests the internal storage format of the texture image.
-Must be 1, 2, 3, 4, or one of the following symbolic constants:
+Requests the internal storage format of the texture image.  The most
+current version of the SGI implementation of GLU does not check this
+value for validity before passing it on to the underlying OpenGL
+implementation.  A value that is not accepted by the OpenGL
+implementation will lead to an OpenGL error.  The benefit of not
+checking this value at the GLU level is that OpenGL extensions can add
+new internal texture formats without requiring a revision of the GLU
+implementation.  Older implementations of GLU check this value and
+raise a GLU error if it is not 1, 2, 3, or 4 or one of the following
+symbolic constants:
 _const(ALPHA),
 _const(ALPHA4),
 _const(ALPHA8),

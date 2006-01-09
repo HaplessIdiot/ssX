@@ -31,13 +31,8 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 **
-** $Date: 2003/10/22 19:20:57 $ $Revision: 1.2 $
 */
-/* $XFree86$ */
-
-/*
-** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/nurbtess/monoTriangulation.cc,v 1.2 2003/10/22 19:20:57 tsi Exp $
-*/
+/* $XFree86: xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/nurbtess/monoTriangulation.cc,v 1.2 2003/10/22 19:20:57 tsi Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>

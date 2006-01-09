@@ -1,9 +1,4 @@
-! $Xorg: xdm-conf.cpp,v 1.3 2000/08/17 19:54:17 cpqbld Exp $
-!
-!
-!
-!
-! $XFree86: xc/programs/xdm/config/xdm-conf.cpp,v 1.11 2004/01/09 00:25:25 dawes Exp $
+! $XFree86: xc/programs/xdm/config/xdm-conf.cpp,v 1.12 2004/06/08 00:11:13 dawes Exp $
 !
 DisplayManager.errorLogFile:	XDMLOGDIR/xdm.log
 DisplayManager.pidFile:		XDMPIDDIR/xdm.pid

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdMach.c,v 3.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdMach.c,v 3.9 2005/10/14 15:16:33 tsi Exp $ */
 /*
  *****************************************************************************
  * HISTORY
@@ -35,7 +35,6 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: xf86KbdMach.c /main/9 1996/02/21 17:38:43 kaleb $ */
 
 #include <X11/X.h>
 #include <X11/Xmd.h>

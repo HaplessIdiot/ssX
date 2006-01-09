@@ -1,4 +1,3 @@
-/* $Xorg: panoramiXproto.h,v 1.4 2000/08/18 04:05:45 coskrey Exp $ */
 /*****************************************************************
 Copyright (c) 1991, 1997 Digital Equipment Corporation, Maynard, Massachusetts.
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,7 +22,7 @@ shall not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 ******************************************************************/
-/* $XFree86: xc/include/extensions/panoramiXproto.h,v 3.5 2000/03/01 01:04:21 dawes Exp $ */
+/* $XFree86: xc/include/extensions/panoramiXproto.h,v 3.6 2001/01/17 17:53:22 dawes Exp $ */
 
 /* THIS IS NOT AN X PROJECT TEAM SPECIFICATION */
 

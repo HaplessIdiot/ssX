@@ -1,5 +1,3 @@
-/* $Xorg: cmsTrig.c,v 1.3 2000/08/17 19:45:10 cpqbld Exp $ */
-
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
@@ -24,7 +22,7 @@
  * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/lib/X11/cmsTrig.c,v 3.8 2001/10/28 03:32:34 tsi Exp $ */
+/* $XFree86: xc/lib/X11/cmsTrig.c,v 3.9 2003/04/13 19:22:20 dawes Exp $ */
 /*
  *	It should be pointed out that for simplicity's sake, the
  *	environment parameters are defined as floating point constants,

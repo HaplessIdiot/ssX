@@ -1,4 +1,4 @@
-/* $XConsortium: version.h,v 1.11 94/04/17 20:44:00 gildea Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium
@@ -29,4 +29,4 @@ from the X Consortium.
 
 */
 
-#define XMAN_VERSION "Xman Version 3.1.6 - X11R6."
+#define XMAN_VERSION "Xman Version 3.1.6 - XFree86 4.x"

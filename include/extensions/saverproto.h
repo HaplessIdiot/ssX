@@ -1,5 +1,4 @@
 /*
- * $XConsortium: saverproto.h,v 1.5 94/04/17 20:59:33 keith Exp $
  *
 Copyright (c) 1992  X Consortium
 
@@ -26,7 +25,7 @@ in this Software without prior written authorization from the X Consortium.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/saverproto.h,v 3.2 2002/09/16 18:05:19 eich Exp $ */
 
 #ifndef _SAVERPROTO_H_
 #define _SAVERPROTO_H_

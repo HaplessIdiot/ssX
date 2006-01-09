@@ -1,5 +1,3 @@
-/* $Xorg: XIproto.h,v 1.5 2001/02/09 02:03:24 xorgcvs Exp $ */
-
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -45,7 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/include/extensions/XIproto.h,v 1.4 2001/01/17 17:53:17 dawes Exp $ */
+/* $XFree86: xc/include/extensions/XIproto.h,v 1.5 2001/12/14 19:53:28 dawes Exp $ */
 
 #ifndef _XIPROTO_H
 #define _XIPROTO_H

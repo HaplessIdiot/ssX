@@ -1,4 +1,4 @@
-.\" $XConsortium: Panner,v 1.7 94/04/14 18:17:01 kaleb Exp $
+.\" $XFree86$
 .NH 2
 Panner Widget
 .LP
@@ -43,10 +43,6 @@ When creating a Panner widget instance, the following resources are
 retrieved from the argument list or from the resource database:
 .LP
 .IN "Panner widget" "resources"
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
 expand;
 lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
@@ -102,10 +98,6 @@ y	Position	Position		0
 .sp 3p
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 .Ac
 .IP \fBallowOff\fP 1.5i
 Whether to allow the edges of the slider to go off the edges of the canvas.

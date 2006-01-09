@@ -38,3 +38,4 @@ EXPORTS
  SmsSaveYourselfPhase2
  SmsSetErrorHandler
  SmsShutdownCancelled
+/* $XFree86$ */

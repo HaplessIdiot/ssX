@@ -1,5 +1,4 @@
 /* x-hook.h -- lists of function,data pairs to call.
-   $Id: x-hook.h,v 1.1 2003/06/30 01:45:13 torrey Exp $
 
    Copyright (c) 2003 Apple Computer, Inc. All rights reserved.
 
@@ -27,7 +26,7 @@
    copyright holders shall not be used in advertising or otherwise to
    promote the sale, use or other dealings in this Software without
    prior written authorization. */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/x-hook.h,v 1.1 2003/06/30 01:45:13 torrey Exp $ */
 
 #ifndef X_HOOK_H
 #define X_HOOK_H 1

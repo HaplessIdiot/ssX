@@ -1,5 +1,3 @@
-/* $Xorg: Resources.c,v 1.4 2001/02/09 02:03:56 xorgcvs Exp $ */
-
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -59,7 +57,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xt/Resources.c,v 1.12 2003/08/27 21:39:38 tsi Exp $ */
+/* $XFree86: xc/lib/Xt/Resources.c,v 1.13 2004/05/05 00:07:03 dickey Exp $ */
 
 /*LINTLIBRARY*/
 #include "IntrinsicI.h"

@@ -1,7 +1,3 @@
-#ifdef UNDEF
-static char cvsid[] = "Header: /usr/build/rman/rman-031225/phelps/RCS/rman.c,v 1.154 2003/07/26 19:00:48 phelps Exp $";
-#endif
-
 /*
    PolyglotMan by Thomas A. Phelps (phelps@ACM.org)
 
@@ -18,7 +14,7 @@ static char cvsid[] = "Header: /usr/build/rman/rman-031225/phelps/RCS/rman.c,v 1
 	source interpretation added September 24, 1996
 	renamed PolyglotMan due to lawsuit by Rosetta, Inc. August 8, 1997
 */
-/* $XFree86: xc/extras/rman/rman.c,v 1.18 2003/10/22 19:50:36 tsi Exp $ */
+/* $XFree86: xc/extras/rman/rman.c,v 1.19 2004/01/01 00:47:45 dickey Exp $ */
 
 #include <unistd.h>
 #include <stdio.h>

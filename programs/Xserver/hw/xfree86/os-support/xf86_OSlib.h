@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.99tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.100 2005/07/20 21:12:43 tsi Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -65,8 +65,6 @@
  *    if advised of the possibility of such damage. 
  *
  */
-
-/* $XConsortium: xf86_OSlib.h /main/22 1996/10/27 11:06:31 kaleb $ */
 
 /*
  * This is private, and should not be included by any drivers.  Drivers

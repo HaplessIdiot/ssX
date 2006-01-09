@@ -1,4 +1,4 @@
-XCOMM $Xorg: Xserv.ws.cpp,v 1.3 2000/08/17 19:54:17 cpqbld Exp $
+XCOMM $XFree86$
 XCOMM
 XCOMM Xservers file, workstation prototype
 XCOMM

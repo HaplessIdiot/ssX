@@ -1,5 +1,3 @@
-/* $Xorg: keysymdef.h,v 1.4 2001/02/09 02:03:23 xorgcvs Exp $ */
-
 /***********************************************************
 Copyright 1987, 1994, 1998  The Open Group
 
@@ -47,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/include/keysymdef.h,v 1.12 2001/12/14 19:53:26 dawes Exp $ */
+/* $XFree86: xc/include/keysymdef.h,v 1.13 2004/06/14 20:43:04 dawes Exp $ */
 
 #define XK_VoidSymbol		0xFFFFFF	/* void symbol */
 

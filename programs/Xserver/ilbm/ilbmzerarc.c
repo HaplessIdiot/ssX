@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/ilbm/ilbmzerarc.c,v 3.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmzerarc.c,v 3.2 2005/10/14 15:17:17 tsi Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -25,8 +25,6 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
-
-/* $XConsortium: ilbmzerarc.c,v 5.19 94/04/17 20:28:37 dpw Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"

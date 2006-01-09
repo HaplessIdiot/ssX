@@ -1,11 +1,9 @@
-
-/* $XConsortium: SlowBcopy.c /main/1 1996/05/07 17:14:10 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/SlowBcopy.c,v 1.8 2005/10/14 15:17:05 tsi Exp $ */
+ 
 /*******************************************************************************
   for Alpha Linux
 *******************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/SlowBcopy.c,v 1.7tsi Exp $ */
- 
 /* 
  *   Create a dependency that should be immune from the effect of register
  *   renaming as is commonly seen in superscalar processors.  This should

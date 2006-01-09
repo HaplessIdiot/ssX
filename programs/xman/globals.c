@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.9 94/04/17 20:43:51 rws Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium

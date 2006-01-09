@@ -1,3 +1,4 @@
+.\" $XFree86$
 .NH 2 
 Paned Widget
 .LP
@@ -48,10 +49,6 @@ without affecting any of the other panes.  When this occurs the pointer
 will change to an arrow that points along the pane border.
 .LP
 The default bindings for the Paned widget's grips are:
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
 lw(1i) lw(2i) lw(2i).
 _
@@ -69,10 +66,6 @@ _
 .sp 3p
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 .NH 3
 Resources
 .LP
@@ -80,11 +73,8 @@ When creating a Paned widget instance, the following resources are
 retrieved from the argument list or the resource database:
 .LP
 .IN "Paned widget" "resources"
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
+expand;
 lw(1i) lw(1i) lw(1i) lw(.4i) lw(2i).
 _
 .sp 3p
@@ -135,10 +125,6 @@ y	Paned	Position		0
 .sp 3p
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 .Ac
 .As
 .Bg
@@ -233,10 +219,6 @@ Each child of the Paned widget may request special layout resources
 be applied to it.  These \fIconstraint\fP resources allow the Paned
 widget's children to specify individual layout requirements.
 .LP
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
 lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
@@ -258,10 +240,6 @@ skipAdjust	Boolean	Boolean		False
 .sp 3p
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 .IP \fBallowResize\fP 1.5i
 If this value is \fBFalse\fP the the Paned widget will disallow all
 geometry requests from this child.

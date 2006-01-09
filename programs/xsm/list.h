@@ -1,4 +1,3 @@
-/* $Xorg: list.h,v 1.4 2001/02/09 02:05:59 xorgcvs Exp $ */
 /******************************************************************************
 
 Copyright 1993, 1998  The Open Group
@@ -23,7 +22,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/list.h,v 1.5 2001/08/01 00:45:07 tsi Exp $ */
+/* $XFree86: xc/programs/xsm/list.h,v 1.6 2001/12/14 20:02:25 dawes Exp $ */
 
 #ifndef _LIST_H_
 #define _LIST_H_

@@ -1,5 +1,4 @@
-/* $Xorg: SetNrmHint.c,v 1.4 2001/02/09 02:03:36 xorgcvs Exp $ */
-
+/* $XFree86$ */
 /***********************************************************
 Copyright 1988 by Wyse Technology, Inc., San Jose, Ca,
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,

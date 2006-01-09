@@ -1,5 +1,3 @@
-/* $Xorg: CCC.c,v 1.4 2001/02/09 02:03:31 xorgcvs Exp $ */
-
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
@@ -33,7 +31,7 @@
  *
  *
  */
-/* $XFree86: xc/lib/X11/CCC.c,v 1.4 2001/12/14 19:53:56 dawes Exp $ */
+/* $XFree86: xc/lib/X11/CCC.c,v 1.5 2003/04/13 19:22:14 dawes Exp $ */
 
 /*
 

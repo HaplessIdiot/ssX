@@ -1,6 +1,4 @@
 /*
- * Id: fbcopy.c,v 1.1 1999/11/02 03:54:45 keithp Exp $
- *
  * Copyright © 1998 Keith Packard
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -21,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbcopy.c,v 1.13 2003/11/10 18:21:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbcopy.c,v 1.14 2003/12/28 17:22:25 alanh Exp $ */
 
 #include "fb.h"
 #ifdef IN_MODULE

@@ -1,6 +1,4 @@
 /*
- * $Xorg: xcutsel.c,v 1.4 2001/02/09 02:05:39 xorgcvs Exp $
- *
  * 
 Copyright 1989, 1998  The Open Group
 
@@ -26,7 +24,7 @@ in this Software without prior written authorization from The Open Group.
  * *
  * Author:  Ralph Swick, DEC/Project Athena
  */
-/* $XFree86: xc/programs/xclipboard/xcutsel.c,v 1.7 2001/04/01 14:00:19 tsi Exp $ */
+/* $XFree86: xc/programs/xclipboard/xcutsel.c,v 1.8 2001/12/14 20:01:16 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1194,5 +1194,4 @@ EXPORTS
   __XOS2RedirRoot1	
 #endif
 
-/* $Xorg: X11-def.cpp,v 1.3 2000/08/17 19:44:59 cpqbld Exp $ */
-/* $XFree86: xc/lib/X11/X11-def.cpp,v 1.15 2003/06/10 17:03:51 dawes Exp $ */
+/* $XFree86: xc/lib/X11/X11-def.cpp,v 1.16 2004/05/06 01:17:29 dawes Exp $ */

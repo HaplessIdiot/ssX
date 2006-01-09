@@ -1,4 +1,3 @@
-/* $Xorg: mitauth.c,v 1.4 2001/02/09 02:05:40 xorgcvs Exp $ */
 /*
 
 Copyright 1988, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/mitauth.c,v 1.5 2003/05/27 22:27:00 tsi Exp $ */
+/* $XFree86: xc/programs/xdm/mitauth.c,v 1.6 2003/09/17 05:48:32 herrb Exp $ */
 
 /*
  * xdm - display manager daemon

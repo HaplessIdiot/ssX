@@ -1,4 +1,3 @@
-/* $Xorg: token.c,v 1.4 2000/08/17 19:46:34 cpqbld Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -27,7 +26,7 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/token.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/lib/font/Type1/token.c,v 1.6 2003/05/27 22:26:47 tsi Exp $ */
 /* Authors: Sig Nin & Carol Thompson IBM Almaden Research Laboratory */
 #include "t1stdio.h"
 #include "util.h"

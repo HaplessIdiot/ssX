@@ -1,4 +1,3 @@
-/* $Xorg: cursorstr.h,v 1.4 2001/02/09 02:05:15 xorgcvs Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/cursorstr.h,v 1.8 2002/11/30 06:21:51 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/include/cursorstr.h,v 1.9 2003/01/12 02:44:27 dawes Exp $ */
 
 #ifndef CURSORSTRUCT_H
 #define CURSORSTRUCT_H 

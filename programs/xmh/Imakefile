@@ -1,10 +1,11 @@
-XCOMM $XConsortium: Imakefile,v 2.24 94/02/10 19:54:10 rws Exp $
+XCOMM $XFree86$
+
 #if HasVFork
   VFORK_DEFINES = -DHAS_VFORK
 #endif
-        DEFINES = $(VFORK_DEFINES)
-        DEPLIBS = XawClientDepLibs
-LOCAL_LIBRARIES = XawClientLibs
+        DEFINES = $(VFORK_DEFINES) XkbClientDefines
+        DEPLIBS = XkbClientDepLibs XawClientDepLibs
+LOCAL_LIBRARIES = XkbClientLibs XawClientLibs
 
     XMH_BITMAPS = black6 box6
            SRCS = bbox.c command.c compfuncs.c folder.c init.c main.c \
@@ -18,6 +19,6 @@ LOCAL_LIBRARIES = XawClientLibs
 
 
 ComplexProgramTarget(xmh)
-BuildIncludes($(XMH_BITMAPS),bitmaps,..)
+BuildIncludes($(XMH_BITMAPS),X11/bitmaps,../..)
 InstallAppDefaults(Xmh)
-InstallMultipleDestFlags(install,$(XMH_BITMAPS),$(INCDIR)/bitmaps,$(INSTINCFLAGS))
+InstallMultipleDestFlags(install,$(XMH_BITMAPS),$(INCDIR)/X11/bitmaps,$(INSTINCFLAGS))

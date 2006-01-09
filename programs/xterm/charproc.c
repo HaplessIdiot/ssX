@@ -1,10 +1,6 @@
 /* $XTermId: charproc.c,v 1.632 2006/01/04 01:03:31 tom Exp $ */
 
-/*
- * $Xorg: charproc.c,v 1.6 2001/02/09 02:06:02 xorgcvs Exp $
- */
-
-/* $XFree86: xc/programs/xterm/charproc.c,v 3.177 2005/11/13 23:10:35 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/charproc.c,v 3.178 2006/01/04 02:10:19 dickey Exp $ */
 
 /*
 

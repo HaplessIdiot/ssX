@@ -1,4 +1,4 @@
-/* $Xorg: selection.h,v 1.4 2001/02/09 02:05:16 xorgcvs Exp $ */
+/* $XFree86$ */
 #ifndef SELECTION_H
 #define SELECTION_H 1
 

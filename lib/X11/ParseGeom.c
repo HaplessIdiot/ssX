@@ -1,5 +1,3 @@
-/* $Xorg: ParseGeom.c,v 1.4 2001/02/09 02:03:35 xorgcvs Exp $ */
-
 /*
 
 Copyright 1985, 1986, 1987,1998  The Open Group
@@ -27,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ParseGeom.c,v 1.3 2001/12/14 19:54:03 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ParseGeom.c,v 1.4 2003/11/17 22:20:08 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xutil.h"

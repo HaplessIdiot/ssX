@@ -1,3 +1,4 @@
+.\" $XFree86$
 .NH 2
 Sme Object
 .LP
@@ -32,10 +33,6 @@ The resources associated with the SmeLine object are defined in this
 section, and affect only the single menu entry specified by this object.
 There are no new resources added for this class, as it picks up all its
 resources from the RectObj class.
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
 lw(1.5i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
@@ -57,10 +54,6 @@ width	Width	Dimension		1
 .sp 3p
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 .As
 .Dc
 .Hw

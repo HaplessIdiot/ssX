@@ -1,4 +1,3 @@
-/* $TOG:  $ */
 /******************************************************************
 
               Copyright 1993 by SunSoft, Inc.
@@ -24,7 +23,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/lcUTF8.c,v 1.16 2003/11/17 22:20:12 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUTF8.c,v 1.17 2004/03/26 02:06:45 dawes Exp $ */
 
 /*
  * This file contains:

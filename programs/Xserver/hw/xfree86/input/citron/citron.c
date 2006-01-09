@@ -1,4 +1,4 @@
-/* $Id: citron.c,v 1.13 2004/04/26 22:26:10 dawes Exp $
+/*
  * Copyright (c) 1998  Metro Link Incorporated
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.c,v 1.12 2003/11/06 18:38:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.c,v 1.13 2004/04/26 22:26:10 dawes Exp $ */
 
 /*
  * Based, in part, on code with the following copyright notice:

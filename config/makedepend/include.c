@@ -1,4 +1,3 @@
-/* $Xorg: include.c,v 1.4 2001/02/09 02:03:16 xorgcvs Exp $ */
 /*
 
 Copyright (c) 1993, 1994, 1998 The Open Group
@@ -24,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/include.c,v 3.7tsi Exp $ */
+/* $XFree86: xc/config/makedepend/include.c,v 3.8 2004/06/09 19:00:09 tsi Exp $ */
 
 
 #include "def.h"

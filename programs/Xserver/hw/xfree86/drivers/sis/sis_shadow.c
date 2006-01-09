@@ -1,5 +1,4 @@
-/* $XFree86$ */
-/* $XdotOrg$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_shadow.c,v 1.11 2004/06/21 00:43:22 twini Exp $ */
 /*
  * Copyright (C) 1999-2004 by The XFree86 Project, Inc.
  * based on code written by Mark Vojkovich

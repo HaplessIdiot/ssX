@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mifillarc.h,v 3.6 2001/10/25 12:03:47 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mifillarc.h,v 3.7 2001/12/14 20:00:22 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -24,8 +24,6 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 ********************************************************/
-
-/* $Xorg: mifillarc.h,v 1.4 2001/02/09 02:05:20 xorgcvs Exp $ */
 
 #ifndef __MIFILLARC_H__
 #define __MIFILLARC_H__

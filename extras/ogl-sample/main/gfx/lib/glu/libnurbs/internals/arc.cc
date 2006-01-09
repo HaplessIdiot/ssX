@@ -35,10 +35,8 @@
 /*
  * arc.c++
  *
- * $Date: 2003/10/22 19:20:56 $ $Revision: 1.2 $
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/arc.cc,v 1.2 2003/10/22 19:20:56 tsi Exp $
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/arc.cc,v 1.2 2003/10/22 19:20:56 tsi Exp $ */
 
 #include <stdio.h>
 #include "glimports.h"

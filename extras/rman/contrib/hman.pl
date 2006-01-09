@@ -1,8 +1,6 @@
 #!/usr/bin/perl -w
 #!/citi/gtfd/mach/bin/perl -w
 ###############
-# $Id: hman.pl,v 1.1 2000/03/21 00:47:35 dawes Exp $
-# $Source: /vol1/history/xf86/xc/extras/rman/contrib/hman.pl,v $
 ############################################
 # TODO:
 #	reorganize location of man pages - move 3x stuff from man3 to man3x

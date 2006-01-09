@@ -35,8 +35,6 @@
 /*
  * varray.c++
  *
- * $Date: 2001/01/15 21:48:46 $ $Revision: 1.1 $
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/varray.cc,v 1.1 2001/01/15 21:48:46 dawes Exp $
  */
 
 #include "glimports.h"

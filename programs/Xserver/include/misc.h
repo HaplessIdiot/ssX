@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.30 2004/06/30 20:21:46 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.31 2004/07/17 20:41:00 martin Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -66,7 +66,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: misc.h,v 1.5 2001/02/09 02:05:15 xorgcvs Exp $ */
+
 #ifndef MISC_H
 #define MISC_H 1
 /*

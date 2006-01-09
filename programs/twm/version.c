@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*****************************************************************************/
 /*
 
@@ -49,6 +50,5 @@ in this Software without prior written authorization from The Open Group.
 /**    OR PERFORMANCE OF THIS SOFTWARE.                                     **/
 /*****************************************************************************/
 
-/* $Xorg: version.c,v 1.4 2001/02/09 02:05:37 xorgcvs Exp $ */
-char *Version = "The Open Group, R6.3";
+char *Version = "XFree86 4.x";
 

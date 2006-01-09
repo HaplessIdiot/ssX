@@ -1,5 +1,3 @@
-/* $Xorg: CursorName.c,v 1.4 2001/02/09 02:03:51 xorgcvs Exp $ */
-
 /*
  
 Copyright 1989, 1998  The Open Group
@@ -25,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/CursorName.c,v 3.7tsi Exp $ */
+/* $XFree86: xc/lib/Xmu/CursorName.c,v 3.8 2002/09/18 17:11:42 tsi Exp $ */
 
 #include <X11/Xmu/CharSet.h>
 #include <X11/Xmu/CurUtil.h>

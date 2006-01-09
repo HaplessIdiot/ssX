@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/bios_devmem.c,v 3.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/bios_devmem.c,v 3.8 2005/10/14 15:17:07 tsi Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -21,7 +21,6 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: bios_devmem.c /main/5 1996/10/19 18:07:41 kaleb $ */
 
 #include <X11/X.h>
 #include "xf86.h"

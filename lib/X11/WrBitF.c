@@ -1,4 +1,3 @@
-/* $Xorg: WrBitF.c,v 1.4 2001/02/09 02:03:37 xorgcvs Exp $ */
 /*
 
 Copyright 1987, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/WrBitF.c,v 3.6 2003/04/13 19:22:18 dawes Exp $ */
+/* $XFree86: xc/lib/X11/WrBitF.c,v 3.7 2003/11/17 22:20:08 dawes Exp $ */
 
 #include "Xlibint.h"
 #include <X11/Xos.h>

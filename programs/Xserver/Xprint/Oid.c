@@ -1,4 +1,3 @@
-/* $Xorg: Oid.c,v 1.3 2000/08/17 19:48:06 cpqbld Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -30,7 +29,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/Oid.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/Oid.c,v 1.6 2003/10/29 22:11:54 tsi Exp $ */
 
 #include "attributes.h"
 

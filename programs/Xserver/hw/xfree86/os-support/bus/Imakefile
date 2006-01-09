@@ -1,9 +1,4 @@
-XCOMM $XConsortium: Imakefile /main/16 1996/10/27 18:07:43 kaleb $
-
-
-
-
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Imakefile,v 1.33tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Imakefile,v 1.34 2005/10/14 15:17:01 tsi Exp $
 
 #include <Server.tmpl>
 

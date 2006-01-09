@@ -1,4 +1,3 @@
-/* $Xorg: cache.h,v 1.4 2001/02/09 02:05:43 xorgcvs Exp $ */
 /* 
 Copyright 1987, 1998  The Open Group
 
@@ -47,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * @(#)cache.h	4.1	91/05/02
  *
  */
-/* $XFree86: xc/programs/xfs/include/cache.h,v 1.4 2001/01/17 23:45:31 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/include/cache.h,v 1.5 2001/12/14 20:01:37 dawes Exp $ */
 
 #ifndef _CACHE_H_
 #define	_CACHE_H_

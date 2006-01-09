@@ -1,7 +1,4 @@
 /*
- * $XConsortium: screen.c,v 2.65 95/01/06 16:39:19 swick Exp $
- *
- *
  *		        COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
@@ -24,7 +21,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xmh/screen.c,v 1.2 2001/10/28 03:34:39 tsi Exp $ */
+/* $XFree86: xc/programs/xmh/screen.c,v 1.3 2002/04/05 21:06:29 dickey Exp $ */
 
 /* scrn.c -- management of scrns. */
 

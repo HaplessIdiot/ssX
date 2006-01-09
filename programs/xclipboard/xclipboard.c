@@ -1,6 +1,4 @@
 /*
- * $Xorg: xclipboard.c,v 1.4 2001/02/09 02:05:38 xorgcvs Exp $
- *
  * 
 Copyright 1989, 1998  The Open Group
 
@@ -28,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
  * Updated for R4:  Chris D. Peterson,  MIT X Consortium.
  * Reauthored by: Keith Packard, MIT X Consortium.
  */
-/* $XFree86: xc/programs/xclipboard/xclipboard.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/xclipboard/xclipboard.c,v 1.9 2003/05/27 22:26:59 tsi Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>

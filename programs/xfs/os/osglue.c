@@ -1,4 +1,3 @@
-/* $Xorg: osglue.c,v 1.4 2001/02/09 02:05:44 xorgcvs Exp $ */
 /*
 Copyright 1987, 1998  The Open Group
 
@@ -44,10 +43,8 @@ in this Software without prior written authorization from The Open Group.
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDXorg: @(#)osglue.c,v 4.6 1991/07/09 14:07:30 lemke Exp $
- *
  */
-/* $XFree86: xc/programs/xfs/os/osglue.c,v 3.18 2002/10/15 01:45:03 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/osglue.c,v 3.19 2002/10/19 20:04:20 herrb Exp $ */
 
 /*
  * this is miscellaneous OS specific stuff.

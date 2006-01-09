@@ -1,9 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_shadow.c,v 1.1 2002/12/10 15:12:24 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_shadow.c,v 1.2 2003/01/14 09:34:32 alanh Exp $ */
 /*
- * $Workfile: nsc_gx2_shadow.c $
- * $Revision: 1.2 $
- * $Author: alanh $
- *
  * File Contents: Direct graphics display routines are implemented and 
  *                graphics rendering are all done in memory.
  *

@@ -1,7 +1,6 @@
 #ifndef _XKBBELLS_H_
 #define	_XKBBELLS_H_ 1
 
-/* $Xorg: XKBbells.h,v 1.3 2000/08/17 19:46:42 cpqbld Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -27,7 +26,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/xkbfile/XKBbells.h,v 3.3 2003/11/17 22:20:23 dawes Exp $ */
 
 #define	XkbBN_Info			"Info"
 #define	XkbBN_Warning			"Warning"

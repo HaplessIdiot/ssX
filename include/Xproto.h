@@ -1,6 +1,4 @@
-/*
- *	$Xorg: Xproto.h,v 1.4 2001/02/09 02:03:23 xorgcvs Exp $
- */
+/* $XFree86$ */
 
 /* Definitions for the X window system used by server and c bindings */
 

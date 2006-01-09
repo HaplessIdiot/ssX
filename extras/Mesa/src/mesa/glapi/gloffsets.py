@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-# $Id: gloffsets.py,v 1.1 2004/04/08 09:17:35 alanh Exp $
-
 # Mesa 3-D graphics library
 # Version:  4.1
 # 

@@ -1,5 +1,3 @@
-/* $Xorg: CharSet.h,v 1.4 2001/02/09 02:03:51 xorgcvs Exp $ */
-
 /* 
 
 Copyright 1988, 1998  The Open Group
@@ -26,7 +24,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xmu/CharSet.h,v 1.7 2001/01/17 19:42:53 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CharSet.h,v 1.8 2001/12/14 19:55:33 dawes Exp $ */
 
 /*
  * The interfaces described by this header file are for miscellaneous utilities

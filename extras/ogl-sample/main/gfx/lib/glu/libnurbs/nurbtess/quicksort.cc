@@ -31,14 +31,9 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 **
-** Date Revision
-*/
-/*
-** Header: //depot/main/gfx/lib/glu/libnurbs/nurbtess/quicksort.cc#3 
 */
 
-
-/* $XFree86$ */
+/* $XFree86: xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/nurbtess/quicksort.cc,v 1.2 2002/01/23 17:06:18 dawes Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>

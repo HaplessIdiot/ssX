@@ -1,5 +1,4 @@
-/* $Xorg: fontshow.h,v 1.4 2001/02/09 02:04:04 xorgcvs Exp $ */
-
+/* $XFree86$ */
 /*
 
 Copyright 1990, 1998  The Open Group

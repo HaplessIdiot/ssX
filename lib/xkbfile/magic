@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XFree86$
 # Here are some lines you can add to /etc/magic
 # to identify XKM (compiled X keymap) files
 # and determine their version and the byte ordering

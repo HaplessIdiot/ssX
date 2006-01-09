@@ -1,4 +1,4 @@
-.\" $XConsortium: ddx.tbl.ms,v 1.40 94/04/18 16:33:47 rws Exp $"
+.\" $XFree86$
 .EF 'Porting Layer Definition'- % -'April 8, 1994'
 .OF 'Porting Layer Definition'- % -'April 8, 1994'
 .EH '''
@@ -990,7 +990,73 @@ terminate the server; it must not return.
 .LP
 The sample server implementation for these routines
 is in Xserver/os/util.c.
+.NH 2
+Idiom Support
+.XS
+Idiom Support
+.XE
+.LP
+The DBE specification introduces the notion of idioms, which are
+groups of X requests which can be executed more efficiently when taken
+as a whole compared to being performed individually and sequentially.
+This following server internal support to allows DBE
+implementations, as well as other parts of the server,
+to do idiom processing.
+.LP
+.nf
 
+	xReqPtr PeekNextRequest(xReqPtr req, ClientPtr client, Bool readmore)
+.fi
+.LP
+If req is NULL, the return value will be a pointer to the start of the
+complete request that follows the one currently being executed for the
+client.  If req is not NULL, the function assumes that req is a
+pointer to a request in the client's request buffer, and the return
+value will be a pointer to the the start of the complete request that
+follows req.  If the complete request is not available, the function
+returns NULL; pointers to partial requests will never be returned.  If
+(and only if) readmore is TRUE, PeekNextRequest should try to read an
+additional request from the client if one is not already available in
+the client's request buffer.  If PeekNextRequest reads more data into
+the request buffer, it should not move or change the existing data.
+.LP
+.nf
+
+	void SkipRequests(xReqPtr req, ClientPtr client, int numskipped)
+.fi
+.LP
+The requests for the client up to and including the one specified by
+req will be skipped.  numskipped must be the number of requests being
+skipped.  Normal request processing will resume with the request that
+follows req.  The caller must not have modified the contents of the
+request buffer in any way (e.g., by doing byte swapping in place).
+.LP
+Additionally, two macros in os.h operate on the xReq
+pointer returned by PeekNextRequest:
+.LP
+.nf
+
+	int ReqLen(xReqPtr req, ClientPtr client)
+.fi
+.LP
+The value of ReqLen is the request length in bytes of the given xReq.
+.LP
+.nf
+
+	otherReqTypePtr CastxReq(xReq *req, otherReqTypePtr)
+.fi
+.LP
+The value of CastxReq is the conversion of the given request pointer
+to an otherReqTypePtr (which should be a pointer to a protocol
+structure type).  Only those fields which come after the length field
+of otherReqType may be accessed via the returned pointer.
+.LP
+Thus the first two fields of a request, reqType and data, can be
+accessed directly using the xReq * returned by PeekNextRequest.  The
+next field, the length, can be accessed with ReqLen.  Fields beyond
+that can be accessed with CastxReq.  This complexity was necessary
+because of the reencoding of core protocol that can happen due to the
+BigRequests extension.
 .NH 1
 DDX LAYER
 .XS

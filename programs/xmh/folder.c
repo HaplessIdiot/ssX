@@ -1,7 +1,4 @@
 /*
- * $XConsortium: folder.c,v 2.44 94/08/29 20:25:49 swick Exp $
- *
- *
  *		       COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
@@ -24,7 +21,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xmh/folder.c,v 1.3 2001/10/28 03:34:38 tsi Exp $ */
+/* $XFree86: xc/programs/xmh/folder.c,v 1.4 2002/04/05 21:06:28 dickey Exp $ */
 
 /* folder.c -- implement buttons relating to folders and other globals. */
 

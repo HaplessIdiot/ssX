@@ -1,9 +1,4 @@
-/* $XConsortium: os2_select.c /main/6 1996/10/27 11:48:55 kaleb $ */
-
-
-
-
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_select.c,v 3.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_select.c,v 3.11 2005/10/14 15:17:06 tsi Exp $ */
 
 /*
  * (c) Copyright 1996 by Sebastien Marineau

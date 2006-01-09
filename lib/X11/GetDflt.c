@@ -1,5 +1,3 @@
-/* $Xorg: GetDflt.c,v 1.6 2001/02/09 02:03:33 xorgcvs Exp $ */
-
 /***********************************************************
 
 Copyright 1987, 1988, 1998  The Open Group
@@ -46,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/GetDflt.c,v 3.22 2003/04/13 19:22:16 dawes Exp $ */
+/* $XFree86: xc/lib/X11/GetDflt.c,v 3.24 2004/03/30 10:34:05 eich Exp $ */
 
 #include "Xlibint.h"
 #include <X11/Xos.h>

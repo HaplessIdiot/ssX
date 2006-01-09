@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.20tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.21 2005/10/14 15:17:06 tsi Exp $ */
 /*
  * (c) Copyright 1994,1999 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -27,7 +27,6 @@
  * in this Software without prior written authorization from Holger Veit.
  *
  */
-/* $XConsortium: os2_io.c /main/9 1996/05/13 16:38:07 kaleb $ */
 
 #define I_NEED_OS2_H
 #include <X11/X.h>

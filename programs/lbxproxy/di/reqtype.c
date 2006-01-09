@@ -1,4 +1,4 @@
-/* $XConsortium: reqtype.c /main/10 1996/12/19 19:16:03 rws $ */
+/* $XFree86$ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *

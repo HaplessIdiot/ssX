@@ -1,10 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.15 94/04/04 21:49:55 gildea Exp $
-
-
-
-
-XCOMM $XFree86: xc/programs/xditview/Imakefile,v 1.7tsi Exp $
-
+XCOMM $XFree86: xc/programs/xditview/Imakefile,v 1.8 2005/10/14 15:17:32 tsi Exp $
 
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 #if BuildXftLibrary

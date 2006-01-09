@@ -1,4 +1,3 @@
-/* $XConsortium: main.c,v 1.23 94/04/17 20:43:55 rws Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium
@@ -28,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/main.c,v 1.4 2001/10/28 03:34:36 tsi Exp $ */
+/* $XFree86: xc/programs/xman/main.c,v 1.5 2004/03/12 02:17:55 dickey Exp $ */
 
 /*
  * xman - X window system manual page display program.

@@ -1,5 +1,3 @@
-/* $XConsortium: Xlibnet.h,v 1.18 91/07/23 19:01:27 rws Exp $ */
-
 /*
 Copyright 1991 Massachusetts Institute of Technology
 
@@ -13,7 +11,7 @@ written prior permission.  M.I.T. makes no representations about the
 suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
-/* $XFree86: xc/lib/dps/Xlibnet.h,v 1.7 2002/05/31 18:45:48 dawes Exp $ */
+/* $XFree86: xc/lib/dps/Xlibnet.h,v 1.8 2004/04/03 22:26:21 dawes Exp $ */
 /*
  * Xlibnet.h - Xlib networking include files for UNIX Systems.
  */

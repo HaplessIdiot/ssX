@@ -1,5 +1,3 @@
-/* $XConsortium: util.c,v 1.16 92/08/12 16:46:22 converse Exp $ */
-
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -24,7 +22,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/util.c,v 1.26 2003/05/07 20:54:43 herrb Exp $ */
+/* $XFree86: xc/programs/xedit/util.c,v 1.27 2003/05/23 14:58:02 tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>		/* for realpath() */

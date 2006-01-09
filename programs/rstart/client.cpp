@@ -1,5 +1,5 @@
 XCOMM! /bin/sh
-XCOMM $Xorg: client.cpp,v 1.4 2000/12/20 16:41:43 pookie Exp $
+XCOMM $XFree86$
 XCOMM
 
 XCOMM Copyright (c) 1993 Quarterdeck Office Systems

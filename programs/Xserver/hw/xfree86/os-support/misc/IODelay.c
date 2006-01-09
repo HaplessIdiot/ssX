@@ -1,11 +1,9 @@
-
-/* $XConsortium: IODelay.c /main/1 1996/05/07 17:13:43 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/IODelay.c,v 1.4 2005/10/14 15:17:05 tsi Exp $ */
+ 
 /*******************************************************************************
   Stub for Alpha Linux
 *******************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/IODelay.c,v 1.3tsi Exp $ */
- 
 #include <X11/X.h>
 #include "xf86.h"
 #include "xf86Priv.h"

@@ -1,47 +1,37 @@
 STARTFONT 2.1
-COMMENT $XConsortium: term14.bdf,v 1.6 94/04/10 21:49:26 gildea Exp $
-COMMENT 
-COMMENT  Copyright 1988 Digital Equipment Corporation
-COMMENT 
-COMMENT  The name "Bitstream" is a registered trademark of Bitstream, Inc.  
-COMMENT  Permission to use this trademark is hereby granted only in association
-COMMENT  with the images described in this file.
-COMMENT 
-COMMENT  Permission to use, copy, modify, and distribute this software and
-COMMENT  its documentation for any purpose and without fee is hereby granted,
-COMMENT  provided that the above copyright notices appear in all copies and
-COMMENT  that both those copyright notices and this permission notice appear
-COMMENT  in supporting documentation, and that the name of 
-COMMENT  Digital Equipment Corporation not be used in advertising or
-COMMENT  publicity pertaining to distribution of the software without
-COMMENT  specific, written prior permission.  Digital
-COMMENT  Equipment Corporation make no representations about the suitability
-COMMENT  of this software for any purpose.  It is provided "as is" without
-COMMENT  express or implied warranty.
-COMMENT 
-COMMENT  DIGITAL EQUIPMENT CORPORATION DISCLAIMS ALL
-COMMENT  WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED
-COMMENT  WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL 
-COMMENT  DIGITAL EQUIPMENT CORPORATION BE LIABLE FOR ANY SPECIAL,
-COMMENT  INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
-COMMENT  RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
-COMMENT  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
-COMMENT  CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-COMMENT 
-COMMENT 
 FONT -Bitstream-Terminal-Medium-R-Normal--18-140-100-100-C-110-ISO8859-1
 SIZE 14 100 100
 FONTBOUNDINGBOX 11 20 0 -5
+COMMENT $XFree86$
+COMMENT 
+COMMENT +
+COMMENT  Copyright (c) 1987, 1994 Digital Equipment Corporation
+COMMENT 
+COMMENT  The name "Bitstream" is a registered trademark of Bitstream, Inc.
+COMMENT  Permission to use this trademark is hereby granted only in association
+COMMENT  with the images described in this file.
+COMMENT 
+COMMENT  The X Consortium, and any party obtaining a copy of these files from
+COMMENT  the X Consortium, directly or indirectly, is granted, free of charge, a
+COMMENT  full and unrestricted irrevocable, world-wide, paid up, royalty-free,
+COMMENT  nonexclusive right and license to deal in this software and
+COMMENT  documentation files (the "Software"), including without limitation the
+COMMENT  rights to use, copy, modify, merge, publish, distribute, sublicense,
+COMMENT  and/or sell copies of the Software, and to permit persons who receive
+COMMENT  copies from any such party to do so.  This license includes without
+COMMENT  limitation a license to do the foregoing actions under any patents of
+COMMENT  the party supplying this software to the X Consortium.
+COMMENT 
+COMMENT  Digital Equipment Corporation make no representations about the
+COMMENT  suitability of this software for any purpose.  It is provided "as
+COMMENT  is" without express or implied warranty.
+COMMENT -
 STARTPROPERTIES 22
-FONT_DESCENT 5
-FONT_ASCENT 15
-COMMENT Begin LogicalFontDescription
-FONTNAME_REGISTRY ""
-FAMILY_NAME "Terminal"
 FOUNDRY "Bitstream"
+FAMILY_NAME "Terminal"
 WEIGHT_NAME "Medium"
-SETWIDTH_NAME "Normal"
 SLANT "R"
+SETWIDTH_NAME "Normal"
 ADD_STYLE_NAME ""
 PIXEL_SIZE 18
 POINT_SIZE 140
@@ -51,14 +41,16 @@ SPACING "C"
 AVERAGE_WIDTH 110
 CHARSET_REGISTRY "ISO8859"
 CHARSET_ENCODING "1"
-CHARSET_COLLECTIONS "ASCII ISO8859-1"
-FACE_NAME "Terminal"
-COPYRIGHT "Copyright (c) 1988 Bitstream, Inc., Portions Copyright 1988 Digital Equipment Corp."
 CAP_HEIGHT 11
 X_HEIGHT 9
-COMMENT ***** end of inserted font properties
+FONT_ASCENT 15
+FONT_DESCENT 5
+DEFAULT_CHAR 159
+COPYRIGHT "Copyright (c) 1991 Digital Equipment Corporation. All Rights Reserved."
+_DEC_PRODUCTINFO "DECterm Fonts V2.2, 11-Nov-1991"
+FULL_NAME "Terminal"
 ENDPROPERTIES
-CHARS 193
+CHARS 195
 STARTCHAR space
 ENCODING 32
 SWIDTH 565 0
@@ -101,17 +93,17 @@ STARTCHAR numbersign
 ENCODING 35
 SWIDTH 565 0
 DWIDTH 11 0
-BBX 11 14 0 -3
+BBX 10 14 1 -3
 BITMAP
-1980
-1980
-1980
-1980
-1980
-FFE0
 3300
 3300
-FFE0
+3300
+3300
+3300
+FFC0
+3300
+3300
+FFC0
 3300
 3300
 3300
@@ -122,21 +114,21 @@ STARTCHAR dollar
 ENCODING 36
 SWIDTH 565 0
 DWIDTH 11 0
-BBX 8 16 2 -3
+BBX 7 16 2 -3
 BITMAP
-08
-08
-7B
-E7
-C3
+10
+10
+7E
+E6
+C6
 C0
 E0
-7E
-03
-03
-C3
-E3
-DE
+7C
+0E
+06
+C6
+CE
+FC
 10
 10
 10
@@ -321,181 +313,181 @@ STARTCHAR zero
 ENCODING 48
 SWIDTH 565 0
 DWIDTH 11 0
-BBX 8 11 2 0
+BBX 7 11 2 0
 BITMAP
-3C
-66
-42
-C3
-C3
-C3
-C3
-C3
-42
-66
-3C
+38
+6C
+44
+C6
+C6
+C6
+C6
+C6
+44
+6C
+38
 ENDCHAR
 STARTCHAR one
 ENCODING 49
 SWIDTH 565 0
 DWIDTH 11 0
-BBX 8 11 2 0
+BBX 6 11 3 0
 BITMAP
-38
-F8
-18
-18
-18
-18
-18
-18
-18
-18
-FF
+30
+70
+B0
+30
+30
+30
+30
+30
+30
+30
+FC
 ENDCHAR
 STARTCHAR two
 ENCODING 50
 SWIDTH 565 0
 DWIDTH 11 0
-BBX 8 11 2 0
+BBX 7 11 2 0
 BITMAP
-7E
-C7
-C3
-03
-03
+7C
+CE
+C6
+06
 06
 0C
 18
 30
-63
-FF
+60
+C6
+FE
 ENDCHAR
 STARTCHAR three
 ENCODING 51
 SWIDTH 565 0
 DWIDTH 11 0
-BBX 8 11 2 0
+BBX 7 11 2 0
 BITMAP
-7E
-C7
-03
-03
+7C
+CE
 06
-1C
 06
-03
-03
-C3
-7E
+0C
+38
+0C
+06
+06
+C6
+7C
 ENDCHAR
 STARTCHAR four
 ENCODING 52
 SWIDTH 565 0
 DWIDTH 11 0
-BBX 8 11 2 0
+BBX 7 11 2 0
 BITMAP
-0E
-0E
-16
-36
-26
-46
-C6
-FF
-06
-06
-1F
+0C
+1C
+1C
+2C
+6C
+4C
+CC
+FE
+0C
+0C
+1E
 ENDCHAR
 STARTCHAR five
 ENCODING 53
 SWIDTH 565 0
 DWIDTH 11 0
-BBX 8 11 2 0
+BBX 7 11 2 0
 BITMAP
-FE
-C0
-C0
-C0
 FC
-C6
-03
-03
-03
-C6
-7C
+C0
+C0
+C0
+F8
+CC
+06
+06
+06
+CC
+78
 ENDCHAR
 STARTCHAR six
 ENCODING 54
 SWIDTH 565 0
 DWIDTH 11 0
-BBX 8 11 2 0
+BBX 7 11 2 0
 BITMAP
-0F
+1C
+20
+60
+40
+D8
+EC
+C6
+C6
+C6
+6C
 38
-60
-60
-DC
-E6
-C3
-C3
-C3
-66
-3C
 ENDCHAR
 STARTCHAR seven
 ENCODING 55
 SWIDTH 565 0
 DWIDTH 11 0
-BBX 8 11 2 0
+BBX 7 11 2 0
 BITMAP
-FF
-C3
-03
+FE
+C6
 06
-06
-04
 0C
 0C
 08
 18
 18
+10
+30
+30
 ENDCHAR
 STARTCHAR eight
 ENCODING 56
 SWIDTH 565 0
 DWIDTH 11 0
-BBX 8 11 2 0
+BBX 7 11 2 0
 BITMAP
-3C
-66
-C3
-C3
-66
-3C
-66
-C3
-C3
-66
-3C
+38
+6C
+C6
+C6
+6C
+38
+6C
+C6
+C6
+6C
+38
 ENDCHAR
 STARTCHAR nine
 ENCODING 57
 SWIDTH 565 0
 DWIDTH 11 0
-BBX 8 11 2 0
+BBX 7 11 2 0
 BITMAP
-3C
-66
-C3
-C3
-C3
-67
-3B
-06
-06
-1C
-F0
+38
+6C
+C6
+C6
+C6
+6E
+36
+04
+0C
+18
+70
 ENDCHAR
 STARTCHAR colon
 ENCODING 58
@@ -632,7 +624,7 @@ BITMAP
 3F80
 60C0
 60C0
-FBE0
+F1E0
 ENDCHAR
 STARTCHAR B
 ENCODING 66
@@ -971,7 +963,7 @@ FFC0
 8C40
 8C40
 8C40
-8C40
+0C00
 0C00
 0C00
 0C00
@@ -1041,13 +1033,13 @@ BBX 9 11 1 0
 BITMAP
 F780
 6300
-3600
+6300
 3600
 1C00
 1C00
 1C00
 3600
-3600
+6300
 6300
 F780
 ENDCHAR
@@ -1067,7 +1059,7 @@ F3C0
 0C00
 0C00
 0C00
-3F00
+1E00
 ENDCHAR
 STARTCHAR Z
 ENCODING 90
@@ -1091,7 +1083,7 @@ STARTCHAR bracketleft
 ENCODING 91
 SWIDTH 565 0
 DWIDTH 11 0
-BBX 4 14 4 -1
+BBX 4 14 4 -2
 BITMAP
 F0
 C0
@@ -1132,7 +1124,7 @@ STARTCHAR bracketright
 ENCODING 93
 SWIDTH 565 0
 DWIDTH 11 0
-BBX 4 14 4 -1
+BBX 4 14 3 -2
 BITMAP
 F0
 30
@@ -1153,7 +1145,7 @@ STARTCHAR asciicircum
 ENCODING 94
 SWIDTH 565 0
 DWIDTH 11 0
-BBX 7 4 2 9
+BBX 7 4 2 5
 BITMAP
 10
 38
@@ -1284,7 +1276,7 @@ FF00
 3000
 3000
 3000
-FF00
+FE00
 ENDCHAR
 STARTCHAR g
 ENCODING 103
@@ -1390,20 +1382,20 @@ STARTCHAR l
 ENCODING 108
 SWIDTH 565 0
 DWIDTH 11 0
-BBX 9 12 1 0
+BBX 8 12 1 0
 BITMAP
-7800
-1800
-1800
-1800
-1800
-1800
-1800
-1800
-1800
-1800
-1800
-FF80
+F8
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+FF
 ENDCHAR
 STARTCHAR m
 ENCODING 109
@@ -1580,7 +1572,7 @@ SWIDTH 565 0
 DWIDTH 11 0
 BBX 11 9 0 0
 BITMAP
-F1E0
+E0E0
 C060
 4440
 64C0
@@ -1714,7 +1706,7 @@ STARTCHAR asciitilde
 ENCODING 126
 SWIDTH 565 0
 DWIDTH 11 0
-BBX 7 3 2 10
+BBX 7 3 2 6
 BITMAP
 62
 BA
@@ -1776,16 +1768,50 @@ F3C0
 0C00
 3F00
 ENDCHAR
+STARTCHAR Error
+ENCODING 159
+SWIDTH 565 0
+DWIDTH 11 0
+BBX 10 18 1 -3
+BITMAP
+1F00
+7F80
+7380
+E1C0
+E1C0
+E1C0
+7000
+7800
+3C00
+1C00
+0E00
+0E00
+0E00
+0000
+0000
+0E00
+0E00
+0E00
+ENDCHAR
+STARTCHAR space
+ENCODING 160
+SWIDTH 565 0
+DWIDTH 11 0
+BBX 1 1 0 0
+BITMAP
+00
+ENDCHAR
 STARTCHAR exclamdown
 ENCODING 161
 SWIDTH 565 0
 DWIDTH 11 0
-BBX 4 11 4 0
+BBX 4 12 4 -1
 BITMAP
 60
 F0
 60
 00
+60
 60
 60
 60
@@ -2259,15 +2285,16 @@ STARTCHAR questiondown
 ENCODING 191
 SWIDTH 565 0
 DWIDTH 11 0
-BBX 8 11 2 0
+BBX 8 12 2 -1
 BITMAP
-0C
-1E
-0C
+18
+3C
+18
 00
-0C
-1C
-70
+18
+18
+30
+60
 C0
 C0
 C3
@@ -2293,7 +2320,7 @@ BITMAP
 3F80
 60C0
 60C0
-FBE0
+F1E0
 ENDCHAR
 STARTCHAR Aacute
 ENCODING 193
@@ -2315,7 +2342,7 @@ BITMAP
 3F80
 60C0
 60C0
-FBE0
+F1E0
 ENDCHAR
 STARTCHAR Acircumflex
 ENCODING 194
@@ -2337,7 +2364,7 @@ BITMAP
 3F80
 60C0
 60C0
-FBE0
+F1E0
 ENDCHAR
 STARTCHAR Atilde
 ENCODING 195
@@ -2359,7 +2386,7 @@ BITMAP
 3F80
 60C0
 60C0
-FBE0
+F1E0
 ENDCHAR
 STARTCHAR Adieresis
 ENCODING 196
@@ -2381,7 +2408,7 @@ BITMAP
 3F80
 60C0
 60C0
-FBE0
+F1E0
 ENDCHAR
 STARTCHAR Aring
 ENCODING 197
@@ -2403,7 +2430,7 @@ BITMAP
 3F80
 60C0
 60C0
-FBE0
+F1E0
 ENDCHAR
 STARTCHAR AE
 ENCODING 198
@@ -3287,10 +3314,10 @@ SWIDTH 565 0
 DWIDTH 11 0
 BBX 9 12 1 0
 BITMAP
-3900
-0E00
-0E00
-1300
+3980
+0600
+1E00
+0300
 1F00
 6380
 C180

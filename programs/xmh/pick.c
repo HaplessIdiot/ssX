@@ -1,7 +1,4 @@
 /*
- * $XConsortium: pick.c,v 2.45 91/07/17 21:26:54 converse Exp $
- *
- *
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
@@ -24,7 +21,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xmh/pick.c,v 1.2 2001/08/01 00:45:06 tsi Exp $ */
+/* $XFree86: xc/programs/xmh/pick.c,v 1.3 2002/04/05 21:06:29 dickey Exp $ */
 
 /* pick.c -- handle a pick subwidget. */
 

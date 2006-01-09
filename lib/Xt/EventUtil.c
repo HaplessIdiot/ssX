@@ -1,5 +1,3 @@
-/* $Xorg: EventUtil.c,v 1.4 2001/02/09 02:03:54 xorgcvs Exp $ */
-
 /********************************************************
 
 Copyright 1988 by Hewlett-Packard Company
@@ -59,7 +57,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/EventUtil.c,v 1.7 2003/04/21 16:34:27 herrb Exp $ */
+/* $XFree86: xc/lib/Xt/EventUtil.c,v 1.8 2004/05/05 00:07:03 dickey Exp $ */
 
 #include "IntrinsicI.h"
 #include "PassivGraI.h"

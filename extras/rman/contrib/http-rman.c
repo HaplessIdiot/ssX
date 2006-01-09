@@ -1,4 +1,4 @@
-/* $Id: http-rman.c,v 1.1 2000/03/21 00:47:35 dawes Exp $
+/*
  *
  * Name:
  *	http-rman.c -- a rudimentary man-page HTTP server

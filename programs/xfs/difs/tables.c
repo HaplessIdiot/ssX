@@ -1,4 +1,3 @@
-/* $Xorg: tables.c,v 1.4 2001/02/09 02:05:43 xorgcvs Exp $ */
 /*
  * all the dispatch, error, event and reply vectors
  */
@@ -46,7 +45,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/tables.c,v 1.5 2001/01/17 23:45:29 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/tables.c,v 1.6 2001/12/14 20:01:35 dawes Exp $ */
 
 #include <dispatch.h>
 #include <swaprep.h>

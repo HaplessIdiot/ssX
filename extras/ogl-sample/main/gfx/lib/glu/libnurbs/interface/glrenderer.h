@@ -35,8 +35,6 @@
 /*
  * glrenderer.h
  *
- * $Date: 2001/01/15 21:48:16 $ $Revision: 1.1 $
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/interface/glrenderer.h,v 1.1 2001/01/15 21:48:16 dawes Exp $
  */
 
 #ifndef __gluglrenderer_h_

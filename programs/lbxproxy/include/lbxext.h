@@ -1,4 +1,3 @@
-/* $Xorg: lbxext.h,v 1.4 2001/02/09 02:05:32 xorgcvs Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -46,7 +45,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/lbxproxy/include/lbxext.h,v 1.3 2003/11/17 22:20:48 dawes Exp $ */
 
 #ifndef _LBXEXT_H_
 #define _LBXEXT_H_

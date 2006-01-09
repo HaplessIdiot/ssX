@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/iplan2p4/iplimage.c,v 3.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplimage.c,v 3.1 2005/10/14 15:17:18 tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -46,7 +46,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: iplimage.c,v 1.18 94/04/17 20:28:52 dpw Exp $ */
 
 /* Modified nov 94 by Martin Schaller (Martin_Schaller@maus.r.de) for use with
 interleaved planes */

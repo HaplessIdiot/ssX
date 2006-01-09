@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.17tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.18 2005/10/14 15:17:06 tsi Exp $ */
 /*
  * (c) Copyright 1994,1996,1999 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -27,7 +27,6 @@
  * in this Software without prior written authorization from Holger Veit.
  *
  */
-/* $XConsortium: os2_kbdEv.c /main/10 1996/10/27 11:48:48 kaleb $ */
 
 #define I_NEED_OS2_H
 #define NEED_EVENTS

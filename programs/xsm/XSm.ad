@@ -1,4 +1,4 @@
-! $XConsortium: XSm.ad,v 1.28 95/05/24 20:43:29 mor Exp $
+! $XFree86$
 *chooseSessionPopup*font:		12x24
 *chooseSessionLabel.label:		Session Menu
 *chooseSessionMessageLabel.label:	Press button again to confirm, or hit Cancel...

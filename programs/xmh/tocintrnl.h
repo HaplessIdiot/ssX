@@ -1,4 +1,3 @@
-/* $XConsortium: tocintrnl.h,v 2.18 91/07/14 18:53:37 converse Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -24,7 +23,7 @@
  * without specific, written prior permission.
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xmh/tocintrnl.h,v 1.2 2003/05/27 22:27:08 tsi Exp $ */
 
 /* Includes for modules implementing toc stuff. */
 

@@ -1,4 +1,3 @@
-/* $Xorg: sunLyFbs.c,v 1.4 2001/02/09 02:04:44 xorgcvs Exp $ */
 /*
  * This is sunFbs.c modified for LynxOS
  * Copyright 1996 by Thomas Mueller
@@ -22,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyFbs.c,v 3.6 2001/12/14 19:59:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyFbs.c,v 3.7 2003/11/17 22:20:37 dawes Exp $ */
 
 /*
 Copyright 1990, 1993, 1998  The Open Group

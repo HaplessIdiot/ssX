@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_diag.c,v 3.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_diag.c,v 3.9 2005/10/14 15:17:06 tsi Exp $ */
 /*
  * (c) Copyright 1997 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -26,7 +26,6 @@
  * in this Software without prior written authorization from Holger Veit.
  *
  */
-/* $XConsortium$ */
 
 /* This file checks whether the user has installed the system correctly, 
  * to avoid the numerous questions why this or that does not work

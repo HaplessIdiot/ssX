@@ -1,4 +1,3 @@
-/* $Xorg: mifpoly.h,v 1.4 2001/02/09 02:05:20 xorgcvs Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/mi/mifpoly.h,v 1.3 2001/10/25 12:03:47 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mifpoly.h,v 1.4 2001/12/14 20:00:22 dawes Exp $ */
 
 #ifndef __MIFPOLY_H__
 #define __MIFPOLY_H__

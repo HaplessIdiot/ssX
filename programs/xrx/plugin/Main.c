@@ -1,4 +1,3 @@
-/* $Xorg: Main.c,v 1.5 2001/02/09 02:05:57 xorgcvs Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization from
 The Open Group.
 
 */
-/* $XFree86: xc/programs/xrx/plugin/Main.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/xrx/plugin/Main.c,v 1.10 2004/04/03 22:38:55 tsi Exp $ */
 
 /*
  * RX plug-in module based on the UnixTemplate file provided by Netcape.

@@ -1,4 +1,3 @@
-/* $Xorg: main.c,v 1.5 2001/02/09 02:03:16 xorgcvs Exp $ */
 /*
 
 Copyright (c) 1993, 1994, 1998 The Open Group
@@ -24,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/main.c,v 3.33tsi Exp $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.34 2004/03/13 23:52:23 tsi Exp $ */
 
 #include "def.h"
 #ifdef hpux

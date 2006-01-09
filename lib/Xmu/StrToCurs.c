@@ -1,5 +1,3 @@
-/* $Xorg: StrToCurs.c,v 1.4 2001/02/09 02:03:53 xorgcvs Exp $ */
-
 /*
 
 Copyright 1987, 1988, 1998  The Open Group
@@ -50,7 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xmu/StrToCurs.c,v 1.12 2002/09/24 18:55:21 alanh Exp $ */
+/* $XFree86: xc/lib/Xmu/StrToCurs.c,v 1.13 2004/10/23 15:29:26 dawes Exp $ */
 
 #include	<X11/Intrinsic.h>
 #include	<X11/StringDefs.h>

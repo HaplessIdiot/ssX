@@ -1,4 +1,3 @@
-/* $XConsortium: mlist.h,v 2.4 89/05/04 15:11:31 converse Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -23,7 +22,7 @@
  * or publicity pertaining to distribution of the software without specific,
  * written prior permission.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xmh/mlist.h,v 1.3 2002/07/01 02:26:05 tsi Exp $ */
 
 #ifndef _mlist_h
 #define _mlist_h

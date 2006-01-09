@@ -1,7 +1,5 @@
 # $XTermId: termcap,v 1.67 2005/10/18 22:54:32 tom Exp $
 #
-# $Xorg: termcap,v 1.3 2000/08/17 19:55:10 cpqbld Exp $
-#
 #	This file is formatted using ncurses' "tic -CNx".
 #
 # Note:
@@ -19,7 +17,7 @@
 #	I checked the limits using ncurses "captoinfo -CrTUvx", which prints
 #	the resolved length of each entry in a comment at the end - T.Dickey
 #
-# $XFree86: xc/programs/xterm/termcap,v 3.35 2005/02/06 21:42:38 dickey Exp $
+# $XFree86: xc/programs/xterm/termcap,v 3.36 2005/11/03 13:17:28 dickey Exp $
 #
 xf|xterm-new|modern xterm:\
 	:*6=\EOF:@7=\EOF:F1=\E[23~:F2=\E[24~:Km=\E[M:k1=\EOP:\

@@ -1,4 +1,4 @@
-/* $Xorg: fsmasks.h,v 1.4 2001/02/09 02:03:25 xorgcvs Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation 

@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile /main/1 1995/11/30 19:00:42 kaleb $
-XCOMM $XFree86: xc/lib/xkbui/Imakefile,v 3.7tsi Exp $
+XCOMM $XFree86: xc/lib/xkbui/Imakefile,v 3.8 2005/10/14 15:16:08 tsi Exp $
+
 #define DoNormalLib NormalLibxkbui
 #define DoSharedLib SharedLibxkbui
 #define DoExtraLib ExtraLibxkbui

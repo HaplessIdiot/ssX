@@ -1,4 +1,3 @@
-/* $Xorg: lbxbufstr.h,v 1.3 2000/08/18 04:05:45 coskrey Exp $ */
 /*
  * Copyright 1988, 1989, 1990, 1994 Network Computing Devices, Inc.
  *
@@ -22,7 +21,7 @@
  * SOFTWARE.
  * 
  */
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/lbxbufstr.h,v 1.2 2001/08/01 00:44:35 tsi Exp $ */
 
 #ifndef _BUFFERSTR_H_
 #define _BUFFERSTR_H_

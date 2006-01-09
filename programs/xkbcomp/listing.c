@@ -1,4 +1,3 @@
-/* $Xorg: listing.c,v 1.5 2001/02/09 02:05:49 xorgcvs Exp $ */
 /************************************************************
  Copyright 1996 by Silicon Graphics Computer Systems, Inc.
 
@@ -70,7 +69,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xkbcomp/listing.c,v 3.9 2001/12/14 20:01:57 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/listing.c,v 3.10 2002/06/05 00:00:37 dawes Exp $ */
 
 
 #include <stdio.h>

@@ -1,6 +1,4 @@
 /*
- * Id: fbimage.c,v 1.1 1999/11/02 03:54:45 keithp Exp $
- *
  * Copyright © 1998 Keith Packard
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -21,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbimage.c,v 1.7 2001/05/29 04:54:09 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbimage.c,v 1.8 2001/09/07 15:15:31 keithp Exp $ */
 
 #include "fb.h"
 #ifdef XFree86LOADER

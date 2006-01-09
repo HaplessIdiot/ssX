@@ -1,4 +1,3 @@
-/* $XConsortium: xditview.c,v 1.32 94/04/17 20:43:36 eswu Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -28,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xditview/xditview.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/xditview/xditview.c,v 1.5 2003/05/27 22:27:00 tsi Exp $ */
 /*
  * xditview -- 
  *

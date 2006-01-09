@@ -1,4 +1,3 @@
-/* $Xorg: VarGet.c,v 1.4 2001/02/09 02:03:59 xorgcvs Exp $ */
 /*
 
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -51,7 +50,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/VarGet.c,v 1.8 2001/12/14 19:56:32 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/VarGet.c,v 1.9 2004/05/05 00:07:03 dickey Exp $ */
 
 #include "IntrinsicI.h"
 #include "VarargsI.h"

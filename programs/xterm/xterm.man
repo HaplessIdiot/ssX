@@ -1,6 +1,4 @@
 .\" $XTermId: xterm.man,v 1.321 2005/11/24 23:46:10 tom Exp $
-.\" $Xorg: xterm.man,v 1.4 2001/02/09 02:06:03 xorgcvs Exp $
-.\"
 .\"
 .\" Copyright 1996-2004,2005 by Thomas E. Dickey
 .\"
@@ -55,7 +53,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86: xc/programs/xterm/xterm.man,v 3.118 2005/11/13 23:10:36 dickey Exp $
+.\" $XFree86: xc/programs/xterm/xterm.man,v 3.119 2006/01/04 02:10:27 dickey Exp $
 .\"
 .\" updated by Thomas E. Dickey for XFree86, July 1996 - July 2004.
 .

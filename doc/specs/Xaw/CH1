@@ -1,7 +1,11 @@
-.\" $XConsortium: CH1,v 1.12 91/09/30 13:46:16 converse Exp $
-.af % 1
-.pn 1
+.\" $XFree86$
+.ps 11
+.nr PS 11
+.ds LH \fBAthena Widget Set\fP
+.ds CH
+.ds RH \fBX11, Release 6.4\fP
 .bp 1
+.af PN 1
 \&
 .sp 1
 .ce 3
@@ -10,6 +14,7 @@
 \s+1\fBAthena Widgets and The Intrinsics\fP\s-1
 .sp 2
 .nr H1 1
+.if \n(GS .nr nh*hl 1
 .nr H2 0
 .nr H3 0
 .nr H4 0
@@ -95,7 +100,6 @@ Model
 Conventions used in this manual
 .IP \(bu 5
 Format of the Widget Reference Chapters
-.LE
 .NH 2 
 Terminology
 .LP

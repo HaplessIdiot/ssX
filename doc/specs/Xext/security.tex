@@ -1,4 +1,4 @@
-% $XConsortium: security.tex /main/2 1996/10/14 11:38:53 dpw $
+% $XFree86$
 \documentstyle{article}
 \pagestyle{myheadings}
 \markboth{Security Extension Specification}{Security Extension Specification}
@@ -24,7 +24,7 @@
 \newenvironment{arequest}[1]{\requestsection{#1} \\ \begin{tabular}{ll}}{\end{tabular}}
 \newcommand{\areply}{$\Rightarrow$\\}
 
-\newcommand{\etabstops}{\hspace*{0cm}\=\hspace*{1cm}\=\hspace*{2cm}\=\hspace*{3cm}\=\kill}
+\newcommand{\etabstops}{\hspace*{0cm}\=\hspace*{1cm}\=\hspace*{2.5cm}\=\hspace*{2.5cm}\=\kill}
 
 \newcommand{\eargdecl}[3]{\> #1 \> \typename{#2} \> \> #3 \\}
 \newcommand{\econstdecl}[2]{\> \> #1 \> #2 \\}
@@ -32,6 +32,8 @@
 \newenvironment{keeptogether}{\vbox \bgroup}{\egroup}
 
 \newenvironment{erequest}[3]{\pagebreak[3] \begin{keeptogether} \encodingsection{#1} \begin{tabbing} \etabstops \eargdecl{1}{CARD8}{major-opcode} \eargdecl{1}{#2}{minor-opcode} \eargdecl{2}{#3}{request length}}{\end{tabbing} \end{keeptogether}}
+
+\newenvironment{estruct}[1]{\pagebreak[3] \begin{keeptogether} \encodingsection{#1} \begin{tabbing} \etabstops }{\end{tabbing} \end{keeptogether}}
 
 \newenvironment{eerror}[1]{\begin{keeptogether} \encodingsection{#1} \begin{tabbing} \etabstops }{\end{tabbing} \end{keeptogether}}
 
@@ -48,9 +50,9 @@
 
 \begin{document}
 
-\title{Security Extension Specification\\Draft Version 4.0}
+\title{Security Extension Specification\\Version 7.1\\X11 Release 6.4}
 \author{David P. Wiggins\\X Consortium, Inc.}
-\date{September 23, 1996}
+\date{November 15, 1996}
 \maketitle
 \thispagestyle{empty}
 
@@ -163,37 +165,60 @@ Attribute	& Type		& Default	\\ \hline
 timeout		& CARD32	& 60		\\
 group		& XID or None	& None		\\
 trust-level	& \{SecurityClientTrusted, \\
-		& SecurityClientUntrusted\} & SecurityClientUntrusted \\ \hline
+		& SecurityClientUntrusted\} & SecurityClientUntrusted \\
+event-mask	& SecurityAuthorizationRevoked, \\
+		& or None	& None		\\ \hline
 \\
 \end{tabular}
 
-timeout is the timeout period in seconds for this authorization.  If
-the specified timeout is greater than the maximum timeout allowed by
-the server, the maximum timeout is used instead.  A timeout value of 0
-means use the maximum timeout allowed by the server.  When timeout
-seconds have elapsed since the last time that the authorizaton entered
-the state of having no connections authorized by it, and if no new
-connections used the authorization during that time, the authorization
-is automatically purged.  (Note that when an authorization is created,
-it enters the state of having no connections authorized by it.)
-Subsequent connection attempts using that authorization will fail.
-This is to facilitate ``fire and forget'' launching of applications.
+timeout is the timeout period in seconds for this authorization.  A
+timeout value of zero means this authorization will never expire.  For
+non-zero timeout values, when timeout seconds have elapsed since the
+last time that the authorization entered the state of having no
+connections authorized by it, and if no new connections used the
+authorization during that time, the authorization is automatically
+purged.  (Note that when an authorization is created, it enters the
+state of having no connections authorized by it.)  Subsequent
+connection attempts using that authorization will fail.  This is to
+facilitate ``fire and forget'' launching of applications.
 
 group is an application group ID as defined by the Application Group
-extension, or None.  Any other values will cause a Value error.  The
-Application Group extension attaches additional semantics to the
-group.  The types of XIDs that are allowed for group may be expanded
-in a future version of this extension.
+extension, or None.  Any other values will cause a Value error.  When
+a group is destroyed, all authorizations specifying that group are
+revoked as described under the SecurityRevokeAuthorization request.
+The Application Group extension attaches additional semantics to the
+group.
 
 trust-level tells whether clients using the authorization are trusted
 or untrusted.  If trust-level is not one of the constants
 SecurityClientTrusted or SecurityClientUntrusted, a Value error
 results.
 
+event-mask defines which events the client is interested in for
+this authorization.  When the authorization expires or is revoked
+if event-mask contains SecurityAuthorizationRevoked a
+SecurityAuthorizationRevoked event is reported to the client.
+
+The SecurityAuthorizationRevoked event contains the following field:
+
+\begin{tabular}{ll}
+\\ \hline
+Field	& Type	\\ \hline
+authorization-id	& AUTHID	\\ \hline
+\\
+\end{tabular}
+
+where authorization-id is the identification of the authorization
+that was revoked.
+
 If an invalid value-mask is specified, a Value error occurs.
 
-The returned authorization-id is a value that uniquely identifies this
-authorization for use in other requests.
+The returned authorization-id is a non-zero value that uniquely
+identifies this authorization for use in other requests.  The value
+space for type AUTHID is not required to be disjoint from values
+spaces of other core X types, e.g. resource ids, atoms, visual ids,
+and keysyms.  Thus, a given numeric value might be both a valid
+AUTHID and a valid atom, for example.
 
 authorization-data-return is the data that a client should use in some
 authorization-method-specific way to make a connection with this
@@ -232,7 +257,7 @@ requests in the following ways.
 If an untrusted client makes a request that specifies a resource ID
 that is not owned by another untrusted client, a protocol error is
 sent to the requesting client indicating that the specified resource
-does not exist.  The following exceptions apply.  Untrusted clients
+does not exist.  The following exceptions apply.  An untrusted client
 can:
 
 \begin{enumerate}
@@ -240,14 +265,14 @@ can:
 \item use the QueryTree, GetGeometry, and TranslateCoordinates requests
 without restriction.
 \item use colormap IDs that are returned in the default-colormap
-field of the connection setup information in any colormap requests.
-\item specify the root window as:
+field of its connection setup information in any colormap requests.
+\item specify a root window as:
 
 \begin{enumerate}
 
 \item the drawable field of CreatePixmap, CreateGC, and QueryBestSize.
 \item the parent field of CreateWindow.
-\item the window field of CreateColormap or ListProperties.
+\item the window field of CreateColormap, ListProperties, and GetWindowAttributes.
 \item the grab-window or confine-to fields of GrabPointer.
 \item the grab-window field of UngrabButton.
 \item the destination of SendEvent, but only if all of the following
@@ -264,12 +289,17 @@ SubstructureNotify.
 or ClientMessage.
 
 \end{enumerate}
+
+\item the window field of ChangeWindowAttributes, but only if
+the value-mask contains only event-mask and the corresponding value
+is StructureNotify, PropertyChange, or the logical OR of both.
+
 \end{enumerate}
 \end{enumerate}
 
-ISSUE: are root window exceptions needed for these?
-WarpPointer, GetWindowAttributes, ReparentWindow (parent),
-CirculateWindow, QueryPointer, GetMotionEvents.
+ISSUE: are root window exceptions needed for these?  WarpPointer,
+ReparentWindow (parent), CirculateWindow, QueryPointer (emacs does
+this), GetMotionEvents.
 
 \subsection{Extension Security}
 
@@ -333,13 +363,12 @@ by a trusted client, all attempts to map the window will be ignored.
 This includes mapping attempts resulting from MapWindow,
 MapSubwindows, ReparentWindow, and save-set processing.
 
-TBD: grab-breaking key sequence (pending XKB changes).
-
 \subsection{Image Security}
 
 It should be impossible for an untrusted client to retrieve the image
-contents of a trusted window.  We introduce the following defenses in
-support of this requirement.
+contents of a trusted window unless a trusted client takes action to
+allow this.  We introduce the following defenses in support of this
+requirement.
 
 The restrictions on resource ID usage listed above prevent untrusted
 clients from using GetImage directly on windows not belonging to
@@ -349,37 +378,162 @@ If an untrusted client tries to set the background-pixmap attribute of
 an untrusted window to None, the server will instead use a
 server-dependent background which must be different than None.
 
+The X protocol description of GetImage states that the returned
+contents of regions of a window obscured by noninferior windows are
+undefined if the window has no backing store.  Some implementations
+return the contents of the obscuring windows in these regions.  When
+an untrusted client uses GetImage, this behavior is forbidden; the
+server must fill the obscured regions in the returned image with a
+server-dependent pattern.
+
+If an untrusted window has trusted inferiors, their contents are
+vulnerable to theft via GetImage on the untrusted parent, as well as
+being vulnerable to destruction via drawing with subwindow-mode
+IncludeInferiors on the untrusted parent.  An untrusted window having
+trusted inferiors can only occur at the request of a trusted client.
+It is expected to be an unusual configuration.
+
 \subsection{Property Security}
 
-ISSUE: With the resource id restrictions above, if the first Motif
-application that runs is trusted, all subsequent untrusted Motif apps
-die right away because the try to read a property on a trusted window
-(the $-100,-100$ window mentioned in section 4.1 of the analysis
-paper.)  This will have to be dealt with when we do property security.
+Unlike the other security provisions described in this document,
+security for property access is not amenable to a fixed policy because
+properties are used for inter-client communication in diverse ways and
+may contain data of varying degrees of sensitivity.  Therefore, we
+only list the possible restrictions the server may decide to impose on
+use of properties on trusted windows by untrusted clients.  How the
+server chooses which restrictions from this list to apply to a
+particular property access is implementation dependent
+\footnote{In the X Consortium server implementation, property access
+is controlled by a configuration file; see the -sp option in the
+Xserver(1) manual page.}.
 
-\subsection{Font Path Security}
+The X Protocol property requests are ChangeProperty, GetProperty,
+DeleteProperty, RotateProperties, and ListProperties.  For these
+requests, the server can allow the request to execute normally (as if
+it had been issued by a trusted client), ignore the request completely
+(as if it were a NoOperation), or ignore the request except to send an
+Atom error to the client.  Ignoring a ListProperties request means
+replying that the window has no properties.  ListProperties may also
+reply with a subset of the existing properties if the server is doing
+property hiding; see below.  An ignored GetProperty request may reply
+that the property does not exist, or that it exists but contains no
+data.
 
-This extension will mark any font path elements added by clients using
-this authorization with this group.  When clients open or list fonts,
-only font path elements that are marked with the same group, or those
-that are not tagged with a group, are used to locate fonts.  The
-marking of font path elements with groups does not affect the font
-path returned by GetFontPath.
+The server may decide to hide certain properties on certain windows
+from untrusted clients\footnote{The X Consortium server
+implementation does not currently provide a way to hide properties.}.
+If a property is to be hidden, it must be done consistently to avoid
+confusing clients.  This means that for untrusted clients:
 
-ISSUE: the font path policy has not yet been fully thought through.
-The words above are mostly a placeholder.
+\begin{itemize}
 
-ISSUE: should trusted apps ever see untrusted font path elements?
-Using the rules described above, this could happen in two ways: fpe's
-added by untrusted clients that aren't in an app group, or by a
-trusted client being in the same app group as an untrusted client that
-adds an fpe.
+\item That property should {\em not} be returned by ListProperties.
+\item PropertyNotify events should {\em not} be sent for that property.
+\item GetProperty on that property should reply that the property
+does not exist (the return type is None, the format and bytes-after
+are zero, and the value is empty).
+
+\end{itemize}
+
+For a property that the server is protecting but not hiding,
+consistency must also be maintained:
+
+\begin{itemize}
+
+\item That property {\em should} be returned by ListProperties.
+\item PropertyNotify events {\em should} be sent for that property.
+\item GetProperty on that property should reply that the property
+exists (if it really does) but the value is empty (return type and format
+are their real values, and the "length of value" field in the reply
+is zero).
+
+\end{itemize}
 
 \subsection{Miscellaneous Security}
 
-If an untrusted client attempts to use ChangeHosts or
+If an untrusted client attempts to use ChangeHosts, ListHosts, or
 SetAccessControl, the only effect is that the client receives an
 Access error.
+
+If an untrusted client attempts to use ConvertSelection on a selection
+with a trusted selection owner window, the server generates a
+SelectionNotify event to the requestor with property None.
+
+\section{New Authorization Method}
+
+This extension includes a new authorization method named
+``XC-QUERY-SECURITY-1''.  Its purpose is to allow an external agent such
+as the X firewall proxy to probe an X server to determine whether that
+server meets certain security criteria without requiring the agent to
+have its own authorization for that server.  The agent may use the
+returned information to make a decision.  For example, the X firewall
+proxy may choose not to forward client connections to servers that do
+not meet the criteria.
+
+To use this authorization method, the client (or proxy) sends
+``XC-QUERY-SECURITY-1'' as the authorization-protocol-name in the
+initial connection setup message.  The authorization-protocol-data may
+be empty or may contain additional security criteria desribed below.
+If the success field of the server's reply is Authenticate, the server
+supports the security extension, and the server meets all specified
+additional security criteria.  In this case, the client should resend
+the initial connection setup message substituting the authorization
+protocol name and data that should be used to authorize the
+connection.  If the success field of the server's reply is anything
+other than Authenticate, either the server does not support the
+security extension, does not meet (or cannot determine if it meets)
+all of the additional security criteria, or chooses for internal
+reasons not to answer with Authenticate.  In this case, the client
+should close the connection.
+
+If the authorization-protocol-data sent with ``XC-QUERY-SECURITY-1'' is
+not empty, it specifies additional security criteria for the server to
+check, as follows.
+
+\begin{arequest}{authorization-protocol-data}
+\argdecl{policy-mask}{BITMASK}
+\argdecl{policies}{LISTofSECURITYPOLICY}
+\end{arequest}
+
+The policy-mask field is any logical-OR combination of the constants
+Extensions and SitePolicies.  For each bit set in policy-mask, there
+is a SECURITYPOLICY element in policies.  The nth element in policies
+corresponds to the nth 1-bit in policy-mask, counting upward from bit
+0.
+
+\begin{arequest}{SECURITYPOLICY}
+\argdecl{policy-type}{\{Disallow, Permit\}}
+\argdecl{names}{LISTofSTR}
+\end{arequest}
+
+For a SECURITYPOLICY corresponding to policy-mask Extensions, if
+policy-type is Disallow the server is required to consider as insecure
+all extensions given in names.  No policy is specified for extensions
+not listed in names.  If policy-type is Permit the server may consider
+only those extensions given in names to be secure; all other
+extensions must be treated as insecure.  If these constraints are not
+met, the server should not return Authenticate in the success field of
+the reply.  Servers can but need not dynamically configure themselves
+in response to an Extensions SECURITYPOLICY; a conforming server might
+simply compare the policy with a compiled-in table of extensions and
+their security status.
+
+
+For a SECURITYPOLICY corresponding to policy-mask SitePolicies,
+policy-type Disallow means the server must not have been configured
+with any of the site policies given in names.  Policy-type Permit
+means the server must have been configured with at least one of the
+site policies given in names.  If these constraints are not met, the
+server should not return Authenticate in the success field of the
+reply.
+
+SitePolicies provide a way to express new forms of security-relevant
+information that could not be anticipated at the time of this writing.
+For example, suppose the server is found to have a critical security
+defect.  When a fix is developed, a site policy string could be
+associated with the fix.  Servers with the fix would advertise that
+site policy, and the X firewall proxy would specify that site policy
+in a SECURITYPOLICY with policy-type Permit.
 
 \section{Encoding}
 
@@ -392,7 +546,7 @@ The name of this extension is ``SECURITY''.
 
 AUTHID: CARD32
 
-\subsection{Requests}
+\subsection{Request Encoding}
 
 % start marker
 \begin{erequest}{SecurityQueryVersion}{0}{2}
@@ -423,9 +577,10 @@ AUTHID: CARD32
 \eargdecl{n}{STRING8}{authorization protocol data}
 \eargdecl{p}{}{unused, p=pad(m+n)}
 \eargdecl{4}{BITMASK}{value-mask (has s bits set to 1)}
-\eargdecl{}{\#x00000001}{timeout}
-\eargdecl{}{\#x00000002}{trust-level}
-\eargdecl{}{\#x00000004}{group}
+\econstdecl{\#x00000001}{timeout}
+\econstdecl{\#x00000002}{trust-level}
+\econstdecl{\#x00000004}{group}
+\econstdecl{\#x00000008}{event-mask}
 \eargdecl{4s}{LISTofVALUE}{value-list}
 \\
 VALUES
@@ -436,6 +591,8 @@ VALUES
 \econstdecl{1}{SecurityClientUntrusted}
 \eargdecl{4}{XID}{group}
 \econstdecl{0}{None}
+\eargdecl{4}{CARD32}{event-mask}
+\econstdecl{\#x00000001}{SecurityAuthorizationRevoked}
 \areply
 \eargdecl{1}{1}{Reply}
 \eargdecl{1}{}{unused}
@@ -448,6 +605,46 @@ VALUES
 \eargdecl{r}{}{unused, r=pad(q)}
 \end{erequest}
 % end marker
+
+\subsection{Event Encoding}
+
+% start marker
+\begin{eerror}{SecurityAuthorizationRevoked}
+\eargdecl{1}{0+extension event base}{code}
+\eargdecl{1}{}{unused}
+\eargdecl{2}{CARD16}{sequence number}
+\eargdecl{4}{AUTHID}{authorization id}
+\eargdecl{24}{}{unused}
+\end{eerror}
+% end marker
+
+\subsection{Authorization Method Encoding}
+
+For authorization-protocol-name ``XC-QUERY-SECURITY-1'', the
+authorization-protocol-data is interpreted as follows:
+
+% start marker
+\begin{estruct}{authorization-protocol-data}
+\eargdecl{1}{BITMASK}{policy-mask}
+\econstdecl{\#x00000001}{Extensions}
+\econstdecl{\#x00000002}{SitePolicies}
+\eargdecl{m}{LISTofSECURITYPOLICY}{policies}
+\end{estruct}
+% end marker
+
+% start marker
+\begin{estruct}{SECURITYPOLICY}
+\eargdecl{1}{}{policy-type}
+\econstdecl{0}{Permit}
+\econstdecl{1}{Disallow}
+\eargdecl{1}{CARD8}{number of STRs in names}
+\eargdecl{n}{LISTofSTR}{names}
+\end{estruct}
+% end marker
+
+LISTofSTR has the same encoding as in the X protocol: each STR is a
+single byte length, followed by that many characters, and there is no
+padding or termination between STRs.
 
 \section{C Language Binding}
 
@@ -577,31 +774,57 @@ fields:
 Type & Field name & Mask \\ \hline
 \typename{unsigned int} & \argname{trust\_level} & XSecurityTrustLevel \\
 \typename{unsigned int} & \argname{timeout} & XSecurityTimeout \\
-\typename{XID} & \argname{group} & XSecurityGroup \\ \hline
+\typename{XID} & \argname{group} & XSecurityGroup \\
+\typename{long} & \argname{event\_mask} & XSecurityEventMask \\ \hline
 \\
 \end{tabular}
 
-These correspond to the trust-level, timeout, and group described in
+These correspond to the trust-level, timeout, group,
+and event-mask described in
 the SecurityGenerateAuthorization protocol request.  The caller can
 fill in values for any subset of these attributes.  The valuemask
 argument must be the bitwise OR of the symbols listed in the Mask
-column for all supplied attributes.  If the caller does not need to
+column for all supplied attributes.
+The event\_mask attribute can be None, XSecurityAuthorizationRevokedMask,
+or XSecurityAllEventMasks.  In this revision of the protocol specification
+XSecurityAllEventMasks is equivalent to XSecurityAuthorizationRevokedMask.
+If the caller does not need to
 specify any attributes, the attributes argument can be NULL, and the
 valuemask argument must be zero.
 
-If the function fails, NULL is returned.  Otherwise, a pointer to an
-Xauth structure is returned.  The name and name\_length fields of the
-returned Xauth structure will be copies of the name that was passed
-in, and the data and data\_length fields will be set to the
-authorization data returned by the server.  The caller should not
-assume that name and data are null-terminated strings.  If no
-authorization data was returned by the server, the data and
-data\_length fields will be set to NULL and zero repectively.  The
-returned Xauth structure must be freed with XSecurityFreeXauth; the
-caller should not use any other means free the structure or any of its
-components.  The auth\_id\_return argument will be filled in with the
-authorization id of the created authorization.
+If the function fails, NULL is returned and auth\_id\_return is filled
+in with zero.  Otherwise, a pointer to an Xauth structure is returned.
+The name and name\_length fields of the returned Xauth structure will
+be copies of the name that was passed in, and the data and
+data\_length fields will be set to the authorization data returned by
+the server.  The caller should not assume that name and data are
+null-terminated strings.  If no authorization data was returned by the
+server, the data and data\_length fields will be set to NULL and zero
+repectively.  The returned Xauth structure must be freed with
+XSecurityFreeXauth; the caller should not use any other means free the
+structure or any of its components.  The auth\_id\_return argument
+will be filled in with the non-zero authorization id of the created
+authorization.
 
 \end{keeptogether}
+
+% start marker
+\begin{keeptogether}
+The XSecurityAuthorizationRevokedEvent structure has the following fields:
+
+\begin{tabular}{lll}
+\\ \hline
+Type & Field name & Description \\ \hline
+\typename{int} & \argname{type} & event base + \\
+		&		& XSecurityAuthorizationRevoked \\
+\typename{unsigned long} & \argname{serial} & \# of last request processed by server \\
+\typename{Bool} & \argname{send\_event} & true if this came from SendEvent \\
+\typename{Display*} & \argname{display} & Display the event was read from \\
+\typename{XSecurityAuthorization} & \argname{auth\_id} & revoked authorization id \\ \hline
+\\
+\end{tabular}
+
+\end{keeptogether}
+% end marker
 
 \end{document}

@@ -1,4 +1,4 @@
-.\" $XConsortium: macros.t,v 1.9 94/04/16 16:57:39 rws Exp $
+.\" $XFree86$
 .\" macros.t -- macros for X Consortium documents
 .\" Revised and commented by smarks 93.12.20.
 .\"
@@ -149,8 +149,12 @@
 .el .sp 5p
 .if '\\$1'C' .ce 99
 .if '\\$2'C' .ce 99
-.in +5n
-.ll -5n
+.\" .QS/.QE macros don't exist in older versions of -ms
+.ie \\n(GS .QS
+.el \{\
+.	in +5n
+.	ll -5n
+.\}
 .R
 ..
 .\"
@@ -158,8 +162,11 @@
 .\"
 .de NE
 .ce 0
-.in -5n
-.ll +5n
+.ie \\n(GS .QE
+.el \{\
+.	in -5n
+.	ll +5n
+.\}
 .ie n .sp
 .el .sp 10p
 ..

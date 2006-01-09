@@ -1,4 +1,4 @@
-// $XConsortium: sym_interp3 /main/1 1995/11/30 19:16:49 kaleb $
+// $XFree86$
 xkb_compatibility "torture3" 
 
 interpret ISO_Prev_Group {

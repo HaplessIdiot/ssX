@@ -1,3 +1,4 @@
+.\" $XFree86$
 .NH 2
 Text Widget Actions
 .LP
@@ -12,7 +13,7 @@ be specified through the \fBtranslations\fP resource in the Text widget.
 .LP
 .sp
 .Ds 0
-.TA .5i	2.5i 3i
+.TA .5i 2.5i 3i
 .ta .5i 2.5i 3i
 Insert Point Movement	Delete
 	forward-character		delete-next-character
@@ -162,8 +163,8 @@ action to be modified, as described above.
 .IP select-end(\fIname\fP[,\fIname\fP,...]) 2.0i
 This action ends a text selection that began with the \fIselect-start\fP
 action, and asserts ownership of the selection or selections specified.
-A \fIname\fP can be a selection (e.g. \fBPRIMARY\fP) or a cut buffer
-(e.g \fBCUT_BUFFER0\fP).  Note that case is important.  If no
+A \fIname\fP can be a selection (e.g., \fBPRIMARY\fP) or a cut buffer
+(e.g., \fBCUT_BUFFER0\fP).  Note that case is important.  If no
 \fInames\fP are specified, \fBPRIMARY\fP is asserted. 
 .IP extend-start(\|) 2.0i
 This action finds the nearest end of the current selection, and moves it
@@ -269,8 +270,8 @@ or \fBLeaveNotify\fP event, the action will be taken only if the focus
 field is \fBTrue\fP.  An augmented binding that might be useful is:
 .LP
 .Ds 0
-.TA .2.0i 2.5i 4.0i
-.ta .2.0i 2.5i 4.0i
+.TA 2.0i 2.5i 4.0i
+.ta 2.0i 2.5i 4.0i
 	*Text.Translations: #override \\
 		<FocusIn>:	display-caret(on) \\n\\
 		<FocusOut>:	display-caret(off)
@@ -501,6 +502,5 @@ Text widget's \fBtranslations\fP resource.
 	<Btn2Down>:	insert-selection(PRIMARY, CUT_BUFFER0) \\n\\
 	<Btn3Down>:	extend-start(\|) \\n\\
 	<Btn3Motion>:	extend-adjust(\|) \\n\\
-	<Btn3Up>:	extend-end(PRIMARY, CUT_BUFFER0) \\
-'';
+	<Btn3Up>:	extend-end(PRIMARY, CUT_BUFFER0) \\n
 .De

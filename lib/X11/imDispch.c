@@ -1,4 +1,3 @@
-/* $Xorg: imDispch.c,v 1.3 2000/08/17 19:45:12 cpqbld Exp $ */
 /******************************************************************
 
                 Copyright 1993, 1994 by FUJITSU LIMITED
@@ -26,7 +25,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imDispch.c,v 1.4 2003/04/13 19:22:20 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imDispch.c,v 1.5 2003/11/17 22:20:11 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include "Xlibint.h"

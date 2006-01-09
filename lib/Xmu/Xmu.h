@@ -1,5 +1,3 @@
-/* $Xorg: Xmu.h,v 1.4 2001/02/09 02:03:53 xorgcvs Exp $ */
-
 /* 
 
 Copyright 1988, 1998  The Open Group
@@ -25,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/Xmu.h,v 1.9 2001/12/14 19:55:59 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/Xmu.h,v 1.10 2004/01/23 03:57:58 dawes Exp $ */
 
 /*
  * The interfaces described by this header file are for miscellaneous utilities

@@ -1,4 +1,3 @@
-/* $Xorg: atomcache.c,v 1.4 2001/02/09 02:05:31 xorgcvs Exp $ */
 /*
 
 Copyright 1998  The Open Group
@@ -46,7 +45,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
  */
-/* $XFree86: xc/programs/lbxproxy/di/atomcache.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/atomcache.c,v 1.8 2004/04/03 22:38:53 tsi Exp $ */
 
 /*
  * atom cache for LBX

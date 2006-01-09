@@ -1,4 +1,4 @@
-/* $XConsortium: t1hdigit.h,v 1.2 91/10/10 11:19:31 rws Exp $ */
+/* $XFree86$ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *

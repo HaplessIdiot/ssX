@@ -1,4 +1,3 @@
-/* $Xorg: ChkIfEv.c,v 1.4 2001/02/09 02:03:31 xorgcvs Exp $ */
 /*
 
 Copyright 1985, 1987, 1998  The Open Group
@@ -24,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/ChkIfEv.c,v 1.3 2003/11/17 22:20:06 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "Xlibint.h"

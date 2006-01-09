@@ -1,5 +1,7 @@
-// $XConsortium: basic,v 1.2 94/04/08 15:58:33 erik Exp $
-xkb_semantics "basic"
+// $XFree86$
+default xkb_semantics "basic" {
 
 xkb_types		{ include "basic" 	};
 xkb_compatibility	{ include "basic"	};
+
+};

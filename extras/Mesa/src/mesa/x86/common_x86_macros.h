@@ -1,5 +1,3 @@
-/* $Id: common_x86_macros.h,v 1.1 2004/04/08 09:18:06 alanh Exp $ */
-
 /*
  * Mesa 3-D graphics library
  * Version:  3.5

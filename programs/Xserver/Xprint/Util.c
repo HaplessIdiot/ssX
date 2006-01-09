@@ -1,4 +1,3 @@
-/* $Xorg: Util.c,v 1.3 2000/08/17 19:48:06 cpqbld Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -30,7 +29,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/Util.c,v 1.12 2001/08/01 00:44:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/Util.c,v 1.13 2001/10/31 22:50:28 tsi Exp $ */
 
 /* To get the tempnam() prototype in <stdio.h> */
 #if defined(linux) && defined(__STRICT_ANSI__)

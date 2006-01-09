@@ -1,5 +1,3 @@
-/* $Xorg: ffcheck.c,v 1.4 2001/02/09 02:04:03 xorgcvs Exp $ */
-
 /*
 
 Copyright 1991, 1998  The Open Group
@@ -25,12 +23,11 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/ffcheck.c,v 1.16 2003/05/27 22:26:49 tsi Exp $ */
+/* $XFree86: xc/lib/font/fontfile/ffcheck.c,v 1.17 2004/05/01 01:30:02 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $NCDXorg: @(#)fontfile.c,v 1.6 1991/07/02 17:00:46 lemke Exp $ */
 
 #include "fntfilst.h"
 #include "bitmap.h"

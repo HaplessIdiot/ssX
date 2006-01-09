@@ -1,4 +1,3 @@
-/* $Xorg: XimTrans.h,v 1.3 2000/08/17 19:45:05 cpqbld Exp $ */
 /******************************************************************
 
            Copyright 1992 by Sun Microsystems, Inc.
@@ -28,7 +27,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/XimTrans.h,v 1.3 2003/10/24 15:34:00 tsi Exp $ */
+/* $XFree86: xc/lib/X11/XimTrans.h,v 1.4 2003/11/17 22:20:10 dawes Exp $ */
 
 #ifndef _XIMTRANS_H
 #define _XIMTRANS_H

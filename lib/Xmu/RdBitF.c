@@ -1,5 +1,3 @@
-/* $Xorg: RdBitF.c,v 1.4 2001/02/09 02:03:53 xorgcvs Exp $ */
-
 /*
 
 Copyright 1988, 1998  The Open Group
@@ -25,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/RdBitF.c,v 3.13 2002/05/31 18:45:45 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/RdBitF.c,v 3.14 2004/10/23 15:29:26 dawes Exp $ */
 
 /*
  * This file contains miscellaneous utility routines and is not part of the

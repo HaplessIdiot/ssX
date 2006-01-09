@@ -1,5 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/x86/3dnow_normal.S,v 1.3 2004/06/10 14:43:41 alanh Exp $ */
-/* $Id: 3dnow_normal.S,v 1.4 2004/12/10 15:30:13 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/x86/3dnow_normal.S,v 1.4 2004/12/10 15:30:13 alanh Exp $ */
 
 /*
  * Mesa 3-D graphics library

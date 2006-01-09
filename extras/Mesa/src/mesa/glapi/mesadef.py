@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-# $Id: mesadef.py,v 1.1 2004/04/08 09:17:36 alanh Exp $
-
 # Mesa 3-D graphics library
 # Version:  4.1
 # 
@@ -110,7 +108,6 @@ def PrintTail():
 	print '\t_ac_InvalidateState'
 	print '\t_glapi_get_context'
 	print '\t_glapi_get_proc_address'
-	print '\t_mesa_base_compressed_texformat'
 	print '\t_mesa_buffer_data'
 	print '\t_mesa_buffer_map'
 	print '\t_mesa_buffer_subdata'

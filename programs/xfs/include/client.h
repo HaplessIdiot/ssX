@@ -1,4 +1,3 @@
-/* $Xorg: client.h,v 1.4 2001/02/09 02:05:43 xorgcvs Exp $ */
 /*
  
 Copyright 1990, 1991, 1998  The Open Group
@@ -43,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/include/client.h,v 1.6 2001/01/17 23:45:31 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/include/client.h,v 1.7 2001/12/14 20:01:37 dawes Exp $ */
 
 #ifndef	_CLIENT_H_
 #define	_CLIENT_H_

@@ -1,5 +1,5 @@
-XCOMM $XFree86: xc/programs/Xserver/iplan2p4/Imakefile,v 3.5tsi Exp $
-XCOMM $XConsortium: Imakefile,v 5.41 93/09/06 18:37:23 rws Exp $
+XCOMM $XFree86: xc/programs/Xserver/iplan2p4/Imakefile,v 3.6 2005/10/14 15:17:18 tsi Exp $
+
 #include <Server.tmpl>
 
 #ifndef IPlanes

@@ -1,5 +1,4 @@
-/* $XFree86$ */
-/* $XdotOrg$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/300vtbl.h,v 1.26 2004/06/21 00:43:21 twini Exp $ */
 /*
  * Register settings for SiS 300 series
  *

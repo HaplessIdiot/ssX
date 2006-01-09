@@ -1,5 +1,3 @@
-/* $Xorg: Geom.c,v 1.4 2001/02/09 02:03:33 xorgcvs Exp $ */
-
 /*
 
 Copyright 1985, 1998  The Open Group
@@ -27,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/Geom.c,v 1.3 2003/11/17 22:20:06 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xutil.h"

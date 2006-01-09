@@ -1,4 +1,3 @@
-/* $XConsortium: bbox.h,v 2.12 91/07/10 19:34:09 converse Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -23,7 +22,7 @@
  * advertising or publicity pertaining to distribution of the software without
  * specific, written prior permission.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xmh/bbox.h,v 1.3 2002/07/01 02:26:05 tsi Exp $ */
 
 #ifndef _bbox_h
 #define _bbox_h

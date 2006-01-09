@@ -1,4 +1,4 @@
-/* $XConsortium: XKM.h /main/2 1995/12/07 21:18:26 kaleb $ */
+/* $XFree86$ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 

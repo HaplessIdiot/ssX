@@ -1,5 +1,4 @@
-/* $XConsortium: QWhite.c,v 1.3 93/09/07 21:32:26 rws Exp $ */
-
+/* $XFree86$ */
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved

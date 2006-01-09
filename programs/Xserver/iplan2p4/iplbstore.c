@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/iplan2p4/iplbstore.c,v 3.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplbstore.c,v 3.1 2005/10/14 15:17:18 tsi Exp $ */
 
 /*
  * iplbstore.c --
@@ -16,10 +16,6 @@
  *
  *
  */
-#ifndef lint
-static char rcsid[] =
-"$XConsortium: iplbstore.c,v 5.8 93/12/13 17:21:51 dpw Exp $ SPRITE (Berkeley)";
-#endif
 
 /* Modified nov 94 by Martin Schaller (Martin_Schaller@maus.r.de) for use with
 interleaved planes */

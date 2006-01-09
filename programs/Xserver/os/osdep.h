@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.19tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.20 2004/06/24 02:21:16 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: osdep.h,v 1.5 2001/02/09 02:05:23 xorgcvs Exp $ */
 
 #ifndef _OSDEP_H_
 #define _OSDEP_H_ 1

@@ -1,4 +1,5 @@
-/* $XConsortium: xf86XKB.c /main/4 1996/02/04 09:28:04 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86XKB.c,v 3.14 2005/10/14 15:16:33 tsi Exp $ */
+
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -70,8 +71,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86XKB.c,v 3.13tsi Exp $ */
 
 #include <stdio.h>
 #define	NEED_EVENTS 1

@@ -1,4 +1,4 @@
-.\" $XConsortium: strings.mit,v 1.8 91/07/30 15:25:58 gildea Exp $
+.\" $XFree86$
 .ds tk X Toolkit
 .ds xT X Toolkit Intrinsics \(em C Language Interface
 .ds xI Intrinsics

@@ -1,9 +1,4 @@
-// $Xorg: sgi.lst,v 1.3 2000/08/17 19:54:41 cpqbld Exp $
-
-
-
-
-// $XFree86: xc/programs/xkbcomp/rules/sgi.lst,v 3.6 2001/05/18 23:35:34 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/rules/sgi.lst,v 3.7 2001/05/23 16:03:51 dawes Exp $
 
 ! model
   indy			SGI O2, Indigo^2 or Indy

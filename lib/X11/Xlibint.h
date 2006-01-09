@@ -1,5 +1,3 @@
-/* $Xorg: Xlibint.h,v 1.5 2001/02/09 02:03:38 xorgcvs Exp $ */
-
 /*
 
 Copyright 1984, 1985, 1987, 1989, 1998  The Open Group
@@ -27,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlibint.h,v 3.27 2003/05/27 22:26:26 tsi Exp $ */
+/* $XFree86: xc/lib/X11/Xlibint.h,v 3.29 2004/03/30 10:34:05 eich Exp $ */
 
 #ifndef _XLIBINT_H_
 #define _XLIBINT_H_ 1

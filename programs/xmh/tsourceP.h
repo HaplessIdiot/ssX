@@ -1,8 +1,3 @@
-/*
-* $XConsortium: tsourceP.h,v 1.2 94/04/17 20:24:05 kit Exp $
-*/
-
-
 /***********************************************************
 
 Copyright (c) 1987, 1988  X Consortium
@@ -50,6 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86$ */
 
 /* 
  * tocSourceP.h - Private definitions for tocSource widget

@@ -1,4 +1,3 @@
-/* $Xorg: xkill.c,v 1.5 2001/02/09 02:05:54 xorgcvs Exp $ */
 /*
 
 Copyright 1988, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xkill/xkill.c,v 1.5 2001/04/01 14:00:22 tsi Exp $ */
+/* $XFree86: xc/programs/xkill/xkill.c,v 1.6 2001/12/14 20:02:06 dawes Exp $ */
 
 /*
  * xkill - simple program for destroying unwanted clients

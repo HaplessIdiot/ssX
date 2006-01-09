@@ -1,5 +1,3 @@
-/* $Xorg: AuGetBest.c,v 1.4 2001/02/09 02:03:42 xorgcvs Exp $ */
-
 /*
 
 Copyright 1988, 1998  The Open Group
@@ -25,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xau/AuGetBest.c,v 1.7 2001/12/14 19:54:36 dawes Exp $ */
+/* $XFree86: xc/lib/Xau/AuGetBest.c,v 1.8 2003/11/17 22:20:21 dawes Exp $ */
 
 #include <X11/Xauth.h>
 #include <X11/Xos.h>

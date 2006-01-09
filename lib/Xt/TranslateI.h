@@ -1,5 +1,3 @@
-/* $Xorg: TranslateI.h,v 1.4 2001/02/09 02:03:59 xorgcvs Exp $ */
-
 /***********************************************************
 
 Copyright 1987, 1988, 1998  The Open Group
@@ -46,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/TranslateI.h,v 1.4 2003/04/21 16:34:29 herrb Exp $ */
+/* $XFree86: xc/lib/Xt/TranslateI.h,v 1.5 2004/05/05 00:07:03 dickey Exp $ */
 
 /*
  * TranslateI.h - Header file private to translation management

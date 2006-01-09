@@ -48,11 +48,9 @@ in this Software without prior written authorization from The Open Group.
 /**    TORTIOUS ACTION, ARISING OUT OF OR IN  CONNECTION  WITH  THE  USE    **/
 /**    OR PERFORMANCE OF THIS SOFTWARE.                                     **/
 /*****************************************************************************/
-
+/* $XFree86: xc/programs/twm/gram.y,v 3.9 2002/10/21 13:33:05 alanh Exp $ */
 
 /***********************************************************************
- *
- * $Xorg: gram.y,v 1.4 2001/02/09 02:05:36 xorgcvs Exp $
  *
  * .twmrc command grammer
  *
@@ -60,7 +58,6 @@ in this Software without prior written authorization from The Open Group.
  * 11-Nov-90 Dave Sternlicht            Adding SaveColors
  * 10-Oct-90 David M. Sternlicht        Storing saved colors on root
  *
- * $XFree86: xc/programs/twm/gram.y,v 3.8 2002/10/16 21:33:03 tsi Exp $
  *
  ***********************************************************************/
 

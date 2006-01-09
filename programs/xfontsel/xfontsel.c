@@ -1,4 +1,3 @@
-/* $XConsortium: xfontsel.c,v 1.35 94/04/17 20:43:41 rws Exp $ */
 /*
 
 Copyright (c) 1985-1989  X Consortium
@@ -31,7 +30,7 @@ Author:	Ralph R. Swick, DEC/MIT Project Athena
 	one weekend in November, 1989
 Modified: Mark Leisher <mleisher@crl.nmsu.edu> to deal with UCS sample text.
 */
-/* $XFree86: xc/programs/xfontsel/xfontsel.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/xfontsel/xfontsel.c,v 1.9 2004/04/03 22:38:55 tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>

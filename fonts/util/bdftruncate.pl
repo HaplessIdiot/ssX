@@ -6,7 +6,7 @@
 # BDF font other ISO10646-1 BDF fonts in which all characters above
 # a threshold code value are stored unencoded.
 #
-# Id: bdftruncate.pl,v 1.5 2001-05-31 10:58:58+01 mgk25 Exp $
+# $XFree86$
 
 # Subroutine to identify whether the ISO 10646/Unicode character code
 # ucs belongs into the East Asian Wide (W) or East Asian FullWidth

@@ -1,4 +1,3 @@
-/* $XConsortium: search.c,v 1.21 94/04/17 20:43:58 rws Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium
@@ -28,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/search.c,v 1.6 2003/04/09 20:31:31 herrb Exp $ */
+/* $XFree86: xc/programs/xman/search.c,v 1.7 2004/03/12 02:17:55 dickey Exp $ */
 
 
 #include "globals.h"

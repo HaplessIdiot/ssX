@@ -1,4 +1,3 @@
-/* $Xorg: sunMouse.c,v 1.3 2000/08/17 19:48:32 cpqbld Exp $ */
 /*-
  * Copyright 1987 by the Regents of the University of California
  *
@@ -50,7 +49,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * any purpose.  It is provided "as is" without express or 
  * implied warranty.
  */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunMouse.c,v 1.3 2001/10/28 03:33:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunMouse.c,v 1.4 2003/11/17 22:20:36 dawes Exp $ */
 
 #define NEED_EVENTS
 #include    "sun.h"

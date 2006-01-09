@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/BUSmemcpy.s,v 1.2 1998/07/25 16:56:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/BUSmemcpy.S,v 1.1 1999/07/10 07:24:49 dawes Exp $ */
 /******************************************************************************
                         Copyright 1993 by Glenn G. Lai
 
@@ -26,7 +26,6 @@ Austin, Tx 78765
 (glenn@cs.utexas.edu)
 8/9/93
 ******************************************************************************/
-/* $XConsortium: BUSmemcpy.s /main/4 1996/02/21 17:39:34 kaleb $ */
 
 /*
  * Modified to use long-alignment of video memory rather than word-alignment

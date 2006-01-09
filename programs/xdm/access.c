@@ -1,5 +1,4 @@
 /*
- * $Xorg: access.c,v 1.5 2001/02/09 02:05:40 xorgcvs Exp $
  *
 Copyright 1990, 1998  The Open Group
 Copyright 2002 Sun Microsystems, Inc.  All rights reserved.
@@ -27,7 +26,7 @@ in this Software without prior written authorization from the copyright holder.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdm/access.c,v 3.15 2004/03/30 17:22:45 tsi Exp $ */
+/* $XFree86: xc/programs/xdm/access.c,v 3.16 2004/04/01 19:18:24 tsi Exp $ */
 
 /*
  * Access control for XDMCP - keep a database of allowable display addresses

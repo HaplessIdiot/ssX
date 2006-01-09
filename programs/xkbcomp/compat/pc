@@ -1,4 +1,4 @@
-// $XConsortium: pc /main/2 1995/12/07 21:33:24 kaleb $
+// $XFree86$
 default partial xkb_compatibility "pc"  {
 
     // Sets the "Alt" virtual modifier

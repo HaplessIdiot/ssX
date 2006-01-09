@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/ilbm/ilbmfont.c,v 3.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmfont.c,v 3.1 2005/10/14 15:17:16 tsi Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -46,7 +46,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XConsortium: ilbmfont.c,v 1.18 94/04/17 20:28:22 keith Exp $ */
 
 /* Modified jun 95 by Geert Uytterhoeven (Geert.Uytterhoeven@cs.kuleuven.ac.be)
    to use interleaved bitplanes instead of normal bitplanes */

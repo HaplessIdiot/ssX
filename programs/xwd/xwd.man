@@ -1,4 +1,3 @@
-.\" $Xorg: xwd.man,v 1.4 2001/02/09 02:06:03 xorgcvs Exp $
 .\" Copyright 1988, 1994, 1998  The Open Group
 .\" 
 .\" Permission to use, copy, modify, distribute, and sell this software and its
@@ -23,7 +22,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86: xc/programs/xwd/xwd.man,v 1.9 2002/04/22 20:53:10 herrb Exp $
+.\" $XFree86: xc/programs/xwd/xwd.man,v 1.10 2005/02/11 03:03:22 dawes Exp $
 .\"
 .TH XWD 1 __vendorversion__
 .SH NAME

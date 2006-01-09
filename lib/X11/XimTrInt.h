@@ -1,4 +1,3 @@
-/* $Xorg: XimTrInt.h,v 1.3 2000/08/17 19:45:05 cpqbld Exp $ */
 /******************************************************************
 
               Copyright 1992 by Sun Microsystems, Inc.
@@ -28,7 +27,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
 			       fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/XimTrInt.h,v 1.2 2003/11/17 22:20:10 dawes Exp $ */
 
 #ifndef _XIMTRINT_H
 #define _XIMTRINT_H

@@ -1,4 +1,3 @@
-/* $XConsortium: readfile.c,v 1.5 94/12/11 14:25:48 gildea Exp $ */
 /*
 
 Copyright (c) 1988, 1991  X Consortium
@@ -28,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xmessage/readfile.c,v 1.2 2000/02/14 19:21:04 dawes Exp $ */
+/* $XFree86: xc/programs/xmessage/readfile.c,v 1.3 2003/04/14 23:03:13 herrb Exp $ */
 
 #include <X11/Xos.h>			/* for types.h */
 #include <sys/stat.h>

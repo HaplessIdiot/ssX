@@ -1,4 +1,5 @@
-# $XConsortium: Cards /main/27 1996/10/28 05:43:53 kaleb $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.80 2002/11/18 05:24:19 paulo Exp $
+#
 # This is the database of card definitions used by xf86config.
 # Each definition should have a NAME entry, CHIPSET (descriptive) and
 # SERVER (one of Mono, VGA16, SVGA, S3, 8514, Mach8, Mach32, Mach64, AGX,
@@ -18,7 +19,6 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.79 2002/10/16 01:31:05 dawes Exp $
 
 # VGA
 

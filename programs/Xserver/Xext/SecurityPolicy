@@ -1,6 +1,6 @@
 version-1 
 
-# $XConsortium: SecurityPolicy /main/3 1996/12/20 20:27:48 swick $
+# $XFree86$
 
 # The site policy fields are interpreted by the XC-QUERY-SECURITY-1
 # authorization protocol.  The values are arbitrary and site-specific.

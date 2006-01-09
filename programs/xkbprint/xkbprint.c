@@ -1,4 +1,3 @@
-/* $Xorg: xkbprint.c,v 1.4 2000/08/17 19:54:50 cpqbld Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +23,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbprint/xkbprint.c,v 3.10 2003/05/27 22:27:07 tsi Exp $ */
+/* $XFree86: xc/programs/xkbprint/xkbprint.c,v 3.11 2003/09/24 02:43:38 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>

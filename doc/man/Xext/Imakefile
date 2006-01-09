@@ -1,8 +1,4 @@
-XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:41:54 cpqbld Exp $
-
-
-
-XCOMM $XFree86: xc/doc/man/Xext/Imakefile,v 1.3tsi Exp $
+XCOMM $XFree86: xc/doc/man/Xext/Imakefile,v 1.4 2005/03/29 17:33:22 tsi Exp $
 
 MANDIR = $(LIBMANDIR)
 MANSUFFIX = $(LIBMANSUFFIX)

@@ -347,5 +347,4 @@ EXPORTS
  XtWindow
  XtWindowOfObject
  XtWindowToWidget
-/* $Xorg: Xt-def.cpp,v 1.3 2000/08/17 19:46:20 cpqbld Exp $ */
-/* $XFree86: xc/lib/Xt/Xt-def.cpp,v 1.4 2003/11/06 03:25:41 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Xt-def.cpp,v 1.5 2004/05/06 00:56:22 dawes Exp $ */

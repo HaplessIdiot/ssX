@@ -1,7 +1,4 @@
 /*
- *  $XConsortium: globals.h /main/37 1996/02/02 14:27:39 kaleb $
- *
- *
  *		       COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
@@ -24,7 +21,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xmh/globals.h,v 1.3 2002/07/01 02:26:05 tsi Exp $ */
 
 #ifdef MAIN
 #define ext

@@ -1,4 +1,4 @@
-/* $XConsortium: rt.stdarg.h,v 1.1 93/12/06 16:24:27 kaleb Exp $ */
+/* $XFree86$ */
 #ifndef _STDARG_H
 #define _STDARG_H
 typedef int *va_list;

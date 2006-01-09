@@ -13,7 +13,6 @@
 /*
  * monotonizer.h
  *
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/monotonizer.h,v 1.1 2001/01/15 21:48:33 dawes Exp $
  */
 
 #ifndef __glumonotonizer_h_

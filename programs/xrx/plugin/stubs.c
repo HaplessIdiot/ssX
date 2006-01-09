@@ -1,4 +1,4 @@
-/* $XConsortium: stubs.c /main/1 1996/08/14 11:46:09 lehors $ */
+/* $XFree86$ */
 /* -*- Mode: C; tab-width: 4; -*- */
 /*******************************************************************************
  * Simple LiveConnect Sample Plugin

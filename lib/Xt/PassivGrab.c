@@ -1,5 +1,3 @@
-/* $Xorg: PassivGrab.c,v 1.5 2001/02/09 02:03:56 xorgcvs Exp $ */
-
 /********************************************************
 
 Copyright 1988 by Hewlett-Packard Company
@@ -33,7 +31,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/lib/Xt/PassivGrab.c,v 3.7 2003/10/24 15:47:35 tsi Exp $ */
+/* $XFree86: xc/lib/Xt/PassivGrab.c,v 3.8 2004/05/05 00:07:03 dickey Exp $ */
 
 /*
 

@@ -35,8 +35,6 @@
 /*
  * mystdlib.h
  *
- * $Date: 2001/01/15 21:48:20 $ $Revision: 1.1 $
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/interface/mystdlib.h,v 1.1 2001/01/15 21:48:20 dawes Exp $
  */
 
 #ifndef __glumystdlib_h_

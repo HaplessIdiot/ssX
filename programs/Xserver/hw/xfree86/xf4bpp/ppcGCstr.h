@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcGCstr.h,v 1.3 2003/02/18 21:29:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcGCstr.h,v 1.4 2003/11/17 22:20:42 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -43,7 +43,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: ppcGCstr.h /main/3 1996/02/21 17:57:42 kaleb $ */
 
 #include "gc.h"
 #include "mfb.h"

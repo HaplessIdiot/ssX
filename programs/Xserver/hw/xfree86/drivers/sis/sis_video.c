@@ -1,5 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.54tsi Exp $ */
-/* $XdotOrg$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.55 2005/10/14 15:16:45 tsi Exp $ */
 /*
  * Xv driver for SiS 300, 315 and 330 series.
  *

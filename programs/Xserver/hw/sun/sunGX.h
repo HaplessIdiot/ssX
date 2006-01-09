@@ -1,5 +1,4 @@
 /*
- * $Xorg: sunGX.h,v 1.4 2001/02/09 02:04:44 xorgcvs Exp $
  *
 Copyright 1991, 1998  The Open Group
 
@@ -25,7 +24,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunGX.h,v 1.3 2001/07/29 05:01:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunGX.h,v 1.4 2001/12/14 19:59:43 dawes Exp $ */
 
 typedef unsigned int	Uint;
 typedef volatile Uint VUint;

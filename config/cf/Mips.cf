@@ -5,11 +5,17 @@
  * sure your path includes /bsd43/bin before /bin/ or /usr/bin.
  */
 
+#ifndef OSName
 #define OSName            RISCOS
+#endif
+#ifndef OSMajorVersion
 #define OSMajorVersion    4
+#endif
+#ifndef OSMinorVersion
 #define OSMinorVersion    50
+#endif
 
-XCOMM platform:  $XConsortium: Mips.cf,v 1.14 94/03/24 15:24:34 gildea Exp $
+XCOMM platform:  $XFree86$
 XCOMM operating system:  OSName
 
 /***************************************************************************
@@ -63,4 +69,4 @@ XCOMM operating system:  OSName
 #define ManDirectoryRoot /man/cat
 #define ManSourcePath $(MANPATH)/man
 
-#define InstKmemFlags -g sys -m 2755
+#define InstKmemFlags -g sys -m 2711

@@ -1,5 +1,5 @@
+/* $XFree86$ */
 /*
- * $XConsortium: saver.h,v 1.5 94/04/17 20:59:33 rws Exp $
  *
 Copyright (c) 1992  X Consortium
 

@@ -1,5 +1,3 @@
-/* $Xorg: Xutil.h,v 1.8 2001/02/09 02:03:39 xorgcvs Exp $ */
-
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/Xutil.h,v 3.6 2003/04/13 19:22:20 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xutil.h,v 3.7 2003/11/17 22:20:11 dawes Exp $ */
 
 #ifndef _XUTIL_H_
 #define _XUTIL_H_

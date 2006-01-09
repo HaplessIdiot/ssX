@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/XShm.h,v 1.11 2003/04/03 15:11:07 dawes Exp $ */
+/* $XFree86: xc/include/extensions/XShm.h,v 1.12 2003/11/17 22:20:03 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -26,8 +26,6 @@ in this Software without prior written authorization from The Open Group.
 ********************************************************/
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD OR AN X PROJECT TEAM SPECIFICATION */
-
-/* $Xorg: XShm.h,v 1.4 2001/02/09 02:03:24 xorgcvs Exp $ */
 
 #ifndef _XSHM_H_
 #define _XSHM_H_

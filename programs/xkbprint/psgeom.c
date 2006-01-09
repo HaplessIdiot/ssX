@@ -1,4 +1,3 @@
-/* $Xorg: psgeom.c,v 1.4 2000/08/17 19:54:50 cpqbld Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +23,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbprint/psgeom.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/xkbprint/psgeom.c,v 1.7 2005/09/14 14:23:16 tsi Exp $ */
 
 #define	XK_TECHNICAL
 #define	XK_PUBLISHING

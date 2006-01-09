@@ -1,13 +1,11 @@
 #!/bin/sh
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapSVR3.shar,v 3.2 1996/12/23 06:47:16 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapSVR3.shar,v 3.3 2002/10/08 23:07:43 dawes Exp $
 # This is a shell archive (produced by shar 3.49)
 # To extract the files from this archive, save it to a file, remove
 # everything above the "!/bin/sh" line above, and type "sh file_name".
 #
 # made 02/26/1994 03:10 UTC by root@gamma
 # Source directory /home1/tmp/x11r5
-#
-# $XConsortium: mmapSVR3.shar /main/4 1996/02/21 17:48:01 kaleb $
 #
 # existing files will NOT be overwritten unless -c is specified
 #

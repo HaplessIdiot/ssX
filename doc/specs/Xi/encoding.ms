@@ -1,4 +1,4 @@
-.\" $XConsortium: encoding.ms,v 1.8 94/04/18 14:22:27 rws Exp $
+.\" $XFree86$
 \&
 .sp 1
 .XS
@@ -2009,5 +2009,8 @@ ChangeDeviceNotify
 		1	NewKeyboard
 	23			unused
 .DE
-.bp
+.\" print Table of Contents
+.if o .bp \" blank page to make count even
+.bp 1
+.af PN i
 .PX

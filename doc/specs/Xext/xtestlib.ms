@@ -1,6 +1,6 @@
 .\" Use -ms and macros.t
 .\" edited for DP edits and code consistency w/ core protocol/xlib 4/2/96
-.\" $XConsortium: xtestlib.ms /main/1 1996/09/17 14:22:58 kaleb $
+.\" $XFree86$
 .de lP
 .ne 8
 .LP

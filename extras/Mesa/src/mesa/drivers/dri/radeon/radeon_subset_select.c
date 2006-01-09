@@ -27,9 +27,6 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/* $Id: radeon_subset_select.c,v 1.1 2004/04/08 09:17:14 alanh Exp $ */
-
-
 #include "glheader.h"
 #include "imports.h"
 #include "context.h"

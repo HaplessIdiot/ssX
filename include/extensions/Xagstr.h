@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/Xagstr.h,v 1.4 2001/12/14 19:53:28 dawes Exp $ */
+/* $XFree86: xc/include/extensions/Xagstr.h,v 1.5 2001/12/17 20:52:24 dawes Exp $ */
 /*
 Copyright 1996, 1998, 2001  The Open Group
 
@@ -24,7 +24,6 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $Xorg: Xagstr.h,v 1.6 2001/02/09 02:03:24 xorgcvs Exp $ */
 
 #ifndef _XAGSTR_H_ /* { */
 #define _XAGSTR_H_

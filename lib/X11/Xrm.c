@@ -1,5 +1,3 @@
-/* $Xorg: Xrm.c,v 1.7 2001/02/09 02:03:39 xorgcvs Exp $ */
-
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard
 
@@ -49,7 +47,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xrm.c,v 3.22 2003/07/16 01:38:26 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xrm.c,v 3.24 2004/03/30 10:34:05 eich Exp $ */
 
 #include	<stdio.h>
 #include	<ctype.h>

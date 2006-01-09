@@ -35,8 +35,6 @@
 /*
  * myassert.h
  *
- * $Date: 2001/01/15 21:48:33 $ $Revision: 1.1 $
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/myassert.h,v 1.1 2001/01/15 21:48:33 dawes Exp $
  */
 
 #ifndef __glumyassert_h_

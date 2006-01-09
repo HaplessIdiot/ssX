@@ -8,3 +8,4 @@ EXPORTS
  XDestroyAssocTable
  XLookUpAssoc
  XMakeAssoc
+/* $XFree86$ */

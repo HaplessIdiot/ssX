@@ -1,5 +1,4 @@
-/* $XFree86: xc/programs/Xserver/ilbm/ilbmwindow.c,v 3.0tsi Exp $ */
-/* $XConsortium: ilbmwindow.c,v 5.14 94/04/17 20:28:36 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmwindow.c,v 3.1 2005/10/14 15:17:17 tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 

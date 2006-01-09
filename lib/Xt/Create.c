@@ -1,5 +1,3 @@
-/* $Xorg: Create.c,v 1.4 2001/02/09 02:03:54 xorgcvs Exp $ */
-
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA
@@ -32,7 +30,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Create.c,v 3.11 2003/04/21 16:34:26 herrb Exp $ */
+/* $XFree86: xc/lib/Xt/Create.c,v 3.12 2004/05/05 00:07:02 dickey Exp $ */
 
 /*
 

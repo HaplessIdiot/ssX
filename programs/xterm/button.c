@@ -1,6 +1,4 @@
 /* $XTermId: button.c,v 1.198 2006/01/04 00:43:43 tom Exp $ */
-
-/* $Xorg: button.c,v 1.3 2000/08/17 19:55:08 cpqbld Exp $ */
 /*
  * Copyright 1999-2005,2006 by Thomas E. Dickey
  *
@@ -52,7 +50,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/programs/xterm/button.c,v 3.82 2005/11/03 13:17:27 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.83 2006/01/04 02:10:19 dickey Exp $ */
 
 /*
 button.c	Handles button events in the terminal emulator.

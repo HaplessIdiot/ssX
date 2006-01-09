@@ -24,9 +24,8 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	Id: fontcacheP.h,v 1.6 1999/01/31 12:43:53 akiyama Exp $
  */
-/* $XFree86: xc/include/extensions/fontcacheP.h,v 1.4 2000/03/01 01:04:21 dawes Exp $ */
+/* $XFree86: xc/include/extensions/fontcacheP.h,v 1.5 2001/08/01 00:44:35 tsi Exp $ */
 
 #ifndef _FONTCACHEP_H_
 #define _FONTCACHEP_H_

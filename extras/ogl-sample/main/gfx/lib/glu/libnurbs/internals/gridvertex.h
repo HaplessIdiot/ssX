@@ -35,8 +35,6 @@
 /*
  * gridvertex.h
  *
- * $Date: 2001/01/15 21:48:28 $ $Revision: 1.1 $
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/gridvertex.h,v 1.1 2001/01/15 21:48:28 dawes Exp $
  */
 
 #ifndef __glugridvertex_h_

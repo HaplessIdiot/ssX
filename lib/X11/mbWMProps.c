@@ -1,4 +1,3 @@
-/* $Xorg: mbWMProps.c,v 1.4 2001/02/09 02:03:40 xorgcvs Exp $ */
 /*
 
 Copyright 1991, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/mbWMProps.c,v 1.5 2001/12/14 19:54:10 dawes Exp $ */
+/* $XFree86: xc/lib/X11/mbWMProps.c,v 1.6 2003/11/17 22:20:12 dawes Exp $ */
 
 #include <X11/Xlibint.h>
 #include <X11/Xutil.h>

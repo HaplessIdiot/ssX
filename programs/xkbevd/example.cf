@@ -1,4 +1,4 @@
-//$XConsortium: example.cf /main/2 1996/01/14 19:32:28 kaleb $
+// $XFree86$
 soundDirectory = "/space/erik/.xkb/sounds/"
 
 Bell() 			"ss/08.ting.aifc"

@@ -1,3 +1,4 @@
+.\" $XFree86$
 .NH 2
 SimpleMenu Widget
 .XS
@@ -33,10 +34,6 @@ Resources
 .LP
 The resources associated with the SimpleMenu widget control aspects
 that will affect the entire menu.  
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
 lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
@@ -88,10 +85,6 @@ y	Position	Position		0
 .sp 3p
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 .Ac
 .As
 .IP \fBbackingStore\fP 1.5i

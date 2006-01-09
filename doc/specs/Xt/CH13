@@ -1,4 +1,4 @@
-.\" $XConsortium: CH13,v 1.13 94/04/19 19:18:50 converse Exp $
+.\" $XFree86$
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -44,7 +44,7 @@
 .ce 3
 \s+1\fBChapter 13\fP\s-1
 
-\s+1\fBEvolution of The \*(xI\fP\s-1
+\s+1\fBEvolution of the \*(xI\fP\s-1
 .sp 2
 .nr H1 13
 .nr H2 0
@@ -53,7 +53,7 @@
 .nr H5 0
 .LP
 .XS
-Chapter 13 \- Evolution of The \*(xI
+Chapter 13 \(em Evolution of the \*(xI
 .XE
 .LP
 The interfaces described by this specification have undergone several
@@ -252,7 +252,7 @@ A new interface declaration for resource type converters was defined
 to provide more information to converters, to support conversion
 cache cleanup with resource reference counting, and to allow
 additional procedures to be declared to free resources.  The old
-interfaces remain (in the compatibility section) and a new set of
+interfaces remain (in the compatibility section), and a new set of
 procedures was defined that work only with the new type converter
 interface.
 .LP
@@ -308,7 +308,7 @@ Release 4 to Release 5 Compatibility
 .XE
 .LP
 At the data structure level, Release 5 retains complete binary
-compatibility with release 4.  The specification of the
+compatibility with Release 4.  The specification of the
 .PN ObjectPart ,
 .PN RectObjPart ,
 .PN CorePart ,
@@ -327,7 +327,7 @@ and
 .PN XrmOptionDescRec
 was updated to use a new type,
 .PN XPointer ,
-for the \fIaddr\fP and \fIvalue\fP fields respectively, to avoid
+for the \fIaddr\fP and \fIvalue\fP fields, respectively, to avoid
 ANSI C conformance problems.  The definition of
 .PN XPointer
 is binary compatible with the previous implementation.
@@ -344,7 +344,7 @@ application developers to specify translation tables in application
 defaults files while still giving end users the ability to augment
 or override individual event sequences.  This change will affect
 only those applications that wish to take advantage of the new
-functionality, or those widgets that may have previously defined
+functionality or those widgets that may have previously defined
 a resource named ``baseTranslations''.
 .LP
 Applications wishing to take advantage of the new functionality
@@ -380,9 +380,9 @@ strings in any order within a single path entry.  Users will need to
 pay close attention to the documentation for the specific
 implementation to know where to find these files and how to specify
 their own
-.PN XFILESEARCHPATH
+.PN \s-1XFILESEARCHPATH\s+1
 and
-.PN XUSERFILESEARCHPATH
+.PN \s-1XUSERFILESEARCHPATH\s+1
 values when overriding the system defaults.
 
 .NH 3
@@ -436,7 +436,7 @@ Internationalization as defined by ANSI is a technology that
 allows support of an application in a single locale.  In
 adding support for internationalization to the \*(xI
 the restrictions of this model have been followed.
-In particular, the new \*(xI interfaces are designed to not
+In particular, the new \*(xI interfaces are designed not to
 preclude an application from using other alternatives.
 For this reason, no \*(xI routine makes a call to establish the
 locale.   However, a convenience routine to establish the
@@ -458,9 +458,10 @@ Applications that may not be dispatching all events through
 .PN XtDispatchEvent
 should be reviewed in the context of this new input method mechanism.
 .LP
-In order to permit internationalization of error messages the name
-and path of the error database file is now allowed to be implementation
-dependent.  No adequate standard mechanism has yet been suggested to
+In order to permit internationalization of error messages, the name
+and path of the error database file are now allowed to be
+implementation-dependent.
+No adequate standard mechanism has yet been suggested to
 allow the \*(xI to locate the database from localization information
 supplied by the client.
 .LP
@@ -531,7 +532,7 @@ Widget Internals
 .LP
 Two new widget methods for instance allocation and deallocation were added
 to the Object class.  These new methods 
-allow widgets to be treated as C++ objects in the C++ environment,
+allow widgets to be treated as C++ objects in the C++ environment
 when an appropriate allocation method is specified or inherited 
 by the widget class.
 .LP
@@ -548,7 +549,7 @@ has been added.
 .LP
 A new option to allow bundled changes to the managed set of a Composite
 widget is introduced in the Composite class extension record.
-Widgets which define a change_managed procedure which can accomodate
+Widgets that define a change_managed procedure that can accommodate
 additions and deletions to the managed set of children in a single
 invocation should set allows_change_managed_set to \fBTrue\fP in the
 extension record.
@@ -563,7 +564,7 @@ A new exposure event compression flag,
 was added.  Many widgets specify exposure compression, but either
 ignore the actual damage region passed to the core expose procedure or
 use only the cumulative bounding box data available in the event.
-Widgets with expose procedures which do not make use of exact
+Widgets with expose procedures that do not make use of exact
 exposure region information can indicate that the \*(xI need not
 compute the region.
 
@@ -590,7 +591,7 @@ The toolkit initialization function
 may be called multiple times without penalty.
 .LP
 In order to optimize changes in geometry to a set of geometry-managed
-children, a new interface 
+children, a new interface,
 .PN XtChangeManagedSet ,
 has been added.
 
@@ -607,8 +608,8 @@ These are \fIurgency\fP, \fIclient_leader\fP, and \fIwindow_role\fP.
 .LP
 The adoption of the \fIX Session Management Protocol\fP as an X Consortium
 standard has resulted in the addition of a new shell widget, 
-.PN SessionShell
-and an accompanying subclass verification interface
+.PN SessionShell ,
+and an accompanying subclass verification interface,
 .PN XtIsSessionShell .
 This widget provides support for communication between an application
 and a session manager, as well as a window manager.
@@ -632,7 +633,7 @@ the session manager in restarting applications based on the \*(xI.
 The resource name and class strings defined by the \*(xI shell
 widgets in 
 .Pn < X11/Shell.h > 
-are now listed in appendix E.  The addition of a new symbol
+are now listed in Appendix E.  The addition of a new symbol
 for the 
 .PN WMShell
 \fIwait_for_wm\fP resource was made to bring the external symbol
@@ -657,11 +658,11 @@ requests may include current values along with the requested changes.
 .NH 3
 Event Management
 .XS
-\*(SN 
-.XE Event Management
+\*(SN Event Management
+.XE
 .LP
-In R6, support is provided for registering selectors and event handlers for
-events generated by X protocol extensions,
+In Release 6, support is provided for registering selectors
+and event handlers for events generated by X protocol extensions
 and for dispatching those events to the appropriate widget.
 The new event handler registration interfaces are
 .PN XtInsertEventTypeHandler
@@ -669,7 +670,7 @@ and
 .PN XtRemoveEventTypeHandler .
 Since the mechanism to indicate selection of extension events is specific
 to the extension being used, the \*(xI introduces 
-.PN XtRegisterExtensionSelector
+.PN XtRegisterExtensionSelector ,
 which allows the application to select for the events of interest.
 In order to change the dispatching algorithm to accommodate extension events
 as well as core X protocol events,
@@ -685,7 +686,7 @@ to cause the event to be dispatched to the event handlers registered
 by a specific widget.
 .LP
 To permit the dispatching of events
-for non-widget drawables, such as pixmaps which are not associated
+for nonwidget drawables, such as pixmaps that are not associated
 with a widget's window, 
 .PN XtRegisterDrawable
 and 
@@ -733,12 +734,12 @@ Resource Management
 \*(SN Resource Management
 .XE
 .LP
-Resource converters are registered by the \*(xI for window gravity,
+Resource converters are registered by the \*(xI for window gravity
 and for three new resource types associated with session participation:
 RestartStyle, CommandArgArray and DirectoryString.
 .LP
 The file search path syntax has been extended to make it easier to
-prepend and append to the default search path, which controls resource
+include the default search path, which controls resource
 database construction, by using the new substitution string, %D.
 
 .NH 3
@@ -752,7 +753,7 @@ If NumLock is on and the second keysym is a keypad keysym
 (a standard keysym named with a ``KP'' prefix or a
 vendor-specific keysym in the hexadecimal range 0x11000000 to 0x1100FFFF),
 then the default key translator will
-use the first keysym if Shift and/or ShiftLock is on, and will 
+use the first keysym if Shift and/or ShiftLock is on and will 
 use the second keysym if neither is on.  Otherwise, it will
 ignore NumLock and apply the normal protocol semantics.
 
@@ -766,16 +767,16 @@ The targets of selection requests may be parameterized, as described
 by the revised \fI\*(xC\fP.
 When such requests are made,
 .PN XtSetSelectionParameters
-is used by the requestor to specify the target parameters, and
+is used by the requestor to specify the target parameters and
 .PN XtGetSelectionParameters
 is used by the selection owner to retrieve the parameters.
 When a parameterized target is specified in the context of a bundled
 request for multiple targets, 
 .PN XtCreateSelectionRequest ,
-.PN XtCancelSelectionRequest
+.PN XtCancelSelectionRequest ,
 and 
 .PN XtSendSelectionRequest 
-are used to envelope the assembly of the request.
+are used to envelop the assembly of the request.
 When the parameters themselves are the names of properties, 
 the \*(xI provides support for the economical use of property atom names;
 see 
@@ -790,13 +791,11 @@ External Agent Hooks
 .XE
 .LP
 External agent hooks were added for the benefit of applications
-which instrument other applications for purposes of accessibility,
+that instrument other applications for purposes of accessibility,
 testing, and customization.  The external agent and the application
 communicate by a shared protocol which is transparent to the application.
-Development of one such protocol is occurring in the Consortium's
-\fBx-agent\fP working group for eventual review as a Consortium standard.
 The hook callbacks permit the external agent to register interest
-in groups or classes of toolkit activity, and to be notified of the
+in groups or classes of toolkit activity and to be notified of the
 type and details of the activity as it occurs.  The new interfaces
 related to this effort are
 .PN XtHooksOfDisplay ,

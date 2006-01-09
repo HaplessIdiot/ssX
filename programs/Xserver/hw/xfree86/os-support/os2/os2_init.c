@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.19tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.20 2005/10/14 15:17:06 tsi Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -27,7 +27,6 @@
  * in this Software without prior written authorization from Holger Veit.
  *
  */
-/* $XConsortium: os2_init.c /main/9 1996/10/19 18:07:13 kaleb $ */
 
 #define I_NEED_OS2_H
 #define INCL_DOSFILEMGR

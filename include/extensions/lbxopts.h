@@ -1,4 +1,3 @@
-/* $Xorg: lbxopts.h,v 1.3 2000/08/18 04:05:45 coskrey Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -21,7 +20,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/include/extensions/lbxopts.h,v 1.5 2001/01/17 17:53:21 dawes Exp $ */
+/* $XFree86: xc/include/extensions/lbxopts.h,v 1.6 2001/10/28 03:32:26 tsi Exp $ */
 
 #ifndef _LBX_OPTS_H_
 #define _LBX_OPTS_H_

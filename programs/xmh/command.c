@@ -1,5 +1,4 @@
-/* $XConsortium: command.c,v 2.49 95/04/05 19:59:06 kaleb Exp $ */
-/* $XFree86: xc/programs/xmh/command.c,v 3.10 2004/04/03 22:26:26 dawes Exp $ */
+/* $XFree86: xc/programs/xmh/command.c,v 3.11 2005/03/23 03:11:30 dawes Exp $ */
 
 /*
  *			  COPYRIGHT 1987, 1989

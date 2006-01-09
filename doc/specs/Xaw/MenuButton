@@ -1,4 +1,4 @@
-.\" $XConsortium: MenuButton,v 1.19 94/04/14 18:16:59 kaleb Exp $
+.\" $XFree86$
 .NH 2
 MenuButton Widget
 .XS
@@ -43,10 +43,6 @@ the following resources are retrieved from the argument list
 or from the resource database:
 .LP
 .IN "MenuButton widget" "resources"
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
 expand;
 lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
@@ -102,10 +98,6 @@ y	Position	Position		0
 .sp 3p
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 .Ac
 .As
 .Bg
@@ -119,7 +111,7 @@ _
 .Cr
 .Cu
 .Cn
-.De
+.Dp
 .Dc
 .Lf
 .Ls
@@ -168,7 +160,6 @@ Switching the internal border between highlighted
 and unhighlighted states with \fBhighlight\fP and \fBunhighlight\fP
 .IP \(bu 5
 Popping up a menu with \fBPopupMenu\fP
-.LE
 .LP
 The following are the default translation bindings used by the
 MenuButton widget: 

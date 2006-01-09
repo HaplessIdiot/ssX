@@ -1,4 +1,3 @@
-/* $Xorg: multiVis.h,v 1.4 2001/02/09 02:06:03 xorgcvs Exp $ */
 /** ------------------------------------------------------------------------
 	This file contains routines for manipulating generic lists.
 	Lists are implemented with a "harness".  In other words, each
@@ -34,7 +33,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
  ------------------------------------------------------------------------ **/
-/* $XFree86$ */
+/* $XFree86: xc/programs/xwd/multiVis.h,v 1.3 2003/11/17 22:20:54 dawes Exp $ */
 
 extern int GetMultiVisualRegions(
     Display *, Window, int, int, unsigned int,

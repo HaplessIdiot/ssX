@@ -1,4 +1,3 @@
-/* $XConsortium: tocutil.h,v 2.7 95/01/09 16:52:53 swick Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -23,7 +22,7 @@
  * advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xmh/tocutil.h,v 1.3 2002/07/01 02:26:05 tsi Exp $ */
 
 #ifndef _tocutil_h
 #define _tocutil_h

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/config/xdmxconfig.c,v 1.2 2005/01/30 17:48:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/config/xdmxconfig.c,v 1.3 2005/03/25 02:22:57 dawes Exp $ */
 /*
  * Copyright 2002 Red Hat Inc., Durham, North Carolina.
  *
@@ -55,7 +55,7 @@
 
 extern FILE                *yyin;
 
-#define DMX_INFO "xdmxconfig v0.9\nCopyright 2002 Red Hat Inc.\n$Id: xdmxconfig.c,v 1.3 2005/03/25 02:22:57 dawes Exp $"
+#define DMX_INFO "xdmxconfig v0.9\nCopyright 2002 Red Hat Inc.\n$XFree86$"
 
 #define DMX_MAIN_WIDTH    800
 #define DMX_MAIN_HEIGHT   600

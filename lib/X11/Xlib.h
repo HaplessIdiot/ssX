@@ -1,4 +1,3 @@
-/* $Xorg: Xlib.h,v 1.6 2001/02/09 02:03:38 xorgcvs Exp $ */
 /* 
 
 Copyright 1985, 1986, 1987, 1991, 1998  The Open Group
@@ -24,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlib.h,v 3.26 2003/12/18 16:38:35 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlib.h,v 3.27 2004/04/03 22:26:20 dawes Exp $ */
 
 
 /*

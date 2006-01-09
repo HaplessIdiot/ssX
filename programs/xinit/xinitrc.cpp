@@ -1,5 +1,5 @@
 XCOMM!/bin/sh
-XCOMM $XConsortium: xinitrc.cpp,v 1.4 91/08/22 11:41:34 rws Exp $
+XCOMM $XFree86$
 
 userresources=$HOME/.Xresources
 usermodmap=$HOME/.Xmodmap

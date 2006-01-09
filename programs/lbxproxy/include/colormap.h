@@ -1,4 +1,3 @@
-/* $Xorg: colormap.h,v 1.4 2001/02/09 02:05:32 xorgcvs Exp $ */
 /*
 
 Copyright 1998  The Open Group
@@ -46,7 +45,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
  */
-/* $XFree86: xc/programs/lbxproxy/include/colormap.h,v 1.6 2001/12/14 20:00:55 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/include/colormap.h,v 1.7 2003/11/17 22:20:48 dawes Exp $ */
 
 #ifndef COLORMAP_H_
 #define COLORMAP_H_

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF98Conf.cpp,v 1.4 2004/02/13 23:58:34 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF98Conf.cpp,v 1.5 2004/06/08 01:28:55 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994-1998 by The XFree86 Project, Inc.
 XCOMM All rights reserved.
@@ -45,7 +45,6 @@ XCOMM WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 XCOMM OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 XCOMM EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 XCOMM
-XCOMM $XConsortium: XF86Conf.cpp /main/22 1996/10/23 11:43:51 kaleb $
 
 XCOMM **********************************************************************
 XCOMM This is a sample configuration file only, intended to illustrate

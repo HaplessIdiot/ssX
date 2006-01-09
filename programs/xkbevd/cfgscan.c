@@ -1,4 +1,3 @@
-/* $Xorg: cfgscan.c,v 1.3 2000/08/17 19:54:49 cpqbld Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +23,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbevd/cfgscan.c,v 3.6 2001/01/17 23:46:07 dawes Exp $ */
+/* $XFree86: xc/programs/xkbevd/cfgscan.c,v 3.7 2001/08/01 00:45:05 tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl
-# $XConsortium: xclock /main/6 1996/12/03 20:06:08 rws $
+# $XFree86$
 # CGI script to launch xclock
 #
 
@@ -187,6 +187,8 @@ if ($query)
 	}
 	# add display specification to the command line
 	$command .= " -display $xdisplay";
+	# and put it in the environment too for good measure.
+	$ENV{'DISPLAY'} = $xdisplay;
     }
     if ($width && $height) {
 	# add geometry specification to the command line

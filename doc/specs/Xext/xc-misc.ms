@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: xc-misc.ms,v 1.1 94/04/18 11:57:01 dpw Exp $
+.\" $XFree86$
 .EH ''''
 .OH ''''
 .EF ''''
@@ -14,7 +14,7 @@
 .ce 3
 Version 1.1
 X Consortium Standard
-X Version 11, Release 6
+X Version 11, Release 6.4
 .sp 6
 .ce 4
 Bob Scheifler
@@ -69,7 +69,7 @@ One approach to solving this problem would be to have Xlib notice when
 a resource is freed and recycle its ID for future use.  This strategy
 runs into difficulties because sometimes freeing one resource causes
 others to be freed (for example, when a window is destroyed, so are
-its children.)  To do a complete job, Xlib would have to maintain a
+its children).  To do a complete job, Xlib would have to maintain a
 large amount of state that currently resides only in the server (the
 entire window tree in the above example).  Even if a less
 comprehensive strategy was adopted, such as recycling only those IDs
@@ -128,6 +128,7 @@ or may not be the largest possible range.
 .PN "XCMiscGetXIDList"
 .IP
 \fIcount\fP\^: CARD32
+.LP
    =>
 .IP
 \fIids\fP\^: LISTofXID

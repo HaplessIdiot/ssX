@@ -1,4 +1,3 @@
-/* $Xorg: utils.c,v 1.5 2001/02/09 02:05:32 xorgcvs Exp $ */
 /***********************************************************
 
 Copyright 1987, 1996, 1998  The Open Group
@@ -45,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/lbxproxy/di/utils.c,v 1.18tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/utils.c,v 1.19 2004/04/03 22:38:54 tsi Exp $ */
 
 #include "lbx.h"
 #include <stdio.h>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/VTsw_sco.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/VTsw_sco.c,v 1.5 2005/10/14 15:17:07 tsi Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Copyright 1993 by David McCullough <davidm@stallion.oz.au>
@@ -22,7 +22,6 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: VTsw_sco.c /main/2 1995/11/13 06:08:36 kaleb $ */
 
 #include <X11/X.h>
 

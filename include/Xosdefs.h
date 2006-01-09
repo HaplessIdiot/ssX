@@ -1,8 +1,6 @@
 /*
  * O/S-dependent (mis)feature macro definitions
  *
- * $Xorg: Xosdefs.h,v 1.5 2001/02/09 02:03:23 xorgcvs Exp $
- *
 Copyright 1991, 1998  The Open Group
 
 Permission to use, copy, modify, distribute, and sell this software and its
@@ -25,7 +23,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86: xc/include/Xosdefs.h,v 3.21 2003/12/18 16:38:34 dawes Exp $ */
+/* $XFree86: xc/include/Xosdefs.h,v 3.22 2004/04/03 22:26:20 dawes Exp $ */
 
 #ifndef _XOSDEFS_H_
 #define _XOSDEFS_H_

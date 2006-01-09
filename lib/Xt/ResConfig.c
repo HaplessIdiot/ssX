@@ -1,4 +1,3 @@
-/* $Xorg: ResConfig.c,v 1.5 2001/02/09 02:03:56 xorgcvs Exp $ */
 /*
 
 Copyright 1987, 1988, 1998  The Open Group
@@ -52,7 +51,7 @@ dealings in this Software without prior written authorization from the IBM
 Corporation.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/ResConfig.c,v 3.9 2004/05/05 00:07:03 dickey Exp $ */
+/* $XFree86: xc/lib/Xt/ResConfig.c,v 3.10 2005/11/13 21:25:00 dickey Exp $ */
 
 #include "Intrinsic.h"
 #include "IntrinsicI.h"

@@ -1,4 +1,3 @@
-/* $Xorg: lcPrTxt.c,v 1.3 2000/08/17 19:45:18 cpqbld Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -23,7 +22,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/lcPrTxt.c,v 1.9 2003/04/03 22:34:02 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcPrTxt.c,v 1.10 2003/05/29 13:22:51 pascal Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"

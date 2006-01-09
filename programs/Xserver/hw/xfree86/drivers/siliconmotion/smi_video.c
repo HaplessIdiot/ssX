@@ -1,4 +1,3 @@
-/* Header:   //Mercury/Projects/archives/XFree86/4.0/smi_video.c.-arc   1.14   30 Nov 2000 16:51:40   Frido  $ */
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
 Copyright (C) 2000 Silicon Motion, Inc.  All Rights Reserved.
@@ -41,7 +40,7 @@ Author of changes: Corvin Zahn <zahn@zac.de>
 Date:   2.11.2001
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_video.c,v 1.14 2003/12/08 16:03:58 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_video.c,v 1.15 2005/08/28 16:24:07 tsi Exp $ */
 
 #include "smi.h"
 #include "smi_video.h"

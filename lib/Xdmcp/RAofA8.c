@@ -1,6 +1,5 @@
+/* $XFree86$ */
 /*
- * $Xorg: RAofA8.c,v 1.6 2001/02/09 02:03:48 xorgcvs Exp $
- *
  * 
 Copyright 1989, 1998  The Open Group
 

@@ -43,10 +43,8 @@ in this Software without prior written authorization from The Open Group.
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDXorg: @(#)config.c,v 4.6 1991/07/09 14:08:09 lemke Exp $
- *
  */
-/* $XFree86: xc/programs/xfs/os/config.c,v 3.16 2002/10/15 01:45:03 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/config.c,v 3.17 2004/06/02 22:43:06 dawes Exp $ */
 /*
  * Copyright (c) 1996-2004 by The XFree86 Project, Inc.
  * All rights reserved.

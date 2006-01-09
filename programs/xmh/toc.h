@@ -1,7 +1,4 @@
 /*
- * $XConsortium: toc.h,v 2.13 91/07/17 12:28:29 converse Exp $
- *
- *
  *		       COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
@@ -24,7 +21,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xmh/toc.h,v 1.3 2002/07/01 02:26:05 tsi Exp $ */
 
 #ifndef _toc_h
 #define _toc_h

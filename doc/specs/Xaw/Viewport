@@ -1,3 +1,4 @@
+.\" $XFree86$
 .NH 2
 Viewport Widget
 .LP
@@ -40,11 +41,8 @@ When creating a Viewport widget instance, the following resources are
 retrieved from the argument list or the resource database:
 .LP
 .IN "Viewport widget" "resources"
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
+expand;
 lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
@@ -84,10 +82,6 @@ y	Position	Position		0
 .sp 3p
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 .Ac
 .IP \fBallowHoriz\fP 1.5i
 .br
@@ -157,6 +151,6 @@ the resources dynamically once the widget ID has been obtained with
 .IN "XtNameToWidget" ""
 .NT
 Although the Viewport is a Subclass of the Form, no resources for the Form
-my be supplied for any of the children of the Viewport.  These constraints
-are managed internally, and are not meant for public consumption.
+may be supplied for any of the children of the Viewport.  These constraints
+are managed internally and are not meant for public consumption.
 .NE

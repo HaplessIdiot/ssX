@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.71tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.72 2005/10/14 15:16:33 tsi Exp $ */
 /*
  * Copyright 1995-1999 by Frederic Lepied, France. <Lepied@XFree86.org>
  *                                                                            
@@ -67,7 +67,6 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/* $XConsortium: xf86Xinput.c /main/14 1996/10/27 11:05:25 kaleb $ */
 
 #include <X11/Xfuncproto.h>
 #include <X11/Xmd.h>

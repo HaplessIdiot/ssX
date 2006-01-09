@@ -1,5 +1,3 @@
-/* $Xorg: CvCols.c,v 1.3 2000/08/17 19:44:32 cpqbld Exp $ */
-
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
@@ -33,7 +31,7 @@
  *
  *
  */
-/* $XFree86: xc/lib/X11/CvCols.c,v 1.4 2003/04/13 19:22:15 dawes Exp $ */
+/* $XFree86: xc/lib/X11/CvCols.c,v 1.5 2003/11/03 03:46:26 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"

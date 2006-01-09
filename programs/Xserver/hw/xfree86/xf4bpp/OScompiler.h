@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/OScompiler.h,v 1.3 1999/01/31 12:22:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/OScompiler.h,v 1.4 2000/07/26 01:52:26 tsi Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -21,7 +21,6 @@
  * SOFTWARE.
  *
 */
-/* $XConsortium: OScompiler.h /main/4 1996/02/21 17:56:09 kaleb $ */
 
 #ifndef __COMPILER_DEPENDANCIES__
 #define __COMPILER_DEPENDANCIES__

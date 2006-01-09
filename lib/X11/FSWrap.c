@@ -1,5 +1,3 @@
-/* $Xorg: FSWrap.c,v 1.5 2001/02/09 02:03:32 xorgcvs Exp $ */
-
 /*
  * Copyright 1991 by the Open Software Foundation
  * Copyright 1993 by the TOSHIBA Corp.
@@ -56,7 +54,7 @@ from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/X11/FSWrap.c,v 1.8 2003/08/22 19:27:24 eich Exp $ */
+/* $XFree86: xc/lib/X11/FSWrap.c,v 1.9 2003/11/17 22:20:06 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"

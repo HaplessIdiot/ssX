@@ -1,5 +1,5 @@
-/* $XConsortium: lnx_jstk.c /main/7 1996/02/21 17:51:36 kaleb $ */
-/* Id: lnx_jstk.c,v 1.1 1995/12/20 14:06:09 lepied Exp */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_jstk.c,v 3.13 1998/07/25 16:56:43 dawes Exp $ */
+
 /*
  * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>       
  *                                                                            
@@ -22,10 +22,6 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_jstk.c,v 3.8.2.1 1998/06/05 16:23:12 dawes Exp $ */
-
-static const char rcs_id[] = "Id: lnx_jstk.c,v 1.1 1995/12/20 14:06:09 lepied Exp";
 
 #include <sys/types.h>
 #include <unistd.h>

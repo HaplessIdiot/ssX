@@ -1,4 +1,3 @@
-/* $XConsortium: XKBui.c /main/2 1995/12/07 21:18:19 kaleb $ */
 /************************************************************
  Copyright (c) 1996 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +23,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/lib/xkbui/XKBui.c,v 3.6 1999/06/20 07:14:08 dawes Exp $ */
+/* $XFree86: xc/lib/xkbui/XKBui.c,v 3.7 2003/11/17 22:20:25 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <stdio.h>

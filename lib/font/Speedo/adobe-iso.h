@@ -1,4 +1,4 @@
-/* $XConsortium: adobe-iso.h,v 1.2 91/05/11 09:39:04 rws Exp $ */
+/* $XFree86$ */
 
 /*
  * Latin 1 format from masterset format 11 (ps)

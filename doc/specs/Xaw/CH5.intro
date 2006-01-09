@@ -1,3 +1,4 @@
+.\" $XFree86$
 .LP
 .bp
 \&
@@ -67,7 +68,7 @@ The Text widget provides many of the common keyboard editing commands.
 These commands allow users to move around and edit the buffer.  If an
 illegal operation is attempted, (such as deleting characters in a
 read-only text widget), the X server will beep.
-.NH3
+.NH 3
 Default Key Bindings
 .IN "Text widget" "default key bindings"
 .LP
@@ -124,7 +125,7 @@ Since all of these key and pointer bindings are set through the
 translations and resource manager, the user and the application
 programmer can modify them by changing the Text widget's
 \fBtranslations\fP resource.
-.bs 1
+.\"
 .NH 3
 Search and Replace
 .IN "Text widget" "search"

@@ -1,6 +1,4 @@
 /*
- * Id: fbpixmap.c,v 1.1 1999/11/02 03:54:45 keithp Exp $
- *
  * Copyright © 1998 Keith Packard
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -21,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbpixmap.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbpixmap.c,v 1.12 2005/09/14 15:13:49 tsi Exp $ */
 
 #include "fb.h"
 #ifdef IN_MODULE

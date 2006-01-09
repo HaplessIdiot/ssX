@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.71 2004/04/28 23:31:11 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.72 2004/10/25 21:23:58 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -93,7 +93,6 @@
  *  - Add font path "/fonts/TrueType/" and "/fonts/freefont/".
  *  Chisato Yamauchi(cyamauch@phyas.aichi-edu.ac.jp)
  */
-/* $XConsortium: xf86config.c /main/21 1996/10/28 05:43:57 kaleb $ */
 
 #include <stdlib.h>
 #include <stdio.h>

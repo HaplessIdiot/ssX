@@ -1,4 +1,4 @@
-/* $XConsortium: assert.h,v 1.3 94/02/20 11:12:26 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -20,7 +20,6 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
- * $NCDId$
  */
 #ifdef DEBUG
 #include	<stdio.h>

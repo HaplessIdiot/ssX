@@ -1,4 +1,3 @@
-/* $Xorg: save.c,v 1.5 2001/02/09 02:06:01 xorgcvs Exp $ */
 /******************************************************************************
 
 Copyright 1993, 1998  The Open Group
@@ -23,7 +22,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/save.c,v 3.5 2004/04/13 04:14:02 dawes Exp $ */
+/* $XFree86: xc/programs/xsm/save.c,v 3.6 2004/06/01 00:17:08 dawes Exp $ */
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.

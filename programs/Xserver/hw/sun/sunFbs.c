@@ -1,6 +1,3 @@
-
-/* $Xorg: sunFbs.c,v 1.4 2001/02/09 02:04:43 xorgcvs Exp $ */
-
 /*
 Copyright 1990, 1993, 1998  The Open Group
 
@@ -67,7 +64,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * express or implied warranty.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/sun/sunFbs.c,v 1.7 2002/12/06 00:28:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunFbs.c,v 1.8 2003/11/17 22:20:36 dawes Exp $ */
 
 /****************************************************************/
 /* Modified from  sunCG4C.c for X11R3 by Tom Jarmolowski	*/

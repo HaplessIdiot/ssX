@@ -1,5 +1,3 @@
-/* $Xorg: ThreadsI.h,v 1.4 2001/02/09 02:03:59 xorgcvs Exp $ */
-
 /************************************************************
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -53,7 +51,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/ThreadsI.h,v 3.5 2001/12/14 19:56:31 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/ThreadsI.h,v 3.6 2003/04/21 16:34:29 herrb Exp $ */
 
 #ifndef _XtThreadsI_h
 #define _XtThreadsI_h

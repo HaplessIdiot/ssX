@@ -1,5 +1,3 @@
-/* $Xorg: reqstats.h,v 1.4 2001/02/09 02:04:05 xorgcvs Exp $ */
-
 /*
 
 Copyright 1996  The Open Group
@@ -27,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/lbxutil/lbx_zlib/reqstats.h,v 1.2 2001/08/27 19:01:07 dawes Exp $ */
+/* $XFree86: xc/lib/lbxutil/lbx_zlib/reqstats.h,v 1.3 2001/12/14 19:57:01 dawes Exp $ */
 
 #ifdef LBXREQSTATS
 struct ReqStats {

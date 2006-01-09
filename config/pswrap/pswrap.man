@@ -1,5 +1,4 @@
-.\" Id: pswrap.man,v 6.1 1994/05/18 23:21:11 asente Exp $
-.\" $XFree86$
+.\" $XFree86: xc/config/pswrap/pswrap.man,v 1.3 2005/03/21 17:45:43 dawes Exp $
 .na
 .nh
 .TH  PSWRAP  1 "4 Apr 1994" "Adobe Systems"

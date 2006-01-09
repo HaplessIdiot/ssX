@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/ilbm/ilbmblt.c,v 3.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmblt.c,v 3.1 2005/10/14 15:17:16 tsi Exp $ */
 /*
  * ilbm copy area
  */
@@ -31,7 +31,6 @@ in this Software without prior written authorization from the X Consortium.
 Author: Keith Packard
 
 */
-/* $XConsortium: ilbmblt.c,v 1.11 94/04/17 20:28:16 dpw Exp $ */
 
 /* Modified jun 95 by Geert Uytterhoeven (Geert.Uytterhoeven@cs.kuleuven.ac.be)
    to use interleaved bitplanes instead of normal bitplanes */

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Xorg: mkdirhier.sh,v 1.3 2000/08/17 19:41:53 cpqbld Exp $
+# $XFree86$
 # Courtesy of Paul Eggert
 
 newline='

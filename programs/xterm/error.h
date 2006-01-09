@@ -1,9 +1,4 @@
-/*
- *	$Xorg: error.h,v 1.3 2000/08/17 19:55:08 cpqbld Exp $
- */
-
-
-/* $XFree86: xc/programs/xterm/error.h,v 1.7 2002/08/17 19:52:26 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/error.h,v 1.8 2002/12/27 21:05:22 dickey Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *

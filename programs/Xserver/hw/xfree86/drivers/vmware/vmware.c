@@ -2,11 +2,7 @@
  * Copyright (C) 1998-2001 VMware, Inc.
  * All Rights Reserved
  * **********************************************************/
-#ifdef VMX86_DEVEL
-char rcsId_vmware[] =
-    "Id: vmware.c,v 1.11 2001/02/23 02:10:39 yoel Exp $";
-#endif
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.23 2005/01/30 21:31:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.24 2005/02/26 01:07:13 dawes Exp $ */
 
 /*
  * TODO: support the vmware linux kernel fb driver (Option "UseFBDev").

@@ -46,12 +46,10 @@ SOFTWARE.
 ******************************************************************/
 
 /*
- * $Xorg: xrefresh.c,v 1.4 2001/02/09 02:05:56 xorgcvs Exp $
- *
  * Kitchen sink version, useful for clearing small areas and flashing the 
  * screen.
  */
-/* $XFree86: xc/programs/xrefresh/xrefresh.c,v 3.5 2001/07/25 15:05:28 dawes Exp $ */
+/* $XFree86: xc/programs/xrefresh/xrefresh.c,v 3.6 2001/12/14 20:02:15 dawes Exp $ */
 
 #include <stdio.h>
 #include <errno.h>

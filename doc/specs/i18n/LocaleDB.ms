@@ -1,4 +1,4 @@
-.\" $XConsortium: LocaleDB.ms,v 1.4 94/04/18 16:48:50 rws Exp $
+.\" $XFree86$
 .\" To print this out, type tbl macros.t ThisFile | troff -ms
 .EH ''''
 .OH ''''
@@ -71,8 +71,8 @@ in this Software without prior written authorization from the X Consortium.
 .bp 1
 .ps 11
 .nr PS 11
-.EH '\fBX Locale Database Definition\fP''\fBX11, Release 6\fP'
-.OH '\fBX Locale Database Definition\fP''\fBX11, Release 6\fP'
+.EH '\fBX Locale Database Definition\fP''\fBX11, Release 6.4\fP'
+.OH '\fBX Locale Database Definition\fP''\fBX11, Release 6.4\fP'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
 .NH 1
@@ -400,7 +400,7 @@ The following is sample X Locale Database file.
 .sp
 .RS
 .nf
-#  $XConsortium: LocaleDB.ms,v 1.4 94/04/18 16:48:50 rws Exp $
+#
 #  XLocale Database Sample for ja_JP.euc 
 # 
 

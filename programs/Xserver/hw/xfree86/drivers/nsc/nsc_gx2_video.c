@@ -1,9 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_video.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_video.c,v 1.12 2005/10/14 15:16:42 tsi Exp $ */
 /*
- * $Workfile: nsc_gx2_video.c $
- * $Revision: 1.12 $
- * $Author: tsi $
- *
  * File Contents: This file consists of main Xfree video supported routines.
  *
  * Project:       Geode Xfree Frame buffer device driver.

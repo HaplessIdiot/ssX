@@ -1,9 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc.h,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc.h,v 1.6 2003/11/03 05:11:20 tsi Exp $ */
 /*
- * $Workfile: nsc.h $
- * $Revision: 1.6 $
- * $Author: tsi $
- *
  * File Contents: This file contains the data structures Geode driver.
  *
  * Project:       Geode Xfree Frame buffer device driver.

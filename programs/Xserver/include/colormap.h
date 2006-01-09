@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/colormap.h,v 1.5 2001/12/14 19:59:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/colormap.h,v 1.6 2003/04/27 21:31:04 herrb Exp $ */
 /*
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $Xorg: colormap.h,v 1.4 2001/02/09 02:05:14 xorgcvs Exp $ */
 
 #ifndef CMAP_H
 #define CMAP_H 1

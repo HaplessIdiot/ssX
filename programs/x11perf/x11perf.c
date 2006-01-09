@@ -1,4 +1,3 @@
-/* $Xorg: x11perf.c,v 1.4 2000/08/17 19:54:10 cpqbld Exp $ */
 /****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -21,7 +20,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ****************************************************************************/
-/* $XFree86: xc/programs/x11perf/x11perf.c,v 3.6 2001/11/03 21:59:20 dawes Exp $ */
+/* $XFree86: xc/programs/x11perf/x11perf.c,v 3.8 2002/12/04 10:28:08 eich Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>

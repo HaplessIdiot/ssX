@@ -1,4 +1,4 @@
-.\" $XConsortium: CH06,v 1.10 94/04/18 18:48:14 rws Exp $
+.\" $XFree86$
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -53,7 +53,7 @@
 .nr H5 0
 .LP
 .XS
-Chapter 6 \- Geometry Management 
+Chapter 6 \(em Geometry Management 
 .XE
 .LP
 .IN "geometry_manager procedure"
@@ -160,6 +160,7 @@ structure.
 .LP
 .IN "XtGeometryMask"
 .KS
+.sM
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -174,11 +175,14 @@ typedef struct {
 	int stack_mode;
 } XtWidgetGeometry;
 .De
+.eM
 .KE
 .LP
 To make a general geometry manager request from a widget, use
 .PN XtMakeGeometryRequest .
+.LP
 .IN "XtMakeGeometryRequest" "" "@DEF@"
+.sM
 .FD 0
 XtGeometryResult XtMakeGeometryRequest(\fIw\fP, \fIrequest\fP, \
 \fIreply_return\fP)
@@ -199,6 +203,7 @@ Returns the allowed widget size, or may be NULL
 if the requesting widget is not interested in handling
 .PN XtGeometryAlmost .
 .LP
+.eM
 Depending on the condition,
 .PN XtMakeGeometryRequest
 performs the following:
@@ -217,7 +222,7 @@ If the widget's \fIbeing_destroyed\fP field is
 it returns
 .PN XtGeometryNo .
 .IP \(bu 5
-If the widget \fIx\fP, \fIy\fP, \fIwidth\fP, \fIheight\fP and,
+If the widget \fIx\fP, \fIy\fP, \fIwidth\fP, \fIheight\fP, and
 \fIborder_width\fP fields are
 all equal to the requested values,
 it returns
@@ -262,6 +267,7 @@ The return codes from geometry managers are
 .IN "XtGeometryResult"
 .LP
 .KS
+.sM
 .Ds 0
 .TA .5i 1.75i
 .ta .5i 1.75i
@@ -272,10 +278,13 @@ typedef enum {
 	XtGeometryDone
 } XtGeometryResult;
 .De
+.eM
 .KE
 .LP
 The \fIrequest_mode\fP definitions are from
 .Pn < X11/X.h >.
+.LP
+.sM
 .TS
 lw(.5i) lw(2.5i) lw(.75i).
 T{
@@ -329,7 +338,10 @@ T}	T{
 T}
 .TE
 .LP
+.eM
 The \*(xI also support the following value.
+.LP
+.sM
 .TS
 lw(.5i) lw(2.5i) lw(.75i).
 T{
@@ -341,6 +353,7 @@ T}	T{
 T}
 .TE
 .LP
+.eM
 .PN XtCWQueryOnly
 indicates that the corresponding geometry request is only a query
 as to what would happen if this geometry request were made
@@ -355,6 +368,8 @@ structure the caller wants to specify.
 .LP
 The \fIstack_mode\fP definitions are from
 .Pn < X11/X.h >:
+.LP
+.sM
 .TS
 lw(.5i) lw(2.5i) lw(.75i).
 T{
@@ -394,7 +409,10 @@ T}	T{
 T}
 .TE
 .LP
+.eM
 The \*(xI also support the following value.
+.LP
+.sM
 .TS
 lw(.5i) lw(2.5i) lw(.75i).
 T{
@@ -406,6 +424,7 @@ T}	T{
 T}
 .TE
 .LP
+.eM
 For definition and behavior of
 .PN Above ,
 .PN Below ,
@@ -427,7 +446,9 @@ To make a simple resize request from a widget, you can use
 .PN XtMakeResizeRequest 
 as an alternative to
 .PN XtMakeGeometryRequest .
+.LP
 .IN "XtMakeResizeRequest" "" "@DEF@"
+.sM
 .FD 0
 XtGeometryResult XtMakeResizeRequest(\fIw\fP, \fIwidth\fP, \fIheight\fP, \
 \fIwidth_return\fP, \fIheight_return\fP)
@@ -441,16 +462,17 @@ XtGeometryResult XtMakeResizeRequest(\fIw\fP, \fIwidth\fP, \fIheight\fP, \
 .IP \fIw\fP 1i
 Specifies the widget making the request.  \*(rI
 .IP \fIwidth\fP 1i
+Specify the desired widget width and height.
 .br
 .ns
 .IP \fIheight\fP 1i
-Specify the desired widget width and height.
 .IP \fIwidth_return\fP 1i
+Return the allowed widget width and height.
 .br
 .ns
 .IP \fIheight_return\fP 1i
-Return the allowed widget width and height.
 .LP
+.eM
 The
 .PN XtMakeResizeRequest
 function, a simple interface to
@@ -530,14 +552,16 @@ is guaranteed only for the next call to the same widget;
 therefore, a cache of size 1 is sufficient.
 
 .NH 2
-Child Geometry Management: the geometry_manager Procedure
+Child Geometry Management: The geometry_manager Procedure
 .XS
-\*(SN Child Geometry Management: the geometry_manager Procedure
+\*(SN Child Geometry Management: The geometry_manager Procedure
 .XE
 .LP
 The geometry_manager procedure pointer in a composite widget class is of type
 .PN XtGeometryHandler .
+.LP
 .IN "XtGeometryHandler" "" "@DEF@"
+.sM
 .FD 0
 typedef XtGeometryResult (*XtGeometryHandler)(Widget, XtWidgetGeometry*, \
 XtWidgetGeometry*);
@@ -556,6 +580,7 @@ Passes the new geometry the child desires.
 Passes a geometry structure in which the geometry manager may store a
 compromise.
 .LP
+.eM
 A class can inherit its superclass's geometry manager during class
 initialization.
 .LP
@@ -704,7 +729,9 @@ Widget Placement and Sizing
 To move a sibling widget of the child making the geometry request,
 the parent uses
 .PN XtMoveWidget .
+.LP
 .IN "XtMoveWidget" "" "@DEF@"
+.sM
 .FD 0
 void XtMoveWidget(\fIw\fP, \fIx\fP, \fIy\fP)
 .br
@@ -722,6 +749,7 @@ Specifies the widget.  \*(rI
 .IP \fIy\fP 1i
 Specify the new widget x and y coordinates.
 .LP
+.eM
 The
 .PN XtMoveWidget
 function returns immediately if the specified geometry fields
@@ -737,7 +765,9 @@ call on the widget's window.
 To resize a sibling widget of the child making the geometry request,
 the parent uses
 .PN XtResizeWidget .
+.LP
 .IN "XtResizeWidget" "" "@DEF@"
+.sM
 .FD 0
 void XtResizeWidget(\fIw\fP, \fIwidth\fP, \fIheight\fP, \fIborder_width\fP)
 .br
@@ -760,6 +790,7 @@ Specifies the widget.  \*(rI
 .IP \fIborder_width\fP 1i
 Specify the new widget size.
 .LP
+.eM
 The
 .PN XtResizeWidget
 function returns immediately if the specified geometry fields
@@ -779,7 +810,9 @@ calls the object's resize procedure to notify it of the size change.
 To move and resize the sibling widget of the child making the geometry request,
 the parent uses
 .PN XtConfigureWidget .
+.LP
 .IN "XtConfigureWidget" "" "@DEF@"
+.sM
 .FD 0
 void XtConfigureWidget(\fIw\fP, \fIx\fP, \fIy\fP, \fIwidth\fP, \fIheight\fP, \
 \fIborder_width\fP)
@@ -812,6 +845,7 @@ Specify the new widget x and y coordinates.
 .IP \fIborder_width\fP 1i
 Specify the new widget size.
 .LP
+.eM
 The
 .PN XtConfigureWidget
 function returns immediately if the specified new geometry fields
@@ -833,7 +867,9 @@ otherwise, it simply returns.
 To resize a child widget that already has the new values of its width,
 height, and border width, the parent uses
 .PN XtResizeWindow .
+.LP
 .IN "XtResizeWindow" "" "@DEF@"
+.sM
 .FD 0
 void XtResizeWindow(\fIw\fP)
 .br
@@ -842,6 +878,7 @@ void XtResizeWindow(\fIw\fP)
 .IP \fIw\fP 1i
 Specifies the widget.  \*(cI
 .LP
+.eM
 The
 .PN XtResizeWindow
 function calls the 
@@ -874,14 +911,18 @@ and, as they see fit, can use or ignore any portion of the response.
 .LP
 To query a child widget's preferred geometry, use
 .PN XtQueryGeometry .
+.LP
 .IN "XtQueryGeometry" "" "@DEF@"
+.sM
 .FD 0
 XtGeometryResult XtQueryGeometry(\fIw\fP, \fIintended\fP, \
 \fIpreferred_return\fP)
 .br
-     Widget \fIw\fP\^;
+     Widget \fIw\fP;
 .br
-     XtWidgetGeometry *\fIintended\fP, *\fIpreferred_return\fP\^;
+     XtWidgetGeometry *\fIintended\fP;
+.br
+     XtWidgetGeometry *\fIpreferred_return\fP;
 .FN
 .IP \fIw\fP 1.1i
 Specifies the widget.  \*(rI
@@ -891,6 +932,7 @@ NULL.
 .IP \fIpreferred_return\fP 1.1i
 Returns the child widget's preferred geometry.
 .LP
+.eM
 To discover a child's preferred geometry,
 the child's parent stores the new
 geometry in the corresponding fields of
@@ -932,7 +974,9 @@ the preferred geometry.
 .LP
 The query_geometry procedure pointer is of type
 .PN XtGeometryHandler .
+.LP
 .IN "query_geometry procedure" "" "@DEF@"
+.sM
 .FD 0
 typedef XtGeometryResult (*XtGeometryHandler)(Widget, XtWidgetGeometry*, \
 XtWidgetGeometry*);
@@ -946,10 +990,11 @@ XtWidgetGeometry*);
 .IP \fIw\fP 1.2i
 Passes the child widget whose preferred geometry is required.
 .IP \fIrequest\fP 1.2i
-Passes the geometry changes which the parent plans to make.
+Passes the geometry changes that the parent plans to make.
 .IP \fIpreferred_return\fP 1.2i
 Passes a structure in which the child returns its preferred geometry.
 .LP
+.eM
 .IN "query_geometry procedure"
 The query_geometry procedure is expected to examine the bits set in
 \fIrequest->request_mode\fP, evaluate the preferred geometry of the widget,
@@ -1028,9 +1073,9 @@ Thus, the child is still responsible for storing values
 into its own geometry during its initialize procedure.
 
 .NH 2
-Size Change Management: the resize Procedure
+Size Change Management: The resize Procedure
 .XS
-\*(SN Size Change Management: the resize Procedure
+\*(SN Size Change Management: The resize Procedure
 .XE
 .LP
 A child can be resized by its parent at any time.

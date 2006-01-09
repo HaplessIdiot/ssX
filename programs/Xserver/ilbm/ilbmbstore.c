@@ -1,5 +1,4 @@
-/* $XFree86: xc/programs/Xserver/ilbm/ilbmbstore.c,v 3.0tsi Exp $ */
-/* $XConsortium: ilbmbstore.c,v 5.7 94/04/17 20:28:18 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmbstore.c,v 3.1 2005/10/14 15:17:16 tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /*
 

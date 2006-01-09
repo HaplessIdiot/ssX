@@ -1,4 +1,3 @@
-/* $Xorg: xkbdraw.c,v 1.3 2000/08/17 19:46:43 cpqbld Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +23,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/lib/xkbfile/xkbdraw.c,v 1.3 2001/07/29 05:01:13 tsi Exp $ */
+/* $XFree86: xc/lib/xkbfile/xkbdraw.c,v 1.4 2003/11/17 22:20:23 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>

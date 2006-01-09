@@ -1,8 +1,4 @@
-/* $XConsortium: dwg.c /main/2 1996/10/28 06:57:55 kaleb $ */
-
-
-
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/util/stormdwg.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/util/stormdwg.c,v 1.2 2004/11/28 03:37:42 tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>

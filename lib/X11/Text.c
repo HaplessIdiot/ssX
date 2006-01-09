@@ -1,4 +1,3 @@
-/* $Xorg: Text.c,v 1.4 2001/02/09 02:03:37 xorgcvs Exp $ */
 /*
 
 Copyright 1986, 1998  The Open Group
@@ -24,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Text.c,v 1.4 2001/12/14 19:54:07 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Text.c,v 1.5 2003/11/17 22:20:08 dawes Exp $ */
 
 #include "Xlibint.h"
 

@@ -1,5 +1,3 @@
-/* $Xorg: Xcupstr.h,v 1.4 2001/02/09 02:03:24 xorgcvs Exp $ */
-
 /*
 
 Copyright 1987, 1988, 1998  The Open Group
@@ -25,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/include/extensions/Xcupstr.h,v 3.5 2001/08/01 00:44:35 tsi Exp $ */
+/* $XFree86: xc/include/extensions/Xcupstr.h,v 3.6 2001/12/14 19:53:28 dawes Exp $ */
 
 #ifndef _XCUPSTR_H_ /* { */
 #define _XCUPSTR_H_

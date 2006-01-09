@@ -1,6 +1,4 @@
 /*
- * $Xorg: WC32.c,v 1.4 2001/02/09 02:03:49 xorgcvs Exp $
- *
  * 
 Copyright 1989, 1998  The Open Group
 
@@ -26,7 +24,7 @@ in this Software without prior written authorization from The Open Group.
  * *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/lib/Xdmcp/WC32.c,v 1.4 2001/01/17 19:42:44 dawes Exp $ */
+/* $XFree86: xc/lib/Xdmcp/WC32.c,v 1.5 2001/12/14 19:54:55 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/X.h>

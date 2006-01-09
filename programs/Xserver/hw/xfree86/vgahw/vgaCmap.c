@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaCmap.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaCmap.c,v 1.8 2005/10/14 15:17:10 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -21,8 +21,6 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: vgaCmap.c /main/15 1996/10/28 05:13:44 kaleb $ */
-
 
 #include <X11/X.h>
 #include <X11/Xproto.h>

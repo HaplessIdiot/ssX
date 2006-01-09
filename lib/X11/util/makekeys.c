@@ -1,4 +1,3 @@
-/* $Xorg: makekeys.c,v 1.5 2001/02/09 02:03:40 xorgcvs Exp $ */
 /*
 
 Copyright 1990, 1998  The Open Group
@@ -26,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/util/makekeys.c,v 3.7tsi Exp $ */
+/* $XFree86: xc/lib/X11/util/makekeys.c,v 3.8 2005/01/17 03:07:41 tsi Exp $ */
 
 /* Constructs hash tables for XStringToKeysym and XKeysymToString. */
 

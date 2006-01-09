@@ -1,4 +1,3 @@
-/* $Xorg: PsText.c,v 1.7 2001/02/09 02:04:36 xorgcvs Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -73,7 +72,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsText.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsText.c,v 1.13 2003/10/29 22:11:55 tsi Exp $ */
 
 #include "Ps.h"
 #include "gcstruct.h"

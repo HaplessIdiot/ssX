@@ -1,7 +1,4 @@
 /*
- * $XConsortium: viewfuncs.c,v 2.23 92/04/08 12:18:41 rws Exp $
- *
- *
  *		       COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
@@ -24,7 +21,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xmh/viewfuncs.c,v 1.3 2002/07/01 02:26:05 tsi Exp $ */
 
 /* view.c -- action procedures to handle viewing of a message */
 

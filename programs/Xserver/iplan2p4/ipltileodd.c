@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/iplan2p4/ipltileodd.c,v 3.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/ipltileodd.c,v 3.1 2005/10/14 15:17:19 tsi Exp $ */
 /*
  * Fill odd tiled rectangles and spans.
  * no depth dependencies.
@@ -29,8 +29,6 @@ Except as contained in this notice, the name of the X Consortium shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
-
-/* $XConsortium: ipltileodd.c,v 1.16 94/04/17 20:29:06 dpw Exp $ */
 
 /* Modified nov 94 by Martin Schaller (Martin_Schaller@maus.r.de) for use with
 interleaved planes */

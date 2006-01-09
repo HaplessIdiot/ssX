@@ -1,4 +1,3 @@
-/* $Xorg: wcWrap.c,v 1.4 2001/02/09 02:03:40 xorgcvs Exp $ */
 /*
 
 Copyright 1991, 1998  The Open Group
@@ -51,7 +50,7 @@ from The Open Group.
  * 
  *		 M. Collins		OSF  
  */				
-/* $XFree86: xc/lib/X11/wcWrap.c,v 1.6 2001/12/14 19:54:11 dawes Exp $ */
+/* $XFree86: xc/lib/X11/wcWrap.c,v 1.7 2003/11/17 22:20:12 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"

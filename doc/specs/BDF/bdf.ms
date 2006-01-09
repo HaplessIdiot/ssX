@@ -1,3 +1,4 @@
+.\" $XFree86$
 \&
 .sp 1
 .ce 4
@@ -7,7 +8,7 @@
 
 X Consortium Standard
 
-X Version 11, Release 6
+X Version 11, Release 6.4
 .sp 3
 Copyright 1984, 1987, 1988 Adobe Systems, Inc.
 .sp 1
@@ -46,7 +47,7 @@ followed by the information and bitmaps for the individual characters.
 A font bitmap description file has the following general form, 
 where each item is contained on a separate line of text in the file.
 Tokens on a line are separated by spaces. 
-Keywords are in upper-case, and must appear in upper-case in the file.
+Keywords are in upper case, and must appear in upper case in the file.
 .IP 1. 5
 The word STARTFONT followed by a version number indicating the exact
 file format used.
@@ -146,7 +147,7 @@ to improve its typographic characteristics on a display.
 The DWIDTH y value should always be zero for a standard X font.
 .IP e. 5
 The word BBX followed by the width in x (\^\fIBBw\fP\^), \fIheight\fP in y
-(\^\fIBBh\fP\^) and x and y displacement (\^\fIBBox\fP, \fIBBoy\fP\^) 
+(\^\fIBBh\fP\^), and x and y displacement (\^\fIBBox\fP, \fIBBoy\fP\^) 
 of the lower left corner from the \fIorigin\fP of the character.
 .IP f. 5
 The optional word ATTRIBUTES followed by the attributes 
@@ -173,7 +174,7 @@ character metric information.
 .ce 5
 BBw = 9, BBh = 22, BBox = -2, BBoy = -6
 DWIDTH = 8 0
-SWIDTH] = 355 0
+SWIDTH = 355 0
 ``+'' = character origin and width
 
 Figure 1: An example of a descender

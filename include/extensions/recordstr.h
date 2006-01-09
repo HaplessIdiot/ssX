@@ -1,10 +1,3 @@
-/*
-#ifndef lint
-$Xorg: recordstr.h,v 1.3 2000/08/18 04:05:46 coskrey Exp $
-static char sccsid[ ] = "@(#) recordstr.h 1.5 6/5/95 12:37:44";
-#endif
-*/
-
 /***************************************************************************
  * Copyright 1995 Network Computing Devices
  *
@@ -24,7 +17,7 @@ static char sccsid[ ] = "@(#) recordstr.h 1.5 6/5/95 12:37:44";
  * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  **************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/recordstr.h,v 1.2 2001/08/01 00:44:35 tsi Exp $ */
 
 #ifndef _RECORDSTR_H_
 #define _RECORDSTR_H_

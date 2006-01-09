@@ -1,5 +1,3 @@
-/* $Xorg: EvToWire.c,v 1.4 2001/02/09 02:03:32 xorgcvs Exp $ */
-
 /*
 
 Copyright 1985, 1986, 1987, 1998  The Open Group
@@ -27,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/EvToWire.c,v 1.4 2001/08/18 02:41:28 dawes Exp $ */
+/* $XFree86: xc/lib/X11/EvToWire.c,v 1.5 2001/12/14 19:53:59 dawes Exp $ */
 
 /*
  *	XEvToWire.c - Internal support routines for the C subroutine

@@ -1,4 +1,4 @@
-/* $Xorg: XWDFile.h,v 1.4 2001/02/09 02:03:22 xorgcvs Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright 1985, 1986, 1998  The Open Group

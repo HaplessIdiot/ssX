@@ -1,5 +1,3 @@
-/* $Id: 3dnow.h,v 1.1 2004/04/08 09:18:05 alanh Exp $ */
-
 /*
  * Mesa 3-D graphics library
  * Version:  3.5

@@ -1,4 +1,4 @@
-/* $XConsortium: hdigit.h,v 1.2 91/10/10 11:18:11 rws Exp $ */
+/* $XFree86$ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *

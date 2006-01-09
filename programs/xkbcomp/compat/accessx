@@ -1,4 +1,4 @@
-// $XConsortium: accessx /main/2 1995/12/07 21:32:12 kaleb $
+// $XFree86$
 
 default partial xkb_compatibility "basic" {
     interpret AccessX_Enable { 

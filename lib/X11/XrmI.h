@@ -1,4 +1,4 @@
-/* $Xorg: XrmI.h,v 1.4 2001/02/09 02:03:39 xorgcvs Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright 1990, 1998  The Open Group

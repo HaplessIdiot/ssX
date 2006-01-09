@@ -1,4 +1,3 @@
-/* $Xorg: lbxstr.h,v 1.4 2001/02/13 20:14:04 pookie Exp $ */
 /*
  * Copyright 1992 Network Computing Devices
  *
@@ -20,7 +19,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/include/extensions/lbxstr.h,v 1.2 2001/08/01 00:44:35 tsi Exp $ */
+/* $XFree86: xc/include/extensions/lbxstr.h,v 1.3 2001/11/23 19:21:30 dawes Exp $ */
  
 #ifndef _LBXSTR_H_
 #define _LBXSTR_H_

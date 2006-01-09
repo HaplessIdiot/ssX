@@ -1,5 +1,3 @@
-/* $Xorg: Intrinsic.h,v 1.4 2001/02/09 02:03:55 xorgcvs Exp $ */
-
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 
@@ -48,7 +46,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/Intrinsic.h,v 3.9 2003/04/21 16:34:27 herrb Exp $ */
+/* $XFree86: xc/lib/Xt/Intrinsic.h,v 3.10 2004/05/05 00:07:03 dickey Exp $ */
 
 #ifndef _XtIntrinsic_h
 #define _XtIntrinsic_h

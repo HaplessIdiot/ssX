@@ -1,4 +1,3 @@
-/* $Xorg: XEVI.h,v 1.3 2000/08/18 04:05:44 coskrey Exp $ */
 /************************************************************
 Copyright (c) 1997 by Silicon Graphics Computer Systems, Inc.
 Permission to use, copy, modify, and distribute this
@@ -21,7 +20,7 @@ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
 OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/XEVI.h,v 3.5 2003/11/17 22:20:02 dawes Exp $ */
 
 #ifndef _XEVI_H_
 #define _XEVI_H_

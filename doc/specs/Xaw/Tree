@@ -1,3 +1,4 @@
+.\" $XFree86$
 .NH 2
 Tree Widget
 .LP
@@ -40,10 +41,6 @@ When creating a Tree widget instance, the following resources are
 retrieved from the argument list or from the resource database:
 .LP
 .IN "Box widget" "resources"
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
 expand;
 lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
@@ -85,10 +82,6 @@ y	Position	Position		0
 .sp 3p
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 .IP \fBautoReconfigure\fP 1.5i
 Whether or not to layout the tree every time a node is added or removed.
 .Bg
@@ -131,11 +124,6 @@ Constraint Resources
 Each child of the Tree widget must specify its superior node in the tree.  In
 addition, it may specify a GC to use when drawing a line between it and its
 inferior nodes.
-.LP
-.ps 9
-.nr PS 9
-.vs 11
-.nr VS 11
 .TS H
 lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
@@ -152,10 +140,6 @@ treeParent	TreeParent	Widget		NULL
 .sp 3p
 _
 .TE
-.ps 11
-.nr PS 11
-.vs 13
-.nr VS 13
 .IP \fBtreeGC\fP 1.5i
 This specifies the GC to use when drawing lines between this widget and its
 inferiors in the tree.  If this resource is not specified, the Tree's

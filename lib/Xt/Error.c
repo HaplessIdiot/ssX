@@ -1,5 +1,3 @@
-/* $Xorg: Error.c,v 1.5 2001/02/09 02:03:54 xorgcvs Exp $ */
-
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -32,7 +30,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Error.c,v 3.14 2003/05/27 22:26:42 tsi Exp $ */
+/* $XFree86: xc/lib/Xt/Error.c,v 3.15 2004/05/05 00:07:03 dickey Exp $ */
 
 /*
 

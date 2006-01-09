@@ -1,4 +1,3 @@
-/* $Xorg: do_traps.c,v 1.3 2000/08/17 19:54:10 cpqbld Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -21,7 +20,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************************/
-/* $XFree86: xc/programs/x11perf/do_traps.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/x11perf/do_traps.c,v 1.10 2003/05/27 22:26:58 tsi Exp $ */
 
 #include "x11perf.h"
 #include "bitmaps.h"

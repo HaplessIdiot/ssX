@@ -1,4 +1,4 @@
-/* $Xorg: lbxdeltastr.h,v 1.3 2000/08/18 04:05:45 coskrey Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 Network Computing Devices
  *

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/bios_mmap.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/bios_mmap.c,v 1.10 2005/10/14 15:17:07 tsi Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -21,7 +21,6 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: bios_V4mmap.c /main/4 1996/02/21 17:54:27 kaleb $ */
 
 #include <X11/X.h>
 

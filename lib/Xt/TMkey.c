@@ -1,4 +1,3 @@
-/* $Xorg: TMkey.c,v 1.4 2001/02/09 02:03:58 xorgcvs Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -59,7 +58,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/TMkey.c,v 3.11 2003/04/21 16:34:28 herrb Exp $ */
+/* $XFree86: xc/lib/Xt/TMkey.c,v 3.12 2004/05/05 00:07:03 dickey Exp $ */
 
 #define XK_MISCELLANY
 #define XK_LATIN1

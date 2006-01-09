@@ -1,4 +1,4 @@
-/* $Xorg: lbxbuf.h,v 1.3 2000/08/18 04:05:45 coskrey Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1988, 1989, 1990, 1994 Network Computing Devices, Inc.
  *

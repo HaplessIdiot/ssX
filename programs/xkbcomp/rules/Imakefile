@@ -1,4 +1,4 @@
-XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:41 cpqbld Exp $
+XCOMM $XFree86$
 
     DATAFILES = README sgi xfree86 sun
     LISTFILES = sgi.lst xfree86.lst xfree86-it.lst sun.lst xfree86.xml

@@ -1,4 +1,4 @@
-// $XConsortium: indicator /main/1 1995/11/30 19:16:16 kaleb $
+// $XFree86$
 xkb_compatibility "torture" 
 
 virtual_modifiers NumLock,AltGr;

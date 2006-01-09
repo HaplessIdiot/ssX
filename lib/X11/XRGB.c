@@ -1,5 +1,3 @@
-/* $Xorg: XRGB.c,v 1.3 2000/08/17 19:45:04 cpqbld Exp $ */
-
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
@@ -33,7 +31,7 @@
  *
  *
  */
-/* $XFree86: xc/lib/X11/XRGB.c,v 3.3 2001/07/29 05:01:11 tsi Exp $ */
+/* $XFree86: xc/lib/X11/XRGB.c,v 3.4 2003/04/13 19:22:19 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"

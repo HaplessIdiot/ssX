@@ -1,4 +1,3 @@
-/* $Xorg: PsGC.c,v 1.4 2001/02/09 02:04:36 xorgcvs Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -57,7 +56,7 @@ in this Software without prior written authorization from The Open Group.
  * or other dealings in this Software without prior written authorization
  * from said copyright holders.
  */
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsGC.c,v 1.7 2003/10/29 22:11:55 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsGC.c,v 1.8 2004/10/23 15:29:27 dawes Exp $ */
 
 /*******************************************************************
 **

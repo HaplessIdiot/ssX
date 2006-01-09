@@ -1,5 +1,4 @@
 /*
- * $Xorg: stipple68k.s,v 1.4 2001/02/09 02:04:39 xorgcvs Exp $
  *
 Copyright 1990, 1998  The Open Group
 
@@ -25,7 +24,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/cfb/stipple68k.s,v 3.2 2001/01/17 22:36:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/stipple68k.s,v 3.3 2001/12/14 19:59:26 dawes Exp $ */
 
 /*
  * Stipple code for 68k processors
