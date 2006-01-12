@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.8 2005/08/12 13:42:44 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -162,10 +162,14 @@ xf86OpenConsole(void)
 
 	if (ioctl(xf86Info.consoleFd, VT_SETMODE, &VT) < 0)
 	    FatalError("xf86OpenConsole: VT_SETMODE VT_PROCESS failed\n");
-#endif
-#ifdef KDSETMODE
+
 	if (ioctl(xf86Info.consoleFd, KDSETMODE, KD_GRAPHICS) < 0)
 	    FatalError("xf86OpenConsole: KDSETMODE KD_GRAPHICS failed\n");
+#else
+#ifdef KDSETMODE
+	/* This may fail. */
+	ioctl(xf86Info.consoleFd, KDSETMODE, KD_GRAPHICS);
+#endif
 #endif
     }
 #ifdef HAS_USL_VTS

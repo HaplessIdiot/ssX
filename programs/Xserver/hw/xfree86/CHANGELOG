@@ -1,4 +1,6 @@
 XFree86 4.5.99.20 (xx January 2006)
+ 183. Modify post-4.5.0 sunos_init changes to make KDGRAPHICS failure
+      non-fatal (David Dawes).
  182. Add suport to Xt's string to float converter to read resources in
       fractional notation (Bugzilla #1642, Alexander Pohoyda).
  181. Add mouse wheel support for Scrollbars in the Xaw's Viewport widget
@@ -19890,7 +19892,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3636 2006/01/08 22:50:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3637 2006/01/12 00:58:02 dawes Exp $
 
 
 
