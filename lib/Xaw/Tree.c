@@ -46,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * additional blank space to make the structure of the graph easier to see
  * as well as to support vertical trees.
  */
-/* $XFree86: xc/lib/Xaw/Tree.c,v 1.13 2005/09/16 14:36:07 tsi Exp $ */
+/* $XFree86: xc/lib/Xaw/Tree.c,v 1.14 2005/10/05 00:33:47 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -122,8 +122,8 @@ static XtResource resources[] = {
 	sizeof(XawDisplayList*),
 	XtOffsetOf(TreeRec, tree.display_list), XtRImmediate,
 	NULL },
-    { XawNtreeLayout, XawCTreeLayout, XtRInt, sizeof (XawTreeLayout),
-	XtOffsetOf(TreeRec, tree.layout), XtRImmediate,
+    { XawNtreeConnType, XawCTreeConnType, XtRInt, sizeof (XawTreeConnType),
+	XtOffsetOf(TreeRec, tree.connection_type), XtRImmediate,
 	(XtPointer) XawTreeK },
 #endif
 };
@@ -328,15 +328,11 @@ delete_node(Widget parent, Widget node)
 static void
 check_gravity(TreeWidget tw, XtGravity grav)
 {
-#ifndef OLDXAW
-    if (tw->tree.layout == XawTreeE) {
-	/* This layout supports any gravity. */
-	return;
-    }
-#endif
-
     switch (tw->tree.gravity) {
-      case WestGravity: case NorthGravity: case EastGravity: case SouthGravity:
+      case WestGravity:
+      case NorthGravity:
+      case EastGravity:
+      case SouthGravity:
 	break;
       default:
 	tw->tree.gravity = grav;
@@ -489,7 +485,7 @@ XawTreeSetValues(Widget gcurrent, Widget grequest, Widget gnew,
     if (cnew->tree.vpad != current->tree.vpad ||
 	cnew->tree.hpad != current->tree.hpad ||
 #ifndef OLDXAW
-	cnew->tree.layout != current->tree.layout ||
+	cnew->tree.connection_type != current->tree.connection_type ||
 #endif
 	cnew->tree.gravity != current->tree.gravity) {
 	(TREE_CLASS_EXTENSION(cnew)->do_layout) (gnew, TRUE);
@@ -730,7 +726,7 @@ XawTreeRedisplay(Widget gw, XEvent *event, Region region)
 		    }
 
 #ifndef OLDXAW
-		    if (tw->tree.layout == XawTreeE) {
+		    if (tw->tree.connection_type == XawTreeE) {
 			XDrawLine (dpy, w, gc, srcx, srcy, msx, msy);
 			XDrawLine (dpy, w, gc, msx, msy, mdx, mdy);
 			XDrawLine (dpy, w, gc, mdx, mdy, dstx, dsty);
