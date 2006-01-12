@@ -46,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * additional blank space to make the structure of the graph easier to see
  * as well as to support vertical trees.
  */
-/* $XFree86: xc/lib/Xaw/Tree.h,v 1.8tsi Exp $ */
+/* $XFree86: xc/lib/Xaw/Tree.h,v 1.9 2005/09/16 14:36:08 tsi Exp $ */
 
 
 #ifndef _XawTree_h
@@ -72,7 +72,7 @@ in this Software without prior written authorization from The Open Group.
  *  hSpace              HSpace             Dimension       20
  *  lineWidth           LineWidth          Dimension       0
  *  vSpace              VSpace             Dimension       6
- *  layout              Layout             XawTreeLayout   XawTreeK
+ *  connectionType      ConnectionType     XawTreeConnType XawTreeK
  * 
  * 
  * Constraint Resources attached to children:
@@ -119,31 +119,35 @@ in this Software without prior written authorization from The Open Group.
 #define XawRDisplayList "XawDisplayList"
 #endif
 
-#define XawNtreeLayout "layout"
-#define XawCTreeLayout "Layout"
+#define XawNtreeConnType "connectionType"
+#define XawCTreeConnType "ConnectionType"
 
 #endif /* OLDXAW */
 
 
 typedef enum {
     /*
-     *                                      -[node]
-     *                                     /
-     * K-layout looks like this:    [node]<--[node]
-     *                                     \
-     *                                      -[node]
+     * K-type:
+     *
+     *         -[node]---[node]
+     *        /
+     * [node]<--[node]
+     *        \
+     *         -[node]
      */
     XawTreeK,
 
     /*
-     *                                     +-[node]
-     *                                     |
-     * E-layout looks like this:    [node]-+-[node]
-     *                                     |
-     *                                     +-[node]
+     * E-type:
+     * 
+     *        +-[node]---[node]
+     *        |
+     * [node]-+-[node]
+     *        |
+     *        +-[node]
      */
-    XawTreeE
-} XawTreeLayout;
+    XawTreeE,
+} XawTreeConnType;
 
                                         /* external declarations */
 extern WidgetClass treeWidgetClass;

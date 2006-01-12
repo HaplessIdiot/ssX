@@ -30,7 +30,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Converters.c,v 3.16 2004/05/05 00:07:02 dickey Exp $ */
+/* $XFree86: xc/lib/Xt/Converters.c,v 3.17 2006/01/09 14:59:20 dawes Exp $ */
 
 /*
 
@@ -804,7 +804,7 @@ Boolean XtCvtStringToFloat(
     XrmValuePtr	toVal,
     XtPointer	*closure_ret)
 {
-    int ret;
+    int ret, nom, denom;
     float f, nan;
 
 #ifndef ISC /* On ISC this generates a core dump :-( at least with gs */
@@ -819,13 +819,20 @@ Boolean XtCvtStringToFloat(
                  "String to Float conversion needs no extra arguments",
                  (String *) NULL, (Cardinal *)NULL);
 
-    ret = sscanf (fromVal->addr, "%g", &f);
-    if (ret == 0) {
-	if (toVal->addr != NULL && toVal->size == sizeof nan)
-	    *(float*)toVal->addr = nan;
-	XtDisplayStringConversionWarning (dpy, (char*) fromVal->addr, XtRFloat);
-	return False;
-    }
+    /* try fractional notation: nominator/denomimator, e.g. 1/2 */
+    ret = sscanf (fromVal->addr, "%d/%d", &nom, &denom);
+    if (ret < 2 || denom == 0) {
+	/* try decimal notation: 3.141 */
+	ret = sscanf (fromVal->addr, "%g", &f);
+	if (ret == 0) {
+	    if (toVal->addr != NULL && toVal->size == sizeof nan)
+		*(float*)toVal->addr = nan;
+	    XtDisplayStringConversionWarning (dpy, (char*) fromVal->addr,
+					      XtRFloat);
+	    return False;
+	}
+    } else
+	f = (float) nom / (float) denom;
     donestr(float, f, XtRFloat);
 }
 
