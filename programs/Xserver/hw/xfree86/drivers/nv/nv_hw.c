@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_hw.c,v 1.18 2005/09/28 17:43:27 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_hw.c,v 1.19 2006/01/20 23:33:17 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -878,6 +878,10 @@ void NVCalcStateExt (
         case NV_ARCH_20:
         case NV_ARCH_30:
         default:
+            if((pNv->Chipset & 0xfff0) == 0x0240) {
+                state->arbitration0 = 256; 
+                state->arbitration1 = 0x0480; 
+            } else
             if(((pNv->Chipset & 0xffff) == 0x01A0) ||
                ((pNv->Chipset & 0xffff) == 0x01f0))
             {
@@ -1203,6 +1207,7 @@ void NVLoadStateExt (
                  break;
               case 0x0160:
               case 0x01D0:
+              case 0x0240:
                  pNv->PMC[0x1700/4] = pNv->PFB[0x020C/4];
                  pNv->PMC[0x1704/4] = 0;
                  pNv->PMC[0x1708/4] = 0;
@@ -1291,7 +1296,8 @@ void NVLoadStateExt (
                  for(i = 0; i < 48; i++) {
                    pNv->PGRAPH[(0x0900/4) + i] = pNv->PFB[(0x0600/4) + i];
                    if(((pNv->Chipset & 0xfff0) != 0x0160) &&
-                      ((pNv->Chipset & 0xfff0) != 0x0220))
+                      ((pNv->Chipset & 0xfff0) != 0x0220) &&
+                      ((pNv->Chipset & 0xfff0) != 0x0240))
                    {
                       pNv->PGRAPH[(0x6900/4) + i] = pNv->PFB[(0x0600/4) + i];
                    }
