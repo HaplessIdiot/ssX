@@ -23,7 +23,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.139 2006/01/09 14:59:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.140 2006/01/20 23:33:17 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -294,13 +294,11 @@ static SymTabRec NVKnownChipsets[] =
   { 0x10DE029A, "Quadro FX 2500M" },
   { 0x10DE029B, "Quadro FX 1500M" },
   
-#if 0   /* not supported :( */
   { 0x10DE0240, "GeForce 6150" },
   { 0x10DE0241, "GeForce 6150 LE" },
   { 0x10DE0241, "GeForce 6100" },
   { 0x10DE0244, "GeForce Go 6150" },
   { 0x10DE0247, "GeForce Go 6100" },
-#endif
 
   {-1, NULL}
 };
@@ -697,6 +695,7 @@ NVProbe(DriverPtr drv, int flags)
                case 0x0090:
                case 0x0210:
                case 0x0220:
+               case 0x0240:
                case 0x0290:
                case 0x0390:
                    NVChipsets[numUsed].token = pciid;
@@ -1389,6 +1388,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     case 0x0220:   /* GeForce 6200 */
     case 0x0290:   /* GeForce 7900 */
     case 0x0390:   /* GeForce 7600 */
+    case 0x0240:   /* GeForce 6100 */
          pNv->Architecture =  NV_ARCH_40;
          break;
     default:
