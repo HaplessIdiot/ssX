@@ -1,4 +1,6 @@
-XFree86 4.5.99.20 (xx January 2006)
+XFree86 4.5.99.21 (xx February 2006)
+
+XFree86 4.5.99.20 (23 January 2006)
  183. Modify post-4.5.0 sunos_init changes to make KDGRAPHICS failure
       non-fatal (David Dawes).
  182. Add suport to Xt's string to float converter to read resources in
@@ -19892,7 +19894,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3637 2006/01/12 00:58:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3638 2006/01/12 02:41:50 dawes Exp $
 
 
 
