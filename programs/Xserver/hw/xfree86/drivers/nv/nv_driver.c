@@ -23,7 +23,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.140 2006/01/20 23:33:17 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.141 2006/01/21 01:17:59 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -296,7 +296,7 @@ static SymTabRec NVKnownChipsets[] =
   
   { 0x10DE0240, "GeForce 6150" },
   { 0x10DE0241, "GeForce 6150 LE" },
-  { 0x10DE0241, "GeForce 6100" },
+  { 0x10DE0242, "GeForce 6100" },
   { 0x10DE0244, "GeForce Go 6150" },
   { 0x10DE0247, "GeForce Go 6100" },
 
