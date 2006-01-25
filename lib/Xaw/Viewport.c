@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Viewport.c,v 1.12 2005/09/14 16:01:54 tsi Exp $ */
+/* $XFree86: xc/lib/Xaw/Viewport.c,v 1.13 2005/12/17 01:10:22 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -1094,4 +1094,28 @@ XawViewportSetCoordinates(Widget gw,
 	y = XtY(child);
 
     MoveChild (w, -x, -y);
+}
+
+void
+XawViewportScrollHoriz(Widget gw, float percent)
+{
+    ViewportWidget w = (ViewportWidget) gw;
+    Widget child = w->viewport.child;
+
+    if (child == NULL)
+	return;
+
+    MoveChild(w, XtX(child) + percent * XtWidth(child), XtY(child));
+}
+
+void
+XawViewportScrollVert(Widget gw, float percent)
+{
+    ViewportWidget w = (ViewportWidget) gw;
+    Widget child = w->viewport.child;
+
+    if (child == NULL)
+	return;
+
+    MoveChild(w, XtX(child), XtY(child) + percent * XtHeight(child));
 }

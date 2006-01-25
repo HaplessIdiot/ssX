@@ -242,6 +242,9 @@ EXPORTS
  XtName
  XtNameToWidget
  XtNewString
+ XtNewStringEx
+ XtStringLengthEx
+ XtCharIndexEx
  XtNextEvent
  XtNoticeSignal
  XtOpenApplication
@@ -347,4 +350,4 @@ EXPORTS
  XtWindow
  XtWindowOfObject
  XtWindowToWidget
-/* $XFree86: xc/lib/Xt/Xt-def.cpp,v 1.5 2004/05/06 00:56:22 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Xt-def.cpp,v 1.6 2006/01/09 14:59:23 dawes Exp $ */

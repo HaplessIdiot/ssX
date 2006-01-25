@@ -46,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * additional blank space to make the structure of the graph easier to see
  * as well as to support vertical trees.
  */
-/* $XFree86: xc/lib/Xaw/TreeP.h,v 1.9 2005/10/05 00:33:47 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TreeP.h,v 1.10 2006/01/12 00:58:01 dawes Exp $ */
 
 
 #ifndef _XawTreeP_h
@@ -94,7 +94,10 @@ typedef struct {
 #ifndef OLDXAW
     XawDisplayList *display_list;
     XawTreeConnType connection_type;    /* connection type */
-    XtPointer pad[3];	/* for future use and keep binary compatability */
+    Boolean needs_relayout;             /* flag to save the performance */
+    char pad[4 * sizeof(XtPointer) -
+             sizeof(XawTreeConnType) -
+             sizeof(Boolean)];		/* for future use and keep binary compatability */
 #endif
 } TreePart;
 

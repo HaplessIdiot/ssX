@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Simple.h,v 1.9 2001/12/14 19:54:42 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Simple.h,v 1.10 2005/05/12 00:51:56 dawes Exp $ */
 
 #ifndef _Simple_h
 #define _Simple_h
@@ -62,8 +62,10 @@ SOFTWARE.
  cursorName	     Cursor		String		NULL
  destroyCallback     Callback		Pointer		NULL
  displayList	     DisplayList	XawDisplayList*	NULL
+ encoding	     Encoding		UnsignedChar	XtTextEncoding8bit
  height		     Height		Dimension	0
  insensitiveBorder   Insensitive	Pixmap		Gray
+ international       International	Boolean		False
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  pointerColor        Foreground         Pixel           XtDefaultForeground
  pointerColorBackground Background      Pixel           XtDefaultBackground
@@ -102,6 +104,9 @@ SOFTWARE.
 #ifndef XawRDisplayList
 #define XawRDisplayList "XawDisplayList"
 #endif
+
+#define XtNencoding "encoding"
+#define XtCEncoding "Encoding"
 
 #define XtNtip		"tip"
 #define XtCTip		"Tip"
