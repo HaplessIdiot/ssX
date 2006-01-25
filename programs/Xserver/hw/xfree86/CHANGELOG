@@ -1,4 +1,5 @@
 XFree86 4.5.99.21 (xx February 2006)
+ 188. Add a Khmer XKB keyboard layout (Bugzilla #1649, Jens Herden).
  187. Add two new functions that can be used to scroll the content of an
       Xaw viewport from outside the viewportWidgetClass (Bugzilla #1648,
       Alexander Pohoyda).
@@ -19902,7 +19903,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3639 2006/01/23 12:04:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3640 2006/01/25 04:32:09 dawes Exp $
 
 
 

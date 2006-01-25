@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/xkbcomp/symbols/pc/Imakefile,v 1.22 2005/02/25 18:25:36 dawes Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/symbols/pc/Imakefile,v 1.23 2005/12/17 01:07:23 dawes Exp $
 
      DATAFILES = al am ar \
 		be ben bg br by \
@@ -9,7 +9,7 @@ XCOMM $XFree86: xc/programs/xkbcomp/symbols/pc/Imakefile,v 1.22 2005/02/25 18:25
 		gb ge_la ge_ru guj gur \
 		hr hsb hu \
 		ie il il_phonetic ir is it iu \
-		kan ky \
+		kan kh ky \
 		la latin lo lt lv lat\
 		mk ml mm mt mt_us \
 		nl no \

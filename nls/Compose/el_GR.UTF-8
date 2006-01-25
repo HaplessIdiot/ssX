@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XFree86$
+XCOMM $XFree86: xc/nls/Compose/el_GR.UTF-8,v 1.2 2002/07/01 02:25:54 tsi Exp $
 XCOMM
 XCOMM UTF-8 compose sequence definitions for the greek keyboard layout.
 XCOMM
@@ -1571,5 +1571,13 @@ XCOMM Miscellaneous extensions.
 <Multi_key> <Greek_DELTA> <Greek_rho>	: "₯"	U20af
 <Multi_key> <Greek_delta> <Greek_RHO>	: "₯"	U20af
 <Multi_key> <Greek_delta> <Greek_rho>	: "₯"	U20af
+
+XCOMM Khmer digraphs
+
+<U17ff>	:	"ាំ"
+<U17fe>	:	"ោះ"
+<U17fd>	:	"េះ"
+<U17fc>	:	"ុំ"
+<U17fb>	:	"ុះ"
 
 XCOMM End
