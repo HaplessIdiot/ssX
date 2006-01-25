@@ -46,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * additional blank space to make the structure of the graph easier to see
  * as well as to support vertical trees.
  */
-/* $XFree86: xc/lib/Xaw/Tree.c,v 1.14 2005/10/05 00:33:47 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Tree.c,v 1.15 2006/01/12 00:58:01 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -438,10 +438,17 @@ XawTreeConstraintInitialize(Widget request, Widget cnew,
      * widget' sub-nodes list. Otherwise make it a sub-node of 
      * the tree_root widget.
      */
-    if (tc->tree.parent)
-      insert_node (tc->tree.parent, cnew);
-    else if (tw->tree.tree_root)
-      insert_node (tw->tree.tree_root, cnew);
+    if (tc->tree.parent) {
+	insert_node (tc->tree.parent, cnew);
+#ifndef OLDXAW
+	tw->tree.needs_relayout = TRUE;
+#endif
+    } else if (tw->tree.tree_root) {
+	insert_node (tw->tree.tree_root, cnew);
+#ifndef OLDXAW
+	tw->tree.needs_relayout = TRUE;
+#endif
+    }
 } 
 
 
@@ -586,7 +593,11 @@ XawTreeGeometryManager(Widget w, XtWidgetGeometry *request,
 static void
 XawTreeChangeManaged(Widget gw)
 {
-    (TREE_CLASS_EXTENSION(gw)->do_layout) (gw, FALSE);
+    TreeWidget tw = (TreeWidget) gw;
+#ifndef OLDXAW
+    if (tw->tree.needs_relayout == TRUE)
+#endif
+	(TREE_CLASS_EXTENSION(tw)->do_layout) (gw, FALSE);
 }
 
 
@@ -1069,6 +1080,10 @@ layout_tree(Widget w, Bool insetvalues)
     if (XtIsRealized ((Widget) tw)) {
 	XClearArea (XtDisplay(tw), XtWindow((Widget)tw), 0, 0, 0, 0, True);
     }
+
+#ifndef OLDXAW
+    tw->tree.needs_relayout = FALSE;
+#endif
 }
 
 

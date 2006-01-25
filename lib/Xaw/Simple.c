@@ -45,7 +45,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xaw/Simple.c,v 1.17 2001/12/14 19:54:42 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Simple.c,v 1.18 2005/05/12 00:51:56 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -155,6 +155,15 @@ static XtResource resources[] = {
     offset(display_list),
     XtRImmediate,
     NULL
+  },
+  {
+    XtNencoding,
+    XtCEncoding,
+    XtRUnsignedChar,
+    sizeof(unsigned char),
+    offset(encoding),
+    XtRImmediate,
+    (XtPointer)XtTextEncoding8bit
   },
   {
     XtNtip,
@@ -301,7 +310,8 @@ XawSimpleInitialize(Widget request, Widget cnew,
     SimpleWidget simple = (SimpleWidget)cnew;
 
     if (simple->simple.tip)
-	simple->simple.tip = XtNewString(simple->simple.tip);
+	simple->simple.tip =
+	    XtNewStringEx(simple->simple.encoding, simple->simple.tip);
 }
 
 static void
@@ -456,7 +466,8 @@ XawSimpleSetValues(Widget current, Widget request, Widget cnew,
 	if (s_old->simple.tip)
 	    XtFree((XtPointer)s_old->simple.tip);
 	if (s_new->simple.tip)
-	    s_new->simple.tip = XtNewString(s_new->simple.tip);
+	    s_new->simple.tip =
+		XtNewStringEx(s_new->simple.encoding, s_new->simple.tip);
     }
 
     if ((s_old->simple.tip && !s_new->simple.tip) ||

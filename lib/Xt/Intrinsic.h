@@ -46,7 +46,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/Intrinsic.h,v 3.10 2004/05/05 00:07:03 dickey Exp $ */
+/* $XFree86: xc/lib/Xt/Intrinsic.h,v 3.11 2006/01/09 14:59:21 dawes Exp $ */
 
 #ifndef _XtIntrinsic_h
 #define _XtIntrinsic_h
@@ -1895,6 +1895,44 @@ extern void _XtFree( /* implementation-private */
 extern String XtNewString(String /* str */);
 #define XtNewString(str) \
     ((str) != NULL ? (strcpy(XtMalloc((unsigned)strlen(str) + 1), str)) : NULL)
+
+
+/*
+ * String manipulation functions
+ */
+
+#define XtTextEncoding8bit	0
+#define XtTextEncodingChar2b	1
+
+/*
+ * Some widgets use Char2b strings, so these are strung manipulation
+ * functions for those widgets.
+ */
+extern char* XtNewStringEx(int encoding, char* string);
+extern char* XtCharIndexEx(int encoding, char* string, char c);
+extern size_t XtStringLengthEx(int encoding, char* string);
+
+#define IS_CHAR(p, c)         ((p)->byte1 == 0 && (p)->byte2 == c)
+#define IS_NOT_CHAR(p, c)     !IS_CHAR(p, c)
+#define IS_NUL(p)             IS_CHAR(p, 0)
+#define IS_NOT_NUL(p)         !IS_NUL(p)
+
+#define AT_EOL(encoding, label)				\
+    ((encoding == XtTextEncodingChar2b &&		\
+         IS_NUL((XChar2b*) label)) ||			\
+     (encoding != XtTextEncodingChar2b &&		\
+         (*label) == '\0'))
+
+#define NOT_AT_EOL(encoding, label)        !AT_EOL(encoding, label)
+
+#define MOVE_FORWARD(encoding, label, nl)		\
+    do {						\
+	if (encoding == XtTextEncodingChar2b)		\
+	    label = (char*) (((XChar2b*) nl) + 1);	\
+	else						\
+	    label = nl + 1;				\
+    } while (0);
+
 
 /*************************************************************
  *

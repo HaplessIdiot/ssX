@@ -1,4 +1,12 @@
 XFree86 4.5.99.21 (xx February 2006)
+ 187. Add two new functions that can be used to scroll the content of an
+      Xaw viewport from outside the viewportWidgetClass (Bugzilla #1648,
+      Alexander Pohoyda).
+ 186. Fix i18n for Xaw's tip widget (Bugzilla #1647, Alexander Pohoyda).
+ 185. Fix a performance issue with Xaw's Tree widget caused by useless
+      relayouts (Bugzilla #1645, Alexander Pohoyda).
+ 184. Add some XChar2b string manipulation functions to Xt (Bugzilla #1646,
+      Alexander Pohoyda).
 
 XFree86 4.5.99.20 (23 January 2006)
  183. Modify post-4.5.0 sunos_init changes to make KDGRAPHICS failure
@@ -19894,7 +19902,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3638 2006/01/12 02:41:50 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3639 2006/01/23 12:04:10 dawes Exp $
 
 
 

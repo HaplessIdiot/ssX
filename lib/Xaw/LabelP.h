@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/LabelP.h,v 1.8 2001/12/14 19:54:40 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/LabelP.h,v 1.9 2006/01/09 14:59:01 dawes Exp $ */
 
 #ifndef _XawLabelP_h
 #define _XawLabelP_h
@@ -81,7 +81,7 @@ typedef struct {
     Dimension	internal_height;
     Pixmap	pixmap;
     Boolean	resize;
-    unsigned char encoding;
+    unsigned char encoding;  /* moved to simpleWidgetClass */
     Pixmap	left_bitmap;
 
     /* private state */
