@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.60tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.61 2005/08/08 20:15:28 tsi Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -38,6 +38,8 @@
 #include "xf86xv.h"
 #include "xf86Pci.h"
 #include "vbe.h"
+
+#define PCI_CHIP_2200		0x2200
 
 typedef struct {
 	unsigned char tridentRegs3x4[0x100];
@@ -301,7 +303,8 @@ typedef enum {
     CYBERBLADEE4,
     BLADEXP,
     CYBERBLADEXPAI1,
-    CYBERBLADEXP4
+    CYBERBLADEXP4,
+    XP5
 } TRIDENTType;
 
 #define UseMMIO		(pTrident->NoMMIO == FALSE)
@@ -332,6 +335,7 @@ typedef enum {
 			 (pTrident->Chipset == BLADE3D) || \
 			 (pTrident->Chipset == CYBERBLADEXPAI1) || \
 			 (pTrident->Chipset == CYBERBLADEXP4) || \
+			 (pTrident->Chipset == XP5) || \
 			 (pTrident->Chipset == BLADEXP))
 
 /*
