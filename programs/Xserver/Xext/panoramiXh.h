@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXh.h,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXh.h,v 1.4 2004/06/25 15:44:42 tsi Exp $ */
 
 /*
  *	Server dispatcher function replacements
@@ -72,7 +72,6 @@ PROC_EXTERN(ProcPanoramiXGetScreenSize);
  
 PROC_EXTERN(ProcXineramaQueryScreens);
 PROC_EXTERN(ProcXineramaIsActive);
-extern Bool XineramaCreateGC(GCPtr pGC);
 
 extern int SProcPanoramiXDispatch(ClientPtr client);
 
