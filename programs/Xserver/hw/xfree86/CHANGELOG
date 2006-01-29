@@ -1,4 +1,7 @@
 XFree86 4.5.99.21 (xx February 2006)
+ 190. Rework printf format specifiers used in XLFD code to make them more
+      portable (and avoid infinite loops in some glibc versions)
+      (Marc La France).
  189. Add XGI (Trident) Volari XP5 support to the trident driver  
       (Alan Hourihane).
  188. Add a Khmer XKB keyboard layout (Bugzilla #1649, Jens Herden).
@@ -19905,7 +19908,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3641 2006/01/25 04:45:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3642 2006/01/27 17:21:17 alanh Exp $
 
 
 
