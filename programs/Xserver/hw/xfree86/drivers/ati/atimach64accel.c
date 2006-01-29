@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64accel.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64accel.c,v 1.8tsi Exp $ */
 /*
  * Copyright 2003 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -134,108 +134,111 @@ ATIMach64Sync
     if (pATI->pXAAInfo)
         pATI->pXAAInfo->NeedToSync = FALSE;
 
-    if (pATI->OptionMMIOCache && pATI->OptionTestMMIOCache)
+    if (pATI->Chip >= ATI_CHIP_264VTB)
     {
         /*
-         * For debugging purposes, attempt to verify that each cached register
-         * should actually be cached.
+         * Flush the read-back cache, otherwise the host might get stale data
+         * when reading through the aperture.
          */
-        TestRegisterCaching(SRC_CNTL);
+        CARD32 mem_buf_cntl = inr(MEM_BUF_CNTL);
 
-        TestRegisterCaching(HOST_CNTL);
-
-        TestRegisterCaching(PAT_REG0);
-        TestRegisterCaching(PAT_REG1);
-        TestRegisterCaching(PAT_CNTL);
-
-        if (RegisterIsCached(SC_LEFT_RIGHT) &&  /* Special case */
-            (CacheSlot(SC_LEFT_RIGHT) !=
-             (SetWord(inm(SC_RIGHT), 1) | SetWord(inm(SC_LEFT), 0))))
-        {
-            UncacheRegister(SC_LEFT_RIGHT);
-            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
-                "SC_LEFT_RIGHT write cache disabled!\n");
-        }
-
-        if (RegisterIsCached(SC_TOP_BOTTOM) &&  /* Special case */
-            (CacheSlot(SC_TOP_BOTTOM) !=
-             (SetWord(inm(SC_BOTTOM), 1) | SetWord(inm(SC_TOP), 0))))
-        {
-            UncacheRegister(SC_TOP_BOTTOM);
-            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
-                "SC_TOP_BOTTOM write cache disabled!\n");
-        }
-
-        TestRegisterCaching(DP_BKGD_CLR);
-        TestRegisterCaching(DP_FRGD_CLR);
-        TestRegisterCaching(DP_WRITE_MASK);
-        TestRegisterCaching(DP_MIX);
-
-        TestRegisterCaching(CLR_CMP_CLR);
-        TestRegisterCaching(CLR_CMP_MSK);
-        TestRegisterCaching(CLR_CMP_CNTL);
-
-        if (pATI->Block1Base)
-        {
-            TestRegisterCaching(OVERLAY_Y_X_START);
-            TestRegisterCaching(OVERLAY_Y_X_END);
-
-            TestRegisterCaching(OVERLAY_GRAPHICS_KEY_CLR);
-            TestRegisterCaching(OVERLAY_GRAPHICS_KEY_MSK);
-
-            TestRegisterCaching(OVERLAY_KEY_CNTL);
-
-            TestRegisterCaching(OVERLAY_SCALE_INC);
-            TestRegisterCaching(OVERLAY_SCALE_CNTL);
-
-            TestRegisterCaching(SCALER_HEIGHT_WIDTH);
-
-            TestRegisterCaching(SCALER_TEST);
-
-            TestRegisterCaching(VIDEO_FORMAT);
-
-            if (pATI->Chip < ATI_CHIP_264VTB)
-            {
-                TestRegisterCaching(BUF0_OFFSET);
-                TestRegisterCaching(BUF0_PITCH);
-                TestRegisterCaching(BUF1_OFFSET);
-                TestRegisterCaching(BUF1_PITCH);
-            }
-            else
-            {
-                TestRegisterCaching(SCALER_BUF0_OFFSET);
-                TestRegisterCaching(SCALER_BUF1_OFFSET);
-                TestRegisterCaching(SCALER_BUF_PITCH);
-
-                TestRegisterCaching(OVERLAY_EXCLUSIVE_HORZ);
-                TestRegisterCaching(OVERLAY_EXCLUSIVE_VERT);
-
-                if (pATI->Chip >= ATI_CHIP_264GTPRO)
-                {
-                    TestRegisterCaching(SCALER_COLOUR_CNTL);
-
-                    TestRegisterCaching(SCALER_H_COEFF0);
-                    TestRegisterCaching(SCALER_H_COEFF1);
-                    TestRegisterCaching(SCALER_H_COEFF2);
-                    TestRegisterCaching(SCALER_H_COEFF3);
-                    TestRegisterCaching(SCALER_H_COEFF4);
-
-                    TestRegisterCaching(SCALER_BUF0_OFFSET_U);
-                    TestRegisterCaching(SCALER_BUF0_OFFSET_V);
-                    TestRegisterCaching(SCALER_BUF1_OFFSET_U);
-                    TestRegisterCaching(SCALER_BUF1_OFFSET_V);
-                }
-            }
-        }
+        outr(MEM_BUF_CNTL, mem_buf_cntl | INVALIDATE_RB_CACHE);
     }
 
+    if (!pATI->OptionMMIOCache || !pATI->OptionTestMMIOCache)
+        return;
+
     /*
-     * For VTB's and later, the first CPU read of the framebuffer will return
-     * zeroes, so do it here.  This appears to be due to some kind of engine
-     * caching of framebuffer data I haven't found any way of disabling, or
-     * otherwise circumventing.  Thanks to Mark Vojkovich for the suggestion.
+     * For debugging purposes, attempt to verify that each cached register
+     * should actually be cached.
      */
-    pATI = *(volatile ATIPtr *)pATI->pMemory;
+    TestRegisterCaching(SRC_CNTL);
+
+    TestRegisterCaching(HOST_CNTL);
+
+    TestRegisterCaching(PAT_REG0);
+    TestRegisterCaching(PAT_REG1);
+    TestRegisterCaching(PAT_CNTL);
+
+    if (RegisterIsCached(SC_LEFT_RIGHT) &&      /* Special case */
+        (CacheSlot(SC_LEFT_RIGHT) !=
+         (SetWord(inm(SC_RIGHT), 1) | SetWord(inm(SC_LEFT), 0))))
+    {
+        UncacheRegister(SC_LEFT_RIGHT);
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+            "SC_LEFT_RIGHT write cache disabled!\n");
+    }
+
+    if (RegisterIsCached(SC_TOP_BOTTOM) &&      /* Special case */
+        (CacheSlot(SC_TOP_BOTTOM) !=
+         (SetWord(inm(SC_BOTTOM), 1) | SetWord(inm(SC_TOP), 0))))
+    {
+        UncacheRegister(SC_TOP_BOTTOM);
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+            "SC_TOP_BOTTOM write cache disabled!\n");
+    }
+
+    TestRegisterCaching(DP_BKGD_CLR);
+    TestRegisterCaching(DP_FRGD_CLR);
+    TestRegisterCaching(DP_WRITE_MASK);
+    TestRegisterCaching(DP_MIX);
+
+    TestRegisterCaching(CLR_CMP_CLR);
+    TestRegisterCaching(CLR_CMP_MSK);
+    TestRegisterCaching(CLR_CMP_CNTL);
+
+    if (!pATI->Block1Base)
+        return;
+
+    TestRegisterCaching(OVERLAY_Y_X_START);
+    TestRegisterCaching(OVERLAY_Y_X_END);
+
+    TestRegisterCaching(OVERLAY_GRAPHICS_KEY_CLR);
+    TestRegisterCaching(OVERLAY_GRAPHICS_KEY_MSK);
+
+    TestRegisterCaching(OVERLAY_KEY_CNTL);
+
+    TestRegisterCaching(OVERLAY_SCALE_INC);
+    TestRegisterCaching(OVERLAY_SCALE_CNTL);
+
+    TestRegisterCaching(SCALER_HEIGHT_WIDTH);
+
+    TestRegisterCaching(SCALER_TEST);
+
+    TestRegisterCaching(VIDEO_FORMAT);
+
+    if (pATI->Chip < ATI_CHIP_264VTB)
+    {
+        TestRegisterCaching(BUF0_OFFSET);
+        TestRegisterCaching(BUF0_PITCH);
+        TestRegisterCaching(BUF1_OFFSET);
+        TestRegisterCaching(BUF1_PITCH);
+
+        return;
+    }
+
+    TestRegisterCaching(SCALER_BUF0_OFFSET);
+    TestRegisterCaching(SCALER_BUF1_OFFSET);
+    TestRegisterCaching(SCALER_BUF_PITCH);
+
+    TestRegisterCaching(OVERLAY_EXCLUSIVE_HORZ);
+    TestRegisterCaching(OVERLAY_EXCLUSIVE_VERT);
+
+    if (pATI->Chip < ATI_CHIP_264GTPRO)
+        return;
+
+    TestRegisterCaching(SCALER_COLOUR_CNTL);
+
+    TestRegisterCaching(SCALER_H_COEFF0);
+    TestRegisterCaching(SCALER_H_COEFF1);
+    TestRegisterCaching(SCALER_H_COEFF2);
+    TestRegisterCaching(SCALER_H_COEFF3);
+    TestRegisterCaching(SCALER_H_COEFF4);
+
+    TestRegisterCaching(SCALER_BUF0_OFFSET_U);
+    TestRegisterCaching(SCALER_BUF0_OFFSET_V);
+    TestRegisterCaching(SCALER_BUF1_OFFSET_U);
+    TestRegisterCaching(SCALER_BUF1_OFFSET_V);
 }
 
 /*
@@ -259,9 +262,9 @@ ATIMach64SetupForScreenToScreenCopy
 
     ATIMach64WaitForFIFO(pATI, 3);
     outf(DP_WRITE_MASK, planemask);
+    outf(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
     outf(DP_SRC, DP_MONO_SRC_ALLONES |
         SetBits(SRC_BLIT, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
-    outf(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
 
     if (!pATI->XAAForceTransBlit && (TransparencyColour == -1))
     {
@@ -415,6 +418,10 @@ ATIMach64SetupForSolidLine
 {
     ATIPtr pATI = ATIPTR(pScreenInfo);
 
+    /* Disable clipping */
+    ATIMach64ValidateClip(pATI, pATI->NewHW.sc_left, pATI->NewHW.sc_right,
+        pATI->NewHW.sc_top, pATI->NewHW.sc_bottom);
+
     ATIMach64WaitForFIFO(pATI, 5);
     outf(DP_WRITE_MASK, planemask);
     outf(DP_SRC, DP_MONO_SRC_ALLONES |
@@ -423,9 +430,6 @@ ATIMach64SetupForSolidLine
     outf(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
 
     outf(CLR_CMP_CNTL, CLR_CMP_FN_FALSE);
-
-    ATIMach64ValidateClip(pATI, pATI->NewHW.sc_left, pATI->NewHW.sc_right,
-        pATI->NewHW.sc_top, pATI->NewHW.sc_bottom);
 }
 
 /*

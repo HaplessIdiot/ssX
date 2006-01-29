@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.33tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.34tsi Exp $ */
 /*
  * Copyright 1997 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -201,6 +201,9 @@ ATIMach64PrintRegisters
     else
         Limit = MM_IO_SELECT;
 
+    if (Index > Limit)
+        return;
+
     for (;  Index <= Limit;  Index += UnitOf(MM_IO_SELECT))
     {
         if (!(Index & SetBits(3, MM_IO_SELECT)))
@@ -279,6 +282,92 @@ FoundLimit:
     }
 
     xf86ErrorFVerb(4, "\n");
+}
+
+/*
+ * ATICH8398PrintRegisters --
+ *
+ * Display Chrontel 8398 registers when the server is invoked with -verbose.
+ */
+static void
+ATICH8398PrintRegisters
+(
+    ATIPtr pATI
+)
+{
+    CARD32 crtc_gen_cntl, dac_cntl;
+    CARD8 index_read, index_write;
+    CARD8 cs, idr, cr, aux, test;
+    int Index;
+
+    /* Temporarily switch to Mach64 CRTC */
+    crtc_gen_cntl = inr(CRTC_GEN_CNTL);
+    if (!(crtc_gen_cntl & CRTC_EXT_DISP_EN))
+        outr(CRTC_GEN_CNTL, crtc_gen_cntl | CRTC_EXT_DISP_EN);
+
+    dac_cntl = inr(DAC_CNTL);
+
+    outr(DAC_CNTL, (dac_cntl | DAC_EXT_SEL_RS3) & ~DAC_EXT_SEL_RS2);
+
+    (void)in8(M64_DAC_READ);
+    (void)in8(M64_DAC_MASK);
+    (void)in8(M64_DAC_MASK);
+    (void)in8(M64_DAC_MASK);
+    idr = in8(M64_DAC_MASK);
+    cr = in8(M64_DAC_MASK);
+    aux = in8(M64_DAC_MASK);
+    test = in8(M64_DAC_MASK);
+
+    xf86ErrorFVerb(4,
+        "  Identification register:       0x%02X\n"
+        "  Control register (Alternate):  0x%02X\n"
+        "  Auxiliary register:            0x%02X\n"
+        "  Test register:                 0x%02X\n",
+        idr, cr, aux, test);
+
+    outr(DAC_CNTL, dac_cntl | (DAC_EXT_SEL_RS3 | DAC_EXT_SEL_RS2));
+
+    index_read = in8(M64_DAC_READ);
+    (void)in8(M64_DAC_DATA);
+    cr = in8(M64_DAC_MASK);
+    (void)in8(M64_DAC_READ);
+    index_write = in8(M64_DAC_WRITE);
+    (void)in8(M64_DAC_WRITE);
+    (void)in8(M64_DAC_WRITE);
+    (void)in8(M64_DAC_WRITE);
+    cs = in8(M64_DAC_WRITE);
+  
+    xf86ErrorFVerb(4,
+        "  PLL RAM read index:            0x%02X\n"
+        "  PLL RAM write index:           0x%02X\n"
+        "  Control register:              0x%02X\n"
+        "  Clock Select Register:         0x%02X\n\n"
+        "  PLL registers:",
+        index_read, index_write, cr, cs);
+
+    out8(M64_DAC_READ, 0);
+
+    for (Index = 0;  Index < 48;  Index++)
+    {
+        if (!(Index & 1))
+        {
+            if (!(Index & 15))
+                xf86ErrorFVerb(4, "\n  0x%02X: ", Index / 2);
+
+            xf86ErrorFVerb(4, " ");
+        }
+
+        xf86ErrorFVerb(4, "%02X", in8(M64_DAC_DATA));
+    }
+
+    xf86ErrorFVerb(4, "\n");
+
+    out8(M64_DAC_READ, index_read);
+
+    /* Restore registers */
+    outr(DAC_CNTL, dac_cntl);
+    if (!(crtc_gen_cntl & CRTC_EXT_DISP_EN))
+        outr(CRTC_GEN_CNTL, crtc_gen_cntl);
 }
 
 /*
@@ -576,6 +665,9 @@ ATIPrintRegisters
 
         if (pATI->Chip >= ATI_CHIP_264CT)
             ATIMach64PrintPLLRegisters(pATI);
+
+        if (pATI->DAC == ATI_DAC_CH8398)
+            ATICH8398PrintRegisters(pATI);
 
         if (pATI->DAC == ATI_DAC_IBMRGB514)
             ATIRGB514PrintRegisters(pATI);
