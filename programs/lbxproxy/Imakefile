@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/lbxproxy/Imakefile,v 1.14 2001/01/17 23:44:55 dawes Exp $
+XCOMM $XFree86: xc/programs/lbxproxy/Imakefile,v 1.15tsi Exp $
 
 #include <Server.tmpl>
 #define       IHaveSubdirs
@@ -23,11 +23,7 @@ os/LibraryTargetName(os):	os
 
 di/LibraryTargetName(dilbx):	di
 
-#if !defined(LynxOSArchitecture) && !defined(QNX4Architecture)
-ServerTarget(lbxproxy,$(SUBDIRS),NullParameter,$(LBXLIBS),$(OTHERLIBS))
-#else
 ServerTarget(lbxproxy,$(SUBDIRS),di/main.o,$(LBXLIBS),$(OTHERLIBS))
-#endif
 
 LinkConfDirectory(lbxproxy,.,lbxproxy,.)
 

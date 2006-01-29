@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/lbxproxy/di/Imakefile,v 1.3tsi Exp $
+XCOMM $XFree86: xc/programs/lbxproxy/di/Imakefile,v 1.4tsi Exp $
 
 #include <Server.tmpl>
 
@@ -17,7 +17,7 @@ INCLUDES = -I../include
                 props.o swapreq.o swaprep.o unsquish.o extensions.o \
 		options.o zeropad.o pm.o
 
-    DEFINES = AllocateLocalDefines
+    DEFINES = AllocateLocalDefines BigReqDefines
 
 #ifdef DefaultRGBDatabase
 DEFAULTRGBDATABASE = DefaultRGBDatabase
@@ -30,14 +30,14 @@ UTIL_DEFINES = '-DDEF_ATOMS_FILE="$(LBXPROXYDIR)/AtomControl"' $(SITE_RGB_DB)
   IPv6_FLAGS = IPv6Flags
 #endif
 
-DEPEND_DEFINES = $(PROXYMNGR_INCLUDES) $(UTIL_DEFINES) DependDefines
+DEPEND_DEFINES = $(UTIL_DEFINES) $(IPv6_FLAGS) DependDefines
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(dilbx,$(OBJS))
 LintLibraryTarget(dilbx,$(SRCS))
 NormalLintTarget($(SRCS))
 
-SpecialCObjectRule(dispatch,$(ICONFIGFILES),$(EXT_DEFINES))
+SpecialCObjectRule(wire,$(ICONFIGFILES),NullParameter)
 SpecialCObjectRule(utils,$(ICONFIGFILES),$(UTIL_DEFINES))
 SpecialCObjectRule(pm,$(ICONFIGFILES),$(IPv6_FLAGS))
 

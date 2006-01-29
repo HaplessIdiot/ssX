@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/lbxproxy/os/Imakefile,v 1.9tsi Exp $
+XCOMM $XFree86: xc/programs/lbxproxy/os/Imakefile,v 1.10tsi Exp $
 
 #include <Server.tmpl>
 
@@ -11,8 +11,8 @@ LinkSourceFile(snprintf.c,$(LIBSRC)/misc)
 
 #endif
 
- DEFINES = $(CONNECTION_FLAGS) $(RPC_DEFINES) \
-                AllocateLocalDefines ServerOSDefines $(SIGNAL_DEFINES)
+ DEFINES = $(CONNECTION_FLAGS) $(RPC_DEFINES) BigReqDefines \
+           AllocateLocalDefines ServerOSDefines $(SIGNAL_DEFINES)
 DEPEND_DEFINES = $(TRANS_INCLUDES) DependDefines
 
 INCLUDES = -I../include
@@ -34,7 +34,7 @@ NormalLintTarget($(SRCS))
 
 LinkSourceFile(transport.c,$(TRANSCOMMSRC))
 
-SpecialCObjectRule(io,$(ICONFIGFILES),$(CONN_DEFINES) $(EXT_DEFINES))
+SpecialCObjectRule(io,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCObjectRule(connection,$(ICONFIGFILES),$(CONN_DEFINES) $(SOCK_DEFINES))
 SpecialCObjectRule(transport,$(ICONFIGFILES),$(TRANS_INCLUDES) $(CONN_DEFINES) $(SOCK_DEFINES))
 
