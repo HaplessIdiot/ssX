@@ -1,6 +1,6 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.499tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.500tsi Exp $
 /*
- * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -1985,6 +1985,9 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 #ifndef HaveTinyXSupport
 #define HaveTinyXSupport	NO
 #endif
+#ifndef HaveTinyXIOPortSupport
+#define HaveTinyXIOPortSupport	NO
+#endif
 #ifndef HaveTinyXVBESupport
 #define HaveTinyXVBESupport	NO
 #endif
@@ -1999,13 +2002,13 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 #define XfbdevServer 		HaveTinyXFbdevSupport
 #endif
 #ifndef Xi810Server
-#define Xi810Server 		HaveTinyXSupport
+#define Xi810Server 		(HaveTinyXVBESupport && HaveTinyXFbdevSupport)
 #endif
 #ifndef XIgsServer
 #define XIgsServer 		HaveTinyXSupport
 #endif
 #ifndef XipaqServer
-#define XipaqServer 		HaveTinyXSupport
+#define XipaqServer 		HaveTinyXFbdevSupport
 #endif
 #ifndef XItsyServer
 #define XItsyServer		NO
@@ -2017,16 +2020,16 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 #define XSavageServer		HaveTinyXSupport
 #endif
 #ifndef XSis530Server
-#define XSis530Server		HaveTinyXSupport
+#define XSis530Server		HaveTinyXIOPortSupport
 #endif
 #ifndef XTridentServer
-#define XTridentServer		HaveTinyXVBESupport
+#define XTridentServer		(HaveTinyXVBESupport && HaveXFbdevSupport)
 #endif
 #ifndef XTrioServer
 #define XTrioServer		HaveTinyXSupport
 #endif
 #ifndef XTS300Server
-#define XTS300Server 		HaveTinyXSupport
+#define XTS300Server 		HaveTinyXIOPortSupport
 #endif
 #ifndef XvesaServer
 #define XvesaServer		HaveTinyXVBESupport

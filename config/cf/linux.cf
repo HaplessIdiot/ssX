@@ -1,7 +1,7 @@
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.235 2005/02/09 19:49:09 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.236tsi Exp $
 
 /*
- * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -413,10 +413,16 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
  * Defaults for the TinyX servers on Linux.
  */
 #ifndef HaveTinyXSupport
-# if defined(i386Architecture)
-#  define HaveTinyXSupport	YES
+/* XXX This is provisional */
+# define HaveTinyXSupport	YES
+#endif
+#ifndef HaveTinyXIOPortSupport
+# if defined(i386Architecture) || defined(AlphaArchitecture) || \
+     defined(AMD64Architecture) || defined(SuperHArchitecture) || \
+     defined(ia64Architecture)
+#  define HaveTinyXIOPortSupport YES
 # else
-#  define HaveTinyXSupport	NO
+#  define HaveTinyXIOPortSupport NO
 # endif
 #endif
 #ifndef HaveTinyXVBESupport
