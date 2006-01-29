@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.66tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.67tsi Exp $ */
 /*
- * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -114,6 +114,19 @@ struct xf86stat {
 
 /* sysv IPC */
 typedef int xf86key_t;
+struct xf86ipc_perm {	/* This is sufficient for now */
+   unsigned long	uid;
+   unsigned long	gid;
+   unsigned long	cuid;
+   unsigned long	cgid;
+   unsigned long	mode;
+   unsigned long	padding[3];
+};
+struct xf86shmid_ds {
+   struct xf86ipc_perm	shm_perm;
+   unsigned long	shm_segsz;
+   unsigned long	padding[9];
+};
 
 /* setjmp/longjmp */
 #if defined(__ia64__)
@@ -217,8 +230,10 @@ typedef int xf86jmp_buf[1024];
 #define XF86SHM_RDONLY      010000      /* attach read-only else read-write */
 #define XF86SHM_RND         020000      /* round attach address to SHMLBA */
 #define XF86SHM_REMAP       040000      /* take-over region on attach */
-/* xf86shmclt() */
+/* xf86shmctl() */
 #define XF86IPC_RMID 0
+#define XF86IPC_STAT 1
+#define XF86IPC_SET  2
 
 #endif /* (XFree86LOADER && IN_MODULE) || NEED_XF86_TYPES */
 
@@ -559,6 +574,12 @@ typedef int xf86jmp_buf[1024];
 #define gid_t                   xf86gid_t
 #undef stat_t
 #define stat_t			struct xf86stat
+#undef key_t
+#define key_t			xf86key_t
+#undef ipc_perm
+#define ipc_perm		xf86ipc_perm
+#undef shmid_ds
+#define shmid_ds		xf86shmid_ds
 
 #undef ulong
 #define ulong			unsigned long
@@ -694,11 +715,15 @@ typedef int xf86jmp_buf[1024];
 #define SHM_REMAP XF86SHM_REMAP
 #undef IPC_RMID
 #define IPC_RMID XF86IPC_RMID
+#undef IPC_STAT
+#define IPC_STAT XF86IPC_STAT
+#undef IPC_SET
+#define IPC_SET XF86IPC_SET
 #undef IPC_CREAT
 #define IPC_CREAT XF86IPC_CREAT
 #undef IPC_EXCL
 #define IPC_EXCL XF86IPC_EXCL
-#undef PC_NOWAIT
+#undef IPC_NOWAIT
 #define IPC_NOWAIT XF86IPC_NOWAIT
 #undef SHM_R
 #define SHM_R XF86SHM_R

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.59tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.60tsi Exp $ */
 /*
  * Copyright 1997-2004 by The XFree86 Project, Inc
  * All rights reserved.
@@ -355,7 +355,7 @@ unsigned int xf86sleep(unsigned int seconds);
 extern int xf86shmget(xf86key_t key, int size, int xf86shmflg);
 extern char * xf86shmat(int id, char *addr, int xf86shmflg);
 extern int xf86shmdt(char *addr);
-extern int xf86shmctl(int id, int xf86cmd, pointer buf);
+extern int xf86shmctl(int id, int xf86cmd, struct xf86shmid_ds * buf);
 
 extern int xf86setjmp(xf86jmp_buf env);
 extern int xf86setjmp0(xf86jmp_buf env);

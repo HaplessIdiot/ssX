@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.109tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.110tsi Exp $ */
 /*
  * Copyright 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1905,7 +1905,7 @@ xf86GetErrno ()
 int
 xf86shmget(xf86key_t key, int size, int xf86shmflg)
 {
-    int shmflg;
+    int shmflg, status;
 
     /* This copies the permissions (SHM_R, SHM_W for u, g, o). */
     shmflg = xf86shmflg & 0777;
@@ -1915,13 +1915,16 @@ xf86shmget(xf86key_t key, int size, int xf86shmflg)
     if (xf86shmflg & XF86IPC_CREAT) shmflg |= IPC_CREAT;
     if (xf86shmflg & XF86IPC_EXCL) shmflg |= IPC_EXCL;
     if (xf86shmflg & XF86IPC_NOWAIT) shmflg |= IPC_NOWAIT;
-    return shmget((key_t) key, size, shmflg);
+    status = shmget((key_t) key, size, shmflg);
+    xf86errno = xf86GetErrno();
+    return status;
 }
 
 char *
 xf86shmat(int id, char *addr, int xf86shmflg)
 {
     int shmflg = 0;
+    char * status;
 
 #ifdef SHM_RDONLY
     if (xf86shmflg & XF86SHM_RDONLY) shmflg |= SHM_RDONLY;
@@ -1933,32 +1936,62 @@ xf86shmat(int id, char *addr, int xf86shmflg)
     if (xf86shmflg & XF86SHM_REMAP)  shmflg |= SHM_REMAP;
 #endif
 
-    return shmat(id,addr,shmflg);
+    status = shmat(id,addr,shmflg);
+    xf86errno = xf86GetErrno();
+    return status;
 }
 
 int
 xf86shmdt(char *addr)
 {
-    return shmdt(addr);
+    int status = shmdt(addr);
+
+    xf86errno = xf86GetErrno();
+    return status;
 }
 
-/*
- * for now only implement the rmid command.
- */
 int
-xf86shmctl(int id, int xf86cmd, pointer buf)
+xf86shmctl(int id, int xf86cmd, struct xf86shmid_ds * buf)
 {
-    int cmd;
+    struct shmid_ds ds, *dsp;
+    int cmd, status;
 
     switch (xf86cmd) {
     case XF86IPC_RMID:
 	cmd = IPC_RMID;
+	dsp = NULL;
+	break;
+    case XF86IPC_SET:
+	cmd = IPC_SET;
+	dsp = &ds;
+	(void) memset(&ds, 0, sizeof(ds));
+	ds.shm_perm.uid = buf->shm_perm.uid;
+	ds.shm_perm.gid = buf->shm_perm.gid;
+	ds.shm_perm.cuid = buf->shm_perm.cuid;
+	ds.shm_perm.cgid = buf->shm_perm.cgid;
+	ds.shm_perm.mode = buf->shm_perm.mode;
+	ds.shm_segsz = buf->shm_segsz;
+	break;
+    case XF86IPC_STAT:
+	cmd = IPC_STAT;
+	dsp = &ds;
 	break;
     default:
-	return 0;
+	return -1;
     }
     
-    return shmctl(id, cmd, buf);
+    status = shmctl(id, cmd, dsp);
+    xf86errno = xf86GetErrno();
+    if ((status == 0) && (cmd == IPC_STAT)) {
+	(void) memset(buf, 0, sizeof(*buf));
+	buf->shm_perm.uid = ds.shm_perm.uid;
+	buf->shm_perm.gid = ds.shm_perm.gid;
+	buf->shm_perm.cuid = ds.shm_perm.cuid;
+	buf->shm_perm.cgid = ds.shm_perm.cgid;
+	buf->shm_perm.mode = ds.shm_perm.mode;
+	buf->shm_segsz = ds.shm_segsz;
+    }
+    return status;
 }
 #else
 
@@ -1976,7 +2009,7 @@ xf86shmat(int id, char *addr, int xf86shmflg)
 }
 
 int
-xf86shmctl(int id, int xf86cmd, pointer buf)
+xf86shmctl(int id, int xf86cmd, struct xf86shmid_ds * buf)
 {
     return -1;
 }
