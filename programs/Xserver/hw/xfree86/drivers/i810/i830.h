@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830.h,v 1.19 2005/05/20 14:06:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830.h,v 1.20tsi Exp $ */
 
 /*
  * Authors:
@@ -151,9 +151,7 @@ typedef struct {
    ScrnInfoPtr    pScrn_1;
    ScrnInfoPtr    pScrn_2;
    int            RingRunning;
-#ifdef I830_XV
    int            XvInUse;
-#endif
 } I830EntRec, *I830EntPtr;
 
 typedef struct _I830Rec {
@@ -212,10 +210,8 @@ typedef struct _I830Rec {
    I830MemRange Dummy;
 #endif
 
-#ifdef I830_XV
    /* For Xvideo */
    I830MemRange *OverlayMem;
-#endif
 
 #ifdef XF86DRI
    I830MemRange BackBuffer;
@@ -280,12 +276,10 @@ typedef struct _I830Rec {
    Bool XvDisabled;			/* Xv disabled in PreInit. */
    Bool XvEnabled;			/* Xv enabled for this generation. */
 
-#ifdef I830_XV
    int colorKey;
    XF86VideoAdaptorPtr adaptor;
    ScreenBlockHandlerProcPtr BlockHandler;
    Bool *overlayOn;
-#endif
 
    Bool directRenderingDisabled;	/* DRI disabled in PreInit. */
    Bool directRenderingEnabled;		/* DRI enabled this generation. */
@@ -394,11 +388,9 @@ extern void I830EmitFlush(ScrnInfoPtr pScrn);
 
 extern Bool I830DGAInit(ScreenPtr pScreen);
 
-#ifdef I830_XV
 extern void I830InitVideo(ScreenPtr pScreen);
 extern void I830VideoSwitchModeBefore(ScrnInfoPtr pScrn, DisplayModePtr mode);
 extern void I830VideoSwitchModeAfter(ScrnInfoPtr pScrn, DisplayModePtr mode);
-#endif
 
 #ifdef XF86DRI
 extern Bool I830Allocate3DMemory(ScrnInfoPtr pScrn, const int flags);
