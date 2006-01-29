@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.80tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.81tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -189,6 +189,11 @@ XCOMM SunPro C++ CplusplusCompilerMajorVersion./**/CplusplusCompilerMinorVersion
 # ifndef CplusplusOptions
 #  define CplusplusOptions -Xa
 # endif
+#endif
+
+/* This might need to key off of compiler and/or OS version */
+#ifndef UseElfFormat
+#define UseElfFormat YES
 #endif
 
 #if OSMajorVersion < 4 || (OSMajorVersion == 4 && OSMinorVersion < 1)
