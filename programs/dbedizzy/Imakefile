@@ -1,0 +1,11 @@
+XCOMM $XFree86: xc/programs/dbedizzy/Imakefile,v 1.0tsi Exp $
+
+        DEFINES = DBEDefines
+        DEPLIBS = $(DEPXLIB)
+LOCAL_LIBRARIES = $(XLIB)
+  SYS_LIBRARIES = MathLibrary
+
+           SRCS = dbedizzy.c
+           OBJS = dbedizzy.o
+
+ComplexProgramTargetNoMan(dbedizzy)

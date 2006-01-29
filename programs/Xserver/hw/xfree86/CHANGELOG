@@ -1,4 +1,5 @@
 XFree86 4.5.99.21 (xx February 2006)
+ 191. Resurrect dbedizzy, a DBE extension test utility (Marc La France).
  190. Rework printf format specifiers used in XLFD code to make them more
       portable (and avoid infinite loops in some glibc versions)
       (Marc La France).
@@ -19908,7 +19909,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3642 2006/01/27 17:21:17 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3643 2006/01/29 01:07:23 tsi Exp $
 
 
 
