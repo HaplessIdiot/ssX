@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.c,v 1.27tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.c,v 1.28tsi Exp $ */
 /*
  * Copyright 1997 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1217,11 +1217,12 @@ ATIClockCalculate
     int Frequency, Multiple;            /* Used as temporaries */
 
     /* Set default values */
-    pATIHW->FeedbackDivider = pATIHW->ReferenceDivider = pATIHW->PostDivider = 0;
+    pATIHW->FeedbackDivider = pATIHW->ReferenceDivider =
+        pATIHW->PostDivider = 0;
 
     if ((pATI->ProgrammableClock <= ATI_CLOCK_FIXED) ||
         ((pATI->ProgrammableClock == ATI_CLOCK_CH8398) &&
-         (pMode->ClockIndex < 2)))
+         ((unsigned)pMode->ClockIndex < 2)))
     {
         /* Use a fixed clock */
         ClockSelect = pMode->ClockIndex;
@@ -1427,14 +1428,24 @@ ATIClockSet
             break;
 
         case ATI_CLOCK_CH8398:
-            tmp = inr(DAC_CNTL) | (DAC_EXT_SEL_RS2 | DAC_EXT_SEL_RS3);
+            tmp = inr(DAC_CNTL) | (DAC_EXT_SEL_RS3 | DAC_EXT_SEL_RS2);
+            (void)in8(M64_DAC_READ);
             outr(DAC_CNTL, tmp);
             out8(M64_DAC_WRITE, pATIHW->clock);
             out8(M64_DAC_DATA, SetBits(N, 0xFFU));
             out8(M64_DAC_DATA, SetBits(M, 0x3FU) | SetBits(D, 0xC0U));
             out8(M64_DAC_MASK, 0x04U);
-            outr(DAC_CNTL, tmp & ~(DAC_EXT_SEL_RS2 | DAC_EXT_SEL_RS3));
+            (void)in8(M64_DAC_READ);
+            (void)in8(M64_DAC_WRITE);
+            (void)in8(M64_DAC_WRITE);
+            (void)in8(M64_DAC_WRITE);
+            (void)in8(M64_DAC_WRITE);
             tmp2 = in8(M64_DAC_WRITE);
+            (void)in8(M64_DAC_READ);
+            (void)in8(M64_DAC_WRITE);
+            (void)in8(M64_DAC_WRITE);
+            (void)in8(M64_DAC_WRITE);
+            (void)in8(M64_DAC_WRITE);
             out8(M64_DAC_WRITE, (tmp2 & 0x70U) | 0x80U);
             outr(DAC_CNTL, tmp & ~DAC_EXT_SEL_RS2);
             break;
