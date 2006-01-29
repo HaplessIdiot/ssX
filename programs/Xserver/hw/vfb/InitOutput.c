@@ -26,7 +26,7 @@ from The Open Group.
 
 */
 /*
- * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -81,7 +81,7 @@ from The Open Group.
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.30tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.31tsi Exp $ */
 
 #if defined(WIN32)
 #include <X11/Xwinsock.h>
@@ -319,10 +319,8 @@ ddxUseMsg()
 {
     ErrorF("-screen n WxHxD[@x,y]  set screen's width, height, depth, origin\n");
     ErrorF("-pixdepths list-of-int support given pixmap depths\n");
-#ifdef RENDER
     ErrorF("+/-render		   turn on/of RENDER extension support"
 	   "(default on)\n");
-#endif
     ErrorF("-linebias n            adjust thin line pixelization\n");
     ErrorF("-blackpixel n          pixel value for black\n");
     ErrorF("-whitepixel n          pixel value for white\n");
@@ -1006,10 +1004,8 @@ vfbScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
     case 32:
 	ret = fbScreenInit(pScreen, pbits, pvfb->width, pvfb->height,
 			      dpix, dpiy, pvfb->paddedWidth,pvfb->bitsPerPixel);
-#ifdef RENDER
 	if (ret && Render) 
 	    fbPictureInit (pScreen, 0, 0);
-#endif
 	break;
     default:
 	return FALSE;
