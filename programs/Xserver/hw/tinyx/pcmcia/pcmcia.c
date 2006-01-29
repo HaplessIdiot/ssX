@@ -27,9 +27,9 @@
  *
  * Tested running under a Compaq IPAQ Pocket PC running Linux
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/pcmcia/pcmcia.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/pcmcia/pcmcia.c,v 1.2tsi Exp $ */
 /*
- * Copyright (c) 2004 by The XFree86 Project, Inc.
+ * Copyright (c) 2004-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -79,9 +79,6 @@
 #define inline __inline__
 #endif
 #include "pcmcia.h"
-#define extern static
-#include <asm/io.h>
-#undef extern
 
 #define CLOCK 14318	/* KHz */
 #define CLK_N(a,b)	(a & 0xff)

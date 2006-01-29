@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/tinyx/igs/igs.c,v 1.3 2000/09/03 05:11:17 keithp Exp $
+ * $XFree86: xc/programs/Xserver/hw/tinyx/igs/igs.c,v 1.1tsi Exp $
  *
  * Copyright © 1999 SuSE, Inc.
  *
@@ -23,7 +23,7 @@
  * Author:  Keith Packard, SuSE, Inc.
  */
 /*
- * Copyright (c) 2004 by The XFree86 Project, Inc.
+ * Copyright (c) 2004-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -209,9 +209,10 @@ igsScreenInit (KdScreenInfo *screen)
     {
 	igss->cursor_offset = memory - 1024;
 #if BITMAP_BIT_ORDER == MSBFirst
-	igss->cursor_base = (CARD8 *) KdMapDevice (card->attr.address[0] +
-						   igss->cursor_offset,
-						   1024);
+	igss->cursor_base =
+	    (CARD8 *) KdMapDevice (screen->card->attr.address[0] +
+				   igss->cursor_offset,
+				   1024);
 #else
 	igss->cursor_base = igsc->frameBuffer + igss->cursor_offset;
 #endif
