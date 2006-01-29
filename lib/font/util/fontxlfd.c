@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/util/fontxlfd.c,v 3.19tsi Exp $ */
+/* $XFree86: xc/lib/font/util/fontxlfd.c,v 3.20tsi Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -131,7 +131,7 @@ xlfd_double_to_text(double value, char *buffer, int space_required)
     }
 #endif
     /* Compute a format to use to render the number */
-    sprintf(formatbuf, "%%.%dle", XLFD_NDIGITS);
+    sprintf(formatbuf, "%%.%de", XLFD_NDIGITS);
 
     if (space_required)
 	*buffer++ = ' ';
@@ -154,7 +154,7 @@ xlfd_double_to_text(double value, char *buffer, int space_required)
     if (exponent >= XLFD_NDIGITS || ndigits - exponent > XLFD_NDIGITS + 1)
     {
 	/* Scientific */
-	sprintf(formatbuf, "%%.%dle", ndigits - 1);
+	sprintf(formatbuf, "%%.%de", ndigits - 1);
 	sprintf(buffer, formatbuf, value);
     }
     else
@@ -162,7 +162,7 @@ xlfd_double_to_text(double value, char *buffer, int space_required)
 	/* Fixed */
 	ndigits -= exponent + 1;
 	if (ndigits < 0) ndigits = 0;
-	sprintf(formatbuf, "%%.%dlf", ndigits);
+	sprintf(formatbuf, "%%.%df", ndigits);
 	sprintf(buffer, formatbuf, value);
 	if (exponent < 0)
 	{
@@ -267,7 +267,7 @@ xlfd_round_double(double x)
 
 	char formatbuf[40], buffer[40];
 
-	sprintf(formatbuf, "%%.%dlg", XLFD_NDIGITS);
+	sprintf(formatbuf, "%%.%dg", XLFD_NDIGITS);
 	sprintf(buffer, formatbuf, x);
 	return atof(buffer);
     }
@@ -386,7 +386,7 @@ FontParseXLFDName(char *fname, FontScalablePtr vals, int subst)
     register char *ptr5;
     FontScalableRec tmpvals;
     char        replaceChar = '0';
-    char        tmpBuf[1024];
+    char        tmpBuf[1024], tmpFormat[64];
     int         spacingLen;
     int		l;
     char	*p;
@@ -510,22 +510,25 @@ FontParseXLFDName(char *fname, FontScalablePtr vals, int subst)
 	else if (vals->width < -1)	/* overload: -1 means wildcard */
 	    tmpvals.width = -vals->width;
 
-
 	p = ptr1 + 1;				/* weight field */
 	l = strchr(p, '-') - p;
-	sprintf(tmpBuf, "%*.*s", l, l, p);
+	sprintf(tmpFormat, "%%%d.%ds", l, l);
+	sprintf(tmpBuf, tmpFormat, p);
 
 	p += l + 1;				/* slant field */
 	l = strchr(p, '-') - p;
-	sprintf(tmpBuf + strlen(tmpBuf), "-%*.*s", l, l, p);
+	sprintf(tmpFormat, "-%%%d.%ds", l, l);
+	sprintf(tmpBuf + strlen(tmpBuf), tmpFormat, p);
 
 	p += l + 1;				/* setwidth_name */
 	l = strchr(p, '-') - p;
-	sprintf(tmpBuf + strlen(tmpBuf), "-%*.*s", l, l, p);
+	sprintf(tmpFormat, "-%%%d.%ds", l, l);
+	sprintf(tmpBuf + strlen(tmpBuf), tmpFormat, p);
 
 	p += l + 1;				/* add_style_name field */
 	l = strchr(p, '-') - p;
-	sprintf(tmpBuf + strlen(tmpBuf), "-%*.*s", l, l, p);
+	sprintf(tmpFormat, "-%%%d.%ds", l, l);
+	sprintf(tmpBuf + strlen(tmpBuf), tmpFormat, p);
 
 	strcat(tmpBuf, "-");
 	if ((tmpvals.values_supplied & PIXELSIZE_MASK) == PIXELSIZE_ARRAY)
@@ -567,9 +570,9 @@ FontParseXLFDName(char *fname, FontScalablePtr vals, int subst)
 	    sprintf(tmpBuf + strlen(tmpBuf), "%d",
 		    (int)(tmpvals.point_matrix[3] * 10.0 + .5));
 	}
-	sprintf(tmpBuf + strlen(tmpBuf), "-%d-%d%*.*s%d%s",
-		tmpvals.x, tmpvals.y,
-		spacingLen, spacingLen, ptr3, tmpvals.width, ptr5);
+	sprintf(tmpFormat, "-%%d-%%d%%%d.%ds%%d%%s", spacingLen, spacingLen);
+	sprintf(tmpBuf + strlen(tmpBuf), tmpFormat, tmpvals.x, tmpvals.y,
+		ptr3, tmpvals.width, ptr5);
 	strcpy(ptr1 + 1, tmpBuf);
 	if ((vals->values_supplied & CHARSUBSET_SPECIFIED) && !vals->nranges)
 	    strcat(fname, "[]");
