@@ -1,9 +1,10 @@
-XCOMM platform:  $XFree86: xc/config/cf/QNX4.cf,v 1.4 2002/01/07 20:38:18 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/QNX4.cf,v 1.5 2004/06/02 22:42:53 dawes Exp $
 
 #define StripInstalledPrograms	NO
 #define BuildServer 		YES
 #define DoLoadableServer	NO     /* sorry, are u listenning QSSL? */
 #define BuildLBX  		YES    /* For now */
+#define BuildGlxExt		NO     /* from miinitext.c */
 #define ExpandManNames		YES
 #define ByteOrder		X_LITTLE_ENDIAN
 
