@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.74 2005/10/14 15:17:23 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.75 2005/12/22 21:14:49 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -49,10 +49,6 @@ SOFTWARE.
 #include "misc.h"
 #include "extnsionst.h"
 #include "micmap.h"
-
-#if defined(QNX4) /* sleaze for Watcom on QNX4 ... */
-#undef GLXEXT
-#endif
 
 #ifdef PANORAMIX
 extern Bool noPanoramiXExtension;
