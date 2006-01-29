@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/Imakefile,v 3.24 2005/10/14 15:17:05 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/Imakefile,v 3.25tsi Exp $
 
 #include <Server.tmpl>
 
@@ -21,11 +21,13 @@ INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/include \
 
 RESDEFINES = -DUSESTDRES
 
-DEFINES = $(RESDEFINES)
+DEFINES = $(EXT_DEFINES) $(RESDEFINES)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 NormalAsmObjectRule()
+
+SpecialCObjectRule(os2_kbdEv,$(ICONFIGFILES),NullParameter)
 
 LinkSourceFile(VTsw_noop.c,../shared)
 LinkSourceFile(libc_wrapper.c,../shared)
