@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_memory.c,v 1.14 2005/03/21 19:00:08 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_memory.c,v 1.15tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -286,7 +286,6 @@ AllocateRingBuffer(ScrnInfoPtr pScrn, int flags)
    return TRUE;
 }
 
-#ifdef I830_XV
 /*
  * Note, the FORCE_LOW flag is currently not used or supported.
  */
@@ -343,7 +342,6 @@ AllocateOverlay(ScrnInfoPtr pScrn, int flags)
    }
    return TRUE;
 }
-#endif
 
 static unsigned long
 GetFreeSpace(ScrnInfoPtr pScrn)
@@ -760,9 +758,7 @@ I830Allocate2DMemory(ScrnInfoPtr pScrn, const int flags)
       }
    }
 
-#ifdef I830_XV
    AllocateOverlay(pScrn, flags);
-#endif
 
    if (!pI830->NeedRingBufferLow)
       AllocateRingBuffer(pScrn, flags);
@@ -1190,11 +1186,8 @@ I830FixupOffsets(ScrnInfoPtr pScrn)
    FixOffset(pScrn, &(pI830->Scratch));
    if (pI830->entityPrivate && pI830->entityPrivate->pScrn_2)
       FixOffset(pScrn, &(pI830->Scratch2));
-#ifdef I830_XV
-   if (pI830->XvEnabled) {
+   if (pI830->XvEnabled)
       FixOffset(pScrn, pI830->OverlayMem);
-   }
-#endif
 #ifdef XF86DRI
    if (pI830->directRenderingEnabled) {
       FixOffset(pScrn, &(pI830->BackBuffer));
@@ -1512,10 +1505,8 @@ I830BindGARTMemory(ScrnInfoPtr pScrn)
       if (pI830->entityPrivate && pI830->entityPrivate->pScrn_2)
          if (!BindMemRange(pScrn, &(pI830->Scratch2)))
 	    return FALSE;
-#ifdef I830_XV
       if (!BindMemRange(pScrn, pI830->OverlayMem))
 	 return FALSE;
-#endif
 #ifdef XF86DRI
       if (pI830->directRenderingEnabled) {
 	 if (!BindMemRange(pScrn, &(pI830->BackBuffer)))
@@ -1584,10 +1575,8 @@ I830UnbindGARTMemory(ScrnInfoPtr pScrn)
       if (pI830->entityPrivate && pI830->entityPrivate->pScrn_2)
          if (!UnbindMemRange(pScrn, &(pI830->Scratch2)))
 	    return FALSE;
-#ifdef I830_XV
       if (!UnbindMemRange(pScrn, pI830->OverlayMem))
 	 return FALSE;
-#endif
 #ifdef XF86DRI
       if (pI830->directRenderingEnabled) {
 	 if (!UnbindMemRange(pScrn, &(pI830->BackBuffer)))

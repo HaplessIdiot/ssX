@@ -1,4 +1,6 @@
 XFree86 4.5.99.21 (xx February 2006)
+ 194. Remove compile-time ability to exclude Xv support in the i830 driver
+      (Marc La France).
  193. Fix one cause of video memory corruption when using XAA with
       second-generation integrated Mach64 controllers.  (I'm still chasing
       another one.)  (Marc La France).
@@ -19914,7 +19916,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3644 2006/01/29 01:12:28 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3645 2006/01/29 01:45:03 tsi Exp $
 
 
 

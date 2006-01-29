@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.88tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.89tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -103,12 +103,10 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  *    18/10/2001
  *        - Fixed a bug in I830BIOSLeaveVT() which caused a bug when you
  *          switched VT's
- */
-/*
+ *
  *    07/2002 David Dawes
  *        - Add Intel(R) 855GM/852GM support.
- */
-/*
+ *
  *    07/2002 David Dawes
  *        - Cleanup code formatting.
  *        - Improve VESA mode selection, and fix refresh rate selection.
@@ -128,14 +126,11 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  *    08/2002 Keith Whitwell
  *        - Fix DRI initialisation.
  *
- *
  *    08/2002 Alan Hourihane and David Dawes
  *        - Add XVideo support.
  *
- *
  *    10/2002 David Dawes
  *        - Add Intel(R) 865G support.
- *
  *
  *    01/2004 Alan Hourihane
  *        - Add Intel(R) 915G support.
@@ -1380,7 +1375,7 @@ I830MapMMIO(ScrnInfoPtr pScrn)
    int mmioFlags;
    I830Ptr pI830 = I830PTR(pScrn);
 
-#if !defined(__alpha__)
+#ifndef __alpha__
    mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT;
 #else
    mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT | VIDMEM_SPARSE;
@@ -2643,7 +2638,6 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
    pI830->XvDisabled =
 	!xf86ReturnOptValBool(pI830->Options, OPTION_XVIDEO, TRUE);
 
-#ifdef I830_XV
    if (xf86GetOptValInteger(pI830->Options, OPTION_VIDEO_KEY,
 			    &(pI830->colorKey))) {
       from = X_CONFIG;
@@ -2659,7 +2653,6 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
    }
    xf86DrvMsg(pScrn->scrnIndex, from, "video overlay key set to 0x%x\n",
 	      pI830->colorKey);
-#endif
 
    pI830->allowPageFlip = FALSE;
    enable = xf86ReturnOptValBool(pI830->Options, OPTION_PAGEFLIP, FALSE);
@@ -3170,7 +3163,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
     * If DRI is potentially usable, check if there is enough memory available
     * for it, and if there's also enough to allow tiling to be enabled.
     */
-#if defined(XF86DRI)
+#ifdef XF86DRI
    if (IsPrimary(pScrn) && !pI830->directRenderingDisabled) {
       int savedDisplayWidth = pScrn->displayWidth;
       int memNeeded = 0;
@@ -3185,13 +3178,11 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
 	 0
       };
 
-#ifdef I830_XV
       /*
        * Set this so that the overlay allocation is factored in when
        * appropriate.
        */
       pI830->XvEnabled = !pI830->XvDisabled;
-#endif
 
       for (i = 0; pitches[i] != 0; i++) {
 #if USE_PITCHES
@@ -3363,7 +3354,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
    xf86DrvMsg(pScrn->scrnIndex, from, "VBE Restore workaround: %s.\n",
 	      pI830->vbeRestoreWorkaround ? "enabled" : "disabled");
       
-#if defined(XF86DRI)
+#ifdef XF86DRI
    /* Load the dri module if requested. */
    if (xf86ReturnOptValBool(pI830->Options, OPTION_DRI, FALSE) &&
        !pI830->directRenderingDisabled) {
@@ -4569,7 +4560,6 @@ I830BIOSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
    if (!miSetPixmapDepths())
       return FALSE;
 
-#ifdef I830_XV
    pI830->XvEnabled = !pI830->XvDisabled;
    if (pI830->XvEnabled) {
       if (!IsPrimary(pScrn)) {
@@ -4584,9 +4574,6 @@ I830BIOSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	 pI830->XvEnabled = FALSE;
       }
    }
-#else
-   pI830->XvEnabled = FALSE;
-#endif
 
    if (IsPrimary(pScrn)) {
       I830ResetAllocations(pScrn, 0);
@@ -4613,7 +4600,6 @@ I830BIOSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
       }
    }
 
-#ifdef I830_XV
    if (pI830->XvEnabled) {
       if (pI830->noAccel) {
 	 xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "Disabling Xv because it "
@@ -4627,7 +4613,6 @@ I830BIOSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	 pI830->XvEnabled = FALSE;
       }
    }
-#endif
 
    InitRegisterRec(pScrn);
 
@@ -4840,11 +4825,9 @@ I830BIOSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
    xf86DPMSInit(pScreen, I830DisplayPowerManagementSet, 0);
 
-#ifdef I830_XV
    /* Init video */
    if (pI830->XvEnabled)
       I830InitVideo(pScreen);
-#endif
 
 #ifdef XF86DRI
    if (pI830->directRenderingEnabled) {
@@ -4993,10 +4976,8 @@ I830BIOSLeaveVT(int scrnIndex, int flags)
       TimerCancel(pI830->devicesTimer);
    pI830->devicesTimer = NULL;
 
-#ifdef I830_XV
    /* Give the video overlay code a chance to shutdown. */
    I830VideoSwitchModeBefore(pScrn, NULL);
-#endif
 
    if (pI830->Clone) {
       /* Ensure we don't try and setup modes on a clone head */
@@ -5321,9 +5302,7 @@ I830BIOSEnterVT(int scrnIndex, int flags)
    if (!I830VESASetMode(pScrn, pScrn->currentMode))
       return FALSE;
    
-#ifdef I830_XV
    I830VideoSwitchModeAfter(pScrn, pScrn->currentMode);
-#endif
 
    ResetState(pScrn, TRUE);
    SetHWOperatingState(pScrn);
@@ -5378,16 +5357,12 @@ I830BIOSSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
    if (IsPrimary(pScrn))
       I830UnbindGARTMemory(pScrn);
 #endif
-#ifdef I830_XV
    /* Give the video overlay code a chance to see the new mode. */
    I830VideoSwitchModeBefore(pScrn, mode);
-#endif
    if (!I830VESASetMode(pScrn, mode))
       ret = FALSE;
-#ifdef I830_XV
    /* Give the video overlay code a chance to see the new mode. */
    I830VideoSwitchModeAfter(pScrn, mode);
-#endif
 #if BINDUNBIND
    if (IsPrimary(pScrn))
       I830BindGARTMemory(pScrn);
