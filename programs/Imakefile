@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Imakefile,v 3.57 2004/09/20 15:24:57 tsi Exp $
+XCOMM $XFree86: xc/programs/Imakefile,v 3.58tsi Exp $
 
 #if BuildServer || BuildClients
 #define IHaveSubdirs
@@ -32,6 +32,9 @@ SCREENSAVESRCDIR = beforelight
 #endif
 #if BuildLBX
   LBXPROXYSRCDIR = lbxproxy
+#endif
+#if BuildDBE
+       DBESRCDIR = dbedizzy
 #endif
   PROXYMGRSRCDIR = proxymngr
     RSTARTSRCDIR = rstart
@@ -112,7 +115,7 @@ SUBDIRS = $(XSSRCDIR)
 SUBDIRS = \
 	appres bdftopcf fonttosfnt bitmap \
 	$(SCREENSAVESRCDIR) editres $(FCDIRS) $(FCLANGDIR) fslsfonts fstobdf \
-	iceauth ico listres luit \
+	$(DBESRCDIR) iceauth ico listres luit \
 	$(MAKEPSRESDIR) $(DPSCLIENTDIRS) \
 	$(MKCFMSRCDIR) \
 	mkfontdir $(MKFONTSCALEDIR) oclock $(PROXYMGRSRCDIR) \
