@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.35tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.36tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -1202,7 +1202,7 @@ XAACheckTileReducibility(PixmapPtr pPixmap, Bool checkMono)
     int dwords, i, j;
 
     pPriv->flags |= REDUCIBILITY_CHECKED;
-    pPriv->flags &= ~(REDUCIBILITY_CHECKED | REDUCIBLE_TO_2_COLOR);
+    pPriv->flags &= ~(REDUCIBLE_TO_8x8 | REDUCIBLE_TO_2_COLOR);
 
     if((w > 32) || (h > 32) || (w & (w - 1)) || (h & (h - 1)))
 	return FALSE;
