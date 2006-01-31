@@ -1,4 +1,7 @@
 XFree86 4.5.99.21 (xx February 2006)
+ 197. Update the Serbian locale naming to reflect the country's name change
+      from "Yugoslavia" to "Serbia and Montenegro" (Bugzilla #1643,
+      Milos Komarcevic).
  196. Fix lbxproxy compile glitch that caused it to misrecognise BIGREQS
       extension requests (Marc La France).
  195. Beef up the loader server's emulation of shmctl() calls (Marc La France).
@@ -19919,7 +19922,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3647 2006/01/29 02:19:52 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3648 2006/01/29 02:31:22 tsi Exp $
 
 
 
