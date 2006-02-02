@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.58tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.59 2003/04/23 21:51:36 tsi Exp $ */
 /*
  * Copyright 1997-2001 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -57,7 +57,7 @@
 
 typedef struct {
 	CARD32 glintRegs[0x2000];
-	CARD32 DacRegs[0x100];
+	CARD32 DacRegs[0x1000];
 	CARD8 cmap[0x300];
 } GLINTRegRec, *GLINTRegPtr;
 
