@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_vgatool.c,v 1.1tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -67,6 +67,8 @@ GetVRAMInfo(ScrnInfoPtr pScrn)
 {
    ASTRecPtr pAST = ASTPTR(pScrn);
    UCHAR jReg;
+
+   vASTOpenKey(pScrn);
 
    GetIndexRegMask(CRTC_PORT, 0xAA, 0xFF, jReg);
 
@@ -186,6 +188,8 @@ ASTDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
 
    pAST = ASTPTR(pScrn);
    SEQ01=CRB6=0;
+
+   vASTOpenKey(pScrn);
 
    switch (PowerManagementMode) {
    case DPMSModeOn:
