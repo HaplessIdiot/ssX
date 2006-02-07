@@ -46,7 +46,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/Intrinsic.h,v 3.11 2006/01/09 14:59:21 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Intrinsic.h,v 3.12 2006/01/25 04:32:09 dawes Exp $ */
 
 #ifndef _XtIntrinsic_h
 #define _XtIntrinsic_h
@@ -1903,6 +1903,7 @@ extern String XtNewString(String /* str */);
 
 #define XtTextEncoding8bit	0
 #define XtTextEncodingChar2b	1
+#define XtTextEncodingMixed	3	/* char */
 
 /*
  * Some widgets use Char2b strings, so these are strung manipulation

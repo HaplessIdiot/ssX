@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Paned.h,v 1.7 2001/12/14 19:54:41 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Paned.h,v 1.8 2006/01/09 14:59:02 dawes Exp $ */
 
 /*
  * Paned.h - Paned Composite Widget's public header file.
@@ -78,7 +78,7 @@ SOFTWARE.
  gripIndent	         GripIndent	   Position	    16
  gripCursor	         Cursor	           Cursor	    **
  horizontalGripCursol    Cursor	           Cursor	    sb_h_double_arrow
- horizontalBetweencursor Cursor	           Cursor	    sb_up_arrow
+ horizontalBetweenCursor Cursor	           Cursor	    sb_up_arrow
  internalBorderColor     BorderColor	   Pixel	    XtDefaultForeground
  internalBorderWidth     BorderWidth	   Position	    1
  leftCursor	         Cursor	           Cursor	    sb_left_arrow
