@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.285tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.286 2005/11/09 17:06:37 tsi Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -3040,7 +3040,7 @@ ProjectUnsharedLibReferences(XP,Xp,$(XPLIBSRC),XBuildLibDir)
        TOOLKITSRC = $(LIBSRC)/Xt
 #if SharedLibXt
 #ifndef SharedXtRev
-#define SharedXtRev 6.0
+#define SharedXtRev 6.1
 #endif
 SharedDSLibReferences(XTOOLONLY,Xt,$(TOOLKITSRC),SOXTREV,SharedXtRev)
 #else
@@ -3068,7 +3068,7 @@ ProjectUnsharedLibReferences(XTOOLONLY,Xt,$(TOOLKITSRC),XBuildLibDir)
        AWIDGETSRC = $(LIBSRC)/Xaw
 #if SharedLibXaw
 #ifndef SharedXawRev
-#define SharedXawRev 7.0
+#define SharedXawRev 7.1
 #endif
 SharedDSLibReferences(XAW,Xaw,$(AWIDGETSRC),SOXAWREV,SharedXawRev)
 #else
