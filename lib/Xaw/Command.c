@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Command.c,v 1.17 2003/08/04 10:32:20 eich Exp $ */
+/* $XFree86: xc/lib/Xaw/Command.c,v 1.18 2006/01/09 14:59:01 dawes Exp $ */
 
 /*
  * Command.c - Command button widget
@@ -330,7 +330,7 @@ Set(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	return;
 
     XawCommandToggle(w);
-    cbw->command.set= True;
+    cbw->command.set = True;
 }
 
 /*ARGSUSED*/
