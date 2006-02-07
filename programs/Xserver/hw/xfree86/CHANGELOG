@@ -1,4 +1,9 @@
 XFree86 4.5.99.21 (xx February 2006)
+ 202. Don't highlight f.nop menu items in twm menus (Bugzilla #1653,
+      Alexander Pohoyda).
+ 201. Whitespace cleanup in Xlib.h (Bugzilla #1652, Alexander Pohoyda).
+ 200. Fix the cursor in Xaw textWidget when the input field has focus
+      (Bugzilla #1651, Alexander Pohoyda).
  199. Another update to ast driver (Bugzilla #1628, Y. C. Chen).
  198. Fix the size of the dac registers storage for pm2v & pm3 chipsets.
       (Alan Hourihane)
@@ -403,7 +408,7 @@ XFree86 4.5.99.3 (11 May 2005)
   29. Allow a static server's -configure to generate an XF86Config for the
       loader server (Marc La France).
   28. Replace lib/font/fontfile/decompress.c with a version derived from
-      the BSD src/usr.bin/compress/zopen.c (Thorsten Glasser).
+      the BSD src/usr.bin/compress/zopen.c (Thorsten Glaser).
   27. Revert the MGA HALlib MGASetDisplayStart interface back to
       HALSetDisplayStart (#7577, Peter Breitenlohner).
   26. Updates to mkfontscale's handling of font weights (#7596,
@@ -19925,7 +19930,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3650 2006/02/02 23:09:36 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3651 2006/02/06 17:28:01 tsi Exp $
 
 
 

@@ -23,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.47 2003/05/27 22:26:36 tsi Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.48 2005/01/27 18:09:19 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2970,10 +2970,17 @@ static void
 TextEnterWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     TextWidget ctx = (TextWidget)w;
+    Bool display_caret = ctx->text.display_caret;
 
     if ((event->xcrossing.detail != NotifyInferior) && event->xcrossing.focus
 	&& !ctx->text.hasfocus)
 	_XawImSetFocusValues(w, NULL, 0);
+
+    if (display_caret)
+	StartAction(ctx, event);
+    ctx->text.hasfocus = TRUE;
+    if (display_caret)
+	EndAction(ctx);
 }
 
 /*ARGSUSED*/
@@ -2981,10 +2988,17 @@ static void
 TextLeaveWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     TextWidget ctx = (TextWidget)w;
+    Bool display_caret = ctx->text.display_caret;
 
     if ((event->xcrossing.detail != NotifyInferior) && event->xcrossing.focus
 	&& !ctx->text.hasfocus)
 	_XawImUnsetFocus(w);
+
+    if (display_caret)
+	StartAction(ctx, event);
+    ctx->text.hasfocus = FALSE;
+    if (display_caret)
+	EndAction(ctx);
 }
 
 /*

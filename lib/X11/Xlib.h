@@ -23,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlib.h,v 3.27 2004/04/03 22:26:20 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlib.h,v 3.28 2006/01/09 14:58:39 dawes Exp $ */
 
 
 /*
@@ -197,13 +197,11 @@ typedef struct {		/* public to extension, cannot be changed */
 /*
  * Data structure for retrieving info about pixmap formats.
  */
-
 typedef struct {
     int depth;
     int bits_per_pixel;
     int scanline_pad;
 } XPixmapFormatValues;
-
 
 /*
  * Data structure for setting graphics context.
@@ -240,7 +238,6 @@ typedef struct {
  * Graphics context.  The contents of this structure are implementation
  * dependent.  A GC should be treated as opaque by application code.
  */
-
 typedef struct _XGC
 #ifdef XLIB_ILLEGAL_ACCESS
 {
@@ -365,9 +362,7 @@ typedef struct {
 
 /*
  * Data structure for host setting; getting routines.
- *
  */
-
 typedef struct {
 	int family;		/* for example FamilyInternet */
 	int length;		/* length of address, in bytes */
@@ -458,9 +453,7 @@ typedef struct {
     short angle1, angle2;
 } XArc;
 
-
 /* Data structure for XChangeKeyboardControl */
-
 typedef struct {
         int key_click_percent;
         int bell_percent;
@@ -473,9 +466,8 @@ typedef struct {
 } XKeyboardControl;
 
 /* Data structure for XGetKeyboardControl */
-
 typedef struct {
-        int key_click_percent;
+	int key_click_percent;
 	int bell_percent;
 	unsigned int bell_pitch, bell_duration;
 	unsigned long led_mask;
@@ -484,17 +476,15 @@ typedef struct {
 } XKeyboardState;
 
 /* Data structure for XGetMotionEvents.  */
-
 typedef struct {
-        Time time;
+	Time time;
 	short x, y;
 } XTimeCoord;
 
 /* Data structure for X{Set,Get}ModifierMapping */
-
 typedef struct {
- 	int max_keypermod;	/* The server's max # of keys per modifier */
- 	KeyCode *modifiermap;	/* An 8 by max_keypermod array of modifiers */
+	int max_keypermod;	/* The server's max # of keys per modifier */
+	KeyCode *modifiermap;	/* An 8 by max_keypermod array of modifiers */
 } XModifierKeymap;
 
 
@@ -1014,8 +1004,8 @@ typedef struct {
 } XCharStruct;
 
 /*
- * To allow arbitrary information with fonts, there are additional properties
- * returned.
+ * To allow arbitrary information with fonts, there are additional
+ * properties returned.
  */
 typedef struct {
     Atom name;
@@ -1063,13 +1053,14 @@ typedef struct {
     Font font;			/* font to print it in, None don't change */
 } XTextItem16;
 
-
-typedef union { Display *display;
-		GC gc;
-		Visual *visual;
-		Screen *screen;
-		ScreenFormat *pixmap_format;
-		XFontStruct *font; } XEDataObject;
+typedef union {
+    Display *display;
+    GC gc;
+    Visual *visual;
+    Screen *screen;
+    ScreenFormat *pixmap_format;
+    XFontStruct *font;
+} XEDataObject;
 
 typedef struct {
     XRectangle      max_ink_extent;
