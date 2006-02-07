@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/menus.c,v 1.22tsi Exp $ */
+/* $XFree86: xc/programs/twm/menus.c,v 1.23 2005/09/14 14:23:15 tsi Exp $ */
 /*****************************************************************************/
 /*
 
@@ -379,6 +379,7 @@ int exposure;
 {
     int y_offset;
     int text_y;
+    int x, y;
     GC gc;
 
 #ifdef DEBUG_MENUS
@@ -389,7 +390,8 @@ int exposure;
 
     if (mi->func != F_TITLE)
     {
-	int x, y;
+	if (mi->func == F_NOP && mi->strlen == 0)
+	    return;
 
 	if (mi->state)
 	{
@@ -422,7 +424,6 @@ int exposure;
 
 	    MyFont_DrawString(dpy, mr->w, &Scr->MenuFont, gc, 
 		    mi->x, text_y, mi->item, mi->strlen);
-
 	}
 
 	if (mi->func == F_MENU)
@@ -441,23 +442,19 @@ int exposure;
     }
     else
     {
-	int y;
-
 	XSetForeground(dpy, Scr->NormalGC, mi->back);
 
 	/* fill the rectangle with the title background color */
 	XFillRectangle(dpy, mr->w, Scr->NormalGC, 0, y_offset,
 	    mr->width, Scr->EntryHeight);
 
-	{
-	    XSetForeground(dpy, Scr->NormalGC, mi->fore);
-	    /* now draw the dividing lines */
-	    if (y_offset)
-	      XDrawLine (dpy, mr->w, Scr->NormalGC, 0, y_offset,
-			 mr->width, y_offset);
-	    y = ((mi->item_num+1) * Scr->EntryHeight)-1;
-	    XDrawLine(dpy, mr->w, Scr->NormalGC, 0, y, mr->width, y);
-	}
+	XSetForeground(dpy, Scr->NormalGC, mi->fore);
+	/* now draw the dividing lines */
+	if (y_offset)
+	    XDrawLine (dpy, mr->w, Scr->NormalGC, 0, y_offset,
+		       mr->width, y_offset);
+	y = ((mi->item_num+1) * Scr->EntryHeight)-1;
+	XDrawLine(dpy, mr->w, Scr->NormalGC, 0, y, mr->width, y);
 
 	MyFont_ChangeGC(mi->fore, mi->back, &Scr->MenuFont);
 	/* finally render the title */
