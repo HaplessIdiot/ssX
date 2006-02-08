@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/compsize.c,v 1.3 2001/03/21 16:04:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/compsize.c,v 1.1 2004/06/30 20:21:44 martin Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -35,6 +35,7 @@
 */
 
 #include <GL/gl.h>
+#include "impsize.h"
 
 GLint __glFogiv_size(GLenum pname)
 {
@@ -154,10 +155,12 @@ GLint __glDrawPixels_size(GLenum format, GLenum type, GLsizei w, GLsizei h)
     return (elements * esize * w * h);
 }
 
+#if 0
 GLint __glBitmap_size(GLsizei w, GLsizei h)
 {
     return __glDrawPixels_size(GL_COLOR_INDEX, GL_BITMAP, w, h);
 }
+#endif
 
 GLint __glTexGendv_size(GLenum e)
 {
@@ -227,6 +230,7 @@ GLint __glTexEnviv_size(GLenum e)
     return __glTexEnvfv_size(e);
 }
 
+#if 0
 GLint __glTexImage1D_size(GLenum format, GLenum type, GLsizei w)
 {
     GLint elements, esize;
@@ -458,6 +462,7 @@ GLint __glTexImage3D_size(GLenum format, GLenum type, GLsizei w, GLsizei h,
     }
     return (elements * esize * w * h * d);
 }
+#endif
 
 GLint __glLightfv_size(GLenum pname)
 {

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/glxswap.c,v 1.1 2004/06/30 20:21:44 martin Exp $ */
 /*
  * Copyright 2003 Red Hat Inc., Raleigh, North Carolina.
  *
@@ -36,9 +36,6 @@
 #include "dmxwindow.h"
 #include "glxserver.h"
 #include "glxswap.h"
-
-extern int __glXDoSwapBuffers(__GLXclientState *cl, XID drawId,
-			      GLXContextTag tag);
 
 typedef struct _SwapGroup *SwapGroupPtr;
 

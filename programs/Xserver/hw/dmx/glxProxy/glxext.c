@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/glxext.c,v 1.7 2001/03/21 16:29:36 dawes Exp $
+/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/glxext.c,v 1.1 2004/06/30 20:21:44 martin Exp $
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
 ** License. You may obtain a copy of the License at Silicon Graphics, Inc.,
@@ -31,6 +31,10 @@
 #include "glxvisuals.h"
 #include "micmap.h"
 #include "glxswap.h"
+
+extern void GlxSetVisualConfigs(int nconfigs, __GLXvisualConfig *configs,
+				void **privates);
+extern void GlxWrapInitVisuals(miInitVisualsProcPtr *initVisProc);
 
 /*
 ** Forward declarations.

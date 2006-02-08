@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/render2swap.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/render2swap.c,v 1.4 2005/01/30 17:48:44 tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -39,7 +39,7 @@
 #include "unpack.h"
 #include "g_disptab.h"
 
-GLint __glEvalComputeK(GLenum target)
+static GLint __glEvalComputeK(GLenum target)
 {
     switch (target) {
     case GL_MAP1_VERTEX_4:

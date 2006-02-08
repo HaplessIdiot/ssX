@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/glxsingle.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/glxsingle.c,v 1.3 2005/01/21 21:22:45 tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -41,6 +41,7 @@
 
 #define NEED_REPLIES
 #include "glxserver.h"
+#include "glxsingle.h"
 #include "glxext.h"
 #include "g_disptab.h"
 /* #include "g_disptab_EXT.h" */
@@ -81,9 +82,6 @@
 #endif
 
 #define X_GLXSingle 0   /* needed by GetReqExtra */
-
-extern Display *GetBackEndDisplay( __GLXclientState *cl, int s );
-extern int GetCurrentBackEndTag(__GLXclientState *cl, GLXContextTag tag, int s);
 
 static int swap_vec_element_size = 0;
 
