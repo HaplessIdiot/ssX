@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xft1/Imakefile,v 1.15tsi Exp $
+XCOMM $XFree86: xc/lib/Xft1/Imakefile,v 1.16 2005/10/14 15:15:59 tsi Exp $
 
 XCOMM Allow for builds against old installed bits
 #ifdef UseInstalled
@@ -99,15 +99,12 @@ FREETYPE2REQLIB = $(FREETYPE2LIB)
 REQUIREDLIBS=$(LDPRELIBS) $(XRENDERLIB) $(XLIB) $(FONTCONFIGLIB) $(EXPATLIB) $(FREETYPE2REQLIB)
 
 #if UseFreetype2
-FT_OLD = xftcache.c
 FT_HEADERS = XftFreetype.h
    FT_SRCS = xftfreetype.c xftglyphs.c xftrender.c xftdir.c
    FT_OBJS = xftfreetype.o xftglyphs.o xftrender.o xftdir.o
 #endif
 
 HEADERS = Xft.h $(FT_HEADERS)
-
-OLD = xftgram.c xftlex.c
 
    SRCS = xftcfg.c xftcolor.c xftcore.c xftdbg.c xftdpy.c \
           xftdraw.c xftextent.c xftfont.c xftfs.c\
