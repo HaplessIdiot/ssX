@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_driver.c,v 1.1 2005/11/10 15:37:03 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -41,36 +41,14 @@
 /* Driver specific headers */
 #include "ast.h"
 
-/* external reference fucntion */
-extern Bool ASTMapMem(ScrnInfoPtr pScrn);
-extern Bool ASTUnmapMem(ScrnInfoPtr pScrn);
-extern Bool ASTMapMMIO(ScrnInfoPtr pScrn);
-extern void ASTUnmapMMIO(ScrnInfoPtr pScrn);
-
-extern void vASTOpenKey(ScrnInfoPtr pScrn);
-extern Bool bASTRegInit(ScrnInfoPtr pScrn);
-extern ULONG GetVRAMInfo(ScrnInfoPtr pScrn);
-extern void vASTLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors, VisualPtr pVisual);
-extern void ASTDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags);
-extern void vSetStartAddressCRT1(ASTRecPtr pAST, ULONG base);
-extern Bool ASTSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode);
-
-extern Bool bInitCMDQInfo(ScrnInfoPtr pScrn, ASTRecPtr pAST);
-extern Bool bEnableCMDQ(ScrnInfoPtr pScrn, ASTRecPtr pAST);
-extern void vDisable2D(ScrnInfoPtr pScrn, ASTRecPtr pAST);
-
-extern Bool ASTAccelInit(ScreenPtr pScreen);
-
-extern Bool ASTCursorInit(ScreenPtr pScreen);
-
 /* Mandatory functions */
 static void ASTIdentify(int flags);
 const OptionInfoRec *ASTAvailableOptions(int chipid, int busid);
 static Bool ASTProbe(DriverPtr drv, int flags);
 static Bool ASTPreInit(ScrnInfoPtr pScrn, int flags);
 static Bool ASTScreenInit(int Index, ScreenPtr pScreen, int argc, char **argv);
-Bool ASTSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
-void ASTAdjustFrame(int scrnIndex, int x, int y, int flags);
+static Bool ASTSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
+static void ASTAdjustFrame(int scrnIndex, int x, int y, int flags);
 static Bool ASTEnterVT(int scrnIndex, int flags);
 static void ASTLeaveVT(int scrnIndex, int flags);
 static void ASTFreeScreen(int scrnIndex, int flags);
@@ -134,7 +112,7 @@ static const OptionInfoRec ASTOptions[] = {
    {-1,			NULL,		OPTV_NONE,	{0},	FALSE}
 };
 
-const char *vgahwSymbols[] = {
+static const char *vgahwSymbols[] = {
    "vgaHWFreeHWRec",
    "vgaHWGetHWRec",
    "vgaHWGetIOBase",
@@ -149,26 +127,26 @@ const char *vgahwSymbols[] = {
    NULL
 };
 
-const char *fbSymbols[] = {
+static const char *fbSymbols[] = {
    "fbPictureInit",
    "fbScreenInit",
    NULL
 };
 
-const char *vbeSymbols[] = {
+static const char *vbeSymbols[] = {
    "VBEInit",
    "vbeDoEDID",
    "vbeFree",
    NULL
 };
 
-const char *ddcSymbols[] = {
+static const char *ddcSymbols[] = {
    "xf86PrintEDID",
    "xf86SetDDCproperties",
    NULL
 };
 
-const char *xaaSymbols[] = {
+static const char *xaaSymbols[] = {
    "XAACreateInfoRec",
    "XAADestroyInfoRec",
    "XAAInit",
@@ -177,7 +155,7 @@ const char *xaaSymbols[] = {
    NULL
 };
 
-const char *ramdacSymbols[] = {
+static const char *ramdacSymbols[] = {
    "xf86CreateCursorInfoRec",
    "xf86DestroyCursorInfoRec",
    "xf86InitCursor",
@@ -543,7 +521,7 @@ ASTPreInit(ScrnInfoPtr pScrn, int flags)
    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "IO registers at addr 0x%lX\n",
 	      (unsigned long) pAST->MMIOPhysAddr);
 
-   pScrn->videoRam = GetVRAMInfo(pScrn) / 1024;
+   pScrn->videoRam = ASTGetVRAMInfo(pScrn) / 1024;
    from = X_DEFAULT;
 
 
@@ -816,7 +794,7 @@ ASTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 } /* ASTScreenInit */
 
 
-Bool
+static Bool
 ASTSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 {
    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
@@ -834,7 +812,7 @@ ASTSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
        xf86FreeOffscreenLinear(pAST->pCMDQPtr);		/* free CMDQ */
        pAST->pCMDQPtr = NULL;
    }
-   vDisable2D(pScrn, pAST);
+   vASTDisable2D(pScrn, pAST);
 #endif
 
    ASTRestore(pScrn);
@@ -843,7 +821,7 @@ ASTSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 
 }
 
-void
+static void
 ASTAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
@@ -853,7 +831,7 @@ ASTAdjustFrame(int scrnIndex, int x, int y, int flags)
    base = y * pAST->VideoModeInfo.ScreenWidth + x * ((pAST->VideoModeInfo.bitsPerPixel + 1) / 8);
    base = base >> 2;				/* DW unit */
 
-   vSetStartAddressCRT1(pAST, base);
+   vASTSetStartAddressCRT1(pAST, base);
 
 }
 
@@ -892,7 +870,7 @@ ASTLeaveVT(int scrnIndex, int flags)
        xf86FreeOffscreenLinear(pAST->pCMDQPtr);		/* free CMDQ */
        pAST->pCMDQPtr = NULL;
    }
-   vDisable2D(pScrn, pAST);
+   vASTDisable2D(pScrn, pAST);
 #endif
 
    ASTRestore(pScrn);
@@ -1013,7 +991,7 @@ ASTCloseScreen(int scrnIndex, ScreenPtr pScreen)
        xf86FreeOffscreenLinear(pAST->pCMDQPtr);		/* free CMDQ */
        pAST->pCMDQPtr = NULL;
    }
-   vDisable2D(pScrn, pAST);
+   vASTDisable2D(pScrn, pAST);
 #endif
 
       ASTRestore(pScrn);

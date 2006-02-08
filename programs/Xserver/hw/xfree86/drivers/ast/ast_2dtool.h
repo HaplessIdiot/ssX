@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_2dtool.h,v 1.1 2005/11/10 15:37:03 tsi Exp $ */
 
 #ifndef __AST_2DTOOL_H__
 #define __AST_2DTOOL_H__ 1
@@ -421,5 +421,11 @@ typedef struct {
 	addr->PKT_SC_dwHeader  = (ULONG) (PKT_NULL_CMD);			\
 	addr->PKT_SC_dwData[0] = (ULONG) 0;					\
       }
+
+extern Bool bASTEnable2D(ScrnInfoPtr pScrn, ASTRecPtr pAST);
+extern void vASTDisable2D(ScrnInfoPtr pScrn, ASTRecPtr pAST);
+extern void vASTWaitEngIdle(ScrnInfoPtr pScrn, ASTRecPtr pAST);
+extern UCHAR *pjASTRequestCMDQ(ASTRecPtr pAST, ULONG   ulDataLen);
+extern Bool bASTGetLineTerm(_LINEInfo *LineInfo, LINEPARAM *dsLineParam);
 
 #endif /* __AST_2DTOOL_H__ */
