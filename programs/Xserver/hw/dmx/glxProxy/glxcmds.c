@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/glxcmds.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/glxcmds.c,v 1.4 2005/01/21 21:22:45 tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -64,17 +64,10 @@
 
 #ifdef PANORAMIX
 #include "panoramiXsrv.h"
-extern XID *PanoramiXVisualTable;
 #endif
 
 extern __GLXFBConfig **__glXFBConfigs;
 extern int            __glXNumFBConfigs;
-
-extern __GLXFBConfig *glxLookupFBConfig( GLXFBConfigID id );
-extern __GLXFBConfig *glxLookupFBConfigByVID( VisualID vid );
-extern __GLXFBConfig *glxLookupBackEndFBConfig( GLXFBConfigID id, int screen );
-extern int glxIsExtensionSupported( char *ext );
-extern int __glXGetFBConfigsSGIX(__GLXclientState *cl, GLbyte *pc);
 
 #define BE_TO_CLIENT_ERROR(x) \
            ( (x) >= __glXerrorBase ? \

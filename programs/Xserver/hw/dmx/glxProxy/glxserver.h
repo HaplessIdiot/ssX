@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/glxserver.h,v 1.3 2001/03/21 16:29:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/glxserver.h,v 1.1 2004/06/30 20:21:44 martin Exp $ */
 #ifndef _GLX_server_h_
 #define _GLX_server_h_
 
@@ -221,8 +221,10 @@ extern RESTYPE __glXPbufferRes;
 
 extern char *__glXcombine_strings(const char *, const char *);
 
+#if 0
 extern void __glXDisp_DrawArrays(GLbyte*);
 extern void __glXDispSwap_DrawArrays(GLbyte*);
+#endif
 
 
 /*
@@ -314,7 +316,9 @@ extern int __glXConvolutionParameterfvSize(GLenum pname);
 extern int __glXColorTableParameterfvSize(GLenum pname);
 extern int __glXColorTableParameterivSize(GLenum pname);
 
+#if 0
 extern void __glXFreeGLXWindow(__glXWindow *pGlxWindow);
+#endif
 extern void __glXFreeGLXPbuffer(__glXPbuffer *pGlxPbuffer);
 
 extern int __glXVersionMajor;
@@ -323,5 +327,16 @@ extern int __glXVersionMinor;
 #define __GLX_IS_VERSION_SUPPORTED(major,minor) \
          ( (__glXVersionMajor > (major)) || \
            ((__glXVersionMajor == (major)) && (__glXVersionMinor >= (minor))) )
+
+extern Display *GetBackEndDisplay(__GLXclientState *cl, int s);
+extern int GetCurrentBackEndTag(__GLXclientState *cl, GLXContextTag tag, int s);
+extern int __glXDoSwapBuffers(__GLXclientState *cl, XID drawId,
+			      GLXContextTag tag);
+
+extern __GLXFBConfig *glxLookupFBConfig(GLXFBConfigID id);
+extern __GLXFBConfig *glxLookupFBConfigByVID( VisualID vid );
+extern __GLXFBConfig *glxLookupBackEndFBConfig( GLXFBConfigID id, int screen );
+extern int glxIsExtensionSupported( char *ext );
+extern int __glXGetFBConfigsSGIX(__GLXclientState *cl, GLbyte *pc);
 
 #endif /* !__GLX_server_h__ */

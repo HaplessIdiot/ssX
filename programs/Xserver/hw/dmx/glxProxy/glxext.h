@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/glxext.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/glxext.h,v 1.2 2004/08/04 16:33:34 tsi Exp $ */
 #ifndef _glxext_h_
 #define _glxext_h_
 
@@ -82,6 +82,12 @@ extern int __glXQueryMaxSwapBarriersSGIX(__GLXclientState *cl, GLbyte *pc);
 extern int __glXBindSwapBarrierSGIX(__GLXclientState *cl, GLbyte *pc);
 extern int __glXJoinSwapGroupSGIX(__GLXclientState *cl, GLbyte *pc);
 extern int __glXSwapGetFBConfigsSGIX(__GLXclientState *cl, GLbyte *pc);
+
+extern int __glXSwapMakeCurrentReadSGI(__GLXclientState *cl, GLbyte *pc);
+extern int __glXSwapCreateContextWithConfigSGIX(__GLXclientState *cl, GLbyte *pc);
+extern int __glXSwapQueryMaxSwapBarriersSGIX(__GLXclientState *cl, GLbyte *pc);
+extern int __glXSwapBindSwapBarrierSGIX(__GLXclientState *cl, GLbyte *pc);
+extern int __glXSwapJoinSwapGroupSGIX(__GLXclientState *cl, GLbyte *pc);
 
 extern void GlxExtensionInit(void);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/util/stormdwg.c,v 1.2 2004/11/28 03:37:42 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/util/stormdwg.c,v 1.3 2006/01/09 14:59:54 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -92,9 +92,7 @@ char *bitmod[] = {
 };
 
 int
-main(argc, argv)
-int argc;
-char *argv[];
+main(int argc, char *argv[])
 {
 	unsigned long val, tmp;
 

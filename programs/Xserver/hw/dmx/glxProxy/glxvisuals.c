@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/glxvisuals.c,v 1.2 2005/01/21 21:22:45 tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -37,6 +37,7 @@
 #include "dmx.h"
 #include "glxserver.h"
 #include "glxutil.h"
+#include "glxvisuals.h"
 #include "dmx_glxvisuals.h"
 
 static int                 numConfigs     = 0;

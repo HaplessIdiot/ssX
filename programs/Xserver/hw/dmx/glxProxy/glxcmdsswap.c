@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/glxcmdsswap.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/glxcmdsswap.c,v 1.3 2005/01/21 21:22:45 tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -46,8 +46,6 @@
 #include "glxext.h"
 #include "GL/glx_ansic.h"
 #include "glxvendor.h"
-
-extern int glxIsExtensionSupported( char *ext );
 
 /************************************************************************/
 
