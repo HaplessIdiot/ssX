@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.111tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.112 2005/10/14 15:16:47 tsi Exp $ */
 
 /*
  * Authors:
@@ -2544,7 +2544,7 @@ TDFXDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
   pTDFX->writeLong(pTDFX, DACMODE, dacmode);
 }
 
-void
+static void
 TDFXPutBits(I2CBusPtr b, int  scl, int  sda)
 {
   TDFXPtr pTDFX;
@@ -2558,7 +2558,7 @@ TDFXPutBits(I2CBusPtr b, int  scl, int  sda)
   pTDFX->writeLong(pTDFX, VIDSERIALPARALLELPORT, reg);
 }
 
-void
+static void
 TDFXGetBits(I2CBusPtr b, int *scl, int *sda)
 {
   TDFXPtr pTDFX;

@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_2dtool.c,v 1.1 2005/11/10 15:37:03 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -31,16 +31,9 @@
 #ifdef	Accel_2D
 
 /* Prototype type declaration */
-Bool bInitCMDQInfo(ScrnInfoPtr pScrn, ASTRecPtr pAST);
-Bool bEnableCMDQ(ScrnInfoPtr pScrn, ASTRecPtr pAST);
-Bool bEnable2D(ScrnInfoPtr pScrn, ASTRecPtr pAST);
-void vDisable2D(ScrnInfoPtr pScrn, ASTRecPtr pAST);
-void vWaitEngIdle(ScrnInfoPtr pScrn, ASTRecPtr pAST);
-UCHAR *pjRequestCMDQ(ASTRecPtr pAST, ULONG   ulDataLen);
-Bool bGetLineTerm(_LINEInfo *LineInfo, LINEPARAM *dsLineParam);
-LONG lGetDiaRg(LONG GFracX, LONG GFracY);
+static LONG lGetDiaRg(LONG GFracX, LONG GFracY);
 
-Bool
+static Bool
 bInitCMDQInfo(ScrnInfoPtr pScrn, ASTRecPtr pAST)
 {
 
@@ -79,12 +72,12 @@ bInitCMDQInfo(ScrnInfoPtr pScrn, ASTRecPtr pAST)
     return (TRUE);
 }
 
-Bool
+static Bool
 bEnableCMDQ(ScrnInfoPtr pScrn, ASTRecPtr pAST)
 {
     ULONG ulVMCmdQBasePort = 0;
 
-    vWaitEngIdle(pScrn, pAST);
+    vASTWaitEngIdle(pScrn, pAST);
 
     /* set DBG Select Info */
     if (pAST->DBGSelect)
@@ -146,19 +139,19 @@ bEnableCMDQ(ScrnInfoPtr pScrn, ASTRecPtr pAST)
 }
 
 Bool
-bEnable2D(ScrnInfoPtr pScrn, ASTRecPtr pAST)
+bASTEnable2D(ScrnInfoPtr pScrn, ASTRecPtr pAST)
 {
     SetIndexRegMask(CRTC_PORT, 0xA4, 0xFE, 0x01);		/* enable 2D */
 
     if (!bInitCMDQInfo(pScrn, pAST))
     {
-	vDisable2D(pScrn, pAST);
+	vASTDisable2D(pScrn, pAST);
 	return (FALSE);
     }
 
     if (!bEnableCMDQ(pScrn, pAST))
     {
-	vDisable2D(pScrn, pAST);
+	vASTDisable2D(pScrn, pAST);
 	return (FALSE);
     }
 
@@ -166,11 +159,11 @@ bEnable2D(ScrnInfoPtr pScrn, ASTRecPtr pAST)
 }
 
 void
-vDisable2D(ScrnInfoPtr pScrn, ASTRecPtr pAST)
+vASTDisable2D(ScrnInfoPtr pScrn, ASTRecPtr pAST)
 {
 
-    vWaitEngIdle(pScrn, pAST);
-    vWaitEngIdle(pScrn, pAST);
+    vASTWaitEngIdle(pScrn, pAST);
+    vASTWaitEngIdle(pScrn, pAST);
 
     SetIndexRegMask(CRTC_PORT, 0xA4, 0xFE, 0x00);
 
@@ -178,7 +171,7 @@ vDisable2D(ScrnInfoPtr pScrn, ASTRecPtr pAST)
 
 
 void
-vWaitEngIdle(ScrnInfoPtr pScrn, ASTRecPtr pAST)
+vASTWaitEngIdle(ScrnInfoPtr pScrn, ASTRecPtr pAST)
 {
     ULONG ulEngState, ulEngState2;
     UCHAR jReg;
@@ -213,7 +206,7 @@ Exit_vWaitEngIdle:
 }
 
 /* ULONG ulGetCMDQLength() */
-__inline ULONG ulGetCMDQLength(ASTRecPtr pAST, ULONG ulWritePointer, ULONG ulCMDQMask)
+static __inline ULONG ulGetCMDQLength(ASTRecPtr pAST, ULONG ulWritePointer, ULONG ulCMDQMask)
 {
     ULONG ulReadPointer, ulReadPointer2;
 
@@ -229,7 +222,7 @@ __inline ULONG ulGetCMDQLength(ASTRecPtr pAST, ULONG ulWritePointer, ULONG ulCMD
     return ((ulReadPointer << 3) - ulWritePointer - CMD_QUEUE_GUARD_BAND) & ulCMDQMask;
 }
 
-UCHAR *pjRequestCMDQ(
+UCHAR *pjASTRequestCMDQ(
 ASTRecPtr pAST, ULONG   ulDataLen)
 {
     UCHAR   *pjBuffer;
@@ -319,7 +312,7 @@ ASTRecPtr pAST, ULONG   ulDataLen)
 
 } /* end of pjRequestCmdQ() */
 
-Bool bGetLineTerm(_LINEInfo *LineInfo, LINEPARAM *dsLineParam)
+Bool bASTGetLineTerm(_LINEInfo *LineInfo, LINEPARAM *dsLineParam)
 {
     LONG GAbsX, GAbsY, GXInc, GYInc, GSlopeOne, GXMajor;
     Bool tmpFlipH=0, tmpFlipV=0, tmpFlipD=0;
@@ -522,7 +515,7 @@ Bool bGetLineTerm(_LINEInfo *LineInfo, LINEPARAM *dsLineParam)
 
 }
 
-LONG lGetDiaRg(LONG GFracX, LONG GFracY)
+static LONG lGetDiaRg(LONG GFracX, LONG GFracY)
 {
     LONG region;
 

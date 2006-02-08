@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_mode.h,v 1.1 2005/11/10 15:37:03 tsi Exp $ */
 
 #ifndef __AST_MODE_H__
 #define __AST_MODE_H__ 1
@@ -117,5 +117,8 @@ typedef struct {
     PVBIOS_ENHTABLE_STRUCT pEnhTableEntry;
 
 } VBIOS_MODE_INFO, *PVBIOS_MODE_INFO;
+
+extern Bool ASTSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode);
+extern Bool bGetAST1000VGAModeInfo(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo);
 
 #endif /* __AST_MODE_H__ */

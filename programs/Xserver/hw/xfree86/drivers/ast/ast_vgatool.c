@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_vgatool.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_vgatool.c,v 1.2 2006/02/06 17:28:03 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -30,16 +30,6 @@
 
 /* Driver specific headers */
 #include "ast.h"
-
-/* Prototype type declaration*/
-void vASTOpenKey(ScrnInfoPtr pScrn);
-Bool bASTRegInit(ScrnInfoPtr pScrn);
-ULONG GetVRAMInfo(ScrnInfoPtr pScrn);
-void vAST1000DisplayOn(ASTRecPtr pAST);
-void vAST1000DisplayOff(ASTRecPtr pAST);
-void vSetStartAddressCRT1(ASTRecPtr pAST, ULONG base);
-void vASTLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors, VisualPtr pVisual);
-void ASTDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags);
 
 void
 vASTOpenKey(ScrnInfoPtr pScrn)
@@ -63,7 +53,7 @@ bASTRegInit(ScrnInfoPtr pScrn)
 }
 
 ULONG
-GetVRAMInfo(ScrnInfoPtr pScrn)
+ASTGetVRAMInfo(ScrnInfoPtr pScrn)
 {
    ASTRecPtr pAST = ASTPTR(pScrn);
    UCHAR jReg;
@@ -90,7 +80,7 @@ GetVRAMInfo(ScrnInfoPtr pScrn)
 
 
 void
-vSetStartAddressCRT1(ASTRecPtr pAST, ULONG base)
+vASTSetStartAddressCRT1(ASTRecPtr pAST, ULONG base)
 {
     SetIndexReg(CRTC_PORT,0x0D, (UCHAR) (base & 0xFF));
     SetIndexReg(CRTC_PORT,0x0C, (UCHAR) ((base >> 8) & 0xFF));

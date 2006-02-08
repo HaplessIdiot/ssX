@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_mode.c,v 1.1 2005/11/10 15:37:03 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -28,7 +28,15 @@
 /* Driver specific headers */
 #include "ast.h"
 
-VBIOS_STDTABLE_STRUCT StdTable[] = {
+/* Prototype type declaration */
+static Bool bSetDACReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo);
+static void vSetCRTCReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo);
+static void vSetDCLKReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo);
+static void vSetOffsetReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo);
+static void vSetExtReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo);
+static void vSetStdReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo);
+
+static VBIOS_STDTABLE_STRUCT StdTable[] = {
     /* MD_2_3_400 */
     {
 	0x67,
@@ -101,7 +109,7 @@ VBIOS_STDTABLE_STRUCT StdTable[] = {
     },
 };
 
-VBIOS_ENHTABLE_STRUCT  Res640x480Table[] = {
+static VBIOS_ENHTABLE_STRUCT  Res640x480Table[] = {
     { 800, 640, 8, 96, 525, 480, 2, 2, VCLK28_322,	/* 60Hz */
       (SyncNN | HBorder | VBorder | Charx8Dot), 60, 1, 0x2E },
     { 832, 640, 16, 40, 520, 480, 1, 3, VCLK31_5,	/* 72Hz */
@@ -115,7 +123,7 @@ VBIOS_ENHTABLE_STRUCT  Res640x480Table[] = {
 };
 
 
-VBIOS_ENHTABLE_STRUCT  Res800x600Table[] = {
+static VBIOS_ENHTABLE_STRUCT  Res800x600Table[] = {
     {1024, 800, 24, 72, 625, 600, 1, 2, VCLK36,		/* 56Hz */
       (SyncPP | Charx8Dot), 56, 1, 0x30 },
     {1056, 800, 40, 128, 628, 600, 1, 4, VCLK40,	/* 60Hz */
@@ -131,7 +139,7 @@ VBIOS_ENHTABLE_STRUCT  Res800x600Table[] = {
 };
 
 
-VBIOS_ENHTABLE_STRUCT  Res1024x768Table[] = {
+static VBIOS_ENHTABLE_STRUCT  Res1024x768Table[] = {
     {1344, 1024, 24, 136, 806, 768, 3, 6, VCLK65,	/* 60Hz */
       (SyncNN | Charx8Dot), 60, 1, 0x31 },
     {1328, 1024, 24, 136, 806, 768, 3, 6, VCLK75,	/* 70Hz */
@@ -144,7 +152,7 @@ VBIOS_ENHTABLE_STRUCT  Res1024x768Table[] = {
       (SyncPP | Charx8Dot), 0xFF, 4, 0x31 },
 };
 
-VBIOS_ENHTABLE_STRUCT  Res1280x1024Table[] = {
+static VBIOS_ENHTABLE_STRUCT  Res1280x1024Table[] = {
     {1688, 1280, 48, 112, 1066, 1024, 1, 3, VCLK108,	/* 60Hz */
       (SyncPP | Charx8Dot), 60, 1, 0x32 },
     {1688, 1280, 16, 144, 1066, 1024, 1, 3, VCLK135,	/* 75Hz */
@@ -155,14 +163,14 @@ VBIOS_ENHTABLE_STRUCT  Res1280x1024Table[] = {
       (SyncPP | Charx8Dot), 0xFF, 3, 0x32 },
 };
 
-VBIOS_ENHTABLE_STRUCT  Res1600x1200Table[] = {
+static VBIOS_ENHTABLE_STRUCT  Res1600x1200Table[] = {
     {2160, 1600, 64, 192, 1250, 1200, 1, 3, VCLK162,	/* 60Hz */
       (SyncPP | Charx8Dot), 60, 1, 0x33 },
     {2160, 1600, 64, 192, 1250, 1200, 1, 3, VCLK162,	/* end */
       (SyncPP | Charx8Dot), 60, 1, 0x33 },
 };
 
-VBIOS_DCLK_INFO DCLKTable [] = {
+static VBIOS_DCLK_INFO DCLKTable [] = {
     {0x2C, 0xE7, 0x03},					/* 00: VCLK25_175	*/
     {0x95, 0x62, 0x03},					/* 01: VCLK28_322	*/
     {0x67, 0x63, 0x01},					/* 02: VCLK31_5         */
@@ -181,7 +189,8 @@ VBIOS_DCLK_INFO DCLKTable [] = {
     {0x6A, 0x22, 0x00},					/* 0F: VCLK162		*/
 };
 
-VBIOS_DAC_INFO DAC_TEXT[] = {
+#if 0
+static VBIOS_DAC_INFO DAC_TEXT[] = {
  { 0x00, 0x00, 0x00 },  { 0x00, 0x00, 0x2a },  { 0x00, 0x2a, 0x00 },  { 0x00, 0x2a, 0x2a },
  { 0x2a, 0x00, 0x00 },  { 0x2a, 0x00, 0x2a },  { 0x2a, 0x2a, 0x00 },  { 0x2a, 0x2a, 0x2a },
  { 0x00, 0x00, 0x15 },  { 0x00, 0x00, 0x3f },  { 0x00, 0x2a, 0x15 },  { 0x00, 0x2a, 0x3f },
@@ -200,7 +209,7 @@ VBIOS_DAC_INFO DAC_TEXT[] = {
  { 0x3f, 0x15, 0x15 },  { 0x3f, 0x15, 0x3f },  { 0x3f, 0x3f, 0x15 },  { 0x3f, 0x3f, 0x3f },
 };
 
-VBIOS_DAC_INFO DAC_EGA[] = {
+static VBIOS_DAC_INFO DAC_EGA[] = {
  { 0x00, 0x00, 0x00 },  { 0x00, 0x00, 0x2a },  { 0x00, 0x2a, 0x00 },  { 0x00, 0x2a, 0x2a },
  { 0x2a, 0x00, 0x00 },  { 0x2a, 0x00, 0x2a },  { 0x2a, 0x2a, 0x00 },  { 0x2a, 0x2a, 0x2a },
  { 0x00, 0x00, 0x15 },  { 0x00, 0x00, 0x3f },  { 0x00, 0x2a, 0x15 },  { 0x00, 0x2a, 0x3f },
@@ -218,8 +227,9 @@ VBIOS_DAC_INFO DAC_EGA[] = {
  { 0x15, 0x15, 0x15 },  { 0x15, 0x15, 0x3f },  { 0x15, 0x3f, 0x15 },  { 0x15, 0x3f, 0x3f },
  { 0x3f, 0x15, 0x15 },  { 0x3f, 0x15, 0x3f },  { 0x3f, 0x3f, 0x15 },  { 0x3f, 0x3f, 0x3f },
 };
+#endif
 
-VBIOS_DAC_INFO DAC_VGA[] = {
+static VBIOS_DAC_INFO DAC_VGA[] = {
  { 0x00, 0x00, 0x00 },  { 0x00, 0x00, 0x2a },  { 0x00, 0x2a, 0x00 },  { 0x00, 0x2a, 0x2a },
  { 0x2a, 0x00, 0x00 },  { 0x2a, 0x00, 0x2a },  { 0x2a, 0x15, 0x00 },  { 0x2a, 0x2a, 0x2a },
  { 0x15, 0x15, 0x15 },  { 0x15, 0x15, 0x3f },  { 0x15, 0x3f, 0x15 },  { 0x15, 0x3f, 0x3f },
@@ -286,27 +296,6 @@ VBIOS_DAC_INFO DAC_VGA[] = {
  { 0x00, 0x00, 0x00 },  { 0x00, 0x00, 0x00 },  { 0x00, 0x00, 0x00 },  { 0x00, 0x00, 0x00 },
 };
 
-/* extern. function */
-extern void vASTOpenKey(ScrnInfoPtr pScrn);
-extern Bool bASTRegInit(ScrnInfoPtr pScrn);
-extern void vAST1000DisplayOn(ASTRecPtr pAST);
-extern void vAST1000DisplayOff(ASTRecPtr pAST);
-
-extern Bool bEnable2D(ScrnInfoPtr pScrn, ASTRecPtr pAST);
-extern void vDisable2D(ScrnInfoPtr pScrn, ASTRecPtr pAST);
-
-extern Bool bInitHWC(ScrnInfoPtr pScrn, ASTRecPtr pAST);
-
-/* Prototype type declaration*/
-Bool ASTSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode);
-Bool bGetAST1000VGAModeInfo(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo);
-void vSetStdReg(ScrnInfoPtr pScrn,  DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo);
-void vSetCRTCReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo);
-void vSetOffsetReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo);
-void vSetDCLKReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo);
-void vSetExtReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo);
-Bool bSetDACReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo);
-
 Bool
 ASTSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
@@ -332,7 +321,7 @@ ASTSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
     /* post set mode */
 #ifdef	Accel_2D
    if (!pAST->noAccel) {
-       if (!bEnable2D(pScrn, pAST)) {
+       if (!bASTEnable2D(pScrn, pAST)) {
 	   xf86DrvMsg(pScrn->scrnIndex, X_ERROR,"Enable 2D failed\n");
 	   pAST->noAccel = TRUE;
        }
@@ -340,7 +329,7 @@ ASTSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
 #endif
 #ifdef	HWC
    if (!pAST->noHWC) {
-       if (!bInitHWC(pScrn, pAST)) {
+       if (!bASTInitHWC(pScrn, pAST)) {
 	   xf86DrvMsg(pScrn->scrnIndex, X_ERROR,"Init HWC failed\n");
 	   pAST->noHWC = TRUE;
        }
@@ -447,7 +436,7 @@ Bool bGetAST1000VGAModeInfo(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_
     return (TRUE);
 }
 
-void vSetStdReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo)
+static void vSetStdReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo)
 {
 
     PVBIOS_STDTABLE_STRUCT pStdModePtr;
@@ -503,7 +492,7 @@ void vSetStdReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAMod
 
 }
 
-void
+static void
 vSetCRTCReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo)
 {
     ASTRecPtr pAST;
@@ -578,7 +567,7 @@ vSetCRTCReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInf
 
 }
 
-void vSetOffsetReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo)
+static void vSetOffsetReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo)
 {
     ASTRecPtr pAST;
     USHORT usOffset;
@@ -592,7 +581,7 @@ void vSetOffsetReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGA
 
 }
 
-void vSetDCLKReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo)
+static void vSetDCLKReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo)
 {
     PVBIOS_ENHTABLE_STRUCT pEnhModePtr;
     PVBIOS_DCLK_INFO pDCLKPtr;
@@ -610,7 +599,7 @@ void vSetDCLKReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAMo
 }
 
 
-void vSetExtReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo)
+static void vSetExtReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo)
 {
 
     ASTRecPtr pAST;
@@ -649,7 +638,7 @@ void vSetExtReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAMod
 }
 
 
-Bool bSetDACReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo)
+static Bool bSetDACReg(ScrnInfoPtr pScrn, DisplayModePtr mode, PVBIOS_MODE_INFO pVGAModeInfo)
 {
     PVBIOS_DAC_INFO pDACPtr;
     ASTRecPtr pAST;

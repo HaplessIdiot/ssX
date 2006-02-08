@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast.h,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast.h,v 1.3 2006/02/06 17:28:03 tsi Exp $ */
 
 #ifndef __AST_H__
 #define __AST_H__ 1
@@ -173,5 +173,7 @@ typedef struct _ASTRec {
 #include "ast_vgatool.h"
 #include "ast_2dtool.h"
 #include "ast_cursor.h"
+#include "ast_tool.h"
+#include "ast_accel.h"
 
 #endif /* __AST_H__ */
