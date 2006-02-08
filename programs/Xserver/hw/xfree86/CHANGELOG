@@ -1,4 +1,6 @@
-XFree86 4.5.99.21 (xx February 2006)
+XFree86 4.5.99.22 (xx February 2006)
+
+XFree86 4.5.99.21 (8 February 2006)
  206. Fix warnings in dmx/glxProxy (David Dawes).
  205. Cleanup the ast driver's name space, and fix some warnings (David Dawes).
  204. Bump the minor rev of libXaw and libXt.
@@ -19934,7 +19936,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3655 2006/02/08 01:34:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3656 2006/02/08 02:34:11 dawes Exp $
 
 
 
