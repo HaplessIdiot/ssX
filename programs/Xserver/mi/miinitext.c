@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.75 2005/12/22 21:14:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.76 2006/01/29 00:52:45 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -375,45 +375,129 @@ InitVisualWrap()
 /* List of built-in (statically linked) extensions */
 static ExtensionModule staticExtensions[] = {
 #ifdef XTESTEXT1
-    { XTestExtension1Init, "XTEST1", &noTestExtensions, NULL, NULL },
+    {
+	XTestExtension1Init,
+	"XTEST1",
+	&noTestExtensions,
+	NULL,
+	NULL
+    },
 #endif
 #ifdef MITSHM
-    { ShmExtensionInit, SHMNAME, NULL, NULL, NULL },
+    {
+	ShmExtensionInit,
+	SHMNAME,
+	NULL,
+	NULL,
+	NULL
+    },
 #endif
 #ifdef XINPUT
-    { XInputExtensionInit, "XInputExtension", NULL, NULL, NULL },
+    {
+	XInputExtensionInit,
+	"XInputExtension",
+	NULL,
+	NULL,
+	NULL
+    },
 #endif
 #ifdef XTEST
-    { XTestExtensionInit, XTestExtensionName, &noTestExtensions, NULL, NULL },
+    {
+	XTestExtensionInit,
+	XTestExtensionName,
+	&noTestExtensions,
+	NULL,
+	NULL
+    },
 #endif
 #ifdef XKB
-    { XkbExtensionInit, XkbName, &noXkbExtension, NULL, NULL },
+    {
+	XkbExtensionInit,
+	XkbName,
+	&noXkbExtension,
+	NULL,
+	NULL
+    },
 #endif
 #ifdef LBX
-    { LbxExtensionInit, LBXNAME, NULL, NULL, NULL },
+    {
+	LbxExtensionInit,
+	LBXNAME,
+	NULL,
+	NULL,
+	NULL
+    },
 #endif
 #ifdef XAPPGROUP
-    { XagExtensionInit, XAGNAME, NULL, NULL, NULL },
+    {
+	XagExtensionInit,
+	XAGNAME,
+	NULL,
+	NULL,
+	NULL
+    },
 #endif
 #ifdef XCSECURITY
-    { SecurityExtensionInit, SECURITY_EXTENSION_NAME, NULL, NULL, NULL },
+    {
+	SecurityExtensionInit,
+	SECURITY_EXTENSION_NAME,
+	NULL,
+	NULL,
+	NULL
+    },
 #endif
 #ifdef XPRINT
-    { XpExtensionInit, XP_PRINTNAME, NULL, NULL, NULL },
+    {
+	XpExtensionInit,
+	XP_PRINTNAME,
+	NULL,
+	NULL,
+	NULL
+    },
 #endif
 #ifdef PANORAMIX
-    { PanoramiXExtensionInit, PANORAMIX_PROTOCOL_NAME, &noPanoramiXExtension, NULL, NULL },
+    {
+	PanoramiXExtensionInit,
+	PANORAMIX_PROTOCOL_NAME,
+	&noPanoramiXExtension,
+	NULL,
+	NULL
+    },
 #endif
 #ifdef XF86BIGFONT
-    { XFree86BigfontExtensionInit, XF86BIGFONTNAME, NULL, NULL, NULL },
+    {
+	XFree86BigfontExtensionInit,
+	XF86BIGFONTNAME,
+	NULL,
+	NULL,
+	NULL
+    },
 #endif
 #ifdef RENDER
-    { RenderExtensionInit, "RENDER", NULL, NULL, NULL },
+    {
+	RenderExtensionInit,
+	"RENDER",
+	NULL,
+	NULL,
+	NULL
+    },
 #endif
 #ifdef RANDR
-    { RRExtensionInit, "RANDR", NULL, NULL, NULL },
+    {
+	RRExtensionInit,
+	"RANDR",
+	NULL,
+	NULL,
+	NULL
+    },
 #endif
-    { NULL, NULL, NULL, NULL, NULL }
+    {
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL
+    }
 };
     
 /*ARGSUSED*/
