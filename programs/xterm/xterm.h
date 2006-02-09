@@ -1,6 +1,6 @@
 /* $XTermId: xterm.h,v 1.359 2006/01/04 01:08:09 tom Exp $ */
 
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.109 2005/11/03 13:17:28 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.110tsi Exp $ */
 
 /************************************************************
 
@@ -197,7 +197,7 @@ authorization.
 #define HAVE_UTMP_UT_XSTATUS 1
 #endif
 
-#if defined(XKB)
+#ifdef XKB
 #define HAVE_XKBBELL 1
 #endif
 
