@@ -11,7 +11,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Screen.c,v 3.14tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Screen.c,v 3.15tsi Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xproto.h>
@@ -229,7 +229,7 @@ xnestOpenScreen(int index, ScreenPtr pScreen, int argc, char *argv[])
 
     GlxWrapInitVisuals(&proc);
     /* GlxInitVisuals ignores the last three arguments. */
-    proc(&visuals, &depths, &numVisuals, &numDepths,
+    (*proc)(&visuals, &depths, &numVisuals, &numDepths,
 	 &rootDepth, &defaultVisual, 0, 0, 0);
   }
 #endif
