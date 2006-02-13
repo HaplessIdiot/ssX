@@ -1,4 +1,4 @@
-# $XTermId: termcap,v 1.67 2005/10/18 22:54:32 tom Exp $
+# $XTermId: termcap,v 1.70 2006/02/12 23:08:27 tom Exp $
 #
 #	This file is formatted using ncurses' "tic -CNx".
 #
@@ -84,8 +84,7 @@ vc|xterm-color|generic "ANSI" color xterm:\
 #
 # These aliases are for compatibility with the terminfo; termcap cannot provide
 # the extra features such as color initialization, but termcap applications
-# still want the names.  Note that AF/AB really should be Sf/Sb, but there are
-# applications which expect the former.  The terminfo contains both strings.
+# still want the names.
 x1|xterm-16color|xterm alias:\
 	:tc=xterm-new:
 

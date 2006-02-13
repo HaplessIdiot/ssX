@@ -1,9 +1,9 @@
-/* $XTermId: resize.c,v 1.96 2005/11/13 19:27:05 tom Exp $ */
+/* $XTermId: resize.c,v 1.98 2006/02/12 22:45:50 tom Exp $ */
 
 /* $XFree86: xc/programs/xterm/resize.c,v 3.60 2005/11/13 23:10:36 dickey Exp $ */
 
 /*
- * Copyright 2003-2004,2005 by Thomas E. Dickey
+ * Copyright 2003-2005,2006 by Thomas E. Dickey
  *
  *                         All Rights Reserved
  *

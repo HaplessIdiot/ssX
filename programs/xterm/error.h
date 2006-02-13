@@ -1,3 +1,6 @@
+/* $XTermId: error.h,v 1.17 2006/02/12 22:43:55 tom Exp $ */
+
+
 /* $XFree86: xc/programs/xterm/error.h,v 1.8 2002/12/27 21:05:22 dickey Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.

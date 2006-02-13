@@ -1,4 +1,4 @@
-/* $XTermId: misc.c,v 1.281 2006/01/02 13:50:14 tom Exp $ */
+/* $XTermId: misc.c,v 1.289 2006/02/12 22:43:55 tom Exp $ */
 
 /* $XFree86: xc/programs/xterm/misc.c,v 3.102 2006/01/04 02:10:25 dickey Exp $ */
 
@@ -200,7 +200,7 @@ xevents(void)
 		 )
 		 && event.xany.type == MotionNotify
 		 && event.xcrossing.window == XtWindow(term)) {
-	    SendMousePosition((Widget) term, &event);
+	    SendMousePosition(term, &event);
 	    continue;
 	}
 
@@ -507,6 +507,9 @@ Bell(int which GCC_UNUSED, int percent)
     long now_msecs;
 
     TRACE(("BELL %d\n", percent));
+    if (!XtIsRealized((Widget) term)) {
+	return;
+    }
 
     /* has enough time gone by that we are allowed to ring
        the bell again? */
@@ -1546,7 +1549,8 @@ ManipulateSelectionData(TScreen * screen, char *buf, int final)
 	char given;
 	char *result;
     } table[] = {
-	PDATA('p', PRIMARY),
+	PDATA('p', SELECT),
+	    PDATA('p', PRIMARY),
 	    PDATA('c', CLIPBOARD),
 	    PDATA('0', CUT_BUFFER0),
 	    PDATA('1', CUT_BUFFER1),
@@ -1600,10 +1604,10 @@ ManipulateSelectionData(TScreen * screen, char *buf, int final)
 	    unparseputc1(final, screen->respond);
 	} else {
 	    TRACE(("Setting selection with %s\n", buf));
-	    ClearSelectionBuffer();
+	    ClearSelectionBuffer(screen);
 	    while (*buf != '\0')
 		AppendToSelectionBuffer(screen, CharOf(*buf++));
-	    CompleteSelection(select_args, n);
+	    CompleteSelection(term, select_args, n);
 	}
 	free(select_args);
     }
@@ -2505,9 +2509,10 @@ AllocateTermColor(XtermWidget pTerm,
     if (XParseColor(screen->display, cmap, name, &def)
 	&& (XAllocColor(screen->display, cmap, &def)
 	    || find_closest_color(screen->display, cmap, &def))
-	&& (newName = XtMalloc(strlen(name) + 1)) != 0) {
+	&& (newName = x_strdup(name)) != 0) {
+	if (COLOR_DEFINED(pNew, ndx))
+	    free(pNew->names[ndx]);
 	SET_COLOR_VALUE(pNew, ndx, def.pixel);
-	strcpy(newName, name);
 	SET_COLOR_NAME(pNew, ndx, newName);
 	TRACE(("AllocateTermColor #%d: %s (pixel %#lx)\n", ndx, newName, def.pixel));
 	return (True);
@@ -3050,7 +3055,7 @@ sortedOptDescs(XrmOptionDescRec * descs, Cardinal res_count)
 {
     static XrmOptionDescRec *res_array = 0;
 
-#if OPT_TRACE || defined(NO_LEAKS)
+#ifdef NO_LEAKS
     if (descs == 0 && res_array != 0) {
 	free(res_array);
 	res_array = 0;
@@ -3079,7 +3084,7 @@ sortedOpts(OptionHelp * options, XrmOptionDescRec * descs, Cardinal numDescs)
 {
     static OptionHelp *opt_array = 0;
 
-#if OPT_TRACE || defined(NO_LEAKS)
+#ifdef NO_LEAKS
     if (descs == 0 && opt_array != 0) {
 	sortedOptDescs(descs, numDescs);
 	free(opt_array);
