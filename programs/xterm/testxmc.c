@@ -1,7 +1,7 @@
-/* $XTermId: testxmc.c,v 1.29 2005/07/23 15:07:47 tom Exp $ */
+/* $XTermId: testxmc.c,v 1.31 2006/02/01 01:07:55 tom Exp $ */
 
 /*
- * $XFree86: xc/programs/xterm/testxmc.c,v 3.12 2005/01/14 01:50:03 dickey Exp $
+ * $XFree86: xc/programs/xterm/testxmc.c,v 3.13 2005/08/05 01:25:40 dickey Exp $
  */
 
 /************************************************************
@@ -182,7 +182,7 @@ Resolve_XMC(TScreen * screen)
 
     /* Find the preceding cell.
      */
-    if (getXtermCell(screen, row, col) != XMC_GLITCH) {
+    if (XTERM_CELL(row, col) != XMC_GLITCH) {
 	if (col != 0) {
 	    col--;
 	} else if (!screen->xmc_inline && row != 0) {
@@ -203,7 +203,7 @@ Resolve_XMC(TScreen * screen)
 	    col = 0;
 	} else
 	    break;
-	if (getXtermCell(screen, row, col) == XMC_GLITCH)
+	if (XTERM_CELL(row, col) == XMC_GLITCH)
 	    break;
 	if ((SCRN_BUF_ATTRS(screen, row)[col] & my_attrs) != start) {
 	    SCRN_BUF_ATTRS(screen, row)[col] = start |

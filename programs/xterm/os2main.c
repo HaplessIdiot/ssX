@@ -1,4 +1,4 @@
-/* $XTermId: os2main.c,v 1.214 2006/01/02 20:52:47 tom Exp $ */
+/* $XTermId: os2main.c,v 1.217 2006/02/12 22:59:13 tom Exp $ */
 
 /* removed all foreign stuff to get the code more clear (hv)
  * and did some rewrite for the obscure OS/2 environment
@@ -911,6 +911,7 @@ int
 main(int argc, char **argv ENVP_ARG)
 {
     Widget form_top, menu_top;
+    Dimension menu_high;
     TScreen *screen;
     int mode;
     char *my_class = DEFCLASS;
@@ -1135,7 +1136,7 @@ main(int argc, char **argv ENVP_ARG)
 	break;
     }
 
-    SetupMenus(toplevel, &form_top, &menu_top);
+    SetupMenus(toplevel, &form_top, &menu_top, &menu_high);
 
     term = (XtermWidget) XtVaCreateManagedWidget("vt100", xtermWidgetClass,
 						 form_top,
@@ -1147,6 +1148,7 @@ main(int argc, char **argv ENVP_ARG)
 						 XtNright, XawChainRight,
 						 XtNtop, XawChainTop,
 						 XtNbottom, XawChainBottom,
+						 XtNmenuHeight, menu_high,
 #endif
 						 (XtPointer) 0);
 

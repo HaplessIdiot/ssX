@@ -1,8 +1,8 @@
-/* $XTermId: VTparse.h,v 1.37 2005/11/13 19:28:00 tom Exp $ */
+/* $XTermId: VTparse.h,v 1.39 2006/02/12 22:45:50 tom Exp $ */
 
 /* $XFree86: xc/programs/xterm/VTparse.h,v 3.22 2005/11/13 23:10:35 dickey Exp $ */
 /*
- * Copyright 2002-2004,2005 by Thomas E. Dickey
+ * Copyright 2002-2005,2006 by Thomas E. Dickey
  *
  *                         All Rights Reserved
  *

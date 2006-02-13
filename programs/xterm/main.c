@@ -1,4 +1,4 @@
-/* $XTermId: main.c,v 1.481 2006/01/02 20:51:52 tom Exp $ */
+/* $XTermId: main.c,v 1.487 2006/02/12 22:43:55 tom Exp $ */
 
 /*
  *				 W A R N I N G
@@ -87,7 +87,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.201tsi Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.200 2006/01/04 02:10:25 dickey Exp $ */
 
 /* main.c */
 
@@ -1582,6 +1582,7 @@ int
 main(int argc, char *argv[]ENVP_ARG)
 {
     Widget form_top, menu_top;
+    Dimension menu_high;
     TScreen *screen;
     int mode;
     char *my_class = DEFCLASS;
@@ -2103,7 +2104,7 @@ main(int argc, char *argv[]ENVP_ARG)
 	break;
     }
 
-    SetupMenus(toplevel, &form_top, &menu_top);
+    SetupMenus(toplevel, &form_top, &menu_top, &menu_high);
 
     term = (XtermWidget) XtVaCreateManagedWidget("vt100", xtermWidgetClass,
 						 form_top,
@@ -2115,6 +2116,7 @@ main(int argc, char *argv[]ENVP_ARG)
 						 XtNright, XawChainRight,
 						 XtNtop, XawChainTop,
 						 XtNbottom, XawChainBottom,
+						 XtNmenuHeight, menu_high,
 #endif
 						 (XtPointer) 0);
     decode_keyboard_type(&resource);
@@ -2811,8 +2813,7 @@ set_owner(char *device, uid_t uid, gid_t gid, mode_t mode)
 	    } else if (mode != (sb.st_mode & 0777U)) {
 		fprintf(stderr,
 			"Cannot chmod %s to %03o currently %03o: %s\n",
-			device, (unsigned) mode,
-			(unsigned) (sb.st_mode & 0777U),
+			device, (unsigned) mode, (sb.st_mode & 0777U),
 			strerror(why));
 		TRACE(("...stat uid=%d, gid=%d, mode=%#o\n",
 		       sb.st_uid, sb.st_gid, sb.st_mode));
@@ -3393,6 +3394,10 @@ spawn(void)
 #if defined(CRAY) && defined(TCSETCTTY)
 			    /* make /dev/tty work */
 			    ioctl(ttyfd, TCSETCTTY, 0);
+#endif
+#if defined(__GNU__) && defined(TIOCSCTTY)
+			    /* make /dev/tty work */
+			    ioctl(ttyfd, TIOCSCTTY, 0);
 #endif
 #ifdef USE_SYSV_PGRP
 			    /* We need to make sure that we are actually
@@ -4569,7 +4574,7 @@ Exit(int n)
 	set_owner(ptydev, 0, 0, 0666U);
 #endif
     }
-#if OPT_TRACE || defined(NO_LEAKS)
+#ifdef NO_LEAKS
     if (n == 0) {
 	TRACE(("Freeing memory leaks\n"));
 	if (term != 0) {
@@ -4580,6 +4585,7 @@ Exit(int n)
 		TRACE(("destroyed top-level widget\n"));
 	    }
 	    sortedOpts(0, 0, 0);
+	    noleaks_charproc();
 	    noleaks_ptydata();
 #if OPT_WIDE_CHARS
 	    noleaks_CharacterClass();

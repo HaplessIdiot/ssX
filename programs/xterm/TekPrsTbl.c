@@ -1,3 +1,5 @@
+/* $XTermId: TekPrsTbl.c,v 1.7 2006/02/12 22:43:56 tom Exp $ */
+
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *

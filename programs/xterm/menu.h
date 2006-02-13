@@ -1,8 +1,8 @@
-/* $XTermId: menu.h,v 1.95 2005/10/28 00:46:57 tom Exp $ */
+/* $XTermId: menu.h,v 1.101 2006/02/12 22:43:55 tom Exp $ */
 
 /*
 
-Copyright 1999-2004,2005 by Thomas E. Dickey
+Copyright 1999-2005,2006 by Thomas E. Dickey
 
                         All Rights Reserved
 
@@ -106,8 +106,10 @@ extern void HandleScoFunctionKeys  PROTO_XT_ACTIONS_ARGS;
 extern void HandleScrollKey        PROTO_XT_ACTIONS_ARGS;
 extern void HandleScrollTtyOutput  PROTO_XT_ACTIONS_ARGS;
 extern void HandleScrollbar        PROTO_XT_ACTIONS_ARGS;
+extern void HandleSecure           PROTO_XT_ACTIONS_ARGS;
 extern void HandleSendSignal       PROTO_XT_ACTIONS_ARGS;
 extern void HandleSetPopOnBell     PROTO_XT_ACTIONS_ARGS;
+extern void HandleSetSelect        PROTO_XT_ACTIONS_ARGS;
 extern void HandleSetTekText       PROTO_XT_ACTIONS_ARGS;
 extern void HandleSetTerminalType  PROTO_XT_ACTIONS_ARGS;
 extern void HandleSetVisualBell    PROTO_XT_ACTIONS_ARGS;
@@ -122,8 +124,7 @@ extern void HandleToolbar          PROTO_XT_ACTIONS_ARGS;
 extern void HandleUTF8Mode         PROTO_XT_ACTIONS_ARGS;
 extern void HandleVisibility       PROTO_XT_ACTIONS_ARGS;
 
-extern void DoSecureKeyboard (Time tp);
-extern void SetupMenus (Widget shell, Widget *forms, Widget *menus);
+extern void SetupMenus (Widget /*shell*/, Widget */*forms*/, Widget */*menus*/, Dimension * /*menu_high*/);
 
 #if OPT_TOOLBAR
 extern void ShowToolbar(Bool);
@@ -198,7 +199,7 @@ typedef enum {
     vtMenu_scrollkey,
     vtMenu_scrollttyoutput,
     vtMenu_allow132,
-    vtMenu_cursesemul,
+    vtMenu_selectToClipboard,
     vtMenu_visualbell,
     vtMenu_poponbell,
     vtMenu_marginbell,
@@ -359,6 +360,7 @@ extern void update_autolinefeed(void);
 extern void update_appcursor(void);
 extern void update_appkeypad(void);
 extern void update_scrollkey(void);
+extern void update_selectToClipboard(void);
 extern void update_scrollttyoutput(void);
 extern void update_allow132(void);
 extern void update_cursesemul(void);

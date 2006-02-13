@@ -1,4 +1,4 @@
-/* $XTermId: screen.c,v 1.186 2006/01/04 00:53:20 tom Exp $ */
+/* $XTermId: screen.c,v 1.190 2006/02/12 22:43:55 tom Exp $ */
 
 /*
  * Copyright 1999-2005,2006 by Thomas E. Dickey
@@ -916,10 +916,10 @@ ScrnRefresh(TScreen * screen,
 	   nrows, ncols,
 	   force ? " force" : ""));
 
-    if (screen->cursor_col >= leftcol
-	&& screen->cursor_col <= (leftcol + ncols - 1)
-	&& screen->cursor_row >= ROW2INX(screen, toprow)
-	&& screen->cursor_row <= ROW2INX(screen, maxrow))
+    if (screen->cursorp.col >= leftcol
+	&& screen->cursorp.col <= (leftcol + ncols - 1)
+	&& screen->cursorp.row >= ROW2INX(screen, toprow)
+	&& screen->cursorp.row <= ROW2INX(screen, maxrow))
 	screen->cursor_state = OFF;
 
     for (row = toprow; row <= maxrow; y += FontHeight(screen), row++) {
@@ -997,9 +997,9 @@ ScrnRefresh(TScreen * screen,
 	    }
 	});
 
-	if (row < screen->startHRow || row > screen->endHRow ||
-	    (row == screen->startHRow && maxcol < screen->startHCol) ||
-	    (row == screen->endHRow && col >= screen->endHCol)) {
+	if (row < screen->startH.row || row > screen->endH.row ||
+	    (row == screen->startH.row && maxcol < screen->startH.col) ||
+	    (row == screen->endH.row && col >= screen->endH.col)) {
 #if OPT_DEC_CHRSET
 	    /*
 	     * Temporarily change dimensions to double-sized characters so
@@ -1031,17 +1031,17 @@ ScrnRefresh(TScreen * screen,
 	    hilite = False;
 	} else {
 	    /* row intersects selection; split into pieces of single type */
-	    if (row == screen->startHRow && col < screen->startHCol) {
+	    if (row == screen->startH.row && col < screen->startH.col) {
 		recurse++;
-		ScrnRefresh(screen, row, col, 1, screen->startHCol - col,
+		ScrnRefresh(screen, row, col, 1, screen->startH.col - col,
 			    force);
-		col = screen->startHCol;
+		col = screen->startH.col;
 	    }
-	    if (row == screen->endHRow && maxcol >= screen->endHCol) {
+	    if (row == screen->endH.row && maxcol >= screen->endH.col) {
 		recurse++;
-		ScrnRefresh(screen, row, screen->endHCol, 1,
-			    maxcol - screen->endHCol + 1, force);
-		maxcol = screen->endHCol - 1;
+		ScrnRefresh(screen, row, screen->endH.col, 1,
+			    maxcol - screen->endH.col + 1, force);
+		maxcol = screen->endH.col - 1;
 	    }
 
 	    /*
@@ -1161,7 +1161,9 @@ ScrnRefresh(TScreen * screen,
 			int comb2 = comb2l[i] | (comb2h[i] << 8);
 
 			if (iswide(base))
-			    my_x = CurCursorX(screen, ROW2INX(screen, row), i - 1);
+			    my_x = CurCursorX(screen,
+					      ROW2INX(screen, row),
+					      i - 1);
 
 			if (comb1 != 0) {
 			    drawXtermText(screen, (test & DRAWX_MASK)
@@ -1305,8 +1307,8 @@ ScrnUpdate(TScreen * screen,
 	   Bool force)		/* ... leading/trailing spaces */
 {
     if (ScrnHaveSelection(screen)
-	&& (toprow <= screen->endHRow)
-	&& (toprow + nrows - 1 >= screen->startHRow)) {
+	&& (toprow <= screen->endH.row)
+	&& (toprow + nrows - 1 >= screen->startH.row)) {
 	ScrnDisownSelection(screen);
     }
     ScrnRefresh(screen, toprow, leftcol, nrows, ncols, force);
@@ -1455,7 +1457,7 @@ ScreenResize(TScreen * screen,
 	    if (screen->topline < -screen->savedlines)
 		screen->topline = -screen->savedlines;
 	    set_cur_row(screen, screen->cur_row + move_down_by);
-	    screen->cursor_row += move_down_by;
+	    screen->cursorp.row += move_down_by;
 	    ScrollSelection(screen, move_down_by, True);
 
 	    if (screen->alternate)

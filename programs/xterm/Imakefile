@@ -1,6 +1,7 @@
-XCOMM $XTermId: Imakefile,v 1.86 2005/11/13 17:51:32 tom Exp $
+XCOMM $XTermId: Imakefile,v 1.88 2006/02/12 22:43:56 tom Exp $
 XCOMM
 XCOMM                         Attention xterm porters
+XCOMM
 XCOMM
 XCOMM Xterm assumes that bcopy can handle overlapping arguments.  If your
 XCOMM bcopy (or memcpy) cannot, write a routine called bcopy and link it in

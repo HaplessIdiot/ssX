@@ -1,4 +1,4 @@
-/* $XTermId: main.h,v 1.28 2005/11/26 01:50:15 tom Exp $ */
+/* $XTermId: main.h,v 1.30 2006/02/12 22:43:55 tom Exp $ */
 
 /* $XFree86: xc/programs/xterm/main.h,v 3.13 2006/01/04 02:10:25 dickey Exp $ */
 

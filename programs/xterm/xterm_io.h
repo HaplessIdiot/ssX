@@ -1,9 +1,11 @@
+/* $XTermId: xterm_io.h,v 1.46 2006/02/12 16:39:51 tom Exp $ */
+
 /*
- * $XFree86: xc/programs/xterm/xterm_io.h,v 1.18 2005/07/07 00:46:15 dickey Exp $
+ * $XFree86: xc/programs/xterm/xterm_io.h,v 1.19 2005/11/13 23:10:37 dickey Exp $
  */
 
 /*
- * Copyright 2000-2004,2005 by Thomas E. Dickey
+ * Copyright 2000-2005,2006 by Thomas E. Dickey
  *
  *                         All Rights Reserved
  *

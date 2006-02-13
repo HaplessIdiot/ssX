@@ -1,4 +1,4 @@
-/* $XTermId: scrollbar.c,v 1.117 2006/01/04 00:48:48 tom Exp $ */
+/* $XTermId: scrollbar.c,v 1.119 2006/02/12 22:43:55 tom Exp $ */
 
 /* $XFree86: xc/programs/xterm/scrollbar.c,v 3.46 2006/01/04 02:10:27 dickey Exp $ */
 
