@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_KbdMap.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_KbdMap.c,v 1.2 2005/10/14 15:17:03 tsi Exp $ */
 
 /*
  * Slightly modified xf86KbdLnx.c which is
@@ -18,6 +18,14 @@
 #include "xf86_OSlib.h"
 #include "xf86Xinput.h"
 #include "xf86OSKbd.h"
+#include <linux/keyboard.h>
+#undef KEY_F13
+#undef KEY_F14
+#undef KEY_F15
+#undef KEY_F16
+#undef KEY_F17
+#undef KEY_XFER
+#undef KEY_UNKNOWN
 #include "atKeynames.h"
 
 #include "xf86Keymap.h"

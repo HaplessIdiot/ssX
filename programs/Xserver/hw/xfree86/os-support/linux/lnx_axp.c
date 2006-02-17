@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_axp.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_axp.c,v 1.6 2005/10/14 15:17:03 tsi Exp $ */
 
 #include <stdio.h>
 #include <X11/X.h>
@@ -6,6 +6,9 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86Axp.h"
+#include "lnx.h"
+#include "lnx_axp.h"
+#include <unistd.h>
 
 axpDevice lnxGetAXP(void);
 
@@ -113,26 +116,11 @@ lnxGetAXP(void)
 #include <asm/pci.h>
 #include <errno.h>
 
-/* glibc versions (single hose only) */
-extern void _outb(char val, unsigned long port);
-extern void _outw(short val, unsigned long port);
-extern void _outl(int val, unsigned long port);
-extern unsigned int _inb(unsigned long port);
-extern unsigned int _inw(unsigned long port);
-extern unsigned int _inl(unsigned long port);
-
-extern void _dense_outb(char, unsigned long);
-extern void _dense_outw(short, unsigned long);
-extern void _dense_outl(int, unsigned long);
-extern unsigned int _dense_inb(unsigned long);
-extern unsigned int _dense_inw(unsigned long);
-extern unsigned int _dense_inl(unsigned long);
-
-void (*_alpha_outb)(char, unsigned long) = _outb;
-void (*_alpha_outw)(short, unsigned long) = _outw;
-void (*_alpha_outl)(int, unsigned long) = _outl;
-unsigned int (*_alpha_inb)(unsigned long) = _inb;
-unsigned int (*_alpha_inw)(unsigned long) = _inw;
+void (*_alpha_outb)(unsigned char, unsigned long) = _outb;
+void (*_alpha_outw)(unsigned short, unsigned long) = _outw;
+void (*_alpha_outl)(unsigned int, unsigned long) = _outl;
+unsigned char (*_alpha_inb)(unsigned long) = _inb;
+unsigned short (*_alpha_inw)(unsigned long) = _inw;
 unsigned int (*_alpha_inl)(unsigned long) = _inl;
 
 static long _alpha_iobase_query(unsigned, int, int, int);
