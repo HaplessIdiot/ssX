@@ -1,4 +1,7 @@
 XFree86 4.5.99.22 (xx February 2006)
+ 208. atimisc changes:  another DSP calculation tweak;  work-around for
+      screen-to-screen copy corruption on second-generation integrated
+      controllers;  make memory range prints faster (Marc La France).
  207. Xterm patch #209 (Thomas Dickey).
 
 XFree86 4.5.99.21 (8 February 2006)
@@ -19937,7 +19940,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3657 2006/02/08 12:02:43 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3658 2006/02/13 01:14:56 dickey Exp $
 
 
 

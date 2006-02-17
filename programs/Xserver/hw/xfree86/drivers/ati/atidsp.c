@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.24tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.25tsi Exp $ */
 /*
  * Copyright 1997 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -279,8 +279,17 @@ ATIDSPCalculate
 
     if (dsp_on >= ((dsp_off / (tmp + 1)) * (tmp + 1)))
     {
-        dsp_on = dsp_off - ATIDivide(Multiplier, Divider, vshift, -1);
-        dsp_on = (dsp_on / (tmp + 1)) * (tmp + 1);
+        /*
+         * dsp_on represents somewhat of a minimum, so first try moving dsp_off
+         * forward.
+         */
+        dsp_off = ATIDivide(Multiplier * (pATI->DisplayFIFODepth - 1), Divider,
+            vshift, 1);
+        if (dsp_on >= ((dsp_off / (tmp + 1)) * (tmp + 1)))
+        {
+            dsp_on = dsp_off - ATIDivide(Multiplier, Divider, vshift, -1);
+            dsp_on = (dsp_on / (tmp + 1)) * (tmp + 1);
+        }
     }
 
     /* Last but not least:  dsp_xclks */
