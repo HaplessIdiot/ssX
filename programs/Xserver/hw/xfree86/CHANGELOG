@@ -1,4 +1,5 @@
 XFree86 4.5.99.22 (xx February 2006)
+ 215. Allow building with devel-specific system headers (David Dawes).
  214. Allow the privileged XFree86 server options to be used by a normal
       user when the server is not setuid/setgid (David Dawes).
  213. Add UseBuildTree config switch for development/debugging (David Dawes)
@@ -19948,7 +19949,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3664 2006/02/17 18:11:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3665 2006/02/17 18:17:53 dawes Exp $
 
 
 
