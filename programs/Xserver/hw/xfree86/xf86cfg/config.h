@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/config.h,v 1.22tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/config.h,v 1.23 2004/04/05 01:34:12 tsi Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -219,6 +219,8 @@ void ExpertConfigureStart(void);
 void ExpertConfigureEnd(void);
 void ExpertCloseAction(Widget, XEvent*, String*, Cardinal*);
 void ExpertCallback(Widget, XtPointer, XtPointer);
+int getArgc(void);
+const char *getArgv(int i);
 
 /*
  * Initialization

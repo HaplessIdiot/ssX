@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.64tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.65 2005/10/14 15:17:18 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -612,5 +612,7 @@ extern int Xasprintf(char **ret, const char *format, ...)
 #if defined(printf_is_xf86printf) && !defined(printf)
 #define printf xf86printf
 #endif
+extern int getArgc(void);
+extern const char *getArgv(int i);
 
 #endif /* OS_H */

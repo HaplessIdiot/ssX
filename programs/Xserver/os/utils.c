@@ -48,7 +48,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.105tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.106 2005/10/14 15:17:26 tsi Exp $ */
 /*
  * Copyright (c) 1996-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -2182,4 +2182,19 @@ CheckUserAuthorization(void)
 	pam_end(pamh, PAM_SUCCESS);
     }
 #endif
+}
+
+int
+getArgc()
+{
+    return argcGlobal;
+}
+
+const char *
+getArgv(int i)
+{
+    if (i >= 0 && i < argcGlobal)
+	return argvGlobal[i];
+    else
+	return NULL;
 }
