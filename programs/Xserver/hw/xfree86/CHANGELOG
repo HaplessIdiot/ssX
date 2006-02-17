@@ -1,4 +1,6 @@
 XFree86 4.5.99.22 (xx February 2006)
+ 214. Allow the privileged XFree86 server options to be used by a normal
+      user when the server is not setuid/setgid (David Dawes).
  213. Add UseBuildTree config switch for development/debugging (David Dawes)
  212. Add getArgc and getArgv functions (David Dawes).
  211. Some Linux/alpha and Linux/ppc build/warning fixes (David Dawes).
@@ -19946,7 +19948,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3663 2006/02/17 18:08:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3664 2006/02/17 18:11:48 dawes Exp $
 
 
 
