@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.229tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.230 2005/10/14 15:16:33 tsi Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -1385,7 +1385,7 @@ OsVendorInit()
 #ifdef O_NONBLOCK
   if (!beenHere) {
 #if !defined(__EMX__)
-    if (geteuid() == 0 && getuid() != geteuid())
+    if (PRIVS_ELEVATED)
 #endif
     {
       int status;
@@ -1571,7 +1571,7 @@ ddxProcessArgument(int argc, char **argv, int i)
   }
 
   /* First the options that are only allowed for root */
-  if (getuid() == 0)
+  if (!PRIVS_ELEVATED)
   {
     if (!strcmp(argv[i], "-modulepath")) {
       if (!argv[++i])
@@ -1597,7 +1597,7 @@ ddxProcessArgument(int argc, char **argv, int i)
   {
     if (!argv[++i])
       return 0;
-    if (getuid() != 0 && !xf86PathIsSafe(argv[i])) {
+    if (PRIVS_ELEVATED && !xf86PathIsSafe(argv[i])) {
       FatalError("\nInvalid argument for -xf86config\n"
 	  "\tFor non-root users, the file specified with -xf86config must be\n"
 	  "\ta relative path and must not contain any \"..\" elements.\n"
@@ -1913,7 +1913,7 @@ ddxProcessArgument(int argc, char **argv, int i)
   }
   if (!strcmp(argv[i], "-configure"))
   {
-    if (getuid() != 0) {
+    if (!PRIVS_ELEVATED) {
 	ErrorF("The '-configure' option can only be used by root.\n");
 	exit(1);
     }
@@ -1937,7 +1937,7 @@ ddxUseMsg()
   ErrorF("\n");
   ErrorF("\n");
   ErrorF("Device Dependent Usage\n");
-  if (getuid() == 0)
+  if (!PRIVS_ELEVATED)
   {
     ErrorF("-xf86config file       specify a configuration file\n");
     ErrorF("-modulepath paths      specify the module search path\n");

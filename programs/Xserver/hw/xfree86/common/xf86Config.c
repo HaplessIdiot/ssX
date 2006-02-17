@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.289tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.290 2005/10/14 15:16:32 tsi Exp $ */
 
 
 /*
@@ -6853,7 +6853,7 @@ xf86LoadConfigFile(const char *filename, Bool append)
 	xf86Info.config = pConfig = NULL;
     }
 
-    if (getuid() == 0)
+    if (!PRIVS_ELEVATED)
 	searchpath = ROOT_CONFIGPATH;
     else
 	searchpath = USER_CONFIGPATH;

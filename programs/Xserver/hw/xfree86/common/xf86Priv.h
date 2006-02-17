@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.88 2005/01/26 05:31:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.89 2005/01/28 02:11:19 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -104,6 +104,8 @@
 
 #include "xf86Privstr.h"
 #include "propertyst.h"
+
+#define PRIVS_ELEVATED (getuid() != geteuid() && getgid() != getegid())
 
 /*
  * Parameters set ONLY from the command line options
