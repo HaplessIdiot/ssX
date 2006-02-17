@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Imakefile,v 3.81 2005/02/28 05:09:33 dawes Exp $
+XCOMM $XFree86: xc/lib/Imakefile,v 3.82 2005/06/07 08:02:14 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -61,7 +61,7 @@ XAW6LIBDIR = Xaw6
 BERKDIR = Xbsd
 #endif
 
-#if BuildXKBfilelib
+#if BuildXKBfilelib || BuildServer
 XKBLIBDIR = xkbfile
 #endif
 
@@ -205,7 +205,7 @@ FONTCACHELIBDIR = Xfontcache
 FONTSUBDIR = font
 #endif
 
-#if BuildFontEncLib
+#if BuildFontEncLib || BuildServer
 FONTENCSUBDIR = fontenc
 #endif
 
@@ -217,7 +217,7 @@ XAULIBDIR = Xau
 XDMCPLIBDIR = Xdmcp
 #endif
 
-#if BuildX11Lib
+#if BuildX11Lib || BuildServer
 X11LIBDIR = X11
 #endif
 

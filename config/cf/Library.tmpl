@@ -14,7 +14,7 @@
  * Define LargePICTable YES if large (32-bit) PIC tables are needed.
  */
 
-XCOMM $XFree86: xc/config/cf/Library.tmpl,v 3.25 2004/04/05 02:33:07 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Library.tmpl,v 3.26 2006/01/09 14:56:12 dawes Exp $
 
 #ifndef DoNormalLib
 #define DoNormalLib NO
@@ -508,6 +508,10 @@ LibraryObjectRule()
 
 # if defined(LibBuild) && !LibBuild
 #  define LibCreate NO
+# endif
+
+# if defined(LibCreate) && !LibCreate && !defined(LibBuild)
+#  define LibBuild NO
 # endif
 
 # if !defined(LibCreate) || LibCreate

@@ -1,15 +1,15 @@
-XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.57tsi Exp $
-
+XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.58 2005/10/14 15:15:59 tsi Exp $
 
 
         HEADERS = Xlib.h Xresource.h Xutil.h cursorfont.h Xlibint.h \
 			Xcms.h Xlocale.h XKBlib.h
 
-#if BuildServersOnly && !XnestServer && !BuildGLXLibrary && !BuildClients && !XdmxServer
+#if (BuildServersOnly || !BuildX11Lib) && !XnestServer && !BuildGLXLibrary && !BuildClients && !XdmxServer
 all::
 
 depend::
 
+#define IncSubdir X11
 BuildIncludes($(HEADERS),IncSubdir,..)
 
 #else
