@@ -1,4 +1,6 @@
 XFree86 4.5.99.22 (xx February 2006)
+ 209. Change i740 to save & restore more of the mode on server entry
+      (Marc La France).
  208. atimisc changes:  another DSP calculation tweak;  work-around for
       screen-to-screen copy corruption on second-generation integrated
       controllers;  make memory range prints faster (Marc La France).
@@ -19940,7 +19942,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3658 2006/02/13 01:14:56 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3659 2006/02/17 17:01:38 tsi Exp $
 
 
 
