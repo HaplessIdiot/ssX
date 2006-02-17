@@ -87,7 +87,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.200 2006/01/04 02:10:25 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.203tsi Exp $ */
 
 /* main.c */
 
@@ -468,7 +468,7 @@ static SIGNAL_T reapchild(int n);
 static int spawn(void);
 static void remove_termcap_entry(char *buf, char *str);
 #ifdef USE_PTY_SEARCH
-static int pty_search(int *pty);
+int pty_search(int *pty);
 #endif
 #endif /* ! VMS */
 
@@ -2359,6 +2359,8 @@ main(int argc, char *argv[]ENVP_ARG)
 static int opened_tty = -1;
 #endif
 
+#undef USE_PTY_SEARCH	/* #define this as needed */
+
 /*
  * This function opens up a pty master and stuffs its value into pty.
  *
@@ -2383,11 +2385,13 @@ get_pty(int *pty, char *from GCC_UNUSED)
     result = openpty(pty, &opened_tty, ttydev, NULL, NULL);
 
 #elif defined(__QNXNTO__)
+#define USE_PTY_SEARCH 1
 
     result = pty_search(pty);
 
 #else
 #if defined(USE_ISPTS_FLAG)
+#define USE_PTY_SEARCH 1
 
     /*
        The order of this code is *important*.  On SYSV/386 we want to open
@@ -2429,6 +2433,7 @@ get_pty(int *pty, char *from GCC_UNUSED)
 	}
     }
 #elif defined(__MVS__)
+#define USE_PTY_SEARCH 1
     result = pty_search(pty);
 #else
 #if defined(USE_ISPTS_FLAG)
@@ -2489,6 +2494,7 @@ get_pty(int *pty, char *from GCC_UNUSED)
 	sprintf(ttydev, "/dev/ttyq%d", minor(fstat_buf.st_rdev));
     }
 #elif defined(__hpux)
+#define USE_PTY_SEARCH 1
 
     /*
      * Use the clone device if it works, otherwise use pty_search logic.
@@ -2508,6 +2514,7 @@ get_pty(int *pty, char *from GCC_UNUSED)
     }
 
 #else
+#define USE_PTY_SEARCH 1
 
     result = pty_search(pty);
 
@@ -2580,7 +2587,7 @@ get_pty(int *pty, char *from)
  * Returns 0 if found a pty, 1 if fails.
  */
 #ifdef USE_PTY_SEARCH
-static int
+int
 pty_search(int *pty)
 {
     static int devindex = 0, letter = 0;
@@ -2813,7 +2820,8 @@ set_owner(char *device, uid_t uid, gid_t gid, mode_t mode)
 	    } else if (mode != (sb.st_mode & 0777U)) {
 		fprintf(stderr,
 			"Cannot chmod %s to %03o currently %03o: %s\n",
-			device, (unsigned) mode, (sb.st_mode & 0777U),
+			device, (unsigned) mode,
+			(unsigned) (sb.st_mode & 0777U),
 			strerror(why));
 		TRACE(("...stat uid=%d, gid=%d, mode=%#o\n",
 		       sb.st_uid, sb.st_gid, sb.st_mode));
