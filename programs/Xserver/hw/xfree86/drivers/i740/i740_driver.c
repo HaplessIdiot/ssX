@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.57tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.58tsi Exp $ */
 
 /*
  * Authors:
@@ -917,7 +917,7 @@ DoSave(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, I740RegPtr i740Reg, Bool saveFonts)
    * in the generic VGA portion.
    */
   if (saveFonts)
-    vgaHWSave(pScrn, vgaReg, VGA_SR_MODE|VGA_SR_FONTS);
+    vgaHWSave(pScrn, vgaReg, VGA_SR_ALL);
   else
     vgaHWSave(pScrn, vgaReg, VGA_SR_MODE);
 
@@ -1029,7 +1029,7 @@ DoRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, I740RegPtr i740Reg,
    *		restore clock-select bits.
    */
   if (restoreFonts)
-    vgaHWRestore(pScrn, vgaReg, VGA_SR_FONTS|VGA_SR_MODE);
+    vgaHWRestore(pScrn, vgaReg, VGA_SR_ALL);
   else
     vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE);
 
