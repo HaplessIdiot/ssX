@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.286 2005/11/09 17:06:37 tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.287 2006/02/07 22:03:24 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -3849,6 +3849,9 @@ LIBPNGLIB = -L$(LIBPNGLIBDIR) -lpng
 #else
 # ifndef SharedLibxkbfile
 #  define SharedLibxkbfile	NO
+# endif
+# ifndef ExtraLibxkbfile
+#  define ExtraLibxkbfile	NO
 # endif
 # ifndef NormalLibxkbfile
 #  define NormalLibxkbfile	NO

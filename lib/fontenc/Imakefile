@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/fontenc/Imakefile,v 1.9tsi Exp $
+XCOMM $XFree86: xc/lib/fontenc/Imakefile,v 1.10 2005/10/14 15:16:07 tsi Exp $
 
    INCLUDES = -I$(FONTLIBSRC)/include -I$(FONTLIBSRC)/fontfile
 
@@ -20,6 +20,12 @@ FONTENCDEFS = -DFONTENC_NO_LIBFONT \
 #define SoRev SOFONTENCREV
 #define IncSubdir X11
 #define IncSubSubdir fonts
+
+#if !BuildFontEncLib
+#define LibBuild NO
+#else
+#define LibBuild YES
+#endif
 
 #ifdef SharedFontencReqs
  REQUIREDLIBS = SharedFontencReqs

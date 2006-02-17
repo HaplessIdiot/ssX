@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.500tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.501 2006/01/29 01:00:55 tsi Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -478,8 +478,10 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.500tsi Exp $
 
 # define DevelDRIDrivers	/**/
 
-# define DriDrivers		gamma i810 mga r128 radeon r200 \
+# ifndef DriDrivers
+#  define DriDrivers		gamma i810 mga r128 radeon r200 \
 				TdfxDriDriver DevelDRIDrivers
+# endif
 #endif /*AMD64Arcitecture*/
 
 /* SPARC and UltraSPARC drivers */
@@ -1740,6 +1742,13 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #endif
 #ifndef XprtServer
 # define XprtServer			YES
+#endif
+
+#ifndef BuildDmx
+#define BuildDmx		YES
+#endif
+#ifndef XdmxServer
+#define XdmxServer		BuildDmx && BuildServer
 #endif
 
 #ifndef ServerExtraDefines
