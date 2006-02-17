@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.172 2005/10/14 15:15:52 tsi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.173 2005/10/25 16:58:48 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -2068,9 +2068,16 @@ MODLDCOMBINEFLAGS = ModuleLdCombineFlags
  * EXTRA_INCLUDES contains project-specific includes set in project incfiles
  * INCLUDES contains client-specific includes set in Imakefile
  * LOCAL_LDFLAGS contains client-specific ld flags flags set in Imakefile
+ * DEVEL_INCLUDES contains sanitised copies of system headers.
  */
+
+#ifdef DevelIncludeDir
+DEVEL_INCLUDEDIR = DevelIncludeDir
+DEVEL_INCLUDES = -I$(DEVEL_INCLUDEDIR)
+#endif
+
    LOCAL_INCLUDES = -I.
-      ALLINCLUDES = $(LOCAL_INCLUDES) $(INCLUDES) $(EXTRA_INCLUDES) $(TOP_INCLUDES) $(INSTALLED_INCLUDES) $(STD_INCLUDES)
+      ALLINCLUDES = $(LOCAL_INCLUDES) $(INCLUDES) $(EXTRA_INCLUDES) $(TOP_INCLUDES) $(INSTALLED_INCLUDES) $(DEVEL_INCLUDES) $(STD_INCLUDES)
        ALLDEFINES = $(ALLINCLUDES) $(STD_DEFINES) $(PROTO_DEFINES) $(THREADS_DEFINES) $(MODULE_DEFINES) $(DEFINES) $(EXTRA_DEFINES)
            CFLAGS = $(CDEBUGFLAGS) $(CCOPTIONS) $(THREADS_CFLAGS) $(MODULE_CFLAGS) $(ALLDEFINES)
         LINTFLAGS = $(LINTOPTS) -DLINT $(ALLDEFINES) $(DEPEND_DEFINES)
