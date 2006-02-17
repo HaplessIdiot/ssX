@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.36 2002/10/19 20:04:21 herrb Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.37 2002/10/21 04:18:36 paulo Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -137,6 +137,9 @@ int textmode = False;
 int nomodules = False;
 #endif
 int  noverify = False;
+
+static int myArgc;
+static char **myArgv;
 
 xf86cfgComputer computer;
 xf86cfgDevice cpu_device;
@@ -288,6 +291,9 @@ main(int argc, char *argv[])
 	else
 	    Usage();
     }
+
+    myArgc = argc;
+    myArgv = argv;
 
 #ifdef HAS_NCURSES
     if (textmode) {
@@ -2278,3 +2284,19 @@ ScreenSetup(Bool check)
     UpdateScreenUI();
     AdjustScreenUI();
 }
+
+int
+getArgc()
+{
+    return myArgc;
+}
+
+const char *
+getArgv(int i)
+{
+    if (i >= 0 && i < myArgc)
+	return myArgv[i];
+    else
+	return NULL;
+}
+
