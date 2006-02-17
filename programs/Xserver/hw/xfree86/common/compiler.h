@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.111 2005/06/29 14:52:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.112 2006/01/09 14:59:52 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1768,7 +1768,7 @@ extern void xf86SlowBCopyToBus(unsigned char *, unsigned char *, int);
 #  define MMIO_MOVE32(base, offset, val) \
        xf86WriteMmio32Be(base, offset, (CARD32)(val))
 
-static __inline__ void ppc_flush_icache(char *addr)
+static __inline__ void ppc_flush_icache(void *addr)
 {
 	__asm__ volatile (
 		"dcbf 0,%0;" 

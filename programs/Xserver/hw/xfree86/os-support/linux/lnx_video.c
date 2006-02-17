@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.69 2005/10/14 15:17:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.70 2006/01/09 15:00:22 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -46,25 +46,6 @@
 #endif
 
 static Bool ExtendedEnabled = FALSE;
-
-#ifdef __ia64__
-
-#include "compiler.h"
-#include <sys/io.h>
-
-#elif !defined(__powerpc__) && \
-      !defined(__mc68000__) && \
-      !defined(__sparc__) && \
-      !defined(__mips__)
-
-/*
- * Due to conflicts with "compiler.h", don't rely on <sys/io.h> to declare
- * these.
- */
-extern int ioperm(unsigned long __from, unsigned long __num, int __turn_on);
-extern int iopl(int __level);
-
-#endif
 
 #ifdef __alpha__
 
@@ -219,7 +200,8 @@ mtrr_cull_wc_region(int screenNum, unsigned long base, unsigned long size,
 			xf86DrvMsg(screenNum, from,
 				   "Removed MMIO write-combining range "
 				   "(0x%lx,0x%lx)\n",
-				   gent.base, gent.size);
+				   (unsigned long)gent.base,
+				   (unsigned long)gent.size);
 			wcr->next = wcreturn;
 			wcreturn = wcr;
 		} else {
@@ -537,7 +519,7 @@ xf86DisableIO(void)
 	if (!ExtendedEnabled)
 		return;
 #if defined(__powerpc__)
-	munmap(ioBase, 0x20000);
+	munmap((void *)ioBase, 0x20000);
 	ioBase = NULL;
 #elif !defined(__mc68000__) && !defined(__sparc__) && !defined(__mips__) && !defined(__sh__) && !defined(__hppa__)
 	iopl(0);
@@ -758,7 +740,7 @@ unmapVidMemSparse(int ScreenNum, pointer Base, unsigned long Size)
 {
     unsigned long Offset = (unsigned long)Base - DENSE_BASE;
 #if 1
-    xf86Msg(X_INFO,"unmapVidMemSparse: unmapping Base 0x%lx Size 0x%lx\n",
+    xf86Msg(X_INFO,"unmapVidMemSparse: unmapping Base %p Size 0x%lx\n",
 	    Base, Size);
 #endif
     /* Unmap DENSE always. */
@@ -1008,7 +990,7 @@ mapVidMemJensen(int ScreenNum, unsigned long Base, unsigned long Size, int flags
   close(fd);
   if (base == MAP_FAILED) {
     FatalError("xf86MapVidMem: Could not mmap framebuffer"
-	       " (0x%08x,0x%x) (%s)\n", Base, Size,
+	       " (0x%08lx,0x%lx) (%s)\n", Base, Size,
 	       strerror(errno));
   }
   return base;
