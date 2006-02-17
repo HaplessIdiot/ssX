@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.287 2006/02/07 22:03:24 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.288 2006/02/17 18:01:14 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1543,6 +1543,9 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #endif
 #ifndef BuildModuleTop
 #define BuildModuleTop $(BUILDLIBTOP)/..
+#endif
+#ifndef UseBuildTree
+#define UseBuildTree	NO
 #endif
 #ifndef LibDir
 # ifdef ProjectRoot

@@ -1,4 +1,5 @@
 XFree86 4.5.99.22 (xx February 2006)
+ 213. Add UseBuildTree config switch for development/debugging (David Dawes)
  212. Add getArgc and getArgv functions (David Dawes).
  211. Some Linux/alpha and Linux/ppc build/warning fixes (David Dawes).
  210. Build/config fixes (David Dawes).
@@ -19945,7 +19946,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3662 2006/02/17 18:04:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3663 2006/02/17 18:08:21 dawes Exp $
 
 
 
