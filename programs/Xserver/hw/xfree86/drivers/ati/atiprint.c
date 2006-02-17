@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.34tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.35tsi Exp $ */
 /*
  * Copyright 1997 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -29,51 +29,75 @@
 #include "atiprint.h"
 #include "atiwonderio.h"
 
+static const char digits[] = "0123456789ABCDEF";
+
 /*
- * ATIPrintBIOS --
+ * ATIPrintMemory --
  *
- * Display various parts of the BIOS when the server is invoked with -verbose.
+ * Print to stderr a formatted dump of a memory region.
  */
 void
-ATIPrintBIOS
+ATIPrintMemory
 (
-    const CARD8        *BIOS,
-    const unsigned int Length   /* A multiple of 512 */
+    const CARD8        *pMemory,
+    const unsigned int Length,
+    const int          Verbosity
 )
 {
-    unsigned char *Char;
+    unsigned char *Char = NULL;
     unsigned int  Index;
     unsigned char Printable[17];
+    char          Buffer[128], *Message = NULL;
 
-    if (xf86GetVerbosity() <= 4)
-        return;
-
-    (void)memset(Printable, 0, SizeOf(Printable));
-    Char = NULL;
-
-    xf86ErrorFVerb(5, "\n BIOS image:");
-
-    for (Index = 0;  Index < Length;  Index++)
+    for (Index = 0;  Index <= (Length + (16U - 1U));  Index++)
     {
         if (!(Index & (4U - 1U)))
         {
             if (!(Index & (16U - 1U)))
             {
-                if (Printable[0])
-                    xf86ErrorFVerb(5, "  |%s|", Printable);
+                if (Char)
+                {
+                    *Message = 0;
+                    *Char = 0;
+                    xf86ErrorFVerb(Verbosity, "%s  |%s|\n", Buffer, Printable);
+                    if (Index >= Length)
+                        return;
+                }
+
                 Char = Printable;
-                xf86ErrorFVerb(5, "\n 0x%08X: ", Index);
+                Message = Buffer +
+                    snprintf(Buffer, SizeOf(Buffer), " 0x%08X: ", Index);
             }
-            xf86ErrorFVerb(5, " ");
+
+            *Message++ = ' ';
         }
-        xf86ErrorFVerb(5, "%02X", BIOS[Index]);
-        if (isprint(BIOS[Index]))
-            *Char++ = BIOS[Index];
+
+        *Message++ = digits[pMemory[Index] >> 4];
+        *Message++ = digits[pMemory[Index] & (16U - 1U)];
+        if (isprint(pMemory[Index]))
+            *Char++ = pMemory[Index];
         else
             *Char++ = '.';
     }
+}
 
-    xf86ErrorFVerb(5, "  |%s|\n", Printable);
+/*
+ * ATIPrintBIOS --
+ *
+ * Display the BIOS when the server is invoked with -verbose.
+ */
+void
+ATIPrintBIOS
+(
+    const CARD8        *BIOS,
+    const unsigned int Length
+)
+{
+    if (xf86GetVerbosity() <= 4)
+        return;
+
+    xf86ErrorFVerb(5, "\n BIOS image:\n");
+    ATIPrintMemory(BIOS, Length, 5);
 }
 
 /*

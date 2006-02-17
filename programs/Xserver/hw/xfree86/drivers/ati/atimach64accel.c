@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64accel.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64accel.c,v 1.9tsi Exp $ */
 /*
  * Copyright 2003 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -137,12 +137,11 @@ ATIMach64Sync
     if (pATI->Chip >= ATI_CHIP_264VTB)
     {
         /*
-         * Flush the read-back cache, otherwise the host might get stale data
-         * when reading through the aperture.
+         * Flush the read-back cache (by turning on INVALIDATE_RB_CACHE),
+         * otherwise the host might get stale data when reading through the
+         * aperture.
          */
-        CARD32 mem_buf_cntl = inr(MEM_BUF_CNTL);
-
-        outr(MEM_BUF_CNTL, mem_buf_cntl | INVALIDATE_RB_CACHE);
+        outr(MEM_BUF_CNTL, pATI->NewHW.mem_buf_cntl);
     }
 
     if (!pATI->OptionMMIOCache || !pATI->OptionTestMMIOCache)
@@ -336,6 +335,18 @@ ATIMach64SubsequentScreenToScreenCopy
     outf(SRC_WIDTH1, w);
     outf(DST_Y_X, SetWord(xDst, 1) | SetWord(yDst, 0));
     outf(DST_HEIGHT_WIDTH, SetWord(w, 1) | SetWord(h, 0));
+
+    /*
+     * On VTB's and later, the engine will randomly not wait for a copy
+     * operation to commit its results to video memory before starting the next
+     * one.  The probability of such occurrences increases with GUI_WB_FLUSH
+     * (or GUI_WB_FLUSH_P) setting, bitsPerPixel and/or CRTC clock.  This
+     * would point to some kind of video memory bandwidth problem were it noti
+     * for the fact that the problem occurs less often (but still occurs) when
+     * copying larger rectangles.
+     */
+    if ((pATI->Chip >= ATI_CHIP_264VTB) && !pATI->OptionDevel)
+        ATIMach64Sync(pScreenInfo);
 }
 
 /*

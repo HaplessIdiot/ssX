@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.57tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.58tsi Exp $ */
 /*
  * Copyright 1997 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -30,9 +30,8 @@
 #include "atimach64io.h"
 #include "atirgb514.h"
 
-#ifndef DPMS_SERVER
-# define DPMS_SERVER
-#endif
+#undef  DPMS_SERVER
+#define DPMS_SERVER 1
 #include <X11/extensions/dpms.h>
 
 /*
@@ -120,6 +119,7 @@ ATIMach64PreInit
 
     if (pATI->Chip >= ATI_CHIP_264VTB)
     {
+        pATIHW->mem_buf_cntl = inr(MEM_BUF_CNTL) | INVALIDATE_RB_CACHE;
         pATIHW->mem_cntl = (pATI->LockData.mem_cntl &
             ~(CTL_MEM_LOWER_APER_ENDIAN | CTL_MEM_UPPER_APER_ENDIAN)) |
             SetBits(CTL_MEM_APER_BYTE_ENDIAN, CTL_MEM_LOWER_APER_ENDIAN);
@@ -346,6 +346,7 @@ ATIMach64Save
 
     if (pATI->Chip >= ATI_CHIP_264VTB)
     {
+        pATIHW->mem_buf_cntl = inr(MEM_BUF_CNTL) | INVALIDATE_RB_CACHE;
         pATIHW->mem_cntl = inr(MEM_CNTL);
         pATIHW->mpp_config = inr(MPP_CONFIG);
         pATIHW->mpp_strobe_seq = inr(MPP_STROBE_SEQ);
@@ -959,6 +960,7 @@ ATIMach64Set
 
         if (pATI->Chip >= ATI_CHIP_264VTB)
         {
+            outr(MEM_BUF_CNTL, pATIHW->mem_buf_cntl);
             outr(MEM_CNTL, pATIHW->mem_cntl);
             outr(MPP_CONFIG, pATIHW->mpp_config);
             outr(MPP_STROBE_SEQ, pATIHW->mpp_strobe_seq);

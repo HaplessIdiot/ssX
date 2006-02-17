@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.h,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.h,v 1.13tsi Exp $ */
 /*
  * Copyright 1997 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -29,6 +29,9 @@
 
 #include "xf86str.h"
 
+extern void ATIPrintMemory    FunctionPrototype((const CARD8 *,
+                                                 const unsigned int,
+                                                 const int));
 extern void ATIPrintBIOS      FunctionPrototype((const CARD8 *,
                                                  const unsigned int));
 extern void ATIPrintRegisters FunctionPrototype((ATIPtr));
