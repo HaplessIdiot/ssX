@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.20tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.21 2005/04/30 17:04:00 tsi Exp $ */
 /*
  * Copyright (C) 2001-2005 The XFree86 Project, Inc.
  * All rights reserved.
@@ -48,6 +48,7 @@
 
 #include "xf86.h"
 #include "xf86Priv.h"
+#define NEED_OS_RAC_PROTOS
 #include "xf86_OSlib.h"
 #include "Pci.h"
 #include "xf86sbusBus.h"

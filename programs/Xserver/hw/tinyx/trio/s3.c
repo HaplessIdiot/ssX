@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/trio/s3.c,v 1.6 2000/09/03 05:11:20 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/trio/s3.c,v 1.1 2004/06/02 22:43:03 dawes Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -408,7 +408,7 @@ s3CardInit (KdCardInfo *card)
     
     card->driver = s3c;
     
-    ErrorF ("S3 at 0x%lx\n", s3Address);
+    ErrorF ("S3 at 0x%lx\n", (unsigned long)s3Address);
     registers = KdMapDevice (s3Address + REGISTERS_OFFSET, 
 			     sizeof (S3) + PACKED_OFFSET);
     if (!registers)

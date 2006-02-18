@@ -20,7 +20,7 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/savage/s3gc.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/savage/s3gc.c,v 1.2 2005/10/14 15:16:29 tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -176,7 +176,7 @@ s3MatchCommon (DrawablePtr pDraw, GCPtr pGC, FbGCPrivPtr fbPriv)
 }
 
 void
-s3ValidateGC (GCPtr pGC, Mask changes, DrawablePtr pDrawable)
+s3ValidateGC (GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
 {
     int		new_type;	/* drawable type has changed */
     int		new_origin;

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/tinyx/igs/igsdraw.c,v 1.1tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/tinyx/igs/igsdraw.c,v 1.2 2005/10/14 15:16:28 tsi Exp $
  *
  * Copyright © 2000 Keith Packard
  *
@@ -1348,7 +1348,7 @@ static const GCOps	igsOps = {
 };
 
 static void
-igsValidateGC (GCPtr pGC, Mask changes, DrawablePtr pDrawable)
+igsValidateGC (GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
 {
     fbValidateGC (pGC, changes, pDrawable);
     

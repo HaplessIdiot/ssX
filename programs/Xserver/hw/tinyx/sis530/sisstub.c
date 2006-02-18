@@ -20,7 +20,7 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/sis530/sisstub.c,v 1.5 2001/10/12 06:33:12 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/sis530/sisstub.c,v 1.1 2004/06/02 22:43:02 dawes Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -83,7 +83,8 @@ InitCard (char *name)
 
     for (i = 0; i < numSisCards; i++)
 	if (LinuxFindPci (0x1039, sisCards[i], 0, &attr))
-	    KdCardInfoAdd (&sisFuncs, &attr, (void *) sisCards[i]);
+	    KdCardInfoAdd (&sisFuncs, &attr,
+			   (void *)(unsigned long) sisCards[i]);
 }
 
 void

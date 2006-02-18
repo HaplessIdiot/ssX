@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.255 2005/08/28 20:04:52 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.256 2005/10/11 14:57:57 alanh Exp $ */
 
 /*
  *
@@ -658,6 +658,10 @@ LOOKUP xfree86LookupTab[] = {
 
 #if defined(__sparc__) && !defined(__OpenBSD__)
     /* xf86sbusBus.c */
+    SYMFUNC(xf86ParseSbusBusString)
+    SYMFUNC(xf86CompareSbusBusString)
+    SYMFUNC(xf86CheckSbusSlot)
+    SYMFUNC(xf86ClaimSbusSlot)
     SYMFUNC(xf86MatchSbusInstances)
     SYMFUNC(xf86GetSbusInfoForEntity)
     SYMFUNC(xf86GetEntityForSbusInfo)

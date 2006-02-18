@@ -20,7 +20,7 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/savage/s3draw.h,v 1.5 2000/08/09 17:52:42 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/savage/s3draw.h,v 1.1 2004/06/02 22:43:02 dawes Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -498,7 +498,7 @@ void
 s3FillBoxSolid (DrawablePtr pDrawable, int nBox, BoxPtr pBox, 
 		unsigned long pixel, int alu, unsigned long planemask);
 
-void	s3ValidateGC (GCPtr pGC, Mask changes, DrawablePtr pDrawable);
+void	s3ValidateGC (GCPtr pGC, unsigned long changes, DrawablePtr pDrawable);
 
 void
 s3CheckGCFill (GCPtr pGC);
