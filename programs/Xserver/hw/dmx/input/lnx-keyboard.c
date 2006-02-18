@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/input/lnx-keyboard.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/input/lnx-keyboard.c,v 1.2 2005/10/14 15:16:26 tsi Exp $ */
 /* Portions of this file were derived from the following files:
  *
  **********************************************************************
@@ -159,9 +159,16 @@
 #include <sys/vt.h>
 #include <sys/kd.h>
 #include <termios.h>
+#include <linux/keyboard.h>
+#undef KEY_F13
+#undef KEY_F14
+#undef KEY_F15
+#undef KEY_F16
+#undef KEY_F17
+#undef KEY_XFER
+#undef KEY_UNKNOWN
 #include "atKeynames.h"
 #include "xf86Keymap.h"
-#include <linux/keyboard.h>
 
 #define NUM_AT2LNX (sizeof(at2lnx) / sizeof(at2lnx[0]))
 #define NUM_STATE_ENTRIES (256/32)

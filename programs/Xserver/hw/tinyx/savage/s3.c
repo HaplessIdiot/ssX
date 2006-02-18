@@ -20,7 +20,7 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/savage/s3.c,v 1.8 2004/04/14 11:23:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/savage/s3.c,v 1.1 2004/06/02 22:43:02 dawes Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -150,10 +150,10 @@ s3CardInit (KdCardInfo *card)
 
 	wakeup = (volatile CARD32 *) (registers + 0x8510);
 	ErrorF ("Wakeup S3 chip at %p\n", (void *)wakeup);
-	ErrorF ("Wakeup was 0x%lx\n", *wakeup);
+	ErrorF ("Wakeup was 0x%lx\n", (unsigned long)*wakeup);
 	/* wakeup the chip */
 	*(volatile CARD32 *) (registers + 0x8510) = 1;
-	ErrorF ("Wakeup is 0x%lx\n", *wakeup);
+	ErrorF ("Wakeup is 0x%lx\n", (unsigned long)*wakeup);
     }
     s3Set (s3vga, s3_io_addr_select, 1);
     s3Set (s3vga, s3_enable_ram, 1);
@@ -187,7 +187,8 @@ s3CardInit (KdCardInfo *card)
     
     if (!s3c->memory)
     {
-	ErrorF ("Can't detect s3 frame buffer at 0x%lx\n", s3FrameBuffer);
+	ErrorF ("Can't detect s3 frame buffer at 0x%lx\n",
+		(unsigned long)s3FrameBuffer);
 	goto bail3;
     }
     

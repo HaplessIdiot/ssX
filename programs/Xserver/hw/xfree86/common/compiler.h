@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.112 2006/01/09 14:59:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.113 2006/02/17 18:04:38 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -170,6 +170,38 @@ extern void stw_brx(unsigned short, volatile unsigned char *, int);
 extern unsigned long ldl_brx(volatile unsigned char *, int);
 extern unsigned short ldw_brx(volatile unsigned char *, int);
 
+#  if (defined(linux) || defined(Lynx) || defined(sun) || defined(__OpenBSD__) || defined(__FreeBSD__)) && defined(__sparc__)
+unsigned char xf86ReadMmio8(__volatile__ void *base,
+			    const unsigned long offset);
+unsigned short xf86ReadMmio16Be(__volatile__ void *base,
+				const unsigned long offset);
+unsigned short xf86ReadMmio16Le(__volatile__ void *base,
+				const unsigned long offset);
+unsigned int xf86ReadMmio32Be(__volatile__ void *base,
+			      const unsigned long offset);
+unsigned int xf86ReadMmio32Le(__volatile__ void *base,
+			      const unsigned long offset);
+void xf86WriteMmio8(__volatile__ void *base, const unsigned long offset,
+		   const unsigned int val);
+void xf86WriteMmio16Be(__volatile__ void *base, const unsigned long offset,
+		       const unsigned int val);
+void xf86WriteMmio16Le(__volatile__ void *base, const unsigned long offset,
+		       const unsigned int val);
+void xf86WriteMmio32Be(__volatile__ void *base, const unsigned long offset,
+		       const unsigned int val);
+void xf86WriteMmio32Le(__volatile__ void *base, const unsigned long offset,
+		       const unsigned int val);
+void xf86WriteMmio8NB(__volatile__ void *base, const unsigned long offset,
+		      const unsigned int val);
+void xf86WriteMmio16BeNB(__volatile__ void *base, const unsigned long offset,
+			 const unsigned int val);
+void xf86WriteMmio16LeNB(__volatile__ void *base, const unsigned long offset,
+			 const unsigned int val);
+void xf86WriteMmio32BeNB(__volatile__ void *base, const unsigned long offset,
+			 const unsigned int val);
+void xf86WriteMmio32LeNB(__volatile__ void *base, const unsigned long offset,
+			 const unsigned int val);
+#  endif /* sparc */
 # endif
 
 # ifndef NO_INLINE

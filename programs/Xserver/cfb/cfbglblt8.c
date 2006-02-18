@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbglblt8.c,v 3.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbglblt8.c,v 3.10 2005/10/14 15:16:19 tsi Exp $ */
 /*
 
 Copyright 1989, 1998  The Open Group
@@ -116,7 +116,9 @@ static void cfbPolyGlyphBlt8Clipped(
  *  They are only provided on some architecures.
  */
 #ifdef USE_STIPPLE_CODE
-extern void		cfbStippleStack (), cfbStippleStackTE ();
+extern void cfbStippleStack(CfbBits *, glyphPointer, CfbBits, int, int, int);
+extern void cfbStippleStackTE(CfbBits *, glyphPointer, CfbBits, int, int, int);
+typedef void (*stippleProcPtr)(CfbBits *, glyphPointer, CfbBits, int, int, int);
 #endif
 
 void
@@ -151,7 +153,7 @@ cfbPolyGlyphBlt8(DrawablePtr pDrawable, GCPtr pGC, int x, int y,
 #endif
 #ifndef STIPPLE
 #ifdef USE_STIPPLE_CODE
-    void		(*stipple)();
+    stippleProcPtr	stipple;
 
     stipple = cfbStippleStack;
     if (FONTCONSTMETRICS(pfont))

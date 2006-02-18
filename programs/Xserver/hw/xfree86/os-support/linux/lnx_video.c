@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.70 2006/01/09 15:00:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.71 2006/02/17 18:04:38 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -209,7 +209,7 @@ mtrr_cull_wc_region(int screenNum, unsigned long base, unsigned long size,
 			xf86DrvMsgVerb(screenNum, X_WARNING, 0,
 				   "Failed to remove MMIO "
 				   "write-combining range (0x%lx,0x%lx)\n",
-				   gent.base, gent.size);
+				   gent.base, (unsigned long)gent.size);
 		}
 	}
 	return wcreturn;

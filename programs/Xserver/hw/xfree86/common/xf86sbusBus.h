@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.h,v 3.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.h,v 3.7 2005/07/19 15:02:50 tsi Exp $ */
 
 #ifndef _XF86_SBUSBUS_H
 #define _XF86_SBUSBUS_H
@@ -74,6 +74,11 @@ extern struct sbus_devtable {
 void xf86SbusProbe(void);
 extern sbusDevicePtr *xf86SbusInfo;
 
+Bool xf86ParseSbusBusString(const char *busID, int *fbNum);
+Bool xf86CompareSbusBusString(const char *busID, int fbNum);
+Bool xf86CheckSbusSlot(int fbNum);
+int xf86ClaimSbusSlot(sbusDevicePtr psdp, DriverPtr drvp, GDevPtr dev,
+		      Bool active);
 int xf86MatchSbusInstances(const char *driverName, int sbusDevId, 
 			   GDevPtr *devList, int numDevs, DriverPtr drvp,
 			   int **foundEntities);

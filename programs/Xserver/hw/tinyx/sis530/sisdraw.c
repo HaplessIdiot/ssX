@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/sis530/sisdraw.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/sis530/sisdraw.c,v 1.2 2005/10/14 15:16:29 tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -348,7 +348,7 @@ sisTEGlyphBlt (DrawablePtr	pDrawable,
     int		    widthBlt;
     int		    glyphsPer;
     FontPtr	    pfont = pGC->font;
-    unsigned long   *char1, *char2, *char3, *char4, *char5;
+    CARD32	    *char1, *char2, *char3, *char4, *char5;
     CARD32	    *dst, tmp;
     int		    nb;
     int		    bwidth;
@@ -458,11 +458,11 @@ sisTEGlyphBlt (DrawablePtr	pDrawable,
     switch (glyphsPer) {
     case 5:
 	LoopIt(5,
-	       char1 = (unsigned long *) (*ppci++)->bits;
-	       char2 = (unsigned long *) (*ppci++)->bits;
-	       char3 = (unsigned long *) (*ppci++)->bits;
-	       char4 = (unsigned long *) (*ppci++)->bits;
-	       char5 = (unsigned long *) (*ppci++)->bits;,
+	       char1 = (CARD32 *) (*ppci++)->bits;
+	       char2 = (CARD32 *) (*ppci++)->bits;
+	       char3 = (CARD32 *) (*ppci++)->bits;
+	       char4 = (CARD32 *) (*ppci++)->bits;
+	       char5 = (CARD32 *) (*ppci++)->bits;,
 	       (*char1++ | ((*char2++ | ((*char3++ | ((*char4++ | (*char5++ 
 								   << widthGlyph))
 						      << widthGlyph))
@@ -471,10 +471,10 @@ sisTEGlyphBlt (DrawablePtr	pDrawable,
 	break;
     case 4:
 	LoopIt(4,
-	       char1 = (unsigned long *) (*ppci++)->bits;
-	       char2 = (unsigned long *) (*ppci++)->bits;
-	       char3 = (unsigned long *) (*ppci++)->bits;
-	       char4 = (unsigned long *) (*ppci++)->bits;,
+	       char1 = (CARD32 *) (*ppci++)->bits;
+	       char2 = (CARD32 *) (*ppci++)->bits;
+	       char3 = (CARD32 *) (*ppci++)->bits;
+	       char4 = (CARD32 *) (*ppci++)->bits;,
 	       (*char1++ | ((*char2++ | ((*char3++ | (*char4++
 						      << widthGlyph))
 					 << widthGlyph))
@@ -482,15 +482,15 @@ sisTEGlyphBlt (DrawablePtr	pDrawable,
 	break;
     case 3:
 	LoopIt(3,
-	       char1 = (unsigned long *) (*ppci++)->bits;
-	       char2 = (unsigned long *) (*ppci++)->bits;
-	       char3 = (unsigned long *) (*ppci++)->bits;,
+	       char1 = (CARD32 *) (*ppci++)->bits;
+	       char2 = (CARD32 *) (*ppci++)->bits;
+	       char3 = (CARD32 *) (*ppci++)->bits;,
 	       (*char1++ | ((*char2++ | (*char3++ << widthGlyph)) << widthGlyph)));
 	break;
     case 2:
 	LoopIt(2,
-	       char1 = (unsigned long *) (*ppci++)->bits;
-	       char2 = (unsigned long *) (*ppci++)->bits;,
+	       char1 = (CARD32 *) (*ppci++)->bits;
+	       char2 = (CARD32 *) (*ppci++)->bits;,
 	       (*char1++ | (*char2++ << widthGlyph)));
 	break;
     }
@@ -1505,7 +1505,7 @@ static const GCOps sisOps = {
 };
 
 static void
-sisValidateGC (GCPtr pGC, Mask changes, DrawablePtr pDrawable)
+sisValidateGC (GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
 {
     fbValidateGC (pGC, changes, pDrawable);
     
@@ -1673,10 +1673,10 @@ sisDrawEnable (ScreenPtr pScreen)
 	      pScreenPriv->screen->width, pScreenPriv->screen->height,
 	      cmd);
 #endif
-    base = (CARD32) (pScreenPriv->screen->fb[0].frameBuffer);
-    fprintf (stderr, "src 0x%lx\n", sis->u.accel.src_addr);
+    base = (CARD32)(unsigned long) (pScreenPriv->screen->fb[0].frameBuffer);
+    fprintf (stderr, "src 0x%lx\n", (unsigned long)sis->u.accel.src_addr);
     sis->u.accel.src_addr = (base & 0x3fffff);
-    fprintf (stderr, "src 0x%lx\n", sis->u.accel.src_addr);
+    fprintf (stderr, "src 0x%lx\n", (unsigned long)sis->u.accel.src_addr);
     sis->u.accel.dst_addr = (base & 0x3fffff);
     sis->u.accel.pitch = (stride << 16) | stride;
     sis->u.accel.dimension = ((pScreenPriv->screen->height-1) << 16 | 

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.236tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.237 2006/01/29 01:00:55 tsi Exp $
 
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
@@ -733,7 +733,9 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #define YaccCmd			bison -y
 #define LexCmd			flex -l
 #define HasFlex			YES
-#define LexLib			-lfl
+#ifndef LexLib
+# define LexLib			-lfl
+#endif
 #define PreProcessCmd		CcCmd -E
 #define PostIncDir		DefaultGccIncludeDir
 #define LdCombineFlags		-r

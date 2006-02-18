@@ -20,7 +20,7 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/savage/s3.h,v 1.6 2000/09/03 05:11:19 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/savage/s3.h,v 1.1 2004/06/02 22:43:02 dawes Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -363,7 +363,8 @@ typedef volatile struct _s3 {
     int	__loop = 1000000; \
     while (((s3)->alt_status_0 & (mask)) != (value)) \
 	if (--__loop == 0) { \
-	    ErrorF ("savage wait loop failed 0x%lx\n", s3->alt_status_0); \
+	    ErrorF ("savage wait loop failed 0x%lx\n", \
+		    (unsigned long)s3->alt_status_0); \
 	    break; \
 	} \
 }
@@ -374,7 +375,8 @@ typedef volatile struct _s3 {
     int __loop = 1000000; \
     while (((s3)->alt_status_0 & S3_SAVAGE4_SLOTS) >= S3_SAVAGE4_ROOM-(n)) \
 	if (--__loop == 0) { \
-	    ErrorF ("savage wait loop failed 0x%lx\n", s3->alt_status_0); \
+	    ErrorF ("savage wait loop failed 0x%lx\n", \
+		    (unsigned long)s3->alt_status_0); \
 	    break; \
 	} \
 }

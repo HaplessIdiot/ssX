@@ -20,7 +20,7 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/savage/s3draw.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/savage/s3draw.c,v 1.2 2005/10/14 15:16:29 tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -2222,7 +2222,7 @@ s3DestroyWindow (WindowPtr pWin)
 }
 
 static Bool
-s3ChangeWindowAttributes (WindowPtr pWin, Mask mask)
+s3ChangeWindowAttributes (WindowPtr pWin, unsigned long mask)
 {
 #ifndef S3_TRIO
     KdScreenPriv(pWin->drawable.pScreen);
@@ -2377,7 +2377,7 @@ s3CopyWindowProc (DrawablePtr pSrcDrawable,
     int		    x1, x2;
     int		    w, h;
     int		    flags;
-    int		    fb = (int) closure;
+    int		    fb = (int)(unsigned long) closure;
     int		    ma;
     BoxPtr	    pbox;
     int		    nbox;
@@ -2997,7 +2997,7 @@ static const GCOps	s3_24GCOps = {
 };
 
 static void
-s3_24ValidateGC (GCPtr pGC, Mask changes, DrawablePtr pDrawable)
+s3_24ValidateGC (GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
 {
     if (pDrawable->type != DRAWABLE_WINDOW)
 	pGC->ops = (GCOps *) &kdAsyncPixmapGCOps;
