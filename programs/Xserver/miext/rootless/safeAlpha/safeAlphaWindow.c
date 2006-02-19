@@ -31,16 +31,11 @@
  *
  * Copyright © 1998 Keith Packard
  */
-/* $XFree86: xc/programs/Xserver/miext/rootless/safeAlpha/safeAlphaWindow.c,v 1.1 2003/09/16 00:36:20 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/safeAlpha/safeAlphaWindow.c,v 1.2tsi Exp $ */
 
 #include "fb.h"
 #include "safeAlpha.h"
 #include "rootlessCommon.h"
-
-#ifdef PANORAMIX
-#include "panoramiX.h"
-#include "panoramiXsrv.h"
-#endif
 
 /*
  * SafeAlphaFillRegionTiled
@@ -68,17 +63,6 @@ SafeAlphaFillRegionTiled(
     int         yRot = pDrawable->y;
     FbBits      planeMask;
 
-#ifdef PANORAMIX
-    if(!noPanoramiXExtension)
-    {
-        int index = pDrawable->pScreen->myNum;
-        if(&WindowTable[index]->drawable == pDrawable)
-        {
-            xRot -= panoramiXdataPtr[index].x;
-            yRot -= panoramiXdataPtr[index].y;
-        }
-    }
-#endif
     fbGetDrawable (pDrawable, dst, dstStride, dstBpp, dstXoff, dstYoff);
     fbGetDrawable (&pTile->drawable, tile, tileStride, tileBpp,
                    tileXoff, tileYoff);

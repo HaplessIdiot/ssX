@@ -1,6 +1,31 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/vfb/Imakefile,v 3.31tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/vfb/Imakefile,v 3.32tsi Exp $
 
 #include <Server.tmpl>
+
+#define IHaveSubdirs
+
+#if BuildRender
+RENDERDIRS = render
+#endif
+
+#if BuildRandR
+RANDRDIRS = randr
+#endif
+
+#if BuildRECORD
+RECORDDIRS = record
+#endif
+
+#if BuildDBE
+DBEDIR = dbe
+#endif
+
+#if BuildXTrap
+XTRAPDIR = XTrap
+#endif
+
+SUBDIRS = dix os Xext $(RENDERDIRS) $(RANDRDIRS) $(RECORDDIRS) $(DBEDIR) \
+	  $(XTRAPDIR)
 
 #if HasShm
 SHMDEF = -DHAS_SHM
@@ -22,24 +47,19 @@ SRCS1 = os2_stubs.c
 OBJS1 = os2_stubs.o
 #endif
 
-SRCSA =	InitInput.c InitOutput.c stubs.c $(SRCS1) miinitext.c $(SRCS2)
+#ifdef XvfbExcludedExtensions
+VFB_DEFINES = XvfbExcludedExtensions
+#endif
 
-OBJSA =	InitInput.o InitOutput.o stubs.o $(OBJS1) miinitext.o $(OBJS2)
+SRCS =	InitInput.c InitOutput.c miinitext.c $(SRCS1)
+
+OBJS =	InitInput.o InitOutput.o miinitext.o $(OBJS1)
 
 INCLUDES = -I$(SERVERSRC)/fb -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
 	   -I$(SERVERSRC)/include -I../../os -I$(SERVERSRC)/Xext \
 	   -I$(SERVERSRC)/render
 
-DEFINES = $(OS_DEFINES) $(SHMDEF) $(MMAPDEF) -UXFree86LOADER
-
-
-#if BuildDPMS
-SRCSC =	dpmsstubs.c
-OBJSC =	dpmsstubs.o
-#endif
-
-SRCS =	$(SRCSA) $(SRCSB) $(SRCSC)
-OBJS =	$(OBJSA) $(OBJSB) $(OBJSC)
+DEFINES = $(OS_DEFINES) $(SHMDEF) $(MMAPDEF) $(EXT_DEFINES) $(VFB_DEFINES)
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(vfb,$(OBJS))
@@ -49,16 +69,11 @@ LinkSourceFile(os2_stubs.c,../xfree86/os-support/os2)
 SpecialCObjectRule(os2_stubs,$(ICONFIGFILES),-DOS2NULLSELECT)
 #endif
 
-LinkSourceFile(stubs.c,../../Xi)
-SpecialCObjectRule(InitInput,$(ICONFIGFILES),$(EXT_DEFINES))
-
 LinkSourceFile(miinitext.c,$(SERVERSRC)/mi)
-SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES) $(PAN_DEFINES) -DNO_HW_ONLY_EXTS -DNO_MODULE_EXTS $(EXT_MODULE_DEFINES) -UXFree86LOADER)
-
-#if BuildDPMS
-LinkSourceFile(dpmsstubs.c,$(SERVERSRC)/Xext)
-SpecialCObjectRule(dpmsstubs,$(ICONFIGFILES),$(EXT_DEFINES))
-#endif
+SpecialCObjectRule(miinitext,$(ICONFIGFILES),NullParameter)
 
 InstallManPage(Xvfb,$(MANDIR))
 DependTarget()
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))

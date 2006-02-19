@@ -14,7 +14,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunInit.c,v 3.14 2004/06/02 22:43:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunInit.c,v 3.15tsi Exp $ */
 
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -941,28 +941,3 @@ sunCfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp)
 
 #endif  /* SUNMAXDEPTH == 32 */
 #endif  /* SUNMAXDEPTH */
-
-#ifdef DPMSExtension
-/**************************************************************
- * DPMSSet(), DPMSGet(), DPMSSupported()
- *
- * stubs
- *
- ***************************************************************/
-
-void DPMSSet (level)
-    int level;
-{
-}
-
-int DPMSGet (level)
-    int* level;
-{
-    return -1;
-}
-
-Bool DPMSSupported ()
-{
-    return FALSE;
-}
-#endif

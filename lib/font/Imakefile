@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/Imakefile,v 3.40 2004/05/01 01:29:57 dawes Exp $
+XCOMM $XFree86: xc/lib/font/Imakefile,v 3.41tsi Exp $
 
 #include <Server.tmpl>
 
@@ -22,7 +22,7 @@ XCOMM $XFree86: xc/lib/font/Imakefile,v 3.40 2004/05/01 01:29:57 dawes Exp $
 #define LibInstall NO
 #endif
 
-#if BuildLibraries
+#if BuildLibraries || BuildServer
 STUBDIRS = stubs
 #endif
 

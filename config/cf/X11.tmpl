@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.288 2006/02/17 18:01:14 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.289tsi Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -230,7 +230,7 @@ VENDORMANVERSION = XVendorManVersionString
 #ifndef BuildUCSFonts
 #define BuildUCSFonts		YES
 #endif
-/* Setting BuildISO8859_1Fonts to NO may result in problems. */
+/* Setting BuildISO8859_1Fonts to NO might result in problems. */
 #ifndef BuildISO8859_1Fonts
 #define BuildISO8859_1Fonts	YES
 #endif
@@ -454,29 +454,6 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildLowMem		NO
 #endif
 
-#ifndef BuildTinyDIX
-#if (defined(TinyXServer) && TinyXServer) && \
-	!(defined(XF86Server) && XF86Server)
-#define BuildTinyDIX		YES
-#else
-#define BuildTinyDIX		NO
-#endif
-#endif
-#ifndef BuildSeparateTinyDIX
-#if (defined(TinyXServer) && TinyXServer) && !BuildTinyDIX
-#define BuildSeparateTinyDIX	YES
-#else
-#define BuildSeparateTinyDIX	NO
-#endif
-#endif
-#ifndef TinyXExcludedExtensions
-#define TinyXExcludedExtensions	-UXKB -UXINPUT -ULBX -UXAPPGROUP -UXCSECURITY \
-				-UDPMSExtension -UPANORAMIX -UGLXEXT \
-				-UXF86VIDMODE -UXF86MISC -UXFreeXDGA \
-				-UXF86DRI -UEVI -UXRECORD -USCREENSAVER \
-				-URES -UXV -UXPRINT -UDBE -UXTRAP -UFONTCACHE \
-				-UXF86BIGFONT -UXSYNC -UTOGCUP
-#endif
 #ifndef TinyXFontDefines
 #define TinyXFontDefines	/**/
 #endif
@@ -499,9 +476,6 @@ VENDORMANVERSION = XVendorManVersionString
 #define TinyXFontServerDefines	-DNOFONTSERVERACCESS
 #else
 #define TinyXFontServerDefines	/**/
-#endif
-#ifndef TinyDIXDefines
-#define TinyDIXDefines		TinyXExcludedExtensions TinyXFontServerDefines
 #endif
 
 #ifndef BuildLBX
@@ -989,320 +963,536 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #define XtMalloc0ReturnsNullDefines Malloc0ReturnsNullDefines -DXTMALLOC_BC
 #endif
 #endif
+
 #ifndef ExtensionOSDefines
 #define ExtensionOSDefines /**/
 #endif
 
-#ifndef ExtensionDefines
-#ifndef MITMiscDefines
+/* Do not allow overrides of extension #define's */
+
+#undef   MITMiscDefines
 #if BuildMITMiscExt
-#define MITMiscDefines -DMITMISC
+# define MITMiscDefines			-DMITMISC
 #else
-#define MITMiscDefines /**/
+# define MITMiscDefines			/**/
 #endif
-#endif
-#ifndef XTestDefines
+#undef   MITMiscUndefines
+#define  MITMiscUndefines		-UMITMISC
+
+#undef   XTestDefines
+#undef   XTestUndefines
+#undef   XTest1Undefines
+#define  XTest1Undefines		-UXTESTEXT1
+#define  XTestUndefines			-UXTEST XTest1Undefines
 #if BuildTestExt
-#define XTestDefines -DXTEST
+# define XTestDefines			-DXTEST
 #else
-#define XTestDefines /**/
+# define XTestDefines			XTestUndefines		/* Insurance */
 #endif
-#endif
-#ifndef XTrapDefines
+
+#undef   XTrapDefines
 #if BuildXTrap
-#define XTrapDefines -DXTRAP
+# define XTrapDefines			-DXTRAP
 #else
-#define XTrapDefines /**/
+# define XTrapDefines			/**/
 #endif
-#endif
-#ifndef XSyncDefines
+#undef   XTrapUndefines
+#define  XTrapUndefines			-UXTRAP
+
+#undef   XSyncDefines
 #if BuildSyncExt
-#define XSyncDefines -DXSYNC
+# define XSyncDefines			-DXSYNC
 #else
-#define XSyncDefines /**/
+# define XSyncDefines			/**/
 #endif
-#endif
-#ifndef XCMiscDefines
+#undef   XSyncUndefines
+#define  XSyncUndefines			-UXSYNC
+
+#undef   XCMiscDefines
 #if BuildXCMiscExt
-#define XCMiscDefines -DXCMISC
+# define XCMiscDefines			-DXCMISC
 #else
-#define XCMiscDefines /**/
+# define XCMiscDefines			/**/
 #endif
-#endif
-#ifndef ShapeDefines
+#undef   XCMiscUndefines
+#define  XCMiscUndefines		-UXCMISC
+
+#undef   ShapeDefines
 #if BuildShapeExt
-#define ShapeDefines -DSHAPE
+# define ShapeDefines			-DSHAPE
 #else
-#define ShapeDefines /**/
+# define ShapeDefines			/**/
 #endif
-#endif
-#ifndef GlxDefines
+#undef   ShapeUndefines
+#define  ShapeUndefines			-USHAPE
+
+#undef    GlxDefines
 #if BuildGlxExt
-#ifdef GlxExtraDefines
-#define GlxDefines -DGLXEXT GlxExtraDefines
+# ifdef GlxExtraDefines
+#  define GlxDefines			-DGLXEXT GlxExtraDefines
+# else
+#  define GlxDefines			-DGLXEXT
+# endif
 #else
-#define GlxDefines -DGLXEXT
+# define  GlxDefines			/**/
 #endif
-#else
-#define GlxDefines /**/
+#undef    GlxUndefines
+#define   GlxUndefines			-UGLXEXT
+#undef    DRIUndefines
+#define   DRIUndefines			-UXF86DRI
+
+#ifndef  DRMIncludesDir
+# define DRMIncludesDir			$(XF86OSSRC)/shared/drm/kernel
 #endif
+
+#ifndef  MesaSrcDir
+# define MesaSrcDir			$(TOP)/extras/Mesa
 #endif
-#ifndef DRMIncludesDir
-#define DRMIncludesDir $(XF86OSSRC)/shared/drm/kernel
+
+#ifndef  OglSampleSrcDir
+# define OglSampleSrcDir		$(TOP)/extras/ogl-sample
 #endif
-#ifndef MesaSrcDir
-#define MesaSrcDir $(TOP)/extras/Mesa
-#endif
-#ifndef OglSampleSrcDir
-#define OglSampleSrcDir $(TOP)/extras/ogl-sample
-#endif
-#ifndef ShmDefines
+
+#undef   ShmDefines
 #if HasShm
-#define ShmDefines -DMITSHM
+# define ShmDefines			-DMITSHM
 #else
-#define ShmDefines /**/
+# define ShmDefines			/**/
 #endif
-#endif
-#ifndef XInputDefines
+#undef   ShmUndefines
+#define  ShmUndefines			-UMITSHM
+
+#undef   XInputDefines
 #if BuildXInputExt
-#define XInputDefines -DXINPUT
+# define XInputDefines			-DXINPUT
 #else
-#define XInputDefines /**/
+# define XInputDefines			/**/
 #endif
-#endif
-#ifndef XineramaDefines
+#undef   XInoutUndefines
+#define  XInputUndefines		-UXINPUT
+
+#undef   XineramaDefines
 #if BuildXinerama
-#define XineramaDefines -DPANORAMIX
+# define XineramaDefines		-DPANORAMIX
 #else
-#define XineramaDefines /**/
+# define XineramaDefines		/**/
 #endif
+#undef   XineramaUndefines
+#define  XineramaUndefines		-UPANORAMIX
+
+#ifndef  PrintOnlyServer
+# define PrintOnlyServer		YES
 #endif
-#ifndef PrintOnlyServer
-#define PrintOnlyServer YES
-#endif
-#ifndef XprintDefines
+
+#undef    XprintDefines
 #if BuildXprint
-#if PrintOnlyServer
-#define XprintDefines -DPIXPRIV
+# if PrintOnlyServer
+#  define XprintDefines			-DPIXPRIV
+# else
+#  define XprintDefines			-DXPRINT -DPIXPRIV
+# endif
 #else
-#define XprintDefines -DXPRINT -DPIXPRIV
+# define  XprintDefines			/**/
 #endif
-#else
-#define XprintDefines /**/
-#endif
-#endif
-#ifndef XkbDefines
+#undef    XprintUndefines
+#define   XprintUndefines		-UXPRINT
+
+#undef   XkbDefines
 #if BuildXKB
-#define XkbDefines -DXKB
+# define XkbDefines			-DXKB
 #else
-#define XkbDefines /**/
+# define XkbDefines			/**/
 #endif
+#undef   XkbUndefines
+#define  XkbUndefines			-UXKB
+
+#ifndef   XkbClientDefines
+# if UseXKBInClients
+#  define XkbClientDefines		-DXKB
+# else
+#  define XkbClientDefines		/**/
+# endif
 #endif
-#ifndef XkbClientDefines
-#if UseXKBInClients
-#define XkbClientDefines -DXKB
-#else
-#define XkbClientDefines /**/
+
+#ifndef  XkbServerDefines
+# define XkbServerDefines		/**/
 #endif
-#endif
-#ifndef XkbServerDefines
-#define XkbServerDefines /**/
-#endif
-#ifndef LbxDefines
+
+#undef   LbxDefines
 #if BuildLBX
-#define LbxDefines -DLBX
+# define LbxDefines			-DLBX
 #else
-#define LbxDefines /**/
+# define LbxDefines			/**/
 #endif
-#endif
-#ifndef BigReqDefines
+#undef   LbxUndefines
+#define  LbxUndefines			-ULBX
+
+#undef   BigReqDefines
 #if BuildBigReqsExt
-#define BigReqDefines -DBIGREQS
+# define BigReqDefines			-DBIGREQS
 #else
-#define BigReqDefines /**/
+# define BigReqDefines			/**/
 #endif
-#endif
+#undef   BigReqUndefines
+#define  BigReqUndefines		-UBIGREQS
 
-#ifndef EVIDefines
+#undef   EVIDefines
 #if BuildEVI
-#define EVIDefines -DEVI
+# define EVIDefines			-DEVI
 #else
-#define EVIDefines /**/
+# define EVIDefines			/**/
 #endif
+#undef   EVIUndefines
+#define  EVIUndefines			-UEVI
+
+#if !BuildDBE || !defined(NeedDBERevalidateBuffer)
+# undef  NeedDBERevalidateBuffer
+# define NeedDBERevalidateBuffer	NO
 #endif
 
-#ifndef DBEDefines
-#if BuildDBE
-#define DBEDefines -DDBE
+#if !BuildDBE || NeedDBERevalidateBuffer || !defined(NeedDBEValidateBuffer)
+# undef  NeedDBEValidateBuffer
+# define NeedDBEValidateBuffer		NeedDBERevalidateBuffer
+#endif
+
+#if !BuildDBE || NeedDBEValidateBuffer || !defined(NeedDBEBufferBits)
+# undef  NeedDBEBufferBits
+# define NeedDBEBufferBits		NeedDBEValidateBuffer
+#endif
+
+#undef   DBEDefines
+#if BuildDBE && !NeedDBEBufferBits
+# define DBEDefines			-DDBE
 #else
-#define DBEDefines /**/
-#endif
-#endif
-
-#ifndef PervasiveDBEDefines
-#define PervasiveDBEDefines /* -DNEED_DBE_BUF_BITS -DNEED_DBE_BUF_VALIDATE */
+# define DBEDefines			/**/
 #endif
 
-#ifndef MultibufferDefines
+#undef    PervasiveDBEDefines
+#if NeedDBERevalidateBuffer
+# define  PervasiveDBEDefines		-DDBE -DNEED_DBE_BUF_BITS \
+					-DNEED_DBE_BUF_VALIDATE \
+					-DNEED_DBE_BUF_REVALIDATE
+#else
+# if NeedDBEValidateBuffer
+#  define PervasiveDBEDefines		-DDBE -DNEED_DBE_BUF_BITS \
+					-DNEED_DBE_BUF_VALIDATE
+# else
+#  if NeedDBEBufferBits
+#   define PervasiveDBEDefines		-DDBE -DNEED_DBE_BUF_BITS
+#  else
+#   define PervasiveDBEDefines		/**/
+#  endif
+# endif
+#endif
+#undef     DBEUndefines
+#define    DBEUndefines			-UDBE -UNEED_DBE_BUF_BITS \
+					-UNEED_DBE_BUF_VALIDATE \
+					-UNEED_DBE_BUF_REVALIDATE
+
+#undef   MultibufferDefines
 #if BuildMultibuffer
-#define MultibufferDefines -DMULTIBUFFER
+# define MultibufferDefines		-DMULTIBUFFER
 #else
-#define MultibufferDefines /**/
+# define MultibufferDefines		/**/
 #endif
-#endif
+#undef   MultibufferUndefines
+#define  MultibufferUndefines		-UMULTIBUFFER
 
-#ifndef ScreenSaverExtensionDefines
+#undef   ScreenSaverExtensionDefines
 #if BuildScreenSaverExt
-#define ScreenSaverExtensionDefines -DSCREENSAVER
+# define ScreenSaverExtensionDefines	-DSCREENSAVER
 #else
-#define ScreenSaverExtensionDefines /**/
+# define ScreenSaverExtensionDefines	/**/
 #endif
-#endif
-#ifndef VidModeExtensionDefines
+#undef   ScreenSaverExtensionUndefines
+#define  ScreenSaverExtensionUndefines	-USCREENSAVER
+
+#undef   VidModeExtensionDefines
 #if BuildXF86VidModeExt
-#define VidModeExtensionDefines -DXF86VIDMODE
+# define VidModeExtensionDefines	-DXF86VIDMODE
 #else
-#define VidModeExtensionDefines /**/
+# define VidModeExtensionDefines	/**/
 #endif
-#endif
-#ifndef XF86MiscExtensionDefines
+#undef   VidModeExtensionUndefines
+#define  VidModeExtensionUndefines	-UXF86VIDMODE
+
+#undef   XF86MiscExtensionDefines
 #if BuildXF86MiscExt
-#define XF86MiscExtensionDefines -DXF86MISC
+# define XF86MiscExtensionDefines	-DXF86MISC
 #else
-#define XF86MiscExtensionDefines /**/
+# define XF86MiscExtensionDefines	/**/
 #endif
-#endif
+#undef   XF86MiscExtensionUndefines
+#define  XF86MiscExtensionUndefines	-UXF86MISC
 
-#ifndef XF86BigfontExtensionDefines
+#undef   XF86BigfontExtensionDefines
 #if BuildXF86BigfontExt
-#define XF86BigfontExtensionDefines -DXF86BIGFONT
+# define XF86BigfontExtensionDefines	-DXF86BIGFONT
 #else
-#define XF86BigfontExtensionDefines /**/
+# define XF86BigfontExtensionDefines	/**/
 #endif
-#endif
+#undef   XF86BigfontExtensionUndefines
+#define  XF86BigfontExtensionUndefines	-UXF86BIGFONT
 
-#ifndef XvExtensionDefines
+#undef   XFree86DGADefines
+#if BuildXF86DGA
+# define XFree86DGADefines		-DXFreeXDGA
+#else
+# define XFree86DGADefines		/**/
+#endif
+#undef   XFree86DGAUndefines
+#define  XFree86DGAUndefines		-UXFreeXDGA
+
+#undef   XvExtensionDefines
 #if BuildXvExt
-#define XvExtensionDefines -DXV
+# define XvExtensionDefines		-DXV
 #else
-#define XvExtensionDefines /**/
+# define XvExtensionDefines		/**/
 #endif
-#endif
+#undef   XvExtensionUndefines
+#define  XvExtensionUndefines		-UXV
 
-#ifndef XvMCExtensionDefines
+#undef   XvMCExtensionDefines
 #if BuildXvMCExt
-#define XvMCExtensionDefines -DXVMC
+# define XvMCExtensionDefines		-DXVMC
 #else
-#define XvMCExtensionDefines /**/
+# define XvMCExtensionDefines		/**/
 #endif
-#endif
+#undef   XvMCExtensionUndefines
+#define  XvMCExtensionUndefines		-UXVMC
 
-#ifndef XResExtensionDefines
+#undef   XResExtensionDefines
 #if BuildXResExt
-#define XResExtensionDefines -DRES
+# define XResExtensionDefines		-DRES
 #else
-#define XResExtensionDefines /**/
+# define XResExtensionDefines		/**/
 #endif
-#endif
+#undef   XResExtensionUndefines
+#define  XResExtensionUndefines		-URES
 
-#ifndef RECORDDefines
+#undef   RECORDDefines
 #if BuildRECORD
-#define RECORDDefines -DXRECORD
+# define RECORDDefines			-DXRECORD
 #else
-#define RECORDDefines /**/
+# define RECORDDefines			/**/
 #endif
-#endif
+#undef   RECORDUndefines
+#define  RECORDUndefines		-UXRECORD
 
-#ifndef AppgroupDefines
+#undef   AppgroupDefines
 #if BuildAppgroup
-#define AppgroupDefines -DXAPPGROUP
+# define AppgroupDefines		-DXAPPGROUP
 #else
-#define AppgroupDefines /**/
+# define AppgroupDefines		/**/
 #endif
-#endif
+#undef   AppgroupUndefines
+#define  AppgroupUndefines		-UXAPPGROUP
 
-#ifndef XCSecurityDefines
+#undef   XCSecurityDefines
 #if BuildXCSecurity
-#define XCSecurityDefines -DXCSECURITY
+# define XCSecurityDefines		-DXCSECURITY
 #else
-#define XCSecurityDefines /**/
+# define XCSecurityDefines		/**/
 #endif
-#endif
+#undef   XCSecurityUndefines
+#define  XCSecurityUndefines		-UXCSECURITY
 
-#ifndef CupDefines
+#undef   CupDefines
 #if BuildCup
-#define CupDefines -DTOGCUP
+# define CupDefines			-DTOGCUP
 #else
-#define CupDefines /**/
+# define CupDefines			/**/
 #endif
+#undef   CupUndefines
+#define  CupUndefines			-UTOGCUP
+
+#ifndef   LowMemDefines
+# if BuildLowMem
+#  define LowMemDefines			-DLOWMEMFTPT
+# else
+#  define LowMemDefines			/**/
+# endif
 #endif
 
-#ifndef LowMemDefines
-#if BuildLowMem
-#define LowMemDefines -DLOWMEMFTPT
-#else
-#define LowMemDefines /**/
-#endif
-#endif
-
-#ifndef DPMSDefines
+#undef   DPMSDefines
 #if BuildDPMS
-#define DPMSDefines -DDPMSExtension
+# define DPMSDefines			-DDPMSExtension
 #else
-#define DPMSDefines /**/
+# define DPMSDefines			/**/
 #endif
-#endif
+#undef   DPMSUndefines
+#define  DPMSUndefines			-UDPMSExtension
 
-#ifndef RenderDefines
+#undef   RenderDefines
 #if BuildRender
-#define RenderDefines -DRENDER
+# define RenderDefines			-DRENDER
 #else
-#define RenderDefines /**/
+# define RenderDefines			/**/
 #endif
-#endif
+#undef   RenderUndefines
+#define  RenderUndefines		-URENDER
 
-#ifndef RandRDefines
+#undef   RandRDefines
 #if BuildRandR
-#define RandRDefines -DRANDR
+# define RandRDefines			-DRANDR
 #else
-#define RandRDefines /**/
+# define RandRDefines			/**/
 #endif
-#endif
+#undef   RandRUndefines
+#define  RandRUndefines			-URANDR
 
-#ifndef FontCacheExtentionDefines
+#undef   FontCacheExtentionDefines
 #if BuildFontCache
-#define FontCacheExtensionDefines	-DFONTCACHE
+# define FontCacheExtensionDefines	-DFONTCACHE
 #else
-#define FontCacheExtensionDefines	/**/
+# define FontCacheExtensionDefines	/**/
 #endif
-#endif
+#undef   FontCacheExtensionUndefines
+#define  FontCacheExtensionUndefines	-UFONTCACHE
+
+/*
+ * (miinitext.c does not exist for the purposes of this comment block.)
+ *
+ * Pervasive extensions are those whose server-side functionality is, partially
+ * or entirely, implemented in #ifdef's of Xserver/dix, Xserver/os and/or some
+ * other extension's code.  (The last of these cases is debatable.)  Should
+ * different servers in the same build require different subsets of these
+ * extensions, each server will likely need to be linked against its own build
+ * of the following subdirectories of xc/programs/Xserver:  dix, os, mi, Xext,
+ * lbx, xkb, fb, XTrap, dbe, cfb*, record, render and randr.  Which ones are
+ * needed will depend on which pervasive extensions are to be included in the
+ * particular server to be linked and which pervasive extensions differ amongst
+ * all servers in the same build.
+ *
+ * (XXX I'd put in an extension vs. Xserver subdir table here, where it not for
+ *  the fact that it would be highly subject to change.  The ideal solution
+ *  here is to make all extensions non-pervasive, but this'll take a while...)
+ *
+ * DBE presents a special case.  It is pervasive if, and only if, Xserver/ is
+ * also compiled with -DNEED_DBE_BUF_BITS.
+ *
+ * Note that an extension's pervasiveness is independent of its loadability.
+ *
+ * #define's for pervasive extensions are inserted into an X server's base
+ * CFLAGS to ensure all pieces of these extensions are linked in.
+ */
 
 #ifndef SitePervasiveExtensionDefines
 #define SitePervasiveExtensionDefines /**/
 #endif
+
 #ifndef PervasiveExtensionDefines
 #define PervasiveExtensionDefines \
 	ShapeDefines XInputDefines XkbDefines LbxDefines AppgroupDefines \
-	XCSecurityDefines CupDefines PervasiveDBEDefines \
-	XF86BigfontExtensionDefines DPMSDefines \
-	LowMemDefines XprintDefines XineramaDefines \
-	SitePervasiveExtensionDefines RenderDefines RandRDefines
+	XCSecurityDefines XSyncDefines XF86BigfontExtensionDefines \
+	DPMSDefines BigReqDefines XineramaDefines RenderDefines RandRDefines \
+	XResExtensionDefines PervasiveDBEDefines XprintDefines \
+	SitePervasiveExtensionDefines LowMemDefines
 #endif
+
 #ifndef SiteExtensionDefines
 #define SiteExtensionDefines /**/
 #endif
+
 #ifndef BaseExtensionDefines
 #define BaseExtensionDefines \
-	MultibufferDefines MITMiscDefines XTestDefines XTrapDefines \
-	XSyncDefines XCMiscDefines RECORDDefines \
-	ShmDefines BigReqDefines VidModeExtensionDefines \
-	XF86MiscExtensionDefines DBEDefines DPMSDefines EVIDefines \
-	ScreenSaverExtensionDefines XvExtensionDefines XvMCExtensionDefines \
-	GlxDefines FontCacheExtensionDefines SiteExtensionDefines \
-        XResExtensionDefines
+	MultibufferDefines ShmDefines MITMiscDefines XTestDefines \
+	XTrapDefines XCMiscDefines RECORDDefines CupDefines \
+	VidModeExtensionDefines XF86MiscExtensionDefines XFree86DGADefines \
+	DBEDefines EVIDefines ScreenSaverExtensionDefines XvExtensionDefines \
+	XvMCExtensionDefines GlxDefines FontCacheExtensionDefines \
+	SiteExtensionDefines
 #endif
-#define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
+
+#ifndef ExtensionDefines
+#define ExtensionDefines ExtensionOSDefines BaseExtensionDefines
 #endif /* ExtensionDefines */
+
+/*
+ * The above specifies the set of extensions that are to be included in _any_
+ * server to be built.  It also specifies that to be included in the "primary"
+ * server, i.e. XFree86, XWin or XDarwin, whatever the case might be.
+ *
+ * Server-specific extension exclusions follow.  Changes to, or overrides of,
+ * these are likely to cause build failures that can be fixed by linking
+ * against more server-specific builds of the Xserver/ subdirectories
+ * mentionned above.
+ */
+
+#ifndef TinyXExcludedExtensions
+#define TinyXExcludedExtensions \
+	XkbUndefines XInputUndefines LbxUndefines AppgroupUndefines \
+	XCSecurityUndefines DPMSUndefines XineramaUndefines GlxUndefines \
+	DRIUndefines VidModeExtensionUndefines XF86MiscExtensionUndefines \
+	XFree86DGAUndefines EVIUndefines RECORDUndefines XTest1Undefines \
+	ScreenSaverExtensionUndefines XResExtensionUndefines \
+	XvExtensionUndefines XvMCExtensionUndefines XTrapUndefines \
+	FontCacheExtensionUndefines DBEUndefines XprintUndefines \
+	XF86BigfontExtensionUndefines XSyncUndefines CupUndefines \
+	-UXFree86LOADER
+#endif
+
+#ifndef XdmxExcludedExtensions
+/* MITSHM -- works but doesn't quite do what people think it should */
+/* DPMSExtension -- compiled in but is non-functional */
+/* MITMISC -- provides legacy support for X11R1,2 applications.  Disable. */
+#if BuildGlxInDmx
+#define XdmxExcludedExtensions \
+	DBEUndefines ShmUndefines RandRUndefines XprintUndefines \
+	MultibufferUndefines XvExtensionUndefines XvMCExtensionUndefines \
+	XTest1Undefines VidModeExtensionUndefines XF86MiscExtensionUndefines \
+	XFree86DGAUndefines -DGLXPROXY DRIUndefines CupUndefines \
+	MITMiscUndefines ScreenSaverExtensionUndefines \
+	FontCacheExtensionUndefines -UXFree86LOADER
+#else
+#define XdmxExcludedExtensions \
+	DBEUndefines ShmUndefines RandRUndefines XprintUndefines \
+	MultibufferUndefines XvExtensionUndefines XvMCExtensionUndefines \
+	XTest1Undefines VidModeExtensionUndefines XF86MiscExtensionUndefines \
+	XFree86DGAUndefines GlxUndefines DRIUndefines CupUndefines \
+	MITMiscUndefines ScreenSaverExtensionUndefines \
+	FontCacheExtensionUndefines -UXFree86LOADER
+#endif
+#endif
+
+#ifndef XvfbExcludedExtensions
+#define XvfbExcludedExtensions \
+	XInputUndefines XkbUndefines DPMSUndefines XineramaUndefines \
+	XprintUndefines XTest1Undefines VidModeExtensionUndefines \
+	XF86MiscExtensionUndefines XFree86DGAUndefines DRIUndefines \
+	ScreenSaverExtensionUndefines XvExtensionUndefines \
+	XvMCExtensionUndefines -UXFree86LOADER
+#endif
+
+#ifndef XnestExcludedExtensions
+#define XnestExcludedExtensions \
+	XInputUndefines DPMSUndefines XineramaUndefines XprintUndefines \
+	XTest1Undefines VidModeExtensionUndefines XF86MiscExtensionUndefines \
+	XFree86DGAUndefines DRIUndefines ScreenSaverExtensionUndefines \
+	XvExtensionUndefines XvMCExtensionUndefines ShmUndefines \
+	-UXFree86LOADER
+#endif
+
+#ifndef XprtExcludedExtensions
+#define XprtExcludedExtensions \
+	XInputUndefines XkbUndefines DPMSUndefines XineramaUndefines \
+	GlxUndefines DRIUndefines VidModeExtensionUndefines \
+	XF86MiscExtensionUndefines XFree86DGAUndefines XTest1Undefines \
+	ScreenSaverExtensionUndefines XvExtensionUndefines \
+	XvMCExtensionUndefines -UXFree86LOADER -D_XP_PRINT_SERVER_
+#endif
+
+#ifndef XsunExcludedExtensions
+#define XsunExcludedExtensions \
+	XInputUndefines DPMSUndefines DRIUndefines VidModeExtensionUndefines \
+	XF86MiscExtensionUndefines XFree86DGAUndefines XTest1Undefines \
+	ScreenSaverExtensionUndefines XvExtensionUndefines \
+	XvMCExtensionUndefines -UXFree86LOADER
+#endif
+
+#ifndef XsunLynxExcludedExtensions
+#define XsunLynxExcludedExtensions XsunExcludedExtensions
+#endif
 
 #ifndef HasStrcasecmp
 #define HasStrcasecmp YES
@@ -1396,7 +1586,13 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #endif
 #endif
 #ifndef ServerDefines
-#define ServerDefines StandardDefines PervasiveExtensionDefines ServerExtraDefines ServerAssertDefines ServerSnprintfDefines ServerStrlcatDefines
+#define ServerDefines StandardDefines PervasiveExtensionDefines \
+		      ServerAssertDefines ServerSnprintfDefines \
+		      ServerStrlcatDefines ServerExtraDefines
+#endif
+
+#ifndef TinyDIXDefines
+#define TinyDIXDefines	TinyXExcludedExtensions TinyXFontServerDefines
 #endif
 
 #ifndef MesaUseX86Asm

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.17tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.18tsi Exp $ */
 
 /*
  *
@@ -181,6 +181,8 @@ ExtensionModule extensionModules[] = {
 	XvRegister,
 	NULL
     },
+#endif
+#ifdef XVMC
     {
         XvMCExtensionInit,
         XvMCName,

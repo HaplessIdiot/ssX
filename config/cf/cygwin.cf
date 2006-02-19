@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.61tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.62tsi Exp $
 
 #ifndef OSName
 # define OSName                 Cygwin
@@ -229,12 +229,9 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.61tsi Exp $
  * define for experimental development purposes.
  */
 #define XWinServerDefines	-DAVOID_GLYPHBLT -DPIXPRIV -DSINGLEDEPTH \
-				XFree86DGADefines XFree86XvDefines \
 				XFree86LoaderDefines -DXFree86Server \
-				VidModeExtensionDefines \
-				XFree86XvMCDefines \
 				SmartScheduleDefines \
-				DebugDefines XFree86XResDefines \
+				DebugDefines \
 				-DX_BYTE_ORDER=$(X_BYTE_ORDER)
 #define ServerOSDefines         XWinServerDefines \
 				-DDDXTIME -DFD_SETSIZE=256 -DDDXOSINIT \

@@ -1,6 +1,35 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xnest/Imakefile,v 3.29tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xnest/Imakefile,v 3.30tsi Exp $
 
 #include <Server.tmpl>
+
+#define IHaveSubdirs
+
+#if BuildXKB
+XKBDIRS = xkb
+#endif
+
+#if BuildRender
+RENDERDIRS = render
+#endif
+
+#if BuildRandR
+RANDRDIRS = randr
+#endif
+
+#if BuildRECORD
+RECORDDIRS = record
+#endif
+
+#if BuildDBE
+DBEDIRS = dbe
+#endif
+
+#if BuildXTrap
+XTRAPDIRS = XTrap
+#endif
+
+SUBDIRS = dix os Xext $(XKBDIRS) $(RENDERDIRS) $(RANDRDIRS) $(RECORDDIRS) \
+	  $(DBEDIRS) $(XTRAPDIRS)
 
 #ifdef OS2Architecture
 SRCS1 = os2Stub.c
@@ -25,7 +54,6 @@ SRCS =	Args.c \
 	TestExt.c \
 	Visual.c \
 	Window.c \
-	stubs.c \
 	miinitext.c $(SRCS1)
 
 OBJS =	Args.o \
@@ -46,25 +74,24 @@ OBJS =	Args.o \
 	TestExt.o \
 	Visual.o \
 	Window.o \
-	stubs.o \
 	miinitext.o $(OBJS1)
 
+#ifdef XnestExcludedExtensions
+XNEST_DEFINES = XnestExcludedExtensions
+#endif
 
-INCLUDES = -I../../mi -I../../include -I../../os \
-	   -I$(LIBSRC) -I$(SERVERSRC)/Xext
-
-DEFINES = $(OS_DEFINES) $(EXT_DEFINES) -DNO_HW_ONLY_EXTS \
-	  -UXFree86LOADER -UMITSHM
+INCLUDES = -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
+	   -I$(SERVERSRC)/os -I$(LIBSRC) -I$(SERVERSRC)/Xext
 
 XKB_DEFINES = -DXKB_BASE_DIRECTORY=\"$(LIBDIR)/xkb/\"
 
+DEFINES = $(OS_DEFINES) $(XKB_DEFINES) $(EXT_DEFINES) $(XNEST_DEFINES)
+
 all:: $(OBJS)
 
-LinkSourceFile(stubs.c,$(SERVERSRC)/Xi)
-SpecialCObjectRule(Init,$(ICONFIGFILES),$(_NOOP_))
+SpecialCObjectRule(Init,$(ICONFIGFILES),NullParameter)
 LinkSourceFile(miinitext.c,$(SERVERSRC)/mi)
-SpecialCObjectRule(miinitext,$(ICONFIGFILES),-UDPMSExtension)
-SpecialCObjectRule(Keyboard,$(ICONFIGFILES),$(XKB_DEFINES))
+SpecialCObjectRule(miinitext,$(ICONFIGFILES),NullParameter)
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(xnest,$(OBJS))
@@ -72,3 +99,6 @@ NormalLibraryTarget(xnest,$(OBJS))
 InstallManPage(Xnest,$(MANDIR))
 
 DependTarget()
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/tinyx/tinyx.c,v 1.29 2002/10/31 18:29:50 keithp Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/tinyx/tinyx.c,v 1.1tsi Exp $ 
  *
  * Copyright © 1999 Keith Packard
  *
@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 /*
- * Copyright (c) 2004 by The XFree86 Project, Inc.
+ * Copyright (c) 2004-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -80,10 +80,6 @@
 
 #ifdef XV
 #include "txxv.h"
-#endif
-
-#ifdef DPMSExtension
-#include "dpmsproc.h"
 #endif
 
 CARD8	kdBpp[] = { 1, 4, 8, 16, 24, 32 };
@@ -1018,9 +1014,6 @@ KdScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
     for (fb = 0; fb < KD_MAX_FB && screen->fb[fb].depth; fb++)
 	pScreenPriv->bytesPerPixel[fb] = screen->fb[fb].bitsPerPixel >> 3;
     pScreenPriv->dpmsState = KD_DPMS_NORMAL;
-#ifdef PANORAMIX
-    dixScreenOrigins[pScreen->myNum] = screen->origin;
-#endif
 
     if (!monitorResolution)
 	monitorResolution = 75;
@@ -1379,48 +1372,3 @@ void
 OsVendorFatalError()
 {
 }
-
-#ifdef XTESTEXT1
-void
-XTestGenerateEvent(dev_type, keycode, keystate, mousex, mousey)
-	int	dev_type;
-	int	keycode;
-	int	keystate;
-	int	mousex;
-	int	mousey;
-{
-}
-
-void
-XTestGetPointerPos(fmousex, fmousey)
-	short *fmousex, *fmousey;
-{
-}
-
-void
-XTestJumpPointer(jx, jy, dev_type)
-	int	jx;
-	int	jy;
-	int	dev_type;
-{
-}
-#endif
-
-#ifdef DPMSExtension
-void
-DPMSSet(int level)
-{
-}
-
-int
-DPMSGet (int *level)
-{
-    return -1;
-}
-
-Bool
-DPMSSupported (void)
-{
-    return FALSE;
-}
-#endif

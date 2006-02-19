@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.47tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.48tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -89,16 +89,21 @@ SOFTWARE.
 #include "site.h"
 #include "dixfont.h"
 #include "extnsionst.h"
+#include "dixevents.h"		/* InitEvents() */
+#include "dispatch.h"		/* InitProcVectors() */
+
 #ifdef PANORAMIX
 #include "panoramiXsrv.h"
 #endif
-#include "dixevents.h"		/* InitEvents() */
-#include "dispatch.h"		/* InitProcVectors() */
 
 #ifdef DPMSExtension
 #define DPMS_SERVER
 #include <X11/extensions/dpms.h>
 #include "dpmsproc.h"
+#endif
+
+#ifdef XPRINT
+#include "DiPrint.h"
 #endif
 
 extern void Dispatch(
@@ -759,4 +764,15 @@ FreeScreen(ScreenPtr pScreen)
 #endif
     xfree(pScreen->devPrivates);
     xfree(pScreen);
+}
+
+Bool
+IsXineramaActive(void)
+{
+#ifdef PANORAMIX
+    if (!noPanoramiXExtension)
+	return TRUE;
+#endif
+
+    return FALSE;
 }

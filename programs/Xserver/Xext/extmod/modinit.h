@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.h,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.h,v 1.4tsi Exp $ */
 
 #include "extnsionst.h"
 
@@ -99,9 +99,11 @@ extern void EVIExtensionInit(INITARGS);
 
 #ifdef XV
 extern void XvExtensionInit(INITARGS);
-extern void XvMCExtensionInit(INITARGS);
 extern void XvRegister(INITARGS);
 #include <X11/extensions/Xv.h>
+#endif
+#ifdef XVMC
+extern void XvMCExtensionInit(INITARGS);
 #include <X11/extensions/XvMC.h>
 #endif
 
@@ -110,15 +112,13 @@ extern void ResExtensionInit(INITARGS);
 #include <X11/extensions/XResproto.h>
 #endif
 
-#ifdef SHM
+#ifdef MITSHM
 extern void ShmExtensionInit(INITARGS);
+#define _XSHM_SERVER_
 #include <X11/extensions/shmstr.h>
 extern void ShmSetPixmapFormat(
     ScreenPtr pScreen,
     int format);
-extern void ShmRegisterFuncs(
-    ScreenPtr pScreen,
-    ShmFuncsPtr funcs);
 #endif
 
 #if 1

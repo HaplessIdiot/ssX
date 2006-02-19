@@ -1,4 +1,40 @@
 XFree86 4.5.99.22 (xx February 2006)
+ 217. A rework of the way extension support is built into servers to allow for
+      servers with different sets of extensions in the same build.  This starts
+      with an idea introduced in David Dawes's TinyX work, and extends it to
+      also apply to the Xprt, Xnest, Xvfb, Xdmx and Xsun* servers.  The changes
+      include:
+      - Add, as a comment, a definition for what makes an extension pervasive.
+      - TOGCUP is not a pervasive extension, but XSYNC, BIGREQS and XRES are.
+      - Consolidate #define's for the Xv, XvMC and XRES extensions.
+      - Flip, in favour of the majority case, MITSHM's default decision WRT
+        whether or not a framebuffer stores pixmap data in the server's virtual
+        address space.  MI is now independent of MITSHM and MITSHM is no longer
+        a pervasive extension.
+      - Add a DIX helper to determine whether Xinerama is active and use it
+        instead of #ifdef'ed code in all loadable modules.  Re-implement, as
+        a screen wrapper, Xinerama's PaintWindow*() hacks.  Move down to DIX
+        Xinerama's only MI hook.  Both MI and loadable module objects are now
+        independent of Xinerama.
+      - Add more XCSECURITY-related DIX helpers.  Loadable module objects that
+        provide their own extensions (e.g. apm) are now independent of the core
+        binary's support for XCSECURITY.
+      - Extend DBE to allow for front and back buffer revalidations (to be used
+        in future changes to restore the only existing example of DBE hardware
+        acceleration after converting the sunffb driver to fb, XAA & Render).
+        This is the change that chronologically started all this.
+      - Separate Xv and XvMC extensions more cleanly.
+      - Move Xserver/*/tiny directories under Xserver/hw/tinyx.
+      - Fix !PrintOnlyServer builds.
+      - Clean up Xserver/Imakefile.
+      - Remove remaining traces of Xdec* servers.
+      - Fix parallel make bug in Xserver/Imakefile caused by unintentional
+        symbol re-use.
+      - Accomodate XWin more cleanly by not "skipping" over Xserver/hw.
+      - Remove all extension stub code (no longer needed).
+      `make World` is required to correctly build these changes.  In fact, I
+      recommend staring from a fresh checkout.  These changes are bundled as
+      one commit due to module versioning considerations.  (Marc La France)
  216. Linux/alpha, Linux/amd64, Linux/ppc, Solaris/sparc build/warning fixes
       (David Dawes).
  215. Allow building with devel-specific system headers (David Dawes).
@@ -19951,7 +19987,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3666 2006/02/17 22:13:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3667 2006/02/18 03:31:37 dawes Exp $
 
 
 

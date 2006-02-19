@@ -1,7 +1,7 @@
-XCOMM $XFree86: xc/programs/Xserver/record/Imakefile,v 1.16tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/record/Imakefile,v 1.17tsi Exp $
 
 /*
- * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -63,11 +63,15 @@ MODSRC = recordmod.c
 MODOBJ = recordmod.o
 #endif
 
+#ifndef LinkDefines
+#define LinkDefines /**/
+#endif
+
        SRCS = record.c set.c $(MODSRC)
        OBJS = record.o set.o $(MODOBJ)
    INCLUDES = -I$(SERVERSRC)/record -I$(SERVERSRC)/include -I$(SERVERSRC)/Xext
    LINTLIBS = $(SERVERSRC)/dix/llib-ldix.ln
-    DEFINES = -DNDEBUG
+    DEFINES = -DNDEBUG $(EXT_DEFINES) LinkDefines
 
 #ifdef IHaveModules
 ModuleObjectRule()

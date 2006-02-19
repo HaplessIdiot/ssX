@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/dbe/midbestr.h,v 3.2tsi Exp $ */
 /******************************************************************************
  * 
  * Copyright (c) 1994, 1995  Hewlett-Packard Company
@@ -35,6 +35,9 @@
 #ifndef MIDBE_STRUCT_H
 #define MIDBE_STRUCT_H
 
+/* INCLUDES */
+
+#include "dbestruct.h"
 
 /* DEFINES */
 

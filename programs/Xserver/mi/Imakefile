@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.35tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.36tsi Exp $
 
 #include <Server.tmpl>
 
@@ -36,17 +36,9 @@ OBJS =	$(CBRT_OBJ) mivaltree.o mipolyseg.o mipolyrect.o \
 	mipointer.o misprite.o midispcur.o miscrinit.o miclipn.o migc.o \
 	micmap.o mioverlay.o
 
-#ifdef XFree86Version
-/* 
- * Make sure XINPUT, XF86VidTune, etc aren't defined for the miinitext.o 
- * used by Xnest, Xvfb 
- */
-EXT_DEFINES = ExtensionDefines -UXINPUT -UXF86VIDMODE -UXFreeXDGA -UXF86MISC \
-	-UXFree86LOADER
-#endif
-
 INCLUDES = -I../include -I../render -I$(SERVERSRC)/Xext
 LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln
+DEFINES = $(EXT_DEFINES) -UXFree86LOADER
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(mi,$(OBJS))
@@ -57,10 +49,10 @@ NormalLintTarget($(SRCS))
 NormalLibraryTarget(cbrt,cbrt.o)
 #endif
 
-SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES))
-SpecialCObjectRule(miscrinit,$(ICONFIGFILES),$(EXT_DEFINES))
+SpecialCObjectRule(miinitext,$(ICONFIGFILES),NullParameter)
+SpecialCObjectRule(miscrinit,$(ICONFIGFILES),NullParameter)
 #ifdef ItsyCompilerBug
-SpecialCObjectRule(mipolycon,$(_NOOP_),-O0)
+SpecialCObjectRule(mipolycon,NullParameter,-O0)
 #endif
 #if defined(OpenBSDArchitecture) && defined(Sparc64Architecture)
 SpecialCObjectRule(mizerclip,NullParameter,-O0)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.201 2005/10/14 15:16:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.202tsi Exp $ */
 /*
  * SiS driver main code
  *
@@ -2087,8 +2087,17 @@ SiSXineramaExtensionInit(ScrnInfoPtr pScrn)
           return;
        }
 
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,5,99,22,0)
 #ifdef PANORAMIX
        if(!noPanoramiXExtension) {
+          xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+       	     "Xinerama active, not initializing SiS Pseudo-Xinerama\n");
+          SiSnoPanoramiXExtension = TRUE;
+          return;
+       }
+#endif
+#else
+       if(IsXineramaActive()) {
           xf86DrvMsg(pScrn->scrnIndex, X_INFO,
        	     "Xinerama active, not initializing SiS Pseudo-Xinerama\n");
           SiSnoPanoramiXExtension = TRUE;
@@ -5828,8 +5837,15 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     	pSiS->SiS_SD_Flags |= SiS_SD_ISDUALHEAD;
 	if(pSiS->SecondHead)      pSiS->SiS_SD_Flags |= SiS_SD_ISDHSECONDHEAD;
 	else			  pSiS->SiS_SD_Flags &= ~(SiS_SD_SUPPORTXVGAMMA1);
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,5,99,22,0)
 #ifdef PANORAMIX
 	if(!noPanoramiXExtension) {
+	   pSiS->SiS_SD_Flags |= SiS_SD_ISDHXINERAMA;
+	   pSiS->SiS_SD_Flags &= ~(SiS_SD_SUPPORTXVGAMMA1);
+	}
+#endif
+#else
+	if(IsXineramaActive()) {
 	   pSiS->SiS_SD_Flags |= SiS_SD_ISDHXINERAMA;
 	   pSiS->SiS_SD_Flags &= ~(SiS_SD_SUPPORTXVGAMMA1);
 	}

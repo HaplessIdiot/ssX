@@ -11,7 +11,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.26tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.27tsi Exp $ */
 /*
  * Copyright (c) 1996-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -82,9 +82,6 @@ is" without express or implied warranty.
 #include "Drawable.h"
 #include "XNGC.h"
 #include "XNFont.h"
-#ifdef DPMSExtension
-#include "dpmsproc.h"
-#endif
 
 Bool xnestDoFullGeneration = True;
 
@@ -203,30 +200,4 @@ void OsVendorFatalError()
 /* this is just to get the server to link on AIX */
 #ifdef AIXV3
 int SelectWaitTime = 10000; /* usec */
-#endif
-
-#ifdef DPMSExtension
-/**************************************************************
- * DPMSSet(), DPMSGet(), DPMSSupported()
- *
- * stubs
- *
- ***************************************************************/
-
-void
-DPMSSet(int level)
-{
-}
-
-int
-DPMSGet(int *level)
-{
-    return -1;
-}
-
-Bool
-DPMSSupported()
-{
-    return FALSE;
-}
 #endif

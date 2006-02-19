@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbpntwin.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbpntwin.c,v 1.6tsi Exp $ */
 
 #include <X11/X.h>
 
@@ -13,11 +13,6 @@
 #include "cfb32.h"
 #include "cfb8_32.h"
 #include "mi.h"
-
-#ifdef PANORAMIX
-#include "panoramiX.h"
-#include "panoramiXsrv.h"
-#endif
 
 void
 cfb8_32PaintWindow(
@@ -43,15 +38,7 @@ cfb8_32PaintWindow(
 	case BackgroundPixmap:
 	    xorg = pWin->drawable.x;
 	    yorg = pWin->drawable.y;
-#ifdef PANORAMIX
-	    if(!noPanoramiXExtension) {
-		int index = pWin->drawable.pScreen->myNum;
-		if(WindowTable[index] == pWin) {
-		    xorg -= panoramiXdataPtr[index].x;
-		    yorg -= panoramiXdataPtr[index].y;
-		}
-	    }
-#endif
+
 	    cfb32FillBoxTileOddGeneral ((DrawablePtr)pWin,
 			(int)REGION_NUM_RECTS(pRegion), REGION_RECTS(pRegion),
 			pWin->background.pixmap, xorg, yorg, GXcopy, 
@@ -91,15 +78,6 @@ cfb8_32PaintWindow(
 	    xorg = pBgWin->drawable.x;
 	    yorg = pBgWin->drawable.y;
 
-#ifdef PANORAMIX
-	    if(!noPanoramiXExtension) {
-		int index = pWin->drawable.pScreen->myNum;
-		if(WindowTable[index] == pBgWin) {
-		    xorg -= panoramiXdataPtr[index].x;
-		    yorg -= panoramiXdataPtr[index].y;
-		}
-	    }
-#endif
 	    cfb32FillBoxTileOddGeneral ((DrawablePtr)pWin,
 			(int)REGION_NUM_RECTS(pRegion), REGION_RECTS(pRegion),
 			pWin->border.pixmap, xorg, yorg, GXcopy, 

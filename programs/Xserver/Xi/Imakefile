@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/Xi/Imakefile,v 3.3tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xi/Imakefile,v 3.4tsi Exp $
 
 #include <Server.tmpl>
 
@@ -36,7 +36,6 @@ XCOMM $XFree86: xc/programs/Xserver/Xi/Imakefile,v 3.3tsi Exp $
 		setmode.c \
 		setbmap.c \
 		setmmap.c \
-		stubs.c \
 		ungrdev.c \
 		ungrdevb.c \
 		ungrdevk.c 

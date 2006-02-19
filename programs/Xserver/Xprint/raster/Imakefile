@@ -1,13 +1,13 @@
-XCOMM $XFree86: xc/programs/Xserver/Xprint/raster/Imakefile,v 1.7tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xprint/raster/Imakefile,v 1.8tsi Exp $
 
 #include <Server.tmpl>
 
-SRCS1 =	Raster.c RasterAttVal.c
-OBJS1 = Raster.o RasterAttVal.o
+SRCS = Raster.c RasterAttVal.c
+OBJS = Raster.o RasterAttVal.o
 
-SRCS = $(SRCS1)
-
-OBJS = $(OBJS1)
+#ifndef XprtExcludedExtensions
+#define XprtExcludedExtensions /**/
+#endif
 
    INCLUDES = -I.. -I../../cfb -I../../mfb -I../../mi -I../../include
 
@@ -15,11 +15,11 @@ OBJS = $(OBJS1)
 	      ../../mfb/llib-lmfb.ln ../../mi/llib-lmi.ln \
 	      ../../cfb/llib-lcfb.ln
 
-   DEFINES  = -D_XP_PRINT_SERVER_ -UXFree86LOADER
+    DEFINES = $(EXT_DEFINES) XprtExcludedExtensions
 
 NormalLibraryObjectRule()
 
 NormalLibraryTarget(raster,$(OBJS))
-NormalLintTarget($(SRCS1) $(SRCS2))
+NormalLintTarget($(SRCS))
 
 DependTarget()

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.c,v 1.30 2003/01/26 16:40:43 eich Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.c,v 1.31tsi Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -614,7 +614,7 @@ PictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats)
 	    return FALSE;
 	PictureWindowPrivateIndex = AllocateWindowPrivateIndex();
 	PictureGeneration = serverGeneration;
-#ifdef XResExtension
+#ifdef XRES
 	RegisterResourceName (PictureType, "PICTURE");
 	RegisterResourceName (PictFormatType, "PICTFORMAT");
 	RegisterResourceName (GlyphSetType, "GLYPHSET");
