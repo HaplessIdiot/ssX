@@ -33,7 +33,7 @@ XFree86 4.5.99.22 (xx February 2006)
       - Accomodate XWin more cleanly by not "skipping" over Xserver/hw.
       - Remove all extension stub code (no longer needed).
       `make World` is required to correctly build these changes.  In fact, I
-      recommend staring from a fresh checkout.  These changes are bundled as
+      recommend starting with a fresh checkout.  These changes are bundled as
       one commit due to module versioning considerations.  (Marc La France)
  216. Linux/alpha, Linux/amd64, Linux/ppc, Solaris/sparc build/warning fixes
       (David Dawes).
@@ -19987,7 +19987,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3667 2006/02/18 03:31:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3668 2006/02/19 15:51:24 tsi Exp $
 
 
 
