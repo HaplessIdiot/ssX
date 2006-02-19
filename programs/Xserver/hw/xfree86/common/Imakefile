@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.159 2006/01/08 22:50:30 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.160tsi Exp $
 
 #include <Server.tmpl>
 
@@ -30,6 +30,11 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.159 2006/01/
 #if BuildXKB
      XKBDDXSRC = xf86XKB.c
      XKBDDXOBJ = xf86XKB.o
+#endif
+
+#if BuildDBE
+     DBEDDXSRC = xf86dbe.c
+     DBEDDXOBJ = xf86dbe.o
 #endif
 
 #if BuildDebug
@@ -84,7 +89,7 @@ MDEBUGDEFS = -DMEMDEBUG
 EXP_FORCE_DEFINES = -DSHOW_BETA_MESSAGE -DEXPIRE_SERVER
 #endif
 
-SRCS =	\
+SRCS = \
 	xf86Configure.c \
 	xf86Bus.c \
 	xf86isaBus.c \
@@ -121,9 +126,10 @@ SRCS =	\
 	$(XF86_XINPUT_SRC) \
 	$(XINPUT_DEV_SRCS) \
 	$(XKBDDXSRC) \
+	$(DBEDDXSRC) \
 	$(BETASRC) \
 	$(SERVERSRCS) \
-        $(RANDRSRC)
+	$(RANDRSRC)
 
 OBJS = \
 	xf86Configure.o \
@@ -158,9 +164,10 @@ OBJS = \
 	$(SBUSOBJ) \
 	$(XF86_XINPUT_OBJ) \
 	$(XKBDDXOBJ) \
+	$(DBEDDXOBJ) \
 	$(BETAOBJ) \
 	$(KBD).o \
-        $(RANDROBJ)
+	$(RANDROBJ)
 
 OFILES = \
 	xf86Init.o \

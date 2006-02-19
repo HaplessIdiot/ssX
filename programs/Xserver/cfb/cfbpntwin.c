@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbpntwin.c,v 3.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbpntwin.c,v 3.10tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -57,11 +57,6 @@ SOFTWARE.
 #include "cfbmskbits.h"
 #include "mi.h"
 
-#ifdef PANORAMIX
-#include "panoramiX.h"
-#include "panoramiXsrv.h"
-#endif
-
 void
 cfbPaintWindow(WindowPtr pWin, RegionPtr pRegion, int what)
 {
@@ -93,22 +88,11 @@ cfbPaintWindow(WindowPtr pWin, RegionPtr pRegion, int what)
 	    }
 	    else
 	    {
-		int xorg = pWin->drawable.x;
-		int yorg = pWin->drawable.y;
-#ifdef PANORAMIX
-		if(!noPanoramiXExtension) {
-		    int index = pWin->drawable.pScreen->myNum;
-		    if(WindowTable[index] == pWin) {
-			xorg -= panoramiXdataPtr[index].x;
-			yorg -= panoramiXdataPtr[index].y;
-		    }
-		}
-#endif
 		cfbFillBoxTileOdd ((DrawablePtr)pWin,
 				   (int)REGION_NUM_RECTS(pRegion),
 				   REGION_RECTS(pRegion),
 				   pWin->background.pixmap,
-				   xorg, yorg);
+				   pWin->drawable.x, pWin->drawable.y);
 	    }
 	    break;
 	case BackgroundPixel:
@@ -136,30 +120,15 @@ cfbPaintWindow(WindowPtr pWin, RegionPtr pRegion, int what)
 	}
 	else
 	{
-	    int xorg, yorg;
-
 	    for (pBgWin = pWin;
 		 pBgWin->backgroundState == ParentRelative;
 		 pBgWin = pBgWin->parent);
-
-	    xorg = pBgWin->drawable.x;
-	    yorg = pBgWin->drawable.y;
-
-#ifdef PANORAMIX
-	    if(!noPanoramiXExtension) {
-		int index = pWin->drawable.pScreen->myNum;
-		if(WindowTable[index] == pBgWin) {
-		    xorg -= panoramiXdataPtr[index].x;
-		    yorg -= panoramiXdataPtr[index].y;
-		}
-	    }
-#endif
 
 	    cfbFillBoxTileOdd ((DrawablePtr)pWin,
 			       (int)REGION_NUM_RECTS(pRegion),
 			       REGION_RECTS(pRegion),
 			       pWin->border.pixmap,
-			       xorg, yorg);
+			       pBgWin->drawable.x, pBgWin->drawable.y);
 	}
 	break;
     }

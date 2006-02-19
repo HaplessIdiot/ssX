@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.58tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.59tsi Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xproto.h>
@@ -268,10 +268,6 @@ static Bool DarwinAddScreen(
     if (! fbPictureInit(pScreen, 0, 0)) {
         return FALSE;
     }
-#endif
-
-#ifdef MITSHM
-    ShmRegisterFbFuncs(pScreen);
 #endif
 
     // this must be initialized (why doesn't X have a default?)

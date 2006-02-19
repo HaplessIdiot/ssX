@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.42tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.43tsi Exp $ */
 
 /*
- * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -106,11 +106,11 @@ typedef enum {
  * changed.  The minor revision mask is 0x0000FFFF and the major revision
  * mask is 0xFFFF0000.
  */
-#define ABI_ANSIC_VERSION	SET_ABI_VERSION(0, 3)
-#define ABI_VIDEODRV_VERSION	SET_ABI_VERSION(0, 9)
-#define ABI_XINPUT_VERSION	SET_ABI_VERSION(0, 5)
-#define ABI_EXTENSION_VERSION	SET_ABI_VERSION(0, 3)
-#define ABI_FONT_VERSION	SET_ABI_VERSION(0, 5)
+#define ABI_ANSIC_VERSION	SET_ABI_VERSION(0,  3)
+#define ABI_VIDEODRV_VERSION	SET_ABI_VERSION(0, 10)
+#define ABI_XINPUT_VERSION	SET_ABI_VERSION(0,  5)
+#define ABI_EXTENSION_VERSION	SET_ABI_VERSION(0,  4)
+#define ABI_FONT_VERSION	SET_ABI_VERSION(0,  5)
 
 #define MODINFOSTRING1	0xef23fdc5
 #define MODINFOSTRING2	0x10dc023a
@@ -241,4 +241,4 @@ typedef struct {
     ModuleTearDownProc		teardown;
 } XF86ModuleData;
 
-#endif /* _XF86STR_H */
+#endif /* _XF86MODULE_H */

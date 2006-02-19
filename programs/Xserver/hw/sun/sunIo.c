@@ -14,7 +14,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunIo.c,v 3.10 2003/11/17 22:20:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunIo.c,v 3.11tsi Exp $ */
 
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -199,7 +199,6 @@ ddxProcessArgument (argc, argv, i)
     int	i;
 {
     extern void UseMsg();
-    extern int XprintOptions(int, char **, int);
 
 #ifdef XKB
     int noxkb = 0, n;
@@ -272,9 +271,6 @@ ddxProcessArgument (argc, argv, i)
 	sunNoGX = TRUE;
 	return 1;
     }
-    if (strcmp(argv[i], "-XpFile") == 0) {
-	return XprintOptions(argc, argv, i) - i;
-    }
     return 0;
 }
 
@@ -295,5 +291,4 @@ ddxUseMsg()
     ErrorF("-cg4frob            don't use the mono plane of the cgfour\n");
     ErrorF("-noGX               treat the GX as a dumb frame buffer\n");
 #endif
-    ErrorF("-XpFile             specifies an alternate `Xprinters' file (Xprt only)\n");
 }

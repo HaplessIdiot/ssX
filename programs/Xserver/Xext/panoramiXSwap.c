@@ -22,7 +22,7 @@ shall not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXSwap.c,v 3.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXSwap.c,v 3.12tsi Exp $ */
 
 #include <stdio.h>
 #include <X11/X.h>
@@ -47,6 +47,8 @@ Equipment Corporation.
 #include "panoramiXsrv.h"
 #include "globals.h"
 #include "panoramiXh.h"
+
+#ifdef PANORAMIX
 
 static int
 SProcPanoramiXQueryVersion(ClientPtr client)
@@ -137,3 +139,5 @@ SProcPanoramiXDispatch (ClientPtr client)
     }
     return BadRequest;
 }
+
+#endif /* PANORAMIX */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPaintWin.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPaintWin.c,v 1.12tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -14,11 +14,6 @@
 #include "gcstruct.h"
 #include "pixmapstr.h"
 #include "xaawrap.h"
-
-#ifdef PANORAMIX
-#include "panoramiX.h"
-#include "panoramiXsrv.h"
-#endif
 
 void
 XAAPaintWindow(
@@ -90,16 +85,6 @@ XAAPaintWindow(
 
         xorg = pBgWin->drawable.x;
         yorg = pBgWin->drawable.y;
-
-#ifdef PANORAMIX
-	if(!noPanoramiXExtension) {
-	    int index = pScreen->myNum;
-	    if(WindowTable[index] == pBgWin) {
-		xorg -= panoramiXdataPtr[index].x;
-		yorg -= panoramiXdataPtr[index].y;
-	    }
-	}
-#endif
 
 	if(IS_OFFSCREEN_PIXMAP(pPix) && infoRec->FillCacheBltRects) {
 	    XAACacheInfoPtr pCache = &(infoRec->ScratchCacheInfoRec);

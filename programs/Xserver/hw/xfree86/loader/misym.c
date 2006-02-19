@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.38 2003/10/15 16:29:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.39tsi Exp $ */
 
 /*
  *
@@ -24,7 +24,7 @@
  */
 
 /*
- * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -84,10 +84,6 @@
 #include "mifillarc.h"
 #include "micmap.h"
 #include "mioverlay.h"
-#ifdef PANORAMIX
-#include "resource.h"
-#include "panoramiX.h"
-#endif
 #ifdef RENDER
 #include "mipict.h"
 #endif

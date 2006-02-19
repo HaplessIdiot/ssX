@@ -68,7 +68,7 @@ Equipment Corporation.
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.44tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.45tsi Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -98,9 +98,6 @@ Equipment Corporation.
 #include "modinit.h"
 
 
-PanoramiXData	*panoramiXdataPtr = NULL;
-unsigned long XRT_WINDOW;
-
 #ifdef PANORAMIX
 
 #ifdef GLXPROXY
@@ -120,6 +117,7 @@ int		PanoramiXPixWidth = 0;
 int		PanoramiXPixHeight = 0;
 int		PanoramiXNumScreens = 0;
 
+PanoramiXData	*panoramiXdataPtr = NULL;
 RegionRec	PanoramiXScreenRegion = {{0, 0, 0, 0}, NULL};
 
 static int		PanoramiXNumDepths;
@@ -131,6 +129,7 @@ static VisualPtr	PanoramiXVisuals;
 XID		*PanoramiXVisualTable = NULL;
 
 unsigned long XRC_DRAWABLE;
+unsigned long XRT_WINDOW;
 unsigned long XRT_PIXMAP;
 unsigned long XRT_GC;
 unsigned long XRT_COLORMAP;
@@ -163,8 +162,10 @@ typedef struct {
 } PanoramiXGCRec, *PanoramiXGCPtr;
 
 typedef struct {
-  CreateGCProcPtr	CreateGC;
-  CloseScreenProcPtr	CloseScreen;
+  CloseScreenProcPtr		CloseScreen;
+  PaintWindowBackgroundProcPtr	PaintWindowBackground;
+  PaintWindowBorderProcPtr	PaintWindowBorder;
+  CreateGCProcPtr		CreateGC;
 } PanoramiXScreenRec, *PanoramiXScreenPtr;
 
 RegionRec XineramaScreenRegions[MAXSCREENS];
@@ -198,6 +199,8 @@ XineramaCloseScreen(int i, ScreenPtr pScreen)
 	pScreen->devPrivates[PanoramiXScreenIndex].ptr;
 
     pScreen->CloseScreen = pScreenPriv->CloseScreen;
+    pScreen->PaintWindowBackground = pScreenPriv->PaintWindowBackground;
+    pScreen->PaintWindowBorder = pScreenPriv->PaintWindowBorder;
     pScreen->CreateGC = pScreenPriv->CreateGC;
 
     REGION_UNINIT(pScreen, &XineramaScreenRegions[pScreen->myNum]);
@@ -207,6 +210,52 @@ XineramaCloseScreen(int i, ScreenPtr pScreen)
     xfree(pScreenPriv);
 
     return (*pScreen->CloseScreen)(i, pScreen);
+}
+
+static void
+XineramaPaintWindow(WindowPtr pWin, RegionPtr pRegion, int what)
+{
+    ScreenPtr pScreen = pWin->drawable.pScreen;
+    PanoramiXScreenPtr pScreenPriv =
+	pScreen->devPrivates[PanoramiXScreenIndex].ptr;
+    WindowPtr pBWindow = pWin;
+    Bool noPanoramiXExtensionSave = noPanoramiXExtension;
+    int xsave, ysave;
+
+    /* Find the window whose background/border is to be used */
+    while (pBWindow->backgroundState == ParentRelative)
+	pBWindow = pBWindow->parent;
+    xsave = pBWindow->drawable.x;
+    ysave = pBWindow->drawable.y;
+
+    if (!noPanoramiXExtension) {
+	int screen = pScreen->myNum;
+
+	/* Disable kludge in older framebuffers */
+	noPanoramiXExtension = TRUE;
+
+	/* The extension mangles root window origins */
+	if (pBWindow == WindowTable[screen]) {
+	    pBWindow->drawable.x -= panoramiXdataPtr[screen].x;
+	    pBWindow->drawable.y -= panoramiXdataPtr[screen].y;
+	}
+    }
+
+    /* Unwrap, call down and re-wrap */
+    if (what == PW_BACKGROUND) {
+	pScreen->PaintWindowBackground = pScreenPriv->PaintWindowBackground;
+	(*pScreen->PaintWindowBackground)(pWin, pRegion, PW_BACKGROUND);
+	pScreen->PaintWindowBackground = XineramaPaintWindow;
+    } else {
+	pScreen->PaintWindowBorder = pScreenPriv->PaintWindowBorder;
+	(*pScreen->PaintWindowBorder)(pWin, pRegion, PW_BORDER);
+	pScreen->PaintWindowBorder = XineramaPaintWindow;
+    }
+
+    /* Recover from the above temporary adjustments */
+    noPanoramiXExtension = noPanoramiXExtensionSave;
+    pBWindow->drawable.x = xsave;
+    pBWindow->drawable.y = ysave;
 }
 
 static Bool
@@ -585,11 +634,15 @@ void PanoramiXExtensionInit(int argc, char *argv[])
 		return;
 	   }
 
-	   pScreenPriv->CreateGC = pScreen->CreateGC;
 	   pScreenPriv->CloseScreen = pScreen->CloseScreen;
+	   pScreenPriv->PaintWindowBackground = pScreen->PaintWindowBackground;
+	   pScreenPriv->PaintWindowBorder = pScreen->PaintWindowBorder;
+	   pScreenPriv->CreateGC = pScreen->CreateGC;
 
-	   pScreen->CreateGC = XineramaCreateGC;
 	   pScreen->CloseScreen = XineramaCloseScreen;
+	   pScreen->PaintWindowBackground = XineramaPaintWindow;
+	   pScreen->PaintWindowBorder = XineramaPaintWindow;
+	   pScreen->CreateGC = XineramaCreateGC;
 	}
 
 	XRC_DRAWABLE = CreateNewResourceClass();
@@ -1368,10 +1421,4 @@ XineramaGetImageData(
     REGION_UNINIT(pScreen, &GrabRegion);
 }
 
-#else
-PanoramiXRes *
-PanoramiXFindIDByScrnum(RESTYPE type, XID id, int screen)
-{
-    return NULL;
-}
-#endif
+#endif /* PANORAMIX */

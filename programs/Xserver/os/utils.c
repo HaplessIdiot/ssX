@@ -48,9 +48,9 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.106 2005/10/14 15:17:26 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.107tsi Exp $ */
 /*
- * Copyright (c) 1996-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1996-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -156,9 +156,14 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #ifdef XKB
 #include <X11/extensions/XKBsrv.h>
 #endif
+
 #ifdef XCSECURITY
 #define _SECURITY_SERVER
 #include <X11/extensions/security.h>
+#endif
+
+#ifdef XPRINT
+#include "DiPrint.h"
 #endif
 
 #ifdef RENDER
@@ -173,8 +178,8 @@ OR PERFORMANCE OF THIS SOFTWARE.
 Bool CoreDump;
 Bool noTestExtensions;
 
-Bool noPanoramiXExtension = TRUE;
 #ifdef PANORAMIX
+Bool noPanoramiXExtension = TRUE;
 Bool PanoramiXVisibilityNotifySent = FALSE;
 Bool PanoramiXMapped = FALSE;
 Bool PanoramiXWindowExposureSent = FALSE;

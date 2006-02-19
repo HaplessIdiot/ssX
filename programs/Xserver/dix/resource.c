@@ -67,7 +67,7 @@ SOFTWARE.
  *      1, and an otherwise arbitrary ID in the low 22 bits, we can create a
  *      resource "owned" by the client.
  */
-/* $XFree86: xc/programs/Xserver/dix/resource.c,v 3.15tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/resource.c,v 3.16tsi Exp $ */
 
 #define NEED_EVENTS
 #include <X11/X.h>
@@ -123,7 +123,7 @@ RESTYPE TypeMask;
 
 static DeleteType *DeleteFuncs = (DeleteType *)NULL;
 
-#ifdef XResExtension
+#ifdef RES
 
 Atom * ResourceNames = NULL;
 
@@ -148,7 +148,7 @@ CreateNewResourceType(DeleteType deleteFunc)
     if (!funcs)
 	return 0;
 
-#ifdef XResExtension
+#ifdef RES
     {
        Atom *newnames;
        newnames = xrealloc(ResourceNames, (next + 1) * sizeof(Atom));
@@ -212,7 +212,7 @@ InitClientResources(ClientPtr client)
 	DeleteFuncs[RT_OTHERCLIENT & TypeMask] = OtherClientGone;
 	DeleteFuncs[RT_PASSIVEGRAB & TypeMask] = DeletePassiveGrab;
 
-#ifdef XResExtension
+#ifdef RES
         if(ResourceNames)
             xfree(ResourceNames);
         ResourceNames = xalloc((lastResourceType + 1) * sizeof(Atom));
@@ -783,7 +783,8 @@ LegalNewID(XID id, ClientPtr client)
 
 #ifdef XCSECURITY
 
-/* SecurityLookupIDByType and SecurityLookupIDByClass:
+/*
+ * SecurityLookupIDByType and SecurityLookupIDByClass:
  * These are the heart of the resource ID security system.  They take
  * two additional arguments compared to the old LookupID functions:
  * the client doing the lookup, and the access mode (see resource.h).
@@ -848,7 +849,8 @@ SecurityLookupIDByClass(ClientPtr client, XID id, RESTYPE classes, Mask mode)
     return retval;
 }
 
-/* We can't replace the LookupIDByType and LookupIDByClass functions with
+/*
+ * We can't replace the LookupIDByType and LookupIDByClass functions with
  * macros because of compatibility with loadable servers.
  */
 
@@ -909,6 +911,18 @@ LookupIDByClass(XID id, RESTYPE classes)
 		return res->value;
     }
     return (pointer)NULL;
+}
+
+pointer
+SecurityLookupIDByType(ClientPtr client, XID id, RESTYPE rtype, Mask mode)
+{
+    return LookupIDByType(id, rtype);
+}
+
+pointer
+SecurityLookupIDByClass(ClientPtr client, XID id, RESTYPE classes, Mask mode)
+{
+    return LookupIDByClass(id, classes);
 }
 
 #endif /* XCSECURITY */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.68tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.69tsi Exp $ */
 
 /*
  * Copyright 1995-1998 by Metro Link, Inc.
@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 /*
- * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -174,10 +174,10 @@ LOOKUP dixLookupTab[] = {
     SYMFUNC(QueueWorkProc)
     SYMFUNC(RegisterBlockAndWakeupHandlers)
     SYMFUNC(RemoveBlockAndWakeupHandlers)
-#ifdef XCSECURITY
     SYMFUNC(SecurityLookupDrawable)
     SYMFUNC(SecurityLookupWindow)
-#endif
+    SYMFUNC(SecurityVerifyDrawable)
+    SYMFUNC(SecurityVerifyGC)
     /* events.c */
     SYMFUNC(CheckCursorConfinement)
     SYMFUNC(DeliverEvents)
@@ -227,11 +227,13 @@ LOOKUP dixLookupTab[] = {
     SYMVAR(defaultDPMSEnabled)
     /* bigreq */
     SYMVAR(maxBigRequestSize)
-#ifdef XV
     /* XXX These are exported from the DDX, not DIX. */
+#ifdef XV
     SYMVAR(XvScreenInitProc)
     SYMVAR(XvGetScreenIndexProc)
     SYMVAR(XvGetRTPortProc)
+#endif
+#ifdef XVMC
     SYMVAR(XvMCScreenInitProc)
 #endif
     SYMVAR(ScreenSaverBlanking)
@@ -249,6 +251,7 @@ LOOKUP dixLookupTab[] = {
     SYMVAR(serverGeneration)
     /* main.c */
     SYMFUNC(NotImplemented)
+    SYMFUNC(IsXineramaActive)
     /* pixmap.c */
     SYMFUNC(AllocatePixmap)
     SYMFUNC(GetScratchPixmapHeader)
@@ -280,10 +283,8 @@ LOOKUP dixLookupTab[] = {
     SYMFUNC(LookupIDByType)
     SYMFUNC(LookupIDByClass)
     SYMFUNC(LegalNewID)
-#ifdef XCSECURITY
     SYMFUNC(SecurityLookupIDByClass)
     SYMFUNC(SecurityLookupIDByType)
-#endif
     SYMFUNC(FindClientResourcesByType)
     SYMFUNC(FindAllClientResources)
     SYMVAR(lastResourceType)

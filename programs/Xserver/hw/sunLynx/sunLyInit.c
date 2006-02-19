@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyInit.c,v 3.10 2004/06/02 22:43:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyInit.c,v 3.11tsi Exp $ */
 
 /*
  * Copyright 1987 by the Regents of the University of California
@@ -626,28 +626,3 @@ sunCfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp)
     return cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width);
 }
 #endif  /* SUNMAXDEPTH */
-
-#ifdef DPMSExtension
-/**************************************************************
- * DPMSSet(), DPMSGet(), DPMSSupported()
- *
- * stubs
- *
- ***************************************************************/
-
-void DPMSSet (level)
-    int level;
-{
-}
-
-int DPMSGet (level)
-    int* level;
-{
-    return -1;
-}
-
-Bool DPMSSupported ()
-{
-    return FALSE;
-}
-#endif

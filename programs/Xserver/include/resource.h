@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/include/resource.h,v 1.13tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1989, 1998  The Open Group
@@ -44,7 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/resource.h,v 1.12 2003/04/27 21:31:05 herrb Exp $ */
 
 #ifndef RESOURCE_H
 #define RESOURCE_H 1
@@ -112,11 +112,8 @@ typedef unsigned long RESTYPE;
 #define CLIENT_ID(id) ((int)(CLIENT_BITS(id) >> CLIENTOFFSET))
 #define SERVER_BIT		(Mask)0x40000000	/* use illegal bit */
 
-#ifdef INVALID
-#undef INVALID	/* needed on HP/UX */
-#endif
-
 /* Invalid resource id */
+#undef  INVALID
 #define INVALID	(0)
 
 #define BAD_RESOURCE 0xe0000000
@@ -213,7 +210,8 @@ extern pointer LookupClientResourceComplex(
     FindComplexResType func,
     pointer cdata);
 
-/* These are the access modes that can be passed in the last parameter
+/*
+ * These are the access modes that can be passed in the last parameter
  * to SecurityLookupIDByType/Class.  The Security extension doesn't
  * currently make much use of these; they're mainly provided as an
  * example of what you might need for discretionary access control.
@@ -226,8 +224,6 @@ extern pointer LookupClientResourceComplex(
 #define SecurityWriteAccess	(1<<1)	/* changing the object */
 #define SecurityDestroyAccess	(1<<2)	/* destroying the object */
 
-#ifdef XCSECURITY
-
 extern pointer SecurityLookupIDByType(
     ClientPtr /*client*/,
     XID /*id*/,
@@ -239,16 +235,6 @@ extern pointer SecurityLookupIDByClass(
     XID /*id*/,
     RESTYPE /*classes*/,
     Mask /*access_mode*/);
-
-#else /* not XCSECURITY */
-
-#define SecurityLookupIDByType(client, id, rtype, access_mode) \
-        LookupIDByType(id, rtype)
-
-#define SecurityLookupIDByClass(client, id, classes, access_mode) \
-        LookupIDByClass(id, classes)
-
-#endif /* XCSECURITY */
 
 extern void GetXIDRange(
     int /*client*/,
@@ -264,10 +250,9 @@ extern unsigned int GetXIDList(
 extern RESTYPE lastResourceType;
 extern RESTYPE TypeMask;
 
-#ifdef XResExtension
+#ifdef RES
 extern Atom *ResourceNames;
 void RegisterResourceName(RESTYPE type, char* name);
 #endif
 
 #endif /* RESOURCE_H */
-

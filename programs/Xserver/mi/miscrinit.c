@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/mi/miscrinit.c,v 3.17tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miscrinit.c,v 3.18tsi Exp $ */
 
 #include <X11/X.h>
 #include "servermd.h"
@@ -35,10 +35,6 @@ from The Open Group.
 #include "pixmapstr.h"
 #include "dix.h"
 #include "miline.h"
-#ifdef MITSHM
-#define _XSHM_SERVER_
-#include <X11/extensions/XShm.h>
-#endif
 
 /* We use this structure to propogate some information from miScreenInit to
  * miCreateScreenResources.  miScreenInit allocates the structure, fills it
@@ -223,12 +219,7 @@ miScreenInit(
     pScreen->numVisuals = numVisuals;
     pScreen->visuals = visuals;
     if (width)
-    {
-#ifdef MITSHM
-	ShmRegisterFbFuncs(pScreen);
-#endif
 	pScreen->CloseScreen = miCloseScreen;
-    }
     /* else CloseScreen */
     /* QueryBestSize, SaveScreen, GetImage, GetSpans */
     pScreen->PointerNonInterestBox = (PointerNonInterestBoxProcPtr) 0;

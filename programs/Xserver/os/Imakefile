@@ -1,6 +1,6 @@
-XCOMM $XFree86: xc/programs/Xserver/os/Imakefile,v 3.45tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/os/Imakefile,v 3.46tsi Exp $
 /*
- * Copyright (c) 1996-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1996-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -45,13 +45,6 @@ XCOMM $XFree86: xc/programs/Xserver/os/Imakefile,v 3.45tsi Exp $
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-
-
-#if BuildSeparateTinyDIX && !BuildTinyDIX
-#define IHaveSubdirs
-SUBDIRS = tiny
-#endif
 
 #include <Server.tmpl>
 
@@ -184,8 +177,8 @@ BOOTSTRAPCFLAGS =
     PAM_DEFINES = -DUSE_PAM
 #endif
 
-#if BuildTinyDIX
-TINY_DEFINES = TinyDIXDefines
+#ifndef LinkDefines
+#define LinkDefines /**/
 #endif
 
 #if !HasStrlcat
@@ -194,12 +187,13 @@ STRLCAT_DEFINES = -DNEED_STRLCAT
         DEFINES = -DXSERV_t -DTRANS_SERVER $(CONNECTION_FLAGS) $(MEM_DEFINES) \
 		  $(XDMAUTHDEFS) $(RPCDEFS) $(SIGNAL_DEFINES) $(OS_DEFINES) \
 		  $(KRB5_DEFINES) $(RGB_DEFINES) $(GETPEEREID_DEFINES) \
-		  $(STRLCAT_DEFINES) $(RANDOM_DEFINES) $(TINY_DEFINES) \
-		  $(ASPRINTF_DEFINES)
-       INCLUDES = -I$(SERVERSRC)/os -I$(SERVERSRC)/include \
+		  $(STRLCAT_DEFINES) $(RANDOM_DEFINES) $(ASPRINTF_DEFINES) \
+		  $(EXT_DEFINES) LinkDefines
+       INCLUDES = -I$(SERVERSRC)/include -I$(SERVERSRC)/os \
 		  -I$(SERVERSRC)/Xext -I$(SERVERSRC)/render \
-		  -I$(TOP)/lib/Xau -I$(SERVERSRC)/lbx Krb5Includes
- DEPEND_DEFINES = $(DBM_DEFINES) $(XDMCP_DEFINES) $(EXT_DEFINES) \
+		  -I$(SERVERSRC)/lbx -I$(SERVERSRC)/Xprint \
+		  -I$(TOP)/lib/Xau Krb5Includes
+ DEPEND_DEFINES = $(DBM_DEFINES) $(XDMCP_DEFINES) \
 		  $(TRANS_INCLUDES) $(CONNECTION_FLAGS) DependDefines
        LINTLIBS = ../dix/llib-ldix.ln
 
@@ -230,12 +224,12 @@ SpecialCObjectRule(connection,$(ICONFIGFILES),$(SOCK_DEFINES) $(XDMCP_DEFINES))
 SpecialCObjectRule(transport,$(ICONFIGFILES),$(TRANS_INCLUDES) $(CONN_DEFINES) $(SOCK_DEFINES))
 LinkSourceFile(transport.c,$(TRANSCOMMSRC))
 SpecialCObjectRule(osinit,$(ICONFIGFILES),$(ADM_DEFINES))
-SpecialCObjectRule(WaitFor,$(ICONFIGFILES),$(EXT_DEFINES) $(TINY_DEFINES))
-SpecialCObjectRule(io,$(ICONFIGFILES),$(EXT_DEFINES) $(TINY_DEFINES))
+SpecialCObjectRule(WaitFor,$(ICONFIGFILES),NullParameter)
+SpecialCObjectRule(io,$(ICONFIGFILES),NullParameter)
 #if BuildLBX
-SpecialCObjectRule(lbxio,$(ICONFIGFILES),$(EXT_DEFINES) $(TINY_DEFINES))
+SpecialCObjectRule(lbxio,$(ICONFIGFILES),NullParameter)
 #endif
-SpecialCObjectRule(utils,$(ICONFIGFILES),$(XDMCP_DEFINES) $(EXT_DEFINES) $(TINY_DEFINES) $(ERROR_DEFINES) $(PAM_DEFINES))
+SpecialCObjectRule(utils,$(ICONFIGFILES),$(XDMCP_DEFINES) $(ERROR_DEFINES) $(PAM_DEFINES))
 SpecialCObjectRule(xalloc,$(ICONFIGFILES),$(XALLOC_DEFINES))
 #if defined(SparcArchitecture) && HasGcc && !HasGcc2
 oscolor.o: oscolor.c $(ICONFIGFILES)
@@ -258,7 +252,7 @@ LinkSourceFile(strlcat.c,$(LIBSRC)/misc)
 LinkSourceFile(strlcpy.c,$(LIBSRC)/misc)
 #endif
 
-#if BuiltinRGB && !defined(LinkDirectory)
+#if BuiltinRGB
 #if HasPerl5
 RGBTXTSRCS = $(RGBSRC)/rgb.txt
 
@@ -277,11 +271,6 @@ LinkFile($(BUILTIN_RGB_SRC),stdrgb.c)
 
 DependTarget()
 
-#ifdef IHaveSubdirs
-MakeSubdirs($(SUBDIRS))
-DependSubdirs($(SUBDIRS))
-#endif
-
 #ifdef LinkDirectory
 LinkSourceFile(WaitFor.c,LinkDirectory)
 LinkSourceFile(access.c,LinkDirectory)
@@ -295,14 +284,13 @@ LinkSourceFile(log.c,LinkDirectory)
 LinkSourceFile(mitauth.c,LinkDirectory)
 LinkSourceFile(oscolor.c,LinkDirectory)
 LinkSourceFile(osinit.c,LinkDirectory)
+LinkSourceFile(rgbBuiltin.pl,LinkDirectory)
 LinkSourceFile(rpcauth.c,LinkDirectory)
 LinkSourceFile(secauth.c,LinkDirectory)
+LinkSourceFile(stdrgb.c,LinkDirectory)
 LinkSourceFile(utils.c,LinkDirectory)
 LinkSourceFile(xalloc.c,LinkDirectory)
 LinkSourceFile(xdmauth.c,LinkDirectory)
 LinkSourceFile(xdmcp.c,LinkDirectory)
-#if BuiltinRGB
-LinkSourceFile($(BUILTIN_RGB_SRC),LinkDirectory)
-#endif
 #endif
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.501 2006/01/29 01:00:55 tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.502tsi Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1627,30 +1627,6 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #define InstallJapaneseDocs	NO
 #endif
 
-#if BuildXF86DGA
-# define XFree86DGADefines	-DXFreeXDGA
-#else
-# define XFree86DGADefines	/**/
-#endif
-
-#if BuildXvExt
-# define XFree86XvDefines	-DXvExtension
-#else
-# define XFree86XvDefines	/**/
-#endif
-
-#if BuildXvMCExt
-# define XFree86XvMCDefines	-DXvMCExtension
-#else
-# define XFree86XvMCDefines	/**/
-#endif
-
-#if BuildXResExt
-# define XFree86XResDefines     -DXResExtension
-#else
-# define XFree86XResDefines     /**/
-#endif
-
 #ifndef DlopenHack
 # define DlopenHack		-DDLOPEN_HACK
 #endif
@@ -1697,12 +1673,9 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 /* Server defines required for all OSs */
 #ifndef XFree86ServerDefines
 # define XFree86ServerDefines	-DAVOID_GLYPHBLT -DPIXPRIV -DSINGLEDEPTH \
-				XFree86DGADefines XFree86XvDefines \
 				XFree86LoaderDefines -DXFree86Server \
-				VidModeExtensionDefines \
-				XFree86XvMCDefines \
 				SmartScheduleDefines \
-				DebugDefines XFree86XResDefines \
+				DebugDefines \
 				-DX_BYTE_ORDER=$(X_BYTE_ORDER)
 #endif
 

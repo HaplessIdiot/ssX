@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/include/windowstr.h,v 1.8tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -44,7 +45,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/windowstr.h,v 1.7 2003/04/27 21:31:05 herrb Exp $ */
 
 #ifndef WINDOWSTRUCT_H
 #define WINDOWSTRUCT_H
@@ -129,12 +129,17 @@ typedef struct _Window {
     unsigned		viewable:1;	/* realized && InputOutput */
     unsigned		dontPropagate:3;/* index into DontPropagateMasks */
     unsigned		forcedBS:1;	/* system-supplied backingStore */
-#ifdef NEED_DBE_BUF_BITS
+
+#if defined(DBE) && defined(NEED_DBE_BUF_BITS)
+
 #define DBE_FRONT_BUFFER 1
 #define DBE_BACK_BUFFER  0
+
     unsigned		dstBuffer:1;	/* destination buffer for rendering */
     unsigned		srcBuffer:1;	/* source buffer for rendering */
-#endif
+
+#endif /* NEED_DBE_BUF_BITS */
+
     DevUnion		*devPrivates;
 } WindowRec;
 

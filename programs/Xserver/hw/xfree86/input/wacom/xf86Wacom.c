@@ -1,5 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.48 2005/10/14 15:16:58 tsi Exp $ */
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.49tsi Exp $ */
 /*
  * Copyright 1995-2001 by Frederic Lepied, France. <Lepied@XFree86.org>
  *                                                                            
@@ -2768,8 +2767,7 @@ xf86WcmDevConvert(LocalDevicePtr	local,
     if (first != 0 || num == 1)
       return FALSE;
    
-#ifdef PANORAMIX
-    if (!noPanoramiXExtension && (priv->flags & ABSOLUTE_FLAG) &&
+    if (IsXineramaActive() && (priv->flags & ABSOLUTE_FLAG) &&
                 priv->common->wcmGimp) {
 	int i, totalWidth, leftPadding = 0;
 	for (i = 0; i < priv->currentScreen; i++)
@@ -2779,7 +2777,7 @@ xf86WcmDevConvert(LocalDevicePtr	local,
 	    v0 -= (priv->bottomX - priv->topX) * leftPadding
                         / (double)totalWidth + 0.5;
     }
-#endif
+
     if (priv->twinview != TV_NONE && (priv->flags & ABSOLUTE_FLAG)) {
 	v0 -= priv->topX;
 	v1 -= priv->topY;
@@ -2862,8 +2860,7 @@ xf86WcmDevReverseConvert(LocalDevicePtr	local,
     valuators[0] = x / priv->factorX + 0.5;
     valuators[1] = y / priv->factorY + 0.5;
 
-#ifdef PANORAMIX
-    if (!noPanoramiXExtension && (priv->flags & ABSOLUTE_FLAG) &&
+    if (IsXineramaActive() && (priv->flags & ABSOLUTE_FLAG) &&
                 priv->common->wcmGimp) {
 	int i, totalWidth, leftPadding = 0;
 	for (i = 0; i < priv->currentScreen; i++)
@@ -2873,7 +2870,7 @@ xf86WcmDevReverseConvert(LocalDevicePtr	local,
 	valuators[0] += (priv->bottomX - priv->topX)
                         * leftPadding / (double)totalWidth + 0.5;
     }
-#endif
+
     if (priv->twinview != TV_NONE && (priv->flags & ABSOLUTE_FLAG)) {
  	if (priv->twinview == TV_LEFT_RIGHT) {
 	    if (x > priv->tvResolution[0]) {
@@ -2993,8 +2990,7 @@ xf86WcmSetScreen(LocalDevicePtr   local,
 	    leftPadding += screenInfo.screens[i]->width;
 	}
     }
-#ifdef PANORAMIX
-    else if (!noPanoramiXExtension && priv->common->wcmGimp) {
+    else if (IsXineramaActive() && priv->common->wcmGimp) {
 	screenToSet = priv->screen_no;
 	for (i = 0; i < screenToSet; i++)
 	    leftPadding += screenInfo.screens[i]->width;
@@ -3003,7 +2999,7 @@ xf86WcmSetScreen(LocalDevicePtr   local,
 	*v1 = *v1 * screenInfo.screens[screenToSet]->height / (double)maxHeight + 0.5;
     }
 
-    if (!noPanoramiXExtension && priv->common->wcmGimp) {
+    if (IsXineramaActive() && priv->common->wcmGimp) {
 	priv->factorX = totalWidth/sizeX;
 	priv->factorY = maxHeight/sizeY;
 	x = (*v0 - sizeX * leftPadding / totalWidth) * priv->factorX + 0.5;
@@ -3015,7 +3011,6 @@ xf86WcmSetScreen(LocalDevicePtr   local,
 	    y = screenInfo.screens[screenToSet]->height - 1;
     }
     else
-#endif
     {
 	if (priv->screen_no == -1)
 	    *v0 = (*v0 * totalWidth - sizeX * leftPadding)

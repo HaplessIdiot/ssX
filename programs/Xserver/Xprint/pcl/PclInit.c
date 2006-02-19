@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclInit.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclInit.c,v 1.13tsi Exp $ */
 /*******************************************************************
 **
 **    *********************************************************
@@ -89,6 +89,11 @@ copyright holders.
 
 #include "attributes.h"
 #include "DiPrint.h"
+
+#ifdef MITSHM
+#define _XSHM_SERVER_
+#include <X11/extensions/XShm.h>
+#endif
 
 #define MODELDIRNAME "/models"
 
@@ -208,6 +213,10 @@ InitializePclDriver(
     mfbScreenInit( pScreen, NULL, maxDim, maxDim, maxRes, maxRes,
 		  maxRes );
 #endif /* XP_PCL_COLOR */
+
+#ifdef MITSHM
+    ShmRegisterMiFuncs(pScreen);
+#endif
 
     miInitializeBackingStore ( pScreen );
 

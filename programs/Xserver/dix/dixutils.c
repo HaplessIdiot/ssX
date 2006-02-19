@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/dixutils.c,v 3.15tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixutils.c,v 3.16tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -169,7 +169,8 @@ CopyISOLatin1Lowered(unsigned char *dest, unsigned char *source, int length)
 
 #ifdef XCSECURITY
 
-/* SecurityLookupWindow and SecurityLookupDrawable:
+/*
+ * SecurityLookupWindow and SecurityLookupDrawable:
  * Look up the window/drawable taking into account the client doing
  * the lookup and the type of access desired.  Return the window/drawable
  * if it exists and the client is allowed access, else return NULL.
@@ -223,7 +224,8 @@ SecurityLookupDrawable(XID rid, ClientPtr client, Mask access_mode)
     return (pointer)NULL;
 }
 
-/* We can't replace the LookupWindow and LookupDrawable functions with
+/*
+ * We can't replace the LookupWindow and LookupDrawable functions with
  * macros because of compatibility with loadable servers.
  */
 
@@ -281,6 +283,18 @@ LookupDrawable(XID rid, ClientPtr client)
     return (pointer)NULL;
 }
 
+WindowPtr
+SecurityLookupWindow(XID rid, ClientPtr client, Mask access_mode)
+{
+    return LookupWindow(rid, client);
+}
+
+pointer
+SecurityLookupDrawable(XID rid, ClientPtr client, Mask access_mode)
+{
+    return LookupDrawable(rid, client);
+}
+
 #endif /* XCSECURITY */
 
 ClientPtr
@@ -295,6 +309,38 @@ LookupClient(XID rid, ClientPtr client)
 	return clients[clientIndex];
     }
     return (ClientPtr)NULL;
+}
+
+
+/* Return the (possibly cached) Drawable that corresponds to an XID */
+DrawablePtr
+SecurityVerifyDrawable(XID did, ClientPtr client, Mask access_mode)
+{
+#ifdef XCSECURITY
+    if (client->lastDrawableID == did &&
+	client->trustLevel == XSecurityClientTrusted)
+	return client->lastDrawable;
+#else
+    if (client->lastDrawableID == did)
+	return client->lastDrawable;
+#endif
+    return SecurityLookupIDByClass(client, did, RC_DRAWABLE, access_mode);
+}
+
+
+/* Return the (possibly cached) GC that corresponds to an XID */
+GCPtr
+SecurityVerifyGC(XID rid, ClientPtr client, Mask access_mode)
+{
+#ifdef XCSECURITY
+    if (client->lastGCID == rid &&
+	client->trustLevel == XSecurityClientTrusted)
+	return client->lastGC;
+#else
+    if (client->lastGCID == rid)
+	return client->lastGC;
+#endif
+    return SecurityLookupIDByType(client, rid, RT_GC, access_mode);
 }
 
 

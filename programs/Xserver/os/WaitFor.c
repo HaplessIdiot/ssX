@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.48tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.49tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /*
- * Portions Copyright (c) 1994-2004 by The XFree86 Project, Inc.
+ * Portions Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -118,7 +118,12 @@ SOFTWARE.
 #include "dixstruct.h"
 #include "opaque.h"
 #ifdef DPMSExtension
+#define DPMS_SERVER
+#include <X11/extensions/dpms.h>
 #include "dpmsproc.h"
+#endif
+#ifdef XTESTEXT1
+#include "xtest1dd.h"
 #endif
 
 /* modifications by raphael */
@@ -136,18 +141,6 @@ mffs(fd_mask mask)
     }
     return i;
 }
-
-#ifdef DPMSExtension
-#define DPMS_SERVER
-#include <X11/extensions/dpms.h>
-#endif
-
-#ifdef XTESTEXT1
-/*
- * defined in xtestext1dd.c
- */
-extern int playback_on;
-#endif /* XTESTEXT1 */
 
 struct _OsTimerRec {
     OsTimerPtr		next;
@@ -220,31 +213,29 @@ WaitForSomething(int *pClientsReady)
 	    }
 	}
 #ifdef SMART_SCHEDULE
+	SmartScheduleIdle = TRUE;
 	if (someReady)
 	{
 	    XFD_COPYSET(&AllSockets, &LastSelectMask);
 	    XFD_UNSET(&LastSelectMask, &ClientsWithInput);
 	}
 	else
+#endif
 	{
-#endif
-        wt = NULL;
-	if (timers)
-        {
-            now = GetTimeInMillis();
-	    timeout = timers->expires - now;
-            if (timeout < 0)
-                timeout = 0;
-	    waittime.tv_sec = timeout / MILLI_PER_SECOND;
-	    waittime.tv_usec = (timeout % MILLI_PER_SECOND) *
-		               (1000000 / MILLI_PER_SECOND);
-	    wt = &waittime;
+	    wt = NULL;
+	    if (timers)
+	    {
+		now = GetTimeInMillis();
+		timeout = timers->expires - now;
+        	if (timeout < 0)
+		    timeout = 0;
+		waittime.tv_sec = timeout / MILLI_PER_SECOND;
+		waittime.tv_usec = (timeout % MILLI_PER_SECOND) *
+				   (1000000 / MILLI_PER_SECOND);
+		wt = &waittime;
+	    }
+	    XFD_COPYSET(&AllSockets, &LastSelectMask);
 	}
-	XFD_COPYSET(&AllSockets, &LastSelectMask);
-#ifdef SMART_SCHEDULE
-	}
-	SmartScheduleIdle = TRUE;
-#endif
 	BlockHandler((pointer)&wt, (pointer)&LastSelectMask);
 	if (NewOutputPending)
 	    FlushAllOutput();

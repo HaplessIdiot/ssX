@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xprint/Init.c,v 1.15tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/Init.c,v 1.16tsi Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -1230,9 +1230,17 @@ PrinterInitOutput(
      char **argv)
 {
     PrinterDbPtr pDb, pDbEntry;
-    int driverCount = 0, i;
+    int driverCount, i;
     char **driverNames;
     char *configDir;
+
+    static char beenHere = FALSE;
+
+    if (beenHere)
+	return;
+    beenHere = TRUE;
+
+    driverCount = 0;
 
     /* 
      * this little test is just a warning at startup to make sure

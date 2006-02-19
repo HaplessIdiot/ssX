@@ -25,7 +25,7 @@ Equipment Corporation.
 
 /* Massively rewritten by Mark Vojkovich <markv@valinux.com> */
 
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.38tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.39tsi Exp $ */
 
 #include <stdio.h>
 #include <X11/X.h>
@@ -46,6 +46,8 @@ Equipment Corporation.
 #include "panoramiXsrv.h"
 #include "resource.h"
 #include "panoramiXh.h"
+
+#ifdef PANORAMIX
 
 #define XINERAMA_IMAGE_BUFSIZE (256*1024)
 #define INPUTONLY_LEGAL_MASK (CWWinGravity | CWEventMask | \
@@ -2400,3 +2402,5 @@ int PanoramiXStoreNamedColor(ClientPtr client)
     }
     return (result);
 }
+
+#endif /* PANORAMIX */

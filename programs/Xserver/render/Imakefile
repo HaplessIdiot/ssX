@@ -1,6 +1,6 @@
-XCOMM $XFree86: xc/programs/Xserver/render/Imakefile,v 1.12tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/render/Imakefile,v 1.13tsi Exp $
 /*
- * Copyright (c) 2000-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 2000-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -46,11 +46,6 @@ XCOMM $XFree86: xc/programs/Xserver/render/Imakefile,v 1.12tsi Exp $
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if BuildSeparateTinyDIX && !BuildTinyDIX
-#define IHaveSubdirs
-SUBDIRS = tiny
-#endif
-
 #include <Server.tmpl>
 
        SRCS =   animcur.c \
@@ -81,11 +76,11 @@ SUBDIRS = tiny
                 -I$(SERVERSRC)/fb -I$(SERVERSRC)/Xext
    LINTLIBS = $(SERVERSRC)/dix/llib-ldix.ln $(SERVERSRC)/os/llib-los.ln
 
-#if BuildTinyDIX
-TINY_DEFINES = TinyDIXDefines
+#ifndef LinkDefines
+#define LinkDefines /**/
 #endif
 
-DEFINES = $(TINY_DEFINES)
+DEFINES = $(EXT_DEFINES) LinkDefines
 
 NormalLibraryTarget(render,$(OBJS))
 NormalLibraryObjectRule()
@@ -98,11 +93,6 @@ InstallDriverSDKNonExecFile(glyphstr.h,$(DRIVERSDKINCLUDEDIR))
 InstallDriverSDKNonExecFile(mipict.h,$(DRIVERSDKINCLUDEDIR))
 InstallDriverSDKNonExecFile(picture.h,$(DRIVERSDKINCLUDEDIR))
 InstallDriverSDKNonExecFile(picturestr.h,$(DRIVERSDKINCLUDEDIR))
-
-#ifdef IHaveSubdirs
-MakeSubdirs($(SUBDIRS))
-DependSubdirs($(SUBDIRS))
-#endif
 
 #ifdef LinkDirectory
 LinkSourceFile(animcur.c,LinkDirectory)

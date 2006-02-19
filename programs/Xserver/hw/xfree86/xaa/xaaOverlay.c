@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaOverlay.c,v 1.16tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaOverlay.c,v 1.17tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -15,11 +15,6 @@
 #include "gcstruct.h"
 #include "pixmapstr.h"
 #include "mioverlay.h"
-
-#ifdef PANORAMIX
-#include "panoramiX.h"
-#include "panoramiXsrv.h"
-#endif
 
 static void
 XAACopyWindow8_32(
@@ -165,16 +160,6 @@ XAAPaintWindow8_32(
 
         xorg = pBgWin->drawable.x;
         yorg = pBgWin->drawable.y;
-
-#ifdef PANORAMIX
-	if(!noPanoramiXExtension) {
-	    int index = pScreen->myNum;
-	    if(WindowTable[index] == pBgWin) {
-		xorg -= panoramiXdataPtr[index].x;
-		yorg -= panoramiXdataPtr[index].y;
-	    }
-	}
-#endif
 
 	if(IS_OFFSCREEN_PIXMAP(pPix) && infoRec->FillCacheBltRects) {
 	    XAACacheInfoPtr pCache = &(infoRec->ScratchCacheInfoRec);

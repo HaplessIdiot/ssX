@@ -30,7 +30,7 @@ dealings in this Software without prior written authorization from said
 copyright holders.
 */
 /*
- * Copyright (c) 1996-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1996-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -76,7 +76,7 @@ copyright holders.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/Xprint/ddxInit.c,v 1.16tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ddxInit.c,v 1.17tsi Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xproto.h>
@@ -125,9 +125,7 @@ InitOutput(
 
     pScreenInfo->numPixmapFormats = 0; /* get them in PrinterInitOutput */
     screenInfo.numVideoScreens = 0;
-#ifdef PRINT_ONLY_SERVER
     PrinterInitOutput(pScreenInfo, argc, argv);
-#endif
 }
 
 static void
@@ -303,115 +301,8 @@ ddxProcessArgument (
     char *argv[],
     int i)
 {
-#ifdef PRINT_ONLY_SERVER
     return XprintOptions(argc, argv, i) - i;
-#else
-    return(0);
-#endif
 }
-
-#ifdef XINPUT
-
-#include <X11/extensions/XI.h>
-#include <X11/extensions/XIproto.h>
-#include "XIstubs.h"
-
-extern  int     BadDevice;
-
-int
-ChangePointerDevice (
-    DeviceIntPtr        old_dev,
-    DeviceIntPtr        new_dev,
-    unsigned char	x,
-    unsigned char	y)
-{
-    return (BadDevice);
-}
-
-int
-ChangeDeviceControl (
-    register    ClientPtr       client,
-    DeviceIntPtr dev,
-    xDeviceCtl  *control)
-{
-    return BadMatch;
-}
-
-void
-OpenInputDevice (
-    DeviceIntPtr dev,
-    ClientPtr client,
-    int *status)
-{
-    return;
-}
-
-void
-AddOtherInputDevices (void)
-{
-    return;
-}
-
-void
-CloseInputDevice (
-    DeviceIntPtr        dev,
-    ClientPtr           client)
-{
-    return;
-}
-
-int
-ChangeKeyboardDevice (
-    DeviceIntPtr        old_dev,
-    DeviceIntPtr        new_dev)
-{
-    return (Success);
-}
-
-int
-SetDeviceMode (
-    register    ClientPtr       client,
-    DeviceIntPtr dev,
-    int         mode)
-{
-    return BadMatch;
-}
-
-int
-SetDeviceValuators (
-    register    ClientPtr       client,
-    DeviceIntPtr dev,
-    int         *valuators,
-    int         first_valuator,
-    int         num_valuators)
-{
-    return BadMatch;
-}
-
-
-#endif /* XINPUT */
-
-#ifdef XTESTEXT1
-
-void
-XTestJumpPointer(int x, int y, int dev)
-{
-    return;
-}
-
-void
-XTestGetPointerPos(int x, int y)
-{
-    return;
-}
-
-void
-XTestGenerateEvent(int dev, int keycode, int keystate, int x, int y)
-{
-    return;
-}
-
-#endif /* XTESTEXT1 */
 
 #ifdef AIXV3
 /*

@@ -1,53 +1,62 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/sun/Imakefile,v 1.10tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/sun/Imakefile,v 1.11tsi Exp $
 
 #include <Server.tmpl>
 
-SRCS1 =	sunInit.c \
-	sunCfb.c \
-	sunCfb24.c \
-	sunCursor.c \
-	sunFbs.c \
-	sunIo.c \
-	sunKbd.c \
-	sunMfb.c \
-	sunMouse.c\
-	sunKeyMap.c
+#define IHaveSubdirs
 
-OBJS1 = sunCfb.o \
-	sunCfb24.o \
-	sunCursor.o \
-	sunFbs.o \
-	sunIo.o \
-	sunKbd.o \
-	sunMfb.o \
-	sunMouse.o \
-	sunKeyMap.o
+#if BuildXKB
+XKBDIRS = xkb
+#endif
 
-#if BuildLowMem
-SRCS2 =
-OBJS2 =
-#else
+#if BuildRender
+RENDERDIRS = render
+#endif
+
+#if BuildRandR
+RANDRDIRS = randr
+#endif
+
+#if BuildRECORD
+RECORDDIRS = record
+#endif
+
+#if BuildDBE
+DBEDIRS = dbe
+#endif
+
+#if BuildXTrap
+XTRAPDIRS = XTrap
+#endif
+
+SUBDIRS = dix os Xext $(XKBDIRS) $(RENDERDIRS) $(RANDRDIRS) $(RECORDDIRS) \
+	  $(DBEDIRS) $(XTRAPDIRS)
+
+SRCS1 = sunCfb.c sunCfb24.c sunCursor.c sunFbs.c sunIo.c sunKbd.c sunMfb.c \
+	sunMouse.c sunKeyMap.c
+
+OBJS1 = sunCfb.o sunCfb24.o sunCursor.o sunFbs.o sunIo.o sunKbd.o sunMfb.o \
+	sunMouse.o sunKeyMap.o
+
+#if !BuildLowMem
 SRCS2 = sunGX.c
 OBJS2 = sunGX.o
 #endif
 
-#ifdef i386Architecture
-SRCS3 = sunInit.c
-OBJS3 = sunInit.o
-#else
-SRCS3 = sunInit.c sunInitExt.c \
-	sunInitMono.c sunInExMono.c \
-	sunInitMulti.c stubs.c
-OBJS3 = sunInit.o sunInitExt.o \
-	sunInitMono.o sunInExMono.o \
-	sunInitMulti.o stubs.o
+SRCS3 = sunInit.c sunInitExt.c
+OBJS3 = sunInit.o sunInitExt.o
 
-DEFINES = $(OS_DEFINES) $(EXT_DEFINES) \
-	  -UXFree86LOADER -UXF86VIDMODE -UXFreeXDGA \
-	  -UXF86MISC -UXF86DRI -UXF86BIGFONT
+#ifndef i386Architecture
+SRCS4 = sunInitMono.c sunInExMono.c sunInitMulti.c
+OBJS4 = sunInitMono.o sunInExMono.o sunInitMulti.o
 #endif
 
-SRCS = $(SRCS1) $(SRCS2) $(SRCS3) kbd_mode.c constype.c
+#ifdef XsunExcludedExtensions
+SUN_DEFINES = XsunExcludedExtensions
+#endif
+
+DEFINES = $(OS_DEFINES) $(EXT_DEFINES) $(SUN_DEFINES)
+
+SRCS = $(SRCS1) $(SRCS2) $(SRCS3) $(SRCS4) kbd_mode.c constype.c
 
 OBJS = $(OBJS1) $(OBJS2)
 
@@ -61,19 +70,19 @@ OBJS = $(OBJS1) $(OBJS2)
 
 NormalLibraryObjectRule()
 
-all:: $(OBJS3) kbd_mode constype
+all:: $(OBJS3) $(OBJS4) kbd_mode constype
 
 lintlib:
 
 NormalLibraryTarget(sun,$(OBJS))
 NormalLintTarget($(SRCS1))
 
+LinkFile(sunInitExt.c,$(SERVERSRC)/mi/miinitext.c)
+sunInitExt.o: $(ICONFIGFILES)
+
 #ifndef i386Architecture
 sunInExMono.o: $(ICONFIGFILES)
-ObjectFromSpecialSource(sunInExMono,$(SERVERSRC)/mi/miinitext, \
-	-UGLXEXT -UXV -URENDER)
-LinkFile(sunInitExt.c,$(SERVERSRC)/mi/miinitext.c)
-LinkSourceFile(stubs.c,$(SERVERSRC)/Xi)
+ObjectFromSpecialSource(sunInExMono,$(SERVERSRC)/mi/miinitext,-UGLXEXT -URENDER)
 ObjectFromSpecialSource(sunInitMono,sunInit,-DSUNMAXDEPTH=1)
 ObjectFromSpecialSource(sunInitMulti,sunInit,-DSUNMAXDEPTH=32)
 #endif
@@ -91,3 +100,6 @@ InstallManPageAliases(Xsun,$(MANDIR),Xsun24)
 #endif
 
 DependTarget()
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))

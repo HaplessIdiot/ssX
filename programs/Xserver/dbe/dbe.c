@@ -29,22 +29,17 @@
  *     DIX DBE code
  *
  *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/dbe/dbe.c,v 3.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dbe/dbe.c,v 3.13tsi Exp $ */
 
 
 /* INCLUDES */
 
 #define NEED_EVENTS
-#include <X11/X.h>
-#include <X11/Xproto.h>
-#include "scrnintstr.h"
+
 #include "extnsionst.h"
-#include "gcstruct.h"
 #include "dixstruct.h"
-#define NEED_DBE_PROTOCOL
-#include "dbestruct.h"
-#include "midbe.h"
 #include "dbeproc.h"
+#include "midbe.h"
 
 #ifdef XFree86LOADER
 #include "xf86_ansic.h"
@@ -75,6 +70,7 @@ static int	dbeErrorBase;
 static Bool	firstRegistrationPass = TRUE;
 
 
+#if defined(NEED_DBE_BUF_BITS) && defined(NEED_DBE_BUF_VALIDATE)
 /******************************************************************************
  *
  * DBE DIX Procedure: DbeValidateBuffer
@@ -100,9 +96,10 @@ void
 DbeValidateBuffer(WindowPtr pWin, XID drawID, Bool dstbuf)
 {
     DbeScreenPrivPtr pDbeScreenPriv = DBE_SCREEN_PRIV_FROM_WINDOW(pWin);
-    if (pDbeScreenPriv->ValidateBuffer)
+    if (pDbeScreenPriv && pDbeScreenPriv->ValidateBuffer)
 	(*pDbeScreenPriv->ValidateBuffer)(pWin, drawID, dstbuf);
 }
+#endif
 
 
 /******************************************************************************
@@ -131,6 +128,11 @@ DbeRegisterFunction(ScreenPtr pScreen, DbeInitFuncPtr funct)
         }
 
         firstRegistrationPass = FALSE;
+#if defined(NEED_DBE_BUF_BITS) && defined(NEED_DBE_BUF_VALIDATE)
+#ifdef XFree86LOADER
+        xf86DbeRegisterValidateBuffer();
+#endif
+#endif
     }
 
     DbeInitFunct[pScreen->myNum] = funct;
@@ -1786,7 +1788,8 @@ DbeExtensionInit(void)
     Bool		ddxInitSuccess;
 
 #ifdef PANORAMIX
-    if(!noPanoramiXExtension) return;
+    if(!noPanoramiXExtension)
+	return;
 #endif
 
     /* Allocate private pointers in windows and screens. */

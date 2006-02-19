@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsInit.c,v 1.15tsi Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -72,7 +73,6 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 **
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsInit.c,v 1.14 2003/10/29 22:11:55 tsi Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -88,6 +88,11 @@ in this Software without prior written authorization from The Open Group.
 
 #include "windowstr.h"
 #include "DiPrint.h"
+
+#ifdef MITSHM
+#define _XSHM_SERVER_
+#include <X11/extensions/XShm.h>
+#endif
 
 static void AllocatePsPrivates(ScreenPtr pScreen);
 static int PsInitContext(XpContextPtr pCon);
@@ -220,6 +225,10 @@ InitializePsDriver(ndx, pScreen, argc, argv)
 	       (int) (pScreen->height / (pScreen->mmHeight / 25.40)),
 	       0, 8, nDepths,
                depths, visuals[1].vid, nVisuals, visuals);
+
+#ifdef MITSHM
+  ShmRegisterMiFuncs(pScreen);
+#endif
 
   if( cfbCreateDefColormap(pScreen)==FALSE ) return FALSE;
 

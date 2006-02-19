@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/extsym.c,v 1.9 2003/10/15 16:29:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/extsym.c,v 1.10tsi Exp $ */
 
 /*
- * Copyright 1999-2003 by The XFree86 Project, Inc.
+ * Copyright 1999-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -97,6 +97,11 @@ LOOKUP extLookupTab[] = {
     SYMVAR(XRT_GC)
     SYMVAR(XRT_COLORMAP)
     SYMVAR(XRC_DRAWABLE)
+#endif
+
+#ifdef DbeValidateBuffer
+    SYMFUNC(DbeValidateBuffer)	/* actually xf86DbeValidateBuffer */
+    SYMFUNC(xf86DbeRegisterValidateBuffer)
 #endif
 
     {0, 0}

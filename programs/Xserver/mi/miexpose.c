@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miexpose.c,v 3.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miexpose.c,v 3.12tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -64,11 +64,6 @@ SOFTWARE.
 #include <X11/Xmd.h>
 
 #include "globals.h"
-
-#ifdef PANORAMIX
-#include "panoramiX.h"
-#include "panoramiXsrv.h"
-#endif
 
 /*
     machine-independent graphics exposure code.  any device that uses
@@ -409,37 +404,6 @@ miSendExposures(WindowPtr pWin, RegionPtr pRgn, int dx, int dy)
 	pe->u.expose.height = pBox->y2 - pBox->y1;
 	pe->u.expose.count = i;
     }
-
-#ifdef PANORAMIX
-    if(!noPanoramiXExtension) {
-	int scrnum = pWin->drawable.pScreen->myNum;
-	int x = 0, y = 0;
-	XID realWin = 0;
-
-	if(!pWin->parent) {
-	    x = panoramiXdataPtr[scrnum].x;
-	    y = panoramiXdataPtr[scrnum].y;
-	    pWin = WindowTable[0];
-	    realWin = pWin->drawable.id;
-	} else if (scrnum) {
-	    PanoramiXRes *win;
-	    win = PanoramiXFindIDByScrnum(XRT_WINDOW, 
-			pWin->drawable.id, scrnum);
-	    if(!win) {
-		DEALLOCATE_LOCAL(pEvent);
-		return;
-	    }
-	    realWin = win->info[0].id;
-	    pWin = LookupIDByType(realWin, RT_WINDOW);
-	}
-	if(x || y || scrnum)
-	  for (i = 0; i < numRects; i++) {
-	      pEvent[i].u.expose.window = realWin;
-	      pEvent[i].u.expose.x += x;
-	      pEvent[i].u.expose.y += y;
-	  }
-    }
-#endif
 
     DeliverEvents(pWin, pEvent, numRects, NullWindow);
 

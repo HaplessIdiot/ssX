@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.42tsi Exp $ */
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.43tsi Exp $ */
 
 
 
@@ -26,10 +26,6 @@ DLOBJ=dlloader.o
  COMPAT_DEFINES = -DFONTENC_COMPATIBILITY
 #endif
 
-#if BuildFontCache
- FONTCACHE_DEFINES = -DFONTCACHE
-#endif
-
 #if HasShm
     SHM_DEFINES = -DHAS_SHM
 #endif
@@ -39,7 +35,7 @@ ARCHDEFINES = -DDoMMAPedMerge -DMmapPageAlign
 #endif
 
 DEFINES = $(DBMALLOCDEFINE) $(DLOPENDEFINES) $(OS_DEFINES) $(COMPAT_DEFINES) \
-	  $(SHM_DEFINES) $(FONTCACHE_DEFINES) $(ARCHDEFINES)
+	  $(SHM_DEFINES) $(ARCHDEFINES) $(EXT_DEFINES)
 
 MODULEDEFINES = -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"
 
@@ -75,9 +71,7 @@ NormalLibraryObjectRule()
 NormalLibraryTarget(loader,$(OBJS) )
 NormalLibraryTarget(xloader,$(XOBJS) )
 
-SpecialCObjectRule(loadmod,NullParameter,$(MODULEDEFINES) $(EXT_DEFINES))
-SpecialCObjectRule(xf86sym,NullParameter,$(EXT_DEFINES))
-SpecialCObjectRule(dixsym,NullParameter,$(EXT_DEFINES))
+SpecialCObjectRule(loadmod,NullParameter,$(MODULEDEFINES))
 
 #ifdef SparcArchitecture
 ObjectFromAsmSource(SparcMulDiv,NullParameter)

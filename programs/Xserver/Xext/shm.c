@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.45tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.46tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -29,6 +29,7 @@ in this Software without prior written authorization from The Open Group.
 
 #define SHM
 
+#ifndef EXTMODULE
 #include <sys/types.h>
 #ifndef Lynx
 #include <sys/ipc.h>
@@ -39,6 +40,7 @@ in this Software without prior written authorization from The Open Group.
 #endif
 #include <unistd.h>
 #include <sys/stat.h>
+#endif
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <X11/X.h>
@@ -210,15 +212,19 @@ ShmExtensionInit(INITARGS)
     }
 #endif
 
-    sharedPixmaps = xFalse;
-    pixmapFormat = 0;
+    sharedPixmaps = xTrue;
+    pixmapFormat = shmPixFormat[0];
+    for (i = 0; i < screenInfo.numScreens; i++)
     {
-      sharedPixmaps = xTrue;
-      pixmapFormat = shmPixFormat[0];
-      for (i = 0; i < screenInfo.numScreens; i++)
-      {
-	if (!shmFuncs[i])
-	    shmFuncs[i] = &miFuncs;
+	if (!shmFuncs[i]) {
+	    /*
+	     * A faster ShmPutImage implementation can be used if the screen
+	     * stores pixmap data in the server's address space.  We now
+	     * assume this is so, by default, given that it is the more usual
+	     * case.
+	     */
+	    shmFuncs[i] = &fbFuncs;
+	}
 	if (!shmFuncs[i]->CreatePixmap)
 	    sharedPixmaps = xFalse;
 	if (shmPixFormat[i] && (shmPixFormat[i] != pixmapFormat))
@@ -226,11 +232,11 @@ ShmExtensionInit(INITARGS)
 	    sharedPixmaps = xFalse;
 	    pixmapFormat = 0;
 	}
-      }
-      if (!pixmapFormat)
+    }
+    if (!pixmapFormat)
 	pixmapFormat = ZPixmap;
-      if (sharedPixmaps)
-      {
+    if (sharedPixmaps)
+    {
 	for (i = 0; i < screenInfo.numScreens; i++)
 	{
 	    destroyPixmap[i] = screenInfo.screens[i]->DestroyPixmap;
@@ -245,7 +251,6 @@ ShmExtensionInit(INITARGS)
 		return;
 	}
 #endif
-      }
     }
     ShmSegType = CreateNewResourceType(ShmDetachSegment);
     if (ShmSegType &&
@@ -318,6 +323,12 @@ ShmDestroyPixmap(PixmapPtr pPixmap)
     destroyPixmap[pScreen->myNum] = pScreen->DestroyPixmap;
     pScreen->DestroyPixmap = ShmDestroyPixmap;
     return ret;
+}
+
+void
+ShmRegisterMiFuncs(ScreenPtr pScreen)
+{
+    shmFuncs[pScreen->myNum] = &miFuncs;
 }
 
 void

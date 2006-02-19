@@ -1,4 +1,6 @@
 /*
+ * $XFree86: xc/programs/Xserver/fb/fbwindow.c,v 1.12tsi Exp $
+ *
  * Copyright © 1998 Keith Packard
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -19,7 +21,6 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbwindow.c,v 1.11 2003/11/10 18:21:47 tsi Exp $ */
 
 #include "fb.h"
 #ifdef IN_MODULE
@@ -221,11 +222,6 @@ fbFillRegionSolid (DrawablePtr	pDrawable,
     }
 }
 
-#ifdef PANORAMIX
-#include "panoramiX.h"
-#include "panoramiXsrv.h"
-#endif
-
 void
 fbFillRegionTiled (DrawablePtr	pDrawable,
 		   RegionPtr	pRegion,
@@ -245,17 +241,6 @@ fbFillRegionTiled (DrawablePtr	pDrawable,
     int		xRot = pDrawable->x;
     int		yRot = pDrawable->y;
     
-#ifdef PANORAMIX
-    if(!noPanoramiXExtension) 
-    {
-	int index = pDrawable->pScreen->myNum;
-	if(&WindowTable[index]->drawable == pDrawable) 
-	{
-	    xRot -= panoramiXdataPtr[index].x;
-	    yRot -= panoramiXdataPtr[index].y;
-	}
-    }
-#endif
     fbGetDrawable (pDrawable, dst, dstStride, dstBpp, dstXoff, dstYoff);
     fbGetDrawable (&pTile->drawable, tile, tileStride, tileBpp, tileXoff, tileYoff);
     tileWidth = pTile->drawable.width;

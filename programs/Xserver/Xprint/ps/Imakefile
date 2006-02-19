@@ -1,20 +1,20 @@
-XCOMM $XFree86: xc/programs/Xserver/Xprint/ps/Imakefile,v 1.9tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xprint/ps/Imakefile,v 1.10tsi Exp $
 
 #include <Server.tmpl>
 
-SRCS1 =	PsInit.c PsPrint.c PsGC.c PsMisc.c PsSpans.c PsArea.c PsPixel.c \
-        PsLine.c PsPolygon.c PsArc.c PsText.c PsWindow.c PsFonts.c \
-        PsAttr.c PsAttVal.c PsColor.c PsPixmap.c psout.c PsCache.c
+ SRCS = PsInit.c PsPrint.c PsGC.c PsMisc.c PsSpans.c PsArea.c PsPixel.c \
+	PsLine.c PsPolygon.c PsArc.c PsText.c PsWindow.c PsFonts.c \
+	PsAttr.c PsAttVal.c PsColor.c PsPixmap.c psout.c PsCache.c
 
-OBJS1 = PsInit.o PsPrint.o PsGC.o PsMisc.o PsSpans.o PsArea.o PsPixel.o \
-        PsLine.o PsPolygon.o PsArc.o PsText.o PsWindow.o PsFonts.o \
-        PsAttr.o PsAttVal.o PsColor.o PsPixmap.o psout.o PsCache.o
+ OBJS = PsInit.o PsPrint.o PsGC.o PsMisc.o PsSpans.o PsArea.o PsPixel.o \
+	PsLine.o PsPolygon.o PsArc.o PsText.o PsWindow.o PsFonts.o \
+	PsAttr.o PsAttVal.o PsColor.o PsPixmap.o psout.o PsCache.o
 
-SRCS =	$(SRCS1)
+#ifndef XprtExcludedExtensions
+#define XprtExcludedExtensions /**/
+#endif
 
-OBJS = $(OBJS1)
-
-   DEFINES = -UXFree86LOADER -DXP_PSTEXT -D_XP_PRINT_SERVER_ -DBM_CACHE
+    DEFINES = -DXP_PSTEXT -DBM_CACHE $(EXT_DEFINES) XprtExcludedExtensions
 
    INCLUDES = -I../../cfb -I../../mi -I../../mfb -I../../include -I.. \
 	      -I$(FONTLIBSRC)/include
@@ -27,6 +27,6 @@ OBJS = $(OBJS1)
 NormalLibraryObjectRule()
 
 NormalLibraryTarget(ps,$(OBJS))
-NormalLintTarget($(SRCS1) $(SRCS2))
+NormalLintTarget($(SRCS))
 
 DependTarget()

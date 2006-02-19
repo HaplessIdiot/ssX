@@ -1,7 +1,7 @@
-XCOMM $XFree86: xc/programs/Xserver/XTrap/Imakefile,v 1.4tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/XTrap/Imakefile,v 1.5tsi Exp $
 
 /*
- * Copyright (c) 2005 by The XFree86 Project, Inc.
+ * Copyright (c) 2005-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -63,9 +63,14 @@ MODSRC = xf86XTrapModule.c
 MODOBJ = xf86XTrapModule.o
 #endif
 
+#ifndef LinkDefines
+#define LinkDefines /**/
+#endif
+
          SRCS = xtrapddmi.c xtrapdi.c xtrapdiswp.c xtrapditbl.c $(MODSRC)
          OBJS = xtrapddmi.o xtrapdi.o xtrapdiswp.o xtrapditbl.o $(MODOBJ)
      INCLUDES = -I$(SERVERSRC)/XTrap -I$(SERVERSRC)/include -I$(SERVERSRC)/Xext
+      DEFINES = $(EXT_DEFINES) LinkDefines
 
 #ifdef IHaveModules
 ModuleObjectRule()

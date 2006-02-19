@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fboverlay.c,v 1.6tsi Exp $
+ * $XFree86: xc/programs/Xserver/fb/fboverlay.c,v 1.7tsi Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -407,10 +407,6 @@ fbOverlayFinishScreenInit(ScreenPtr	pScreen,
 #endif
 		       ))
 	return FALSE;
-    /* MI thinks there's no frame buffer */
-#ifdef MITSHM
-    ShmRegisterFbFuncs(pScreen);
-#endif
     pScreen->minInstalledCmaps = 1;
     pScreen->maxInstalledCmaps = 2;
     

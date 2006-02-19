@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.30tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.31tsi Exp $ */
 
 /*
 ** File: 
@@ -1208,7 +1208,7 @@ ProcXvShmPutImage(ClientPtr client)
 }
 #endif
 
-#ifdef XvMCExtension
+#ifdef XVMC
 #include "xvmcext.h"
 #endif
 
@@ -1239,7 +1239,7 @@ ProcXvQueryImageAttributes(ClientPtr client)
       }
   }
 
-#ifdef XvMCExtension
+#ifdef XVMC
   if(!pImage)
      pImage = XvMCFindXvImage(pPort, stuff->id);
 #endif

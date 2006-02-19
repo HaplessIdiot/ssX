@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_driver.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_driver.c,v 1.7tsi Exp $ */
 /*
  * XGI driver main code
  *
@@ -3204,8 +3204,15 @@ PDEBUG(ErrorF(" --- Chipset : %s \n", pScrn->chipset));
     	pXGI->XGI_SD_Flags |= XGI_SD_ISDUALHEAD;
 	if(pXGI->SecondHead)      pXGI->XGI_SD_Flags |= XGI_SD_ISDHSECONDHEAD;
 	else			  pXGI->XGI_SD_Flags &= ~(XGI_SD_SUPPORTXVGAMMA1);
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,5,99,22,0)
 #ifdef PANORAMIX
 	if(!noPanoramiXExtension) {
+	   pXGI->XGI_SD_Flags |= XGI_SD_ISDHXINERAMA;
+	   pXGI->XGI_SD_Flags &= ~(XGI_SD_SUPPORTXVGAMMA1);
+	}
+#endif
+#else
+	if(IsXineramaActive()) {
 	   pXGI->XGI_SD_Flags |= XGI_SD_ISDHXINERAMA;
 	   pXGI->XGI_SD_Flags &= ~(XGI_SD_SUPPORTXVGAMMA1);
 	}

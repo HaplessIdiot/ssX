@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_rush.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_rush.c,v 1.14tsi Exp $ */
 /*
  * Copyright Loïc Grenié 1999
  */
@@ -316,6 +316,7 @@ Copyright (c) 1998 Daryll Strauss
 #include "scrnintstr.h"
 #define _XF86RUSH_SERVER_
 #include <X11/extensions/xf86rushstr.h>
+#include <X11/extensions/panoramiXproto.h>
 
 static int RushErrorBase;
 
@@ -344,10 +345,13 @@ XFree86RushExtensionInit(ScreenPtr pScreen)
 {
     ExtensionEntry* extEntry;
 
-#ifdef PANORAMIX
-    if (!noPanoramiXExtension)
+    if (IsXineramaActive()) {
+	xf86DrvMsg(pScreen->myNum, X_NOTICE,
+		   "\"" XF86RUSHNAME "\" and \"" PANORAMIX_PROTOCOL_NAME
+		   "\" extensions not supported simultaneously.\n");
 	return;
-#endif
+    }
+
     if (rush_ext_generation == serverGeneration) {
 	if (xf86Screens[pScreen->myNum]->drv == &APM &&
 		APMPTR(xf86Screens[pScreen->myNum])->Chipset == AT3D) {

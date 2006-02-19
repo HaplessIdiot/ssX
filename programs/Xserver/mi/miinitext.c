@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.76 2006/01/29 00:52:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.77tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -82,6 +82,8 @@ extern Bool dmxNoRender;
 #include <X11/extensions/lbxstr.h>
 #endif
 #ifdef XPRINT
+#undef  _XP_PRINT_SERVER_
+#define _XP_PRINT_SERVER_
 #include <X11/extensions/Print.h>
 #endif
 #ifdef XAPPGROUP
@@ -140,6 +142,9 @@ extern void XagExtensionInit(INITARGS);
 #ifdef XCSECURITY
 extern void SecurityExtensionInit(INITARGS);
 #endif
+#ifdef XPRINT
+extern void XpExtensionInit(INITARGS);
+#endif
 #ifdef XF86BIGFONT
 extern void XFree86BigfontExtensionInit(INITARGS);
 #endif
@@ -174,6 +179,8 @@ extern void ScreenSaverExtensionInit (INITARGS);
 #endif
 #ifdef XV
 extern void XvExtensionInit(INITARGS);
+#endif
+#ifdef XVMC
 extern void XvMCExtensionInit(INITARGS);
 #endif
 #ifdef XSYNC
@@ -181,9 +188,6 @@ extern void SyncExtensionInit(INITARGS);
 #endif
 #ifdef XCMISC
 extern void XCMiscExtensionInit(INITARGS);
-#endif
-#ifdef XPRINT
-extern void XpExtensionInit(INITARGS);
 #endif
 #ifdef XF86VIDMODE
 extern void XFree86VidModeExtensionInit(INITARGS);
@@ -230,9 +234,7 @@ void
 InitExtensions(int argc, char *argv[])
 {
 #ifdef PANORAMIX
-# if !defined(PRINT_ONLY_SERVER) && !defined(NO_PANORAMIX)
   if (!noPanoramiXExtension) PanoramiXExtensionInit();
-# endif
 #endif
 #ifdef XTESTEXT1
     if (!noTestExtensions) XTestExtension1Init();
@@ -249,7 +251,7 @@ InitExtensions(int argc, char *argv[])
 #ifdef MULTIBUFFER
     MultibufferExtensionInit();
 #endif
-#if defined(XINPUT) && !defined(NO_HW_ONLY_EXTS)
+#ifdef XINPUT
     XInputExtensionInit();
 #endif
 #ifdef XTEST
@@ -264,17 +266,19 @@ InitExtensions(int argc, char *argv[])
 #ifdef XTRAP
     if (!noTestExtensions) DEC_XTRAPInit();
 #endif
-#if defined(SCREENSAVER) && !defined(PRINT_ONLY_SERVER)
+#ifdef SCREENSAVER
     ScreenSaverExtensionInit ();
 #endif
 #ifdef XV
     XvExtensionInit();
+#endif
+#ifdef XVMC
     XvMCExtensionInit();
 #endif
 #ifdef XSYNC
     SyncExtensionInit();
 #endif
-#if defined(XKB) && !defined(PRINT_ONLY_SERVER) && !defined(NO_HW_ONLY_EXTS)
+#ifdef XKB
     if (!noXkbExtension) XkbExtensionInit();
 #endif
 #ifdef XCMISC
@@ -301,7 +305,7 @@ InitExtensions(int argc, char *argv[])
 #ifdef TOGCUP
     XcupExtensionInit();
 #endif
-#if defined(DPMSExtension) && !defined(NO_HW_ONLY_EXTS)
+#ifdef DPMSExtension
     DPMSExtensionInit();
 #endif
 #ifdef FONTCACHE
@@ -310,33 +314,27 @@ InitExtensions(int argc, char *argv[])
 #ifdef XF86BIGFONT
     XFree86BigfontExtensionInit();
 #endif
-#if !defined(PRINT_ONLY_SERVER) && !defined(NO_HW_ONLY_EXTS)
-#if defined(XF86VIDMODE)
+#ifdef XF86VIDMODE
     XFree86VidModeExtensionInit();
 #endif
-#if defined(XF86MISC)
+#ifdef XF86MISC
     XFree86MiscExtensionInit();
 #endif
-#if defined(XFreeXDGA)
+#ifdef XFreeXDGA
     XFree86DGAExtensionInit();
 #endif
 #ifdef XF86DRI
     XFree86DRIExtensionInit();
 #endif
-#endif
 #ifdef GLXEXT
-#ifndef XPRINT	/* we don't want Glx in the Xprint server */
 #ifndef __DARWIN__
     GlxExtensionInit();
 #else
     DarwinGlxExtensionInit();
 #endif
 #endif
-#endif
 #ifdef DPSEXT
-#ifndef XPRINT
     DPSExtensionInit();
-#endif
 #endif
 #ifdef RENDER
 #ifdef DMXSERVER
@@ -360,12 +358,10 @@ InitVisualWrap()
 {
     miResetInitVisuals();
 #ifdef GLXEXT
-#ifndef XPRINT
 #ifndef __DARWIN__
     GlxWrapInitVisuals(&miInitVisualsProc);
 #else
     DarwinGlxWrapInitVisuals(&miInitVisualsProc);
-#endif
 #endif
 #endif
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.56tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.57tsi Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -1802,13 +1802,45 @@ DeliverEvents(WindowPtr pWin, xEvent *xE, int count, WindowPtr otherParent)
     Mask filter;
     int     deliveries;
 
-#ifdef PANORAMIX
-    if(!noPanoramiXExtension && pWin->drawable.pScreen->myNum)
-	return count;
-#endif
-
     if (!count)
 	return 0;
+
+#ifdef PANORAMIX
+    if(!noPanoramiXExtension) {
+	int scrnum = pWin->drawable.pScreen->myNum;
+
+	if (xE->u.u.type == Expose) {
+	    int i, x = 0, y = 0;
+	    XID realWin = 0;
+
+	    if (!pWin->parent) {
+		x = panoramiXdataPtr[scrnum].x;
+		y = panoramiXdataPtr[scrnum].y;
+		pWin = WindowTable[0];
+		realWin = pWin->drawable.id;
+	    } else if (scrnum) {
+		PanoramiXRes *win;
+
+		win = PanoramiXFindIDByScrnum(XRT_WINDOW,
+			pWin->drawable.id, scrnum);
+		if (!win)
+		    return count;
+		realWin = win->info[0].id;
+		pWin = LookupIDByType(realWin, RT_WINDOW);
+	    }
+	    if (x || y || scrnum) {
+		for (i = 0; i < count; i++) {
+		    xE[i].u.expose.window = realWin;
+		    xE[i].u.expose.x += x;
+		    xE[i].u.expose.y += y;
+		}
+	    }
+	} else
+	if (scrnum)
+	   return count;
+    }
+#endif
+
     filter = filters[xE->u.u.type];
     if ((filter & SubstructureNotifyMask) && (xE->u.u.type != CreateNotify))
 	xE->u.destroyNotify.event = pWin->drawable.id;
@@ -2282,7 +2314,7 @@ ProcWarpPointer(ClientPtr client)
 	    y = sprite.physLimits.y1;
 	else if (y >= sprite.physLimits.y2)
 	    y = sprite.physLimits.y2 - 1;
-#if defined(SHAPE)
+#ifdef SHAPE
 	if (sprite.hotShape)
 	    ConfineToShape(sprite.hotShape, &x, &y);
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/shmstr.h,v 3.4tsi Exp $ */
+/* $XFree86: xc/include/extensions/shmstr.h,v 3.5tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -70,6 +70,10 @@ typedef struct _ShmFuncs {
     PixmapPtr	(* CreatePixmap)(XSHM_CREATE_PIXMAP_ARGS);
     void	(* PutImage)(XSHM_PUT_IMAGE_ARGS);
 } ShmFuncs, *ShmFuncsPtr;
+
+extern void ShmRegisterFuncs(
+    ScreenPtr /*pScreen*/,
+    ShmFuncsPtr /*funcs*/);
 #endif
 
 typedef struct _ShmQueryVersion {
