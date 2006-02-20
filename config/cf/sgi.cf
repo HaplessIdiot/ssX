@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/sgi.cf,v 1.24 2006/01/09 14:56:13 dawes Exp $
+XCOMM $XFree86: xc/config/cf/sgi.cf,v 1.25tsi Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -113,10 +113,10 @@ XCOMM operating system: OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVer
 #if OSMajorVersion < 5
 /* Extra libraries provide : yp, sysV malloc, shared libc, and widechar */
 # define ExtraLibraries -lsun -lmalloc -lc_s -lw
-# define sgiCCOptions -xansi -D__STDC__=1 -float -D__mips__
+# define sgiCCOptions -xansi -D__STDC__=1 -float -D__mips__ -Wl,-woff,47
 #else
 # if OSMajorVersion < 6
-#  define sgiCCOptions -xansi -D__mips__
+#  define sgiCCOptions -xansi -D__mips__ -Wl,-woff,47
 # else
 #  define CppCmd cc -E -cckr
 #  define HasDlopen YES
@@ -124,12 +124,12 @@ XCOMM operating system: OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVer
 #  ifdef Mips64Architecture
 /* set Mips64Architecture in host.def. Usually don't need it but we
  * (the X Consortium) want a  64-bit big-endian machine to test on. */
-#   define sgiCCOptions -xansi -mips3 -64 -D__mips__
+#   define sgiCCOptions -xansi -mips3 -64 -D__mips__ -Wl,-woff,47
 #  elif defined(MipsN32Architecture)
 /* Set MipsN32Architecture to build "new" 32-bit objs with a 32-bit kernel. */
-#   define sgiCCOptions -xansi -mips3 -n32 -D__mips__
+#   define sgiCCOptions -xansi -mips3 -n32 -D__mips__ -Wl,-woff,47
 #  else
-#   define sgiCCOptions -xansi -32 -D__mips__
+#   define sgiCCOptions -xansi -32 -D__mips__ -Wl,-woff,47
 #  endif
 #  if OSMinorVersion == 2
 /* if you haven't installed patch 1361, 1403, or 1645 on IRIX 6.2 then you
