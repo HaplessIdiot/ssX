@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.238 2006/02/18 03:31:36 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.239 2006/02/20 00:14:34 dawes Exp $
 
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
@@ -417,7 +417,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 # define HaveTinyXSupport	YES
 #endif
 #ifndef HaveTinyXIOPortSupport
-# if defined(i386Architecture) || \
+# if defined(i386Architecture) || defined(AlphaArchitecture) || \
      defined(AMD64Architecture) || defined(SuperHArchitecture) || \
      defined(ia64Architecture)
 #  define HaveTinyXIOPortSupport YES
