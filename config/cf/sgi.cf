@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/sgi.cf,v 1.23 2005/07/05 16:43:54 tsi Exp $
+XCOMM $XFree86: xc/config/cf/sgi.cf,v 1.24 2006/01/09 14:56:13 dawes Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -67,17 +67,17 @@ XCOMM operating system: OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVer
 #ifdef Mips64Architecture
 # define BuildLibPathVar	_RLD_ROOT=/dev/null LD_LIBRARY64_PATH
 # define SystemBuildLibPath	/usr/lib64:/lib64
-# define LdCmd			ld -64
+# define LdCmd			ld -64 -woff 47
 # define AsCmd			as -64 -mips3
 #elif defined(MipsN32Architecture)
 # define BuildLibPathVar	_RLD_ROOT=/dev/null LD_LIBRARYN32_PATH
 # define SystemBuildLibPath	/usr/lib32:/lib32
-# define LdCmd			ld -n32
+# define LdCmd			ld -n32 -woff 47
 # define AsCmd			as -n32 -mips3
 #else
 # define BuildLibPathVar	_RLD_ROOT=/dev/null LD_LIBRARY_PATH
 # define SystemBuildLibPath	/usr/lib:/lib
-# define LdCmd			ld -32 -allow_jump_at_eop
+# define LdCmd			ld -32 -woff 47
 # define AsCmd			as -32
 #endif
 #define HasCplusplus		YES
