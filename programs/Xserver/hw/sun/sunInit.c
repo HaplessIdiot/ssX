@@ -14,7 +14,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunInit.c,v 3.15tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunInit.c,v 3.16 2006/02/19 15:51:20 tsi Exp $ */
 
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -277,7 +277,7 @@ static PixmapFormatRec	formats[] = {
 #if SUNMAXDEPTH > 1
     ,{ 8, 8, BITMAP_SCANLINE_PAD} /* 8-bit deep */
 #if SUNMAXDEPTH > 8
-    ,{ 12, 24, BITMAP_SCANLINE_PAD } /* 12-bit deep */
+    ,{ 12, 16, BITMAP_SCANLINE_PAD } /* 12-bit deep */
     ,{ 24, 32, BITMAP_SCANLINE_PAD } /* 24-bit deep */
 #endif
 #endif
