@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/mitmisc.c,v 3.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/mitmisc.c,v 3.9 2005/10/14 15:16:11 tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -38,6 +38,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/extensions/mitmiscstr.h>
 #include "modinit.h"
 
+#ifdef MITMISC
 extern Bool permitOldBugs;
 
 #if 0
@@ -161,3 +162,5 @@ SProcMITDispatch(ClientPtr client)
 	return BadRequest;
     }
 }
+
+#endif

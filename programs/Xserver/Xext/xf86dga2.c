@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.22tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.23 2005/10/14 15:16:12 tsi Exp $ */
 
 
 #define NEED_REPLIES
@@ -33,6 +33,8 @@
 #endif
 
 #include "modinit.h"
+
+#ifdef XFreeXDGA
 
 static DISPATCH_PROC(ProcXDGADispatch);
 static DISPATCH_PROC(SProcXDGADispatch);
@@ -774,4 +776,6 @@ XFree86DGARegister(INITARGS)
 {
   XDGAEventBase = &DGAEventBase; 
 }
+#endif
+
 #endif

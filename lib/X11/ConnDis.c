@@ -23,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ConnDis.c,v 3.32 2004/06/24 02:21:15 tsi Exp $ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.33 2006/01/09 14:58:24 dawes Exp $ */
 
 /* 
  * This file contains operating system dependencies.
@@ -700,11 +700,7 @@ void XSetAuthorization (name, namelen, data, datalen)
  * Create a credential that we can send to the X server.
  */
 static int
-auth_ezencode(servername, window, cred_out, len)
-        char           *servername;
-        int             window;
-	char	       *cred_out;
-        int            *len;
+auth_ezencode(char *servername, int window, char *cred_out, int *len)
 {
         AUTH           *a;
         XDR             xdr;

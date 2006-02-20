@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/mbuf.c,v 3.17tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/mbuf.c,v 3.18 2005/10/14 15:16:11 tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -54,6 +54,7 @@ in this Software without prior written authorization from The Open Group.
 #endif
 #endif
 
+#ifdef MULTIBUFFER
 /* given an OtherClientPtr obj, get the ClientPtr */
 #define rClient(obj) (clients[CLIENT_ID((obj)->resource)])
 
@@ -1716,3 +1717,5 @@ BumpTimeStamp(TimeStamp *ts, CARD32 inc)
 	ts->months++;
     ts->milliseconds = newms;
 }
+
+#endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.60tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.61 2006/01/29 02:19:53 tsi Exp $ */
 /*
  * Copyright 1997-2004 by The XFree86 Project, Inc
  * All rights reserved.
@@ -232,8 +232,8 @@ extern XF86FILE* xf86freopen(const char*,const char*,XF86FILE*);
 #if defined(HAVE_VFSCANF) || !defined(NEED_XF86_PROTOTYPES)
 extern int xf86fscanf(XF86FILE*,const char*,...);
 #else
-extern int xf86fscanf(/*XF86FILE*,const char*,char *,char *,char *,char *,
-			char *,char *,char *,char *,char *,char * */);
+extern int xf86fscanf(XF86FILE*,const char*,char *,char *,char *,char *,
+		      char *,char *,char *,char *,char *,char *);
 #endif
 extern int xf86fseek(XF86FILE*,long,int);
 extern int xf86fsetpos(XF86FILE*,const XF86fpos_t*);
@@ -279,8 +279,8 @@ extern double xf86sqrt(double);
 #if defined(HAVE_VSSCANF) || !defined(NEED_XF86_PROTOTYPES)
 extern int xf86sscanf(const char*,const char*,...);
 #else
-extern int xf86sscanf(/*const char*,const char*,char *,char *,char *,char *,
-			char *,char *,char *,char *,char *,char * */);
+extern int xf86sscanf(const char*,const char*,char *,char *,char *,char *,
+		      char *,char *,char *,char *,char *,char *);
 #endif
 extern char* xf86strcat(char*,const char*);
 extern char* xf86strchr(const char*, int c);

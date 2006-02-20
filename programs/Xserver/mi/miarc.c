@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miarc.c,v 3.18 2005/10/14 15:17:22 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miarc.c,v 3.19 2006/02/18 03:31:39 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -73,7 +73,9 @@ static double miDcos(double a);
 static double miDasin(double v);
 static double miDatan2(double dy, double dx);
 #if !defined(__USE_XOPEN_EXTENDED) || !__USE_XOPEN_EXTENDED
+#if !defined(sun)
 double	cbrt(double);
+#endif
 #endif
 
 #ifdef ICEILTEMPDECL

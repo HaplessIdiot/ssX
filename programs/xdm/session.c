@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/session.c,v 3.40 2005/03/23 03:11:28 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.41 2006/01/09 15:01:04 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -98,7 +98,9 @@ extern	struct passwd	*getpwnam(GETPWNAM_ARGS);
 # ifdef linux
 extern  void	endpwent(void);
 # endif
+# if !(defined(sun) && defined(SVR4))
 extern	char	*crypt(CRYPT_ARGS);
+# endif
 #endif
 
 #ifdef USE_PAM

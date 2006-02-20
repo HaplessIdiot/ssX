@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/rpcauth.c,v 3.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/rpcauth.c,v 3.9 2005/10/14 15:17:26 tsi Exp $ */
 /*
 
 Copyright 1991, 1998  The Open Group
@@ -40,6 +40,7 @@ from The Open Group.
 #include "misc.h"
 #include "os.h"
 #include "dixstruct.h"
+#include "osdep.h"
 
 #include <rpc/rpc.h>
 

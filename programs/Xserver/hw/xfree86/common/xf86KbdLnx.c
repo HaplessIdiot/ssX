@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdLnx.c,v 3.19 2005/10/14 15:16:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdLnx.c,v 3.20 2006/01/09 14:59:52 dawes Exp $ */
 /*
  * Linux version of keymapping setup. The kernel (since 0.99.14) has support
  * for fully remapping the keyboard, but there are some differences between
@@ -85,6 +85,14 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
+#include <linux/keyboard.h>
+#undef KEY_F13
+#undef KEY_F14
+#undef KEY_F15
+#undef KEY_F16
+#undef KEY_F17
+#undef KEY_XFER
+#undef KEY_UNKNOWN
 #include "atKeynames.h"
 
 #include "xf86Keymap.h"
@@ -180,8 +188,6 @@ xf86KbdGetMapping (KeySymsPtr pKeySyms, CARD8 *pModMap)
   pKeySyms->minKeyCode = MIN_KEYCODE;
   pKeySyms->maxKeyCode = MAX_KEYCODE; 
 }
-
-#include <linux/keyboard.h>
 
 static KeySym linux_to_x[256] = {
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,

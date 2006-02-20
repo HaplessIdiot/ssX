@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_vid.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_vid.c,v 1.4 2004/03/08 15:37:12 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -110,6 +110,7 @@ xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 
 #ifdef i386
 static Bool ExtendedEnabled = FALSE;
+extern int sysi86(int, ...);
 #endif
 
 void

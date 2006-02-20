@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.71 2006/02/17 18:04:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.72 2006/02/18 03:31:38 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -35,6 +35,7 @@
 #include "lnx.h"
 #ifdef __alpha__
 #include "xf86Axp.h"
+#include "lnx_axp.h"
 #endif
 
 #ifdef HAS_MTRR_SUPPORT
@@ -603,38 +604,17 @@ xf86EnableInterrupts()
 #if defined (__alpha__)
 
 #define vuip    volatile unsigned int *
+#define vvp	volatile void *
 
-extern int readDense8(pointer Base, register unsigned long Offset);
-extern int readDense16(pointer Base, register unsigned long Offset);
-extern int readDense32(pointer Base, register unsigned long Offset);
-extern void
-writeDenseNB8(int Value, pointer Base, register unsigned long Offset);
-extern void
-writeDenseNB16(int Value, pointer Base, register unsigned long Offset);
-extern void
-writeDenseNB32(int Value, pointer Base, register unsigned long Offset);
-extern void
-writeDense8(int Value, pointer Base, register unsigned long Offset);
-extern void
-writeDense16(int Value, pointer Base, register unsigned long Offset);
-extern void
-writeDense32(int Value, pointer Base, register unsigned long Offset);
-
-static int readSparse8(pointer Base, register unsigned long Offset);
-static int readSparse16(pointer Base, register unsigned long Offset);
-static int readSparse32(pointer Base, register unsigned long Offset);
-static void
-writeSparseNB8(int Value, pointer Base, register unsigned long Offset);
-static void
-writeSparseNB16(int Value, pointer Base, register unsigned long Offset);
-static void
-writeSparseNB32(int Value, pointer Base, register unsigned long Offset);
-static void
-writeSparse8(int Value, pointer Base, register unsigned long Offset);
-static void
-writeSparse16(int Value, pointer Base, register unsigned long Offset);
-static void
-writeSparse32(int Value, pointer Base, register unsigned long Offset);
+static int readSparse8(vvp Base, register unsigned long Offset);
+static int readSparse16(vvp Base, register unsigned long Offset);
+static int readSparse32(vvp Base, register unsigned long Offset);
+static void writeSparseNB8(int Value, vvp Base, register unsigned long Offset);
+static void writeSparseNB16(int Value, vvp Base, register unsigned long Offset);
+static void writeSparseNB32(int Value, vvp Base, register unsigned long Offset);
+static void writeSparse8(int Value, vvp Base, register unsigned long Offset);
+static void writeSparse16(int Value, vvp Base, register unsigned long Offset);
+static void writeSparse32(int Value, vvp Base, register unsigned long Offset);
 
 #define DENSE_BASE	0x2ff00000000UL
 #define SPARSE_BASE	0x30000000000UL
@@ -751,7 +731,7 @@ unmapVidMemSparse(int ScreenNum, pointer Base, unsigned long Size)
 }
 
 static int
-readSparse8(pointer Base, register unsigned long Offset)
+readSparse8(vvp Base, register unsigned long Offset)
 {
     register unsigned long result, shift;
     register unsigned long msb;
@@ -775,7 +755,7 @@ readSparse8(pointer Base, register unsigned long Offset)
 }
 
 static int
-readSparse16(pointer Base, register unsigned long Offset)
+readSparse16(vvp Base, register unsigned long Offset)
 {
     register unsigned long result, shift;
     register unsigned long msb;
@@ -799,7 +779,7 @@ readSparse16(pointer Base, register unsigned long Offset)
 }
 
 static int
-readSparse32(pointer Base, register unsigned long Offset)
+readSparse32(vvp Base, register unsigned long Offset)
 {
     /* NOTE: this is really using DENSE. */
     mem_barrier();
@@ -807,7 +787,7 @@ readSparse32(pointer Base, register unsigned long Offset)
 }
 
 static void
-writeSparse8(int Value, pointer Base, register unsigned long Offset)
+writeSparse8(int Value, vvp Base, register unsigned long Offset)
 {
     register unsigned long msb;
     register unsigned int b = Value & 0xffU;
@@ -828,7 +808,7 @@ writeSparse8(int Value, pointer Base, register unsigned long Offset)
 }
 
 static void
-writeSparse16(int Value, pointer Base, register unsigned long Offset)
+writeSparse16(int Value, vvp Base, register unsigned long Offset)
 {
     register unsigned long msb;
     register unsigned int w = Value & 0xffffU;
@@ -849,7 +829,7 @@ writeSparse16(int Value, pointer Base, register unsigned long Offset)
 }
 
 static void
-writeSparse32(int Value, pointer Base, register unsigned long Offset)
+writeSparse32(int Value, vvp Base, register unsigned long Offset)
 {
     /* NOTE: this is really using DENSE. */
     write_mem_barrier();
@@ -858,7 +838,7 @@ writeSparse32(int Value, pointer Base, register unsigned long Offset)
 }
 
 static void
-writeSparseNB8(int Value, pointer Base, register unsigned long Offset)
+writeSparseNB8(int Value, vvp Base, register unsigned long Offset)
 {
     register unsigned long msb;
     register unsigned int b = Value & 0xffU;
@@ -876,7 +856,7 @@ writeSparseNB8(int Value, pointer Base, register unsigned long Offset)
 }
 
 static void
-writeSparseNB16(int Value, pointer Base, register unsigned long Offset)
+writeSparseNB16(int Value, vvp Base, register unsigned long Offset)
 {
     register unsigned long msb;
     register unsigned int w = Value & 0xffffU;
@@ -894,52 +874,49 @@ writeSparseNB16(int Value, pointer Base, register unsigned long Offset)
 }
 
 static void
-writeSparseNB32(int Value, pointer Base, register unsigned long Offset)
+writeSparseNB32(int Value, vvp Base, register unsigned long Offset)
 {
     /* NOTE: this is really using DENSE. */
     *(vuip)((unsigned long)Base + (Offset)) = Value;
     return;
 }
 
-void (*xf86WriteMmio8)(int Value, pointer Base, unsigned long Offset) 
+void (*xf86WriteMmio8)(int Value, vvp Base, unsigned long Offset) 
      = writeDense8;
-void (*xf86WriteMmio16)(int Value, pointer Base, unsigned long Offset)
+void (*xf86WriteMmio16)(int Value, vvp Base, unsigned long Offset)
      = writeDense16;
-void (*xf86WriteMmio32)(int Value, pointer Base, unsigned long Offset)
+void (*xf86WriteMmio32)(int Value, vvp Base, unsigned long Offset)
      = writeDense32;
-void (*xf86WriteMmioNB8)(int Value, pointer Base, unsigned long Offset) 
+void (*xf86WriteMmioNB8)(int Value, vvp Base, unsigned long Offset) 
      = writeDenseNB8;
-void (*xf86WriteMmioNB16)(int Value, pointer Base, unsigned long Offset)
+void (*xf86WriteMmioNB16)(int Value, vvp Base, unsigned long Offset)
      = writeDenseNB16;
-void (*xf86WriteMmioNB32)(int Value, pointer Base, unsigned long Offset)
+void (*xf86WriteMmioNB32)(int Value, vvp Base, unsigned long Offset)
      = writeDenseNB32;
-int  (*xf86ReadMmio8)(pointer Base, unsigned long Offset) 
+int  (*xf86ReadMmio8)(vvp Base, unsigned long Offset) 
      = readDense8;
-int  (*xf86ReadMmio16)(pointer Base, unsigned long Offset)
+int  (*xf86ReadMmio16)(vvp Base, unsigned long Offset)
      = readDense16;
-int  (*xf86ReadMmio32)(pointer Base, unsigned long Offset)
+int  (*xf86ReadMmio32)(vvp Base, unsigned long Offset)
      = readDense32;
 
 #ifdef JENSEN_SUPPORT
 
-static int
-readSparseJensen8(pointer Base, register unsigned long Offset);
-static int
-readSparseJensen16(pointer Base, register unsigned long Offset);
-static int
-readSparseJensen32(pointer Base, register unsigned long Offset);
-static void
-writeSparseJensen8(int Value, pointer Base, register unsigned long Offset);
-static void
-writeSparseJensen16(int Value, pointer Base, register unsigned long Offset);
-static void
-writeSparseJensen32(int Value, pointer Base, register unsigned long Offset);
-static void
-writeSparseJensenNB8(int Value, pointer Base, register unsigned long Offset);
-static void
-writeSparseJensenNB16(int Value, pointer Base, register unsigned long Offset);
-static void
-writeSparseJensenNB32(int Value, pointer Base, register unsigned long Offset);
+static int readSparseJensen8(vvp Base, register unsigned long Offset);
+static int readSparseJensen16(vvp Base, register unsigned long Offset);
+static int readSparseJensen32(vvp Base, register unsigned long Offset);
+static void writeSparseJensen8(int Value, vvp Base,
+			       register unsigned long Offset);
+static void writeSparseJensen16(int Value, vvp Base,
+				register unsigned long Offset);
+static void writeSparseJensen32(int Value, vvp Base,
+				register unsigned long Offset);
+static void writeSparseJensenNB8(int Value, vvp Base,
+				 register unsigned long Offset);
+static void writeSparseJensenNB16(int Value, vvp Base,
+				 register unsigned long Offset);
+static void writeSparseJensenNB32(int Value, vvp Base,
+				 register unsigned long Offset);
 
 /*
  * The Jensen lacks dense memory, thus we have to address the bus via
@@ -1003,7 +980,7 @@ unmapVidMemJensen(int ScreenNum, pointer Base, unsigned long Size)
 }
 
 static int
-readSparseJensen8(pointer Base, register unsigned long Offset)
+readSparseJensen8(vvp Base, register unsigned long Offset)
 {
     register unsigned long result, shift;
 
@@ -1017,7 +994,7 @@ readSparseJensen8(pointer Base, register unsigned long Offset)
 }
 
 static int
-readSparseJensen16(pointer Base, register unsigned long Offset)
+readSparseJensen16(vvp Base, register unsigned long Offset)
 {
     register unsigned long result, shift;
 
@@ -1031,7 +1008,7 @@ readSparseJensen16(pointer Base, register unsigned long Offset)
 }
 
 static int
-readSparseJensen32(pointer Base, register unsigned long Offset)
+readSparseJensen32(vvp Base, register unsigned long Offset)
 {
     register unsigned long result;
 
@@ -1042,7 +1019,7 @@ readSparseJensen32(pointer Base, register unsigned long Offset)
 }
 
 static void
-writeSparseJensen8(int Value, pointer Base, register unsigned long Offset)
+writeSparseJensen8(int Value, vvp Base, register unsigned long Offset)
 {
     register unsigned int b = Value & 0xffU;
 
@@ -1051,7 +1028,7 @@ writeSparseJensen8(int Value, pointer Base, register unsigned long Offset)
 }
 
 static void
-writeSparseJensen16(int Value, pointer Base, register unsigned long Offset)
+writeSparseJensen16(int Value, vvp Base, register unsigned long Offset)
 {
     register unsigned int w = Value & 0xffffU;
 
@@ -1061,14 +1038,14 @@ writeSparseJensen16(int Value, pointer Base, register unsigned long Offset)
 }
 
 static void
-writeSparseJensen32(int Value, pointer Base, register unsigned long Offset)
+writeSparseJensen32(int Value, vvp Base, register unsigned long Offset)
 {
     write_mem_barrier();
     *(vuip)((unsigned long)Base+(Offset<<SPARSE)+(3<<(SPARSE-2))) = Value;
 }
 
 static void
-writeSparseJensenNB8(int Value, pointer Base, register unsigned long Offset)
+writeSparseJensenNB8(int Value, vvp Base, register unsigned long Offset)
 {
     register unsigned int b = Value & 0xffU;
 
@@ -1076,7 +1053,7 @@ writeSparseJensenNB8(int Value, pointer Base, register unsigned long Offset)
 }
 
 static void
-writeSparseJensenNB16(int Value, pointer Base, register unsigned long Offset)
+writeSparseJensenNB16(int Value, vvp Base, register unsigned long Offset)
 {
     register unsigned int w = Value & 0xffffU;
 
@@ -1085,7 +1062,7 @@ writeSparseJensenNB16(int Value, pointer Base, register unsigned long Offset)
 }
 
 static void
-writeSparseJensenNB32(int Value, pointer Base, register unsigned long Offset)
+writeSparseJensenNB32(int Value, vvp Base, register unsigned long Offset)
 {
     *(vuip)((unsigned long)Base+(Offset<<SPARSE)+(3<<(SPARSE-2))) = Value;
 }

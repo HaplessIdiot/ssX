@@ -19,12 +19,13 @@
    Note: Use of these macros is based on judgement, not hard rules,
          and therefore subject to change.
 */
-/* $XFree86$ */
+/* $XFree86: xc/extras/expat/lib/internal.h,v 1.2 2003/11/06 18:37:54 tsi Exp $ */
 
 #if defined(__GNUC__) && \
     !defined(ia64) && !defined(__ia64__) && \
     !defined(__sparc__) && !defined(__sparc_v9__) && !defined(sparc) && \
-    !defined(__sparc64__) && !defined(__arch64__)
+    !defined(__sparc64__) && !defined(__arch64__) && !defined(__alpha__) && \
+    !defined(__powerpc__)
 
 /* Instability reported with egcs on a RedHat Linux 7.3.
    Let's comment it out:

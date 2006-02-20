@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.46tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.47 2006/02/19 15:51:16 tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -68,6 +68,8 @@ in this Software without prior written authorization from The Open Group.
 #endif
 
 #include "modinit.h"
+
+#ifdef MITSHM
 
 typedef struct _ShmDesc {
     struct _ShmDesc *next;
@@ -1247,3 +1249,5 @@ SProcShmDispatch (ClientPtr client)
 	return BadRequest;
     }
 }
+
+#endif

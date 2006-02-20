@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/auth.c,v 3.36 2004/04/03 22:26:26 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.37 2006/01/09 15:01:03 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -943,7 +943,6 @@ DefineSelf (int fd, FILE *file, Xauth *auth)
     int 		family;
     register ifr_type  *ifr;
 #ifdef USE_SIOCGLIFCONF
-    int			n;
     void *		bufptr = buf;
     size_t		buflen = sizeof(buf);
     struct lifconf	ifc;

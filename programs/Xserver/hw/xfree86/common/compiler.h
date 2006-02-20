@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.113 2006/02/17 18:04:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.114 2006/02/18 03:31:38 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1701,25 +1701,25 @@ extern void outl(unsigned port, unsigned val);
 
 # ifdef __alpha__
 /* entry points for Mmio memory access routines */
-extern int (*xf86ReadMmio8)(void *, unsigned long);
-extern int (*xf86ReadMmio16)(void *, unsigned long);
+extern int (*xf86ReadMmio8)(volatile void *, unsigned long);
+extern int (*xf86ReadMmio16)(volatile void *, unsigned long);
 #  ifndef STANDALONE_MMIO
-extern int (*xf86ReadMmio32)(void *, unsigned long);
+extern int (*xf86ReadMmio32)(volatile void *, unsigned long);
 #  else
 /* Some DRI 3D drivers need MMIO_IN32. */
 static __inline__ int
-xf86ReadMmio32(void *Base, unsigned long Offset)
+xf86ReadMmio32(volatile void *Base, unsigned long Offset)
 {
 	__asm__ __volatile__("mb"  : : : "memory");
 	return *(volatile CARD32*)((unsigned long)Base+(Offset));
 }
 #  endif
-extern void (*xf86WriteMmio8)(int, void *, unsigned long);
-extern void (*xf86WriteMmio16)(int, void *, unsigned long);
-extern void (*xf86WriteMmio32)(int, void *, unsigned long);
-extern void (*xf86WriteMmioNB8)(int, void *, unsigned long);
-extern void (*xf86WriteMmioNB16)(int, void *, unsigned long);
-extern void (*xf86WriteMmioNB32)(int, void *, unsigned long);
+extern void (*xf86WriteMmio8)(int, volatile void *, unsigned long);
+extern void (*xf86WriteMmio16)(int, volatile void *, unsigned long);
+extern void (*xf86WriteMmio32)(int, volatile void *, unsigned long);
+extern void (*xf86WriteMmioNB8)(int, volatile void *, unsigned long);
+extern void (*xf86WriteMmioNB16)(int, volatile void *, unsigned long);
+extern void (*xf86WriteMmioNB32)(int, volatile void *, unsigned long);
 extern void xf86JensenMemToBus(char *, long, long, int);
 extern void xf86JensenBusToMem(char *, char *, unsigned long, int);
 extern void xf86SlowBCopyFromBus(unsigned char *, unsigned char *, int);
