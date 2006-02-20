@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.502tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.503 2006/02/19 15:51:12 tsi Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -2005,7 +2005,7 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 #define XSis530Server		HaveTinyXIOPortSupport
 #endif
 #ifndef XTridentServer
-#define XTridentServer		(HaveTinyXVBESupport && HaveXFbdevSupport)
+#define XTridentServer		(HaveTinyXVBESupport && HaveTinyXFbdevSupport)
 #endif
 #ifndef XTrioServer
 #define XTrioServer		HaveTinyXSupport
