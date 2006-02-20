@@ -46,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * additional blank space to make the structure of the graph easier to see
  * as well as to support vertical trees.
  */
-/* $XFree86: xc/lib/Xaw/Tree.h,v 1.9 2005/09/16 14:36:08 tsi Exp $ */
+/* $XFree86: xc/lib/Xaw/Tree.h,v 1.10 2006/01/12 00:58:01 dawes Exp $ */
 
 
 #ifndef _XawTree_h
@@ -146,7 +146,7 @@ typedef enum {
      *        |
      *        +-[node]
      */
-    XawTreeE,
+    XawTreeE
 } XawTreeConnType;
 
                                         /* external declarations */
