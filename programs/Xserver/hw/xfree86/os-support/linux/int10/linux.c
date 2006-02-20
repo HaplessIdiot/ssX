@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.33tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.34tsi Exp $ */
 /*
  * linux specific part of the int10 module
  * Copyright 1999 Egbert Eich
@@ -130,6 +130,9 @@ xf86ExtendedInitInt10(int entityIndex, int Flags)
 		    close(fd);
 		    goto error0;
 		}
+		if (sysMem != (void *)(SYS_BIOS))
+		    xf86DrvMsgVerb(screen, X_NOTICE, 0,
+			"Possible sysMem mmap() error (%p)\n", sysMem);
 	    }
 	    if (!vidMem) {
 #ifdef DEBUG
@@ -143,6 +146,9 @@ xf86ExtendedInitInt10(int entityIndex, int Flags)
 		    close(fd);
 		    goto error0;
 		}
+		if (vidMem != (void *)(V_RAM))
+		    xf86DrvMsgVerb(screen, X_NOTICE, 0,
+			"Possible vidMem mmap() error (%p)\n", vidMem);
 	    }
 	    close(fd);
 	} else {
@@ -189,6 +195,9 @@ xf86ExtendedInitInt10(int entityIndex, int Flags)
 		goto error1;
 	    }
 	    close (fd);
+	    if (vMem != (void *)(V_BIOS))
+		xf86DrvMsgVerb(screen, X_NOTICE, 0,
+		    "Possible V_BIOS (1) mmap() error (%p)\n", vMem);
 	} else
 	    goto error1;
     }
@@ -431,6 +440,9 @@ MapCurrentInt10(xf86Int10InfoPtr pInt)
 	xf86DrvMsg(pInt->scrnIndex, X_ERROR, "Cannot shmat() low memory\n");
 	return FALSE;
     }
+    if (addr != (void *)0)
+	xf86DrvMsgVerb(pInt->scrnIndex, X_NOTICE, 0,
+	    "Possible lowMem shmat() error (%p)\n", addr);
     
     if (((linuxInt10Priv*)pInt->private)->highMem >= 0) {
 	addr = shmat(((linuxInt10Priv*)pInt->private)->highMem,
@@ -440,16 +452,22 @@ MapCurrentInt10(xf86Int10InfoPtr pInt)
 		       "Cannot shmat() high memory\n");
 	    return FALSE;
 	}
+	if (addr != (void *)(HIGH_MEM))
+	    xf86DrvMsgVerb(pInt->scrnIndex, X_NOTICE, 0,
+		"Possible highMem shmat() error (%p)\n", addr);
     } else {
 	if ((fd = open(DEV_MEM, O_RDWR, 0)) >= 0) {
-	    if (mmap((void *)(V_BIOS), SYS_BIOS - V_BIOS,
+	    if ((addr = mmap((void *)(V_BIOS), SYS_BIOS - V_BIOS,
 			     PROT_READ | PROT_WRITE | PROT_EXEC,
-			     MAP_SHARED | MAP_FIXED, fd, V_BIOS)
+			     MAP_SHARED | MAP_FIXED, fd, V_BIOS))
 		== MAP_FAILED) {
 		xf86DrvMsg(pInt->scrnIndex, X_ERROR, "Cannot map V_BIOS\n");
 		close (fd);
 		return FALSE;
 	    }
+	    if (addr != (void *)(V_BIOS))
+		xf86DrvMsgVerb(pInt->scrnIndex, X_NOTICE, 0,
+		    "Possible V_BIOS (2) mmap() error (%p)\n", addr);
 	} else {
 	    xf86DrvMsg(pInt->scrnIndex, X_ERROR, "Cannot open %s\n",DEV_MEM);
 	    return FALSE;
