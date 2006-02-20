@@ -1,4 +1,7 @@
 XFree86 4.5.99.22 (xx February 2006)
+ 201. cfb24 is no longer needed; don't link it into servers but still produce
+      a loadable module for it.  Also, fix server make dependencies on Xserver/
+      subdirectories (Marc La France).
  220. Fix incorrect bitsPerPixel for depth 12 in pixmap formats advertised by
       Xsun24 server (Marc La France).
  219. In linux/int10, produce messages when the mappings used to build up the
@@ -19992,7 +19995,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3671 2006/02/20 16:06:33 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3672 2006/02/20 17:02:02 tsi Exp $
 
 
 

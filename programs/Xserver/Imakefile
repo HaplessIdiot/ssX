@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.317tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.318tsi Exp $
 
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
@@ -78,6 +78,32 @@ XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.317tsi Exp $
          SHADOWDIR = miext/shadow
 
            MISCDIR = Xext
+
+                OS = os/LibraryTargetName(os)
+                MI = mi/LibraryTargetName(mi)
+               DIX = dix/LibraryTargetName(dix)
+#if DoLoadableServer
+               MFB = mfb/ModuleLibraryTargetName(mfb)
+                FB = fb/ModuleLibraryTargetName(fb)
+              CFB8 = cfb/ModuleLibraryTargetName(cfb)
+             CFB16 = cfb16/ModuleLibraryTargetName(cfb16)
+             CFB24 = cfb24/ModuleLibraryTargetName(cfb24)
+             CFB32 = cfb32/ModuleLibraryTargetName(cfb32)
+            SHADOW = miext/shadow/ModuleLibraryTargetName(shadow)
+             LAYER = miext/layer/ModuleLibraryTargetName(layer)
+#else
+               MFB = mfb/LibraryTargetName(mfb)
+                FB = fb/LibraryTargetName(fb)
+              CFB8 = cfb/LibraryTargetName(cfb)
+             CFB16 = cfb16/LibraryTargetName(cfb16)
+             CFB24 = cfb24/LibraryTargetName(cfb24)
+             CFB32 = cfb32/LibraryTargetName(cfb32)
+            SHADOW = miext/shadow/LibraryTargetName(shadow)
+             LAYER = miext/layer/LibraryTargetName(layer)
+#endif
+#if BuildLowMem
+            LMFCFB = lmfcfb/LibraryTargetName(cfb)
+#endif
 
 #if BuildGlxExt
 #if BuildXF86DRI
@@ -171,7 +197,7 @@ XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.317tsi Exp $
 
          XPDDXLIBS = $(XPDDXDIR)/LibraryTargetName(printer) \
 		     $(XPRASTLIB) $(XPPCLLIB) $(XPMPCLLIB) $(XPPSLIB)
-       XPDDXFBLIBS = $(CFB32) $(MFB) $(MI)
+       XPDDXFBLIBS = $(CFB32) $(CFB8) $(MFB) $(MI)
 #if !PrintOnlyServer
              XPDDX = $(XPDDXLIBS)
           XPFBLIBS = $(XPDDXFBLIBS)
@@ -206,45 +232,6 @@ XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.317tsi Exp $
               ZLIB = GzipLibrary
 #endif
 
-                OS = os/LibraryTargetName(os)
-#if DoLoadableServer
-               MFB = mfb/ModuleLibraryTargetName(mfb)
-                FB = fb/ModuleLibraryTargetName(fb)
-               CFB = cfb16/ModuleLibraryTargetName(cfb16) \
-		     cfb24/ModuleLibraryTargetName(cfb24) \
-		     cfb32/ModuleLibraryTargetName(cfb32) \
-		     cfb/ModuleLibraryTargetName(cfb)
-              CFB8 = cfb/ModuleLibraryTargetName(cfb)
-             CFB16 = cfb16/ModuleLibraryTargetName(cfb16) \
-		     cfb/ModuleLibraryTargetName(cfb)
-             CFB24 = cfb24/ModuleLibraryTargetName(cfb24) \
-		     cfb/ModuleLibraryTargetName(cfb)
-             CFB32 = cfb32/ModuleLibraryTargetName(cfb32) \
-		     cfb/ModuleLibraryTargetName(cfb)
-            SHADOW = miext/shadow/ModuleLibraryTargetName(shadow)
-             LAYER = miext/layer/ModuleLibraryTargetName(layer)
-#else
-               MFB = mfb/LibraryTargetName(mfb)
-                FB = fb/LibraryTargetName(fb)
-               CFB = cfb16/LibraryTargetName(cfb16) \
-		     cfb24/LibraryTargetName(cfb24) \
-		     cfb32/LibraryTargetName(cfb32) \
-		     cfb/LibraryTargetName(cfb)
-              CFB8 = cfb/LibraryTargetName(cfb)
-             CFB16 = cfb16/LibraryTargetName(cfb16) \
-		     cfb/LibraryTargetName(cfb)
-             CFB24 = cfb24/LibraryTargetName(cfb24) \
-		     cfb/LibraryTargetName(cfb)
-             CFB32 = cfb32/LibraryTargetName(cfb32) \
-		     cfb/LibraryTargetName(cfb)
-            SHADOW = miext/shadow/LibraryTargetName(shadow)
-             LAYER = miext/layer/LibraryTargetName(layer)
-#endif
-#if BuildLowMem
-            LMFCFB = lmfcfb/LibraryTargetName(cfb)
-#endif
-                MI = mi/LibraryTargetName(mi)
-               DIX = dix/LibraryTargetName(dix)
 #if DoLoadableServer
           FONTBASE = $(FONTLIBSRC)/fontbase.o \
 		     $(FONTLIBSRC)/LibraryTargetName(fontbase)
@@ -314,7 +301,8 @@ XCOMM
 MakeMutex($(XF86SERVER) $(XNESTSERVER) $(XVFBSERVER) $(XDMXSERVER) $(XWINSERVER))
 #endif
 MakeMutex($(STDDIRS) $(DIXDIR) $(OSDIR) $(HWDIR) $(EXTDIRS) \
-	  mfb fb cfb cfb16 cfb24 cfb32)
+	  $(MFBDIR) $(FBDIR) $(AFBDIR) \
+	  $(CFBDIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR))
 #endif
 
 
@@ -348,7 +336,9 @@ XCOMM
          MFBSUBDIR = mfb
         CFB8SUBDIR = cfb
        CFB16SUBDIR = cfb16
+#ifdef DoLoadableServer
        CFB24SUBDIR = cfb24
+#endif
        CFB32SUBDIR = cfb32
 #ifdef OS2Architecture
      SERVERDEFFILE = XFree86.def
@@ -357,16 +347,10 @@ XCOMM
          AFBSUBDIR = afb
 #endif
      XFREE86DDXDIR = hw/xfree86
-#if DoLoadableServer
-          BASEEXTS = Xext/LibraryTargetName(exts)
-    XF86EXTENSIONS = $(BASEEXTS) $(STATICEXTS)
-#else
-    XF86EXTENSIONS = $(STATICEXTS) $(LOADABLEEXTS)
-#endif
- XF86SERVERSUBDIRS = $(STDDIRS) $(DIXDIR) $(OSDIR) $(HWDIR) $(EXTDIRS) \
-		     $(MFBDIR) $(FBDIR) $(AFBDIR) \
-		     $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) \
-		     $(SHADOWDIR) $(LAYERDIR) $(DEPDIRS)
+ XF86SERVERSUBDIRS = $(STDDIRS) $(DIXSUBDIR) $(OSSUBDIR) $(HWSUBDIR) \
+		     $(EXTDIRS) $(MFBDIR) $(FBSUBDIR) $(AFBSUBDIR) \
+		     $(CFB8SUBDIR) $(CFB16SUBDIR) $(CFB24SUBDIR) \
+		     $(CFB32SUBDIR) $(SHADOWDIR) $(LAYERDIR) $(DEPDIRS)
           XF86INIT = $(XF86COMSRC)/xf86Init.o $(XF86COMSRC)/xf86IniExt.o
         XF86COMLIB = $(XF86COMSRC)/LibraryTargetName(xf86)
        XF86PARSLIB = $(XF86PARSERSRC)/LibraryTargetName(xf86config)
@@ -375,6 +359,8 @@ XCOMM
        MEMDEBUGLIB = $(TOP)/util/memleak/LibraryTargetName(memleak)
 #endif
 #if DoLoadableServer
+          BASEEXTS = Xext/LibraryTargetName(exts)
+    XF86EXTENSIONS = $(BASEEXTS) $(STATICEXTS)
           XF86LIBS = $(MEMDEBUGLIB) $(XF86INIT) $(XF86COMLIB) $(XF86PARSLIB) \
 		     $(XF86OSLIB)
      XF86LOADERLIB = $(XF86SRC)/loader/LibraryTargetName(loader)
@@ -383,6 +369,7 @@ XCOMM
  XF86SERVERSYSLIBS = $(XPFBLIBS) $(SYSLIBS) $(LIBDL) $(LIBREGEX)
     XF86SERVERLIBS = $(XF86LIBS) $(XF86LOADERLIB) $(XF86MAINLIBS) $(XF86OSLIB)
 #else
+    XF86EXTENSIONS = $(STATICEXTS) $(LOADABLEEXTS)
 #if XF86XAA
         XF86XAALIB = $(XF86SRC)/xaa/LibraryTargetName(xaa)
 #endif
@@ -449,8 +436,9 @@ XCOMM
        XF86SCANLIB = $(XF86SRC)/scanpci/LibraryTargetName(scanpci)
           XF86LIBS = $(MEMDEBUGLIB) $(XF86INIT) $(XF86COMLIB) $(XF86RACLIB) \
 		     $(XF86PARSLIB) $(XF86VBELIB) $(XF86OSLIB) $(XF86INT10LIB)
-      XF86MAINLIBS = $(SHADOW) $(DIX) $(OS) $(XPDDX) $(FB) $(CFB) $(MFB) \
-		     $(MI) $(XF86EXTENSIONS) $(XF86COMLIB)
+      XF86MAINLIBS = $(SHADOW) $(DIX) $(OS) $(XPDDX) $(FB) \
+		     $(CFB32) $(CFB16) $(CFB8) $(MFB) $(MI) \
+		     $(XF86EXTENSIONS) $(XF86COMLIB)
  XF86SERVERSYSLIBS = $(FONTLIBS) $(SYSLIBS) $(LIBDL) $(LIBREGEX)
     XF86SERVERLIBS = $(XF86DRVLIBS) $(XF86IDRVLIBS) $(XF86LIBS) \
 		     $(XF86MAINLIBS) $(XF86SCANLIB)
@@ -487,8 +475,12 @@ XCOMM Sun server
 XCOMM
 
           HWSUBDIR = hw
+#if BuildLowMem
+      LMFCFBSUBDIR = lmfcfb
+#else
          MFBSUBDIR = mfb
         CFB8SUBDIR = cfb
+#endif
          SUNDDXDIR = hw/sun
 #if BuildXKB
          SUNXKBEXT = $(SUNDDXDIR)/$(XKBEXT)
@@ -519,12 +511,13 @@ XCOMM
             SUNLIB = $(SUNDDXDIR)/LibraryTargetName(sun)
            SUNOBJS = $(SUNDDXDIR)/sunInit.o $(SUNDDXDIR)/sunInitExt.o
 #if BuildLowMem
-           SUNDIRS = $(STDDIRS) $(HWDIR) $(SUNEXTDIRS) $(LMFCFBDIR) $(DEPDIRS)
+           SUNDIRS = $(STDDIRS) $(HWSUBDIR) $(SUNEXTDIRS) $(LMFCFBSUBDIR) \
+		     $(DEPDIRS)
            SUNLIBS = $(SUNLIB) $(SUNDDXDIR)/$(DIX) $(SUNDDXDIR)/$(OS) \
 		     $(XPDDX) $(LMFCFB) $(MI) $(SUNEXTENSIONS)
 #else
-           SUNDIRS = $(STDDIRS) $(HWDIR) $(SUNEXTDIRS) $(CFB8DIR) $(MFBDIR) \
-		     $(DEPDIRS)
+           SUNDIRS = $(STDDIRS) $(HWSUBDIR) $(SUNEXTDIRS) \
+		     $(CFB8SUBDIR) $(MFBSUBDIR) $(DEPDIRS)
            SUNLIBS = $(SUNLIB) $(SUNDDXDIR)/$(DIX) $(SUNDDXDIR)/$(OS) \
 		     $(XPDDX) $(CFB8) $(MFB) $(MI) $(SUNEXTENSIONS)
 #endif
@@ -548,7 +541,6 @@ XCOMM
          MFBSUBDIR = mfb
         CFB8SUBDIR = cfb
        CFB16SUBDIR = cfb16
-       CFB24SUBDIR = cfb24
        CFB32SUBDIR = cfb32
          SUNDDXDIR = hw/sun
 #if BuildXKB
@@ -578,12 +570,12 @@ XCOMM
         SUNEXTDIRS = $(GLXDIR) $(LBXDIRS) $(SITEEXTDIRS)
         SUNSYSLIBS = $(FONTLIBS) $(WIDECHARSYSLIB) $(SYSLIBS)
             SUNLIB = $(SUNDDXDIR)/LibraryTargetName(sun)
-         SUN24DIRS = $(STDDIRS) $(HWDIR) $(SUNEXTDIRS) \
-		     $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) \
-		     $(DEPDIRS)
+         SUN24DIRS = $(STDDIRS) $(HWSUBDIR) $(SUNEXTDIRS) $(MFBSUBDIR) \
+		     $(CFB8SUBDIR) $(CFB16SUBDIR) $(CFB32SUBDIR) $(DEPDIRS)
          SUN24OBJS = $(SUNDDXDIR)/sunInitMulti.o $(SUNDDXDIR)/sunInitExt.o
          SUN24LIBS = $(SUNLIB) $(SUNDDXDIR)/$(DIX) $(SUNDDXDIR)/$(OS) \
-		     $(XPDDX) $(CFB) $(MFB) $(MI) $(SUNEXTENSIONS)
+		     $(XPDDX) $(CFB32) $(CFB16) $(CFB8) $(MFB) \
+		     $(MI) $(SUNEXTENSIONS)
 SetUIDServerTarget(Xsun24, \
 	$(SUN24DIRS), \
 	$(SUN24OBJS), \
@@ -630,7 +622,8 @@ XCOMM
         SUNEXTDIRS = $(GLXDIR) $(LBXDIRS) $(SITEEXTDIRS)
         SUNSYSLIBS = $(FONTLIBS) $(WIDECHARSYSLIB) $(SYSLIBS)
             SUNLIB = $(SUNDDXDIR)/LibraryTargetName(sun)
-          SUNMDIRS = $(STDDIRS) $(HWDIR) $(SUNEXTDIRS) $(MFBDIR) $(DEPDIRS)
+          SUNMDIRS = $(STDDIRS) $(HWSUBDIR) $(SUNEXTDIRS) $(MFBSUBDIR) \
+		     $(DEPDIRS)
           SUNMOBJS = $(SUNDDXDIR)/sunInitMono.o $(SUNDDXDIR)/sunInExMono.o
           SUNMLIBS = $(SUNLIB) $(SUNDDXDIR)/$(DIX) $(SUNDDXDIR)/$(OS) \
 		     $(XPDDX) $(MFB) $(MI) $(SUNEXTENSIONS)
@@ -681,8 +674,8 @@ XCOMM
        LYNXEXTDIRS = $(GLXDIR) $(LBXDIRS) $(SITEEXTDIRS)
        LYNXSYSLIBS = $(FONTLIBS) $(SYSLIBS)
            LYNXLIB = $(LYNXDDXDIR)/LibraryTargetName(sun)
-          LYNXDIRS = $(STDDIRS) $(HWDIR) $(LYNXEXTDIRS) $(MFBDIR) $(CFB8DIR) \
-		     $(DEPDIRS)
+          LYNXDIRS = $(STDDIRS) $(HWSUBDIR) $(LYNXEXTDIRS) \
+		     $(MFBSUBDIR) $(CFB8SUBDIR) $(DEPDIRS)
           LYNXOBJS = $(LYNXDDXDIR)/sunLyInit.o $(LYNXDDXDIR)/sunInitExt.o
           LYNXLIBS = $(LYNXLIB) $(LYNXDDXDIR)/$(DIX) $(LYNXDDXDIR)/$(OS) \
 		     $(XPDDX) $(CFB8) $(MFB) $(MI) $(LYNXEXTENSIONS)
@@ -732,7 +725,8 @@ XCOMM
        LYNXEXTDIRS = $(GLXDIR) $(LBXDIRS) $(SITEEXTDIRS)
        LYNXSYSLIBS = $(FONTLIBS) $(SYSLIBS)
            LYNXLIB = $(LYNXDDXDIR)/LibraryTargetName(sun)
-         LYNXMDIRS = $(STDDIRS) $(HWDIR) $(LYNXEXTDIRS) $(MFBDIR) $(DEPDIRS)
+         LYNXMDIRS = $(STDDIRS) $(HWSUBDIR) $(LYNXEXTDIRS) $(MFBSUBDIR) \
+		     $(DEPDIRS)
          LYNXMOBJS = $(LYNXDDXDIR)/sunInitMono.o $(LYNXDDXDIR)/sunInExMono.o
          LYNXMLIBS = $(LYNXLIB) $(LYNXDDXDIR)/$(DIX) $(LYNXDDXDIR)/$(OS) \
 		     $(XPDDX) $(MFB) $(MI) $(LYNXEXTENSIONS)
@@ -810,9 +804,9 @@ XCOMM
           FBDEVDIR = $(TINYXDIR)/fbdev
              FBDEV = $(FBDEVDIR)/LibraryTargetName(fbdev)
 
-         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(DEPDIRS)
+         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(FBSUBDIR) $(DEPDIRS)
 
-         FBDEVDIRS = $(STDDIRS) $(HWDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
+         FBDEVDIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
 		     $(FBDEVDIR) $(SHADOWDIR) $(LAYERDIR)
 
          FBDEVLIBS = $(TINY_DIX) $(TINY_OS) $(FBDEV) $(LAYER) $(TINYX) \
@@ -844,9 +838,9 @@ XCOMM
          SAVAGEDIR = $(TINYXDIR)/savage
             SAVAGE = $(SAVAGEDIR)/LibraryTargetName(savage)
 
-         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(DEPDIRS)
+         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(FBSUBDIR) $(DEPDIRS)
 
-        SAVAGEDIRS = $(STDDIRS) $(HWDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
+        SAVAGEDIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
 		     $(SAVAGEDIR)
 
         SAVAGEOBJS = $(TINYXDIR)/miinitext.o $(TINYXDIR)/register.o \
@@ -878,9 +872,10 @@ XCOMM
             IGSDIR = $(TINYXDIR)/igs
                IGS = $(IGSDIR)/LibraryTargetName(igs)
 
-         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(DEPDIRS)
+         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(FBSUBDIR) $(DEPDIRS)
 
-           IGSDIRS = $(STDDIRS) $(HWDIR) $(TINY_EXTDIRS) $(TINYXDIRS) $(IGSDIR)
+           IGSDIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
+		     $(IGSDIR)
 
            IGSOBJS = $(TINYXDIR)/miinitext.o $(TINYXDIR)/register.o \
 		     $(TINYXDIR)/ffcheck.o
@@ -917,9 +912,9 @@ XCOMM
         TRIDENTDIR = $(TINYXDIR)/trident
            TRIDENT = $(TRIDENTDIR)/LibraryTargetName(trident)
 
-         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(DEPDIRS)
+         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(FBSUBDIR) $(DEPDIRS)
 
-       TRIDENTDIRS = $(STDDIRS) $(HWDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
+       TRIDENTDIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
 		     $(FBDEVDIR) $(VESADIR) $(SHADOWDIR) $(LAYERDIR) \
 		     $(TRIDENTDIR)
 
@@ -956,9 +951,9 @@ XCOMM
           CHIPSDIR = $(TINYXDIR)/chips
              CHIPS = $(CHIPSDIR)/LibraryTargetName(chips)
 
-         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(DEPDIRS)
+         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(FBSUBDIR) $(DEPDIRS)
 
-         CHIPSDIRS = $(STDDIRS) $(HWDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
+         CHIPSDIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
 		     $(FBDEVDIR) $(VESADIR) $(SHADOWDIR) $(LAYERDIR) \
 		     $(CHIPSDIR)
 
@@ -995,9 +990,9 @@ XCOMM
          MACH64DIR = $(TINYXDIR)/mach64
             MACH64 = $(MACH64DIR)/LibraryTargetName(mach64)
 
-         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(DEPDIRS)
+         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(FBSUBDIR) $(DEPDIRS)
 
-        MACH64DIRS = $(STDDIRS) $(HWDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
+        MACH64DIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
 		     $(VESADIR) $(SHADOWDIR) $(LAYERDIR) $(MACH64DIR)
 
         MACH64OBJS = $(TINYXDIR)/miinitext.o $(TINYXDIR)/register.o \
@@ -1036,9 +1031,9 @@ XCOMM
            I810DIR = $(TINYXDIR)/i810
               I810 = $(I810DIR)/LibraryTargetName(i810)
 
-         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(DEPDIRS)
+         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(FBSUBDIR) $(DEPDIRS)
 
-          I810DIRS = $(STDDIRS) $(HWDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
+          I810DIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
 		     $(SHADOWDIR) $(I810DIR)
 
           I810OBJS = $(TINYXDIR)/miinitext.o $(TINYXDIR)/register.o \
@@ -1070,9 +1065,9 @@ XCOMM
          SIS530DIR = $(TINYXDIR)/sis530
             SIS530 = $(SIS530DIR)/LibraryTargetName(sis530)
 
-         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(DEPDIRS)
+         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(FBSUBDIR) $(DEPDIRS)
 
-        SIS530DIRS = $(STDDIRS) $(HWDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
+        SIS530DIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
 		     $(SIS530DIR)
 
         SIS530OBJS = $(TINYXDIR)/miinitext.o $(TINYXDIR)/register.o \
@@ -1104,9 +1099,9 @@ XCOMM
            TRIODIR = $(TINYXDIR)/trio
               TRIO = $(TRIODIR)/LibraryTargetName(trio)
 
-         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(DEPDIRS)
+         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(FBSUBDIR) $(DEPDIRS)
 
-          TRIODIRS = $(STDDIRS) $(HWDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
+          TRIODIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
 		     $(TRIODIR)
 
           TRIOOBJS = $(TINYXDIR)/miinitext.o $(TINYXDIR)/register.o \
@@ -1144,9 +1139,9 @@ XCOMM
            IPAQDIR = $(TINYXDIR)/ipaq
               IPAQ = $(IPAQDIR)/LibraryTargetName(ipaq)
 
-         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(DEPDIRS)
+         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(FBSUBDIR) $(DEPDIRS)
 
-          IPAQDIRS = $(STDDIRS) $(HWDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
+          IPAQDIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
 		     $(FBDEVDIR) $(LAYERDIR) $(SHADOWDIR) $(PCMCIADIR) \
 		     $(IPAQDIR)
 
@@ -1186,9 +1181,9 @@ XCOMM
           TS300DIR = $(TINYXDIR)/ts300
              TS300 = $(TS300DIR)/LibraryTargetName(ts300)
 
-         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(DEPDIRS)
+         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(FBSUBDIR) $(DEPDIRS)
 
-         TS300DIRS = $(STDDIRS) $(HWDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
+         TS300DIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
 		     $(TRIODIR) $(SIS530DIR) $(TS300DIR)
 
          TS300OBJS = $(TINYXDIR)/miinitext.o $(TINYXDIR)/register.o \
@@ -1221,9 +1216,9 @@ XCOMM
            ITSYDIR = $(TINYXDIR)/itsy
               ITSY = $(ITSYDIR)/LibraryTargetName(itsy)
 
-         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(DEPDIRS)
+         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(FBSUBDIR) $(DEPDIRS)
 
-          ITSYDIRS = $(STDDIRS) $(HWDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
+          ITSYDIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
 		     $(ITSYDIR)
 
           ITSYOBJS = $(TINYXDIR)/miinitext.o $(TINYXDIR)/register.o \
@@ -1255,9 +1250,9 @@ XCOMM
            VESADIR = $(TINYXDIR)/vesa
               VESA = $(VESADIR)/LibraryTargetName(vesa)
 
-         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(DEPDIRS)
+         TINYXDIRS = $(TINYXDIR) $(TINYXOSDIR) $(FBSUBDIR) $(DEPDIRS)
 
-          VESADIRS = $(STDDIRS) $(HWDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
+          VESADIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
 		     $(VESADIR) $(SHADOWDIR) $(LAYERDIR)
 
           VESAOBJS = $(TINYXDIR)/miinitext.o $(TINYXDIR)/register.o \
@@ -1315,11 +1310,11 @@ XCOMM
     XPLOADABLEEXTS = $(XPMISCEXT) $(XPDBEEXT) $(XPRECORDEXT) $(XPXTRAPEXT)
       XPEXTENSIONS = $(XPLOADABLEEXTS) $(XPSTATICEXTS)
          XPEXTDIRS = $(LBXDIRS) $(SITEEXTDIRS)
-         XPSUBDIRS = $(STDDIRS) $(XPEXTDIRS) $(MFBDIR) $(CFB8DIR) $(CFB32DIR) \
-		     $(DEPDIRS)
+         XPSUBDIRS = $(STDDIRS) $(XPEXTDIRS) $(MFBSUBDIR) \
+		     $(CFB8SUBDIR) $(CFB32SUBDIR) $(DEPDIRS)
             XPOBJS = Xprint/ddxInit.o Xprint/miinitext.o
             XPLIBS = $(XPDDXDIR)/$(DIX) $(XPDDXDIR)/$(OS) \
-		     $(XPDDXLIBS) $(XPDDXFBLIBS) $(MI) $(XPEXTENSIONS)
+		     $(XPDDXLIBS) $(XPDDXFBLIBS) $(XPEXTENSIONS)
 #if (defined(SunArchitecture) || defined(SparcArchitecture)) && \
     defined(SVR4Architecture)
          XPSYSLIBS = $(FONT) $(CBRT) $(SYSLIBS) -lw
@@ -1376,7 +1371,7 @@ XCOMM
 		     $(GLXEXT) $(XNESTXTRAPEXT)
    XNESTEXTENSIONS = $(XNESTLOADABLEEXTS) $(XNESTSTATICEXTS)
       XNESTEXTDIRS = $(GLXDIR) $(LBXDIRS) $(SITEEXTDIRS)
-         XNESTDIRS = $(STDDIRS) $(HWDIR) $(XNESTEXTDIRS) $(DEPDIRS)
+         XNESTDIRS = $(STDDIRS) $(HWSUBDIR) $(XNESTEXTDIRS) $(DEPDIRS)
          XNESTOBJS = $(XNESTDDXDIR)/dix/main.o $(XNESTDDXDIR)/miinitext.o
              XNEST = $(XNESTDDXDIR)/LibraryTargetName(xnest)
          XNESTLIBS = $(XNESTDDXDIR)/$(DIX) $(XNESTDDXDIR)/$(OS) $(XNEST) \
@@ -1396,29 +1391,6 @@ ServerTarget(Xnest, \
 	$(XNESTLIBS), \
 	$(XNESTSYSLIBS))
 #endif /* XnestServer */
-
-
-#if defined(XnonServer) && XnonServer
-XCOMM
-XCOMM non server, just compile sources for build test
-XCOMM
-
-         MFBSUBDIR = mfb
-        CFB8SUBDIR = cfb
-       CFB16SUBDIR = cfb16
-       CFB32SUBDIR = cfb32
-#if HasParallelMake
-MakeMutex($(STDDIRS) $(DIXDIR) $(OSDIR) $(HWDIR) $(EXTDIRS) $(MFBDIR) \
-	  $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) \
-	  $(SHADOWDIR) $(LAYERDIR) $(ROOTLESSDIR) \
-	  $(AFBDIR) $(FBDIR) $(DEPDIRS))
-#endif
-all:: Xnon
-Xnon: $(STDDIRS) $(DIXDIR) $(OSDIR) $(HWDIR) $(EXTDIRS) $(MFBDIR) \
-      $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) \
-      $(SHADOWDIR) $(LAYERDIR) $(ROOTLESSDIR) \
-      $(AFBDIR) $(FBDIR) $(DEPDIRS)
-#endif /* XnonServer */
 
 
 #if defined(XVirtualFramebufferServer) && XVirtualFramebufferServer
@@ -1454,8 +1426,8 @@ XCOMM
 		     $(XVFBXTRAPEXT)
     XVFBEXTENSIONS = $(XVFBLOADABLEEXTS) $(XVFBSTATICEXTS)
        XVFBEXTDIRS = $(GLXDIR) $(LBXDIRS) $(SITEEXTDIRS)
-          XVFBDIRS = $(STDDIRS) $(HWDIR) $(XVFBEXTDIRS) $(MFBDIR) $(FBDIR) \
-		     $(DEPDIRS)
+          XVFBDIRS = $(STDDIRS) $(HWSUBDIR) $(XVFBEXTDIRS) \
+		     $(MFBSUBDIR) $(FBSUBDIR) $(DEPDIRS)
           XVFBOBJS = $(XVFBDDXDIR)/dix/main.o $(XVFBDDXDIR)/miinitext.o
               XVFB = $(XVFBDDXDIR)/LibraryTargetName(vfb)
           XVFBLIBS = $(XVFBDDXDIR)/$(DIX) $(XVFBDDXDIR)/$(OS) $(XVFB) $(FB) \
@@ -1493,8 +1465,8 @@ XCOMM
      DMXEXTENSIONS = $(DMXLOADABLEEXTS) $(DMXSTATICEXTS)
         DMXEXTDIRS = $(XKBDIR) $(XIDIR) $(LBXDIRS) $(RECORDDIR) $(RENDERDIR) \
 		     $(XTRAPDIR) $(SITEEXTDIRS)
-          XDMXDIRS = $(STDDIRS) $(HWDIR) $(DMXEXTDIRS) $(SHADOWDIR) \
-		     $(DEPDIRS) $(FBDIR)
+          XDMXDIRS = $(STDDIRS) $(HWSUBDIR) $(FBSUBDIR) \
+		     $(DMXEXTDIRS) $(SHADOWDIR) $(DEPDIRS)
 #if BuildGlxInDmx
        GLXPROXYLIB = $(XDMXDDXDIR)/glxProxy/LibraryTargetName(glxProxy)
 #endif
@@ -1542,9 +1514,9 @@ XCOMM
      XWINPARSERDIR = hw/xfree86/parser
      XWINPARSERLIB = $(XWINPARSERDIR)/LibraryTargetName(xf86config)
            XWINLIB = $(XWINDDXDIR)/LibraryTargetName(Xwin)
-          XWINDIRS = $(STDDIRS) $(DIXDIR) $(OSDIR) $(HWDIR) $(EXTDIRS) \
-		     $(FBDIR) $(SHADOWDIR) $(LAYERDIR) $(DEPDIRS) \
-		     $(XWINPARSERDIR)
+          XWINDIRS = $(STDDIRS) $(DIXSUBDIR) $(OSSUBDIR) $(HWSUBDIR) \
+		     $(EXTDIRS) $(FBSUBDIR) $(SHADOWDIR) $(LAYERDIR) \
+		     $(DEPDIRS) $(XWINPARSERDIR)
           XWINOBJS = $(XWINDDXDIR)/stubs.o $(XWINDDXDIR)/XWin.res
 #if 0
           XWINLIBS = $(DIX) $(OS) $(XPDDX) $(XWINLIB) $(FB) $(MI) \
@@ -1606,8 +1578,8 @@ XCOMM
           OSSUBDIR = os
           FBSUBDIR = fb
       DARWINDDXDIR = hw/darwin
-        DARWINDIRS = $(STDDIRS) $(DIXDIR) $(OSDIR) $(HWDIR) $(EXTDIRS) \
-		     $(FBDIR) $(SHADOWDIR) $(DEPDIRS)
+        DARWINDIRS = $(STDDIRS) $(DIXSUBDIR) $(OSSUBDIR) $(HWSUBDIR) \
+		     $(EXTDIRS) $(FBSUBDIR) $(SHADOWDIR) $(DEPDIRS)
         DARWINOBJS = $(DARWINDDXDIR)/miinitext.o
         DARWINLIBS = $(DIX) $(OS) $(XPDDX) \
 		     $(DARWINDDXDIR)/LibraryTargetName(darwin)
@@ -1739,11 +1711,30 @@ BundleProgramTarget(glxMesa, \
 #endif /* XDarwinServer */
 
 
+#if defined(XnonServer) && XnonServer
+XCOMM
+XCOMM non server, just compile sources for build test
+XCOMM
+
+       XNONSUBDIRS = $(STDDIRS) $(DIXSUBDIR) $(OSSUBDIR) $(HWSUBDIR) \
+		     $(CFB8SUBDIR) $(CFB16SUBDIR) \
+		     $(CFB24SUBDIR) $(CFB32SUBDIR) \
+		     $(MFBSUBDIR) $(AFBSUBDIR) $(FBSUBDIR) \
+		     $(SHADOWDIR) $(LAYERDIR) $(ROOTLESSDIR) \
+		     $(EXTDIRS) $(DEPDIRS)
+#if HasParallelMake
+MakeMutex($(XNONSUBDIRS))
+#endif
+all:: Xnon
+Xnon: $(XNONSUBDIRS)
+#endif /* XnonServer */
+
+
         CFBSUBDIRS = $(CFB8SUBDIR) $(CFB16SUBDIR) $(CFB24SUBDIR) $(CFB32SUBDIR)
          MIEXTDIRS = $(SHADOWDIR) $(LAYERDIR) $(ROOTLESSDIR)
          IPLANDIRS = $(IPLAN2P2DIR) $(IPLAN2P4DIR) $(IPLAN2P8DIR)
            SUBDIRS = $(STDDIRS) $(DIXSUBDIR) $(OSSUBDIR) $(HWSUBDIR) \
-		     $(EXTDIRS) $(MFBSUBDIR) $(CFBSUBDIRS) \
+		     $(EXTDIRS) $(LMFCFBSUBDIR) $(MFBSUBDIR) $(CFBSUBDIRS) \
 		     $(IPLANDIRS) $(ILBMDIR) $(AFBSUBDIR) \
 		     $(LMFCFBDIR) $(FBSUBDIR) $(TINYXSUBDIRS) \
 		     $(MIEXTDIRS) $(XWINPARSERDIR)
