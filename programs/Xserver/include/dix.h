@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.29tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.30 2006/02/19 15:51:31 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -151,7 +151,7 @@ SOFTWARE.
  * protocol, this whether or not the window structure's srcBuffer and/or
  * dstBuffer bits have been changed.  See the DBE code for more details on this
  * function.  We put in these levels of conditionality so that you can do just
- * what you need to do, and no more.  If neither of these defines are used, the
+ * what you need to do, and no more.  If none of these defines are used, the
  * bits won't be there, and VALIDATE_DRAWABLE_AND_GC will be unchanged.
  *	dpw
  */
