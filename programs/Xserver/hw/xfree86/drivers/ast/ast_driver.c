@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_driver.c,v 1.1 2005/11/10 15:37:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_driver.c,v 1.2tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -1088,7 +1088,7 @@ ASTDoDDC(ScrnInfoPtr pScrn, int index)
    }
 
    if (xf86LoadVBEModule(pScrn) && (pVbe = VBEInit(NULL, index))) {
-      xf86LoaderReqSymLists(vbeSymbols, NULL);
+      xf86LoaderReqSymLists(vbeSymbols, ddcSymbols, NULL);
       MonInfo = vbeDoEDID(pVbe, NULL);
       xf86PrintEDID(MonInfo);
       xf86SetDDCproperties(pScrn, MonInfo);
