@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.33tsi Exp $
+XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.34 2005/10/17 15:35:55 tsi Exp $
 XCOMM The contents of this file are subject to the GLX Public License Version 1.0
 XCOMM (the "License"). You may not use this file except in compliance with the
 XCOMM License. You may obtain a copy of the License at Silicon Graphics, Inc.,
@@ -119,7 +119,6 @@ LinkSourceFile(glapi_sparc.S, $(MESASRCDIR)/src/mesa/sparc)
 		single2.c \
 		singlepix.c \
 		vertarr.c \
-		xfont.c \
 		glx_pbuffer.c \
 		glx_query.c \
 		glx_texture_compression.c
@@ -146,7 +145,6 @@ LinkSourceFile(glapi_sparc.S, $(MESASRCDIR)/src/mesa/sparc)
 		single2.o \
 		singlepix.o \
 		vertarr.o \
-		xfont.o \
 		glx_pbuffer.o \
 		glx_query.o \
 		glx_texture_compression.o
@@ -162,8 +160,8 @@ LinkSourceFile(glapi_sparc.S, $(MESASRCDIR)/src/mesa/sparc)
 #endif
 
 #if BuildXF86DRI
-     DRI_SRCS = dri_glx.c XF86dri.c
-     DRI_OBJS = dri_glx.o XF86dri.o
+     DRI_SRCS = dri_glx.c XF86dri.c xfont.c
+     DRI_OBJS = dri_glx.o XF86dri.o xfont.o
 
      DRI_INCS = -I$(SERVERSRC)/GL/dri
 #if defined(i386Architecture) && MesaUseX86Asm
@@ -191,8 +189,8 @@ LinkSourceFile(glapi_sparc.S, $(MESASRCDIR)/src/mesa/sparc)
 ALIAS_DEFINES = -DGLX_ALIAS_UNSUPPORTED
 #endif
 #if defined(DarwinArchitecture) && BuildAppleDRI
-     DRI_SRCS = XF86dri.c
-     DRI_OBJS = XF86dri.o
+     DRI_SRCS = XF86dri.c xfont.c
+     DRI_OBJS = XF86dri.o xfont.o
 
      DRI_INCS = -I$(SERVERSRC)/GL/dri
 

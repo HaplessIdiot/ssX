@@ -87,7 +87,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.204 2006/02/17 16:56:15 tsi Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.205 2006/02/18 03:31:39 dawes Exp $ */
 
 /* main.c */
 
@@ -449,7 +449,7 @@ extern void sleep();
 extern char *ttyname();
 #endif
 
-#ifdef SYSV
+#if defined(SYSV) && !defined(SVR4)
 extern char *ptsname(int);
 #endif
 

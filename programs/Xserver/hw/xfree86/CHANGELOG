@@ -1,4 +1,5 @@
 XFree86 4.5.99.22 (xx February 2006)
+ 218. Platforms-specific build/warning fixes (David Dawes).
  217. A rework of the way extension support is built into servers to allow for
       servers with different sets of extensions in the same build.  This starts
       with an idea introduced in David Dawes's TinyX work, and extends it to
@@ -19987,7 +19988,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3668 2006/02/19 15:51:24 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3669 2006/02/19 16:05:13 tsi Exp $
 
 
 

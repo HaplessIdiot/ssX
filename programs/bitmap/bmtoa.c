@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/bitmap/bmtoa.c,v 3.7 2001/12/14 20:00:41 dawes Exp $ */
+/* $XFree86: xc/programs/bitmap/bmtoa.c,v 3.8 2006/01/09 15:00:40 dawes Exp $ */
 
 /*
  * bmtoa - bitmap to ascii filter
@@ -41,9 +41,6 @@ from The Open Group.
 
 #include <stdlib.h>
 #include <unistd.h>
-#ifndef HAS_MKSTEMP
-extern char *mktemp();
-#endif
 
 char *ProgramName;
 

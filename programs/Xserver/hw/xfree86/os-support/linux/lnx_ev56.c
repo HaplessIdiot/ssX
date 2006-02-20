@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_ev56.c,v 3.8 2005/10/14 15:17:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_ev56.c,v 3.9 2006/02/17 18:04:38 dawes Exp $ */
 
 #include <X11/X.h>
 #include "input.h"
@@ -13,77 +13,61 @@
 #include "lnx.h"
 #include "lnx_axp.h"
 
-int readDense8(pointer Base, register unsigned long Offset);
-int readDense16(pointer Base, register unsigned long Offset);
-int readDense32(pointer Base, register unsigned long Offset);
-void
-writeDenseNB8(int Value, pointer Base, register unsigned long Offset);
-void
-writeDenseNB16(int Value, pointer Base, register unsigned long Offset);
-void
-writeDenseNB32(int Value, pointer Base, register unsigned long Offset);
-void
-writeDense8(int Value, pointer Base, register unsigned long Offset);
-void
-writeDense16(int Value, pointer Base, register unsigned long Offset);
-void
-writeDense32(int Value, pointer Base, register unsigned long Offset);
-
 int
-readDense8(pointer Base, register unsigned long Offset)
+readDense8(volatile void *Base, register unsigned long Offset)
 {
     mem_barrier();
     return *(volatile CARD8*) ((unsigned long)Base+(Offset));
 }
 
 int
-readDense16(pointer Base, register unsigned long Offset)
+readDense16(volatile void *Base, register unsigned long Offset)
 {
     mem_barrier();
     return *(volatile CARD16*) ((unsigned long)Base+(Offset));
 }
 
 int
-readDense32(pointer Base, register unsigned long Offset)
+readDense32(volatile void *Base, register unsigned long Offset)
 {
     mem_barrier();
     return *(volatile CARD32*)((unsigned long)Base+(Offset));
 }
 
 void
-writeDenseNB8(int Value, pointer Base, register unsigned long Offset)
+writeDenseNB8(int Value, volatile void *Base, register unsigned long Offset)
 {
     *(volatile CARD8*)((unsigned long)Base+(Offset)) = Value;
 }
 
 void
-writeDenseNB16(int Value, pointer Base, register unsigned long Offset)
+writeDenseNB16(int Value, volatile void *Base, register unsigned long Offset)
 {
     *(volatile CARD16*)((unsigned long)Base + (Offset)) = Value;
 }
 
 void
-writeDenseNB32(int Value, pointer Base, register unsigned long Offset)
+writeDenseNB32(int Value, volatile void *Base, register unsigned long Offset)
 {
     *(volatile CARD32*)((unsigned long)Base+(Offset)) = Value;
 }
 
 void
-writeDense8(int Value, pointer Base, register unsigned long Offset)
+writeDense8(int Value, volatile void *Base, register unsigned long Offset)
 {
     write_mem_barrier();
     *(volatile CARD8 *)((unsigned long)Base+(Offset)) = Value;
 }
 
 void
-writeDense16(int Value, pointer Base, register unsigned long Offset)
+writeDense16(int Value, volatile void *Base, register unsigned long Offset)
 {
     write_mem_barrier();
     *(volatile CARD16 *)((unsigned long)Base+(Offset)) = Value;
 }
 
 void
-writeDense32(int Value, pointer Base, register unsigned long Offset)
+writeDense32(int Value, volatile void *Base, register unsigned long Offset)
 {
     write_mem_barrier();
     *(volatile CARD32 *)((unsigned long)Base+(Offset)) = Value;

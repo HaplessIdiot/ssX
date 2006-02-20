@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/menus.c,v 1.23 2005/09/14 14:23:15 tsi Exp $ */
+/* $XFree86: xc/programs/twm/menus.c,v 1.24 2006/02/07 21:23:59 dawes Exp $ */
 /*****************************************************************************/
 /*
 
@@ -2529,8 +2529,7 @@ MenuRoot *root;
 
 #if defined(sun) && defined(SVR4)
 static int 
-System (s)
-    char *s;
+System (char *s)
 {
     int pid, status;
     if ((pid = fork ()) == 0) {

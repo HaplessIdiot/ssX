@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/axpPci.c,v 1.15tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/axpPci.c,v 1.16 2004/12/31 03:30:41 tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -45,6 +45,7 @@
 #include "compiler.h"
 #include "xf86.h"
 #include "xf86Priv.h"
+#define NEED_OS_RAC_PROTOS
 #include "xf86_OSlib.h"
 #include "Pci.h"
 

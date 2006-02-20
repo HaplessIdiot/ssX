@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xeyes/Eyes.c,v 1.5 2004/12/07 16:35:36 dawes Exp $ */
+/* $XFree86: xc/programs/xeyes/Eyes.c,v 1.6 2006/01/09 15:01:08 dawes Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -44,7 +44,7 @@ from the X Consortium.
 # include <math.h>
 # include <X11/extensions/shape.h>
 
-#if (defined(SVR4) || defined(SYSV) && defined(i386))
+#if (defined(SVR4) || defined(SYSV) && defined(i386)) && !defined(sun)
 extern double hypot(double, double);
 #endif
 

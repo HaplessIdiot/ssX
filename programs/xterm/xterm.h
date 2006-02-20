@@ -1,6 +1,6 @@
 /* $XTermId: xterm.h,v 1.371 2006/02/12 18:57:38 tom Exp $ */
 
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.110 2006/01/04 02:10:27 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.112 2006/02/13 01:14:59 dickey Exp $ */
 
 /************************************************************
 
@@ -85,7 +85,9 @@ authorization.
 #endif
 
 #define HAVE_STDLIB_H 1
+#ifndef SVR4
 #define DECL_ERRNO 1
+#endif
 
 #ifndef NOPUTENV
 #define HAVE_PUTENV 1

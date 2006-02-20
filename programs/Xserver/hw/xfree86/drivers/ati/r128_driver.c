@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.90tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.91 2005/08/28 20:04:47 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -1180,8 +1180,10 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 
 static Bool R128PreInitDDC(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 {
+#if !(defined(__powerpc__) || defined(__alpha__))
     R128InfoPtr   info = R128PTR(pScrn);
     vbeInfoPtr pVbe;
+#endif
 
     if (!xf86LoadSubModule(pScrn, "ddc")) return FALSE;
     xf86LoaderReqSymLists(ddcSymbols, NULL);
@@ -1696,8 +1698,8 @@ static Bool R128PreInitAccel(ScrnInfoPtr pScrn)
 
 static Bool R128PreInitInt10(ScrnInfoPtr pScrn, xf86Int10InfoPtr *ppInt10)
 {
-    R128InfoPtr   info = R128PTR(pScrn);
 #if 1 && !defined(__alpha__)
+    R128InfoPtr   info = R128PTR(pScrn);
     /* int10 is broken on some Alphas */
     if (xf86LoadSubModule(pScrn, "int10")) {
 	xf86LoaderReqSymLists(int10Symbols, NULL);

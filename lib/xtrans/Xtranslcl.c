@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.42tsi Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.43 2005/09/14 14:23:14 tsi Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -207,7 +207,7 @@ TRANS(FillAddrInfo)(XtransConnInfo ciptr, char *sun_path, char *peer_sun_path)
 #define SIGNAL_T void
 #endif /* SYSV */
 
-typedef SIGNAL_T (*PFV)();
+typedef SIGNAL_T (*PFV)(int);
 
 #ifndef sun
 #define X_STREAMS_DIR	"/dev/X"
