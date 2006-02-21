@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.318tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.319 2006/02/20 19:09:46 tsi Exp $
 
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
@@ -336,7 +336,7 @@ XCOMM
          MFBSUBDIR = mfb
         CFB8SUBDIR = cfb
        CFB16SUBDIR = cfb16
-#ifdef DoLoadableServer
+#if DoLoadableServer
        CFB24SUBDIR = cfb24
 #endif
        CFB32SUBDIR = cfb32
