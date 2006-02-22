@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessCommon.h,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessCommon.h,v 1.7tsi Exp $ */
 
 #ifndef _ROOTLESSCOMMON_H
 #define _ROOTLESSCOMMON_H
@@ -49,7 +49,9 @@
 
 
 /* Deal with inline */
-#if !defined(__GNUC__)
+#if defined(__GNUC__)
+#define inline __inline__
+#else
 #define inline /* */
 #endif
 
