@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.320tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.321tsi Exp $
 
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
@@ -336,7 +336,7 @@ XCOMM
          MFBSUBDIR = mfb
         CFB8SUBDIR = cfb
        CFB16SUBDIR = cfb16
-#if DoLoadableServer
+#if DoLoadableServer || defined(SparcArchitecture)
        CFB24SUBDIR = cfb24
 #endif
        CFB32SUBDIR = cfb32
@@ -386,7 +386,8 @@ XCOMM
          XF4BPPLIB = $(XF86SRC)/xf4bpp/LibraryTargetName(xf4bpp)
 #endif
 #if XF8_32Wid && defined(SparcArchitecture)
-      XF8_32WIDLIB = $(XF86SRC)/xf8_32wid/LibraryTargetName(xf8_32wid)
+      XF8_32WIDLIB = $(XF86SRC)/xf8_32wid/LibraryTargetName(xf8_32wid) \
+		     $(CFB24)
 #endif
 #if XF8_32Bpp
       XF8_32BPPLIB = $(XF86SRC)/xf8_32bpp/LibraryTargetName(xf8_32bpp)
