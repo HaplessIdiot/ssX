@@ -1,4 +1,8 @@
 XFree86 4.5.99.23 (xx March 2006)
+ 224. TinyX build fixes, including one for Linux systems that don't provide
+      <sys/io.h>, e.g. libc5 among others (Marc La France).
+ 223. Improve accuracy of atimisc's calculations that are based on a 29.5 MHz
+      reference clock (Marc La France).
  222. A setuid xterm doesn't also need to be setgid (Marc La France).
 
 XFree86 4.5.99.22 (23 February 2006)
@@ -19998,7 +20002,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3675 2006/02/23 12:02:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3676 2006/02/24 04:28:45 tsi Exp $
 
 
 

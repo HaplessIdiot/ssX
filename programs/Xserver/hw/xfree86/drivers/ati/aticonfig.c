@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonfig.c,v 1.18tsi Exp $*/
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonfig.c,v 1.19tsi Exp $*/
 /*
  * Copyright 2000 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -192,7 +192,7 @@ ATIProcessOptions
     /* Only set the reference clock if it hasn't already been determined */
     if (!pATI->ReferenceNumerator || !pATI->ReferenceDenominator)
     {
-        switch ((int)(ReferenceClock / ((double)100000.0)))
+        switch ((int)((ReferenceClock + 50000) / ((double)100000.0)))
         {
             case 143:
                 pATI->ReferenceNumerator = 157500;
@@ -201,6 +201,11 @@ ATIProcessOptions
 
             case 286:
                 pATI->ReferenceNumerator = 315000;
+                pATI->ReferenceDenominator = 11;
+                break;
+
+            case 295:
+                pATI->ReferenceNumerator = 324480;
                 pATI->ReferenceDenominator = 11;
                 break;
 
