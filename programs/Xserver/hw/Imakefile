@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/Imakefile,v 1.3tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/Imakefile,v 1.4tsi Exp $
 
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -60,7 +60,7 @@ DARWINDIR = darwin
 #endif
 
 #ifdef IHaveSubdirs
-SUBDIRS= $(XFREE86DIR) $(SUNDIR) $(LYNXDIR) $(TINYX) $(XNESTDIR) $(XVFBDIR) \
+SUBDIRS= $(XFREE86DIR) $(SUNDIR) $(LYNXDIR) $(TINYDIR) $(XNESTDIR) $(XVFBDIR) \
 	 $(XDMXDIR) $(WINDIR) $(DARWINDIR)
 
 MakeSubdirs($(SUBDIRS))

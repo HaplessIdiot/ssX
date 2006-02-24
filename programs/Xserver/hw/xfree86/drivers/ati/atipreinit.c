@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.89tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.90tsi Exp $ */
 /*
  * Copyright 1999 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1070,7 +1070,7 @@ ATIPreInit
 
             pATI->ProgrammableClock = BIOSByte(ClockTable);
             pATI->ClockNumberToProgramme = BIOSByte(ClockTable + 0x06U);
-            switch (BIOSWord(ClockTable + 0x08U) / 10)
+            switch ((BIOSWord(ClockTable + 0x08U) + 5) / 10)
             {
                 case 143:
                     pATI->ReferenceNumerator = 157500;
@@ -1079,6 +1079,11 @@ ATIPreInit
 
                 case 286:
                     pATI->ReferenceNumerator = 315000;
+                    pATI->ReferenceDenominator = 11;
+                    break;
+
+                case 295:
+                    pATI->ReferenceNumerator = 324480;
                     pATI->ReferenceDenominator = 11;
                     break;
 

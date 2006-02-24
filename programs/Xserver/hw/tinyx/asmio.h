@@ -1,6 +1,6 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/Imakefile,v 1.7tsi Exp $
+/* $XFree86: xc/programs/Xserver/hw/tinyx/asmio.h,v 1.0tsi Exp $ */
 /*
- * Copyright (c) 2004-2006 by The XFree86 Project, Inc.
+ * Copyright (c) 2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -46,86 +46,20 @@ XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/Imakefile,v 1.7tsi Exp $
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "TinyX.tmpl"
+/*
+ * This file provides a default <sys/io.h>.  It is assumed <asm/io.h> exists.
+ */
 
-#define IHaveSubdirs
+#ifndef _SYS_IO_H
+#define _SYS_IO_H	1
 
-#if BuildRender
-RENDERSRCS=txpict.c
-RENDEROBJS=txpict.o
-RENDERSUBDIRS = render
+#ifdef __GNUC__
+#undef  inline
+#define inline __inline__
 #endif
 
-#if BuildRandR
-RANDRSUBDIRS = randr
-#endif
+#define extern static
+#include <asm/io.h>
+#undef  extern
 
-#if BuildXvExt
-XVSRCS=txxv.c
-XVOBJS=txxv.o 
-#endif
-
-#ifdef TinyDIXDefines
-TINY_DEFINES = TinyDIXDefines
-#endif
-
-#if XipaqServer
-IPAQ_DEFINES = -DXIPAQ
-#endif
-
-#if HasMTRRSupport
-MTRR_DEFINES = -DHAS_MTRR
-#endif
-
-SUBDIRS = sys dix os Xext $(RENDERSUBDIRS) $(RANDRSUBDIRS)
-
-DEFINES = $(EXT_DEFINES) $(IPAQ_DEFINES) $(TINY_DEFINES) $(MTRR_DEFINES)
-
-SRCS = txaa.c txcmap.c tinyx.c txinfo.c txinput.c txmap.c txnoop.c \
-	txtest.c vga.c txasync.c txmode.c txcurscol.c txshadow.c \
-	$(RENDERSRCS) $(XVSRCS) miinitext.c
-
-OBJS = txaa.o txcmap.o tinyx.o txinfo.o txinput.o txmap.o txnoop.o \
-	txtest.o vga.o txasync.o txmode.o txcurscol.o txshadow.o \
-	$(RENDEROBJS) $(XVOBJS)
-
-INCLUDES = $(TINYXINCLUDES)
-
-NormalLibraryObjectRule()
-NormalLibraryTarget(tinyx,$(OBJS))
-
-AllTarget(miinitext.o)
-LinkSourceFile(miinitext.c,$(SERVERSRC)/mi)
-SpecialCObjectRule(miinitext,$(ICONFIGFILES),NullParameter)
-
-TINYX_FONT_DEFS = TinyXFontDefines
-#if TinyXSpeedo
-TINYX_SPEEDO_DEFINES = -DBUILD_SPEEDO
-#endif
-#if TinyXType1
-TINYX_TYPE1_DEFINES = -DBUILD_TYPE1
-#endif
-#if TinyXCID
-TINYX_CID_DEFINES = -DBUILD_CID
-#endif
-#if TinyXFreeType
-TINYX_FREETYPE_DEFINES = -DBUILD_FREETYPE
-#endif
-
-TINY_FONT_DEFINES = $(TINYX_FONT_DEFS) $(TINYX_SPEEDO_DEFINES) \
-	$(TINYX_TYPE1_DEFINES) $(TINYX_CID_DEFINES) $(TINYX_FREETYPE_DEFINES)
-
-
-AllTarget(register.o)
-LinkSourceFile(register.c,$(FONTLIBSRC)/fontfile)
-SpecialCObjectRule(register,$(ICONFIGFILES),-I$(FONTLIBSRC)/include $(TINY_FONT_DEFINES))
-AllTarget(ffcheck.o)
-LinkSourceFile(ffcheck.c,$(FONTLIBSRC)/fontfile)
-SpecialCObjectRule(ffcheck,$(ICONFIGFILES),-I$(FONTLIBSRC)/include $(TINY_FONT_DEFINES))
-
-InstallManPage(TinyX,$(MANDIR))
-InstallManPageAliases(TinyX,$(MANDIR),Xchips Xi810 Xigs Xipaq Xmach64 Xsavage Xsis530 Xtrident Xtrio Xts300 Xkdrive kdrive)
-DependTarget()
-
-MakeSubdirs($(SUBDIRS))
-DependSubdirs($(SUBDIRS))
+#endif /* _SYS_IO_H */
