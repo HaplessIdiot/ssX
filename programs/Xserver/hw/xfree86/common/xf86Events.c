@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.168tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.169 2005/10/14 15:16:33 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1620,8 +1620,6 @@ XTestGenerateEvent(int dev_type, int keycode, int keystate, int mousex,
 #ifdef WSCONS_SUPPORT
 
 /* XXX Currently XKB is mandatory. */
-
-extern int WSKbdToKeycode(int);
 
 void
 xf86PostWSKbdEvent(struct wscons_event *event)

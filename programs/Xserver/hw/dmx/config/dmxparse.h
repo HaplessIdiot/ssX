@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/config/dmxparse.h,v 1.2 2005/03/25 02:22:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/config/dmxparse.h,v 1.3 2005/03/28 02:51:06 dawes Exp $ */
 /*
  * Copyright 2002 Red Hat Inc., Durham, North Carolina.
  *
@@ -295,7 +295,7 @@ extern DMXConfigEntryPtr   dmxConfigAddEntry(DMXConfigEntryPtr head,
 extern DMXConfigEntryPtr   dmxConfigEntryComment(DMXConfigCommentPtr comment);
 extern DMXConfigEntryPtr   dmxConfigEntryVirtual(DMXConfigVirtualPtr virtual);
 
-#ifndef YYBISON
+#if !defined(YYBISON) && !(defined(YYBYACC) && defined(__NetBSD__))
 extern int yyparse(void);
 #endif
 

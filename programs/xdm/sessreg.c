@@ -28,7 +28,7 @@
  *   by Andreas Stolcke <stolcke@icsi.berkeley.edu>
  */
 
-/* $XFree86: xc/programs/xdm/sessreg.c,v 3.21 2005/01/26 04:18:53 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/sessreg.c,v 3.22 2006/01/09 15:01:04 dawes Exp $ */
 
 /*
  * sessreg
@@ -200,7 +200,7 @@ getstring (char ***avp, int *flagp)
 	return *a;
 }
 
-#ifndef SYSV
+#if !defined(SYSV) && !defined(BSD_UTMPX)
 static int
 syserr (int x, char *s)
 {
@@ -225,7 +225,7 @@ sysnerr (int x, char *s)
 int
 main (int argc, char **argv)
 {
-#ifndef SYSV
+#if !defined(SYSV) && !defined(BSD_UTMPX)
 	int		utmp;
 #endif
 	char		*line_tmp;
@@ -354,12 +354,14 @@ main (int argc, char **argv)
 	}
 #ifndef NO_LASTLOG
 	if (aflag && !llog_none) {
+# ifndef BSD_UTMPX
 	        int llog;
+# endif
 	        struct passwd *pwd = getpwnam(user_name);
 
 	        sysnerr( pwd != NULL, "get user id");
 # ifdef BSD_UTMPX
-		if (llog != -1) {
+		{
 			struct lastlogx ll;
 
 			bzero((char *)&ll, sizeof(ll));

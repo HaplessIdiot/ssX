@@ -23,7 +23,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbevd/xkbevd.h,v 3.5 2003/11/17 22:20:53 dawes Exp $ */
+/* $XFree86: xc/programs/xkbevd/xkbevd.h,v 3.6 2005/03/28 02:51:14 dawes Exp $ */
 
 #ifndef XKBEVD_H
 #define	XKBEVD_H 1
@@ -98,7 +98,7 @@ extern int setScanState ( char * file, int line );
 extern int CFGParseFile ( FILE *file );
 
 extern int yylex(void);
-#ifndef YYBISON
+#if !defined(YYBISON) && !(defined(YYBYACC) && defined(__NetBSD__))
 extern int yyparse(void);
 #endif
 extern int yyerror(char *s);

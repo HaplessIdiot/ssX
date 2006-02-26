@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.89 2005/01/28 02:11:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.90 2006/02/17 18:17:55 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -257,6 +257,10 @@ void xf86HandlePMEvents(int fd, pointer data);
 extern int (*xf86PMGetEventFromOs)(int fd,pmEvent *events,int num);
 extern pmWait (*xf86PMConfirmEventToOs)(int fd,pmEvent event);
 void xf86GrabServerCallback(CallbackListPtr *, pointer, pointer);
+#ifdef WSCONS_SUPPORT
+struct wscons_event;
+void xf86PostWSKbdEvent(struct wscons_event *event);
+#endif
 
 /* xf86Helper.c */
 void xf86LogInit(void);
@@ -281,6 +285,11 @@ int xf86KbdProc(DeviceIntPtr pKeyboard, int what);
 /* xf86Kbd.c */ 
 
 void xf86KbdGetMapping(KeySymsPtr pKeySyms, CARD8 *pModMap);
+
+#ifdef WSCONS_SUPPORT
+/* xf86KbdBSD.c */ 
+int WSKbdToKeycode(int keycode);
+#endif
 
 /* xf86Lock.c */
 
