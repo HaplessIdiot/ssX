@@ -23,7 +23,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/parseutils.h,v 1.5 2002/07/01 02:26:01 tsi Exp $ */
+/* $XFree86: xc/programs/xkbcomp/parseutils.h,v 1.6 2005/03/28 02:51:14 dawes Exp $ */
 
 #ifndef XKBPARSE_H
 #define	XKBPARSE_H 1
@@ -235,7 +235,7 @@ extern int yywrap(
 );
 
 extern int yylex(void);
-#ifndef YYBISON
+#if !defined(YYBISON) && !(defined(YYBYACC) && defined(__NetBSD__))
 extern int yyparse(void);
 #endif
 

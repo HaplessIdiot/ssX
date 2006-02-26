@@ -1,4 +1,5 @@
 XFree86 4.5.99.23 (xx March 2006)
+ 225. Fix some build/warnings on NetBSD (David Dawes).
  224. TinyX build fixes, including one for Linux systems that don't provide
       <sys/io.h>, e.g. libc5 among others (Marc La France).
  223. Improve accuracy of atimisc's calculations that are based on a 29.5 MHz
@@ -20002,7 +20003,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3676 2006/02/24 04:28:45 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3677 2006/02/24 15:31:29 tsi Exp $
 
 
 

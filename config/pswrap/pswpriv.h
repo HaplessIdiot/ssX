@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/config/pswrap/pswpriv.h,v 1.8 2005/03/25 02:22:50 dawes Exp $ */
+/* $XFree86: xc/config/pswrap/pswpriv.h,v 1.9 2005/03/28 02:50:58 dawes Exp $ */
 
 #ifndef PSWPRIV_H
 #define PSWPRIV_H
@@ -167,7 +167,7 @@ extern void InitHFile(void);
 extern void InitOFile(void);
 
 /* pswparser.y */
-#ifndef YYBISON
+#if !defined(YYBISON) && !(defined(YYBYACC) && defined(__NetBSD__))
 extern int yyparse (void);
 #endif
 
