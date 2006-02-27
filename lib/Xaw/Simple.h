@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Simple.h,v 1.10 2005/05/12 00:51:56 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Simple.h,v 1.11 2006/01/25 04:32:09 dawes Exp $ */
 
 #ifndef _Simple_h
 #define _Simple_h
@@ -75,6 +75,7 @@ SOFTWARE.
  width		     Width		Dimension	0
  x		     Position		Position	0
  y		     Position		Position	0
+ userData	     UserData		Pointer		NULL
 
 */
 
@@ -110,6 +111,14 @@ SOFTWARE.
 
 #define XtNtip		"tip"
 #define XtCTip		"Tip"
+
+#ifndef XtNuserData
+#define XtNuserData	"userData"
+#endif
+
+#ifndef XtCuserData
+#define XtCuserData	"UserData"
+#endif
 
 #define XtNtipCallback	"tipCallback"
 #define XtCTipCallback	"Callback"

@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/SimpleP.h,v 1.14 2005/05/12 00:51:56 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleP.h,v 1.15 2006/01/25 04:32:09 dawes Exp $ */
 
 #ifndef _SimpleP_h
 #define _SimpleP_h
@@ -87,7 +87,9 @@ typedef struct {
     String tip;
     XtCallbackList tipCallback;
     unsigned char encoding;
-    char pad[2 * sizeof(XtPointer) -    /* for future use and keep */
+    XtPointer user_data;
+
+    char pad[sizeof(XtPointer) -	/* for future use and keep */
 	     sizeof(unsigned char)];	/* binary compatability */
 #endif
 } SimplePart;

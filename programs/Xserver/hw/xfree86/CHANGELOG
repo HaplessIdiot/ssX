@@ -1,4 +1,7 @@
 XFree86 4.5.99.23 (xx March 2006)
+ 227. Add user_data field to Xaw's simpleWidgetClass (Bugzilla #1659,
+      Alexander Pohoyda)
+ 226. Fix some X server man page typos (Bugzilla #1658, Nicolas Joly).
  225. Fix some build/warnings on NetBSD (David Dawes).
  224. TinyX build fixes, including one for Linux systems that don't provide
       <sys/io.h>, e.g. libc5 among others (Marc La France).
@@ -20003,7 +20006,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3677 2006/02/24 15:31:29 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3678 2006/02/26 02:40:59 dawes Exp $
 
 
 

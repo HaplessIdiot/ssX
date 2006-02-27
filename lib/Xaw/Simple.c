@@ -45,7 +45,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xaw/Simple.c,v 1.19 2006/01/25 04:32:09 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Simple.c,v 1.20 2006/02/07 22:02:25 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -180,6 +180,15 @@ static XtResource resources[] = {
     XawRTipCallback,
     sizeof(XtCallbackList),
     offset(tipCallback),
+    XtRImmediate,
+    NULL
+  },
+  {
+    XtNuserData,
+    XtCuserData,
+    XtRPointer,
+    sizeof(XtPointer),
+    offset(user_data),
     XtRImmediate,
     NULL
   },
