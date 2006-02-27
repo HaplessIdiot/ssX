@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/magictouch/magictouch.man,v 1.1 2001/08/17 13:27:55 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/magictouch/magictouch.man,v 1.2 2005/06/11 02:40:55 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH MagicTouch __drivermansuffix__ __vendorversion__
@@ -19,7 +19,7 @@ magictouch \- MagicTouch input driver
 .SH DESCRIPTION
 .B MagicTouch
 is an XFree86 input driver for MagicTouch ProE-X controller...
-B.PP
+.PP
 The
 .B MagicTouch
 driver functions as a pointer input device, and may be used as the
@@ -59,7 +59,7 @@ for the
 InputDevice.
 .PP
 .RS 7
-B.I Default:
+.I Default:
 ScreenNumber: "0"
 
 .RE
