@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.230 2005/10/14 15:16:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.231 2006/02/17 18:17:55 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -174,11 +174,6 @@ static Bool noHardware = FALSE;
 static Bool noVT = FALSE;
 
 static char *cmdline = NULL;
-
-#ifdef DO_CHECK_BETA
-static int extraDays = 0;
-static char *expKey = NULL;
-#endif
 
 #ifdef __UNIXOS2__
 extern void os2ServerVideoAccess();
@@ -357,10 +352,6 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
       xf86ServerName++;
     else
       xf86ServerName = argv[0];
-
-#ifdef DO_CHECK_BETA
-    xf86CheckBeta(extraDays, expKey);
-#endif
 
     /* Set default paths. */
     xf86FileCmdline.handle = &xf86FileCmdline;
@@ -1677,14 +1668,6 @@ ddxProcessArgument(int argc, char **argv, int i)
 #endif
     return 1;
   }
-#ifdef DO_CHECK_BETA
-  if (!strcmp(argv[i],"-extendExpiry"))
-  {
-    extraDays = atoi(argv[i + 1]);
-    expKey = argv[i + 2];
-    return 3;
-  }
-#endif
   if (!strcmp(argv[i],"-verbose"))
   {
     if (++i < argc && argv[i])

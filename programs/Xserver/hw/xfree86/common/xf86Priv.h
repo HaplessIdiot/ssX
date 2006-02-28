@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.90 2006/02/17 18:17:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.91 2006/02/26 02:41:01 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -192,9 +192,6 @@ extern RootWinPropPtr *xf86RegisteredPropertiesTable;
 
 /* Function Prototypes */
 #ifndef _NO_XF86_PROTOTYPES
-
-/* xf86Beta.c */
-extern void xf86CheckBeta(int extraDays, char *key);
 
 /* xf86Bus.c */
 

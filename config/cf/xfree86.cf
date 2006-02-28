@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.503 2006/02/19 15:51:12 tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.504 2006/02/20 00:51:28 tsi Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1520,17 +1520,6 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 
 #ifndef HasMTRRSupport
 # define HasMTRRSupport		NO
-#endif
-
-/*
- * The expiry date for beta versions
- *
- * 853286400 is Wed Jan 15 00:00:00 1997 GMT
- * 855964800 is Sat Feb 15 00:00:00 1997 GMT
- * 866332800 is Sun Jun 15 00:00:00 1997 GMT
- */
-#ifndef XF86ServerExpiry
-# define XF86ServerExpiry 866332800
 #endif
 
 /*
