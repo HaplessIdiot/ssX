@@ -24,7 +24,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_gc.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_gc.c,v 1.5 2005/10/14 15:16:46 tsi Exp $ */
 
 #include "ffb.h"
 #include "ffb_regs.h"
@@ -443,7 +443,10 @@ CreatorNewFillArea(GCPtr pGC, cfbPrivGCPtr devPriv, CreatorPrivGCPtr gcPriv, int
 	pGC->ops->PushPixels = mfbPushPixels;
 }
 
-void
+extern GCOps cfbNonTEOps;
+extern GCOps cfb32NonTEOps;
+
+static void
 CreatorValidateGC (GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
 {
 	int	mask;		/* stateChanges */
@@ -462,9 +465,6 @@ CreatorValidateGC (GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
 	type = pFfb->vtSema ? -1 : pDrawable->type;
 	if (type != DRAWABLE_WINDOW) {
 		if (gcPriv->type == DRAWABLE_WINDOW) {
-			extern GCOps cfbNonTEOps;
-			extern GCOps cfb32NonTEOps;
-
 			miDestroyGCOps (pGC->ops);
 
 			if (pGC->depth == 8)

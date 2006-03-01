@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo_gc.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo_gc.c,v 1.3 2005/10/14 15:16:46 tsi Exp $ */
 
 #define PSZ 32
 
@@ -164,7 +164,7 @@ GCOps	LeoNonTEOps = {
 #endif
 };
 
-GCOps *
+static GCOps *
 LeoMatchCommon (GCPtr pGC, cfbPrivGCPtr devPriv)
 {
 	if (pGC->lineWidth != 0)
@@ -221,6 +221,8 @@ LeoDestroyGC (GCPtr pGC)
 	miDestroyGC (pGC);
 }
 
+extern GCOps cfbNonTEOps;
+
 void
 LeoValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
 {
@@ -240,8 +242,6 @@ LeoValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
 	type = pLeo->vtSema ? -1 : pDrawable->type;
 	if (type != DRAWABLE_WINDOW) {
 		if (gcPriv->type == DRAWABLE_WINDOW) {
-			extern GCOps cfbNonTEOps;
-
 			miDestroyGCOps (pGC->ops);
 			pGC->ops = &cfbNonTEOps;
 			changes = (1 << (GCLastBit+1)) - 1;

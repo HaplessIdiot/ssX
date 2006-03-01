@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_dbe.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_dbe.c,v 1.3 2005/10/14 15:16:46 tsi Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -887,7 +887,7 @@ FFBDbeInit(ScreenPtr pScreen, DbeScreenPrivPtr pDbeScreenPriv)
 	pDbeScreenPriv->WinPrivDelete         = FFBDbeWinPrivDelete;
 
 	/* The FFB implementation doesn't need buffer validation. */
-	pDbeScreenPriv->ValidateBuffer	  = (void (*)())NoopDDA;
+	pDbeScreenPriv->ValidateBuffer	  = (void (*)(WindowPtr, XID, Bool))NoopDDA;
 
 	return TRUE;
 }

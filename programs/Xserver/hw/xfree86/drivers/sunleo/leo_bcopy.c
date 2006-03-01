@@ -20,12 +20,13 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo_bcopy.c,v 1.1 2000/05/18 23:21:39 dawes Exp $ */
 
 #define PSZ 32
 
 #include "leo.h"
 #include "leo_regs.h"
+#include "leo_gc.h"
 
 #include "pixmapstr.h"
 #include "scrnintstr.h"
@@ -174,5 +175,5 @@ LeoCopyArea(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable,
 		return cfbCopyArea (pSrcDrawable, pDstDrawable,
 				    pGC, srcx, srcy, width, height, dstx, dsty);
 	return cfbBitBlt (pSrcDrawable, pDstDrawable,
-			  pGC, srcx, srcy, width, height, dstx, dsty, (void (*)())LeoDoBitblt, 0);
+			  pGC, srcx, srcy, width, height, dstx, dsty, LeoDoBitblt, 0);
 }

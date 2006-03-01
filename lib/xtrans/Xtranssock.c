@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from the copyright holders.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.71 2005/03/25 02:22:52 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.72 2006/01/09 14:59:38 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -1002,7 +1002,8 @@ TRANS(SocketINETCreateListener) (XtransConnInfo ciptr, char *port, unsigned int 
     } else {
 	namelen = sizeof (struct sockaddr_in6);
 #ifdef SIN6_LEN
-	((struct sockaddr_in6 *)&sockname)->sin6_len = sizeof(sockname);
+	((struct sockaddr_in6 *)&sockname)->sin6_len =
+					(unsigned char)sizeof(sockname);
 #endif
 	((struct sockaddr_in6 *)&sockname)->sin6_family = AF_INET6;
 	((struct sockaddr_in6 *)&sockname)->sin6_port = htons(sport);

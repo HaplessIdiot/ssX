@@ -20,18 +20,19 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo_checks.c,v 1.1 2000/05/18 23:21:39 dawes Exp $ */
 
 #define PSZ 32
 
 #include "leo.h"
+#include "leo_gc.h"
 
 #include "pixmapstr.h"
 #include "scrnintstr.h"
 
 #include "cfb.h"
 
-int
+static int
 LeoCheckTile (PixmapPtr pPixmap, LeoStipplePtr stipple, int ox, int oy)
 {
 	unsigned int *sbits;
@@ -88,7 +89,7 @@ LeoCheckTile (PixmapPtr pPixmap, LeoStipplePtr stipple, int ox, int oy)
 	return TRUE;
 }
 
-int
+static int
 LeoCheckStipple (PixmapPtr pPixmap, LeoStipplePtr stipple, int ox, int oy)
 {
 	unsigned int *sbits;

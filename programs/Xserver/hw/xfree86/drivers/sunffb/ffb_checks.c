@@ -23,12 +23,13 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_checks.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_checks.c,v 1.3 2004/12/05 23:06:37 tsi Exp $ */
 
 #include "ffb.h"
 #include "ffb_regs.h"
 #include "ffb_rcache.h"
 #include "ffb_fifo.h"
+#include "ffb_gc.h"
 
 #include "pixmapstr.h"
 #include "scrnintstr.h"
