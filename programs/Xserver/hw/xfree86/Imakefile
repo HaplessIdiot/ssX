@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.89tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.90 2005/08/28 17:47:59 tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -126,7 +126,7 @@ INPUTDIR = input
 DRIVERSDK = sdk
 #endif
 
-#if !BuildServersOnly || BuildXFree86ConfigTools
+#if BuildXFree86ConfigTools
 XF86CFGDIRS = xf86cfg xf86config
 #endif
 

@@ -22,7 +22,7 @@
  *
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810vb.c,v 1.13 2003/03/26 20:43:48 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/i810/i810vb.c,v 1.1.1.2 2004/12/10 15:05:44 alanh Exp $ */
  
 
 #include "glheader.h"
@@ -55,8 +55,8 @@
 
 static struct {
    void                (*emit)( GLcontext *, GLuint, GLuint, void *, GLuint );
-   interp_func		interp;
-   copy_pv_func	        copy_pv;
+   tnl_interp_func		interp;
+   tnl_copy_pv_func	        copy_pv;
    GLboolean           (*check_tex_sizes)( GLcontext *ctx );
    GLuint               vertex_size;
    GLuint               vertex_format;
@@ -323,7 +323,7 @@ static void init_setup_tab( void )
 
 
 
-void i810PrintSetupFlags(char *msg, GLuint flags )
+void i810PrintSetupFlags(const char *msg, GLuint flags )
 {
    fprintf(stderr, "%s(%x): %s%s%s%s%s%s\n",
 	   msg,

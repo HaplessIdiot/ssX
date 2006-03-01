@@ -22,7 +22,7 @@
  *
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810vb.h,v 1.4 2002/02/22 21:33:04 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/i810/i810vb.h,v 1.1.1.1 2004/04/08 09:16:57 alanh Exp $ */
 
 #ifndef I810VB_INC
 #define I810VB_INC
@@ -58,6 +58,6 @@ extern void i810InitVB( GLcontext *ctx );
 extern void i810FreeVB( GLcontext *ctx );
 
 extern void i810_print_vertex( GLcontext *ctx, const i810Vertex *v );
-extern void i810PrintSetupFlags(char *msg, GLuint flags );
+extern void i810PrintSetupFlags(const char *msg, GLuint flags );
 
 #endif
