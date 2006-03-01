@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/programs/makepsres/makepsres.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/makepsres/makepsres.c,v 1.10 2004/04/03 22:38:55 tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1603,7 +1603,7 @@ static void ProcessFile (
 {
   FILE   *file;
   ResourceKey *resourceType;
-  char	version[10];
+  char	version[11];
 
   if (fileName[0] == '.')
     return;
