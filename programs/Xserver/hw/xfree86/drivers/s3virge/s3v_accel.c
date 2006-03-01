@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.27tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.28 2005/08/28 17:48:02 tsi Exp $ */
 
 /*
- * Copyright (C) 1994-1999 The XFree86 Project, Inc.
+ * Copyright (C) 1994-2006 The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -72,6 +72,7 @@ static void S3VSetupForScreenToScreenCopy(ScrnInfoPtr, int, int, int,
 				unsigned int, int); 
 static void S3VSubsequentScreenToScreenCopy(ScrnInfoPtr, int, int, int, int, 
 				int, int);
+#ifndef __alpha__
 static void S3VSetupForCPUToScreenColorExpand(ScrnInfoPtr, int, int, int, 
 				unsigned int);
 static void S3VSubsequentCPUToScreenColorExpand(ScrnInfoPtr, int, int, int, 
@@ -79,6 +80,7 @@ static void S3VSubsequentCPUToScreenColorExpand(ScrnInfoPtr, int, int, int,
 static void S3VSetupForImageWrite(ScrnInfoPtr, int, unsigned int, int, 
 				int, int);
 static void S3VSubsequentImageWriteRect(ScrnInfoPtr, int, int, int, int, int);
+#endif
 static void S3VSubsequentSolidHorVertLine(ScrnInfoPtr, int, int, int, int);
 static void S3VSubsequentSolidHorVertLinePlaneMask(ScrnInfoPtr, int, int, 
 				int, int);
@@ -758,6 +760,7 @@ S3VSubsequentMono8x8PatternFillRectPlaneMask(
 	\*********************************/
 
 
+#ifndef __alpha__
 static void
 S3VSetupForCPUToScreenColorExpand(
     ScrnInfoPtr pScrn, 
@@ -861,6 +864,7 @@ S3VSubsequentImageWriteRect(
     WAITCMD();
     OUTREG(RDEST_XY, (x << 16) | y);
 }
+#endif /* !__alpha__ */
 
 
 	/***********\

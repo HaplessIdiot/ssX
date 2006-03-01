@@ -22,13 +22,14 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_bcopy.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_bcopy.c,v 1.4 2004/12/05 23:06:37 tsi Exp $ */
 
 #include "ffb.h"
 #include "ffb_regs.h"
 #include "ffb_rcache.h"
 #include "ffb_fifo.h"
 #include "ffb_loops.h"
+#include "ffb_gc.h"
 
 #include "pixmapstr.h"
 #include "scrnintstr.h"
@@ -518,12 +519,12 @@ CreatorCopyArea(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable,
 				ret = cfbBitBlt(pSrcDrawable, pDstDrawable,
 						pGC, srcx, srcy, width, height,
 						dstx, dsty,
-						(void (*)())CreatorDoVertBitblt, 0);
+						CreatorDoVertBitblt, 0);
 			else
 				ret = cfb32BitBlt(pSrcDrawable, pDstDrawable,
 						  pGC, srcx, srcy, width, height,
 						  dstx, dsty,
-						  (void (*)())CreatorDoVertBitblt, 0);
+						  CreatorDoVertBitblt, 0);
 			FFBLOG(("CreatorCopyArea: Done, returning %p\n", ret));
 			return ret;
 		}
@@ -547,11 +548,11 @@ CreatorCopyArea(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable,
 	if (pSrcDrawable->bitsPerPixel == 8)
 		ret = cfbBitBlt(pSrcDrawable, pDstDrawable,
 				pGC, srcx, srcy, width, height,
-				dstx, dsty, (void (*)())CreatorDoBitblt, 0);
+				dstx, dsty, CreatorDoBitblt, 0);
 	else
 		ret = cfb32BitBlt(pSrcDrawable, pDstDrawable,
 				  pGC, srcx, srcy, width, height,
-				  dstx, dsty, (void (*)())CreatorDoBitblt, 0);
+				  dstx, dsty, CreatorDoBitblt, 0);
 
 	FFBLOG(("CreatorCopyArea: Done, returning %p\n", ret));
 	return ret;

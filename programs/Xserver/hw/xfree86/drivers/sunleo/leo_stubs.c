@@ -21,11 +21,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo_stubs.c,v 1.1 2000/05/18 23:21:40 dawes Exp $ */
 
 #define PSZ 32
 
 #include "leo.h"
+#include "leo_gc.h"
 
 #include "pixmapstr.h"
 #include "scrnintstr.h"
