@@ -3952,20 +3952,20 @@ below are not.
           depend on runtime factors.  The end of the argument list
           is indicated by a NULL argument.
 
-     int LoaderCheckUnresolved(int delayflag)
+     int LoaderCheckUnresolved(int dummy)
 
           This function checks for unresolved symbols.  It gener-
           ates warnings for unresolved symbols that have not been
-          registered with LoaderRefSymLists(), and maps them to a
-          dummy function.  This behaviour may change in future.  If
-          unresolved symbols are found that have been registered
-          with LoaderReqSymLists() or LoaderReqSymbols() then this
-          function returns a non-zero value.  If none of these sym-
-          bols are unresolved the return value is zero, indicating
-          success.
+          registered with LoaderRefSymLists().  All such symbols
+          are autmatically mapped to a dummy function.  If unre-
+          solved symbols are found that have been registered with
+          LoaderReqSymLists() or LoaderReqSymbols() then this func-
+          tion returns a non-zero value.  If none of these symbols
+          are unresolved the return value is zero, indicating suc-
+          cess.
 
-          The delayflag parameter should normally be set to
-          LD_RESOLV_IFDONE.
+          The dummy parameter is not used, and should be set to 0.
+          It is kept only for compatibility purposes.
 
      LoaderErrorMsg(const char *name, const char *modname,
 
@@ -6391,7 +6391,7 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.59 tsi Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.61 dawes Exp $
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/DESIGN,v 1.55tsi Exp $
+$XFree86$
