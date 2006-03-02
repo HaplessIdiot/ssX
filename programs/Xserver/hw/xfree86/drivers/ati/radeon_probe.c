@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.31tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.32 2005/10/14 15:16:37 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -314,7 +314,7 @@ RADEONProbe(DriverPtr drv, int flags)
 		    continue;
 		}
 
-		xf86LoaderReqSymLists(RADEONSymbols, NULL);
+		xf86LoaderModReqSymLists(RADEONModule, RADEONSymbols, NULL);
 #endif
 
 		pScrn->driverVersion = RADEON_VERSION_CURRENT;

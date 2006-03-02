@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadext.c,v 1.8 2003/10/15 16:29:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadext.c,v 1.9 2004/02/13 23:58:45 dawes Exp $ */
 /*
  * Copyright (c) 2000 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -52,6 +52,11 @@
 #include "loaderProcs.h"
 #include "misc.h"
 #include "xf86.h"
+
+#ifndef LOADERDEBUG
+#define LOADERDEBUG 0
+#endif
+#include "loader.h"
 
 ExtensionModule *ExtensionModuleList = NULL;
 static int numExtensionModules = 0;
@@ -254,8 +259,8 @@ remove_node(NODE * n)
     NODE *newnode;
     int i;
 
-#ifdef DEBUG
-    ErrorF("%s\n", n->n_name);
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_EXT, "%s\n", n->n_name);
 #endif
     newnode = xnfalloc(sizeof(NODE));
     memcpy(newnode, n, sizeof(NODE));
@@ -314,9 +319,9 @@ find_cycle(NODE * from, NODE * to, int longest_len, int depth)
 		continue;
 	    len = find_cycle(*np, to, longest_len, depth + 1);
 
-#ifdef DEBUG
-	    ErrorF("%*s %s->%s %d\n", depth, "",
-		   from->n_name, to->n_name, len);
+#if LOADERDEBUG
+	    LoaderDebugMsg(LOADER_DEBUG_EXT, "%*s %s->%s %d\n", depth, "",
+			   from->n_name, to->n_name, len);
 #endif
 
 	    if (len == 0)
@@ -420,14 +425,15 @@ LoaderSortExtensions()
     for (i = numExtensionModules - 1; i >= 0; i--) {
 	ext = &ExtensionModuleList[i];
 	add_arc(ext->name, ext->name);
-#ifdef DEBUG
-	ErrorF("Extension %s:\n", ext->name);
+#if LOADERDEBUG
+	LoaderDebugMsg(LOADER_DEBUG_EXT, "Extension %s:\n", ext->name);
 #endif
 	if (ext->initDependencies)
 	    for (j = 0; ext->initDependencies[j]; j++) {
 		add_arc(ext->initDependencies[j], ext->name);
-#ifdef DEBUG
-		ErrorF("\t%s\n", ext->initDependencies[j]);
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_EXT,
+			       "\t%s\n", ext->initDependencies[j]);
 #endif
 	    }
     }
@@ -446,8 +452,9 @@ LoaderSortExtensions()
     newList[i].name = NULL;
     xfree(ExtensionModuleList);
     ExtensionModuleList = newList;
-#ifdef DEBUG
+#if LOADERDEBUG
     for (i = 0; ExtensionModuleList[i].name; i++)
-	ErrorF("Extension %s\n", ExtensionModuleList[i].name);
+	LoaderDebugMsg(LOADER_DEBUG_EXT, "Extension %s\n",
+		       ExtensionModuleList[i].name);
 #endif
 }

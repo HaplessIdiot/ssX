@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_misc.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_misc.c,v 1.8 2006/01/05 18:55:31 tsi Exp $ */
 /*
  * Copyright 2000 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -46,6 +46,8 @@ static XF86ModuleVersionInfo R128VersionRec =
     {0, 0, 0, 0}
 };
 
+pointer R128Module = NULL;
+
 /*
  * R128Setup --
  *
@@ -68,7 +70,8 @@ R128Setup
         if (!xf86ServerIsOnlyDetecting() && !LoaderSymbol(ATI_NAME))
             xf86LoadOneModule(ATI_DRIVER_NAME, Options);
 
-        R128LoaderRefSymLists();
+        R128Module = Module;
+        R128LoaderRefSymLists(Module);
 
         Inited = TRUE;
     }
@@ -81,6 +84,20 @@ XF86ModuleData r128ModuleData =
 {
     &R128VersionRec,
     R128Setup,
+    NULL
+};
+
+const char *r128ExportedSymbols[] = {
+    "R128PreInit",
+    "R128ScreenInit",
+    "R128SwitchMode",
+    "R128AdjustFrame",
+    "R128EnterVT",
+    "R128LeaveVT",
+    "R128FreeScreen",
+    "R128ValidMode",
+    "R128Options",
+    "R128Module",
     NULL
 };
 

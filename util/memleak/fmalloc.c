@@ -25,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/util/memleak/fmalloc.c,v 3.14 2002/04/04 14:06:00 eich Exp $ */
+/* $XFree86: xc/util/memleak/fmalloc.c,v 3.15 2006/01/09 15:01:57 dawes Exp $ */
 
 
 /*
@@ -48,6 +48,9 @@ extern _end;
 
 #ifndef TOP_OF_DATA
 #define TOP_OF_DATA 0
+#endif
+#ifdef TOP_OF_STACK
+#include "stackbottom.h"
 #endif
 
 #ifndef FALSE

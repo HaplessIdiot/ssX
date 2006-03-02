@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/fontsym.c,v 1.16tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/fontsym.c,v 1.17 2005/10/14 15:16:59 tsi Exp $ */
 /*
  * Copyright (c) 1998-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -125,5 +125,5 @@ LOOKUP fontLookupTab[] = {
     SYMFUNC(FontCacheGetBitmap)
 #endif
 
-    {0, 0}
+    LOOKUP_TERMINATOR
 };

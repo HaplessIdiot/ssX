@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_misc.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_misc.c,v 1.10 2006/01/05 18:55:31 tsi Exp $ */
 /*
  * Copyright 2000 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -46,6 +46,8 @@ static XF86ModuleVersionInfo RADEONVersionRec =
     {0, 0, 0, 0}
 };
 
+pointer RADEONModule = NULL;
+
 /*
  * RADEONSetup --
  *
@@ -67,7 +69,8 @@ RADEONSetup
         if (!xf86ServerIsOnlyDetecting() && !LoaderSymbol(ATI_NAME))
             xf86LoadOneModule(ATI_DRIVER_NAME, Options);
 
-        RADEONLoaderRefSymLists();
+        RADEONModule = Module;
+        RADEONLoaderRefSymLists(Module);
 
         Inited = TRUE;
     }
@@ -80,6 +83,21 @@ XF86ModuleData radeonModuleData =
 {
     &RADEONVersionRec,
     RADEONSetup,
+    NULL
+};
+
+const char *radeonExportedSymbols[] = {
+    "RADEONPreInit",
+    "RADEONScreenInit",
+    "RADEONSwitchMode",
+    "RADEONAdjustFrame",
+    "RADEONEnterVT",
+    "RADEONLeaveVT",
+    "RADEONFreeScreen",
+    "RADEONValidMode",
+    "RADEONOptions",
+    "RADEONModule",
+    "RADEONHandleMessage",
     NULL
 };
 

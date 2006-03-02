@@ -1,4 +1,30 @@
 XFree86 4.5.99.23 (xx March 2006)
+ 229. XFree86 loader enhancments:
+      - Per-module export symbol lists.
+      - Improved symbol hash.
+      - A mechanism for specifying the scope of symbols.
+      - Keep track of relocations, and undo them when they become unresolved
+        on module unload, and recalculate them when they change on module
+        load.
+      - Check relocations on each module load/unload, ensuring that function
+        references that are unresolved at any time are always mapped to the
+        catch-all function preventing calls into nowhere.
+      - Efficient handling of invariant relocations.
+      - Cleanup/update the memleak stack trace code, and print a stack
+        trace when an unresolved function is called or when XFree86 aborts.
+      - Update the catch-all function to identify the unresolved function.
+      - Read the XFree86 executable's symbol table in order to get the
+        most useful stack traces, and use dladdr(), where available,
+        for shared library references.
+      - Cleanup and unify debug messages for the loader components.
+      - Allow for module-instance-specific referenced and required
+        symbols lists, so that a module's requirements can be removed
+        when it is unloaded.
+      - Update the ati driver to make use of some of the new loader
+        functionality.
+      - General loader cleanups, including removing some redundancies.
+      - Don't build the coff loader on platforms that it doesn't support.
+      (X-Oz Technologies, David Dawes).
  228. Remove unused beta/expiry code from the XFree86 server (David Dawes).
  227. Add user_data field to Xaw's simpleWidgetClass (Bugzilla #1659,
       Alexander Pohoyda)
@@ -20007,7 +20033,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3679 2006/02/27 01:57:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3680 2006/02/28 22:32:37 dawes Exp $
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.91 2005/08/28 20:04:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.92 2006/02/20 00:14:37 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -321,13 +321,14 @@ static const char *int10Symbols[] = {
     NULL
 };
 
-void R128LoaderRefSymLists(void)
+void R128LoaderRefSymLists(pointer module)
 {
     /*
      * Tell the loader about symbols from other modules that this module might
      * refer to.
      */
-    xf86LoaderRefSymLists(vgahwSymbols,
+    xf86LoaderModRefSymLists(module,
+		      vgahwSymbols,
 		      fbSymbols,
 		      xaaSymbols,
 		      ramdacSymbols,
@@ -1186,14 +1187,14 @@ static Bool R128PreInitDDC(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 #endif
 
     if (!xf86LoadSubModule(pScrn, "ddc")) return FALSE;
-    xf86LoaderReqSymLists(ddcSymbols, NULL);
+    xf86LoaderModReqSymLists(R128Module, ddcSymbols, NULL);
 
 #if defined(__powerpc__) || defined(__alpha__)
     /* Int10 is broken on PPC and some Alphas */
     return TRUE;
 #else
     if (xf86LoadVBEModule(pScrn)) {
-	xf86LoaderReqSymLists(vbeSymbols,NULL);
+	xf86LoaderModReqSymLists(R128Module, vbeSymbols,NULL);
 	pVbe = VBEInit(pInt10,info->pEnt->index);
 	if (!pVbe) return FALSE;
         xf86SetDDCproperties(pScrn,xf86PrintEDID(vbeDoEDID(pVbe,NULL)));
@@ -1249,7 +1250,7 @@ R128I2cInit(ScrnInfoPtr pScrn)
 {
     R128InfoPtr info = R128PTR(pScrn);
     if ( xf86LoadSubModule(pScrn, "i2c") )
-        xf86LoaderReqSymLists(i2cSymbols,NULL);
+        xf86LoaderModReqSymLists(R128Module, i2cSymbols,NULL);
 	else{
         xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
             "Failed to load i2c module\n");
@@ -1664,7 +1665,7 @@ static Bool R128PreInitModes(ScrnInfoPtr pScrn)
 
 				/* Get ScreenInit function */
     if (!xf86LoadSubModule(pScrn, "fb")) return FALSE;
-    xf86LoaderReqSymLists(fbSymbols, NULL);
+    xf86LoaderModReqSymLists(R128Module, fbSymbols, NULL);
 
     info->CurrentLayout.displayWidth = pScrn->displayWidth;
     info->CurrentLayout.mode = pScrn->currentMode;
@@ -1679,7 +1680,7 @@ static Bool R128PreInitCursor(ScrnInfoPtr pScrn)
 
     if (!xf86ReturnOptValBool(info->Options, OPTION_SW_CURSOR, FALSE)) {
 	if (!xf86LoadSubModule(pScrn, "ramdac")) return FALSE;
-	xf86LoaderReqSymLists(ramdacSymbols, NULL);
+	xf86LoaderModReqSymLists(R128Module, ramdacSymbols, NULL);
     }
     return TRUE;
 }
@@ -1691,7 +1692,7 @@ static Bool R128PreInitAccel(ScrnInfoPtr pScrn)
 
     if (!xf86ReturnOptValBool(info->Options, OPTION_NOACCEL, FALSE)) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) return FALSE;
-	xf86LoaderReqSymLists(xaaSymbols, NULL);
+	xf86LoaderModReqSymLists(R128Module, xaaSymbols, NULL);
     }
     return TRUE;
 }
@@ -1702,7 +1703,7 @@ static Bool R128PreInitInt10(ScrnInfoPtr pScrn, xf86Int10InfoPtr *ppInt10)
     R128InfoPtr   info = R128PTR(pScrn);
     /* int10 is broken on some Alphas */
     if (xf86LoadSubModule(pScrn, "int10")) {
-	xf86LoaderReqSymLists(int10Symbols, NULL);
+	xf86LoaderModReqSymLists(R128Module, int10Symbols, NULL);
 	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"initializing int10\n");
 	*ppInt10 = xf86InitInt10(info->pEnt->index);
     }
@@ -1816,7 +1817,7 @@ static Bool R128PreInitDRI(ScrnInfoPtr pScrn)
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		   "Couldn't load shadowfb module:\n");
     } else {
-	xf86LoaderReqSymLists(driShadowFBSymbols, NULL);
+	xf86LoaderModReqSymLists(R128Module, driShadowFBSymbols, NULL);
 
 	info->allowPageFlip = xf86ReturnOptValBool(info->Options,
 						   OPTION_PAGE_FLIP,
@@ -1864,7 +1865,7 @@ Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     if (!xf86LoadSubModule(pScrn, "vgahw")) return FALSE;
-    xf86LoaderReqSymLists(vgahwSymbols, NULL);
+    xf86LoaderModReqSymLists(R128Module, vgahwSymbols, NULL);
     if (!vgaHWGetHWRec(pScrn)) {
 	R128FreeRec(pScrn);
 	return FALSE;
@@ -1919,7 +1920,7 @@ Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
     if (info->FBDev) {
 	/* check for linux framebuffer device */
 	if (!xf86LoadSubModule(pScrn, "fbdevhw")) return FALSE;
-	xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
+	xf86LoaderModReqSymLists(R128Module, fbdevHWSymbols, NULL);
 	if (!fbdevHWInit(pScrn, info->PciInfo, NULL)) return FALSE;
 	pScrn->SwitchMode    = fbdevHWSwitchMode;
 	pScrn->AdjustFrame   = fbdevHWAdjustFrame;

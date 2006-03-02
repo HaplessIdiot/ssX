@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.h,v 1.14tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.h,v 1.15 2005/10/14 15:16:37 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -80,7 +80,7 @@ extern PciChipsets          RADEONPciChipsets[];
 
 /* radeon_driver.c */
 extern void                 RADEONLoaderRefSymLists
-			    FunctionPrototype((void));
+			    FunctionPrototype((pointer));
 extern Bool                 RADEONPreInit
 			    FunctionPrototype((ScrnInfoPtr, int));
 extern Bool                 RADEONScreenInit
@@ -105,5 +105,12 @@ extern ModeStatus           RADEONValidMode
 					       int));
 
 extern const OptionInfoRec  RADEONOptions[];
+
+/* radeon_misc.c */
+#ifdef IN_MODULE
+extern pointer              RADEONModule;
+#else
+#define RADEONModule NULL
+#endif
 
 #endif /* _RADEON_PROBE_H_ */

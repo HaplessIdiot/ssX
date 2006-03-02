@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.256 2005/10/11 14:57:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.257 2006/02/18 03:31:38 dawes Exp $ */
 
 /*
  *
@@ -635,6 +635,10 @@ LOOKUP xfree86LookupTab[] = {
     SYMFUNC(xf86LoaderRefSymbols)
     SYMFUNC(xf86LoaderReqSymLists)
     SYMFUNC(xf86LoaderReqSymbols)
+    SYMFUNC(xf86LoaderModRefSymLists)
+    SYMFUNC(xf86LoaderModRefSymbols)
+    SYMFUNC(xf86LoaderModReqSymLists)
+    SYMFUNC(xf86LoaderModReqSymbols)
     SYMFUNC(xf86SetBackingStore)
     SYMFUNC(xf86SetSilkenMouse)
     /* SYMFUNC(xf86NewSerialNumber) */
@@ -909,6 +913,10 @@ LOOKUP xfree86LookupTab[] = {
     SYMFUNC(LoaderReqSymLists)
     SYMFUNC(LoaderRefSymbols)
     SYMFUNC(LoaderRefSymLists)
+    SYMFUNC(LoaderModReqSymbols)
+    SYMFUNC(LoaderModReqSymLists)
+    SYMFUNC(LoaderModRefSymbols)
+    SYMFUNC(LoaderModRefSymLists)
     SYMFUNC(UnloadSubModule)
     SYMFUNC(LoaderSymbol)
     SYMFUNC(LoaderListDirs)
@@ -1333,5 +1341,5 @@ LOOKUP xfree86LookupTab[] = {
     /* Pci.c */
     SYMVAR(pciNumBuses)
 
-    {0, 0}
+    LOOKUP_TERMINATOR
 };

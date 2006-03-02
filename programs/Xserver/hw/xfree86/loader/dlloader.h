@@ -19,14 +19,13 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.h,v 1.2 1998/07/25 16:56:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.h,v 1.3 1998/09/20 14:41:04 dawes Exp $ */
 
 #ifndef _DLLOADER_H
 #define _DLLOADER_H
 extern void *DLLoadModule(loaderPtr, int, LOOKUP **);
-extern void DLResolveSymbols(void *);
-extern int DLCheckForUnresolved(void *);
 extern void DLUnloadModule(void *);
 extern void *DLFindSymbol(const char *name);
-
+extern const char *DLAddressToSymbol(void *, unsigned long, unsigned long *,
+				     const char **);
 #endif

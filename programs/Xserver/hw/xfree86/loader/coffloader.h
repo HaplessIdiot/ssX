@@ -21,14 +21,22 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.h,v 1.3 1998/09/20 14:41:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.h,v 1.4 2003/10/15 16:29:02 dawes Exp $ */
 
 #ifndef _COFFLOADER_H
 #define _COFFLOADER_H
+
+typedef struct _coff_reloc *COFFRelocPtr;
+typedef struct _coff_COMMON *COFFCommonPtr;
+
 /* coffloader.c */
 extern void *COFFLoadModule(loaderPtr, int, LOOKUP **);
-extern void COFFResolveSymbols(void *);
-extern int COFFCheckForUnresolved(void *);
+extern void COFFResolveSymbols(LoaderDescPtr, int);
+extern int COFFCheckForUnresolved(LoaderDescPtr);
 extern char *COFFAddressToSection(void *, unsigned long);
 extern void COFFUnloadModule(void *);
+extern const char *COFFFindRelocName(LoaderDescPtr, int, unsigned long);
+extern const char *COFFAddressToSymbol(void *, unsigned long, unsigned long *,
+				       const char **);
+extern void *COFFReadExecutableSyms(int);
 #endif /* _COFFLOADER_H */

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.162 2006/02/20 16:49:12 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.163 2006/02/28 22:32:38 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -55,6 +55,12 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.162 2006/02/
   RANDROBJ = xf86RandR.o
 #endif
 
+#if defined(BuildTestmod) && BuildTestmod && DoLoadableServer
+LOADERTESTSRC = loadertest.c
+LOADERTESTOBJ = loadertest.o
+LOADERTESTDEFS = -DLOADERTEST=1
+#endif
+
 #if UseBuildTree
 MODPATHDEFINES = -DDEFAULT_MODULE_PATH=\"`cd $(BUILDMODULEDIR); pwd`\"
 #else
@@ -68,6 +74,11 @@ EXT_MODULES_DEFINES = $(GLX_DEFINES)
 
 #if UseMemLeak
 MDEBUGDEFS = -DMEMDEBUG
+#endif
+
+#if UseStackTrace
+STRACEDEFS = -DSTACKTRACE
+STRACEINCS = -I$(TOP)/util/memleak
 #endif
 
 SRCS = \
@@ -109,7 +120,8 @@ SRCS = \
 	$(XKBDDXSRC) \
 	$(DBEDDXSRC) \
 	$(SERVERSRCS) \
-	$(RANDRSRC)
+	$(RANDRSRC) \
+	$(LOADERTESTSRC)
 
 OBJS = \
 	xf86Configure.o \
@@ -146,7 +158,8 @@ OBJS = \
 	$(XKBDDXOBJ) \
 	$(DBEDDXOBJ) \
 	$(KBD).o \
-	$(RANDROBJ)
+	$(RANDROBJ) \
+	$(LOADERTESTOBJ)
 
 OFILES = \
 	xf86Init.o \
@@ -160,7 +173,8 @@ OFILES = \
 		-I$(XF86SRC) -I$(XF86PARSERSRC) \
 		-I$(XF86SRC)/loader $(VGAINCLUDES) -I$(XF86SRC)/rac \
 	        -I$(XF86SRC)/scanpci -I$(XF86SRC)/vbe -I$(XF86SRC)/int10 \
-		-I$(XF86SRC)/ddc -I$(SERVERSRC)/render $(RANDRINCS)
+		-I$(XF86SRC)/ddc -I$(SERVERSRC)/render $(RANDRINCS) \
+		$(STRACEINCS)
 
      OSNAME = OSName
    OSVENDOR = OSVendor
@@ -184,12 +198,13 @@ XCONFIGDEFINES = -DPROJECTROOT='"$(PROJECTROOT)"' \
 XF86CONFIGFILE = XConfigFile
 XCONFIGUREDEFINES = -DXF86CONFIGFILE='"$(XF86CONFIGFILE)"'
 
-    DEFINES = $(CONSDEFINES) $(KBDDEFINES) $(EXT_DEFINES) $(OS_DEFINES)
+    DEFINES = $(CONSDEFINES) $(KBDDEFINES) $(EXT_DEFINES) $(OS_DEFINES) \
+		$(STRACEDEFS)
 
 AllTarget($(OFILES))
 
 SpecialCObjectRule(xf86Bus,NullParameter,$(BUGMSG) $(VGAINCLUDES))
-SpecialCObjectRule(xf86Init,$(ICONFIGFILES),$(OSNAMEDEF) $(BUILDERMSG) $(BUGMSG) $(CUSTOMVERDEF) $(MDEBUGDEFS))
+SpecialCObjectRule(xf86Init,$(ICONFIGFILES),$(OSNAMEDEF) $(BUILDERMSG) $(BUGMSG) $(CUSTOMVERDEF) $(MDEBUGDEFS) $(LOADERTESTDEFS))
 SpecialCObjectRule(xf86Events,$(ICONFIGFILES),$(MDEBUGDEFS))
 SpecialCObjectRule(xf86Globals,$(ICONFIGFILES),$(MODPATHDEFINES) $(LOGDEFINES))
 SpecialCObjectRule(xf86AutoConfig,$(ICONFIGFILES),$(XCONFIGDEFINES))

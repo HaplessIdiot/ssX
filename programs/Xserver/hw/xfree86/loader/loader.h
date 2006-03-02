@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.28 2003/11/06 18:38:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.29 2004/02/13 23:58:45 dawes Exp $ */
 
 /*
  *
@@ -23,7 +23,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 /*
- * Copyright (c) 1997-2001 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -68,9 +68,58 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/*
+ * Copyright 2003-2006 by David H. Dawes.
+ * Copyright 2003-2006 by X-Oz Technologies.
+ * All rights reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ * 
+ *  1. Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions, and the following disclaimer.
+ *
+ *  2. Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ * 
+ *  3. The end-user documentation included with the redistribution,
+ *     if any, must include the following acknowledgment: "This product
+ *     includes software developed by X-Oz Technologies
+ *     (http://www.x-oz.com/)."  Alternately, this acknowledgment may
+ *     appear in the software itself, if and wherever such third-party
+ *     acknowledgments normally appear.
+ *
+ *  4. Except as contained in this notice, the name of X-Oz
+ *     Technologies shall not be used in advertising or otherwise to
+ *     promote the sale, use or other dealings in this Software without
+ *     prior written authorization from X-Oz Technologies.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL X-OZ TECHNOLOGIES OR ITS CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 
+ */
 
 #ifndef _LOADER_H
 #define _LOADER_H
+
+#ifndef LOADERDEBUG
+#define LOADERDEBUG 0
+#endif
 
 #include "sym.h"
 
@@ -96,30 +145,50 @@
 #define LD_PROCESSED_ARCHIVE -1
 /* #define UNINIT_SECTION */
 #define HANDLE_IN_HASH_ENTRY
-/*
- * COFF Section nmumbers
- */
-#define N_TEXT       1
-#define N_DATA       2
-#define N_BSS        3
-#define N_COMMENT    4
-#define TestFree(a) if (a) { xfree (a); a = NULL; }
-#define HASHDIV 10
-#define HASHSIZE (1<<HASHDIV)
-typedef struct _elf_reloc *ELFRelocPtr;
-typedef struct _elf_COMMON *ELFCommonPtr;
-typedef struct _coff_reloc *COFFRelocPtr;
-typedef struct _coff_COMMON *COFFCommonPtr;
-typedef struct AOUT_RELOC *AOUTRelocPtr;
-typedef struct AOUT_COMMON *AOUTCommonPtr;
 
-typedef struct _LoaderReloc {
-    int modtype;
-    struct _LoaderReloc *next;
-    COFFRelocPtr coff_reloc;
-    ELFRelocPtr elf_reloc;
-    AOUTRelocPtr aout_reloc;
-} LoaderRelocRec, *LoaderRelocPtr;
+#define TestFree(a) if (a) { xfree (a); a = NULL; }
+
+#if LOADERDEBUG
+/*
+ * Loader debug levels.
+ */
+#define LOADER_DEBUG_ADD_SYMBOLS		0x00001
+#define LOADER_DEBUG_HASH_ADD 			0x00002
+#define LOADER_DEBUG_DIAGNOSTICS 		0x00004
+#define LOADER_DEBUG_FILES	 		0x00008
+#define LOADER_DEBUG_LOWLEVEL	 		0x00010
+#define LOADER_DEBUG_DUMP_HASH			0x00020
+#define LOADER_DEBUG_HASH_DETAILS		0x00040
+#define LOADER_DEBUG_HASH_SUMMARY		0x00080
+#define LOADER_DEBUG_REPORT_RELOC		0x00100
+#define LOADER_DEBUG_REQ_REF			0x00200
+#define LOADER_DEBUG_SHOW_EXE_SYMS		0x00400
+#define LOADER_DEBUG_PLT			0x00800
+#define LOADER_DEBUG_ARCHIVE			0x01000
+#define LOADER_DEBUG_MEM			0x02000
+#define LOADER_DEBUG_EXT			0x04000
+
+#ifdef LOADER_DEBUG_DESCRIPTIONS
+static const char *debugDesc [] = {
+    "AddSymbols",
+    "HashAdd",
+    "Diagnostics (memory usage)",
+    "Files loaded",
+    "Low level object processing",
+    "Dump hash table",
+    "Hash hit/depth details",
+    "Hash hit/depth summary",
+    "Report relocations",
+    "Req/Ref symbols",
+    "Show exe symbols",
+    "PLT handling",
+    "Archives",
+    "Memory",
+    "LoadExtensions",
+    NULL
+};
+#endif
+#endif
 
 typedef struct _loader_item *itemPtr;
 typedef struct _loader_item {
@@ -128,19 +197,35 @@ typedef struct _loader_item {
     itemPtr next;
     int handle;
     int module;
-    itemPtr exports;
+    unsigned long scope;
 #if defined(__powerpc__)
     /*
      * PowerPC file formats require special routines in some circumstances
      * to assist in the linking process. See the specific loader for
-     * more details.
+     * more details.  XXX This should be eliminated and handled in the same
+     * way as the pseudo PLT is now handled for ELF.
      */
     union {
-	unsigned short plt[8];	/* ELF */
 	unsigned short glink[14];	/* XCOFF */
     } code;
 #endif
 } itemRec;
+
+/* Values for itemRec.scope. */
+#define LOOKUP_SCOPE_SELF	0
+#define LOOKUP_SCOPE_GLOBAL	(1 << 0)
+#define LOOKUP_SCOPE_BUILTIN	(1 << 1)
+#define LOOKUP_SCOPE_AUTO	(~0UL)
+#define LOOKUP_SCOPE_ANY	(~0UL)
+
+#define SCOPE_OK(i, h, s)	\
+    (((s) == LOOKUP_SCOPE_ANY) || \
+     ((i)->scope == LOOKUP_SCOPE_SELF && (i)->handle == (h)) || \
+     ((s) & (i)->scope))
+
+/* Special module symbol names. */
+#define MODULE_DATA_NAME	"ModuleData"
+#define EXPORTED_SYMS_NAME	"ExportedSymbols"
 
 /* The following structures provide an interface to GDB (note that GDB
    has copies of the definitions - if you change anything here make
@@ -209,20 +294,29 @@ typedef struct _loader *loaderPtr;
  * _loader_funcs hold the entry points for a module format.
  */
 
-typedef void *(*LoadModuleProcPtr) (loaderPtr modrec, int fd, LOOKUP **);
-typedef void (*ResolveSymbolsProcPtr) (void *);
-typedef int (*CheckForUnresolvedProcPtr) (void *);
-typedef char *(*AddressToSectionProcPtr) (void *, unsigned long);
-typedef void (*LoaderUnloadProcPtr) (void *);
+typedef struct _loader_desc LoaderDesc, *LoaderDescPtr;
 
-typedef struct _loader_funcs {
+typedef void *(*LoadModuleProcPtr)(loaderPtr modrec, int fd, LOOKUP **);
+typedef void (*ResolveSymbolsProcPtr)(LoaderDescPtr, int);
+typedef int (*CheckForUnresolvedProcPtr)(LoaderDescPtr);
+typedef char *(*AddressToSectionProcPtr)(void *, unsigned long);
+typedef void (*LoaderUnloadProcPtr)(void *);
+typedef const char *(*FindRelocNameProcPtr)(LoaderDescPtr, int, unsigned long);
+typedef const char *(*AddressToSymbolProcPtr)(void *, unsigned long,
+					      unsigned long *, const char **);
+typedef void *(*ReadExecutableSymsProcPtr)(int);
+
+struct _loader_desc {
     LoadModuleProcPtr LoadModule;
     ResolveSymbolsProcPtr ResolveSymbols;
     CheckForUnresolvedProcPtr CheckForUnresolved;
     AddressToSectionProcPtr AddressToSection;
     LoaderUnloadProcPtr LoaderUnload;
-    LoaderRelocRec pRelocs;	/* type specific relocations */
-} loader_funcs;
+    FindRelocNameProcPtr FindRelocName;
+    AddressToSymbolProcPtr AddressToSymbol;
+    ReadExecutableSymsProcPtr ReadExecutableSyms;
+    void *pRelocs;	/* type specific relocations */
+};
 
 /* Each module loaded has a loaderRec */
 typedef struct _loader {
@@ -232,8 +326,9 @@ typedef struct _loader {
     char *name;
     char *cname;
     void *private;		/* format specific data */
-    loader_funcs *funcs;	/* funcs for operating on this module */
+    LoaderDescPtr desc;		/* funcs/data for operating on this module */
     loaderPtr next;
+    char *modData;
 } loaderRec;
 
 /* Compiled-in version information */
@@ -248,32 +343,43 @@ typedef struct {
 extern ModuleVersions LoaderVersionInfo;
 
 extern unsigned long LoaderOptions;
+extern unsigned long LoaderDebugLevel;
 
 /* Internal Functions */
 
-void LoaderAddSymbols(int, int, LOOKUP *);
+#if defined(__GNUC__) && \
+    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ > 4)))
+#define _printf_attribute(a,b) __attribute((format(printf,a,b)))
+#else
+#define _printf_attribute(a,b) /**/
+#endif
+
+void LoaderDebugMsg(unsigned long, const char *f, ...) _printf_attribute(2,3);
+
+void LoaderAddSymbols(int, int, LOOKUP *, unsigned long, char **);
 void LoaderDefaultFunc(void);
 void LoaderDuplicateSymbol(const char *, const int);
+void *LoaderSymbolWithScope(const char *, int, unsigned long);
 
-#if 0
-void LoaderFixups(void);
-#endif
-void LoaderResolve(void);
-int LoaderResolveSymbols(void);
-int _LoaderHandleUnresolved(char *, char *);
+int LoaderResolveSymbols(int);
+int _LoaderHandleUnresolved(const char *, int);
 void LoaderHashAdd(itemPtr);
 itemPtr LoaderHashDelete(const char *);
 itemPtr LoaderHashFind(const char *);
 void LoaderHashTraverse(void *, int (*)(void *, itemPtr));
 void LoaderPrintAddress(const char *);
 void LoaderPrintItem(itemPtr);
-void LoaderPrintSymbol(unsigned long);
 void LoaderDumpSymbols(void);
+void LoaderDumpHashHits(void);
 char *_LoaderModuleToName(int);
 int _LoaderAddressToSection(const unsigned long, const char **,
 			    const char **);
-int LoaderOpen(const char *, const char *, int, int *, int *, int *);
+int LoaderOpen(const char *, const char *, int, int *, int *, int *, char **);
 int LoaderHandleOpen(int);
+const char *LoaderFindRelocName(int handle, unsigned long addr);
+const char *_LoaderAddressToSymbol(unsigned long addr, unsigned long *symaddr,
+				   const char **);
+
 
 /*
  * File interface functions
@@ -285,23 +391,13 @@ int _LoaderFileRead(int fd, unsigned int offset, void *addr, int size);
 /*
  * Relocation list manipulation routines
  */
-LoaderRelocPtr _LoaderGetRelocations(void *);
+void **_LoaderGetRelocations(LoaderDescPtr);
 
 /*
  * object to name lookup routines
  */
 char *_LoaderHandleToName(int handle);
 char *_LoaderHandleToCanonicalName(int handle);
-
-/*
- * Entry points for the different loader types
- */
-#include "aoutloader.h"
-#include "coffloader.h"
-#include "elfloader.h"
-#include "dlloader.h"
-/* LD_ARCHIVE */
-void *ARCHIVELoadModule(loaderPtr, int, LOOKUP **);
 
 extern void _loader_debug_state(void);
 

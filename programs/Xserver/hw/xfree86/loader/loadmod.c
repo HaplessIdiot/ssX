@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.75tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.76 2005/09/16 15:26:51 tsi Exp $ */
 
 /*
  *
@@ -23,7 +23,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 /*
- * Copyright (c) 1997-2002 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -68,6 +68,51 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/*
+ * Copyright 2003-2006 by David H. Dawes.
+ * Copyright 2003-2006 by X-Oz Technologies.
+ * All rights reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ * 
+ *  1. Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions, and the following disclaimer.
+ *
+ *  2. Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ * 
+ *  3. The end-user documentation included with the redistribution,
+ *     if any, must include the following acknowledgment: "This product
+ *     includes software developed by X-Oz Technologies
+ *     (http://www.x-oz.com/)."  Alternately, this acknowledgment may
+ *     appear in the software itself, if and wherever such third-party
+ *     acknowledgments normally appear.
+ *
+ *  4. Except as contained in this notice, the name of X-Oz
+ *     Technologies shall not be used in advertising or otherwise to
+ *     promote the sale, use or other dealings in this Software without
+ *     prior written authorization from X-Oz Technologies.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL X-OZ TECHNOLOGIES OR ITS CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 
+ */
 
 #include "os.h"
 /* For stat() and related stuff */
@@ -81,6 +126,10 @@
 #ifdef XINPUT
 #include "xf86Xinput.h"
 #endif
+
+#ifndef LOADERDEBUG
+#define LOADERDEBUG 0
+#endif
 #include "loader.h"
 #include "xf86Optrec.h"
 
@@ -88,8 +137,6 @@
 #include <regex.h>
 #include <dirent.h>
 #include <limits.h>
-
-extern int check_unresolved_sema;
 
 typedef struct _pattern {
     const char *pattern;
@@ -110,14 +157,33 @@ ModuleVersions LoaderVersionInfo = {
     ABI_FONT_VERSION
 };
 
-#if 0
-void
-LoaderFixups(void)
+#if LOADERDEBUG
+static void
+PrintDiagnostics(const char *module, const char *what)
 {
-    /* Need to call LRS here because the frame buffers get loaded last,
-     * and the drivers depend on them. */
+#ifdef linux
+    char procdev[] = "/proc/XXXXX/maps";
+    FILE *f = NULL;
+    char buf[1024];
+#endif
 
-    LoaderResolveSymbols();
+    if (!(LoaderDebugLevel & LOADER_DEBUG_DIAGNOSTICS))
+	return;
+
+    LoaderDebugMsg(LOADER_DEBUG_DIAGNOSTICS,
+		   "LoaderDiagnostics for %s of module %s\n", what, module);
+#ifdef linux
+    sprintf(procdev, "/proc/%d/maps", getpid());
+    f = fopen(procdev, "r");
+    if (f) {
+	while (fgets(buf, sizeof(buf), f))
+	    LoaderDebugMsg(LOADER_DEBUG_DIAGNOSTICS, "%s", buf);
+	fclose(f);
+    } else {
+	LoaderDebugMsg(LOADER_DEBUG_DIAGNOSTICS,
+		       "Cannot open %s: %s\n", procdev, strerror(errno));
+    }
+#endif
 }
 #endif
 
@@ -1009,27 +1075,13 @@ LoadModule(const char *module, const char *path, const char **subdirlist,
 	    *errmin = 0;
 	goto LoadModule_fail;
     }
-    ret->handle = LoaderOpen(found, name, 0, errmaj, errmin, &wasLoaded);
+    ret->handle = LoaderOpen(found, name, 0, errmaj, errmin, &wasLoaded,
+			     (char **)&initdata);
     if (ret->handle < 0)
 	goto LoadModule_fail;
 
     ret->filename = xstrdup(found);
 
-    /*
-     * now check if the special data object <modulename>ModuleData is
-     * present.
-     */
-    p = xalloc(strlen(name) + strlen("ModuleData") + 1);
-    if (!p) {
-	if (errmaj)
-	    *errmaj = LDR_NOMEM;
-	if (errmin)
-	    *errmin = 0;
-	goto LoadModule_fail;
-    }
-    strcpy(p, name);
-    strcat(p, "ModuleData");
-    initdata = LoaderSymbol(p);
     if (initdata) {
 	ModuleSetupProc setup;
 	ModuleTearDownProc teardown;
@@ -1073,8 +1125,9 @@ LoadModule(const char *module, const char *path, const char **subdirlist,
 	    goto LoadModule_exit;
 
 	/* no initdata, fail the load */
-	xf86Msg(X_ERROR, "LoadModule: Module %s does not have a %s "
-		"data object.\n", module, p);
+	xf86Msg(X_ERROR, "LoadModule: Module %s does not have a %s"
+			 MODULE_DATA_NAME " data object.\n",
+		module, name);
 	if (errmaj)
 	    *errmaj = LDR_INVALID;
 	if (errmin)
@@ -1090,6 +1143,9 @@ LoadModule(const char *module, const char *path, const char **subdirlist,
 	xf86Msg(X_WARNING, "Module Options present, but no SetupProc "
 		"available for %s\n", module);
     }
+#if LOADERDEBUG
+    PrintDiagnostics(module, "load");
+#endif
     goto LoadModule_exit;
 
   LoadModule_fail:

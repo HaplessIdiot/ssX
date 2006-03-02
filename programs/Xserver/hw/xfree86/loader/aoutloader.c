@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.20tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.21 2005/10/14 15:16:59 tsi Exp $ */
 
 /*
  *
@@ -25,6 +25,53 @@
  *
  * Modified 21/02/97 by Sebastien Marineau to support OS/2 a.out objects
  */
+
+/*
+ * Copyright 2003-2006 by David H. Dawes.
+ * Copyright 2003-2006 by X-Oz Technologies.
+ * All rights reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ * 
+ *  1. Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions, and the following disclaimer.
+ *
+ *  2. Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ * 
+ *  3. The end-user documentation included with the redistribution,
+ *     if any, must include the following acknowledgment: "This product
+ *     includes software developed by X-Oz Technologies
+ *     (http://www.x-oz.com/)."  Alternately, this acknowledgment may
+ *     appear in the software itself, if and wherever such third-party
+ *     acknowledgments normally appear.
+ *
+ *  4. Except as contained in this notice, the name of X-Oz
+ *     Technologies shall not be used in advertising or otherwise to
+ *     promote the sale, use or other dealings in this Software without
+ *     prior written authorization from X-Oz Technologies.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL X-OZ TECHNOLOGIES OR ITS CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 
+ */
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
@@ -47,17 +94,16 @@
 #include <X11/Xos.h>
 #include "os.h"
 #include "aout.h"
-
 #include "sym.h"
-#include "loader.h"
-#include "aoutloader.h"
 
 #ifndef LOADERDEBUG
 #define LOADERDEBUG 0
 #endif
+#include "loader.h"
+#include "aoutloader.h"
 
-#if LOADERDEBUG
-#define AOUTDEBUG ErrorF
+#ifndef EXESYMDEBUG
+#define EXESYMDEBUG 0 && LOADERDEBUG
 #endif
 
 #ifndef MIN
@@ -73,7 +119,7 @@ typedef struct {
     int handle;
     int module;
     int fd;
-    loader_funcs *funcs;
+    LoaderDescPtr desc;
     AOUTHDR *header;		/* file header */
     unsigned char *text;	/* Start address of the text section */
     unsigned int textsize;	/* Size of the text section */
@@ -98,6 +144,10 @@ typedef struct AOUT_RELOC {
     AOUTModulePtr file;
     struct relocation_info *rel;
     int type;			/* AOUT_TEXT or AOUT_DATA */
+    int relocated;
+    void *symval;
+    int assigned;
+    unsigned long olddata;
     struct AOUT_RELOC *next;
 } AOUTRelocRec;
 
@@ -119,17 +169,16 @@ static AOUTCommonPtr listCOMMON = NULL;
 
 /* prototypes for static functions */
 static int AOUTHashCleanOut(void *, itemPtr);
-static char *AOUTGetSymbolName(AOUTModulePtr, struct AOUT_nlist *);
-static void *AOUTGetSymbolValue(AOUTModulePtr, int);
+static const char *AOUTGetSymbolName(AOUTModulePtr, struct AOUT_nlist *);
+static void *AOUTGetSymbolValue(AOUTModulePtr, int, int *);
 static AOUTCommonPtr AOUTAddCommon(struct AOUT_nlist *, int);
 static LOOKUP *AOUTCreateCommon(AOUTModulePtr);
 static LOOKUP *AOUT_GetSymbols(AOUTModulePtr);
 static AOUTRelocPtr AOUTDelayRelocation(AOUTModulePtr, int,
 					struct relocation_info_i386 *);
 static AOUTRelocPtr AOUTCollectRelocations(AOUTModulePtr);
-static void AOUT_Relocate(unsigned long *, unsigned long, int);
-static AOUTRelocPtr AOUT_RelocateEntry(AOUTModulePtr, int,
-				       struct relocation_info_i386 *);
+static void AOUT_Relocate(AOUTRelocPtr, unsigned long *, unsigned long, int);
+static int AOUT_RelocateEntry(AOUTRelocPtr);
 
 /*
  * Return 1 if the symbol in item belongs to aoutfile
@@ -161,7 +210,11 @@ AOUTDelayRelocation(AOUTModulePtr aoutfile, int type,
     reloc->file = aoutfile;
     reloc->type = type;
     reloc->rel = rel;
-    reloc->next = 0;
+    reloc->relocated = 0;
+    reloc->symval = NULL;
+    reloc->assigned = 0;
+    reloc->olddata = 0;
+    reloc->next = NULL;
     return reloc;
 }
 
@@ -207,9 +260,10 @@ AOUTCreateCommon(AOUTModulePtr aoutfile)
 	numsyms++;
     }				/* while */
 
-#ifdef AOUTDEBUG
-    AOUTDEBUG("AOUTCreateCommon() %d entries (%d bytes) of COMMON data\n",
-	      numsyms, size);
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+		   "AOUTCreateCommon() %d entries (%d bytes) of COMMON data\n",
+		   numsyms, size);
 #endif
 
     if ((lookup = xf86loadermalloc((numsyms + 1) * sizeof(LOOKUP))) == NULL) {
@@ -225,11 +279,12 @@ AOUTCreateCommon(AOUTModulePtr aoutfile)
 
     while (listCOMMON) {
 	common = listCOMMON;
-	lookup[l].symName = AOUTGetSymbolName(aoutfile, common->sym);
+	lookup[l].symName = xf86loaderstrdup(AOUTGetSymbolName(aoutfile,
+							       common->sym));
 	lookup[l].offset = (funcptr) (aoutfile->common + offset);
-#ifdef AOUTDEBUG
-	AOUTDEBUG("Adding %p %s\n", (void *)lookup[l].offset,
-		  lookup[l].symName);
+#if LOADERDEBUG
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "Adding %p %s\n",
+		       (void *)lookup[l].offset, lookup[l].symName);
 #endif
 	listCOMMON = common->next;
 	offset += common->sym->n_value;
@@ -261,40 +316,37 @@ AOUTGetString(AOUTModulePtr aoutfile, int index)
 /*
  * Return the name of a symbol 
  */
-static char *
+static const char *
 AOUTGetSymbolName(AOUTModulePtr aoutfile, struct AOUT_nlist *sym)
 {
-    char *symname = AOUTGetString(aoutfile, sym->n_un.n_strx);
-    char *name;
-
-    name = xf86loadermalloc(strlen(symname) + 1);
-    if (!name)
-	FatalError("AOUTGetSymbolName: Out of memory\n");
-
-    strcpy(name, symname);
-
-    return name;
+    return AOUTGetString(aoutfile, sym->n_un.n_strx);
 }
 
 /*
  * Return the value of a symbol in the loader's symbol table
  */
 static void *
-AOUTGetSymbolValue(AOUTModulePtr aoutfile, int index)
+AOUTGetSymbolValue(AOUTModulePtr aoutfile, int index, int *pInvariant)
 {
     void *symval = NULL;	/* value of the indicated symbol */
     itemPtr symbol = NULL;	/* name/value of symbol */
-    char *name = NULL;
+    const char *name = NULL;
 
     name = AOUTGetSymbolName(aoutfile, aoutfile->symtab + index);
 
     if (name)
 	symbol = LoaderHashFind(name);
 
-    if (symbol)
-	symval = (unsigned char *)symbol->address;
+    if (symbol == NULL ||
+	!SCOPE_OK(symbol, aoutfile->handle, LOOKUP_SCOPE_GLOBAL)) {
+	return NULL;
+    }
+    symval = (void *)symbol->address;
+    if (pInvariant) {
+	*pInvariant = ((symbol->handle == aoutfile->handle) ||
+		       (symbol->scope & LOOKUP_SCOPE_BUILTIN));
+    }
 
-    xf86loaderfree(name);
     return symval;
 }
 
@@ -302,55 +354,70 @@ AOUTGetSymbolValue(AOUTModulePtr aoutfile, int index)
  * Perform the actual relocation 
  */
 static void
-AOUT_Relocate(unsigned long *destl, unsigned long val, int pcrel)
+AOUT_Relocate(AOUTRelocPtr p, unsigned long *destl, unsigned long val,
+	      int pcrel)
 {
-#ifdef AOUTDEBUG
-    AOUTDEBUG("AOUT_Relocate %p : %08lx %s",
-	      (void *)destl, *destl, pcrel == 1 ? "rel" : "abs");
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "AOUT_Relocate %p : %08lx %s",
+		   (void *)destl, *destl, pcrel == 1 ? "rel" : "abs");
 
 #endif
+
+    if (p->assigned) {
+	*destl = p->olddata;
+    } else {
+	p->olddata = *destl;
+	p->assigned = 1;
+    }
+
     if (pcrel) {
 	/* relative to PC */
 	*destl = val - ((unsigned long)destl + sizeof(long));
     } else {
 	*destl += val;
     }
-#ifdef AOUTDEBUG
-    AOUTDEBUG(" -> %08lx\n", *destl);
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, " -> %08lx\n", *destl);
 #endif
 }
 
 /*
  * Fix the relocation for text or data section
  */
-static AOUTRelocPtr
-AOUT_RelocateEntry(AOUTModulePtr aoutfile, int type,
-		   struct relocation_info *rel)
+static int
+AOUT_RelocateEntry(AOUTRelocPtr p)
 {
+    AOUTModulePtr aoutfile = p->file;
+    int type = p->type;
+    struct relocation_info *rel = p->rel;
     AOUTHDR *header = aoutfile->header;
+#if LOADERDEBUG
     AOUT_nlist *symtab = aoutfile->symtab;
+#endif
     int symnum;
-    void *symval;
+    void *symval = NULL;
     unsigned long *destl;	/* address of the location to be modified */
+    int invariant = 0;
 
     symnum = rel->r_symbolnum;
-#ifdef AOUTDEBUG
+#if LOADERDEBUG
     {
-	char *name;
-
 	if (rel->r_extern) {
-	    AOUTDEBUG("AOUT_RelocateEntry: extern %s\n",
-		      name = AOUTGetSymbolName(aoutfile, symtab + symnum));
-	    xf86loaderfree(name);
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+			   "AOUT_RelocateEntry: extern %s\n",
+			   AOUTGetSymbolName(aoutfile, symtab + symnum));
 	} else {
-	    AOUTDEBUG("AOUT_RelocateEntry: intern\n");
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+			   "AOUT_RelocateEntry: intern\n");
 	}
-	AOUTDEBUG("  pcrel: %d", rel->r_pcrel);
-	AOUTDEBUG("  length: %d", rel->r_length);
-	AOUTDEBUG("  baserel: %d", rel->r_baserel);
-	AOUTDEBUG("  jmptable: %d", rel->r_jmptable);
-	AOUTDEBUG("  relative: %d", rel->r_relative);
-	AOUTDEBUG("  copy: %d\n", rel->r_copy);
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "  pcrel: %d", rel->r_pcrel);
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "  length: %d", rel->r_length);
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "  baserel: %d", rel->r_baserel);
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+		       "  jmptable: %d", rel->r_jmptable);
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+		       "  relative: %d", rel->r_relative);
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "  copy: %d\n", rel->r_copy);
     }
 #endif /* AOUTDEBUG */
 
@@ -387,71 +454,81 @@ AOUT_RelocateEntry(AOUTModulePtr aoutfile, int type,
      */
     if (rel->r_extern) {
 	/* Lookup the symbol in the loader's symbol table */
-	symval = AOUTGetSymbolValue(aoutfile, symnum);
-	if (symval != 0) {
-	    /* we've got the value */
-	    AOUT_Relocate(destl, (unsigned long)symval, rel->r_pcrel);
-	    return 0;
+	symval = AOUTGetSymbolValue(aoutfile, symnum, &invariant);
+	if (symval != NULL) {
+	    if (p->relocated) {
+		/* Already relocated. */
+		return invariant;
+	    } else {
+		p->relocated = 1;
+	    }
 	} else {
-	    /* The symbol should be undefined */
-	    switch (symtab[symnum].n_type & AOUT_TYPE) {
-	    case AOUT_UNDF:
-#ifdef AOUTDEBUG
-		AOUTDEBUG("  extern AOUT_UNDEF\n");
-#endif
-		/* Add this relocation back to the global list */
-		return AOUTDelayRelocation(aoutfile, type, rel);
-
-	    default:
-		ErrorF("AOUT_RelocateEntry():"
-		       " impossible intern relocation type: %d\n",
-		       symtab[symnum].n_type);
-		return 0;
-	    }			/* switch */
+	    symval = &LoaderDefaultFunc;
+	    p->relocated = 0;
+	}
+	if (symval) {
+	    if (p->symval == symval) {
+		/* Unchanged. */
+		return invariant;
+	    } else
+		p->symval = symval;
 	}
     } else {
 	/* intern */
+	invariant = 1;
 	switch (rel->r_symbolnum) {
 	case AOUT_TEXT:
-#ifdef AOUTDEBUG
-	    AOUTDEBUG("  AOUT_TEXT\n");
+#if LOADERDEBUG
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "  AOUT_TEXT\n");
 #endif
 	    /* Only absolute intern text relocations need to be handled */
-	    if (rel->r_pcrel == 0)
-		AOUT_Relocate(destl, (unsigned long)aoutfile->text,
-			      rel->r_pcrel);
-	    return 0;
+	    if (rel->r_pcrel == 0) {
+		symval = aoutfile->text;
+		p->relocated = 1;
+	    } else
+		p->relocated = 0;
+	    break;
+
 	case AOUT_DATA:
-#ifdef AOUTDEBUG
-	    AOUTDEBUG("  AOUT_DATA\n");
+#if LOADERDEBUG
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "  AOUT_DATA\n");
 #endif
-	    if (rel->r_pcrel == 0)
-		AOUT_Relocate(destl, (unsigned long)aoutfile->data
-			      - header->a_text, rel->r_pcrel);
-	    else
+	    if (rel->r_pcrel == 0) {
+		symval = (void *)((unsigned long)aoutfile->data - 
+			          header->a_text);
+		p->relocated = 1;
+	    } else {
 		ErrorF("AOUT_RelocateEntry(): "
 		       "don't know how to handle data pc-relative reloc\n");
+		p->relocated = 0;
+	    }
+	    break;
 
-	    return 0;
 	case AOUT_BSS:
-#ifdef AOUTDEBUG
-	    AOUTDEBUG("  AOUT_BSS\n");
+#if LOADERDEBUG
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "  AOUT_BSS\n");
 #endif
-	    if (rel->r_pcrel == 0)
-		AOUT_Relocate(destl, (unsigned long)aoutfile->bss
-			      - header->a_text - header->a_data,
-			      rel->r_pcrel);
-	    else
+	    if (rel->r_pcrel == 0) {
+		symval = (void *)((unsigned long)aoutfile->bss - 
+				  header->a_text - header->a_data);
+		p->relocated = 1;
+	    } else {
 		ErrorF("AOUT_RelocateEntry(): "
 		       "don't know how to handle bss pc-relative reloc\n");
+		p->relocated = 0;
+	    }
+	    break;
 
-	    return 0;
 	default:
 	    ErrorF("AOUT_RelocateEntry():"
 		   " unknown intern relocation type: %d\n", rel->r_symbolnum);
 	    return 0;
 	}			/* switch */
     }
+    if (symval != NULL)
+	AOUT_Relocate(p, destl, (unsigned long)symval, rel->r_pcrel);
+
+    return invariant;
 }				/* AOUT_RelocateEntry */
 
 static AOUTRelocPtr
@@ -501,7 +578,7 @@ AOUT_GetSymbols(AOUTModulePtr aoutfile)
     int fd = aoutfile->fd;
     AOUTHDR *header = aoutfile->header;
     int nsyms, soff, i, l;
-    char *symname;
+    const char *symname;
     AOUT_nlist *s;
     LOOKUP *lookup, *lookup_common;
     AOUTCommonPtr tmp;
@@ -522,16 +599,18 @@ AOUT_GetSymbols(AOUTModulePtr aoutfile)
 	if (soff == 0 || (s->n_type & AOUT_STAB) != 0)
 	    continue;
 	symname = AOUTGetSymbolName(aoutfile, s);
-#ifdef AOUTDEBUG
-	AOUTDEBUG("AOUT_GetSymbols(): %s %02x %02x %08lx\n",
-		  symname, s->n_type, s->n_other, s->n_value);
+#if LOADERDEBUG
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+		       "AOUT_GetSymbols(): %s %02x %02x %08lx\n",
+		       symname, s->n_type, s->n_other, s->n_value);
 #endif
 	switch (s->n_type & AOUT_TYPE) {
 	case AOUT_UNDF:
 	    if (s->n_value != 0) {
 		if (!LoaderHashFind(symname)) {
-#ifdef AOUTDEBUG
-		    AOUTDEBUG("Adding common %s\n", symname);
+#if LOADERDEBUG
+		    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+				   "Adding common %s\n", symname);
 #endif
 		    tmp = AOUTAddCommon(s, i);
 		    if (tmp) {
@@ -540,70 +619,66 @@ AOUT_GetSymbols(AOUTModulePtr aoutfile)
 		    }
 		}
 	    } else {
-#ifdef AOUTDEBUG
-		AOUTDEBUG("Adding undef %s\n", symname);
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+			       "Adding undef %s\n", symname);
 #endif
 	    }
-	    xf86loaderfree(symname);
 	    break;
 	case AOUT_TEXT:
 	    if (s->n_type & AOUT_EXT) {
-		lookup[l].symName = symname;
+		lookup[l].symName = xf86loaderstrdup(symname);
 		/* text symbols start at 0 */
 		lookup[l].offset = (funcptr) (aoutfile->text + s->n_value);
-#ifdef AOUTDEBUG
-		AOUTDEBUG("Adding text %s %p\n", symname,
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+			       "Adding text %s %p\n", symname,
 			  (void *)lookup[l].offset);
 #endif
 		l++;
-	    } else {
-		xf86loaderfree(symname);
 	    }
 	    break;
 	case AOUT_DATA:
 	    if (s->n_type & AOUT_EXT) {
-		lookup[l].symName = symname;
+		lookup[l].symName = xf86loaderstrdup(symname);
 		/* data symbols are following text */
 		lookup[l].offset = (funcptr) (aoutfile->data +
 					      s->n_value - header->a_text);
-#ifdef AOUTDEBUG
-		AOUTDEBUG("Adding data %s %p\n", symname,
-			  (void *)lookup[l].offset);
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+			       "Adding data %s %p\n", symname,
+			       (void *)lookup[l].offset);
 #endif
 		l++;
-	    } else {
-		xf86loaderfree(symname);
 	    }
 	    break;
 	case AOUT_BSS:
 	    if (s->n_type & AOUT_EXT) {
-		lookup[l].symName = symname;
+		lookup[l].symName = xf86loaderstrdup(symname);
 		/* bss symbols follow both text and data */
 		lookup[l].offset = (funcptr) (aoutfile->bss + s->n_value
 					      - (header->a_data
 						 + header->a_text));
-#ifdef AOUTDEBUG
-		AOUTDEBUG("Adding bss %s %p\n", symname,
-			  (void *)lookup[l].offset);
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "Adding bss %s %p\n",
+			       symname, (void *)lookup[l].offset);
 #endif
 		l++;
-	    } else {
-		xf86loaderfree(symname);
 	    }
 	    break;
 	case AOUT_FN:
-#ifdef AOUTDEBUG
+#if LOADERDEBUG
 	    if (s->n_type & AOUT_EXT) {
-		AOUTDEBUG("Ignoring AOUT_FN %s\n", symname);
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+			       "Ignoring AOUT_FN %s\n", symname);
 	    } else {
-		AOUTDEBUG("Ignoring AOUT_WARN %s\n", symname);
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+			       "Ignoring AOUT_WARN %s\n", symname);
 	    }
 #endif
-	    xf86loaderfree(symname);
 	    break;
 	default:
 	    ErrorF("Unknown symbol type %x\n", s->n_type & AOUT_TYPE);
-	    xf86loaderfree(symname);
 	}			/* switch */
     }				/* for */
     lookup[l].symName = NULL;
@@ -631,11 +706,10 @@ AOUTLoadModule(loaderPtr modrec, int aoutfd, LOOKUP ** ppLookup)
     AOUTModulePtr aoutfile = NULL;
     AOUTHDR *header;
     AOUTRelocPtr reloc, tail;
-    void *v;
 
-#ifdef AOUTDEBUG
-    AOUTDEBUG("AOUTLoadModule(%s, %d, %d)\n",
-	      modrec->name, modrec->handle, aoutfd);
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_FILES, "AOUTLoadModule(%s, %d, %d)\n",
+		   modrec->name, modrec->handle, aoutfd);
 #endif
     if ((aoutfile = xf86loadercalloc(1, sizeof(AOUTModuleRec))) == NULL) {
 	ErrorF("Unable to allocate AOUTModuleRec\n");
@@ -645,7 +719,7 @@ AOUTLoadModule(loaderPtr modrec, int aoutfd, LOOKUP ** ppLookup)
     aoutfile->handle = modrec->handle;
     aoutfile->module = modrec->module;
     aoutfile->fd = aoutfd;
-    v = aoutfile->funcs = modrec->funcs;
+    aoutfile->desc = modrec->desc;
 
     /*
      *  Get the a.out header
@@ -717,69 +791,67 @@ AOUTLoadModule(loaderPtr modrec, int aoutfd, LOOKUP ** ppLookup)
 
     if (reloc) {
 	for (tail = reloc; tail->next; tail = tail->next) ;
-	tail->next = _LoaderGetRelocations(v)->aout_reloc;
-	_LoaderGetRelocations(v)->aout_reloc = reloc;
+	tail->next = *_LoaderGetRelocations(aoutfile->desc);
+	*_LoaderGetRelocations(aoutfile->desc) = reloc;
     }
 
     return (void *)aoutfile;
 }
 
 void
-AOUTResolveSymbols(void *mod)
+AOUTResolveSymbols(LoaderDescPtr desc, int handle)
 {
-    AOUTRelocPtr newlist, p, tmp;
+    AOUTRelocPtr p, *pp, tmp;
 
-#ifdef AOUTDEBUG
-    AOUTDEBUG("AOUTResolveSymbols()\n");
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "AOUTResolveSymbols()\n");
 #endif
 
-    newlist = 0;
-    for (p = _LoaderGetRelocations(mod)->aout_reloc; p;) {
-	tmp = AOUT_RelocateEntry(p->file, p->type, p->rel);
-	if (tmp) {
-	    /* Failed to relocate.  Keep it in the list. */
-	    tmp->next = newlist;
-	    newlist = tmp;
+    pp = (AOUTRelocPtr *)_LoaderGetRelocations(desc);
+    for (p = *_LoaderGetRelocations(desc); p;) {
+	/* If handle is valid, only relocate symbols for that module. */
+	if (handle >= 0 && p->file->handle != handle) {
+	    pp = &(p->next);
+	    p = p->next;
+	    continue;
 	}
-	tmp = p;
-	p = p->next;
-	xf86loaderfree(tmp);
+	
+	if (AOUT_RelocateEntry(p)) {
+	    /*
+	     * Remove invariant relocations, since they can't change when
+	     * other modules are loaded or unloaded.
+	     */
+	    *pp = p->next;
+	    tmp = p;
+	    p = p->next;
+	    xf86loaderfree(tmp);
+	} else {
+	    pp = &(p->next);
+	    p = p->next;
+	}
     }
-    _LoaderGetRelocations(mod)->aout_reloc = newlist;
 }				/* AOUTResolveSymbols */
 
 int
-AOUTCheckForUnresolved(void *mod)
+AOUTCheckForUnresolved(LoaderDescPtr desc)
 {
     int symnum;
     AOUTRelocPtr crel;
-    char *name;
+    const char *name;
     int fatalsym = 0, flag;
 
-#ifdef AOUTDEBUG
-    AOUTDEBUG("AOUTCheckForUnResolved()\n");
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "AOUTCheckForUnResolved()\n");
 #endif
-    if ((crel = _LoaderGetRelocations(mod)->aout_reloc) == NULL)
-	return 0;
+    for (crel = *_LoaderGetRelocations(desc); crel; crel = crel->next) {
+	if (crel->relocated)
+	    continue;
 
-    while (crel) {
-	if (crel->type == AOUT_TEXT) {
-	    /* Attempt to make unresolved  text references 
-	     * point to a default function */
-	    AOUT_Relocate((unsigned long *)(crel->file->text
-					    + crel->rel->r_address),
-			  (unsigned long)LoaderDefaultFunc,
-			  crel->rel->r_pcrel);
-	}
 	symnum = crel->rel->r_symbolnum;
 	name = AOUTGetSymbolName(crel->file, crel->file->symtab + symnum);
-	flag = _LoaderHandleUnresolved(name,
-				       _LoaderHandleToName(crel->file->
-							   handle));
-	xf86loaderfree(name);
+	flag = _LoaderHandleUnresolved(name, crel->file->handle);
 	if (flag)
 	    fatalsym = 1;
-	crel = crel->next;
     }
     return fatalsym;
 }
@@ -790,16 +862,16 @@ AOUTUnloadModule(void *modptr)
     AOUTModulePtr aoutfile = (AOUTModulePtr) modptr;
     AOUTRelocPtr relptr, *prevptr;
 
-#ifdef AOUTDEBUG
-    AOUTDEBUG("AOUTUnLoadModule(0x%p)\n", modptr);
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "AOUTUnLoadModule(0x%p)\n", modptr);
 #endif
 
-/*
- * Delete any unresolved relocations
- */
+    /*
+     * Delete any unresolved relocations
+     */
 
-    relptr = _LoaderGetRelocations(aoutfile->funcs)->aout_reloc;
-    prevptr = &(_LoaderGetRelocations(aoutfile->funcs)->aout_reloc);
+    relptr = *_LoaderGetRelocations(aoutfile->desc);
+    prevptr = (AOUTRelocPtr *)_LoaderGetRelocations(aoutfile->desc);
 
     while (relptr) {
 	if (relptr->file == aoutfile) {
@@ -859,4 +931,179 @@ AOUTAddressToSection(void *modptr, unsigned long address)
     }
 
     return NULL;
+}
+
+const char *
+AOUTFindRelocName(LoaderDescPtr desc, int handle, unsigned long addr)
+{
+    AOUTRelocPtr p;
+    long diff;
+
+    for (p = *_LoaderGetRelocations(desc); p;) {
+	/* If handle is valid, only look for symbols for that module. */
+	if (handle >= 0 && p->file->handle != handle) {
+	    p = p->next;
+	    continue;
+	}
+	diff = addr - ((unsigned long)p->file->text + p->rel->r_address);
+	if (diff < 8 && diff > -8) {
+	    return AOUTGetSymbolName(p->file,
+				     p->file->symtab + p->rel->r_symbolnum);
+	}
+	p = p->next;
+    }
+    return NULL;
+}
+
+const char *
+AOUTAddressToSymbol(void *modptr, unsigned long addr, unsigned long *symaddr,
+		    const char **filename)
+{
+    AOUTModulePtr aoutfile;
+    AOUTHDR *header;
+    AOUT_nlist *syms, *s;
+    int i, numsyms, soff;
+    long bestDiff = MAXINT, diff;
+    const char *best = NULL;
+    unsigned long saddr, bestAddr = 0;
+
+    if (!modptr)
+	return NULL;
+    else
+	aoutfile = (AOUTModulePtr)modptr;
+
+    header = aoutfile->header;
+    syms = aoutfile->symtab;
+    numsyms = header->a_syms / sizeof(AOUT_nlist);
+    for (i = 0; i < numsyms; i++) {
+	s = syms + i;
+	soff = s->n_un.n_strx;
+	if (soff == 0 || (s->n_type & AOUT_STAB))
+	    continue;
+	switch (s->n_type & AOUT_TYPE) {
+	case AOUT_TEXT:
+	case AOUT_DATA:
+	case AOUT_BSS:
+	    saddr = s->n_value;
+	    if (aoutfile->text != 0 || aoutfile->data != 0) {
+		switch (s->n_type & AOUT_TYPE) {
+		case AOUT_TEXT:
+		    saddr += (unsigned long)aoutfile->text;
+		    break;
+		case AOUT_DATA:
+		    saddr += ((unsigned long)aoutfile->data - header->a_text);
+		    break;
+		case AOUT_BSS:
+		    saddr += ((unsigned long)aoutfile->bss -
+			      (header->a_data + header->a_text));
+		    break;
+		}
+	    }
+	    break;
+	default:
+	    saddr = 0;
+	    break;
+	}
+
+	if (!saddr)
+	    continue;
+
+	diff = addr - saddr;
+	if (diff >= 0) {
+	    if ((best && diff < bestDiff) || !best) {
+		best = AOUTGetSymbolName(aoutfile, s);
+		bestDiff = diff;
+		bestAddr = saddr;
+	    }
+	}
+    }
+    *filename = NULL;
+    if (best && bestDiff < 0x10000) {
+	*symaddr = bestAddr;
+	return best;
+    } else {
+	return NULL;
+    }
+}
+
+#if EXESYMDEBUG
+static void
+ShowExeSyms(AOUTModulePtr aoutfile)
+{
+    AOUTHDR *header;
+    AOUT_nlist *syms, *s;
+    int i, numsyms;
+    unsigned long saddr;
+
+    header = aoutfile->header;
+    syms = aoutfile->symtab;
+    numsyms = header->a_syms / sizeof(AOUT_nlist);
+
+    LoaderDebugMsg(LOADER_DEBUG_SHOW_EXE_SYMS,
+		   "ShowExeSyms: numsyms: %d\n", numsyms);
+
+    for (i = 0; i < numsyms; i++) {
+	s = syms +  i;
+	saddr = s->n_value;
+	if ((s->n_type & AOUT_ABS) == 0) {
+	    switch (s->n_type & AOUT_TYPE) {
+	    case AOUT_TEXT:
+		saddr += ((unsigned long)aoutfile->text - header->a_text);
+		break;
+	    case AOUT_DATA:
+		saddr += ((unsigned long)aoutfile->data - header->a_data);
+		break;
+	    case AOUT_BSS:
+		saddr += ((unsigned long)aoutfile->bss - header->a_bss);
+		break;
+	    }
+	}
+	LoaderDebugMsg(LOADER_DEBUG_SHOW_EXE_SYMS,
+		       "ShowExeSyms: value=0x%lx\tsaddr=0x%lx\tTYPE=%x\t%s\n",
+		       (unsigned long)s->n_value, saddr, s->n_type,
+		       AOUTGetSymbolName(aoutfile, s));
+
+    }
+}
+#endif
+
+void *
+AOUTReadExecutableSyms(int aoutfd)
+{
+    AOUTModulePtr aoutfile;
+    AOUTHDR *header;
+  
+    aoutfile = xf86loadercalloc(1, sizeof(*aoutfile));
+    if (!aoutfile) {
+	ErrorF("Cannot allocate space for the main executable symbol table\n");
+	return NULL;
+    }
+
+    aoutfile->fd = aoutfd;
+
+    /* Get the header. */
+    aoutfile->header = (AOUTHDR *)_LoaderFileToMem(aoutfd, 0,
+						   sizeof(AOUTHDR), "header");
+    header = aoutfile->header;
+
+    /* Get the symbol table. */
+    aoutfile->symtab = (AOUT_nlist *)_LoaderFileToMem(aoutfd,
+						      AOUT_SYMOFF(header),
+						      header->a_syms,
+						      "symbols");
+    aoutfile->text = 0;
+    aoutfile->data = 0;
+    aoutfile->bss = 0;
+
+    /* Get the string table. */
+    _LoaderFileRead(aoutfd, AOUT_STROFF(header), &(aoutfile->strsize),
+		    sizeof(int));
+    if (aoutfile->strsize != 0)
+	aoutfile->strings = _LoaderFileToMem(aoutfd, AOUT_STROFF(header),
+					     aoutfile->strsize, "strings");
+
+#if EXESYMDEBUG
+    ShowExeSyms(aoutfile);
+#endif
+    return aoutfile;
 }

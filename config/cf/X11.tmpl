@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.289tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.290 2006/02/19 15:51:12 tsi Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -875,6 +875,9 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef UseMemLeak
 #define UseMemLeak		NO
+#endif
+#ifndef UseStackTrace
+#define UseStackTrace		NO
 #endif
 #ifndef SpecialMalloc
 #define SpecialMalloc		NO

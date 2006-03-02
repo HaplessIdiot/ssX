@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.90 2005/08/28 17:47:59 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.91 2006/03/01 04:08:26 dawes Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -59,6 +59,10 @@ FBDEVHWDIR = fbdevhw
 
 #if XF86XAA
 XAADIR = xaa
+#endif
+
+#if defined(BuildTestmod) && BuildTestmod
+TESTMODDIR = testmod
 #endif
 
 #if XF1Bpp || XF4Bpp
@@ -135,7 +139,7 @@ SUBDIRS = os-support common $(I2CDIR) $(XAADIR) $(XF1BPPDIR) $(XF4BPPDIR) \
 	  dummylib drivers $(LOADERDIR) $(VGAHWDIR) $(FBDEVHWDIR) \
 	  $(RAMDACDIR) $(RACDIR) $(DDCDIR) $(INPUTDIR) $(INT10DIR) $(VBEDIR) \
 	  parser scanpci doc $(XF86CFGDIRS) etc $(DRIVERSDK) \
-	  $(XF8_32WIDDIR) getconfig
+	  $(XF8_32WIDDIR) $(TESTMODDIR) getconfig
 
 #if !defined(OS2Architecture) && !defined(cygwinArchitecture)
 XF86CONFIG = XF86Config
