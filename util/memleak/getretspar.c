@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/util/memleak/getretspar.c,v 1.3 2006/01/09 15:01:57 dawes Exp $ */
 /*
  *
 Copyright 1992, 1998  The Open Group
@@ -28,39 +28,48 @@ in this Software without prior written authorization from The Open Group.
 
 /* Trace up the stack and build a call history -- SPARC specific code */
 
+#include "getstack.h"
+
 /* hack -- flush out the register windows by recursing */
 
 static void
-flushWindows (depth)
+flushWindows(int depth)
 {
     if (depth == 0)
 	return;
-    flushWindows (depth-1);
+    flushWindows(depth - 1);
 }
 
-getStackTrace (results, max)
-    unsigned long   *results;
-    int		    max;
-{
-    unsigned long   *sp, *getStackPointer (), *getFramePointer();
-    unsigned long   *ra, mainCall;
-    extern int	    main ();
+#ifndef __GNUC__
+extern unsigned long *getStackPointer(void);
+#endif
+extern int main(int, char **);
 
-    flushWindows (32);
-    sp = getFramePointer ();
-    while (max) 
-    {
+void
+getStackTrace(unsigned long *results, int max)
+{
+    unsigned long *sp;
+    unsigned long *ra, mainCall;
+
+    flushWindows(32);
+#ifdef __GNUC__
+    __asm__ volatile ("mov %%sp, %0" : "=r" (sp));
+#else
+    sp = getStackPointer();
+#endif
+
+    while (max) {
 	/* sparc stack traces are easy -- chain up the saved FP/SP values */
-	ra = (unsigned long *) sp[15];
-	sp = (unsigned long *) sp[14];
+	ra = (unsigned long *)sp[15];
+	sp = (unsigned long *)sp[14];
 	/* stop when we get the call to main */
-	mainCall = ((((unsigned long) main) - ((unsigned long) ra)) >> 2) | 0x40000000;
-	if (ra[0] == mainCall)
-	{
+	mainCall = ((((unsigned long)main) -
+		     ((unsigned long)ra)) >> 2) | 0x40000000;
+	if (ra[0] == mainCall) {
 	    *results++ = 0;
 	    break;
 	}
-	*results++ = (unsigned long) ra;
+	*results++ = (unsigned long)ra;
 	max--;
     }
 }

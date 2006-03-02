@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.106 2005/02/26 01:07:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.107 2005/03/27 20:04:36 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -1208,13 +1208,6 @@ typedef struct {
 #define OVERLAY_8_24_DUALFB	0x00000002
 #define OVERLAY_8_16_DUALFB	0x00000004
 #define OVERLAY_8_32_PLANAR	0x00000008
-
-#if 0
-#define LD_RESOLV_IFDONE		0	/* only check if no more 
-						   delays pending */
-#define LD_RESOLV_NOW			1	/* finish one delay step */
-#define LD_RESOLV_FORCE			2	/* force checking... */
-#endif
 
 /* Values of xf86Info.mouseFlags */
 #define MF_CLEAR_DTR       1

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.169 2005/10/14 15:16:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.170 2006/02/26 02:41:01 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -79,6 +79,10 @@
 #include <X11/Xproto.h>
 #include "misc.h"
 
+#ifdef XFree86LOADER
+#include "loaderProcs.h"
+#endif
+
 #include "compiler.h"
 
 #include "xf86.h"
@@ -106,6 +110,10 @@
 #ifdef XF86BIGFONT
 #define _XF86BIGFONT_SERVER_
 #include <X11/extensions/xf86bigfont.h>
+#endif
+
+#ifdef STACKTRACE
+#include "getstack.h"
 #endif
 
 #ifdef XKB
@@ -1298,12 +1306,36 @@ xf86SigHandler(int signo)
 #endif
 #if defined(XFree86LOADER)
   if (xf86Initialising)
-      LoaderCheckUnresolved(LD_RESOLV_IFDONE);
+      LoaderCheckUnresolved(0);
   ErrorF("\n"
 	 "   *** If unresolved symbols were reported above, they might not\n"
-	 "   *** be the reason for the server aborting.\n");
+	 "   *** be the reason for the server aborting.\n\n");
 #endif
-  FatalError("Caught signal %d.  Server aborting\n", signo);
+  ErrorF("Caught signal %d.\n", signo);
+
+#ifdef STACKTRACE
+#ifndef STACK_LEVELS
+#define STACK_LEVELS 16
+#endif
+  {
+    unsigned long returnStack[STACK_LEVELS];
+    int i;
+
+    getStackTrace(returnStack, STACK_LEVELS);
+    ErrorF("Stack trace:\n");
+    for (i = 0; i < STACK_LEVELS && returnStack[i]; i++) {
+      ErrorF("%2d: 0x%lx", i, returnStack[i]);
+#ifdef XFree86LOADER
+      ErrorF(": ");
+      LoaderPrintSymbol(returnStack[i]);
+#else
+      ErrorF("\n");
+#endif
+    }
+  }
+#endif
+  
+  FatalError("Server aborting\n");
 }
 
 #ifdef MEMDEBUG

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.c,v 1.18tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.c,v 1.19 2006/01/05 18:55:30 tsi Exp $ */
 /*
  * Copyright 1997 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -53,6 +53,7 @@ const char *R128Symbols[] =
     "R128FreeScreen",
     "R128ValidMode",
     "R128Options",
+    "R128Module",
     NULL
 };
 
@@ -68,6 +69,7 @@ const char *RADEONSymbols[] =
     "RADEONValidMode",
     "RADEONOptions",
     "RADEONHandleMessage",
+    "RADEONModule",
     NULL
 };
 
@@ -106,7 +108,7 @@ ATISetup
         Inited = TRUE;
         xf86AddDriver(&ATI, Module, 0);
 
-        xf86LoaderRefSymLists(
+        xf86LoaderModRefSymLists(Module,
             ATISymbols,
             R128Symbols,
             RADEONSymbols,
@@ -121,6 +123,26 @@ XF86ModuleData atiModuleData =
 {
     &ATIVersionRec,
     ATISetup,
+    NULL
+};
+
+const char *atiExportedSymbols[] = {
+    "ATI",
+    "ATIAdapterNames",
+    "ATIBusNames",
+    "ATIChipID",
+    "ATIChipNames",
+    "ATIChipsetNames",
+    "ATIFoundryNames",
+    "ATIMapApertures",
+    "ATIMemoryTypeNames_264xT",
+    "ATIMemoryTypeNames_88800CX",
+    "ATIMemoryTypeNames_Mach",
+    "ATISetVGAIOBase",
+    "ATIUnmapApertures",
+    "R128Chipsets",
+    "RADEONChipsets",
+    "gRADEONEntityIndex",
     NULL
 };
 

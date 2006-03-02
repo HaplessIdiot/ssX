@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/extsym.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/extsym.c,v 1.11 2006/02/19 15:51:27 tsi Exp $ */
 
 /*
  * Copyright 1999-2006 by The XFree86 Project, Inc.
@@ -104,5 +104,5 @@ LOOKUP extLookupTab[] = {
     SYMFUNC(xf86DbeRegisterValidateBuffer)
 #endif
 
-    {0, 0}
+    LOOKUP_TERMINATOR
 };

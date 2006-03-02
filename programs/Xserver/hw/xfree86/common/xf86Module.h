@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.43tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.44 2006/02/19 15:51:26 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
@@ -71,6 +71,7 @@
 #define NULL ((void *)0)
 #endif
 
+/* These are redundant, and kept for compatibility purposes only. */
 typedef enum {
     LD_RESOLV_IFDONE		= 0,	/* only check if no more
 					   delays pending */
@@ -227,6 +228,10 @@ void LoaderRefSymLists(const char **, ...);
 void LoaderRefSymbols(const char *, ...);
 void LoaderReqSymLists(const char **, ...);
 void LoaderReqSymbols(const char *, ...);
+void LoaderModRefSymLists(pointer, const char **, ...);
+void LoaderModRefSymbols(pointer, const char *, ...);
+void LoaderModReqSymLists(pointer, const char **, ...);
+void LoaderModReqSymbols(pointer, const char *, ...);
 int LoaderCheckUnresolved(int);
 void LoaderGetOS(const char **name, int *major, int *minor, int *teeny);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.152tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.153 2005/10/14 15:16:33 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -2544,7 +2544,7 @@ xf86LoaderReqSymLists(const char **list0, ...)
     va_list ap;
 
     va_start(ap, list0);
-    LoaderVReqSymLists(list0, ap);
+    LoaderVReqSymLists(NULL, list0, ap);
     va_end(ap);
 #endif
 }
@@ -2556,7 +2556,7 @@ xf86LoaderReqSymbols(const char *sym0, ...)
     va_list ap;
 
     va_start(ap, sym0);
-    LoaderVReqSymbols(sym0, ap);
+    LoaderVReqSymbols(NULL, sym0, ap);
     va_end(ap);
 #endif
 }
@@ -2568,7 +2568,7 @@ xf86LoaderRefSymLists(const char **list0, ...)
     va_list ap;
 
     va_start(ap, list0);
-    LoaderVRefSymLists(list0, ap);
+    LoaderVRefSymLists(NULL, list0, ap);
     va_end(ap);
 #endif
 }
@@ -2580,7 +2580,55 @@ xf86LoaderRefSymbols(const char *sym0, ...)
     va_list ap;
 
     va_start(ap, sym0);
-    LoaderVRefSymbols(sym0, ap);
+    LoaderVRefSymbols(NULL, sym0, ap);
+    va_end(ap);
+#endif
+}
+
+void
+xf86LoaderModReqSymLists(pointer module, const char **list0, ...)
+{
+#ifdef XFree86LOADER
+    va_list ap;
+
+    va_start(ap, list0);
+    LoaderVReqSymLists(module, list0, ap);
+    va_end(ap);
+#endif
+}
+
+void
+xf86LoaderModReqSymbols(pointer module, const char *sym0, ...)
+{
+#ifdef XFree86LOADER
+    va_list ap;
+
+    va_start(ap, sym0);
+    LoaderVReqSymbols(module, sym0, ap);
+    va_end(ap);
+#endif
+}
+
+void
+xf86LoaderModRefSymLists(pointer module, const char **list0, ...)
+{
+#ifdef XFree86LOADER
+    va_list ap;
+
+    va_start(ap, list0);
+    LoaderVRefSymLists(module, list0, ap);
+    va_end(ap);
+#endif
+}
+
+void
+xf86LoaderModRefSymbols(pointer module, const char *sym0, ...)
+{
+#ifdef XFree86LOADER
+    va_list ap;
+
+    va_start(ap, sym0);
+    LoaderVRefSymbols(module, sym0, ap);
     va_end(ap);
 #endif
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.231 2006/02/17 18:17:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.232 2006/02/28 22:32:38 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -160,6 +160,15 @@
 extern int xtest_command_key;
 #endif /* XTESTEXT1 */
 
+#if !defined(LOADERTEST) || !defined(XFree86LOADER)
+#undef LOADERTEST
+#define LOADERTEST 0
+#endif
+
+#if LOADERTEST
+#include "loadertest.h"
+static Bool doLoaderTest = FALSE;
+#endif
 
 /* forward declarations */
 
@@ -327,6 +336,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
   Pix24Flags		 screenpix24, pix24;
   MessageType		 pix24From = X_DEFAULT;
   Bool			 pix24Fail = FALSE;
+  Bool			 haveScreens = FALSE;
   Bool			 autoretry = FALSE;
   int			 found = 0;
 
@@ -530,7 +540,12 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 	LoaderFreeDirList(list);
     }
 #endif
-	
+
+#if LOADERTEST
+    if (doLoaderTest)
+	LoaderTest();
+#endif
+
     /* Load mandatory probe and base modules. */
     if (probeModules) {
 	if (!xf86LoadModules(probeModules, NULL))
@@ -813,9 +828,16 @@ retry:
     for (i = 0; i < xf86NumScreens; i++) {
 	xf86EnableAccess(xf86Screens[i]);
 	if (xf86Screens[i]->PreInit &&
-	    xf86Screens[i]->PreInit(xf86Screens[i], 0))
+	    xf86Screens[i]->PreInit(xf86Screens[i], 0)) {
 	    xf86Screens[i]->configured = TRUE;
+	    haveScreens = TRUE;
+	}
     }
+
+#ifdef XFree86LOADER
+    if (!haveScreens)
+	LoaderCheckUnresolved(0);
+#endif
 
     for (i = 0; i < xf86NumScreens; i++)
 	if (!xf86Screens[i]->configured)
@@ -1161,7 +1183,7 @@ retry:
   }
 
 #ifdef XFree86LOADER
-    if ((serverGeneration == 1) && LoaderCheckUnresolved(LD_RESOLV_IFDONE)) {
+    if ((serverGeneration == 1) && LoaderCheckUnresolved(0)) {
 	/* For now, just a warning */
 	xf86Msg(X_WARNING, "Some symbols could not be resolved!\n");
     }
@@ -1434,8 +1456,9 @@ ddxGiveUp()
     xf86CloseLog();
 
     /* If an unexpected signal was caught, dump a core for debugging */
-    if (xf86Info.caughtSignal)
+    if (xf86Info.caughtSignal) {
 	abort();
+    }
 }
 
 
@@ -1668,6 +1691,22 @@ ddxProcessArgument(int argc, char **argv, int i)
 #endif
     return 1;
   }
+#ifdef XFree86LOADER
+#if LOADERTEST
+  if (!strcmp(argv[i],"-loadertest"))
+  {
+    doLoaderTest = TRUE;
+    return 1;
+  }
+#endif
+  if (!strcmp(argv[i],"-loaderdebug"))
+  {
+    if (++i >= argc)
+      return 0;
+    LoaderSetDebug(atoi(argv[i]));
+    return 2;
+  }
+#endif
   if (!strcmp(argv[i],"-verbose"))
   {
     if (++i < argc && argv[i])

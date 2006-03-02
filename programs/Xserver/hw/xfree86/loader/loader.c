@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.74 2004/12/03 02:18:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.75 2005/06/29 01:14:11 dawes Exp $ */
 
 /*
  * Copyright 1995-1998 by Metro Link, Inc.
@@ -67,6 +67,51 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/*
+ * Copyright 2003-2006 by David H. Dawes.
+ * Copyright 2003-2006 by X-Oz Technologies.
+ * All rights reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ * 
+ *  1. Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions, and the following disclaimer.
+ *
+ *  2. Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ * 
+ *  3. The end-user documentation included with the redistribution,
+ *     if any, must include the following acknowledgment: "This product
+ *     includes software developed by X-Oz Technologies
+ *     (http://www.x-oz.com/)."  Alternately, this acknowledgment may
+ *     appear in the software itself, if and wherever such third-party
+ *     acknowledgments normally appear.
+ *
+ *  4. Except as contained in this notice, the name of X-Oz
+ *     Technologies shall not be used in advertising or otherwise to
+ *     promote the sale, use or other dealings in this Software without
+ *     prior written authorization from X-Oz Technologies.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL X-OZ TECHNOLOGIES OR ITS CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 
+ */
 
 #include <errno.h>
 #include <stdio.h>
@@ -79,39 +124,93 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
+#if defined(linux) || defined(__FreeBSD__) || defined(__NetBSD__) || \
+    defined(__OpenBSD__) || (defined(sun) && defined(SVR4))
+#define HAVE_DLADDR
+#endif
 #if defined(linux) && \
     (defined(__alpha__) || defined(__powerpc__) || defined(__ia64__) \
     || defined(__amd64__) || defined(__x86_64__))
 #include <malloc.h>
 #endif
 #include <stdarg.h>
+#if defined(sun) && defined(SVR4)
+#include <procfs.h>
+#endif
 #include "ar.h"
 #include "elf.h"
+#ifdef COFF_SUPPORT
 #include "coff.h"
-
+#endif
 #include "os.h"
 #include "sym.h"
+
+#ifndef LOADERDEBUG
+#define LOADERDEBUG 0
+#endif
+#define LOADER_DEBUG_DESCRIPTIONS
 #include "loader.h"
+#include "aoutloader.h"
+#ifdef COFF_SUPPORT
+#include "coffloader.h"
+#endif
+#include "elfloader.h"
+#ifdef DLOPEN_SUPPORT
+#include "dlloader.h"
+#endif
+
 #include "loaderProcs.h"
 #include "xf86.h"
 #include "xf86Priv.h"
 
 #include "compiler.h"
 
+#ifdef STACKTRACE
+#include "getstack.h"
+#endif
+
+#ifndef LOADER_UNRESOLVED_IS_FATAL
+#define LOADER_UNRESOLVED_IS_FATAL 0
+#endif
+
+/*
+ * procfs feature defines.  procfs is used, where available, to locate the
+ * main executable file so that the loader can open it and examine its symbols.
+ *
+ * Features are:
+ *
+ * HAVE_PROCFS			- /proc is available.
+ * PROCFS_EXE_SYMLINK		- /proc provides a symlink to the executable.
+ * PROCFS_EXE_NAME		- The node under /proc/<pid>/ that points to
+ *				  the executable.
+ * HAVE_PROCFS_PSINFO		- /proc/<pid>/psinfo can be used to get
+ *				  the executable name.
+ * PROCFS_PSINFO_FULLPATH	- The full executable pathname can be found
+ *				  via /proc/<pid>/psinfo.
+ */
+
+#if defined(__linux__)
+#define HAVE_PROCFS
+#define PROCFS_EXE_SYMLINK
+#define PROCFS_EXE_NAME "exe"
+#elif defined(__FreeBSD__)
+#define HAVE_PROCFS
+#define PROCFS_EXE_SYMLINK
+#define PROCFS_EXE_NAME "file"
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
+#define HAVE_PROCFS
+#define PROCFS_EXE_NAME "file"
+#elif defined(sun) && defined(SVR4)
+#define HAVE_PROCFS
+#define PROCFS_EXE_NAME "object/a.out"
+#define HAVE_PROCFS_PSINFO
+#endif
+
 extern LOOKUP miLookupTab[];
 extern LOOKUP xfree86LookupTab[];
 extern LOOKUP dixLookupTab[];
 extern LOOKUP fontLookupTab[];
 extern LOOKUP extLookupTab[];
-
-/*
-#define DEBUG
-#define DEBUGAR
-#define DEBUGLIST
-#define DEBUGMEM
-*/
-
-int check_unresolved_sema = 0;
 
 #if defined(Lynx) && defined(sun)
 /* Cross build machine doesn;t have strerror() */
@@ -240,19 +339,23 @@ char DebuggerPresent = 0;
 LDRCommonPtr ldrCommons;
 int nCommons;
 
-typedef struct {
+typedef struct _symlist symlist, *symlistPtr;
+
+struct _symlist {
     int num;
+    const char *modname;
     const char **list;
-} symlist;
+    symlistPtr next;
+};
 
 /*
  * List of symbols that may be referenced, and which are allowed to be
  * unresolved providing that they don't appear on the "reqired" list.
  */
-static symlist refList = { 0, NULL };
+static symlist refList = { 0, NULL, NULL, NULL };
 
 /* List of symbols that must not be unresolved */
-static symlist reqList = { 0, NULL };
+static symlist reqList = { 0, NULL, NULL, NULL };
 
 static int fatalReqSym = 0;
 
@@ -260,109 +363,201 @@ static int fatalReqSym = 0;
 static int _GetModuleType(int, long);
 static loaderPtr _LoaderListPush(void);
 static loaderPtr _LoaderListPop(int);
- /*ARGSUSED*/ static void
-ARCHIVEResolveSymbols(void *unused)
-{
-}
- /*ARGSUSED*/ static int
-ARCHIVECheckForUnresolved(void *v)
-{
-    return 0;
-}
- /*ARGSUSED*/ static char *
-ARCHIVEAddressToSection(void *modptr, unsigned long address)
+static void ReadMainExe(void);
+static const char *GetExePath(const char **);
+
+static char *exePath = NULL;
+static char *exeName = NULL;
+
+#ifndef COFF_SUPPORT
+static void *
+DUMMYLoadModule(loaderPtr modrec, int fd, LOOKUP **ppLookup)
 {
     return NULL;
 }
- /*ARGSUSED*/ static void
-ARCHIVEUnload(void *unused2)
+#endif
+
+static void
+DUMMYResolveSymbols(LoaderDescPtr desc, int handle)
 {
 }
+static int
+DUMMYCheckForUnresolved(LoaderDescPtr desc)
+{
+    return 0;
+}
+static char *
+DUMMYAddressToSection(void *modptr, unsigned long address)
+{
+    return NULL;
+}
+static void
+DUMMYUnload(void *v)
+{
+}
+
+static const char *
+DUMMYFindRelocName(LoaderDescPtr desc, int handle, unsigned long addr)
+{
+    return NULL;
+}
+
+static const char *
+DUMMYAddressToSymbol(void *modptr, unsigned long addr, unsigned long *symaddr,
+		     const char **filename)
+{
+    return NULL;
+}
+
+static void *
+DUMMYReadExecutableSyms(int exefd)
+{
+    return NULL;
+}
+
+static void *ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP ** ppLookup);
 
 /*
  * Array containing entry points for different formats.
  */
-
-static loader_funcs funcs[] = {
-    /* LD_ARCHIVE */
-    {ARCHIVELoadModule,
-     ARCHIVEResolveSymbols,
-     ARCHIVECheckForUnresolved,
-     ARCHIVEAddressToSection,
-     ARCHIVEUnload, {0, 0, 0, 0, 0}},
-    /* LD_ELFOBJECT */
-    {ELFLoadModule,
-     ELFResolveSymbols,
-     ELFCheckForUnresolved,
-     ELFAddressToSection,
-     ELFUnloadModule, {0, 0, 0, 0, 0}},
-    /* LD_COFFOBJECT */
-    {COFFLoadModule,
-     COFFResolveSymbols,
-     COFFCheckForUnresolved,
-     COFFAddressToSection,
-     COFFUnloadModule, {0, 0, 0, 0, 0}},
-    /* LD_XCOFFOBJECT */
-    {COFFLoadModule,
-     COFFResolveSymbols,
-     COFFCheckForUnresolved,
-     COFFAddressToSection,
-     COFFUnloadModule, {0, 0, 0, 0, 0}},
-    /* LD_AOUTOBJECT */
-    {AOUTLoadModule,
-     AOUTResolveSymbols,
-     AOUTCheckForUnresolved,
-     AOUTAddressToSection,
-     AOUTUnloadModule, {0, 0, 0, 0, 0}},
-    /* LD_AOUTDLOBJECT */
-#ifdef DLOPEN_SUPPORT
-    {DLLoadModule,
-     DLResolveSymbols,
-     DLCheckForUnresolved,
-     ARCHIVEAddressToSection,
-     DLUnloadModule, {0, 0, 0, 0, 0}},
-#else
-    {AOUTLoadModule,
-     AOUTResolveSymbols,
-     AOUTCheckForUnresolved,
-     AOUTAddressToSection,
-     AOUTUnloadModule, {0, 0, 0, 0, 0}},
+#ifndef COFF_SUPPORT
+static LoaderDesc DUMMYdesc = {
+     DUMMYLoadModule,
+     DUMMYResolveSymbols,
+     DUMMYCheckForUnresolved,
+     DUMMYAddressToSection,
+     DUMMYUnload,
+     DUMMYFindRelocName,
+     DUMMYAddressToSymbol,
+     DUMMYReadExecutableSyms,
+     NULL
+};
 #endif
-    /* LD_ELFDLOBJECT */
+
+static LoaderDesc ARCHIVEdesc = {
+    ARCHIVELoadModule,
+    DUMMYResolveSymbols,
+    DUMMYCheckForUnresolved,
+    DUMMYAddressToSection,
+    DUMMYUnload,
+    DUMMYFindRelocName,
+    DUMMYAddressToSymbol,
+    DUMMYReadExecutableSyms,
+    NULL
+};
+
+static LoaderDesc ELFdesc = {
+    ELFLoadModule,
+    ELFResolveSymbols,
+    ELFCheckForUnresolved,
+    ELFAddressToSection,
+    ELFUnloadModule,
+    ELFFindRelocName,
+    ELFAddressToSymbol,
+    ELFReadExecutableSyms,
+    NULL
+};
+
+#ifdef COFF_SUPPORT
+static LoaderDesc COFFdesc = {
+    COFFLoadModule,
+    COFFResolveSymbols,
+    COFFCheckForUnresolved,
+    COFFAddressToSection,
+    COFFUnloadModule,
+    COFFFindRelocName,
+    COFFAddressToSymbol,
+    COFFReadExecutableSyms,
+    NULL
+};
+#endif
+
+static LoaderDesc AOUTdesc = {
+    AOUTLoadModule,
+    AOUTResolveSymbols,
+    AOUTCheckForUnresolved,
+    AOUTAddressToSection,
+    AOUTUnloadModule,
+    AOUTFindRelocName,
+    AOUTAddressToSymbol,
+    AOUTReadExecutableSyms,
+    NULL
+};
+
 #ifdef DLOPEN_SUPPORT
-    {DLLoadModule,
-     DLResolveSymbols,
-     DLCheckForUnresolved,
-     ARCHIVEAddressToSection,
-     DLUnloadModule, {0, 0, 0, 0, 0}},
+static LoaderDesc DLdesc = {
+    DLLoadModule,
+    DUMMYResolveSymbols,
+    DUMMYCheckForUnresolved,
+    DUMMYAddressToSection,
+    DLUnloadModule,
+    DUMMYFindRelocName,
+    DLAddressToSymbol,
+    DUMMYReadExecutableSyms,
+    NULL
+};
+#endif
+
+static LoaderDescPtr ldesc[] = {
+    &ARCHIVEdesc,		/* LD_ARCHIVE */
+    &ELFdesc,			/* LD_ELFOBJECT */
+#ifdef COFF_SUPPORT
+    &COFFdesc,			/* LD_COFFOBJECT */
+    &COFFdesc,			/* LD_XCOFFOBJECT */
 #else
-    {ELFLoadModule,
-     ELFResolveSymbols,
-     ELFCheckForUnresolved,
-     ELFAddressToSection,
-     ELFUnloadModule, {0, 0, 0, 0, 0}},
+    &DUMMYdesc,			/* LD_COFFOBJECT */
+    &DUMMYdesc,			/* LD_XCOFFOBJECT */
+#endif
+    &AOUTdesc,			/* LD_AOUTOBJECT */
+#ifdef DLOPEN_SUPPORT
+    &DLdesc,			/* LD_AOUTDLOBJECT */
+    &DLdesc,			/* LD_ELFDLOBJECT */
+#else
+    &AOUTdesc,			/* LD_AOUTDLOBJECT */
+    &ELFdesc,			/* LD_ELFDLOBJECT */
 #endif
 };
 
-int numloaders = sizeof(funcs) / sizeof(loader_funcs);
+int numloaders = sizeof(ldesc) / sizeof(ldesc[0]);
+
+const char *loaderNames[] = {
+    "archive",
+    "elf",
+    "coff",
+    "xcoff",
+    "a.out",
+    "a.out dl",
+    "elf dl"
+};
 
 void
 LoaderInit(void)
 {
     const char *osname = NULL;
+#if LOADERDEBUG
+    int i;
+#endif
 
-    LoaderAddSymbols(-1, -1, miLookupTab);
-    LoaderAddSymbols(-1, -1, xfree86LookupTab);
-    LoaderAddSymbols(-1, -1, dixLookupTab);
-    LoaderAddSymbols(-1, -1, fontLookupTab);
-    LoaderAddSymbols(-1, -1, extLookupTab);
+    ReadMainExe();
+    LoaderAddSymbols(-1, -1, miLookupTab,
+		     LOOKUP_SCOPE_GLOBAL | LOOKUP_SCOPE_BUILTIN, NULL);
+    LoaderAddSymbols(-1, -1, xfree86LookupTab,
+		     LOOKUP_SCOPE_GLOBAL | LOOKUP_SCOPE_BUILTIN, NULL);
+    LoaderAddSymbols(-1, -1, dixLookupTab,
+		     LOOKUP_SCOPE_GLOBAL | LOOKUP_SCOPE_BUILTIN, NULL);
+    LoaderAddSymbols(-1, -1, fontLookupTab,
+		     LOOKUP_SCOPE_GLOBAL | LOOKUP_SCOPE_BUILTIN, NULL);
+    LoaderAddSymbols(-1, -1, extLookupTab,
+		     LOOKUP_SCOPE_GLOBAL | LOOKUP_SCOPE_BUILTIN, NULL);
 #if defined(__sparc__) && !defined(__FreeBSD__)
 #ifdef linux
     if (sparcUseHWMulDiv())
-	LoaderAddSymbols(-1, -1, SparcV89LookupTab);
+	LoaderAddSymbols(-1, -1, SparcV89LookupTab,
+			 LOOKUP_SCOPE_GLOBAL | LOOKUP_SCOPE_BUILTIN, NULL);
     else
 #endif
-	LoaderAddSymbols(-1, -1, SparcLookupTab);
+	LoaderAddSymbols(-1, -1, SparcLookupTab,
+			 LOOKUP_SCOPE_GLOBAL | LOOKUP_SCOPE_BUILTIN, NULL);
 #endif
 
     xf86MsgVerb(X_INFO, 2, "Module ABI versions:\n");
@@ -385,6 +580,15 @@ LoaderInit(void)
     LoaderGetOS(&osname, NULL, NULL, NULL);
     if (osname)
 	xf86MsgVerb(X_INFO, 2, "Loader running on %s\n", osname);
+
+#if LOADERDEBUG
+    xf86MsgVerb(X_INFO, 3, "Loader Debug Flags:\n");
+    for (i = 0; debugDesc[i]; i++)
+	xf86MsgVerb(X_INFO, 3, "%6d - %s\n", 1 << i, debugDesc[i]);
+    if (LoaderDebugLevel)
+	xf86MsgVerb(X_INFO, 2, "Loader debug level set to 0x%lx (%ld).\n",
+		    LoaderDebugLevel, LoaderDebugLevel);
+#endif
 
 #if defined(linux) && \
     (defined(__alpha__) || defined(__powerpc__) || defined(__ia64__) \
@@ -414,10 +618,10 @@ _GetModuleType(int fd, long offset)
     if (read(fd, buf, sizeof(buf)) < 0) {
 	return -1;
     }
-#ifdef DEBUG
-    ErrorF("Checking module type %10s\n", buf);
-    ErrorF("Checking module type %x %x %x %x\n", buf[0], buf[1], buf[2],
-	   buf[3]);
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_FILES, "Checking module type %10s\n", buf);
+    LoaderDebugMsg(LOADER_DEBUG_FILES, "Checking module type %x %x %x %x\n",
+		   buf[0], buf[1], buf[2], buf[3]);
 #endif
 
     lseek(fd, offset, SEEK_SET);
@@ -465,6 +669,10 @@ _GetModuleType(int fd, long offset)
 	/* AOUTMAGIC, BSDI */
 	return LD_AOUTOBJECT;
     }
+    if (buf[1] == 0x86 && buf[2] == 0x01 && buf[3] == 0x0b) {
+	/* AOUT BSD/i386 demand paged executable */
+	return LD_AOUTOBJECT;
+    }
     if ((buf[0] == 0xc0 && buf[1] == 0x86) ||	/* big endian form */
 	(buf[3] == 0xc0 && buf[2] == 0x86)) {	/* little endian form */
 	/* i386 shared object */
@@ -499,9 +707,9 @@ _LoaderFileToMem(int fd, unsigned long offset, int size, char *label)
 # define MMAP_FLAGS     (MAP_PRIVATE | MAP_32BIT)
 # endif
 
-# ifdef DEBUGMEM
-    ErrorF("_LoaderFileToMem(%d,%u(%u),%d,%s)", fd, offset, offsetbias, size,
-	   label);
+# if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_MEM, "_LoaderFileToMem(%d,%lx(%u),%d,%s)",
+		   fd, offset, offsetbias, size, label);
 # endif
 # ifdef MmapPageAlign
     pagesize = getpagesize();
@@ -520,6 +728,11 @@ _LoaderFileToMem(int fd, unsigned long offset, int size, char *label)
 # else
     ret = (unsigned long)mmap(0, size, MMAP_PROT, MMAP_FLAGS, fd,
 			      offset + offsetbias);
+#  if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_MEM,
+		   "mmap: fd %d, size %d, offset %lx, offsetbias %u, ret %d\n",
+		   fd, size, offset, offsetbias, ret);
+#  endif
     if (ret == -1)
 	FatalError("mmap() failed: %s\n", strerror(errno));
     return (void *)ret;
@@ -527,14 +740,14 @@ _LoaderFileToMem(int fd, unsigned long offset, int size, char *label)
 #else
     char *ptr;
 
-# ifdef DEBUGMEM
-    ErrorF("_LoaderFileToMem(%d,%u(%u),%d,%s)", fd, offset, offsetbias, size,
-	   label);
+# if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_MEM, "_LoaderFileToMem(%d,%lx(%u),%d,%s)",
+		   fd, offset, offsetbias, size, label);
 # endif
 
     if (size == 0) {
-# ifdef DEBUGMEM
-	ErrorF("=NULL\n", ptr);
+# if LOADERDEBUG
+	LoaderDebugMsg(LOADER_DEBUG_MEM, "=NULL\n");
 # endif
 	return NULL;
     }
@@ -580,8 +793,8 @@ _LoaderFileToMem(int fd, unsigned long offset, int size, char *label)
     }
 # endif
 
-# ifdef DEBUGMEM
-    ErrorF("=%lx\n", ptr);
+# if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_MEM, "=%p\n", ptr);
 # endif
 
     return (void *)ptr;
@@ -599,8 +812,8 @@ _LoaderFreeFileMem(void *addr, int size)
     memType i_addr = (memType) addr;
     unsigned long new_size;
 #endif
-#ifdef DEBUGMEM
-    ErrorF("_LoaderFreeFileMem(%x,%d)\n", addr, size);
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_MEM, "_LoaderFreeFileMem(%p,%d)\n", addr, size);
 #endif
 #ifdef UseMMAP
 # if defined (MmapPageAlign)
@@ -636,7 +849,10 @@ _LoaderFileRead(int fd, unsigned int offset, void *buf, int size)
     return size;
 }
 
-static loaderPtr listHead = (loaderPtr) 0;
+static loaderPtr listHead = NULL;
+static loaderPtr mainExeItem = NULL;
+static int mainExeModType = -1;
+static int mainExeDlType = -1;
 
 static loaderPtr
 _LoaderListPush()
@@ -667,20 +883,15 @@ _LoaderListPop(int handle)
     return 0;
 }
 
-/*
- * _LoaderHandleToName() will return the name of the first module with a
- * given handle. This requires getting the last module on the LIFO with
- * the given handle.
- */
-char *
-_LoaderHandleToName(int handle)
+static loaderPtr
+_LoaderHandleToItem(int handle)
 {
     loaderPtr item = listHead;
     loaderPtr aritem = NULL;
     loaderPtr lastitem = NULL;
 
     if (handle < 0) {
-	return "(built-in)";
+	return NULL;
     }
     while (item) {
 	if (item->handle == handle) {
@@ -693,12 +904,33 @@ _LoaderHandleToName(int handle)
     }
 
     if (aritem)
-	return aritem->name;
+	return aritem;
 
     if (lastitem)
-	return lastitem->name;
+	return lastitem;
 
-    return 0;
+    return NULL;
+}
+
+/*
+ * _LoaderHandleToName() will return the name of the first module with a
+ * given handle. This requires getting the last module on the LIFO with
+ * the given handle.
+ */
+char *
+_LoaderHandleToName(int handle)
+{
+    loaderPtr item;
+
+    if (handle < 0) {
+	return "(built-in)";
+    }
+
+    item = _LoaderHandleToItem(handle);
+    if (item)
+	return item->name;
+    else
+	return NULL;
 }
 
 /*
@@ -709,23 +941,17 @@ _LoaderHandleToName(int handle)
 char *
 _LoaderHandleToCanonicalName(int handle)
 {
-    loaderPtr item = listHead;
-    loaderPtr lastitem = NULL;
+    loaderPtr item;
 
     if (handle < 0) {
 	return "(built-in)";
     }
-    while (item) {
-	if (item->handle == handle) {
-	    lastitem = item;
-	}
-	item = item->next;
-    }
 
-    if (lastitem)
-	return lastitem->cname;
-
-    return NULL;
+    item = _LoaderHandleToItem(handle);
+    if (item)
+	return item->cname;
+    else
+	return NULL;
 }
 
 /*
@@ -763,6 +989,69 @@ _LoaderModuleToName(int module)
 }
 
 /*
+ * Platform-specific method for finding if an address on the stack is a signal
+ * trampoline.
+ */
+
+#if defined(__FreeBSD__) || (defined(__NetBSD__) && !defined(__ELF__))
+/* For FreeBSD 3.0 and later and NetBSD/a.out.  */
+#define SIGTRAMP_START	0xbfbfdf20UL
+#define SIGTRAMP_END	0xbfbfdff0UL
+#endif
+
+static int
+inSigTramp(unsigned long addr)
+{
+#if defined(SIGTRAMP_START) && defined(SIGTRAMP_END)
+    if (addr >= SIGTRAMP_START && addr <= SIGTRAMP_END)
+	return 1;
+#endif
+    return 0;
+}
+
+const char *
+_LoaderAddressToSymbol(const unsigned long address, unsigned long *symaddr,
+		       const char **filename)
+{
+    loaderPtr item = listHead;
+    const char *sym = NULL;
+
+    while (item) {
+	sym = item->desc->AddressToSymbol(item->private, address, symaddr,
+					  filename);
+	if (sym)
+	    return sym;
+	item = item->next;
+    }
+    if (mainExeItem) {
+	sym = mainExeItem->desc->AddressToSymbol(mainExeItem->private,
+						 address, symaddr, filename);
+	if (!*filename)
+	    *filename = GetExePath(NULL);
+	if (sym)
+	    return sym;
+
+	if (mainExeDlType >= 0) {
+	    sym = ldesc[mainExeDlType]->AddressToSymbol(mainExeItem->private,
+						        address, symaddr,
+						        filename);
+	}
+	if (!*filename)
+	    *filename = GetExePath(NULL);
+	if (sym)
+	    return sym;
+    }
+    if (!sym) {
+	/* Check for a signal handler trampoline. */
+	if (inSigTramp(address)) {
+	    *symaddr = 0;
+	    return "<signal handler>";
+	}
+    }
+    return NULL;
+}
+
+/*
  * _LoaderAddressToSection() will return the name of the file & section
  * that contains the given address.
  */
@@ -774,14 +1063,73 @@ _LoaderAddressToSection(const unsigned long address, const char **module,
 
     while (item) {
 	if ((*section =
-	     item->funcs->AddressToSection(item->private, address)) != NULL) {
+	     item->desc->AddressToSection(item->private, address)) != NULL) {
 	    *module = _LoaderModuleToName(item->module);
 	    return 1;
 	}
 	item = item->next;
     }
-
+    if (mainExeItem) {
+	*section = mainExeItem->desc->AddressToSection(mainExeItem->private,
+							address);
+	if (!*section)
+	    *section = "<cannot-find>";
+	*module = GetExePath(NULL);
+	return 1;
+    }
     return 0;
+}
+
+static symlistPtr
+GetSymbolList(symlistPtr list, const char *name, int create)
+{
+    symlistPtr p;
+
+    for (p = list; p; p = p->next) {
+	if (p->modname && strcmp(p->modname, name) == 0)
+	    break;
+    }
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_REQ_REF,
+		"GetSymbolList for %s: list is %p, p is %p\n", name, list, p);
+#endif
+    if (!p && create) {
+	p = xnfcalloc(1, sizeof(symlist));
+	p->next = list->next;
+	p->modname = xnfstrdup(name);
+	list->next = p;
+    }
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_REQ_REF,
+		"GetSymbolList for %s returns %p\n", name, p);
+#endif
+    return p;
+}
+
+static void
+RemoveSymbolList(symlistPtr list, const char *name)
+{
+    symlistPtr p, q;
+
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_REQ_REF, "RemoveSymbolList for %s\n", name);
+#endif
+    p = GetSymbolList(list, name, 0);
+    if (p) {
+	if (p->modname)
+	    xfree(p->modname);
+	if (p->list)
+	    xfree(p->list);
+	p->num = 0;
+	for (q = list; q && q->next != p; q = q->next)
+	    ;
+	if (!q)
+	    ErrorF("RemoveSymbolList: internal error\n");
+	else {
+	    q->next = p->next;
+	    xfree(p);
+	}
+    }
 }
 
 /*
@@ -789,15 +1137,19 @@ _LoaderAddressToSection(const unsigned long address, const char **module,
  */
 
 static void
-AppendSymbol(symlist * list, const char *sym)
+AppendSymbol(symlist *list, const char *sym)
 {
     list->list = xnfrealloc(list->list, (list->num + 1) * sizeof(char **));
     list->list[list->num] = xnfstrdup(sym);
     list->num++;
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_REQ_REF, "AppendSymbol for %s: %s\n",
+		   list->modname ? list->modname : "<global>", sym);
+#endif
 }
 
 static void
-AppendSymList(symlist * list, const char **syms)
+AppendSymList(symlist *list, const char **syms)
 {
     while (*syms) {
 	AppendSymbol(list, *syms);
@@ -806,7 +1158,7 @@ AppendSymList(symlist * list, const char **syms)
 }
 
 static int
-SymInList(symlist * list, char *sym)
+SymInList(symlist *list, const char *sym)
 {
     int i;
 
@@ -818,18 +1170,39 @@ SymInList(symlist * list, char *sym)
 }
 
 void
-LoaderVRefSymbols(const char *sym0, va_list args)
+LoaderVRefSymbols(ModuleDescPtr module, const char *sym0, va_list args)
 {
     const char *s;
+    symlistPtr list;
 
     if (sym0 == NULL)
 	return;
 
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_REQ_REF,
+		"LoaderVRefSymbols: module %p, %s\n",
+		module, module ? module->name : "<global>");
+#endif
+    if (module)
+	list = GetSymbolList(&refList, module->name, 1);
+    else
+	list = &refList;
+
     s = sym0;
     do {
-	AppendSymbol(&refList, s);
+	AppendSymbol(list, s);
 	s = va_arg(args, const char *);
     } while (s != NULL);
+}
+
+void
+LoaderModRefSymbols(pointer module, const char *sym0, ...)
+{
+    va_list ap;
+
+    va_start(ap, sym0);
+    LoaderVRefSymbols(module, sym0, ap);
+    va_end(ap);
 }
 
 void
@@ -838,23 +1211,43 @@ LoaderRefSymbols(const char *sym0, ...)
     va_list ap;
 
     va_start(ap, sym0);
-    LoaderVRefSymbols(sym0, ap);
+    LoaderVRefSymbols(NULL, sym0, ap);
     va_end(ap);
 }
 
 void
-LoaderVRefSymLists(const char **list0, va_list args)
+LoaderVRefSymLists(ModuleDescPtr module, const char **list0, va_list args)
 {
     const char **l;
+    symlistPtr list;
 
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_REQ_REF,
+		"LoaderVRefSymLists: module %p, %s\n",
+		module, module ? module->name : "<global>");
+#endif
     if (list0 == NULL)
 	return;
 
     l = list0;
+    if (module)
+	list = GetSymbolList(&refList, module->name, 1);
+    else
+	list = &refList;
     do {
-	AppendSymList(&refList, l);
+	AppendSymList(list, l);
 	l = va_arg(args, const char **);
     } while (l != NULL);
+}
+
+void
+LoaderModRefSymLists(pointer module, const char **list0, ...)
+{
+    va_list ap;
+
+    va_start(ap, list0);
+    LoaderVRefSymLists(module, list0, ap);
+    va_end(ap);
 }
 
 void
@@ -863,23 +1256,43 @@ LoaderRefSymLists(const char **list0, ...)
     va_list ap;
 
     va_start(ap, list0);
-    LoaderVRefSymLists(list0, ap);
+    LoaderVRefSymLists(NULL, list0, ap);
     va_end(ap);
 }
 
 void
-LoaderVReqSymLists(const char **list0, va_list args)
+LoaderVReqSymLists(ModuleDescPtr module, const char **list0, va_list args)
 {
     const char **l;
+    symlistPtr list;
 
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_REQ_REF,
+		"LoaderVReqSymLists: module %p, %s\n",
+		module, module ? module->name : "<global>");
+#endif
     if (list0 == NULL)
 	return;
 
     l = list0;
+    if (module)
+	list = GetSymbolList(&reqList, module->name, 1);
+    else
+	list = &reqList;
     do {
-	AppendSymList(&reqList, l);
+	AppendSymList(list, l);
 	l = va_arg(args, const char **);
     } while (l != NULL);
+}
+
+void
+LoaderModReqSymLists(pointer module, const char **list0, ...)
+{
+    va_list ap;
+
+    va_start(ap, list0);
+    LoaderVReqSymLists(module, list0, ap);
+    va_end(ap);
 }
 
 void
@@ -888,23 +1301,43 @@ LoaderReqSymLists(const char **list0, ...)
     va_list ap;
 
     va_start(ap, list0);
-    LoaderVReqSymLists(list0, ap);
+    LoaderVReqSymLists(NULL, list0, ap);
     va_end(ap);
 }
 
 void
-LoaderVReqSymbols(const char *sym0, va_list args)
+LoaderVReqSymbols(ModuleDescPtr module, const char *sym0, va_list args)
 {
     const char *s;
+    symlistPtr list;
 
     if (sym0 == NULL)
 	return;
 
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_REQ_REF,
+		"LoaderVRefSymbols: module %p, %s\n",
+		module, module ? module->name : "<global>");
+#endif
     s = sym0;
+    if (module)
+	list = GetSymbolList(&reqList, module->name, 1);
+    else
+	list = &reqList;
     do {
-	AppendSymbol(&reqList, s);
+	AppendSymbol(list, s);
 	s = va_arg(args, const char *);
     } while (s != NULL);
+}
+
+void
+LoaderModReqSymbols(pointer module, const char *sym0, ...)
+{
+    va_list ap;
+
+    va_start(ap, sym0);
+    LoaderVReqSymbols(module, sym0, ap);
+    va_end(ap);
 }
 
 void
@@ -913,7 +1346,7 @@ LoaderReqSymbols(const char *sym0, ...)
     va_list ap;
 
     va_start(ap, sym0);
-    LoaderVReqSymbols(sym0, ap);
+    LoaderVReqSymbols(NULL, sym0, ap);
     va_end(ap);
 }
 
@@ -925,19 +1358,29 @@ LoaderReqSymbols(const char *sym0, ...)
  */
 
 int
-_LoaderHandleUnresolved(char *symbol, char *module)
+_LoaderHandleUnresolved(const char *symbol, int handle)
 {
     int fatalsym = 0;
+    symlistPtr list;
+    const char *name, *cname;
 
+    cname = _LoaderHandleToCanonicalName(handle);
+    name = _LoaderHandleToName(handle);
     if (xf86ShowUnresolved && !fatalsym) {
-	if (SymInList(&reqList, symbol)) {
+	list = GetSymbolList(&reqList, cname, 0);
+	if (!list)
+	    list = &reqList;
+	if (SymInList(list, symbol)) {
 	    fatalReqSym = 1;
 	    ErrorF("Required symbol %s from module %s is unresolved!\n",
-		   symbol, module);
+		   symbol, name);
 	}
-	if (!SymInList(&refList, symbol)) {
+	list = GetSymbolList(&refList, cname, 0);
+	if (!list)
+	    list = &refList;
+	if (!SymInList(list, symbol)) {
 	    ErrorF("Symbol %s from module %s is unresolved!\n",
-		   symbol, module);
+		   symbol, name);
 	}
     }
     return (fatalsym);
@@ -946,7 +1389,7 @@ _LoaderHandleUnresolved(char *symbol, char *module)
 /*
  * Handle an archive.
  */
-void *
+static void *
 ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP ** ppLookup)
 {
     loaderPtr tmp = NULL;
@@ -960,7 +1403,7 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP ** ppLookup)
     int namlen;
 #endif
     unsigned int size;
-    unsigned int offset;
+    unsigned int offset = 0;
     int arnamesize, modnamesize;
     char *slash, *longname;
     char *nametable = NULL;
@@ -970,8 +1413,6 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP ** ppLookup)
     int modtype;
     int i;
     int numsyms = 0;
-
-    /* lookup_ret = xf86loadermalloc(sizeof (LOOKUP *)); */
 
     arnamesize = strlen(modrec->name);
 
@@ -991,8 +1432,10 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP ** ppLookup)
     }
 #endif /* __powerpc__ && Lynx */
 
-#ifdef DEBUGAR
-    ErrorF("Looking for archive members starting at offset %o\n", offset);
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_ARCHIVE,
+		   "Looking for archive members starting at offset %o\n",
+		   offset);
 #endif
 
     while (read(arfd, &hdr, sizeof(struct ar_hdr))) {
@@ -1018,10 +1461,12 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP ** ppLookup)
 #endif
 	    strncmp(hdr.ar_name, "__.SYMDEF", 9) == 0) {
 	    /* If the file name is NULL, then it is a symbol table */
-#ifdef DEBUGAR
-	    ErrorF("Symbol Table Member '%16.16s', size %d, offset %d\n",
-		   hdr.ar_name, size, offset);
-	    ErrorF("Symbol table size %d\n", size);
+#if LOADERDEBUG
+	    LoaderDebugMsg(LOADER_DEBUG_ARCHIVE,
+			   "Symbol Table Member '%16.16s', size %d, "
+			   "offset %d\n", hdr.ar_name, size, offset);
+	    LoaderDebugMsg(LOADER_DEBUG_ARCHIVE,
+			   "Symbol table size %d\n", size);
 #endif
 	    offset = lseek(arfd, offset + size, SEEK_SET);
 	    if (offset & 0x1)	/* odd value */
@@ -1032,10 +1477,12 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP ** ppLookup)
 	/* Check for a String Table */
 	if (hdr.ar_name[0] == '/' && hdr.ar_name[1] == '/') {
 	    /* If the file name is '/', then it is a string table */
-#ifdef DEBUGAR
-	    ErrorF("String Table Member '%16.16s', size %d, offset %d\n",
-		   hdr.ar_name, size, offset);
-	    ErrorF("String table size %d\n", size);
+#if LOADERDEBUG
+	    LoaderDebugMsg(LOADER_DEBUG_ARCHIVE,
+			   "String Table Member '%16.16s', size %d, "
+			   "offset %d\n", hdr.ar_name, size, offset);
+	    LoaderDebugMsg(LOADER_DEBUG_ARCHIVE,
+			   "String table size %d\n", size);
 #endif
 	    nametablelen = size;
 	    nametable = (char *)xf86loadermalloc(nametablelen);
@@ -1096,8 +1543,9 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP ** ppLookup)
 	    size -= i;
 	} else {
 	    /* Regular archive member */
-#ifdef DEBUGAR
-	    ErrorF("Member '%16.16s', size %d, offset %x\n",
+#if LOADERDEBUG
+	    LoaderDebugMsg(LOADER_DEBUG_ARCHIVE,
+			   "Member '%16.16s', size %d, offset %x\n",
 #if !(defined(__powerpc__) && defined(Lynx))
 		   hdr.ar_name,
 #else
@@ -1123,6 +1571,11 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP ** ppLookup)
 	    if (nametable)
 		xf86loaderfree(nametable);
 	    return NULL;
+	} else {
+#if LOADERDEBUG
+	    LoaderDebugMsg(LOADER_DEBUG_FILES, "Module %s is type %d (%s)\n",
+			   hdr.ar_name, modtype, loaderNames[modtype]);
+#endif
 	}
 
 	tmp = _LoaderListPush();
@@ -1131,7 +1584,7 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP ** ppLookup)
 	tmp->module = moduleseq++;
 	tmp->cname = xf86loadermalloc(strlen(modrec->cname) + 1);
 	strcpy(tmp->cname, modrec->cname);
-	tmp->funcs = &funcs[modtype];
+	tmp->desc = ldesc[modtype];
 	if (longname == NULL) {
 	    modnamesize = strlen(hdr.ar_name);
 	    tmp->name =
@@ -1145,7 +1598,7 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP ** ppLookup)
 	}
 	offsetbias = offset;
 
-	if ((tmp->private = funcs[modtype].LoadModule(tmp, arfd, &lookup_ret))
+	if ((tmp->private = ldesc[modtype]->LoadModule(tmp, arfd, &lookup_ret))
 	    == NULL) {
 	    ErrorF("Failed to load %s\n", hdr.ar_name);
 	    offsetbias = 0;
@@ -1164,7 +1617,7 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP ** ppLookup)
 	} else
 	    ret = tmp->private;
 
-	/* Add the lookup table returned from funcs.LoadModule to the
+	/* Add the lookup table returned from desc->LoadModule to the
 	 * one we're going to return.
 	 */
 	for (i = 0, p = lookup_ret; p && p->symName; i++, p++) ;
@@ -1195,14 +1648,19 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP ** ppLookup)
  */
 
 /*
- * _LoaderGetRelocations() Return the list of outstanding relocations
+ * _LoaderGetRelocations() Return a pointer to the list of outstanding
+ * relocations.
  */
-LoaderRelocPtr
-_LoaderGetRelocations(void *mod)
+void **
+_LoaderGetRelocations(LoaderDescPtr mod)
 {
-    loader_funcs *formatrec = (loader_funcs *) mod;
+    return &(mod->pRelocs);
+}
 
-    return &(formatrec->pRelocs);
+static int
+MatchScopeSelf(void *dummy, itemPtr entry)
+{
+    return (entry->scope == LOOKUP_SCOPE_SELF);
 }
 
 /*
@@ -1211,15 +1669,15 @@ _LoaderGetRelocations(void *mod)
 
 int
 LoaderOpen(const char *module, const char *cname, int handle,
-	   int *errmaj, int *errmin, int *wasLoaded)
+	   int *errmaj, int *errmin, int *wasLoaded, char **modData)
 {
     loaderPtr tmp;
     int new_handle, modtype;
     int fd;
     LOOKUP *pLookup;
 
-#if defined(DEBUG)
-    ErrorF("LoaderOpen(%s)\n", module);
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_FILES, "LoaderOpen(%s)\n", module);
 #endif
 
     /*
@@ -1231,15 +1689,16 @@ LoaderOpen(const char *module, const char *cname, int handle,
     if (handle >= 0) {
 	tmp = listHead;
 	while (tmp) {
-#ifdef DEBUGLIST
-	    ErrorF("strcmp(%x(%s),{%x} %x(%s))\n", module, module,
-		   &(tmp->name), tmp->name, tmp->name);
+#if LOADERDEBUG
+	    LoaderDebugMsg(LOADER_DEBUG_FILES, "strcmp(%p(%s),{%p} %p(%s))\n",
+			   module, module, &(tmp->name), tmp->name, tmp->name);
 #endif
 	    if (!strcmp(module, tmp->name)) {
 		refCount[tmp->handle]++;
 		if (wasLoaded)
 		    *wasLoaded = 1;
 		xf86MsgVerb(X_INFO, 2, "Reloading %s\n", module);
+		*modData = tmp->modData;
 		return tmp->handle;
 	    }
 	    tmp = tmp->next;
@@ -1290,6 +1749,11 @@ LoaderOpen(const char *module, const char *cname, int handle,
 	if (errmin)
 	    *errmin = LDR_UNKTYPE;
 	return -1;
+    } else {
+#if LOADERDEBUG
+	LoaderDebugMsg(LOADER_DEBUG_FILES, "Module %s is type %d (%s)\n",
+		       module, modtype, loaderNames[modtype]);
+#endif
     }
 
     tmp = _LoaderListPush();
@@ -1299,9 +1763,9 @@ LoaderOpen(const char *module, const char *cname, int handle,
     strcpy(tmp->cname, cname);
     tmp->handle = new_handle;
     tmp->module = moduleseq++;
-    tmp->funcs = &funcs[modtype];
+    tmp->desc = ldesc[modtype];
 
-    if ((tmp->private = funcs[modtype].LoadModule(tmp, fd, &pLookup)) == NULL) {
+    if (!(tmp->private = ldesc[modtype]->LoadModule(tmp, fd, &pLookup))) {
 	xf86Msg(X_ERROR, "Failed to load %s\n", module);
 	_LoaderListPop(new_handle);
 	freeHandles[new_handle] = HANDLE_FREE;
@@ -1313,11 +1777,21 @@ LoaderOpen(const char *module, const char *cname, int handle,
     }
 
     if (tmp->private != (void *)-1L) {
-	LoaderAddSymbols(new_handle, tmp->module, pLookup);
+	LoaderAddSymbols(new_handle, tmp->module, pLookup, LOOKUP_SCOPE_AUTO,
+			 modData);
 	xf86loaderfree(pLookup);
     }
+    tmp->modData = *modData;
 
     close(fd);
+
+    LoaderResolveSymbols(-1);
+
+    /*
+     * Remove symbols from the lookup table that have LOOKUP_SCOPE_SELF.
+     * These can never be used when resolving other modules.
+     */
+    LoaderHashTraverse(NULL, MatchScopeSelf);
 
     return new_handle;
 }
@@ -1336,61 +1810,68 @@ LoaderHandleOpen(int handle)
 }
 
 void *
-LoaderSymbol(const char *sym)
+LoaderSymbolWithScope(const char *sym, int handle, unsigned long scope)
 {
-    int i;
     itemPtr item = NULL;
-
-    for (i = 0; i < numloaders; i++)
-	funcs[i].ResolveSymbols(&funcs[i]);
 
     item = (itemPtr) LoaderHashFind(sym);
 
-    if (item)
+    if (item && SCOPE_OK(item, handle, scope))
 	return item->address;
-    else
+    else if (!item) {
 #ifdef DLOPEN_SUPPORT
 	return (DLFindSymbol(sym));
-#else
-	return NULL;
 #endif
+    }
+    return NULL;
+}
+
+void *
+LoaderSymbol(const char *sym)
+{
+    return LoaderSymbolWithScope(sym, -1, LOOKUP_SCOPE_GLOBAL);
 }
 
 int
-LoaderResolveSymbols(void)
+LoaderResolveSymbols(int handle)
 {
     int i;
 
     for (i = 0; i < numloaders; i++)
-	funcs[i].ResolveSymbols(&funcs[i]);
+	ldesc[i]->ResolveSymbols(ldesc[i], handle);
     return 0;
 }
 
 int
-LoaderCheckUnresolved(int delay_flag)
+LoaderCheckUnresolved(int dummy)
 {
     int i, ret = 0;
-    LoaderResolveOptions delayFlag = (LoaderResolveOptions)delay_flag;
 
-    LoaderResolveSymbols();
+    for (i = 0; i < numloaders; i++)
+	if (ldesc[i]->CheckForUnresolved(ldesc[i]))
+	    ret = 1;
 
-    if (delayFlag == LD_RESOLV_NOW) {
-	if (check_unresolved_sema > 0)
-	    check_unresolved_sema--;
-	else
-	    xf86Msg(X_WARNING, "LoaderCheckUnresolved: not enough "
-		    "MAGIC_DONT_CHECK_UNRESOLVED\n");
-    }
-
-    if (!check_unresolved_sema || delayFlag == LD_RESOLV_FORCE)
-	for (i = 0; i < numloaders; i++)
-	    if (funcs[i].CheckForUnresolved(&funcs[i]))
-		ret = 1;
+    /* This does nothing unless debugging is enabled. */
+    LoaderDumpHashHits();
 
     if (fatalReqSym)
-	FatalError("Some required symbols were unresolved\n");
+	FatalError("Some required symbols were unresolved.\n");
 
     return ret;
+}
+
+const char *
+LoaderFindRelocName(int handle, unsigned long addr)
+{
+    int i;
+    const char *ret;
+
+    for (i = 0; i < numloaders; i++) {
+	ret = ldesc[i]->FindRelocName(ldesc[i], handle, addr);
+	if (ret)
+	    return ret;
+    }
+    return NULL;
 }
 
 void xf86LoaderTrap(void);
@@ -1400,17 +1881,52 @@ xf86LoaderTrap(void)
 {
 }
 
+#ifdef STACKTRACE
+
+#ifndef STACK_LEVELS
+#define STACK_LEVELS 16
+#endif
+
 void
 LoaderDefaultFunc(void)
 {
-    ErrorF("\n\n\tThis should not happen!\n"
-	   "\tAn unresolved function was called!\n");
+    unsigned long returnStack[STACK_LEVELS];
+    int i;
+    const char *rname = NULL;
 
+    getStackTrace(returnStack, STACK_LEVELS);
+    if (returnStack[1])
+	    rname = LoaderFindRelocName(-1, returnStack[1]);
+    if (rname)
+	    ErrorF("*** Unresolved function \"%s\" called ***\n", rname);
+    else
+	    ErrorF("*** Unresolved function (unknown name) called ***\n");
+
+    ErrorF("Stack trace:\n");
+    for (i = 1; i < STACK_LEVELS && returnStack[i]; i++) {
+	    ErrorF("%2d: 0x%lx: ", i, returnStack[i]);
+	    LoaderPrintSymbol(returnStack[i]);
+    }
     xf86LoaderTrap();
-
-    FatalError("\n");
+#if LOADER_UNRESOLVED_IS_FATAL
+    FatalError("Aborting because of unresolved function call.\n");
+#endif
 }
 
+#else
+
+void
+LoaderDefaultFunc(void)
+{
+    ErrorF("*** Unresolved function called ***\n");
+    xf86LoaderTrap();
+#if LOADER_UNRESOLVED_IS_FATAL
+    FatalError("Aborting because of unresolved function call.\n");
+#endif
+}
+
+#endif
+    
 int
 LoaderUnload(int handle)
 {
@@ -1433,14 +1949,18 @@ LoaderUnload(int handle)
 	if (strchr(tmp->name, ':') == NULL) {
 	    /* It is not a member of an archive */
 	    xf86Msg(X_INFO, "Unloading %s\n", tmp->name);
+	    RemoveSymbolList(&refList, tmp->name);
+	    RemoveSymbolList(&reqList, tmp->name);
 	}
-	tmp->funcs->LoaderUnload(tmp->private);
+	tmp->desc->LoaderUnload(tmp->private);
 	xf86loaderfree(tmp->name);
 	xf86loaderfree(tmp->cname);
 	xf86loaderfree(tmp);
     }
 
     freeHandles[handle] = HANDLE_FREE;
+
+    LoaderResolveSymbols(-1);
 
     return 0;
 }
@@ -1479,3 +1999,165 @@ LoaderClearOptions(unsigned long opts)
 {
     LoaderOptions &= ~opts;
 }
+
+unsigned long LoaderDebugLevel = 0;
+
+void
+LoaderSetDebug(unsigned long level)
+{
+    LoaderDebugLevel = level;
+}
+
+void
+LoaderDebugMsg(unsigned long debug, const char *f, ...)
+{
+    va_list args;
+
+    va_start(args, f);
+    if (debug & LoaderDebugLevel)
+	VErrorF(f, args);
+    va_end(args);
+}
+
+/*
+ * The return value is the user-recognisable file name, and *path is set
+ * to the name of a full path that can be used to open the executable file
+ * image.
+ */
+static const char *
+GetExePath(const char **path)
+{
+#ifdef HAVE_PROCFS
+    unsigned int pid;
+    char *procPath;
+#ifdef HAVE_PROCFS_PSINFO
+    char *procName;
+#endif
+    struct stat sb;
+#endif
+    const char *reason = NULL;
+
+    if (exePath && exeName) {
+	if (path)
+	    *path = exePath;
+	return exeName;
+    }
+
+#ifdef HAVE_PROCFS
+    pid = getpid();
+    xasprintf(&procPath, "/proc/%d/" PROCFS_EXE_NAME, pid);
+#ifdef HAVE_PROCFS_PSINFO
+    xasprintf(&procName, "/proc/%d/psinfo", pid);
+#endif
+
+    if (procPath) {
+	if (stat(procPath, &sb) == -1)
+	    reason = "The /proc filesystem is not mounted.";
+	else {
+#if defined(PROCFS_EXE_SYMLINK)
+	    exePath = xnfcalloc(PATH_MAX + 1, 1);
+	    if (readlink(procPath, exePath, PATH_MAX) == -1) {
+		reason = "readlink failed on /proc entry.";
+		xfree(exePath);
+		exePath = NULL;
+	    } else
+		exeName = exePath;
+#elif defined(HAVE_PROCFS_PSINFO)
+	    if (procName) {
+		struct psinfo ps;
+		int fd;
+
+		fd = open(procName, O_RDONLY);
+		if (fd < 0) {
+		    ErrorF("Cannot open \"%s\"\n", procName);
+		    reason = "failed to open /proc psinfo entry.";
+		} else {
+		    if (read(fd, &ps, sizeof(ps)) != sizeof(ps)) {
+			ErrorF("Cannot read \"%s\"\n", procName);
+			reason = "failed to read /proc psinfo entry. ";
+		    } else {
+			exeName = xnfstrdup(ps.pr_fname);
+#ifdef PROCFS_PSINFO_FULLPATH
+			exePath = exeName;
+#else
+			exePath = xnfstrdup(procPath);
+#endif
+		    }
+		    close(fd);
+		}
+	    }
+#else
+	    exePath = xnfstrdup(procPath);
+	    exeName = xnfstrdup(getArgv(0));
+#endif
+
+	    if (exePath && exeName) {
+		ErrorF("Executable is \"%s\"", exeName);
+		if (exePath != exeName)
+		    ErrorF(", path \"%s\"", exePath);
+		ErrorF("\n");
+		if (path)
+		    *path = exePath;
+		return exeName;
+	    }
+	}
+    }
+#else
+    reason = "there is no support for finding it on this platform.";
+#endif
+
+    ErrorF("Cannot find the executable path name.\n");
+    if (reason)
+	ErrorF("\t%s\n", reason);
+    return NULL;
+}
+
+static void
+ReadMainExe(void)
+{
+    const char *fileName = NULL;
+    int fd;
+    int modtype;
+
+    GetExePath(&fileName);
+    if (!fileName) {
+	ErrorF("Cannot identify the executable file.\n");
+	return;
+    }
+    ErrorF("Reading symbols from \"%s\".\n", fileName);
+    fd = open(fileName, O_RDONLY);
+    if (fd < 0) {
+	ErrorF("Cannot open executable file \"%s\" (%s).\n", fileName,
+		strerror(errno));
+	return;
+    }
+
+    if ((modtype = _GetModuleType(fd, 0)) < 0) {
+	ErrorF("Executable file type is not recognized.\n");
+	close(fd);
+	return;
+    }
+    mainExeModType = modtype;
+
+#ifdef HAVE_DLADDR
+    /*
+     * Use dladdr(3), if available, to find symbols that are neither in
+     * modules or the main executable -- e.g., in shared libraries.
+     */
+    switch (modtype) {
+    case LD_ELFOBJECT:
+	mainExeDlType = LD_ELFDLOBJECT;
+	break;
+    case LD_AOUTOBJECT:
+	mainExeDlType = LD_AOUTDLOBJECT;
+	break;
+    default:
+	break;
+    }
+#endif
+    mainExeItem = xnfcalloc(1, sizeof(*mainExeItem));
+    mainExeItem->desc = ldesc[modtype];
+    mainExeItem->private = mainExeItem->desc->ReadExecutableSyms(fd);
+    close(fd);
+}
+

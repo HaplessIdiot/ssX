@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.504 2006/02/20 00:51:28 tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.505 2006/02/28 22:32:36 dawes Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -263,6 +263,14 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.504 2006/02/20 00:51:28 tsi Exp $
 /* OS.cf files may set this for OS-specific drivers */
 #ifndef HasAgpGart
 #define HasAgpGart NO
+#endif
+
+/* Support for stack traces. */
+#if defined(i386Architecture) || defined(SparcArchitecture) || \
+    defined(MipsArchitecture)
+# ifndef UseStackTrace
+#  define UseStackTrace		YES
+# endif
 #endif
 
 /*
@@ -1616,22 +1624,18 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #define InstallJapaneseDocs	NO
 #endif
 
-#ifndef DlopenHack
-# define DlopenHack		-DDLOPEN_HACK
-#endif
-
 #ifndef ExtraLoaderDefines
-# if MakeDllModules
-#  define ExtraLoaderDefines	DlopenHack
-# else
-#  define ExtraLoaderDefines	/**/
-# endif
+# define ExtraLoaderDefines	/**/
 #endif
 
 #if DoLoadableServer
 # define XFree86LoaderDefines	-DXFree86LOADER ExtraLoaderDefines
 #else
 # define XFree86LoaderDefines	/**/
+#endif
+
+#ifndef LoaderBuildFlags
+# define LoaderBuildFlags	/**/
 #endif
 
 #ifndef HasBsdMake

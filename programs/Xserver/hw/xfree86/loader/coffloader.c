@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.22tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.23 2005/10/14 15:16:59 tsi Exp $ */
 
 /*
  *
@@ -22,6 +22,52 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+/*
+ * Copyright 2003-2006 by David H. Dawes.
+ * Copyright 2003-2006 by X-Oz Technologies.
+ * All rights reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ * 
+ *  1. Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions, and the following disclaimer.
+ *
+ *  2. Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ * 
+ *  3. The end-user documentation included with the redistribution,
+ *     if any, must include the following acknowledgment: "This product
+ *     includes software developed by X-Oz Technologies
+ *     (http://www.x-oz.com/)."  Alternately, this acknowledgment may
+ *     appear in the software itself, if and wherever such third-party
+ *     acknowledgments normally appear.
+ *
+ *  4. Except as contained in this notice, the name of X-Oz
+ *     Technologies shall not be used in advertising or otherwise to
+ *     promote the sale, use or other dealings in this Software without
+ *     prior written authorization from X-Oz Technologies.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL X-OZ TECHNOLOGIES OR ITS CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 
+ */
+
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -42,19 +88,19 @@
 #include <X11/Xos.h>
 #include "os.h"
 #include "coff.h"
-
 #include "sym.h"
-#include "loader.h"
-#include "coffloader.h"
-
-#include "compiler.h"
 
 #ifndef LOADERDEBUG
 #define LOADERDEBUG 0
 #endif
 
-#if LOADERDEBUG
-#define COFFDEBUG ErrorF
+#include "loader.h"
+#include "coffloader.h"
+
+#include "compiler.h"
+
+#ifndef COFF_WITH_LEADING_UNDERSCORE
+#define COFF_WITH_LEADING_UNDERSCORE 0
 #endif
 
 /*
@@ -66,7 +112,7 @@ typedef struct {
     int handle;
     long module;		/* Id of the module used to find inter module calls */
     int fd;
-    loader_funcs *funcs;
+    LoaderDescPtr desc;
     FILHDR *header;		/* file header */
     AOUTHDR *optheader;		/* optional file header */
     unsigned short numsh;
@@ -99,6 +145,10 @@ typedef struct {
     unsigned char *tocaddr;	/* Address of the TOC csect */
 } COFFModuleRec, *COFFModulePtr;
 
+typedef union {
+    unsigned int	d32;
+} relocData;
+
 /*
  * If any relocation is unable to be satisfied, then put it on a list
  * to try later after more modules have been loaded.
@@ -107,6 +157,10 @@ typedef struct _coff_reloc {
     COFFModulePtr file;
     RELOC *rel;
     int secndx;
+    int relocated;
+    unsigned char *symval;
+    int assigned;
+    relocData  olddata;
     struct _coff_reloc *next;
 } COFFRelocRec;
 
@@ -128,15 +182,15 @@ static COFFCommonPtr listCOMMON = NULL;
 
 /* Prototypes for static functions */
 static int COFFhashCleanOut(void *, itemPtr);
-static char *COFFGetSymbolName(COFFModulePtr, int);
+static const char *COFFGetSymbolName(COFFModulePtr, int);
 static COFFCommonPtr COFFAddCOMMON(SYMENT *, int);
 static LOOKUP *COFFCreateCOMMON(COFFModulePtr);
 static COFFRelocPtr COFFDelayRelocation(COFFModulePtr, int, RELOC *);
 static SYMENT *COFFGetSymbol(COFFModulePtr, int);
 #if defined(i386) || defined(__powerpc__)
-static unsigned char *COFFGetSymbolValue(COFFModulePtr, int);
+static unsigned char *COFFGetSymbolValue(COFFModulePtr, int, int *);
 #endif
-static COFFRelocPtr COFF_RelocateEntry(COFFModulePtr, int, RELOC *);
+static int COFF_RelocateEntry(COFFRelocPtr);
 static LOOKUP *COFF_GetSymbols(COFFModulePtr);
 static void COFFCollectSections(COFFModulePtr);
 static COFFRelocPtr COFFCollectRelocations(COFFModulePtr);
@@ -169,7 +223,11 @@ COFFDelayRelocation(COFFModulePtr cofffile, int secndx, RELOC *rel)
     reloc->file = cofffile;
     reloc->secndx = secndx;
     reloc->rel = rel;
-    reloc->next = 0;
+    reloc->relocated = 0;
+    reloc->symval = NULL;
+    reloc->assigned = 0;
+    memset(&reloc->olddata, 0, sizeof(reloc->olddata));
+    reloc->next = NULL;
 
     return reloc;
 }
@@ -217,9 +275,10 @@ COFFCreateCOMMON(COFFModulePtr cofffile)
 	numsyms++;
     }
 
-#ifdef COFFDEBUG
-    COFFDEBUG("COFFCreateCOMMON() %d entries (%d bytes) of COMMON data\n",
-	      numsyms, size);
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+		   "COFFCreateCOMMON() %d entries (%d bytes) of COMMON data\n",
+		   numsyms, size);
 #endif
 
     if ((lookup = xf86loadermalloc((numsyms + 1) * sizeof(LOOKUP))) == NULL) {
@@ -239,11 +298,12 @@ COFFCreateCOMMON(COFFModulePtr cofffile)
      */
     while (listCOMMON) {
 	common = listCOMMON;
-	lookup[l].symName = COFFGetSymbolName(cofffile, common->index);
+	lookup[l].symName =
+		xf86loaderstrdup(COFFGetSymbolName(cofffile, common->index));
 	lookup[l].offset = (funcptr) (cofffile->common + offset);
-#ifdef COFFDEBUG
-	COFFDEBUG("Adding %p %s\n", (void *)lookup[l].offset,
-		  lookup[l].symName);
+#if LOADERDEBUG
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "Adding %p %s\n",
+		       (void *)lookup[l].offset, lookup[l].symName);
 #endif
 	listCOMMON = common->next;
 	offset += common->sym->n_value;
@@ -263,35 +323,44 @@ COFFCreateCOMMON(COFFModulePtr cofffile)
 /*
  * Get symbol name
  */
-static char *
+static const char *
 COFFGetSymbolName(COFFModulePtr cofffile, int index)
 {
-    char *name;
+    const char *ret;
+    static char name[SYMNMLEN + 1];
     SYMENT *sym;
 
     sym = (SYMENT *) (((unsigned char *)cofffile->symtab) + (index * SYMESZ));
 
-#ifdef COFFDEBUG
-    COFFDEBUG("COFFGetSymbolName(%p,%x) %lx", (void *)cofffile, index,
-	      sym->n_zeroes);
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "COFFGetSymbolName(%p,%x) %lx",
+		   (void *)cofffile, index, sym->n_zeroes);
 #endif
-
-    name = xf86loadermalloc(sym->n_zeroes ? SYMNMLEN + 1
-			    : strlen((const char *)&cofffile->
-				     strtab[(int)sym->n_offset - 4]) + 1);
-    if (!name)
-	FatalError("COFFGetSymbolName: Out of memory\n");
 
     if (sym->n_zeroes) {
-	strncpy(name, sym->n_name, SYMNMLEN);
-	name[SYMNMLEN] = '\000';
-    } else {
-	strcpy(name, (const char *)&cofffile->strtab[(int)sym->n_offset - 4]);
-    }
-#ifdef COFFDEBUG
-    COFFDEBUG(" %s\n", name);
+#if COFF_WITH_LEADING_UNDERSCORE
+	if (sym->n_name[0] == '_') {
+	    strncpy(name, sym->n_name + 1, SYMNMLEN - 1);
+	    name[SYMNMLEN - 1] = '\000';
+	} else
 #endif
-    return name;
+	{
+	    strncpy(name, sym->n_name, SYMNMLEN);
+	    name[SYMNMLEN] = '\000';
+	}
+	ret = name;
+    } else {
+#if COFF_WITH_LEADING_UNDERSCORE
+	if (((const char *)&cofffile->strtab[(int)sym->n_offset - 4])[0] == '_')
+	    ret = ((const char *)&cofffile->strtab[(int)sym->n_offset - 4]) + 1;
+	else
+#endif
+	    ret = (const char *)&cofffile->strtab[(int)sym->n_offset - 4];
+    }
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, " %s\n", ret);
+#endif
+    return ret;
 }
 
 static SYMENT *
@@ -302,28 +371,35 @@ COFFGetSymbol(COFFModulePtr file, int index)
 
 #if defined(i386) || defined(__powerpc__)
 static unsigned char *
-COFFGetSymbolValue(COFFModulePtr cofffile, int index)
+COFFGetSymbolValue(COFFModulePtr cofffile, int index, int *pInvariant)
 {
     unsigned char *symval = 0;	/* value of the indicated symbol */
     itemPtr symbol;		/* name/value of symbol */
-    char *symname;
+    const char *symname;
 
     symname = COFFGetSymbolName(cofffile, index);
 
-#ifdef COFFDEBUG
-    COFFDEBUG("COFFGetSymbolValue() for %s=", symname);
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "COFFGetSymbolValue() for %s=",
+		   symname);
 #endif
 
     symbol = LoaderHashFind(symname);
 
-    if (symbol)
-	symval = (unsigned char *)symbol->address;
+    if (symbol == NULL ||
+	!SCOPE_OK(symbol, cofffile->handle, LOOKUP_SCOPE_GLOBAL)) {
+	return NULL;
+    }
+    symval = (unsigned char *)symbol->address;
+    if (pInvariant) {
+	*pInvariant = ((symbol->handle == cofffile->handle) ||
+		       (symbol->scope & LOOKUP_SCOPE_BUILTIN));
+    }
 
-#ifdef COFFDEBUG
-    COFFDEBUG("%p\n", symval);
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "%p\n", symval);
 #endif
 
-    xf86loaderfree(symname);
     return symval;
 }
 #endif
@@ -339,20 +415,20 @@ COFFGetSymbolGlinkValue(COFFModulePtr cofffile, int index)
 {
     unsigned char *symval = 0;	/* value of the indicated symbol */
     itemPtr symbol;		/* name/value of symbol */
-    char *name;
+    const char *name;
 
     name = COFFGetSymbolName(cofffile, index);
 
-#ifdef COFFDEBUG
-    COFFDEBUG("COFFGetSymbolGlinkValue() for %s=", name);
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_PLT, "COFFGetSymbolGlinkValue() for %s=", name);
 #endif
 
     symbol = LoaderHashFind(name + 1);	/* Eat the '.' so we get the
 					 * Function descriptor instead */
 
-/* Here we are building up a glink function that will change the TOC
- * pointer before calling a function that resides in a different module.
- * The following code is being used to implement this.
+    /* Here we are building up a glink function that will change the TOC
+     * pointer before calling a function that resides in a different module.
+     * The following code is being used to implement this.
 
 	1 00000000 3d80xxxx	lis   r12,hi16(funcdesc)
 	2 00000004 618cxxxx	ori   r12,r12,lo16(funcdesc)
@@ -362,12 +438,12 @@ COFFGetSymbolGlinkValue(COFFModulePtr cofffile, int index)
 	6 00000014 804c0004	l     r2,4(r12)	# get TOC of function
 	7 00000018 4e800420	bctr		# branch to it
 
- */
+     */
     if (symbol) {
 	symval = (unsigned char *)&symbol->code.glink;
-#ifdef COFFDEBUG
-	COFFDEBUG("%x\n", symval);
-	COFFDEBUG("glink_%s=%x\n", name, symval);
+#if LOADERDEBUG
+	LoaderDebugMsg(LOADER_DEBUG_PLT, "%x\n", symval);
+	LoaderDebugMsg(LOADER_DEBUG_PLT, "glink_%s=%x\n", name, symval);
 #endif
 	symbol->code.glink[0] = 0x3d80;	/* lis r12 */
 	symbol->code.glink[1] =
@@ -388,56 +464,82 @@ COFFGetSymbolGlinkValue(COFFModulePtr cofffile, int index)
 	ppc_flush_icache(&symbol->code.glink[12]);
     }
 
-    xf86loaderfree(name);
     return symval;
 }
 #endif /* __powerpc__ */
 
+#if defined(i386) || defined(__powerpc__)
+static void
+resetDest32(COFFRelocPtr p, unsigned int *dest32)
+{
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "*dest32=%8.8x\n", *dest32);
+#endif
+    if (p->assigned) {
+#if LOADERDEBUG
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "was assigned\t");
+#endif
+	*dest32 = p->olddata.d32;
+#if LOADERDEBUG
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "*dest32=%8.8x\t", *dest32);
+#endif
+    } else {
+	p->olddata.d32 = *dest32;
+	p->assigned = 1;
+    }
+}
+#endif
+
 /*
  * Fix all of the relocation for the given section.
  */
-static COFFRelocPtr
-COFF_RelocateEntry(COFFModulePtr cofffile, int secndx, RELOC *rel)
+static int
+COFF_RelocateEntry(COFFRelocPtr p)
 {
+    COFFModulePtr cofffile = p->file;
+    int secndx = p->secndx;
+    RELOC *rel = p->rel;
     SYMENT *symbol;		/* value of the indicated symbol */
-    unsigned long *dest32;	/* address of the place being modified */
+    unsigned int *dest32;	/* address of the place being modified */
 
 #if defined(__powerpc__)
     unsigned short *dest16;	/* address of the place being modified */
     itemPtr symitem;		/* symbol structure from has table */
-    char *name;
+    const char *name;
 #endif
-    unsigned char *symval;	/* value of the indicated symbol */
+    unsigned char *symval = NULL;	/* value of the indicated symbol */
+    int invariant = 0;		/* relocation is invariant */
 
-/*
- * Note: Section numbers are 1 biased, while the cofffile->saddr[] array
- * of pointer is 0 biased, so alway have to account for the difference.
- */
+    /*
+     * Note: Section numbers are 1 biased, while the cofffile->saddr[] array
+     * of pointer is 0 biased, so alway have to account for the difference.
+     */
 
-/* 
- * Reminder: secndx is the section to which the relocation is applied.
- *           symbol->n_scnum is the section in which the symbol value resides.
- */
+    /* 
+     * Reminder: secndx is the section to which the relocation is applied.
+     *           symbol->n_scnum is the section in which the symbol value
+     *           resides.
+     */
 
-#ifdef COFFDEBUG
-    COFFDEBUG("%lx %ld %o ", (unsigned long)rel->r_vaddr,
-	      rel->r_symndx, rel->r_type);
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "%lx %ld %o ",
+		   (unsigned long)rel->r_vaddr, rel->r_symndx, rel->r_type);
 #if defined(__powerpc__)
-    COFFDEBUG("[%x %x %x] ",
-	      RELOC_RSIGN(*rel), RELOC_RFIXUP(*rel), RELOC_RLEN(*rel));
+    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "[%x %x %x] ",
+		   RELOC_RSIGN(*rel), RELOC_RFIXUP(*rel), RELOC_RLEN(*rel));
 #endif
 #endif
     symbol = COFFGetSymbol(cofffile, rel->r_symndx);
-#ifdef COFFDEBUG
-    COFFDEBUG("%d %lx %d-%d\n", symbol->n_sclass, symbol->n_value,
-	      symbol->n_scnum, secndx);
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "%d %lx %d-%d\n",
+		   symbol->n_sclass, symbol->n_value, symbol->n_scnum, secndx);
 #endif
 
-/*
- * Check to see if the relocation offset is part of the .text segment.
- * If not, we must change the offset to be relative to the .data section
- * which is NOT contiguous.
- */
+    /*
+     * Check to see if the relocation offset is part of the .text segment.
+     * If not, we must change the offset to be relative to the .data section
+     * which is NOT contiguous.
+     */
     switch (secndx + 1) {	/* change the bias */
     case N_TEXT:
 	if ((long)rel->r_vaddr < cofffile->txtaddr ||
@@ -445,7 +547,7 @@ COFF_RelocateEntry(COFFModulePtr cofffile, int secndx, RELOC *rel)
 	    (long)(cofffile->txtaddr + cofffile->txtsize)) {
 	    FatalError("Relocation against N_TEXT not in .text section\n");
 	}
-	dest32 = (unsigned long *)((long)(cofffile->saddr[secndx]) +
+	dest32 = (unsigned int *)((long)(cofffile->saddr[secndx]) +
 				   ((unsigned char *)rel->r_vaddr -
 				    cofffile->txtaddr));
 	break;
@@ -455,7 +557,7 @@ COFF_RelocateEntry(COFFModulePtr cofffile, int secndx, RELOC *rel)
 	    (long)(cofffile->dataddr + cofffile->datsize)) {
 	    FatalError("Relocation against N_DATA not in .data section\n");
 	}
-	dest32 = (unsigned long *)((long)(cofffile->saddr[secndx]) +
+	dest32 = (unsigned int *)((long)(cofffile->saddr[secndx]) +
 				   ((unsigned char *)rel->r_vaddr -
 				    cofffile->dataddr));
 	break;
@@ -465,7 +567,7 @@ COFF_RelocateEntry(COFFModulePtr cofffile, int secndx, RELOC *rel)
 	    (long)(cofffile->bssaddr + cofffile->bsssize)) {
 	    FatalError("Relocation against N_TEXT not in .bss section\n");
 	}
-	dest32 = (unsigned long *)((long)(cofffile->saddr[secndx]) +
+	dest32 = (unsigned int *)((long)(cofffile->saddr[secndx]) +
 				   ((unsigned char *)rel->r_vaddr -
 				    cofffile->bssaddr));
 	break;
@@ -476,127 +578,160 @@ COFF_RelocateEntry(COFFModulePtr cofffile, int secndx, RELOC *rel)
     if (symbol->n_sclass == 0) {
 	symval = (unsigned char *)(symbol->n_value + (*dest32) -
 				   symbol->n_type);
-#ifdef COFFDEBUG
-	COFFDEBUG("symbol->n_sclass==0\n");
-	COFFDEBUG("dest32=%p\t", (void *)dest32);
-	COFFDEBUG("symval=%p\t", symval);
-	COFFDEBUG("*dest32=%8.8lx\t", *dest32);
+#if LOADERDEBUG
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "symbol->n_sclass==0\n");
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "dest32=%p\t", (void *)dest32);
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "symval=%p\t", symval);
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "*dest32=%8.8x\t", *dest32);
 #endif
 	*dest32 = (unsigned long)symval;
-	return 0;
+	invariant = 1;
+	p->relocated = 1;
+	return invariant;
     }
+
+#if defined(i386) || defined(__powerpc__)
+#if defined(i386)
+    if (rel->r_type == R_DIR32 || rel->r_type == R_PCRLONG)
+#elif defined(__powerpc__)
+    if (rel->r_type == R_POS)
+#endif
+    {
+	symval = COFFGetSymbolValue(cofffile, rel->r_symndx, &invariant);
+	if (symval == NULL && symbol->n_scnum == N_UNDEF) {
+	    symval = (unsigned char *)&LoaderDefaultFunc;
+	    p->relocated = 0;
+	} else if (symval != NULL) {
+	    if (p->relocated)
+		return invariant;
+	    else
+		p->relocated = 1;
+	}
+	if (symval) {
+	    if (p->symval == symval) {
+		/* Unchangd. */
+		return invariant;
+	    } else
+		p->symval = symval;
+	}
+    }
+#endif
 
     switch (rel->r_type) {
 #if defined(i386)
     case R_DIR32:
-	symval = COFFGetSymbolValue(cofffile, rel->r_symndx);
-	if (symval) {
-#ifdef COFFDEBUG
-	    char *namestr;
 
-	    COFFDEBUG("R_DIR32 %s\n",
-		      namestr = COFFGetSymbolName(cofffile, rel->r_symndx));
-	    xf86loaderfree(namestr);
-	    COFFDEBUG("txtsize=%x\t", cofffile->txtsize);
-	    COFFDEBUG("dest32=%p\t", (void *)dest32);
-	    COFFDEBUG("symval=%p\t", symval);
-	    COFFDEBUG("*dest32=%8.8lx\t", *dest32);
+	if (symval) {
+#if LOADERDEBUG
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "R_DIR32 %s\n",
+			   COFFGetSymbolName(cofffile, rel->r_symndx));
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "txtsize=%x\t",
+			   cofffile->txtsize);
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "dest32=%p\t",
+			   (void *)dest32);
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "symval=%p\t", symval);
 #endif
+	    resetDest32(p, dest32);
 	    *dest32 = (unsigned long)(symval + (*dest32) - symbol->n_value);
 	} else {
+	    const char *reltype;
+	    reltype = "R_DIR32";
+
 	    switch (symbol->n_scnum) {
 	    case N_UNDEF:
-#ifdef COFFDEBUG
-		COFFDEBUG("R_DIR32 N_UNDEF\n");
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "%s N_UNDEF\n", reltype);
 #endif
-		return COFFDelayRelocation(cofffile, secndx, rel);
+		return 0;
 	    case N_ABS:
-#ifdef COFFDEBUG
-		COFFDEBUG("R_DIR32 N_ABS\n");
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "%s N_ABS\n", reltype);
 #endif
 		return 0;
 	    case N_DEBUG:
-#ifdef COFFDEBUG
-		COFFDEBUG("R_DIR32 N_DEBUG\n");
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "%s N_DEBUG\n", reltype);
 #endif
 		return 0;
 	    case N_COMMENT:
-#ifdef COFFDEBUG
-		COFFDEBUG("R_DIR32 N_COMMENT\n");
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "%s N_COMMENT\n",
+			       reltype);
 #endif
 		return 0;
 	    case N_TEXT:
-#ifdef COFFDEBUG
-		COFFDEBUG("R_DIR32 N_TEXT\n");
-		COFFDEBUG("dest32=%p\t", (void *)dest32);
-		COFFDEBUG("symval=%p\t", symval);
-		COFFDEBUG("*dest32=%8.8lx\t", *dest32);
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "%s N_TEXT\n", reltype);
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "dest32=%p\t",
+			       (void *)dest32);
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "symval=%p\t", symval);
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "*dest32=%8.8x\t",
+			       *dest32);
 #endif
 		*dest32 = (unsigned long)((*dest32) +
 					  (unsigned long)(cofffile->
 							  saddr[N_TEXT - 1]));
+		p->relocated = 1;
+		invariant = 1;
 		break;
 	    case N_DATA:
-#ifdef COFFDEBUG
-		COFFDEBUG("R_DIR32 N_DATA\n");
-		COFFDEBUG("txtsize=%x\t", cofffile->txtsize);
-		COFFDEBUG("dest32=%p\t", (void *)dest32);
-		COFFDEBUG("symval=%p\t", symval);
-		COFFDEBUG("*dest32=%8.8lx\t", *dest32);
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "%s N_DATA\n", reltype);
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "txtsize=%x\t",
+			       cofffile->txtsize);
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "dest32=%p\t",
+			       (void *)dest32);
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "symval=%p\t", symval);
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "*dest32=%8.8x\t",
+			       *dest32);
 #endif
 		*dest32 = (unsigned long)((*dest32) +
 					  ((unsigned long)(cofffile->
 							   saddr[N_DATA -
 								 1])) -
 					  cofffile->dataddr);
+		p->relocated = 1;
+		invariant = 1;
 		break;
 	    case N_BSS:
-#ifdef COFFDEBUG
-		COFFDEBUG("R_DIR32 N_BSS\n");
-		COFFDEBUG("dest32=%p\t", (void *)dest32);
-		COFFDEBUG("symval=%p\t", symval);
-		COFFDEBUG("*dest32=%8.8lx\t", *dest32);
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "%s N_BSS\n", reltype);
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "dest32=%p\t",
+			       (void *)dest32);
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "symval=%p\t", symval);
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "*dest32=%8.8x\t",
+			       *dest32);
 #endif
 		*dest32 = (unsigned long)((*dest32) +
 					  (unsigned long)(cofffile->
 							  saddr[N_BSS - 1]) -
 					  (cofffile->bssaddr));
+		p->relocated = 1;
+		invariant = 1;
 		break;
 	    default:
-		ErrorF("R_DIR32 with unexpected section %d\n",
+		ErrorF("%s with unexpected section %d\n", reltype,
 		       symbol->n_scnum);
 	    }
-
 	}
-#ifdef COFFDEBUG
-	COFFDEBUG("*dest32=%8.8lx\n", *dest32);
+#if LOADERDEBUG
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "*dest32=%8.8x\n", *dest32);
 #endif
 	break;
     case R_PCRLONG:
-	if (symbol->n_scnum == N_TEXT)
+	if (symbol->n_scnum == N_TEXT || !symval)
 	    break;
 
-	symval = COFFGetSymbolValue(cofffile, rel->r_symndx);
-#ifdef COFFDEBUG
-	COFFDEBUG("R_PCRLONG ");
-	COFFDEBUG("dest32=%p\t", (void *)dest32);
-	COFFDEBUG("symval=%p\t", symval);
-	COFFDEBUG("*dest32=%8.8lx\t", *dest32);
+#if LOADERDEBUG
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "R_PCRLONG ");
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "dest32=%p\t", (void *)dest32);
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "symval=%p\t", symval);
 #endif
-	if (symval == 0) {
-#ifdef COFFDEBUG
-	    char *name;
-
-	    COFFDEBUG("***Unable to resolve symbol %s\n",
-		      name = COFFGetSymbolName(cofffile, rel->r_symndx));
-	    xf86loaderfree(name);
-#endif
-	    return COFFDelayRelocation(cofffile, secndx, rel);
-	}
+	resetDest32(p, dest32);
 	*dest32 = (unsigned long)(symval - ((long)dest32 + sizeof(long)));
 
-#ifdef COFFDEBUG
-	COFFDEBUG("*dest32=%8.8lx\n", *dest32);
+#if LOADERDEBUG
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "*dest32=%8.8x\n", *dest32);
 #endif
 	break;
     case R_ABS:
@@ -613,87 +748,97 @@ COFF_RelocateEntry(COFFModulePtr cofffile, int secndx, RELOC *rel)
 	 */
 	if (RELOC_RLEN(*rel) != 0x1f)
 	    FatalError("R_POS with size != 32 bits");
-	symval = COFFGetSymbolValue(cofffile, rel->r_symndx);
 	if (symval) {
-#ifdef COFFDEBUG
-	    COFFDEBUG("R_POS ");
-	    COFFDEBUG("dest32=%x\t", dest32);
-	    COFFDEBUG("symval=%x\t", symval);
-	    COFFDEBUG("*dest32=%8.8x\t", *dest32);
+	    
+#if LOADERDEBUG
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "R_POS ");
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "dest32=%x\t", dest32);
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "symval=%x\t", symval);
 #endif
+	    resetDest32(p, dest32);
 	    *dest32 = (unsigned long)(symval + (*dest32) - symbol->n_value);
 	    ppc_flush_icache(dest32);
 	} else {
 	    switch (symbol->n_scnum) {
 	    case N_UNDEF:
-#ifdef COFFDEBUG
-		COFFDEBUG("R_POS N_UNDEF\n");
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "R_POS N_UNDEF\n");
 #endif
-		return COFFDelayRelocation(cofffile, secndx, rel);
+		return 0;
 	    case N_ABS:
-#ifdef COFFDEBUG
-		COFFDEBUG("R_POS N_ABS\n");
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "R_POS N_ABS\n");
 #endif
 		return 0;
 	    case N_DEBUG:
-#ifdef COFFDEBUG
-		COFFDEBUG("R_POS N_DEBUG\n");
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "R_POS N_DEBUG\n");
 #endif
 		return 0;
 	    case N_COMMENT:
-#ifdef COFFDEBUG
-		COFFDEBUG("R_POS N_COMMENT\n");
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "R_POS N_COMMENT\n");
 #endif
 		return 0;
 	    case N_TEXT:
-#ifdef COFFDEBUG
-		COFFDEBUG("R_POS N_TEXT\n");
-		COFFDEBUG("dest32=%x\t", dest32);
-		COFFDEBUG("symval=%x\t", symval);
-		COFFDEBUG("*dest32=%8.8x\t", *dest32);
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "R_POS N_TEXT\n");
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "dest32=%x\t", dest32);
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "symval=%x\t", symval);
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "*dest32=%8.8x\t",
+			       *dest32);
 #endif
 		*dest32 = (unsigned long)((*dest32) +
 					  ((unsigned long)(cofffile->
 							   saddr[N_TEXT -
 								 1])) -
 					  cofffile->txtaddr);
+		invariant = 1;
+		p->relocated = 1;
 		ppc_flush_icache(dest32);
 		break;
 	    case N_DATA:
-#ifdef COFFDEBUG
-		COFFDEBUG("R_POS N_DATA\n");
-		COFFDEBUG("txtsize=%x\t", cofffile->txtsize);
-		COFFDEBUG("dest32=%x\t", dest32);
-		COFFDEBUG("symval=%x\t", symval);
-		COFFDEBUG("*dest32=%8.8x\t", *dest32);
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "R_POS N_DATA\n");
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "txtsize=%x\t",
+			       cofffile->txtsize);
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "dest32=%x\t", dest32);
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "symval=%x\t", symval);
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "*dest32=%8.8x\t",
+			       *dest32);
 #endif
 		*dest32 = (unsigned long)((*dest32) +
 					  ((unsigned long)(cofffile->
 							   saddr[N_DATA -
 								 1])) -
 					  cofffile->dataddr);
+		invariant = 1;
+		p->relocated = 1;
 		ppc_flush_icache(dest32);
 		break;
 	    case N_BSS:
-#ifdef COFFDEBUG
-		COFFDEBUG("R_POS N_BSS\n");
-		COFFDEBUG("dest32=%x\t", dest32);
-		COFFDEBUG("symval=%x\t", symval);
-		COFFDEBUG("*dest32=%8.8x\t", *dest32);
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "R_POS N_BSS\n");
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "dest32=%x\t", dest32);
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "symval=%x\t", symval);
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "*dest32=%8.8x\t",
+			       *dest32);
 #endif
 		*dest32 = (unsigned long)((*dest32) +
 					  (unsigned long)(cofffile->
 							  saddr[N_BSS - 1]) -
 					  (cofffile->bssaddr));
+		invariant = 1;
+		p->relocated = 1;
 		ppc_flush_icache(dest32);
 		break;
 	    default:
 		ErrorF("R_POS with unexpected section %d\n", symbol->n_scnum);
 	    }
 	}
-#ifdef COFFDEBUG
-	COFFDEBUG("*dest32=%8.8x\t", *dest32);
-	COFFDEBUG("\n");
+#if LOADERDEBUG
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "*dest32=%8.8x\t", *dest32);
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "\n");
 #endif
 	break;
     case R_TOC:
@@ -704,20 +849,22 @@ COFF_RelocateEntry(COFFModulePtr cofffile, int secndx, RELOC *rel)
 	    dest16 = (unsigned short *)dest32;
 	    if (RELOC_RLEN(*rel) != 0x0f)
 		FatalError("R_TOC with size != 16 bits");
-#ifdef COFFDEBUG
-	    COFFDEBUG("R_TOC ");
-	    COFFDEBUG("dest16=%x\t", dest16);
-	    COFFDEBUG("symbol=%x\t", symbol);
-	    COFFDEBUG("symbol->n_value=%x\t", symbol->n_value);
-	    COFFDEBUG("cofffile->toc=%x\t", cofffile->toc);
-	    COFFDEBUG("*dest16=%8.8x\t", *dest16);
+#if LOADERDEBUG
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "R_TOC ");
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "dest16=%x\t", dest16);
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "symbol=%x\t", symbol);
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "symbol->n_value=%x\t",
+			   symbol->n_value);
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "cofffile->toc=%x\t",
+			   cofffile->toc);
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "*dest16=%8.8x\t", *dest16);
 #endif
 	    *dest16 = (unsigned long)((symbol->n_value - cofffile->toc));
 	    ppc_flush_icache(dest16);
 	}
-#ifdef COFFDEBUG
-	COFFDEBUG("*dest16=%8.8x\t", *dest16);
-	COFFDEBUG("\n");
+#if LOADERDEBUG
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "*dest16=%8.8x\t", *dest16);
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "\n");
 #endif
 	break;
     case R_BR:
@@ -734,35 +881,45 @@ COFF_RelocateEntry(COFFModulePtr cofffile, int secndx, RELOC *rel)
 	    symitem = LoaderHashFind(name);
 	}
 	if (symitem && cofffile->module != symitem->module) {
-#ifdef COFFDEBUG
-	    COFFDEBUG("Symbol module %d != file module %d\n",
-		      symitem->module, cofffile->module);
+#if LOADERDEBUG
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+			   "Symbol module %d != file module %d\n",
+			   symitem->module, cofffile->module);
 #endif
 	    symval = COFFGetSymbolGlinkValue(cofffile, rel->r_symndx);
 	} else
-	    symval = COFFGetSymbolValue(cofffile, rel->r_symndx);
-	if (symval == 0) {
-#ifdef COFFDEBUG
-	    char *name;
-
-	    COFFDEBUG("***Unable to resolve symbol %s\n",
-		      name = COFFGetSymbolName(cofffile, rel->r_symndx));
-	    xf86loaderfree(name);
+	    symval = COFFGetSymbolValue(cofffile, rel->r_symndx, &invariant);
+	if (symval == NULL) {
+#if LOADERDEBUG
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+			   "***Unable to resolve symbol %s\n",
+			   COFFGetSymbolName(cofffile, rel->r_symndx));
 #endif
-	    return COFFDelayRelocation(cofffile, secndx, rel);
+	    symval = (unsigned char *)&LoaderDefaultFunc;
+	    p->relocated = 0;
+	} else {
+	    if (p->relocated)
+		return invariant;
+	    else
+		p->relocated = 1;
 	}
-#ifdef COFFDEBUG
-	COFFDEBUG("R_BR ");
-	COFFDEBUG("dest32=%x\t", dest32);
-	COFFDEBUG("symval=%x\t", symval);
-	COFFDEBUG("*dest32=%8.8x\t", *dest32);
+	if (p->symval == symval) {
+	    /* Unchanged. */
+	    return invariant;
+	} else
+	    p->symval = symval;
+#if LOADERDEBUG
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "R_BR ");
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "dest32=%x\t", dest32);
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "symval=%x\t", symval);
 #endif
+	resetDest32(p, dest32);
 	{
 	    unsigned long val;
 
 	    val = ((unsigned long)symval - (unsigned long)dest32);
-#ifdef COFFDEBUG
-	    COFFDEBUG("val=%8.8x\n", val);
+#if LOADERDEBUG
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "val=%8.8x\n", val);
 #endif
 	    val = val >> 2;
 	    if ((val & 0x3f000000) != 0x3f000000 &&
@@ -771,8 +928,8 @@ COFF_RelocateEntry(COFFModulePtr cofffile, int secndx, RELOC *rel)
 		break;
 	    }
 	    val &= 0x00ffffff;
-#ifdef COFFDEBUG
-	    COFFDEBUG("val=%8.8x\n", val);
+#if LOADERDEBUG
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "val=%8.8x\n", val);
 #endif
 	    /*
 	     * The address part contains the offset to the beginning
@@ -780,8 +937,8 @@ COFF_RelocateEntry(COFFModulePtr cofffile, int secndx, RELOC *rel)
 	     * calculated the correct offset already.
 	     */
 	    (*dest32) = ((*dest32) & 0xfc000003) | (val << 2);
-#ifdef COFFDEBUG
-	    COFFDEBUG("*dest32=%8.8x\n", *dest32);
+#if LOADERDEBUG
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "*dest32=%8.8x\n", *dest32);
 #endif
 	    if (cofffile->module != symitem->module) {
 		(*++dest32) = 0x80410014;	/* lwz r2,20(r1) */
@@ -796,7 +953,7 @@ COFF_RelocateEntry(COFFModulePtr cofffile, int secndx, RELOC *rel)
 	       rel->r_type);
 	break;
     }
-    return 0;
+    return invariant;
 }
 
 static COFFRelocPtr
@@ -836,15 +993,16 @@ COFF_GetSymbols(COFFModulePtr cofffile)
     AUXENT *aux = NULL;
     int i, l, numsyms;
     LOOKUP *lookup, *lookup_common, *p;
-    char *symname;
+    const char *symname;
 
-/*
- * Load the symbols into memory
- */
+    /*
+     * Load the symbols into memory
+     */
     numsyms = cofffile->header->f_nsyms;
 
-#ifdef COFFDEBUG
-    COFFDEBUG("COFF_GetSymbols(): %d symbols\n", numsyms);
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+		   "COFF_GetSymbols(): %d symbols\n", numsyms);
 #endif
 
     cofffile->symsize = (numsyms * SYMESZ);
@@ -864,15 +1022,16 @@ COFF_GetSymbols(COFFModulePtr cofffile)
 			      ((i + 1) * SYMESZ));
 	else
 	    aux = NULL;
-#ifdef COFFDEBUG
-	COFFDEBUG("\t%d %d %lx %x %d %d %s\n",
-		  i, sym->n_scnum, sym->n_value, sym->n_type,
-		  sym->n_sclass, sym->n_numaux, symname);
+#if LOADERDEBUG
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "\t%d %d %lx %x %d %d %s\n",
+		       i, sym->n_scnum, sym->n_value, sym->n_type,
+		       sym->n_sclass, sym->n_numaux, symname);
 	if (aux)
-	    COFFDEBUG("aux=\t%ld %lx %x %x %x %lx %x\n",
-		      aux->x_scnlen, aux->x_parmhash, aux->x_snhash,
-		      aux->x_smtyp, aux->x_smclas, aux->x_stab,
-		      aux->x_snstab);
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+			   "aux=\t%ld %lx %x %x %x %lx %x\n",
+			   aux->x_scnlen, aux->x_parmhash, aux->x_snhash,
+			   aux->x_smtyp, aux->x_smclas, aux->x_stab,
+			   aux->x_snstab);
 #endif
 	i += sym->n_numaux;
 	/*
@@ -884,31 +1043,34 @@ COFF_GetSymbols(COFFModulePtr cofffile)
 	    cofffile->toc = sym->n_value;
 	    cofffile->tocaddr = (cofffile->saddr[sym->n_scnum - 1] +
 				 sym->n_value - (cofffile->dataddr));
-#ifdef COFFDEBUG
-	    COFFDEBUG("TOC=%lx\n", cofffile->toc);
-	    COFFDEBUG("TOCaddr=%p\n", cofffile->tocaddr);
+#if LOADERDEBUG
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "TOC=%lx\n", cofffile->toc);
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "TOCaddr=%p\n",
+			   cofffile->tocaddr);
 #endif
 	    continue;
 	}
 	if (sym->n_sclass == C_HIDEXT) {
-/*
+#if 0
 		&& aux && !(aux->x_smclas == XMC_DS
 		&& aux->x_smtyp == XTY_SD) ) ) {
-*/
-#ifdef COFFDEBUG
-	    COFFDEBUG("Skipping C_HIDEXT class symbol %s\n", symname);
+#endif
+#if LOADERDEBUG
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+			   "Skipping C_HIDEXT class symbol %s\n", symname);
 #endif
 	    continue;
 	}
 	switch (sym->n_scnum) {
 	case N_UNDEF:
 	    if (sym->n_value != 0) {
-		char *name;
+		const char *name;
 		COFFCommonPtr tmp;
 
 		name = COFFGetSymbolName(cofffile, i);
-#ifdef COFFDEBUG
-		COFFDEBUG("Adding COMMON space for %s\n", name);
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+			       "Adding COMMON space for %s\n", name);
 #endif
 		if (!LoaderHashFind(name)) {
 		    tmp = COFFAddCOMMON(sym, i);
@@ -917,35 +1079,34 @@ COFF_GetSymbols(COFFModulePtr cofffile)
 			listCOMMON = tmp;
 		    }
 		}
-		xf86loaderfree(name);
 	    }
-	    xf86loaderfree(symname);
 	    break;
 	case N_ABS:
 	case N_DEBUG:
 	case N_COMMENT:
-#ifdef COFFDEBUG
-	    COFFDEBUG("Freeing %s, section %d\n", symname, sym->n_scnum);
+#if LOADERDEBUG
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+			   "Freeing %s, section %d\n", symname, sym->n_scnum);
 #endif
-	    xf86loaderfree(symname);
 	    break;
 	case N_TEXT:
 	    if ((sym->n_sclass == C_EXT || sym->n_sclass == C_HIDEXT)
 		&& cofffile->saddr[sym->n_scnum - 1]) {
-		lookup[l].symName = symname;
+		lookup[l].symName = xf86loaderstrdup(symname);
 		lookup[l].offset = (funcptr)
 			(cofffile->saddr[sym->n_scnum - 1] +
 			 sym->n_value - cofffile->txtaddr);
-#ifdef COFFDEBUG
-		COFFDEBUG("Adding %p %s\n",
-			  (void *)lookup[l].offset, lookup[l].symName);
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "Adding %p %s\n",
+			       (void *)lookup[l].offset, lookup[l].symName);
 #endif
 		l++;
 	    } else {
-#ifdef COFFDEBUG
-		COFFDEBUG("TEXT Section not loaded %d\n", sym->n_scnum - 1);
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+			       "TEXT Section not loaded %d\n",
+			       sym->n_scnum - 1);
 #endif
-		xf86loaderfree(symname);
 	    }
 	    break;
 	case N_DATA:
@@ -959,20 +1120,21 @@ COFF_GetSymbols(COFFModulePtr cofffile)
 	     */
 	    if ((sym->n_sclass == C_EXT || sym->n_sclass == C_HIDEXT)
 		&& cofffile->saddr[sym->n_scnum - 1]) {
-		lookup[l].symName = symname;
+		lookup[l].symName = xf86loaderstrdup(symname);
 		lookup[l].offset = (funcptr)
 			(cofffile->saddr[sym->n_scnum - 1] +
 			 sym->n_value - cofffile->dataddr);
-#ifdef COFFDEBUG
-		COFFDEBUG("Adding %p %s\n",
-			  (void *)lookup[l].offset, lookup[l].symName);
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "Adding %p %s\n",
+			       (void *)lookup[l].offset, lookup[l].symName);
 #endif
 		l++;
 	    } else {
-#ifdef COFFDEBUG
-		COFFDEBUG("DATA Section not loaded %d\n", sym->n_scnum - 1);
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+			       "DATA Section not loaded %d\n",
+			       sym->n_scnum - 1);
 #endif
-		xf86loaderfree(symname);
 	    }
 	    break;
 	case N_BSS:
@@ -986,25 +1148,25 @@ COFF_GetSymbols(COFFModulePtr cofffile)
 	     */
 	    if ((sym->n_sclass == C_EXT || sym->n_sclass == C_HIDEXT)
 		&& cofffile->saddr[sym->n_scnum - 1]) {
-		lookup[l].symName = symname;
+		lookup[l].symName = xf86loaderstrdup(symname);
 		lookup[l].offset = (funcptr)
 			(cofffile->saddr[sym->n_scnum - 1] +
 			 sym->n_value - cofffile->bssaddr);
-#ifdef COFFDEBUG
-		COFFDEBUG("Adding %p %s\n",
-			  (void *)lookup[l].offset, lookup[l].symName);
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "Adding %p %s\n",
+			       (void *)lookup[l].offset, lookup[l].symName);
 #endif
 		l++;
 	    } else {
-#ifdef COFFDEBUG
-		COFFDEBUG("BSS Section not loaded %d\n", sym->n_scnum - 1);
+#if LOADERDEBUG
+		LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+			       "BSS Section not loaded %d\n",
+			       sym->n_scnum - 1);
 #endif
-		xf86loaderfree(symname);
 	    }
 	    break;
 	default:
 	    ErrorF("Unknown Section number %d\n", sym->n_scnum);
-	    xf86loaderfree(symname);
 	    break;
 	}
     }
@@ -1021,9 +1183,9 @@ COFF_GetSymbols(COFFModulePtr cofffile)
 	lookup[l].symName = NULL;
     }
 
-/*
- * remove the COFF symbols that will show up in every module
- */
+    /*
+     * remove the COFF symbols that will show up in every module
+     */
     for (i = 0, p = lookup; p->symName; i++, p++) {
 	while (p->symName && (!strcmp(lookup[i].symName, ".text")
 			      || !strcmp(lookup[i].symName, ".data")
@@ -1057,13 +1219,15 @@ COFFCollectSections(COFFModulePtr cofffile)
  * Find and identify all of the Sections
  */
 
-#ifdef COFFDEBUG
-    COFFDEBUG("COFFCollectSections(): %d sections\n", cofffile->numsh);
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+		   "COFFCollectSections(): %d sections\n", cofffile->numsh);
 #endif
 
     for (i = 0; i < cofffile->numsh; i++) {
-#ifdef COFFDEBUG
-	COFFDEBUG("%d %s\n", i, cofffile->sections[i].s_name);
+#if LOADERDEBUG
+	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "%d %s\n",
+		       i, cofffile->sections[i].s_name);
 #endif
 	/* .text */
 	if (strcmp(cofffile->sections[i].s_name, ".text") == 0) {
@@ -1078,9 +1242,10 @@ COFFCollectSections(COFFModulePtr cofffile)
 	    cofffile->reladdr[i] = _LoaderFileToMem(cofffile->fd,
 						    RelOffset(i), RelSize(i),
 						    ".rel.text");
-#ifdef COFFDEBUG
-	    COFFDEBUG(".text starts at %p (%x bytes)\n", cofffile->text,
-		      cofffile->txtsize);
+#if LOADERDEBUG
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+			   ".text starts at %p (%x bytes)\n", cofffile->text,
+			   cofffile->txtsize);
 #endif
 	    continue;
 	}
@@ -1097,9 +1262,10 @@ COFFCollectSections(COFFModulePtr cofffile)
 	    cofffile->reladdr[i] = _LoaderFileToMem(cofffile->fd,
 						    RelOffset(i), RelSize(i),
 						    ".rel.data");
-#ifdef COFFDEBUG
-	    COFFDEBUG(".data starts at %p (%x bytes)\n", cofffile->data,
-		      cofffile->datsize);
+#if LOADERDEBUG
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+			   ".data starts at %p (%x bytes)\n", cofffile->data,
+			   cofffile->datsize);
 #endif
 	    continue;
 	}
@@ -1113,9 +1279,10 @@ COFFCollectSections(COFFModulePtr cofffile)
 	    cofffile->bssndx = i;
 	    cofffile->bssaddr = SecAddr(i);
 	    cofffile->bsssize = SecSize(i);
-#ifdef COFFDEBUG
-	    COFFDEBUG(".bss starts at %p (%x bytes)\n", cofffile->bss,
-		      cofffile->bsssize);
+#if LOADERDEBUG
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+			   ".bss starts at %p (%x bytes)\n",
+			   cofffile->bss, cofffile->bsssize);
 #endif
 	    continue;
 	}
@@ -1151,11 +1318,10 @@ COFFLoadModule(loaderPtr modrec, int cofffd, LOOKUP **ppLookup)
     FILHDR *header;
     int stroffset;		/* offset of string table */
     COFFRelocPtr coff_reloc, tail;
-    void *v;
 
-#ifdef COFFDEBUG
-    COFFDEBUG("COFFLoadModule(%s,%x,%x)\n", modrec->name, modrec->handle,
-	      cofffd);
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_FILES, "COFFLoadModule(%s,%x,%x)\n",
+		   modrec->name, modrec->handle, cofffd);
 #endif
 
     if ((cofffile = xf86loadercalloc(1, sizeof(COFFModuleRec))) == NULL) {
@@ -1166,11 +1332,11 @@ COFFLoadModule(loaderPtr modrec, int cofffd, LOOKUP **ppLookup)
     cofffile->handle = modrec->handle;
     cofffile->module = modrec->module;
     cofffile->fd = cofffd;
-    v = cofffile->funcs = modrec->funcs;
+    cofffile->desc = modrec->desc;
 
-/*
- *  Get the COFF header
- */
+    /*
+     *  Get the COFF header
+     */
     cofffile->header =
 	    (FILHDR *) _LoaderFileToMem(cofffd, 0, sizeof(FILHDR), "header");
     header = (FILHDR *) cofffile->header;
@@ -1181,9 +1347,9 @@ COFFLoadModule(loaderPtr modrec, int cofffd, LOOKUP **ppLookup)
 	xf86loaderfree(cofffile);
 	return NULL;
     }
-/*
- * Get the section table
- */
+    /*
+     * Get the section table
+     */
     cofffile->numsh = header->f_nscns;
     cofffile->secsize = (header->f_nscns * SCNHSZ);
     cofffile->sections =
@@ -1194,18 +1360,18 @@ COFFLoadModule(loaderPtr modrec, int cofffd, LOOKUP **ppLookup)
     cofffile->reladdr =
 	    xf86loadercalloc(cofffile->numsh, sizeof(unsigned char *));
 
-/*
- * Load the optional header if we need it ?????
- */
+    /*
+     * Load the optional header if we need it ?????
+     */
 
-/*
- * Load the rest of the desired sections
- */
+    /*
+     * Load the rest of the desired sections
+     */
     COFFCollectSections(cofffile);
 
-/*
- * load the string table (must be done before we process symbols).
- */
+    /*
+     * load the string table (must be done before we process symbols).
+     */
     stroffset = header->f_symptr + (header->f_nsyms * SYMESZ);
 
     _LoaderFileRead(cofffd, stroffset, &(cofffile->strsize), sizeof(int));
@@ -1215,65 +1381,72 @@ COFFLoadModule(loaderPtr modrec, int cofffd, LOOKUP **ppLookup)
     cofffile->strtab =
 	    _LoaderFileToMem(cofffd, stroffset, cofffile->strsize, "strings");
 
-/*
- * add symbols
- */
+    /*
+     * add symbols
+     */
     *ppLookup = COFF_GetSymbols(cofffile);
 
-/*
- * Do relocations
- */
+    /*
+     * Do relocations
+     */
     coff_reloc = COFFCollectRelocations(cofffile);
     if (coff_reloc) {
 	for (tail = coff_reloc; tail->next; tail = tail->next) ;
-	tail->next = _LoaderGetRelocations(v)->coff_reloc;
-	_LoaderGetRelocations(v)->coff_reloc = coff_reloc;
+	tail->next = *_LoaderGetRelocations(cofffile->desc);
+	*_LoaderGetRelocations(cofffile->desc) = coff_reloc;
     }
 
     return (void *)cofffile;
 }
 
 void
-COFFResolveSymbols(void *mod)
+COFFResolveSymbols(LoaderDescPtr desc, int handle)
 {
-    COFFRelocPtr newlist, p, tmp;
+    COFFRelocPtr p, *pp, tmp;
 
     /* Try to relocate everything.  Build a new list containing entries
      * which we failed to relocate.  Destroy the old list in the process.
      */
-    newlist = 0;
-    for (p = _LoaderGetRelocations(mod)->coff_reloc; p;) {
-	tmp = COFF_RelocateEntry(p->file, p->secndx, p->rel);
-	if (tmp) {
-	    /* Failed to relocate.  Keep it in the list. */
-	    tmp->next = newlist;
-	    newlist = tmp;
+    pp = (COFFRelocPtr *)_LoaderGetRelocations(desc);
+    for (p = *_LoaderGetRelocations(desc); p;) {
+	/* If handle is valid, only relocate symbols for that module. */
+	if (handle >= 0 && p->file->handle != handle) {
+	    pp = &(p->next);
+	    p = p->next;
+	    continue;
 	}
-	tmp = p;
-	p = p->next;
-	xf86loaderfree(tmp);
+
+	if (COFF_RelocateEntry(p)) {
+	    /*
+	     * Remove invariant relocations, since they can't change when
+	     * other moduled are loaded or unloaded.
+	     */
+	    *pp = p->next;
+	    tmp = p;
+	    p = p->next;
+	    xf86loaderfree(tmp);
+	} else {
+	    pp = &(p->next);
+	    p = p->next;
+	}
     }
-    _LoaderGetRelocations(mod)->coff_reloc = newlist;
 }
 
 int
-COFFCheckForUnresolved(void *mod)
+COFFCheckForUnresolved(LoaderDescPtr desc)
 {
-    char *name;
+    const char *name;
     COFFRelocPtr crel;
     int flag, fatalsym = 0;
 
-    if ((crel = _LoaderGetRelocations(mod)->coff_reloc) == NULL)
+    if ((crel = *_LoaderGetRelocations(desc)) == NULL)
 	return 0;
 
     while (crel) {
 	name = COFFGetSymbolName(crel->file, crel->rel->r_symndx);
-	flag = _LoaderHandleUnresolved(name,
-				       _LoaderHandleToName(crel->file->
-							   handle));
+	flag = _LoaderHandleUnresolved(name, crel->file->handle);
 	if (flag)
 	    fatalsym = 1;
-	xf86loaderfree(name);
 	crel = crel->next;
     }
     return fatalsym;
@@ -1285,12 +1458,12 @@ COFFUnloadModule(void *modptr)
     COFFModulePtr cofffile = (COFFModulePtr) modptr;
     COFFRelocPtr relptr, reltptr, *brelptr;
 
-/*
- * Delete any unresolved relocations
- */
+    /*
+     * Delete any unresolved relocations
+     */
 
-    relptr = _LoaderGetRelocations(cofffile->funcs)->coff_reloc;
-    brelptr = &(_LoaderGetRelocations(cofffile->funcs)->coff_reloc);
+    relptr = *_LoaderGetRelocations(cofffile->desc);
+    brelptr = (COFFRelocPtr *)_LoaderGetRelocations(cofffile->desc);
 
     while (relptr) {
 	if (relptr->file == cofffile) {
@@ -1304,15 +1477,15 @@ COFFUnloadModule(void *modptr)
 	}
     }
 
-/*
- * Delete any symbols in the symbols table.
- */
+    /*
+     * Delete any symbols in the symbols table.
+     */
 
     LoaderHashTraverse((void *)cofffile, COFFhashCleanOut);
 
-/*
- * Free the sections that were allocated.
- */
+    /*
+     * Free the sections that were allocated.
+     */
 #define CheckandFree(ptr,size)	if(ptr) _LoaderFreeFileMem((ptr),(size))
 
     CheckandFree(cofffile->strtab, cofffile->strsize);
@@ -1324,16 +1497,16 @@ COFFUnloadModule(void *modptr)
     CheckandFree(cofffile->bss, cofffile->bsssize);
     if (cofffile->common)
 	xf86loaderfree(cofffile->common);
-/*
- * Free the section table, and section pointer array
- */
+    /*
+     * Free the section table, and section pointer array
+     */
     _LoaderFreeFileMem(cofffile->sections, cofffile->secsize);
     xf86loaderfree(cofffile->saddr);
     xf86loaderfree(cofffile->reladdr);
     _LoaderFreeFileMem(cofffile->header, sizeof(FILHDR));
-/*
- * Free the COFFModuleRec
- */
+    /*
+     * Free the COFFModuleRec
+     */
     xf86loaderfree(cofffile);
 
     return;
@@ -1345,7 +1518,7 @@ COFFAddressToSection(void *modptr, unsigned long address)
     COFFModulePtr cofffile = (COFFModulePtr) modptr;
     int i;
 
-    for (i = 1; i < cofffile->numsh; i++) {
+    for (i = 0; i < cofffile->numsh; i++) {
 	if (address >= (unsigned long)cofffile->saddr[i] &&
 	    address <= (unsigned long)cofffile->saddr[i] + SecSize(i)) {
 	    return cofffile->sections[i].s_name;
@@ -1353,3 +1526,101 @@ COFFAddressToSection(void *modptr, unsigned long address)
     }
     return NULL;
 }
+
+const char *
+COFFFindRelocName(LoaderDescPtr desc, int handle, unsigned long addr)
+{
+    COFFRelocPtr p;
+    long diff;
+
+    for (p = *_LoaderGetRelocations(desc); p;) {
+	/* If handle is valid, only relocate symbols for that module. */
+	if (handle >= 0 && p->file->handle != handle) {
+	    p = p->next;
+	    continue;
+	}
+
+	diff = addr - ((long)(p->file->saddr[p->secndx]) +
+		       (p->rel->r_vaddr - p->file->txtaddr));
+	if (diff < 8 && diff > -8) {
+	    return COFFGetSymbolName(p->file, p->rel->r_symndx);
+	}
+	p = p->next;
+    }
+    return NULL;
+}
+
+const char *
+COFFAddressToSymbol(void *modptr, unsigned long addr, unsigned long *symaddr,
+		    const char **filename)
+{
+    COFFModulePtr cofffile;
+    FILHDR *header;
+    SYMENT *syms, *sym;
+    int i, numsyms;
+    long bestDiff = MAXINT, diff;
+    const char *best = NULL;
+    unsigned long saddr = 0, bestAddr = 0;
+
+    if (!modptr)
+	return NULL;
+    else
+	cofffile = (COFFModulePtr)modptr;
+
+    header = cofffile->header;
+    syms = cofffile->symtab;
+    numsyms = cofffile->header->f_nsyms;
+    for (i = 0; i < numsyms; i++) {
+	sym = (SYMENT *)((unsigned char *)syms + i * SYMESZ);
+	switch (sym->n_scnum) {
+	case N_TEXT:
+	case N_DATA:
+	case N_BSS:
+	    if (cofffile->saddr[sym->n_scnum - 1]) {
+		saddr = (unsigned long)cofffile->saddr[sym->n_scnum - 1] + sym->n_value;
+		switch (sym->n_scnum) {
+		case N_TEXT:
+		    saddr -= cofffile->txtaddr;
+		    break;
+		case N_DATA:
+		    saddr -= cofffile->dataddr;
+		    break;
+		case N_BSS:
+		    saddr -= cofffile->bssaddr;
+		    break;
+		}
+	    }
+	    break;
+	default:
+	    saddr = 0;
+	    break;
+	}
+
+	if (!saddr)
+	    continue;
+
+	diff = addr - saddr;
+	if (diff >= 0) {
+	    if ((best && diff < bestDiff) || !best) {
+		best = COFFGetSymbolName(cofffile, i);
+		bestDiff = diff;
+		bestAddr = saddr;
+	    }
+	}
+    }
+    *filename = NULL;
+    if (best && bestDiff < 0x10000) {
+	*symaddr = bestAddr;
+	return best;
+    } else {
+	return NULL;
+    }
+}
+
+void *
+COFFReadExecutableSyms(int fd)
+{
+    /* TODO */
+    return NULL;
+}
+

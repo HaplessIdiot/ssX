@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.39tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.40 2006/02/19 15:51:27 tsi Exp $ */
 
 /*
  *
@@ -221,5 +221,5 @@ LOOKUP miLookupTab[] = {
     SYMVAR(miGlyphExtents)
 #endif
 
-    {0, 0}
+    LOOKUP_TERMINATOR
 };

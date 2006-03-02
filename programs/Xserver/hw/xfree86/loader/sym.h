@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/sym.h,v 1.6 2000/10/24 00:06:55 anderson Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/sym.h,v 1.7 2003/10/15 16:29:04 dawes Exp $ */
 
 /*
  *
@@ -26,21 +26,22 @@
 #ifndef _SYM_H
 #define _SYM_H
 
+typedef void (*funcptr)(void);
+
 /*
  * This structure is used to pass in symbol information that is being
  * added to the symbol table.
  */
-
-typedef void (*funcptr) (void);
-
 typedef struct {
     char *symName;
     funcptr offset;
 } LOOKUP;
 
-#define SYMFUNC( func ) { #func, (funcptr)&func },
-#define SYMFUNCALIAS( name, func ) { name, (funcptr)&func },
-#define SYMVAR( var ) { #var, (funcptr)&var },
-#define SYMVARALIAS( name, var ) { name, (funcptr)&var },
+#define SYMFUNC(func)			{ #func, (funcptr)&func },
+#define SYMFUNCALIAS(name, func)	{ name, (funcptr)&func },
+#define SYMVAR(var)			{ #var, (funcptr)&var },
+#define SYMVARALIAS(name, var)		{ name, (funcptr)&var },
+
+#define LOOKUP_TERMINATOR		{ NULL, NULL }
 
 #endif /* _SYM_H */

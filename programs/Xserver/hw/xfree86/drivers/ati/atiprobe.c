@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.69tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.70 2006/01/05 18:55:30 tsi Exp $ */
 /*
  * Copyright 1997 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -2683,7 +2683,7 @@ ATIProbe
                 continue;
             }
 
-            xf86LoaderReqSymLists(ATISymbols, NULL);
+            xf86LoaderModReqSymLists(pScreenInfo->module, ATISymbols, NULL);
 
 #endif
 

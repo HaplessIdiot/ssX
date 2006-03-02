@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.59tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.60 2006/01/01 03:43:00 tsi Exp $
 </ident>
 
 
@@ -4703,20 +4703,20 @@ available in a staticly built server, whereas the functions below are not.
 
   </quote>
 
-  &s.code;int LoaderCheckUnresolved(int delayflag)&e.code;
+  &s.code;int LoaderCheckUnresolved(int dummy)&e.code;
   <quote><p>
     This function checks for unresolved symbols.  It generates warnings
     for unresolved symbols that have not been registered with
-    &s.code;LoaderRefSymLists()&e.code;, and maps them to a dummy
-    function.  This behaviour may change in future.  If unresolved
+    &s.code;LoaderRefSymLists()&e.code;.  All such symbols are autmatically
+    mapped to a dummy function.  If unresolved
     symbols are found that have been registered with
     &s.code;LoaderReqSymLists()&e.code; or
     &s.code;LoaderReqSymbols()&e.code; then this function returns a
     non-zero value.  If none of these symbols are unresolved the return
     value is zero, indicating success.
 
-    The &s.code;delayflag&e.code; parameter should normally be set to
-    &s.code;LD_RESOLV_IFDONE&e.code;.
+    The &s.code;dummy&e.code; parameter is not used, and should be set to
+    &s.code;0&e.code;.  It is kept only for compatibility purposes.
 
   </quote>
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coff.h,v 1.5 1998/07/25 16:56:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coff.h,v 1.6 2003/10/15 16:29:02 dawes Exp $ */
 
 /* This file was implemented from the information in the book
    Understanding and Using COFF
@@ -107,6 +107,12 @@ typedef struct COFF_syment {
 #define COFF_E_DIMNUM	 4	/* array dimensions in aux entry        */
 #define SYMNMLEN	COFF_E_SYMNMLEN
 #define SYMESZ		18	/* not really sizeof(SYMENT) due to padding */
+
+/* COFF section numbers. */
+#define N_TEXT		1
+#define N_DATA		2
+#define N_BSS		3
+#define N_COMMENT	4
 
 /* Special section number found in the symbol section */
 #define	N_UNDEF	0

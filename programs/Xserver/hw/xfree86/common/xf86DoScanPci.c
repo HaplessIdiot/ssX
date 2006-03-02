@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoScanPci.c,v 1.17tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoScanPci.c,v 1.18 2005/10/14 15:16:32 tsi Exp $ */
 /*
  * Copyright (c) 1999-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -122,7 +122,7 @@ void DoScanPci(int argc, char **argv, int i)
     LoaderErrorMsg(NULL, "scanpci", errmaj, errmin);
     exit(1);
   }
-  if (LoaderCheckUnresolved(LD_RESOLV_IFDONE)) {
+  if (LoaderCheckUnresolved(0)) {
       /* For now, just a warning */
       xf86Msg(X_WARNING, "Some symbols could not be resolved!\n");
   }

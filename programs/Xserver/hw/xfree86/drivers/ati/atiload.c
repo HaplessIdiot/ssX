@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.c,v 1.20tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.c,v 1.21 2006/01/05 18:55:29 tsi Exp $ */
 /*
  * Copyright 2000 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -128,7 +128,7 @@ ATILoadSubModule
     pointer pModule = xf86LoadSubModule(pScreenInfo, Module);
 
     if (pModule)
-        xf86LoaderReqSymLists(SymbolList, NULL);
+        xf86LoaderModReqSymLists(pScreenInfo->module, SymbolList, NULL);
 
     return pModule;
 }
@@ -147,7 +147,7 @@ ATILoadVBEModule
     pointer pModule = xf86LoadVBEModule(pScreenInfo);
 
     if (pModule)
-        xf86LoaderReqSymLists(ATIvbeSymbols, NULL);
+        xf86LoaderModReqSymLists(pScreenInfo->module, ATIvbeSymbols, NULL);
 
     return pModule;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.45tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.46 2005/10/14 15:16:33 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -319,9 +319,3 @@ Bool xf86MiscModInDevAllowNonLocal = FALSE;
 RootWinPropPtr *xf86RegisteredPropertiesTable = NULL;
 Bool xf86inSuspend = FALSE;
 
-#ifdef DLOPEN_HACK
-/*
- * This stuff is a hack to allow dlopen() modules to work.  It is intended
- * only to be used when using dlopen() modules for debugging purposes.
- */
-#endif

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/Imakefile,v 3.32 2004/06/23 17:04:13 dawes Exp $
+XCOMM $XFree86: xc/Imakefile,v 3.33 2005/06/07 08:02:13 dawes Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
@@ -23,7 +23,11 @@ VERSTRING = " "version XFree86VersionString "("XFree86DateString")"
 #endif
 #endif
 
-        SUBDIRS = include config lib $(NLSSUBDIR) \
+#if UseMemLeak || UseStackTrace
+        MEMLEAKDIR = util/memleak
+#endif
+
+        SUBDIRS = include config lib $(NLSSUBDIR) $(MEMLEAKDIR) \
                   programs $(FONTSDIR) $(DOCSDIR)
   LNINSTALLDIRS = lib
 

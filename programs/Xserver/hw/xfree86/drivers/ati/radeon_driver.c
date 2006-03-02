@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.129tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.130 2005/08/28 20:04:47 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -340,13 +340,14 @@ static const char *i2cSymbols[] = {
     NULL
 };
 
-void RADEONLoaderRefSymLists(void)
+void RADEONLoaderRefSymLists(pointer module)
 {
     /*
      * Tell the loader about symbols from other modules that this module might
      * refer to.
      */
-    xf86LoaderRefSymLists(vgahwSymbols,
+    xf86LoaderModRefSymLists(module,
+			  vgahwSymbols,
 			  fbSymbols,
 			  xaaSymbols,
 			  ramdacSymbols,
@@ -2369,7 +2370,7 @@ static void RADEONPreInitDDC(ScrnInfoPtr pScrn)
     if (!xf86LoadSubModule(pScrn, "ddc")) {
 	info->ddc2 = FALSE;
     } else {
-	xf86LoaderReqSymLists(ddcSymbols, NULL);
+	xf86LoaderModReqSymLists(RADEONModule, ddcSymbols, NULL);
 	info->ddc2 = TRUE;
     }
 
@@ -2377,7 +2378,7 @@ static void RADEONPreInitDDC(ScrnInfoPtr pScrn)
     /* Load I2C if we have the code to use it */
     if (info->ddc2) {
 	if (xf86LoadSubModule(pScrn, "i2c")) {
-	    xf86LoaderReqSymLists(i2cSymbols,NULL);
+	    xf86LoaderModReqSymLists(RADEONModule, i2cSymbols,NULL);
 	    info->ddc2 = RADEONI2cInit(pScrn);
 	}
 	else info->ddc2 = FALSE;
@@ -3638,7 +3639,7 @@ static Bool RADEONPreInitModes(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 				/* Get ScreenInit function */
     if (!xf86LoadSubModule(pScrn, "fb")) return FALSE;
 
-    xf86LoaderReqSymLists(fbSymbols, NULL);
+    xf86LoaderModReqSymLists(RADEONModule, fbSymbols, NULL);
 
     info->CurrentLayout.displayWidth = pScrn->displayWidth;
     info->CurrentLayout.mode = pScrn->currentMode;
@@ -3653,7 +3654,7 @@ static Bool RADEONPreInitCursor(ScrnInfoPtr pScrn)
 
     if (!xf86ReturnOptValBool(info->Options, OPTION_SW_CURSOR, FALSE)) {
 	if (!xf86LoadSubModule(pScrn, "ramdac")) return FALSE;
-	xf86LoaderReqSymLists(ramdacSymbols, NULL);
+	xf86LoaderModReqSymLists(RADEONModule, ramdacSymbols, NULL);
     }
     return TRUE;
 }
@@ -3680,7 +3681,7 @@ static Bool RADEONPreInitAccel(ScrnInfoPtr pScrn)
 		return FALSE;
 	    }
 	}
-	xf86LoaderReqSymLists(xaaSymbols, NULL);
+	xf86LoaderModReqSymLists(RADEONModule, xaaSymbols, NULL);
     }
 #endif
 
@@ -3693,7 +3694,7 @@ static Bool RADEONPreInitInt10(ScrnInfoPtr pScrn, xf86Int10InfoPtr *ppInt10)
 
 #if !defined(__powerpc__)
     if (xf86LoadSubModule(pScrn, "int10")) {
-	xf86LoaderReqSymLists(int10Symbols, NULL);
+	xf86LoaderModReqSymLists(RADEONModule, int10Symbols, NULL);
 	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"initializing int10\n");
 	*ppInt10 = xf86InitInt10(info->pEnt->index);
     }
@@ -3829,7 +3830,7 @@ static Bool RADEONPreInitDRI(ScrnInfoPtr pScrn)
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		   "Couldn't load shadowfb module:\n");
     } else {
-	xf86LoaderReqSymLists(driShadowFBSymbols, NULL);
+	xf86LoaderModReqSymLists(RADEONModule, driShadowFBSymbols, NULL);
 
 	info->allowPageFlip = xf86ReturnOptValBool(info->Options,
 						   OPTION_PAGE_FLIP,
@@ -3948,7 +3949,7 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     if (!xf86LoadSubModule(pScrn, "vgahw")) return FALSE;
-    xf86LoaderReqSymLists(vgahwSymbols, NULL);
+    xf86LoaderModReqSymLists(RADEONModule, vgahwSymbols, NULL);
     if (!vgaHWGetHWRec(pScrn)) {
 	RADEONFreeRec(pScrn);
 	goto fail2;
@@ -4010,7 +4011,7 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
 	/* check for Linux framebuffer device */
 
 	if (xf86LoadSubModule(pScrn, "fbdevhw")) {
-	    xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
+	    xf86LoaderModReqSymLists(RADEONModule, fbdevHWSymbols, NULL);
 
 	    if (fbdevHWInit(pScrn, info->PciInfo, NULL)) {
 		pScrn->ValidMode     = fbdevHWValidMode;

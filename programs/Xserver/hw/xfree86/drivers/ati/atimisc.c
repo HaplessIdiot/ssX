@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimisc.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimisc.c,v 1.12 2006/01/05 18:55:30 tsi Exp $ */
 /*
  * Copyright 2000 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -99,7 +99,7 @@ ATISetup
          * Tell loader about symbols from other modules that this module might
          * refer to.
          */
-        xf86LoaderRefSymLists(
+        xf86LoaderModRefSymLists(Module,
             ATIint10Symbols,
             ATIddcSymbols,
             ATIvbeSymbols,
@@ -123,6 +123,18 @@ XF86ModuleData atimiscModuleData =
 {
     &ATIVersionRec,
     ATISetup,
+    NULL
+};
+
+const char *atimiscExportedSymbols[] = {
+    "ATIPreInit",
+    "ATIScreenInit",
+    "ATISwitchMode",
+    "ATIAdjustFrame",
+    "ATIEnterVT",
+    "ATILeaveVT",
+    "ATIFreeScreen",
+    "ATIValidMode",
     NULL
 };
 

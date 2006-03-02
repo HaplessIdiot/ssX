@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.322tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.323 2006/02/24 15:31:29 tsi Exp $
 
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
@@ -357,12 +357,14 @@ XCOMM
          XF86OSLIB = $(XF86OSSRC)/LibraryTargetName(xf86_os)
 #if UseMemLeak
        MEMDEBUGLIB = $(TOP)/util/memleak/LibraryTargetName(memleak)
+#elif UseStackTrace
+     STACKTRACELIB = $(TOP)/util/memleak/LibraryTargetName(stacktrace)
 #endif
 #if DoLoadableServer
           BASEEXTS = Xext/LibraryTargetName(exts)
     XF86EXTENSIONS = $(BASEEXTS) $(STATICEXTS)
           XF86LIBS = $(MEMDEBUGLIB) $(XF86INIT) $(XF86COMLIB) $(XF86PARSLIB) \
-		     $(XF86OSLIB)
+		     $(XF86OSLIB) $(STACKTRACELIB)
      XF86LOADERLIB = $(XF86SRC)/loader/LibraryTargetName(loader)
       XF86MAINLIBS = $(DIX) $(OS) $(FONTBASE) $(XF86COMLIB) $(XPDDX) $(MI) \
 		     $(XF86EXTENSIONS)
@@ -436,7 +438,8 @@ XCOMM
       XF86IDRVLIBS = $(XF86IDRIVERLIB)
        XF86SCANLIB = $(XF86SRC)/scanpci/LibraryTargetName(scanpci)
           XF86LIBS = $(MEMDEBUGLIB) $(XF86INIT) $(XF86COMLIB) $(XF86RACLIB) \
-		     $(XF86PARSLIB) $(XF86VBELIB) $(XF86OSLIB) $(XF86INT10LIB)
+		     $(XF86PARSLIB) $(XF86VBELIB) $(XF86OSLIB) \
+		     $(XF86INT10LIB) $(STACKTRACELIB)
       XF86MAINLIBS = $(SHADOW) $(DIX) $(OS) $(XPDDX) $(FB) \
 		     $(CFB32) $(CFB16) $(CFB8) $(MFB) $(MI) \
 		     $(XF86EXTENSIONS) $(XF86COMLIB)

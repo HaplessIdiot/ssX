@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.32 2005/10/14 15:17:13 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.33 2006/02/20 00:14:37 dawes Exp $
 
 XCOMM CDEBUGFLAGS=-g -Wall -ansi -pedantic
 
@@ -124,6 +124,12 @@ DEFINES        = -DXF86CONFIG=\"$(XF86CONFIGFILE)\" $(MODULEDEFINES) \
 DLLIB = DlLibrary
 #endif
 
+#if UseMemLeak
+STRACELIB = $(TOP)/util/memleak/LibraryTargetName(memleak)
+#elif UseStackTrace
+STRACELIB = $(TOP)/util/memleak/LibraryTargetName(stacktrace)
+#endif
+
 INCLUDES       = -I$(XF86SRC)/common -I$(XF86SRC)/scanpci \
 		 -I$(XF86SRC)/loader -I$(XF86SRC)/parser -I$(XF86OSSRC) \
 		 -I$(SERVERSRC)/include -I$(FONTLIBSRC)/include
@@ -131,7 +137,7 @@ LOCAL_LIBRARIES = $(XF86SRC)/parser/LibraryTargetName(xf86config) \
 		  $(XKBUILIB) $(XKBFILELIB) $(XXF86MISCLIB) \
 		  $(XXF86VMLIB) $(XAWLIB) $(XMULIB) $(XTOOLLIB) \
 		  $(XPMLIB) $(LOADERLIB) $(DLLIB) $(XLIB) $(CURSESLIB) \
-		  RegexLibrary -lm
+		  $(STRACELIB) RegexLibrary -lm
 
 NormalProgramTarget($(PROG),$(OBJS),,$(LOCAL_LIBRARIES),)
 InstallProgramWithFlags($(PROG),$(BINDIR),NullParameter)

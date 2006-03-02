@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.188 2005/08/28 20:04:46 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.189 2005/10/11 21:01:49 alanh Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -524,6 +524,10 @@ void xf86LoaderReqSymLists(const char **, ...);
 void xf86LoaderReqSymbols(const char *, ...);
 void xf86LoaderRefSymLists(const char **, ...);
 void xf86LoaderRefSymbols(const char *, ...);
+void xf86LoaderModReqSymLists(pointer module, const char **, ...);
+void xf86LoaderModReqSymbols(pointer module, const char *, ...);
+void xf86LoaderModRefSymLists(pointer module, const char **, ...);
+void xf86LoaderModRefSymbols(pointer module, const char *, ...);
 void xf86SetBackingStore(ScreenPtr pScreen);
 void xf86SetSilkenMouse(ScreenPtr pScreen);
 int xf86NewSerialNumber(WindowPtr p, pointer unused);

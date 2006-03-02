@@ -45,7 +45,7 @@
    * Support static loading.  
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.29tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.30 2005/10/14 15:16:39 tsi Exp $ */
 
 #include "xf86Cursor.h"
 #include "colormapst.h"
@@ -749,7 +749,7 @@ GLIDEScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
   }
 
 #if 0
-  LoaderCheckUnresolved(LD_RESOLV_NOW);
+  LoaderCheckUnresolved(0);
   return FALSE;
 #endif
 
