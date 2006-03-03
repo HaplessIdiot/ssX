@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/Imakefile,v 1.7tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/Imakefile,v 1.8tsi Exp $
 /*
  * Copyright (c) 2004-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -65,6 +65,12 @@ XVSRCS=txxv.c
 XVOBJS=txxv.o 
 #endif
 
+#if (defined(XSavageServer) && XSavageServer) || \
+    (defined(XIgsServer) && XIgsServer)
+VGASRC = vga.c
+VGAOBJ = vga.o
+#endif
+
 #ifdef TinyDIXDefines
 TINY_DEFINES = TinyDIXDefines
 #endif
@@ -82,11 +88,11 @@ SUBDIRS = sys dix os Xext $(RENDERSUBDIRS) $(RANDRSUBDIRS)
 DEFINES = $(EXT_DEFINES) $(IPAQ_DEFINES) $(TINY_DEFINES) $(MTRR_DEFINES)
 
 SRCS = txaa.c txcmap.c tinyx.c txinfo.c txinput.c txmap.c txnoop.c \
-	txtest.c vga.c txasync.c txmode.c txcurscol.c txshadow.c \
+	txtest.c $(VGASRC) txasync.c txmode.c txcurscol.c txshadow.c \
 	$(RENDERSRCS) $(XVSRCS) miinitext.c
 
 OBJS = txaa.o txcmap.o tinyx.o txinfo.o txinput.o txmap.o txnoop.o \
-	txtest.o vga.o txasync.o txmode.o txcurscol.o txshadow.o \
+	txtest.o $(VGAOBJ) txasync.o txmode.o txcurscol.o txshadow.o \
 	$(RENDEROBJS) $(XVOBJS)
 
 INCLUDES = $(TINYXINCLUDES)

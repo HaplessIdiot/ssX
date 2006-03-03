@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.505 2006/02/28 22:32:36 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.506tsi Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1980,7 +1980,7 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 #define Xi810Server 		(HaveTinyXVBESupport && HaveTinyXFbdevSupport)
 #endif
 #ifndef XIgsServer
-#define XIgsServer 		HaveTinyXSupport
+#define XIgsServer 		HaveTinyXIOPortSupport
 #endif
 #ifndef XipaqServer
 #define XipaqServer 		HaveTinyXFbdevSupport
@@ -1992,7 +1992,7 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 #define Xmach64Server		HaveTinyXVBESupport
 #endif
 #ifndef XSavageServer
-#define XSavageServer		HaveTinyXSupport
+#define XSavageServer		HaveTinyXIOPortSupport
 #endif
 #ifndef XSis530Server
 #define XSis530Server		HaveTinyXIOPortSupport
