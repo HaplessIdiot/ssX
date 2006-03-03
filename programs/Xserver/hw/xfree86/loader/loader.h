@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.29 2004/02/13 23:58:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.30tsi Exp $ */
 
 /*
  *
@@ -347,11 +347,13 @@ extern unsigned long LoaderDebugLevel;
 
 /* Internal Functions */
 
-#if defined(__GNUC__) && \
+#if (!defined(printf) || defined(printf_is_xf86printf)) && \
+    defined(__GNUC__) && \
     ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ > 4)))
-#define _printf_attribute(a,b) __attribute((format(printf,a,b)))
+# define _printf_attribute(a,b) __attribute((format(printf,a,b)))
+# undef printf
 #else
-#define _printf_attribute(a,b) /**/
+# define _printf_attribute(a,b) /**/
 #endif
 
 void LoaderDebugMsg(unsigned long, const char *f, ...) _printf_attribute(2,3);
@@ -400,5 +402,10 @@ char *_LoaderHandleToName(int handle);
 char *_LoaderHandleToCanonicalName(int handle);
 
 extern void _loader_debug_state(void);
+
+#undef _printf_attribute
+#if defined(printf_is_xf86printf) && !defined(printf)
+#defined printf xf86printf
+#endif
 
 #endif /* _LOADER_H */
