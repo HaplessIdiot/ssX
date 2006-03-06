@@ -1,8 +1,8 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.144tsi Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.145 2005/10/14 15:15:52 tsi Exp $
 /*
- * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -1303,6 +1303,9 @@ install::								@@\
 InstallTarget(install.ln,Concat(llib-l,libname.ln),$(INSTLIBFLAGS),dest)
 #endif /* InstallLintLibrary */
 
+#ifndef OsInstallManPageLong
+#define OsInstallManPageLongBase(file,destdir,dest,suffix) /**/
+#endif
 
 #if !CompressManPages
 /*
@@ -1318,9 +1321,14 @@ BuildInstallHtmlManPage(file,dest,$(MANSUFFIX))				@@\
 									@@\
 CppManTarget(file,$(EXTRAMANDEFS))					@@\
 									@@\
-InstallNamedTarget(install.man,file.$(MANNEWSUFFIX),$(INSTMANFLAGS),destdir,dest.$(MANSUFFIX))
+InstallNamedTarget(install.man,file.$(MANNEWSUFFIX),$(INSTMANFLAGS),destdir,dest.$(MANSUFFIX)) @@\
+									@@\
+OsInstallManPageLongBase(file,destdir,dest,$(MANSUFFIX))
 #endif /* InstallManPageLong */
 
+#ifndef OsInstallManPageAliasesBase
+#define OsInstallManPageAliasesBase(file,destdir,suffix,aliases) /**/
+#endif
 
 /*
  * InstallManPageAliases - generate rules to install manual page aliases.
@@ -1336,7 +1344,9 @@ install.man::								@@\
 	for i in aliases; do (set -x; \					@@\
 	$(INSTALL) $(INSTALLFLAGS) $(INSTMANFLAGS) $${TMP} $(DESTDIR)destdir/$$i.$(MANSUFFIX)); \ @@\
 	done; \								@@\
-	RemoveFile($${TMP}))
+	RemoveFile($${TMP}))						@@\
+									@@\
+OsInstallManPageAliasesBase(file,destdir,$(MANSUFFIX),aliases)
 #endif /* InstallManPageAliases */
 
 
@@ -1353,7 +1363,9 @@ CppManTarget(file, $(EXTRAMANDEFS))					@@\
 install.man::								@@\
 	MakeDir($(DESTDIR)destdir)					@@\
 	$(INSTALL) -c $(INSTMANFLAGS) file.$(MANNEWSUFFIX) \		@@\
-		$(DESTDIR)destdir/dest.suffix
+		$(DESTDIR)destdir/dest.suffix				@@\
+									@@\
+OsInstallManPageLongBase(file,destdir,dest,suffix)
 #endif /* InstallGenManPageLong */
 
 
@@ -1371,7 +1383,10 @@ install.man::								@@\
 	for i in aliases; do (set -x; \					@@\
 	$(INSTALL) $(INSTALLFLAGS) $(INSTMANFLAGS) $${TMP} $(DESTDIR)destdir/$$i.suffix); \ @@\
 	done; \								@@\
-	RemoveFile($${TMP}))
+	RemoveFile($${TMP}))						@@\
+									@@\
+OsInstallManPageAliasesBase(file,destdir,suffix,aliases)
+
 #endif /* InstallGenManPageAliases */
 
 #else /* CompressManPages */
@@ -1704,8 +1719,9 @@ InstallNamedTargetNoClobber(install,srcname,$(INSTBINFLAGS),dest,dstname)
  */
 #ifndef MakeNamedTargetSubdir
 #define MakeNamedTargetSubdir(dir,flags,subname)\
-		(cd dir && $(MAKE) $(MFLAGS) $(PARALLELMFLAGS) \	@@\
-			flags subname)
+		if [ -z "$$_fail" ]; then _fail="exit 1"; fi; \		@@\
+		(cd dir; $(MAKE) $(MFLAGS) $(PARALLELMFLAGS) \		@@\
+			flags subname) || $$_fail
 #endif
 
 /*
@@ -1880,14 +1896,24 @@ InstallMultipleDestFlags(install,list,dest,flags)
 #endif /* InstallMultipleFlags */
 
 
+#ifndef OsInstallMultipleMan
+#define OsInstallMultipleMan(list,dest)	/**/
+#endif
+
 /*
  * InstallMultipleMan - generate rules to install a variety of manual pages
  * during the install.man step of the build.
  */
 #ifndef InstallMultipleMan
 #define InstallMultipleMan(list,dest)					@@\
-InstallMultipleDestFlags(install.man,list,dest,$(INSTMANFLAGS))
+InstallMultipleDestFlags(install.man,list,dest,$(INSTMANFLAGS))		@@\
+									@@\
+OsInstallMultipleMan(list,dest)
 #endif /* InstallMultipleMan */
+
+#ifndef OsInstallMultipleManSuffix
+#define OsInstallMultipleManSuffix(list,dest,suffix) /**/
+#endif
 
 /*
  * InstallMultipleManSuffix - generate rules to install multiple manual
@@ -1901,7 +1927,9 @@ install.man::								@@\
 	@MakeFlagsToShellFlags(i,set +e); \				@@\
 	for i in list; do \						@@\
 	  (set -x; $(INSTALL) $(INSTALLFLAGS) $(INSTMANFLAGS) $$i.suffix $(DESTDIR)dest/$$i.$(MANSUFFIX)); \	@@\
-	done
+	done								@@\
+									@@\
+OsInstallMultipleManSuffix(list,dest,suffix)
 #endif /* InstallMultipleManSuffix */
 
 
@@ -3065,7 +3093,7 @@ LangNamedMakeSubdirs(lang,all,dirs)
 #ifndef NamedTargetSubdirs
 #define NamedTargetSubdirs(name,dirs,verb,flags,subname)		@@\
 name::									@@\
-	@MakeFlagsToShellFlags(ik,set +e); \				@@\
+	@MakeFlagsToShellFlags(ik,set +e; _fail=:); \			@@\
 	for i in dirs ;\						@@\
 	do \								@@\
 		echo verb "in $(CURRENT_DIR)/$$i..."; \			@@\

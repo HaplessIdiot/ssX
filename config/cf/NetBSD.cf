@@ -1,7 +1,7 @@
 XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.128 2005/06/22 03:28:49 dawes Exp $
 
 /*
- * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -507,45 +507,29 @@ dirs:	.EXEC								@@\
  */
 #define ManSuffix	1
 #define FileManSuffix	5
-#define ManSourcePath	$(MANPATH)/cat
 
-#define InstallManPageLongBase(file,destdir,dest)			@@\
+#define OsInstallManPageLongBase(file,destdir,dest,suffix)		@@\
 									@@\
 all:: file.0								@@\
 									@@\
 file.0:: file.$(MANNEWSUFFIX)						@@\
-	@if [ -f file.$(MANNEWSUFFIX) ]; \				@@\
-	then \								@@\
-	cat file.$(MANNEWSUFFIX) | $(NEQN) | $(TBL) | $(NROFF) $(MANMACROS) | $(COL) > file.0; \	@@\
-	fi 								@@\
+	cat file.$(MANNEWSUFFIX) | $(NEQN) | $(TBL) | $(NROFF) $(MANMACROS) | $(COL) > file.0	@@\
 									@@\
 install.man::                                                           @@\
-	MakeDir($(DESTDIR)destdir)					@@\
-	-@if [ -f file.0 ]; \						@@\
+	@catdir=`echo destdir | sed -e s,man/man,man/cat,`; \		@@\
+	MakeDirInline($(DESTDIR)$$catdir); \				@@\
+	if [ -f file.0 ]; \						@@\
 	then \								@@\
-	$(INSTALL) -c $(INSTMANFLAGS) file.0 $(DESTDIR)destdir/dest.0; \@@\
+	(set -x; $(INSTALL) -c $(INSTMANFLAGS) file.0 $(DESTDIR)$$catdir/dest.0); \@@\
 	fi								@@\
 									@@\
 clean::									@@\
 	RemoveFile(file.0)
 
-#define InstallManPageLong(file,destdir,dest)				@@\
-BuildInstallHtmlManPage(file,dest,$(MANSUFFIX))				@@\
-									@@\
-CppManTarget(file, $(EXTRAMANDEFS))					@@\
-									@@\
-InstallManPageLongBase(file,destdir,dest)
-
-#define InstallGenManPageLong(file,destdir,dest,suffix)			@@\
-BuildInstallHtmlManPage(file,dest,suffix)				@@\
-									@@\
-CppManTarget(file, $(EXTRAMANDEFS))					@@\
-									@@\
-InstallManPageLongBase(file,destdir,dest)
-
-#define InstallMultipleMan(list,dest)                                   @@\
+#define OsInstallMultipleMan(list,dest)					@@\
 install.man:: 								@@\
-	MakeDir($(DESTDIR)dest)						@@\
+	@catdir=`echo destdir | sed -e s,man/man,man/cat,`; \		@@\
+	MakeDirInline($(DESTDIR)$$catdir); \				@@\
 	case '${MFLAGS}' in *[i]*) set +e;; esac; \			@@\
 	for i in list; do \                                             @@\
 	  (MNAME=`echo $$i | cut -f1 -d.`; \				@@\
@@ -553,42 +537,74 @@ install.man:: 								@@\
 	  cat $$i | $(NEQN) | $(TBL) | $(NROFF) $(MANMACROS) \		@@\
 		| $(COL) > $${MNAME}.0; \				@@\
 	  $(INSTALL) -c $(INSTMANFLAGS) $${MNAME}.0 \			@@\
-			$(DESTDIR)dest/$${MNAME}.0; \			@@\
+			$(DESTDIR)$$catdir/$${MNAME}.0; \		@@\
 	  $(RM) $${MNAME}.0); \						@@\
 	done
 
-#define InstallMultipleManSuffix(list,dest,suff)                        @@\
+#define OsInstallMultipleManSuffix(list,dest,suff)			@@\
 install.man:: 								@@\
-	MakeDir($(DESTDIR)dest)						@@\
+	@catdir=`echo destdir | sed -e s,man/man,man/cat,`; \		@@\
+	MakeDirInline($(DESTDIR)$$catdir); \				@@\
 	case '${MFLAGS}' in *[i]*) set +e;; esac; \			@@\
 	for i in list; do \                                             @@\
 	  (set -x; \							@@\
 	  cat $$i.suff | $(NEQN) | $(TBL) | $(NROFF) $(MANMACROS) \	@@\
 		| $(COL) > $$i.0; \					@@\
 	  $(INSTALL) -c $(INSTMANFLAGS) $$i.0	 \			@@\
-		$(DESTDIR)dest/$$i.0; \					@@\
+		$(DESTDIR)$$catdir/$$i.0; \				@@\
 	  $(RM) $$i.0 ); \						@@\
 	done
 
-#define InstallManPageAliasesBase(file,destdir,aliases)			@@\
+#define OsInstallManPageAliasesBase(file,destdir,suffix,aliases)	@@\
 install.man:: 								@@\
-	@case '${MFLAGS}' in *[i]*) set +e;; esac; \                    @@\
+	@catdir=`echo destdir | sed -e s,man/man,man/cat,`; \		@@\
+	case '${MFLAGS}' in *[i]*) set +e;; esac; \			@@\
 	for i in aliases; do \                                          @@\
 		(set -x; \						@@\
-		$(RM) $(DESTDIR)destdir/$$i.0;\  			@@\
-		(cd $(DESTDIR)/destdir; $(LN) file.0 $$i.0);\ 		@@\
+		$(RM) $(DESTDIR)$$catdir/$$i.0;\  			@@\
+		(cd $(DESTDIR)/$$catdir; $(LN) file.0 $$i.0);\ 		@@\
 		); \							@@\
 	done
 
+#ifndef InstallManPageSource
+#define InstallManPageSource	YES
+#endif
+
+#if !InstallManPageSource
+
+/* Install only the formatted man pages */
+
+#define InstallManPageLong(file,destdir,dest)				@@\
+BuildInstallHtmlManPage(file,dest,$(MANSUFFIX))				@@\
+									@@\
+CppManTarget(file, $(EXTRAMANDEFS))					@@\
+									@@\
+OsInstallManPageLongBase(file,destdir,dest,$(MANSUFFIX))
+
+#define InstallGenManPageLong(file,destdir,dest,suffix)			@@\
+BuildInstallHtmlManPage(file,dest,suffix)				@@\
+									@@\
+CppManTarget(file, $(EXTRAMANDEFS))					@@\
+									@@\
+InstallManPageLongBase(file,destdir,dest,suffix)
+ 
 #define InstallManPageAliases(file,destdir,aliases)			@@\
 InstallHtmlManPageAliases(file,aliases,$(MANSUFFIX))			@@\
 									@@\
-InstallManPageAliasesBase(file,destdir,aliases)
+OsInstallManPageAliasesBase(file,destdir,$(MANSUFFIX),aliases)
 
 #define InstallGenManPageAliases(file,destdir,suffix,aliases)		@@\
 InstallHtmlManPageAliases(file,aliases,suffix)				@@\
 									@@\
-InstallManPageAliasesBase(file,destdir,aliases)
+InstallManPageAliasesBase(file,destdir,suffix,aliases)
+
+#define InstallMultipleMan(list,dest)					@@\
+OsInstallMultipleMan(list,dest)
+
+#define InstallMultipleManSuffix(list,dest,suff)			@@\
+OsInstallMultipleManSuffix(list,dest,suff)
+
+#endif
 
 /*
  * Shared libraries supported starting in 1.0 on a.out platforms,
