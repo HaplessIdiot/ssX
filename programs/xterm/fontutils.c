@@ -1,7 +1,7 @@
 /* $XTermId: fontutils.c,v 1.197 2006/02/12 16:59:32 tom Exp $ */
 
 /*
- * $XFree86: xc/programs/xterm/fontutils.c,v 1.56 2006/01/04 02:10:24 dickey Exp $
+ * $XFree86: xc/programs/xterm/fontutils.c,v 1.57 2006/02/13 01:14:58 dickey Exp $
  */
 
 /************************************************************
@@ -1336,12 +1336,16 @@ xtermOpenXft(Display * dpy, XftPattern * pat, const char *tag GCC_UNUSED)
 
     if (pat != 0) {
 	match = XftFontMatch(dpy, DefaultScreen(dpy), pat, &status);
-	result = XftFontOpenPattern(dpy, match);
-	if ((result == 0) && match) {
+	if (match == 0) {
 	    TRACE(("...did not match %s font\n", tag));
-	    XftPatternDestroy(match);
 	} else {
-	    TRACE(("...matched %s font\n", tag));
+	    result = XftFontOpenPattern(dpy, match);
+	    if ((result == 0) && match) {
+		TRACE(("...did not match %s font\n", tag));
+		XftPatternDestroy(match);
+	    } else {
+		TRACE(("...matched %s font\n", tag));
+	    }
 	}
     }
     return result;
