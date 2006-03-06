@@ -23,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.33 2003/06/10 17:03:56 dawes Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.34 2005/01/29 00:22:02 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xos.h>
@@ -742,6 +742,7 @@ shutdown(void)
 	    return;
 	}
 
+#ifndef DONTKILL
 	fprintf(stderr, 
 	"\r\n%s:  X server slow to shut down, sending KILL signal.\r\n",
 		program);
@@ -755,6 +756,23 @@ shutdown(void)
 		fprintf (stderr, "\r\n");
 		Fatal("Can't kill server\r\n");
 	}
+#else
+	fprintf(stderr, 
+	"\r\n%s:  X server slow to shut down, sending interrupt signal.\r\n",
+		program);
+	fflush(stderr);
+	errno = 0;
+	if (killpg(serverpid, SIGINT) < 0) {
+		if (errno == ESRCH)
+			return;
+	}
+	if (!processTimeout(10, "server to die")) {
+		fprintf (stderr, "\r\n");
+		return;
+	}
+	fprintf(stderr, 
+	"\r\n%s:  X server slow to shut down.  Exiting.\r\n", program);
+#endif
 	fprintf (stderr, "\r\n");
 	return;
 }

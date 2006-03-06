@@ -1,4 +1,8 @@
 XFree86 4.5.99.23 (xx March 2006)
+ 232. Avoid having xinit kill a slow exiting X server with SIGKILL.  Instead
+      use SIGINT for slowly exiting X servers, and modify the X server
+      to use a faster, but still hardware-clean, exit path when it
+      receives an interrupt signal (David Dawes).
  231. Install the manual page source as well as the formatted manual pages
       on NetBSD (David Dawes).
  230. Fix a problem on NetBSD where a build will continue after an error
@@ -20037,7 +20041,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3681 2006/03/02 03:00:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3682 2006/03/06 15:58:02 dawes Exp $
 
 
 
