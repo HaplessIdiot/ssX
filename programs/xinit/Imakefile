@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/xinit/Imakefile,v 3.18 2003/11/12 00:10:31 dawes Exp $
+XCOMM $XFree86: xc/programs/xinit/Imakefile,v 3.19 2006/01/09 15:01:14 dawes Exp $
 
 #if HasVFork
   VFORK_DEFINES = -DHAS_VFORK
@@ -10,7 +10,7 @@ XCOMM $XFree86: xc/programs/xinit/Imakefile,v 3.18 2003/11/12 00:10:31 dawes Exp
         DEFFILE = xinit.def
 #endif
         DEFINES = $(CONNECTION_FLAGS) $(VFORK_DEFINES) $(SIGNAL_DEFINES) \
-			-DBINDIR=\"$(BINDIR)\" $(OS_DEFS)
+			-DBINDIR=\"$(BINDIR)\" $(OS_DEFS) -DDONTKILL
         DEPLIBS = $(DEPXONLYLIB)
 LOCAL_LIBRARIES = $(XONLYLIB)
           SRCS1 = xinit.c 

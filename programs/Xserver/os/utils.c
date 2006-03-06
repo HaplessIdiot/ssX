@@ -48,7 +48,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.107tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.108 2006/02/19 15:51:31 tsi Exp $ */
 /*
  * Copyright (c) 1996-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -476,6 +476,30 @@ GiveUp(int sig)
 	OsSignal(sig, SIG_IGN);
 #endif
     errno = olderrno;
+}
+
+/*ARGSUSED*/
+SIGVAL
+AbortServer(int sig)
+{
+#if defined(SYSV) && defined(X_NOT_POSIX)
+    if (sig)
+	OsSignal(sig, SIG_IGN);
+#endif
+    /*
+     * Once entering here, ignore SIGINT and SIGTERM so that we don't
+     * re-enter.
+     */
+    OsSignal(SIGINT, SIG_IGN);
+    OsSignal(SIGTERM, SIG_IGN);
+    if (sig == SIGINT)
+	ErrorF("X server terminated by an interrupt signal.\n");
+    OsCleanup(TRUE);
+    AbortDDX();
+    fflush(stderr);
+    if (CoreDump)
+	abort();
+    exit (1);
 }
 
 #ifndef DDXTIME

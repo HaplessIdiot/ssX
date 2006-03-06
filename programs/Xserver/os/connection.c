@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.68tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.69 2005/10/14 15:17:26 tsi Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -351,7 +351,7 @@ CreateWellKnownSockets(void)
     OsSignal (SIGPIPE, SIG_IGN);
     OsSignal (SIGHUP, AutoResetServer);
 #endif
-    OsSignal (SIGINT, GiveUp);
+    OsSignal (SIGINT, AbortServer);
     OsSignal (SIGTERM, GiveUp);
     XFD_COPYSET (&WellKnownConnections, &AllSockets);
     ResetHosts(display);

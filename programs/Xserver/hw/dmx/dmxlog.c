@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/dmxlog.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxlog.c,v 1.2 2005/10/14 15:16:25 tsi Exp $ */
 /*
  * Copyright 2001 Red Hat Inc., Durham, North Carolina.
  *
@@ -96,7 +96,6 @@ void VErrorF(const char *format, va_list args)
 }
 #else
 /** This function was removed between XFree86 4.3.0 and XFree86 4.4.0. */
-extern void AbortServer(void);
 static void VFatalError(const char *format, va_list args)
 {
     VErrorF(format, args);
@@ -104,7 +103,7 @@ static void VFatalError(const char *format, va_list args)
 #ifdef DDXOSFATALERROR
     OsVendorFatalError();
 #endif
-    AbortServer();
+    AbortServer(0);
     /*NOTREACHED*/
 }
 #endif

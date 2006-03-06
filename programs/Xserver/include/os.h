@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.65 2005/10/14 15:17:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.66 2006/02/17 18:08:22 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /*
- * Copyright (c) 1996-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1996-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -279,9 +279,16 @@ extern void SetDPMSTimers(void);
 extern void FreeDPMSTimers(void);
 #endif
 
-extern SIGVAL AutoResetServer(int /*sig*/);
+#ifdef __GNUC__
+#define NORET __attribute__((noreturn))
+#else
+#define NORET /**/
+#endif
 
+extern SIGVAL AutoResetServer(int /*sig*/);
 extern SIGVAL GiveUp(int /*sig*/);
+extern SIGVAL AbortServer(int /*sig*/) NORET;
+
 
 extern void UseMsg(void);
 

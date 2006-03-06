@@ -50,7 +50,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
 */
 
 /*
- * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -96,7 +96,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/os/log.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/log.c,v 1.13 2005/10/14 15:17:26 tsi Exp $ */
 
 #include <X11/Xos.h>
 #include <stdio.h>
@@ -403,21 +403,6 @@ LogMessage(MessageType type, const char *format, ...)
     va_end(ap);
 }
 
-#ifdef __GNUC__
-void AbortServer(void) __attribute__((noreturn));
-#endif
-
-void
-AbortServer(void)
-{
-    OsCleanup(TRUE);
-    AbortDDX();
-    fflush(stderr);
-    if (CoreDump)
-	abort();
-    exit (1);
-}
-
 #ifndef AUDIT_PREFIX
 #define AUDIT_PREFIX "AUDIT: %s: %ld %s: "
 #endif
@@ -547,7 +532,7 @@ FatalError(const char *f, ...)
 #endif
     if (!beenhere) {
 	beenhere = TRUE;
-	AbortServer();
+	AbortServer(0);
     } else
 	abort();
     /*NOTREACHED*/
