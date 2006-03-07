@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.232 2006/02/28 22:32:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.233 2006/03/02 03:00:36 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -1935,7 +1935,7 @@ ddxProcessArgument(int argc, char **argv, int i)
   }
   if (!strcmp(argv[i], "-configure"))
   {
-    if (!PRIVS_ELEVATED) {
+    if (PRIVS_ELEVATED) {
 	ErrorF("The '-configure' option can only be used by root.\n");
 	exit(1);
     }
