@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.67 2005/10/14 15:16:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.68tsi Exp $ */
 
 /*
  *
@@ -454,7 +454,7 @@ typedef union {
 #endif
 #if defined(__ia64__)
     unsigned long	d64;
-    unsigned long	dest128[2];
+    unsigned long	d128[2];
 #endif
 } relocData;
 
