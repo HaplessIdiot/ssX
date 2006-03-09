@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.30tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.31 2006/03/03 16:41:56 tsi Exp $ */
 
 /*
  *
@@ -405,7 +405,7 @@ extern void _loader_debug_state(void);
 
 #undef _printf_attribute
 #if defined(printf_is_xf86printf) && !defined(printf)
-#defined printf xf86printf
+#define printf xf86printf
 #endif
 
 #endif /* _LOADER_H */
