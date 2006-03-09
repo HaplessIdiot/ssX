@@ -24,7 +24,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from the XFree86 Project and silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_accel.c,v 1.11 2005/08/11 16:01:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_accel.c,v 1.12tsi Exp $ */
 
 #include "smi.h"
 
@@ -243,7 +243,7 @@ void
 SMI_GEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file)
 {
 	SMIPtr pSmi = SMIPTR(pScrn);
-	CARD8 tmp;
+	CARD8 tmp = 0;
 
 	ENTER_PROC("SMI_GEReset");
 
@@ -259,12 +259,25 @@ SMI_GEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file)
 		WaitIdleEmpty();
 	}
 
-	tmp = VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x15);
-	VGAOUT8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x15, tmp | 0x30);
+	if (pSmi->Chipset == SMI_MSOC)
+	{
+		CARD32 itmp = READ_SCR(pSmi, SCR00) & ~0x3000;
+		WRITE_SCR(pSmi, SCR00, (itmp | 0x3000));
+		WRITE_SCR(pSmi, SCR00, itmp);
+	}
+	else
+	{
+		tmp = VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x15);
+		VGAOUT8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x15, tmp | 0x30);
+	}
 
 	WaitIdleEmpty();
 
-	VGAOUT8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x15, tmp);
+	if (pSmi->Chipset != SMI_MSOC)
+	{
+		VGAOUT8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x15, tmp);
+	}
+
 	SMI_EngineReset(pScrn);
 
 	LEAVE_PROC("SMI_GEReset");
@@ -476,6 +489,9 @@ SMI_SubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h)
 
 	ENTER_PROC("SMI_SubsequentSolidFillRect");
 	DEBUG((VERBLEV, "x=%d y=%d w=%d h=%d\n", x, y, w, h));
+
+	if (x < 0) x = 0;
+	if (y < 0) y = 0;
 
 	if (pScrn->bitsPerPixel == 24)
 	{
@@ -901,6 +917,12 @@ SMI_SetClippingRectangle(ScrnInfoPtr pScrn, int left, int top, int right,
 			top    *= 3;
 			bottom *= 3;
 		}
+	}
+
+	if (pSmi->Chipset == SMI_MSOC)
+	{
+		bottom++;
+		right++;
 	}
 
 	pSmi->ScissorsLeft = (top << 16) | (left & 0xFFFF) | 0x2000;
