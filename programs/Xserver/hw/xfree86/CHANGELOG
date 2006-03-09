@@ -1,4 +1,6 @@
 XFree86 4.5.99.902 (xx March 2006)
+ 236. Merge in support for SiliconMotion's SM501 controller (Adapted from
+      Bugzilla #1001, Terry Chang).
  235. Make the fbdev driver's required/referenced symbols instance-specific,
       fixing a problem that shows up with -autoconfig (David Dawes, reported
       by Tom Williams).
@@ -20050,7 +20052,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3686 2006/03/07 02:33:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3687 2006/03/09 02:16:37 dawes Exp $
 
 
 

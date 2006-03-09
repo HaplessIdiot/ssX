@@ -24,7 +24,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from the XFree86 Project and Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_shadow.c,v 1.3 2003/10/08 11:13:01 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_shadow.c,v 1.4tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -37,146 +37,311 @@ authorization from the XFree86 Project and Silicon Motion.
 
 #include "smi.h"
 
+#define  ROTBLTWIDTH     16
+
 /******************************************************************************\
 |* SMI_RefreshArea
 |*=============================================================================
 |*
-|*  PARAMETERS:		pScrn	Pointer to ScrnInfo structure.
-|*					num		Number of boxes to refresh.
-|*					pbox	Pointer to an array of boxes to refresh.
+|*  PARAMETERS:     pScrn   Pointer to ScrnInfo structure.
+|*                  num     Number of boxes to refresh.
+|*                  pbox    Pointer to an array of boxes to refresh.
 |*
-|*  DESCRIPTION:	Refresh a portion of the shadow buffer to the visual screen
-|*					buffer.  This is mainly used for rotation purposes.
-|*												y
-|*  RETURNS:		Nothing.
+|*  DESCRIPTION:    Refresh a portion of the shadow buffer to the visual screen
+|*                  buffer.  This is mainly used for rotation purposes.
+|*                                              y
+|*  RETURNS:        Nothing.
 |*
 \******************************************************************************/
 void SMI_RefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 {
-	SMIPtr pSmi = SMIPTR(pScrn);
-	int width, height, srcX, srcY, destX, destY;
+    SMIPtr pSmi = SMIPTR(pScrn);
+    int width, height, srcX, srcY, destX, destY;
+    int leftoverwidth;
 
-	ENTER_PROC("SMI_RefreshArea");
+    ENTER_PROC("SMI_RefreshArea");
 
-	/* #671 */
-	if (pSmi->polyLines)
-	{
-		pSmi->polyLines = FALSE;
-		return;
-	}
+    /* #671 */
+    if (pSmi->polyLines)
+    {
+        pSmi->polyLines = FALSE;
+        return;
+    }
 
-	if (pSmi->rotate)
-	{
-		/* IF we need to do rotation, setup the hardware here. */
-		WaitIdleEmpty();
-		WRITE_DPR(pSmi, 0x10, pSmi->ShadowPitch);
-		WRITE_DPR(pSmi, 0x3C, pSmi->ShadowPitch);
-		WRITE_DPR(pSmi, 0x44, pSmi->FBOffset >> 3);
-	}
+    if (pSmi->rotate)
+    {
+        /* IF we need to do rotation, setup the hardware here. */
+        WaitIdleEmpty();
+        WRITE_DPR(pSmi, 0x10, pSmi->ShadowPitch);
+        WRITE_DPR(pSmi, 0x3C, pSmi->ShadowPitch);
 
-	/* #672 */
-	if (pSmi->ClipTurnedOn)
-	{
-		WaitQueue(1);
-		WRITE_DPR(pSmi, 0x2C, pSmi->ScissorsLeft);
-		pSmi->ClipTurnedOn = FALSE;
-	}
+        if (SMI_MSOC != pSmi->Chipset)
+        {
+            WRITE_DPR(pSmi, 0x44, pSmi->FBOffset >> 3);
+        }
+        else
+        {
+            WRITE_DPR(pSmi, 0x44, pSmi->FBOffset);
+        }
+    }
 
-	while (num--)
-	{
-		/* Get coordinates of the box to refresh. */
-		srcX   = pbox->x1;
-		srcY   = pbox->y1;
-		width  = pbox->x2 - srcX;
-		height = pbox->y2 - srcY;
+    /* #672 */
+    if (pSmi->ClipTurnedOn)
+    {
+        WaitQueue(1);
+        WRITE_DPR(pSmi, 0x2C, pSmi->ScissorsLeft);
+        pSmi->ClipTurnedOn = FALSE;
+    }
 
-		DEBUG((VERBLEV, "x=%d y=%d w=%d h=%d\n", srcX, srcY, width, height));
+    while (num--)
+    {
+        /* Get coordinates of the box to refresh. */
+        srcX   = pbox->x1;
+        srcY   = pbox->y1;
+        width  = pbox->x2 - srcX;
+        height = pbox->y2 - srcY;
 
-		if ((width > 0) && (height > 0))
-		{
-			switch (pSmi->rotate)
-			{
-				case SMI_ROTATE_CW:
-					/* 90 degrees CW rotation.  Calculate destination
-					   coordinates:
+        DEBUG((VERBLEV, "x=%d y=%d w=%d h=%d\n", srcX, srcY, width, height));
 
-						*---+
-						|   |       +-----*
-						|   |       |     |  destX = shadowHeight - srcY - 1
-						|   |  -->  |     |  destY = srcX
-						|   |       |     |
-						|   |       +-----+
-						+---+
-					*/
-					destX = pSmi->ShadowHeight - srcY - 1;
-					destY = srcX;
+        if ((width > 0) && (height > 0))
+        {
+            switch (pSmi->rotate)
+            {
+                case SMI_ROTATE_CW:
+                    /* 90 degrees CW rotation.  Calculate destination
+                       coordinates:
 
-					WaitQueue(4);
-					WRITE_DPR(pSmi, 0x00, (srcX << 16)   + srcY);
-					WRITE_DPR(pSmi, 0x04, (destX << 16)  + destY);
-					WRITE_DPR(pSmi, 0x08, (width << 16)  + height);
-					WRITE_DPR(pSmi, 0x0C, 0xCC | SMI_ROTATE_BLT |
-							SMI_ROTATE_CW | SMI_START_ENGINE);
-					break;
+                        *---+
+                        |   |       +-----*
+                        |   |       |     |  destX = shadowHeight - srcY - 1
+                        |   |  -->  |     |  destY = srcX
+                        |   |       |     |
+                        |   |       +-----+
+                        +---+
+                    */
+                    if (SMI_MSOC == pSmi->Chipset)
+                    {
+                        if (srcX < 0 || srcY < 0)
+                        {
+                            if (srcX < 0)
+                            {
+                                width += srcX;
+                                srcX = 0;
+                            }
+                            if (srcY < 0)
+                            {
+                                height += srcY;
+                                srcY = 0;
+                            }
 
-				case SMI_ROTATE_CCW:
-					/* 90 degrees CCW rotatation.  Calculate destination
-					   coordinates:
+                            if (width < 0 || height < 0)
+                            {
+                                /* Perform no operation if width or height is negative */
+                                break;
+                            }
+                        }
 
-						*---+
-						|   |       +-----+
-						|   |       |     |  destX = srcY
-						|   |  -->  |     |  destY = shadowWidth - srcX - 1
-						|   |       |     |
-						|   |       *-----+
-						+---+
-					*/
-					destX = srcY;
-					destY = pSmi->ShadowWidth - srcX - 1;
+                        /* Adjust source coordinates to be 32-byte aligned for 501 HW */
+                        width += srcX % (32/(pScrn->bitsPerPixel/8));
+                        srcX  -= srcX % (32/(pScrn->bitsPerPixel/8));
 
-					WaitQueue(4);
-					WRITE_DPR(pSmi, 0x00, (srcX << 16)   + srcY);
-					WRITE_DPR(pSmi, 0x04, (destX << 16)  + destY);
-					WRITE_DPR(pSmi, 0x08, (width << 16)  + height);
-					WRITE_DPR(pSmi, 0x0C, 0xCC | SMI_ROTATE_BLT |
-							SMI_ROTATE_CCW | SMI_START_ENGINE);
-					break;
+                        destX = pSmi->ShadowHeight - srcY - 1;
+                        destY = srcX;
 
-				default:
-					/* No rotation, perform a normal copy. */
-					if (pScrn->bitsPerPixel == 24)
-					{
-						srcX  *= 3;
-						width *= 3;
+                        /* 501 has some wierdness where it won't clip correctly
+                         * at the bottom of the screen.  Need to do this in SW. */
+                        if ((srcX + width) > pSmi->width)
+                        {
+                            width -= ((srcX+width) - pSmi->width);
+                            if (width <= 0)
+                                break;
+                        }
+                        if ((srcY + height) > pSmi->height)
+                        {
+                            height -= ((srcY + height) - pSmi->height);
+                            if (height <= 0)
+                                break;
+                        }
 
-						if (pSmi->Chipset == SMI_LYNX)
-						{
-							srcY *= 3;
-						}
-					}
 
-					WaitQueue(4);
-					WRITE_DPR(pSmi, 0x00, (srcX << 16)  + srcY);
-					WRITE_DPR(pSmi, 0x04, (srcX << 16)  + srcY);
-					WRITE_DPR(pSmi, 0x08, (width << 16) + height);
-					WRITE_DPR(pSmi, 0x0C, SMI_BITBLT + SMI_START_ENGINE + 0xCC);
-					break;
-			}
-		}
+                        leftoverwidth = width;
 
-		pbox++;
-	}
+                        /* 501 Hardware cannot handle rotblits > 32 bytes */
+                        while (leftoverwidth > ROTBLTWIDTH)
+                        {
 
-	if (pSmi->rotate)
-	{
-		/* If we did a rotation, we need to restore the hardware state here. */
-		WaitIdleEmpty();
-		WRITE_DPR(pSmi, 0x10, (pSmi->Stride << 16) | pSmi->Stride);
-		WRITE_DPR(pSmi, 0x3C, (pSmi->Stride << 16) | pSmi->Stride);
-		WRITE_DPR(pSmi, 0x44, 0);
-	}
+                            WaitQueue(4);
+                            WRITE_DPR(pSmi, 0x00, (srcX  << 16)  + srcY);
+                            WRITE_DPR(pSmi, 0x04, (destX << 16)  + destY);
+                            WRITE_DPR(pSmi, 0x08, (ROTBLTWIDTH << 16)  + height);
+                            WRITE_DPR(pSmi, 0x0C, 0xCC | SMI_ROTATE_BLT |
+                                     SMI_ROTATE_CW | SMI_START_ENGINE);
 
-	LEAVE_PROC("SMI_RefreshArea");
+                            leftoverwidth -= ROTBLTWIDTH;
+                            srcX          += ROTBLTWIDTH;
+                            destY         = srcX;
+                        }
+
+                        WaitQueue(4);
+                        WRITE_DPR(pSmi, 0x00, (srcX << 16)   + srcY);
+                        WRITE_DPR(pSmi, 0x04, (destX << 16)  + destY);
+                        WRITE_DPR(pSmi, 0x08, (leftoverwidth << 16)  + height);
+                        WRITE_DPR(pSmi, 0x0C, 0xCC | SMI_ROTATE_BLT |
+                                 SMI_ROTATE_CW | SMI_START_ENGINE);
+                    }
+                    else /* NOT SMOC 501 chipset */
+                    {
+                        destX = pSmi->ShadowHeight - srcY - 1;
+                        destY = srcX;
+
+                        WaitQueue(4);
+                        WRITE_DPR(pSmi, 0x00, (srcX  << 16)  + srcY);
+                        WRITE_DPR(pSmi, 0x04, (destX << 16)  + destY);
+                        WRITE_DPR(pSmi, 0x08, (width << 16)  + height);
+                        WRITE_DPR(pSmi, 0x0C, 0xCC | SMI_ROTATE_BLT |
+                                 SMI_ROTATE_CW | SMI_START_ENGINE);
+                    }
+                    break;
+
+                case SMI_ROTATE_CCW:
+                    /* 90 degrees CCW rotatation.  Calculate destination
+                       coordinates:
+
+                        *---+
+                        |   |       +-----+
+                        |   |       |     |  destX = srcY
+                        |   |  -->  |     |  destY = shadowWidth - srcX - 1
+                        |   |       |     |
+                        |   |       *-----+
+                        +---+
+                    */
+
+                    if (SMI_MSOC == pSmi->Chipset)
+                    {
+                        if (srcX < 0 || srcY < 0)
+                        {
+                            if (srcX < 0)
+                            {
+                                width += srcX;
+                                srcX = 0;
+                            }
+                            if (srcY < 0)
+                            {
+                                height += srcY;
+                                srcY = 0;
+                            }
+
+                            if (width < 0 || height < 0)
+                            {
+                                /* Punt on blits with a negative width or height*/
+                                break;
+                            }
+                        }
+
+
+                        /* Adjust source coordinates to be 32-byte aligned for 501 HW */
+                        width += srcX % (32/(pScrn->bitsPerPixel/8));
+                        srcX  -= srcX % (32/(pScrn->bitsPerPixel/8));
+
+                        destX = srcY;
+                        destY = pSmi->ShadowWidth - srcX - 1;
+
+                        /* 501 has some wierdness where it won't clip correctly
+                         * at the bottom of the screen.  Need to do this in SW. */
+                        if ((srcX + width) > pSmi->width)
+                        {
+                            width -= ((srcX+width) - pSmi->width);
+                            if (width <= 0)
+                                break;
+                        }
+                        if ((srcY + height) > pSmi->height)
+                        {
+                            height -= ((srcY + height) - pSmi->height);
+                            if (height <= 0)
+                                break;
+                        }
+                        leftoverwidth = width;
+
+                        /* 501 Hardware cannot handle rotblits > 32 bytes */
+                        while (leftoverwidth > ROTBLTWIDTH)
+                        {
+                            WaitQueue(4);
+                            WRITE_DPR(pSmi, 0x00, (srcX        << 16) + srcY);
+                            WRITE_DPR(pSmi, 0x04, (destX       << 16) + destY);
+                            WRITE_DPR(pSmi, 0x08, (ROTBLTWIDTH << 16) + height);
+                            WRITE_DPR(pSmi, 0x0C, 0xCC | SMI_ROTATE_BLT |
+                                     SMI_ROTATE_CCW | SMI_START_ENGINE);
+
+                            leftoverwidth -= ROTBLTWIDTH;
+                            srcX          += ROTBLTWIDTH;
+                            destY          = pSmi->ShadowWidth - srcX - 1;
+
+                            if (destY < 0)
+                            {
+                                destY  = 0;
+                                height-= 1;
+                            }
+                        }
+
+                        if (leftoverwidth > 0)
+                        {
+                            WaitQueue(4);
+                            WRITE_DPR(pSmi, 0x00, (srcX          << 16)  + srcY);
+                            WRITE_DPR(pSmi, 0x04, (destX         << 16)  + destY);
+                            WRITE_DPR(pSmi, 0x08, (leftoverwidth << 16)  + height);
+                            WRITE_DPR(pSmi, 0x0C, 0xCC | SMI_ROTATE_BLT |
+                                    SMI_ROTATE_CCW | SMI_START_ENGINE);
+                        }
+                    }
+                    else
+                    {
+                        destX = srcY;
+                        destY = pSmi->ShadowWidth - srcX - 1;
+
+                        WaitQueue(4);
+                        WRITE_DPR(pSmi, 0x00, (srcX  << 16)  + srcY);
+                        WRITE_DPR(pSmi, 0x04, (destX << 16)  + destY);
+                        WRITE_DPR(pSmi, 0x08, (width << 16)  + height);
+                        WRITE_DPR(pSmi, 0x0C, 0xCC | SMI_ROTATE_BLT |
+                                SMI_ROTATE_CCW | SMI_START_ENGINE);
+                    }
+                    break;
+
+                default:
+                    /* No rotation, perform a normal copy. */
+                    if (pScrn->bitsPerPixel == 24)
+                    {
+                        srcX  *= 3;
+                        width *= 3;
+
+                        if (pSmi->Chipset == SMI_LYNX)
+                        {
+                            srcY *= 3;
+                        }
+                    }
+
+                    WaitQueue(4);
+                    WRITE_DPR(pSmi, 0x00, (srcX << 16)  + srcY);
+                    WRITE_DPR(pSmi, 0x04, (srcX << 16)  + srcY);
+                    WRITE_DPR(pSmi, 0x08, (width << 16) + height);
+                    WRITE_DPR(pSmi, 0x0C, SMI_BITBLT + SMI_START_ENGINE + 0xCC);
+                    break;
+            }
+        }
+
+        pbox++;
+    }
+
+    if (pSmi->rotate)
+    {
+        /* If we did a rotation, we need to restore the hardware state here. */
+        WaitIdleEmpty();
+        WRITE_DPR(pSmi, 0x10, (pSmi->Stride << 16) | pSmi->Stride);
+        WRITE_DPR(pSmi, 0x3C, (pSmi->Stride << 16) | pSmi->Stride);
+        WRITE_DPR(pSmi, 0x44, 0);
+    }
+
+    LEAVE_PROC("SMI_RefreshArea");
 }
 
 /* Custom version for the 730 series (Cougar3DR).
@@ -184,168 +349,168 @@ void SMI_RefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 
 void SMI_RefreshArea730(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 {
-	SMIPtr pSmi = SMIPTR(pScrn);
-	int width, height, srcX, srcY, destX, destY;
-	int maxPixels, tempWidth;
+    SMIPtr pSmi = SMIPTR(pScrn);
+    int width, height, srcX, srcY, destX, destY;
+    int maxPixels, tempWidth;
 
-	ENTER_PROC("SMI_RefreshArea730");
+    ENTER_PROC("SMI_RefreshArea730");
 
-	/* #671 */
-	if (pSmi->polyLines)
-	{
-		pSmi->polyLines = FALSE;
-		return;
-	}
+    /* #671 */
+    if (pSmi->polyLines)
+    {
+        pSmi->polyLines = FALSE;
+        return;
+    }
 
-	if (pSmi->rotate)
-	{
-		/* IF we need to do rotation, setup the hardware here. */
-		WaitIdleEmpty();
-		WRITE_DPR(pSmi, 0x10, pSmi->ShadowPitch);
-		WRITE_DPR(pSmi, 0x3C, pSmi->ShadowPitch);
-		WRITE_DPR(pSmi, 0x44, pSmi->FBOffset >> 3);
-	}
+    if (pSmi->rotate)
+    {
+        /* IF we need to do rotation, setup the hardware here. */
+        WaitIdleEmpty();
+        WRITE_DPR(pSmi, 0x10, pSmi->ShadowPitch);
+        WRITE_DPR(pSmi, 0x3C, pSmi->ShadowPitch);
+        WRITE_DPR(pSmi, 0x44, pSmi->FBOffset >> 3);
+    }
 
-	/* #672 */
-	if (pSmi->ClipTurnedOn)
-	{
-		WaitQueue(1);
-		WRITE_DPR(pSmi, 0x2C, pSmi->ScissorsLeft);
-		pSmi->ClipTurnedOn = FALSE;
-	}
+    /* #672 */
+    if (pSmi->ClipTurnedOn)
+    {
+        WaitQueue(1);
+        WRITE_DPR(pSmi, 0x2C, pSmi->ScissorsLeft);
+        pSmi->ClipTurnedOn = FALSE;
+    }
 
-	/* SM731 cannot rotate-blt more than a certain number of pixels
-	   (based on a calculation from the Windows driver source */
-	maxPixels = 1280 / pScrn->bitsPerPixel;
+    /* SM731 cannot rotate-blt more than a certain number of pixels
+       (based on a calculation from the Windows driver source */
+    maxPixels = 1280 / pScrn->bitsPerPixel;
 
-	while (num--)
-	{
-		/* Get coordinates of the box to refresh. */
-		srcX   = pbox->x1;
-		srcY   = pbox->y1;
-		width  = pbox->x2 - srcX;
-		height = pbox->y2 - srcY;
+    while (num--)
+    {
+        /* Get coordinates of the box to refresh. */
+        srcX   = pbox->x1;
+        srcY   = pbox->y1;
+        width  = pbox->x2 - srcX;
+        height = pbox->y2 - srcY;
 
-		DEBUG((VERBLEV, "x=%d y=%d w=%d h=%d\n", srcX, srcY, width, height));
+        DEBUG((VERBLEV, "x=%d y=%d w=%d h=%d\n", srcX, srcY, width, height));
 
-		if ((width > 0) && (height > 0))
-		{
-			switch (pSmi->rotate)
-			{
-				case SMI_ROTATE_CW:
-					/* 90 degrees CW rotation.  Calculate destination
-					   coordinates:
+        if ((width > 0) && (height > 0))
+        {
+            switch (pSmi->rotate)
+            {
+                case SMI_ROTATE_CW:
+                    /* 90 degrees CW rotation.  Calculate destination
+                       coordinates:
 
-						*---+
-						|   |       +-----*
-						|   |       |     |  destX = shadowHeight - srcY - 1
-						|   |  -->  |     |  destY = srcX
-						|   |       |     |
-						|   |       +-----+
-						+---+
-					*/
-					destX = pSmi->ShadowHeight - srcY - 1;
-					destY = srcX;
+                        *---+
+                        |   |       +-----*
+                        |   |       |     |  destX = shadowHeight - srcY - 1
+                        |   |  -->  |     |  destY = srcX
+                        |   |       |     |
+                        |   |       +-----+
+                        +---+
+                    */
+                    destX = pSmi->ShadowHeight - srcY - 1;
+                    destY = srcX;
 
-					for (tempWidth=width; tempWidth>0;)
-					{
-						if (width>maxPixels)
-							width = maxPixels;
-						WaitQueue(4);
-						WRITE_DPR(pSmi, 0x00, (srcX << 16)   + srcY);
-						WRITE_DPR(pSmi, 0x04, (destX << 16)  + destY);
-						WRITE_DPR(pSmi, 0x08, (width << 16)  + height);
-						WRITE_DPR(pSmi, 0x0C, 0xCC | SMI_ROTATE_BLT |
-								SMI_ROTATE_CW | SMI_START_ENGINE);
-						destY 	  += maxPixels;
-						srcX  	  += maxPixels;
-						tempWidth -= maxPixels;
-						width      = tempWidth;
-					}
+                    for (tempWidth=width; tempWidth>0;)
+                    {
+                        if (width>maxPixels)
+                            width = maxPixels;
+                        WaitQueue(4);
+                        WRITE_DPR(pSmi, 0x00, (srcX << 16)   + srcY);
+                        WRITE_DPR(pSmi, 0x04, (destX << 16)  + destY);
+                        WRITE_DPR(pSmi, 0x08, (width << 16)  + height);
+                        WRITE_DPR(pSmi, 0x0C, 0xCC | SMI_ROTATE_BLT |
+                                SMI_ROTATE_CW | SMI_START_ENGINE);
+                        destY     += maxPixels;
+                        srcX      += maxPixels;
+                        tempWidth -= maxPixels;
+                        width      = tempWidth;
+                    }
 
-					break;
+                    break;
 
-				case SMI_ROTATE_CCW:
-					/* 90 degrees CCW rotatation.  Calculate destination
-					   coordinates:
+                case SMI_ROTATE_CCW:
+                    /* 90 degrees CCW rotatation.  Calculate destination
+                       coordinates:
 
-						*---+
-						|   |       +-----+
-						|   |       |     |  destX = srcY
-						|   |  -->  |     |  destY = shadowWidth - srcX - 1
-						|   |       |     |
-						|   |       *-----+
-						+---+
-					*/
-					destX = srcY;
-					destY = pSmi->ShadowWidth - srcX - 1;
+                        *---+
+                        |   |       +-----+
+                        |   |       |     |  destX = srcY
+                        |   |  -->  |     |  destY = shadowWidth - srcX - 1
+                        |   |       |     |
+                        |   |       *-----+
+                        +---+
+                    */
+                    destX = srcY;
+                    destY = pSmi->ShadowWidth - srcX - 1;
 
-					for (tempWidth=width; tempWidth>0;)
-					{
-						if (width>maxPixels)
-							width = maxPixels;
-						WaitQueue(4);
-						WRITE_DPR(pSmi, 0x00, (srcX << 16)   + srcY);
-						WRITE_DPR(pSmi, 0x04, (destX << 16)  + destY);
-						WRITE_DPR(pSmi, 0x08, (width << 16)  + height);
-						WRITE_DPR(pSmi, 0x0C, 0xCC | SMI_ROTATE_BLT |
-								SMI_ROTATE_CCW | SMI_START_ENGINE);
-						destY 	  -= maxPixels;
-						srcX  	  += maxPixels;
-						tempWidth -= maxPixels;
-						width      = tempWidth;
-					}
+                    for (tempWidth=width; tempWidth>0;)
+                    {
+                        if (width>maxPixels)
+                            width = maxPixels;
+                        WaitQueue(4);
+                        WRITE_DPR(pSmi, 0x00, (srcX << 16)   + srcY);
+                        WRITE_DPR(pSmi, 0x04, (destX << 16)  + destY);
+                        WRITE_DPR(pSmi, 0x08, (width << 16)  + height);
+                        WRITE_DPR(pSmi, 0x0C, 0xCC | SMI_ROTATE_BLT |
+                                SMI_ROTATE_CCW | SMI_START_ENGINE);
+                        destY     -= maxPixels;
+                        srcX      += maxPixels;
+                        tempWidth -= maxPixels;
+                        width      = tempWidth;
+                    }
 
-					break;
+                    break;
 
-				default:
-					/* No rotation, perform a normal copy. */
-					if (pScrn->bitsPerPixel == 24)
-					{
-						srcX  *= 3;
-						width *= 3;
+                default:
+                    /* No rotation, perform a normal copy. */
+                    if (pScrn->bitsPerPixel == 24)
+                    {
+                        srcX  *= 3;
+                        width *= 3;
 
-						if (pSmi->Chipset == SMI_LYNX)
-						{
-							srcY *= 3;
-						}
-					}
+                        if (pSmi->Chipset == SMI_LYNX)
+                        {
+                            srcY *= 3;
+                        }
+                    }
 
-					WaitQueue(4);
-					WRITE_DPR(pSmi, 0x00, (srcX << 16)  + srcY);
-					WRITE_DPR(pSmi, 0x04, (srcX << 16)  + srcY);
-					WRITE_DPR(pSmi, 0x08, (width << 16) + height);
-					WRITE_DPR(pSmi, 0x0C, SMI_BITBLT + SMI_START_ENGINE + 0xCC);
-					break;
-			}
-		}
+                    WaitQueue(4);
+                    WRITE_DPR(pSmi, 0x00, (srcX << 16)  + srcY);
+                    WRITE_DPR(pSmi, 0x04, (srcX << 16)  + srcY);
+                    WRITE_DPR(pSmi, 0x08, (width << 16) + height);
+                    WRITE_DPR(pSmi, 0x0C, SMI_BITBLT + SMI_START_ENGINE + 0xCC);
+                    break;
+            }
+        }
 
-		pbox++;
-	}
+        pbox++;
+    }
 
-	if (pSmi->rotate)
-	{
-		/* If we did a rotation, we need to restore the hardware state here. */
-		WaitIdleEmpty();
-		WRITE_DPR(pSmi, 0x10, (pSmi->Stride << 16) | pSmi->Stride);
-		WRITE_DPR(pSmi, 0x3C, (pSmi->Stride << 16) | pSmi->Stride);
-		WRITE_DPR(pSmi, 0x44, 0);
-	}
+    if (pSmi->rotate)
+    {
+        /* If we did a rotation, we need to restore the hardware state here. */
+        WaitIdleEmpty();
+        WRITE_DPR(pSmi, 0x10, (pSmi->Stride << 16) | pSmi->Stride);
+        WRITE_DPR(pSmi, 0x3C, (pSmi->Stride << 16) | pSmi->Stride);
+        WRITE_DPR(pSmi, 0x44, 0);
+    }
 
-	LEAVE_PROC("SMI_RefreshArea730");
+    LEAVE_PROC("SMI_RefreshArea730");
 }
 
 /******************************************************************************\
 |* SMI_PointerMoved
 |*=============================================================================
 |*
-|*  PARAMETERS:		index	Index of current screen.
-|*					x		X location of pointer.
-|*					y		Y location of pointer.
+|*  PARAMETERS:     index   Index of current screen.
+|*                  x       X location of pointer.
+|*                  y       Y location of pointer.
 |*
-|*  DESCRIPTION:	Adjust the pointer location if we are in rotation mode.
+|*  DESCRIPTION:    Adjust the pointer location if we are in rotation mode.
 |*
-|*  RETURNS:		Nothing.
+|*  RETURNS:        Nothing.
 |*
 \******************************************************************************/
 void SMI_PointerMoved(int index, int x, int y)
@@ -354,27 +519,27 @@ void SMI_PointerMoved(int index, int x, int y)
     SMIPtr pSmi = SMIPTR(pScrn);
     int newX, newY;
 
-	switch (pSmi->rotate)
-	{
-		case SMI_ROTATE_CW:
-			/* 90 degrees CW rotation. */
-			newX = pScrn->pScreen->height - y - 1;
-			newY = x;
-			break;
+    switch (pSmi->rotate)
+    {
+        case SMI_ROTATE_CW:
+            /* 90 degrees CW rotation. */
+            newX = pScrn->pScreen->height - y - 1;
+            newY = x;
+            break;
 
-		case SMI_ROTATE_CCW:
-			/* 90 degrees CCW rotation. */
-			newX = y;
-			newY = pScrn->pScreen->width - x - 1;
-			break;
+        case SMI_ROTATE_CCW:
+            /* 90 degrees CCW rotation. */
+            newX = y;
+            newY = pScrn->pScreen->width - x - 1;
+            break;
 
-		default:
-			/* No rotation. */
-			newX = x;
-			newY = y;
-			break;
+        default:
+            /* No rotation. */
+            newX = x;
+            newY = y;
+            break;
     }
 
-	/* Pass adjusted pointer coordinates original PointerMoved function. */
+    /* Pass adjusted pointer coordinates original PointerMoved function. */
     (*pSmi->PointerMoved)(index, newX, newY);
 }
