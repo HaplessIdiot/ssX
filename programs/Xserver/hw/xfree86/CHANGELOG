@@ -1,4 +1,7 @@
 XFree86 4.5.99.902 (xx March 2006)
+ 235. Make the fbdev driver's required/referenced symbols instance-specific,
+      fixing a problem that shows up with -autoconfig (David Dawes, reported
+      by Tom Williams).
 
 XFree86 4.5.99.901 (6 March 2006)
  234. Fix an error in the handling of PRIVS_ELEVATED (David Dawes, reported
@@ -20047,7 +20050,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3685 2006/03/07 01:03:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3686 2006/03/07 02:33:01 dawes Exp $
 
 
 
