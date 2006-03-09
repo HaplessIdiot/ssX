@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.46tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.48 2005/07/26 18:32:03 tsi Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -176,6 +176,8 @@ static const char *fbdevHWSymbols[] = {
 	NULL
 };
 
+static void *fbdevModule = NULL;
+
 #ifdef XFree86LOADER
 
 MODULESETUPPROTO(FBDevSetup);
@@ -204,8 +206,9 @@ FBDevSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	if (!setupDone) {
 		setupDone = TRUE;
 		xf86AddDriver(&FBDEV, module, 0);
-		LoaderRefSymLists(afbSymbols, fbSymbols,
-				  shadowSymbols, fbdevHWSymbols, NULL);
+		LoaderModRefSymLists(module, afbSymbols, fbSymbols,
+				     shadowSymbols, fbdevHWSymbols, NULL);
+		fbdevModule = module;
 		return (pointer)1;
 	} else {
 		if (errmaj) *errmaj = LDR_ONCEONLY;
@@ -293,7 +296,7 @@ FBDevProbe(DriverPtr drv, int flags)
 	if (!xf86LoadDrvSubModule(drv, "fbdevhw"))
 	    return FALSE;
 
-	xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
+	xf86LoaderModReqSymLists(fbdevModule, fbdevHWSymbols, NULL);
 
 	for (i = 0; i < numDevSections; i++) {
 	    Bool isIsa = FALSE;
@@ -577,7 +580,7 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 		return FALSE;
 	}
 	if (mod && syms) {
-		xf86LoaderReqSymLists(syms, NULL);
+		xf86LoaderModReqSymLists(fbdevModule, syms, NULL);
 	}
 
 	/* Load shadow if needed */
@@ -587,7 +590,7 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 			FBDevFreeRec(pScrn);
 			return FALSE;
 		}
-		xf86LoaderReqSymLists(shadowSymbols, NULL);
+		xf86LoaderModReqSymLists(fbdevModule, shadowSymbols, NULL);
 	}
 
 	TRACE_EXIT("PreInit");
