@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830.h,v 1.20tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830.h,v 1.21 2006/01/29 01:51:49 tsi Exp $ */
 
 /*
  * Authors:
@@ -212,6 +212,8 @@ typedef struct _I830Rec {
 
    /* For Xvideo */
    I830MemRange *OverlayMem;
+   I830MemRange LinearMem;
+   unsigned int LinearAlloc;
 
 #ifdef XF86DRI
    I830MemRange BackBuffer;
@@ -331,7 +333,8 @@ typedef struct _I830Rec {
    int monitorSwitch;
    int operatingDevices;
    int savedDevices;
-   int lastDevice1, lastDevice2;
+   int toggleDevices;
+   int lastDevice0, lastDevice1, lastDevice2;
 
    /* These are indexed by the display types */
    Bool displayAttached[NumDisplayTypes];

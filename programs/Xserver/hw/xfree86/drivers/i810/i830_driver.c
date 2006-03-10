@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.89tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.90 2006/01/29 01:51:49 tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -139,8 +139,11 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  *        - Fix Xvideo with high-res LFP's
  *        - Add ARGB HW cursor support
  *
- *    30/2005 Alan Hourihane
+ *    05/2005 Alan Hourihane
  *        - Add Intel(R) 945G support.
+ *
+ *    09/2005 Alan Hourihane
+ *        - Add Intel(R) 945GM support.
  */
 
 #ifndef PRINT_MODE_INFO
@@ -187,6 +190,7 @@ static SymTabRec I830BIOSChipsets[] = {
    {PCI_CHIP_E7221_G,		"E7221 (i915)"},
    {PCI_CHIP_I915_GM,		"915GM"},
    {PCI_CHIP_I945_G,		"945G"},
+   {PCI_CHIP_I945_GM,		"945GM"},
    {-1,				NULL}
 };
 
@@ -199,6 +203,7 @@ static PciChipsets I830BIOSPciChipsets[] = {
    {PCI_CHIP_E7221_G,		PCI_CHIP_E7221_G,	RES_SHARED_VGA},
    {PCI_CHIP_I915_GM,		PCI_CHIP_I915_GM,	RES_SHARED_VGA},
    {PCI_CHIP_I945_G,		PCI_CHIP_I945_G,	RES_SHARED_VGA},
+   {PCI_CHIP_I945_GM,		PCI_CHIP_I945_GM,	RES_SHARED_VGA},
    {-1,				-1,			RES_UNDEFINED}
 };
 
@@ -226,7 +231,8 @@ typedef enum {
    OPTION_CHECKDEVICES,
    OPTION_FIXEDPIPE,
    OPTION_SHADOW_FB,
-   OPTION_ROTATE
+   OPTION_ROTATE,
+   OPTION_LINEARALLOC
 } I830Opts;
 
 static OptionInfoRec I830BIOSOptions[] = {
@@ -248,6 +254,7 @@ static OptionInfoRec I830BIOSOptions[] = {
    {OPTION_FIXEDPIPE,   "FixedPipe",    OPTV_ANYSTR, 	{0},	FALSE},
    {OPTION_SHADOW_FB,   "ShadowFB",     OPTV_BOOLEAN,   {0},    FALSE},
    {OPTION_ROTATE,      "Rotate",       OPTV_ANYSTR,    {0},    FALSE},
+   {OPTION_LINEARALLOC, "LinearAlloc",  OPTV_INTEGER,   {0},    FALSE},
    {-1,			NULL,		OPTV_NONE,	{0},	FALSE}
 };
 /* *INDENT-ON* */
@@ -422,6 +429,93 @@ GetToggleList(ScrnInfoPtr pScrn, int toggle)
    }
 
    return 0;
+}
+
+static int
+GetNextDisplayDeviceList(ScrnInfoPtr pScrn, int toggle)
+{
+   vbeInfoPtr pVbe = I830PTR(pScrn)->pVbe;
+   int devices = 0;
+   int pipe = 0;
+   int i;
+
+   DPRINTF(PFX, "GetNextDisplayDeviceList\n");
+
+   pVbe->pInt10->num = 0x10;
+   pVbe->pInt10->ax = 0x5f64;
+   pVbe->pInt10->bx = 0xA00;
+   pVbe->pInt10->bx |= toggle;
+   pVbe->pInt10->es = SEG_ADDR(pVbe->real_mode_base);
+   pVbe->pInt10->di = SEG_OFF(pVbe->real_mode_base);
+
+   xf86ExecX86int10_wrapper(pVbe->pInt10, pScrn);
+   if (!Check5fStatus(pScrn, 0x5f64, pVbe->pInt10->ax))
+      return 0;
+
+   for (i=0; i<(pVbe->pInt10->cx & 0xff); i++) {
+      CARD32 VODA = (CARD32)((CARD32*)pVbe->memory)[i];
+
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Next ACPI _DGS [%d] 0x%lx\n",
+		i, VODA);
+
+      /* Check if it's a custom Video Output Device Attribute */
+      if (!(VODA & 0x80000000)) 
+         continue;
+
+      pipe = (VODA & 0x000000F0) >> 4;
+
+      if (pipe != 0 && pipe != 1) {
+         pipe = 0;
+#if 0
+         ErrorF("PIPE %d\n",pipe);
+#endif
+      }
+
+      switch ((VODA & 0x00000F00) >> 8) {
+      case 0x0:
+      case 0x1: /* CRT */
+         devices |= PIPE_CRT << (pipe == 1 ? 8 : 0);
+         break;
+      case 0x2: /* TV/HDTV */
+         devices |= PIPE_TV << (pipe == 1 ? 8 : 0);
+         break;
+      case 0x3: /* DFP */
+         devices |= PIPE_DFP << (pipe == 1 ? 8 : 0);
+         break;
+      case 0x4: /* LFP */
+         devices |= PIPE_LFP << (pipe == 1 ? 8 : 0);
+         break;
+      }
+   }
+
+   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "ACPI Toggle devices 0x%x\n", devices);
+
+   return devices;
+}
+
+static int
+GetAttachableDisplayDeviceList(ScrnInfoPtr pScrn)
+{
+   vbeInfoPtr pVbe = I830PTR(pScrn)->pVbe;
+   int i;
+
+   DPRINTF(PFX, "GetAttachableDisplayDeviceList\n");
+
+   pVbe->pInt10->num = 0x10;
+   pVbe->pInt10->ax = 0x5f64;
+   pVbe->pInt10->bx = 0x900;
+   pVbe->pInt10->es = SEG_ADDR(pVbe->real_mode_base);
+   pVbe->pInt10->di = SEG_OFF(pVbe->real_mode_base);
+
+   xf86ExecX86int10_wrapper(pVbe->pInt10, pScrn);
+   if (!Check5fStatus(pScrn, 0x5f64, pVbe->pInt10->ax))
+      return 0;
+
+   for (i=0; i<(pVbe->pInt10->cx & 0xff); i++)
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+		"Attachable device 0x%lx.\n", ((CARD32*)pVbe->memory)[i]);
+
+   return pVbe->pInt10->cx & 0xffff;
 }
 
 static int
@@ -615,7 +709,7 @@ SetRefreshRate(ScrnInfoPtr pScrn, int mode, int refresh)
       return 0;
 }
 
-#ifdef UNUSED
+#if 0
 static Bool
 SetPowerStatus(ScrnInfoPtr pScrn, int mode)
 {
@@ -875,7 +969,7 @@ SetDisplayDevices(ScrnInfoPtr pScrn, int devices)
       setmode = FALSE;
    if (pI830->closing)
       setmode = FALSE;
-	 
+
    if (setmode) {
       VBEGetVBEMode(pVbe, &getmode1);
       I830Set640x480(pScrn);
@@ -1316,7 +1410,7 @@ I830DetectMemory(ScrnInfoPtr pScrn)
     * The GTT varying according the the FbMapSize and the popup is 4KB */
    range = (pI830->FbMapSize / (1024*1024)) + 4;
 
-   if (IS_I85X(pI830) || IS_I865G(pI830) || IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830)) {
+   if (IS_I85X(pI830) || IS_I865G(pI830) || IS_I9XX(pI830)) {
       switch (gmch_ctrl & I830_GMCH_GMS_MASK) {
       case I855_GMCH_GMS_STOLEN_1M:
 	 memsize = MB(1) - KB(range);
@@ -1334,11 +1428,11 @@ I830DetectMemory(ScrnInfoPtr pScrn)
 	 memsize = MB(32) - KB(range);
 	 break;
       case I915G_GMCH_GMS_STOLEN_48M:
-	 if (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830))
+	 if (IS_I9XX(pI830))
 	    memsize = MB(48) - KB(range);
 	 break;
       case I915G_GMCH_GMS_STOLEN_64M:
-	 if (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830))
+	 if (IS_I9XX(pI830))
 	    memsize = MB(64) - KB(range);
 	 break;
       }
@@ -1705,6 +1799,8 @@ SetBIOSMemSize(ScrnInfoPtr pScrn, int newSize)
    }
 }
 
+static CARD32 val8[256];
+
 static void
 I830LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
 		LOCO * colors, VisualPtr pVisual)
@@ -1779,6 +1875,19 @@ I830LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
       }
       break;
    default:
+#if 1
+      /* Dual head 8bpp modes seem to squish the primary's cmap - reload */
+      if (IsPrimary(pScrn) && xf86IsEntityShared(pScrn->entityList[0]) &&
+          pScrn->depth == 8) {
+         for(i = 0; i < numColors; i++) {
+	    index = indices[i];
+	    r = colors[index].red;
+	    g = colors[index].green;
+	    b = colors[index].blue;
+	    val8[index] = (r << 16) | (g << 8) | b;
+        }
+      }
+#endif
       for(i = 0; i < numColors; i++) {
 	 index = indices[i];
 	 r = colors[index].red;
@@ -1786,6 +1895,16 @@ I830LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
 	 b = colors[index].blue;
 	 val = (r << 16) | (g << 8) | b;
 	 OUTREG(palreg + index * 4, val);
+#if 1
+         /* Dual head 8bpp modes seem to squish the primary's cmap - reload */
+         if (!IsPrimary(pScrn) && xf86IsEntityShared(pScrn->entityList[0]) &&
+             pScrn->depth == 8) {
+  	    if (palreg == PALETTE_A)
+	       OUTREG(PALETTE_B + index * 4, val8[index]);
+	    else
+	       OUTREG(PALETTE_A + index * 4, val8[index]);
+         }
+#endif
       }
       break;
    }
@@ -2083,6 +2202,9 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
    case PCI_CHIP_I945_G:
       chipname = "945G";
       break;
+   case PCI_CHIP_I945_GM:
+      chipname = "945GM";
+      break;
    default:
       chipname = "unknown chipset";
       break;
@@ -2120,8 +2242,8 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
       pI830->LinearAddr = pI830->pEnt->device->MemBase;
       from = X_CONFIG;
    } else {
-      if (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830)) {
-	 pI830->LinearAddr = pI830->PciInfo->memBase[2] & 0xF0000000;
+      if (IS_I9XX(pI830)) {
+	 pI830->LinearAddr = pI830->PciInfo->memBase[2] & 0xFF000000;
 	 from = X_PROBED;
       } else if (pI830->PciInfo->memBase[1] != 0) {
 	 /* XXX Check mask. */
@@ -2142,7 +2264,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
       pI830->MMIOAddr = pI830->pEnt->device->IOBase;
       from = X_CONFIG;
    } else {
-      if (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830)) {
+      if (IS_I9XX(pI830)) {
 	 pI830->MMIOAddr = pI830->PciInfo->memBase[0] & 0xFFF80000;
 	 from = X_PROBED;
       } else if (pI830->PciInfo->memBase[1]) {
@@ -2187,7 +2309,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
 	 pI830->FbMapSize = 0x4000000; /* 64MB - has this been tested ?? */
       }
    } else {
-      if (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830)) {
+      if (IS_I9XX(pI830)) {
 	 if (pI830->PciInfo->memBase[2] & 0x08000000)
 	    pI830->FbMapSize = 0x8000000;	/* 128MB aperture */
 	 else
@@ -2220,7 +2342,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
    if (pI830->PciInfo->chipType == PCI_CHIP_E7221_G)
       pI830->availablePipes = 1;
    else
-   if (IS_MOBILE(pI830) || IS_I915G(pI830) || IS_I945G(pI830))
+   if (IS_MOBILE(pI830) || IS_I9XX(pI830))
       pI830->availablePipes = 2;
    else
       pI830->availablePipes = 1;
@@ -2294,6 +2416,13 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
       }
    }
 #endif
+
+   pI830->LinearAlloc = 0;
+   if (xf86GetOptValInteger(pI830->Options, OPTION_LINEARALLOC,
+			    &(pI830->LinearAlloc))) {
+      xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Allocating %dKbytes of memory\n",
+		 pI830->LinearAlloc);
+   }
 
    pI830->fixedPipe = -1;
    if ((s = xf86GetOptValString(pI830->Options, OPTION_FIXEDPIPE)) &&
@@ -2689,21 +2818,15 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
 
    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "BIOS Build: %d\n",pI830->bios_version);
 
-   /* Great..
-    * Intel changed the BIOS version codes and started at 1200.
-    * We know that bios codes for 830M started around 2400.
-    * So we test those conditions to make this judgement. Ugh.
-    */
-   if (pI830->availablePipes == 2 && pI830->bios_version < 2000)
-      pI830->newPipeSwitch = TRUE;
-   else if (pI830->availablePipes == 2 && pI830->bios_version >= 3062)
-      /* BIOS build 3062 changed the pipe switching functionality */
+   if (IS_I9XX(pI830))
       pI830->newPipeSwitch = TRUE;
    else
-      pI830->newPipeSwitch = FALSE;
-
-   if (pI830->newPipeSwitch)
+   if (pI830->availablePipes == 2 && pI830->bios_version >= 3062) {
+      /* BIOS build 3062 changed the pipe switching functionality */
+      pI830->newPipeSwitch = TRUE;
       xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using new Pipe switch code\n");
+   } else
+      pI830->newPipeSwitch = FALSE;
 
    pI830->devicePresence = FALSE;
    from = X_DEFAULT;
@@ -2863,7 +2986,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
    }
 
    /* Check if the HW cursor needs physical address. */
-   if (IS_MOBILE(pI830) || IS_I915G(pI830) || IS_I945G(pI830))
+   if (IS_MOBILE(pI830) || IS_I9XX(pI830))
       pI830->CursorNeedsPhysical = TRUE;
    else
       pI830->CursorNeedsPhysical = FALSE;
@@ -4759,6 +4882,11 @@ I830BIOSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		 "Failed to init memory manager\n");
          return FALSE;
       }
+
+      if (pI830->LinearAlloc && xf86InitFBManagerLinear(pScreen, pI830->LinearMem.Offset / pI830->cpp, pI830->LinearMem.Size / pI830->cpp))
+            xf86DrvMsg(scrnIndex, X_INFO, 
+			"Using %ld bytes of offscreen memory for linear (offset=0x%lx)\n", pI830->LinearMem.Size, pI830->LinearMem.Offset);
+
    } else {
       if (!xf86InitFBManager(pScreen, &(pI8301->FbMemBox2))) {
          xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -4874,6 +5002,7 @@ I830BIOSAdjustFrame(int scrnIndex, int x, int y, int flags)
    ScrnInfoPtr pScrn;
    I830Ptr pI830;
    vbeInfoPtr pVbe;
+   unsigned long Start;
 
    pScrn = xf86Screens[scrnIndex];
    pI830 = I830PTR(pScrn);
@@ -4883,46 +5012,35 @@ I830BIOSAdjustFrame(int scrnIndex, int x, int y, int flags)
 	   x, pI830->xoffset, y, pI830->yoffset);
 
    /* Sync the engine before adjust frame */
-   if (!pI830->noAccel && pI830->AccelInfoRec)
+   if (pI830->AccelInfoRec && pI830->AccelInfoRec->NeedToSync) {
       (*pI830->AccelInfoRec->Sync)(pScrn);
+      pI830->AccelInfoRec->NeedToSync = FALSE;
+   }
 
-   /* The i830M just happens to have some problems programming offsets via
-    * this VESA BIOS call. Especially in dual head configurations which
-    * have high resolutions which cause the DSP{A,B}BASE registers to be
-    * programmed incorrectly. Thus, it warrants bypassing the BIOS for i830M
-    * and hitting the DSP{A,B}BASE registers directly. 
-    *
-    * We could probably do this for other platforms too, but we don't
-    * know what else the Video BIOS may do when calling it. It seems safe
-    * though for i830M during testing......
-    *
-    * Also note, calling the Video BIOS version first and then fixing the
-    * registers fail on i830M and eventually cause a lockup of the hardware
-    * in my testing.
+   if (IsPrimary(pScrn))
+      Start = pI830->FrontBuffer.Start;
+   else {
+      I830Ptr pI8301 = I830PTR(pI830->entityPrivate->pScrn_1);
+      Start = pI8301->FrontBuffer2.Start;
+   }
+
+   /* Sigh...
+    * It seems that there are quite a few Video BIOS' that get this wrong.
+    * So, we'll bypass the VBE call and hit the hardware directly.
     */
 
    if (pI830->Clone) {
-      if (!IS_I830(pI830)) {
-         SetBIOSPipe(pScrn, !pI830->pipe);
-         VBESetDisplayStart(pVbe, x + pI830->xoffset, y + pI830->yoffset, TRUE);
+      if (!pI830->pipe == 0) {
+         OUTREG(DSPABASE, Start + ((y * pScrn->displayWidth + x) * pI830->cpp));
       } else {
-         if (!pI830->pipe == 0) {
-            OUTREG(DSPABASE, pScrn->fbOffset + ((y * pScrn->displayWidth + x) * pI830->cpp));
-         } else {
-            OUTREG(DSPBBASE, pScrn->fbOffset + ((y * pScrn->displayWidth + x) * pI830->cpp));
-         }
+         OUTREG(DSPBBASE, Start + ((y * pScrn->displayWidth + x) * pI830->cpp));
       }
    }
 
-   if (!IS_I830(pI830)) {
-      SetPipeAccess(pScrn);
-      VBESetDisplayStart(pVbe, x + pI830->xoffset, y + pI830->yoffset, TRUE);
+   if (pI830->pipe == 0) {
+      OUTREG(DSPABASE, Start + ((y * pScrn->displayWidth + x) * pI830->cpp));
    } else {
-      if (pI830->pipe == 0) {
-         OUTREG(DSPABASE, pScrn->fbOffset + ((y * pScrn->displayWidth + x) * pI830->cpp));
-      } else {
-         OUTREG(DSPBBASE, pScrn->fbOffset + ((y * pScrn->displayWidth + x) * pI830->cpp));
-      }
+      OUTREG(DSPBBASE, Start + ((y * pScrn->displayWidth + x) * pI830->cpp));
    }
 }
 
@@ -5276,7 +5394,7 @@ I830BIOSEnterVT(int scrnIndex, int flags)
    }
 
    /* Setup for device monitoring status */
-   pI830->monitorSwitch = INREG(SWF0) & 0x0000FFFF;
+   pI830->monitorSwitch = pI830->toggleDevices = INREG(SWF0) & 0x0000FFFF;
 
    if (IsPrimary(pScrn))
       if (!I830BindGARTMemory(pScrn))
@@ -5604,6 +5722,34 @@ I830PMEvent(int scrnIndex, pmEvent event, Bool undo)
 	 SaveScreens(SCREEN_SAVER_FORCER, ScreenSaverReset);
       }
       break;
+   /* This is currently used for ACPI */
+   case XF86_APM_CAPABILITY_CHANGED:
+#if 0
+      /* If we had status checking turned on, turn it off now */
+      if (pI830->checkDevices) {
+         if (pI830->devicesTimer)
+            TimerCancel(pI830->devicesTimer);
+         pI830->devicesTimer = NULL;
+         pI830->checkDevices = FALSE; 
+      }
+#endif
+      if (!IsPrimary(pScrn))
+         return TRUE;
+
+      ErrorF("I830PMEvent: Capability change\n");
+
+      /* ACPI Toggle */
+      pI830->toggleDevices = GetNextDisplayDeviceList(pScrn, 1);
+      if (xf86IsEntityShared(pScrn->entityList[0])) {
+         I830Ptr pI8302 = I830PTR(pI830->entityPrivate->pScrn_2);
+         pI8302->toggleDevices = pI830->toggleDevices;
+      }
+
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "ACPI Toggle to 0x%x\n",pI830->toggleDevices);
+
+      I830CheckDevicesTimer(NULL, 0, pScrn);
+      SaveScreens(SCREEN_SAVER_FORCER, ScreenSaverReset);
+      break;
    default:
       ErrorF("I830PMEvent: received APM event %d\n", event);
    }
@@ -5635,28 +5781,40 @@ I830CheckDevicesTimer(OsTimerPtr timer, CARD32 now, pointer arg)
       CARD32 adjust;
       CARD32 temp = INREG(SWF0) & 0x0000FFFF;
       int fixup = 0;
+      I830Ptr pI8301;
+      I830Ptr pI8302 = NULL;
 
-      /* this avoids a BIOS call if possible */
-      if (pI830->monitorSwitch != temp) {
-         I830Ptr pI8301;
-         I830Ptr pI8302 = NULL;
-         unsigned int toggle = GetToggleList(pScrn, 1);
+      if (IsPrimary(pScrn))
+         pI8301 = pI830;
+      else 
+         pI8301 = I830PTR(pI830->entityPrivate->pScrn_1);
 
-         GetToggleList(pScrn, 2);
-         GetToggleList(pScrn, 3);
-         GetToggleList(pScrn, 4);
+      if (xf86IsEntityShared(pScrn->entityList[0]))
+         pI8302 = I830PTR(pI830->entityPrivate->pScrn_2);
+
+      /* this avoids several BIOS calls if possible */
+      if (pI830->monitorSwitch != temp || pI830->monitorSwitch != pI830->toggleDevices) {
+         xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+			"Hotkey switch to 0x%lx.\n", temp);
+
+         if (pI830->AccelInfoRec && pI830->AccelInfoRec->NeedToSync) {
+            (*pI830->AccelInfoRec->Sync)(pScrn);
+            pI830->AccelInfoRec->NeedToSync = FALSE;
+            if (xf86IsEntityShared(pScrn->entityList[0]))
+               pI8302->AccelInfoRec->NeedToSync = FALSE;
+         }
+
+         GetAttachableDisplayDeviceList(pScrn);
          
-         if (IsPrimary(pScrn))
-            pI8301 = pI830;
-         else 
-            pI8301 = I830PTR(pI830->entityPrivate->pScrn_1);
-
-         if (xf86IsEntityShared(pScrn->entityList[0]))
-            pI8302 = I830PTR(pI830->entityPrivate->pScrn_2);
-
+	 pI8301->lastDevice0 = pI8301->lastDevice1;
          pI8301->lastDevice1 = pI8301->lastDevice2;
          pI8301->lastDevice2 = pI8301->monitorSwitch;
 
+	 if (temp != pI8301->lastDevice1 && 
+	     temp != pI8301->lastDevice2) {
+            xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+			"Detected three device configs.\n");
+	 } else
          if (CountBits(temp & 0xff) > 1) {
             xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 			"Detected cloned pipe mode (A).\n");
@@ -5685,22 +5843,22 @@ I830CheckDevicesTimer(OsTimerPtr timer, CARD32 now, pointer arg)
          }
 
          if (cloned &&
-             ((CountBits(pI830->lastDevice1 & 0xff) > 1) ||
-             ((CountBits((pI830->lastDevice1 & 0xff00) >> 8) > 1))) ) {
+             ((CountBits(pI8301->lastDevice1 & 0xff) > 1) ||
+             ((CountBits((pI8301->lastDevice1 & 0xff00) >> 8) > 1))) ) {
                xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 			"Detected duplicate (1).\n");
                cloned = 0;
          } else
          if (cloned &&
-             ((CountBits(pI830->lastDevice2 & 0xff) > 1) ||
-             ((CountBits((pI830->lastDevice2 & 0xff00) >> 8) > 1))) ) {
+             ((CountBits(pI8301->lastDevice2 & 0xff) > 1) ||
+             ((CountBits((pI8301->lastDevice2 & 0xff00) >> 8) > 1))) ) {
                xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 			"Detected duplicate (2).\n");
                cloned = 0;
          } 
 
          xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-		    "Requested display devices 0x%lx.\n", (unsigned long)temp);
+			"Requested display devices 0x%lx.\n", temp);
 
 
          /* If the BIOS doesn't flip between CRT, LFP and CRT+LFP we fake
@@ -5711,8 +5869,22 @@ I830CheckDevicesTimer(OsTimerPtr timer, CARD32 now, pointer arg)
           *
           * Cloned pipe mode should only be done when running single head.
           */
-         if (xf86IsEntityShared(pScrn->entityList[0]))
+         if (xf86IsEntityShared(pScrn->entityList[0])) {
             cloned = 0;
+
+	    /* Some BIOS' don't realize we may be in true dual head mode.
+	     * And only display the primary output on both when switching.
+	     * We detect this here and cycle back to both pipes.
+	     */
+	    if ((pI830->lastDevice0 == temp) &&
+                ((CountBits(pI8301->lastDevice2 & 0xff) > 1) ||
+                ((CountBits((pI8301->lastDevice2 & 0xff00) >> 8) > 1))) ) {
+               xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+			"Detected cloned pipe mode when dual head on previous switch. (0x%x -> 0x%x)\n", (int)temp, pI8301->MonType2 << 8 | pI8301->MonType1);
+	       temp = pI8301->MonType2 << 8 | pI8301->MonType1;
+	    }
+	    
+	 }
 
          if (cloned) { 
             if (pI830->Clone)
@@ -5724,19 +5896,36 @@ I830CheckDevicesTimer(OsTimerPtr timer, CARD32 now, pointer arg)
          } 
 
          /* Jump to our next mode if we detect we've been here before */
-         if (temp == pI830->lastDevice1 || temp == pI830->lastDevice2) {
-             temp = toggle;
+         if (temp == pI8301->lastDevice1 || temp == pI8301->lastDevice2) {
+             temp = GetToggleList(pScrn, 1);
              xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-			"Detected duplicate devices. Toggling (0x%lx)\n",
-			(unsigned long)temp);
+			"Detected duplicate devices. Toggling (0x%lx)\n", temp);
          }
 
          xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 		"Detected display change operation (0x%x, 0x%x, 0x%lx).\n", 
-                pI8301->lastDevice1, pI8301->lastDevice2, (unsigned long)temp);
+                pI8301->lastDevice1, pI8301->lastDevice2, temp);
 
          /* So that if we close on the wrong config, we restore correctly */
          pI830->specifiedMonitor = TRUE;
+
+         if (!xf86IsEntityShared(pScrn->entityList[0])) {
+            if ((temp & 0xFF00) && (temp & 0x00FF)) {
+               pI830->Clone = TRUE;
+               xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Setting Clone mode\n");
+            } else {
+               pI830->Clone = FALSE;
+               xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Clearing Clone mode\n");
+            }
+         }
+
+         {
+            /* Turn Cursor off before switching */
+            Bool on = pI830->cursorOn;
+            if (pI830->CursorInfoRec && pI830->CursorInfoRec->HideCursor)
+               pI830->CursorInfoRec->HideCursor(pScrn);
+            pI830->cursorOn = on;
+         }
 
          /* double check the display devices are what's configured and try
           * not to do it twice because of dual heads with the code above */
@@ -5746,26 +5935,41 @@ I830CheckDevicesTimer(OsTimerPtr timer, CARD32 now, pointer arg)
                      (CountBits((temp & 0xff00) >> 8) > 1)) ) {
 	       temp = pI8301->lastDevice2 | pI8301->lastDevice1;
                xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "Cloning failed, "
-			  "trying dual pipe clone mode (0x%lx)\n",
-			  (unsigned long)temp);
+                    "trying dual pipe clone mode (0x%lx)\n", temp);
                if (!SetDisplayDevices(pScrn, temp))
                     xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "Failed to switch "
-			       "to configured display devices (0x%lx).\n",
-			       (unsigned long)temp);
-               else
+ 		    "to configured display devices (0x%lx).\n", temp);
+               else {
                  pI830->Clone = TRUE;
+                 xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Setting Clone mode\n");
+               }
             }
          }
+
          pI8301->monitorSwitch = temp;
 	 pI8301->operatingDevices = temp;
+	 pI8301->toggleDevices = temp;
+
          if (xf86IsEntityShared(pScrn->entityList[0])) {
-	    pI8302->operatingDevices = temp;
-            pI8302->monitorSwitch = temp;
+	    pI8302->operatingDevices = pI8301->operatingDevices;
+            pI8302->monitorSwitch = pI8301->monitorSwitch;
+	    pI8302->toggleDevices = pI8301->toggleDevices;
          }
 
          fixup = 1;
+
+#if 0
+         xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+			"ACPI _DGS queried devices is 0x%x, but probed is 0x%x monitorSwitch=0x%x\n", 
+			pI830->toggleDevices, INREG(SWF0), pI830->monitorSwitch);
+#endif
       } else {
-         int offset = pScrn->fbOffset + ((pScrn->frameY0 * pScrn->displayWidth + pScrn->frameX0) * pI830->cpp);
+         int offset = -1;
+         if (IsPrimary(pScrn))
+            offset = pI8301->FrontBuffer.Start + ((pScrn->frameY0 * pScrn->displayWidth + pScrn->frameX0) * pI830->cpp);
+         else {
+            offset = pI8301->FrontBuffer2.Start + ((pScrn->frameY0 * pScrn->displayWidth + pScrn->frameX0) * pI830->cpp);
+	 }
 
          if (pI830->pipe == 0)
             adjust = INREG(DSPABASE);
@@ -5783,6 +5987,7 @@ I830CheckDevicesTimer(OsTimerPtr timer, CARD32 now, pointer arg)
       if (fixup) {
          ScreenPtr   pCursorScreen;
          int x = 0, y = 0;
+
 
          pCursorScreen = miPointerCurrentScreen();
          if (pScrn->pScreen == pCursorScreen)

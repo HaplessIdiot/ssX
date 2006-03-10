@@ -26,7 +26,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_cursor.c,v 1.9 2005/01/09 20:47:19 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_cursor.c,v 1.10 2005/05/31 18:19:18 alanh Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -82,7 +82,7 @@ I830InitHWCursor(ScrnInfoPtr pScrn)
 
    DPRINTF(PFX, "I830InitHWCursor\n");
    /* Initialise the HW cursor registers, leaving the cursor hidden. */
-   if (IS_MOBILE(pI830) || IS_I915G(pI830) || IS_I945G(pI830)) {
+   if (IS_MOBILE(pI830) || IS_I9XX(pI830)) {
       temp = INREG(CURSOR_A_CONTROL);
       temp &= ~(CURSOR_MODE | MCURSOR_GAMMA_ENABLE | MCURSOR_MEM_TYPE_LOCAL |
 		MCURSOR_PIPE_SELECT);
@@ -135,8 +135,8 @@ I830CursorInit(ScreenPtr pScreen)
    if (!infoPtr)
       return FALSE;
 
-   infoPtr->MaxWidth = 64;
-   infoPtr->MaxHeight = 64;
+   infoPtr->MaxWidth = I810_CURSOR_X;
+   infoPtr->MaxHeight = I810_CURSOR_Y;
    infoPtr->Flags = (HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
 		     HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
 		     HARDWARE_CURSOR_INVERT_MASK |
@@ -304,7 +304,7 @@ I830SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
    }
 
    /* have to upload the base for the new position */
-   if (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830)) {
+   if (IS_I9XX(pI830)) {
       if (pI830->CursorIsARGB)
          OUTREG(CURSOR_A_BASE, pI830->CursorMemARGB->Physical);
       else
@@ -335,7 +335,7 @@ I830ShowCursor(ScrnInfoPtr pScrn)
 	   pI830->CursorMemARGB->Physical, pI830->CursorMemARGB->Start);
 
    pI830->cursorOn = TRUE;
-   if (IS_MOBILE(pI830) || IS_I915G(pI830) || IS_I945G(pI830)) {
+   if (IS_MOBILE(pI830) || IS_I9XX(pI830)) {
       temp = INREG(CURSOR_A_CONTROL);
       temp &= ~(CURSOR_MODE | MCURSOR_PIPE_SELECT);
       if (pI830->CursorIsARGB)
@@ -383,7 +383,7 @@ I830HideCursor(ScrnInfoPtr pScrn)
    DPRINTF(PFX, "I830HideCursor\n");
 
    pI830->cursorOn = FALSE;
-   if (IS_MOBILE(pI830) || IS_I915G(pI830) || IS_I945G(pI830)) {
+   if (IS_MOBILE(pI830) || IS_I9XX(pI830)) {
       temp = INREG(CURSOR_A_CONTROL);
       temp &= ~CURSOR_MODE;
       temp |= CURSOR_MODE_DISABLE;

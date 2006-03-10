@@ -1,4 +1,8 @@
 XFree86 4.5.99.902 (xx March 2006)
+ 239. Add ACPI Hotkey switching support to the i810 driver (Alan Hourihane).
+ 238. Add 945GM support to the i810 driver (Alan Hourihane).
+ 237. Support 1920x1088 for HDTV movies in the i810 driver using a new option
+      called LinearAlloc to add more memory for video overlay (Alan Hourihane).
  236. Merge in support for SiliconMotion's SM501 controller (Adapted from
       Bugzilla #1001, Terry Chang).
  235. Make the fbdev driver's required/referenced symbols instance-specific,
@@ -20052,7 +20056,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3687 2006/03/09 02:16:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3688 2006/03/09 17:37:05 tsi Exp $
 
 
 
