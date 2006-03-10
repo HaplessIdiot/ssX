@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_memory.c,v 1.15tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_memory.c,v 1.16 2006/01/29 01:51:49 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -302,6 +302,9 @@ AllocateOverlay(ScrnInfoPtr pScrn, int flags)
    memset(pI830->OverlayMem, 0, sizeof(I830MemRange));
    pI830->OverlayMem->Key = -1;
 
+   memset(&(pI830->LinearMem), 0, sizeof(I830MemRange));
+   pI830->LinearMem.Key = -1;
+
    if (!pI830->XvEnabled)
       return TRUE;
 
@@ -340,6 +343,24 @@ AllocateOverlay(ScrnInfoPtr pScrn, int flags)
 		     alloced / 1024, pI830->OverlayMem->Start,
 		     pI830->OverlayMem->Physical);
    }
+
+   /* Clear linearmem info */
+   if (pI830->LinearAlloc) {
+      size = KB(pI830->LinearAlloc);
+      alloced = I830AllocVidMem(pScrn, &(pI830->LinearMem), &(pI830->StolenPool),
+				size, GTT_PAGE_SIZE,
+				FROM_ANYWHERE | ALLOCATE_AT_TOP);
+      if (alloced < size) {
+         if (!dryrun) {
+            xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		       "Failed to allocate linear buffer space\n");
+         }
+      } else
+         xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, verbosity,
+		    "%sAllocated %ld kB for the linear buffer at 0x%lx\n", s,
+		    alloced / 1024, pI830->LinearMem.Start);
+   }
+
    return TRUE;
 }
 
@@ -1188,6 +1209,8 @@ I830FixupOffsets(ScrnInfoPtr pScrn)
       FixOffset(pScrn, &(pI830->Scratch2));
    if (pI830->XvEnabled)
       FixOffset(pScrn, pI830->OverlayMem);
+   if (pI830->LinearAlloc)
+      FixOffset(pScrn, &pI830->LinearMem);
 #ifdef XF86DRI
    if (pI830->directRenderingEnabled) {
       FixOffset(pScrn, &(pI830->BackBuffer));
@@ -1222,13 +1245,13 @@ SetFence(ScrnInfoPtr pScrn, int nr, unsigned int start, unsigned int pitch,
 
    if (nr < 0 || nr > 7) {
       xf86DrvMsg(X_WARNING, pScrn->scrnIndex,
-		 "SetFence: fence %d out of range\n", nr);
+		 "SetFence: fence %d out of range\n",nr);
       return;
    }
 
    i830Reg->Fence[nr] = 0;
 
-   if (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830))
+   if (IS_I9XX(pI830))
    	fence_mask = ~I915G_FENCE_START_MASK;
    else
    	fence_mask = ~I830_FENCE_START_MASK;
@@ -1236,7 +1259,7 @@ SetFence(ScrnInfoPtr pScrn, int nr, unsigned int start, unsigned int pitch,
    if (start & fence_mask) {
       xf86DrvMsg(X_WARNING, pScrn->scrnIndex,
 		 "SetFence: %d: start (0x%08x) is not %s aligned\n",
-		 nr, start, (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830)) ? "1MB" : "512k");
+		 nr, start, (IS_I9XX(pI830)) ? "1MB" : "512k");
       return;
    }
 
@@ -1256,7 +1279,7 @@ SetFence(ScrnInfoPtr pScrn, int nr, unsigned int start, unsigned int pitch,
 
    val = (start | FENCE_X_MAJOR | FENCE_VALID);
 
-   if (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830)) {
+   if (IS_I9XX(pI830)) {
    	switch (size) {
 	   case MB(1):
       		val |= I915G_FENCE_SIZE_1M;
@@ -1317,7 +1340,7 @@ SetFence(ScrnInfoPtr pScrn, int nr, unsigned int start, unsigned int pitch,
    	}
    }
 
-   if (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830))
+   if (IS_I9XX(pI830))
 	fence_pitch = pitch / 512;
    else
 	fence_pitch = pitch / 128;
@@ -1507,6 +1530,8 @@ I830BindGARTMemory(ScrnInfoPtr pScrn)
 	    return FALSE;
       if (!BindMemRange(pScrn, pI830->OverlayMem))
 	 return FALSE;
+      if (!BindMemRange(pScrn, &pI830->LinearMem))
+	 return FALSE;
 #ifdef XF86DRI
       if (pI830->directRenderingEnabled) {
 	 if (!BindMemRange(pScrn, &(pI830->BackBuffer)))
@@ -1576,6 +1601,8 @@ I830UnbindGARTMemory(ScrnInfoPtr pScrn)
          if (!UnbindMemRange(pScrn, &(pI830->Scratch2)))
 	    return FALSE;
       if (!UnbindMemRange(pScrn, pI830->OverlayMem))
+	 return FALSE;
+      if (!UnbindMemRange(pScrn, &pI830->LinearMem))
 	 return FALSE;
 #ifdef XF86DRI
       if (pI830->directRenderingEnabled) {

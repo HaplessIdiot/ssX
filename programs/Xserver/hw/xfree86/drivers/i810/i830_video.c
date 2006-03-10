@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.25tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.26 2006/02/19 15:51:26 tsi Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -112,9 +112,10 @@ static void I830BlockHandler(int, pointer, pointer, pointer);
 static Atom xvBrightness, xvContrast, xvColorKey, xvPipe;
 static Atom xvGamma0, xvGamma1, xvGamma2, xvGamma3, xvGamma4, xvGamma5;
 
-#define IMAGE_MAX_WIDTH		1440
-#define IMAGE_MAX_HEIGHT	1080
-#define Y_BUF_SIZE		(IMAGE_MAX_WIDTH * IMAGE_MAX_HEIGHT)
+#define IMAGE_MAX_WIDTH		1920
+#define IMAGE_MAX_HEIGHT	1088
+#define IMAGE_MAX_WIDTH_LEGACY	1024
+#define IMAGE_MAX_HEIGHT_LEGACY	1088
 
 #if !VIDEO_DEBUG
 #define ErrorF Edummy
@@ -133,13 +134,13 @@ Edummy(const char *dummy, ...)
  * all modes of server exit.
  */
 
-#define OVERLAY_UPDATE							\
+#define OVERLAY_UPDATE						\
    do { 								\
       BEGIN_LP_RING(6);							\
       OUT_RING(MI_FLUSH | MI_WRITE_DIRTY_STATE);			\
       OUT_RING(MI_NOOP);						\
       if (!*pI830->overlayOn) {						\
-	 OUT_RING(MI_NOOP);						\
+         OUT_RING(MI_NOOP);						\
 	 OUT_RING(MI_NOOP);						\
 	 OUT_RING(MI_OVERLAY_FLIP | MI_OVERLAY_FLIP_ON);		\
 	 ErrorF("Overlay goes from off to on\n");			\
@@ -149,7 +150,7 @@ Edummy(const char *dummy, ...)
 	 OUT_RING(MI_NOOP);						\
 	 OUT_RING(MI_OVERLAY_FLIP | MI_OVERLAY_FLIP_CONTINUE);		\
       }									\
-      OUT_RING(pI830->OverlayMem->Physical | 1);			\
+      OUT_RING(pI830->OverlayMem->Physical | OFC_UPDATE); 		\
       ADVANCE_LP_RING();						\
       ErrorF("OVERLAY_UPDATE\n");					\
    } while(0)
@@ -157,18 +158,28 @@ Edummy(const char *dummy, ...)
 #define OVERLAY_OFF							\
    do { 								\
       if (*pI830->overlayOn) {						\
-	 BEGIN_LP_RING(8);						\
+	 int spin = 1000000;						\
+	 BEGIN_LP_RING(12);						\
 	 OUT_RING(MI_FLUSH | MI_WRITE_DIRTY_STATE);			\
 	 OUT_RING(MI_NOOP);						\
 	 OUT_RING(MI_WAIT_FOR_EVENT | MI_WAIT_FOR_OVERLAY_FLIP);	\
 	 OUT_RING(MI_NOOP);						\
+	 OUT_RING(MI_OVERLAY_FLIP | MI_OVERLAY_FLIP_CONTINUE);		\
+         OUT_RING(pI830->OverlayMem->Physical | OFC_UPDATE); 		\
+	 OUT_RING(MI_WAIT_FOR_EVENT | MI_WAIT_FOR_OVERLAY_FLIP);	\
+	 OUT_RING(MI_NOOP);						\
 	 OUT_RING(MI_OVERLAY_FLIP | MI_OVERLAY_FLIP_OFF);		\
-	 OUT_RING(pI830->OverlayMem->Physical);				\
+         OUT_RING(pI830->OverlayMem->Physical | OFC_UPDATE); 		\
 	 OUT_RING(MI_WAIT_FOR_EVENT | MI_WAIT_FOR_OVERLAY_FLIP);	\
 	 OUT_RING(MI_NOOP);						\
 	 ADVANCE_LP_RING();						\
 	 *pI830->overlayOn = FALSE;					\
 	 ErrorF("Overlay goes from on to off\n");			\
+         while (spin != 0 && (INREG(OCMD_REGISTER) & OVERLAY_ENABLE)){	\
+		ErrorF("SPIN %d\n",spin);				\
+		spin--;							\
+ 	 }								\
+	 if (spin == 0) ErrorF("OVERLAY FAILED TO GO OFF\n");		\
 	 ErrorF("OVERLAY_OFF\n");					\
       }									\
    } while(0)
@@ -176,6 +187,7 @@ Edummy(const char *dummy, ...)
 /*
  * OCMD - Overlay Command Register
  */
+#define OCMD_REGISTER		0x30168
 #define MIRROR_MODE		(0x3<<17)
 #define MIRROR_HORIZONTAL	(0x1<<17)
 #define MIRROR_VERTICAL		(0x2<<17)
@@ -207,11 +219,15 @@ Edummy(const char *dummy, ...)
 #define FIELD1			(0x1<<1)
 #define OVERLAY_ENABLE		0x1
 
+#define OFC_UPDATE		0x1
+
 /* OCONFIG register */
 #define CC_OUT_8BIT		(0x1<<3)
 #define OVERLAY_PIPE_MASK	(0x1<<18)		
 #define OVERLAY_PIPE_A		(0x0<<18)		
 #define OVERLAY_PIPE_B		(0x1<<18)		
+#define THREE_LINE_BUFFERS	(0x1<<0)
+#define TWO_LINE_BUFFERS	(0x0<<0)
 
 /* DCLRKM register */
 #define DEST_KEY_ENABLE		(0x1<<31)
@@ -259,7 +275,7 @@ static XF86AttributeRec CloneAttributes[CLONE_ATTRIBUTES] = {
 static XF86AttributeRec Attributes[NUM_ATTRIBUTES] = {
    {XvSettable | XvGettable, 0, (1 << 24) - 1, "XV_COLORKEY"},
    {XvSettable | XvGettable, -128, 127, "XV_BRIGHTNESS"},
-   {XvSettable | XvGettable, 0, 255, "XV_CONTRAST"}
+   {XvSettable | XvGettable, 0, 255, "XV_CONTRAST"},
 };
 
 #define GAMMA_ATTRIBUTES 6
@@ -275,9 +291,9 @@ static XF86AttributeRec GammaAttributes[GAMMA_ATTRIBUTES] = {
 #define NUM_IMAGES 4
 
 static XF86ImageRec Images[NUM_IMAGES] = {
-   XVIMAGE_YUY2,
    XVIMAGE_YV12,
    XVIMAGE_I420,
+   XVIMAGE_YUY2,
    XVIMAGE_UYVY
 };
 
@@ -470,10 +486,10 @@ I830ResetVideo(ScrnInfoPtr pScrn)
    overlay->HORZ_PH = 0;
    overlay->INIT_PHS = 0;
    overlay->DWINPOS = 0;
-   overlay->DWINSZ = (IMAGE_MAX_HEIGHT << 16) | IMAGE_MAX_WIDTH;
-   overlay->SWIDTH = IMAGE_MAX_WIDTH | (IMAGE_MAX_WIDTH << 16);
-   overlay->SWIDTHSW = (IMAGE_MAX_WIDTH >> 3) | (IMAGE_MAX_WIDTH << 12);
-   overlay->SHEIGHT = IMAGE_MAX_HEIGHT | (IMAGE_MAX_HEIGHT << 15);
+   overlay->DWINSZ = 0;
+   overlay->SWIDTH = 0;
+   overlay->SWIDTHSW = 0;
+   overlay->SHEIGHT = 0;
    overlay->OCLRC0 = (pPriv->contrast << 18) | (pPriv->brightness & 0xff);
    overlay->OCLRC1 = 0x00000080;	/* saturation: bypass */
    overlay->AWINPOS = 0;
@@ -601,6 +617,11 @@ I830SetupImageVideo(ScreenPtr pScreen)
    adapt->name = "Intel(R) Video Overlay";
    adapt->nEncodings = 1;
    adapt->pEncodings = DummyEncoding;
+   /* update the DummyEncoding for these two chipsets */
+   if (IS_845G(pI830) || IS_I830(pI830)) {
+      adapt->pEncodings->width = IMAGE_MAX_WIDTH_LEGACY;
+      adapt->pEncodings->height = IMAGE_MAX_HEIGHT_LEGACY;
+   }
    adapt->nFormats = NUM_FORMATS;
    adapt->pFormats = Formats;
    adapt->nPorts = 1;
@@ -612,7 +633,7 @@ I830SetupImageVideo(ScreenPtr pScreen)
    adapt->nAttributes = NUM_ATTRIBUTES;
    if (pI830->Clone)
       adapt->nAttributes += CLONE_ATTRIBUTES;
-   if (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830))
+   if (IS_I9XX(pI830))
       adapt->nAttributes += GAMMA_ATTRIBUTES; /* has gamma */
    adapt->pAttributes = xnfalloc(sizeof(XF86AttributeRec) * adapt->nAttributes);
    /* Now copy the attributes */
@@ -623,7 +644,7 @@ I830SetupImageVideo(ScreenPtr pScreen)
       memcpy((char*)att, (char*)CloneAttributes, sizeof(XF86AttributeRec) * CLONE_ATTRIBUTES);
       att+=CLONE_ATTRIBUTES;
    }
-   if (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830)) {
+   if (IS_I9XX(pI830)) {
       memcpy((char*)att, (char*)GammaAttributes, sizeof(XF86AttributeRec) * GAMMA_ATTRIBUTES);
       att+=GAMMA_ATTRIBUTES;
    }
@@ -675,15 +696,15 @@ I830SetupImageVideo(ScreenPtr pScreen)
    pI830->BlockHandler = pScreen->BlockHandler;
    pScreen->BlockHandler = I830BlockHandler;
 
+   xvColorKey = MAKE_ATOM("XV_COLORKEY");
    xvBrightness = MAKE_ATOM("XV_BRIGHTNESS");
    xvContrast = MAKE_ATOM("XV_CONTRAST");
-   xvColorKey = MAKE_ATOM("XV_COLORKEY");
 
    /* Allow the pipe to be switched from pipe A to B when in clone mode */
    if (pI830->Clone)
      xvPipe = MAKE_ATOM("XV_PIPE");
-
-   if (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830)) {
+   
+   if (IS_I9XX(pI830)) {
      xvGamma0 = MAKE_ATOM("XV_GAMMA0");
      xvGamma1 = MAKE_ATOM("XV_GAMMA1");
      xvGamma2 = MAKE_ATOM("XV_GAMMA2");
@@ -714,10 +735,12 @@ I830StopVideo(ScrnInfoPtr pScrn, pointer data, Bool shutdown)
 
    if (shutdown) {
       if (pPriv->videoStatus & CLIENT_VIDEO_ON) {
+
 	 overlay->OCMD &= ~OVERLAY_ENABLE;
 	 OVERLAY_UPDATE;
-
+#if 1
 	 OVERLAY_OFF;
+#endif
 
          if (pI830->entityPrivate)
             pI830->entityPrivate->XvInUse = -1;
@@ -750,15 +773,23 @@ I830SetPortAttribute(ScrnInfoPtr pScrn,
 	 return BadValue;
       pPriv->brightness = value;
       overlay->OCLRC0 = (pPriv->contrast << 18) | (pPriv->brightness & 0xff);
-      if (pPriv->overlayOK)
-         OVERLAY_UPDATE;
+      ErrorF("BRIGHTNESS\n");
+      overlay->OCMD &= ~OVERLAY_ENABLE;
+      OVERLAY_UPDATE;
+#if 1
+      OVERLAY_OFF;
+#endif
    } else if (attribute == xvContrast) {
       if ((value < 0) || (value > 255))
 	 return BadValue;
       pPriv->contrast = value;
       overlay->OCLRC0 = (pPriv->contrast << 18) | (pPriv->brightness & 0xff);
-      if (pPriv->overlayOK)
-         OVERLAY_UPDATE;
+      ErrorF("CONTRAST\n");
+      overlay->OCMD &= ~OVERLAY_ENABLE;
+      OVERLAY_UPDATE;
+#if 1
+      OVERLAY_OFF;
+#endif
    } else if (pI830->Clone && attribute == xvPipe) {
       if ((value < 0) || (value > 1))
          return BadValue;
@@ -771,52 +802,36 @@ I830SetPortAttribute(ScrnInfoPtr pScrn,
          overlay->OCONFIG |= OVERLAY_PIPE_A;
       else 
          overlay->OCONFIG |= OVERLAY_PIPE_B;
-      if (pPriv->overlayOK)
-         OVERLAY_UPDATE;
-   } else if (attribute == xvGamma0 && (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830))) {
-      /* Avoid video anomalies, so set gamma registers when overlay is off */
-      /* We also clamp the values if they are outside the ranges */
-      if (!*pI830->overlayOn) {
-         pPriv->gamma0 = value;
-	 if (pPriv->gamma1 - pPriv->gamma0 > 0x7d)
-	   pPriv->gamma1 = pPriv->gamma0 + 0x7d;
-      } else
-         return BadRequest;
-   } else if (attribute == xvGamma1 && (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830))) {
-      if (!*pI830->overlayOn) {
-         pPriv->gamma1 = value;
-         if (pPriv->gamma1 - pPriv->gamma0 > 0x7d)
-           pPriv->gamma0 = pPriv->gamma1 - 0x7d;
-      } else
-         return BadRequest;
-   } else if (attribute == xvGamma2 && (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830))) {
-      if (!*pI830->overlayOn) {
-         pPriv->gamma2 = value;
-         if (pPriv->gamma3 - pPriv->gamma2 > 0x7d)
-            pPriv->gamma3 = pPriv->gamma2 + 0x7d;
-      } else
-         return BadRequest;
-   } else if (attribute == xvGamma3 && (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830))) {
-      if (!*pI830->overlayOn) {
-         pPriv->gamma3 = value;
-         if (pPriv->gamma3 - pPriv->gamma2 > 0x7d)
-            pPriv->gamma2 = pPriv->gamma3 - 0x7d;
-      } else
-         return BadRequest;
-   } else if (attribute == xvGamma4 && (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830))) {
-      if (!*pI830->overlayOn) {
-         pPriv->gamma4 = value;
-         if (pPriv->gamma5 - pPriv->gamma4 > 0x7d)
-            pPriv->gamma5 = pPriv->gamma4 + 0x7d;
-      } else
-         return BadRequest;
-   } else if (attribute == xvGamma5 && (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830))) {
-      if (!*pI830->overlayOn) {
-         pPriv->gamma5 = value;
-         if (pPriv->gamma5 - pPriv->gamma4 > 0x7d)
-            pPriv->gamma4 = pPriv->gamma5 - 0x7d;
-      } else
-         return BadRequest;
+      ErrorF("PIPE CHANGE\n");
+      overlay->OCMD &= ~OVERLAY_ENABLE;
+      OVERLAY_UPDATE;
+#if 1
+      OVERLAY_OFF;
+#endif
+   } else if (attribute == xvGamma0 && (IS_I9XX(pI830))) {
+      pPriv->gamma0 = value; 
+      if (pPriv->gamma1 - pPriv->gamma0 > 0x7d)
+         pPriv->gamma1 = pPriv->gamma0 + 0x7d;
+   } else if (attribute == xvGamma1 && (IS_I9XX(pI830))) {
+      pPriv->gamma1 = value;
+      if (pPriv->gamma1 - pPriv->gamma0 > 0x7d)
+        pPriv->gamma0 = pPriv->gamma1 - 0x7d;
+   } else if (attribute == xvGamma2 && (IS_I9XX(pI830))) {
+      pPriv->gamma2 = value;
+      if (pPriv->gamma3 - pPriv->gamma2 > 0x7d)
+         pPriv->gamma3 = pPriv->gamma2 + 0x7d;
+   } else if (attribute == xvGamma3 && (IS_I9XX(pI830))) {
+      pPriv->gamma3 = value;
+      if (pPriv->gamma3 - pPriv->gamma2 > 0x7d)
+         pPriv->gamma2 = pPriv->gamma3 - 0x7d;
+   } else if (attribute == xvGamma4 && (IS_I9XX(pI830))) {
+      pPriv->gamma4 = value;
+      if (pPriv->gamma5 - pPriv->gamma4 > 0x7d)
+         pPriv->gamma5 = pPriv->gamma4 + 0x7d;
+   } else if (attribute == xvGamma5 && (IS_I9XX(pI830))) {
+      pPriv->gamma5 = value;
+      if (pPriv->gamma5 - pPriv->gamma4 > 0x7d)
+         pPriv->gamma4 = pPriv->gamma5 - 0x7d;
    } else if (attribute == xvColorKey) {
       pPriv->colorKey = value;
       switch (pScrn->depth) {
@@ -830,8 +845,12 @@ I830SetPortAttribute(ScrnInfoPtr pScrn,
 	 overlay->DCLRKV = pPriv->colorKey;
 	 break;
       }
-      if (pPriv->overlayOK)
-         OVERLAY_UPDATE;
+      ErrorF("COLORKEY\n");
+      overlay->OCMD &= ~OVERLAY_ENABLE;
+      OVERLAY_UPDATE;
+#if 1
+      OVERLAY_OFF;
+#endif
       REGION_EMPTY(pScrn->pScreen, &pPriv->clip);
    } else
       return BadMatch;
@@ -842,7 +861,13 @@ I830SetPortAttribute(ScrnInfoPtr pScrn,
         attribute == xvGamma2 ||
         attribute == xvGamma3 ||
         attribute == xvGamma4 ||
-        attribute == xvGamma5) && (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830))) {
+        attribute == xvGamma5) && (IS_I9XX(pI830))) {
+        ErrorF("GAMMA\n");
+        overlay->OCMD &= ~OVERLAY_ENABLE;
+        OVERLAY_UPDATE;
+#if 1
+        OVERLAY_OFF;
+#endif
 	I830UpdateGamma(pScrn);
    }
 
@@ -862,21 +887,21 @@ I830GetPortAttribute(ScrnInfoPtr pScrn,
       *value = pPriv->contrast;
    } else if (pI830->Clone && attribute == xvPipe) {
       *value = pPriv->pipe;
-   } else if (attribute == xvGamma0 && (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830))) {
+   } else if (attribute == xvGamma0 && (IS_I9XX(pI830))) {
       *value = pPriv->gamma0;
-   } else if (attribute == xvGamma1 && (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830))) {
+   } else if (attribute == xvGamma1 && (IS_I9XX(pI830))) {
       *value = pPriv->gamma1;
-   } else if (attribute == xvGamma2 && (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830))) {
+   } else if (attribute == xvGamma2 && (IS_I9XX(pI830))) {
       *value = pPriv->gamma2;
-   } else if (attribute == xvGamma3 && (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830))) {
+   } else if (attribute == xvGamma3 && (IS_I9XX(pI830))) {
       *value = pPriv->gamma3;
-   } else if (attribute == xvGamma4 && (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830))) {
+   } else if (attribute == xvGamma4 && (IS_I9XX(pI830))) {
       *value = pPriv->gamma4;
-   } else if (attribute == xvGamma5 && (IS_I915G(pI830) || IS_I915GM(pI830) || IS_I945G(pI830))) {
+   } else if (attribute == xvGamma5 && (IS_I9XX(pI830))) {
       *value = pPriv->gamma5;
    } else if (attribute == xvColorKey) {
       *value = pPriv->colorKey;
-   } else
+   } else 
       return BadMatch;
 
    return Success;
@@ -1149,7 +1174,7 @@ I830DisplayVideo(ScrnInfoPtr pScrn, int id, short width, short height,
    if (!pPriv->overlayOK)
       return;
 
-   if (IS_I915G(pI830) || IS_I915GM(pI830)) {
+   if (IS_I9XX(pI830)) {
       shift = 6;
       mask = 0x3f;
    } else {
@@ -1188,7 +1213,7 @@ I830DisplayVideo(ScrnInfoPtr pScrn, int id, short width, short height,
       swidth = ((offsety + width + mask) >> shift) -
 	    (offsety >> shift);
 
-      if (IS_I915G(pI830) || IS_I915GM(pI830))
+      if (IS_I9XX(pI830))
          swidth <<= 1;
 
       swidth -= 1;
@@ -1200,7 +1225,7 @@ I830DisplayVideo(ScrnInfoPtr pScrn, int id, short width, short height,
       swidth = ((offsetu + (width / 2) + mask) >> shift) -
 	    (offsetu >> shift);
 
-      if (IS_I915G(pI830) || IS_I915GM(pI830))
+      if (IS_I9XX(pI830))
          swidth <<= 1;
 
       swidth -= 1;
@@ -1224,7 +1249,7 @@ I830DisplayVideo(ScrnInfoPtr pScrn, int id, short width, short height,
       swidth = ((offsety + (width << 1) + mask) >> shift) -
 	    (offsety >> shift);
 
-      if (IS_I915G(pI830) || IS_I915GM(pI830))
+      if (IS_I9XX(pI830))
          swidth <<= 1;
 
       swidth -= 1;
@@ -1653,14 +1678,22 @@ I830QueryImageAttributes(ScrnInfoPtr pScrn,
 			 unsigned short *w, unsigned short *h,
 			 int *pitches, int *offsets)
 {
+   I830Ptr pI830 = I830PTR(pScrn);
    int size, tmp;
 
-   DPRINTF(PFX, "I830QueryImageAttributes: w is %d, h is %d\n", *w, *h);
+   ErrorF("I830QueryImageAttributes: w is %d, h is %d\n", *w, *h);
 
+   if (IS_845G(pI830) || IS_I830(pI830)) {
+   if (*w > IMAGE_MAX_WIDTH_LEGACY)
+      *w = IMAGE_MAX_WIDTH_LEGACY;
+   if (*h > IMAGE_MAX_HEIGHT_LEGACY)
+      *h = IMAGE_MAX_HEIGHT_LEGACY;
+   } else {
    if (*w > IMAGE_MAX_WIDTH)
       *w = IMAGE_MAX_WIDTH;
    if (*h > IMAGE_MAX_HEIGHT)
       *h = IMAGE_MAX_HEIGHT;
+   }
 
    *w = (*w + 1) & ~1;
    if (offsets)
@@ -1730,24 +1763,29 @@ I830BlockHandler(int i,
    pScreen->BlockHandler = I830BlockHandler;
 
    if (pPriv->videoStatus & TIMER_MASK) {
+#if 1
+      Time now = currentTime.milliseconds;
+#else
       UpdateCurrentTime();
+#endif
       if (pPriv->videoStatus & OFF_TIMER) {
-	 if (pPriv->offTime < currentTime.milliseconds) {
+	 if (pPriv->offTime < now) {
 	    /* Turn off the overlay */
+	    ErrorF("BLOCKHANDLER\n");
 	    overlay->OCMD &= ~OVERLAY_ENABLE;
-
-	    OVERLAY_UPDATE;
-
-	    OVERLAY_OFF;
+            OVERLAY_UPDATE;
+#if 1
+            OVERLAY_OFF;
+#endif
 
 	    pPriv->videoStatus = FREE_TIMER;
-	    pPriv->freeTime = currentTime.milliseconds + FREE_DELAY;
+	    pPriv->freeTime = now + FREE_DELAY;
        
             if (pI830->entityPrivate)
                pI830->entityPrivate->XvInUse = -1;
 	 }
       } else {				/* FREE_TIMER */
-	 if (pPriv->freeTime < currentTime.milliseconds) {
+	 if (pPriv->freeTime < now) {
 	    if (pPriv->linear) {
 	       xf86FreeOffscreenLinear(pPriv->linear);
 	       pPriv->linear = NULL;
@@ -1778,10 +1816,15 @@ I830AllocateSurface(ScrnInfoPtr pScrn,
    OffscreenPrivPtr pPriv;
    I830Ptr pI830 = I830PTR(pScrn);
 
-   DPRINTF(PFX, "I830AllocateSurface\n");
+   ErrorF("I830AllocateSurface\n");
 
-   if ((w > 1024) || (h > 1024))
-      return BadAlloc;
+   if (IS_845G(pI830) || IS_I830(pI830)) {
+      if ((w > IMAGE_MAX_WIDTH_LEGACY) || (h > IMAGE_MAX_HEIGHT_LEGACY))
+         return BadAlloc;
+   } else {
+      if ((w > IMAGE_MAX_WIDTH) || (h > IMAGE_MAX_HEIGHT))
+         return BadAlloc;
+   }
 
    w = (w + 1) & ~1;
    pitch = ((w << 1) + 15) & ~15;
@@ -1837,11 +1880,12 @@ I830StopSurface(XF86SurfacePtr surface)
       I830OverlayRegPtr overlay =
 	    (I830OverlayRegPtr) (pI830->FbBase + pI830->OverlayMem->Start);
 
+      ErrorF("StopSurface\n");
       overlay->OCMD &= ~OVERLAY_ENABLE;
-
       OVERLAY_UPDATE;
-
+#if 1
       OVERLAY_OFF;
+#endif
 
       if (pI830->entityPrivate)
          pI830->entityPrivate->XvInUse = -1;
@@ -1976,6 +2020,8 @@ I830DisplaySurface(XF86SurfacePtr surface,
 static void
 I830InitOffscreenImages(ScreenPtr pScreen)
 {
+   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+   I830Ptr pI830 = I830PTR(pScrn);
    XF86OffscreenImagePtr offscreenImages;
 
    /* need to free this someplace */
@@ -1991,8 +2037,13 @@ I830InitOffscreenImages(ScreenPtr pScreen)
    offscreenImages[0].stop = I830StopSurface;
    offscreenImages[0].setAttribute = I830SetSurfaceAttribute;
    offscreenImages[0].getAttribute = I830GetSurfaceAttribute;
-   offscreenImages[0].max_width = 1024;
-   offscreenImages[0].max_height = 1024;
+   if (IS_845G(pI830) || IS_I830(pI830)) {
+      offscreenImages[0].max_width = IMAGE_MAX_WIDTH_LEGACY;
+      offscreenImages[0].max_height = IMAGE_MAX_HEIGHT_LEGACY;
+   } else {
+      offscreenImages[0].max_width = IMAGE_MAX_WIDTH;
+      offscreenImages[0].max_height = IMAGE_MAX_HEIGHT; 
+   }
    offscreenImages[0].num_attributes = 1;
    offscreenImages[0].attributes = Attributes;
 
@@ -2021,6 +2072,8 @@ I830VideoSwitchModeBefore(ScrnInfoPtr pScrn, DisplayModePtr mode)
     */
    I830StopVideo(pScrn, pPriv, TRUE);
 
+   pPriv->overlayOK = FALSE;
+
    pPriv->oneLineMode = FALSE;
 }
 
@@ -2037,6 +2090,17 @@ I830VideoSwitchModeAfter(ScrnInfoPtr pScrn, DisplayModePtr mode)
    pPriv = GET_PORT_PRIVATE(pScrn);
    if (!pPriv)
       return;
+
+   pPriv->overlayOK = TRUE;
+
+   /* ensure pipe is updated on mode switch */
+   if (!pI830->Clone) {
+      if (pPriv->pipe != pI830->pipe) {
+         xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	   "Changing XVideo pipe (%d to %d).\n", pPriv->pipe, pI830->pipe);
+         pPriv->pipe = pI830->pipe;
+      }
+   }
 
    if (pPriv->pipe == 0) {
       if (INREG(PIPEACONF) & PIPEACONF_DOUBLE_WIDE) {
