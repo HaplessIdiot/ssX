@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.75 2005/06/29 01:14:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.76tsi Exp $ */
 
 /*
  * Copyright 1995-1998 by Metro Link, Inc.
@@ -851,7 +851,6 @@ _LoaderFileRead(int fd, unsigned int offset, void *buf, int size)
 
 static loaderPtr listHead = NULL;
 static loaderPtr mainExeItem = NULL;
-static int mainExeModType = -1;
 static int mainExeDlType = -1;
 
 static loaderPtr
@@ -1010,7 +1009,7 @@ inSigTramp(unsigned long addr)
 }
 
 const char *
-_LoaderAddressToSymbol(const unsigned long address, unsigned long *symaddr,
+_LoaderAddressToSymbol(unsigned long address, unsigned long *symaddr,
 		       const char **filename)
 {
     loaderPtr item = listHead;
@@ -2137,7 +2136,6 @@ ReadMainExe(void)
 	close(fd);
 	return;
     }
-    mainExeModType = modtype;
 
 #ifdef HAVE_DLADDR
     /*

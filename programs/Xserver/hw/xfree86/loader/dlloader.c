@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.15 2005/10/14 15:16:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.16tsi Exp $ */
 
 /*
  * Copyright (c) 1997 The XFree86 Project, Inc.
@@ -95,6 +95,32 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <dlfcn.h>
+
+#ifdef sgi
+/*
+ * From the IRIX dladdr manpage:
+ *
+ * "<dlfcn.h> does not contain a prototype for dladdr or definition of Dl_info.
+ * The #include <dlfcn.h> in the SYNOPSIS line is traditional, but contains no
+ * dladdr prototype and no IRIX library contains an implementation.  Write your
+ * own declaration based on the code below.
+ *
+ * The following code is dependent on internal interfaces that are not part of
+ * the IRIX compatibility guarantee; however, there is no future intention to
+ * change this interface, so on a practical level, the code below is safe to
+ * use on IRIX."
+ *
+ * The following is adapted from the sample code the manpage contains.
+ */
+#include <rld_interface.h>
+
+static int dladdr(void *address, Dl_info *dl)
+{
+    void *v = _rld_new_interface(_RLD_DLADDR,address,dl);
+    return (long)v;
+}
+
+#endif
 
 #include <X11/Xos.h>
 #include "os.h"
