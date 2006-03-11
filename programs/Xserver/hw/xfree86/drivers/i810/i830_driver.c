@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.90 2006/01/29 01:51:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.91tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -456,7 +456,7 @@ GetNextDisplayDeviceList(ScrnInfoPtr pScrn, int toggle)
       CARD32 VODA = (CARD32)((CARD32*)pVbe->memory)[i];
 
       xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Next ACPI _DGS [%d] 0x%lx\n",
-		i, VODA);
+		i, (unsigned long)VODA);
 
       /* Check if it's a custom Video Output Device Attribute */
       if (!(VODA & 0x80000000)) 
@@ -512,8 +512,8 @@ GetAttachableDisplayDeviceList(ScrnInfoPtr pScrn)
       return 0;
 
    for (i=0; i<(pVbe->pInt10->cx & 0xff); i++)
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-		"Attachable device 0x%lx.\n", ((CARD32*)pVbe->memory)[i]);
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Attachable device 0x%lx.\n",
+		   (unsigned long)((CARD32*)pVbe->memory)[i]);
 
    return pVbe->pInt10->cx & 0xffff;
 }
@@ -5794,8 +5794,8 @@ I830CheckDevicesTimer(OsTimerPtr timer, CARD32 now, pointer arg)
 
       /* this avoids several BIOS calls if possible */
       if (pI830->monitorSwitch != temp || pI830->monitorSwitch != pI830->toggleDevices) {
-         xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-			"Hotkey switch to 0x%lx.\n", temp);
+         xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Hotkey switch to 0x%lx.\n",
+		    (unsigned long)temp);
 
          if (pI830->AccelInfoRec && pI830->AccelInfoRec->NeedToSync) {
             (*pI830->AccelInfoRec->Sync)(pScrn);
@@ -5858,7 +5858,7 @@ I830CheckDevicesTimer(OsTimerPtr timer, CARD32 now, pointer arg)
          } 
 
          xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-			"Requested display devices 0x%lx.\n", temp);
+		    "Requested display devices 0x%lx.\n", (unsigned long)temp);
 
 
          /* If the BIOS doesn't flip between CRT, LFP and CRT+LFP we fake
@@ -5899,12 +5899,13 @@ I830CheckDevicesTimer(OsTimerPtr timer, CARD32 now, pointer arg)
          if (temp == pI8301->lastDevice1 || temp == pI8301->lastDevice2) {
              temp = GetToggleList(pScrn, 1);
              xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-			"Detected duplicate devices. Toggling (0x%lx)\n", temp);
+			"Detected duplicate devices. Toggling (0x%lx)\n",
+			(unsigned long)temp);
          }
 
          xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 		"Detected display change operation (0x%x, 0x%x, 0x%lx).\n", 
-                pI8301->lastDevice1, pI8301->lastDevice2, temp);
+                pI8301->lastDevice1, pI8301->lastDevice2, (unsigned long)temp);
 
          /* So that if we close on the wrong config, we restore correctly */
          pI830->specifiedMonitor = TRUE;
@@ -5935,10 +5936,12 @@ I830CheckDevicesTimer(OsTimerPtr timer, CARD32 now, pointer arg)
                      (CountBits((temp & 0xff00) >> 8) > 1)) ) {
 	       temp = pI8301->lastDevice2 | pI8301->lastDevice1;
                xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "Cloning failed, "
-                    "trying dual pipe clone mode (0x%lx)\n", temp);
+			  "trying dual pipe clone mode (0x%lx)\n",
+			  (unsigned long)temp);
                if (!SetDisplayDevices(pScrn, temp))
                     xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "Failed to switch "
- 		    "to configured display devices (0x%lx).\n", temp);
+			       "to configured display devices (0x%lx).\n",
+			       (unsigned long)temp);
                else {
                  pI830->Clone = TRUE;
                  xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Setting Clone mode\n");
