@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.162tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.163tsi Exp $ */
 
 /*
  * Copyright (c) 1995-2003 by The XFree86 Project, Inc.
@@ -635,13 +635,14 @@
 #define PCI_CHIP_460GX_GXB_1		0x84EA	/* PCI function 1 */
 
 /* Silicon Motion Inc. */
-#define PCI_CHIP_SMI910			0x0910
-#define PCI_CHIP_SMI810			0x0810
-#define PCI_CHIP_SMI820			0x0820
+#define PCI_CHIP_SMI501			0x0501
 #define PCI_CHIP_SMI710			0x0710
 #define PCI_CHIP_SMI712			0x0712
 #define PCI_CHIP_SMI720			0x0720
 #define PCI_CHIP_SMI731			0x0730
+#define PCI_CHIP_SMI810			0x0810
+#define PCI_CHIP_SMI820			0x0820
+#define PCI_CHIP_SMI910			0x0910
 
 /* VMware */
 #define PCI_CHIP_VMWARE0405		0x0405
