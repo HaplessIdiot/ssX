@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.33 2006/02/20 00:14:37 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.34tsi Exp $
 
 XCOMM CDEBUGFLAGS=-g -Wall -ansi -pedantic
 
@@ -126,7 +126,7 @@ DLLIB = DlLibrary
 
 #if UseMemLeak
 STRACELIB = $(TOP)/util/memleak/LibraryTargetName(memleak)
-#elif UseStackTrace
+#elif UseStackTrace && DoLoadableServer
 STRACELIB = $(TOP)/util/memleak/LibraryTargetName(stacktrace)
 #endif
 

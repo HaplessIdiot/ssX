@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.233 2006/03/02 03:00:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.234tsi Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -330,13 +330,13 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 #ifdef XFree86LOADER
   const char             **modulelist;
   pointer                *optionlist;
+  Bool			 haveScreens = FALSE;
 #endif
   const char             **driverlist;
   screenLayoutPtr	 layout;
   Pix24Flags		 screenpix24, pix24;
   MessageType		 pix24From = X_DEFAULT;
   Bool			 pix24Fail = FALSE;
-  Bool			 haveScreens = FALSE;
   Bool			 autoretry = FALSE;
   int			 found = 0;
 
@@ -830,7 +830,9 @@ retry:
 	if (xf86Screens[i]->PreInit &&
 	    xf86Screens[i]->PreInit(xf86Screens[i], 0)) {
 	    xf86Screens[i]->configured = TRUE;
+#ifdef XFree86LOADER
 	    haveScreens = TRUE;
+#endif
 	}
     }
 
