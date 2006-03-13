@@ -1,4 +1,4 @@
-XCOMM $XTermId: Imakefile,v 1.88 2006/02/12 22:43:56 tom Exp $
+XCOMM $XTermId: Imakefile,v 1.91 2006/03/12 21:01:48 tom Exp $
 XCOMM
 XCOMM                         Attention xterm porters
 XCOMM
@@ -7,7 +7,7 @@ XCOMM Xterm assumes that bcopy can handle overlapping arguments.  If your
 XCOMM bcopy (or memcpy) cannot, write a routine called bcopy and link it in
 XCOMM or add -Dbcopy=mybcopy to the DEFINES list below.
 XCOMM
-XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.63tsi Exp $
+XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.63 2006/02/13 01:14:57 dickey Exp $
 XCOMM
 
 /* Uncomment SCROLLBAR_RIGHT if you want the scroll bar to be on the right */
@@ -16,17 +16,9 @@ SCROLLBAR_RIGHT = -DSCROLLBAR_RIGHT
 /* Define UTF8support to compile-in support for UTF-8 */
 #define UTF8support
 
-#if defined(UseUtempter)
-#undef InstallXtermSetUID /* imake sets this */
-#define InstallXtermSetUID NO
-#define InstallXtermSetGID NO
-        UTMPLIB = -lutempter
-#endif
-
 /*
  * setgid mode works for systems that do not require setuid to open pty.
  */
-#if !InstallXtermSetUID
 #if defined(OpenBSDArchitecture) || \
     (defined(LinuxArchitecture) && \
      (LinuxCLibMajorVersion == 6)) || \
@@ -34,6 +26,13 @@ SCROLLBAR_RIGHT = -DSCROLLBAR_RIGHT
 #undef  InstallXtermSetGID
 #define InstallXtermSetGID YES
 #endif
+
+#if defined(UseUtempter)
+#undef InstallXtermSetUID /* imake sets this */
+#undef InstallXtermSetGID /* we set this */
+#define InstallXtermSetUID NO
+#define InstallXtermSetGID NO
+        UTMPLIB = -lutempter
 #endif
 
 /*

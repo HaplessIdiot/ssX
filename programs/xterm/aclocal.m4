@@ -1,6 +1,6 @@
-dnl $XTermId: aclocal.m4,v 1.218 2006/02/12 22:48:03 tom Exp $
+dnl $XTermId: aclocal.m4,v 1.220 2006/03/12 22:47:31 tom Exp $
 dnl
-dnl $XFree86: xc/programs/xterm/aclocal.m4,v 3.61 2006/01/04 02:10:19 dickey Exp $
+dnl $XFree86: xc/programs/xterm/aclocal.m4,v 3.62 2006/02/13 01:14:58 dickey Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl
@@ -1381,6 +1381,31 @@ AC_CACHE_VAL(cf_cv_type_size_t,[
 	])
 AC_MSG_RESULT($cf_cv_type_size_t)
 test $cf_cv_type_size_t = no && AC_DEFINE(size_t, unsigned)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_STRUCT_LASTLOG version: 1 updated: 2006/03/12 17:46:43
+dnl -----------------
+dnl Check for header defining struct lastlog, ensure that its .ll_time member
+dnl is compatible with time().
+AC_DEFUN([CF_STRUCT_LASTLOG],
+[
+AC_CHECK_HEADERS(lastlog.h)
+AC_CACHE_CHECK(for struct lastlog,cf_cv_struct_lastlog,[
+AC_TRY_RUN([
+#include <sys/types.h>
+#include <time.h>
+#include <lastlog.h>
+
+int main()
+{
+	struct lastlog data;
+	return (sizeof(data.ll_time) != sizeof(time_t));
+}],[
+cf_cv_struct_lastlog=yes],[
+cf_cv_struct_lastlog=no],[
+cf_cv_struct_lastlog=unknown])])
+
+test $cf_cv_struct_lastlog != no && AC_DEFINE(USE_STRUCT_LASTLOG)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_SVR4 version: 3 updated: 2000/05/31 10:16:52

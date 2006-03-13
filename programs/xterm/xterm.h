@@ -1,4 +1,4 @@
-/* $XTermId: xterm.h,v 1.371 2006/02/12 18:57:38 tom Exp $ */
+/* $XTermId: xterm.h,v 1.374 2006/03/12 22:41:38 tom Exp $ */
 
 /* $XFree86: xc/programs/xterm/xterm.h,v 3.112 2006/02/13 01:14:59 dickey Exp $ */
 
@@ -85,9 +85,7 @@ authorization.
 #endif
 
 #define HAVE_STDLIB_H 1
-#ifndef SVR4
 #define DECL_ERRNO 1
-#endif
 
 #ifndef NOPUTENV
 #define HAVE_PUTENV 1
@@ -149,11 +147,13 @@ authorization.
 #if defined(linux) || defined(__CYGWIN__)
 #define USE_LASTLOG
 #define HAVE_LASTLOG_H
+#define USE_STRUCT_LASTLOG
 #elif defined(BSD) && (BSD >= 199103)
 #ifdef BSD_UTMPX
 #define USE_LASTLOGX
 #else
 #define USE_LASTLOG
+#define USE_STRUCT_LASTLOG
 #endif
 #endif
 
@@ -432,6 +432,7 @@ extern char **environ;
 #define XtNtrimSelection	"trimSelection"
 #define XtNunderLine		"underLine"
 #define XtNutf8			"utf8"
+#define XtNutf8Title		"utf8Title"
 #define XtNveryBoldColors	"veryBoldColors"
 #define XtNvisualBell		"visualBell"
 #define XtNvisualBellDelay	"visualBellDelay"
@@ -549,6 +550,7 @@ extern char **environ;
 #define XtCTrimSelection	"TrimSelection"
 #define XtCUnderLine		"UnderLine"
 #define XtCUtf8			"Utf8"
+#define XtCUtf8Title		"Utf8Title"
 #define XtCVT100Graphics	"VT100Graphics"
 #define XtCVeryBoldColors	"VeryBoldColors"
 #define XtCVisualBell		"VisualBell"
