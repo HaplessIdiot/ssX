@@ -1,4 +1,4 @@
-/* $XTermId: main.c,v 1.487 2006/02/12 22:43:55 tom Exp $ */
+/* $XTermId: main.c,v 1.491 2006/03/12 22:53:31 tom Exp $ */
 
 /*
  *				 W A R N I N G
@@ -87,7 +87,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.205 2006/02/18 03:31:39 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.203 2006/02/13 01:14:59 dickey Exp $ */
 
 /* main.c */
 
@@ -171,7 +171,6 @@ static Bool IsPts = False;
 #endif
 
 #ifdef __CYGWIN__
-#define LASTLOG
 #define WTMP
 #endif
 
@@ -373,7 +372,7 @@ extern struct utmp *getutid __((struct utmp * _Id));
 #endif
 
 #if defined(USE_LASTLOG) && defined(HAVE_LASTLOG_H)
-#include <lastlog.h>		/* caution: glibc 2.3.5 includes utmp.h here */
+#include <lastlog.h>		/* caution: glibc includes utmp.h here */
 #endif
 
 #ifndef USE_LASTLOGX
@@ -449,7 +448,7 @@ extern void sleep();
 extern char *ttyname();
 #endif
 
-#if defined(SYSV) && !defined(SVR4)
+#ifdef SYSV
 extern char *ptsname(int);
 #endif
 
@@ -468,7 +467,7 @@ static SIGNAL_T reapchild(int n);
 static int spawn(void);
 static void remove_termcap_entry(char *buf, char *str);
 #ifdef USE_PTY_SEARCH
-int pty_search(int *pty);
+static int pty_search(int *pty);
 #endif
 #endif /* ! VMS */
 
@@ -691,8 +690,10 @@ static char etc_utmp[] = UTMP_FILENAME;
 #endif /* USE_SYSV_UTMP */
 
 #ifndef USE_UTEMPTER
-#ifdef USE_LASTLOG
+#if defined(USE_LASTLOG) && defined(USE_STRUCT_LASTLOG)
 static char etc_lastlog[] = LASTLOG_FILENAME;
+#else
+#undef USE_LASTLOG
 #endif
 
 #ifdef WTMP
@@ -2359,8 +2360,6 @@ main(int argc, char *argv[]ENVP_ARG)
 static int opened_tty = -1;
 #endif
 
-#undef USE_PTY_SEARCH	/* #define this as needed */
-
 /*
  * This function opens up a pty master and stuffs its value into pty.
  *
@@ -2385,13 +2384,11 @@ get_pty(int *pty, char *from GCC_UNUSED)
     result = openpty(pty, &opened_tty, ttydev, NULL, NULL);
 
 #elif defined(__QNXNTO__)
-#define USE_PTY_SEARCH 1
 
     result = pty_search(pty);
 
 #else
 #if defined(USE_ISPTS_FLAG)
-#define USE_PTY_SEARCH 1
 
     /*
        The order of this code is *important*.  On SYSV/386 we want to open
@@ -2433,7 +2430,6 @@ get_pty(int *pty, char *from GCC_UNUSED)
 	}
     }
 #elif defined(__MVS__)
-#define USE_PTY_SEARCH 1
     result = pty_search(pty);
 #else
 #if defined(USE_ISPTS_FLAG)
@@ -2494,7 +2490,6 @@ get_pty(int *pty, char *from GCC_UNUSED)
 	sprintf(ttydev, "/dev/ttyq%d", minor(fstat_buf.st_rdev));
     }
 #elif defined(__hpux)
-#define USE_PTY_SEARCH 1
 
     /*
      * Use the clone device if it works, otherwise use pty_search logic.
@@ -2514,7 +2509,6 @@ get_pty(int *pty, char *from GCC_UNUSED)
     }
 
 #else
-#define USE_PTY_SEARCH 1
 
     result = pty_search(pty);
 
@@ -2587,7 +2581,7 @@ get_pty(int *pty, char *from)
  * Returns 0 if found a pty, 1 if fails.
  */
 #ifdef USE_PTY_SEARCH
-int
+static int
 pty_search(int *pty)
 {
     static int devindex = 0, letter = 0;
@@ -2820,8 +2814,7 @@ set_owner(char *device, uid_t uid, gid_t gid, mode_t mode)
 	    } else if (mode != (sb.st_mode & 0777U)) {
 		fprintf(stderr,
 			"Cannot chmod %s to %03o currently %03o: %s\n",
-			device, (unsigned) mode,
-			(unsigned) (sb.st_mode & 0777U),
+			device, (unsigned) mode, (sb.st_mode & 0777U),
 			strerror(why));
 		TRACE(("...stat uid=%d, gid=%d, mode=%#o\n",
 		       sb.st_uid, sb.st_gid, sb.st_mode));
@@ -4101,15 +4094,14 @@ spawn(void)
 #endif
 
 #ifdef USE_LASTLOG
-	    if (sizeof(lastlog.ll_time) == sizeof(time_t) &&	/* !Solaris */
-		term->misc.login_shell &&
+	    if (term->misc.login_shell &&
 		(i = open(etc_lastlog, O_WRONLY)) >= 0) {
 		bzero((char *) &lastlog, sizeof(struct lastlog));
 		(void) strncpy(lastlog.ll_line,
 			       my_pty_name(ttydev),
 			       sizeof(lastlog.ll_line));
 		SetUtmpHost(lastlog.ll_host, screen);
-		time((time_t *) &lastlog.ll_time);
+		time(&lastlog.ll_time);
 		lseek(i, (long) (screen->uid * sizeof(struct lastlog)), 0);
 		write(i, (char *) &lastlog, sizeof(struct lastlog));
 		close(i);
