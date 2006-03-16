@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.27 2003/10/30 17:48:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.28 2004/12/11 20:38:46 dawes Exp $ */
 
 /* xf86DDC.c 
  * 
@@ -6,7 +6,7 @@
  */
 
 /*
- * Copyright (c) 1999-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1999-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -101,7 +101,7 @@ ModuleInfoRec DDC = {
 };
 
 static pointer
-ddcSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+ddcSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 
@@ -115,7 +115,7 @@ ddcSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * Tell the loader about symbols from other modules that this module
 	 * might refer to.
 	 */
-	LoaderRefSymLists(i2cSymbols, NULL);
+	LoaderModRefSymLists(module, i2cSymbols, NULL);
 
     } 
     /*
@@ -440,8 +440,10 @@ DDCRead_DDC2(int scrnIndex, I2CBusPtr pBus, int start, int len)
     int w_bytes;
     unsigned char *R_Buffer;
     int i;
-    
-    xf86LoaderReqSymLists(i2cSymbols, NULL);
+    ModuleDescPtr pMod;
+
+    pMod = xf86GetSubModuleByName(xf86Screens[scrnIndex]->module, "i2c");
+    xf86LoaderModReqSymLists(pMod, i2cSymbols, NULL);
 
     if (!(dev = xf86I2CFindDev(pBus, 0x00A0))) {
 	dev = xf86CreateI2CDevRec();

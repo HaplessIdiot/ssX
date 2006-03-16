@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/cfb32/cfbmodule.c,v 1.8 1999/01/26 05:53:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb32/cfbmodule.c,v 1.9 2004/02/13 23:58:31 dawes Exp $ */
 /*
- * Copyright (C) 1998 The XFree86 Project, Inc.
+ * Copyright (C) 1998-2006 The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -70,7 +70,7 @@ static XF86ModuleVersionInfo VersRec =
 XF86ModuleData cfb32ModuleData = { &VersRec, cfb32Setup, NULL };
 
 static pointer
-cfb32Setup(pointer module, pointer opts, int *errmaj, int *errmin)
+cfb32Setup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     /* This modules requires cfb, so load it */
     return LoadSubModule(module, "cfb", NULL, NULL, NULL, NULL,

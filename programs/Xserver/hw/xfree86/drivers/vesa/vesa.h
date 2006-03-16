@@ -26,7 +26,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.h,v 1.15tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.h,v 1.16 2005/08/25 13:27:51 tsi Exp $
  */
 
 #ifndef _VESA_H_
@@ -57,9 +57,6 @@
 
 /* ShadowFB support */
 #include "shadow.h"
-
-/* Int 10 support */
-#include "xf86int10.h"
 
 /* bank switching */
 #include "mibank.h"

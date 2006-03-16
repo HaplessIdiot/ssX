@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.23tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.24 2004/11/26 13:44:59 tsi Exp $ */
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
  *
@@ -158,14 +158,15 @@ static XF86ModuleVersionInfo ARKVersRec = {
 
 XF86ModuleData arkModuleData = { &ARKVersRec, ARKSetup, NULL };
 
-pointer ARKSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+pointer ARKSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
 	static Bool setupDone = FALSE;
 
 	if (!setupDone) {
 		setupDone = TRUE;
 		xf86AddDriver(&ARK, module, 0);
-		LoaderRefSymLists(fbSymbols, vgaHWSymbols, xaaSymbols, NULL);
+		LoaderModRefSymLists(module, fbSymbols, vgaHWSymbols,
+				     xaaSymbols, NULL);
 		return (pointer) 1;
 	} else {
 		if (errmaj)
@@ -268,14 +269,15 @@ static Bool ARKPreInit(ScrnInfoPtr pScrn, int flags)
 	rgb zeros = {0, 0, 0};
 	Gamma gzeros = {0.0, 0.0, 0.0};
 	unsigned char tmp;
+	ModuleDescPtr pMod;
 
 	if (flags & PROBE_DETECT)
 		return FALSE;
 
-	if (!xf86LoadSubModule(pScrn, "vgahw"))
+	if (!(pMod = xf86LoadSubModule(pScrn, "vgahw")))
 		return FALSE;
 
-	xf86LoaderReqSymLists(vgaHWSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, vgaHWSymbols, NULL);
 
 	if (!vgaHWGetHWRec(pScrn))
 		return FALSE;
@@ -483,19 +485,19 @@ static Bool ARKPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86PrintModes(pScrn);
 	xf86SetDpi(pScrn, 0, 0);
 
-	if (!xf86LoadSubModule(pScrn, "fb")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "fb"))) {
 	    ARKFreeRec(pScrn);
 	    return FALSE;
 	}
 
-	xf86LoaderReqSymLists(fbSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
 
 	if (!pARK->NoAccel) {
-		if (!xf86LoadSubModule(pScrn, "xaa")) {
+		if (!(pMod = xf86LoadSubModule(pScrn, "xaa"))) {
 			ARKFreeRec(pScrn);
 			return FALSE;
 		}
-		xf86LoaderReqSymLists(xaaSymbols, NULL);
+		xf86LoaderModReqSymLists(pMod, xaaSymbols, NULL);
 	}
 
 	return TRUE;

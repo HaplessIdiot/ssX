@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.197 2005/10/14 15:16:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.198 2006/01/27 17:21:18 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -583,16 +583,16 @@ static XF86ModuleVersionInfo tridentVersRec =
 XF86ModuleData tridentModuleData = { &tridentVersRec, tridentSetup, NULL };
 
 pointer
-tridentSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+tridentSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 
     if (!setupDone) {
 	setupDone = TRUE;
 	xf86AddDriver(&TRIDENT, module, 0);
-	LoaderRefSymLists(vgahwSymbols, fbSymbols, i2cSymbols, vbeSymbols,
-			  miscfbSymbols, ramdacSymbols, int10Symbols,
-			  xaaSymbols, shadowSymbols, NULL);
+	LoaderModRefSymLists(module, vgahwSymbols, fbSymbols, i2cSymbols,
+			     vbeSymbols, miscfbSymbols, ramdacSymbols,
+			     int10Symbols, xaaSymbols, shadowSymbols, NULL);
 	return (pointer)TRUE;
     } 
 
@@ -1054,10 +1054,14 @@ static void
 TRIDENTProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
-    if (xf86LoadVBEModule(pScrn)) {
+    ModuleDescPtr pMod;
+
+    if ((pMod = xf86LoadVBEModule(pScrn))) {
+	xf86LoaderModReqSymLists(pMod, vbeSymbols, NULL);
 	pVbe = VBEInit(NULL,index);
 	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
 	vbeFree(pVbe);
+	xf86UnloadSubModule(pMod);
     }
 }
 
@@ -1081,6 +1085,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     const char *Sym = "";
     Bool ddcLoaded = FALSE;
     char *s;
+    ModuleDescPtr pMod;
 
     /* Allocate the TRIDENTRec driverPrivate */
     if (!TRIDENTGetRec(pScrn)) {
@@ -1171,10 +1176,10 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	pix24bpp = xf86GetBppFromDepth(pScrn, 24);
 
     /* The vgahw module should be loaded here when needed */
-    if (!xf86LoadSubModule(pScrn, "vgahw"))
+    if (!(pMod = xf86LoadSubModule(pScrn, "vgahw")))
 	return FALSE;
 
-    xf86LoaderReqSymLists(vgahwSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, vgahwSymbols, NULL);
 
     /*
      * Allocate a vgaHWRec
@@ -1190,10 +1195,10 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     xf86SetOperatingState(resVga, pTrident->pEnt->index, ResUnusedOpr);
 
     /* The ramdac module should be loaded here when needed */
-    if (!xf86LoadSubModule(pScrn, "ramdac"))
+    if (!(pMod = xf86LoadSubModule(pScrn, "ramdac")))
 	return FALSE;
 
-    xf86LoaderReqSymLists(ramdacSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, ramdacSymbols, NULL);
 
     /*
      * This must happen after pScrn->display has been set because
@@ -1536,20 +1541,21 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
      * when MMIO is turned on!
      */
 
-    if (xf86LoadVBEModule(pScrn)) {
+    if ((pMod = xf86LoadVBEModule(pScrn))) {
 	xf86MonPtr pMon;
 	vbeInfoPtr pVbe;
 
-        xf86LoaderReqSymLists(vbeSymbols, NULL);
-	pVbe =  VBEInit(NULL,pTrident->pEnt->index);
+        xf86LoaderModReqSymLists(pMod, vbeSymbols, NULL);
+	pVbe =  VBEInit(NULL, pTrident->pEnt->index);
 	pMon = vbeDoEDID(pVbe, NULL);
 	vbeFree(pVbe);
+	xf86UnloadSubModule(pMod);
 	if (pMon) {
-	    if (!xf86LoadSubModule(pScrn, "ddc")) {
+	    if (!(pMod = xf86LoadSubModule(pScrn, "ddc"))) {
 		TRIDENTFreeRec(pScrn);
 		return FALSE;
 	    } else {
-		xf86LoaderReqSymLists(ddcSymbols, NULL);
+		xf86LoaderModReqSymLists(pMod, ddcSymbols, NULL);
 		xf86SetDDCproperties(pScrn,xf86PrintEDID(pMon));
 		ddcLoaded = TRUE;
 	    }
@@ -2417,7 +2423,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	break;
     }
 
-    if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
+    if (mod && !(pMod = xf86LoadSubModule(pScrn, mod))) {
 	if (IsPciCard && UseMMIO) {
     	    TRIDENTDisableMMIO(pScrn);
  	    TRIDENTUnmapMem(pScrn);
@@ -2428,13 +2434,13 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (mod) {
 	if (Sym) {
-	    xf86LoaderReqSymbols(Sym, NULL);
+	    xf86LoaderModReqSymbols(pMod, Sym, NULL);
 	} else {
-	    xf86LoaderReqSymLists(fbSymbols, NULL);
+	    xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
 	}
     }
 
-    if (!xf86LoadSubModule(pScrn, "i2c")) {
+    if (!(pMod = xf86LoadSubModule(pScrn, "i2c"))) {
 	if (IsPciCard && UseMMIO) {
     	    TRIDENTDisableMMIO(pScrn);
  	    TRIDENTUnmapMem(pScrn);
@@ -2443,20 +2449,20 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
 
-    xf86LoaderReqSymLists(i2cSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, i2cSymbols, NULL);
 
     /* Load shadow if needed */
     if (pTrident->ShadowFB) {
-	if (!xf86LoadSubModule(pScrn, "shadow")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "shadow"))) {
 	    TRIDENTFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(shadowSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, shadowSymbols, NULL);
     }
 
     /* Load XAA if needed */
     if (!pTrident->NoAccel) {
-	if (!xf86LoadSubModule(pScrn, "xaa")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "xaa"))) {
 	    if (IsPciCard && UseMMIO) {
     	    	TRIDENTDisableMMIO(pScrn);
  	    	TRIDENTUnmapMem(pScrn);
@@ -2465,7 +2471,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 	}
 
-        xf86LoaderReqSymLists(xaaSymbols, NULL);
+        xf86LoaderModReqSymLists(pMod, xaaSymbols, NULL);
 
         switch (pScrn->displayWidth * pScrn->bitsPerPixel / 8) {
 	    case 512:
@@ -2488,7 +2494,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     /* This gives us DDC1 - we should be able to get DDC2B using i2c */
 
     if (! ddcLoaded)
-	if (!xf86LoadSubModule(pScrn, "ddc")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "ddc"))) {
 	    if (IsPciCard && UseMMIO) {
 		TRIDENTDisableMMIO(pScrn);
 		TRIDENTUnmapMem(pScrn);
@@ -2497,7 +2503,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 	}
     
-    xf86LoaderReqSymLists(ddcSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, ddcSymbols, NULL);
 
     if (IsPciCard && UseMMIO) {
         TRIDENTDisableMMIO(pScrn);
@@ -2783,6 +2789,7 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     VisualPtr visual;
     unsigned char *FBStart;
     int width, height, displayWidth;
+    ModuleDescPtr pMod;
 
     /* 
      * First get the ScrnInfoRec
@@ -2799,8 +2806,8 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!TRIDENTMapMem(pScrn))
 	return FALSE;
 
-    if (!xf86IsPc98() && xf86LoadSubModule(pScrn, "int10")) {
-	xf86LoaderReqSymLists(int10Symbols, NULL);
+    if (!xf86IsPc98() && (pMod = xf86LoadSubModule(pScrn, "int10"))) {
+	xf86LoaderModReqSymLists(pMod, int10Symbols, NULL);
 	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"Initializing int10\n");
 	pTrident->Int10 = xf86InitInt10(pTrident->pEnt->index);
     }

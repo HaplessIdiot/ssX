@@ -1,4 +1,3 @@
-
 /*
  * Copyright © 2003, 2004, 2005 David H. Dawes.
  * Copyright © 2003, 2004, 2005 X-Oz Technologies.
@@ -46,7 +45,7 @@
  * Author: David Dawes <dawes@x-oz.com>.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AutoConfig.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AutoConfig.c,v 1.10 2005/07/26 18:32:02 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86Parser.h"

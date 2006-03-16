@@ -24,7 +24,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.42tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.43 2006/03/09 17:37:08 tsi Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -320,7 +320,7 @@ XF86ModuleData siliconmotionModuleData =
 };
 
 static pointer
-siliconmotionSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+siliconmotionSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
 	static Bool setupDone = FALSE;
 
@@ -338,9 +338,10 @@ siliconmotionSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 		 * Tell the loader about symbols from other modules that this module
 		 * might refer to.
 		 */
-		LoaderRefSymLists(vgahwSymbols, fbSymbols, xaaSymbols, ramdacSymbols,
-						  ddcSymbols, i2cSymbols, int10Symbols, vbeSymbols,
-						  shadowSymbols, NULL);
+		LoaderModRefSymLists(module, vgahwSymbols, fbSymbols,
+							 xaaSymbols, ramdacSymbols, ddcSymbols,
+							 i2cSymbols, int10Symbols, vbeSymbols,
+							 shadowSymbols, NULL);
 
 		/*
 		 * The return value must be non-NULL on success even though there
@@ -504,6 +505,7 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	int vgaCRIndex, vgaIOBase;
 	vbeInfoPtr pVbe = NULL;
 	int chipType;
+	ModuleDescPtr pMod;
 
 	ENTER_PROC("SMI_PreInit");
 
@@ -536,13 +538,13 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	}
 
 	/* The vgahw module should be loaded here when needed */
-	if (!xf86LoadSubModule(pScrn, "vgahw"))
+	if (!(pMod = xf86LoadSubModule(pScrn, "vgahw")))
 	{
 		LEAVE_PROC("SMI_PreInit");
 		return(FALSE);
 	}
 
-	xf86LoaderReqSymLists(vgahwSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, vgahwSymbols, NULL);
 
 	/*
 	 * Allocate a vgaHWRec
@@ -872,14 +874,14 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 
 	if (chipType != SMI_MSOC)
 	{
-		if (xf86LoadSubModule(pScrn,"int10")) {
-		    xf86LoaderReqSymLists(int10Symbols,NULL);
+		if ((pMod = xf86LoadSubModule(pScrn,"int10"))) {
+		    xf86LoaderModReqSymLists(pMod, int10Symbols, NULL);
 		    pSmi->pInt10 = xf86InitInt10(pEnt->index);
 		}
 
-		if (pSmi->pInt10 && xf86LoadVBEModule(pScrn))
+		if (pSmi->pInt10 && (pMod = xf86LoadVBEModule(pScrn)))
 		{
-		    xf86LoaderReqSymLists(vbeSymbols, NULL);
+		    xf86LoaderModReqSymLists(pMod, vbeSymbols, NULL);
 		    pVbe = VBEInit(pSmi->pInt10, pEnt->index);
 		}
 	}
@@ -966,20 +968,20 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 		/* Next go on to detect amount of installed ram */
 		config = VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x71);
 
-		if (xf86LoadSubModule(pScrn, "i2c"))
+		if ((pMod = xf86LoadSubModule(pScrn, "i2c")))
 		{
-			xf86LoaderReqSymLists(i2cSymbols, NULL);
+			xf86LoaderModReqSymLists(pMod, i2cSymbols, NULL);
 			SMI_I2CInit(pScrn);
 		}
-		if (xf86LoadSubModule(pScrn, "ddc"))
+		if ((pMod = xf86LoadSubModule(pScrn, "ddc")))
 		{
 			xf86MonPtr pMon = NULL;
 
-			xf86LoaderReqSymLists(ddcSymbols, NULL);
+			xf86LoaderModReqSymLists(pMod, ddcSymbols, NULL);
 #if 1 /* PDR#579 */
 			if (pVbe)
 			{
-				pMon = vbeDoEDID(pVbe, NULL);
+				pMon = vbeDoEDID(pVbe, pMod);
 				if (pMon != NULL)
 				{
 					if (   (pMon->rawData[0] == 0x00)
@@ -1002,7 +1004,7 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 			}
 #else
 			if (   (pVbe)
-				&& ((pMon = xf86PrintEDID(vbeDoEDID(pVbe, NULL))) != NULL)
+				&& ((pMon = xf86PrintEDID(vbeDoEDID(pVbe, pMod))) != NULL)
 			)
 			{
 				xf86SetDDCproperties(pScrn, pMon);
@@ -1232,48 +1234,48 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	/* Set display resolution */
 	xf86SetDpi(pScrn, 0, 0);
 
-	if ((xf86LoadSubModule(pScrn, "fb") == NULL))
+	if (!(pMod = xf86LoadSubModule(pScrn, "fb")))
 	{
 		SMI_FreeRec(pScrn);
 		LEAVE_PROC("SMI_PreInit");
 		return(FALSE);
 	}
 
-	xf86LoaderReqSymLists(fbSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
 
 	/* Load XAA if needed */
 	if (!pSmi->NoAccel || pSmi->hwcursor)
 	{
-		if (!xf86LoadSubModule(pScrn, "xaa"))
+		if (!(pMod = xf86LoadSubModule(pScrn, "xaa")))
 		{
 			SMI_FreeRec(pScrn);
 			LEAVE_PROC("SMI_PreInit");
 			return(FALSE);
 		}
-		xf86LoaderReqSymLists(xaaSymbols, NULL);
+		xf86LoaderModReqSymLists(pMod, xaaSymbols, NULL);
 	}
 
 	/* Load ramdac if needed */
 	if (pSmi->hwcursor)
 	{
-		if (!xf86LoadSubModule(pScrn, "ramdac"))
+		if (!(pMod = xf86LoadSubModule(pScrn, "ramdac")))
 		{
 			SMI_FreeRec(pScrn);
 			LEAVE_PROC("SMI_PreInit");
 			return(FALSE);
 		}
-		xf86LoaderReqSymLists(ramdacSymbols, NULL);
+		xf86LoaderModReqSymLists(pMod, ramdacSymbols, NULL);
 	}
 
 	if (pSmi->shadowFB)
 	{
-		if (!xf86LoadSubModule(pScrn, "shadowfb"))
+		if (!(pMod = xf86LoadSubModule(pScrn, "shadowfb")))
 		{
 			SMI_FreeRec(pScrn);
 			LEAVE_PROC("SMI_PreInit");
 			return(FALSE);
 		}
-		xf86LoaderReqSymLists(shadowSymbols, NULL);
+		xf86LoaderModReqSymLists(pMod, shadowSymbols, NULL);
 	}
 
 	LEAVE_PROC("SMI_PreInit");
@@ -3501,11 +3503,15 @@ static void
 SMI_ProbeDDC(ScrnInfoPtr pScrn, int index)
 {
 	vbeInfoPtr pVbe;
-	if (xf86LoadVBEModule(pScrn))
+	ModuleDescPtr pMod;
+
+	if ((pMod = xf86LoadVBEModule(pScrn)))
 	{
+		xf86LoaderModReqSymLists(pMod, vbeSymbols, NULL);
 		pVbe = VBEInit(NULL, index);
 		ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
 		vbeFree(pVbe);
+		xf86UnloadSubModule(pMod);
 	}
 }
 

@@ -30,7 +30,7 @@
  * Probably buggy as hell, no idea what the initialisation strings are,
  * no idea how to ack it. If the tablet stops responding power cycle it.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/digitaledge/DigitalEdge.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/digitaledge/DigitalEdge.c,v 1.12 2005/10/14 15:16:55 tsi Exp $ */
 
 #ifndef XFree86LOADER
 #include <unistd.h>
@@ -968,6 +968,8 @@ InputDriverRec DIGITALEDGE = {
  *
  * called when the module subsection is found in XF86Config
  */
+static MODULETEARDOWNPROTO(xf86SumUnplug);
+
 static void
 xf86SumUnplug(pointer	p)
 {
@@ -978,8 +980,10 @@ xf86SumUnplug(pointer	p)
  *
  * called when the module subsection is found in XF86Config
  */
+static MODULESETUPPROTO(xf86SumPlug);
+
 static pointer
-xf86SumPlug(pointer	module,
+xf86SumPlug(ModuleDescPtr	module,
 	    pointer	options,
 	    int		*errmaj,
 	    int		*errmin)

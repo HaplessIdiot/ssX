@@ -1,7 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.44 2006/02/19 15:51:27 tsi Exp $ */
-
-
-
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.45 2006/03/02 03:00:38 dawes Exp $ */
 
 #include <Server.tmpl>
 #ifdef LoaderTest

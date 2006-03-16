@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2004 The XFree86 Project, Inc.
+ * Copyright (C) 1998-2006 The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -44,7 +44,7 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/* $XFree86: xc/lib/font/FreeType/module/ftmodule.c,v 1.19 2004/02/13 23:58:29 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/module/xttmodule.c,v 1.1 2004/03/17 19:48:33 dawes Exp $ */
 
 /*
  * This is a wrapper module that simply loads the "freetype" module.
@@ -74,7 +74,7 @@ static XF86ModuleVersionInfo VersRec =
 XF86ModuleData xttModuleData = { &VersRec, xttSetup, NULL };
 
 static pointer
-xttSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+xttSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     /* We are just a wrapper, so load the real module. */
     return LoadSubModule(module, "freetype", NULL, NULL, NULL, NULL,

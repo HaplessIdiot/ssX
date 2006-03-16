@@ -49,7 +49,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/fpit/xf86Fpit.c,v 1.6 2004/04/26 22:48:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/fpit/xf86Fpit.c,v 1.7 2005/02/02 04:34:24 dawes Exp $ */
 
 #include <xf86Version.h>
 
@@ -585,11 +585,15 @@ InputDriverRec FPIT = {
 };
 
 #ifdef XFree86LOADER
-static pointer Plug(pointer module, pointer options, int *errmaj, int *errmin)
+static MODULESETUPPROTO(Plug);
+
+static pointer Plug(ModuleDescPtr module, pointer options, int *errmaj, int *errmin)
 {
 	xf86AddInputDriver(&FPIT, module, 0);
 	return module;
 }
+
+static MODULETEARDOWNPROTO(Unplug);
 
 static void Unplug(pointer p)
 {

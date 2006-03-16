@@ -24,7 +24,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/eloinput/xf86EloInput.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/eloinput/xf86EloInput.c,v 1.3 2005/10/14 15:16:55 tsi Exp $ */
 
 /*
  ******************************************************************************
@@ -998,8 +998,10 @@ InputDriverRec ELOINPUT = {
 };
 
 #ifdef XFree86LOADER
+static MODULESETUPPROTO(Plug);
+
 static pointer
-Plug(pointer	module,
+Plug(ModuleDescPtr	module,
      pointer	options,
      int	*errmaj,
      int	*errmin)
@@ -1007,6 +1009,8 @@ Plug(pointer	module,
   xf86AddInputDriver(&ELOINPUT, module, 0);
   return module;
 }
+
+static MODULETEARDOWNPROTO(Unplug);
 
 static void
 Unplug(pointer	p)

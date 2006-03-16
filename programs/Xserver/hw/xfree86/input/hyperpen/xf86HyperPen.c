@@ -35,7 +35,7 @@
  * TORTIOUS ACTIONS, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/hyperpen/xf86HyperPen.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/hyperpen/xf86HyperPen.c,v 1.13 2005/10/14 15:16:56 tsi Exp $ */
 
 #ifndef XFree86LOADER
 #include <unistd.h>
@@ -1179,6 +1179,9 @@ InputDriverRec HYPERPEN = {
  *
  * called when the module subsection is found in XF86Config
  */
+
+static MODULETEARDOWNPROTO(xf86HypUnplug);
+
 static void
 xf86HypUnplug(pointer	p)
 {
@@ -1190,8 +1193,11 @@ xf86HypUnplug(pointer	p)
  *
  * called when the module subsection is found in XF86Config
  */
+
+static MODULESETUPPROTO(xf86HypPlug);
+
 static pointer
-xf86HypPlug(pointer	module,
+xf86HypPlug(ModuleDescPtr	module,
 	    pointer	options,
 	    int		*errmaj,
 	    int		*errmin)

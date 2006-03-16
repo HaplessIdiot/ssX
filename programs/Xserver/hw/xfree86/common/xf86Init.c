@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.234tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.235 2006/03/11 17:36:50 tsi Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -6,7 +6,7 @@
  *   Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  */
 /*
- * Copyright (c) 1992-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1992-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining

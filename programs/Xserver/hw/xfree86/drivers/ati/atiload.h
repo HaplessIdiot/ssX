@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.h,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.h,v 1.11 2006/01/05 18:55:29 tsi Exp $ */
 /*
  * Copyright 2000 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -36,11 +36,12 @@ extern const char *ATIint10Symbols[], *ATIddcSymbols[], *ATIvbeSymbols[],
                   *ATIshadowfbSymbols[], *ATIxaaSymbols[], *ATIramdacSymbols[],
                   *ATIi2cSymbols[];
 
-extern pointer ATILoadSubModule  FunctionPrototype((ScrnInfoPtr, const char *,
-                                                    const char **));
-extern pointer ATILoadVBEModule  FunctionPrototype((ScrnInfoPtr));
+extern ModuleDescPtr ATILoadSubModule  FunctionPrototype((ScrnInfoPtr,
+							  const char *,
+							  const char **));
+extern ModuleDescPtr ATILoadVBEModule  FunctionPrototype((ScrnInfoPtr));
 
-extern pointer ATILoadSubModules FunctionPrototype((ScrnInfoPtr, ATIPtr));
+extern ModuleDescPtr ATILoadSubModules FunctionPrototype((ScrnInfoPtr, ATIPtr));
 
 #else /* XFree86LOADER */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.17tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.18 2005/10/14 15:17:10 tsi Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -11,7 +11,7 @@
  */
 
 /*
- * Copyright (c) 2002-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 2002-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -78,6 +78,16 @@ const char *vbe_ddcSymbols[] = {
     NULL
 };
 
+const char *vbe_int10Symbols[] = {
+    "xf86ExecX86int10",
+    "xf86FreeInt10",
+    "xf86InitInt10",
+    "xf86Int10AllocPages",
+    "xf86Int10FreePages",
+    "xf86int10Addr",
+    NULL
+};
+
 static const char vbeVersionString[] = "VBE2";
 
 vbeInfoPtr
@@ -97,16 +107,21 @@ VBEExtendedInit(xf86Int10InfoPtr pInt, int entityIndex, int Flags)
     vbeInfoPtr vip = NULL;
     int screen = pScrn->scrnIndex;
     unsigned long TotalMem;
+    ModuleDescPtr pMod, pInt10Mod = NULL;
 
     if (!pInt) {
-	if (!xf86LoadSubModule(pScrn, "int10"))
+	if (!(pInt10Mod = xf86LoadSubModule(pScrn, "int10")))
 	    goto error;
 
+	xf86LoaderModReqSymLists(pInt10Mod, vbe_int10Symbols, NULL);
 	xf86DrvMsg(screen, X_INFO, "initializing int10\n");
 	pInt = xf86InitInt10(entityIndex);
 	if (!pInt)
 	    goto error;
 	init_int10 = TRUE;
+    } else {
+	if ((pMod = xf86GetSubModuleByName(pScrn->module, "int10")))
+	    xf86LoaderModReqSymLists(pMod, vbe_int10Symbols, NULL);
     }
 
     page = xf86Int10AllocPages(pInt, 1, &RealOff);
@@ -192,14 +207,19 @@ VBEExtendedInit(xf86Int10InfoPtr pInt, int entityIndex, int Flags)
     vip->real_mode_base = RealOff;
     vip->num_pages = 1;
     vip->init_int10 = init_int10;
+    vip->pInt10Mod = pInt10Mod;
+    vip->pDDCMod = NULL;
 
     return vip;
 
  error:
     if (page)
 	xf86Int10FreePages(pInt, page, 1);
-    if (init_int10)
+    if (init_int10) {
 	xf86FreeInt10(pInt);
+	if (pInt10Mod)
+	    xf86UnloadSubModule(pInt10Mod);
+    }
     return NULL;
 }
 
@@ -211,8 +231,13 @@ vbeFree(vbeInfoPtr pVbe)
 
     xf86Int10FreePages(pVbe->pInt10, pVbe->memory, pVbe->num_pages);
     /* If we have initalized int10 we ought to free it, too */
-    if (pVbe->init_int10)
+    if (pVbe->init_int10) {
 	xf86FreeInt10(pVbe->pInt10);
+	if (pVbe->pInt10Mod)
+	    xf86UnloadSubModule(pVbe->pInt10Mod);
+    }
+    if (pVbe->pDDCMod)
+	xf86UnloadSubModule(pVbe->pDDCMod);
     xfree(pVbe);
     return;
 }
@@ -367,10 +392,10 @@ vbeReadEDID(vbeInfoPtr pVbe)
 }
 
 xf86MonPtr
-vbeDoEDID(vbeInfoPtr pVbe, pointer pDDCModule)
+vbeDoEDID(vbeInfoPtr pVbe, ModuleDescPtr pDDCModule)
 {
     xf86MonPtr    pMonitor;
-    pointer       pModule;
+    ModuleDescPtr pModule;
     unsigned char *DDC_data = NULL;
 
     if (!pVbe) return NULL;
@@ -378,13 +403,13 @@ vbeDoEDID(vbeInfoPtr pVbe, pointer pDDCModule)
 	return NULL;
 
     if (!(pModule = pDDCModule)) {
-	pModule =
+	pVbe->pDDCMod = pModule =
 	    xf86LoadSubModule(xf86Screens[pVbe->pInt10->scrnIndex], "ddc");
 	if (!pModule)
 	    return NULL;
 
-	xf86LoaderReqSymLists(vbe_ddcSymbols, NULL);
     }
+    xf86LoaderModReqSymLists(pModule, vbe_ddcSymbols, NULL);
 
     DDC_data = vbeReadEDID(pVbe);
 
@@ -393,8 +418,6 @@ vbeDoEDID(vbeInfoPtr pVbe, pointer pDDCModule)
 
     pMonitor = xf86InterpretEDID(pVbe->pInt10->scrnIndex, DDC_data);
 
-    if (!pDDCModule)
-	xf86UnloadSubModule(pModule);
     return pMonitor;
 }
 
@@ -674,7 +697,7 @@ VBEGetModeInfo(vbeInfoPtr pVbe, int mode)
     }
 
     /* Mandatory information for VBE 2.0 and above */
-    block->PhysBasePtr = B_O32(pBlock[40]);
+    block->PhysBasePtr = B_O32((pBlock[40]));
     block->Reserved32 = B_O32(pBlock[44]);
     block->Reserved16 = B_O16(pBlock[48]);
 

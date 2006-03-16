@@ -31,7 +31,7 @@
  * authorization  from Martin Kroeker or Daveg GmbH.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/calcomp/xf86Calcomp.c,v 1.7 2003/01/12 03:55:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/calcomp/xf86Calcomp.c,v 1.8 2003/01/15 03:43:58 dawes Exp $ */
 
 #define _CALCOMP_C_
 /*****************************************************************************
@@ -149,7 +149,7 @@ static const char *reqSymbols[] = {
                               
                                                                                                                                                                 
 static pointer
-CalcompSetupProc(       pointer module,
+CalcompSetupProc(       ModuleDescPtr module,
                         pointer options,
                         int *errmaj,
                         int *errmin )

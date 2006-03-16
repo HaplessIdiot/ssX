@@ -35,7 +35,7 @@
   *   - Make dectection work after restart of X
   */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/dmc/xf86DMC.c,v 1.3 2003/06/25 18:06:25 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/dmc/xf86DMC.c,v 1.4 2004/10/23 15:29:30 dawes Exp $ */
 
 #define _DMC_C_
 
@@ -123,9 +123,10 @@ static const char *reqSymbols[] = {
 	NULL
 };
 
+static MODULESETUPPROTO(DMCSetupProc);
 
 static pointer
-DMCSetupProc(	pointer module,
+DMCSetupProc(	ModuleDescPtr module,
 			pointer options,
 			int *errmaj,
 			int *errmin )

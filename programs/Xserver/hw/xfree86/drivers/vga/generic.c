@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.67tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.68 2004/11/26 11:50:22 tsi Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -195,7 +195,8 @@ static XF86ModuleVersionInfo GenericVersionRec =
 XF86ModuleData vgaModuleData = { &GenericVersionRec, GenericSetup, NULL };
 
 static pointer
-GenericSetup(pointer Module, pointer Options, int *ErrorMajor, int *ErrorMinor)
+GenericSetup(ModuleDescPtr Module, pointer Options,
+	     int *ErrorMajor, int *ErrorMinor)
 {
     static Bool Initialised = FALSE;
 
@@ -203,8 +204,8 @@ GenericSetup(pointer Module, pointer Options, int *ErrorMajor, int *ErrorMinor)
     {
 	Initialised = TRUE;
 	xf86AddDriver(&VGA, Module, 0);
-	LoaderRefSymLists(vgahwSymbols, miscfbSymbols, fbSymbols,
-			  shadowfbSymbols, int10Symbols, NULL);
+	LoaderModRefSymLists(Module, vgahwSymbols, miscfbSymbols, fbSymbols,
+			     shadowfbSymbols, int10Symbols, NULL);
 	return (pointer)TRUE;
     }
 
@@ -505,6 +506,7 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
     vgaHWPtr          pvgaHW;
     GenericPtr        pGenericPriv;
     EntityInfoPtr     pEnt;
+    ModuleDescPtr     pMod;
 
     if (flags & PROBE_DETECT)
 	return FALSE;
@@ -518,10 +520,10 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
     if (pEnt->resources)
 	return FALSE;
 
-    if (xf86LoadSubModule(pScreenInfo, "int10"))
+    if ((pMod = xf86LoadSubModule(pScreenInfo, "int10")))
     {
 	xf86Int10InfoPtr pInt;
-	xf86LoaderReqSymLists(int10Symbols, NULL);
+	xf86LoaderModReqSymLists(pMod, int10Symbols, NULL);
 	xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO, "initializing int10.\n");
 	pInt = xf86ExtendedInitInt10(pEnt->index,
 				     SET_BIOS_SCRATCH | RESTORE_BIOS_SCRATCH);
@@ -618,10 +620,10 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
 	return FALSE;
 
     /* Ensure vgahw entry points are available for the clock probe */
-    if (!xf86LoadSubModule(pScreenInfo, "vgahw"))
+    if (!(pMod = xf86LoadSubModule(pScreenInfo, "vgahw")))
 	return FALSE;
 
-    xf86LoaderReqSymLists(vgahwSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, vgahwSymbols, NULL);
 
     /* Allocate driver private structure */
     if (!(pGenericPriv = GenericGetRec(pScreenInfo)))
@@ -768,21 +770,21 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
 	pScreenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
 	Module = "fb";
 	Sym = NULL;
-	if (!xf86LoadSubModule(pScreenInfo, "shadowfb"))
+	if (!(pMod = xf86LoadSubModule(pScreenInfo, "shadowfb")))
 	    return FALSE;
-	xf86LoaderReqSymLists(shadowfbSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, shadowfbSymbols, NULL);
     }
 
     /* Ensure depth-specific entry points are available */
     if (Module)
     {
-	if (!xf86LoadSubModule(pScreenInfo, Module))
+	if (!(pMod = xf86LoadSubModule(pScreenInfo, Module)))
 	    return FALSE;
 
 	if (Sym)
-	    xf86LoaderReqSymbols(Sym, NULL);
+	    xf86LoaderModReqSymbols(pMod, Sym, NULL);
 	else
-	    xf86LoaderReqSymLists(fbSymbols, NULL);
+	    xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
     }
 
     /* Only one chipset here */

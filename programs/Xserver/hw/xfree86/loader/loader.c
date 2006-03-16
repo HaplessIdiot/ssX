@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.76tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.77 2006/03/11 17:36:50 tsi Exp $ */
 
 /*
  * Copyright 1995-1998 by Metro Link, Inc.
@@ -343,7 +343,7 @@ typedef struct _symlist symlist, *symlistPtr;
 
 struct _symlist {
     int num;
-    const char *modname;
+    ModuleDescPtr module;
     const char **list;
     symlistPtr next;
 };
@@ -404,7 +404,7 @@ DUMMYFindRelocName(LoaderDescPtr desc, int handle, unsigned long addr)
 
 static const char *
 DUMMYAddressToSymbol(void *modptr, unsigned long addr, unsigned long *symaddr,
-		     const char **filename)
+		     const char **filename, int exe)
 {
     return NULL;
 }
@@ -1017,14 +1017,14 @@ _LoaderAddressToSymbol(unsigned long address, unsigned long *symaddr,
 
     while (item) {
 	sym = item->desc->AddressToSymbol(item->private, address, symaddr,
-					  filename);
+					  filename, 0);
 	if (sym)
 	    return sym;
 	item = item->next;
     }
     if (mainExeItem) {
 	sym = mainExeItem->desc->AddressToSymbol(mainExeItem->private,
-						 address, symaddr, filename);
+						 address, symaddr, filename, 1);
 	if (!*filename)
 	    *filename = GetExePath(NULL);
 	if (sym)
@@ -1033,7 +1033,7 @@ _LoaderAddressToSymbol(unsigned long address, unsigned long *symaddr,
 	if (mainExeDlType >= 0) {
 	    sym = ldesc[mainExeDlType]->AddressToSymbol(mainExeItem->private,
 						        address, symaddr,
-						        filename);
+						        filename, 1);
 	}
 	if (!*filename)
 	    *filename = GetExePath(NULL);
@@ -1079,44 +1079,69 @@ _LoaderAddressToSection(const unsigned long address, const char **module,
     return 0;
 }
 
+#define MODNAME(m) ((m) ? (m)->name : "<global>")
+
 static symlistPtr
-GetSymbolList(symlistPtr list, const char *name, int create)
+GetSymbolList(symlistPtr list, ModuleDescPtr module, int create)
 {
     symlistPtr p;
 
     for (p = list; p; p = p->next) {
-	if (p->modname && strcmp(p->modname, name) == 0)
+	if (module && p->module == module)
 	    break;
     }
 #if LOADERDEBUG
     LoaderDebugMsg(LOADER_DEBUG_REQ_REF,
-		"GetSymbolList for %s: list is %p, p is %p\n", name, list, p);
+		   "GetSymbolList for %p (%s): list is %p, p is %p\n",
+		   module, MODNAME(module), list, p);
 #endif
     if (!p && create) {
 	p = xnfcalloc(1, sizeof(symlist));
 	p->next = list->next;
-	p->modname = xnfstrdup(name);
+	p->module = module;
 	list->next = p;
     }
 #if LOADERDEBUG
     LoaderDebugMsg(LOADER_DEBUG_REQ_REF,
-		"GetSymbolList for %s returns %p\n", name, p);
+		   "GetSymbolList for module %p (%s) returns %p\n",
+		   module, MODNAME(module), p);
 #endif
     return p;
 }
 
+static symlistPtr
+GetNextSymbolListByName(symlistPtr list, const char *name)
+{
+    symlistPtr p;
+
+    if (!list || !name)
+	return NULL;
+
+    for (p = list->next; p; p = p->next) {
+	if (p->module  && p->module->name && !strcmp(p->module->name, name)) {
+#if LOADERDEBUG
+	    LoaderDebugMsg(LOADER_DEBUG_REQ_REF,
+			   "GetNextSymbolListByName for module %s returns %p\n",
+			   name, p);
+#endif
+	    return p;
+	}
+    }
+    return NULL;
+}
+
 static void
-RemoveSymbolList(symlistPtr list, const char *name)
+RemoveSymbolList(symlistPtr list, ModuleDescPtr module)
 {
     symlistPtr p, q;
 
+    p = GetSymbolList(list, module, 0);
 #if LOADERDEBUG
-    LoaderDebugMsg(LOADER_DEBUG_REQ_REF, "RemoveSymbolList for %s\n", name);
+    LoaderDebugMsg(LOADER_DEBUG_REQ_REF,
+		   "RemoveSymbolList for %p (%s) list %p, p %p\n",
+		   module, MODNAME(module), list, p);
 #endif
-    p = GetSymbolList(list, name, 0);
     if (p) {
-	if (p->modname)
-	    xfree(p->modname);
 	if (p->list)
 	    xfree(p->list);
 	p->num = 0;
@@ -1143,7 +1168,7 @@ AppendSymbol(symlist *list, const char *sym)
     list->num++;
 #if LOADERDEBUG
     LoaderDebugMsg(LOADER_DEBUG_REQ_REF, "AppendSymbol for %s: %s\n",
-		   list->modname ? list->modname : "<global>", sym);
+		   MODNAME(list->module), sym);
 #endif
 }
 
@@ -1168,6 +1193,28 @@ SymInList(symlist *list, const char *sym)
     return 0;
 }
 
+static void
+DuplicateSymbolList(symlistPtr list, ModuleDescPtr old, ModuleDescPtr new)
+{
+    symlistPtr oldList, newList = NULL;
+    int i;
+
+    oldList = GetSymbolList(list, old, 0);
+    if (oldList) {
+	newList = GetSymbolList(list, new, 1);
+	if (newList)
+	    for (i = 0; i < oldList->num; i++)
+		AppendSymbol(newList, oldList->list[i]);
+    }
+}
+
+void
+DuplicateSymbolLists(ModuleDescPtr old, ModuleDescPtr new)
+{
+    DuplicateSymbolList(&refList, old, new);
+    DuplicateSymbolList(&reqList, old, new);
+}
+
 void
 LoaderVRefSymbols(ModuleDescPtr module, const char *sym0, va_list args)
 {
@@ -1179,11 +1226,10 @@ LoaderVRefSymbols(ModuleDescPtr module, const char *sym0, va_list args)
 
 #if LOADERDEBUG
     LoaderDebugMsg(LOADER_DEBUG_REQ_REF,
-		"LoaderVRefSymbols: module %p, %s\n",
-		module, module ? module->name : "<global>");
+		"LoaderVRefSymbols: module %p, %s\n", module, MODNAME(module));
 #endif
     if (module)
-	list = GetSymbolList(&refList, module->name, 1);
+	list = GetSymbolList(&refList, module, 1);
     else
 	list = &refList;
 
@@ -1195,7 +1241,7 @@ LoaderVRefSymbols(ModuleDescPtr module, const char *sym0, va_list args)
 }
 
 void
-LoaderModRefSymbols(pointer module, const char *sym0, ...)
+LoaderModRefSymbols(ModuleDescPtr module, const char *sym0, ...)
 {
     va_list ap;
 
@@ -1222,15 +1268,14 @@ LoaderVRefSymLists(ModuleDescPtr module, const char **list0, va_list args)
 
 #if LOADERDEBUG
     LoaderDebugMsg(LOADER_DEBUG_REQ_REF,
-		"LoaderVRefSymLists: module %p, %s\n",
-		module, module ? module->name : "<global>");
+		"LoaderVRefSymLists: module %p, %s\n", module, MODNAME(module));
 #endif
     if (list0 == NULL)
 	return;
 
     l = list0;
     if (module)
-	list = GetSymbolList(&refList, module->name, 1);
+	list = GetSymbolList(&refList, module, 1);
     else
 	list = &refList;
     do {
@@ -1240,7 +1285,7 @@ LoaderVRefSymLists(ModuleDescPtr module, const char **list0, va_list args)
 }
 
 void
-LoaderModRefSymLists(pointer module, const char **list0, ...)
+LoaderModRefSymLists(ModuleDescPtr module, const char **list0, ...)
 {
     va_list ap;
 
@@ -1259,39 +1304,58 @@ LoaderRefSymLists(const char **list0, ...)
     va_end(ap);
 }
 
-void
+int
 LoaderVReqSymLists(ModuleDescPtr module, const char **list0, va_list args)
 {
-    const char **l;
+    const char **l, **s;
     symlistPtr list;
+    itemPtr sym;
+    int numUnresolved = 0;
 
 #if LOADERDEBUG
     LoaderDebugMsg(LOADER_DEBUG_REQ_REF,
 		"LoaderVReqSymLists: module %p, %s\n",
-		module, module ? module->name : "<global>");
+		module, MODNAME(module));
 #endif
     if (list0 == NULL)
-	return;
+	return 0;
 
     l = list0;
     if (module)
-	list = GetSymbolList(&reqList, module->name, 1);
+	list = GetSymbolList(&reqList, module, 1);
     else
 	list = &reqList;
     do {
 	AppendSymList(list, l);
+	for (s = l; *s; s++) {
+	    sym = LoaderHashFind(*s);
+	    if (!sym) {
+		xf86Msg(X_WARNING, "Symbol \"%s\" is not provided by "
+			"module \"%s\"\n", *s, MODNAME(module));
+		numUnresolved++;
+	    } else if (module && sym->handle != module->handle) {
+		xf86Msg(X_WARNING, "Symbol \"%s\" is provided by a "
+			"module (\"%s\") other than \"%s\"\n", *s,
+			_LoaderHandleToCanonicalName(sym->handle),
+			MODNAME(module));
+		numUnresolved++;
+	    }
+	}
 	l = va_arg(args, const char **);
-    } while (l != NULL);
+    } while (l);
+    return numUnresolved;
 }
 
-void
-LoaderModReqSymLists(pointer module, const char **list0, ...)
+int
+LoaderModReqSymLists(ModuleDescPtr module, const char **list0, ...)
 {
     va_list ap;
+    int ret;
 
     va_start(ap, list0);
-    LoaderVReqSymLists(module, list0, ap);
+    ret = LoaderVReqSymLists(module, list0, ap);
     va_end(ap);
+    return ret;
 }
 
 void
@@ -1304,39 +1368,56 @@ LoaderReqSymLists(const char **list0, ...)
     va_end(ap);
 }
 
-void
+int
 LoaderVReqSymbols(ModuleDescPtr module, const char *sym0, va_list args)
 {
     const char *s;
     symlistPtr list;
+    itemPtr sym;
+    int numUnresolved = 0;
 
     if (sym0 == NULL)
-	return;
+	return 0;
 
 #if LOADERDEBUG
     LoaderDebugMsg(LOADER_DEBUG_REQ_REF,
 		"LoaderVRefSymbols: module %p, %s\n",
-		module, module ? module->name : "<global>");
+		module, MODNAME(module));
 #endif
     s = sym0;
     if (module)
-	list = GetSymbolList(&reqList, module->name, 1);
+	list = GetSymbolList(&reqList, module, 1);
     else
 	list = &reqList;
     do {
 	AppendSymbol(list, s);
+	sym = LoaderHashFind(s);
+	if (!sym) {
+	    xf86Msg(X_WARNING, "Symbol \"%s\" is not provided by "
+		    "module \"%s\"\n", s, MODNAME(module));
+	    numUnresolved++;
+	} else if (module && sym->handle != module->handle) {
+	    xf86Msg(X_WARNING, "Symbol \"%s\" is provided by a "
+		    "module (\"%s\") other than \"%s\"\n", s,
+		    _LoaderHandleToCanonicalName(sym->handle),
+		    MODNAME(module));
+	    numUnresolved++;
+	}
 	s = va_arg(args, const char *);
-    } while (s != NULL);
+    } while (s);
+    return numUnresolved;
 }
 
-void
-LoaderModReqSymbols(pointer module, const char *sym0, ...)
+int
+LoaderModReqSymbols(ModuleDescPtr module, const char *sym0, ...)
 {
     va_list ap;
+    int ret;
 
     va_start(ap, sym0);
-    LoaderVReqSymbols(module, sym0, ap);
+    ret = LoaderVReqSymbols(module, sym0, ap);
     va_end(ap);
+    return ret;
 }
 
 void
@@ -1360,29 +1441,41 @@ int
 _LoaderHandleUnresolved(const char *symbol, int handle)
 {
     int fatalsym = 0;
+    int refsym = 0;
     symlistPtr list;
     const char *name, *cname;
 
     cname = _LoaderHandleToCanonicalName(handle);
     name = _LoaderHandleToName(handle);
-    if (xf86ShowUnresolved && !fatalsym) {
-	list = GetSymbolList(&reqList, cname, 0);
-	if (!list)
-	    list = &reqList;
-	if (SymInList(list, symbol)) {
-	    fatalReqSym = 1;
-	    ErrorF("Required symbol %s from module %s is unresolved!\n",
-		   symbol, name);
+    if (xf86ShowUnresolved) {
+	int useGlobal = 1;
+	for (list = &reqList; list; list = list->next) {
+	    if (SymInList(list, symbol)) {
+		fatalsym = 1;
+		xf86Msg(X_ERROR,
+			"Required symbol %s from module %s is unresolved!\n",
+			symbol, name);
+	        break;
+	    }
 	}
-	list = GetSymbolList(&refList, cname, 0);
-	if (!list)
-	    list = &refList;
-	if (!SymInList(list, symbol)) {
-	    ErrorF("Symbol %s from module %s is unresolved!\n",
-		   symbol, name);
+	list = &refList;
+	while ((list = GetNextSymbolListByName(list, cname))) {
+	    useGlobal = 0;
+	    if (SymInList(list, symbol))
+		refsym = 1;
 	}
+	if (useGlobal && SymInList(&refList, symbol))
+	    refsym = 1;
+	if (!refsym)
+	    xf86MsgVerb(X_WARNING, 0,
+			"Symbol %s from module %s is unresolved!\n",
+			symbol, name);
     }
-    return (fatalsym);
+
+    if (fatalsym)
+	fatalReqSym = 1;
+
+    return (fatalsym || !refsym);
 }
 
 /*
@@ -1927,14 +2020,22 @@ LoaderDefaultFunc(void)
 #endif
     
 int
-LoaderUnload(int handle)
+LoaderUnload(ModuleDescPtr mod)
 {
+    int handle;
     loaderRec fakeHead;
     loaderPtr tmp = &fakeHead;
 
+    if (!mod)
+	return -1;
+
+    handle = mod->handle;
     if (handle < 0 || handle > MAX_HANDLE)
 	return -1;
 
+    RemoveSymbolList(&refList, mod);
+    RemoveSymbolList(&reqList, mod);
+    
     /*
      * check the reference count, only free it if it goes to zero
      */
@@ -1948,8 +2049,6 @@ LoaderUnload(int handle)
 	if (strchr(tmp->name, ':') == NULL) {
 	    /* It is not a member of an archive */
 	    xf86Msg(X_INFO, "Unloading %s\n", tmp->name);
-	    RemoveSymbolList(&refList, tmp->name);
-	    RemoveSymbolList(&reqList, tmp->name);
 	}
 	tmp->desc->LoaderUnload(tmp->private);
 	xf86loaderfree(tmp->name);
@@ -2068,11 +2167,11 @@ GetExePath(const char **path)
 
 		fd = open(procName, O_RDONLY);
 		if (fd < 0) {
-		    ErrorF("Cannot open \"%s\"\n", procName);
+		    xf86Msg(X_WARNING, "Cannot open \"%s\"\n", procName);
 		    reason = "failed to open /proc psinfo entry.";
 		} else {
 		    if (read(fd, &ps, sizeof(ps)) != sizeof(ps)) {
-			ErrorF("Cannot read \"%s\"\n", procName);
+			xf86Msg(X_WARNING, "Cannot read \"%s\"\n", procName);
 			reason = "failed to read /proc psinfo entry. ";
 		    } else {
 			exeName = xnfstrdup(ps.pr_fname);
@@ -2091,10 +2190,11 @@ GetExePath(const char **path)
 #endif
 
 	    if (exePath && exeName) {
-		ErrorF("Executable is \"%s\"", exeName);
 		if (exePath != exeName)
-		    ErrorF(", path \"%s\"", exePath);
-		ErrorF("\n");
+		    xf86Msg(X_INFO, "Executable is \"%s\", path \"%s\".\n",
+			    exeName, exePath);
+		else
+		    xf86Msg(X_INFO, "Executable is \"%s\".\n", exeName);
 		if (path)
 		    *path = exePath;
 		return exeName;
@@ -2105,9 +2205,9 @@ GetExePath(const char **path)
     reason = "there is no support for finding it on this platform.";
 #endif
 
-    ErrorF("Cannot find the executable path name.\n");
+    xf86Msg(X_WARNING, "Cannot find the executable path name.\n");
     if (reason)
-	ErrorF("\t%s\n", reason);
+	xf86Msg(X_NONE, "\t%s\n", reason);
     return NULL;
 }
 
@@ -2120,19 +2220,20 @@ ReadMainExe(void)
 
     GetExePath(&fileName);
     if (!fileName) {
-	ErrorF("Cannot identify the executable file.\n");
+	xf86Msg(X_WARNING, "Cannot identify the executable file.\n");
 	return;
     }
-    ErrorF("Reading symbols from \"%s\".\n", fileName);
+    xf86Msg(X_INFO, "Reading symbols from \"%s\".\n", fileName);
     fd = open(fileName, O_RDONLY);
     if (fd < 0) {
-	ErrorF("Cannot open executable file \"%s\" (%s).\n", fileName,
+	xf86Msg(X_WARNING,
+		"Cannot open executable file \"%s\" (%s).\n", fileName,
 		strerror(errno));
 	return;
     }
 
     if ((modtype = _GetModuleType(fd, 0)) < 0) {
-	ErrorF("Executable file type is not recognized.\n");
+	xf86Msg(X_WARNING, "Executable file type is not recognized.\n");
 	close(fd);
 	return;
     }

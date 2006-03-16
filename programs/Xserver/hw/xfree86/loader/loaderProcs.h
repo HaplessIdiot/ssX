@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.23 2005/08/28 20:04:52 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.24 2006/03/02 03:00:38 dawes Exp $ */
 
 /*
  *
@@ -125,7 +125,6 @@ typedef struct module_desc {
     struct module_desc *child;
     struct module_desc *sib;
     struct module_desc *parent;
-    struct module_desc *demand_next;
     char *name;
     char *filename;
     char *identifier;
@@ -138,7 +137,7 @@ typedef struct module_desc {
     const char *path;
     const XF86ModuleVersionInfo *VersionInfo;
     const XF86ModReqInfo *ParentReq;
-} ModuleDesc, *ModuleDescPtr;
+} ModuleDesc;
 
 /*
  * Extenal API for the loader 
@@ -151,13 +150,7 @@ ModuleDescPtr LoadDriver(const char *, const char *, int, pointer, int *,
 ModuleDescPtr LoadModule(const char *, const char *, const char **,
 			 const char **, pointer, const XF86ModReqInfo *,
 			 int *, int *);
-ModuleDescPtr LoadSubModule(ModuleDescPtr, const char *,
-			    const char **, const char **, pointer,
-			    const XF86ModReqInfo *, int *, int *);
 ModuleDescPtr DuplicateModule(ModuleDescPtr mod, ModuleDescPtr parent);
-void LoadFont(FontModule *);
-void UnloadModule(ModuleDescPtr);
-void UnloadSubModule(ModuleDescPtr);
 void UnloadDriver(ModuleDescPtr);
 void FreeModuleDesc(ModuleDescPtr mod);
 ModuleDescPtr NewModuleDesc(const char *);
@@ -167,14 +160,16 @@ void LoaderSortExtensions(void);
 void LoaderSetParentModuleRequirements(ModuleDescPtr module,
 				       XF86ModReqInfo *req);
 
-void LoaderVReqSymLists(ModuleDescPtr module, const char **, va_list args);
-void LoaderVReqSymbols(ModuleDescPtr module, const char *, va_list args);
+int LoaderVReqSymLists(ModuleDescPtr module, const char **, va_list args);
+int LoaderVReqSymbols(ModuleDescPtr module, const char *, va_list args);
 void LoaderVRefSymLists(ModuleDescPtr module, const char **, va_list args);
 void LoaderVRefSymbols(ModuleDescPtr module, const char *, va_list args);
+void DuplicateSymbolLists(ModuleDescPtr old, ModuleDescPtr new);
 
 void *LoaderSymbolHandle(const char *, int);
-int LoaderUnload(int);
+int LoaderUnload(ModuleDescPtr mod);
 unsigned long LoaderGetModuleVersion(ModuleDescPtr mod);
+ModuleDescPtr LoaderGetSubModuleByName(ModuleDescPtr mod, const char *name);
 
 void LoaderResetOptions(void);
 void LoaderSetOptions(unsigned long);

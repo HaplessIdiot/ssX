@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.h,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.h,v 1.11 2005/08/28 20:04:52 tsi Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -45,6 +45,8 @@ typedef struct {
     Bool init_int10;
     ddc_lvl ddc;
     Bool ddc_blank;
+    ModuleDescPtr pInt10Mod;
+    ModuleDescPtr pDDCMod;
 } vbeInfoRec, *vbeInfoPtr;
 
 #define VBE_VERSION_MAJOR(x) (B8P(x)[1])
@@ -53,7 +55,7 @@ typedef struct {
 vbeInfoPtr VBEInit(xf86Int10InfoPtr pInt, int entityIndex);
 vbeInfoPtr VBEExtendedInit(xf86Int10InfoPtr pInt, int entityIndex, int Flags);
 void vbeFree(vbeInfoPtr pVbe);
-xf86MonPtr vbeDoEDID(vbeInfoPtr pVbe, pointer pDDCModule);
+xf86MonPtr vbeDoEDID(vbeInfoPtr pVbe, ModuleDescPtr pDDCModule);
 
 #pragma pack(1)
 
@@ -100,7 +102,7 @@ typedef struct vbeControllerInfoBlock {
 
 #if defined(XFree86LOADER)
 
-    static __inline__ pointer
+    static __inline__ ModuleDescPtr
     xf86LoadVBEModule(ScrnInfoPtr pScreenInfo)
     {
 	/*

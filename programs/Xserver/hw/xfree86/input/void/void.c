@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/void/void.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/void/void.c,v 1.4 2005/10/14 15:16:58 tsi Exp $ */
 
 /* Input device which doesn't output any event. This device can be used
  * as a core pointer or as a core keyboard.
@@ -235,6 +235,8 @@ InputDriverRec VOID = {
  *
  * called when the module subsection is found in XF86Config
  */
+static MODULETEARDOWNPROTO(xf86VoidUnplug);
+
 static void
 xf86VoidUnplug(pointer	p)
 {
@@ -245,8 +247,10 @@ xf86VoidUnplug(pointer	p)
  *
  * called when the module subsection is found in XF86Config
  */
+static MODULESETUPPROTO(xf86VoidPlug);
+
 static pointer
-xf86VoidPlug(pointer	module,
+xf86VoidPlug(ModuleDescPtr	module,
 	    pointer	options,
 	    int		*errmaj,
 	    int		*errmin)

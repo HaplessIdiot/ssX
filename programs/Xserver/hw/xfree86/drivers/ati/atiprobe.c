@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.70 2006/01/05 18:55:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.71 2006/03/02 03:00:37 dawes Exp $ */
 /*
  * Copyright 1997 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1148,6 +1148,9 @@ ATIProbe
 
     unsigned long       BIOSBase;
     CARD8               BIOS[PrefixSize];
+#ifdef XFree86LOADER
+    ModuleDescPtr       pModule;
+#endif
 
 #   define              AddAdapter(_p)                                     \
     do                                                                     \
@@ -2675,7 +2678,7 @@ ATIProbe
 
 #ifdef XFree86LOADER
 
-            if (!xf86LoadSubModule(pScreenInfo, "atimisc"))
+            if (!(pModule = xf86LoadSubModule(pScreenInfo, "atimisc")))
             {
                 xf86Msg(X_ERROR,
                     ATI_NAME ":  Failed to load \"atimisc\" module.\n");
@@ -2683,7 +2686,7 @@ ATIProbe
                 continue;
             }
 
-            xf86LoaderModReqSymLists(pScreenInfo->module, ATISymbols, NULL);
+            xf86LoaderModReqSymLists(pModule, ATISymbols, NULL);
 
 #endif
 

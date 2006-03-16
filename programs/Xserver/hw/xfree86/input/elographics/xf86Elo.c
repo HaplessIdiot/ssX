@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.20 2004/04/26 22:48:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.21 2006/01/09 15:00:18 dawes Exp $ */
 
 /*
  * Copyright 1995, 1999 by Patrick Lecoanet, France. <lecoanet@cena.dgac.fr>
@@ -1170,8 +1170,10 @@ InputDriverRec ELOGRAPHICS = {
 };
 
 #ifdef XFree86LOADER
+static MODULESETUPPROTO(Plug);
+
 static pointer
-Plug(pointer	module,
+Plug(ModuleDescPtr	module,
      pointer	options,
      int	*errmaj,
      int	*errmin)

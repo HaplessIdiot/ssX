@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg14/cg14_driver.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg14/cg14_driver.c,v 1.12 2005/07/19 15:02:51 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -107,7 +107,7 @@ static XF86ModuleVersionInfo suncg14VersRec =
 XF86ModuleData suncg14ModuleData = { &suncg14VersRec, cg14Setup, NULL };
 
 static pointer
-cg14Setup(pointer module, pointer opts, int *errmaj, int *errmin)
+cg14Setup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 

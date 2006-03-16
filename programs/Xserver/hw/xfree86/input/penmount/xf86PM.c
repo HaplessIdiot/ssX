@@ -28,7 +28,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/penmount/xf86PM.c,v 1.3 2001/11/26 16:25:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/penmount/xf86PM.c,v 1.4 2004/10/23 15:29:31 dawes Exp $ */
 
 #define _PENMOUNT_C_
 
@@ -116,9 +116,10 @@ static const char *reqSymbols[] = {
 	NULL
 };
 
+static MODULESETUPPROTO(PenMountSetupProc);
 
 static pointer
-PenMountSetupProc(	pointer module,
+PenMountSetupProc(	ModuleDescPtr module,
 			pointer options,
 			int *errmaj,
 			int *errmin )

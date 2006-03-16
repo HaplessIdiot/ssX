@@ -26,7 +26,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.33tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.34 2003/11/03 05:11:14 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -360,6 +360,9 @@ Permedia3PreInit(ScrnInfoPtr pScrn)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
     CARD32 LocalMemCaps;
+#if defined(__alpha__)
+    ModuleDescPtr pMod;
+#endif
 
     TRACE_ENTER("Permedia3PreInit");
 
@@ -421,10 +424,10 @@ Permedia3PreInit(ScrnInfoPtr pScrn)
 	    pciWriteByte( pGlint->PciTag, 0xfc, 0 );
 
 	    /* The card we are on should be VGA-enabled now, so run int10. */
-	    if (xf86LoadSubModule(pScrn, "int10")) {
+	    if ((pMod = xf86LoadSubModule(pScrn, "int10"))) {
 	        xf86Int10InfoPtr pInt;
 
-	        xf86LoaderReqSymLists(GLINTint10Symbols, NULL);
+	        xf86LoaderModReqSymLists(pMod, GLINTint10Symbols, NULL);
 		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
 		pInt = xf86InitInt10(pGlint->pEnt->index);
 		xf86FreeInt10(pInt);

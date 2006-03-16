@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.52tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.53 2005/10/14 15:16:38 tsi Exp $ */
 
 #define EXPERIMENTAL
 
@@ -162,8 +162,8 @@ static int LgLinePitches[4][11] = {
  * List of symbols from other modules that this module references.  This
  * list is used to tell the loader that it is OK for symbols here to be
  * unresolved providing that it hasn't been told that they haven't been
- * told that they are essential via a call to xf86LoaderReqSymbols() or
- * xf86LoaderReqSymLists().  The purpose is this is to avoid warnings about
+ * told that they are essential via a call to xf86LoaderModReqSymbols() or
+ * xf86LoaderModReqSymLists().  The purpose is this is to avoid warnings about
  * unresolved symbols that are not required.
  */
 
@@ -262,15 +262,15 @@ static XF86ModuleVersionInfo lgVersRec =
 XF86ModuleData cirrus_lagunaModuleData = { &lgVersRec, lgSetup, NULL };
 
 static pointer
-lgSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+lgSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
     
     if (!setupDone) {
 	setupDone = TRUE;
-	LoaderRefSymLists(vgahwSymbols, fbSymbols, xaaSymbols,
-			  ramdacSymbols, ddcSymbols, i2cSymbols,
-			  int10Symbols, NULL);
+	LoaderModRefSymLists(module, vgahwSymbols, fbSymbols, xaaSymbols,
+			     ramdacSymbols, ddcSymbols, i2cSymbols,
+			     int10Symbols, NULL);
     }
     return (pointer)1;
 }
@@ -406,6 +406,7 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	ClockRangePtr clockRanges;
 	int fbPCIReg, ioPCIReg;
 	char *s;
+	ModuleDescPtr pMod;
 
 	if (flags & PROBE_DETECT)  {
 	  cirProbeDDC( pScrn, xf86GetEntityInfo(pScrn->entityList[0])->index );
@@ -421,10 +422,10 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 		return FALSE;
 
 	/* The vgahw module should be loaded here when needed */
-	if (!xf86LoadSubModule(pScrn, "vgahw"))
+	if (!(pMod = xf86LoadSubModule(pScrn, "vgahw")))
 		return FALSE;
 
-	xf86LoaderReqSymLists(vgahwSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, vgahwSymbols, NULL);
 
 	/*
 	 * Allocate a vgaHWRec
@@ -455,9 +456,9 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 								pCir->PciInfo->device,
 								pCir->PciInfo->func);
 
-	if (xf86LoadSubModule(pScrn, "int10")) {
+	if ((pMod = xf86LoadSubModule(pScrn, "int10"))) {
 	    xf86Int10InfoPtr int10InfoPtr;
-	    xf86LoaderReqSymLists(int10Symbols, NULL);
+	    xf86LoaderModReqSymLists(pMod, int10Symbols, NULL);
 	    
 	    int10InfoPtr = xf86InitInt10(pCir->pEnt->index);
 
@@ -656,18 +657,18 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 		return FALSE;
 	}
 
-	if (!xf86LoadSubModule(pScrn, "ddc")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "ddc"))) {
 		LgFreeRec(pScrn);
 		return FALSE;
 	}
-	xf86LoaderReqSymLists(ddcSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, ddcSymbols, NULL);
 
 #if LGuseI2C
-	if (!xf86LoadSubModule(pScrn, "i2c")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "i2c"))) {
 		LgFreeRec(pScrn);
 		return FALSE;
 	}
-	xf86LoaderReqSymLists(i2cSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, i2cSymbols, NULL);
 #endif
 
 	/* Read and print the monitor DDC information */
@@ -856,38 +857,38 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	case 16:
 	case 24:
 	case 32: 
-	    if (xf86LoadSubModule(pScrn, "fb") == NULL) {
+	    if (!(pMod = xf86LoadSubModule(pScrn, "fb"))) {
 	         LgFreeRec(pScrn);
 		 return FALSE;
 	    }
-	    xf86LoaderReqSymLists(fbSymbols, NULL);
+	    xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
 	    break;
 	}
 
 	/* Load XAA if needed */
 	if (!pCir->NoAccel) {
-		if (!xf86LoadSubModule(pScrn, "xaa")) {
+		if (!(pMod = xf86LoadSubModule(pScrn, "xaa"))) {
 			LgFreeRec(pScrn);
 			return FALSE;
 		}
-		xf86LoaderReqSymLists(xaaSymbols, NULL);
+		xf86LoaderModReqSymLists(pMod, xaaSymbols, NULL);
 	}
 
 	/* Load ramdac if needed */
 	if (pCir->HWCursor) {
-		if (!xf86LoadSubModule(pScrn, "ramdac")) {
+		if (!(pMod = xf86LoadSubModule(pScrn, "ramdac"))) {
 			LgFreeRec(pScrn);
 			return FALSE;
 		}
-		xf86LoaderReqSymLists(ramdacSymbols, NULL);
+		xf86LoaderModReqSymLists(pMod, ramdacSymbols, NULL);
 	}
 
 	if (pCir->shadowFB) {
-	    if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+	    if (!(pMod = xf86LoadSubModule(pScrn, "shadowfb"))) {
 		LgFreeRec(pScrn);
 		return FALSE;
 	    }
-	    xf86LoaderReqSymLists(shadowSymbols, NULL);
+	    xf86LoaderModReqSymLists(pMod, shadowSymbols, NULL);
 	}
 	
 	return TRUE;

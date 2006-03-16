@@ -50,7 +50,7 @@
  *		(note that most of the data books have been released by
  *		 NatSemi and are downloadable for free as pdf files)
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.34tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.35 2005/10/14 15:16:39 tsi Exp $ */
 
 #include "fb.h"
 #include "mibank.h"
@@ -202,14 +202,12 @@ static const char *shadowSymbols[] = {
     NULL
 };
 
-#ifdef XFree86LOADER
 static const char *vbeSymbols[] = {
     "VBEInit",
     "vbeDoEDID",
     "vbeFree",
     NULL
 };
-#endif
 
 /* access to the MediaGX video hardware registers */
 
@@ -239,14 +237,15 @@ static XF86ModuleVersionInfo cyrixVersRec =
 XF86ModuleData cyrixModuleData = { &cyrixVersRec, cyrixSetup, NULL };
 
 pointer
-cyrixSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+cyrixSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 
     if (!setupDone) {
 	setupDone = TRUE;
 	xf86AddDriver(&CYRIX, module, 0);
-	LoaderRefSymLists(vgahwSymbols, fbSymbols, xaaSymbols, vbeSymbols, shadowSymbols, NULL);
+	LoaderModRefSymLists(module, vgahwSymbols, fbSymbols, xaaSymbols,
+			     vbeSymbols, shadowSymbols, NULL);
 	return (pointer)TRUE;
     } 
 
@@ -528,10 +527,14 @@ static void
 CYRIXProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
-    if (xf86LoadVBEModule(pScrn)) {
+    ModuleDescPtr pMod;
+
+    if ((pMod = xf86LoadVBEModule(pScrn))) {
+	xf86LoaderModReqSymLists(pMod, vbeSymbols, NULL);
 	pVbe = VBEInit(NULL,index);
 	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
 	vbeFree(pVbe);
+	xf86UnloadSubModule(pMod);
     }
 }
 	
@@ -550,6 +553,7 @@ CYRIXPreInit(ScrnInfoPtr pScrn, int flags)
     unsigned char gcr;
     static int accelWidths[3]= {2,1024, 2048};
     const char *s;
+    ModuleDescPtr pMod;
 
     /* Allocate the CYRIXRec driverPrivate */
     if (!CYRIXGetRec(pScrn)) return FALSE;
@@ -579,9 +583,9 @@ CYRIXPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     /* The vgahw module should be loaded here when needed */
-    if (!xf86LoadSubModule(pScrn, "vgahw"))
+    if (!(pMod = xf86LoadSubModule(pScrn, "vgahw")))
 	return FALSE;
-    xf86LoaderReqSymLists(vgahwSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, vgahwSymbols, NULL);
 
     /*
      * Allocate a vgaHWRec
@@ -931,20 +935,20 @@ CYRIXPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     /* Load fb module */
-    if (xf86LoadSubModule(pScrn, "fb") == NULL) {
+    if (!(pMod = xf86LoadSubModule(pScrn, "fb"))) {
 	CYRIXFreeRec(pScrn);
 	return FALSE;
     }
 
-    xf86LoaderReqSymLists(fbSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
 
     /* Load XAA if needed */
     if (!pCyrix->NoAccel) {
-	if (!xf86LoadSubModule(pScrn, "xaa")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "xaa"))) {
 	    CYRIXFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(xaaSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, xaaSymbols, NULL);
 
         switch (pScrn->displayWidth * pScrn->bitsPerPixel / 8) {
 	    case 512:
@@ -961,11 +965,11 @@ CYRIXPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Load shadowfb if needed */
     if (pCyrix->ShadowFB) {
-	if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "shadowfb"))) {
 	    CYRIXFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(shadowSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, shadowSymbols, NULL);
     }
 
     return TRUE;

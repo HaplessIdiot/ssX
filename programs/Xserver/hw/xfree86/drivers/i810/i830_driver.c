@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.91tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.92 2006/03/11 16:17:42 tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -2043,7 +2043,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
    int DDCclock = 0;
    char *s;
    DisplayModePtr p, pMon;
-   pointer pDDCModule = NULL, pVBEModule = NULL;
+   ModuleDescPtr pMod;
    Bool enable;
    const char *chipname;
    unsigned int ver;
@@ -2053,14 +2053,14 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
       return FALSE;
 
    /* Load int10 module */
-   if (!xf86LoadSubModule(pScrn, "int10"))
+   if (!(pMod = xf86LoadSubModule(pScrn, "int10")))
       return FALSE;
-   xf86LoaderReqSymLists(I810int10Symbols, NULL);
+   xf86LoaderModReqSymLists(pMod, I810int10Symbols, NULL);
 
    /* Load vbe module */
-   if (!(pVBEModule = xf86LoadVBEModule(pScrn)))
+   if (!(pMod = xf86LoadVBEModule(pScrn)))
       return FALSE;
-   xf86LoaderReqSymLists(I810vbeSymbols, NULL);
+   xf86LoaderModReqSymLists(pMod, I810vbeSymbols, NULL);
 
    pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
 
@@ -2070,9 +2070,9 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
    }
 
    /* The vgahw module should be loaded here when needed */
-   if (!xf86LoadSubModule(pScrn, "vgahw"))
+   if (!(pMod = xf86LoadSubModule(pScrn, "vgahw")))
       return FALSE;
-   xf86LoaderReqSymLists(I810vgahwSymbols, NULL);
+   xf86LoaderModReqSymLists(pMod, I810vgahwSymbols, NULL);
 
    /* Allocate a vgaHWRec */
    if (!vgaHWGetHWRec(pScrn))
@@ -3038,15 +3038,15 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
         (pI830->pipe == 0 && pI830->operatingDevices & PIPE_LFP) )
    	vbeDoPanelID(pI830->pVbe);
 
-   pDDCModule = xf86LoadSubModule(pScrn, "ddc");
+   pMod = xf86LoadSubModule(pScrn, "ddc");
 
-   pI830->vesa->monitor = vbeDoEDID(pI830->pVbe, pDDCModule);
+   pI830->vesa->monitor = vbeDoEDID(pI830->pVbe, pMod);
 
    if ((pScrn->monitor->DDC = pI830->vesa->monitor) != NULL) {
       xf86PrintEDID(pI830->vesa->monitor);
       xf86SetDDCproperties(pScrn, pI830->vesa->monitor);
    }
-   xf86UnloadSubModule(pDDCModule);
+   xf86UnloadSubModule(pMod);
 
    /* XXX Move this to a header. */
 #define VIDEO_BIOS_SCRATCH 0x18
@@ -3423,27 +3423,27 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
    xf86SetDpi(pScrn, 0, 0);
 
    /* Load the required sub modules */
-   if (!xf86LoadSubModule(pScrn, "fb")) {
+   if (!(pMod = xf86LoadSubModule(pScrn, "fb"))) {
       PreInitCleanup(pScrn);
       return FALSE;
    }
 
-   xf86LoaderReqSymLists(I810fbSymbols, NULL);
+   xf86LoaderModReqSymLists(pMod, I810fbSymbols, NULL);
 
    if (!pI830->noAccel) {
-      if (!xf86LoadSubModule(pScrn, "xaa")) {
+      if (!(pMod = xf86LoadSubModule(pScrn, "xaa"))) {
 	 PreInitCleanup(pScrn);
 	 return FALSE;
       }
-      xf86LoaderReqSymLists(I810xaaSymbols, NULL);
+      xf86LoaderModReqSymLists(pMod, I810xaaSymbols, NULL);
    }
 
    if (!pI830->SWCursor) {
-      if (!xf86LoadSubModule(pScrn, "ramdac")) {
+      if (!(pMod = xf86LoadSubModule(pScrn, "ramdac"))) {
 	 PreInitCleanup(pScrn);
 	 return FALSE;
       }
-      xf86LoaderReqSymLists(I810ramdacSymbols, NULL);
+      xf86LoaderModReqSymLists(pMod, I810ramdacSymbols, NULL);
    }
 
    I830UnmapMMIO(pScrn);
@@ -3454,12 +3454,12 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
    xf86SetOperatingState(resVgaMem, pI830->pEnt->index, ResDisableOpr);
 
    if (pI830->shadowFB) {
-       if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+       if (!(pMod = xf86LoadSubModule(pScrn, "shadowfb"))) {
 	   I830BIOSFreeRec(pScrn);
 	   vbeFree(pI830->pVbe);
 	   return FALSE;
        }
-      xf86LoaderReqSymLists(I810shadowFBSymbols, NULL);
+      xf86LoaderModReqSymLists(pMod, I810shadowFBSymbols, NULL);
    }
 
    VBEFreeVBEInfo(pI830->vbeInfo);
@@ -3481,17 +3481,17 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
    /* Load the dri module if requested. */
    if (xf86ReturnOptValBool(pI830->Options, OPTION_DRI, FALSE) &&
        !pI830->directRenderingDisabled) {
-      if (xf86LoadSubModule(pScrn, "dri")) {
-	 xf86LoaderReqSymLists(I810driSymbols, I810drmSymbols, NULL);
+      if ((pMod = xf86LoadSubModule(pScrn, "dri"))) {
+	 xf86LoaderModReqSymLists(pMod, I810driSymbols, I810drmSymbols, NULL);
       }
    }
 
    if (!pI830->directRenderingDisabled) {
-      if (!xf86LoadSubModule(pScrn, "shadow")) {
+      if (!(pMod = xf86LoadSubModule(pScrn, "shadow"))) {
 	 PreInitCleanup(pScrn);
 	 return FALSE;
       }
-      xf86LoaderReqSymLists(I810shadowSymbols, NULL);
+      xf86LoaderModReqSymLists(pMod, I810shadowSymbols, NULL);
    }
 #endif
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.21 2005/10/14 15:16:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.22 2006/03/02 03:00:38 dawes Exp $ */
 
 /*
  *
@@ -838,7 +838,7 @@ AOUTCheckForUnresolved(LoaderDescPtr desc)
     int symnum;
     AOUTRelocPtr crel;
     const char *name;
-    int fatalsym = 0, flag;
+    int fatalsym = 0;
 
 #if LOADERDEBUG
     LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "AOUTCheckForUnResolved()\n");
@@ -849,8 +849,7 @@ AOUTCheckForUnresolved(LoaderDescPtr desc)
 
 	symnum = crel->rel->r_symbolnum;
 	name = AOUTGetSymbolName(crel->file, crel->file->symtab + symnum);
-	flag = _LoaderHandleUnresolved(name, crel->file->handle);
-	if (flag)
+	if (_LoaderHandleUnresolved(name, crel->file->handle))
 	    fatalsym = 1;
     }
     return fatalsym;
@@ -957,7 +956,7 @@ AOUTFindRelocName(LoaderDescPtr desc, int handle, unsigned long addr)
 
 const char *
 AOUTAddressToSymbol(void *modptr, unsigned long addr, unsigned long *symaddr,
-		    const char **filename)
+		    const char **filename, int exe)
 {
     AOUTModulePtr aoutfile;
     AOUTHDR *header;

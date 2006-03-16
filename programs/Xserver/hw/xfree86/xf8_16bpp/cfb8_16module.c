@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_16bpp/cfb8_16module.c,v 1.1 1999/01/31 12:22:16 dawes Exp $ */
 
 #ifdef XFree86LOADER
 
@@ -23,7 +23,7 @@ static XF86ModuleVersionInfo VersRec =
 XF86ModuleData xf8_16bppModuleData = { &VersRec, xf8_16bppSetup, NULL };
 
 static pointer
-xf8_16bppSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+xf8_16bppSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     if (!LoadSubModule(module, "cfb", NULL, NULL, NULL, NULL,
 			errmaj, errmin))

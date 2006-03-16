@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_driver.c,v 1.14 2005/10/14 15:16:42 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_driver.c,v 1.15 2006/01/09 14:59:56 dawes Exp $ */
 /*
  * File Contents: This is the main module configures the interfacing 
  *                with the X server. The individual modules will be 
@@ -420,11 +420,14 @@ static void
 GX2ProbeDDC(ScrnInfoPtr pScrn, int index)
 {
    vbeInfoPtr pVbe;
+   ModuleDescPtr pMod;
 
-   if (xf86LoadVBEModule(pScrn)) {
+   if ((pMod = xf86LoadVBEModule(pScrn))) {
+      xf86LoaderModReqSymLists(pMod, nscVbeSymbols, NULL);
       pVbe = VBEInit(NULL, index);
       ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
       vbeFree(pVbe);
+      xf86UnloadSubModule(pMod);
    }
 }
 
@@ -458,6 +461,7 @@ GX2PreInit(ScrnInfoPtr pScreenInfo, int flags)
    unsigned int SupportFlags;
    const char *s;
    char **modes;
+   ModuleDescPtr pMod;
 
 #if INT10_SUPPORT
    VESAPtr pVesa;
@@ -484,18 +488,18 @@ GX2PreInit(ScrnInfoPtr pScreenInfo, int flags)
       return TRUE;
    }
 #if INT10_SUPPORT
-   if (!xf86LoadSubModule(pScreenInfo, "int10"))
+   if (!(pMod = xf86LoadSubModule(pScreenInfo, "int10")))
       return FALSE;
-   xf86LoaderReqSymLists(nscInt10Symbols, NULL);
+   xf86LoaderModReqSymLists(pMod, nscInt10Symbols, NULL);
 #endif
    pGeode->FBVGAActive = 0;		/* KFB will Knock of VGA */
 
 #if !defined(STB_X)
    /* If the vgahw module would be needed it would be loaded here */
-   if (!xf86LoadSubModule(pScreenInfo, "vgahw")) {
+   if (!(pMod = xf86LoadSubModule(pScreenInfo, "vgahw"))) {
       return FALSE;
    }
-   xf86LoaderReqSymLists(nscVgahwSymbols, NULL);
+   xf86LoaderModReqSymLists(pMod, nscVgahwSymbols, NULL);
 #endif /* STB_X */
    GeodeDebug(("GX2PreInit(1)!\n"));
    /* Do the durango hardware detection */
@@ -950,37 +954,37 @@ GX2PreInit(ScrnInfoPtr pScreenInfo, int flags)
    xf86SetDpi(pScreenInfo, 0, 0);
    GeodeDebug(("GX2PreInit(14)!\n"));
 
-   if (xf86LoadSubModule(pScreenInfo, "fb") == NULL) {
+   if (!(pMod = xf86LoadSubModule(pScreenInfo, "fb"))) {
       GX2FreeRec(pScreenInfo);
       return FALSE;
    }
 
-   xf86LoaderReqSymLists(nscFbSymbols, NULL);
+   xf86LoaderModReqSymLists(pMod, nscFbSymbols, NULL);
 
    GeodeDebug(("GX2PreInit(15)!\n"));
    if (pGeode->NoAccel == FALSE) {
-      if (!xf86LoadSubModule(pScreenInfo, "xaa")) {
+      if (!(pMod = xf86LoadSubModule(pScreenInfo, "xaa"))) {
 	 GX2FreeRec(pScreenInfo);
 	 return FALSE;
       }
-      xf86LoaderReqSymLists(nscXaaSymbols, NULL);
+      xf86LoaderModReqSymLists(pMod, nscXaaSymbols, NULL);
    }
    GeodeDebug(("GX2PreInit(16)!\n"));
    if (pGeode->HWCursor == TRUE) {
-      if (!xf86LoadSubModule(pScreenInfo, "ramdac")) {
+      if (!(pMod = xf86LoadSubModule(pScreenInfo, "ramdac"))) {
 	 GX2FreeRec(pScreenInfo);
 	 return FALSE;
       }
-      xf86LoaderReqSymLists(nscRamdacSymbols, NULL);
+      xf86LoaderModReqSymLists(pMod, nscRamdacSymbols, NULL);
    }
    GeodeDebug(("GX2PreInit(17)!\n"));
    /* Load shadowfb if needed */
    if (pGeode->ShadowFB) {
-      if (!xf86LoadSubModule(pScreenInfo, "shadowfb")) {
+      if (!(pMod = xf86LoadSubModule(pScreenInfo, "shadowfb"))) {
 	 GX2FreeRec(pScreenInfo);
 	 return FALSE;
       }
-      xf86LoaderReqSymLists(nscShadowSymbols, NULL);
+      xf86LoaderModReqSymLists(pMod, nscShadowSymbols, NULL);
    }
    GeodeDebug(("GX2PreInit(18)!\n"));
    if (xf86RegisterResources(pGeode->pEnt->index, NULL, ResExclusive)) {

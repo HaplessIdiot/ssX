@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg3/cg3_driver.c,v 1.8 2004/12/05 23:06:37 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg3/cg3_driver.c,v 1.9 2005/02/18 02:55:09 dawes Exp $ */
 
 #define PSZ 8
 #include "xf86.h"
@@ -106,7 +106,7 @@ static XF86ModuleVersionInfo suncg3VersRec =
 XF86ModuleData suncg3ModuleData = { &suncg3VersRec, cg3Setup, NULL };
 
 static pointer
-cg3Setup(pointer module, pointer opts, int *errmaj, int *errmin)
+cg3Setup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 

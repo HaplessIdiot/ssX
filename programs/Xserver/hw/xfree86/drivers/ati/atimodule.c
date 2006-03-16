@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.c,v 1.19 2006/01/05 18:55:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.c,v 1.20 2006/03/02 03:00:37 dawes Exp $ */
 /*
  * Copyright 1997 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -95,7 +95,7 @@ static XF86ModuleVersionInfo ATIVersionRec =
 static pointer
 ATISetup
 (
-    pointer Module,
+    ModuleDescPtr Module,
     pointer Options,
     int     *ErrorMajor,
     int     *ErrorMinor

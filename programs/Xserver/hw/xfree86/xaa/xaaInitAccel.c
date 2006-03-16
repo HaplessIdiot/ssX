@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.36tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.37 2005/10/14 15:17:11 tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -121,7 +121,7 @@ ModuleInfoRec XAA = {
 
 /*ARGSUSED*/
 static pointer
-xaaSetup(pointer Module, pointer Options, int *ErrorMajor, int *ErrorMinor)
+xaaSetup(ModuleDescPtr Module, pointer Options, int *ErrorMajor, int *ErrorMinor)
 {
     static Bool Initialised = FALSE;
 

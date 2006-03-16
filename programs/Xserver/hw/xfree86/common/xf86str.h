@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.107 2005/03/27 20:04:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.108 2006/03/02 03:00:36 dawes Exp $ */
 
 /*
- * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -346,7 +346,7 @@ typedef struct _DriverRec {
     void		(*Identify)(int flags);
     Bool		(*Probe)(struct _DriverRec *drv, int flags);
     const OptionInfoRec * (*AvailableOptions)(int chipid, int bustype);
-    pointer		module;
+    ModuleDescPtr	module;
     int			refCount;
 } DriverRec, *DriverPtr;
 
@@ -359,7 +359,7 @@ typedef struct _DriverRec {
 typedef struct _ModuleInfoRec {
     int			moduleVersion;
     char *		moduleName;
-    pointer		module;
+    ModuleDescPtr	module;
     int			refCount;
     const OptionInfoRec * (*AvailableOptions)(void *unused);
     pointer		unused[8];	/* leave some space for more fields */
@@ -1034,7 +1034,7 @@ typedef struct _ScrnInfoRec {
     DevUnion *		privates;		/* Other privates can hook in
 						 * here */
     DriverPtr		drv;			/* xf86DriverList[] entry */
-    pointer		module;			/* Pointer to module head */
+    ModuleDescPtr	module;			/* Pointer to module head */
     int			colorKey;
     int			overlayFlags;
 

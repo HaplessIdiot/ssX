@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.27tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.29 2005/08/05 18:23:45 tsi Exp $ */
 
 
 #include "xf86.h"
@@ -248,16 +248,16 @@ static XF86ModuleVersionInfo S3VersRec = {
 
 XF86ModuleData s3ModuleData = { &S3VersRec, S3Setup, NULL };
 
-pointer S3Setup (pointer module, pointer opts, int *errmaj, int *errmin)
+pointer S3Setup (ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
 	static Bool setupDone = FALSE;
 
 	if (!setupDone) {
 		setupDone = TRUE;
 		xf86AddDriver(&S3, module, 0);
-		LoaderRefSymLists(vgaHWSymbols, int10Symbols, ramdacSymbols,
-				  fbSymbols, xaaSymbols,
-				  NULL);
+		LoaderModRefSymLists(module, vgaHWSymbols, int10Symbols,
+				     ramdacSymbols, fbSymbols, xaaSymbols,
+				     NULL);
 		return (pointer) 1;
 	} else {
 		if (errmaj)
@@ -358,14 +358,15 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
 	Gamma gzeros = {0.0, 0.0, 0.0};
 	int i, vgaCRIndex, vgaCRReg;
 	unsigned char tmp;
+	ModuleDescPtr pMod;
 
 	if (flags & PROBE_DETECT)
 		return FALSE;
 
-	if (!xf86LoadSubModule(pScrn, "vgahw"))
+	if (!(pMod = xf86LoadSubModule(pScrn, "vgahw")))
 		return FALSE;
 
-	xf86LoaderReqSymLists(vgaHWSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, vgaHWSymbols, NULL);
 
 	if (!vgaHWGetHWRec(pScrn))
 		return FALSE;
@@ -457,9 +458,9 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
 		return FALSE;
 	}
 
-	if (xf86LoadSubModule(pScrn, "int10")) {
+	if ((pMod = xf86LoadSubModule(pScrn, "int10"))) {
 		xf86Int10InfoPtr pInt10;
-		xf86LoaderReqSymLists(int10Symbols, NULL);
+		xf86LoaderModReqSymLists(pMod, int10Symbols, NULL);
 		pInt10 = xf86InitInt10(pEnt->index);
 		if (pInt10)
 			xf86FreeInt10(pInt10);
@@ -600,9 +601,9 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
 			   "videoRam = %d Kb\n", pScrn->videoRam);
 	}
 
-	if (!xf86LoadSubModule(pScrn, "ramdac"))
+	if (!(pMod = xf86LoadSubModule(pScrn, "ramdac")))
 		return FALSE;
-	xf86LoaderReqSymLists(ramdacSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, ramdacSymbols, NULL);
 
 	pScrn->rgbBits = 8;	/* set default */
 
@@ -713,12 +714,13 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
 	xf86PrintModes(pScrn);
 	xf86SetDpi(pScrn, 0, 0);
 
-	xf86LoadSubModule(pScrn, "fb");
-	xf86LoaderReqSymLists(fbSymbols, NULL);
-
-	if (!xf86LoadSubModule(pScrn, "xaa"))
+	if (!(pMod = xf86LoadSubModule(pScrn, "fb")))
 		return FALSE;
-	xf86LoaderReqSymLists(xaaSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
+
+	if (!(pMod = xf86LoadSubModule(pScrn, "xaa")))
+		return FALSE;
+	xf86LoaderModReqSymLists(pMod, xaaSymbols, NULL);
 
 	return TRUE;
 }

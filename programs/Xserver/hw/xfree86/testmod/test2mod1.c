@@ -1,7 +1,7 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/testmod/test2mod1.c,v 1.1 2006/03/02 03:00:39 dawes Exp $ */
 /*
- * Copyright 2003 by David H. Dawes.
- * Copyright 2003 by X-Oz Technologies.
+ * Copyright 2003-2006 by David H. Dawes.
+ * Copyright 2003-2006 by X-Oz Technologies.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -46,6 +46,7 @@
  */
 
 #include "xf86Module.h"
+#include "xf86.h"
 
 static XF86ModuleVersionInfo VersRec = {
     "test2mod",
@@ -67,13 +68,14 @@ XF86ModuleData test2modModuleData =
 	{ &VersRec, test2modSetup, test2modTearDown };
 
 static pointer
-test2modSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+test2modSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 
     ErrorF("test2modSetup: This module (%p) has %salready been loaded\n",
 		module, setupDone ? "" : "NOT ");
     setupDone = TRUE;
+    xf86LoaderModRefSymbols(module, "testmodFunction1", NULL);
 
     return (pointer)1;
 }

@@ -45,7 +45,7 @@
    * Support static loading.  
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.30 2005/10/14 15:16:39 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.31 2006/03/02 03:00:37 dawes Exp $ */
 
 #include "xf86Cursor.h"
 #include "colormapst.h"
@@ -205,8 +205,8 @@ static SymTabRec GLIDEChipsets[] = {
  * List of symbols from other modules that this module references.  This
  * list is used to tell the loader that it is OK for symbols here to be
  * unresolved providing that it hasn't been told that they haven't been
- * told that they are essential via a call to xf86LoaderReqSymbols() or
- * xf86LoaderReqSymLists().  The purpose is this is to avoid warnings about
+ * told that they are essential via a call to xf86LoaderModReqSymbols() or
+ * xf86LoaderModReqSymLists().  The purpose is this is to avoid warnings about
  * unresolved symbols that are not required.
  */
 
@@ -242,7 +242,7 @@ static XF86ModuleVersionInfo glideVersRec =
 XF86ModuleData glideModuleData = { &glideVersRec, glideSetup, NULL };
 
 static pointer
-glideSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+glideSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
   static Bool setupDone = FALSE;
   pointer ret;
@@ -296,7 +296,7 @@ glideSetup(pointer module, pointer opts, int *errmaj, int *errmin)
      * Tell the loader about symbols from other modules that this module
      * might refer to.
      */
-    LoaderRefSymLists(fbSymbols, shadowSymbols, NULL);
+    LoaderModRefSymLists(module, fbSymbols, shadowSymbols, NULL);
 
     /*
      * The return value must be non-NULL on success even though there
@@ -445,6 +445,7 @@ GLIDEPreInit(ScrnInfoPtr pScrn, int flags)
   int i;
   ClockRangePtr clockRanges;
   int sst;
+  ModuleDescPtr pMod;
 
   if (flags & PROBE_DETECT) return FALSE;
 
@@ -627,19 +628,19 @@ GLIDEPreInit(ScrnInfoPtr pScrn, int flags)
   xf86SetDpi(pScrn, 0, 0);
     
   /* Load fb */
-  if (xf86LoadSubModule(pScrn, "fb") == NULL) {
+  if (!(pMod = xf86LoadSubModule(pScrn, "fb"))) {
     GLIDEFreeRec(pScrn);
     return FALSE;
   }
 
-  xf86LoaderReqSymLists(fbSymbols, NULL);
+  xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
 
   /* Load the shadow framebuffer */
-  if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+  if (!(pMod = xf86LoadSubModule(pScrn, "shadowfb"))) {
     GLIDEFreeRec(pScrn);
     return FALSE;
   }
-  xf86LoaderReqSymLists(shadowSymbols, NULL);
+  xf86LoaderModReqSymLists(pMod, shadowSymbols, NULL);
 
   return TRUE;
 }

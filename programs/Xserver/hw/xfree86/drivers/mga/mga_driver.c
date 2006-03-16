@@ -44,7 +44,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.253tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.254 2005/08/28 20:04:49 tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -231,8 +231,8 @@ static const OptionInfoRec MGAOptions[] = {
  * List of symbols from other modules that this module references.  This
  * list is used to tell the loader that it is OK for symbols here to be
  * unresolved providing that it hasn't been told that they haven't been
- * told that they are essential via a call to xf86LoaderReqSymbols() or
- * xf86LoaderReqSymLists().  The purpose is this is to avoid warnings about
+ * told that they are essential via a call to xf86LoaderModReqSymbols() or
+ * xf86LoaderModReqSymLists().  The purpose is this is to avoid warnings about
  * unresolved symbols that are not required.
  */
 
@@ -353,14 +353,12 @@ static const char *shadowSymbols[] = {
     NULL
 };
 
-#ifdef XFree86LOADER
 static const char *vbeSymbols[] = {
     "VBEInit",
     "vbeDoEDID",
     "vbeFree",
     NULL
 };
-#endif
 
 static const char *int10Symbols[] = {
     "xf86FreeInt10",
@@ -425,7 +423,7 @@ static XF86ModuleVersionInfo mgaVersRec =
 XF86ModuleData MGA_MODULE_DATA = { &mgaVersRec, mgaSetup, NULL };
 
 static pointer
-mgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+mgaSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 
@@ -444,18 +442,18 @@ mgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * Tell the loader about symbols from other modules that this module
 	 * might refer to.
 	 */
-	LoaderRefSymLists(vgahwSymbols, xaaSymbols,
-			  xf8_32bppSymbols, ramdacSymbols,
-			  ddcSymbols, i2cSymbols, shadowSymbols,
-			  fbdevHWSymbols, vbeSymbols,
-			  fbSymbols, int10Symbols,
+	LoaderModRefSymLists(module, vgahwSymbols, xaaSymbols,
+			     xf8_32bppSymbols, ramdacSymbols,
+			     ddcSymbols, i2cSymbols, shadowSymbols,
+			     fbdevHWSymbols, vbeSymbols,
+			     fbSymbols, int10Symbols,
 #ifdef XF86DRI
-			  drmSymbols, driSymbols,
+			     drmSymbols, driSymbols,
 #endif
 #ifdef USEMGAHAL
-			  halSymbols,
+			     halSymbols,
 #endif
-			  NULL);
+			     NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -984,6 +982,7 @@ MGAdoDDC(ScrnInfoPtr pScrn)
   vgaHWPtr hwp;
   MGAPtr pMga;
   xf86MonPtr MonInfo = NULL;
+  ModuleDescPtr pDDCMod, pMod;
 
   hwp = VGAHWPTR(pScrn);
   pMga = MGAPTR(pScrn);
@@ -991,8 +990,8 @@ MGAdoDDC(ScrnInfoPtr pScrn)
   /* Load DDC if we have the code to use it */
   /* This gives us DDC1 */
   if (pMga->ddc1Read || pMga->i2cInit) {
-      if (xf86LoadSubModule(pScrn, "ddc")) {
-	  xf86LoaderReqSymLists(ddcSymbols, NULL);
+      if ((pDDCMod = xf86LoadSubModule(pScrn, "ddc"))) {
+	  xf86LoaderModReqSymLists(pDDCMod, ddcSymbols, NULL);
 	} else {
 	  /* ddc module not found, we can do without it */
 	  pMga->ddc1Read = NULL;
@@ -1007,8 +1006,8 @@ MGAdoDDC(ScrnInfoPtr pScrn)
     /* - DDC can use I2C bus */
     /* Load I2C if we have the code to use it */
     if (pMga->i2cInit) {
-      if ( xf86LoadSubModule(pScrn, "i2c") ) {
-	xf86LoaderReqSymLists(i2cSymbols,NULL);
+      if ((pMod = xf86LoadSubModule(pScrn, "i2c"))) {
+	xf86LoaderModReqSymLists(pMod, i2cSymbols,NULL);
       } else {
 	/* i2c module not found, we can do without it */
 	pMga->i2cInit = NULL;
@@ -1084,10 +1083,11 @@ MGAdoDDC(ScrnInfoPtr pScrn)
 	  }
 	  if (!MonInfo){
 	    vbeInfoPtr pVbe;
-	    if (xf86LoadVBEModule(pScrn)) {
+	    if ((pMod = xf86LoadVBEModule(pScrn))) {
 	      pVbe = VBEInit(NULL,pMga->pEnt->index);
-	      MonInfo = vbeDoEDID(pVbe, NULL);
+	      MonInfo = vbeDoEDID(pVbe, pDDCMod);
 	      vbeFree(pVbe);
+	      xf86UnloadSubModule(pMod);
 	
 	      if (MonInfo){
 		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "VBE DDC Monitor info: %p\n",
@@ -1176,10 +1176,13 @@ void
 MGAProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
-    if (xf86LoadVBEModule(pScrn)) {
+    ModuleDescPtr pMod;
+    if ((pMod = xf86LoadVBEModule(pScrn))) {
+	xf86LoaderModReqSymLists(pMod, vbeSymbols, NULL);
 	pVbe = VBEInit(NULL,index);
 	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
 	vbeFree(pVbe); 
+	xf86UnloadSubModule(pMod);
     }
 }
 
@@ -1221,6 +1224,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     int flags24;
     MGAEntPtr pMgaEnt = NULL;
     Bool Default;
+    ModuleDescPtr pMod;
 #ifdef USEMGAHAL
     ULONG status;
     CARD8 MiscCtlReg;
@@ -1275,10 +1279,10 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     /* The vgahw module should be loaded here when needed */
-    if (!xf86LoadSubModule(pScrn, "vgahw"))
+    if (!(pMod = xf86LoadSubModule(pScrn, "vgahw")))
 	return FALSE;
 
-    xf86LoaderReqSymLists(vgahwSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, vgahwSymbols, NULL);
 
     /*
      * Allocate a vgaHWRec
@@ -1374,8 +1378,8 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 					"Hal", loadHal);
 	    from = X_CONFIG;
 	}
-        if (loadHal && xf86LoadSubModule(pScrn, "mga_hal")) {
-	  xf86LoaderReqSymLists(halSymbols, NULL);
+        if (loadHal && (pMod = xf86LoadSubModule(pScrn, "mga_hal"))) {
+	  xf86LoaderModReqSymLists(pMod, halSymbols, NULL);
 	  xf86DrvMsg(pScrn->scrnIndex, from,"Matrox HAL module used\n");
 	  pMga->HALLoaded = TRUE;
 	} else {
@@ -1534,10 +1538,10 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     else
 	Default = FALSE;
     if (xf86ReturnOptValBool(pMga->Options, OPTION_INT10, Default) &&
-        xf86LoadSubModule(pScrn, "int10")) {
+        (pMod = xf86LoadSubModule(pScrn, "int10"))) {
         xf86Int10InfoPtr pInt;
 
-	xf86LoaderReqSymLists(int10Symbols, NULL);
+	xf86LoaderModReqSymLists(pMod, int10Symbols, NULL);
         xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
         pInt = xf86InitInt10(pMga->pEnt->index);
 	if (pInt) pMga->softbooted = TRUE;
@@ -1693,9 +1697,9 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     }
     if (pMga->FBDev) {
 	/* check for linux framebuffer device */
-	if (!xf86LoadSubModule(pScrn, "fbdevhw"))
+	if (!(pMod = xf86LoadSubModule(pScrn, "fbdevhw")))
 	    return FALSE;
-	xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, fbdevHWSymbols, NULL);
 	if (!fbdevHWInit(pScrn, pMga->PciInfo, NULL))
 	    return FALSE;
 	pScrn->SwitchMode    = fbdevHWSwitchMode;
@@ -2397,52 +2401,52 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Load the required framebuffer */
     if (pMga->Overlay8Plus24) {
-	if (!xf86LoadSubModule(pScrn, "xf8_32bpp")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "xf8_32bpp"))) {
 	    MGAFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(xf8_32bppSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, xf8_32bppSymbols, NULL);
     } else {
-	if (!xf86LoadSubModule(pScrn, "fb")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "fb"))) {
 	    MGAFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(fbSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
     }
 
 
     /* Load XAA if needed */
     if (!pMga->NoAccel) {
-	if (!xf86LoadSubModule(pScrn, "xaa")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "xaa"))) {
 	    MGAFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(xaaSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, xaaSymbols, NULL);
     }
 
     /* Load ramdac if needed */
     if (pMga->HWCursor) {
-	if (!xf86LoadSubModule(pScrn, "ramdac")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "ramdac"))) {
 	    MGAFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(ramdacSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, ramdacSymbols, NULL);
     }
 
     /* Load shadowfb if needed */
     if (pMga->ShadowFB) {
-	if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "shadowfb"))) {
 	    MGAFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(shadowSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, shadowSymbols, NULL);
     }
 
 #ifdef XF86DRI
     /* Load the dri module if requested. */
     if (xf86ReturnOptValBool(pMga->Options, OPTION_DRI, FALSE)) {
-       if (xf86LoadSubModule(pScrn, "dri")) {
-	  xf86LoaderReqSymLists(driSymbols, drmSymbols, NULL);
+       if ((pMod = xf86LoadSubModule(pScrn, "dri"))) {
+	  xf86LoaderModReqSymLists(pMod, driSymbols, drmSymbols, NULL);
        }
     }
 #endif

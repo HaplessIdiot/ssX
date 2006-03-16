@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.48 2005/07/26 18:32:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.49 2006/03/09 02:16:38 dawes Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -158,7 +158,7 @@ static const char *fbdevHWSymbols[] = {
 	"fbdevHWUnmapVidmem",
 
 	/* colormap */
-	"fbdevHWLoadpalette",
+	"fbdevHWLoadPalette",
 
 	/* ScrnInfo hooks */
 	"fbdevHWAdjustFrame",
@@ -175,8 +175,6 @@ static const char *fbdevHWSymbols[] = {
 
 	NULL
 };
-
-static void *fbdevModule = NULL;
 
 #ifdef XFree86LOADER
 
@@ -199,7 +197,7 @@ static XF86ModuleVersionInfo FBDevVersRec =
 XF86ModuleData fbdevModuleData = { &FBDevVersRec, FBDevSetup, NULL };
 
 pointer
-FBDevSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+FBDevSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
 	static Bool setupDone = FALSE;
 
@@ -208,7 +206,6 @@ FBDevSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 		xf86AddDriver(&FBDEV, module, 0);
 		LoaderModRefSymLists(module, afbSymbols, fbSymbols,
 				     shadowSymbols, fbdevHWSymbols, NULL);
-		fbdevModule = module;
 		return (pointer)1;
 	} else {
 		if (errmaj) *errmaj = LDR_ONCEONLY;
@@ -283,6 +280,7 @@ FBDevProbe(DriverPtr drv, int flags)
 	int bus,device,func;
 	char *dev;
 	Bool foundScreen = FALSE;
+	ModuleDescPtr pMod;
 
 	TRACE("probe start");
 
@@ -293,10 +291,10 @@ FBDevProbe(DriverPtr drv, int flags)
 	if ((numDevSections = xf86MatchDevice(FBDEV_DRIVER_NAME, &devSections)) <= 0)
 	    return FALSE;
 
-	if (!xf86LoadDrvSubModule(drv, "fbdevhw"))
+	if (!(pMod = xf86LoadDrvSubModule(drv, "fbdevhw")))
 	    return FALSE;
 
-	xf86LoaderModReqSymLists(fbdevModule, fbdevHWSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, fbdevHWSymbols, NULL);
 
 	for (i = 0; i < numDevSections; i++) {
 	    Bool isIsa = FALSE;
@@ -375,6 +373,7 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 	const char *mod = NULL, *s;
 	const char **syms = NULL;
 	int type;
+	ModuleDescPtr pMod = NULL;
 
 	if (flags & PROBE_DETECT) return FALSE;
 
@@ -575,22 +574,22 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 	       "Fbdev type (%d) not supported yet.", type);
 	       return FALSE;
 	}
-	if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
+	if (mod && !(pMod = xf86LoadSubModule(pScrn, mod))) {
 		FBDevFreeRec(pScrn);
 		return FALSE;
 	}
 	if (mod && syms) {
-		xf86LoaderModReqSymLists(fbdevModule, syms, NULL);
+		xf86LoaderModReqSymLists(pMod, syms, NULL);
 	}
 
 	/* Load shadow if needed */
 	if (fPtr->shadowFB) {
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using \"Shadow Framebuffer\"\n");
-		if (!xf86LoadSubModule(pScrn, "shadow")) {
+		if (!(pMod = xf86LoadSubModule(pScrn, "shadow"))) {
 			FBDevFreeRec(pScrn);
 			return FALSE;
 		}
-		xf86LoaderModReqSymLists(fbdevModule, shadowSymbols, NULL);
+		xf86LoaderModReqSymLists(pMod, shadowSymbols, NULL);
 	}
 
 	TRACE_EXIT("PreInit");

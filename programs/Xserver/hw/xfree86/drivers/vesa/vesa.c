@@ -28,7 +28,7 @@
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *          David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.53tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.54 2005/10/14 15:16:48 tsi Exp $
  */
 /*
  * Copyright (c) 2000-2005 by The XFree86 Project, Inc.
@@ -192,8 +192,8 @@ static const OptionInfoRec VESAOptions[] = {
  * List of symbols from other modules that this module references.  This
  * list is used to tell the loader that it is OK for symbols here to be
  * unresolved providing that it hasn't been told that they haven't been
- * told that they are essential via a call to xf86LoaderReqSymbols() or
- * xf86LoaderReqSymLists().  The purpose is this is to avoid warnings about
+ * told that they are essential via a call to xf86LoaderModReqSymbols() or
+ * xf86LoaderModReqSymLists().  The purpose is this is to avoid warnings about
  * unresolved symbols that are not required.
  */
 #ifdef XFree86LOADER
@@ -245,14 +245,13 @@ static const char *vbeSymbols[] = {
     NULL
 };
 
-#ifdef XFree86LOADER
 static const char *ddcSymbols[] = {
     "xf86PrintEDID",
     "xf86SetDDCproperties",
     NULL
 };
 
-
+#ifdef XFree86LOADER
 /* Module loader interface */
 static MODULESETUPPROTO(vesaSetup);
 
@@ -277,7 +276,7 @@ static XF86ModuleVersionInfo vesaVersionRec =
 XF86ModuleData vesaModuleData = { &vesaVersionRec, vesaSetup, NULL };
 
 static pointer
-vesaSetup(pointer Module, pointer Options, int *ErrorMajor, int *ErrorMinor)
+vesaSetup(ModuleDescPtr Module, pointer Options, int *ErrorMajor, int *ErrorMinor)
 {
     static Bool Initialised = FALSE;
 
@@ -285,12 +284,13 @@ vesaSetup(pointer Module, pointer Options, int *ErrorMajor, int *ErrorMinor)
     {
 	Initialised = TRUE;
 	xf86AddDriver(&VESA, Module, 0);
-	LoaderRefSymLists(miscfbSymbols,
-			  fbSymbols,
-			  shadowSymbols,
-			  vbeSymbols,
-			  ddcSymbols,
-			  NULL);
+	LoaderModRefSymLists(Module,
+			     miscfbSymbols,
+			     fbSymbols,
+			     shadowSymbols,
+			     vbeSymbols,
+			     ddcSymbols,
+			     NULL);
 	return (pointer)TRUE;
     }
 
@@ -491,7 +491,7 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
     static const Gamma defaultGamma = {0.0, 0.0, 0.0};
     static const rgb defaultWeight = {0, 0, 0};
     rgb defaultMask = {0, 0, 0};
-    pointer pDDCModule;
+    ModuleDescPtr pDDCModule = NULL, pVBEModule, pMod = NULL;
     int i;
     int flags24 = 0;
     int defaultDepth = 0;
@@ -506,14 +506,14 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 					 pScrn->entityInstanceList[0]);
 
     /* Load vbe module */
-    if (!xf86LoadVBEModule(pScrn))
+    if (!(pVBEModule = xf86LoadVBEModule(pScrn)))
 	return (FALSE);
 
-    xf86LoaderReqSymLists(vbeSymbols, NULL);
+    xf86LoaderModReqSymLists(pVBEModule, vbeSymbols, NULL);
 
     if ((pVesa->pVbe = VBEExtendedInit(NULL, pVesa->pEnt->index,
-				       SET_BIOS_SCRATCH
-				       | RESTORE_BIOS_SCRATCH)) == NULL)
+					SET_BIOS_SCRATCH
+					| RESTORE_BIOS_SCRATCH)) == NULL)
 	return (FALSE);
 
     if (pVesa->pEnt->location.type == BUS_PCI) {
@@ -645,17 +645,17 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (pVesa->major >= 2) {
 	/* Load ddc module */
-	if ((pDDCModule = xf86LoadSubModule(pScrn, "ddc")) == NULL) {
+	if (!(pDDCModule = xf86LoadSubModule(pScrn, "ddc"))) {
 	    vbeFree(pVesa->pVbe);
 	    pVesa->pVbe = NULL;
 	    return (FALSE);
 	}
 
+	xf86LoaderModReqSymLists(pDDCModule, ddcSymbols, NULL);
 	if ((pVesa->monitor = vbeDoEDID(pVesa->pVbe, pDDCModule)) != NULL) {
 	    xf86PrintEDID(pVesa->monitor);
 	}
 
-	xf86UnloadSubModule(pDDCModule);
     }
 
     if ((pScrn->monitor->DDC = pVesa->monitor) != NULL) {
@@ -687,9 +687,11 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 	    pVesa->defaultRefresh = TRUE;
 	}
     }
+    if (pDDCModule)
+	xf86UnloadSubModule(pDDCModule);
 
     xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, DEBUG_VERB,
-			"Searching for matching VESA mode(s):\n");
+		   "Searching for matching VESA mode(s):\n");
 
     /*
      * Check the available BIOS modes, and extract those that match the
@@ -777,8 +779,6 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 	    if (pVesa->shadowFB) {
 		mod = "fb";
 		pScrn->bitmapBitOrder = BITMAP_BIT_ORDER;
-
-		xf86LoaderReqSymbols("fbPictureInit", NULL);
 	    }
 	    else {
 		switch (pScrn->bitsPerPixel) {
@@ -824,15 +824,15 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 	    mod = "mfb";
 	    reqSym = "mfbScreenInit";
 	}
-	if (!xf86LoadSubModule(pScrn, "shadow")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "shadow"))) {
 	    vbeFree(pVesa->pVbe);
 	    pVesa->pVbe = NULL;
 	    return (FALSE);
 	}
-	xf86LoaderReqSymLists(shadowSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, shadowSymbols, NULL);
     }
 
-    if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
+    if (mod && !(pMod = xf86LoadSubModule(pScrn, mod))) {
 	VESAFreeRec(pScrn);
 	vbeFree(pVesa->pVbe);
 	pVesa->pVbe = NULL;
@@ -841,9 +841,9 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (mod) {
 	if (reqSym) {
-	    xf86LoaderReqSymbols(reqSym, NULL);
+	    xf86LoaderModReqSymbols(pMod, reqSym, NULL);
 	} else {
-	    xf86LoaderReqSymLists(fbSymbols, NULL);
+	    xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
 	}
     }
 

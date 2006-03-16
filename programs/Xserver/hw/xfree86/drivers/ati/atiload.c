@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.c,v 1.21 2006/01/05 18:55:29 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.c,v 1.22 2006/03/02 03:00:37 dawes Exp $ */
 /*
  * Copyright 2000 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -117,7 +117,7 @@ const char *ATIi2cSymbols[] =
  * Load a specific module and register with the loader those of its entry
  * points that are referenced by this driver.
  */
-pointer
+ModuleDescPtr
 ATILoadSubModule
 (
     ScrnInfoPtr  pScreenInfo,
@@ -125,10 +125,10 @@ ATILoadSubModule
     const char **SymbolList
 )
 {
-    pointer pModule = xf86LoadSubModule(pScreenInfo, Module);
+    ModuleDescPtr pModule = xf86LoadSubModule(pScreenInfo, Module);
 
     if (pModule)
-        xf86LoaderModReqSymLists(pScreenInfo->module, SymbolList, NULL);
+        xf86LoaderModReqSymLists(pModule, SymbolList, NULL);
 
     return pModule;
 }
@@ -138,16 +138,16 @@ ATILoadSubModule
  *
  * A variant of ATILoadSubModule() specifically for loading the 'vbe' module.
  */
-pointer
+ModuleDescPtr
 ATILoadVBEModule
 (
     ScrnInfoPtr  pScreenInfo
 )
 {
-    pointer pModule = xf86LoadVBEModule(pScreenInfo);
+    ModuleDescPtr pModule = xf86LoadVBEModule(pScreenInfo);
 
     if (pModule)
-        xf86LoaderModReqSymLists(pScreenInfo->module, ATIvbeSymbols, NULL);
+        xf86LoaderModReqSymLists(pModule, ATIvbeSymbols, NULL);
 
     return pModule;
 }
@@ -157,7 +157,7 @@ ATILoadVBEModule
  *
  * This function loads other modules required for a screen.
  */
-pointer
+ModuleDescPtr
 ATILoadSubModules
 (
     ScrnInfoPtr pScreenInfo,

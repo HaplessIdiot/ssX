@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.44 2006/02/19 15:51:26 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.45 2006/03/02 03:00:36 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
@@ -207,18 +207,18 @@ typedef struct {
     const char **	initDependencies;
 } ExtensionModule;
 
+typedef struct module_desc *ModuleDescPtr;
+typedef struct font_module *FontModulePtr;
+
 extern ExtensionModule *ExtensionModuleList;
 
 /* Prototypes for Loader functions that are exported to modules */
-#ifndef IN_LOADER
-/* Prototypes with opaque pointers for use by modules */
-pointer LoadSubModule(pointer, const char *, const char **,
-		      const char **, pointer, const XF86ModReqInfo *,
-		      int *, int *);
-void UnloadSubModule(pointer);
-void LoadFont(pointer);
-void UnloadModule (pointer);
-#endif
+ModuleDescPtr LoadSubModule(ModuleDescPtr, const char *, const char **,
+			    const char **, pointer, const XF86ModReqInfo *,
+			    int *, int *);
+void UnloadSubModule(ModuleDescPtr);
+void UnloadModule (ModuleDescPtr);
+void LoadFont(FontModulePtr);
 pointer LoaderSymbol(const char *);
 char **LoaderListDirs(const char **, const char **);
 void LoaderFreeDirList(char **);
@@ -228,16 +228,16 @@ void LoaderRefSymLists(const char **, ...);
 void LoaderRefSymbols(const char *, ...);
 void LoaderReqSymLists(const char **, ...);
 void LoaderReqSymbols(const char *, ...);
-void LoaderModRefSymLists(pointer, const char **, ...);
-void LoaderModRefSymbols(pointer, const char *, ...);
-void LoaderModReqSymLists(pointer, const char **, ...);
-void LoaderModReqSymbols(pointer, const char *, ...);
+void LoaderModRefSymLists(ModuleDescPtr, const char **, ...);
+void LoaderModRefSymbols(ModuleDescPtr, const char *, ...);
+int LoaderModReqSymLists(ModuleDescPtr, const char **, ...);
+int LoaderModReqSymbols(ModuleDescPtr, const char *, ...);
 int LoaderCheckUnresolved(int);
 void LoaderGetOS(const char **name, int *major, int *minor, int *teeny);
 
-typedef pointer (*ModuleSetupProc)(pointer, pointer, int *, int *);
+typedef pointer (*ModuleSetupProc)(ModuleDescPtr, pointer, int *, int *);
 typedef void (*ModuleTearDownProc)(pointer);
-#define MODULESETUPPROTO(func) pointer func(pointer, pointer, int*, int*)
+#define MODULESETUPPROTO(func) pointer func(ModuleDescPtr, pointer, int*, int*)
 #define MODULETEARDOWNPROTO(func) void func(pointer)
 
 typedef struct {

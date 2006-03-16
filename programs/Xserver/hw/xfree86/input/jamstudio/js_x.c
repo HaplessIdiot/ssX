@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/jamstudio/js_x.c,v 1.5 2004/04/26 22:26:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/jamstudio/js_x.c,v 1.6 2004/04/26 22:48:21 dawes Exp $ */
 
 #include <sys/types.h>
 #include "misc.h"
@@ -326,14 +326,18 @@ InputDriverRec JAMSTUDIO =
 
 #ifdef XFree86LOADER
 
+static MODULETEARDOWNPROTO(xf86JS_XUnplug);
+
 static void
 xf86JS_XUnplug(pointer p)
 {
    return;
 }
 
+static MODULESETUPPROTO(xf86JS_XPlug);
+
 static pointer
-xf86JS_XPlug(pointer module, pointer options, int *errmaj, int *errmin)
+xf86JS_XPlug(ModuleDescPtr module, pointer options, int *errmaj, int *errmin)
 {
    xf86AddInputDriver(&JAMSTUDIO, module, 0);
    return module;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.61tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.62 2005/08/28 20:04:50 tsi Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -232,7 +232,7 @@ XF86ModuleData renditionModuleData =
                { &renditionVersionRec, renditionSetup, NULL };
 
 static pointer
-renditionSetup(pointer Module, pointer Options, int *ErrorMajor, 
+renditionSetup(ModuleDescPtr Module, pointer Options, int *ErrorMajor, 
                int *ErrorMinor)
 {
     static Bool Initialised=FALSE;
@@ -240,9 +240,9 @@ renditionSetup(pointer Module, pointer Options, int *ErrorMajor,
     if (!Initialised) {
         Initialised=TRUE;
         xf86AddDriver(&RENDITION, Module, 0);
-        LoaderRefSymLists(vgahwSymbols, ramdacSymbols, fbSymbols,
-			  xaaSymbols, ddcSymbols, int10Symbols,
-			  shadowfbSymbols, vbeSymbols, NULL);
+        LoaderModRefSymLists(Module, vgahwSymbols, ramdacSymbols, fbSymbols,
+			     xaaSymbols, ddcSymbols, int10Symbols,
+			     shadowfbSymbols, vbeSymbols, NULL);
         return (pointer)TRUE;
     }
 
@@ -479,6 +479,7 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     renditionPtr      pRendition;
     char             *in_string;
     vgaHWPtr          pvgaHW;
+    ModuleDescPtr     pMod;
     
 #ifdef DEBUG
     ErrorF("Rendition: renditionPreInit() called\n");
@@ -509,10 +510,10 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     pScreenInfo->monitor=pScreenInfo->confScreen->monitor;
 
     /* Initialize the card through int10 interface if needed */
-    if (xf86LoadSubModule(pScreenInfo, "int10")){
+    if ((pMod = xf86LoadSubModule(pScreenInfo, "int10"))){
         xf86Int10InfoPtr pInt=NULL;
 
-        xf86LoaderReqSymLists(int10Symbols, NULL);
+        xf86LoaderModReqSymLists(pMod, int10Symbols, NULL);
 
         xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO, "Initializing int10\n");
         pInt = xf86InitInt10(pRendition->pEnt->index);
@@ -588,10 +589,10 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
 
 
     /* Load fb */
-    if (!xf86LoadSubModule(pScreenInfo, "fb"))
+    if (!(pMod = xf86LoadSubModule(pScreenInfo, "fb")))
       return FALSE;
 
-    xf86LoaderReqSymLists(fbSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
 
     /* determine colour weights */
     pScreenInfo->rgbBits=8;
@@ -637,10 +638,10 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
       renditionClockRange.clockIndex = -1;
     }
 
-    if (!xf86LoadSubModule(pScreenInfo, "vgahw")){
+    if (!(pMod = xf86LoadSubModule(pScreenInfo, "vgahw"))){
         return FALSE;
     }
-    xf86LoaderReqSymLists(vgahwSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, vgahwSymbols, NULL);
 
     if (!vgaHWGetHWRec(pScreenInfo))
         return FALSE;
@@ -722,12 +723,12 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     
     if (xf86ReturnOptValBool(pRendition->Options, OPTION_SHADOW_FB,1)||
 	pRendition->board.rotate) {
-	if (!xf86LoadSubModule(pScreenInfo, "shadowfb")) {
+	if (!(pMod = xf86LoadSubModule(pScreenInfo, "shadowfb"))) {
 	    xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
 		       "Oops, \"ShadowFB\" module loading failed, disabling ShadowFB!\n");
 	}
 	else{
-	    xf86LoaderReqSymLists(shadowfbSymbols, NULL);
+	    xf86LoaderModReqSymLists(pMod, shadowfbSymbols, NULL);
 	    pRendition->board.shadowfb=TRUE;
 	    xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
 		       "Using \"Shadow Framebuffer\"\n");
@@ -743,21 +744,21 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     /* Load Ramdac module if needed */
     if (!xf86ReturnOptValBool(pRendition->Options, OPTION_SW_CURSOR,0) &&
 	!pRendition->board.rotate){
-      if (!xf86LoadSubModule(pScreenInfo, "ramdac")) {
+      if (!(pMod = xf86LoadSubModule(pScreenInfo, "ramdac"))) {
 	return FALSE;
       }
-      xf86LoaderReqSymLists(ramdacSymbols, NULL);
+      xf86LoaderModReqSymLists(pMod, ramdacSymbols, NULL);
     }
 
 #if 0
     /* Load DDC module if needed */
     if (!xf86ReturnOptValBool(pRendition->Options, OPTION_NO_DDC,0)){
-      if (!xf86LoadSubModule(pScreenInfo, "ddc")) {
+      if (!(pMod = xf86LoadSubModule(pScreenInfo, "ddc"))) {
 	xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
 		   ("Loading of DDC library failed, skipping DDC-probe\n"));
       }
       else {
-	xf86LoaderReqSymLists(ddcSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, ddcSymbols, NULL);
 	pScreenInfo->monitor->DDC = renditionDDC(pScreenInfo);
       }
     }
@@ -768,13 +769,13 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
 #else
     /* Load DDC module if needed */
     if (!xf86ReturnOptValBool(pRendition->Options, OPTION_NO_DDC,0)){
-      if (!xf86LoadSubModule(pScreenInfo, "ddc")) {
+      if (!(pMod = xf86LoadSubModule(pScreenInfo, "ddc"))) {
 	xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
 		   ("Loading of DDC library failed, skipping DDC-probe\n"));
       }
       else {
 	  xf86MonPtr mon;
-	  xf86LoaderReqSymLists(ddcSymbols, NULL);
+	  xf86LoaderModReqSymLists(pMod, ddcSymbols, NULL);
 	  mon = renditionProbeDDC(pScreenInfo, pRendition->pEnt->index);
 	  xf86PrintEDID(mon);
 	  xf86SetDDCproperties(pScreenInfo, mon);
@@ -876,8 +877,8 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     if (!xf86ReturnOptValBool(pRendition->Options, OPTION_NOACCEL,0) &&
 	!pRendition->board.shadowfb) {
 	/* Load XAA if needed */
-	if (xf86LoadSubModule(pScreenInfo, "xaa")) {
-	    xf86LoaderReqSymLists(xaaSymbols, NULL);
+	if ((pMod = xf86LoadSubModule(pScreenInfo, "xaa"))) {
+	    xf86LoaderModReqSymLists(pMod, xaaSymbols, NULL);
 	    renditionMapMem(pScreenInfo);
   	    RENDITIONAccelPreInit (pScreenInfo);
 	    renditionUnmapMem(pScreenInfo);
@@ -1455,13 +1456,14 @@ renditionProbeDDC(ScrnInfoPtr pScreenInfo, int index)
 {
   vbeInfoPtr pVbe;
   xf86MonPtr mon = NULL;
+  ModuleDescPtr pMod;
 
-  if (xf86LoadVBEModule(pScreenInfo)) {
-    xf86LoaderReqSymLists(vbeSymbols, NULL);
-
+  if ((pMod = xf86LoadVBEModule(pScreenInfo))) {
+    xf86LoaderModReqSymLists(pMod, vbeSymbols, NULL);
     pVbe = VBEInit(NULL,index);
     mon = vbeDoEDID(pVbe, NULL);
     vbeFree(pVbe);
+    xf86UnloadSubModule(pMod);
   }
   return mon;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.69tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.70 2005/10/14 15:16:36 tsi Exp $ */
 
 #include "apm.h"
 #include "xf86cmap.h"
@@ -132,8 +132,8 @@ static const OptionInfoRec ApmOptions[] =
  * List of symbols from other modules that this module references.  This
  * list is used to tell the loader that it is OK for symbols here to be
  * unresolved providing that it hasn't been told that they haven't been
- * told that they are essential via a call to xf86LoaderReqSymbols() or
- * xf86LoaderReqSymLists().  The purpose is this is to avoid warnings about
+ * told that they are essential via a call to xf86LoaderModReqSymbols() or
+ * xf86LoaderModReqSymLists().  The purpose is this is to avoid warnings about
  * unresolved symbols that are not required.
  */
 
@@ -173,14 +173,12 @@ static const char *ramdacSymbols[] = {
     NULL
 };
 
-#ifdef XFree86LOADER
 static const char *vbeSymbols[] = {
     "VBEInit",
     "vbeDoEDID",
     "vbeFree",
     NULL
 };
-#endif
 
 static const char *ddcSymbols[] = {
     "xf86DoEDID_DDC1",
@@ -244,7 +242,7 @@ static MODULESETUPPROTO(apmSetup);
 XF86ModuleData apmModuleData = { &apmVersRec, apmSetup, NULL };
 
 static pointer
-apmSetup(pointer module, pointer opts, int *errmaj, int *errmain)
+apmSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmain)
 {
     static Bool setupDone = FALSE;
 
@@ -252,10 +250,10 @@ apmSetup(pointer module, pointer opts, int *errmaj, int *errmain)
 	setupDone = TRUE;
 	xf86AddDriver(&APM, module, 0);
 
-	LoaderRefSymLists(vgahwSymbols, fbSymbols, xaaSymbols, 
-			  miscfbSymbols, ramdacSymbols, vbeSymbols,
-			  ddcSymbols, i2cSymbols, shadowSymbols, 
-			  int10Symbols, NULL);
+	LoaderModRefSymLists(module, vgahwSymbols, fbSymbols, xaaSymbols, 
+			     miscfbSymbols, ramdacSymbols, vbeSymbols,
+			     ddcSymbols, i2cSymbols, shadowSymbols, 
+			     int10Symbols, NULL);
 
 	return (pointer)1;
     }
@@ -498,11 +496,14 @@ static void
 ApmProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
+    ModuleDescPtr pMod;
 
-    if (xf86LoadVBEModule(pScrn)) {
+    if ((pMod = xf86LoadVBEModule(pScrn))) {
+	xf86LoaderModReqSymLists(pMod, vbeSymbols, NULL);
         pVbe = VBEInit(NULL, index);
         ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
 	vbeFree(pVbe);
+	xf86UnloadSubModule(pMod);
     }
 }
 
@@ -518,6 +519,7 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
     int			i;
     xf86MonPtr		MonInfo = NULL;
     double		real;
+    ModuleDescPtr 	pMod;
 
     /*
      * Note: This function is only called once at server startup, and
@@ -560,10 +562,10 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     /* The vgahw module should be allocated here when needed */
-    if (!xf86LoadSubModule(pScrn, "vgahw"))
+    if (!(pMod = xf86LoadSubModule(pScrn, "vgahw")))
 	return FALSE;
 
-    xf86LoaderReqSymLists(vgahwSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, vgahwSymbols, NULL);
 
     /*
      * Allocate a vgaHWRec
@@ -827,10 +829,10 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, from, "Linear framebuffer at 0x%lX\n",
 	       (unsigned long)pApm->LinAddress);
 
-    if (xf86LoadSubModule(pScrn, "ddc")) {
-	xf86LoaderReqSymLists(ddcSymbols, NULL);
-	if (xf86LoadSubModule(pScrn, "i2c")) {
-	    xf86LoaderReqSymLists(i2cSymbols, NULL);
+    if ((pMod = xf86LoadSubModule(pScrn, "ddc"))) {
+	xf86LoaderModReqSymLists(pMod, ddcSymbols, NULL);
+	if ((pMod = xf86LoadSubModule(pScrn, "i2c"))) {
+	    xf86LoaderModReqSymLists(pMod, i2cSymbols, NULL);
 	    pApm->I2C = TRUE;
 	}
     }
@@ -853,10 +855,10 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 	pApm->FbMapSize   =  4 * 1024 * 1024;
     }
 
-    if (xf86LoadSubModule(pScrn, "int10")) {
+    if ((pMod = xf86LoadSubModule(pScrn, "int10"))) {
 	void	*ptr;
 
-	xf86LoaderReqSymLists(int10Symbols, NULL);
+	xf86LoaderModReqSymLists(pMod, int10Symbols, NULL);
 	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"initializing int10\n");
 	ptr = xf86InitInt10(pEnt->index);
 	if (ptr)
@@ -1143,44 +1145,44 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 	break;
     }
 
-    if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
+    if (mod && !(pMod = xf86LoadSubModule(pScrn, mod))) {
 	ApmFreeRec(pScrn);
 	return FALSE;
     }
 
     if (mod) {
 	if (req) {
-	    xf86LoaderReqSymbols(req, NULL);
+	    xf86LoaderModReqSymbols(pMod, req, NULL);
 	} else {
-	    xf86LoaderReqSymLists(fbSymbols, NULL);
+	    xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
 	}
     }
 
     /* Load XAA if needed */
     if (!pApm->NoAccel) {
-	if (!xf86LoadSubModule(pScrn, "xaa")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "xaa"))) {
 	    ApmFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(xaaSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, xaaSymbols, NULL);
     }
 
     /* Load ramdac if needed */
     if (pApm->hwCursor) {
-	if (!xf86LoadSubModule(pScrn, "ramdac")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "ramdac"))) {
 	    ApmFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(ramdacSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, ramdacSymbols, NULL);
     }
 
     /* Load shadowfb if needed */
     if (pApm->ShadowFB) {
-	if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "shadowfb"))) {
 	    ApmFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(shadowSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, shadowSymbols, NULL);
     }
 
     pApm->CurrentLayout.displayWidth	= pScrn->virtualX;

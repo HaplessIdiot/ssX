@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_driver.c,v 1.9 2005/10/14 15:16:42 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_driver.c,v 1.10 2006/01/09 14:59:55 dawes Exp $ */
 /*
  * File Contents: This is the main module configures the interfacing 
  *                with the X server. The individual modules will be 
@@ -6,7 +6,7 @@
  *                XF86Config. This file also has modules for finding 
  *                supported modes, turning on the modes based on options.
  *
- * Project:       Nsc Xfree Frame buffer device driver.
+ * Project:       Nsc XFree86 Frame buffer device driver.
  *
  */
 
@@ -400,7 +400,7 @@ XF86ModuleData nscModuleData = { &NscVersionRec, NscSetup, NULL };
  *-------------------------------------------------------------------------
 */
 static pointer
-NscSetup(pointer Module, pointer Options, int *ErrorMajor, int *ErrorMinor)
+NscSetup(ModuleDescPtr Module, pointer Options, int *ErrorMajor, int *ErrorMinor)
 {
    static Bool Initialised = FALSE;
 
@@ -410,10 +410,10 @@ NscSetup(pointer Module, pointer Options, int *ErrorMajor, int *ErrorMinor)
       /* Tell the loader about symbols from other modules that this
        * module might refer to.
        */
-      LoaderRefSymLists(nscVgahwSymbols, nscVbeSymbols,
-			nscFbSymbols, nscXaaSymbols,
-			nscInt10Symbols, nscRamdacSymbols, nscShadowSymbols,
-			NULL);
+      LoaderModRefSymLists(Module, nscVgahwSymbols, nscVbeSymbols,
+			   nscFbSymbols, nscXaaSymbols,
+			   nscInt10Symbols, nscRamdacSymbols, nscShadowSymbols,
+			   NULL);
       return (pointer) TRUE;
    }
    /*The return value must be non-NULL on success */

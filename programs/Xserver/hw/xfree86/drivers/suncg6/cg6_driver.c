@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg6/cg6_driver.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg6/cg6_driver.c,v 1.14 2005/09/23 05:07:50 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -137,7 +137,7 @@ static XF86ModuleVersionInfo suncg6VersRec =
 XF86ModuleData suncg6ModuleData = { &suncg6VersRec, cg6Setup, NULL };
 
 static pointer
-cg6Setup(pointer module, pointer opts, int *errmaj, int *errmin)
+cg6Setup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 
@@ -149,7 +149,8 @@ cg6Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * Modules that this driver always requires can be loaded here
 	 * by calling LoadSubModule().
 	 */
-	xf86LoaderRefSymLists(fbSymbols, ramdacSymbols, xaaSymbols, NULL);
+	xf86LoaderModRefSymLists(module, fbSymbols, ramdacSymbols,
+				 xaaSymbols, NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -307,6 +308,7 @@ CG6PreInit(ScrnInfoPtr pScrn, int flags)
     sbusDevicePtr psdp;
     MessageType from;
     int i;
+    ModuleDescPtr pMod;
 
     if (flags & PROBE_DETECT) return FALSE;
 
@@ -411,26 +413,26 @@ CG6PreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }
 
-    if (xf86LoadSubModule(pScrn, "fb") == NULL) {
+    if (!(pMod = xf86LoadSubModule(pScrn, "fb"))) {
 	CG6FreeRec(pScrn);
 	return FALSE;
     }
-    xf86LoaderReqSymLists(fbSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
 
     if (pCg6->HWCursor) {
-	if (xf86LoadSubModule(pScrn, "ramdac") == NULL) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "ramdac"))) {
 	    CG6FreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(ramdacSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, ramdacSymbols, NULL);
     }
 
     if (!pCg6->NoAccel) {
-	if (xf86LoadSubModule(pScrn, "xaa") == NULL) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "xaa"))) {
 	    CG6FreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(xaaSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, xaaSymbols, NULL);
     }
 
     /*********************

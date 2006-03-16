@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.c,v 1.13 2004/04/26 22:26:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.c,v 1.14 2006/01/09 15:00:17 dawes Exp $ */
 
 /*
  * Based, in part, on code with the following copyright notice:
@@ -282,7 +282,7 @@ static XF86ModuleVersionInfo VersionRec =
  * ************************************************************************/
 
 static pointer
-SetupProc(	pointer module,
+SetupProc(	ModuleDescPtr module,
 			pointer options,
 			int *errmaj,
 			int *errmin )

@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.153 2005/10/14 15:16:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.154 2006/03/02 03:00:36 dawes Exp $ */
 
 /*
- * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -131,7 +131,7 @@
 static int xf86ScrnInfoPrivateCount = 0;
 
 #ifdef XFree86LOADER
-pointer *deferredUnloadList = NULL;
+ModuleDescPtr *deferredUnloadList = NULL;
 int numDeferredUnloads;
 
 void
@@ -146,7 +146,7 @@ xf86DoDeferredUnloads()
 }
 
 static void
-DeferredUnloadModule(pointer module)
+DeferredUnloadModule(ModuleDescPtr module)
 {
     numDeferredUnloads++;
     deferredUnloadList =
@@ -157,7 +157,7 @@ DeferredUnloadModule(pointer module)
 /* Add a pointer to a new DriverRec to xf86DriverList */
 
 void
-xf86AddDriver(DriverPtr driver, pointer module, int flags)
+xf86AddDriver(DriverPtr driver, ModuleDescPtr module, int flags)
 {
     /* Don't add null entries */
     if (!driver)
@@ -199,7 +199,7 @@ xf86DeleteDriver(int drvIndex, Bool deferUnload)
 /* Add a pointer to a new InputDriverRec to xf86InputDriverList */
 
 void
-xf86AddInputDriver(InputDriverPtr driver, pointer module, int flags)
+xf86AddInputDriver(InputDriverPtr driver, ModuleDescPtr module, int flags)
 {
     /* Don't add null entries */
     if (!driver)
@@ -228,7 +228,7 @@ xf86DeleteInputDriver(int drvIndex)
 }
 
 void
-xf86AddModuleInfo(ModuleInfoPtr info, pointer module)
+xf86AddModuleInfo(ModuleInfoPtr info, ModuleDescPtr module)
 {
     /* Don't add null entries */
     if (!module)
@@ -2387,7 +2387,7 @@ xf86GetVersion()
 }
 
 CARD32
-xf86GetModuleVersion(pointer module)
+xf86GetModuleVersion(ModuleDescPtr module)
 {
 #ifdef XFree86LOADER
     return (CARD32)LoaderGetModuleVersion(module);
@@ -2396,19 +2396,29 @@ xf86GetModuleVersion(pointer module)
 #endif
 }
 
+ModuleDescPtr
+xf86GetSubModuleByName(ModuleDescPtr mod, const char *name)
+{
+#ifdef XFree86LOADER
+    return LoaderGetSubModuleByName(mod, name);
+#else
+    return NULL;
+#endif
+}
+
 void
-xf86SetParentModuleRequirements(pointer module, pointer req)
+xf86SetParentModuleRequirements(ModuleDescPtr module, XF86ModReqInfo *req)
 {
 #ifdef XFree86LOADER
     LoaderSetParentModuleRequirements(module, req);
 #endif
 }
 
-pointer
+ModuleDescPtr
 xf86LoadDrvSubModule(DriverPtr drv, const char *name)
 {
 #ifdef XFree86LOADER
-    pointer ret;
+    ModuleDescPtr ret;
     int errmaj = 0, errmin = 0;
 
     ret = LoadSubModule(drv->module, name, NULL, NULL, NULL, NULL,
@@ -2421,12 +2431,12 @@ xf86LoadDrvSubModule(DriverPtr drv, const char *name)
 #endif
 }
 
-pointer
+ModuleDescPtr
 xf86LoadDrvSubModuleWithRequirements(DriverPtr drv, const char *name,
-				     pointer req)
+				     XF86ModReqInfo *req)
 {
 #ifdef XFree86LOADER
-    pointer ret;
+    ModuleDescPtr ret;
     int errmaj = 0, errmin = 0;
 
     ret = LoadSubModule(drv->module, name, NULL, NULL, NULL, req,
@@ -2439,11 +2449,11 @@ xf86LoadDrvSubModuleWithRequirements(DriverPtr drv, const char *name,
 #endif
 }
 
-pointer
+ModuleDescPtr
 xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name)
 {
 #ifdef XFree86LOADER
-    pointer ret;
+    ModuleDescPtr ret;
     int errmaj = 0, errmin = 0;
 
     ret = LoadSubModule(pScrn->module, name, NULL, NULL, NULL, NULL,
@@ -2456,12 +2466,12 @@ xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name)
 #endif
 }
 
-pointer
+ModuleDescPtr
 xf86LoadSubModuleWithRequirements(ScrnInfoPtr pScrn, const char *name,
-				  pointer req)
+				  XF86ModReqInfo *req)
 {
 #ifdef XFree86LOADER
-    pointer ret;
+    ModuleDescPtr ret;
     int errmaj = 0, errmin = 0;
 
     ret = LoadSubModule(pScrn->module, name, NULL, NULL, NULL, req,
@@ -2477,14 +2487,14 @@ xf86LoadSubModuleWithRequirements(ScrnInfoPtr pScrn, const char *name,
 /*
  * xf86LoadOneModule loads a single module.
  */
-pointer
+ModuleDescPtr
 xf86LoadOneModule(char *name, pointer opt)
 {
 #ifdef XFree86LOADER
     int errmaj, errmin;
 #endif
     char *Name;
-    pointer mod;
+    ModuleDescPtr mod;
 
     if (!name)
 	return NULL;
@@ -2516,13 +2526,9 @@ xf86LoadOneModule(char *name, pointer opt)
 }
 
 void
-xf86UnloadSubModule(pointer mod)
+xf86UnloadSubModule(ModuleDescPtr mod)
 {
-    /*
-     * This is disabled for now.  The loader isn't smart enough yet to undo
-     * relocations.
-     */
-#if defined(XFree86LOADER) && 0
+#if defined(XFree86LOADER)
     UnloadSubModule(mod);
 #endif
 }
@@ -2585,32 +2591,36 @@ xf86LoaderRefSymbols(const char *sym0, ...)
 #endif
 }
 
-void
-xf86LoaderModReqSymLists(pointer module, const char **list0, ...)
+int
+xf86LoaderModReqSymLists(ModuleDescPtr module, const char **list0, ...)
 {
+    int ret = 0;
 #ifdef XFree86LOADER
     va_list ap;
 
     va_start(ap, list0);
-    LoaderVReqSymLists(module, list0, ap);
+    ret = LoaderVReqSymLists(module, list0, ap);
     va_end(ap);
 #endif
+    return ret;
 }
 
-void
-xf86LoaderModReqSymbols(pointer module, const char *sym0, ...)
+int
+xf86LoaderModReqSymbols(ModuleDescPtr module, const char *sym0, ...)
 {
+    int ret = 0;
 #ifdef XFree86LOADER
     va_list ap;
 
     va_start(ap, sym0);
-    LoaderVReqSymbols(module, sym0, ap);
+    ret = LoaderVReqSymbols(module, sym0, ap);
     va_end(ap);
 #endif
+    return ret;
 }
 
 void
-xf86LoaderModRefSymLists(pointer module, const char **list0, ...)
+xf86LoaderModRefSymLists(ModuleDescPtr module, const char **list0, ...)
 {
 #ifdef XFree86LOADER
     va_list ap;
@@ -2622,7 +2632,7 @@ xf86LoaderModRefSymLists(pointer module, const char **list0, ...)
 }
 
 void
-xf86LoaderModRefSymbols(pointer module, const char *sym0, ...)
+xf86LoaderModRefSymbols(ModuleDescPtr module, const char *sym0, ...)
 {
 #ifdef XFree86LOADER
     va_list ap;

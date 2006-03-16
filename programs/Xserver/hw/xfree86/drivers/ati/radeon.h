@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.45 2004/06/10 17:28:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.46 2004/12/10 16:07:01 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -317,6 +317,7 @@ typedef struct {
     Bool              ddc_bios;
     Bool              ddc1;
     Bool              ddc2;
+    ModuleDescPtr     pDDCModule;
     I2CBusPtr         pI2CBus;
     CARD32            DDCReg;
 

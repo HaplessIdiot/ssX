@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.20 2002/09/24 15:23:55 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.21 2003/08/23 15:03:02 dawes Exp $ */
 
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
@@ -182,11 +182,6 @@ static const char *fbdevHWSymbols[] = {
 
 MODULESETUPPROTO(IMSTTSetup);
 
-/*
-pointer IMSTTSetup(pointer module, pointer opts, int *errmaj,
-			  int *errmin);
-*/
-
 static XF86ModuleVersionInfo IMSTTVersRec = {
 	"imstt",
 	MODULEVENDORSTRING,
@@ -202,7 +197,7 @@ static XF86ModuleVersionInfo IMSTTVersRec = {
 
 XF86ModuleData imsttModuleData = { &IMSTTVersRec, IMSTTSetup, NULL };
 
-pointer IMSTTSetup(pointer module, pointer opts, int *errmaj,
+pointer IMSTTSetup(ModuleDescPtr module, pointer opts, int *errmaj,
 			  int *errmin)
 {
 	static Bool setupDone = FALSE;
@@ -211,7 +206,8 @@ pointer IMSTTSetup(pointer module, pointer opts, int *errmaj,
 	if (!setupDone) {
 		setupDone = TRUE;
 		xf86AddDriver(&IMSTT, module, 0);
-		LoaderRefSymLists(fbSymbols, xaaSymbols, fbdevHWSymbols, NULL);
+		LoaderModRefSymLists(module, fbSymbols, xaaSymbols,
+				     fbdevHWSymbols, NULL);
 		return (pointer) 1;
 	} else {
 		if (errmaj)
@@ -323,6 +319,7 @@ static Bool IMSTTPreInit(ScrnInfoPtr pScrn, int flags)
 	ClockRangePtr clockRanges;
 	rgb zeros = {0, 0, 0};
 	Gamma gzeros = {0.0, 0.0, 0.0};
+	ModuleDescPtr pMod;
 
 
 	if (flags & PROBE_DETECT)
@@ -412,9 +409,9 @@ static Bool IMSTTPreInit(ScrnInfoPtr pScrn, int flags)
 	iptr->FBDev = TRUE;
 
 	if (iptr->FBDev) {
-		if (!xf86LoadSubModule(pScrn, "fbdevhw"))
+		if (!(pMod = xf86LoadSubModule(pScrn, "fbdevhw")))
 			return FALSE;
-		xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
+		xf86LoaderModReqSymLists(pMod, fbdevHWSymbols, NULL);
 		if (!fbdevHWInit(pScrn, iptr->PciInfo, NULL))
 			return FALSE;
 		pScrn->SwitchMode = fbdevHWSwitchMode;
@@ -545,15 +542,15 @@ static Bool IMSTTPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86PrintModes(pScrn);
 	xf86SetDpi(pScrn, 0, 0);
 
-	if (!xf86LoadSubModule(pScrn, "fb"))
+	if (!(pMod = xf86LoadSubModule(pScrn, "fb")))
 		return FALSE;
 
-	xf86LoaderReqSymLists(fbSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
 
-	if (!xf86LoadSubModule(pScrn, "xaa"))
+	if (!(pMod = xf86LoadSubModule(pScrn, "xaa")))
 		return FALSE;
 
-	xf86LoaderReqSymLists(xaaSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, xaaSymbols, NULL);
 
 	IMSTTTRACE("PreInit -- END\n");
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.38 2005/10/14 15:16:34 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.39 2006/01/09 14:59:52 dawes Exp $ */
 
 /*
  * Copyright 1995-1999 by Frederic Lepied, France. <Lepied@XFree86.org>
@@ -24,7 +24,7 @@
  */
 
 /*
- * Copyright (c) 2000-2002 by The XFree86 Project, Inc.
+ * Copyright (c) 2000-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -127,7 +127,7 @@ typedef struct _InputDriverRec {
     void		    (*UnInit)(struct _InputDriverRec *drv,
 				      struct _LocalDeviceRec *pInfo,
 				      int flags);
-    pointer		    module;
+    ModuleDescPtr	    module;
     int			    refCount;
 } InputDriverRec, *InputDriverPtr;
 #endif
@@ -172,7 +172,7 @@ typedef struct _LocalDeviceRec {
     IntegerFeedbackPtr	    always_core_feedback;
     IDevPtr		    conf_idev;
     InputDriverPtr	    drv;
-    pointer		    module;
+    ModuleDescPtr	    module;
     pointer		    options;
 } LocalDeviceRec, *LocalDevicePtr, InputInfoRec, *InputInfoPtr;
 
@@ -227,7 +227,7 @@ void xf86AddEnabledDevice(InputInfoPtr pInfo);
 void xf86RemoveEnabledDevice(InputInfoPtr pInfo);
 
 /* xf86Helper.c */
-void xf86AddInputDriver(InputDriverPtr driver, pointer module, int flags);
+void xf86AddInputDriver(InputDriverPtr driver, ModuleDescPtr module, int flags);
 void xf86DeleteInputDriver(int drvIndex);
 InputInfoPtr xf86AllocateInput(InputDriverPtr drv, int flags);
 void xf86DeleteInput(InputInfoPtr pInp, int flags);

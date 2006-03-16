@@ -48,7 +48,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/microtouch/microtouch.c,v 1.11 1999/08/28 10:43:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/microtouch/microtouch.c,v 1.12 2000/08/11 19:10:45 dawes Exp $ */
 
 #define _microtouch_C_
 /*****************************************************************************
@@ -162,8 +162,10 @@ static const char *reqSymbols[] = {
         NULL
 };
 
+static MODULESETUPPROTO(SetupProc);
+
 static pointer
-SetupProc(	pointer module,
+SetupProc(	ModuleDescPtr module,
 			pointer options,
 			int *errmaj,
 			int *errmin )

@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo_driver.c,v 1.11 2004/12/05 23:06:38 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo_driver.c,v 1.12 2005/02/18 02:55:10 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -116,7 +116,7 @@ static XF86ModuleVersionInfo sunleoVersRec =
 XF86ModuleData sunleoModuleData = { &sunleoVersRec, leoSetup, NULL };
 
 static pointer
-leoSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+leoSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 

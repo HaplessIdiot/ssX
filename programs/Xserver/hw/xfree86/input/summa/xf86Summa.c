@@ -24,7 +24,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/summa/xf86Summa.c,v 1.19tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/summa/xf86Summa.c,v 1.20 2005/10/14 15:16:57 tsi Exp $ */
 
 #ifndef XFree86LOADER
 #include <unistd.h>
@@ -1134,6 +1134,8 @@ InputDriverRec SUMMA = {
  *
  * called when the module subsection is found in XF86Config
  */
+static MODULETEARDOWNPROTO(xf86SumUnplug);
+
 static void
 xf86SumUnplug(pointer	p)
 {
@@ -1144,8 +1146,10 @@ xf86SumUnplug(pointer	p)
  *
  * called when the module subsection is found in XF86Config
  */
+static MODULESETUPPROTO(xf86SumPlug);
+
 static pointer
-xf86SumPlug(pointer	module,
+xf86SumPlug(ModuleDescPtr	module,
 	    pointer	options,
 	    int		*errmaj,
 	    int		*errmin)

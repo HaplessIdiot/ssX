@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.290 2005/10/14 15:16:32 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.291 2006/02/17 18:17:54 dawes Exp $ */
 
 
 /*
@@ -8,7 +8,7 @@
  */
 
 /*
- * Copyright (c) 1992-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1992-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining

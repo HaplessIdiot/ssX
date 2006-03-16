@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2002 The XFree86 Project, Inc.
+ * Copyright (C) 1998-2006 The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -44,12 +44,12 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/* $XFree86: xc/lib/font/FreeType/module/ftmodule.c,v 1.18 2003/11/02 04:30:57 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/module/ftmodule.c,v 1.19 2004/02/13 23:58:29 dawes Exp $ */
 
 #include "misc.h"
 
-#include "fontmod.h"
 #include "xf86Module.h"
+#include "fontmod.h"
 
 static MODULESETUPPROTO(freetypeSetup);
 
@@ -83,7 +83,7 @@ FontModule freetypeModule = {
 };
 
 static pointer
-freetypeSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+freetypeSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     freetypeModule.module = module;
     LoadFont(&freetypeModule);

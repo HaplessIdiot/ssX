@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.189 2005/10/11 21:01:49 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.190 2006/03/02 03:00:36 dawes Exp $ */
 
 /*
- * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -440,7 +440,7 @@ void xf86ProcessActionEvent(ActionEvent action, void *arg);
 # define _printf_attribute(a,b) /**/
 #endif
 
-void xf86AddDriver(DriverPtr driver, pointer module, int flags);
+void xf86AddDriver(DriverPtr driver, ModuleDescPtr module, int flags);
 void xf86DeleteDriver(int drvIndex, Bool deferUnload);
 ScrnInfoPtr xf86AllocateScreen(DriverPtr drv, int flags);
 void xf86DeleteScreen(int scrnIndex, int flags);
@@ -509,25 +509,28 @@ Bool xf86GetAllowMouseOpenFail(void);
 Bool xf86IsPc98(void);
 void xf86DisableRandR(void);
 CARD32 xf86GetVersion(void);
-CARD32 xf86GetModuleVersion(pointer module);
-void xf86SetParentModuleRequirements(pointer module, pointer req);
-pointer xf86LoadDrvSubModule(DriverPtr drv, const char *name);
-pointer xf86LoadDrvSubModuleWithRequirements(DriverPtr drv, const char *name,
-					     pointer req);
-pointer xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name);
-pointer xf86LoadSubModuleWithRequirements(ScrnInfoPtr pScrn, const char *name,
-					  pointer req);
-pointer xf86LoadOneModule(char *name, pointer optlist);
-void xf86UnloadSubModule(pointer mod);
+CARD32 xf86GetModuleVersion(ModuleDescPtr module);
+ModuleDescPtr xf86GetSubModuleByName(ModuleDescPtr mod, const char *name);
+void xf86SetParentModuleRequirements(ModuleDescPtr module, XF86ModReqInfo *req);
+ModuleDescPtr xf86LoadDrvSubModule(DriverPtr drv, const char *name);
+ModuleDescPtr xf86LoadDrvSubModuleWithRequirements(DriverPtr drv,
+						   const char *name,
+						   XF86ModReqInfo *req);
+ModuleDescPtr xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name);
+ModuleDescPtr xf86LoadSubModuleWithRequirements(ScrnInfoPtr pScrn,
+						const char *name,
+						XF86ModReqInfo *req);
+ModuleDescPtr xf86LoadOneModule(char *name, pointer optlist);
+void xf86UnloadSubModule(ModuleDescPtr mod);
 Bool xf86LoaderCheckSymbol(const char *name);
 void xf86LoaderReqSymLists(const char **, ...);
 void xf86LoaderReqSymbols(const char *, ...);
 void xf86LoaderRefSymLists(const char **, ...);
 void xf86LoaderRefSymbols(const char *, ...);
-void xf86LoaderModReqSymLists(pointer module, const char **, ...);
-void xf86LoaderModReqSymbols(pointer module, const char *, ...);
-void xf86LoaderModRefSymLists(pointer module, const char **, ...);
-void xf86LoaderModRefSymbols(pointer module, const char *, ...);
+int xf86LoaderModReqSymLists(ModuleDescPtr module, const char **, ...);
+int xf86LoaderModReqSymbols(ModuleDescPtr module, const char *, ...);
+void xf86LoaderModRefSymLists(ModuleDescPtr module, const char **, ...);
+void xf86LoaderModRefSymbols(ModuleDescPtr module, const char *, ...);
 void xf86SetBackingStore(ScreenPtr pScreen);
 void xf86SetSilkenMouse(ScreenPtr pScreen);
 int xf86NewSerialNumber(WindowPtr p, pointer unused);
@@ -582,7 +585,7 @@ Bool xf86GetNextMonitor(const ScrnInfoRec *pScrn, MonPtr *pMonitor,
 			DispPtr *pDisplay);
 
 #ifdef XFree86LOADER
-void xf86AddModuleInfo(ModuleInfoPtr info, pointer module);
+void xf86AddModuleInfo(ModuleInfoPtr info, ModuleDescPtr module);
 void xf86DeleteModuleInfo(int idx);
 #endif
 

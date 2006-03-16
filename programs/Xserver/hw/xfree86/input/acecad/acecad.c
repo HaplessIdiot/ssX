@@ -23,7 +23,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/acecad/acecad.c,v 1.4 2003/10/30 00:40:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/acecad/acecad.c,v 1.5 2003/11/05 20:56:29 alanh Exp $ */
 
 #define _ACECAD_C_
 /*****************************************************************************
@@ -106,7 +106,7 @@ XF86ModuleData acecadModuleData = { &VersionRec, SetupProc, TearDownProc};
  ****************************************************************************/
 
 static pointer
-SetupProc(	pointer module,
+SetupProc(	ModuleDescPtr module,
 		pointer options,
 		int *errmaj,
 		int *errmin )

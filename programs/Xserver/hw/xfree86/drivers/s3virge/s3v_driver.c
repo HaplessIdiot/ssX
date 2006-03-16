@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.98tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.99 2005/10/14 15:16:43 tsi Exp $ */
 
 /*
  * Copyright (C) 1994-1999 The XFree86 Project, Inc.
@@ -390,7 +390,7 @@ static XF86ModuleVersionInfo S3VVersRec =
 XF86ModuleData s3virgeModuleData = { &S3VVersRec, s3virgeSetup, NULL };
 
 static pointer
-s3virgeSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+s3virgeSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 
@@ -407,13 +407,13 @@ s3virgeSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * Tell the loader about symbols from other modules that this module
 	 * might refer to.
 	 */
-	LoaderRefSymLists(vgahwSymbols, xaaSymbols,
-			  ramdacSymbols, ddcSymbols, i2cSymbols,
+	LoaderModRefSymLists(module, vgahwSymbols, xaaSymbols,
+			     ramdacSymbols, ddcSymbols, i2cSymbols,
 #if USE_INT10
-			  int10Symbols,
+			     int10Symbols,
 #endif
-			  vbeSymbols, shadowSymbols, 
-			  fbSymbols, NULL);
+			     vbeSymbols, shadowSymbols, 
+			     fbSymbols, NULL);
 			  
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -587,6 +587,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     double real;
     ClockRangePtr clockRanges;
     char *s;
+    ModuleDescPtr pMod;
     
     unsigned char config1, config2, m, n, n1, n2, cr66 = 0;
     int mclk;
@@ -616,10 +617,10 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* The vgahw module should be loaded here when needed */
     
-    if (!xf86LoadSubModule(pScrn, "vgahw"))
+    if (!(pMod = xf86LoadSubModule(pScrn, "vgahw")))
 	return FALSE;
 	   
-    xf86LoaderReqSymLists(vgahwSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, vgahwSymbols, NULL);
 	
     /*
      * Allocate a vgaHWRec
@@ -909,9 +910,9 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
 #if USE_INT10
-    if (xf86LoadSubModule(pScrn, "int10")) {
+    if ((pMod = xf86LoadSubModule(pScrn, "int10"))) {
  	xf86Int10InfoPtr pInt;
- 	xf86LoaderReqSymLists(int10Symbols, NULL);
+ 	xf86LoaderModReqSymLists(pMod, int10Symbols, NULL);
 #if 1
 	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"initializing int10\n");
 	pInt = xf86InitInt10(pEnt->index);
@@ -919,9 +920,9 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
     }
 #endif
-    if (xf86LoadVBEModule(pScrn)) {
-	xf86LoaderReqSymLists(vbeSymbols, NULL);
-	ps3v->pVbe =  VBEInit(NULL,pEnt->index);
+    if ((pMod = xf86LoadVBEModule(pScrn))) {
+	xf86LoaderModReqSymLists(pMod, vbeSymbols, NULL);
+	ps3v->pVbe =  VBEInit(NULL, pEnt->index);
     }
 
     ps3v->PciInfo = xf86GetPciInfoForEntity(pEnt->index);
@@ -958,6 +959,13 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     }
     xfree(pEnt);
     
+#define VBECLEAN do {						\
+			if (ps3v->pVbe) {			\
+			    vbeFree(ps3v->pVbe);		\
+			    ps3v->pVbe = NULL;			\
+			}					\
+		    } while (0)
+
     /*
      * This shouldn't happen because such problems should be caught in
      * S3VProbe(), but check it just in case.
@@ -965,15 +973,13 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     if (pScrn->chipset == NULL) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		   "ChipID 0x%04X is not recognised\n", ps3v->Chipset);
-	vbeFree(ps3v->pVbe);
-	ps3v->pVbe = NULL;
+	VBECLEAN;
 	return FALSE;
     }
     if (ps3v->Chipset < 0) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		   "Chipset \"%s\" is not recognised\n", pScrn->chipset);
-	vbeFree(ps3v->pVbe);
-	ps3v->pVbe = NULL;
+	VBECLEAN;
 	return FALSE;
     }
 
@@ -1030,22 +1036,19 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
    VGAOUT8(vgaCRIndex, 0x37);           /* for register CR37 (CONFG_REG2),*/
    config2 = VGAIN8(vgaCRReg);          /* get amount of off-screen ram   */
 
-   if (xf86LoadSubModule(pScrn, "ddc")) {
+   if ((pMod = xf86LoadSubModule(pScrn, "ddc"))) {
        xf86MonPtr pMon = NULL;
        
-       xf86LoaderReqSymLists(ddcSymbols, NULL);
+       xf86LoaderModReqSymLists(pMod, ddcSymbols, NULL);
        if ((ps3v->pVbe) 
-	   && ((pMon = xf86PrintEDID(vbeDoEDID(ps3v->pVbe, NULL))) != NULL))
+	   && ((pMon = xf86PrintEDID(vbeDoEDID(ps3v->pVbe, pMod))) != NULL))
 	   xf86SetDDCproperties(pScrn,pMon);
        else if (!S3Vddc1(pScrn->scrnIndex)) {
 	   S3Vddc2(pScrn->scrnIndex);
        }
    }
-   if (ps3v->pVbe) {
-       vbeFree(ps3v->pVbe);
-       ps3v->pVbe = NULL;
-   }
-   
+   VBECLEAN;
+
    /*
     * If the driver can do gamma correction, it should call xf86SetGamma()
     * here. (from MGA, no ViRGE gamma support yet, but needed for 
@@ -1497,37 +1500,37 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     /* Load bpp-specific modules */
-    if( xf86LoadSubModule(pScrn, "fb") == NULL )
+    if (!(pMod = xf86LoadSubModule(pScrn, "fb")))
       {
 	 S3VFreeRec(pScrn);
 	 return FALSE;
       }	       
-    xf86LoaderReqSymLists(fbSymbols, NULL);       
+    xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);       
 
     /* Load XAA if needed */
     if (!ps3v->NoAccel || ps3v->hwcursor ) {
-	if (!xf86LoadSubModule(pScrn, "xaa")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "xaa"))) {
 	    S3VFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(xaaSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, xaaSymbols, NULL);
     }
 
     /* Load ramdac if needed */
     if (ps3v->hwcursor) {
-	if (!xf86LoadSubModule(pScrn, "ramdac")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "ramdac"))) {
 	    S3VFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(ramdacSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, ramdacSymbols, NULL);
     }
 
     if (ps3v->shadowFB) {
-	if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "shadowfb"))) {
 	    S3VFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(shadowSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, shadowSymbols, NULL);
     }
 
     /* Setup WAITFIFO() for accel and ModeInit() */
@@ -3898,9 +3901,10 @@ S3Vddc2(int scrnIndex)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     S3VPtr ps3v = S3VPTR(pScrn);
+    ModuleDescPtr pMod;
     
-    if ( xf86LoadSubModule(pScrn, "i2c") ) {
-	xf86LoaderReqSymLists(i2cSymbols,NULL);
+    if ((pMod = xf86LoadSubModule(pScrn, "i2c"))) {
+	xf86LoaderModReqSymLists(pMod, i2cSymbols,NULL);
 	if (S3V_I2CInit(pScrn)) {
 	    CARD32 tmp = (INREG(DDC_REG));
 	    OUTREG(DDC_REG,(tmp | 0x13));
@@ -3917,10 +3921,14 @@ static void
 S3VProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
-    if (xf86LoadVBEModule(pScrn)) {
+    ModuleDescPtr pMod;
+
+    if ((pMod = xf86LoadVBEModule(pScrn))) {
+	xf86LoaderModReqSymLists(pMod, vbeSymbols, NULL);
         pVbe = VBEInit(NULL,index);
         ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
 	vbeFree(pVbe);
+	xf86UnloadSubModule(pMod);
     }
 }
 

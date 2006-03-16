@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/XTrap/xf86XTrapModule.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/XTrap/xf86XTrapModule.c,v 1.3 2005/10/14 15:16:10 tsi Exp $ */
 /*  This is the xf86 module code for the DEC_XTRAP extension.
  */
 
@@ -38,7 +38,7 @@ static XF86ModuleVersionInfo xtrapVersRec =
 XF86ModuleData xtrapModuleData = { &xtrapVersRec, xtrapSetup, NULL };
 
 static pointer
-xtrapSetup(pointer module, pointer opts, int *errmaj, int *errmin) {
+xtrapSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin) {
     LoadExtension(&xtrapExt, FALSE);
     /* Need a non-NULL return value to indicate success */
     return (pointer)1;

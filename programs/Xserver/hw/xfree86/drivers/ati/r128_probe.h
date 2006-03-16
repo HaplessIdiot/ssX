@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_probe.h,v 1.7 2003/10/30 17:36:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_probe.h,v 1.8 2006/03/02 03:00:37 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -54,7 +54,7 @@ extern PciChipsets           R128PciChipsets[];
 
 /* r128_driver.c */
 extern void                  R128LoaderRefSymLists
-			     FunctionPrototype((pointer));
+			     FunctionPrototype((ModuleDescPtr));
 extern Bool                  R128PreInit
 			     FunctionPrototype((ScrnInfoPtr, int));
 extern Bool                  R128ScreenInit
@@ -74,12 +74,5 @@ extern ModeStatus            R128ValidMode
 						int));
 
 extern const OptionInfoRec   R128Options[];
-
-/* r128_misc.c */
-#ifdef IN_MODULE
-extern pointer               R128Module;
-#else
-#define R128Module NULL
-#endif
 
 #endif /* _R128_PROBE_H_ */

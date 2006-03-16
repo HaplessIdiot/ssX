@@ -1,10 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe_module.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe_module.c,v 1.3 2005/08/28 20:04:52 tsi Exp $ */
 
 #ifdef XFree86LOADER
 
 #include "vbe.h"
 
 extern const char *vbe_ddcSymbols[];
+extern const char *vbe_int10Symbols[];
 
 /*
  * Vbe.*InfoBlock structures were reworked starting with video driver ABI
@@ -21,19 +22,13 @@ static XF86ModReqInfo ParentModuleRequirements =
 };
 
 static pointer
-vbeSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+vbeSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
-    static Bool setupDone = FALSE;
-    
-    if (!setupDone) {
-	setupDone = TRUE;
-
-	/*
-	 * Tell the loader about symbols from other modules that this module
-	 * might refer to.
-	 */
-	LoaderRefSymLists(vbe_ddcSymbols, NULL);
-    } 
+    /*
+     * Tell the loader about symbols from other modules that this module
+     * might refer to.
+     */
+    LoaderModRefSymLists(module, vbe_ddcSymbols, vbe_int10Symbols, NULL);
 
     /* Cause parent module version to be checked */
     xf86SetParentModuleRequirements(module, &ParentModuleRequirements);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_misc.c,v 1.10 2006/01/05 18:55:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_misc.c,v 1.11 2006/03/02 03:00:37 dawes Exp $ */
 /*
  * Copyright 2000 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -56,7 +56,7 @@ pointer RADEONModule = NULL;
 static pointer
 RADEONSetup
 (
-    pointer Module,
+    ModuleDescPtr Module,
     pointer Options,
     int     *ErrorMajor,
     int     *ErrorMinor
@@ -69,7 +69,6 @@ RADEONSetup
         if (!xf86ServerIsOnlyDetecting() && !LoaderSymbol(ATI_NAME))
             xf86LoadOneModule(ATI_DRIVER_NAME, Options);
 
-        RADEONModule = Module;
         RADEONLoaderRefSymLists(Module);
 
         Inited = TRUE;
