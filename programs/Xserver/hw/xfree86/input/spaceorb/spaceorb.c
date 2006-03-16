@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/spaceorb/spaceorb.c,v 1.12 2001/10/28 03:33:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/spaceorb/spaceorb.c,v 1.13 2001/11/26 16:25:54 dawes Exp $ */
 
 #define _SPACEORB_C_
 /*****************************************************************************
@@ -125,7 +125,7 @@ static const char *reqSymbols[] = {
 };
 
 static pointer
-SPACEORBSetupProc(pointer module,
+SPACEORBSetupProc(ModuleDescPtr module,
 		  pointer options,
 		  int *errmaj,
 		  int *errmin ) {

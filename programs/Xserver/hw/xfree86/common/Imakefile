@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.163 2006/02/28 22:32:38 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.164 2006/03/02 03:00:36 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -61,7 +61,7 @@ LOADERTESTOBJ = loadertest.o
 LOADERTESTDEFS = -DLOADERTEST=1
 #endif
 
-#if UseBuildTree
+#if UseBuildTree && DoLoadableServer
 MODPATHDEFINES = -DDEFAULT_MODULE_PATH=\"`cd $(BUILDMODULEDIR); pwd`\"
 #else
 MODPATHDEFINES = -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"

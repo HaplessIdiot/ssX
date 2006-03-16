@@ -21,7 +21,7 @@
  * TORTIOUS ACTIONS, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/tek4957/xf86Tek4957.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/tek4957/xf86Tek4957.c,v 1.4 2005/10/14 15:16:58 tsi Exp $ */
 
 #ifndef XFree86LOADER
 #include <unistd.h>
@@ -728,6 +728,8 @@ InputDriverRec TEK4957 = {
  *
  * called when the module subsection is found in XF86Config
  */
+static MODULETEARDOWNPROTO(TekUnplug);
+
 static void
 TekUnplug(pointer p)
 {
@@ -738,8 +740,10 @@ TekUnplug(pointer p)
  *
  * called when the module subsection is found in XF86Config
  */
+static MODULESETUPPROTO(TekPlug);
+
 static pointer
-TekPlug(pointer	module,
+TekPlug(ModuleDescPtr	module,
     pointer	options,
     int		*errmaj,
     int		*errmin)

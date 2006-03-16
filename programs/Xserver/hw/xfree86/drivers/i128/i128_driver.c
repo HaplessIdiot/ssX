@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.36tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.37 2005/10/14 15:16:40 tsi Exp $ */
 
 
 /* All drivers should typically include these */
@@ -166,10 +166,10 @@ XF86ModuleData i128ModuleData = { &i128VersRec, i128Setup, NULL };
  * List of symbols from other modules that this module references.  This
  * list is used to tell the loader that it is OK for symbols here to be
  * unresolved providing that it hasn't been told that they haven't been
- * told that they are essential via a call to xf86LoaderReqSymbols() or
- * xf86LoaderReqSymLists().  The purpose is this is to avoid warnings about
+ * told that they are essential via a call to xf86LoaderModReqSymbols() or
+ * xf86LoaderModReqSymLists().  The purpose is this is to avoid warnings about
  * unresolved symbols that are not required.  These are provided to the
- * LoaderRefSymLists() function in the module specific Setup() function.
+ * LoaderModRefSymLists() function in the module specific Setup() function.
  */
 
 static const char *vgahwSymbols[] = {
@@ -254,7 +254,7 @@ static const char *int10Symbols[] = {
  */
 
 static pointer
-i128Setup(pointer module, pointer opts, int *errmaj, int *errmin)
+i128Setup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 
@@ -273,16 +273,16 @@ i128Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * Tell the loader about symbols from other modules that this module
 	 * might refer to.
 	 */
-	LoaderRefSymLists(fbSymbols,
-			  xaaSymbols, 
-			  ramdacSymbols,
-			  ddcSymbols,
-			  ddcSymbols,
-			  i2cSymbols,
-			  vbeSymbols,
-			  int10Symbols,
-			  vgahwSymbols,
-			  NULL);
+	LoaderModRefSymLists(module, fbSymbols,
+			     xaaSymbols, 
+			     ramdacSymbols,
+			     ddcSymbols,
+			     ddcSymbols,
+			     i2cSymbols,
+			     vbeSymbols,
+			     int10Symbols,
+			     vgahwSymbols,
+			     NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -529,6 +529,7 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
     unsigned char n, m, p, mdc, df;
     float mclk;
     xf86MonPtr mon;
+    ModuleDescPtr pMod;
 
     /* Check the number of entities, and fail if it isn't one. */
     if (pScrn->numEntities != 1)
@@ -557,10 +558,10 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
     pI128->Primary = xf86IsPrimaryPci(pI128->PciInfo);
 
     /* The vgahw module should be allocated here when needed */
-    if (!xf86LoadSubModule(pScrn, "vgahw"))
+    if (!(pMod = xf86LoadSubModule(pScrn, "vgahw")))
         return FALSE;
     
-    xf86LoaderReqSymLists(vgahwSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, vgahwSymbols, NULL);
 
     /*
      * Allocate a vgaHWRec
@@ -835,8 +836,8 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
     /* Load DDC if we have the code to use it */
     /* This gives us DDC1 */
     if (pI128->ddc1Read || pI128->i2cInit) {
-        if (xf86LoadSubModule(pScrn, "ddc")) {
-          xf86LoaderReqSymLists(ddcSymbols, NULL);
+        if ((pMod = xf86LoadSubModule(pScrn, "ddc"))) {
+          xf86LoaderModReqSymLists(pMod, ddcSymbols, NULL);
         } else {
           /* ddc module not found, we can do without it */
           pI128->ddc1Read = NULL;
@@ -848,8 +849,8 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
     /* - DDC can use I2C bus */
     /* Load I2C if we have the code to use it */
     if (pI128->i2cInit) {
-      if ( xf86LoadSubModule(pScrn, "i2c") ) {
-        xf86LoaderReqSymLists(i2cSymbols,NULL);
+      if ((pMod = xf86LoadSubModule(pScrn, "i2c"))) {
+        xf86LoaderModReqSymLists(pMod, i2cSymbols,NULL);
       } else {
         /* i2c module not found, we can do without it */
         pI128->i2cInit = NULL;
@@ -1152,28 +1153,28 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
     /* Set display resolution */
     xf86SetDpi(pScrn, 0, 0);
 
-    if (!xf86LoadSubModule(pScrn, "fb")) {
+    if (!(pMod = xf86LoadSubModule(pScrn, "fb"))) {
 	I128FreeRec(pScrn);
 	return FALSE;
     }
-    xf86LoaderReqSymLists(fbSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
 
     /* Load XAA if needed */
     if (!pI128->NoAccel) {
-	if (!xf86LoadSubModule(pScrn, "xaa")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "xaa"))) {
 	    I128FreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(xaaSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, xaaSymbols, NULL);
     }
 
     /* Load ramdac if needed */
     if (pI128->HWCursor) {
-	if (!xf86LoadSubModule(pScrn, "ramdac")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "ramdac"))) {
 	    I128FreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(ramdacSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, ramdacSymbols, NULL);
     }
 
     I128UnmapMem(pScrn);

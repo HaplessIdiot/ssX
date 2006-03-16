@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998 The XFree86 Project, Inc.
+ * Copyright (C) 1998-2006 The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -44,12 +44,12 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/* $XFree86: xc/lib/font/Type1/module/type1mod.c,v 1.10 2002/12/09 17:29:59 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/module/type1mod.c,v 1.11 2004/02/13 23:58:29 dawes Exp $ */
 
 #include "misc.h"
 
-#include "fontmod.h"
 #include "xf86Module.h"
+#include "fontmod.h"
 
 static MODULESETUPPROTO(type1Setup);
 
@@ -94,7 +94,7 @@ FontModule CIDModule = {
 #endif
 
 static pointer
-type1Setup(pointer module, pointer opts, int *errmaj, int *errmin)
+type1Setup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     type1Module.module = module;
     LoadFont(&type1Module);

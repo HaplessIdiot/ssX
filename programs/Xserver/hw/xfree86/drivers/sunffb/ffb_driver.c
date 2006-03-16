@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_driver.c,v 1.15tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_driver.c,v 1.16 2005/09/23 05:07:50 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -123,7 +123,7 @@ static XF86ModuleVersionInfo sunffbVersRec =
 XF86ModuleData sunffbModuleData = { &sunffbVersRec, ffbSetup, NULL };
 
 static pointer
-ffbSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+ffbSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 

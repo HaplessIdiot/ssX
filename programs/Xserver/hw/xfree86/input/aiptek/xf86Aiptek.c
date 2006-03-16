@@ -35,7 +35,7 @@
  * TORTIOUS ACTIONS, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/aiptek/xf86Aiptek.c,v 1.2 2003/12/22 17:48:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/aiptek/xf86Aiptek.c,v 1.3 2004/04/26 22:26:10 dawes Exp $ */
 
 /*
  *
@@ -2416,7 +2416,7 @@ xf86AiptekUnplug(pointer p)
  * called when the module subsection is found in XF86Config
  */
 static pointer
-xf86AiptekPlug(pointer    module,
+xf86AiptekPlug(ModuleDescPtr    module,
                pointer    options,
                int*       errmaj,
                int*       errmin)

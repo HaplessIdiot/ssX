@@ -1,4 +1,15 @@
 XFree86 4.5.99.902 (xx March 2006)
+ 242. Loader updates:
+       - Improve the stack trace information.
+       - Improve the handling of instance-specific req/ref symbols.
+       - Use stronger typing for the module-visible instance-specific module
+         descriptor.
+       - No longer disable xf86UnloadSubModule(), since the loader now handles
+         unloads and re-loads cleanly.
+       - Update all modules to make use of the above, and fix some bugs
+         that this exposed.
+       - Some loader message cleanups.
+      (X-Oz Technologies, David Dawes).
  241. Xterm patch #210 (Thomas Dickey).
  240. Enable gamma for hw cursor when ARGB cursor in use (Lukas Hejtmanek).
  239. Add ACPI Hotkey switching support to the i810 driver (Alan Hourihane).
@@ -20058,7 +20069,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3690 2006/03/10 13:07:41 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3691 2006/03/13 01:27:54 dickey Exp $
 
 
 

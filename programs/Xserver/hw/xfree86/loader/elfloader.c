@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.68tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.69 2006/03/09 17:28:10 tsi Exp $ */
 
 /*
  *
@@ -3734,7 +3734,7 @@ ELFCheckForUnresolved(LoaderDescPtr desc)
 {
     ELFRelocPtr erel;
     const char *name;
-    int flag, fatalsym = 0;
+    int fatalsym = 0;
 
     for (erel = *_LoaderGetRelocations(desc); erel; erel = erel->next) {
 	if (erel->relocated) {
@@ -3747,8 +3747,7 @@ ELFCheckForUnresolved(LoaderDescPtr desc)
 	    continue;
 	}
 	name = ElfGetSymbolName(erel->file, ELF_R_SYM(erel->rel->r_info));
-	flag = _LoaderHandleUnresolved(name, erel->file->handle);
-	if (flag)
+	if ( _LoaderHandleUnresolved(name, erel->file->handle))
 	    fatalsym = 1;
     }
     return fatalsym;
@@ -3939,7 +3938,7 @@ ELFAddressToSection(void *modptr, unsigned long address)
 
 const char *
 ELFAddressToSymbol(void *modptr, unsigned long address, unsigned long *symaddr,
-		   const char **filename)
+		   const char **filename, int exe)
 {
     ELFModulePtr elffile;
     Elf_Sym *syms;
@@ -3960,7 +3959,8 @@ ELFAddressToSymbol(void *modptr, unsigned long address, unsigned long *symaddr,
     numsyms = sect->sh_size / sect->sh_entsize;
 
     sectnum = ELF_AddressToSectNum(elffile, address);
-    if (!sectnum)
+
+    if (!sectnum && !exe)
 	return NULL;
 
     for (i = 0; i < numsyms; i++) {
@@ -3973,40 +3973,22 @@ ELFAddressToSymbol(void *modptr, unsigned long address, unsigned long *symaddr,
 		 syms[i].st_shndx, ElfGetString(elffile, syms[i].st_name));
 #endif
 
+	if (syms[i].st_shndx != sectnum && !exe)
+	    continue;
+
 	switch (ELF_ST_TYPE(syms[i].st_info)) {
 	case STT_OBJECT:
 	case STT_FUNC:
 	case STT_SECTION:
 	case STT_NOTYPE:
-	    switch (syms[i].st_shndx) {
-	    case SHN_COMMON:
-#if 0
-		ErrorF("ELFAddressToSymbol(): "
-		       "Don't know how to handle SHN_COMMON\n");
-#endif
-		break;
-	    case SHN_UNDEF:
-#if 0
-		ErrorF("ELFAddressToSymbol(): "
-		       "Don't know how to handle SHN_UNDEF\n");
-#endif
-		break;
-	    default:
-		saddr = syms[i].st_value;
-		if (syms[i].st_shndx != SHN_ABS) {
-		    saddr += (unsigned long)elffile->saddr[sectnum];
+	    saddr = syms[i].st_value + (unsigned long)elffile->saddr[sectnum];
+	    diff = address - saddr;
+	    if (diff >= 0) {
+		if ((best && diff < bestDiff && syms[i].st_name > 0) || !best) {
+		    best = ElfGetString(elffile, syms[i].st_name);
+		    bestDiff = diff;
+		    bestAddr = saddr;
 		}
-
-		diff = address - saddr;
-		if (diff >= 0) {
-		    if ((best && diff < bestDiff && syms[i].st_name > 0) ||
-			!best) {
-			best = ElfGetString(elffile, syms[i].st_name);
-			bestDiff = diff;
-			bestAddr = saddr;
-		    }
-		}
-		break;
 	    }
 	    break;
 	}

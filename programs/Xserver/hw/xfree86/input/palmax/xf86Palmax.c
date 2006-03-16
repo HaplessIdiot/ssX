@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/palmax/xf86Palmax.c,v 1.2 2003/06/23 17:35:49 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/palmax/xf86Palmax.c,v 1.3 2004/04/26 22:26:11 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -788,13 +788,16 @@ InputDriverRec PALMAX = {
 };
 
 #ifdef XFree86LOADER
-static pointer Plug(pointer module, pointer options, int *errmaj,int *errmin)
+static MODULESETUPPROTO(Plug);
+
+static pointer Plug(ModuleDescPtr module, pointer options, int *errmaj,int *errmin)
 {
 	xf86LoaderReqSymLists(reqSymbols, NULL);
 	xf86AddInputDriver(&PALMAX, module, 0);
 	return module;
 }
 
+static MODULETEARDOWNPROTO(Unplug);
 static void Unplug(pointer p)
 {
 }

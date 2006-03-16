@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.49tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.50 2006/02/19 15:51:27 tsi Exp $ */
 /*
  * Copyright 1995-2001 by Frederic Lepied, France. <Lepied@XFree86.org>
  *                                                                            
@@ -5218,6 +5218,8 @@ InputDriverRec WACOM = {
  *
  * called when the module subsection is found in XF86Config
  */
+static MODULETEARDOWNPROTO(xf86WcmUnplug);
+
 static void
 xf86WcmUnplug(pointer	p)
 {
@@ -5229,8 +5231,10 @@ xf86WcmUnplug(pointer	p)
  *
  * called when the module subsection is found in XF86Config
  */
+static MODULESETUPPROTO(xf86WcmPlug);
+
 static pointer
-xf86WcmPlug(pointer	module,
+xf86WcmPlug(ModuleDescPtr	module,
 	    pointer	options,
 	    int		*errmaj,
 	    int		*errmin)

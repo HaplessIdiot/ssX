@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.31 2006/03/03 16:41:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.32 2006/03/09 17:34:43 tsi Exp $ */
 
 /*
  *
@@ -303,7 +303,8 @@ typedef char *(*AddressToSectionProcPtr)(void *, unsigned long);
 typedef void (*LoaderUnloadProcPtr)(void *);
 typedef const char *(*FindRelocNameProcPtr)(LoaderDescPtr, int, unsigned long);
 typedef const char *(*AddressToSymbolProcPtr)(void *, unsigned long,
-					      unsigned long *, const char **);
+					      unsigned long *, const char **,
+					      int);
 typedef void *(*ReadExecutableSymsProcPtr)(int);
 
 struct _loader_desc {

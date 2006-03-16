@@ -2,7 +2,7 @@
  * Copyright (C) 1998-2001 VMware, Inc.
  * All Rights Reserved
  * **********************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.24 2005/02/26 01:07:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.25 2006/01/09 15:00:15 dawes Exp $ */
 
 /*
  * TODO: support the vmware linux kernel fb driver (Option "UseFBDev").
@@ -387,6 +387,7 @@ VMWAREPreInit(ScrnInfoPtr pScrn, int flags)
     int i;
     ClockRange* clockRanges;
     IOADDRESS domainIOBase = 0;
+    ModuleDescPtr pMod;
 
 #ifndef BUILD_FOR_420
     domainIOBase = pScrn->domainIOBase;
@@ -432,11 +433,11 @@ VMWAREPreInit(ScrnInfoPtr pScrn, int flags)
                "VMware SVGA regs at (0x%04lx, 0x%04lx)\n",
                pVMWARE->indexReg, pVMWARE->valueReg);
 
-    if (!xf86LoadSubModule(pScrn, "vgahw")) {
+    if (!(pMod = xf86LoadSubModule(pScrn, "vgahw"))) {
         return FALSE;
     }
 
-    xf86LoaderReqSymLists(vgahwSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, vgahwSymbols, NULL);
 
     if (!vgaHWGetHWRec(pScrn)) {
         return FALSE;
@@ -757,28 +758,32 @@ VMWAREPreInit(ScrnInfoPtr pScrn, int flags)
     pScrn->currentMode = pScrn->modes;
     xf86PrintModes(pScrn);
     xf86SetDpi(pScrn, 0, 0);
-    if (!xf86LoadSubModule(pScrn, "fb") ||
-        !xf86LoadSubModule(pScrn, "shadowfb")) {
+    if (!(pMod = xf86LoadSubModule(pScrn, "fb"))) {
         VMWAREFreeRec(pScrn);
         return FALSE;
     }
-    xf86LoaderReqSymLists(fbSymbols, shadowfbSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
+    if (!(pMod = xf86LoadSubModule(pScrn, "shadowfb"))) {
+        VMWAREFreeRec(pScrn);
+        return FALSE;
+    }
+    xf86LoaderModReqSymLists(pMod, shadowfbSymbols, NULL);
 
     /* Need ramdac for hwcursor */
     if (pVMWARE->hwCursor) {
-        if (!xf86LoadSubModule(pScrn, "ramdac")) {
+        if (!(pMod = xf86LoadSubModule(pScrn, "ramdac"))) {
             VMWAREFreeRec(pScrn);
             return FALSE;
         }
-        xf86LoaderReqSymLists(ramdacSymbols, NULL);
+        xf86LoaderModReqSymLists(pMod, ramdacSymbols, NULL);
     }
 
     if (!pVMWARE->noAccel) {
-        if (!xf86LoadSubModule(pScrn, "xaa")) {
+        if (!(pMod = xf86LoadSubModule(pScrn, "xaa"))) {
             VMWAREFreeRec(pScrn);
             return FALSE;
         }
-        xf86LoaderReqSymLists(vmwareXaaSymbols, NULL);
+        xf86LoaderModReqSymLists(pMod, vmwareXaaSymbols, NULL);
     }
 
     return TRUE;
@@ -1424,7 +1429,7 @@ static MODULESETUPPROTO(vmwareSetup);
 XF86ModuleData vmwareModuleData = { &vmwareVersRec, vmwareSetup, NULL };
 
 static pointer
-vmwareSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+vmwareSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 
@@ -1432,8 +1437,8 @@ vmwareSetup(pointer module, pointer opts, int *errmaj, int *errmin)
         setupDone = TRUE;
         xf86AddDriver(&VMWARE, module, 0);
 
-        LoaderRefSymLists(vgahwSymbols, fbSymbols, ramdacSymbols,
-                          shadowfbSymbols, vmwareXaaSymbols, NULL);
+        LoaderModRefSymLists(module, vgahwSymbols, fbSymbols, ramdacSymbols,
+                             shadowfbSymbols, vmwareXaaSymbols, NULL);
 
         return (pointer)1;
     }

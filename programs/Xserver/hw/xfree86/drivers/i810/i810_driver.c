@@ -72,7 +72,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.123 2005/12/17 00:49:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.124 2006/03/10 12:44:20 alanh Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -261,13 +261,13 @@ const char *I810vbeSymbols[] = {
    "VBEFreeVBEInfo",
    "VBEGetDisplayStart",
    "VBEGetModeInfo",
-   "VBEGetSetLogicalScanlineLength",
    "VBEGetVBEInfo",
    "VBEGetVBEMode",
    "VBEInit",
    "VBESaveRestore",
    "VBESetDisplayStart",
    "VBESetGetDACPaletteFormat",
+   "VBESetGetLogicalScanlineLength",
    "VBESetGetPaletteData",
    "VBESetModeNames",
    "VBESetVBEMode",
@@ -293,6 +293,7 @@ const char *I810ddcSymbols[] = {
 
 const char *I810int10Symbols[] = {
    "xf86ExecX86int10",
+   "xf86FreeInt10",
    "xf86InitInt10",
    "xf86Int10AllocPages",
    "xf86int10Addr",
@@ -416,7 +417,7 @@ static XF86ModuleVersionInfo i810VersRec = {
 XF86ModuleData i810ModuleData = { &i810VersRec, i810Setup, 0 };
 
 static pointer
-i810Setup(pointer module, pointer opts, int *errmaj, int *errmin)
+i810Setup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
    static Bool setupDone = 0;
 
@@ -430,16 +431,16 @@ i810Setup(pointer module, pointer opts, int *errmaj, int *errmin)
        * Tell the loader about symbols from other modules that this module
        * might refer to.
        */
-      LoaderRefSymLists(I810vgahwSymbols,
-			I810fbSymbols, I810xaaSymbols, I810ramdacSymbols,
+      LoaderModRefSymLists(module, I810vgahwSymbols,
+			   I810fbSymbols, I810xaaSymbols, I810ramdacSymbols,
 #ifdef XF86DRI
-			I810drmSymbols,
-			I810driSymbols,
-			I810shadowSymbols,
+			   I810drmSymbols,
+			   I810driSymbols,
+			   I810shadowSymbols,
 #endif
-			I810shadowFBSymbols,
-			I810vbeSymbols, vbeOptionalSymbols,
-			I810ddcSymbols, I810int10Symbols, NULL);
+			   I810shadowFBSymbols,
+			   I810vbeSymbols, vbeOptionalSymbols,
+			   I810ddcSymbols, I810int10Symbols, NULL);
 
       /*
        * The return value must be non-NULL on success even though there
@@ -669,11 +670,14 @@ static void
 I810ProbeDDC(ScrnInfoPtr pScrn, int index)
 {
    vbeInfoPtr pVbe;
+   ModuleDescPtr pMod;
 
-   if (xf86LoadVBEModule(pScrn)) {
+   if ((pMod = xf86LoadVBEModule(pScrn))) {
+      xf86LoaderModReqSymLists(pMod, I810vbeSymbols, NULL);
       pVbe = VBEInit(NULL, index);
       ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
       vbeFree(pVbe);
+      xf86UnloadSubModule(pMod);
    }
 }
 
@@ -683,18 +687,26 @@ I810DoDDC(ScrnInfoPtr pScrn, int index)
    vbeInfoPtr pVbe;
    xf86MonPtr MonInfo = NULL;
    I810Ptr pI810 = I810PTR(pScrn);
+   ModuleDescPtr pMod, pDDCMod;
 
    /* Honour Option "noDDC" */
    if (xf86ReturnOptValBool(pI810->Options, OPTION_NO_DDC, FALSE)) {
       return MonInfo;
    }
 
-   if (xf86LoadVBEModule(pScrn) && (pVbe = VBEInit(NULL, index))) {
-      xf86LoaderReqSymLists(I810vbeSymbols, NULL);
-      MonInfo = vbeDoEDID(pVbe, NULL);
-      xf86PrintEDID(MonInfo);
-      xf86SetDDCproperties(pScrn, MonInfo);
-      vbeFree(pVbe);
+   if ((pMod = xf86LoadVBEModule(pScrn))) {
+      xf86LoaderModReqSymLists(pMod, I810vbeSymbols, NULL);
+      if ((pVbe = VBEInit(NULL, index))) {
+	 if ((pDDCMod = xf86LoadSubModule(pScrn, "ddc"))) {
+	    xf86LoaderModReqSymLists(pDDCMod, I810ddcSymbols, NULL);
+	    MonInfo = vbeDoEDID(pVbe, pDDCMod);
+	    xf86PrintEDID(MonInfo);
+	    xf86SetDDCproperties(pScrn, MonInfo);
+	    xf86UnloadSubModule(pDDCMod);
+	 }
+	 vbeFree(pVbe);
+      }
+      xf86UnloadSubModule(pMod);
    } else {
       xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		 "this driver cannot do DDC without VBE\n");
@@ -722,6 +734,7 @@ I810PreInit(ScrnInfoPtr pScrn, int flags)
    rgb defaultWeight = { 0, 0, 0 };
    int mem;
    Bool enable;
+   ModuleDescPtr pMod;
 
    if (pScrn->numEntities != 1)
       return FALSE;
@@ -746,10 +759,10 @@ I810PreInit(ScrnInfoPtr pScrn, int flags)
    }
 
    /* The vgahw module should be loaded here when needed */
-   if (!xf86LoadSubModule(pScrn, "vgahw"))
+   if (!(pMod = xf86LoadSubModule(pScrn, "vgahw")))
       return FALSE;
 
-   xf86LoaderReqSymLists(I810vgahwSymbols, NULL);
+   xf86LoaderModReqSymLists(pMod, I810vgahwSymbols, NULL);
 
    /* Allocate a vgaHWRec */
    if (!vgaHWGetHWRec(pScrn))
@@ -1074,29 +1087,29 @@ I810PreInit(ScrnInfoPtr pScrn, int flags)
 
    xf86SetDpi(pScrn, 0, 0);
 
-   if (!xf86LoadSubModule(pScrn, "fb")) {
+   if (!(pMod = xf86LoadSubModule(pScrn, "fb"))) {
       I810FreeRec(pScrn);
       return FALSE;
    }
-   xf86LoaderReqSymLists(I810fbSymbols, NULL);
+   xf86LoaderModReqSymLists(pMod, I810fbSymbols, NULL);
 
    if (xf86ReturnOptValBool(pI810->Options, OPTION_NOACCEL, FALSE))
       pI810->noAccel = TRUE;
 
    if (!pI810->noAccel) {
-      if (!xf86LoadSubModule(pScrn, "xaa")) {
+      if (!(pMod = xf86LoadSubModule(pScrn, "xaa"))) {
 	 I810FreeRec(pScrn);
 	 return FALSE;
       }
-      xf86LoaderReqSymLists(I810xaaSymbols, NULL);
+      xf86LoaderModReqSymLists(pMod, I810xaaSymbols, NULL);
    }
 
    if (!xf86ReturnOptValBool(pI810->Options, OPTION_SW_CURSOR, FALSE)) {
-      if (!xf86LoadSubModule(pScrn, "ramdac")) {
+      if (!(pMod = xf86LoadSubModule(pScrn, "ramdac"))) {
 	 I810FreeRec(pScrn);
 	 return FALSE;
       }
-      xf86LoaderReqSymLists(I810ramdacSymbols, NULL);
+      xf86LoaderModReqSymLists(pMod, I810ramdacSymbols, NULL);
    }
 
    if (xf86GetOptValInteger
@@ -1132,13 +1145,13 @@ I810PreInit(ScrnInfoPtr pScrn, int flags)
      pI810->allowPageFlip = enable;
      if (pI810->allowPageFlip == enable)
      {
-       if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+       if (!(pMod = xf86LoadSubModule(pScrn, "shadowfb"))) {
 	 pI810->allowPageFlip = 0;
 	 xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
 		    "Couldn't load shadowfb module:\n");
        }
        else {
-	 xf86LoaderReqSymLists(I810shadowFBSymbols, NULL);
+	 xf86LoaderModReqSymLists(pMod, I810shadowFBSymbols, NULL);
        }
      }
      
@@ -1171,8 +1184,8 @@ I810PreInit(ScrnInfoPtr pScrn, int flags)
 #ifdef XF86DRI
    /* Load the dri module if requested. */
    if (xf86ReturnOptValBool(pI810->Options, OPTION_DRI, FALSE)) {
-      if (xf86LoadSubModule(pScrn, "dri")) {
-	 xf86LoaderReqSymLists(I810driSymbols, I810drmSymbols, NULL);
+      if ((pMod = xf86LoadSubModule(pScrn, "dri"))) {
+	 xf86LoaderModReqSymLists(pMod, I810driSymbols, I810drmSymbols, NULL);
       }
    }
 #endif

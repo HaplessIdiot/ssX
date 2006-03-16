@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.h,v 1.4 2003/10/15 16:29:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.h,v 1.5 2006/03/02 03:00:38 dawes Exp $ */
 
 #ifndef _ELFLOADER_H
 #define _ELFLOADER_H
@@ -37,7 +37,7 @@ extern char *ELFAddressToSection(void *, unsigned long);
 extern void ELFUnloadModule(void *);
 extern const char *ELFFindRelocName(LoaderDescPtr, int, unsigned long);
 extern const char *ELFAddressToSymbol(void *, unsigned long, unsigned long *,
-				      const char **);
+				      const char **, int);
 extern void *ELFReadExecutableSyms(int);
 
 #endif /* _ELFLOADER_h */

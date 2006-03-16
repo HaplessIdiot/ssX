@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgamodule.c,v 1.8 1999/01/26 05:54:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgamodule.c,v 1.9 2004/02/13 23:58:52 dawes Exp $ */
 /*
- * Copyright (C) 1998 The XFree86 Project, Inc.
+ * Copyright (C) 1998-2006 The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -68,7 +68,7 @@ static XF86ModuleVersionInfo VersRec =
 XF86ModuleData xf4bppModuleData = { &VersRec, xf4bppSetup, NULL };
 
 static pointer
-xf4bppSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+xf4bppSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     /* This module requires xf1bpp for bitmap support */
     return LoadSubModule(module, "xf1bpp", NULL, NULL, NULL, NULL,

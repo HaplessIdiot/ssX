@@ -23,7 +23,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_driver.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_driver.c,v 1.8 2005/08/28 20:04:50 tsi Exp $ */
 
 #include "riva_include.h"
 
@@ -61,8 +61,8 @@ static Bool	RivaModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
  * List of symbols from other modules that this module references.  This
  * list is used to tell the loader that it is OK for symbols here to be
  * unresolved providing that it hasn't been told that they haven't been
- * told that they are essential via a call to xf86LoaderReqSymbols() or
- * xf86LoaderReqSymLists().  The purpose is this is to avoid warnings about
+ * told that they are essential via a call to xf86LoaderModReqSymbols() or
+ * xf86LoaderModReqSymLists().  The purpose is this is to avoid warnings about
  * unresolved symbols that are not required.
  */
 
@@ -111,14 +111,12 @@ static const char *ddcSymbols[] = {
     NULL
 };
 
-#ifdef XFree86LOADER
 static const char *vbeSymbols[] = {
     "VBEInit",
     "vbeFree",
     "vbeDoEDID",
     NULL
 };
-#endif
 
 static const char *i2cSymbols[] = {
     "xf86CreateI2CBusRec",
@@ -160,7 +158,6 @@ static const char *int10Symbols[] = {
     "xf86InitInt10",
     NULL
 };
-
 
 #ifdef XFree86LOADER
 
@@ -242,7 +239,7 @@ RivaFreeRec(ScrnInfoPtr pScrn)
 #ifdef XFree86LOADER
 
 static pointer
-rivaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+rivaSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 
@@ -251,10 +248,10 @@ rivaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
     if (!setupDone) {
         setupDone = TRUE;
 
-        LoaderRefSymLists(vgahwSymbols, xaaSymbols, fbSymbols,
-                          ramdacSymbols, shadowSymbols,
-                          i2cSymbols, ddcSymbols, vbeSymbols,
-                          fbdevHWSymbols, int10Symbols, NULL);
+        LoaderModRefSymLists(module, vgahwSymbols, xaaSymbols, fbSymbols,
+                             ramdacSymbols, shadowSymbols,
+                             i2cSymbols, ddcSymbols, vbeSymbols,
+                             fbdevHWSymbols, int10Symbols, NULL);
     } 
     return (pointer)1;
 }
@@ -438,11 +435,14 @@ static void
 rivaProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
+    ModuleDescPtr pMod;
 
-    if (xf86LoadVBEModule(pScrn)) {
+    if ((pMod = xf86LoadVBEModule(pScrn))) {
+	xf86LoaderModReqSymLists(pMod, vbeSymbols, NULL);
         pVbe = VBEInit(NULL,index);
         ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
 	vbeFree(pVbe);
+	xf86UnloadSubModule(pMod);
     }
 }
 
@@ -450,13 +450,14 @@ rivaProbeDDC(ScrnInfoPtr pScrn, int index)
 Bool RivaI2CInit(ScrnInfoPtr pScrn)
 {
     char *mod = "i2c";
+    ModuleDescPtr pMod;
 
-    if (xf86LoadSubModule(pScrn, mod)) {
-        xf86LoaderReqSymLists(i2cSymbols,NULL);
+    if ((pMod = xf86LoadSubModule(pScrn, mod))) {
+        xf86LoaderModReqSymLists(pMod, i2cSymbols,NULL);
 
         mod = "ddc";
-        if(xf86LoadSubModule(pScrn, mod)) {
-            xf86LoaderReqSymLists(ddcSymbols, NULL);
+        if ((pMod = xf86LoadSubModule(pScrn, mod))) {
+            xf86LoaderModReqSymLists(pMod, ddcSymbols, NULL);
             return RivaDACi2cInit(pScrn);
         } 
     }
@@ -476,6 +477,7 @@ RivaPreInit(ScrnInfoPtr pScrn, int flags)
     int i;
     ClockRangePtr clockRanges;
     const char *s;
+    ModuleDescPtr pMod;
 
     if (flags & PROBE_DETECT) {
         rivaProbeDDC( pScrn, xf86GetEntityInfo(pScrn->entityList[0])->index );
@@ -518,8 +520,8 @@ RivaPreInit(ScrnInfoPtr pScrn, int flags)
     pRiva->Primary = xf86IsPrimaryPci(pRiva->PciInfo);
 
     /* Initialize the card through int10 interface if needed */
-    if (xf86LoadSubModule(pScrn, "int10")) {
- 	xf86LoaderReqSymLists(int10Symbols, NULL);
+    if ((pMod = xf86LoadSubModule(pScrn, "int10"))) {
+ 	xf86LoaderModReqSymLists(pMod, int10Symbols, NULL);
 #if !defined(__alpha__) 
         xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
         pRiva->pInt = xf86InitInt10(pRiva->pEnt->index);
@@ -599,12 +601,12 @@ RivaPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     /* The vgahw module should be loaded here when needed */
-    if (!xf86LoadSubModule(pScrn, "vgahw")) {
+    if (!(pMod = xf86LoadSubModule(pScrn, "vgahw"))) {
 	xf86FreeInt10(pRiva->pInt);
 	return FALSE;
     }
     
-    xf86LoaderReqSymLists(vgahwSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, vgahwSymbols, NULL);
 
     /*
      * Allocate a vgaHWRec
@@ -667,12 +669,12 @@ RivaPreInit(ScrnInfoPtr pScrn, int flags)
     }
     if (pRiva->FBDev) {
 	/* check for linux framebuffer device */
-	if (!xf86LoadSubModule(pScrn, "fbdevhw")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "fbdevhw"))) {
 	    xf86FreeInt10(pRiva->pInt);
 	    return FALSE;
 	}
 	
-	xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, fbdevHWSymbols, NULL);
 	if (!fbdevHWInit(pScrn, pRiva->PciInfo, NULL)) {
 	    xf86FreeInt10(pRiva->pInt);
 	    return FALSE;
@@ -889,42 +891,42 @@ RivaPreInit(ScrnInfoPtr pScrn, int flags)
      * section.
      */
 
-    if (xf86LoadSubModule(pScrn, "fb") == NULL) {
+    if (!(pMod = xf86LoadSubModule(pScrn, "fb"))) {
 	xf86FreeInt10(pRiva->pInt);
 	RivaFreeRec(pScrn);
 	return FALSE;
     }
 
-    xf86LoaderReqSymLists(fbSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
     
     /* Load XAA if needed */
     if (!pRiva->NoAccel) {
-	if (!xf86LoadSubModule(pScrn, "xaa")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "xaa"))) {
 	    xf86FreeInt10(pRiva->pInt);
 	    RivaFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(xaaSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, xaaSymbols, NULL);
     }
 
     /* Load ramdac if needed */
     if (pRiva->HWCursor) {
-	if (!xf86LoadSubModule(pScrn, "ramdac")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "ramdac"))) {
 	    xf86FreeInt10(pRiva->pInt);
 	    RivaFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(ramdacSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, ramdacSymbols, NULL);
     }
 
     /* Load shadowfb if needed */
     if (pRiva->ShadowFB) {
-	if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "shadowfb"))) {
 	    xf86FreeInt10(pRiva->pInt);
 	    RivaFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(shadowSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, shadowSymbols, NULL);
     }
 
     pRiva->CurrentLayout.bitsPerPixel = pScrn->bitsPerPixel;

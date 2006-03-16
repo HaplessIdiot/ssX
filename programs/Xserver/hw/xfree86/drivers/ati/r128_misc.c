@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_misc.c,v 1.8 2006/01/05 18:55:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_misc.c,v 1.9 2006/03/02 03:00:37 dawes Exp $ */
 /*
  * Copyright 2000 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -56,7 +56,7 @@ pointer R128Module = NULL;
 static pointer
 R128Setup
 (
-    pointer Module,
+    ModuleDescPtr Module,
     pointer Options,
     int     *ErrorMajor,
     int     *ErrorMinor
@@ -70,7 +70,6 @@ R128Setup
         if (!xf86ServerIsOnlyDetecting() && !LoaderSymbol(ATI_NAME))
             xf86LoadOneModule(ATI_DRIVER_NAME, Options);
 
-        R128Module = Module;
         R128LoaderRefSymLists(Module);
 
         Inited = TRUE;

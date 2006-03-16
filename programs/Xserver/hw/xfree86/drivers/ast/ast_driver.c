@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_driver.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_driver.c,v 1.3 2006/02/20 00:38:49 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -183,7 +183,7 @@ static XF86ModuleVersionInfo astVersRec = {
 XF86ModuleData astModuleData = { &astVersRec, astSetup, NULL };
 
 static pointer
-astSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+astSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
    static Bool setupDone = FALSE;
 
@@ -197,9 +197,9 @@ astSetup(pointer module, pointer opts, int *errmaj, int *errmin)
        * Tell the loader about symbols from other modules that this module
        * might refer to.
        */
-      xf86LoaderRefSymLists(vgahwSymbols,
-			fbSymbols, xaaSymbols, ramdacSymbols,
-			vbeSymbols, ddcSymbols, NULL);
+      xf86LoaderModRefSymLists(module, vgahwSymbols,
+			       fbSymbols, xaaSymbols, ramdacSymbols,
+			       vbeSymbols, ddcSymbols, NULL);
 
       /*
        * The return value must be non-NULL on success even though there
@@ -330,6 +330,7 @@ ASTPreInit(ScrnInfoPtr pScrn, int flags)
    ClockRangePtr clockRanges;
    int i;
    MessageType from;
+   ModuleDescPtr pMod;
 
    /* Suport one adapter only now */
    if (pScrn->numEntities != 1)
@@ -349,14 +350,14 @@ ASTPreInit(ScrnInfoPtr pScrn, int flags)
        return FALSE;
 
    /* The vgahw module should be loaded here when needed */
-   if (!xf86LoadSubModule(pScrn, "vgahw"))
+   if (!(pMod = xf86LoadSubModule(pScrn, "vgahw")))
       return FALSE;
-   xf86LoaderReqSymLists(vgahwSymbols, NULL);
+   xf86LoaderModReqSymLists(pMod, vgahwSymbols, NULL);
 
    /* The fb module should be loaded here when needed */
-   if (!xf86LoadSubModule(pScrn, "fb"))
+   if (!(pMod = xf86LoadSubModule(pScrn, "fb")))
       return FALSE;
-   xf86LoaderReqSymLists(fbSymbols, NULL);
+   xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
 
    /* Allocate a vgaHWRec */
    if (!vgaHWGetHWRec(pScrn))
@@ -583,11 +584,11 @@ ASTPreInit(ScrnInfoPtr pScrn, int flags)
 #ifdef	Accel_2D
    if (!xf86ReturnOptValBool(pAST->Options, OPTION_NOACCEL, FALSE))
    {
-       if (!xf86LoadSubModule(pScrn, "xaa")) {
+       if (!(pMod = xf86LoadSubModule(pScrn, "xaa"))) {
 	   ASTFreeRec(pScrn);
 	   return FALSE;
        }
-       xf86LoaderReqSymLists(xaaSymbols, NULL);
+       xf86LoaderModReqSymLists(pMod, xaaSymbols, NULL);
 
        pAST->noAccel = FALSE;
 
@@ -617,11 +618,11 @@ ASTPreInit(ScrnInfoPtr pScrn, int flags)
    pAST->pHWCPtr = NULL;
 #ifdef	HWC
    if (!xf86ReturnOptValBool(pAST->Options, OPTION_SW_CURSOR, FALSE)) {
-      if (!xf86LoadSubModule(pScrn, "ramdac")) {
+      if (!(pMod = xf86LoadSubModule(pScrn, "ramdac"))) {
 	 ASTFreeRec(pScrn);
 	 return FALSE;
       }
-      xf86LoaderReqSymLists(ramdacSymbols, NULL);
+      xf86LoaderModReqSymLists(pMod, ramdacSymbols, NULL);
 
       pAST->noHWC = FALSE;
       pAST->HWCInfo.HWC_NUM = DEFAULT_HWC_NUM;
@@ -1067,11 +1068,14 @@ static void
 ASTProbeDDC(ScrnInfoPtr pScrn, int index)
 {
    vbeInfoPtr pVbe;
+   ModuleDescPtr pMod;
 
-   if (xf86LoadVBEModule(pScrn)) {
+   if ((pMod = xf86LoadVBEModule(pScrn))) {
+      xf86LoaderModReqSymLists(pMod, vbeSymbols, NULL);
       pVbe = VBEInit(NULL, index);
       ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
       vbeFree(pVbe);
+      xf86UnloadSubModule(pMod);
    }
 }
 
@@ -1081,18 +1085,26 @@ ASTDoDDC(ScrnInfoPtr pScrn, int index)
    vbeInfoPtr pVbe;
    xf86MonPtr MonInfo = NULL;
    ASTRecPtr pAST = ASTPTR(pScrn);
+   ModuleDescPtr pMod, pDDCMod;
 
    /* Honour Option "noDDC" */
    if (xf86ReturnOptValBool(pAST->Options, OPTION_NO_DDC, FALSE)) {
       return MonInfo;
    }
 
-   if (xf86LoadVBEModule(pScrn) && (pVbe = VBEInit(NULL, index))) {
-      xf86LoaderReqSymLists(vbeSymbols, ddcSymbols, NULL);
-      MonInfo = vbeDoEDID(pVbe, NULL);
-      xf86PrintEDID(MonInfo);
-      xf86SetDDCproperties(pScrn, MonInfo);
-      vbeFree(pVbe);
+   if ((pMod = xf86LoadVBEModule(pScrn))) {
+      xf86LoaderModReqSymLists(pMod, vbeSymbols, NULL);
+      if ((pVbe = VBEInit(NULL, index))) {
+	 if ((pDDCMod = xf86LoadSubModule(pScrn, "ddc"))) {
+	    xf86LoaderModReqSymLists(pDDCMod, ddcSymbols, NULL);
+	    MonInfo = vbeDoEDID(pVbe, pDDCMod);
+	    xf86PrintEDID(MonInfo);
+	    xf86SetDDCproperties(pScrn, MonInfo);
+	    xf86UnloadSubModule(pDDCMod);
+	 }
+	 vbeFree(pVbe);
+      }
+      xf86UnloadSubModule(pMod);
    } else {
       xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		 "this driver cannot do DDC without VBE\n");

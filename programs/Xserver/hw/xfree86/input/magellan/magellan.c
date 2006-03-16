@@ -32,7 +32,7 @@
  * port based on pre-XFree4.2.0 driver code v1.10 and XFree4.2.0 SpaceOrb driver code
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/magellan/magellan.c,v 1.10 2001/11/26 16:25:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/magellan/magellan.c,v 1.11 2002/06/07 21:03:27 alanh Exp $ */
 
 #define _MAGELLAN_C_
 /*****************************************************************************
@@ -136,8 +136,10 @@ static const char *reqSymbols[] = {
         NULL
 };
 
+static MODULESETUPPROTO(MAGELLANSetupProc);
+
 static pointer
-MAGELLANSetupProc(pointer module,
+MAGELLANSetupProc(ModuleDescPtr module,
 		  pointer options,
 		  int *errmaj,
 		  int *errmin ) {
@@ -149,6 +151,9 @@ MAGELLANSetupProc(pointer module,
 /* 
  * The TearDownProc may have to be tailored to your device
  */
+
+static MODULETEARDOWNPROTO(TearDownProc);
+
 static void
 TearDownProc( pointer p )
 {

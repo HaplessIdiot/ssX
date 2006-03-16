@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mutouch/xf86MuTouch.c,v 1.15 2004/04/26 22:26:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mutouch/xf86MuTouch.c,v 1.16 2004/04/26 22:48:21 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -1299,8 +1299,10 @@ InputDriverRec MUTOUCH = {
 };
 
 #ifdef XFree86LOADER
+static MODULESETUPPROTO(Plug);
+
 static pointer
-Plug(pointer	module,
+Plug(ModuleDescPtr	module,
      pointer	options,
      int	*errmaj,
      int	*errmin)
@@ -1309,6 +1311,8 @@ Plug(pointer	module,
 
   return module;
 }
+
+static MODULETEARDOWNPROTO(Unplug);
 
 static void
 Unplug(pointer	p)

@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.63tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.64 2005/10/14 15:16:47 tsi Exp $ */
 
 /* everybody includes these */
 #include "xf86.h"
@@ -219,7 +219,7 @@ static XF86ModuleVersionInfo tgaVersRec =
 XF86ModuleData tgaModuleData = { &tgaVersRec, tgaSetup, NULL };
 
 pointer
-tgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+tgaSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 
@@ -232,7 +232,8 @@ tgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * by calling LoadSubModule().
 	 */
 
-	LoaderRefSymLists(ramdacSymbols, fbSymbols, xaaSymbols, NULL);
+	LoaderModRefSymLists(module, ramdacSymbols, fbSymbols,
+			     xaaSymbols, NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -452,6 +453,7 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
     int i;
     ClockRangePtr clockRanges;
     pointer Base;
+    ModuleDescPtr pMod;
 
     if (flags & PROBE_DETECT) return FALSE;
 
@@ -469,10 +471,10 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
      */
 
     /* The ramdac module should be loaded here when needed */
-    if (!xf86LoadSubModule(pScrn, "ramdac"))
+    if (!(pMod = xf86LoadSubModule(pScrn, "ramdac")))
 	return FALSE;
 
-    xf86LoaderReqSymLists(ramdacSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, ramdacSymbols, NULL);
 
     /* Allocate the TGARec driverPrivate */
     if (!TGAGetRec(pScrn)) {
@@ -784,20 +786,20 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 
     pTga->FbMapSize = pScrn->videoRam * 1024;
 
-    if (xf86LoadSubModule(pScrn, "fb") == NULL) {
+    if (!(pMod = xf86LoadSubModule(pScrn, "fb"))) {
 	TGAFreeRec(pScrn);
 	return FALSE;
     }
 
-    xf86LoaderReqSymLists(fbSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
 
     /* Load XAA if needed */
     if (!pTga->NoAccel || pTga->HWCursor) {
-	if (!xf86LoadSubModule(pScrn, "xaa")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "xaa"))) {
 	    TGAFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(xaaSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, xaaSymbols, NULL);
     }
 
     

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfb24_32module.c,v 1.2 1999/01/24 13:32:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfb24_32module.c,v 1.3 1999/01/26 05:54:20 dawes Exp $ */
 
 #ifdef XFree86LOADER
 
@@ -23,7 +23,7 @@ static XF86ModuleVersionInfo VersRec =
 XF86ModuleData xf24_32bppModuleData = { &VersRec, xf24_32bppSetup, NULL };
 
 static pointer
-xf24_32bppSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+xf24_32bppSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     if (!LoadSubModule(module, "cfb24", NULL, NULL, NULL, NULL,
 			errmaj, errmin))

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998 The XFree86 Project, Inc.
+ * Copyright (C) 1998-2006 The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -44,12 +44,12 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/* $XFree86: xc/lib/font/Speedo/module/speedomod.c,v 1.8 2001/09/04 13:49:16 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/module/speedomod.c,v 1.9 2004/02/13 23:58:29 dawes Exp $ */
 
 #include "misc.h"
 
-#include "fontmod.h"
 #include "xf86Module.h"
+#include "fontmod.h"
 
 static MODULESETUPPROTO(speedoSetup);
 
@@ -83,7 +83,7 @@ FontModule speedoModule = {
 };
 
 static pointer
-speedoSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+speedoSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     speedoModule.module = module;
     LoadFont(&speedoModule);

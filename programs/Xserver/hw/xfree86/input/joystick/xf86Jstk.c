@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/joystick/xf86Jstk.c,v 1.8 2005/10/14 15:16:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/joystick/xf86Jstk.c,v 1.9 2006/01/09 15:00:18 dawes Exp $ */
 
 /*
  * Copyright 1995-1999 by Frederic Lepied, France. <Lepied@XFree86.org>       
@@ -411,7 +411,7 @@ xf86JstkUnplug(pointer	p)
  * called when the module subsection is found in XF86Config
  */
 static pointer
-xf86JstkPlug(pointer	module,
+xf86JstkPlug(ModuleDescPtr	module,
 	     pointer	options,
 	     int	*errmaj,
 	     int	*errmin )

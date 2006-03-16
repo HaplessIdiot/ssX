@@ -48,7 +48,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elo2300/elo.c,v 1.10 2000/08/11 19:10:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elo2300/elo.c,v 1.11 2001/11/26 16:25:53 dawes Exp $ */
 
 #define _elo_C_
 /*****************************************************************************
@@ -124,7 +124,7 @@ TearDownProc( pointer p )
 }
 
 static pointer
-SetupProc(	pointer module,
+SetupProc(	ModuleDescPtr module,
 			pointer options,
 			int *errmaj,
 			int *errmin )

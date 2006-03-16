@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.18tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.19 2006/02/19 15:51:17 tsi Exp $ */
 
 /*
  *
@@ -229,7 +229,7 @@ static XF86ModuleVersionInfo VersRec =
 XF86ModuleData extmodModuleData = { &VersRec, extmodSetup, NULL };
 
 static pointer
-extmodSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+extmodSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     int i;
 

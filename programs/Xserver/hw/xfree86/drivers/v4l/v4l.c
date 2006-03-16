@@ -2,7 +2,7 @@
  *  video4linux Xv Driver 
  *  based on Michael Schimek's permedia 2 driver.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.34tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.35 2005/10/14 15:16:48 tsi Exp $ */
 
 #include "videodev.h"
 #include "xf86.h"
@@ -61,7 +61,7 @@ static XF86ModuleVersionInfo v4lVersRec =
 XF86ModuleData v4lModuleData = { &v4lVersRec, v4lSetup, NULL };
 
 static pointer
-v4lSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+v4lSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
         const char *osname;
 	static Bool setupDone = FALSE;

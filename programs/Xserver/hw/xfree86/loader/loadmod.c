@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.76 2005/09/16 15:26:51 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.77 2006/03/02 03:00:38 dawes Exp $ */
 
 /*
  *
@@ -23,7 +23,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 /*
- * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -938,6 +938,8 @@ DuplicateModule(ModuleDescPtr mod, ModuleDescPtr parent)
     ret->VersionInfo = mod->VersionInfo;
     ret->ParentReq = mod->ParentReq;
 
+    DuplicateSymbolLists(mod, ret);
+
     return ret;
 }
 
@@ -1201,7 +1203,7 @@ UnloadModuleOrDriver(ModuleDescPtr mod)
 
     if ((mod->TearDownProc) && (mod->TearDownData))
 	mod->TearDownProc(mod->TearDownData);
-    LoaderUnload(mod->handle);
+    LoaderUnload(mod);
 
     if (mod->child)
 	UnloadModuleOrDriver(mod->child);
@@ -1225,7 +1227,7 @@ UnloadSubModule(ModuleDescPtr mod)
 
     if ((mod->TearDownProc) && (mod->TearDownData))
 	mod->TearDownProc(mod->TearDownData);
-    LoaderUnload(mod->handle);
+    LoaderUnload(mod);
 
     RemoveChild(mod);
 
@@ -1268,7 +1270,6 @@ NewModuleDesc(const char *name)
 	mdp->child = NULL;
 	mdp->sib = NULL;
 	mdp->parent = NULL;
-	mdp->demand_next = NULL;
 	mdp->name = xstrdup(name);
 	mdp->filename = NULL;
 	mdp->identifier = NULL;
@@ -1430,3 +1431,19 @@ LoaderGetModuleVersion(ModuleDescPtr mod)
 				  mod->VersionInfo->minorversion,
 				  mod->VersionInfo->patchlevel);
 }
+
+ModuleDescPtr
+LoaderGetSubModuleByName(ModuleDescPtr mod, const char *name)
+{
+    ModuleDescPtr m;
+
+    if (!mod || !name)
+	return NULL;
+
+    for (m = mod->child; m; m = m->sib) {
+	if (!strcmp(m->name, name))
+	    return m;
+    }
+    return NULL;
+}
+

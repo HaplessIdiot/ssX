@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.58tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.59 2006/02/17 17:05:57 tsi Exp $ */
 
 /*
  * Authors:
@@ -225,14 +225,12 @@ static const char *ramdacSymbols[] = {
     NULL
 };
 
-#ifdef XFree86LOADER
 static const char *vbeSymbols[] = {
     "VBEInit",
     "vbeDoEDID",
     "vbeFree",
     NULL
 };
-#endif
 
 #if USE_DDC2
 static const char *ddcSymbols[] = {
@@ -271,7 +269,7 @@ static XF86ModuleVersionInfo i740VersRec =
 XF86ModuleData i740ModuleData = {&i740VersRec, i740Setup, 0};
 
 static pointer
-i740Setup(pointer module, pointer opts, int *errmaj, int *errmin)
+i740Setup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 
@@ -290,12 +288,12 @@ i740Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * Tell the loader about symbols from other modules that this module
 	 * might refer to.
 	 */
-	LoaderRefSymLists(vgahwSymbols, fbSymbols, xaaSymbols, 
-			  ramdacSymbols, vbeSymbols,
+	LoaderModRefSymLists(module, vgahwSymbols, fbSymbols, xaaSymbols, 
+			     ramdacSymbols, vbeSymbols,
 #if USE_DDC2
-			  ddcSymbols, i2cSymbols,
+			     ddcSymbols, i2cSymbols,
 #endif
-			  NULL);
+			     NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -451,10 +449,14 @@ static void
 I740ProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
-    if (xf86LoadVBEModule(pScrn)) {
+    ModuleDescPtr pMod;
+
+    if ((pMod = xf86LoadVBEModule(pScrn))) {
+	xf86LoaderModReqSymLists(pMod, vbeSymbols, NULL);
 	pVbe = VBEInit(NULL,index);
 	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
 	vbeFree(pVbe);
+	xf86UnloadSubModule(pMod);
     }
 }
 
@@ -474,6 +476,7 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
   int temp;
   int flags24;
   rgb defaultWeight = {0, 0, 0};
+  ModuleDescPtr pMod;
 
   if (pScrn->numEntities != 1) return FALSE;
 
@@ -494,9 +497,9 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
   }
 
   /* The vgahw module should be loaded here when needed */
-  if (!xf86LoadSubModule(pScrn, "vgahw")) return FALSE;
+  if (!(pMod = xf86LoadSubModule(pScrn, "vgahw"))) return FALSE;
 
-  xf86LoaderReqSymLists(vgahwSymbols, NULL);
+  xf86LoaderModReqSymLists(pMod, vgahwSymbols, NULL);
 
   /* Allocate a vgaHWRec */
   if (!vgaHWGetHWRec(pScrn)) return FALSE;
@@ -764,26 +767,26 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
 
   xf86SetDpi(pScrn, 0, 0);
 
-  if (!xf86LoadSubModule(pScrn, "fb")) {
+  if (!(pMod = xf86LoadSubModule(pScrn, "fb"))) {
     I740FreeRec(pScrn);
     return FALSE;
   }
-  xf86LoaderReqSymbols("fbScreenInit","fbPictureInit", NULL);
+  xf86LoaderModReqSymbols(pMod, "fbScreenInit","fbPictureInit", NULL);
 
   if (!xf86ReturnOptValBool(pI740->Options, OPTION_NOACCEL, FALSE)) {
-    if (!xf86LoadSubModule(pScrn, "xaa")) {
+    if (!(pMod = xf86LoadSubModule(pScrn, "xaa"))) {
       I740FreeRec(pScrn);
       return FALSE;
     }
-    xf86LoaderReqSymLists(xaaSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, xaaSymbols, NULL);
   }
 
   if (!xf86ReturnOptValBool(pI740->Options, OPTION_SW_CURSOR, FALSE)) {
-    if (!xf86LoadSubModule(pScrn, "ramdac")) {
+    if (!(pMod = xf86LoadSubModule(pScrn, "ramdac"))) {
       I740FreeRec(pScrn);
       return FALSE;
     }
-    xf86LoaderReqSymLists(ramdacSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, ramdacSymbols, NULL);
   }
 
   /*  We wont be using the VGA access after the probe */
@@ -813,10 +816,10 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
 #if USE_DDC2 /*DDC2*/
   { /*PL*/
 
-   if (xf86LoadSubModule(pScrn, "ddc")) {
-     xf86LoaderReqSymLists(ddcSymbols, NULL);
-     if ( xf86LoadSubModule(pScrn, "i2c") ) {
-       xf86LoaderReqSymLists(i2cSymbols,NULL);
+   if ((pMod = xf86LoadSubModule(pScrn, "ddc"))) {
+     xf86LoaderModReqSymLists(pMod, ddcSymbols, NULL);
+     if ((pMod = xf86LoadSubModule(pScrn, "i2c"))) {
+       xf86LoaderModReqSymLists(pMod, i2cSymbols,NULL);
 
        if (I740MapMem(pScrn))
 	 {

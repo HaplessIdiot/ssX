@@ -11,7 +11,7 @@
  *	Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.70tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.71 2005/08/28 20:04:48 tsi Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -114,8 +114,8 @@ PciChipsets CIRPciChipsets[] = {
  * List of symbols from other modules that this module references.  This
  * list is used to tell the loader that it is OK for symbols here to be
  * unresolved providing that it hasn't been told that they haven't been
- * told that they are essential via a call to xf86LoaderReqSymbols() or
- * xf86LoaderReqSymLists().  The purpose of this is to avoid warnings about
+ * told that they are essential via a call to xf86LoaderModReqSymbols() or
+ * xf86LoaderModReqSymLists().  The purpose of this is to avoid warnings about
  * unresolved symbols that are not required.
  */
 
@@ -162,7 +162,7 @@ static XF86ModuleVersionInfo cirVersRec =
 XF86ModuleData cirrusModuleData = { &cirVersRec, cirSetup, NULL };
 
 static pointer
-cirSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+cirSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
 	static Bool setupDone = FALSE;
 
@@ -172,7 +172,8 @@ cirSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 		setupDone = TRUE;
 		xf86AddDriver(&CIRRUS, module, 0);
 
-		LoaderRefSymLists(alpSymbols, lgSymbols, vbeSymbols, NULL);
+		LoaderModRefSymLists(module, alpSymbols, lgSymbols,
+				     vbeSymbols, NULL);
 		return (pointer)1;
 	}
 	if (errmaj) *errmaj = LDR_ONCEONLY;
@@ -224,6 +225,7 @@ CIRProbe(DriverPtr drv, int flags)
     Bool foundScreen = FALSE;
     ScrnInfoPtr (*subProbe)(int entity);
     ScrnInfoPtr pScrn;
+    ModuleDescPtr pMod;
 
 #ifdef CIR_DEBUG
     ErrorF("CirProbe\n");
@@ -237,14 +239,14 @@ CIRProbe(DriverPtr drv, int flags)
     
     if (flags & PROBE_DETECT) {
 	if (!lg_loaded) {
-	    if (xf86LoadDrvSubModule(drv, "cirrus_laguna")) {
-		xf86LoaderReqSymLists(lgSymbols, NULL);
+	    if ((pMod = xf86LoadDrvSubModule(drv, "cirrus_laguna"))) {
+		xf86LoaderModReqSymLists(pMod, lgSymbols, NULL);
 		lg_loaded = TRUE;
 	    }
 	}
 	if (!alp_loaded) {
-	    if (xf86LoadDrvSubModule(drv, "cirrus_alpine")) {
-		xf86LoaderReqSymLists(alpSymbols, NULL);
+	    if ((pMod = xf86LoadDrvSubModule(drv, "cirrus_alpine"))) {
+		xf86LoaderModReqSymLists(pMod, alpSymbols, NULL);
 		alp_loaded = TRUE;
 	    }
 	}
@@ -285,17 +287,17 @@ CIRProbe(DriverPtr drv, int flags)
  	    pPci->chipType == PCI_CHIP_GD5465)) {
  	    
  	    if (!lg_loaded) {
- 		if (!xf86LoadDrvSubModule(drv, "cirrus_laguna")) 
+ 		if (!(pMod = xf86LoadDrvSubModule(drv, "cirrus_laguna"))) 
 		    continue;
- 		xf86LoaderReqSymLists(lgSymbols, NULL);
+ 		xf86LoaderModReqSymLists(pMod, lgSymbols, NULL);
  		lg_loaded = TRUE;
  	    }
  	    subProbe = LgProbe;
  	} else {
  	    if (!alp_loaded) {
- 		if (!xf86LoadDrvSubModule(drv, "cirrus_alpine")) 
+ 		if (!(pMod = xf86LoadDrvSubModule(drv, "cirrus_alpine")))
  		    continue;
- 		xf86LoaderReqSymLists(alpSymbols, NULL);
+ 		xf86LoaderModReqSymLists(pMod, alpSymbols, NULL);
  		alp_loaded = TRUE;
  	    }
  	    subProbe = AlpProbe;
@@ -403,11 +405,13 @@ void
 cirProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
+    ModuleDescPtr pMod;
 
-    if (xf86LoadVBEModule(pScrn)) {
-	xf86LoaderReqSymLists(vbeSymbols,NULL);
+    if ((pMod = xf86LoadVBEModule(pScrn))) {
+	xf86LoaderModReqSymLists(pMod, vbeSymbols,NULL);
         pVbe = VBEInit(NULL,index);
         ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
 	vbeFree(pVbe);
+	xf86UnloadSubModule(pMod);
     }
 }

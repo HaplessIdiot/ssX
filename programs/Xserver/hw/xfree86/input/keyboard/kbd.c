@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/keyboard/kbd.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/keyboard/kbd.c,v 1.12 2005/10/14 15:16:56 tsi Exp $ */
 
 /*
  * Copyright (c) 2002 by The XFree86 Project, Inc.
@@ -729,13 +729,17 @@ ModuleInfoRec KeyboardInfo = {
     KeyboardAvailableOptions,
 };
 
+static MODULETEARDOWNPROTO(xf86KbdUnplug);
+
 static void
 xf86KbdUnplug(pointer	p)
 {
 }
 
+static MODULESETUPPROTO(xf86KbdPlug);
+
 static pointer
-xf86KbdPlug(pointer	module,
+xf86KbdPlug(ModuleDescPtr	module,
 	    pointer	options,
 	    int		*errmaj,
 	    int		*errmin)

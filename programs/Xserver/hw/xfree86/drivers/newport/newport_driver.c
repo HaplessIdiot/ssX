@@ -28,7 +28,7 @@
  * Project.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.27 2005/10/14 15:16:42 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.28 2006/01/09 14:59:54 dawes Exp $ */
 
 /* function prototypes, common data structures & generic includes */
 #include "newport.h"
@@ -136,7 +136,7 @@ static XF86ModuleVersionInfo newportVersRec =
 XF86ModuleData newportModuleData = { &newportVersRec, newportSetup, NULL };
 
 static pointer
-newportSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+newportSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
 	static Bool setupDone = FALSE;
 
@@ -154,7 +154,8 @@ newportSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 		 * might refer to.
 		 *
 		 */
-		LoaderRefSymLists( fbSymbols, ramdacSymbols, shadowSymbols, NULL);
+		LoaderModRefSymLists(module, fbSymbols, ramdacSymbols,
+				     shadowSymbols, NULL);
 
 
 		/*
@@ -283,6 +284,7 @@ NewportPreInit(ScrnInfoPtr pScrn, int flags)
 	NewportPtr pNewport;
 	MessageType from;
 	ClockRangePtr clockRanges;
+	ModuleDescPtr pMod;
 
 	if (flags & PROBE_DETECT) return FALSE;
 
@@ -444,27 +446,27 @@ NewportPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86SetDpi (pScrn, 0, 0);
 
 	/* Load FB module */
-	if (!xf86LoadSubModule (pScrn, "fb")) {
+	if (!(pMod = xf86LoadSubModule (pScrn, "fb"))) {
 		NewportFreeRec(pScrn);
 		return FALSE;
 	}
-	xf86LoaderReqSymLists( fbSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
 
 	/* Load ramdac modules */
     	if (pNewport->hwCursor) {
-        	if (!xf86LoadSubModule(pScrn, "ramdac")) {
+        	if (!(pMod = xf86LoadSubModule(pScrn, "ramdac"))) {
 			NewportFreeRec(pScrn);
             		return FALSE;
         	}
-        	xf86LoaderReqSymLists(ramdacSymbols, NULL);
+        	xf86LoaderModReqSymLists(pMod, ramdacSymbols, NULL);
     	}
 
 	/* Load ShadowFB module */
-	if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "shadowfb"))) {
 		NewportFreeRec(pScrn);
 		return FALSE;
 	}
-	xf86LoaderReqSymLists(shadowSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, shadowSymbols, NULL);
 
 	return TRUE;
 }

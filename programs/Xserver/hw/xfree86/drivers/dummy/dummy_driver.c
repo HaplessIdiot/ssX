@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/dummy/dummy_driver.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/dummy/dummy_driver.c,v 1.10 2005/10/14 15:16:39 tsi Exp $ */
 
 /*
  * Copyright 2002, SuSE Linux AG, Author: Egbert Eich
@@ -115,8 +115,8 @@ static const OptionInfoRec DUMMYOptions[] = {
  * List of symbols from other modules that this module references.  This
  * list is used to tell the loader that it is OK for symbols here to be
  * unresolved providing that it hasn't been told that they haven't been
- * told that they are essential via a call to xf86LoaderReqSymbols() or
- * xf86LoaderReqSymLists().  The purpose is this is to avoid warnings about
+ * told that they are essential via a call to xf86LoaderModReqSymbols() or
+ * xf86LoaderModReqSymLists().  The purpose is this is to avoid warnings about
  * unresolved symbols that are not required.
  */
 
@@ -152,7 +152,7 @@ static XF86ModuleVersionInfo dummyVersRec =
 XF86ModuleData dummyModuleData = { &dummyVersRec, dummySetup, NULL };
 
 static pointer
-dummySetup(pointer module, pointer opts, int *errmaj, int *errmin)
+dummySetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 
@@ -160,11 +160,7 @@ dummySetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	setupDone = TRUE;
         xf86AddDriver(&DUMMY, module, 0);
 
-	/*
-	 * Modules that this driver always requires can be loaded here
-	 * by calling LoadSubModule().
-	 */
-
+	xf86LoaderModRefSymLists(module, fbSymbols, NULL);
 	/*
 	 * The return value must be non-NULL on success even though there
 	 * is no TearDownProc.
@@ -283,6 +279,7 @@ DUMMYPreInit(ScrnInfoPtr pScrn, int flags)
     int i;
     int maxClock = 230000;
     GDevPtr device = xf86GetEntityInfo(pScrn->entityList[0])->device;
+    ModuleDescPtr pMod;
 
     if (flags & PROBE_DETECT) 
 	return TRUE;
@@ -430,10 +427,10 @@ DUMMYPreInit(ScrnInfoPtr pScrn, int flags)
     /* If monitor resolution is set on the command line, use it */
     xf86SetDpi(pScrn, 0, 0);
 
-    if (xf86LoadSubModule(pScrn, "fb") == NULL) {
+    if (!(pMod = xf86LoadSubModule(pScrn, "fb"))) {
 	RETURN
     }
-    xf86LoaderReqSymLists(fbSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
 
     return TRUE;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.130 2005/08/28 20:04:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.131 2006/03/02 03:00:37 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -340,7 +340,7 @@ static const char *i2cSymbols[] = {
     NULL
 };
 
-void RADEONLoaderRefSymLists(pointer module)
+void RADEONLoaderRefSymLists(ModuleDescPtr module)
 {
     /*
      * Tell the loader about symbols from other modules that this module might
@@ -1254,18 +1254,21 @@ static void RADEONQueryConnectedDisplays(ScrnInfoPtr pScrn, xf86Int10InfoPtr pIn
 	    else if((pRADEONEnt->MonType1 = RADEONDisplayDDCConnected(pScrn, DDC_VGA, &pRADEONEnt->MonInfo1)));
 	    else if((pRADEONEnt->MonType1 = RADEONDisplayDDCConnected(pScrn, DDC_CRT2, &pRADEONEnt->MonInfo1)));
 	    else if (pInt10) {
-		if (xf86LoadVBEModule(pScrn)) {
+		pointer pVBEModule;
+		if ((pVBEModule = xf86LoadVBEModule(pScrn))) {
 		    vbeInfoPtr  pVbe;
 		    pVbe = VBEInit(pInt10, info->pEnt->index);
 		    if (pVbe) {
 			for (i = 0; i < 5; i++) {
-			    pRADEONEnt->MonInfo1 = vbeDoEDID(pVbe, NULL);
+			    pRADEONEnt->MonInfo1 =
+					vbeDoEDID(pVbe, info->pDDCModule);
 			}
 			if (pRADEONEnt->MonInfo1->rawData[0x14] & 0x80)
 			    pRADEONEnt->MonType1 = MT_DFP;
 			else pRADEONEnt->MonType1 = MT_CRT;
 			vbeFree(pVbe);
 		    }
+		    xf86UnloadSubModule(pVBEModule);
 		}
 	    } else
 		pRADEONEnt->MonType1 = MT_CRT;
@@ -2363,22 +2366,22 @@ static Bool RADEONI2cInit(ScrnInfoPtr pScrn)
 static void RADEONPreInitDDC(ScrnInfoPtr pScrn)
 {
     RADEONInfoPtr  info = RADEONPTR(pScrn);
- /* vbeInfoPtr     pVbe; */
+    ModuleDescPtr pModule;
 
     info->ddc1     = FALSE;
     info->ddc_bios = FALSE;
-    if (!xf86LoadSubModule(pScrn, "ddc")) {
+    if (!(info->pDDCModule = xf86LoadSubModule(pScrn, "ddc"))) {
 	info->ddc2 = FALSE;
     } else {
-	xf86LoaderModReqSymLists(RADEONModule, ddcSymbols, NULL);
+	xf86LoaderModReqSymLists(info->pDDCModule, ddcSymbols, NULL);
 	info->ddc2 = TRUE;
     }
 
     /* DDC can use I2C bus */
     /* Load I2C if we have the code to use it */
     if (info->ddc2) {
-	if (xf86LoadSubModule(pScrn, "i2c")) {
-	    xf86LoaderModReqSymLists(RADEONModule, i2cSymbols,NULL);
+	if ((pModule = xf86LoadSubModule(pScrn, "i2c"))) {
+	    xf86LoaderModReqSymLists(pModule, i2cSymbols,NULL);
 	    info->ddc2 = RADEONI2cInit(pScrn);
 	}
 	else info->ddc2 = FALSE;
@@ -3330,6 +3333,7 @@ static Bool RADEONPreInitModes(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
     int            modesFound;
     RADEONEntPtr pRADEONEnt = RADEONEntPriv(pScrn);
     char           *s;
+    ModuleDescPtr pModule;
 
     /* This option has two purposes:
      *
@@ -3637,9 +3641,9 @@ static Bool RADEONPreInitModes(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
     xf86SetDpi(pScrn, 0, 0);
 
 				/* Get ScreenInit function */
-    if (!xf86LoadSubModule(pScrn, "fb")) return FALSE;
+    if (!(pModule = xf86LoadSubModule(pScrn, "fb"))) return FALSE;
 
-    xf86LoaderModReqSymLists(RADEONModule, fbSymbols, NULL);
+    xf86LoaderModReqSymLists(pModule, fbSymbols, NULL);
 
     info->CurrentLayout.displayWidth = pScrn->displayWidth;
     info->CurrentLayout.mode = pScrn->currentMode;
@@ -3651,10 +3655,11 @@ static Bool RADEONPreInitModes(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 static Bool RADEONPreInitCursor(ScrnInfoPtr pScrn)
 {
     RADEONInfoPtr  info = RADEONPTR(pScrn);
+    ModuleDescPtr pModule;
 
     if (!xf86ReturnOptValBool(info->Options, OPTION_SW_CURSOR, FALSE)) {
-	if (!xf86LoadSubModule(pScrn, "ramdac")) return FALSE;
-	xf86LoaderModReqSymLists(RADEONModule, ramdacSymbols, NULL);
+	if (!(pModule = xf86LoadSubModule(pScrn, "ramdac"))) return FALSE;
+	xf86LoaderModReqSymLists(pModule, ramdacSymbols, NULL);
     }
     return TRUE;
 }
@@ -3664,6 +3669,7 @@ static Bool RADEONPreInitAccel(ScrnInfoPtr pScrn)
 {
 #ifdef XFree86LOADER
     RADEONInfoPtr  info = RADEONPTR(pScrn);
+    ModuleDescPtr pModule;
 
     if (!xf86ReturnOptValBool(info->Options, OPTION_NOACCEL, FALSE)) {
 	int errmaj = 0, errmin = 0;
@@ -3671,17 +3677,18 @@ static Bool RADEONPreInitAccel(ScrnInfoPtr pScrn)
 	info->xaaReq.majorversion = 1;
 	info->xaaReq.minorversion = 1;
 
-	if (!LoadSubModule(pScrn->module, "xaa", NULL, NULL, NULL,
-			   &info->xaaReq, &errmaj, &errmin)) {
+	if (!(pModule = LoadSubModule(pScrn->module, "xaa", NULL, NULL, NULL,
+				      &info->xaaReq, &errmaj, &errmin))) {
 	    info->xaaReq.minorversion = 0;
 
-	    if (!LoadSubModule(pScrn->module, "xaa", NULL, NULL, NULL,
-			       &info->xaaReq, &errmaj, &errmin)) {
+	    if (!(pModule = LoadSubModule(pScrn->module, "xaa", NULL, NULL,
+					  NULL,
+					  &info->xaaReq, &errmaj, &errmin))) {
 		LoaderErrorMsg(NULL, "xaa", errmaj, errmin);
 		return FALSE;
 	    }
 	}
-	xf86LoaderModReqSymLists(RADEONModule, xaaSymbols, NULL);
+	xf86LoaderModReqSymLists(pModule, xaaSymbols, NULL);
     }
 #endif
 
@@ -3690,11 +3697,12 @@ static Bool RADEONPreInitAccel(ScrnInfoPtr pScrn)
 
 static Bool RADEONPreInitInt10(ScrnInfoPtr pScrn, xf86Int10InfoPtr *ppInt10)
 {
-    RADEONInfoPtr  info = RADEONPTR(pScrn);
-
 #if !defined(__powerpc__)
-    if (xf86LoadSubModule(pScrn, "int10")) {
-	xf86LoaderModReqSymLists(RADEONModule, int10Symbols, NULL);
+    RADEONInfoPtr  info = RADEONPTR(pScrn);
+    ModuleDescPtr pModule;
+
+    if ((pModule = xf86LoadSubModule(pScrn, "int10"))) {
+	xf86LoaderModReqSymLists(pModule, int10Symbols, NULL);
 	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"initializing int10\n");
 	*ppInt10 = xf86InitInt10(info->pEnt->index);
     }
@@ -3706,6 +3714,7 @@ static Bool RADEONPreInitInt10(ScrnInfoPtr pScrn, xf86Int10InfoPtr *ppInt10)
 static Bool RADEONPreInitDRI(ScrnInfoPtr pScrn)
 {
     RADEONInfoPtr  info = RADEONPTR(pScrn);
+    ModuleDescPtr pModule;
 
     if (xf86ReturnOptValBool(info->Options, OPTION_CP_PIO, FALSE)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Forcing CP into PIO mode\n");
@@ -3825,12 +3834,12 @@ static Bool RADEONPreInitDRI(ScrnInfoPtr pScrn)
 
     if (info->noBackBuffer) {
 	info->allowPageFlip = 0;
-    } else if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+    } else if (!(pModule = xf86LoadSubModule(pScrn, "shadowfb"))) {
 	info->allowPageFlip = 0;
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		   "Couldn't load shadowfb module:\n");
     } else {
-	xf86LoaderModReqSymLists(RADEONModule, driShadowFBSymbols, NULL);
+	xf86LoaderModReqSymLists(pModule, driShadowFBSymbols, NULL);
 
 	info->allowPageFlip = xf86ReturnOptValBool(info->Options,
 						   OPTION_PAGE_FLIP,
@@ -3848,11 +3857,14 @@ static void
 RADEONProbeDDC(ScrnInfoPtr pScrn, int indx)
 {
     vbeInfoPtr  pVbe;
+    ModuleDescPtr pModule;
 
-    if (xf86LoadVBEModule(pScrn)) {
+    if ((pModule = xf86LoadVBEModule(pScrn))) {
+	xf86LoaderModReqSymLists(pModule, vbeSymbols, NULL);
 	pVbe = VBEInit(NULL,indx);
 	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
 	vbeFree(pVbe);
+	xf86UnloadSubModule(pModule);
     }
 }
 
@@ -3863,6 +3875,7 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
     xf86Int10InfoPtr  pInt10 = NULL;
     void *int10_save = NULL;
     const char *s;
+    ModuleDescPtr pModule;
 
     RADEONTRACE(("RADEONPreInit\n"));
     if (pScrn->numEntities != 1) return FALSE;
@@ -3948,8 +3961,8 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
 	return TRUE;
     }
 
-    if (!xf86LoadSubModule(pScrn, "vgahw")) return FALSE;
-    xf86LoaderModReqSymLists(RADEONModule, vgahwSymbols, NULL);
+    if (!(pModule = xf86LoadSubModule(pScrn, "vgahw"))) return FALSE;
+    xf86LoaderModReqSymLists(pModule, vgahwSymbols, NULL);
     if (!vgaHWGetHWRec(pScrn)) {
 	RADEONFreeRec(pScrn);
 	goto fail2;
@@ -4010,8 +4023,8 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
     if (xf86ReturnOptValBool(info->Options, OPTION_FBDEV, FALSE)) {
 	/* check for Linux framebuffer device */
 
-	if (xf86LoadSubModule(pScrn, "fbdevhw")) {
-	    xf86LoaderModReqSymLists(RADEONModule, fbdevHWSymbols, NULL);
+	if ((pModule = xf86LoadSubModule(pScrn, "fbdevhw"))) {
+	    xf86LoaderModReqSymLists(pModule, fbdevHWSymbols, NULL);
 
 	    if (fbdevHWInit(pScrn, info->PciInfo, NULL)) {
 		pScrn->ValidMode     = fbdevHWValidMode;

@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.112 2005/10/14 15:16:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.113 2006/02/08 01:34:36 dawes Exp $ */
 
 /*
  * Authors:
@@ -301,7 +301,7 @@ static XF86ModuleVersionInfo tdfxVersRec =
 XF86ModuleData tdfxModuleData = {&tdfxVersRec, tdfxSetup, 0};
 
 static pointer
-tdfxSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+tdfxSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 
@@ -320,12 +320,12 @@ tdfxSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * Tell the loader about symbols from other modules that this module
 	 * might refer to.
 	 */
-	LoaderRefSymLists(vgahwSymbols, fbSymbols, xaaSymbols, 
-			  ramdacSymbols, vbeSymbols, int10Symbols,
+	LoaderModRefSymLists(module, vgahwSymbols, fbSymbols, xaaSymbols, 
+			     ramdacSymbols, vbeSymbols, int10Symbols,
 #ifdef XF86DRI
-			  drmSymbols, driSymbols,
+			     drmSymbols, driSymbols,
 #endif
-			  NULL);
+			     NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -385,11 +385,14 @@ static void
 TDFXProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
-    if (xf86LoadVBEModule(pScrn))
+    ModuleDescPtr pMod;
+    if ((pMod = xf86LoadVBEModule(pScrn)))
     {
+	xf86LoaderModReqSymLists(pMod, vbeSymbols, NULL);
 	pVbe =  VBEInit(NULL,index);
 	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
 	vbeFree(pVbe);
+	xf86UnloadSubModule(pMod);
     }
 }
 
@@ -691,6 +694,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
   rgb defaultWeight = {0, 0, 0};
   pciVideoPtr match;
   int availableMem;
+  ModuleDescPtr pMod, pDDCMod;
 
   TDFXTRACE("TDFXPreInit start\n");
   if (pScrn->numEntities != 1) return FALSE;
@@ -717,19 +721,19 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
   if (pTDFX->pEnt->location.type != BUS_PCI) return FALSE;
 
   /* The vgahw module should be loaded here when needed */
-  if (!xf86LoadSubModule(pScrn, "vgahw")) return FALSE;
+  if (!(pMod = xf86LoadSubModule(pScrn, "vgahw"))) return FALSE;
 
-  xf86LoaderReqSymLists(vgahwSymbols, NULL);
+  xf86LoaderModReqSymLists(pMod, vgahwSymbols, NULL);
 
   /* Allocate a vgaHWRec */
   if (!vgaHWGetHWRec(pScrn)) return FALSE;
 
 #if USE_INT10
 #if !defined(__powerpc__)
-  if (xf86LoadSubModule(pScrn, "int10")) {
+  if ((pMod = xf86LoadSubModule(pScrn, "int10"))) {
     xf86Int10InfoPtr pInt;
 
-    xf86LoaderReqSymLists(int10Symbols, NULL);
+    xf86LoaderModReqSymLists(pMod, int10Symbols, NULL);
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
                "Softbooting the board (through the int10 interface).\n");
     pInt = xf86InitInt10(pTDFX->pEnt->index);
@@ -988,18 +992,18 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
 
   xf86SetDpi(pScrn, 0, 0);
 
-  if (!xf86LoadSubModule(pScrn, "fb")) {
+  if (!(pMod = xf86LoadSubModule(pScrn, "fb"))) {
     TDFXFreeRec(pScrn);
     return FALSE;
   }
-  xf86LoaderReqSymLists(fbSymbols, NULL);
+  xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
 
   if (!xf86ReturnOptValBool(pTDFX->Options, OPTION_NOACCEL, FALSE)) {
-    if (!xf86LoadSubModule(pScrn, "xaa")) {
+    if (!(pMod = xf86LoadSubModule(pScrn, "xaa"))) {
       TDFXFreeRec(pScrn);
       return FALSE;
     }
-    xf86LoaderReqSymLists(xaaSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, xaaSymbols, NULL);
   }
 
   if (!xf86GetOptValBool(pTDFX->Options, OPTION_SHOWCACHE, &(pTDFX->ShowCache))) {
@@ -1021,25 +1025,25 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
   }
 
   if (!xf86ReturnOptValBool(pTDFX->Options, OPTION_SW_CURSOR, FALSE)) {
-    if (!xf86LoadSubModule(pScrn, "ramdac")) {
+    if (!(pMod = xf86LoadSubModule(pScrn, "ramdac"))) {
       TDFXFreeRec(pScrn);
       return FALSE;
     }
-    xf86LoaderReqSymLists(ramdacSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, ramdacSymbols, NULL);
   }
 
   /* Load DDC and I2C for monitor ID */
-  if (!xf86LoadSubModule(pScrn, "i2c")) {
+  if (!(pMod = xf86LoadSubModule(pScrn, "i2c"))) {
     TDFXFreeRec(pScrn);
     return FALSE;
   }
-  xf86LoaderReqSymLists(i2cSymbols, NULL);
+  xf86LoaderModReqSymLists(pMod, i2cSymbols, NULL);
 
-  if (!xf86LoadSubModule(pScrn, "ddc")) {
+  if (!(pDDCMod = xf86LoadSubModule(pScrn, "ddc"))) {
     TDFXFreeRec(pScrn);
     return FALSE;
   }
-  xf86LoaderReqSymLists(ddcSymbols, NULL);
+  xf86LoaderModReqSymLists(pDDCMod, ddcSymbols, NULL);
 
   /* try to read read DDC2 data */
   pMon = doTDFXDDC(pScrn);
@@ -1050,13 +1054,15 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
   } else {
     /* try to use vbe if we didn't find anything */
     /* Initialize DDC1 if possible */
-    if (xf86LoadVBEModule(pScrn)) {
+    if ((pMod = xf86LoadVBEModule(pScrn))) {
         vbeInfoPtr pVbe = VBEInit(NULL,pTDFX->pEnt->index);
-
-        xf86LoaderReqSymLists(vbeSymbols, NULL);
-        pMon = vbeDoEDID(pVbe, NULL);
-        vbeFree(pVbe);
-        xf86SetDDCproperties(pScrn,xf86PrintEDID(pMon));
+        xf86LoaderModReqSymLists(pMod, vbeSymbols, NULL);
+        if (pVbe) {
+            pMon = vbeDoEDID(pVbe, pDDCMod);
+            vbeFree(pVbe);
+            xf86SetDDCproperties(pScrn,xf86PrintEDID(pMon));
+        }
+        xf86UnloadSubModule(pMod);
     }
 #endif
 #endif
@@ -1124,8 +1130,8 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
 #ifdef XF86DRI
   /* Load the dri module if requested. */
   if (xf86ReturnOptValBool(pTDFX->Options, OPTION_DRI, FALSE)) {
-    if (xf86LoadSubModule(pScrn, "dri")) {
-      xf86LoaderReqSymLists(driSymbols, drmSymbols, NULL);
+    if ((pMod = xf86LoadSubModule(pScrn, "dri"))) {
+      xf86LoaderModReqSymLists(pMod, driSymbols, drmSymbols, NULL);
     }
   }
 #endif

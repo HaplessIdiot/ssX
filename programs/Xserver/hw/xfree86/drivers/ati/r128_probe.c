@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_probe.c,v 1.18 2003/02/09 15:33:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_probe.c,v 1.19 2006/03/02 03:00:37 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -268,15 +268,16 @@ R128Probe(DriverPtr drv, int flags)
 	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv, 0);
 
 #ifdef XFree86LOADER
+	    ModuleDescPtr pModule;
 
-	    if (!xf86LoadSubModule(pScrn, "r128")) {
+	    if (!(pModule = xf86LoadSubModule(pScrn, "r128"))) {
 		xf86Msg(X_ERROR,
 		    R128_NAME ":  Failed to load \"r128\" module.\n");
 		xf86DeleteScreen(pScrn->scrnIndex, 0);
 		continue;
 	    }
 
-	    xf86LoaderModReqSymLists(R128Module, R128Symbols, NULL);
+	    xf86LoaderModReqSymLists(pModule, R128Symbols, NULL);
 
 #endif
 

@@ -19,7 +19,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.h,v 1.4 2003/10/15 16:29:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.h,v 1.5 2006/03/02 03:00:38 dawes Exp $ */
 
 #ifndef _AOUTLOADER_H
 #define _AOUTLOADER_H
@@ -34,6 +34,6 @@ extern char *AOUTAddressToSection(void *, unsigned long);
 extern void AOUTUnloadModule(void *);
 extern const char *AOUTFindRelocName(LoaderDescPtr, int, unsigned long);
 extern const char *AOUTAddressToSymbol(void *, unsigned long, unsigned long *,
-				       const char **);
+				       const char **, int);
 extern void *AOUTReadExecutableSyms(int);
 #endif

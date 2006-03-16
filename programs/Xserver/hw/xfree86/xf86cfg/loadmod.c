@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loadmod.c,v 1.18 2003/06/12 14:12:38 eich Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loadmod.c,v 1.19 2005/06/29 01:14:12 dawes Exp $
  */
 
 #ifdef USE_MODULES
@@ -552,7 +552,7 @@ xf86cfgCheckModule(void)
 }
 
 void
-xf86AddDriver(DriverPtr drv, void *module, int flags)
+xf86AddDriver(DriverPtr drv, ModuleDescPtr module, int flags)
 {
     driver = drv;
     if (driver)
@@ -567,13 +567,13 @@ xf86ServerIsOnlyDetecting(void)
 }
 
 void
-xf86AddInputDriver(InputDriverPtr inp, void *module, int flags)
+xf86AddInputDriver(InputDriverPtr inp, ModuleDescPtr module, int flags)
 {
     module_type = InputModule;
 }
 
 void
-xf86AddModuleInfo(ModuleInfoPtr inf, void *module)
+xf86AddModuleInfo(ModuleInfoPtr inf, ModuleDescPtr module)
 {
     info = inf;
 }
@@ -649,7 +649,7 @@ xf86MatchIsaInstances(const char *name, SymTabPtr chipsets, IsaChipsets *ISAchip
 }
 
 /*ARGSUSED*/
-void *
+ModuleDescPtr
 xf86LoadDrvSubModule(DriverPtr drv, const char *name)
 {
     pointer ret;

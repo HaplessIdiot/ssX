@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.43tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.44 2005/10/14 15:16:49 tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -357,29 +357,30 @@ XF86ModuleData viaModuleData = {&VIAVersRec, VIASetup, NULL};
 
 
 /* static */
-pointer VIASetup(pointer module, pointer opts, int *errmaj, int *errmin)
+pointer VIASetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 
     if (!setupDone) {
 	setupDone = TRUE;
 	xf86AddDriver(&VIA, module, 0);
-	LoaderRefSymLists(vgaHWSymbols,
-			  fbSymbols,
-			  ramdacSymbols,
-			  xaaSymbols,
-			  shadowSymbols,
-			  vbeSymbols,
-			  i2cSymbols,
-			  ddcSymbols,
-			  /*
-			  mpegSymbols,
-			  */
+	LoaderModRefSymLists(module,
+			     vgaHWSymbols,
+			     fbSymbols,
+			     ramdacSymbols,
+			     xaaSymbols,
+			     shadowSymbols,
+			     vbeSymbols,
+			     i2cSymbols,
+			     ddcSymbols,
+			     /*
+			     mpegSymbols,
+			     */
 #ifdef XF86DRI
-				  drmSymbols,
-				  driSymbols,
+			     drmSymbols,
+			     driSymbols,
 #endif
-			  NULL);
+			     NULL);
 
 	return (pointer) 1;
     }
@@ -674,10 +675,13 @@ static void
 VIAProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
+    ModuleDescPtr pMod;
 
-    if (xf86LoadVBEModule(pScrn)) {
+    if ((pMod = xf86LoadVBEModule(pScrn))) {
+	xf86LoaderModReqSymLists(pMod, vbeSymbols, NULL);
 	pVbe = VBEInit(NULL,index);
 	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
+	xf86UnloadSubModule(pMod);
     }
 }
 /***********************************************************
@@ -749,6 +753,7 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
     char            *s = NULL;
     vgaHWPtr        hwp;
     int             i, bMemSize = 0, tmp;
+    ModuleDescPtr   pMod;
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "VIAPreInit\n"));
 
@@ -758,10 +763,10 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
     if (flags & PROBE_DETECT)
 	return FALSE;
 
-    if (!xf86LoadSubModule(pScrn, "vgahw"))
+    if (!(pMod = xf86LoadSubModule(pScrn, "vgahw")))
 	return FALSE;
 
-    xf86LoaderReqSymLists(vgaHWSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, vgaHWSymbols, NULL);
     if (!vgaHWGetHWRec(pScrn))
 	return FALSE;
 
@@ -1248,13 +1253,13 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Refresh is %d\n", pBIOSInfo->OptRefresh);
     }
 
-    if (xf86LoadSubModule(pScrn, "int10")) {
-	xf86LoaderReqSymLists(int10Symbols, NULL);
+    if ((pMod = xf86LoadSubModule(pScrn, "int10"))) {
+	xf86LoaderModReqSymLists(pMod, int10Symbols, NULL);
 	pVia->pInt10 = xf86InitInt10(pEnt->index);
     }
 
-    if (pVia->pInt10 && xf86LoadVBEModule(pScrn)) {
-	xf86LoaderReqSymLists(vbeSymbols, NULL);
+    if (pVia->pInt10 && (pMod = xf86LoadVBEModule(pScrn))) {
+	xf86LoaderModReqSymLists(pMod, vbeSymbols, NULL);
 	pVia->pVbe = VBEInit(pVia->pInt10, pVia->EntityIndex);
     }
 
@@ -1333,8 +1338,15 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
     hwp = VGAHWPTR(pScrn);
     vgaHWGetIOBase(hwp);
 
+#define VBECLEAN do {						\
+			if (pVia->pVbe) {			\
+			    vbeFree(pVia->pVbe);		\
+			    pVia->pVbe = NULL;			\
+			}					\
+		    } while (0)
+
     if (!VIAMapMMIO(pScrn)) {
-	vbeFree(pVia->pVbe);
+	VBECLEAN;
 	return FALSE;
     }
     /* now we can check what devices are connected */
@@ -1366,7 +1378,7 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
 	Gamma zeros = {0.0, 0.0, 0.0};
 
 	if (!xf86SetGamma(pScrn, zeros)) {
-	    vbeFree(pVia->pVbe);
+	    VBECLEAN;
 	    return FALSE;
 	}
     }
@@ -1430,23 +1442,23 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
 	    break;
     }
 
-    if (!xf86LoadSubModule(pScrn, "i2c")) {
+    if (!(pMod = xf86LoadSubModule(pScrn, "i2c"))) {
 	VIAFreeRec(pScrn);
 	return FALSE;
     }
     else {
-	xf86LoaderReqSymLists(i2cSymbols,NULL);
+	xf86LoaderModReqSymLists(pMod, i2cSymbols,NULL);
 	VIAI2CInit(pScrn);
     }
 
-    if (!xf86LoadSubModule(pScrn, "ddc")) {
+    if (!(pMod = xf86LoadSubModule(pScrn, "ddc"))) {
 	VIAFreeRec(pScrn);
 	return FALSE;
     }
     else {
-	xf86LoaderReqSymLists(ddcSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, ddcSymbols, NULL);
 
-	if (!(pVia->pVbe && ((pVia->DDC1 = vbeDoEDID(pVia->pVbe, NULL)))))
+	if (!(pVia->pVbe && ((pVia->DDC1 = vbeDoEDID(pVia->pVbe, pMod)))))
 	    if (!(pVia->DDC1 = xf86DoEDID_DDC2(pScrn->scrnIndex, pVia->I2C_Port1)))
 		pVia->DDC1 = VIAddc1(pScrn->scrnIndex, pVia);
 
@@ -1455,6 +1467,7 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
 	    xf86SetDDCproperties(pScrn, pVia->DDC1);
 	}
     }
+    VBECLEAN;
 
     /*
      * Setup the ClockRanges, which describe what clock ranges are available,
@@ -1537,35 +1550,35 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
     xf86PrintModes(pScrn);
     xf86SetDpi(pScrn, 0, 0);
 
-    if (xf86LoadSubModule(pScrn, "fb") == NULL) {
+    if (!(pMod = xf86LoadSubModule(pScrn, "fb"))) {
 	VIAFreeRec(pScrn);
 	return FALSE;
     }
 
-    xf86LoaderReqSymLists(fbSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
 
     if (!pVia->NoAccel) {
-	if(!xf86LoadSubModule(pScrn, "xaa")) {
+	if(!(pMod = xf86LoadSubModule(pScrn, "xaa"))) {
 	    VIAFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(xaaSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, xaaSymbols, NULL);
     }
 
     if (pVia->hwcursor) {
-	if (!xf86LoadSubModule(pScrn, "ramdac")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "ramdac"))) {
 	    VIAFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(ramdacSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, ramdacSymbols, NULL);
     }
 
     if (pVia->shadowFB) {
-	if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "shadowfb"))) {
 	    VIAFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(shadowSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, shadowSymbols, NULL);
     }
 
     /* Capture option parameter */
@@ -1604,7 +1617,7 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
 		   "Option: Cap0_FieldSwap Disabled\n");
     }
 
-    /* xf86LoaderReqSymLists(mpegSymbols, NULL); */
+    /* xf86LoaderModReqSymLists(pMod, mpegSymbols, NULL); */
 
     VIADeviceSelection(pScrn);
     if (pVia->IsSecondary) {

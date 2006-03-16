@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.33tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.34 2005/10/14 15:16:52 tsi Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -51,7 +51,7 @@ static XF86ModuleVersionInfo fbdevHWVersRec =
 XF86ModuleData fbdevhwModuleData = { &fbdevHWVersRec, fbdevhwSetup, NULL };
 
 static pointer
-fbdevhwSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+fbdevhwSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
 	const char *osname;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/mesa/src/GLcoremodule.c,v 1.5 2000/02/23 04:46:55 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/mesa/GLcore/GLcoremodule.c,v 1.1 2002/02/25 00:45:41 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -53,7 +53,7 @@ static XF86ModuleVersionInfo VersRec =
 XF86ModuleData GLcoreModuleData = { &VersRec, GLcoreSetup, NULL };
 
 static pointer
-GLcoreSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+GLcoreSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     /* Need a non-NULL return value to indicate success */
     return (pointer)1;

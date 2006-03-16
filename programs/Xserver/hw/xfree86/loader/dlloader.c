@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.16tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.17 2006/03/11 17:36:50 tsi Exp $ */
 
 /*
  * Copyright (c) 1997 The XFree86 Project, Inc.
@@ -272,7 +272,7 @@ DLUnloadModule(void *modptr)
 
 const char *
 DLAddressToSymbol(void *mod, unsigned long addr, unsigned long *symaddr,
-		  const char **filename)
+		  const char **filename, int exe)
 {
     static Dl_info info;
     int ret;

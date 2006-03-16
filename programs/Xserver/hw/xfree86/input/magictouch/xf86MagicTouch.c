@@ -27,7 +27,7 @@
  * SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/magictouch/xf86MagicTouch.c,v 1.7 2005/06/11 02:40:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/magictouch/xf86MagicTouch.c,v 1.8 2005/06/11 09:57:28 dawes Exp $ */
 
 #define _MGT_C_
 
@@ -117,9 +117,10 @@ static const char *reqSymbols[] = {
 	NULL
 };
 
+static MODULESETUPPROTO(MGTSetupProc);
 
 static pointer
-MGTSetupProc(	pointer module,
+MGTSetupProc(	ModuleDescPtr module,
 			pointer options,
 			int *errmaj,
 			int *errmin )

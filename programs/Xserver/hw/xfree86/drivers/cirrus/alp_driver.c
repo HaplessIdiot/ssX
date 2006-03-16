@@ -11,7 +11,7 @@
  *    Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.39tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.40 2005/10/14 15:16:38 tsi Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -153,8 +153,8 @@ static int gd7556_MaxClocks[] = {  80100,  80100,  80100,  80100,  80100 };
  * List of symbols from other modules that this module references.  This
  * list is used to tell the loader that it is OK for symbols here to be
  * unresolved providing that it hasn't been told that they haven't been
- * told that they are essential via a call to xf86LoaderReqSymbols() or
- * xf86LoaderReqSymLists().  The purpose is this is to avoid warnings about
+ * told that they are essential via a call to xf86LoaderModReqSymbols() or
+ * xf86LoaderModReqSymLists().  The purpose is this is to avoid warnings about
  * unresolved symbols that are not required.
  */
 
@@ -258,14 +258,15 @@ static XF86ModuleVersionInfo alpVersRec =
 XF86ModuleData cirrus_alpineModuleData = { &alpVersRec, alpSetup, NULL };
 
 static pointer
-alpSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+alpSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
 	static Bool setupDone = FALSE;
 	if (!setupDone) {
 		setupDone = TRUE;
-		LoaderRefSymLists(vgahwSymbols, fbSymbols, xaaSymbols,
-				  miscfbSymbols, ramdacSymbols,int10Symbols,
-				  ddcSymbols, i2cSymbols, shadowSymbols, NULL);
+		LoaderModRefSymLists(module, vgahwSymbols, fbSymbols,
+				     xaaSymbols, miscfbSymbols, ramdacSymbols,
+				     int10Symbols, ddcSymbols, i2cSymbols,
+				     shadowSymbols, NULL);
 	}
 	return (pointer)1;
 }
@@ -528,6 +529,7 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 	ClockRangePtr clockRanges;
 	char *s;
  	xf86Int10InfoPtr pInt = NULL;
+	ModuleDescPtr pMod;
 
 	if (flags & PROBE_DETECT)  {
 	  cirProbeDDC( pScrn, xf86GetEntityInfo(pScrn->entityList[0])->index );
@@ -542,10 +544,10 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 	if (pScrn->numEntities != 1)
 		return FALSE;
 
-	if (!xf86LoadSubModule(pScrn, "vgahw"))
+	if (!(pMod = xf86LoadSubModule(pScrn, "vgahw")))
 		return FALSE;
 
-	xf86LoaderReqSymLists(vgahwSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, vgahwSymbols, NULL);
 
 	/*
 	 * Allocate a vgaHWRec
@@ -577,8 +579,8 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 									pCir->PciInfo->device,
 									pCir->PciInfo->func);
 
-    if (!xf86IsPc98() && xf86LoadSubModule(pScrn, "int10")) {
-	xf86LoaderReqSymLists(int10Symbols,NULL);
+    if (!xf86IsPc98() && (pMod = xf86LoadSubModule(pScrn, "int10"))) {
+	xf86LoaderModReqSymLists(pMod, int10Symbols,NULL);
 	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"initializing int10\n");
 	pInt = xf86InitInt10(pCir->pEnt->index);
 	xf86FreeInt10(pInt);
@@ -798,17 +800,17 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 	 return FALSE;
      }
 
-     if (!xf86LoadSubModule(pScrn, "i2c")) {
+     if (!(pMod = xf86LoadSubModule(pScrn, "i2c"))) {
 	 AlpFreeRec(pScrn);
  	return FALSE;
      }
-     xf86LoaderReqSymLists(i2cSymbols,NULL);
+     xf86LoaderModReqSymLists(pMod, i2cSymbols,NULL);
  
-     if (!xf86LoadSubModule(pScrn, "ddc")) {
+     if (!(pMod = xf86LoadSubModule(pScrn, "ddc"))) {
  	AlpFreeRec(pScrn);
  	return FALSE;
      }
-     xf86LoaderReqSymLists(ddcSymbols, NULL);
+     xf86LoaderModReqSymLists(pMod, ddcSymbols, NULL);
  
      if(!AlpI2CInit(pScrn)) {
          xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -1102,55 +1104,55 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 	/* Load bpp-specific modules */
 	switch (pScrn->bitsPerPixel) {
 	case 1:  
-	    if (xf86LoadSubModule(pScrn, "xf1bpp") == NULL) {
+	    if (!(pMod = xf86LoadSubModule(pScrn, "xf1bpp"))) {
 	        AlpFreeRec(pScrn);
 		return FALSE;
 	    } 
-	    xf86LoaderReqSymbols("xf1bppScreenInit",NULL);
+	    xf86LoaderModReqSymbols(pMod, "xf1bppScreenInit", NULL);
 	    break;
 	case 4:  
-	    if (xf86LoadSubModule(pScrn, "xf4bpp") == NULL) {
+	    if (!(pMod = xf86LoadSubModule(pScrn, "xf4bpp"))) {
 	        AlpFreeRec(pScrn);
 		return FALSE;
-	    } 
-	    xf86LoaderReqSymbols("xf4bppScreenInit",NULL);	    
+	    }
+	    xf86LoaderModReqSymbols(pMod, "xf4bppScreenInit",NULL);
 	    break;
 	case 8:
 	case 16:
 	case 24:
 	case 32:
-	    if (xf86LoadSubModule(pScrn, "fb") == NULL) {
+	    if (!(pMod = xf86LoadSubModule(pScrn, "fb"))) {
 	        AlpFreeRec(pScrn);
 		return FALSE;
 	    } 
-	    xf86LoaderReqSymLists(fbSymbols, NULL);
+	    xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
 	    break;
 	}
 
 	/* Load XAA if needed */
 	if (!pCir->NoAccel) {
-		if (!xf86LoadSubModule(pScrn, "xaa")) {
+		if (!(pMod = xf86LoadSubModule(pScrn, "xaa"))) {
 			AlpFreeRec(pScrn);
 			return FALSE;
 		}
-		xf86LoaderReqSymLists(xaaSymbols, NULL);
+		xf86LoaderModReqSymLists(pMod, xaaSymbols, NULL);
 	}
 
 	/* Load ramdac if needed */
 	if (pCir->HWCursor) {
-		if (!xf86LoadSubModule(pScrn, "ramdac")) {
+		if (!(pMod = xf86LoadSubModule(pScrn, "ramdac"))) {
 			AlpFreeRec(pScrn);
 			return FALSE;
 		}
-		xf86LoaderReqSymLists(ramdacSymbols, NULL);
+		xf86LoaderModReqSymLists(pMod, ramdacSymbols, NULL);
 	}
 
 	if (pCir->shadowFB) {
-	    if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+	    if (!(pMod = xf86LoadSubModule(pScrn, "shadowfb"))) {
 		AlpFreeRec(pScrn);
 		return FALSE;
 	    }
-	    xf86LoaderReqSymLists(shadowSymbols, NULL);
+	    xf86LoaderModReqSymLists(pMod, shadowSymbols, NULL);
 	}
 
 	return TRUE;

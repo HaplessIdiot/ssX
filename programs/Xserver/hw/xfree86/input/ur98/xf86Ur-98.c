@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/ur98/xf86Ur-98.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/ur98/xf86Ur-98.c,v 1.2 2003/12/22 17:48:10 tsi Exp $ */
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -687,12 +687,16 @@ InputDriverRec UR98 = {
 };
 
 #ifdef XFree86LOADER
-static pointer Plug(pointer module, pointer options, int *errmaj,int *errmin)
+static MODULESETUPPROTO(Plug);
+
+static pointer Plug(ModuleDescPtr module, pointer options, int *errmaj,int *errmin)
 {
 	xf86LoaderReqSymLists(reqSymbols, NULL);
 	xf86AddInputDriver(&UR98, module, 0);
 	return module;
 }
+
+static MODULETEARDOWNPROTO(Unplug);
 
 static void Unplug(pointer p)
 {

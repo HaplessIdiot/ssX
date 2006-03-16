@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.257 2006/02/18 03:31:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.258 2006/03/02 03:00:38 dawes Exp $ */
 
 /*
  *
@@ -621,6 +621,7 @@ LOOKUP xfree86LookupTab[] = {
     SYMFUNC(xf86GetRotation)
     SYMFUNC(xf86GetVersion)
     SYMFUNC(xf86GetModuleVersion)
+    SYMFUNC(xf86GetSubModuleByName)
     SYMFUNC(xf86GetClocks)
     SYMFUNC(xf86SetPriority)
     SYMFUNC(xf86SetParentModuleRequirements)

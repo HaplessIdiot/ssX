@@ -23,7 +23,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.141 2006/01/21 01:17:59 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.142 2006/01/23 18:35:53 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -308,8 +308,8 @@ static SymTabRec NVKnownChipsets[] =
  * List of symbols from other modules that this module references.  This
  * list is used to tell the loader that it is OK for symbols here to be
  * unresolved providing that it hasn't been told that they haven't been
- * told that they are essential via a call to xf86LoaderReqSymbols() or
- * xf86LoaderReqSymLists().  The purpose is this is to avoid warnings about
+ * told that they are essential via a call to xf86LoaderModReqSymbols() or
+ * xf86LoaderModReqSymLists().  The purpose is this is to avoid warnings about
  * unresolved symbols that are not required.
  */
 
@@ -358,14 +358,12 @@ static const char *ddcSymbols[] = {
     NULL
 };
 
-#ifdef XFree86LOADER
 static const char *vbeSymbols[] = {
     "VBEInit",
     "vbeFree",
     "vbeDoEDID",
     NULL
 };
-#endif
 
 static const char *i2cSymbols[] = {
     "xf86CreateI2CBusRec",
@@ -506,7 +504,7 @@ NVFreeRec(ScrnInfoPtr pScrn)
 #ifdef XFree86LOADER
 
 static pointer
-nvSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+nvSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 
@@ -525,10 +523,10 @@ nvSetup(pointer module, pointer opts, int *errmaj, int *errmin)
          * Tell the loader about symbols from other modules that this module
          * might refer to.
          */
-        LoaderRefSymLists(vgahwSymbols, xaaSymbols, fbSymbols,
-                          ramdacSymbols, shadowSymbols, rivaSymbols,
-                          i2cSymbols, ddcSymbols, vbeSymbols,
-                          fbdevHWSymbols, int10Symbols, NULL);
+        LoaderModRefSymLists(module, vgahwSymbols, xaaSymbols, fbSymbols,
+                             ramdacSymbols, shadowSymbols, rivaSymbols,
+                             i2cSymbols, ddcSymbols, vbeSymbols,
+                             fbdevHWSymbols, int10Symbols, NULL);
 
         /*
          * The return value must be non-NULL on success even though there
@@ -638,6 +636,7 @@ NVProbe(DriverPtr drv, int flags)
     int numDevSections;
     int numUsed;
     Bool foundScreen = FALSE;
+    ModuleDescPtr pMod;
 
 
     if ((numDevSections = xf86MatchDevice(NV_DRIVER_NAME, &devSections)) <= 0) 
@@ -733,10 +732,10 @@ NVProbe(DriverPtr drv, int flags)
 
         pPci = xf86GetPciInfoForEntity(usedChips[i]);
         if(pPci->vendor == PCI_VENDOR_NVIDIA_SGS) {
-            if (!xf86LoadDrvSubModule(drv, "riva128")) {
+            if (!(pMod = xf86LoadDrvSubModule(drv, "riva128"))) {
                   continue;
             }
-            xf86LoaderReqSymLists(rivaSymbols, NULL);
+            xf86LoaderModReqSymLists(pMod, rivaSymbols, NULL);
             if(RivaGetScrnInfoRec(NVPciChipsets, usedChips[i]))
                 foundScreen = TRUE;
         } else {
@@ -933,11 +932,14 @@ static void
 nvProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
+    ModuleDescPtr pMod;
 
-    if (xf86LoadVBEModule(pScrn)) {
+    if ((pMod = xf86LoadVBEModule(pScrn))) {
+	xf86LoaderModReqSymLists(pMod, vbeSymbols, NULL);
         pVbe = VBEInit(NULL,index);
         ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
 	vbeFree(pVbe);
+	xf86UnloadSubModule(pMod);
     }
 }
 
@@ -945,13 +947,14 @@ nvProbeDDC(ScrnInfoPtr pScrn, int index)
 Bool NVI2CInit(ScrnInfoPtr pScrn)
 {
     char *mod = "i2c";
+    ModuleDescPtr pMod;
 
-    if (xf86LoadSubModule(pScrn, mod)) {
-        xf86LoaderReqSymLists(i2cSymbols,NULL);
+    if ((pMod = xf86LoadSubModule(pScrn, mod))) {
+        xf86LoaderModReqSymLists(pMod, i2cSymbols,NULL);
 
         mod = "ddc";
-        if(xf86LoadSubModule(pScrn, mod)) {
-            xf86LoaderReqSymLists(ddcSymbols, NULL);
+        if ((pMod = xf86LoadSubModule(pScrn, mod))) {
+            xf86LoaderModReqSymLists(pMod, ddcSymbols, NULL);
             return NVDACi2cInit(pScrn);
         } 
     }
@@ -971,6 +974,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     int i, max_width, max_height;
     ClockRangePtr clockRanges;
     const char *s;
+    ModuleDescPtr pMod;
 
     if (flags & PROBE_DETECT) {
         nvProbeDDC( pScrn, xf86GetEntityInfo(pScrn->entityList[0])->index );
@@ -1013,8 +1017,8 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     pNv->Primary = xf86IsPrimaryPci(pNv->PciInfo);
 
     /* Initialize the card through int10 interface if needed */
-    if (xf86LoadSubModule(pScrn, "int10")) {
- 	xf86LoaderReqSymLists(int10Symbols, NULL);
+    if ((pMod = xf86LoadSubModule(pScrn, "int10"))) {
+ 	xf86LoaderModReqSymLists(pMod, int10Symbols, NULL);
 #if !defined(__alpha__) && !defined(__powerpc__)
         xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
         pNv->pInt = xf86InitInt10(pNv->pEnt->index);
@@ -1142,12 +1146,12 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     /* The vgahw module should be loaded here when needed */
-    if (!xf86LoadSubModule(pScrn, "vgahw")) {
+    if (!(pMod = xf86LoadSubModule(pScrn, "vgahw"))) {
 	xf86FreeInt10(pNv->pInt);
 	return FALSE;
     }
     
-    xf86LoaderReqSymLists(vgahwSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, vgahwSymbols, NULL);
 
     /*
      * Allocate a vgaHWRec
@@ -1212,12 +1216,12 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     }
     if (pNv->FBDev) {
 	/* check for linux framebuffer device */
-	if (!xf86LoadSubModule(pScrn, "fbdevhw")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "fbdevhw"))) {
 	    xf86FreeInt10(pNv->pInt);
 	    return FALSE;
 	}
 	
-	xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, fbdevHWSymbols, NULL);
 	if (!fbdevHWInit(pScrn, pNv->PciInfo, NULL)) {
 	    xf86FreeInt10(pNv->pInt);
 	    return FALSE;
@@ -1529,42 +1533,42 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
      * section.
      */
 
-    if (xf86LoadSubModule(pScrn, "fb") == NULL) {
+    if (!(pMod = xf86LoadSubModule(pScrn, "fb"))) {
 	xf86FreeInt10(pNv->pInt);
 	NVFreeRec(pScrn);
 	return FALSE;
     }
 
-    xf86LoaderReqSymLists(fbSymbols, NULL);
+    xf86LoaderModReqSymLists(pMod, fbSymbols, NULL);
     
     /* Load XAA if needed */
     if (!pNv->NoAccel) {
-	if (!xf86LoadSubModule(pScrn, "xaa")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "xaa"))) {
 	    xf86FreeInt10(pNv->pInt);
 	    NVFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(xaaSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, xaaSymbols, NULL);
     }
 
     /* Load ramdac if needed */
     if (pNv->HWCursor) {
-	if (!xf86LoadSubModule(pScrn, "ramdac")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "ramdac"))) {
 	    xf86FreeInt10(pNv->pInt);
 	    NVFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(ramdacSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, ramdacSymbols, NULL);
     }
 
     /* Load shadowfb if needed */
     if (pNv->ShadowFB) {
-	if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+	if (!(pMod = xf86LoadSubModule(pScrn, "shadowfb"))) {
 	    xf86FreeInt10(pNv->pInt);
 	    NVFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(shadowSymbols, NULL);
+	xf86LoaderModReqSymLists(pMod, shadowSymbols, NULL);
     }
 
     pNv->CurrentLayout.bitsPerPixel = pScrn->bitsPerPixel;

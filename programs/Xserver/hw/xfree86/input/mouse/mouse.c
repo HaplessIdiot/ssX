@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.84tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.85 2005/10/14 15:16:56 tsi Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -3585,12 +3585,17 @@ ModuleInfoRec MouseInfo = {
     MouseAvailableOptions,
 };
 
+static MODULETEARDOWNPROTO(xf86MouseUnplug);
+
 static void
 xf86MouseUnplug(pointer	p)
 {
 }
+
+static MODULESETUPPROTO(xf86MousePlug);
+
 static pointer
-xf86MousePlug(pointer	module,
+xf86MousePlug(ModuleDescPtr	module,
 	    pointer	options,
 	    int		*errmaj,
 	    int		*errmin)

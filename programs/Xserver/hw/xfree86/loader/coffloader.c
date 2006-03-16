@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.23 2005/10/14 15:16:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.24 2006/03/02 03:00:38 dawes Exp $ */
 
 /*
  *
@@ -1437,15 +1437,14 @@ COFFCheckForUnresolved(LoaderDescPtr desc)
 {
     const char *name;
     COFFRelocPtr crel;
-    int flag, fatalsym = 0;
+    int fatalsym = 0;
 
     if ((crel = *_LoaderGetRelocations(desc)) == NULL)
 	return 0;
 
     while (crel) {
 	name = COFFGetSymbolName(crel->file, crel->rel->r_symndx);
-	flag = _LoaderHandleUnresolved(name, crel->file->handle);
-	if (flag)
+	if (_LoaderHandleUnresolved(name, crel->file->handle))
 	    fatalsym = 1;
 	crel = crel->next;
     }
@@ -1552,7 +1551,7 @@ COFFFindRelocName(LoaderDescPtr desc, int handle, unsigned long addr)
 
 const char *
 COFFAddressToSymbol(void *modptr, unsigned long addr, unsigned long *symaddr,
-		    const char **filename)
+		    const char **filename, int exe)
 {
     COFFModulePtr cofffile;
     FILHDR *header;

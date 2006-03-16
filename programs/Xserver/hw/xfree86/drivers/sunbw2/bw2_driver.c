@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunbw2/bw2_driver.c,v 1.6 2004/12/05 23:06:37 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunbw2/bw2_driver.c,v 1.7 2005/02/18 02:55:09 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -105,7 +105,7 @@ static XF86ModuleVersionInfo sunbw2VersRec =
 XF86ModuleData sunbw2ModuleData = { &sunbw2VersRec, bw2Setup, NULL };
 
 static pointer
-bw2Setup(pointer module, pointer opts, int *errmaj, int *errmin)
+bw2Setup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 
