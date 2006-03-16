@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_exec.c,v 1.30 2005/08/30 16:26:48 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_exec.c,v 1.31 2006/02/08 02:34:12 dawes Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -24,7 +24,11 @@
 #include "xf86int10.h"
 
 static int pciCfg1in(CARD16 addr, CARD32 *val);
+static int pciCfg1inw(CARD16 addr, CARD16 *val);
+static int pciCfg1inb(CARD16 addr, CARD8 *val);
 static int pciCfg1out(CARD16 addr, CARD32 val);
+static int pciCfg1outw(CARD16 addr, CARD16 val);
+static int pciCfg1outb(CARD16 addr, CARD8 val);
 #if defined(_PC)
 static void SetResetBIOSVars(xf86Int10InfoPtr pInt, Bool set);
 #endif
@@ -405,22 +409,24 @@ x_inb(CARD16 port)
 	}
 #endif /* __NOT_YET__ */
     } else {
-	IOADDRESS ioport = Int10Current->ioBase + port;
-	volatile int signo;
-	int iScreen = Int10Current->scrnIndex;
-	signed char attempt;
+	if (!pciCfg1inb(port, &val)) {
+	    IOADDRESS ioport = Int10Current->ioBase + port;
+	    volatile int signo;
+	    int iScreen = Int10Current->scrnIndex;
+	    signed char attempt;
 
-	xf86InterceptSignals(&signo);
-	for (attempt = 0;  attempt >= 0;  attempt++) {
-	    signo = -1;
-	    val = inb(ioport);
-	    if (signo < 0)
-		break;
-	    xf86DrvMsg(iScreen, X_WARNING,
-		"Signal %d interrupted inb(%#x) attempt %d\n",
-		signo, port, attempt);
+	    xf86InterceptSignals(&signo);
+	    for (attempt = 0;  attempt >= 0;  attempt++) {
+		signo = -1;
+		val = inb(ioport);
+		if (signo < 0)
+		    break;
+		xf86DrvMsg(iScreen, X_WARNING,
+			   "Signal %d interrupted inb(%#x) attempt %d\n",
+			   signo, port, attempt);
+	    }
+	    xf86InterceptSignals(NULL);
 	}
-	xf86InterceptSignals(NULL);
 #ifdef PRINT_PORT
 	ErrorF(" inb(%#x) = %#2.2x\n", port, val);
 #endif
@@ -450,22 +456,24 @@ x_inw(CARD16 port)
 	ErrorF(" inw(%#x) = %#4.4x\n", port, val);
 #endif
     } else {
-	IOADDRESS ioport = Int10Current->ioBase + port;
-	volatile int signo;
-	int iScreen = Int10Current->scrnIndex;
-	signed char attempt;
+	if (!pciCfg1inw(port, &val)) {
+	    IOADDRESS ioport = Int10Current->ioBase + port;
+	    volatile int signo;
+	    int iScreen = Int10Current->scrnIndex;
+	    signed char attempt;
 
-	xf86InterceptSignals(&signo);
-	for (attempt = 0;  attempt >= 0;  attempt++) {
-	    signo = -1;
-	    val = inw(ioport);
-	    if (signo < 0)
-		break;
-	    xf86DrvMsg(iScreen, X_WARNING,
-		"Signal %d interrupted inw(%#x) attempt %d\n",
-		signo, port, attempt);
+	    xf86InterceptSignals(&signo);
+	    for (attempt = 0;  attempt >= 0;  attempt++) {
+		signo = -1;
+		val = inw(ioport);
+		if (signo < 0)
+		    break;
+		xf86DrvMsg(iScreen, X_WARNING,
+			   "Signal %d interrupted inw(%#x) attempt %d\n",
+			   signo, port, attempt);
+	    }
+	    xf86InterceptSignals(NULL);
 	}
-	xf86InterceptSignals(NULL);
 #ifdef PRINT_PORT
 	ErrorF(" inw(%#x) = %#4.4x\n", port, val);
 #endif
@@ -543,22 +551,24 @@ x_outb(CARD16 port, CARD8 val)
 	}
 #endif /* __NOT_YET__ */
     } else {
-	IOADDRESS ioport = Int10Current->ioBase + port;
-	volatile int signo;
-	int iScreen = Int10Current->scrnIndex;
-	signed char attempt;
+	if (!pciCfg1outb(port, val)) {
+	    IOADDRESS ioport = Int10Current->ioBase + port;
+	    volatile int signo;
+	    int iScreen = Int10Current->scrnIndex;
+	    signed char attempt;
 
-	xf86InterceptSignals(&signo);
-	for (attempt = 0;  attempt >= 0;  attempt++) {
-	    signo = -1;
-	    outb(ioport, val);
-	    if (signo < 0)
-		break;
-	    xf86DrvMsg(iScreen, X_WARNING,
-		"Signal %d interrupted outb(%#x, %#x) attempt %d\n",
-		signo, port, val, attempt);
+	    xf86InterceptSignals(&signo);
+	    for (attempt = 0;  attempt >= 0;  attempt++) {
+		signo = -1;
+		outb(ioport, val);
+		if (signo < 0)
+		    break;
+		xf86DrvMsg(iScreen, X_WARNING,
+			   "Signal %d interrupted outb(%#x, %#x) attempt %d\n",
+			   signo, port, val, attempt);
+	    }
+	    xf86InterceptSignals(NULL);
 	}
-	xf86InterceptSignals(NULL);
 #ifdef PRINT_PORT
 	ErrorF(" outb(%#x, %#2.2x)\n", port, val);
 #endif
@@ -573,20 +583,22 @@ x_outw(CARD16 port, CARD16 val)
 	x_outb(port, val);
 	x_outb(port + 1, val >> 8);
     } else {
-	IOADDRESS ioport = Int10Current->ioBase + port;
-	volatile int signo;
-	int iScreen = Int10Current->scrnIndex;
-	signed char attempt;
+	if (!pciCfg1outw(port, val)) {
+	    IOADDRESS ioport = Int10Current->ioBase + port;
+	    volatile int signo;
+	    int iScreen = Int10Current->scrnIndex;
+	    signed char attempt;
 
-	xf86InterceptSignals(&signo);
-	for (attempt = 0;  attempt >= 0;  attempt++) {
-	    signo = -1;
-	    outw(ioport, val);
-	    if (signo < 0)
-		break;
-	    xf86DrvMsg(iScreen, X_WARNING,
-		"Signal %d interrupted outw(%#x, %#x) attempt %d\n",
-		signo, port, val, attempt);
+	    xf86InterceptSignals(&signo);
+	    for (attempt = 0;  attempt >= 0;  attempt++) {
+		signo = -1;
+		outw(ioport, val);
+		if (signo < 0)
+		    break;
+		xf86DrvMsg(iScreen, X_WARNING,
+			   "Signal %d interrupted outw(%#x, %#x) attempt %d\n",
+			   signo, port, val, attempt);
+	    }
 	}
 	xf86InterceptSignals(NULL);
 #ifdef PRINT_PORT
@@ -701,6 +713,104 @@ pciCfg1out(CARD16 addr, CARD32 val)
 
     if (addr == 0xCFC) {
 	pciWriteLong(TAG(PciCfg1Addr), OFFSET(PciCfg1Addr), val);
+	return 1;
+    }
+
+    return 0;
+}
+
+static int
+pciCfg1inw(CARD16 addr, CARD16 *val)
+{
+    if (addr == 0xCF8 || addr == 0xCFA) {
+	int shift;
+	CARD32 mask;
+
+	shift = (addr - 0xCF8) * 8;
+	mask = 0xffff << shift;
+	*val = (PciCfg1Addr & mask) >> shift;
+	return 1;
+    }
+
+    if (addr == 0xCFC || addr == 0xCFE) {
+	int offset;
+
+	offset = addr - 0xCFC;
+	*val = pciReadWord(TAG(PciCfg1Addr), OFFSET(PciCfg1Addr) + offset);
+	return 1;
+    }
+
+    return 0;
+}
+
+static int
+pciCfg1outw(CARD16 addr, CARD16 val)
+{
+    if (addr == 0xCF8 || addr == 0xCFA) {
+	int shift;
+	CARD32 mask;
+
+	shift = (addr - 0xCF8) * 8;
+	mask = ~(0xffff << shift);
+	PciCfg1Addr &= mask;
+	PciCfg1Addr |= (val << shift);
+	return 1;
+    }
+
+    if (addr == 0xCFC || addr == 0xCFE) {
+	int offset;
+
+	offset = addr - 0xCFC;
+	pciWriteWord(TAG(PciCfg1Addr), OFFSET(PciCfg1Addr) + offset, val);
+	return 1;
+    }
+
+    return 0;
+}
+
+static int
+pciCfg1inb(CARD16 addr, CARD8 *val)
+{
+    if (addr >= 0xCF8 && addr <= 0xCFB) {
+	int shift;
+	CARD32 mask;
+
+	shift = (addr - 0xCF8) * 8;
+	mask = 0xff << shift;
+	*val = (PciCfg1Addr & mask) >> shift;
+	return 1;
+    }
+
+    if (addr >= 0xCFC && addr <= 0xCFF) {
+	int offset;
+
+	offset = addr - 0xCFC;
+	*val = pciReadByte(TAG(PciCfg1Addr), OFFSET(PciCfg1Addr) + offset);
+	return 1;
+    }
+
+    return 0;
+}
+
+static int
+pciCfg1outb(CARD16 addr, CARD8 val)
+{
+    if (addr >= 0xCF8 && addr <= 0xCFB) {
+	int shift;
+	CARD32 mask;
+
+	shift = (addr - 0xCF8) * 8;
+	mask = ~(0xff << shift);
+	PciCfg1Addr &= mask;
+	PciCfg1Addr |= (val << shift);
+	return 1;
+    }
+
+    if (addr >= 0xCFC && addr <= 0xCFF) {
+	int offset;
+
+	offset = addr - 0xCFC;
+	pciWriteByte(TAG(PciCfg1Addr), OFFSET(PciCfg1Addr) + offset, val);
 	return 1;
     }
 
