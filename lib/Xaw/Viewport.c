@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Viewport.c,v 1.13 2005/12/17 01:10:22 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Viewport.c,v 1.14 2006/01/25 04:32:09 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -328,7 +328,7 @@ XawViewportInitialize(Widget request, Widget cnew,
     clip_width = XtWidth(w);
     clip_height = XtHeight(w);
 
-    if (h_bar != NULL &&  XtWidth(w) > XtWidth(h_bar) + XtBorderWidth(h_bar))
+    if (h_bar != NULL && XtWidth(w) > XtWidth(h_bar) + XtBorderWidth(h_bar))
 	clip_width -= XtWidth(h_bar) + XtBorderWidth(h_bar);
 
     if (v_bar != NULL && XtHeight(w) > XtHeight(v_bar) + XtBorderWidth(v_bar))
@@ -571,6 +571,7 @@ ComputeLayout(Widget widget, Bool query, Bool destroy_scrollbars)
 	    preferred.width = XtWidth(child);
 	    preferred.height = XtHeight(child);
 	}
+
 	do { /* while intended != prev  */
 	    if (query) {
 		(void)XtQueryGeometry(child, &intended, &preferred);
@@ -592,13 +593,13 @@ ComputeLayout(Widget widget, Bool query, Bool destroy_scrollbars)
 		preferred.width > clip_width) {				\
 		if (!needshoriz) {					\
 		    Widget bar;						\
-									\
 		    needshoriz = True;					\
 		    if ((bar = w->viewport.horiz_bar) == NULL)		\
 			bar = CreateScrollbar(w, True);			\
 		    clip_height -= XtHeight(bar) + XtBorderWidth(bar);	\
 		    if (clip_height < 1)				\
 			clip_height = 1;				\
+		    intended.height = clip_height;			\
 		}							\
 		intended.width = preferred.width;			\
 	    }
@@ -613,10 +614,12 @@ ComputeLayout(Widget widget, Bool query, Bool destroy_scrollbars)
 		    clip_width -= XtWidth(bar) + XtBorderWidth(bar);
 		    if (clip_width < 1)
 			clip_width = 1;
+		    intended.width = clip_width;
 		    CheckHoriz();
 		}
 		intended.height = preferred.height;
 	    }
+
 	    if (!w->viewport.allowhoriz || preferred.width < clip_width) {
 		intended.width = clip_width;
 		intended.request_mode |= CWWidth;
@@ -678,21 +681,22 @@ ComputeLayout(Widget widget, Bool query, Bool destroy_scrollbars)
 	    }
 	}
 	else {
-	    int bw = bar->core.border_width;
+	    int bw = XtBorderWidth(bar);
 
 	    XtResizeWidget(bar, XtWidth(bar), clip_height, bw);
 	    XtMoveWidget(bar,
-			w->viewport.useright
-			? XtWidth(w) - XtWidth(bar) - bw : -bw,
-			needshoriz && !w->viewport.usebottom
-			? XtHeight(w->viewport.horiz_bar) : -bw);
-	   XtSetMappedWhenManaged(bar, True);
+			 w->viewport.useright
+			 ? XtWidth(w) - XtWidth(bar) - bw : -bw,
+			 needshoriz && !w->viewport.usebottom
+			 ? XtHeight(w->viewport.horiz_bar) : -bw);
+	    XtSetMappedWhenManaged(bar, True);
 	}
     }
 
     if (child != NULL) {
 	XtResizeWidget(child, intended.width, intended.height, 0);
-	MoveChild(w, needshoriz ? XtX(child) : 0,	needsvert ? XtY(child) : 0);
+	MoveChild(w, needshoriz ? XtX(child) : 0,
+		  needsvert ? XtY(child) : 0);
     }
 
     SendReport (w, XawPRAll);
@@ -962,7 +966,7 @@ XawViewportGeometryManager(Widget child, XtWidgetGeometry *request,
 		    allowed.width = XtWidth(w);
 		    allowed.request_mode |= CWWidth;
 		}
-		if (allowed.width  >  XtWidth(bar) + XtBorderWidth(bar))
+		if (allowed.width > XtWidth(bar) + XtBorderWidth(bar))
 		    allowed.width -= XtWidth(bar) + XtBorderWidth(bar);
 		else
 		    allowed.width = 1;
