@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.66 2006/02/17 18:08:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.67 2006/03/06 16:06:23 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -343,6 +343,8 @@ extern int OsLookupColor(
 extern void OsInit(void);
 
 extern void OsCleanup(Bool);
+extern void OsPrepareShutdown(Bool);
+extern void OsPrepareRestart(void);
 
 extern void OsVendorFatalError(void);
 

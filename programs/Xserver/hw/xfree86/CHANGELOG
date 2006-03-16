@@ -1,4 +1,6 @@
 XFree86 4.5.99.902 (xx March 2006)
+ 244. Prevent SIGINT from causing the XFree86 to re-enter the CloseScreen
+      phase once it has begun (David Dawes).
  243. Fix the int10 module's interception of PCI config1 i/o to handle 8-bit
       and 16-bit accesses.  This fixes problems that show up with the vesa
       driver and vbe module with some video cards (David Dawes).
@@ -20072,7 +20074,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3692 2006/03/16 16:49:52 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3693 2006/03/16 20:43:33 dawes Exp $
 
 
 

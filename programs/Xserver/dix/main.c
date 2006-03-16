@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.48tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.49 2006/02/19 15:51:19 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -424,6 +424,8 @@ main(int argc, char *argv[], char *envp[])
 
 	Dispatch();
 
+	OsPrepareShutdown((dispatchException & DE_TERMINATE) != 0);
+
 	/* Now free up whatever must be freed */
 	if (screenIsSaved == SCREEN_SAVER_ON)
 	    SaveScreens(SCREEN_SAVER_OFF, ScreenSaverReset);
@@ -479,6 +481,7 @@ main(int argc, char *argv[], char *envp[])
 
 	xfree(ConnectionInfo);
 	ConnectionInfo = NULL;
+	OsPrepareRestart();
     }
     return(0);
 }

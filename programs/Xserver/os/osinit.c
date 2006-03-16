@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.32tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.33 2005/10/14 15:17:26 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /*
- * Copyright (c) 1996-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1996-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -93,6 +93,7 @@ SOFTWARE.
  */
 
 #include <stdio.h>
+#include <signal.h>
 #include <X11/X.h>
 #include "os.h"
 #include "osdep.h"
@@ -282,3 +283,22 @@ OsCleanup(Bool terminating)
     }
 #endif
 }
+
+/* Make sure that signals don't cause re-entry during screen close. */
+void
+OsPrepareShutdown(Bool terminating)
+{
+    if (terminating) {
+	OsSignal(SIGINT, SIG_IGN);
+    } else {
+	OsSignal(SIGINT, GiveUp);
+    }
+}
+
+/* Reset signal disposition before reset. */
+void
+OsPrepareRestart()
+{
+    OsSignal(SIGINT, AbortServer);
+}
+
