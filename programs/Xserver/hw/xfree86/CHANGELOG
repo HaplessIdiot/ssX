@@ -1,4 +1,6 @@
 XFree86 4.5.99.902 (xx March 2006)
+ 246. Don't make xterm setgid on FreeBSD prior to 5.x (Bugzilla #1655,
+      Alexander Pohoyda).
  245. Fix Xaw viewport scrollbar flickering problem (Bugzilla #1660,
       Alexander Pohoyda).
  244. Prevent SIGINT from causing the XFree86 to re-enter the CloseScreen
@@ -20076,7 +20078,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3694 2006/03/16 21:43:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3695 2006/03/16 21:51:18 dawes Exp $
 
 
 
