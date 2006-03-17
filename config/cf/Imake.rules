@@ -1,6 +1,6 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.145 2005/10/14 15:15:52 tsi Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.146 2006/03/06 15:58:01 dawes Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1303,7 +1303,7 @@ install::								@@\
 InstallTarget(install.ln,Concat(llib-l,libname.ln),$(INSTLIBFLAGS),dest)
 #endif /* InstallLintLibrary */
 
-#ifndef OsInstallManPageLong
+#ifndef OsInstallManPageLongBase
 #define OsInstallManPageLongBase(file,destdir,dest,suffix) /**/
 #endif
 
