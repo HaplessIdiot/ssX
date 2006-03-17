@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.154 2006/03/02 03:00:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.155 2006/03/16 16:49:56 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
@@ -131,28 +131,6 @@
 static int xf86ScrnInfoPrivateCount = 0;
 
 #ifdef XFree86LOADER
-ModuleDescPtr *deferredUnloadList = NULL;
-int numDeferredUnloads;
-
-void
-xf86DoDeferredUnloads()
-{
-    int i;
-
-    for (i = 0; i < numDeferredUnloads; i++)
-	UnloadModule(deferredUnloadList[i]);
-    xfree(deferredUnloadList);
-    numDeferredUnloads = 0;
-}
-
-static void
-DeferredUnloadModule(ModuleDescPtr module)
-{
-    numDeferredUnloads++;
-    deferredUnloadList =
-	xnfrealloc(deferredUnloadList, numDeferredUnloads * sizeof(pointer));
-    deferredUnloadList[numDeferredUnloads - 1] = module;
-}
 
 /* Add a pointer to a new DriverRec to xf86DriverList */
 
@@ -177,17 +155,14 @@ xf86AddDriver(DriverPtr driver, ModuleDescPtr module, int flags)
 #endif
 
 void
-xf86DeleteDriver(int drvIndex, Bool deferUnload)
+xf86DeleteDriver(int drvIndex)
 {
     if (xf86DriverList[drvIndex] &&
 	!xf86DriverHasEntities(xf86DriverList[drvIndex])) {
 	xf86ClearDriverEntities(xf86DriverList[drvIndex]);
 #ifdef XFree86LOADER
 	if (xf86DriverList[drvIndex]->module) {
-	    if (deferUnload)
-		DeferredUnloadModule(xf86DriverList[drvIndex]->module);
-	    else
-		UnloadModule(xf86DriverList[drvIndex]->module);
+	    UnloadModule(xf86DriverList[drvIndex]->module);
 	    xfree(xf86DriverList[drvIndex]);
 	}
 #endif
@@ -343,7 +318,7 @@ xf86DeleteScreen(int scrnIndex, int flags)
 
 #ifdef XFree86LOADER
     if (pScrn->module)
-	DeferredUnloadModule(pScrn->module);
+	UnloadModule(pScrn->module);
 #endif
 
     if (pScrn->drv)

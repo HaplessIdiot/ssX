@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.190 2006/03/02 03:00:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.191 2006/03/16 16:49:55 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
@@ -441,7 +441,7 @@ void xf86ProcessActionEvent(ActionEvent action, void *arg);
 #endif
 
 void xf86AddDriver(DriverPtr driver, ModuleDescPtr module, int flags);
-void xf86DeleteDriver(int drvIndex, Bool deferUnload);
+void xf86DeleteDriver(int drvIndex);
 ScrnInfoPtr xf86AllocateScreen(DriverPtr drv, int flags);
 void xf86DeleteScreen(int scrnIndex, int flags);
 int xf86AllocateScrnInfoPrivateIndex(void);

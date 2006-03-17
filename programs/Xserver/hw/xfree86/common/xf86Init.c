@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.235 2006/03/11 17:36:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.236 2006/03/16 16:49:56 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -719,7 +719,7 @@ retry:
 	  if (xf86DriverList[i]->Probe(xf86DriverList[i], PROBE_DEFAULT))
 	    found++;
 	  if (!found) {
-	    xf86DeleteDriver(i, TRUE);
+	    xf86DeleteDriver(i);
 	  }
 	} else {
 	  xf86MsgVerb(X_WARNING, 0,
@@ -853,7 +853,7 @@ retry:
     if (xf86NumScreens == 0 && autoconfig) {
 	for (i = 0; i < xf86NumDrivers; i++) {
 	    if (xf86DriverList[i]) {
-		xf86DeleteDriver(i, TRUE);
+		xf86DeleteDriver(i);
 		autoretry = TRUE;
 		/* Clear claimed config sections. */
 		for (j = 0; j < xf86Info.serverLayout->numScreens; j++) {
@@ -927,11 +927,10 @@ retry:
     }
 
 #ifdef XFree86LOADER
-    xf86DoDeferredUnloads();
     /* Remove (unload) drivers that are not required. */
     for (i = 0; i < xf86NumDrivers; i++)
 	if (xf86DriverList[i] && xf86DriverList[i]->refCount <= 0) {
-	    xf86DeleteDriver(i, FALSE);
+	    xf86DeleteDriver(i);
 }
 #endif
 
