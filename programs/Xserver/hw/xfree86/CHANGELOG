@@ -1,4 +1,5 @@
 XFree86 4.5.99.902 (xx March 2006)
+ 249. Fix client-side framebuffer mapping for DGA on NetBSD (David Dawes).
  248. Fix typos in XErrorDB (David Dawes).
  247. The new loader eliminates the need to defer unloading drivers when using
       autoconfig (David Dawes).
@@ -20081,7 +20082,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3697 2006/03/17 02:25:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3698 2006/03/17 22:05:04 dawes Exp $
 
 
 
