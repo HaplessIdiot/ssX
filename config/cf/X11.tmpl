@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.290 2006/02/19 15:51:12 tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.291 2006/03/02 03:00:34 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -3881,6 +3881,8 @@ FCCACHE = set -x; $(CLIENTENVSETUP) $(PRELOADXFTSETUP) FONTCONFIG_PATH=$(FONTCON
 
 #endif /* BuildFontconfigLibrary */
 
+FCCACHEOPTS = -f -v
+
 #if UseFontconfig
 #if HasFontconfig && !BuildFontconfigLibrary
 
@@ -4252,7 +4254,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
  * MakeFcCache - generate rules to build fontconfig cache database
  */
 
-#if defined UseFreetype2 && !CrossCompiling
+#if BuildFontconfigLibrary || HasFontconfig && !CrossCompiling
 
 # ifndef MakeFcCache
 #  define MakeFcCache(deplist)						@@\
