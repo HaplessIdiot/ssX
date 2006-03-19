@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimisc.c,v 1.13 2006/03/02 03:00:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimisc.c,v 1.14tsi Exp $ */
 /*
  * Copyright 2000 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -52,9 +52,9 @@ static pointer
 ATISetup
 (
     ModuleDescPtr Module,
-    pointer Options,
-    int     *ErrorMajor,
-    int     *ErrorMinor
+    pointer       Options,
+    int           *ErrorMajor,
+    int           *ErrorMinor
 )
 {
     static Bool Inited = FALSE;

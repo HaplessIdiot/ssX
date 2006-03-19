@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.c,v 1.20 2006/03/02 03:00:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.c,v 1.21tsi Exp $ */
 /*
  * Copyright 1997 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -96,9 +96,9 @@ static pointer
 ATISetup
 (
     ModuleDescPtr Module,
-    pointer Options,
-    int     *ErrorMajor,
-    int     *ErrorMinor
+    pointer       Options,
+    int           *ErrorMajor,
+    int           *ErrorMinor
 )
 {
     static Bool Inited = FALSE;
@@ -133,11 +133,17 @@ const char *atiExportedSymbols[] = {
     "ATIChipID",
     "ATIChipNames",
     "ATIChipsetNames",
+    "ATIEndian",
+    "ATIEndianCopy",
+    "ATIEndianSwap24",
+    "ATIEndianSwap32",
     "ATIFoundryNames",
     "ATIMapApertures",
     "ATIMemoryTypeNames_264xT",
     "ATIMemoryTypeNames_88800CX",
     "ATIMemoryTypeNames_Mach",
+    "ATIPublicOptionSize",
+    "ATIPublicOptions",
     "ATISetVGAIOBase",
     "ATIUnmapApertures",
     "R128Chipsets",
