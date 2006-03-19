@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_vgatool.h,v 1.1 2005/11/10 15:37:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_vgatool.h,v 1.2tsi Exp $ */
 
 #ifndef __AST_VGATOOL_H__
 #define __AST_VGATOOL_H__ 1
@@ -77,6 +77,7 @@
 extern void vASTOpenKey(ScrnInfoPtr pScrn);
 extern Bool bASTRegInit(ScrnInfoPtr pScrn);
 extern ULONG ASTGetVRAMInfo(ScrnInfoPtr pScrn);
+extern ULONG GetMaxDCLK(ScrnInfoPtr pScrn);
 extern void vAST1000DisplayOn(ASTRecPtr pAST);
 extern void vAST1000DisplayOff(ASTRecPtr pAST);
 extern void vASTSetStartAddressCRT1(ASTRecPtr pAST, ULONG base);

@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_accel.c,v 1.1 2005/11/10 15:37:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_accel.c,v 1.2tsi Exp $ */
 
 #include "xf86.h"
 
@@ -595,10 +595,10 @@ static void ASTSubsequentSolidTwoPointLine(ScrnInfoPtr pScrn,
 	y2 -= miny;
     }
 
-    LineInfo.X1 = x1 << 4;
-    LineInfo.X2 = x2 << 4;
-    LineInfo.Y1 = y1 << 4;
-    LineInfo.Y2 = y2 << 4;
+    LineInfo.X1 = x1;
+    LineInfo.Y1 = y1;
+    LineInfo.X2 = x2;
+    LineInfo.Y2 = y2;
 
     bASTGetLineTerm(&LineInfo, &dsLineParam);		/* Get Line Parameter */
 
@@ -750,10 +750,10 @@ ASTSubsequentDashedTwoPointLine(ScrnInfoPtr pScrn,
 	y2 -= miny;
     }
 
-    LineInfo.X1 = x1 << 4;
-    LineInfo.X2 = x2 << 4;
-    LineInfo.Y1 = y1 << 4;
-    LineInfo.Y2 = y2 << 4;
+    LineInfo.X1 = x1;
+    LineInfo.Y1 = y1;
+    LineInfo.X2 = x2;
+    LineInfo.Y2 = y2;
 
     bASTGetLineTerm(&LineInfo, &dsLineParam);		/* Get Line Parameter */
 

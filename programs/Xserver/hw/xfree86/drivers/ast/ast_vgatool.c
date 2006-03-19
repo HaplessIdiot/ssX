@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_vgatool.c,v 1.2 2006/02/06 17:28:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_vgatool.c,v 1.3tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -93,6 +93,77 @@ vAST1000DisplayOff(ASTRecPtr pAST)
 {
     SetIndexRegMask(SEQ_PORT,0x01, 0xDF, 0x20);
 
+}
+
+ULONG
+GetMaxDCLK(ScrnInfoPtr pScrn)
+{
+   ASTRecPtr pAST = ASTPTR(pScrn);
+   UCHAR jReg;
+   ULONG ulData, ulData2;
+   ULONG ulRefPLL, ulDeNumerator, ulNumerator, ulDivider;
+   ULONG ulDRAMBusWidth, ulMCLK, ulDRAMBandwidth, ActualDRAMBandwidth, DRAMEfficiency = 500;
+   ULONG ulDCLK;
+	
+   vASTOpenKey(pScrn);
+
+   *(ULONG *) (pAST->MMIOVirtualAddr + 0xF004) = 0x1e6e0000;
+   *(ULONG *) (pAST->MMIOVirtualAddr + 0xF000) = 0x00000001;
+   
+   /* Get BusWidth */
+   ulData = *(ULONG * ) (pAST->MMIOVirtualAddr + 0x10004);       
+   if (ulData & 0x40)
+      ulDRAMBusWidth = 16;
+   else    
+      ulDRAMBusWidth = 32;
+          
+   /* Get MCLK */
+   {
+       *(ULONG *) (pAST->MMIOVirtualAddr + 0x10100) = 0x000000A8;
+   	
+       ulData = *(ULONG *) (pAST->MMIOVirtualAddr + 0x10120);       
+       ulData2 = *(ULONG *) (pAST->MMIOVirtualAddr + 0x10170);       
+       if (ulData2 & 0x2000)
+           ulRefPLL = 14318;
+       else
+           ulRefPLL = 12000;
+           
+       ulDeNumerator = ulData & 0x1F;
+       ulNumerator = (ulData & 0x3FE0) >> 5;
+               
+       ulData = (ulData & 0xC000) >> 14;        
+       switch (ulData)
+       {
+       case 0x03:
+           ulDivider = 0x04;
+           break;
+       case 0x02:
+       case 0x01:        
+           ulDivider = 0x02;
+           break;
+       default:
+           ulDivider = 0x01;                         
+       }    
+       
+       ulMCLK = ulRefPLL * (ulNumerator + 2) / ((ulDeNumerator + 2) * ulDivider * 1000);          
+       
+   }  
+   
+   /* Get Bandwidth */  
+   ulDRAMBandwidth = ulMCLK * ulDRAMBusWidth * 2 / 8;
+   ActualDRAMBandwidth = ulDRAMBandwidth * DRAMEfficiency / 1000;
+   
+   /* Get Max DCLK */    
+   GetIndexRegMask(CRTC_PORT, 0xD0, 0xFF, jReg);  
+   if (jReg & 0x08)                      
+       ulDCLK = ActualDRAMBandwidth / ((pScrn->bitsPerPixel+1+16) / 8);	
+   else    
+       ulDCLK = ActualDRAMBandwidth / ((pScrn->bitsPerPixel+1) / 8);	   
+
+   if (ulDCLK > 165) ulDCLK = 165;
+   
+   return(ulDCLK);
+   
 }
 
 

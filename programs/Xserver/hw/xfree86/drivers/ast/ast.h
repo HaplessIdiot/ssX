@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast.h,v 1.3 2006/02/06 17:28:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast.h,v 1.4tsi Exp $ */
 
 #ifndef __AST_H__
 #define __AST_H__ 1
@@ -32,6 +32,7 @@
 #define	Accel_2D
 /* #define MMIO_2D */
 #define HWC
+/* #define PATCH_ABI_VERSION */
 
 /* Vendor & Device Info */
 #ifndef PCI_VENDOR_AST
@@ -46,7 +47,7 @@
 #define AST_NAME			"AST"
 #define AST_DRIVER_NAME			"ast"
 #define AST_MAJOR_VERSION		0
-#define AST_MINOR_VERSION		62
+#define AST_MINOR_VERSION		80
 #define AST_PATCH_VERSION		0
 #define AST_VERSION	\
 	((AST_MAJOR_VERSION << 20) | (AST_MINOR_VERSION << 10) | AST_PATCH_VERSION)
@@ -55,8 +56,12 @@
 #define DEFAULT_VIDEOMEM_SIZE		0x00800000
 #define DEFAULT_MMIO_SIZE		0x00020000
 #define DEFAULT_CMDQ_SIZE		0x00100000
+#define MIN_CMDQ_SIZE			0x00040000
 #define CMD_QUEUE_GUARD_BAND		0x00000020
 #define DEFAULT_HWC_NUM			0x00000002
+
+/* Patch Info */
+#define ABI_VIDEODRV_VERSION_PATCH	SET_ABI_VERSION(0, 1)
 
 /* Data Type Definition */
 typedef INT32		LONG;
