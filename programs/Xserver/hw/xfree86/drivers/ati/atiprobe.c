@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.71 2006/03/02 03:00:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.72tsi Exp $ */
 /*
  * Copyright 1997 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1119,6 +1119,9 @@ ATIProbe
     int       flags
 )
 {
+#ifdef XFree86LOADER
+    ModuleDescPtr       pModule;
+#endif
     ATIPtr              pATI, *ATIPtrs = NULL;
     ATIPtr              *ppVGA = NULL, *pp8514 = NULL, *ppMach64 = NULL;
     GDevPtr             *GDevs, pGDev;
@@ -1148,9 +1151,6 @@ ATIProbe
 
     unsigned long       BIOSBase;
     CARD8               BIOS[PrefixSize];
-#ifdef XFree86LOADER
-    ModuleDescPtr       pModule;
-#endif
 
 #   define              AddAdapter(_p)                                     \
     do                                                                     \

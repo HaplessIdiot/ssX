@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativgaio.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativgaio.c,v 1.8tsi Exp $ */
 /*
  * Copyright 2000 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -28,8 +28,8 @@
 /*
  * ATISetVGAIOBase --
  *
- * This sets vgaIOBase according to the value of the passed value of the
- * miscellaneous output register.
+ * This sets vgaIOBase according to the passed value of the miscellaneous
+ * output register.
  */
 void
 ATISetVGAIOBase

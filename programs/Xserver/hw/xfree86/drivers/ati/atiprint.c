@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.35tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.36tsi Exp $ */
 /*
  * Copyright 1997 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -801,7 +801,7 @@ ATIPrintRegisters
             if (!(Index & 15))
                 xf86ErrorFVerb(4, "\n 0x%02X: ", Index);
             xf86ErrorFVerb(4, " 0x%08lX",
-			   (unsigned long)pciReadLong(pPCI->tag, Index));
+                           (unsigned long)pciReadLong(pPCI->tag, Index));
         }
     }
 
