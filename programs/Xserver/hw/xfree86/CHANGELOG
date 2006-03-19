@@ -1,4 +1,6 @@
 XFree86 4.5.99.902 (xx March 2006)
+ 251. Xterm may overwrite the field adjacent to lastlog.ll_time on some 64-bit
+      Linux platforms.
  250. Fix a bug in fontconfig's pattern matching that can cause FcFontMatch()
       to fail when it shouldn't (David Dawes).
  249. Fix client-side framebuffer mapping for DGA on NetBSD (David Dawes).
@@ -20084,7 +20086,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3699 2006/03/17 23:40:13 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3700 2006/03/19 01:58:38 dawes Exp $
 
 
 
