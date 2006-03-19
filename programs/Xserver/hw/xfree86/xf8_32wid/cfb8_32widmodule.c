@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32wid/cfb8_32widmodule.c,v 1.1tsi Exp $ */
 
 #ifdef XFree86LOADER
 
@@ -23,7 +23,7 @@ static XF86ModuleVersionInfo VersRec =
 XF86ModuleData xf8_32widModuleData = { &VersRec, xf8_32widSetup, NULL };
 
 static pointer
-xf8_32widSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+xf8_32widSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 {
     if (!LoadSubModule(module, "mfb", NULL, NULL, NULL, NULL,
 			errmaj, errmin))
