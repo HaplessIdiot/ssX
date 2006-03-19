@@ -87,7 +87,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.203 2006/02/13 01:14:59 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.207 2006/03/13 01:27:59 dickey Exp $ */
 
 /* main.c */
 
@@ -4101,7 +4101,7 @@ spawn(void)
 			       my_pty_name(ttydev),
 			       sizeof(lastlog.ll_line));
 		SetUtmpHost(lastlog.ll_host, screen);
-		time(&lastlog.ll_time);
+		lastlog.ll_time = time(NULL);
 		lseek(i, (long) (screen->uid * sizeof(struct lastlog)), 0);
 		write(i, (char *) &lastlog, sizeof(struct lastlog));
 		close(i);
