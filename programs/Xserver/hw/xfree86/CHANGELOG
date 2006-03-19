@@ -1,4 +1,5 @@
 XFree86 4.5.99.902 (xx March 2006)
+ 252. More work on the ast driver (derived from Bugzilla #1628, Y.C. Chen).
  251. Xterm may overwrite the field adjacent to lastlog.ll_time on some 64-bit
       Linux platforms.
  250. Fix a bug in fontconfig's pattern matching that can cause FcFontMatch()
@@ -20086,7 +20087,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3700 2006/03/19 01:58:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3701 2006/03/19 02:17:27 dawes Exp $
 
 
 

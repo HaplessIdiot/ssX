@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_driver.c,v 1.3 2006/02/20 00:38:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_driver.c,v 1.4tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -175,7 +175,11 @@ static XF86ModuleVersionInfo astVersRec = {
    XF86_VERSION_CURRENT,
    AST_MAJOR_VERSION, AST_MINOR_VERSION, AST_PATCH_VERSION,
    ABI_CLASS_VIDEODRV,
+#ifdef PATCH_ABI_VERSION
+   ABI_VIDEODRV_VERSION_PATCH,
+#else 
    ABI_VIDEODRV_VERSION,
+#endif   
    MOD_CLASS_VIDEODRV,
    {0, 0, 0, 0}
 };
@@ -534,6 +538,20 @@ ASTPreInit(ScrnInfoPtr pScrn, int flags)
    pAST->FbMapSize = pScrn->videoRam * 1024;
    pAST->MMIOMapSize = DEFAULT_MMIO_SIZE;
 
+   /* Map resource */
+   if (!ASTMapMem(pScrn)) {
+      xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Map FB Memory Failed \n");      	
+      return FALSE;
+   }
+   
+   if (!ASTMapMMIO(pScrn)) {
+      xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Map Memory Map IO Failed \n");      	
+      return FALSE;
+   }
+
+   pScrn->memPhysBase = (ULONG)pAST->FBPhysAddr;
+   pScrn->fbOffset = 0;
+
    /* Do DDC
     * should be done after xf86CollectOptions
     */
@@ -543,7 +561,7 @@ ASTPreInit(ScrnInfoPtr pScrn, int flags)
    clockRanges = xnfcalloc(sizeof(ClockRange), 1);
    clockRanges->next = NULL;
    clockRanges->minClock = 9500;
-   clockRanges->maxClock = 165000;
+   clockRanges->maxClock = GetMaxDCLK(pScrn) * 1000;   
    clockRanges->clockIndex = -1;
    clockRanges->interlaceAllowed = FALSE;
    clockRanges->doubleScanAllowed = FALSE;
@@ -656,20 +674,6 @@ ASTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
    pScrn = xf86Screens[pScreen->myNum];
    pAST = ASTPTR(pScrn);
    hwp = VGAHWPTR(pScrn);
-
-
-   if (!ASTMapMem(pScrn)) {
-      xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Map FB Memory Failed \n");
-      return FALSE;
-   }
-
-   if (!ASTMapMMIO(pScrn)) {
-      xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Map Memory Map IO Failed \n");
-      return FALSE;
-   }
-
-   pScrn->memPhysBase = (ULONG)pAST->FBPhysAddr;
-   pScrn->fbOffset = 0;
 
 /*   if (!pAST->noAccel) */
    {
