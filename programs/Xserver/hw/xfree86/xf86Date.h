@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Date.h,v 1.108 2006/02/23 12:02:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Date.h,v 1.109 2006/03/07 02:33:01 dawes Exp $ */
 /*
  * Copyright (c) 2004, 2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -48,6 +48,6 @@
 
 #ifndef XF86_DATE
 
-#define XF86_DATE	"6 March 2006"
+#define XF86_DATE	"19 March 2006"
 
 #endif

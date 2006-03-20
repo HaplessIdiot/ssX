@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.622 2006/02/23 12:02:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.623 2006/03/07 02:33:02 dawes Exp $ */
 
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -52,7 +52,7 @@
 #define XF86_VERSION_MAJOR	4
 #define XF86_VERSION_MINOR	5
 #define XF86_VERSION_PATCH	99
-#define XF86_VERSION_SNAP	901
+#define XF86_VERSION_SNAP	902
 
 /* This has five arguments for compatibilty reasons */
 #define XF86_VERSION_NUMERIC(major, minor, patch, snap, dummy) \
