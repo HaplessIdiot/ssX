@@ -1,4 +1,4 @@
-XCOMM $XTermId: Imakefile,v 1.91 2006/03/12 21:01:48 tom Exp $
+XCOMM $XTermId: Imakefile,v 1.93 2006/03/19 18:16:12 tom Exp $
 XCOMM
 XCOMM                         Attention xterm porters
 XCOMM
@@ -7,7 +7,7 @@ XCOMM Xterm assumes that bcopy can handle overlapping arguments.  If your
 XCOMM bcopy (or memcpy) cannot, write a routine called bcopy and link it in
 XCOMM or add -Dbcopy=mybcopy to the DEFINES list below.
 XCOMM
-XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.66 2006/03/17 01:39:33 dawes Exp $
+XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.65 2006/03/13 01:27:57 dickey Exp $
 XCOMM
 
 /* Uncomment SCROLLBAR_RIGHT if you want the scroll bar to be on the right */
@@ -18,6 +18,9 @@ SCROLLBAR_RIGHT = -DSCROLLBAR_RIGHT
 
 /*
  * setgid mode works for systems that do not require setuid to open pty.
+ *
+ * This feature could also be applied to FreeBSD, but requires the installer
+ * to define a "utmp" group as well as chgrp the utmp file to match.
  */
 #if defined(OpenBSDArchitecture) || \
     (defined(LinuxArchitecture) && \
