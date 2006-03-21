@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.258 2006/03/02 03:00:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.259 2006/03/16 16:50:34 dawes Exp $ */
 
 /*
  *
@@ -550,6 +550,7 @@ LOOKUP xfree86LookupTab[] = {
     SYMFUNC(DGACreateColormap)
     SYMFUNC(DGAOpenFramebuffer)
     SYMFUNC(DGACloseFramebuffer)
+    SYMFUNC(DGAShutdown)
 
     /* xf86DPMS.c */
     SYMFUNC(xf86DPMSInit)
@@ -563,6 +564,7 @@ LOOKUP xfree86LookupTab[] = {
     SYMFUNC(xf86AddEnabledDevice)
     SYMFUNC(xf86RemoveEnabledDevice)
     SYMFUNC(xf86InterceptSignals)
+    SYMFUNC(xf86ShowStackTrace)
     SYMFUNC(xf86EnableVTSwitch)
 
     /* xf86Helper.c */

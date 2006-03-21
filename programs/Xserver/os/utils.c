@@ -48,7 +48,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.108 2006/02/19 15:51:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.109 2006/03/06 16:06:23 dawes Exp $ */
 /*
  * Copyright (c) 1996-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -482,6 +482,8 @@ GiveUp(int sig)
 SIGVAL
 AbortServer(int sig)
 {
+    static Bool beenHere = FALSE;
+
 #if defined(SYSV) && defined(X_NOT_POSIX)
     if (sig)
 	OsSignal(sig, SIG_IGN);
@@ -492,10 +494,15 @@ AbortServer(int sig)
      */
     OsSignal(SIGINT, SIG_IGN);
     OsSignal(SIGTERM, SIG_IGN);
-    if (sig == SIGINT)
-	ErrorF("X server terminated by an interrupt signal.\n");
-    OsCleanup(TRUE);
-    AbortDDX();
+    if (!beenHere) {
+	beenHere = TRUE;
+	if (sig == SIGINT)
+	    ErrorF("X server terminated by an interrupt signal.\n");
+	OsCleanup(TRUE);
+	AbortDDX();
+    } else {
+	ErrorF("Re-entering AbortServer.  Aborting without further cleanup.\n");
+    }
     fflush(stderr);
     if (CoreDump)
 	abort();

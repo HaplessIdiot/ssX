@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.236 2006/03/16 16:49:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.237 2006/03/17 02:25:03 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -1447,9 +1447,6 @@ ddxGiveUp()
 #ifdef USE_XF86_SERVERLOCK
     xf86UnlockServer();
 #endif
-#ifdef XFreeXDGA
-    DGAShutdown();
-#endif
 
     if (!noVT)
 	xf86CloseConsole();
@@ -1491,9 +1488,12 @@ AbortDDX()
     sleep(1);
 #endif
   if (xf86Screens && !noVT) {
+#ifdef XFreeXDGA
+    DGAShutdown();
+#endif
     if (xf86Screens[0]->vtSema)
       xf86EnterServerState(SETUP);
-    for (i = 0; i < xf86NumScreens; i++)
+    for (i = 0; i < xf86NumScreens; i++) {
       if (xf86Screens[i]->vtSema) {
 	/*
 	 * If we are aborting before ScreenInit() has finished
@@ -1503,6 +1503,7 @@ AbortDDX()
 	xf86EnableAccess(xf86Screens[i]);
 	(xf86Screens[i]->LeaveVT)(i, 0);
       }
+    }
   }
   
   xf86AccessLeave();

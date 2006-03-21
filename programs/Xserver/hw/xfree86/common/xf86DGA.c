@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.50tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.51 2005/10/14 15:16:32 tsi Exp $ */
 /*
  * Copyright (c) 1998-2002 by The XFree86 Project, Inc.
  *
@@ -502,7 +502,11 @@ DGAActive(int indx)
 
 
 
-/* Called by the event code in case the server is abruptly terminated */
+/*
+ * Called whenever the server is shutdown, before the CloseScreen phase.
+ * It ensures that all screens are not in DGA mode before proceeding with
+ * the shutdown/reset.
+ */
 
 void 
 DGAShutdown()

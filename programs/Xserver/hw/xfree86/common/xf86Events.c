@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.171 2006/03/02 03:00:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.172 2006/03/16 16:49:56 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -323,9 +323,6 @@ xf86ProcessActionEvent(ActionEvent action, void *arg)
     switch (action) {
     case ACTION_TERMINATE:
 	if (!xf86Info.dontZap) {
-#ifdef XFreeXDGA
-	    DGAShutdown();
-#endif
 	    GiveUp(0);
 	}
 	break;
@@ -1276,6 +1273,39 @@ xf86RemoveEnabledDevice(InputInfoPtr pInfo)
     }
 }
 
+#ifdef STACKTRACE
+
+#ifndef STACK_LEVELS
+#define STACK_LEVELS 16
+#endif
+void
+xf86ShowStackTrace()
+{
+    unsigned long returnStack[STACK_LEVELS];
+    int i;
+
+    getStackTrace(returnStack, STACK_LEVELS);
+    ErrorF("Stack trace:\n");
+    for (i = 0; i < STACK_LEVELS && returnStack[i]; i++) {
+      ErrorF("%2d: 0x%lx", i, returnStack[i]);
+#ifdef XFree86LOADER
+      ErrorF(": ");
+      LoaderPrintSymbol(returnStack[i]);
+#else
+      ErrorF("\n");
+#endif
+    }
+}
+
+#else
+
+void
+xf86ShowStackTrace()
+{
+    ErrorF("Stack trace not supported on this platform.\n");
+}
+#endif
+
 static volatile int *xf86SignalIntercept = NULL;
 
 void
@@ -1313,28 +1343,8 @@ xf86SigHandler(int signo)
 #endif
   ErrorF("Caught signal %d.\n", signo);
 
-#ifdef STACKTRACE
-#ifndef STACK_LEVELS
-#define STACK_LEVELS 16
-#endif
-  {
-    unsigned long returnStack[STACK_LEVELS];
-    int i;
+  xf86ShowStackTrace();
 
-    getStackTrace(returnStack, STACK_LEVELS);
-    ErrorF("Stack trace:\n");
-    for (i = 0; i < STACK_LEVELS && returnStack[i]; i++) {
-      ErrorF("%2d: 0x%lx", i, returnStack[i]);
-#ifdef XFree86LOADER
-      ErrorF(": ");
-      LoaderPrintSymbol(returnStack[i]);
-#else
-      ErrorF("\n");
-#endif
-    }
-  }
-#endif
-  
   FatalError("Server aborting\n");
 }
 
