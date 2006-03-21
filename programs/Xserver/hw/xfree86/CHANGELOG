@@ -1,4 +1,10 @@
 XFree86 4.5.99.903 (xx April 2006)
+ 256. Add a stack trace function, callable from modules and elsewhere, which
+      can be useful for development/debugging (David Dawes).
+ 255. Make sure that DGAShutdown() is always called before HW state is
+      restored on exit and reset, and make sure that it is not called after
+      the HW state is restored (David Dawes).
+ 254. Trap re-entry into AbortServer() (David Dawes).
 
 XFree86 4.5.99.902 (19 March 2006)
  253. Xterm patch #211 (Thomas Dickey).
@@ -20090,7 +20096,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3703 2006/03/20 00:36:18 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3704 2006/03/20 02:22:54 dawes Exp $
 
 
 
