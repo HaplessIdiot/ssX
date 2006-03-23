@@ -1,4 +1,6 @@
 XFree86 4.5.99.903 (xx April 2006)
+ 257. Yet another attempt at dealing with xterm's setgid issue
+      (Marc La France).
  256. Add a stack trace function, callable from modules and elsewhere, which
       can be useful for development/debugging (David Dawes).
  255. Make sure that DGAShutdown() is always called before HW state is
@@ -20096,7 +20098,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3704 2006/03/20 02:22:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3705 2006/03/21 03:56:25 dawes Exp $
 
 
 
