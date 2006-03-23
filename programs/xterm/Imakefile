@@ -7,7 +7,7 @@ XCOMM Xterm assumes that bcopy can handle overlapping arguments.  If your
 XCOMM bcopy (or memcpy) cannot, write a routine called bcopy and link it in
 XCOMM or add -Dbcopy=mybcopy to the DEFINES list below.
 XCOMM
-XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.65 2006/03/13 01:27:57 dickey Exp $
+XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.68tsi Exp $
 XCOMM
 
 /* Uncomment SCROLLBAR_RIGHT if you want the scroll bar to be on the right */
@@ -76,6 +76,15 @@ module.o: ; $(CC) -c defines $(CFLAGS) module.c
 
 #ifndef ProgramTargetName
 #define ProgramTargetName(program) program
+#endif
+
+#if InstallXtermSetGID
+CSGIDFLAGS = -DUSE_UTMP_SETGID
+INSTUIDFLAGS = "`if [ \`grep ^utmp: /etc/group\` ]; then echo ' -m 2755 -g utmp'; else echo ' -m 4711'; fi`"
+#else
+# if InstallXtermSetUID
+INSTUIDFLAGS = -m 4711
+# endif
 #endif
 
 /*
@@ -147,7 +156,7 @@ module.o: ; $(CC) -c defines $(CFLAGS) module.c
 #ifdef TraceXTerm
        TRACEDEF = -DOPT_TRACE=1
 #endif
-   MAIN_DEFINES = $(UTMPDEF) $(TTYGROUPDEF) $(PUCCPTYDDEF) \
+   MAIN_DEFINES = $(UTMPDEF) $(TTYGROUPDEF) $(PUCCPTYDDEF) $(CSGIDFLAGS) \
 		  -DOSMAJORVERSION=$(OSMAJORVERSION) \
 		  -DOSMINORVERSION=$(OSMINORVERSION)
    MISC_DEFINES = /* -DALLOWLOGGING -DALLOWLOGFILEEXEC */
@@ -213,16 +222,10 @@ SpecialCObjectRule(misc,$(_NOOP_),$(MISC_DEFINES))
 SpecialCObjectRule(charproc,$(_NOOP_),$(MISC_DEFINES))
 SpecialCObjectRule(data,$(_NOOP_),$(MISC_DEFINES))
 
-#if InstallXtermSetUID
-INSTUIDFLAGS = -m 4711
+#if InstallXtermSetUID || InstallXtermSetGID
 SetUIDProgramTarget(xterm,$(OBJS1),$(DEPLIBS1),$(XRFLIBS) XkbClientLibs XawClientLibs,$(TERMCAPLIB) $(PTYLIB))
 #else
 NormalProgramTarget(xterm,$(OBJS1),$(DEPLIBS1),$(XRFLIBS) XkbClientLibs XawClientLibs,$(TERMCAPLIB) $(UTMPLIB) $(PTYLIB))
-#endif
-
-#if InstallXtermSetGID
-CSGIDFLAGS  = -DUSE_UTMP_SETGID
-INSTUIDFLAGS = -m 2755 -g utmp
 #endif
 
 #if InstallXtermSetUID && defined(SunArchitecture) && HasSharedLibraries && (OSMajorVersion < 5)

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.88 2005/03/06 17:10:04 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.89tsi Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -180,6 +180,8 @@ OLDFILES=" \
 	$RUNDIR/lib/X11/fonts/misc/7x14rk.pcf.gz \
 	$RUNDIR/lib/X11/fonts/misc/7x13euro.pcf.gz \
 	$RUNDIR/lib/X11/fonts/misc/7x13euroB.pcf.gz \
+	$RUNDIR/lib/modules/drivers/ati2_drv.o \
+	$RUNDIR/lib/modules/drivers/ati2_drv.so \
 	"
 
 OLDDIRS=" \
@@ -273,6 +275,7 @@ WDIR="`pwd`"
 NoEtcX11=
 DOUPDATE=
 DOBASE=
+NEEDSOMETHING=
 
 OPTS=""
 
@@ -1038,6 +1041,45 @@ CheckInstallType()
 	GetBindistVersion
 }
 
+ModifyXterm()
+{
+	# Make xterm setgid or setuid depending on utmp permissions.  This might
+	# not be entirely portable.
+
+	if [ -w /var/run/utmp ]; then
+
+		CheckUtil ls
+		CheckUtil awk
+		CheckUtil cut
+		CheckUtil chmod
+
+		LS="`ls -l /var/run/utmp`"
+		if [ "`echo ${LS} | cut -b 1`" = "l" ]; then
+			LS="`ls -lL /var/run/utmp`"
+		fi
+		UA="`echo ${LS} | cut -b 3`"
+		GA="`echo ${LS} | cut -b 6`"
+		USR="`echo ${LS} | awk '{print $3}'`"
+		GRP="`echo ${LS} | awk '{print $4}'`"
+
+		if [ "${GA}" = "w" ]; then
+
+			CheckUtil chgrp
+
+			chgrp ${GRP} ${RUNDIR}/bin/xterm
+			chmod 2755 ${RUNDIR}/bin/xterm
+
+		elif [ "${UA}" = "w" ]; then
+
+			CheckUtil chown
+
+			chown ${USR} ${RUNDIR}/bin/xterm
+			chmod 4711 ${RUNDIR}/bin/xterm
+
+		fi
+	fi
+}
+
 InstallUpdate()
 {
 	# Check that there's an existing installation.
@@ -1115,6 +1157,8 @@ InstallUpdate()
 	# update Fontconfig cache
 	Echo "Updating the index of Freetype fonts..."
 	$RUNDIR/bin/fc-cache -v
+
+	ModifyXterm
 
 	echo ""
 	echo "Update installation complete."
@@ -1692,9 +1736,13 @@ Rm -fr .etctmp
 echo ""
 echo "Installing the mandatory parts of the binary distribution"
 echo ""
+
 for i in $BASEDIST $SERVDIST; do
 	(cd $RUNDIR; "$EXTRACT" "$WDIR"/$i)
 done
+
+ModifyXterm
+
 if [ X"$VARDIST" != X ]; then
 	(cd $VARDIR; "$EXTRACT" "$WDIR"/$VARDIST)
 fi
