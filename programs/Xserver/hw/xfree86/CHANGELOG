@@ -1,4 +1,5 @@
 XFree86 4.5.99.903 (xx April 2006)
+ 258. Workaround for finding moduleData with dlopen modules (David Dawes).
  257. Yet another attempt at dealing with xterm's setgid issue
       (Marc La France).
  256. Add a stack trace function, callable from modules and elsewhere, which
@@ -20098,7 +20099,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3705 2006/03/21 03:56:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3706 2006/03/23 21:10:55 tsi Exp $
 
 
 
