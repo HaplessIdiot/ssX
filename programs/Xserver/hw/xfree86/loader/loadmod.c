@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.77 2006/03/02 03:00:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.78 2006/03/16 16:50:34 dawes Exp $ */
 
 /*
  *
@@ -1083,6 +1083,17 @@ LoadModule(const char *module, const char *path, const char **subdirlist,
 	goto LoadModule_fail;
 
     ret->filename = xstrdup(found);
+
+    /* This is needed for dlopen modules. */
+    if (!initdata) {
+	char *md;
+
+	xasprintf(&md, "%s" MODULE_DATA_NAME, name);
+	if (md) {
+	    initdata = LoaderSymbol(md);
+	    xfree(md);
+	}
+    }
 
     if (initdata) {
 	ModuleSetupProc setup;
