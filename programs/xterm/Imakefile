@@ -7,7 +7,7 @@ XCOMM Xterm assumes that bcopy can handle overlapping arguments.  If your
 XCOMM bcopy (or memcpy) cannot, write a routine called bcopy and link it in
 XCOMM or add -Dbcopy=mybcopy to the DEFINES list below.
 XCOMM
-XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.68tsi Exp $
+XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.69tsi Exp $
 XCOMM
 
 /* Uncomment SCROLLBAR_RIGHT if you want the scroll bar to be on the right */
@@ -80,7 +80,7 @@ module.o: ; $(CC) -c defines $(CFLAGS) module.c
 
 #if InstallXtermSetGID
 CSGIDFLAGS = -DUSE_UTMP_SETGID
-INSTUIDFLAGS = "`if [ \`grep ^utmp: /etc/group\` ]; then echo ' -m 2755 -g utmp'; else echo ' -m 4711'; fi`"
+INSTUIDFLAGS = `if [ \`grep ^utmp: /etc/group\` ]; then echo ' -m 2755 -g utmp'; else echo ' -m 4711'; fi`
 #else
 # if InstallXtermSetUID
 INSTUIDFLAGS = -m 4711
