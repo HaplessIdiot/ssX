@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/extras/fontconfig/src/fccfg.c,v 1.2 2003/06/04 16:29:39 dawes Exp $ */
+/* $XFree86: xc/extras/fontconfig/src/fccfg.c,v 1.3 2005/05/03 20:43:27 dawes Exp $ */
 
 #include "fcint.h"
 
@@ -675,6 +675,7 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 	r = FcPatternGet (p, e->u.field, 0, &v);
 	if (r != FcResultMatch)
 	    v.type = FcTypeVoid;
+	v = FcValueSave (v);
 	break;
     case FcOpConst:
 	if (FcNameConstant (e->u.constant, &v.u.i))
