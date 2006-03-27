@@ -1,4 +1,5 @@
 XFree86 4.5.99.903 (xx April 2006)
+ 259. Fix a double-free problem in fontconfig (David Dawes).
  258. Workaround for finding moduleData with dlopen modules (David Dawes).
  257. Yet another attempt at dealing with xterm's setgid issue
       (Marc La France).
@@ -20099,7 +20100,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3706 2006/03/23 21:10:55 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3707 2006/03/26 02:25:07 dawes Exp $
 
 
 
