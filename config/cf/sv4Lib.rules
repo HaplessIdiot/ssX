@@ -2,7 +2,7 @@
  * SVR4 shared library rules
  */
 
-XCOMM $XFree86: xc/config/cf/sv4Lib.rules,v 3.14 2005/02/05 03:46:22 dawes Exp $
+XCOMM $XFree86: xc/config/cf/sv4Lib.rules,v 3.15 2005/02/06 23:48:15 dawes Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -380,7 +380,7 @@ clean::									@@\
 
 
 #define Shared64LibObjCompile(options) LibObjCompile(Shared64Dir,Shared64CArchFlags Shared64CDebugFlags Shared64LibraryDef Shared64PositionIndependentCFlags options)
-#define Shared64LibObjAsm(options) LibObjAsm(Shared64Dir,options,Shared64AsmOptions)
+#define Shared64LibObjAsm(options) LibObjAsm(Shared64Dir,-D__sparc_v9__ options,Shared64AsmOptions)
 #define Shared64LibObjCplusplusCompile(options) LibObjCompile(Shared64Dir,Shared64CplusplusArchFlags Shared64CplusplusDebugFlags Shared64LibraryDef Shared64PositionIndependentCFlags options)
 
 #define ExtraSubdir Shared64Dir
