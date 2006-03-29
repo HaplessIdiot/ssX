@@ -1,6 +1,6 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.146 2006/03/06 15:58:01 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.147 2006/03/17 21:03:05 dawes Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -2342,11 +2342,11 @@ LintLibReferences(varname,libname,libsource)
  * LibObjAsm - assemble fragment for unshared/profiled/debugged objects
  */
 #ifndef LibObjAsm
-#define LibObjAsm(dir,options,asmopt) RemoveFiles($@ dir/$@ $*.i)	@@\
+#define LibObjAsm(dir,options,asmopt) RemoveFiles(dir/$@ dir/$*.i)	@@\
 	$(CPP) CPPAsmOptions AsmDefines $(ALLDEFINES) options $*.S | \	@@\
-		grep -v '^\#' > $*.i					@@\
-	$(AS) asmopt -o dir/$@ $*.i					@@\
-	RemoveFile($*.i)
+		grep -v '^\#' > dir/$*.i				@@\
+	$(AS) asmopt -o dir/$@ dir/$*.i					@@\
+	RemoveFile(dir/$*.i)
 #endif
 
 #ifndef LibObjCplusplusCompile
