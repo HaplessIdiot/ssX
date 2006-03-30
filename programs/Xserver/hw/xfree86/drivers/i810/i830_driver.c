@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.92 2006/03/11 16:17:42 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.93 2006/03/16 16:50:08 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -5182,11 +5182,12 @@ I830DetectMonitorChange(ScrnInfoPtr pScrn)
    if (pI830->vesa->monitor)
       xfree(pI830->vesa->monitor);
    pI830->vesa->monitor = vbeDoEDID(pI830->pVbe, pDDCModule);
-   xf86UnloadSubModule(pDDCModule);
    if ((pScrn->monitor->DDC = pI830->vesa->monitor) != NULL) {
       xf86PrintEDID(pI830->vesa->monitor);
       xf86SetDDCproperties(pScrn, pI830->vesa->monitor);
-   } else 
+   }
+   xf86UnloadSubModule(pDDCModule);
+   if (!pScrn->monitor->DDC)
       /* No DDC, so get out of here, and continue to use the current settings */
       return FALSE; 
 
