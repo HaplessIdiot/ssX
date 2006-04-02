@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.239 2006/02/20 00:14:34 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.240 2006/02/20 00:43:00 dawes Exp $
 
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
@@ -207,6 +207,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 # ifndef HasLibCrypt
 #  define HasLibCrypt		YES
 # endif
+# define InstallXtermSetGID	YES
 /* netscape wraps select but not poll as of communicator 4.72 */
 # ifndef HasPoll
 #  define HasPoll		NO
