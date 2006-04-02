@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.291 2006/03/02 03:00:34 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.292 2006/03/18 01:34:23 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -776,7 +776,10 @@ VENDORMANVERSION = XVendorManVersionString
 #define InstallLibManPages	YES
 #endif
 #ifndef InstallXtermSetUID
-#define InstallXtermSetUID	YES	/* xterm needs to be set uid */
+#define InstallXtermSetUID	YES	/* xterm may need to be set uid */
+#endif
+#ifndef InstallXtermSetGID
+#define InstallXtermSetGID	NO	/* xterm may need to be set gid */
 #endif
 #ifndef InstallXloadSetGID
 #define InstallXloadSetGID	YES	/* xload often needs set gid kmem */

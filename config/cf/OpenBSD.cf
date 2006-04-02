@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.115 2005/10/14 15:15:52 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.116 2006/03/01 21:01:55 dawes Exp $
 XCOMM
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -95,6 +95,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 #define HasBSD44Sockets 	YES
 #define Malloc0ReturnsNull	NO
+#define InstallXtermSetGID	YES	/* xterm will be set gid */
 #define SetTtyGroup     	YES
 #define DBMLibrary		/**/
 #define HasLibCrypt		NO

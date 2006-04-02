@@ -1,4 +1,4 @@
-$XFree86: xc/config/cf/README,v 1.25tsi Exp $
+$XFree86: xc/config/cf/README,v 1.26 2005/09/14 14:23:13 tsi Exp $
 
 The easiest way to write an Imakefile is to find another one that does
 something similar and copy/modify it!
@@ -98,6 +98,7 @@ Imake.tmpl provides defaults for the following variables:
 	InstManFlags		install flags for manual pages
 	InstPgmFlags		install flags for normal programs
 	InstUidFlags		install flags for xterm to chown /dev/ptys
+	InstGidFlags		install flags for xterm to open utmp
 	InstallCmd		command to install files
 	KrbIVIncludes		where to include KerberosIV header files from
 	KrbIVLibraries		where to load KerberosIV libraries from
@@ -231,6 +232,10 @@ X11.tmpl provides defaults for the following variables:
 	InstallFSConfig		install fs config file over old?
 	InstallLibManPages	boolean for installing library man pages
 	InstallSecurityConfig	install server security policy file over old?
+	InstallXtermSetUID	install xterm setuid, e.g., to open pty, utmp
+	InstallXtermSetGID	install xterm setgid, e.g., to open utmp
+				Defining UseUtempter overrides xterm set uid/gid
+	InstallXloadSetGID	install xload setgid to access kmem
 	InstallXdmConfig	install xdm config files over old?
 	InstallXinitConfig	install xinit config files over old?
 	KrbIVDefines		defines for use with KerberosIV
@@ -629,6 +634,9 @@ ComplexProgramTarget_3	Use after ComplexProgramTarget_2 for the
 
 NormalProgramTarget	Build a program.  Can be used multiple times
 			with different arguments in the same Imakefile.
+
+SetUidProgramTarget	Build a setuid program.  Normally not needed, since
+			install-flags provide the necessary functionality.
 
 Lower level rules, often used with NormalProgramTarget
 

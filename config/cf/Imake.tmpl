@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.173 2005/10/25 16:58:48 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.174 2006/02/17 22:13:05 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -1062,6 +1062,9 @@ TCLIBDIR = TclLibDir
 #endif
 #ifndef InstUidFlags
 #define InstUidFlags -m 4711
+#endif
+#ifndef InstGidFlags
+#define InstGidFlags -m 2755 -g utmp
 #endif
 #ifndef InstLibFlags
 #define InstLibFlags -m 0644
