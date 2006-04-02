@@ -4,20 +4,13 @@
  * Copyright (c) 1995 Jeffrey Hsu
  */
 
-/* $XFree86: xc/util/memleak/getreti386.c,v 3.5 2001/02/16 13:24:10 eich Exp $ */
+/* $XFree86: xc/util/memleak/getreti386.c,v 3.6 2006/03/02 03:00:40 dawes Exp $ */
 
 #define get_current_fp(first_local)	((unsigned)&(first_local) + 4)
 #define prev_fp_from_fp(fp)		*((unsigned *) fp)
 #define ret_addr_from_fp(fp)		*((unsigned *) (fp+4))
 
-#if defined(__ELF__) || defined(SVR4)
-/* Good enough for most i386/ELF platforms. */
-#define CRT0_ADDRESS		0x80482fc
-#elif defined(__FreeBSD__)
-#define CRT0_ADDRESS		0x10d3
-#elif defined(__NetBSD__) || defined(__OpenBSD__)
-#define CRT0_ADDRESS            0x109a
-#endif
+#define MIN_ADDRESS		0x1000
 
 #include "getstack.h"
 
@@ -39,7 +32,7 @@ getStackTrace(unsigned long *results, int max)
     fp = get_current_fp(first_local);
     ret_addr = ret_addr_from_fp(fp);
 
-    while (ret_addr > CRT0_ADDRESS && max-- > 1) {
+    while (ret_addr > MIN_ADDRESS && max-- > 1) {
 	*results++ = ret_addr;
 	if (fp < (unsigned long)&first_local)
 	    break;
