@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.506tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.507 2006/03/03 16:43:14 tsi Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -266,7 +266,26 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.506tsi Exp $
 #endif
 
 /* Support for stack traces. */
-#if defined(i386Architecture) || defined(SparcArchitecture) || \
+
+/*
+ * gcc's __builtin_frame_address() works for some, but not all, platforms.
+ * The platforms it is enabled for have been tested to work.
+ * Plaforms tested that do not work, or work less effectively than the
+ * native support are: Alpha, Sparc.
+ */
+
+#ifndef UseGccBuiltinFrameAddress
+# if defined(i386Architecture) || \
+     defined(PpcArchitecture) || \
+     defined(AMD64Architecture)
+#  define UseGccBuiltinFrameAddress YES
+# else
+#  define UseGccBuiltinFrameAddress NO
+# endif
+#endif
+
+#if (HasGcc2 && UseGccBuiltinFrameAddress) || \
+    defined(i386Architecture) || defined(SparcArchitecture) || \
     defined(MipsArchitecture)
 # ifndef UseStackTrace
 #  define UseStackTrace		YES
