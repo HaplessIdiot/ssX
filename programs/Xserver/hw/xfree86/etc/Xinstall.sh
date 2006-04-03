@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.89tsi Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.90 2006/03/23 21:10:57 tsi Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -31,7 +31,7 @@
 #
 
 #
-# Copyright © 1996-2005 by The XFree86 Project, Inc.
+# Copyright © 1996-2006 by The XFree86 Project, Inc.
 # All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining
@@ -78,7 +78,7 @@
 #
 
 #
-# This script should be used to install XFree86 4.5.0.
+# This script should be used to install XFree86 4.5.99.903
 #
 # Parts of this script are based on the old preinst.sh and postinst.sh
 # scripts.
@@ -110,11 +110,11 @@ if [ X$XINST_LOGFILE != X ]; then
 	trap "echo ''; echo $logmsg; echo ''; exit" 0
 fi
 
-SNAPSHOT=n
+SNAPSHOT=y
 
 if [ $SNAPSHOT = y ]; then
 	FULLPREFIX=XXX
-	VERSION=4.4.99.XXX
+	VERSION=4.5.99.903
 	PATCHLEVEL=0
 	FULLVERSION=$VERSION
 else
@@ -840,6 +840,9 @@ FindDistName()
 				;;
 			2.*)
 				DistName="NetBSD-2.0"
+				;;
+			3.*)
+				DistName="NetBSD-3.0"
 				;;
 			*)
 				Message="No NetBSD/i386 binaries available for this version"
