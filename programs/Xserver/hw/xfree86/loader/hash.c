@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.26 2005/10/14 15:16:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.27 2006/03/02 03:00:38 dawes Exp $ */
 
 /*
  *
@@ -512,7 +512,7 @@ LoaderPrintSymbol(unsigned long address)
 	if (section)
 	    ErrorF("\tSection \"%s\"\n", section);
     } else {
-	ErrorF("(null)\n");
+	ErrorF("<cannot guess>\n");
     }
 }
 
@@ -536,7 +536,7 @@ LoaderPrintItem(itemPtr pItem)
 				    &module, &section))
 	    ErrorF("\tModule \"%s\"\n\tSection \"%s\"\n", module, section);
     } else
-	ErrorF("(null)\n");
+	ErrorF("<null>\n");
 }
 
 void

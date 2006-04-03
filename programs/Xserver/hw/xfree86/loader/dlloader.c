@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.17 2006/03/11 17:36:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.18 2006/03/16 16:50:34 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 The XFree86 Project, Inc.
@@ -274,6 +274,7 @@ const char *
 DLAddressToSymbol(void *mod, unsigned long addr, unsigned long *symaddr,
 		  const char **filename, int exe)
 {
+#ifdef HAVE_DLADDR
     static Dl_info info;
     int ret;
 
@@ -287,6 +288,7 @@ DLAddressToSymbol(void *mod, unsigned long addr, unsigned long *symaddr,
 	return info.dli_sname;
 #endif
     }
+#endif
 
     return NULL;
 }
