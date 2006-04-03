@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/util/memleak/Imakefile,v 3.6 2006/01/09 15:01:57 dawes Exp $
+XCOMM $XFree86: xc/util/memleak/Imakefile,v 3.7 2006/03/02 03:00:40 dawes Exp $
 
 #define DoNormalLib YES
 #define DoSharedLib NO
@@ -6,6 +6,13 @@ XCOMM $XFree86: xc/util/memleak/Imakefile,v 3.6 2006/01/09 15:01:57 dawes Exp $
 #define DoProfileLib NO
 #define IncSubdir X11
 #include <Library.tmpl>
+
+#if HasGcc2 && UseGccBuiltinFrameAddress
+
+GRET_NAME = getretgcc
+#define HasGetReturnAddress YES
+
+#else
 
 #ifdef MipsArchitecture
 #define TopOfStack		0x7fffbbb0
@@ -57,7 +64,7 @@ GETSTACK_OBJS = stackbottom.o
 #define BottomOfData		\&__data_start
 #endif
 
-#endif
+#endif /* i386Architecture */
 
 #ifdef AlphaArchitecture
 #define HasGetReturnAddress	NO
@@ -65,6 +72,8 @@ GETSTACK_OBJS = stackbottom.o
 #define TopOfStack		0x11ffffff0
 #define BottomOfData		\&xf86DriverList
 #endif
+
+#endif /* HasGcc */
 
 #ifndef HasGetReturnAddress
 #define HasGetReturnAddress NO
@@ -77,9 +86,15 @@ GETSTACK_OBJS = stackbottom.o
 #ifdef TopOfData
  TOD_DEFS = -DTOP_OF_DATA=TopOfData
 #endif
+#ifdef TopOfStack
+ BOD_DEFS = -DBOTTOM_OF_DATA=BottomOfData
+#endif
+#ifdef TopOfStack
+ TOS_DEFS = -DTOP_OF_STACK=TopOfStack
+#endif
 
-DEFINES = 	-DTOP_OF_STACK=TopOfStack -DBOTTOM_OF_DATA=BottomOfData\
-		$(GRA_DEFS) $(TOD_DEFS) $(LOCAL_DEFS) $(STACKBASE)
+DEFINES = 	$(TOS_DEFS) $(BOD_DEFS) $(GRA_DEFS) $(TOD_DEFS) \
+		$(LOCAL_DEFS) $(STACKBASE)
 
 #if UseMemLeak
 MSRCS = fmalloc.c $(GETSTACK_SRCS)

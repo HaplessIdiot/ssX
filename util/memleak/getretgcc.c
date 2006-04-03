@@ -1,0 +1,35 @@
+/*
+ * Use gcc's __builtin_frame_address() function to get the stack trace.
+ */
+
+/* $XFree86$ */
+
+#include "getstack.h"
+
+#define MIN_ADDR 0x1000
+
+struct gccframe {
+	struct gccframe *next;
+	void *ret;
+};
+
+void
+getStackTrace(unsigned long *results, int max)
+{
+    struct gccframe *frame;
+
+    frame = (struct gccframe *)__builtin_frame_address(0);
+#if defined(__powerpc__)
+    if (frame)
+	frame = frame->next;
+#endif
+    while (frame && max-- > 1) {
+	*results = (unsigned long)frame->ret;
+	if (*results < MIN_ADDR)
+		break;
+	results++;
+	frame = frame->next;
+    }
+    *results = 0;
+}
+
