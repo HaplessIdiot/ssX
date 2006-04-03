@@ -1,4 +1,6 @@
 XFree86 4.5.99.903 (xx April 2006)
+ 262. Stop at the first successful probe on each autoconfig retry, minimising
+      unnecessary probes (David Dawes).
  261. Integrate xterm's setgid feature into imake definitions (Thomas Dickey).
  260. Fix Solaris/sparc 64-bit library build for libGL (David Dawes).
  259. Fix a double-free problem in fontconfig (David Dawes).
@@ -20102,7 +20104,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3709 2006/03/29 01:35:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3710 2006/04/02 23:12:47 dickey Exp $
 
 
 

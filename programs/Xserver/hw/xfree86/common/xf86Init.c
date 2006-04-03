@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.237 2006/03/17 02:25:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.238 2006/03/21 03:56:26 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -709,7 +709,9 @@ retry:
      * For autoconfiguration, where several drivers will be tried in
      * sequence, we need to make sure that those with a failing Probe() up
      * until the first successful Probe() are deleted here.  This is
-     * important for the autoconfiguration retry mechanism.
+     * important for the autoconfiguration retry mechanism.  Also, stop
+     * probing at the first successful probe.  The remaining fallback
+     * drivers will be retried on preinit failure.
      */
 
     found = 0;
@@ -728,6 +730,8 @@ retry:
 			xf86DriverList[i]->driverName : "noname");
 	}
 	xf86SetPciVideo(NULL,NONE);
+	if (found && autoconfig)
+	  break;
       }
     }
 
