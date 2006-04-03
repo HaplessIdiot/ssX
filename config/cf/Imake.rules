@@ -1,6 +1,6 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.147 2006/03/17 21:03:05 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.148 2006/03/29 01:35:41 dawes Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1720,7 +1720,7 @@ InstallNamedTargetNoClobber(install,srcname,$(INSTBINFLAGS),dest,dstname)
 #ifndef MakeNamedTargetSubdir
 #define MakeNamedTargetSubdir(dir,flags,subname)\
 		if [ -z "$$_fail" ]; then _fail="exit 1"; fi; \		@@\
-		(cd dir; $(MAKE) $(MFLAGS) $(PARALLELMFLAGS) \		@@\
+		(cd dir && $(MAKE) $(MFLAGS) $(PARALLELMFLAGS) \	@@\
 			flags subname) || $$_fail
 #endif
 
