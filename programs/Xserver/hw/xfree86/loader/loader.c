@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.77 2006/03/11 17:36:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.78 2006/03/16 16:50:34 dawes Exp $ */
 
 /*
  * Copyright 1995-1998 by Metro Link, Inc.
@@ -124,10 +124,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
-#if defined(linux) || defined(__FreeBSD__) || defined(__NetBSD__) || \
-    defined(__OpenBSD__) || (defined(sun) && defined(SVR4))
-#define HAVE_DLADDR
-#endif
 #if defined(linux) && \
     (defined(__alpha__) || defined(__powerpc__) || defined(__ia64__) \
     || defined(__amd64__) || defined(__x86_64__))
@@ -671,6 +667,10 @@ _GetModuleType(int fd, long offset)
     }
     if (buf[1] == 0x86 && buf[2] == 0x01 && buf[3] == 0x0b) {
 	/* AOUT BSD/i386 demand paged executable */
+	return LD_AOUTOBJECT;
+    }
+    if (buf[0] == 0xcc && buf[1] == 0x00 && buf[2] == 0x86) {
+	/* AOUT FreeBSD/i386 compact demand paged executable */
 	return LD_AOUTOBJECT;
     }
     if ((buf[0] == 0xc0 && buf[1] == 0x86) ||	/* big endian form */
@@ -2184,10 +2184,11 @@ GetExePath(const char **path)
 		    close(fd);
 		}
 	    }
-#else
-	    exePath = xnfstrdup(procPath);
-	    exeName = xnfstrdup(getArgv(0));
 #endif
+	    if (!exePath)
+		exePath = xnfstrdup(procPath);
+	    if (!exeName)
+		exeName = xnfstrdup(getArgv(0));
 
 	    if (exePath && exeName) {
 		if (exePath != exeName)

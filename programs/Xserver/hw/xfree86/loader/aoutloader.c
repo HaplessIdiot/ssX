@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.22 2006/03/02 03:00:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.23 2006/03/16 16:50:33 dawes Exp $ */
 
 /*
  *
@@ -984,7 +984,7 @@ AOUTAddressToSymbol(void *modptr, unsigned long addr, unsigned long *symaddr,
 	case AOUT_DATA:
 	case AOUT_BSS:
 	    saddr = s->n_value;
-	    if (aoutfile->text != 0 || aoutfile->data != 0) {
+	    if (exe || (aoutfile->text != 0 || aoutfile->data != 0)) {
 		switch (s->n_type & AOUT_TYPE) {
 		case AOUT_TEXT:
 		    saddr += (unsigned long)aoutfile->text;
@@ -1091,7 +1091,7 @@ AOUTReadExecutableSyms(int aoutfd)
 						      header->a_syms,
 						      "symbols");
     aoutfile->text = 0;
-    aoutfile->data = 0;
+    aoutfile->data = (unsigned char *)AOUT_DATOFF(header);
     aoutfile->bss = 0;
 
     /* Get the string table. */

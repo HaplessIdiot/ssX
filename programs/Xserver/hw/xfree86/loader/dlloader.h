@@ -19,10 +19,20 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.h,v 1.4 2006/03/02 03:00:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.h,v 1.5 2006/03/16 16:50:34 dawes Exp $ */
 
 #ifndef _DLLOADER_H
 #define _DLLOADER_H
+
+#if defined(linux) || \
+    (defined(__FreeBSD__) && defined(__ELF__)) || \
+    defined(__NetBSD__) || \
+    (defined(__OpenBSD__) && defined(__ELF__)) || \
+    (defined(sun) && defined(SVR4)) || \
+    defined(sgi)
+#define HAVE_DLADDR
+#endif
+
 extern void *DLLoadModule(loaderPtr, int, LOOKUP **);
 extern void DLUnloadModule(void *);
 extern void *DLFindSymbol(const char *name);

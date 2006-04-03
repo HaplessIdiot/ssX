@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aout.h,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aout.h,v 1.9 2005/10/14 15:16:59 tsi Exp $ */
 
 /*
  * Borrowed from NetBSD's exec_aout.h
@@ -30,6 +30,11 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * Updated to the FreeBSD version, since there are some issues in the handling
+ * of the magic/mid field.
  */
 
 #ifndef _AOUT_H
@@ -119,65 +124,73 @@ typedef struct AOUT_exec {
  *       `M' is 16 bits worth of magic number, ie. ZMAGIC.
  * The macros below will set/get the needed fields.
  */
+
 #define AOUT_GETMAGIC(ex) \
-    ( (((ex)->a_midmag)&0xffff0000U) ? (ntohl(((ex)->a_midmag))&0xffffU) : ((ex)->a_midmag))
-#define AOUT_GETMAGIC2(ex) \
-    ( (((ex)->a_midmag)&0xffff0000U) ? (ntohl(((ex)->a_midmag))&0xffffU) : \
-    (((ex)->a_midmag) | 0x10000) )
+	( (ex)->a_midmag & 0xffff )
 #define AOUT_GETMID(ex) \
-    ( (((ex)->a_midmag)&0xffff0000U) ? ((ntohl(((ex)->a_midmag))>>16)&0x03ffU) : MID_ZERO )
+	( (AOUT_GETMAGIC_NET(ex) == ZMAGIC) ? AOUT_GETMID_NET(ex) : \
+	((ex)->a_midmag >> 16) & 0x03ff )
 #define AOUT_GETFLAG(ex) \
-    ( (((ex)->a_midmag)&0xffff0000U) ? ((ntohl(((ex)->a_midmag))>>26)&0x3fU) : 0 )
+	( (AOUT_GETMAGIC_NET(ex) == ZMAGIC) ? AOUT_GETFLAG_NET(ex) : \
+	((ex)->a_midmag >> 26) & 0x3f )
 #define AOUT_SETMAGIC(ex,mag,mid,flag) \
-    ( (ex)->a_midmag = htonl( (((flag)&0x3fU)<<26) | (((mid)&0x03ffU)<<16) | \
-    (((mag)&0xffffU)) ) )
+	( (ex)->a_midmag = (((flag) & 0x3f) <<26) | (((mid) & 0x03ff) << 16) | \
+	((mag) & 0xffff) )
+
+#define AOUT_GETMAGIC_NET(ex) \
+	(ntohl((ex)->a_midmag) & 0xffff)
+#define AOUT_GETMID_NET(ex) \
+	((ntohl((ex)->a_midmag) >> 16) & 0x03ff)
+#define AOUT_GETFLAG_NET(ex) \
+	((ntohl((ex)->a_midmag) >> 26) & 0x3f)
+#define AOUT_SETMAGIC_NET(ex,mag,mid,flag) \
+	( (ex)->a_midmag = htonl( (((flag)&0x3f)<<26) | (((mid)&0x03ff)<<16) | \
+	(((mag)&0xffff)) ) )
 
 #define AOUT_ALIGN(ex,x) \
-        (AOUT_GETMAGIC(ex) == ZMAGIC || AOUT_GETMAGIC(ex) == QMAGIC ? \
-        ((x) + __LDPGSZ - 1) & ~(__LDPGSZ - 1) : (x))
+	(AOUT_GETMAGIC(ex) == ZMAGIC || AOUT_GETMAGIC(ex) == QMAGIC || \
+	 AOUT_GETMAGIC_NET(ex) == ZMAGIC || AOUT_GETMAGIC_NET(ex) == QMAGIC ? \
+	 ((x) + __LDPGSZ - 1) & ~(unsigned long)(__LDPGSZ - 1) : (x))
 
 /* Valid magic number check. */
-#define AOUT_BADMAG(ex) \
-        (AOUT_GETMAGIC(ex) != NMAGIC && AOUT_GETMAGIC(ex) != OMAGIC && \
-        AOUT_GETMAGIC(ex) != ZMAGIC && AOUT_GETMAGIC(ex) != QMAGIC)
+#define	AOUT_BADMAG(ex) \
+	(AOUT_GETMAGIC(ex) != OMAGIC && AOUT_GETMAGIC(ex) != NMAGIC && \
+	 AOUT_GETMAGIC(ex) != ZMAGIC && AOUT_GETMAGIC(ex) != QMAGIC && \
+	 AOUT_GETMAGIC_NET(ex) != OMAGIC && AOUT_GETMAGIC_NET(ex) != NMAGIC && \
+	 AOUT_GETMAGIC_NET(ex) != ZMAGIC && AOUT_GETMAGIC_NET(ex) != QMAGIC)
+
 
 /* Address of the bottom of the text segment. */
-#define AOUT_TXTADDR(ex)   (AOUT_GETMAGIC2(ex) == (ZMAGIC|0x10000) ? 0 : __LDPGSZ)
+#define AOUT_TXTADDR(ex) \
+	((AOUT_GETMAGIC(ex) == OMAGIC || AOUT_GETMAGIC(ex) == NMAGIC || \
+	AOUT_GETMAGIC(ex) == ZMAGIC) ? 0 : __LDPGSZ)
 
 /* Address of the bottom of the data segment. */
 #define AOUT_DATADDR(ex) \
-        (AOUT_GETMAGIC(ex) == OMAGIC ? AOUT_TXTADDR(ex) + (ex)->a_text : \
-        (AOUT_TXTADDR(ex) + (ex)->a_text + __LDPGSZ - 1) & ~(__LDPGSZ - 1))
-
-/* Address of the bottom of the bss segment. */
-#define AOUT_BSSADDR(ex) \
-        (AOUT_DATADDR(ex) + (ex)->a_data)
+	AOUT_ALIGN(ex, AOUT_TXTADDR(ex) + (ex)->a_text)
 
 /* Text segment offset. */
-#define AOUT_TXTOFF(ex) \
-        ( AOUT_GETMAGIC2(ex)==ZMAGIC || AOUT_GETMAGIC2(ex)==(QMAGIC|0x10000) ? \
-        0 : (AOUT_GETMAGIC2(ex)==(ZMAGIC|0x10000) ? __LDPGSZ : \
-        sizeof(struct AOUT_exec)) )
+#define	AOUT_TXTOFF(ex) \
+	(AOUT_GETMAGIC(ex) == ZMAGIC ? __LDPGSZ : (AOUT_GETMAGIC(ex) == QMAGIC || \
+	AOUT_GETMAGIC_NET(ex) == ZMAGIC) ? 0 : sizeof(struct AOUT_exec))
 
 /* Data segment offset. */
-#define AOUT_DATOFF(ex) \
-        AOUT_ALIGN(ex, AOUT_TXTOFF(ex) + (ex)->a_text)
+#define	AOUT_DATOFF(ex) \
+	AOUT_ALIGN(ex, AOUT_TXTOFF(ex) + (ex)->a_text)
 
-/* Text relocation table offset. */
+/* Relocation table offset. */
 #define AOUT_TRELOFF(ex) \
-        (AOUT_DATOFF(ex) + (ex)->a_data)
-
-/* Data relocation table offset. */
+	AOUT_ALIGN(ex, AOUT_DATOFF(ex) + (ex)->a_data)
 #define AOUT_DRELOFF(ex) \
-        (AOUT_TRELOFF(ex) + (ex)->a_trsize)
+	AOUT_ALIGN(ex, AOUT_TRELOFF(ex) + (ex)->a_trsize)
 
 /* Symbol table offset. */
 #define AOUT_SYMOFF(ex) \
-        (AOUT_DRELOFF(ex) + (ex)->a_drsize)
+	(AOUT_DRELOFF(ex) + (ex)->a_drsize)
 
 /* String table offset. */
-#define AOUT_STROFF(ex) \
-        (AOUT_SYMOFF(ex) + (ex)->a_syms)
+#define	AOUT_STROFF(ex) 	(AOUT_SYMOFF(ex) + (ex)->a_syms)
+
 
 /* Relocation format. */
 struct relocation_info_i386 {
