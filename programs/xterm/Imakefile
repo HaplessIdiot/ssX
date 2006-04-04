@@ -7,7 +7,7 @@ XCOMM Xterm assumes that bcopy can handle overlapping arguments.  If your
 XCOMM bcopy (or memcpy) cannot, write a routine called bcopy and link it in
 XCOMM or add -Dbcopy=mybcopy to the DEFINES list below.
 XCOMM
-XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.70 2006/03/27 18:56:44 tsi Exp $
+XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.71tsi Exp $
 XCOMM
 
 /* Uncomment SCROLLBAR_RIGHT if you want the scroll bar to be on the right */
@@ -73,6 +73,16 @@ SCROLLBAR_RIGHT = -DSCROLLBAR_RIGHT
 
 #ifndef XkbClientLibs
 #define XkbClientLibs /**/
+#endif
+
+/* This must come before setting DEFINES */
+#if InstallXtermSetUID
+INSTSETIDFLAGS = InstUidFlags 
+#elif InstallXtermSetGID
+CSGIDFLAGS = -DUSE_UTMP_SETGID
+INSTSETIDFLAGS = InstGidFlags 
+#else
+INSTSETIDFLAGS = NullParameter 
 #endif
 
 /*
@@ -227,15 +237,6 @@ SpecialCObjectRule(menu,$(_NOOP_),$(MISC_DEFINES))
 SpecialCObjectRule(misc,$(_NOOP_),$(MISC_DEFINES))
 SpecialCObjectRule(charproc,$(_NOOP_),$(MISC_DEFINES))
 SpecialCObjectRule(data,$(_NOOP_),$(MISC_DEFINES))
-
-#if InstallXtermSetUID
-INSTSETIDFLAGS = InstUidFlags 
-#elif InstallXtermSetGID
-CSGIDFLAGS  = -DUSE_UTMP_SETGID
-INSTSETIDFLAGS = InstGidFlags 
-#else
-INSTSETIDFLAGS = NullParameter 
-#endif
 
 #if InstallXtermSetUID
 SetUIDProgramTarget(xterm,$(OBJS1),$(DEPLIBS1),$(XRFLIBS) XkbClientLibs XawClientLibs,$(TERMCAPLIB) $(PTYLIB))
