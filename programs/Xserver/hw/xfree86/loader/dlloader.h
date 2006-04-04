@@ -19,15 +19,20 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.h,v 1.5 2006/03/16 16:50:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.h,v 1.6 2006/04/03 18:08:03 dawes Exp $ */
 
 #ifndef _DLLOADER_H
 #define _DLLOADER_H
 
+#ifdef __OpenBSD__
+/* Get OpenBSD macro.  dladdr support starts with 3.6 (200411) */
+#include <sys/param.h>
+#endif
+
 #if defined(linux) || \
     (defined(__FreeBSD__) && defined(__ELF__)) || \
     defined(__NetBSD__) || \
-    (defined(__OpenBSD__) && defined(__ELF__)) || \
+    (defined(__OpenBSD__) && defined(OpenBSD) && OpenBSD >= 200411) || \
     (defined(sun) && defined(SVR4)) || \
     defined(sgi)
 #define HAVE_DLADDR
