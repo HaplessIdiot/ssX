@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Imakefile,v 3.58tsi Exp $
+XCOMM $XFree86: xc/programs/Imakefile,v 3.59 2006/01/29 01:12:27 tsi Exp $
 
 #if BuildServer || BuildClients
 #define IHaveSubdirs
@@ -41,7 +41,9 @@ SCREENSAVESRCDIR = beforelight
    SMPROXYSRCDIR = smproxy
        TWMSRCDIR = twm
   XCONSOLESRCDIR = xconsole
+#if BuildXdm
        XDMSRCDIR = xdm
+#endif
 XFINDPROXYSRCDIR = xfindproxy
       XFWPSRCDIR = xfwp
 #if BuildXF86VidModeLibrary

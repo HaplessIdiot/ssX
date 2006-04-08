@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.191tsi Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.192 2005/11/10 15:37:02 tsi Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -66,6 +66,12 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.191tsi Exp $
  * To disable building Xprt, uncomment this.
  *
 #define XprtServer NO
+ */
+
+/*
+ * To disable building Xdm, uncomment this.
+ *
+#define BuildXdm NO
  */
 
 /*
