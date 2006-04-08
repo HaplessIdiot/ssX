@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.27 2006/03/02 03:00:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.28 2006/04/03 18:08:03 dawes Exp $ */
 
 /*
  *
@@ -470,7 +470,9 @@ LoaderHashFindNearest(unsigned long address)
     return best_entry;
 }
 
-void
+/* Returns 0 when the symbol's name is 'main' */
+
+int
 LoaderPrintSymbol(unsigned long address)
 {
     itemPtr entry;
@@ -499,7 +501,7 @@ LoaderPrintSymbol(unsigned long address)
 #else
 	if (symaddr != 0 && address - symaddr > 0x10000) {
 	    ErrorF("<cannot guess>\n");
-	    return;
+	    return 1;
 	}
 
 	if (symaddr != 0)
@@ -511,8 +513,13 @@ LoaderPrintSymbol(unsigned long address)
 	    ErrorF("\tModule \"%s\"\n", module);
 	if (section)
 	    ErrorF("\tSection \"%s\"\n", section);
+	if (!strcmp(symname, "main"))
+	    return 0;
+	else
+	    return 1;
     } else {
 	ErrorF("<cannot guess>\n");
+	return 1;
     }
 }
 

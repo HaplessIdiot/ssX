@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.507 2006/03/03 16:43:14 tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.508 2006/04/03 18:13:43 dawes Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -276,8 +276,7 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.507 2006/03/03 16:43:14 tsi Exp $
 
 #ifndef UseGccBuiltinFrameAddress
 # if defined(i386Architecture) || \
-     defined(PpcArchitecture) || \
-     defined(AMD64Architecture)
+     defined(PpcArchitecture)
 #  define UseGccBuiltinFrameAddress YES
 # else
 #  define UseGccBuiltinFrameAddress NO

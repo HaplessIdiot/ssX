@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.78 2006/03/16 16:50:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.79 2006/04/03 18:08:03 dawes Exp $ */
 
 /*
  * Copyright 1995-1998 by Metro Link, Inc.
@@ -1997,7 +1997,8 @@ LoaderDefaultFunc(void)
     ErrorF("Stack trace:\n");
     for (i = 1; i < STACK_LEVELS && returnStack[i]; i++) {
 	    ErrorF("%2d: 0x%lx: ", i, returnStack[i]);
-	    LoaderPrintSymbol(returnStack[i]);
+	    if (!LoaderPrintSymbol(returnStack[i]))
+		break;
     }
     xf86LoaderTrap();
 #if LOADER_UNRESOLVED_IS_FATAL

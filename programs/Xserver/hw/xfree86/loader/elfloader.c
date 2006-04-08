@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.69 2006/03/09 17:28:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.70 2006/03/16 16:50:34 dawes Exp $ */
 
 /*
  *
@@ -3980,7 +3980,6 @@ ELFAddressToSymbol(void *modptr, unsigned long address, unsigned long *symaddr,
 	case STT_OBJECT:
 	case STT_FUNC:
 	case STT_SECTION:
-	case STT_NOTYPE:
 	    saddr = syms[i].st_value + (unsigned long)elffile->saddr[sectnum];
 	    diff = address - saddr;
 	    if (diff >= 0) {

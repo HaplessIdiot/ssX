@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.172 2006/03/16 16:49:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.173 2006/03/21 03:56:26 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1290,7 +1290,8 @@ xf86ShowStackTrace()
       ErrorF("%2d: 0x%lx", i, returnStack[i]);
 #ifdef XFree86LOADER
       ErrorF(": ");
-      LoaderPrintSymbol(returnStack[i]);
+      if (!LoaderPrintSymbol(returnStack[i]))
+	break;
 #else
       ErrorF("\n");
 #endif

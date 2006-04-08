@@ -2,7 +2,7 @@
  * Use gcc's __builtin_frame_address() function to get the stack trace.
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/util/memleak/getretgcc.c,v 1.1 2006/04/03 18:13:45 dawes Exp $ */
 
 #include "getstack.h"
 
@@ -23,7 +23,7 @@ getStackTrace(unsigned long *results, int max)
     if (frame)
 	frame = frame->next;
 #endif
-    while (frame && max-- > 1) {
+    while ((unsigned long)frame > MIN_ADDR && max-- > 1) {
 	*results = (unsigned long)frame->ret;
 	if (*results < MIN_ADDR)
 		break;
