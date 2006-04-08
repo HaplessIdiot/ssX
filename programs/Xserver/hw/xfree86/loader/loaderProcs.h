@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.24 2006/03/02 03:00:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.25 2006/03/16 16:50:34 dawes Exp $ */
 
 /*
  *
@@ -176,7 +176,7 @@ void LoaderSetOptions(unsigned long);
 void LoaderClearOptions(unsigned long);
 void LoaderSetDebug(unsigned long);
 
-void LoaderPrintSymbol(unsigned long);
+int LoaderPrintSymbol(unsigned long);
 
 /* Options for LoaderSetOptions */
 #define LDR_OPT_ABI_MISMATCH_NONFATAL		0x0001
