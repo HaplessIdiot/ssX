@@ -1,4 +1,5 @@
 XFree86 4.5.99.903 (xx April 2006)
+ 268. Build fixes for OS/2 (Bugzilla #1663, Frank Giessler).
  267. Add preliminary generic stack trace support using gcc's
       __builtin_frame_address() function (David Dawes).
  266. Fix exectable loading on FreeBSD/a.out (David Dawes).
@@ -20110,7 +20111,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3712 2006/04/03 18:08:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3713 2006/04/03 18:13:43 dawes Exp $
 
 
 

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.46 2005/03/07 16:39:16 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.47 2005/06/07 08:02:14 dawes Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -112,6 +112,7 @@ XCOMM hv: but in future a separate system)
 #define HasVarRun		NO
 #define HasLibPthread		NO
 #define HasPosixThreads		NO
+/* #define ThreadsLibraries	-lpthreads */
 #define HasVarDb		NO
 #define HasDlopen		NO
 #define HasBsearch		NO
@@ -138,7 +139,11 @@ XCOMM hv: but in future a separate system)
 #define HasStickyDirBit		NO
 #define HasMkstemp		NO
 #define HasBasename		NO	/* C-function, not shell utility!! */
-
+/* 
+ * There is a newer version of fontconfig for OS/2 available,
+ * which is needed by GTK+-2.0 anyway
+ */
+#define HasFontconfig		YES
 
 /*
  * Compiler Features
@@ -167,9 +172,9 @@ XCOMM hv: but in future a separate system)
 #define PreProcessCmd	CppCmd
 
 #define CcCmd	gcc -D__UNIXOS2__
-#define DefaultCCOptions	-D__ST_MT_ERRNO -Zmtd -Zsysv-signals
-#define LibraryCCOptions	-D__ST_MT_ERRNO -Zmtd -Zsysv-signals
-#define ServerCCOptions		-D__ST_MT_ERRNO  -Zmtd -Zsysv-signals
+#define DefaultCCOptions	-D__ST_MT_ERRNO__ -Zmtd -Zsysv-signals
+#define LibraryCCOptions	-D__ST_MT_ERRNO__ -Zmtd -Zsysv-signals
+#define ServerCCOptions		-D__ST_MT_ERRNO__ -Zmtd -Zsysv-signals
 
 #define ModuleCcCmd		gcc_elf
 #define ModuleCppCmd		cpp_elf

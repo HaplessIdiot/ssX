@@ -9,7 +9,7 @@
 ; be TAB, not a nice looking number of spaces! Don't try to beautify this
 ; file!!!!
 ;
-; $XFree86: xc/config/cf/os2def.db,v 1.10tsi Exp $
+; $XFree86: xc/config/cf/os2def.db,v 1.11 2005/07/05 16:43:54 tsi Exp $
 ;
 LIBRARY	X11 X11
 X11	XSaveContext	1
@@ -3926,6 +3926,8 @@ GL	glPointParameterfvEXT	539
 GL	glXMakeContextCurrent	540
 GL	_glapi_get_proc_address	541
 GL	_glapi_set_warning_func	542
+GL	_glapi_DispatchTSD	543
+GL	_glapi_get_dispatch	544
 LIBRARY ICE ICE
 ICE	IceAcceptConnection	1 
 ICE	IceAddConnectionWatch	2 
@@ -4153,6 +4155,11 @@ Xft	XftDrawSrcPicture	40
 Xft	XftCharExists	41
 Xft	XftDrawCharSpec	42
 Xft	XftCharIndex	43
+Xft	XftGlyphExtents	44
+Xft	XftLockFace	45
+Xft	XftUnlockFace	46
+Xft	XftGlyphSpecRender	47
+Xft	XftDrawGlyphSpec	48
 LIBRARY Xmuu Xmuu
 Xmuu	XmuClientWindow	1
 Xmuu	XmuCursorNameToIndex	2
@@ -4502,6 +4509,12 @@ freetype	FT_Get_X11_Font_Format	159
 freetype	FT_Get_BDF_Charset_ID	160
 freetype	FT_Get_Postscript_Name	161
 freetype	FT_Stream_Seek		162
+freetype	FT_Stream_EnterFrame	163
+freetype	FT_Stream_ExitFrame	164
+freetype	FT_Stream_GetShort	165
+freetype	FT_Stream_GetLong	166
+freetype	FT_Load_Sfnt_Table	167
+freetype	FT_Library_Version	168
 LIBRARY	XTrap	XTrap
 XTrap	XEAddEventCB	1
 XTrap	XEAddEventCBs	2
@@ -4752,6 +4765,11 @@ fontconfig	FcPatternInsertElt	173
 fontconfig	FcCharSetFirstPage	174
 fontconfig	FcCharSetNextPage	175
 fontconfig	FcUtf16ToUcs4	176
+fontconfig	FcPatternEqual	177
+fontconfig	FcPatternHash	178
+fontconfig	FcPatternReference	179
+fontconfig	FcFontSort	180
+fontconfig	FcFontSetSortDestroy	181
 LIBRARY expat	expat
 expat	XML_DefaultCurrent	1
 expat	XML_ErrorString	2

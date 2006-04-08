@@ -491,5 +491,9 @@ EXPORTS
 	_glapi_get_proc_address
 	_glapi_set_warning_func
 #endif
+#ifdef HAS_THREADS
+	_glapi_DispatchTSD
+	_glapi_get_dispatch
+#endif
 
-/* $XFree86: xc/lib/GL/GL/GL-def.cpp,v 1.2 2003/03/25 04:18:07 dawes Exp $ */
+/* $XFree86: xc/lib/GL/GL/GL-def.cpp,v 1.3 2003/11/12 00:10:24 dawes Exp $ */

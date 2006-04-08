@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_select.c,v 3.11 2005/10/14 15:17:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_select.c,v 3.12 2006/01/09 15:00:23 dawes Exp $ */
 
 /*
  * (c) Copyright 1996 by Sebastien Marineau
@@ -457,7 +457,7 @@ void os2SocketMonitorThread(void *arg)
 		 * The next line shouldn't be here, but the DosPostEventSem()
 		 * below will return 299 from time to time under heavy load
 		 */
-/*		DosResetEventSem(hSocketSem,&ulPostCount);*/
+		DosResetEventSem(hSocketSem,&ulPostCount);
 
 		memcpy(sd_ptr->tcp_select_monitor,sd_ptr->tcp_select_mask,
 		        sd_ptr->socket_ntotal*sizeof(int));
@@ -478,10 +478,7 @@ void os2SocketMonitorThread(void *arg)
 				xf86Msg(X_ERROR,"Socket monitor: os2_select: sock_errno = %d\n",rc);
 		}
 
-		rc = DosQueryEventSem(hevServerHasFocus, &ulPostCount);
-
 		/* no need to rush while switched away */
-		if ((rc==0) && (ulPostCount==0))
 			rc == DosWaitEventSem(hevServerHasFocus,31L);
 	}
 }

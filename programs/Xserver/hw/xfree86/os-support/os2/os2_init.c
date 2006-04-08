@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.20 2005/10/14 15:17:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.21 2006/01/09 15:00:23 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -74,6 +74,7 @@ void xf86OpenConsole()
 	int VioTid;
         ULONG actual_handles;
         LONG new_handles;
+	char popup_sem_name[25];
 
 	/* hv 250197 workaround for xkb-Problem: switch to X11ROOT drive */
 	char *x11r = getenv("X11ROOT");
@@ -88,6 +89,9 @@ void xf86OpenConsole()
 	}
 
 	xf86Msg(X_INFO,"Console opened\n");
+
+	/* fg 090305 we do not want ctrl-c to terminate the server */
+	signal(SIGINT,SIG_IGN);
 	OriginalVideoMode.cb=sizeof(VIOMODEINFO);
 	rc=VioGetMode(&OriginalVideoMode,(HVIO)0);
 	if(rc!=0) 
@@ -132,7 +136,8 @@ void xf86OpenConsole()
  
 /* Create popup semaphore */
 
-	rc = DosCreateEventSem("\\SEM32\\XF86PUP",&hevPopupPending,DC_SEM_SHARED,1);
+	sprintf(popup_sem_name, "\\SEM32\\XF86PUP.%d", getpid());
+	rc = DosCreateEventSem(popup_sem_name,&hevPopupPending,DC_SEM_SHARED,1);
 	if (rc) 
 		xf86Msg(X_ERROR,
 			"Could not create popup semaphore! RC=%d\n",rc);
@@ -218,7 +223,9 @@ void xf86CloseConsole()
 	rc = DosQuerySysInfo(5,5,&drive,sizeof(drive));
 	rc = DosSuppressPopUps(0x0000L,drive+96);    /* Reenable popups */
 	rc = DosCloseEventSem(hevPopupPending);
+#if 0
 	rc = VioDeRegister();
+#endif
 	return;
 }
 

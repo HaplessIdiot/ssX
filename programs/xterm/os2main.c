@@ -4,7 +4,7 @@
  * and did some rewrite for the obscure OS/2 environment
  */
 
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.82 2006/01/04 02:10:26 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.84 2006/02/13 01:14:59 dickey Exp $ */
 
 /***********************************************************
 
@@ -1484,6 +1484,8 @@ set_owner(char *device, uid_t uid, gid_t gid, mode_t mode)
 		    device, (long) uid, (long) gid, strerror(why));
 	}
     }
+#ifndef __EMX__
+/* EMX can chmod files only, not devices */
     if (chmod(device, mode) < 0) {
 	why = errno;
 	if (why != ENOENT) {
@@ -1498,6 +1500,7 @@ set_owner(char *device, uid_t uid, gid_t gid, mode_t mode)
 	    }
 	}
     }
+#endif
 }
 
 #define THE_PARENT 1

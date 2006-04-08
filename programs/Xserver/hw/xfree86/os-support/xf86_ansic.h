@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.61 2006/01/29 02:19:53 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.62 2006/02/20 00:14:37 dawes Exp $ */
 /*
  * Copyright 1997-2004 by The XFree86 Project, Inc
  * All rights reserved.
@@ -58,6 +58,9 @@
 #  include <stdarg.h>
 # else /* __OS2ELF__ */
    /* EMX/gcc_elf under OS/2 does not have native header files */
+#  ifndef _STDARG_H
+#   define _STDARG_H
+#  endif
 #  if !defined (_VA_LIST)
 #   define _VA_LIST
     typedef char *va_list;
