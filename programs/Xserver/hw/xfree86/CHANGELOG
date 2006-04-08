@@ -1,4 +1,6 @@
-XFree86 4.5.99.903 (xx April 2006)
+XFree86 4.5.99.904 (xx April 2006)
+
+XFree86 4.5.99.903 (8 April 2006)
  269. Add a config switch for building xdm (Bugzilla #1662. Frank Giessler).
  268. Build fixes for OS/2 (Bugzilla #1663, Frank Giessler).
  267. Add preliminary generic stack trace support using gcc's
@@ -20112,7 +20114,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3714 2006/04/08 18:30:24 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3715 2006/04/08 18:33:00 dawes Exp $
 
 
 
