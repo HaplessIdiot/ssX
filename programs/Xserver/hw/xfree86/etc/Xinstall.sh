@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.90 2006/03/23 21:10:57 tsi Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.91 2006/04/03 16:04:13 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -182,6 +182,8 @@ OLDFILES=" \
 	$RUNDIR/lib/X11/fonts/misc/7x13euroB.pcf.gz \
 	$RUNDIR/lib/modules/drivers/ati2_drv.o \
 	$RUNDIR/lib/modules/drivers/ati2_drv.so \
+	$RUNDIR/lib/modules/drivers/sunffb_drv.o \
+	$RUNDIR/lib/modules/drivers/sunffb_drv.so \
 	"
 
 OLDDIRS=" \
