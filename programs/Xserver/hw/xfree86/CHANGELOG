@@ -1,4 +1,5 @@
 XFree86 4.5.99.904 (xx April 2006)
+ 270. Xterm patch #212 (Thomas Dickey).
 
 XFree86 4.5.99.903 (8 April 2006)
  269. Add a config switch for building xdm (Bugzilla #1662. Frank Giessler).
@@ -20114,7 +20115,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3715 2006/04/08 18:33:00 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3716 2006/04/08 19:10:48 dawes Exp $
 
 
 

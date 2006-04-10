@@ -1,4 +1,4 @@
-XCOMM $XTermId: Imakefile,v 1.95 2006/04/02 22:57:08 tom Exp $
+XCOMM $XTermId: Imakefile,v 1.97 2006/04/08 22:08:34 tom Exp $
 XCOMM
 XCOMM                         Attention xterm porters
 XCOMM
@@ -7,7 +7,7 @@ XCOMM Xterm assumes that bcopy can handle overlapping arguments.  If your
 XCOMM bcopy (or memcpy) cannot, write a routine called bcopy and link it in
 XCOMM or add -Dbcopy=mybcopy to the DEFINES list below.
 XCOMM
-XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.71tsi Exp $
+XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.72 2006/04/04 16:37:31 tsi Exp $
 XCOMM
 
 /* Uncomment SCROLLBAR_RIGHT if you want the scroll bar to be on the right */
