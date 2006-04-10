@@ -1,6 +1,6 @@
-/* $XTermId: charproc.c,v 1.668 2006/03/07 14:25:11 tom Exp $ */
+/* $XTermId: charproc.c,v 1.670 2006/04/05 00:48:40 Jason.Vas.Dias Exp $ */
 
-/* $XFree86: xc/programs/xterm/charproc.c,v 3.180 2006/02/13 01:14:58 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/charproc.c,v 3.181 2006/03/13 01:27:57 dickey Exp $ */
 
 /*
 
@@ -5757,14 +5757,33 @@ VTInitialize(Widget wrequest,
 static void
 releaseCursorGCs(TScreen * screen)
 {
-    if (screen->cursorGC)
-	XFreeGC(screen->display, screen->cursorGC);
-    if (screen->fillCursorGC)
-	XFreeGC(screen->display, screen->fillCursorGC);
-    if (screen->reversecursorGC)
+    GC cursorGC = screen->cursorGC;
+    GC fillCursorGC = screen->fillCursorGC;
+    GC reverseCursorGC = screen->reversecursorGC;
+    GC cursorOutlineGC = screen->cursoroutlineGC;
+
+    if (cursorGC)
+	XFreeGC(screen->display, cursorGC);
+    screen->cursorGC = 0;
+
+    if (fillCursorGC && (fillCursorGC != cursorGC))
+	XFreeGC(screen->display, fillCursorGC);
+    screen->fillCursorGC = 0;
+
+    if (reverseCursorGC
+	&& (reverseCursorGC != cursorGC)
+	&& (reverseCursorGC != fillCursorGC)
+	)
 	XFreeGC(screen->display, screen->reversecursorGC);
-    if (screen->cursoroutlineGC)
+    screen->reversecursorGC = 0;
+
+    if (cursorOutlineGC
+	&& (cursorOutlineGC != cursorGC)
+	&& (cursorOutlineGC != fillCursorGC)
+	&& (cursorOutlineGC != reverseCursorGC)
+	)
 	XFreeGC(screen->display, screen->cursoroutlineGC);
+    screen->cursoroutlineGC = 0;
 }
 
 #ifdef NO_LEAKS
