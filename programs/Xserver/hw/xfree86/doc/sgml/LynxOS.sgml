@@ -8,7 +8,7 @@
 <date>25 February 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.20 2000/06/17 00:27:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.21 2004/12/08 22:27:11 dawes Exp $
 </ident>
 
 <toc>
@@ -31,10 +31,6 @@ Binaries of XFree86 for LynxOS x86 are available from:
 
 <htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/&relvers;/binaries/LynxOS"
 url="ftp://ftp.XFree86.org/pub/XFree86/&relvers;/binaries/LynxOS">
-
-A list of mirror sites is provided by
-<htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/MIRRORS"
-url="ftp://ftp.XFree86.org/pub/XFree86/MIRRORS">
 
 The binaries on the FTP site were built on the latest released LynxOS
 version at the time XFree86 &relvers; was released. In this case it is

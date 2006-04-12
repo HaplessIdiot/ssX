@@ -8,7 +8,7 @@
 <Date>16 March 2005
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.18 2005/03/16 15:30:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.19 2005/03/16 17:12:47 dawes Exp $
 </ident>
 
 <abstract>
@@ -62,8 +62,7 @@ site<![ %updaterel; [ and the source patch that updates &fullrelvers; to
 
 	These can be found at <htmlurl
 	name="ftp://ftp.xfree86.org/pub/XFree86/&fullrelvers;/source/"
-	url="ftp://ftp.xfree86.org/pub/XFree86/&fullrelvers;/source/">
-	and similar locations on XFree86 mirror sites.
+	url="ftp://ftp.xfree86.org/pub/XFree86/&fullrelvers;/source/">.
 	<tt>XFree86-&fullrelvers;-src-4.tgz</tt> and
 	<tt>XFree86-&fullrelvers;-src-5.tgz</tt> contains the fonts.
 	<tt>XFree86-&fullrelvers;-src-6.tgz</tt> contains the documentation

@@ -9,7 +9,7 @@
 <date>16 March 2005
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.135 2005/03/16 15:30:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.135 2005/03/17 01:11:56 dawes Exp $
 </ident>
 
 <abstract>
@@ -54,16 +54,17 @@ feature-complete.  Known problems with this release candidate include:
 <p>
 Automatic configuration was introduced with XFree86 4.4.0 
 which makes it possible to start XFree86 without first creating a 
-configuration file.  This was further improved in XFree86
-4.5.0.  
+configuration file.  This has been further improved in XFree86
+4.5.0 and 4.6.0.  If you experienced any problems with automatic configuration
+in a previous release, it is worth trying it again with this release.
 
-While the initial automatic configuration support was originally targeted 
-ust for Linux and the FreeBSD variants, in 4.5.0 it now includes Solaris, NetBSD and OpenBSD support, 
-and it is planned that automatic configuration will be supported on other 
-platforms in future releases.
+While the initial automatic configuration support was originally targeted
+ust for Linux and the FreeBSD variants, as of 4.5.0 it also includes
+Solaris, NetBSD and OpenBSD support. Full support for automatic
+configuration is planned for other platforms in future releases.
 
-If you are running either Linux, FreeBSD, NetBSD, OpenBSD, or Solaris,
-try Auto Configuration by running:
+If you are running Linux, FreeBSD, NetBSD, OpenBSD, or Solaris, try Auto
+Configuration by running:
 
 <tscreen><verb>
 XFree86 -autoconfig
@@ -148,27 +149,12 @@ url="http://cvsweb.xfree86.org/cvsweb/xc/programs/Xserver/hw/xfree86/CHANGELOG?r
 
 <sect1>Security Updates
 <p>
-The following security issues have been fixed in this release:
+The following security issue have been fixed in this release:
 
 <itemize>
-<item>xdm would listen on a random socket when the
-<tt>DisplayManager.requestPort</tt> resource was set to <tt>0</tt>
-(<url name="CAN-2004-0419" url="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CAN-2004-0419">).
 
-<item>Integer overflow in libICE/libSM.
-
-<item>libXpm stack and integer overflow and other issues (<url
-name="CAN-2004-0687"
-url="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CAN-2004-0687">, <url
-name="CAN-2004-0688"
-url="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CAN-2004-0688">, <url
-name="CAN-2004-0914"
-url="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CAN-2004-0914">, <url
-name="CAN-2005-0605"
-url="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CAN-2005-0605">).
-
-<item>Potential security issues related to wrap-around of memory allocation
-requests in font handling and other areas.
+<item>X server pixmap allocation flaw (<url name="CERT Vulnerability
+Note VU#102441" url="http://www.kb.cert.org/vuls/id/102441"> <url name="CAN-2005-2495" url="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CAN-2005-2495">).
 
 </itemize>
 
@@ -1049,6 +1035,7 @@ XFree86 &relvers; includes the following video drivers:
    <tabrow><tt>apm</tt><colsep>Alliance Pro Motion<colsep><htmlurl
 		name="README.apm" url="apm.html"></tabrow>
    <tabrow><tt>ark</tt><colsep>Ark Logic<colsep>&nbsp;</tabrow>
+   <tabrow><tt>ast</tt><colsep>ASPEED Technology<colsep>&nbsp;</tabrow>
    <tabrow><tt>ati</tt><colsep>ATI<colsep><htmlurl
 		name="README.ati" url="ati.html">, <htmlurl
 		name="README.r128" url="r128.html">,</tabrow>
@@ -1115,14 +1102,16 @@ XFree86 &relvers; includes the following video drivers:
    <tabrow><tt>trident</tt><colsep>Trident<colsep><htmlurl
 		name="trident(4)" url="trident.4.html"></tabrow>
    <tabrow><tt>tseng</tt><colsep>Tseng Labs<colsep>&nbsp;</tabrow>
-   <tabrow><tt>via</tt><colsep>VIA<colsep><htmlurl
-		name="via(4)" url="via.4.html"></tabrow>
    <tabrow><tt>vesa</tt><colsep>VESA<colsep><htmlurl
 		name="vesa(4)" url="vesa.4.html"></tabrow>
    <tabrow><tt>vga</tt><colsep>Generic VGA<colsep><htmlurl
 		name="vga(4)" url="vga.4.html"></tabrow>
+   <tabrow><tt>via</tt><colsep>VIA<colsep><htmlurl
+		name="via(4)" url="via.4.html"></tabrow>
    <tabrow><tt>vmware</tt><colsep>VMWare guest OS<colsep><htmlurl
 		name="vmware(4)" url="vmware.4.html"></tabrow>
+   <tabrow><tt>xgi</tt><colsep>Xabre Graphics Inc<colsep><htmlurl
+		name="xgi(4)" url="xgi.4.html"></tabrow>
 </tabular>
 </table>
 
