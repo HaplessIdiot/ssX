@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.163tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.164 2006/03/11 03:05:17 tsi Exp $ */
 
 /*
  * Copyright (c) 1995-2003 by The XFree86 Project, Inc.
@@ -116,6 +116,8 @@
 #define PCI_VENDOR_TRITECH		0x1292
 #define PCI_VENDOR_NVIDIA_SGS		0x12D2
 #define PCI_VENDOR_VMWARE		0x15AD
+#define PCI_VENDOR_XGI			0x18CA
+#define PCI_VENDOR_AST			0x1A03
 #define PCI_VENDOR_3DLABS		0x3D3D
 #define PCI_VENDOR_AVANCE_2		0x4005
 #define PCI_VENDOR_HERCULES		0x4843
