@@ -1,4 +1,4 @@
-                      Release Notes for XFree86® 4.5.0
+                      Release Notes for XFree86® 4.6.0
 
                           The XFree86 Project, Inc
 
@@ -7,28 +7,30 @@
                                   Abstract
 
       This document contains information about the various features and
-     their current status in the XFree86 4.5.0 release.
+     their current status in the XFree86 4.6.0 release.
 
 1.  Introduction to the 4.x Release Series
 
 XFree86 4.0 was the first official release of the XFree86 4 series.  The cur-
-rent release (4.5.0) is the latest in that series.  The XFree86 4.x series
+rent release (4.6.0) is the latest in that series.  The XFree86 4.x series
 represents a significant redesign of the XFree86 X server, with a strong
 focus on modularity and configurability.
 
 2.  Configuration: a Quick Synopsis
 
 Automatic configuration was introduced with XFree86 4.4.0 which makes it pos-
-sible to start XFree86 without first creating a configuration file.  This was
-further improved in XFree86 4.5.0.
+sible to start XFree86 without first creating a configuration file.  This has
+been further improved in XFree86 4.5.0 and 4.6.0.  If you experienced any
+problems with automatic configuration in a previous release, it is worth try-
+ing it again with this release.
 
 While the initial automatic configuration support was originally targeted ust
-for Linux and the FreeBSD variants, in 4.5.0 it now includes Solaris, NetBSD
-and OpenBSD support, and it is planned that automatic configuration will be
-supported on other platforms in future releases.
+for Linux and the FreeBSD variants, as of 4.5.0 it also includes Solaris,
+NetBSD and OpenBSD support. Full support for automatic configuration is
+planned for other platforms in future releases.
 
-If you are running either Linux, FreeBSD, NetBSD, OpenBSD, or Solaris, try
-Auto Configuration by running:
+If you are running Linux, FreeBSD, NetBSD, OpenBSD, or Solaris, try Auto Con-
+figuration by running:
 
      XFree86 -autoconfig
 
@@ -70,13 +72,13 @@ Before downloading any of the binary distributions for this release, read
 through the Installation Document as it can point out which particular binary
 you should download.
 
-The next section describes what is new in the latest version (4.5.0) compared
-with the previous full release (4.4.0).  There are many new features in this
+The next section describes what is new in the latest version (4.6.0) compared
+with the previous full release (4.5.0).  There are many new features in this
 release and we unfortunately do not have enough space to cover them all here.
 
-3.  Summary of new features in 4.5.0.
+3.  Summary of new features in 4.6.0.
 
-This is a sampling of the new features in XFree86 4.5.0.  A more complete
+This is a sampling of the new features in XFree86 4.6.0.  A more complete
 list of changes can be found in the CHANGELOG that is part of the XFree86
 source tree.  It can also be viewed online at our CVSweb server
 <URL:http://cvsweb.xfree86.org/cvsweb/xc/pro-
@@ -84,24 +86,11 @@ grams/Xserver/hw/xfree86/CHANGELOG?rev=HEAD>.
 
 3.1  Security Updates
 
-The following security issues have been fixed in this release:
+The following security issue have been fixed in this release:
 
-   o xdm would listen on a random socket when the DisplayManager.requestPort
-     resource was set to 0 (CAN-2004-0419 <URL:http://cve.mitre.org/cgi-
-     bin/cvename.cgi?name=CAN-2004-0419>).
-
-   o Integer overflow in libICE/libSM.
-
-   o libXpm stack and integer overflow and other issues (CAN-2004-0687
-     <URL:http://cve.mitre.org/cgi-bin/cvename.cgi?name=CAN-2004-0687>,
-     CAN-2004-0688 <URL:http://cve.mitre.org/cgi-bin/cve-
-     name.cgi?name=CAN-2004-0688>, CAN-2004-0914
-     <URL:http://cve.mitre.org/cgi-bin/cvename.cgi?name=CAN-2004-0914>,
-     CAN-2005-0605 <URL:http://cve.mitre.org/cgi-bin/cve-
-     name.cgi?name=CAN-2005-0605>).
-
-   o Potential security issues related to wrap-around of memory allocation
-     requests in font handling and other areas.
+   o X server pixmap allocation flaw (CERT Vulnerability Note VU#102441
+     <URL:http://www.kb.cert.org/vuls/id/102441> CAN-2005-2495
+     <URL:http://cve.mitre.org/cgi-bin/cvename.cgi?name=CAN-2005-2495>).
 
 3.2  Video Driver Enhancements
 
@@ -798,13 +787,14 @@ complete list):
 
 4.1  Video Drivers
 
-XFree86 4.5.0 includes the following video drivers:
+XFree86 4.6.0 includes the following video drivers:
 
  +--------------+--------------------------+--------------------------------+
  |Driver Name   | Description              | Further Information            |
  +--------------+--------------------------+--------------------------------+
  |apm           | Alliance Pro Motion      | README.apm                     |
  |ark           | Ark Logic                |                                |
+ |ast           | ASPEED Technology        |                                |
  |ati           | ATI                      | README.ati, README.r128,       |
  |              |                          | r128(4), radeon(4)             |
  |chips         | Chips & Technologies     | README.chips, chips(4)         |
@@ -839,10 +829,11 @@ XFree86 4.5.0 includes the following video drivers:
  |tga           | DEC TGA                  | README.DECtga                  |
  |trident       | Trident                  | trident(4)                     |
  |tseng         | Tseng Labs               |                                |
- |via           | VIA                      | via(4)                         |
  |vesa          | VESA                     | vesa(4)                        |
  |vga           | Generic VGA              | vga(4)                         |
+ |via           | VIA                      | via(4)                         |
  |vmware        | VMWare guest OS          | vmware(4)                      |
+ |xgi           | Xabre Graphics Inc       | xgi(4)                         |
  +--------------+--------------------------+--------------------------------+
 
 Drivers marked with (*) are present in a preliminary form in this release,
@@ -857,7 +848,7 @@ listed above. Further information can be found in README.Darwin.
 
 4.2  Input Drivers
 
-XFree86 4.5.0 includes the following input drivers:
+XFree86 4.6.0 includes the following input drivers:
 
    +------------+----------------------------------+---------------------+
    |Driver Name | Description                      | Further Information |
@@ -901,7 +892,7 @@ either have one or more video and input drivers linked in statically, or more
 usually, dynamically, and in that manner load the video drivers, input driv-
 ers, and other modules that are needed.
 
-XFree86 4.5.0 has X server support for most UNIX® and UNIX-like operating
+XFree86 4.6.0 has X server support for most UNIX® and UNIX-like operating
 systems on Intel/x86 platforms, plus support for Linux and some BSD OSs on
 Alpha, PowerPC, IA-64, AMD64, SPARC, and Mips platforms, and for Darwin on
 PowerPC.  Support for additional architectures and operating systems is in
@@ -997,7 +988,7 @@ Known problems:
 
 6.7  DGA version 2
 
-DGA 2.0 is included in 4.5.0.  Documentation for the client libraries can be
+DGA 2.0 is included in 4.6.0.  Documentation for the client libraries can be
 found in the XDGA(3) man page.  A good degree of backwards compatibility with
 version 1.0 is provided.
 
@@ -1052,7 +1043,7 @@ anti-aliased text and geometric objects as well as perform translucent image
 overlays and other image operations not possible with the core X rendering
 system.
 
-XFree86 4.5.0 provides a partial implementation of Render sufficient for
+XFree86 4.6.0 provides a partial implementation of Render sufficient for
 drawing anti-aliased text and image composition.  Still to be implemented are
 geometric primitives and affine transformation of images.
 
@@ -1087,12 +1078,12 @@ the Xft(3) man page.
 
 6.11.2  FreeType support in Xft
 
-XFree86 4.5.0 includes sources for FreeType version 2.1.8, and, by default,
+XFree86 4.6.0 includes sources for FreeType version 2.1.8, and, by default,
 they are built and installed automatically.
 
 6.11.3  Application Support For Anti-Aliased Text
 
-Only three applications have been modified in XFree86 4.5.0 to work with the
+Only three applications have been modified in XFree86 4.6.0 to work with the
 Render extension and the Xft and FreeType libraries to provide anti-aliased
 text.  Xterm, xditview and x11perf.  Migration of other applications may
 occur in future releases.
@@ -1276,7 +1267,7 @@ site <URL:http://www.urwpp.de>.
 
 7.  Credits
 
-This section lists the credits for the XFree86 4.5.0 release.  For a more
+This section lists the credits for the XFree86 4.6.0 release.  For a more
 detailed breakdown, refer to the CHANGELOG file in the XFree86 source tree,
 the cvs-commit archives <URL:http://www.mail-archive.com/cvs-com-
 mit@xfree86.org/maillist.html>, or the 'cvs log' information for individual
@@ -1381,7 +1372,7 @@ its contributors
 This product includes software developed by X-Oz Technologies (http://www.x-
 oz.com/).
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.135 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.136 dawes Exp $
 
 
 $XFree86$

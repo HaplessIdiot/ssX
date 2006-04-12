@@ -49,14 +49,14 @@ XFree86 licensing policy, please contact us.
 
 3.1  Open Source
 
-We believe that all of the code in this release (4.5.0) of XFree86 meet the
+We believe that all of the code in this release (4.6.0) of XFree86 meet the
 requirements of the Open Source Definition <URL:http://open-
 source.org/docs/definition.php>, as maintained by the Open Source Initiative
 (OSI) <URL:http://opensource.org/>.
 
 3.2  Free Software
 
-We believe that most of the code in this release (4.5.0) of XFree86 meets the
+We believe that most of the code in this release (4.6.0) of XFree86 meets the
 requirements of the Free Software definition <URL:http://www.fsf.org/philoso-
 phy/free-sw.html> as defined by the Free Software Foundation (FSF)
 <URL:http://www.fsf.org/>.
@@ -1639,4 +1639,4 @@ further information, contact: fonts at gnome dot org.
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.42 tsi Exp $
 
 
-$XFree86: xc/LICENSE.txt,v 1.3tsi Exp $
+$XFree86$
