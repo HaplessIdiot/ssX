@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast.h,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast.h,v 1.5 2006/03/19 21:18:52 tsi Exp $ */
 
 #ifndef __AST_H__
 #define __AST_H__ 1

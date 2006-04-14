@@ -19,30 +19,11 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_cursor.h,v 1.2 2005/12/18 01:00:46 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_accel.h,v 1.1 2006/02/08 01:34:36 dawes Exp $ */
 
-#ifndef __AST_CURSOR_H__
-#define __AST_CURSOR_H__ 1
+#ifndef __AST_ACCEL_H__
+#define __AST_ACCEL_H__ 1
 
-#define	MAX_HWC_WIDTH		64
-#define	MAX_HWC_HEIGHT		64
-#define HWC_SIZE		(MAX_HWC_WIDTH*MAX_HWC_HEIGHT*2)
-#define	HWC_SIGNATURE_SIZE	32
-#define	HWC_ALIGN		32
+extern Bool ASTAccelInit(ScreenPtr pScreen);
 
-#define HWC_MONO		0
-#define HWC_COLOR		1
-
-/* define for signature structure */
-#define HWC_SIGNATURE_CHECKSUM	0x00
-#define HWC_SIGNATURE_SizeX	0x04
-#define HWC_SIGNATURE_SizeY	0x08
-#define HWC_SIGNATURE_X		0x0C
-#define HWC_SIGNATURE_Y		0x10
-#define HWC_SIGNATURE_HOTSPOTX	0x14
-#define HWC_SIGNATURE_HOTSPOTY	0x18
-
-extern Bool ASTCursorInit(ScreenPtr pScreen);
-extern Bool bASTInitHWC(ScrnInfoPtr pScrn, ASTRecPtr pAST);
-
-#endif /* __AST_CURSOR_H__ */
+#endif /* __AST_ACCEL_H */

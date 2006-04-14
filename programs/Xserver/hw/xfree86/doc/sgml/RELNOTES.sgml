@@ -9,7 +9,7 @@
 <date>16 March 2005
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.135 2005/03/17 01:11:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.136 2006/04/12 01:39:22 dawes Exp $
 </ident>
 
 <abstract>
@@ -1035,7 +1035,7 @@ XFree86 &relvers; includes the following video drivers:
    <tabrow><tt>apm</tt><colsep>Alliance Pro Motion<colsep><htmlurl
 		name="README.apm" url="apm.html"></tabrow>
    <tabrow><tt>ark</tt><colsep>Ark Logic<colsep>&nbsp;</tabrow>
-   <tabrow><tt>ast</tt><colsep>ASPEED Technology<colsep>&nbsp;</tabrow>
+   <tabrow><tt>aspeed</tt><colsep>ASPEED Technology<colsep>&nbsp;</tabrow>
    <tabrow><tt>ati</tt><colsep>ATI<colsep><htmlurl
 		name="README.ati" url="ati.html">, <htmlurl
 		name="README.r128" url="r128.html">,</tabrow>

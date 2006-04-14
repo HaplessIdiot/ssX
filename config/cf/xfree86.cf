@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.508 2006/04/03 18:13:43 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.509 2006/04/08 17:53:38 dawes Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -392,7 +392,7 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.508 2006/04/03 18:13:43 dawes Exp $
 #  endif
 #  define XF86CardDrivers	mga glint nv tga s3 s3virge sis xgi rendition \
 				neomagic i740 tdfx savage \
-				cirrus vmware tseng trident chips ast apm \
+				cirrus vmware tseng trident chips aspeed apm \
 				GlideDriver i128 NscDriver \
 				ati i810 AgpGartDrivers DevelDrivers ark \
 				cyrix siliconmotion via \
@@ -495,8 +495,8 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.508 2006/04/03 18:13:43 dawes Exp $
 # ifndef XF86CardDrivers
 #  define XF86CardDrivers	mga glint nv tga s3 s3virge sis xgi rendition \
 				neomagic tdfx savage cirrus tseng trident \
-				chips ast apm i128 ati ark cyrix siliconmotion \
-				vga dummy fbdev vesa
+				chips aspeed apm i128 ati ark cyrix \
+				siliconmotion vga dummy fbdev vesa
 # endif
 
 /* DRI tdfx driver needs Glide, which is not available for AMD64 */
@@ -591,9 +591,9 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.508 2006/04/03 18:13:43 dawes Exp $
     * require changes (or even removal) for things like endianness, etc.  Move
     * those known to work into the main XF86CardDrivers #define.
     */
-#   define DevelDrivers		apm ark ast chips cirrus i128 i740 i810 imstt \
-				neomagic newport nv rendition s3virge savage \
-				siliconmotion tga trident vmware dummy
+#   define DevelDrivers		apm ark aspeed chips cirrus i128 i740 i810 \
+				imstt neomagic newport nv rendition s3virge \
+				savage siliconmotion tga trident vmware dummy
 #  else
 #   define DevelDrivers		/* */
 #  endif
