@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_driver.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_driver.c,v 1.5 2006/03/19 21:18:53 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -70,7 +70,7 @@ static Bool ASTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
  * This is intentionally screen-independent.  It indicates the binding
  * choice made in the first PreInit.
  */
-DriverRec AST = {
+DriverRec ASPEED = {
    AST_VERSION,
    AST_DRIVER_NAME,
    ASTIdentify,
@@ -184,7 +184,7 @@ static XF86ModuleVersionInfo astVersRec = {
    {0, 0, 0, 0}
 };
 
-XF86ModuleData astModuleData = { &astVersRec, astSetup, NULL };
+XF86ModuleData aspeedModuleData = { &astVersRec, astSetup, NULL };
 
 static pointer
 astSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
@@ -195,7 +195,7 @@ astSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
     */
    if (!setupDone) {
       setupDone = TRUE;
-      xf86AddDriver(&AST, module, 0);
+      xf86AddDriver(&ASPEED, module, 0);
 
       /*
        * Tell the loader about symbols from other modules that this module

@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_2dtool.h,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_2dtool.h,v 1.3 2006/03/19 21:18:52 tsi Exp $ */
 
 #ifndef __AST_2DTOOL_H__
 #define __AST_2DTOOL_H__ 1

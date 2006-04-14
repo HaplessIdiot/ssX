@@ -19,7 +19,7 @@ XCOMM DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
 XCOMM TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 XCOMM PERFORMANCE OF THIS SOFTWARE.
 XCOMM
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/Imakefile,v 1.1 2005/11/10 15:37:03 tsi Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -46,25 +46,25 @@ SubdirLibraryRule($(OBJS))
 
 ModuleObjectRule()
 
-ObjectModuleTarget(ast,$(OBJS),drivers)
+ObjectModuleTarget(aspeed,$(OBJS),drivers)
 
-InstallObjectModule(ast,$(MODULEDIR),drivers)
+InstallObjectModule(aspeed,$(MODULEDIR),drivers)
 
 DependTarget()
 
-InstallDriverSDKNonExecFile(Imakefile,$(DRIVERSDKDIR)/drivers/ast)
-InstallDriverSDKNonExecFile(ast.h,$(DRIVERSDKDIR)/drivers/ast)
-InstallDriverSDKNonExecFile(ast_driver.c,$(DRIVERSDKDIR)/drivers/ast)
-InstallDriverSDKNonExecFile(ast_mode.h,$(DRIVERSDKDIR)/drivers/ast)
-InstallDriverSDKNonExecFile(ast_mode.c,$(DRIVERSDKDIR)/drivers/ast)
-InstallDriverSDKNonExecFile(ast_accel.c,$(DRIVERSDKDIR)/drivers/ast)
-InstallDriverSDKNonExecFile(ast_tool.h,$(DRIVERSDKDIR)/drivers/ast)
-InstallDriverSDKNonExecFile(ast_tool.c,$(DRIVERSDKDIR)/drivers/ast)
-InstallDriverSDKNonExecFile(ast_vgatool.h,$(DRIVERSDKDIR)/drivers/ast)
-InstallDriverSDKNonExecFile(ast_vgatool.c,$(DRIVERSDKDIR)/drivers/ast)
-InstallDriverSDKNonExecFile(ast_2dtool.h,$(DRIVERSDKDIR)/drivers/ast)
-InstallDriverSDKNonExecFile(ast_2dtool.c,$(DRIVERSDKDIR)/drivers/ast)
-InstallDriverSDKNonExecFile(ast_cursor.h,$(DRIVERSDKDIR)/drivers/ast)
-InstallDriverSDKNonExecFile(ast_cursor.c,$(DRIVERSDKDIR)/drivers/ast)
+InstallDriverSDKNonExecFile(Imakefile,$(DRIVERSDKDIR)/drivers/aspeed)
+InstallDriverSDKNonExecFile(ast.h,$(DRIVERSDKDIR)/drivers/aspeed)
+InstallDriverSDKNonExecFile(ast_driver.c,$(DRIVERSDKDIR)/drivers/aspeed)
+InstallDriverSDKNonExecFile(ast_mode.h,$(DRIVERSDKDIR)/drivers/aspeed)
+InstallDriverSDKNonExecFile(ast_mode.c,$(DRIVERSDKDIR)/drivers/aspeed)
+InstallDriverSDKNonExecFile(ast_accel.c,$(DRIVERSDKDIR)/drivers/aspeed)
+InstallDriverSDKNonExecFile(ast_tool.h,$(DRIVERSDKDIR)/drivers/aspeed)
+InstallDriverSDKNonExecFile(ast_tool.c,$(DRIVERSDKDIR)/drivers/aspeed)
+InstallDriverSDKNonExecFile(ast_vgatool.h,$(DRIVERSDKDIR)/drivers/aspeed)
+InstallDriverSDKNonExecFile(ast_vgatool.c,$(DRIVERSDKDIR)/drivers/aspeed)
+InstallDriverSDKNonExecFile(ast_2dtool.h,$(DRIVERSDKDIR)/drivers/aspeed)
+InstallDriverSDKNonExecFile(ast_2dtool.c,$(DRIVERSDKDIR)/drivers/aspeed)
+InstallDriverSDKNonExecFile(ast_cursor.h,$(DRIVERSDKDIR)/drivers/aspeed)
+InstallDriverSDKNonExecFile(ast_cursor.c,$(DRIVERSDKDIR)/drivers/aspeed)
 
-InstallDriverSDKObjectModule(ast,$(DRIVERSDKMODULEDIR),drivers)
+InstallDriverSDKObjectModule(aspeed,$(DRIVERSDKMODULEDIR),drivers)

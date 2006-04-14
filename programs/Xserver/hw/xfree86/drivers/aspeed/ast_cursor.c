@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_cursor.c,v 1.2 2005/12/18 01:00:46 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_cursor.c,v 1.3 2006/02/08 01:34:36 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"

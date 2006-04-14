@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ast/ast_tool.c,v 1.1 2005/11/10 15:37:03 tsi Exp $ */
 
 #include "xf86_OSproc.h"
 
