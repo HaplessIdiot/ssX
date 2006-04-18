@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                                16 March 2005
+                                 April 2006
 
                                   Abstract
 
@@ -86,702 +86,635 @@ grams/Xserver/hw/xfree86/CHANGELOG?rev=HEAD>.
 
 3.1  Security Updates
 
-The following security issue have been fixed in this release:
+The following security issue has been fixed in this release:
 
    o X server pixmap allocation flaw (CERT Vulnerability Note VU#102441
-     <URL:http://www.kb.cert.org/vuls/id/102441> CAN-2005-2495
+     <URL:http://www.kb.cert.org/vuls/id/102441>, CAN-2005-2495
      <URL:http://cve.mitre.org/cgi-bin/cvename.cgi?name=CAN-2005-2495>).
 
 3.2  Video Driver Enhancements
 
-3.2.1  General
+   o Remove cfb support from the i740, nsc, s3virge, siliconmotion and via
+     drivers.
 
-   o In most drivers, fix a long-standing off-by-one error in the programming
-     of sync pulse start and end for video modes based on VGA or its exten-
-     sions.
+3.2.1  aspeed
+
+   o A new driver for ASPEED Technologies' AST2000 graphics chips.
 
 3.2.2  ati
 
-   o Fix various bugs in the Mach64-based panel support.
+   o Reinstate support for all ATI adapters on all architectures supported by
+     the XFree86 common layer.
 
-   o Re-instate atimisc's support for DGA on UltraSPARC platforms.
+   o Restore accuracy of atimisc's clock probe despite certain I/O errors.
 
-3.2.3  chips
+   o Change the atimisc driver on big-endian systems to allow depth 24 even
+     if the big-endian aperture is not available, by swapping RGB masks.
 
-   o Fix the stretching option and centering.
+   o Fix an ATI driver probe crash.
 
-3.2.4  cirrus
+   o Workaround for screen-to-screen copy corruption in second-generation
+     integrated controllers.
 
-   o Add support for the NEC PC-9821 with CLGD755x.
+   o Improve accuracy of atmisc's calculations that are based on a 29.5 MHz
+     reference clock.
+
+   o Chrontel 8398 related changes to the Mach64 support.
+
+   o Fix one cause of video memory corruption when using XAA with second gen-
+     eration integrated Mach64 controllers.
+
+3.2.3  glint
+
+   o Fix the size of the DAC registers storage for pm2v and pm3 chipsets.
+
+3.2.4  i740
+
+   o Save and restore more of the mode on server entry.
 
 3.2.5  i810
 
-   o Add support for memory size tweaking in the BIOS for 845G.
+   o Make sure the DDC-probed parameters are applied before modes are
+     selected.
 
-   o Fix Xv flickering on the 830GM and later.
+   o Fix some bad alignment problems when allocating memory from the end of
+     AGP space.
 
-   o Add support for the 915G/915GM chipsets.
+   o Adjust the display width according to the VESA BIOS scanline require-
+     ments.
 
-   o Add dual-head and clone support for the 915G, 855GM, 830GM chipsets.
+   o Add support for the Intel E7221 server chipset.
 
-   o Add ARGB cursor support for all chipsets.  This requires an updated agp-
-     gart kernel driver.
+   o Improve display switching support for mobile chipsets using the Fn+F?
+     combination keys.
 
-   o Add module lid status checking.
+   o Add DirectColor support for the i830 and later.
 
-   o Fix XVideo when high resolutions are used on local flat panels.
+   o Add gamma correction support for the i830 and later.
 
-   o Add PanelID identification.
+   o Add rotation support for the i830 and later.
 
-   o Detect monitor changes on VT switch (830GM and up).
+   o Improve refresh rate selection for custom modelines.
+
+   o Add support for the 945G and 945GM.
 
    o Support custom video modes in the video BIOS, when available.
 
-   o Fix some Xv bugs.
+   o Fix some offset, pitch, and overlay scaler size problems with the video
+     overlay.  This solves various spontaneous lockups.
 
-   o Set the default monitor parameters to match the display size for the
-     830GM and up when they are not available from another source, improving
-     the default video mode selection in these cases.
+   o Fix text restoration when display switching has been activated.
+
+   o Add support to check the built-in VESA mode list.
+
+   o Fix XVideo when operating in one line mode and video is pushed off the
+     top of the screen, and fix some XVideo skew problems at certain resolu-
+     tions.
+
+   o Sync the accelerator before calling AdjustFrame to avoid lockups.
+
+   o Fix a lockup when spend and resume when playing video (shutdown the
+     overlay on LeaveVT).
+
+   o Support 1920x1088 for HDTV movies using a new option (LinearAlloc) to
+     add more memory for the video overlay.
+
+   o Add ACPI hotkey switching support.
 
 3.2.6  mga
 
-   o Make the Mystique lockup workaround more selective, avoiding different
-     problems on cards that do not require the workaround.
+   o Reduce the Mystique's SYSCLK from 197 MHz to 166 MHz, allowing the
+     higher clock to still be used when the "OverclockMem" option is acti-
+     vated.  This fixes the instability seen on some Mystique cards, and
+     removes the need for the workaround in previous releases.
 
-   o Fix segfaults that occur when the XaaNoSolidFillRect and/or
-     XaaNoMono8x8PatternFillRect options are used.
+   o Revert the HALlib MGASetDisplayStart interface back to HALSetDis-
+     playStart.
 
-   o Fix for Xv resolution loss problem.
-
-   o Add i2c and Maven support, providing DDC and DPMS support for the second
-     head on dual-head cards.
+   o Make 8+24 mode honour the default visual.
 
 3.2.7  nv
 
-   o PCI-Xpress support added.
+   o Some of the panel DPMS support in 4.5.0 only works for TMDS, and caused
+     some panel blooming on some LVDS panels, so skip the DPMS panel code
+     when the panel is LVDS.
 
-   o Add support for newer hardware.
+   o Add DPMS support for GeForce4 and newer laptops.
 
-   o Workaround for Toshiba M30 laptop issue.
+   o Fix some console restore code for the NV11.
 
-   o Reject modes larger than the flat panel.
+   o Workaround for 512MB video cards (can only map 256MB of it).
 
-   o DPMS support for DVI added.
+   o Fix a graphics acceleration hang that occurred on some NVIDIA GeForce
+     6xxx cards.
 
-   o Cursor update for NV11 so that alpha blended cursors will work in con-
-     junction with dithering (laptop panels).
+   o Fix a potential problem with pixmap cache corruption on GeForce 6xxx and
+     7xxx parts.
 
-3.2.8  r128
+   o Add support for new hardware.
 
-   o Improve the handling of timeouts in R128CCEWaitForIdle()
+3.2.8  siliconmotion
 
-3.2.9  radeon
+   o Merge in support for SiliconMotion's SM501 controller.
 
-   o The DAC is turned off for DPMS modes, fixing a problem that can badly
-     affect some monitors.
+3.2.9  suncg6
 
-   o Add an option for avoid flickering and blank screen problems with
-     iBooks.
+   o Add screen-to-screen copy, solid fill, and CPU-to-screen colour expan-
+     sion acceleration.
 
-3.2.10  rendition
+   o Map more of a Sun CG6's video memory for use by the pixmap cache.
 
-   o Fix bad free() calls in the probe function.
+3.2.10  sunffb
 
-3.2.11  s3
+   o Prevent turning off the FPU on NetBSD.
 
-   o Add support for interlaced video modes.
+   o Fix build problems on NetBSD (global register usage declaration, and
+     increase stack usage).
 
-   o Remove cfb support.
+   o Workaround for VRAM corruption when unblanking FFB1 adapters.
 
-   o Correct the depth checking (32 is not a supported depth).
+3.2.11  tdfx
 
-   o Fix DAC probing.
+   o Add DDC2 support.
 
-   o Add IBM RGB525 support.
+3.2.12  trident
 
-   o Fix a ScreenToScreenCopy bug that shows up with xtest.
+   o Do not wait for vertical retrace on PC98 systems.
 
-3.2.12  s3virge
+   o Fix an offset problem in Xv for the Cyber9397 and later chipsets.
 
-   o Fix a bug that shows up when mode restoration results in a switch
-     between colour and mono operation.
+   o Add XGI (Trident) Volari XP5 support to the trident driver.
 
-3.2.13  savage
+3.2.13  via
 
-   o Fix HW cursor state on VT switching.
+   o Add a "ConnectedDevice" option to the via driver to force selection of
+     output devices.
 
-   o Disable the RANDR extension when using rotation.
+3.2.14  vmware
 
-   o Turn off the back light on panels when DPMS "off" mode is activated.
+   o Implement a workaround in the generic int10 module to allow unaligned
+     I/O access specific to VMWare's second generation emulated adapter.
 
-   o Allow black as an Xv colour key.
+3.2.15  xgi
 
-3.2.14  sis
-
-   o Fix some modes for 1400x1050 and 1600x1200 panels.
-
-   o BIOS data layout-related fixes for 661/741/760.
-
-   o Xv fixes.
-
-   o Fix LCD support for ECS A90x and ECS A907.
-
-   o Add video blitter as a second Xv adaptor for the M650/651 and later.
-
-   o Add (display?) hot plug support.
-
-   o Add preliminary support for the SiS340.
-
-   o Fix bad external symbols in this driver module.
-
-3.2.15  sunffb
-
-   o Fix a segfault when acceleration is disabled.
-
-3.2.16  vesa
-
-   o Do not attempt to set the palette format for depths greater than 8.
-     This fixes a problem on some platforms.
-
-   o Fix a substantial memory leak on server regeneration.
-
-   o Fix screen blanking for non-VGA compatible modes.
-
-   o Blank the screen at startup, so that the contents of the previous ses-
-     sion are not initially visible.
-
-3.2.17  via
-
-   o Restructuring and acceleration cleanups.
-
-   o Fix some DRM-related problems.
-
-   o Cleanup the DDC/EDID retrieval.
-
-3.2.18  vmware
-
-   o Various register state save/restore fixes.
-
-   o Fix host-cursor mode.
-
-   o Allow any reasonable depth if 8BIT_EMULATION is set, supporting non-host
-     depths.
-
-   o Set the "monitor" parameters to allow the default resolution to be a
-     little smaller than the host resolution rather than simply 640x480.
+   o A new driver for the Volari V3XT, V5, V8, Z7 chipsets.
 
 3.3  Input Driver Enhancements
 
 3.3.1  keyboard
 
-   o A bug in the application of the Linux KDKBDREP ioctl has been fixed,
-     preventing unnecessary use of a fallback that directly programs the key-
-     board hardware and produces warning message with recent Linux kernels.
-
-   o Differentiate between Alt+Ctrl+SPECIAL and Alt+Ctrl+Shift+SPECIAL key
-     sequences.
-
-   o Avoid various keycode conversions on NEC PC-98 platforms.
-
-   o Fix off-by-one problem for keys on FreeBSD/sparc64.
+   o Ignore KEY_UNUSED scancodes.
 
 3.3.2  mouse
 
-   o Add a serial PNP entry for the Genius NetScroll+ mouse.
+   o Fix auto-detection of Sun mice on Linux/SPARC.
 
-   o Fix a problem with the wsmouse driver losing events on 64-bit architec-
-     tures.
+3.3.3  magictouch
 
-   o Add/improve protocol and device auto-detection for FreeBSD, Linux,
-     NetBSD, OpenBSD, and SunOS/Solaris, eliminating the need to provide any
-     of this information in the config file in the majority of situations.
-
-   o Increase the maximum number of buttons supported from 12 to 24.
-
-   o Fix a multiple-free bug, that could lead to a crash.
-
-3.3.3  elographics
-
-   o Fix problems where the driver gets out of sync under heavy loads.
-
-   o Add an "AllowNoCntl" option, which allows the driver to be used with
-     some other protocols, like the SmartSet 2500s, which share the same
-     default protocol.
-
-   o Fix a problem with the cursor not correctly following the touch in a
-     dual-head configuration.  This fix has also been applied to other rele-
-     vant input drivers.
-
-3.3.4  eloinput
-
-   o A new driver for ELO Graphics 2500U USB touch screens.
-
-3.3.5  fpit
-
-   o Add support for the passive pen of the Stylistic 2400.
-
-   o Fix some driver bugs.
+   o Port of the magictouch driver to XFree86 4.x.
 
 3.4  XKB updates
 
-   o Update the Hindi/Devanagari map.
+   o Replace the macintosh/fr map with the "fr_new" map, release 4.
 
-   o Add Sorbian map.
+   o Fix a bug in XKB group adjustment.
 
-   o Add German Dvorak map.
+   o Fix off-by-one errors in XKBMalloc.c.
 
-   o Fix wrong brokenbar keysym in the de_CH map.
+   o Shrink tables instead of only growing them.
 
-   o Rename the microsoftprose keyboard model to microsoftprousb because it
-     is not Swedish-specific but a common USB variant.
+   o Fix various vmodmap vs modmap cut and paste bugs.
 
-   o Add nodeadkeys variant to the gb map.
+   o Improve synthesized core X events for reporting XKB changes to XKB-
+     unaware clients.
 
-   o Replace the comma keysym on the KPDL key in the Brazilian map with
-     KP_Separator.
+   o Fix a setxkbmap segfault.
 
-   o Add multi-layout compatible Hungarian, Azerbaijani, Canadian, Mongolian,
-     and Vietnamese maps.
+   o Add Eszett (ssharp) to the us_intl map.
 
-   o Update Serbian map with new variant.
+   o Add dvorak_intl map.
 
-   o Add Genius KB-12e model to the inet map.
+   o Add a Khmer layout.
 
-   o Update ABNT2 geometry (including two variants) and change the Brazilian
-     map to avoid ABNT2 specific keycodes section.
-
-   o Add Classical Latin map.
-
-   o Replace the Latvian map with a new one.
-
-   o Fix some errors in the Dzongka/Tibetan map.
-
-   o Add ur_PK (Urdu) map.
-
-   o Fixes for the Bengali map.
-
-   o Add Sinhala (Sri Lanka) map.
-
-   o Add missing keycode to the "xfree86" keycodes files.
-
-   o Update the mapping for the Microsoft Natural Multimedia keyboard.
-
-   o Fixes for the Croatian map.
-
-   o Add a Polish variant to the French keyboard layout.
-
-   o Add a standard Kyrgyz map.
+   o Add multimedia keysyms for the Inspiron 6000 laptop to the "inspiron"
+     set.
 
 3.5  X Server and Extension Updates
 
-   o Mesa as used in the XFree86 "GLcore" module for indirect GLX rendering
-     has been updated to version 6.2.1.
+   o Updates to the handling of the X server RGB database:
 
-   o Fixed bugs in the Screen Saver extension that could cause an X server
-     crash.
+        o Ignore white space, dash, and underscore characters, as well as
+          case when matching colour names, and remove the unnecessary dupli-
+          cates in rgb.txt.
 
-   o Fixed a bug in the X-Resource extension that could cause an X server
-     crash when the client host and server host have different endianness.
+        o Allow a copy of the RGB database to be included into the X servers
+          as a fallback for when the rgb.txt file cannot be found.
 
-   o Added support to the Xvfb server for specifying the screen origins when
-     Xinerama is enabled.
+        o Remove the (unused) support for DBM-compiled RGB database files.
 
-   o Ensure that the Xvfb's root window depth and visuals are set correctly.
+   o Make the AMD64/x86_64 platform tests consistent throughout.
 
-   o Work around bug in Mac OS X 10.1's AppKit that causes rootless XDarwin
-     to lock up when creating windows
+   o Rework the way that extension support is built into the servers to allow
+     for servers with different sets of extensions in the same build.  This
+     includes minimising the number of pervasive extensions, and adding DIX
+     helpers for extensions such as Xinerama and XCSECURITY.
 
-   o Fix XDarwin's launch of X clients by double clicking in the Finder when
-     there is a space in the path.
+   o Modify the X server handling of SIGINT to provide a faster exit path
+     than SIGTERM, while ensuring that all hardware state gets restored.
+     This change is used by xinit as a cleaner alternative to using SIGKILL
+     for a slowly exiting server.
 
-   o Allow XDarwin to interpret scroll wheel mouse events correctly when the
-     shift key is held down.
+3.5.1  Loader
 
-   o Add initial XInput support for XDarwin.
+   o Add support for relocation type 10 for Alpha to the ELF loader.
 
-   o Add an option for XDarwin to always use Mac command key equivalents.
+   o Fix issues with Linux/SPARC 2.6 kernels.
 
-   o Make XDarwin not default to StaticColor on ix86.
+   o Add loader infrastructure to implement inter-module version checks.
 
-   o Fix a bug that caused restacks to be optimized away in rootless mode.
+   o Use mprotect on NetBSD.
 
-   o Add support for dynamic screen configuration changes in rootless XDar-
-     win.
+   o Fix support for NetBSD/arm.
 
-   o Fix a problem with multiple glyphs in the RENDER extension's RenderAddG-
-     lyphs that caused malloc corruption.
+   o Add support for R_SPARC_OLO10 relocations.
 
-   o Fix a segfault when XAA's overlay acceleration is invoked with the
-     XaaNoSolidFillRect option.
+   o Make error messages for unsupported relocations more useful.
 
-   o Fix the disabling of individual DPMS states.
+   o Improve the loader server's emulation of shmctl() calls.
 
-   o Rework the XFree86 server's SBUS code so that SBUS adapters are properly
-     detected on SunOS.
+   o Fix some problems with the a.out header macros used by the loader, which
+     was causing incorrect header interpretation for some a.out object types.
 
-   o Auto-detect DPMS support based on EDID data.
+   o Major loader enhancements, including:
 
-   o Fix DPMS enable/disable logic.
+        o Per-module export symbol lists.
 
-   o Allow multiple probe phases when using automatic configuration, which
-     allows the driver search to continue after failures at the PreInit
-     stage.
+        o Improved symbol hash.
 
-   o Update the static XFree86 driver list to allow automatic configuration
-     to work with statically linked XFree86 servers.
+        o A mechanism for specifying the scope of symbols.
 
-   o Add a '-autoconfig' command line option to the XFree86 server to enable
-     automatic configuration even when a configuration file is present.
+        o Keep track of relocations, and undo them when they become unre-
+          solved on module unload, and recalculate them when they change on
+          module load.
 
-   o Integrate the TinyX servers into the standard XFree86 build.
+        o Check relocations on each module load/unload, ensuring that func-
+          tion references that are unresolved at any time are always mapped
+          to the catch-all function, preventing calls into nowhere.
 
-   o Fix a problem where a big request length of zero does not generate a
-     BadLength error.
+        o Efficient handling of invariant relocations.
 
-   o Add a Distributed Multihead X server (DMX) and related extension.
+        o Cleanup/update the memleak stack trace code, and print a stack
+          trace when an unresolved function is called or when XFree86 aborts.
 
-   o Fix a segfault in the cfb module.
+        o Update the catch-all function to identify the unresolved function
+          that was called.
 
-   o Fixes for the MIT-SHM extension's Xineramafication.
+        o Read the XFree86 executable's symbol table in order to get the most
+          useful stack traces, and use dladdr() where available for identify-
+          ing shared library references.
 
-   o Fix detection of phantom PCI devices.
+        o Cleanup and unify debug messages for the loader components.
 
-   o Fix x86emu's handling of the 0xe8 and 0xe9 opcodes.
+        o Use module-instance-specific referenced and required symbol lists.
 
-   o Modify x86emu's handling of SHLD/SHRD instructions to allow shifts
-     greater than 15 for 16-bit operands.  This undocumented behaviour is
-     expected by the BIOS in an SM722 controller.
+        o Update drivers to make use of some of the new loader functionality,
+          including the instance-specific ref/req lists, and some unloading
+          of modules when they are no longer needed.
 
-   o Avoid some references to unloaded data in the XFree86 server, which can
-     cause crashes in some situations.
+        o Don't build the coff loader on platforms that it doesn't support.
 
-   o Change the DDC/EDID root window property data from signed to unsigned.
+        o Use stronger typing of the module-visible instance-specific module
+          descriptor.
 
-   o Fix the XFree86-Misc extension's PassMessage function.
+        o No longer disable xf86UnloadSubModule() since the loader now han-
+          dles unloads and reloads cleanly.
 
-   o Fix XFree86-DGA for multi-domain architectures.
+        o Do not defer unloading drivers when using autoconfig, since that is
+          not necessary with the loader updates.
 
-   o Extend the XF86Config format and parser/config to allow multiple Monitor
-     sections to be referenced from a Screen section.
+3.5.2  XFree86 core server and modules
 
-   o Allow multiple XFree86 configuration sources to be combined, and add a
-     -appendauto" command line option to allow automatic configuration data
-     to be appended to a partial static configuration.
+   o Modify the handling of preferred EDID modes to allow user-specified
+     modes that are larger than the preferred mode.
 
-   o Extend the XF86Config format and parser/config to allow multiple Server-
-     Flags, Files, and Module sections in a config file.
+   o Refine VGA routing emulation through Sun's Simba P2P bridges.
 
-   o Use a more complete set of the probed EDID data in determining the
-     default monitor parameters.
+   o Allow a static server's -configure to generate an XF86Config for the
+     loader server.
 
-   o Add a "preferred" video mode type, which can be obtained from the probed
-     EDID information, or from the static configuration.  This allows the
-     native video mode to be used by default for digital panels.
+   o Fix a bug relating to the forwarding of 64-bit memory addresses by PCI-
+     to-PCI bridges on 32-bit systems.
 
-   o Add tentative support for newer iterations of HP's zx1 chipsets.
+   o Fix a bug in the decoding of I/O forwarding by Cardbus bridges.
 
-   o Fix xf86fbman's largest linear area offscreen computation.
+   o Update -configure to detect when wscons support should be used for the
+     keyboard on NetBSD.
 
-   o Print the XFree86 server's command line in the log file.
+   o Fix an endianness bug in the xf4bpp module.
 
-   o Update getconfig to work with older versions of Perl, and to detect when
-     the version of Perl is too old and when Perl is not available.
+   o Fix some of the endianness bugs in the vbe module.
 
-   o Extend automatic configuration and getconfig to work with SBUS video
-     devices in SPARC platforms.
+   o Remove obsolete VBE functions that have not been compiled-in for some
+     time.
 
-   o Update the ValidMode functions in most video drivers to return more spe-
-     cific status values when a mode is rejected.
+   o Fix VBE's reporting of video memory size.
 
-3.6  Client and Library Updates
+   o Re-implement Alpha kludge in x86emu's ops.c to be more portable.
 
-3.6.1  Xlib and related libraries
+   o Intercept "raw" requests for PCI configuration space from video BIOSes
+     on all architectures.
 
-   o Fix an Xlib segfault that may occur when IPv6 XDM-AUTHORIZATION-1 data
-     is present in the .Xauthority file.
+   o Handle unaligned I/O requests more gracefully and be more tolerant of
+     spurious I/O errors in the int10 module.
 
-   o Add WrapHelp.c and enable XdmAuth by default.
+   o Make sparse I/O masks more portable throughout the server.
 
-   o Fix a null dereference in libSM when given a bad previous session ID.
+   o Fix a long-standing off-by-one bug in the setting of RGB offsets when
+     the driver supplies RGB masks.
 
-3.6.2  Xterm
+   o Make I/O error handling more reliable on SPARC.
 
-The changes to xterm since XFree86 4.4 are:
+   o Change the OS-specific module subdirectory name for all SunOS variants
+     from "solaris" to "sunos".
 
-Improved behavior
+   o Port of SBUS drivers to SunOS variants.  This also allows for multihead
+     using a mix of SBUS and PCI devices.
 
-   o Change resource settings for color4 and color12, add some discussion in
-     XTerm-col.ad.
+   o Fix text mode restore on x86/Solaris 8 and later.
 
-   o Modify the criteria for disowning primary selection.  Previously, this
-     happened anytime the cursor was moved before the end of the selection.
-     That would ensure that any insert/delete of char or line, as well as
-     scrolling, would disown the selection.  The new criteria change this to
-     checking if the operations would modify the data which is highlighted.
+   o Change autoconfiguration to include PCI and SBUS BusIDs in generated
+     device sections.  This fixes some problems when fbdev is active.
 
-   o Change default translations so a BtnDown which is not recognized is sim-
-     ply ignored rather than emitting a bell.  That makes it less obtrusive
-     when the user tries to use a mouse which provides more capabilities than
-     the X mouse driver supports, e.g., one with a horizontal scroll wheel.
+   o Prevent the sharing of a PCI entity by more than one driver.
 
-   o Modify to allow turning UTF-8 mode via escape sequence even if -wc
-     option was not given at startup.
+   o Insulate various common layer functions against out-of-bounds entity
+     indices.
 
-   o Add menu items and corresponding actions for switching on/off the UTF-8
-     mode and Xft (TrueType) support.
+   o Fix XAA's support for TRIPLE_BITS_24BPP on big-endian systems.
 
-   o Modify FreeType support to allow resizing the font, in the same ways the
-     window can be resized if fixed fonts are used.  The relative font sizes
-     are derived from the fixed font sizes.
+   o Fix unaligned access in XAA's handling of 24bpp.
 
-   o Implement blinking text, using the timer for blinking cursor.
+   o The xf24_32bpp module is no longer used by any of our drivers, so don't
+     include it in static builds.
 
-   o Add translation to ASCII of commonly-used characters that groff trans-
-     lates to Unicode, when the font in use does not provide the correspond-
-     ing glyphs.
+   o The xf8_32wid module is only used by the sunffb driver, so don't include
+     it in non-SPARC static builds.
 
-   o Modify constraints in form used to layout toolbar, to work with newer
-     Xaw in XFree86 4.x.
+   o Fix generic int10 memory accesses on little-endian systems.
 
-   o Make active-icon work properly when TrueType fonts are used, as well as
-     when UTF-8 mode is used.
+   o Fix a SEGV that can occur under certain builds of glibc 2.3.4 and up,
+     when linux/int10 attempts to determine kernel support for the vm86()
+     system call.
 
-   o Improve rendering for Xft, allow it to draw non-linedrawing characters
-     such as "pi", which were drawn from internal tables with patch #180.
+   o Add an xf86DeallocateGARTMemory() function.
 
-   o Modify initialization of 256- and 88-colors so that colors beyond 16 are
-     normally not X resources.  This works around a hard-coded limit in Xt
-     which breaks xterm when 256-colors and luit are both configured (report
-     by Noah Friedman).
+   o Make autoconfig stop at the first successful probe on each retry, min-
+     imising unnecessary probes.
 
-   o Fix problem responding to session management events, e.g., which would
-     make logging out very slow.
+3.5.3  TinyX
 
-Modified behavior
+   o Allow build-time selection of which font renderers get built in to the
+     TinyX servers.
 
-   o Enable utmpx support for NetBSD 1.6C and newer.
+   o Fix a problem where VT switching back to TinyX servers was failing due
+     to blocking on keyboard read.
 
-   o Modify Help() to make "xterm -h" write to standard output rather than
-     standard error.
+   o Fix a TinyX build issue under !XserverStaticFontLib.
 
-   o Improve error-reporting for root user by checking if $DISPLAY is set
-     rather than using the useless message from X11 library.
+   o Move Xserver/*/tiny directories under Xserver/hw/tinyx.
 
-   o Improve $WINDOWID for configuration with toolbar by making it refer to
-     the top-level shell rather than the parent of the current window.  For
-     that case, the parent is a form widget, which does not have a name,
-     which made the $WINDOWID not very useful as a parameter for xwininfo.
+   o TinyX build fixes.
 
-   o Improve pattern used in uxterm to check for UTF-8 locale, e.g., for
-     HPUX.
+3.5.4  Xnest
 
-   o Modify uxterm script to use locale program to verify if the derived
-     locale is installed.
+   o Add a "-noinput" option that allows Xnest to be run in a view-only mode.
 
-   o Add case to uxterm to accommodate locales ending with "@euro", e.g.,
-     fr_FR.UTF-8@euro.
+3.5.5  Xsun
 
-   o For Linux, if IUTF8 is defined, e.g., on recent 2.6.x kernels, set the
-     corresponding flag for the slave pty, to enable UTF-8 interpretation of
-     backspace in cooked mode.
+   o Fix incorrect bitsPerPixel for depth 12 in pixmap formats advertised by
+     the Xsun24 server.
 
-   o Modify faceSize resource to use a floating-point internal value.
+3.5.6  cfb
 
-   o Modify XTerm.ad to set saveLines default to 1024.
+   o Fix a bug that occurs when using cfb to tile 32-bit rectangles on SPARC.
 
-   o Change xterm version string to use __vendorversion__ where that is
-     available, and "XTerm" otherwise.  Rather than reporting the version of
-     X that was current when xterm was modified, it reports the version
-     against which it was built.
+   o cfb24 is no longer needed.  Keep the loadable module, but no longer
+     statically link it into servers.
 
-New resource settings
+3.5.7  shadow
 
-   o Add scoFunctionKeys resource, to match manpage.
+   o Rewrite shadowUpdateRotatePacked() to reduce cache misses.
 
-   o Add -fd option and resource faceNameDoublesize to specify double-wide
-     fonts with Xft.
+3.5.8  Xinerama
 
-   o Add resource showMissingGlyphs to outline places on the screen where a
-     font lacks the corresponding glyph.
+   o Cause the server to FatalError() when Xinerama attempts to create a
+     screen whose root depth has no visuals, causing Xlib to segfault.
 
-   o Add resource showBlinkAsBold to control whether blinking text should be
-     shown as bold or actual blinking text.
+   o Allow Xinerama to initialise even when there is only one screen to com-
+     bine.
 
-   o Add utmpDisplayId resource to allow users to control whether the display
-     identifier (display number and screen number) are retained in the con-
-     nection information recorded in utmp.
+   o Make loadable modules and MI independent of Xinerama:
 
-   o Add bellOnReset resource to allow users to disable bell which sounds on
-     hard reset since patch #183 changes to DECSCL.
+        o Add a DIX helper to determine whether Xinerama is active and use it
+          instead of #ifdef's code in all loadable modules.
 
-New configure script options
+        o Re-implement, as a screen wrapper, Xinerama's PaintWindow*() hacks.
 
-   o Add --disable-setuid option to configure script.
+        o Move down to DIX Xinerama's only MI hook.
 
-   o Add --disable-full-tgetent option to configure script, allowing one to
-     ignore a termcap library in favor of ncurses/curses.
+3.5.9  XFree86-DGA
 
-Other new features
+   o Do not call a screen's PointerMoved entry if a DGA mode is active on
+     that screen.
 
-   o Add mini-luit feature, which supports Latin9 directly rather than via
-     luit, provided that Unicode fonts are used.
+   o Fix client-side framebuffer mapping on NetBSD.
 
-   o Add dynamic abbreviation support like Emacs.
+   o Make sure that DGAShutdown() is always called before HW state is
+     restored on exit and reset, and make sure that it is not called after
+     the HW state has been restored.
 
-   o Add "erase2" and "eol2" keywords to ttyModes resource, for recent/cur-
-     rent FreeBSD.
+3.5.10  Render
 
-Bug-fixes (see http://invisible-island.net/xterm/xterm.log.html for a more
-complete list):
+   o Fix unaligned access in RenderCompositeGlyphs request.
 
-   o Modify initialization and cleanup of utmp data to also compare the
-     ut_line member.
+3.5.11  RandR
 
-   o Correct table entry for DEL in the ground state, which marked it as a
-     printable character from patch #171.
+   o Use xf86SetViewport as well as SetCursorPosition during RandR rotation,
+     as xf86SetViewport will call AdjustFrame to reposition the window if
+     necessary and avoid the cursor ending up off screen.
 
-   o Correct change from patch #157 which uses getlogin() to check for an
-     alias; the storage used for the related getpwuid() call was overwritten
-     by the data used for comparison.
+   o Add a new function xf86GetRotation() to allow third party modules to
+     obtain the current rotation.
 
-   o Correct case of SCS for character set 0 (line-drawing) to allow it to be
-     selected into GR.
+   o Fix up error case when rotation fails and the framebuffer needs to be
+     re-enabled.
 
-   o Modify creat_as() to only fork if xterm is actually running as setuid
-     and/or setgid.  This works around a Cygwin bug which hangs when logging
-     is enabled and makes xterm a little faster for systems using interfaces
-     such as utempter.
+3.6  Library, Client and Utility Updates
 
-   o Modify Cleanup() to avoid operations such as X calls that might use
-     unsafe functions when it is called by a signal handler.
+3.6.1  Xlib
 
-   o Check for type of failure in xim_real_init() to avoid looping when the
-     problem is an unsupported input method rather than a failure to connect
-     to the XIM server.  Problem was introduced in patch #175.
+   o Fix typos in XErrorDB that were preventing descriptive messages for some
+     extension errors.
 
-   o Add missing #undef OPT_SESSION_MGT to xtermcfg.hin to make the configure
-     script's --disable-session-mgt option work.
+3.6.2  Xt
 
-   o Correct options parsing for -into option so it can be combined with -e.
+   o Fix an uninitialised pointer dereference in Xt/Initialize.c on WIN32
+     platforms that happens if $HOME is set in the environment.
 
-   o Make escape sequence reporting dynamic colors consistent with the logic
-     that sets it; choosing the opposite color when reverse video is set.
+   o Add support to Xt's string to float converter to read resources in frac-
+     tional notation.
 
-   o Fix a repainting bug introduced in patch #180:  when using a font lack-
-     ing line-drawing characters, a repaint of the screen could skip horizon-
-     tally an extra amount after filling in the missing character.
+   o Add some XChar2b string manipulation functions to Xt.
 
-   o Modify terminfo to accommodate luit, which relies on G1 being used via
-     an ISO-2022 escape sequence.  Note that this relies in turn on bug fixes
-     in ncurses after the 5.4 release.
+   o Bump the minor revision of the Xt shared library to reflect the fact
+     that some new interfaces have been added.
 
-3.6.3  Luit
+3.6.3  Xaw
 
-   o Fix a synchronization problem with luit's handling of tty settings.
+   o Extend the tool tip resource for Xaw's simpleWidgetClass to allow a
+     function to be called
 
-   o Extract information from the pty before forking rather than after, to
-     avoid conflicting with the child process's modifications to the line.
+   o Fix problems with Xaw's label widget when using XChar2b strings.
 
-3.6.4  GLX/DRI
+   o Add a new connectionType property to Xaw's tree widget.
 
-   o Mesa and its DRI drivers have been updated to version 6.2.1, plus some
-     bug fixes.
+   o Make Xaw Form widgets inherit dimensions from their parent at widget
+     initialisation time.
 
-   o Add a 915G DRI driver.
+   o Add mouse wheel support for Scrollbars in Xaw's Viewport widget.
 
-   o Fix a GLX multi-thread bug.
+   o Fix a performance issue with Xaw's Tree widget caused by useless relay-
+     outs.
 
-3.6.5  twm
+   o Fix i18n for Xaw's tooltip widget.
 
-   o Add support for XPM icons.
+   o Add two new functions that can be used to scroll the content of an Xaw
+     viewport from outside the viewportWidgetClass.
 
-   o Add IconMaxWidth and TitleIndent configuration parameters.
+   o Fix the cursor in Xaw textWidget when the input field has focus.
 
-3.6.6  xdm
+   o Bump the minor revision of the Xaw shared library to reflect the fact
+     that some new interfaces have been added.
 
-   o Improve the operation of IPv6-enabled xdm when the platforms's IPv6 sup-
-     port is disabled.
+   o Add user_data field to Xaw's simpleWidgetClass.
 
-   o Make use of Xlib's _XGetHostname rather than attempting to duplicate it.
+   o Fix Xaw viewport scrollbar flickering problem.
 
-   o Fix sessreg for NetBSD.
+3.6.4  pswrap
 
-   o Update docs and config to handle authDir being in a non-default loca-
-     tion.
+   o Fix a problem where pswrap generates a bogus .c file when the -h option
+     is not used.
 
-3.6.7  xfs
+   o Document pswrap's -f option.
 
-   o Fix log file opening with the '-user nobody' option.
+3.6.5  mmapr, mmapw
+
+   o Extend mmapr and mmapw on Linux to allow specification of which PCI
+     address space (I/O or memory) to mmap.
+
+   o Add options to mmapr and mmapw to allow unaligned accesses for testing
+     purposes
+
+3.6.6  cpconfig
+
+   o Use the same default XF86Config search path as the XFree86 server.
+
+3.6.7  Xterm (TODO)
+
+3.6.8  GLX/DRI
+
+   o Mesa build fixes for NetBSD/sparc64.
+
+   o Solaris/SPARC 64-bit libGL fixes.
+
+3.6.9  dbedizzy
+
+   o Resurrect this DBE extension test utility.
+
+3.6.10  xclock
+
+   o Use the Xaw tooltip to display the date in xclock.
+
+3.6.11  twm
+
+   o Add a new function to allow the window text title to be changed interac-
+     tively.
+
+   o Allow environment variables to be used in menu names.
+
+   o Add a new "f.totalzoom" function that zooms windows to cover the whole
+     area of a screen with no window decoration visible.
+
+   o Don't highlight "f.nop" menu items in menus.
+
+3.6.12  xbiff
+
+   o Add a tooltip to xbiff that shows the number of messages in a mail
+     folder.
+
+3.6.13  xdm
+
+   o Fix a potential infinite loop when the "willing" command fails to pro-
+     duce any output.
+
+3.6.14  xfd
+
+   o Fix a bug that prevents properly paging through xft fonts beyond 0xFFFF.
+
+3.6.15  xfs
+
+   o Modify the font server transport messages to go through xfs's logging
+     mechanism.
+
+   o Fix a bug introduced when syslog support was added that prevents exit on
+     fatal errors.
+
+3.6.16  xinit
+
+   o Send SIGINT to slowing exiting X servers instead of SIGKILL.  This works
+     together with the new SIGINT handling in the X servers, and results in a
+     clean exit.  Sending SIGKILL only results in the hardware state not
+     being restored, often requiring a reboot to recover from.
+
+3.6.17  xmessage
+
+   o Fix a bug in the handling of escapes in button labels.
+
+3.6.18  xvidtune
+
+   o Fix the -timeout <n> option.
 
 3.7  I18n and Fonts
 
-   o FreeType has been updated to version 2.1.8.
+   o Update mkfontscale's handling of font weights.
 
-   o The FreeType-1.x based X-TrueType XFree86 server font backend has been
-     retired.  The functionality it provides is now available in the
-     "FreeType" font backend.  The old "xtt" module is now a wrapper that
-     loads the "freetype" module.
+   o Replace lib/font/fontfile/decompress.c with a version derived from BSD's
+     src/usr.bin/compress/zopen.c.
 
-   o A bug that prevented the VeraIt.ttf font from being installed has been
-     fixed.
+   o Modify the fontconfig library to use getpwnam/getpwuid to find the home
+     directory when $HOME is not set.
 
-   o Fix a problem that could cause apps using the zh_CN.UTF-8 locale to
-     crash.
+   o Fix a bug in fontconfig's pattern matching that can cause FcFontMatch()
+     to fail when it shouldn't.
 
-   o Fix freetype module segfault with some Type1 fonts.
+   o Fix a double-free problem in fontconfig.
 
-   o Replace unicode keysyms in the en_US.UTF-8 Compose file with "tradi-
-     tional" ones where such keysyms exist.
+   o Rework printf format specifiers used in XLFD code to make them more por-
+     table and avoid infinite loops in some glibc versions.
 
-   o Fix the ct_encoding sequence in the zh_CN.gbk locale.
-
-   o Update the 8859-7 unicode conversion data file to the current version.
-
-   o Update the gb3212.1980-0 encoding to handle fonts that do not have a
-     unicode table.
-
-   o Add encoding files for cns11643-1, cns11643-2, cns11643-3, and
-     suneu_greek.
-
-   o Add support for the si_LK.UTF-8 locale.
-
-   o Reinstate the original mkfontdir program, because its mkfontscale equiv-
-     alent does not handle creating encodings.dir files as well as is neces-
-     sary.
-
-   o Fix for fstobdf generating corrupted BDF files.
-
-   o Update locale info for Kinyarwanda, the language of Rwanda.
-
-   o Add nine missing South African locales.
-
-   o Add extra fontset records into XLC_LOCALE, fixing problems with text
-     output by Xuft8 functions under non-Unicode locales.
-
-   o Add a Kyrgyz locale.
+   o Update the Serbian locale naming to reflect the country's name change
+     from "Yugoslavia" to "Serbia and Montenegro".
 
 3.8  OS Support Updates
 
-   o Numerous fixes and enhancements for the Solaris/SPARC platform support,
-     including the ability to build 64-bit shared libraries.
+   o Fix some cases in the Darwin build where a  variable is declared static
+     and later as extern.
 
-   o Support added for OpenBSD/amd64.
+   o Avoid /tmp files in NetBSD.cf's man page creation.
 
-   o Differentiate left and right modifier keys on Mac OS X 10.3.
+   o Install man page source as well as formatted man pages on NetBSD.
 
-   o Fix some path-related issues on OS/2 with xman and xf86cfg.
-
-   o Update the transport layer to allow LOCAL SCO connection types to be
-     used for more than just X protocol connections.
-
-   o Cleanups for the SCO port.
-
-   o Fixes for FreeBSD/amd64 support.
-
-   o Add support for newer UltraSPARC variants to the SunOS/Solaris and Linux
-     ports.
-
-   o Understand the PCI bus naming scheme found in Linux 2.6 kernels.
+   o Fix a problem where builds would continue past errors on NetBSD.
 
 4.  Drivers
 
@@ -794,7 +727,7 @@ XFree86 4.6.0 includes the following video drivers:
  +--------------+--------------------------+--------------------------------+
  |apm           | Alliance Pro Motion      | README.apm                     |
  |ark           | Ark Logic                |                                |
- |ast           | ASPEED Technology        |                                |
+ |aspeed        | ASPEED Technology        |                                |
  |ati           | ATI                      | README.ati, README.r128,       |
  |              |                          | r128(4), radeon(4)             |
  |chips         | Chips & Technologies     | README.chips, chips(4)         |
@@ -866,6 +799,7 @@ XFree86 4.6.0 includes the following input drivers:
    |js_x        | JamStudio pentablet              | js_x(4)             |
    |kbd         | generic keyboards (alternate)    | kbd(4)              |
    |keyboard    | generic keyboards                | keyboard(4)         |
+   |magictouch  | MagicTouch ProE-X                | magictouch(4)       |
    |microtouch  | MicroTouch                       |                     |
    |mouse       | most mouse devices               | mouse(4)            |
    |mutouch     | MicroTouch                       |                     |
@@ -1079,11 +1013,11 @@ the Xft(3) man page.
 6.11.2  FreeType support in Xft
 
 XFree86 4.6.0 includes sources for FreeType version 2.1.8, and, by default,
-they are built and installed automatically.
+it is built and installed automatically.
 
 6.11.3  Application Support For Anti-Aliased Text
 
-Only three applications have been modified in XFree86 4.6.0 to work with the
+Only three applications have been modified in this release to work with the
 Render extension and the Xft and FreeType libraries to provide anti-aliased
 text.  Xterm, xditview and x11perf.  Migration of other applications may
 occur in future releases.
@@ -1242,7 +1176,7 @@ the result depends on how Agrave is mapped in the current locale.
 
 6.21  Luxi fonts from Bigelow and Holmes
 
-XFree86 now includes the ``Luxi'' family of Type 1 fonts and TrueType fonts.
+XFree86 includes the ``Luxi'' family of Type 1 fonts and TrueType fonts.
 This family consists of the fonts ``Luxi Serif'', ``Luxi Sans'' and
 ``Luxi Mono'' in Roman, oblique, bold and bold oblique variants.  The True-
 Type version have glyphs covering the basic ASCII Unicode range, the Latin 1
@@ -1275,77 +1209,61 @@ source files.
 
       New Features, Enhancements and Updates:
 
+                  Security Updates:
+                        Marc La France.
+
+                  ASPEED Technologies driver:
+                        Y. C. Chen, ASPEED Technologies.
+
+                  Xabre Graphics driver:
+                        Jong Lin, XGI.
+
+                  X server extension rework:
+                        Marc La France.
+
+                  Loader Enhancements:
+                        David H. Dawes, X-Oz Technologies.
+
+                  Intel i945G/i945GM support and other driver enhancements:
+                        Alan Hourihane, Tungsten Graphics.
+
+                  NVIDIA driver updates and new hardware support:
+                        Mark Vojkovich
+
+                  Improved SunOS/SPARC and SBUS support:
+                        Marc La France.
+
                   Xterm enhancements and updates:
-                        Thomas Dickey
+                        Thomas Dickey.
 
-                  Integrate TinyX into the mainline XFree86 build:
-                        X-Oz Technologies
-
-                  Intel i915GM support, dual head i830/i855/i915 support:
-                        Tungsten Graphics, Alan Hourihane, Keith Whitwell
-
-                  Automatic configuration enhancements:
-                        X-Oz Technologies, David Dawes
-
-                  Distributed Multihead X:
-                        Kevin Martin, Rik Faith
-
-                  Preliminary work on SunOS/SPARC and IRIX ports:
-                        Marc La France
+                  Xaw enhancements:
+                        Alexander Pohoyda.
 
       Integration:
 
                   General Integration of Submissions:
-                        David H. Dawes, Marc La France, Alan Hourihane, Ivan
-                        Pascal.
-
-                  DRI Integration:
-                        Alan Hourihane, David H. Dawes.
+                        Marc La France, David H. Dawes.
 
       Release Engineering:
             David H. Dawes.
 
       Patches and other submissions (in alphabetical order):
-            Szilveszter Adam, Tim Adye, Taneem Ahmed, Andrew Aitchison, Raoul
-            Arranz, Zaeem Arshad, Dwayne Bailey, Ilyas Bakirov, Denis Bar-
-            bier, Kyle Bateman, J. Scott Berg, Thomas Biege, Dmitry
-            Bolkhovityanov, H Merijn Brand, Peter Breitenlohner, Benjamin
-            Burke, Dale L Busacker, busmanus, Julian Cable, Mike Castle,
-            David M. Clay, Philip Clayton, Alan Coopersmith, Ricardo Cruz,
-            Michel Dänzer, J. D. Darling, David Dawes, Michael Dawes, Rafael
-            Ávila de Espíndola, Rick De Laet, Josip Deanovic, Angelus Dei,
-            Laurent Deniel, Thomas Dickey, Stefan Dirsch, Charles Dobson, DRI
-            Project, Emmanuel Dreyfus, Boris Dusek, Georgina O. Economou,
-            Egbert Eich, Bernd Ernesti, Chris Evans, Rik Faith, Adrian
-            Fiechter, Matthew Fischer, FreeType Team, Terry R. Frienrichsen,
-            Christopher Fynn, Hubert Gburzynski, Nicolas George, Frank
-            Giessler, Fred Gleason, Dmitry Golubev, Alexander Gottwald, Her-
-            bert Graeber, Miroslav Halas, John Harper, Harshula, John
-            Heasley, Matthieu Herrb, David Holl, Alex Holland, Peng Hongbo,
-            Alan Hourihane, Harold L Hunt II, Alan Iwi, Timur Jamakeev, Paul
-            Jarc, Kean Johnston, Nicolas Joly, Mark Kandianis, Kaleb Keith-
-            ley, Chamath Keppitiyagama, Jung-uk Kim, Satoshi Kimura, Michael
-            Knudsen, Vlatko Kosturjak, Alexei Kosut, Anton Kovalenko, Joachim
-            Kuebart, Marc La France, David Laight, Zarick Lau, Pierre Lalet,
-            Michael Lampe, Lanka Linux User Group, Nolan Leake, Werner Lem-
-            berg, Dejan Lesjak, Noah Levitt, Greg Lewis, Bernhard R Link,
-            Jonas Lund, S. Lussos, Torrey T. Lyons, Roland Mainz, N Marci,
-            Kevin Martin, Stephen McCamant, Mesa Developers, Luke Mewburn,
-            Petr Mladek, Bram Moolenaar, Steve Murphy, Ishikawa MUTSUMI, Radu
-            Octavian, Lee Olsen, Greg Parker, Ivan Pascal, Alexander E.
-            Patrakov, Mike Pechkin, Soós Péter, Zvezdan Petkovic, Alexander
-            Pohoyda, Xie Qian, Bill Randle, Adam J. Richter, Tim Roberts,
-            Bernhard Rosenkraenzer, Andreas Rüden, Steve Rumble, Oleg Safi-
-            ullin, Ty Sarna, Leo Savernik, Barry Scott, Shantonu Sen, Yu
-            Shao, Andreas Schwab, Matthias Scheler, Dan Shearer, Michael
-            Shell, Paul Shupak, Alexander Stohr, Marius Strobl, Mikko Markus
-            Torni, Jess Thrysoee, Izumi Tsutsui, Tungsten Graphics, Ryan
-            Underwood, Tristan Van Berkom, Michael van Elst, Phillip Vandry,
-            Roman Vasylyev, Luc Verhaegen, Rodion Vshevtsov, Mark Vojkovich,
-            Edi Werner, Keith Whitwell, Scot Wilcoxon, Dave Williss, Thomas
-            Winischhofer, Kuang-che Wu, X-Oz Technologies, Chisato Yamauchi,
-            Michael Yaroslavtsev, David Yerger, Su Yong, Hui Yu, Sagi Zeevi,
-            Christian Zietz
+            ASPEED Technologies, Andrew Aitchison, James Ascroft-Leigh,
+            Étienne Bersac, Peter Breitenlohner, Terry Chang, Y. C. Chen,
+            Jeff Chua, James Cloos, Alan Coopersmith, Miguel González
+            Cuadrado, David Dawes, Thomas Dickey, Stefan Dirsch, Jordan
+            Frank, Will L G, Frank Giessler, Thorsten Glaser, Damian Janusz
+            Gruszka, Lukas Hejtmanek, Evil Mr Henry, Jens Herden, Alan Houri-
+            hane, Nicolas Joly, Bang Jun-Young, Alexander Kabaev, Satoshi
+            Kimura, Milos Komarcevic, Marc La France, Dejan Lesjak, Khong Jye
+            Liew, Jong Lin, Michael Lorenz, Michael Macallan, Michal Maruska,
+            Luke Mewburn, Timothy Musson, Newsh, Takaaki Nomura, Ivan Pascal,
+            Bob Peterson, Pierre, Aaron Plattner, Alexander Pohoyda, Jeremy
+            C. Reed, Conrad Schuler, Bruno Schwander, Olaf Seibert, Aaron
+            Solochek, Helmar Spangenberg, Ken Stailey, Tobias Stoeckmann,
+            Tungsten Graphics, James Richard Tyrer, Staffan Ulfberg, Denis
+            Vlasenko, Mark Vojkovich, Tom Williams, Dave Williss, X-Oz Tech-
+            nologies, XGI, Christos Zoulas.
 
       Webmaster:
             Georgina O. Economou
@@ -1372,7 +1290,7 @@ its contributors
 This product includes software developed by X-Oz Technologies (http://www.x-
 oz.com/).
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.136 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.139 dawes Exp $
 
 
 $XFree86$

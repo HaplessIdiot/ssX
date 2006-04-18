@@ -3860,8 +3860,8 @@ The following is the Loader interface that is available to any part of the
 server, and may also be used from within modules.
 
 Some of these have xf86* wrappers with simpler interfaces declared in
-"xf86.h".  These wrappers are the prefered interface for modules, given that
-they are also available in a staticly built server, whereas the functions
+"xf86.h".  These wrappers are the preferred interface for modules, given that
+they are also available in a statically built server, whereas the functions
 below are not.
 
      pointer LoadSubModule(pointer parent, const char *module,
@@ -3957,7 +3957,7 @@ below are not.
           This function checks for unresolved symbols.  It gener-
           ates warnings for unresolved symbols that have not been
           registered with LoaderRefSymLists().  All such symbols
-          are autmatically mapped to a dummy function.  If unre-
+          are automatically mapped to a dummy function.  If unre-
           solved symbols are found that have been registered with
           LoaderReqSymLists() or LoaderReqSymbols() then this func-
           tion returns a non-zero value.  If none of these symbols
@@ -5349,8 +5349,8 @@ prefix all of its externally visible symbols.  This is to avoid name space
 clashes when loading multiple drivers.  The examples here are for the ``ZZZ''
 driver, which uses the ``ZZZ'' or ``zzz'' prefix for its externally visible
 symbols, with preference given to the uppercase prefix.  Internal symbols
-should also follow this convention to facilitate the debugging of a staticly
-built server.
+should also follow this convention to facilitate the debugging of a stati-
+cally built server.
 
 20.1  Include files
 
@@ -6391,7 +6391,7 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.61 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.62 dawes Exp $
 
 
 $XFree86$
