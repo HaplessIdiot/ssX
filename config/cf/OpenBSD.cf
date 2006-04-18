@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.116 2006/03/01 21:01:55 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.117tsi Exp $
 XCOMM
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -214,7 +214,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define StandardCppOptions	-traditional
 #define StandardCppDefines	/**/
 #define PreProcessCmd   	CppCmd
+#ifndef PreIncDir
 #define PreIncDir		DefaultGccIncludeDir
+#endif
 
 #ifndef CcCmd
 #define CcCmd 			cc

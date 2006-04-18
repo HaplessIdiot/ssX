@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.293 2006/04/02 23:12:46 dickey Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.294tsi Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -3963,7 +3963,7 @@ FONTCONFIGDEFINES = -DFONTCONFIG
 
 XFTINCLUDES=$(FONTCONFIGINCLUDES) $(FREETYPE2INCLUDES)
 
-#ifdef HasLibpng
+#if defined(HasLibpng) && HasLibpng
 
 /*
  * Libpng controls:
