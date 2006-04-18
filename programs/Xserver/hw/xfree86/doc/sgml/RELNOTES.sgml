@@ -9,7 +9,7 @@
 <date>April 2006
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.137 2006/04/14 00:50:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.138 2006/04/18 17:07:24 dawes Exp $
 </ident>
 
 <abstract>
@@ -428,7 +428,7 @@ I/O access specific to VMWare's second generation emulated adapter.
 
 <item>Fix off-by-one errors in XKBMalloc.c.
 
-<item>Shring tables instead of only growing them.
+<item>Shrink tables instead of only growing them.
 
 <item>Fix various vmodmap vs modmap cut and paste bugs.
 
@@ -531,7 +531,7 @@ types.
   was called.
 
   <item>Read the XFree86 executable's symbol table in order to get the most
-  useful stack traces, and use dladdr() where availalbe for identifying shared
+  useful stack traces, and use dladdr() where available for identifying shared
   library references.
 
   <item>Cleanup and unify debug messages for the loader components.
@@ -592,7 +592,7 @@ time.
 BIOSes on all architectures.
 
 <item>Handle unaligned I/O requests more gracefully and be more tolerant
-of suprious I/O errors in the int10 module.
+of spurious I/O errors in the int10 module.
 
 <item>Make sparse I/O masks more portable throughout the server.
 
@@ -619,7 +619,7 @@ indices.
 
 <item>Fix XAA's support for <tt>TRIPLE_BITS_24BPP</tt> on big-endian systems.
 
-<item>Fix unaligned access in XAA's handloing of 24bpp.
+<item>Fix unaligned access in XAA's handling of 24bpp.
 
 <item>The xf24_32bpp module is no longer used by any of our drivers, so don't
 include it in static builds.
@@ -704,7 +704,7 @@ a screen whose root depth has no visuals, causing Xlib to segfault.
 <item>Allow Xinerama to initialise even when there is only one screen
 to combine.
 
-<item>Make loadable modules and MI indpendent of Xinerama:
+<item>Make loadable modules and MI independent of Xinerama:
 
   <itemize>
   <item>Add a DIX helper to determine whether Xinerama is active and use it
@@ -811,7 +811,7 @@ relayouts.
 <item>Add two new functions that can be used to scroll the content of an
 Xaw viewport from outside the viewportWidgetClass.
 
-<item>Fix the cursoe in Xaw textWidget when the input field has focus.
+<item>Fix the cursor in Xaw textWidget when the input field has focus.
 
 <item>Bump the minor revision of the Xaw shared library to reflect
 the fact that some new interfaces have been added.
@@ -826,7 +826,7 @@ the fact that some new interfaces have been added.
 <p>
 
 <itemize>
-<item>Fix a problem where pswrap generates a bugus .c file when the -h option
+<item>Fix a problem where pswrap generates a bogus .c file when the -h option
 is not used.
 
 <item>Document pswrap's -f option.
@@ -1670,7 +1670,7 @@ or the 'cvs log' information for individual source files.
 
   <tag>NVIDIA driver updates and new hardware support:</tag>Mark Vojkovich
 
-  <tag>Imrpoved SunOS/SPARC and SBUS support:</tag> Marc La France.
+  <tag>Improved SunOS/SPARC and SBUS support:</tag> Marc La France.
 
   <tag>Xterm enhancements and updates:</tag>Thomas Dickey.
 

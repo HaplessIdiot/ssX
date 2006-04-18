@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.60 2006/01/01 03:43:00 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.61 2006/03/02 03:00:36 dawes Exp $
 </ident>
 
 
@@ -4596,8 +4596,8 @@ the server, and may also be used from within modules.
 <p>
 Some of these have &s.code;xf86*&e.code; wrappers with simpler interfaces
 declared in &s.code;"xf86.h"&e.code;.
-These wrappers are the prefered interface for modules, given that they are also
-available in a staticly built server, whereas the functions below are not.
+These wrappers are the preferred interface for modules, given that they are also
+available in a statically built server, whereas the functions below are not.
 
   <quote><p>
   &s.code;pointer LoadSubModule(pointer parent, const char *module,
@@ -4707,7 +4707,7 @@ available in a staticly built server, whereas the functions below are not.
   <quote><p>
     This function checks for unresolved symbols.  It generates warnings
     for unresolved symbols that have not been registered with
-    &s.code;LoaderRefSymLists()&e.code;.  All such symbols are autmatically
+    &s.code;LoaderRefSymLists()&e.code;.  All such symbols are automatically
     mapped to a dummy function.  If unresolved
     symbols are found that have been registered with
     &s.code;LoaderReqSymLists()&e.code; or
@@ -6293,7 +6293,7 @@ space clashes when loading multiple drivers.  The examples here are for
 the ``ZZZ'' driver, which uses the ``ZZZ'' or ``zzz'' prefix for its externally
 visible symbols, with preference given to the uppercase prefix.
 Internal symbols should also follow this convention to facilitate the debugging
-of a staticly built server.
+of a statically built server.
 
 <sect1>Include files
 <p>
