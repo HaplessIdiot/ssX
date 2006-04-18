@@ -2,7 +2,7 @@
 
                        Compiled by The XFree86 Project
 
-                                9 March 2005
+                                 April 2006
 
 1.  Introduction
 
@@ -70,7 +70,7 @@ The text of the XFree86 1.1 license is included below.  A FAQ for this
 licence can be found at the XFree86 web site
 <URL:http://www.xfree86.org/legal/licenses.html>
 
-Copyright (C) 1994-2005 The XFree86 Project, Inc.
+Copyright (C) 1994-2006 The XFree86 Project, Inc.
 
 All rights reserved.
 
@@ -130,6 +130,8 @@ Copyright (C) 1984-1989, 1994 Adobe Systems Incorporated.
 Copyright (C) 2003 Eric Anholt
 
 Copyright (C) 2002 Apple Computer, Inc. All Rights Reserved.
+
+Copyright (C) 2005 ASPEED Technology Inc.
 
 Copyright (C) 1988 AT&T.  All Rights Reserved.
 
@@ -802,9 +804,9 @@ AGE.
 
 6.7  X-Oz Technologies
 
-Copyright 2003, 2004, 2005 by David H. Dawes.
+Copyright 2003-2006 by David H. Dawes.
 
-Copyright 2003, 2004, 2005 by X-Oz Technologies.
+Copyright 2003-2006 by X-Oz Technologies.
 
 All rights reserved.
 
@@ -1636,7 +1638,7 @@ the sale, use or other dealings in this Font Software without prior written
 authorization from the Gnome Foundation or Bitstream Inc., respectively. For
 further information, contact: fonts at gnome dot org.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.42 tsi Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.43 dawes Exp $
 
 
 $XFree86$
