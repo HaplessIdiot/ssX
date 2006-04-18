@@ -3,7 +3,7 @@ XFree86 4.5.99.904 (xx April 2006)
       prettyprints (Marc La France).
  273. Fix xgc's parsing of font names (Marc La France).
  272. Rename the "ast" driver to "aspeed" (Bugzilla #1664, requested by
-      Y.C. Chen).
+      Y. C. Chen).
  271. Resync with pci.ids file, and add entries for AST.
  270. Xterm patch #212 (Thomas Dickey).
 
@@ -33,7 +33,7 @@ XFree86 4.5.99.903 (8 April 2006)
 
 XFree86 4.5.99.902 (19 March 2006)
  253. Xterm patch #211 (Thomas Dickey).
- 252. More work on the ast driver (derived from Bugzilla #1628, Y.C. Chen).
+ 252. More work on the ast driver (derived from Bugzilla #1628, Y. C. Chen).
  251. Xterm may overwrite the field adjacent to lastlog.ll_time on some 64-bit
       Linux platforms.
  250. Fix a bug in fontconfig's pattern matching that can cause FcFontMatch()
@@ -246,7 +246,7 @@ XFree86 4.5.99.18 (23 December 2005)
  176. Some cleanups and typo fixes in libXaw (Alexander Pohoyda, Bugzilla
       #1637, Marc La France).
  175. Modify hardware cursor handling in ast driver
-      (Y.C. Chen, Bugzilla #1628).
+      (Y. C. Chen, Bugzilla #1628).
  174. Make Xaw Form widgets inherit dimensions from their parent at
       widget initialisation time.  (Bugzilla #1623, Alexander Pohoyda).
  173. Add a dvorak_intl xkb map (Bugzilla #1624, Conrad Schuler).
@@ -539,7 +539,7 @@ XFree86 4.5.99.5 (8 June 2005)
   57. Fix for auto-detection of Sun mice on Linux/SPARC (Marc La France).
   56. Fix (some of) the vbe module's endianness bugs (Marc La France).
   55. Fix endianness bug in xf4bpp;  This is actually faster on all
-      architectures (Marc La Framce).
+      architectures (Marc La France).
   54. Add Intel(R) i945G support to the i830 driver (Tungsten Graphics).
   53. Change the sequence on how refresh rates are set in the i830 driver.
       This works much better with custom modelines (Alan Hourihane).
@@ -20121,7 +20121,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3720 2006/04/18 15:48:45 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3721 2006/04/18 15:52:56 tsi Exp $
 
 
 
