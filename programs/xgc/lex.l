@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xgc/lex.l,v 1.5 2005/03/25 02:22:59 dawes Exp $ */
+/* $XFree86: xc/programs/xgc/lex.l,v 1.6tsi Exp $ */
 /*
 ** lex file for xgc syntax
 */
@@ -20,8 +20,8 @@ int yylineno = 0;
 %a				3000
 
 number				[0-9]+
-word				[^\n\t ]+
-string				\"([^"]|\\.)*\"
+word				[^\n\t "]+
+string				\"([^\"]|\\.)*\"
 
 %%
 
