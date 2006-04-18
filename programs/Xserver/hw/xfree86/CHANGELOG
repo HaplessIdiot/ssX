@@ -1,4 +1,6 @@
 XFree86 4.5.99.904 (xx April 2006)
+ 274. Avoid isprint(3) when generating atimisc debugging output or mmapr's
+      prettyprints (Marc La France).
  273. Fix xgc's parsing of font names (Marc La France).
  272. Rename the "ast" driver to "aspeed" (Bugzilla #1664, requested by
       Y.C. Chen).
@@ -20119,7 +20121,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3719 2006/04/14 00:50:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3720 2006/04/18 15:48:45 tsi Exp $
 
 
 

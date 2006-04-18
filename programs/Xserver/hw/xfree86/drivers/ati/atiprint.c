@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.36tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.37tsi Exp $ */
 /*
  * Copyright 1997 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -74,7 +74,7 @@ ATIPrintMemory
 
         *Message++ = digits[pMemory[Index] >> 4];
         *Message++ = digits[pMemory[Index] & (16U - 1U)];
-        if (isprint(pMemory[Index]))
+        if ((pMemory[Index] >= 0x20U) && (pMemory[Index] < 0x7FU))
             *Char++ = pMemory[Index];
         else
             *Char++ = '.';

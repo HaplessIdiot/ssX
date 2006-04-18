@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapr.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapr.c,v 1.14tsi Exp $ */
 /*
  * Copyright 2002 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -355,7 +355,7 @@ main(int argc, char **argv)
 		Hex[((i >> 2) * 9) + ((i & 3) << 1) + 1] =
 		    hextab[(unsigned char)*data & 15];
 
-		if (isprint(*data))
+		if ((*data >= 0x20) && (*data < 0x7F))
 		    Glyph[i] = *data;
 		else
 		    Glyph[i] = '.';
