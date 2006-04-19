@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdLnx.c,v 3.20 2006/01/09 14:59:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdLnx.c,v 3.21 2006/02/20 00:14:37 dawes Exp $ */
 /*
  * Linux version of keymapping setup. The kernel (since 0.99.14) has support
  * for fully remapping the keyboard, but there are some differences between
@@ -29,7 +29,7 @@
  *
  */
 /*
- * Copyright (c) 1994-2001 by The XFree86 Project, Inc.
+ * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -364,7 +364,7 @@ readKernelMapping(KeySymsPtr pKeySyms, CARD8 *pModMap)
   }
   else {
     k = map+GLYPHS_PER_KEY;
-    maxkey = NUM_AT2LNX;
+    maxkey = NUM_AT2LNX - 1;
   }
 
   for (i = 0; i < maxkey; ++i)

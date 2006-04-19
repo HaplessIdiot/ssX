@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_KbdMap.c,v 1.3 2006/02/17 18:04:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_KbdMap.c,v 1.4 2006/02/20 00:14:37 dawes Exp $ */
 
 /*
  * Slightly modified xf86KbdLnx.c which is
@@ -287,7 +287,7 @@ readKernelMapping(InputInfoPtr pInfo, KeySymsPtr pKeySyms, CARD8 *pModMap)
   }
   else {
     k = map+GLYPHS_PER_KEY;
-    maxkey = NUM_AT2LNX;
+    maxkey = NUM_AT2LNX - 1;
   }
 
   for (i = 0; i < maxkey; ++i)
