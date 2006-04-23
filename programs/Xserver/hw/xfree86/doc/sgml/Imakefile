@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.90 2005/03/08 17:44:30 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.91 2005/03/08 21:11:14 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -105,6 +105,24 @@ LinuxDocTarget(index)
 
 clean::
 	RemoveFile(index.sgml)
+
+#if XFree86Devel
+
+lindex.sgml: $(INDEXLIST) index.pre index.post add.sh Imakefile $(SGMLDEPENDS) $(MANSGMLDEPENDS)
+	RemoveFile(lindex.sgml)
+	cat index.pre > lindex.sgml
+	echo "<!-- This file is auto-generated.  Do not edit! -->" >> lindex.sgml
+	for i in $(INDEXLIST); do \
+		$(SHELL) add.sh -f lindex.sgml -p ./ $$i; \
+	done
+	cat index.post >> lindex.sgml
+
+LinuxDocTarget(lindex)
+
+clean::
+	RemoveFile(lindex.sgml)
+
+#endif
 
 
 FORMATTEDDIR = ..
