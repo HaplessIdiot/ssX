@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xgc/lex.l,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/xgc/lex.l,v 1.7 2006/04/18 15:48:46 tsi Exp $ */
 /*
 ** lex file for xgc syntax
 */
@@ -18,6 +18,7 @@ int yylineno = 0;
 
 %p				4000
 %a				3000
+%o				4000
 
 number				[0-9]+
 word				[^\n\t "]+
