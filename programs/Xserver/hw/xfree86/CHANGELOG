@@ -1,4 +1,7 @@
 XFree86 4.5.99.905 (xx May 2006)
+ 277. Various bindist fixes/updates (David Dawes).
+ 276. Previous xgc change requires increase in lex output table size on some
+      platforms (David Dawes).
 
 XFree86 4.5.99.904 (23 April 2006)
  275. Fix an array overrun that resulted in a server crash on exit on some
@@ -20125,7 +20128,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3723 2006/04/19 13:02:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3724 2006/04/23 17:16:29 dawes Exp $
 
 
 
