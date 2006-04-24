@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.93 2006/04/14 00:50:39 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.94 2006/04/23 17:03:52 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -756,8 +756,11 @@ FindDistName()
 				3)
 					DistName="Linux-ix86-glibc23"
 					;;
+				4)
+					DistName="Linux-ix86-glibc24"
+					;;
 				*)
-					Message="No dist available for glibc 2.$OsLibcMinor.  Try Linux-ix86-glibc23"
+					Message="No dist available for glibc 2.$OsLibcMinor.  Try Linux-ix86-glibc24"
 					;;
 				esac
 				;;
@@ -787,8 +790,11 @@ FindDistName()
 			6.2)
 				DistName="Linux-alpha-glibc22"
 				;;
+			6.3)
+				DistName="Linux-alpha-glibc23"
+				;;
 			6.*)
-				Message="No Linux/alpha binaries for glibc 2.$OsLibcMinor.  Try Linux-alpha-glibc22"
+				Message="No Linux/alpha binaries for glibc 2.$OsLibcMinor.  Try Linux-alpha-glibc23"
 				;;
 			*)
 				Message="No Linux/alpha binaries for this libc version"
@@ -810,8 +816,11 @@ FindDistName()
 			6.2)
 				DistName="Linux-amd64-glibc22"
 				;;
+			6.3)
+				DistName="Linux-amd64-glibc23"
+				;;
 			6.[3-9]*)
-				Message="No dist available for glibc 2.$OsLibcMinor.  Try Linux-amd64-glibc22"
+				Message="No dist available for glibc 2.$OsLibcMinor.  Try Linux-amd64-glibc23"
 				;;
 			*)
 				Message="No Linux/AMD64 binaries for this libc version"
@@ -1162,7 +1171,7 @@ InstallUpdate()
 	done
 	# update Fontconfig cache
 	Echo "Updating the index of Freetype fonts..."
-	$RUNDIR/bin/fc-cache -v
+	$RUNDIR/bin/fc-cache -v -f
 
 	ModifyXterm
 
@@ -1799,7 +1808,7 @@ echo "Searching for a termcap file.  This may take a few seconds..."
 TERMCAP1DIR=$ROOTDIR/usr/share
 TERMCAP2=$ROOTDIR/etc/termcap
 if [ -d $TERMCAP1DIR ]; then
-	TERMCAP1=`find $TERMCAP1DIR -type f -name termcap -print 2> /dev/null`
+	TERMCAP1=`find $TERMCAP1DIR -type f -name termcap -print | fgrep -v doc 2> /dev/null`
 	if [ x"$TERMCAP1" != x ]; then
 		TERMCAPFILE="$TERMCAP1"
 	fi
@@ -2007,6 +2016,11 @@ for i in $FONTDIRS $EXTRAFONTDIRS; do
 		echo ""
 	fi
 done
+
+# update Fontconfig cache
+Echo "Updating the index of Freetype fonts..."
+$RUNDIR/bin/fc-cache -v -f
+
 
 
 if [ -f $RUNDIR/bin/rstartd ]; then
