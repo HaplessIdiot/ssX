@@ -9,7 +9,7 @@
 <date>April 2006
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.138 2006/04/18 17:07:24 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.139 2006/04/18 17:13:22 dawes Exp $
 </ident>
 
 <abstract>
@@ -1698,6 +1698,7 @@ Miguel Gonz&aacute;lez Cuadrado,
 David Dawes,
 Thomas Dickey,
 Stefan Dirsch,
+Bernd Ernesti,
 Jordan Frank,
 Will L G,
 Frank Giessler,
