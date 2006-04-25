@@ -1,4 +1,4 @@
-/* $XFree86: xc/util/memleak/getretspar.c,v 1.3 2006/01/09 15:01:57 dawes Exp $ */
+/* $XFree86: xc/util/memleak/getretspar.c,v 1.4 2006/03/02 03:00:40 dawes Exp $ */
 /*
  *
 Copyright 1992, 1998  The Open Group
@@ -65,7 +65,7 @@ getStackTrace(unsigned long *results, int max)
 	/* stop when we get the call to main */
 	mainCall = ((((unsigned long)main) -
 		     ((unsigned long)ra)) >> 2) | 0x40000000;
-	if (ra[0] == mainCall) {
+	if (!ra || ra[0] == mainCall) {
 	    *results++ = 0;
 	    break;
 	}

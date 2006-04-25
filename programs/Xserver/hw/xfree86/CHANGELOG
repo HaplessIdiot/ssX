@@ -1,4 +1,5 @@
 XFree86 4.5.99.905 (xx May 2006)
+ 279. Fix segv in stack trace on sparc (David Dawes).
  278. Fix some errors in change #231 that prevent
       '#define InstallManPageSource NO' from working (Bernd Ernesti).
  277. Various bindist fixes/updates (David Dawes).
@@ -20130,7 +20131,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3725 2006/04/24 04:06:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3726 2006/04/25 02:50:25 dawes Exp $
 
 
 
