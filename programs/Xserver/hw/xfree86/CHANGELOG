@@ -1,4 +1,6 @@
 XFree86 4.5.99.905 (xx May 2006)
+ 278. Fix some errors in change #231 that prevent
+      '#define InstallManPageSource NO' from working (Bernd Ernesti).
  277. Various bindist fixes/updates (David Dawes).
  276. Previous xgc change requires increase in lex output table size on some
       platforms (David Dawes).
@@ -20128,7 +20130,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3724 2006/04/23 17:16:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3725 2006/04/24 04:06:04 dawes Exp $
 
 
 

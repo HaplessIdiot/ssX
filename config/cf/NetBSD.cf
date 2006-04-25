@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.128 2005/06/22 03:28:49 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.130 2006/03/06 15:58:01 dawes Exp $
 
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
@@ -586,7 +586,7 @@ BuildInstallHtmlManPage(file,dest,suffix)				@@\
 									@@\
 CppManTarget(file, $(EXTRAMANDEFS))					@@\
 									@@\
-InstallManPageLongBase(file,destdir,dest,suffix)
+OsInstallManPageLongBase(file,destdir,dest,suffix)
  
 #define InstallManPageAliases(file,destdir,aliases)			@@\
 InstallHtmlManPageAliases(file,aliases,$(MANSUFFIX))			@@\
@@ -596,7 +596,7 @@ OsInstallManPageAliasesBase(file,destdir,$(MANSUFFIX),aliases)
 #define InstallGenManPageAliases(file,destdir,suffix,aliases)		@@\
 InstallHtmlManPageAliases(file,aliases,suffix)				@@\
 									@@\
-InstallManPageAliasesBase(file,destdir,suffix,aliases)
+OsInstallManPageAliasesBase(file,destdir,suffix,aliases)
 
 #define InstallMultipleMan(list,dest)					@@\
 OsInstallMultipleMan(list,dest)
