@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.509 2006/04/08 17:53:38 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.510 2006/04/14 00:50:36 dawes Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -518,6 +518,10 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.509 2006/04/08 17:53:38 dawes Exp $
     !defined(OpenBSDArchitecture)
 # ifndef XF86Server
 #  define XF86Server		YES
+# endif
+/* Referenced by the vesa driver */
+# ifndef XF86AFB
+#  define XF86AFB		YES
 # endif
 /* 1bpp module */
 # ifndef XF1Bpp
