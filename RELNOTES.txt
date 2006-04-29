@@ -619,7 +619,258 @@ The following security issue has been fixed in this release:
 
    o Use the same default XF86Config search path as the XFree86 server.
 
-3.6.7  Xterm (TODO)
+3.6.7  xterm
+
+These changes correspond to xterm patches #200 through #212.
+
+   o Improved behavior
+
+        o add a new selection feature:  regular expressions, and new
+          resources which specify what happens on multiple mouse clicks:
+          on2Clicks, on3Clicks, on4Clicks and on5Clicks.
+
+        o improve initialization of toolbar so that individual pulldown menus
+          are initialized on demand, as they are in the scenario where they
+          are invoked as popup menus.
+
+        o improve error-reporting when chown/chmod of the pseudo-terminal
+          fails, e.g., if a copy of xterm which was designed to work with
+          old-style pseudo-terminals is not installed setuid or setgid.
+
+        o add support for interpreting the underline attribute as an italic
+          font in Xft mode.
+
+        o modify configure script --disable-imake to use the script's defini-
+          tions anyway if it cannot detect imake.
+
+        o improve resource files to show how the menubar and popup menus can
+          be colored.
+
+        o modify initialization of allowSendEvents and allowWindowOps to pre-
+          vent modification with the editres protocol.
+
+        o improved some of the built-in line-drawing glyphs.
+
+        o set the _NET_WM_PID property.
+
+        o update table for mk_width() from UnicodeData 4.1.0.
+
+        o implement the remaining pieces to make xterm allocate cells for
+          wide-characters when the "UTF-8" menu entry is selected.  Also,
+          load the UTF-8 font when that menu entry is selected, or the escape
+          sequence for UTF-8 mode is received :
+
+        o improve behavior when switching to UTF-8 mode after startup so
+          xterm will check if the current fonts are already wide
+          (ISO-10646-1).  If they are not, xterm will use the utf8Fonts sub-
+          resource to load appropriate fonts.
+
+        o modify initialization for wide-bold fontname, to search for one if
+          none is given.
+
+        o modify interaction between +u8 and locale resource to allow the
+          command-line option to override the resource.
+
+        o modify initialization to decide whether to default to built-in
+          wcwidth() versus system's version based on the starting locale and
+          whether the system's version is poor quality.
+
+        o make paste of UTF-8 faster for Western character sets by checking
+          range of incoming data.
+
+        o improve initialization due to utf8 resource by loading the
+          utf8Fonts resource in the case where locale resource is false.
+          Also in this case, do not disable switching UTF-8 mode on/off.
+
+   o Modified behavior
+
+        o modify parsing of OSC (and SOS, etc), strings so their contents are
+          not interpreted as UTF-8.  This allows non-ASCII title strings to
+          be set, provided that the window manager complies.
+
+        o modify parsing of control sequence CSI T to allow scroll-down to be
+          sent while mouse tracking is enabled.
+
+        o modify command-processing to accept an optional parameter that
+          tells xterm which shell program to use.
+
+        o change xterm manpage to show the actual color resource names XtDe-
+          faultForeground and XtDefaultBackground rather than black and
+          white.
+
+        o modify xterm-new terminfo entry to use capabilities for shifted
+          scroll forward/reverse as shifted cursor up/down.
+
+        o remove menu entry for "Enable Curses Emulation" (to make room for
+          "Select To Clipboard").
+
+        o modify resource files to make the font-resources a little more spe-
+          cific, e.g., changing "*VT100*" to "*VT100.", to make the distinc-
+          tion between VT100.font and VT100.utf8Fonts.font sharper, in case a
+          packager modifies one of those.
+
+        o allow cursor to have the same color as foreground (text), since it
+          is rendered as reverse.
+
+        o modify Imakefile to use setgid mode for installing with Linux,
+          OpenBSD and FreeBSD.
+
+   o New resource settings
+
+        o add utf8Title resource and menu entry, allowing the user to control
+          whether title strings are interpreted as ISO-8859-1 or UTF-8 encod-
+          ing.
+
+        o add scrollBarBorder resource.
+
+        o add resource selectToClipboard, action set-select and a menu entry
+          to allow users to switch between PRIMARY and CLIPBOARD for
+          select/paste.
+
+        o add resource mkWidth and command-line option -mk_width to control
+          whether xterm uses the built-in version of wcwidth().
+
+        o add resource settings for minimum/maximum input buffer size, and
+          call to sched_yield to improve performance with newer Linux kernels
+
+        o add simpler resource keyboardType which, when set, overrides the
+          individual keyboard-type resources and eliminates the possibility
+          of conflict between them.
+
+   o New configure script options
+
+        o the --with-utmp-setgid allows the packager to configure xterm to
+          use setgid permissions for utmp.
+
+        o add configure option --enable-readline-mouse, which turns on the
+          experimental OPT_READLINE code.
+
+        o add --enable-narrowproto configure option to accommodate X.org
+          "modular" build.
+
+        o add configure --with-app-defaults option to allow app-defaults
+          directory for install-rules to be customized.
+
+        o add configure option --with-tty-group to help work around deficien-
+          cies in packager's build environment.
+
+        o add configure --with-setuid and --with-reference options to allow
+          packagers more flexibility in customizing install permissions.
+
+        o add configure --with-symlink option to make it simpler to install
+          successive versions of xterm renamed using the --program-prefix,
+          etc., options with a symbolic link pointing to the most recent.
+
+        o add a configure check for the actual path of luit, to work around
+          broken imake configurations.
+
+        o add a configure check for pkg-config.
+
+        o modify install rule for uxterm to account for the --program-prefix,
+          etc., options by invoking the transformed name of xterm rather than
+          simply "xterm".
+
+        o modify configure --with-app-defaults option to allow --without-app-
+          defaults.
+
+        o add configure option --disable-leaks.
+
+        o add experimental option to allow applications to get or set the
+          selection data as a BASE64 string.
+
+   o Other new features
+
+        o add select-cursor-extend() action.
+
+        o add environment variables $XTERM_SHELL and $XTERM_VERSION.
+
+        o add menu entry (alt-esc) and corresponding action (alt-sends-esc)
+          to toggle the eightBitInput resource setting.
+
+        o add command-line options (-tb, +tb) and resource toolBar to allow
+          menu/toolbar to disabled or enabled at startup.
+
+        o add extended shift- and control-modifier cursor keys to
+          "xterm+pcfkeys" terminfo entry to correspond to ncurses 20050430
+          patch.
+
+        o enable lastlogx support for NetBSD (was added, but not enabled in
+          patch #186).
+
+   o Bug-fixes (see http://invisible-island.net/xterm/xterm.log.html for a
+     more complete list):
+
+        o correct typo in configure script's --enable-dec-locator option
+
+        o correct a typo in CF_FUNC_TGETENT introduced in patch #198 fix
+
+        o fix an off-by-one error parsing -S/nn option.
+
+        o add a check in Bell to ensure that the VT100 widget is realized,
+          since it may be called by xtermLoadFont given an incorrect font
+          resource.
+
+        o correct treatment of iconBorderWidth for resizing an active-icon,
+          and its description in manpage.
+
+        o add a limit check for scrolling margins in a one-line screen, over-
+          looked in fixes for patch #198.
+
+        o correct computation of width for wide characters with the invisible
+          attribute.
+
+        o improve fix from patch #198 for Cleanup() by ensuring it is not
+          called from the SIGCHLD handler.
+
+        o fixes to make -geom option work properly with the toolbar configu-
+          ration.
+
+        o fix logic in find_utmp, which did not reset result in getutid(),
+          causing an infinite loop in some conditions.
+
+        o fix a rare case where text would be written with the wrong colors
+          because output of scrolled text would reset the colors and the new
+          text would be written with the same colors.
+
+        o implement logic in termcap query to process multiple parameters as
+          documented in ctlseqs.ms
+
+        o fix buffer size used for termcap query, which was not long enough
+          for the terminfo "colors" name.
+
+        o initialize the saved-cursor data so a restore-cursor operation
+          without a preceding save-cursor operation will not modify the fore-
+          ground color.
+
+        o modify Imakefile to work around old problems in imake configuration
+          to allow test-builds using xmkmf on Linux.  (This was not noticed
+          since several releases had broken definitions relating to Xft which
+          were harder to work around).
+
+        o remove default translations for dabbrev-expand() due to conflicts
+          with existing keyboard arrangements.
+
+        o set icon border width explicitly to work around fvwm problem with
+          active icon resizing.
+
+        o eliminate a retry for a better-matching bold font, to work around
+          recent font server changes.
+
+        o modify prefix/suffix transformation in makefile to make uxterm
+          install properly on Cygwin.
+
+        o correct termcap "me" (mode-end) string so it does not modify the
+          alternate character set.
+
+        o modify computation of rows/columns on resize to avoid extending
+          beyond the given limits, e.g., if resizing in response to a "maxi-
+          mize" in Gnome or KDE which do not use the window manager hints for
+          this case.
+
+        o make a special case of resizing work like vt100:  a hard reset also
+          resets the 132/80 mode.  The code to support this was present since
+          X11R5, but not used because the corresponding initial state of the
+          -132 option was not saved.
 
 3.6.8  GLX/DRI
 
@@ -1251,19 +1502,19 @@ source files.
             ASPEED Technologies, Andrew Aitchison, James Ascroft-Leigh,
             Étienne Bersac, Peter Breitenlohner, Terry Chang, Y. C. Chen,
             Jeff Chua, James Cloos, Alan Coopersmith, Miguel González
-            Cuadrado, David Dawes, Thomas Dickey, Stefan Dirsch, Jordan
-            Frank, Will L G, Frank Giessler, Thorsten Glaser, Damian Janusz
-            Gruszka, Lukas Hejtmanek, Evil Mr Henry, Jens Herden, Alan Houri-
-            hane, Nicolas Joly, Bang Jun-Young, Alexander Kabaev, Satoshi
-            Kimura, Milos Komarcevic, Marc La France, Dejan Lesjak, Khong Jye
-            Liew, Jong Lin, Michael Lorenz, Michael Macallan, Michal Maruska,
-            Luke Mewburn, Timothy Musson, Newsh, Takaaki Nomura, Ivan Pascal,
-            Bob Peterson, Pierre, Aaron Plattner, Alexander Pohoyda, Jeremy
-            C. Reed, Conrad Schuler, Bruno Schwander, Olaf Seibert, Aaron
-            Solochek, Helmar Spangenberg, Ken Stailey, Tobias Stoeckmann,
-            Tungsten Graphics, James Richard Tyrer, Staffan Ulfberg, Denis
-            Vlasenko, Mark Vojkovich, Tom Williams, Dave Williss, X-Oz Tech-
-            nologies, XGI, Christos Zoulas.
+            Cuadrado, David Dawes, Thomas Dickey, Stefan Dirsch, Bernd
+            Ernesti, Jordan Frank, Will L G, Frank Giessler, Thorsten Glaser,
+            Damian Janusz Gruszka, Lukas Hejtmanek, Evil Mr Henry, Jens Her-
+            den, Alan Hourihane, Nicolas Joly, Bang Jun-Young, Alexander
+            Kabaev, Satoshi Kimura, Milos Komarcevic, Marc La France, Dejan
+            Lesjak, Khong Jye Liew, Jong Lin, Michael Lorenz, Michael
+            Macallan, Michal Maruska, Luke Mewburn, Timothy Musson, Newsh,
+            Takaaki Nomura, Ivan Pascal, Bob Peterson, Pierre, Aaron Plat-
+            tner, Alexander Pohoyda, Jeremy C. Reed, Conrad Schuler, Bruno
+            Schwander, Olaf Seibert, Aaron Solochek, Helmar Spangenberg, Ken
+            Stailey, Tobias Stoeckmann, Tungsten Graphics, James Richard
+            Tyrer, Staffan Ulfberg, Denis Vlasenko, Mark Vojkovich, Tom
+            Williams, Dave Williss, X-Oz Technologies, XGI, Christos Zoulas.
 
       Webmaster:
             Georgina O. Economou
@@ -1290,7 +1541,7 @@ its contributors
 This product includes software developed by X-Oz Technologies (http://www.x-
 oz.com/).
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.139 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.142 dawes Exp $
 
 
 $XFree86$
