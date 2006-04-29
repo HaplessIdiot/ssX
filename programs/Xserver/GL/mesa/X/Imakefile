@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/X/Imakefile,v 1.8tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/X/Imakefile,v 1.9 2005/10/17 15:35:55 tsi Exp $
 
 #if DoLoadableServer
 #if !BuildModuleInSubdir
@@ -74,6 +74,10 @@ SubdirLibraryRule($(OBJS))
 
 LintLibraryTarget(dri,$(SRCS))
 NormalLintTarget($(SRCS))
+
+#if defined(SparcArchitecture) && HasGcc
+SpecialCObjectRule(xm_api,NullParameter,-O0)
+#endif
 
 DependTarget()
 
