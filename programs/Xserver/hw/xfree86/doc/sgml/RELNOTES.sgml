@@ -9,7 +9,7 @@
 <date>April 2006
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.140 2006/04/25 02:50:43 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.141 2006/04/29 03:32:58 dawes Exp $
 </ident>
 
 <abstract>
@@ -861,60 +861,60 @@ These changes correspond to xterm patches #200 through #212.
 <item>Improved behavior
 
   <itemize>
-  <item> add a new selection feature:  regular expressions, and new resources
+  <item>add a new selection feature:  regular expressions, and new resources
        which specify what happens on multiple mouse clicks:  on2Clicks,
        on3Clicks, on4Clicks and on5Clicks.
 
-  <item> improve initialization of toolbar so that individual pulldown menus
+  <item>improve initialization of toolbar so that individual pulldown menus
        are initialized on demand, as they are in the scenario where they
        are invoked as popup menus.
 
-  <item> improve error-reporting when chown/chmod of the pseudo-terminal
+  <item>improve error-reporting when chown/chmod of the pseudo-terminal
        fails, e.g., if a copy of xterm which was designed to work with
        old-style pseudo-terminals is not installed setuid or setgid.
 
-  <item> add support for interpreting the underline attribute as an italic
+  <item>add support for interpreting the underline attribute as an italic
        font in Xft mode.
 
-  <item> modify configure script --disable-imake to use the script's
+  <item>modify configure script --disable-imake to use the script's
        definitions anyway if it cannot detect imake.
 
-  <item> improve resource files to show how the menubar and popup menus can
+  <item>improve resource files to show how the menubar and popup menus can
        be colored.
 
-  <item> modify initialization of allowSendEvents and allowWindowOps to
+  <item>modify initialization of allowSendEvents and allowWindowOps to
        prevent modification with the editres protocol.
 
-  <item> improved some of the built-in line-drawing glyphs.
+  <item>improved some of the built-in line-drawing glyphs.
 
-  <item> set the _NET_WM_PID property.
+  <item>set the _NET_WM_PID property.
 
-  <item> update table for mk_width() from UnicodeData 4.1.0.
+  <item>update table for mk_width() from UnicodeData 4.1.0.
 
-  <item> implement the remaining pieces to make xterm allocate cells for
+  <item>implement the remaining pieces to make xterm allocate cells for
        wide-characters when the "UTF-8" menu entry is selected.  Also, load
        the UTF-8 font when that menu entry is selected, or the escape
        sequence for UTF-8 mode is received :
 
-  <item> improve behavior when switching to UTF-8 mode after startup so
+  <item>improve behavior when switching to UTF-8 mode after startup so
        xterm will check if the current fonts are already wide
        (ISO-10646-1).  If they are not, xterm will use the utf8Fonts
        subresource to load appropriate fonts.
 
-  <item> modify initialization for wide-bold fontname, to search for one if
+  <item>modify initialization for wide-bold fontname, to search for one if
        none is given.
 
-  <item> modify interaction between +u8 and locale resource to allow the
+  <item>modify interaction between +u8 and locale resource to allow the
        command-line option to override the resource.
 
-  <item> modify initialization to decide whether to default to built-in
+  <item>modify initialization to decide whether to default to built-in
        wcwidth() versus system's version based on the starting locale and
        whether the system's version is poor quality.
 
-  <item> make paste of UTF-8 faster for Western character sets by checking
+  <item>make paste of UTF-8 faster for Western character sets by checking
        range of incoming data.
 
-  <item> improve initialization due to utf8 resource by loading the
+  <item>improve initialization due to utf8 resource by loading the
        utf8Fonts resource in the case where locale resource is false.  Also
        in this case, do not disable switching UTF-8 mode on/off.
 
@@ -923,35 +923,35 @@ These changes correspond to xterm patches #200 through #212.
 <item>Modified behavior
 
   <itemize>
-  <item> modify parsing of OSC (and SOS, etc), strings so their contents are
+  <item>modify parsing of OSC (and SOS, etc), strings so their contents are
        not interpreted as UTF-8.  This allows non-ASCII title strings to be
        set, provided that the window manager complies.
 
-  <item> modify parsing of control sequence CSI T to allow scroll-down to be
+  <item>modify parsing of control sequence CSI T to allow scroll-down to be
        sent while mouse tracking is enabled.
 
-  <item> modify command-processing to accept an optional parameter that
+  <item>modify command-processing to accept an optional parameter that
        tells xterm which shell program to use.
 
-  <item> change xterm manpage to show the actual color resource names
+  <item>change xterm manpage to show the actual color resource names
        XtDefaultForeground and XtDefaultBackground rather than black and
        white.
 
-  <item> modify xterm-new terminfo entry to use capabilities for shifted
+  <item>modify xterm-new terminfo entry to use capabilities for shifted
        scroll forward/reverse as shifted cursor up/down.
 
-  <item> remove menu entry for "Enable Curses Emulation" (to make room for
+  <item>remove menu entry for "Enable Curses Emulation" (to make room for
        "Select To Clipboard").
 
-  <item> modify resource files to make the font-resources a little more
+  <item>modify resource files to make the font-resources a little more
        specific, e.g., changing "*VT100*" to "*VT100.", to make the
        distinction between VT100.font and VT100.utf8Fonts.font sharper, in
        case a packager modifies one of those.
 
-  <item> allow cursor to have the same color as foreground (text), since it
+  <item>allow cursor to have the same color as foreground (text), since it
        is rendered as reverse.
 
-  <item> modify Imakefile to use setgid mode for installing with Linux,
+  <item>modify Imakefile to use setgid mode for installing with Linux,
        OpenBSD and FreeBSD.
 
   </itemize>
@@ -960,23 +960,23 @@ These changes correspond to xterm patches #200 through #212.
 
   <itemize>
 
-  <item> add utf8Title resource and menu entry, allowing the user to control
+  <item>add utf8Title resource and menu entry, allowing the user to control
        whether title strings are interpreted as ISO-8859-1 or UTF-8
        encoding.
 
-  <item> add scrollBarBorder resource.
+  <item>add scrollBarBorder resource.
 
-  <item> add resource selectToClipboard, action set-select and a menu entry
+  <item>add resource selectToClipboard, action set-select and a menu entry
        to allow users to switch between PRIMARY and CLIPBOARD for
        select/paste.
 
-  <item> add resource mkWidth and command-line option -mk_width to control
+  <item>add resource mkWidth and command-line option -mk_width to control
        whether xterm uses the built-in version of wcwidth().
 
-  <item> add resource settings for minimum/maximum input buffer size, and
+  <item>add resource settings for minimum/maximum input buffer size, and
        call to sched_yield to improve performance with newer Linux kernels
 
-  <item> add simpler resource keyboardType which, when set, overrides the
+  <item>add simpler resource keyboardType which, when set, overrides the
        individual keyboard-type resources and eliminates the possibility
        of conflict between them.
 
@@ -986,43 +986,43 @@ These changes correspond to xterm patches #200 through #212.
 
   <itemize>
 
-  <item> the --with-utmp-setgid allows the packager to configure xterm to
+  <item>the --with-utmp-setgid allows the packager to configure xterm to
        use setgid permissions for utmp.
 
-  <item> add configure option --enable-readline-mouse, which turns on the
+  <item>add configure option --enable-readline-mouse, which turns on the
        experimental OPT_READLINE code.
 
-  <item> add --enable-narrowproto configure option to accommodate X.org
+  <item>add --enable-narrowproto configure option to accommodate X.org
        "modular" build.
 
-  <item> add configure --with-app-defaults option to allow app-defaults
+  <item>add configure --with-app-defaults option to allow app-defaults
        directory for install-rules to be customized.
 
-  <item> add configure option --with-tty-group to help work around
+  <item>add configure option --with-tty-group to help work around
        deficiencies in packager's build environment.
 
-  <item> add configure --with-setuid and --with-reference options to allow
+  <item>add configure --with-setuid and --with-reference options to allow
        packagers more flexibility in customizing install permissions.
 
-  <item> add configure --with-symlink option to make it simpler to install
+  <item>add configure --with-symlink option to make it simpler to install
        successive versions of xterm renamed using the --program-prefix,
        etc., options with a symbolic link pointing to the most recent.
 
-  <item> add a configure check for the actual path of luit, to work around
+  <item>add a configure check for the actual path of luit, to work around
        broken imake configurations.
 
-  <item> add a configure check for pkg-config.
+  <item>add a configure check for pkg-config.
 
-  <item> modify install rule for uxterm to account for the --program-prefix,
+  <item>modify install rule for uxterm to account for the --program-prefix,
        etc., options by invoking the transformed name of xterm rather than
        simply "xterm".
 
-  <item> modify configure --with-app-defaults option to allow
+  <item>modify configure --with-app-defaults option to allow
        --without-app-defaults.
 
-  <item> add configure option --disable-leaks.
+  <item>add configure option --disable-leaks.
 
-  <item> add experimental option to allow applications to get or set the
+  <item>add experimental option to allow applications to get or set the
        selection data as a BASE64 string.
 
   </itemize>
@@ -1031,21 +1031,21 @@ These changes correspond to xterm patches #200 through #212.
 
   <itemize>
 
-  <item> add select-cursor-extend() action.
+  <item>add select-cursor-extend() action.
 
-  <item> add environment variables $XTERM_SHELL and $XTERM_VERSION.
+  <item>add environment variables $XTERM_SHELL and $XTERM_VERSION.
 
-  <item> add menu entry (alt-esc) and corresponding action (alt-sends-esc)
+  <item>add menu entry (alt-esc) and corresponding action (alt-sends-esc)
        to toggle the eightBitInput resource setting.
 
-  <item> add command-line options (-tb, +tb) and resource toolBar to allow
+  <item>add command-line options (-tb, +tb) and resource toolBar to allow
        menu/toolbar to disabled or enabled at startup.
 
-  <item> add extended shift- and control-modifier cursor keys to
+  <item>add extended shift- and control-modifier cursor keys to
        "xterm+pcfkeys" terminfo entry to correspond to ncurses 20050430
        patch.
 
-  <item> enable lastlogx support for NetBSD (was added, but not enabled in
+  <item>enable lastlogx support for NetBSD (was added, but not enabled in
        patch #186).
 
   </itemize>
@@ -1055,74 +1055,74 @@ more complete list):
 
   <itemize>
 
-  <item> correct typo in configure script's --enable-dec-locator option
+  <item>correct typo in configure script's --enable-dec-locator option
 
-  <item> correct a typo in CF_FUNC_TGETENT introduced in patch #198 fix
+  <item>correct a typo in CF_FUNC_TGETENT introduced in patch #198 fix
 
-  <item> fix an off-by-one error parsing -S/nn option.
+  <item>fix an off-by-one error parsing -S/nn option.
 
-  <item> add a check in Bell to ensure that the VT100 widget is realized,
+  <item>add a check in Bell to ensure that the VT100 widget is realized,
        since it may be called by xtermLoadFont given an incorrect font
        resource.
 
-  <item> correct treatment of iconBorderWidth for resizing an active-icon,
+  <item>correct treatment of iconBorderWidth for resizing an active-icon,
        and its description in manpage.
 
-  <item> add a limit check for scrolling margins in a one-line screen,
+  <item>add a limit check for scrolling margins in a one-line screen,
        overlooked in fixes for patch #198.
 
-  <item> correct computation of width for wide characters with the invisible
+  <item>correct computation of width for wide characters with the invisible
        attribute.
 
-  <item> improve fix from patch #198 for Cleanup() by ensuring it is
+  <item>improve fix from patch #198 for Cleanup() by ensuring it is
        not called from the SIGCHLD handler.
 
-  <item> fixes to make -geom option work properly with the toolbar
+  <item>fixes to make -geom option work properly with the toolbar
        configuration.
 
-  <item> fix logic in find_utmp, which did not reset result in getutid(),
+  <item>fix logic in find_utmp, which did not reset result in getutid(),
        causing an infinite loop in some conditions.
 
-  <item> fix a rare case where text would be written with the wrong colors
+  <item>fix a rare case where text would be written with the wrong colors
        because output of scrolled text would reset the colors and the new
        text would be written with the same colors.
 
-  <item> implement logic in termcap query to process multiple parameters as
+  <item>implement logic in termcap query to process multiple parameters as
        documented in ctlseqs.ms
 
-  <item> fix buffer size used for termcap query, which was not long enough
+  <item>fix buffer size used for termcap query, which was not long enough
        for the terminfo "colors" name.
 
-  <item> initialize the saved-cursor data so a restore-cursor operation
+  <item>initialize the saved-cursor data so a restore-cursor operation
        without a preceding save-cursor operation will not modify the
        foreground color.
 
-  <item> modify Imakefile to work around old problems in imake configuration
+  <item>modify Imakefile to work around old problems in imake configuration
        to allow test-builds using xmkmf on Linux.  (This was not noticed
        since several releases had broken definitions relating to Xft which
        were harder to work around).
 
-  <item> remove default translations for dabbrev-expand() due to conflicts
+  <item>remove default translations for dabbrev-expand() due to conflicts
        with existing keyboard arrangements.
 
-  <item> set icon border width explicitly to work around fvwm problem with
+  <item>set icon border width explicitly to work around fvwm problem with
        active icon resizing.
 
-  <item> eliminate a retry for a better-matching bold font, to work around
+  <item>eliminate a retry for a better-matching bold font, to work around
        recent font server changes.
 
-  <item> modify prefix/suffix transformation in makefile to make uxterm
+  <item>modify prefix/suffix transformation in makefile to make uxterm
        install properly on Cygwin.
 
-  <item> correct termcap "me" (mode-end) string so it does not modify the
+  <item>correct termcap "me" (mode-end) string so it does not modify the
        alternate character set.
 
-  <item> modify computation of rows/columns on resize to avoid extending
+  <item>modify computation of rows/columns on resize to avoid extending
        beyond the given limits, e.g., if resizing in response to a
        "maximize" in Gnome or KDE which do not use the window manager
        hints for this case.
 
-  <item> make a special case of resizing work like vt100:  a hard reset also
+  <item>make a special case of resizing work like vt100:  a hard reset also
        resets the 132/80 mode.  The code to support this was present since
        X11R5, but not used because the corresponding initial state of the
        -132 option was not saved.
