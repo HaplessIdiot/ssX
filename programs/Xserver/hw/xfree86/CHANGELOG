@@ -1,4 +1,5 @@
 XFree86 4.5.99.905 (xx May 2006)
+ 281. Xterm patch #213 (Thomas Dickey).
  280. Build fix for static server on sparc (David Dawes).
  279. Fix segv in stack trace on sparc (David Dawes).
  278. Fix some errors in change #231 that prevent
@@ -20132,7 +20133,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3727 2006/04/25 03:09:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3728 2006/04/26 00:28:15 dawes Exp $
 
 
 

@@ -1,7 +1,7 @@
-/* $XTermId: fontutils.c,v 1.200 2006/03/13 01:22:09 tom Exp $ */
+/* $XTermId: fontutils.c,v 1.202 2006/04/30 17:33:03 tom Exp $ */
 
 /*
- * $XFree86: xc/programs/xterm/fontutils.c,v 1.57 2006/02/13 01:14:58 dickey Exp $
+ * $XFree86: xc/programs/xterm/fontutils.c,v 1.59 2006/03/13 01:27:59 dickey Exp $
  */
 
 /************************************************************
@@ -1233,6 +1233,10 @@ xtermLoadWideFonts(XtermWidget xw, Bool nullOk)
     } else {
 	result = (isWideFont(screen->fnts[fWide], "wide", nullOk)
 		  && isWideFont(screen->fnts[fWBold], "wide-bold", nullOk));
+	if (result && !screen->utf8_latin1) {
+	    result = (isWideFont(screen->fnts[fNorm], "normal", nullOk)
+		      && isWideFont(screen->fnts[fBold], "bold", nullOk));
+	}
     }
     if (!result) {
 	TRACE(("current fonts are not all wide%s\n", nullOk ? " nullOk" : ""));
