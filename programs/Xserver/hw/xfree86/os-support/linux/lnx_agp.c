@@ -7,7 +7,7 @@
  * Copyright © 2001 The XFree86 Project, Inc.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_agp.c,v 3.16tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_agp.c,v 3.17 2005/10/26 20:42:36 tsi Exp $ */
 
 #include <X11/X.h>
 #include "xf86.h"
@@ -19,9 +19,10 @@
 #include <asm/ioctl.h>
 #include <linux/version.h>
 
-#if defined(LINUX_VERSION_CODE) && defined(KERNEL_VERSION) && \
-    LINUX_VERSION_CODE >= KERNEL_VERSION(2,3,31)
-# include <linux/agpgart.h>
+#if defined(LINUX_VERSION_CODE) && defined(KERNEL_VERSION)
+# if LINUX_VERSION_CODE >= KERNEL_VERSION(2,3,31)
+#  include <linux/agpgart.h>
+# endif
 #endif
 #elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #include <sys/ioctl.h>
