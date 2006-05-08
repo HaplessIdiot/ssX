@@ -35,7 +35,7 @@ of the copyright holder.
 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/tinyx/linux/agp.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/linux/agp.c,v 1.4 2005/10/26 20:42:36 tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -109,9 +109,10 @@ of the copyright holder.
 #include <asm/ioctl.h>
 #include <linux/version.h>
 
-#if defined(LINUX_VERSION_CODE) && defined(KERNEL_VERSION) && \
-    LINUX_VERSION_CODE >= KERNEL_VERSION(2,3,31)
-# include <linux/agpgart.h>
+#if defined(LINUX_VERSION_CODE) && defined(KERNEL_VERSION)
+# if LINUX_VERSION_CODE >= KERNEL_VERSION(2,3,31)
+#  include <linux/agpgart.h>
+# endif
 #endif
 
 #elif defined(__FreeBSD__)
