@@ -19,7 +19,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.h,v 1.6 2006/04/03 18:08:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.h,v 1.7 2006/04/04 00:30:36 dawes Exp $ */
 
 #ifndef _DLLOADER_H
 #define _DLLOADER_H
@@ -29,7 +29,11 @@
 #include <sys/param.h>
 #endif
 
-#if defined(linux) || \
+#ifdef linux
+#include <features.h>
+#endif
+
+#if (defined(linux) && defined(__GLIBC__)) || \
     (defined(__FreeBSD__) && defined(__ELF__)) || \
     defined(__NetBSD__) || \
     (defined(__OpenBSD__) && defined(OpenBSD) && OpenBSD >= 200411) || \
