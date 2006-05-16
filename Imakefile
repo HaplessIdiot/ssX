@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/Imakefile,v 3.33 2005/06/07 08:02:13 dawes Exp $
+XCOMM $XFree86: xc/Imakefile,v 3.34tsi Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
@@ -110,7 +110,7 @@ clean::
       MAKE_OPTS = -f xmakefile
 
 World::
-	$(MAKE) $(MFLAGS) $(MAKE_OPTS) $(TOPPARALLELMFLAGS) all
+	$(MAKE) $(PASSMFLAGS) $(MAKE_OPTS) $(TOPPARALLELMFLAGS) all
 
 Everything::
 	@echo ""
@@ -119,16 +119,16 @@ Everything::
 	@date
 	@echo ""
 	cd $(IMAKESRC) && if [ -f Makefile ]; then \
-	    $(MAKE) $(MFLAGS) BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"; \
+	    $(MAKE) $(PASSMFLAGS) BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"; \
 	else \
-	    $(MAKE) $(MFLAGS) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"; \
+	    $(MAKE) $(PASSMFLAGS) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"; \
 	fi
 	-$(RM) xmakefile.bak; $(MV) xmakefile xmakefile.bak
-	$(MAKE) $(MFLAGS) xmakefile
-	$(MAKE) $(MFLAGS) $(MAKE_OPTS) Makefiles
-	$(MAKE) $(MFLAGS) $(MAKE_OPTS) includes
-	$(MAKE) $(MFLAGS) $(MAKE_OPTS) depend
-	$(MAKE) $(MFLAGS) $(MAKE_OPTS) $(WORLDOPTS)
+	$(MAKE) $(PASSMFLAGS) xmakefile
+	$(MAKE) $(PASSMFLAGS) $(MAKE_OPTS) Makefiles
+	$(MAKE) $(PASSMFLAGS) $(MAKE_OPTS) includes
+	$(MAKE) $(PASSMFLAGS) $(MAKE_OPTS) depend
+	$(MAKE) $(PASSMFLAGS) $(MAKE_OPTS) $(WORLDOPTS)
 	@echo ""
 	@date
 	@echo ""
@@ -163,14 +163,14 @@ Everything::
 	@echo :
 	@echo :
 	cd $(IMAKESRC)
-	$(MAKE) $(MFLAGS) -f Makefile.ini imake.exe
+	$(MAKE) $(PASSMFLAGS) -f Makefile.ini imake.exe
 	cd ..\..
 	RMoveToBakFile(xmakefile)
-	$(MAKE) $(MFLAGS) xmakefile
-	$(MAKE) $(MFLAGS) $(MAKE_OPTS) Makefiles
-	$(MAKE) $(MFLAGS) $(MAKE_OPTS) includes
-	$(MAKE) $(MFLAGS) $(MAKE_OPTS) depend
-	$(MAKE) $(MFLAGS) $(MAKE_OPTS) $(WORLDOPTS)
+	$(MAKE) $(PASSMFLAGS) xmakefile
+	$(MAKE) $(PASSMFLAGS) $(MAKE_OPTS) Makefiles
+	$(MAKE) $(PASSMFLAGS) $(MAKE_OPTS) includes
+	$(MAKE) $(PASSMFLAGS) $(MAKE_OPTS) depend
+	$(MAKE) $(PASSMFLAGS) $(MAKE_OPTS) $(WORLDOPTS)
 	@echo :
 	@echo :
 	@echo Rebuild of XFree86$(VERSTRING) complete.

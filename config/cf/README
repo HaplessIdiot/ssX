@@ -1,4 +1,4 @@
-$XFree86: xc/config/cf/README,v 1.26 2005/09/14 14:23:13 tsi Exp $
+$XFree86: xc/config/cf/README,v 1.27 2006/04/02 23:12:46 dickey Exp $
 
 The easiest way to write an Imakefile is to find another one that does
 something similar and copy/modify it!
@@ -20,7 +20,9 @@ Imake.tmpl provides defaults for the following variables:
 	CURDIR			current directory relative to top of sources
 	CcCmd			command to run C compiler
 	CompressCmd		command to run compress program
-	ConstructMFLAGS		System V option to set MFLAGS make variable
+	ConstructMFLAGS		Set MFLAGS to $(MAKEFLAGS)
+	ConstructMAKEFLAGS	Set MAKEFLAGS to $(MFLAGS)
+	PassMFLAGS		Include $(MFLAGS) in `make` command lines
 	CpCmd			command to copy one file to another
 	CplusplusCmd		command to run C++ compiler
 	CplusplusFilt		command to run C++ name demangler

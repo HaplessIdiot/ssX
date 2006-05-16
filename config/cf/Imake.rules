@@ -1,6 +1,6 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.148 2006/03/29 01:35:41 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.149 2006/04/03 15:59:08 dawes Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1720,7 +1720,7 @@ InstallNamedTargetNoClobber(install,srcname,$(INSTBINFLAGS),dest,dstname)
 #ifndef MakeNamedTargetSubdir
 #define MakeNamedTargetSubdir(dir,flags,subname)\
 		if [ -z "$$_fail" ]; then _fail="exit 1"; fi; \		@@\
-		(cd dir && $(MAKE) $(MFLAGS) $(PARALLELMFLAGS) \	@@\
+		(cd dir && $(MAKE) $(PASSMFLAGS) $(PARALLELMFLAGS) \	@@\
 			flags subname) || $$_fail
 #endif
 
@@ -3063,7 +3063,7 @@ name::									@@\
 	for i in dirs ;\						@@\
 	do \								@@\
 		echo verb "in $(CURRENT_DIR)/$$i..."; \			@@\
-		(cd $$i && LANG=lang $(MAKE) $(MFLAGS) flags subname);\ @@\
+		(cd $$i && LANG=lang $(MAKE) $(PASSMFLAGS) flags subname);\ @@\
 	done
 #endif
 
@@ -3146,7 +3146,7 @@ FRC:
 #define ForceSubdirs(dirs)						@@\
 dirs:	.EXEC								@@\
 	@cd $@ ; echo "making all in $(CURRENT_DIR)/$@..."; \		@@\
-	$(MAKE) $(MFLAGS) PassCDebugFlags all				@@\
+	$(MAKE) $(PASSMFLAGS) PassCDebugFlags all			@@\
 									@@\
 .EXEC:
 #endif
@@ -3325,10 +3325,10 @@ target::								@@\
 				$(MV) $$i/Makefile $$i/Makefile.bak; \	@@\
 			fi; \						@@\
 		fi; \							@@\
-		$(MAKE) $(MFLAGS) $(MAKE_OPTS) ONESUBDIR=$$i ONECURDIR=$$curdir IMAKETOP=$$imaketop IMAKEPREFIX=$$imakeprefix $$i/Makefile; \	@@\
+		$(MAKE) $(PASSMFLAGS) $(MAKE_OPTS) ONESUBDIR=$$i ONECURDIR=$$curdir IMAKETOP=$$imaketop IMAKEPREFIX=$$imakeprefix $$i/Makefile; \	@@\
 		if [ -d $$i ] ; then \					@@\
 			cd $$i; \					@@\
-			$(MAKE) $(MFLAGS) Makefiles; \			@@\
+			$(MAKE) $(PASSMFLAGS) Makefiles; \		@@\
 			cd $$newtop; \					@@\
 		else \							@@\
 			exit 1; \					@@\
