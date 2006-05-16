@@ -81,7 +81,7 @@ from The Open Group.
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.31tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.32tsi Exp $ */
 
 #if defined(WIN32)
 #include <X11/Xwinsock.h>
@@ -350,12 +350,12 @@ ddxProcessArgument(int argc, char *argv[], int i)
     {
 	int screenNum;
  	char *s;
-	if (i + 2 >= argc) UseMsg();
+	if (i + 2 >= argc) return 0;
 	screenNum = atoi(argv[i+1]);
 	if (screenNum < 0 || screenNum >= MAXSCREENS)
 	{
 	    ErrorF("Invalid screen number %d\n", screenNum);
-	    UseMsg();
+	    return 0;
 	}
 	s = strtok(argv[i+2], "@");
 	if (3 != sscanf(s, "%dx%dx%d",
@@ -364,7 +364,7 @@ ddxProcessArgument(int argc, char *argv[], int i)
 			&vfbScreens[screenNum].depth))
 	{
 	    ErrorF("Invalid screen configuration %s\n", s);
-	    UseMsg();
+	    return 0;
 	}
 	s = strtok(NULL, "@");
 	if (s)
@@ -374,7 +374,7 @@ ddxProcessArgument(int argc, char *argv[], int i)
 			    &vfbScreens[screenNum].yOrigin))
 	    {
 		ErrorF("Invalid screen position %s\n", s);
-		UseMsg();
+		return 0;
 	    }
 	}
 	else
@@ -393,13 +393,13 @@ ddxProcessArgument(int argc, char *argv[], int i)
     {
 	int depth, ret = 1;
 
-	if (++i >= argc) UseMsg();
+	if (++i >= argc) return 0;
 	while ((i < argc) && (depth = atoi(argv[i++])) != 0)
 	{
 	    if (depth < 0 || depth > 32)
 	    {
 		ErrorF("Invalid pixmap depth %d\n", depth);
-		UseMsg();
+		return 0;
 	    }
 	    vfbPixmapDepths[depth] = TRUE;
 	    ret++;
@@ -422,7 +422,7 @@ ddxProcessArgument(int argc, char *argv[], int i)
     if (strcmp (argv[i], "-blackpixel") == 0)	/* -blackpixel n */
     {
 	Pixel pix;
-	if (++i >= argc) UseMsg();
+	if (++i >= argc) return 0;
 	pix = atoi(argv[i]);
 	if (-1 == lastScreen)
 	{
@@ -442,7 +442,7 @@ ddxProcessArgument(int argc, char *argv[], int i)
     if (strcmp (argv[i], "-whitepixel") == 0)	/* -whitepixel n */
     {
 	Pixel pix;
-	if (++i >= argc) UseMsg();
+	if (++i >= argc) return 0;
 	pix = atoi(argv[i]);
 	if (-1 == lastScreen)
 	{
@@ -462,7 +462,7 @@ ddxProcessArgument(int argc, char *argv[], int i)
     if (strcmp (argv[i], "-linebias") == 0)	/* -linebias n */
     {
 	unsigned int linebias;
-	if (++i >= argc) UseMsg();
+	if (++i >= argc) return 0;
 	linebias = atoi(argv[i]);
 	if (-1 == lastScreen)
 	{
@@ -482,7 +482,7 @@ ddxProcessArgument(int argc, char *argv[], int i)
 #ifdef HAS_MMAP
     if (strcmp (argv[i], "-fbdir") == 0)	/* -fbdir directory */
     {
-	if (++i >= argc) UseMsg();
+	if (++i >= argc) return 0;
 	pfbdir = argv[i];
 	fbmemtype = MMAPPED_FILE_FB;
 	return 2;
