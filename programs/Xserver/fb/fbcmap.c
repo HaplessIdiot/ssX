@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/fb/fbcmap.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbcmap.c,v 1.8tsi Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -82,7 +82,13 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "resource.h"
 #include "fb.h"
 
-#ifndef XFree86Server
+#if 0
+
+/*
+ * Old version.  This isn't GLX-aware and doesn't respect Xvfb's specification
+ * of rootDepth.
+ */
+
 ColormapPtr FbInstalledMaps[MAXSCREENS];
 
 int
@@ -627,6 +633,7 @@ fbInitVisuals (VisualPtr    *visualp,
     *defaultVisp = depth[i].vids[j];
     return TRUE;
 }
+
 #else
 
 #include "micmap.h"
