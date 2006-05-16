@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.174 2006/02/17 22:13:05 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.175 2006/04/02 23:12:46 dickey Exp $
 XCOMM ----------------------------------------------------------------------
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -408,6 +408,11 @@ XCOMM the platform-specific parameters - edit site.def to change
 
 #ifndef ConstructMAKEFLAGS		/* needed on old BSD-based? */
 #define ConstructMAKEFLAGS	NO	/* build MAKEFLAGS from MFLAGS */
+#endif
+
+/* Some recursive `make`'s end up duplicating MFLAGS (and MAKEFLAGS) */
+#ifndef PassMFLAGS
+#define PassMFLAGS		YES
 #endif
 
 #ifndef HasLargeTmp
@@ -1969,6 +1974,9 @@ MODLDCOMBINEFLAGS = ModuleLdCombineFlags
 #endif
 #if ConstructMAKEFLAGS
         MAKEFLAGS = $(MFLAGS)
+#endif
+#if PassMFLAGS
+       PASSMFLAGS = $(MFLAGS)
 #endif
    PARALLELMFLAGS = ParallelMakeFlags
 #if HasSharedLibraries

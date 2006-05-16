@@ -1,4 +1,7 @@
 XFree86 4.6.99.1 (xx May 2006)
+  10. On OpenBSD, don't pass $(MFLAGS) on recursive make command lines, as
+      doing so causes its contents to be repeatedly duplicated
+      (Marc La France).
    9. Fix up "#!" lines in various python scripts (Marc La France).
    8. Fix build and segfaults in libGL on SPARCs (Marc La France).
    7. Merge in OpenBSD's lndir back in.  (An audit for "misused" functions of
@@ -20153,7 +20156,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3737 2006/05/16 14:57:09 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3738 2006/05/16 15:34:47 tsi Exp $
 
 
 

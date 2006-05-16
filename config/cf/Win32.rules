@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/Win32.rules,v 1.6 2004/03/25 03:36:21 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Win32.rules,v 1.7 2006/01/09 14:56:12 dawes Exp $
 
 #define HasSharedLibraries YES
 #define NeedLibInsideFlag YES
@@ -30,7 +30,7 @@ XCOMM $XFree86: xc/config/cf/Win32.rules,v 1.6 2004/03/25 03:36:21 dawes Exp $
 
 #define RemoveFile(file) if exist file $(RM) file
 
-#define RemoveFiles(files) @$(MAKE) $(MFLAGS) -f <<			@@\
+#define RemoveFiles(files) @$(MAKE) $(PASSMFLAGS) -f <<			@@\
 .SUFFIXES:								@@\
 									@@\
 all: files								@@\
@@ -55,7 +55,7 @@ Avoid.Error files:							@@\
 #define BuildIncludesTop(srclist,dstsubdir,dstupdir)			@@\
 includes:: srclist							@@\
 	MakeDir($(BUILDINCDIR:/=\))					@@\
-	@$(MAKE) $(MFLAGS) -f <<					@@\
+	@$(MAKE) $(PASSMFLAGS) -f <<					@@\
 .SUFFIXES:								@@\
 									@@\
 all: srclist								@@\
@@ -72,7 +72,7 @@ XVARdef1 = $(BUILDINCTOP)/dstupdir/$(CURRENT_DIR)			@@\
 									@@\
 includes:: srclist							@@\
 	MakeDir($(XVARuse0:/=\))					@@\
-	@$(MAKE) -A $(MFLAGS) -f <<					@@\
+	@$(MAKE) -A $(PASSMFLAGS) -f <<					@@\
 .SUFFIXES:								@@\
 									@@\
 all: srclist								@@\
@@ -297,7 +297,7 @@ $(DEPENDFLAGS) -- $(ALLDEFINES) $(DEPEND_DEFINES) -- srcs1 srcs2 srcs3	@@\
 Avoid.Error dirs: FRC							@@\
 	@cd $@								@@\
 	@echo making all in $(CURRENT_DIR)/$@...			@@\
-	$(MAKE) $(MFLAGS) PassCDebugFlags all				@@\
+	$(MAKE) $(PASSMFLAGS) PassCDebugFlags all			@@\
 	cd ..								@@\
 									@@\
 FRC:
@@ -307,7 +307,7 @@ XVARdef0 = dirs								@@\
 XVARdef1 = $$								@@\
 									@@\
 target::								@@\
-	@$(MAKE) -A $(MFLAGS) -f <<					@@\
+	@$(MAKE) -A $(PASSMFLAGS) -f <<					@@\
 .SUFFIXES:								@@\
 									@@\
 all: $(XVARuse0:/=\)							@@\
@@ -316,7 +316,7 @@ Avoid.Error $(XVARuse0:/=\):						@@\
 	cd $(XVARuse1)@							@@\
 	RMoveToBakFile(Makefile)					@@\
 	ImakeSubCmdHelper -DTOPDIR=../$(TOP) -DCURDIR=$(CURRENT_DIR)/$(XVARuse1)@ @@\
-	$(MAKE) $(MFLAGS) Makefiles					@@\
+	$(MAKE) $(PASSMFLAGS) Makefiles					@@\
 	cd ..								@@\
 <<
 
@@ -332,7 +332,7 @@ XVARdef0 = dirs								@@\
 XVARdef1 = $$								@@\
 									@@\
 name::									@@\
-	@$(MAKE) -A $(MFLAGS) -f <<					@@\
+	@$(MAKE) -A $(PASSMFLAGS) -f <<					@@\
 .SUFFIXES:								@@\
 									@@\
 all: $(XVARuse0:/=\)							@@\
@@ -340,7 +340,7 @@ all: $(XVARuse0:/=\)							@@\
 Avoid.Error $(XVARuse0:/=\):						@@\
 	cd $(XVARuse1)@							@@\
 	@echo verb in $(CURRENT_DIR)/$(XVARuse1)@...			@@\
-	$(MAKE) $(MFLAGS) flags subname					@@\
+	$(MAKE) $(PASSMFLAGS) flags subname				@@\
 	cd ..								@@\
 <<
 

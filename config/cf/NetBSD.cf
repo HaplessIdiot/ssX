@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.130 2006/03/06 15:58:01 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.131 2006/04/25 02:50:27 dawes Exp $
 
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
@@ -497,7 +497,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define ForceSubdirs(dirs)						@@\
 dirs:	.EXEC								@@\
 	@cd $@ ; echo "making all in $(CURRENT_DIR)/$@..."; \		@@\
-	$(MAKE) $(MFLAGS) PassCDebugFlags all				@@\
+	$(MAKE) $(PASSMFLAGS) PassCDebugFlags all			@@\
 									@@\
 .EXEC:
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.19tsi Exp $
+XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.20 2005/10/14 15:15:52 tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -201,7 +201,7 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.19tsi Exp $
 #define MesaUseX86Asm		NO
 
 #define MakeNamedTargetSubdir(dir,flags,subname)\
-	$(MAKE) -C dir $(MFLAGS) $(PARALLELMFLAGS) flags subname
+	$(MAKE) -C dir $(PASSMFLAGS) $(PARALLELMFLAGS) flags subname
 
 #define ArCmdBase               ar
 #define AsCmd                   CcCmd

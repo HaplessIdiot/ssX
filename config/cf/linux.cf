@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.240 2006/02/20 00:43:00 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.241 2006/04/02 23:12:46 dickey Exp $
 
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
@@ -998,7 +998,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #define HasGnuMake		YES
 
 #define MakeNamedTargetSubdir(dir,flags,subname)\
-	$(MAKE) -C dir $(MFLAGS) $(PARALLELMFLAGS) flags subname
+	$(MAKE) -C dir $(PASSMFLAGS) $(PARALLELMFLAGS) flags subname
 
 #define ArchitectureDefines	-DLINUX_ARCHITECTURE
 
