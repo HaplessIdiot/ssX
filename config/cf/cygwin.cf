@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.62tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.63tsi Exp $
 
 #ifndef OSName
 # define OSName                 Cygwin
@@ -301,7 +301,6 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.62tsi Exp $
 #define BuildXCSecurity		YES
 #define BuildAppgroup		YES
 #define BuildShapeExt		YES
-#define BuildScanpci		NO	/* No direct access to hardware */
 
 #define BuildScreenSaverExt	NO
 

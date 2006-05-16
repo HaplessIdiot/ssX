@@ -1,4 +1,6 @@
 XFree86 4.6.99.1 (xx May 2006)
+   3. Remove BuildScanpci imake symbol and build scanpci on all platforms that
+      also build pcitweak (Marc La France).
    2. On the *BSD's, if the OS disallows r/w access to PCI configuration space,
       attempt to proceed with read-only access.  Also, do not FatalError should
       read-only access not be allowed either.  This allows, for example,
@@ -20142,7 +20144,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3732 2006/05/16 13:43:41 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3733 2006/05/16 13:51:37 tsi Exp $
 
 
 
