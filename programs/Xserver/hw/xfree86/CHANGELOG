@@ -1,4 +1,6 @@
 XFree86 4.6.99.1 (xx May 2006)
+   1. Fix ATIProbe() buglet that can prevent detection of non-PCI adapters on
+      OS'es that provide only estimates of PCI resource sizes (Marc La France).
 
 XFree86 4.6.0 (10 May 2006)
  281. Xterm patch #213 (Thomas Dickey).
@@ -20135,7 +20137,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3730 2006/05/10 00:25:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3731 2006/05/12 01:51:25 dawes Exp $
 
 
 

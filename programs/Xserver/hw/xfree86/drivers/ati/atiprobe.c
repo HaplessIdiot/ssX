@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.72tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.73tsi Exp $ */
 /*
  * Copyright 1997 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -115,6 +115,8 @@ typedef struct
     CARD16 Base;
     CARD8  Size;
     CARD8  Flag;
+    CARD8  Flag2;
+    CARD8  Pad[7];
 } PortRec, *PortPtr;
 
 /* BIOS definitions */
@@ -140,10 +142,11 @@ ATIScanPCIBases
 (
     PortPtr      *PCIPorts,
     int          *nPCIPort,
-    const int     Domain,
+    const int    Domain,
     const CARD32 *pBase,
     const int    *pSize,
-    const CARD8  ProbeFlag
+    const CARD8  ProbeFlag,
+    const CARD8  ProbeFlag2
 )
 {
     CARD16 Base;
@@ -168,6 +171,7 @@ ATIScanPCIBases
                     (*PCIPorts)[j].Base = Base;
                     (*PCIPorts)[j].Size = (CARD8)*pSize;
                     (*PCIPorts)[j].Flag = ProbeFlag;
+                    (*PCIPorts)[j].Flag2 = ProbeFlag2;
                     break;
                 }
 
@@ -1147,7 +1151,7 @@ ATIProbe
     static const CARD16 Mach64SparseIOBases[] = {0x02ECU, 0x01CCU, 0x01C8U};
     CARD16              Mach64SparseIOBase;
     CARD8               fChipsets[ATI_CHIPSET_MAX];
-    CARD8               ProbeFlag;
+    CARD8               ProbeFlag, ProbeFlag2;
 
     unsigned long       BIOSBase;
     CARD8               BIOS[PrefixSize];
@@ -1257,10 +1261,23 @@ ATIProbe
                 if ((pVideo->vendor == PCI_VENDOR_ATI))
                     continue;
 
+                if (!(pciReadLong(pPCI->tag, PCI_CMD_STAT_REG) &
+                      PCI_CMD_IO_ENABLE))
+                {
+                    ProbeFlag = ProbeFlag2 = Allowed;
+                }
+                else
+                {
+                    ProbeFlag = 0;
+                    if (pPCI->minBasesize)
+                        ProbeFlag2 = 0;
+                    else
+                        ProbeFlag2 = Allowed;
+                }
+
                 ATIScanPCIBases(&PCIPorts, &nPCIPort,
                     Domain, &pPCI->pci_base0, pVideo->size,
-                    (pciReadLong(pPCI->tag, PCI_CMD_STAT_REG) &
-                     PCI_CMD_IO_ENABLE) ? 0 : Allowed);
+                    ProbeFlag, ProbeFlag2);
             }
         }
 
@@ -1279,10 +1296,23 @@ ATIProbe
                       ~GetByte(PCI_HEADER_MULTIFUNCTION, 2)))
                     continue;
 
+                if (!(pciReadLong(pPCI->tag, PCI_CMD_STAT_REG) &
+                      PCI_CMD_IO_ENABLE))
+                {
+                    ProbeFlag = ProbeFlag2 = Allowed;
+                }
+                else
+                {
+                    ProbeFlag = Conflict;
+                    if (pPCI->minBasesize)
+                        ProbeFlag2 = Conflict;
+                    else
+                        ProbeFlag2 = Allowed;
+                }
+
                 ATIScanPCIBases(&PCIPorts, &nPCIPort,
                     Domain, &pPCI->pci_base0, pPCI->basesize,
-                    (pciReadLong(pPCI->tag, PCI_CMD_STAT_REG) &
-                     PCI_CMD_IO_ENABLE) ? Conflict : Allowed);
+                    ProbeFlag, ProbeFlag2);
             }
         }
 
@@ -1299,6 +1329,7 @@ ATIProbe
 
             Domain = PCIPorts[i].Domain;
             ProbeFlag = PCIPorts[i].Flag;
+            ProbeFlag2 = PCIPorts[i].Flag2;
 
             /*
              * The following reduction of Count is based on the assumption that
@@ -1316,7 +1347,12 @@ ATIProbe
             Base = LongPort(Base) + (PCIPorts[i].Domain * DomainSize);
             Count = LongPort((Count | IO_BYTE_SELECT) + 1);
             while (Count--)
-                ProbeFlags[Base++] &= ProbeFlag;
+            {
+                if ((ProbeFlag != Allowed) || (ProbeFlags[Base] & Allowed))
+                    ProbeFlags[Base] = ProbeFlag;
+                Base++;
+                ProbeFlag = ProbeFlag2;
+            }
         }
 
         xfree(PCIPorts);
