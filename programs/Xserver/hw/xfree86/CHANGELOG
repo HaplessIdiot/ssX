@@ -1,4 +1,6 @@
 XFree86 4.6.99.1 (xx May 2006)
+   9. Fix up "#!" lines in various python scripts (Marc La France).
+   8. Fix build and segfaults in libGL on SPARCs (Marc La France).
    7. Merge in OpenBSD's lndir back in.  (An audit for "misused" functions of
       the entire tree to be done later.)  (Marc La France).
    6. Fix misuse of S_IF* stat(2) macros throughout the source tree
@@ -20151,7 +20153,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3736 2006/05/16 14:10:45 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3737 2006/05/16 14:57:09 tsi Exp $
 
 
 
