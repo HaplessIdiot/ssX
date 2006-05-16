@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/freebsdPci.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/freebsdPci.c,v 1.7tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -121,8 +121,19 @@ void
 freebsdPciInit()
 {
 	pciFd = open("/dev/pci", O_RDWR);
-	if (pciFd < 0)
-		return;
+	if (pciFd < 0) {
+		if (errno != EPERM)
+			return;
+
+		/* Try again without write access */
+		pciFd = open("/dev/pci", O_RDONLY);
+		if (pciFd < 0)
+			return;
+
+		xf86MsgVerb(X_WARNING, 3,
+			"OS limits PCI configuration space access to"
+			" read-only\n");
+	}
 
 	pciNumBuses    = 1;
 	pciBusInfo[0]  = &freebsdPci0;

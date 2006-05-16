@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/netbsdPci.c,v 1.4 2003/08/24 17:37:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/netbsdPci.c,v 1.5tsi Exp $ */
 /*
  * Copyright (C) 1994-2003 The XFree86 Project, Inc.
  * All rights reserved.
@@ -90,8 +90,19 @@ netbsdPciInit()
 	struct pciio_businfo pci_businfo;
 
 	devpci = open("/dev/pci0", O_RDWR);
-	if (devpci == -1)
-		FatalError("netbsdPciInit: can't open /dev/pci0\n");
+	if (devpci < 0) {
+		if (errno != EPERM)
+			return;
+
+		/* Try again without write access */
+		devpci = open("/dev/pci0", O_RDONLY);
+		if (devpci < 0)
+			return;
+
+		xf86MsgVerb(X_WARNING, 3,
+			"OS limits PCI configuration space access to"
+			" read-only\n");
+	}
 
 	pciNumBuses    = 1;
 	pciBusInfo[0]  = &netbsdPci0;
