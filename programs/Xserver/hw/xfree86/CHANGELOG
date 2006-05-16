@@ -1,4 +1,6 @@
 XFree86 4.6.99.1 (xx May 2006)
+  11. Change makedepend to not warn about #pragma's that don't start in column
+      one (Marc La France).
   10. On OpenBSD, don't pass $(MFLAGS) on recursive make command lines, as
       doing so causes its contents to be repeatedly duplicated
       (Marc La France).
@@ -20156,7 +20158,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3738 2006/05/16 15:34:47 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3739 2006/05/16 16:01:50 tsi Exp $
 
 
 

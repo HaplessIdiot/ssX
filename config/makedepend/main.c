@@ -23,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/main.c,v 3.34 2004/03/13 23:52:23 tsi Exp $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.35tsi Exp $ */
 
 #include "def.h"
 #ifdef hpux
@@ -704,6 +704,11 @@ char *getnextline(struct filepointer *filep)
 				/* punt lines with just # (yacc generated) */
 				for (cp = bol+1;
 				     *cp && (*cp == ' ' || *cp == '\t'); cp++);
+				/*
+				 * TurboC seems to want its pragmas in column
+				 * 2.
+				 */
+				if (!strcmp(cp, "pragma")) whitespace = FALSE;
 				if (*cp) goto done;
 				--p;
 			}
