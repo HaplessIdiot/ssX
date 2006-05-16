@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/env python
 
 # (C) Copyright IBM Corporation 2004
 # All Rights Reserved.
@@ -24,6 +24,8 @@
 #
 # Authors:
 #    Ian Romanick <idr@us.ibm.com>
+#
+# $XFree86$
 
 from xml.sax import saxutils
 from xml.sax import make_parser
@@ -50,15 +52,15 @@ class PrintGlProcs(gl_XML.FilterGLAPISpecBase):
 		print ' */'
 		print ''
 		print 'typedef struct {'
-		print '    int Name_offset;'
+		print '    GLint Name_offset;'
 		print '#ifdef NEED_FUNCTION_POINTER'
-		print '    void * Address;'
+		print '    _glapi_proc Address;'
 		print '#endif'
-		print '    unsigned int Offset;'
+		print '    GLuint Offset;'
 		print '} glprocs_table_t;'
 		print ''
 		print '#ifdef NEED_FUNCTION_POINTER'
-		print '#  define NAME_FUNC_OFFSET(n,f,o) { n , (void *) f , o }'
+		print '#  define NAME_FUNC_OFFSET(n,f,o) { n , (_glapi_proc) f , o }'
 		print '#else'
 		print '#  define NAME_FUNC_OFFSET(n,f,o) { n , o }'
 		print '#endif'
@@ -132,7 +134,7 @@ class PrintGlProcs(gl_XML.FilterGLAPISpecBase):
 
 			base_offset += len(self.functions[k].name) + 3
 
-		print '    NAME_FUNC_OFFSET( -1, NULL, -1 )'
+		print '    NAME_FUNC_OFFSET( -1, NULL, 0 )'
 		print '};'
 		return
 

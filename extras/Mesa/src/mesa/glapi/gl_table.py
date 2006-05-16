@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/env python
 
 # (C) Copyright IBM Corporation 2004
 # All Rights Reserved.
@@ -24,6 +24,8 @@
 #
 # Authors:
 #    Ian Romanick <idr@us.ibm.com>
+#
+# $XFree86$
 
 from xml.sax import saxutils
 from xml.sax import make_parser

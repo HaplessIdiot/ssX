@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.29tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.30tsi Exp $ */
 
 /*
 ** License Applicability. Except to the extent portions of this file are
@@ -74,6 +74,10 @@ void __glXDumpDrawBuffer(__GLXcontext *ctx);
 #endif
 
 #ifdef USE_SPARC_ASM
+#if defined(__OpenBSD__) || defined(__NetBSD__)
+#include <unistd.h>
+#endif
+
 /*
  * This is where our dispatch table's bounds are.
  * And the static mesa_init is taken directly from
@@ -1813,12 +1817,11 @@ void __glXDumpDrawBuffer(__GLXcontext *ctx)
 }
 #endif
 
-#ifdef  USE_SPARC_ASM
+#ifdef USE_SPARC_ASM
 /*
  * Used only when we are sparc, using sparc assembler.
  *
  */
-
 static void
 _glx_mesa_init_sparc_glapi_relocs(void)
 {
@@ -1830,42 +1833,68 @@ _glx_mesa_init_sparc_glapi_relocs(void)
 	disp_addr = (unsigned long) &_glapi_Dispatch;
 
 	/*
-         * Verbatim from Mesa sparc.c.  It's needed because there doesn't
-         * seem to be a better way to do this:
-         *
-         * UNCONDITIONAL_JUMP ( (*_glapi_Dispatch) + entry_offset )
-         *
-         * This code is patching in the ADDRESS of the pointer to the
-         * dispatch table.  Hence, it must be called exactly once, because
-         * that address is not going to change.
-         *
-         * What it points to can change, but Mesa (and hence, we) assume
-         * that there is only one pointer.
-         *
+	 * Verbatim from Mesa sparc.c.  It's needed because there doesn't seem
+	 * to be a better way to do this:
+	 *
+	 * UNCONDITIONAL_JUMP ( (*_glapi_Dispatch) + entry_offset )
+	 *
+	 * This code is patching in the ADDRESS of the pointer to the dispatch
+	 * table.  Hence, it must be called exactly once, because that address
+	 * is not going to change.
+	 *
+	 * What it points to can change, but Mesa (and hence, we) assume
+	 * that there is only one pointer.
 	 */
-	while (insn_ptr < end_ptr) {
-#if ( defined(__sparc_v9__) && ( !defined(__linux__) || defined(__linux_64__) ) )	
-/*
-	This code patches for 64-bit addresses.  This had better
-	not happen for Sparc/Linux, no matter what architecture we
-	are building for.  So, don't do this.
 
-        The 'defined(__linux_64__)' is used here as a placeholder for
-        when we do do 64-bit usermode on sparc linux.
-	*/
+#if defined(__OpenBSD__) || defined(__NetBSD__)
+	{	/* Re-protect to allow instruction execution */
+		unsigned long mask = getpagesize() - 1;
+		unsigned long base = (unsigned long)insn_ptr & ~mask;
+		unsigned long size = (((unsigned long)end_ptr + mask) &
+				      ~mask) - base;
+
+		mprotect((void *)base, size,
+			 PROT_READ | PROT_WRITE | PROT_EXEC);
+	}
+#endif
+
+	while (insn_ptr < end_ptr) {
+
+#define all_ones ((unsigned long)(-1L))
+
+#if defined(__sparc_v9__) && (!defined(__linux__) || defined(__linux_64__))	
+
+		/*
+		 * This code patches for 64-bit addresses.  This had better not
+		 * happen for Sparc/Linux, no matter what architecture we are
+		 * building for.  So, don't do this.
+		 *
+		 * The 'defined(__linux_64__)' is used here as a placeholder
+		 * for when we do do 64-bit usermode on sparc linux.
+		 */
+		insn_ptr[0] &= ~(all_ones >> (32 + 10));
 		insn_ptr[0] |= (disp_addr >> (32 + 10));
+		insn_ptr[1] &= ~((all_ones & 0xffffffff) >> 10);
 		insn_ptr[1] |= ((disp_addr & 0xffffffff) >> 10);
 		__glapi_sparc_icache_flush(&insn_ptr[0]);
+		insn_ptr[2] &= ~((all_ones >> 32) & ((1 << 10) - 1));
 		insn_ptr[2] |= ((disp_addr >> 32) & ((1 << 10) - 1));
+		insn_ptr[3] &= ~(all_ones & ((1 << 10) - 1));
 		insn_ptr[3] |= (disp_addr & ((1 << 10) - 1));
 		__glapi_sparc_icache_flush(&insn_ptr[2]);
 		insn_ptr += 11;
+
 #else
+
+		insn_ptr[0] &= ~(all_ones >> 10);
 		insn_ptr[0] |= (disp_addr >> 10);
+		insn_ptr[1] &= ~(all_ones & ((1 << 10) - 1));
 		insn_ptr[1] |= (disp_addr & ((1 << 10) - 1));
 		__glapi_sparc_icache_flush(&insn_ptr[0]);
 		insn_ptr += 5;
+
 #endif
+
 	}
 }
 #endif  /* sparc ASM in use */

@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/env python
 
 # (C) Copyright IBM Corporation 2004
 # All Rights Reserved.
@@ -24,6 +24,8 @@
 #
 # Authors:
 #    Ian Romanick <idr@us.ibm.com>
+#
+# $XFree86$
 
 from xml.sax import saxutils
 from xml.sax import make_parser
@@ -48,7 +50,7 @@ class PrintGenericStubs(gl_XML.FilterGLAPISpecBase):
 		print ''
 		print '#define GLOBL_FN(x) .globl x ; .type x,#function'
 		print ''
-		print '#if defined(__sparc_v9__) && !defined(__linux__)'
+		print '#if (defined(__sparc_v9__) && (!defined(__linux__) || defined(__linux_sparc_64__)))'
 		print '#  define GL_STUB(fn,off)\t\t\t\t\\'
 		print 'GLOBL_FN(fn) ; fn:\t\t\t\t\t\\'
 		print '\tsethi\t%hi(0x00000000), %g4 ;\t\t\t\\'
