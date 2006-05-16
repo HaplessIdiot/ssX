@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.35 2003/11/17 22:20:09 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.36tsi Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -270,7 +270,7 @@ _XkbGetCharset()
 #else
         char *cf = __XOS2RedirRoot(CHARSET_FILE);
 #endif
-	if ( (stat(cf,&sbuf)==0) && (sbuf.st_mode&S_IFREG) &&
+	if ( (stat(cf,&sbuf)==0) && ((sbuf.st_mode&S_IFMT) == S_IFREG) &&
 	    (file = fopen(cf,"r")) ) {
 	    tmp = _XkbAlloc(sbuf.st_size+1);
 	    if (tmp!=NULL) {
