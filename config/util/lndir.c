@@ -1,4 +1,4 @@
-/* $XFree86: xc/config/util/lndir.c,v 3.19tsi Exp $ */
+/* $XFree86: xc/config/util/lndir.c,v 3.20tsi Exp $ */
 /* Create shadow link tree (after X11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 
@@ -30,8 +30,8 @@ in this Software without prior written authorization from The Open Group.
 /* From the original /bin/sh script:
 
   Used to create a copy of the a directory tree that has links for all
-  non-directories (except, by default, those named BitKeeper, RCS, SCCS
-  or CVS.adm).  If you are building the distribution on more than one
+  non-directories (except, by default, those named BitKeeper, RCS, SCCS,
+  CVS.adm, or .svn).  If you are building the distribution on more than one
   machine, you should use this technique.
 
   If your master sources are located in /usr/local/src/X and you would like
@@ -51,20 +51,12 @@ in this Software without prior written authorization from The Open Group.
 #endif
 #include <errno.h>
 
-#ifndef X_NOT_POSIX
-#include <dirent.h>
-#else
-#ifdef SYSV
-#include <dirent.h>
-#else
-#ifdef USG
+#if !defined(X_NOT_POSIX) || defined(SYSV) || defined(USG)
 #include <dirent.h>
 #else
 #include <sys/dir.h>
 #ifndef dirent
 #define dirent direct
-#endif
-#endif
 #endif
 #endif
 #ifndef MAXPATHLEN
@@ -73,9 +65,16 @@ in this Software without prior written authorization from The Open Group.
 
 #include <stdarg.h>
 
-int silent = 0;			/* -silent */
-int ignore_links = 0;		/* -ignorelinks */
-int with_revinfo = 0;		/* -withrevinfo */
+struct except {
+    char *name;
+    struct except *next;
+};
+
+static int silent = 0;			/* -silent */
+static int ignore_links = 0;		/* -ignorelinks */
+static int with_revinfo = 0;		/* -withrevinfo */
+static int no_exceptions = 0;
+static struct except *exceptions = 0;
 
 char *rcurdir;
 char *curdir;
@@ -122,7 +121,6 @@ mperror (char *s)
     perror (s);
 }
 
-
 static int 
 equivalent(char *lname, char *rname, char **p)
 {
@@ -139,6 +137,21 @@ equivalent(char *lname, char *rname, char **p)
     return !strcmp(lname, rname);
 }
 
+static void
+add_exception(char *name)
+{
+    struct except *new = malloc(sizeof(struct except));
+
+    if (!new)
+	quiterr(1, name);
+
+    new->name = strdup(name);
+    if (!new->name)
+	quiterr(1, name);
+
+    new->next = exceptions;
+    exceptions = new;
+}
 
 /* Recursively create symbolic links from the current directory to the "from"
    directory.  Assumes that files described by fs and ts are directories. */
@@ -159,6 +172,7 @@ dodir (char *fn,		/* name of "from" directory, either absolute or
     int symlen;
     int basesymlen = -1;
     char *ocurdir;
+    struct except *cur;
 
     if ((fs->st_dev == ts->st_dev) && (fs->st_ino == ts->st_ino)) {
 	msg ("%s: From and to directories are identical!", fn);
@@ -181,14 +195,21 @@ dodir (char *fn,		/* name of "from" directory, either absolute or
 	*p++ = '/';
     n_dirs = fs->st_nlink;
     while ((dp = readdir (df))) {
-	if (dp->d_name[strlen(dp->d_name) - 1] == '~')
-	    continue;
-#ifdef __DARWIN__
-	/* Ignore these Mac OS X Finder data files */
-	if (!strcmp(dp->d_name, ".DS_Store") || 
-	    !strcmp(dp->d_name, "._.DS_Store")) 
-	    continue;
-#endif
+	if (!no_exceptions) {
+	    if ((strlen(dp->d_name) <= 0) ||
+		(dp->d_name[strlen(dp->d_name) - 1] == '~') ||
+		((dp->d_name[0] == '.') && (dp->d_name[1] == '#')))
+		continue;
+	    /* Ignore these Mac OS X Finder data files */
+	    if (!strcmp(dp->d_name, ".DS_Store") || 
+		!strcmp(dp->d_name, "._.DS_Store")) 
+		continue;
+	}
+
+	for (cur = exceptions;  cur;  cur = cur->next)
+	    if (!strcmp(dp->d_name, cur->name))
+		goto next;
+
 	strcpy (p, dp->d_name);
 
 	if (n_dirs > 0) {
@@ -200,7 +221,7 @@ dodir (char *fn,		/* name of "from" directory, either absolute or
 #ifdef S_ISDIR
 	    if(S_ISDIR(sb.st_mode))
 #else
-	    if (sb.st_mode & S_IFDIR) 
+	    if ((sb.st_mode & S_IFMT) == S_IFDIR) 
 #endif
 	    {
 		/* directory */
@@ -325,6 +346,7 @@ dodir (char *fn,		/* name of "from" directory, either absolute or
 	    if (symlink (sympath, dp->d_name) < 0)
 		mperror (dp->d_name);
 	}
+next:;
     }
 
     closedir (df);
@@ -339,12 +361,26 @@ main (int ac, char *av[])
     struct stat fs, ts;
 
     while (++av, --ac) {
-	if (strcmp(*av, "-silent") == 0)
+	if ((strcmp(*av, "-silent") == 0) ||
+	    (strcmp(*av, "-s") == 0))
 	    silent = 1;
-	else if (strcmp(*av, "-ignorelinks") == 0)
+	else if ((strcmp(*av, "-ignorelinks") == 0) ||
+		 (strcmp(*av, "-i") == 0))
 	    ignore_links = 1;
-	else if (strcmp(*av, "-withrevinfo") == 0)
+	else if ((strcmp(*av, "-withrevinfo") == 0) ||
+		 (strcmp(*av, "-r") == 0))
 	    with_revinfo = 1;
+	else if ((strcmp(*av, "-noexceptions") == 0) ||
+		 (strcmp(*av, "-E") == 0))
+	    no_exceptions = 1;
+	else if ((ac > 2) &&
+		 ((strcmp(*av , "-except") == 0) ||
+		  (strcmp(*av, "-e") == 0))) {
+	    av++;
+	    ac--;
+
+	    add_exception(*av);
+	}
 	else if (strcmp(*av, "--") == 0) {
 	    ++av, --ac;
 	    break;
@@ -354,7 +390,7 @@ main (int ac, char *av[])
     }
 
     if (ac < 1 || ac > 2)
-	quit (1, "usage: %s [-silent] [-ignorelinks] fromdir [todir]",
+	quit (1, "usage: %s [-s] [-i] [-E] [-r] [-e <filename>] ... fromdir [todir]",
 	      prog_name);
 
     fn = av[0];
@@ -369,7 +405,7 @@ main (int ac, char *av[])
 #ifdef S_ISDIR
     if (!(S_ISDIR(ts.st_mode)))
 #else
-    if (!(ts.st_mode & S_IFDIR))
+    if ((ts.st_mode & S_IFMT) != S_IFDIR)
 #endif
 	quit (2, "%s: Not a directory", tn);
     if (chdir (tn) < 0)
@@ -381,7 +417,7 @@ main (int ac, char *av[])
 #ifdef S_ISDIR
     if (!(S_ISDIR(fs.st_mode)))
 #else
-    if (!(fs.st_mode & S_IFDIR))
+    if ((fs.st_mode & S_IFMT) != S_IFDIR)
 #endif
 	quit (2, "%s: Not a directory", fn);
 

@@ -22,7 +22,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/config/util/checktree.c,v 1.4 2001/12/14 19:53:22 dawes Exp $ */
+/* $XFree86: xc/config/util/checktree.c,v 1.5tsi Exp $ */
 
 #include <X11/Xos.h>
 #include <stdio.h>
@@ -100,18 +100,18 @@ checkfile(fullname, fn, fs)
     if (len > maxlen && !dontcare(fn))
 	printf("too long (%d): %s\n", len, fullname);
 #ifdef S_IFLNK
-    if ((fs->st_mode & S_IFLNK) == S_IFLNK) {
+    if ((fs->st_mode & S_IFMT) == S_IFLNK) {
 	printf("symbolic link: %s\n", fullname);
 	return;
     }
 #endif
     mode = fs->st_mode & (~S_IFMT);
-    if ((fs->st_mode & S_IFDIR) == S_IFDIR) {
+    if ((fs->st_mode & S_IFMT) == S_IFDIR) {
 	maxlen = 14;
 	if ((mode & dmode_bits_minset) != dmode_bits_minset)
 	    printf("directory mode 0%o not minimum 0%o: %s\n",
 		   mode, dmode_bits_minset, fullname);
-    } else if ((fs->st_mode & S_IFREG) != S_IFREG)
+    } else if ((fs->st_mode & S_IFMT) != S_IFREG)
 	printf("not a regular file: %s\n", fullname);
     else {
 	if ((mode & fmode_bits_minset) != fmode_bits_minset)
@@ -234,7 +234,7 @@ checkdir(dir)
 	    perror(dir);
 	    continue;
 	}
-	if ((fs.st_mode & S_IFDIR) == S_IFDIR) {
+	if ((fs.st_mode & S_IFMT) == S_IFDIR) {
 	    if (dp->d_name[0] == '.' &&
 		(dp->d_name[1] == '\0' || (dp->d_name[1] == '.' &&
 					   dp->d_name[2] == '\0')))

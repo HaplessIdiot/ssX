@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/util/Imakefile,v 3.50 2003/11/12 00:10:24 dawes Exp $
+XCOMM $XFree86: xc/config/util/Imakefile,v 3.51tsi Exp $
 
 CCMDEP_PROG = ccmakedep
 
@@ -71,14 +71,12 @@ CppScriptTarget(ccmakedep,mdepend.cpp,-DPREPROC='"'"$(PREPROCESSCMD_MKDEPEND)"'"
 CppScriptTarget(mergelib,mergelib.cpp,"-DARCMD=$(AR)" "-DRANLIB=$(RANLIB)",$(ICONFIGFILES))
 CppScriptTarget(gccmakedep,gccmdep.cpp,-DCCCMD='"'"$(GCCCMD)"'"' -DRMCMD='"'"$(RM)"'"' -DLNCMD='"'"$(LN)"'"' -DMVCMD='"'"$(MV)"'"',$(ICONFIGFILES))
 
-#ifndef OpenBSDArchitecture
 #if HasSymLinks
 #if CrossCompiling
 SimpleHostProgramTarget_2(lndir)
 #else
 AllTarget(lndir)
 SimpleProgramTarget_2(lndir)
-#endif
 #endif
 #endif
 
