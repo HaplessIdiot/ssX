@@ -1,4 +1,5 @@
 XFree86 4.6.99.1 (xx May 2006)
+   4. Fix segfaults in Xvfb's command line parsing (Marc La France).
    3. Remove BuildScanpci imake symbol and build scanpci on all platforms that
       also build pcitweak (Marc La France).
    2. On the *BSD's, if the OS disallows r/w access to PCI configuration space,
@@ -20144,7 +20145,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3733 2006/05/16 13:51:37 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3734 2006/05/16 14:01:21 tsi Exp $
 
 
 
