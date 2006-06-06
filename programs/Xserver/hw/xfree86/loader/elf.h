@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elf.h,v 1.16 2003/06/12 14:12:34 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elf.h,v 1.17 2003/10/15 16:29:02 dawes Exp $ */
 
 typedef unsigned int Elf32_Addr;
 typedef unsigned short Elf32_Half;
@@ -273,6 +273,7 @@ extern Elf32_Dyn _DYNAMIC[];
 #define R_ALPHA_GLOB_DAT	25	/* Create GOT entry */
 #define R_ALPHA_JMP_SLOT	26	/* Create PLT entry */
 #define R_ALPHA_RELATIVE	27	/* Adjust by program base */
+#define R_ALPHA_BRSGP		28	/* Calc displacement for BRS */
 
 /* IA-64 relocations.  */
 #define R_IA64_NONE		0x00	/* none */
