@@ -1,4 +1,6 @@
-XFree86 4.6.99.1 (xx June 2006)
+XFree86 4.6.99.2 (xx June 2006)
+
+XFree86 4.6.99.1 (7 June 2006)
   12. Add support to the elf loader for Alpha relocation type 28 (adapted from
       Bugzilla #1665, Jay Estabrook, reported by Will L G).
   11. Change makedepend to not warn about #pragma's that don't start in column
@@ -20160,7 +20162,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3740 2006/05/16 16:04:46 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3741 2006/06/06 01:20:42 dawes Exp $
 
 
 
