@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/netbsdPci.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/netbsdPci.c,v 1.6tsi Exp $ */
 /*
  * Copyright (C) 1994-2003 The XFree86 Project, Inc.
  * All rights reserved.
@@ -88,6 +88,10 @@ void
 netbsdPciInit()
 {
 	struct pciio_businfo pci_businfo;
+
+	/* Always prefer a hardware-derived mechanism over an OS-provided one */
+	if (pciNumBuses)
+		return;
 
 	devpci = open("/dev/pci0", O_RDWR);
 	if (devpci < 0) {
