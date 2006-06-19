@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.92tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.93 2005/10/14 15:16:32 tsi Exp $ */
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1904,7 +1904,11 @@ setAccess(EntityPtr pEnt, xf86State state)
 	}
     }
 
-    prop = pEnt->entityProp;
+    if (state == OPERATING)
+	prop = pEnt->entityProp;
+    else
+	prop = NEED_SHARED | NEED_MEM | NEED_IOI;
+
     switch (prop & NEED_SHARED) {
     case NEED_SHARED:
 	pEnt->access->rt = MEM_IO;
@@ -1920,7 +1924,7 @@ setAccess(EntityPtr pEnt, xf86State state)
 	break;
     default: /* no conflicts at all */
 	pEnt->access->rt = NONE;
-	pEnt->access->pAccess =  NULL; /* remove from RAC */
+	pEnt->access->pAccess = NULL;	/* remove from RAC */
 	break;
     }
 
