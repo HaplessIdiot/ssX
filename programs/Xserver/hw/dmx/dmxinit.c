@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/dmxinit.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxinit.c,v 1.9tsi Exp $ */
 /*
  * Copyright 2001-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -519,9 +519,9 @@ static const char *dmxExecOS(void)
 
     if (!initialized++) {
         memset(buffer, 0, sizeof(buffer));
-        uname(&u);
-        XmuSnprintf(buffer, sizeof(buffer)-1, "%s %s %s",
-                    u.sysname, u.release, u.version);
+        if (uname(&u) >= 0)
+	    XmuSnprintf(buffer, sizeof(buffer)-1, "%s %s %s",
+			u.sysname, u.release, u.version);
     }
     return buffer;
 }

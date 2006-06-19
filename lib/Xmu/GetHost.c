@@ -23,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/GetHost.c,v 3.8 2001/12/14 19:55:46 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/GetHost.c,v 3.9tsi Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -66,14 +66,23 @@ XmuGetHostname(char *buf, int maxlen)
      */
     struct utsname name;
 
-    uname (&name);
-    len = strlen (name.nodename);
-    if (len >= maxlen) len = maxlen - 1;
-    strncpy (buf, name.nodename, len);
+    if ((maxlen <= 0) || (buf == NULL))
+	return 0;
+
+    len = 0;
+    if (uname(&name) >= 0) {
+	len = strlen(name.nodename);
+	if (len >= maxlen)
+	    len = maxlen - 1;
+	strncpy(buf, name.nodename, len);
+    }
     buf[len] = '\0';
 #else
+    if ((maxlen <= 0) || (buf == NULL))
+	return 0;
+
     buf[0] = '\0';
-    (void) gethostname (buf, maxlen);
+    (void) gethostname(buf, maxlen);
     buf [maxlen - 1] = '\0';
     len = strlen(buf);
 #endif /* hpux */

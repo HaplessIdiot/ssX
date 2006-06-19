@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/auth.c,v 3.37 2006/01/09 15:01:03 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.38tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -696,7 +696,8 @@ DefineLocal (FILE *file, Xauth *auth)
 	struct utsname name;
 
 	tmp_displayname[0] = 0;
-	uname(&name);
+	if (uname(&name) < 0)
+	    name.nodename[0] = '\0';
 	snprintf(tmp_displayname, sizeof(tmp_displayname), "%s", name.nodename);
 	writeAddr (FamilyLocal, strlen (tmp_displayname), tmp_displayname,
        		   file, auth);
@@ -1091,7 +1092,8 @@ DefineSelf (int fd, int file, int auth)
      * uname() lets me access to the whole string (it smashes release, you
      * see), whereas gethostname() kindly truncates it for me.
      */
-    uname(&name);
+    if (uname(&name) < 0)
+	name.nodename[0] = '\0';
     hp = gethostbyname (name.nodename);
     if (hp != NULL) {
 	saddr.sa.sa_family = hp->h_addrtype;

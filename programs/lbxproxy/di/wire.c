@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/lbxproxy/di/wire.c,v 1.17tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/wire.c,v 1.18tsi Exp $ */
 /*
 
 Copyright 1998  The Open Group
@@ -1548,7 +1548,8 @@ ConnectToServer(dpy_name)
 	clients[0]->server = server;
 
 #ifdef NEED_UTSNAME
-	uname (&name);
+	if (uname(&name) < 0)
+	    name.nodename[0] = '\0';
 	(void) snprintf(my_host,sizeof(my_host),"%s",name.nodename);
 #else
         (void) gethostname (my_host,sizeof(my_host));

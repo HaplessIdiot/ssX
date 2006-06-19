@@ -47,7 +47,7 @@
  *  
  * Author:  Adobe Systems Incorporated and MIT X Consortium
  */
-/* $XFree86: xc/lib/dps/cslibint.c,v 1.5 2003/05/23 14:38:28 tsi Exp $ */
+/* $XFree86: xc/lib/dps/cslibint.c,v 1.6tsi Exp $ */
 
 /*
  *	XlibInternal.c - Internal support routines for the C subroutine
@@ -1652,15 +1652,24 @@ int N_XGetHostname (char *buf, int maxlen)
 #ifdef NEED_UTSNAME
     struct utsname name;
 
-    uname (&name);
-    len = strlen (name.nodename);
-    if (len >= maxlen) len = maxlen - 1;
-    strncpy (buf, name.nodename, len);
+    if ((maxlen <= 0) || (buf == NULL))
+	return 0;
+
+    len = 0;
+    if (uname(&name) >= 0) {
+	len = strlen(name.nodename);
+	if (len >= maxlen)
+	    len = maxlen - 1;
+	strncpy(buf, name.nodename, len);
+    }
     buf[len] = '\0';
 #else
+    if ((maxlen <= 0) || (buf == NULL))
+	return 0;
+
     buf[0] = '\0';
-    (void) gethostname (buf, maxlen);
-    buf [maxlen - 1] = '\0';
+    (void) gethostname(buf, maxlen);
+    buf[maxlen - 1] = '\0';
     len = strlen(buf);
 #endif /* NEED_UTSNAME */
     return len;
