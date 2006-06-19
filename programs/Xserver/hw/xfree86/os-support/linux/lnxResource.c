@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnxResource.c,v 3.19tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnxResource.c,v 3.20tsi Exp $ */
 
 /* Resource information code */
 
@@ -206,6 +206,8 @@ xf86BusAccWindowsFromOS(void)
 
 #if defined(__sparc__) || defined(__powerpc__)
     RANGE(range, 0x00000000, 0x00ffffff, ResExcIoBlock);
+#elif defined(__mips__)
+    RANGE(range, 0x00000000, 0xffffffff, ResExcIoBlock);
 #else
     RANGE(range, 0x00000000, 0x0000ffff, ResExcIoBlock);
 #endif
@@ -224,6 +226,8 @@ xf86PciBusAccWindowsFromOS(void)
 
 #if defined(__sparc__) || defined(__powerpc__)
     RANGE(range, 0x00000000, 0x00ffffff, ResExcIoBlock);
+#elif defined(__mips__)
+    RANGE(range, 0x00000000, 0xffffffff, ResExcIoBlock);
 #else
     RANGE(range, 0x00000000, 0x0000ffff, ResExcIoBlock);
 #endif
@@ -244,6 +248,8 @@ xf86IsaBusAccWindowsFromOS(void)
 
 #if defined(__sparc__) || defined(__powerpc__)
     RANGE(range, 0x00000000, 0x00ffffff, ResExcIoBlock);
+#elif defined(__mips__)
+    RANGE(range, 0x00000000, 0xffffffff, ResExcIoBlock);
 #else
     RANGE(range, 0x00000000, 0x0000ffff, ResExcIoBlock);
 #endif
@@ -270,6 +276,8 @@ xf86AccResFromOS(resPtr ret)
     ret = xf86AddResToList(ret, &range, -1);
 #if defined(__sparc__) || defined(__powerpc__)
     RANGE(range, 0x00ffffff, 0x00ffffff, ResExcIoBlock);
+#elif defined(__mips__)
+    RANGE(range, 0xffffffff, 0xffffffff, ResExcIoBlock);
 #else
     RANGE(range, 0x0000ffff, 0x0000ffff, ResExcIoBlock);
 #endif
