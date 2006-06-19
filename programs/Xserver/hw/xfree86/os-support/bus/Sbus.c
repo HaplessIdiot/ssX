@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Sbus.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Sbus.c,v 1.8tsi Exp $ */
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -179,7 +179,7 @@ promIsP1275(void)
     if (promP1275 != -1)
 	return;
 
-    if ((uname(&buffer) == 0) && !strcmp(buffer.machine, "sun4u"))
+    if ((uname(&buffer) >= 0) && !strcmp(buffer.machine, "sun4u"))
 	promP1275 = TRUE;
     else
 	promP1275 = FALSE;

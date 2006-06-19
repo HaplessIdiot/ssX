@@ -22,7 +22,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS 
  * SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/FS/FSlibInt.c,v 3.12tsi Exp $ */
 
 /*
 
@@ -49,7 +49,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/FS/FSlibInt.c,v 3.11 2003/05/23 14:38:26 tsi Exp $ */
+/* $XFree86: xc/lib/FS/FSlibInt.c,v 3.12 2005/03/23 03:11:23 dawes Exp $ */
 
 /*
  *	FSlibInt.c - Internal support routines for the C subroutine
@@ -1237,13 +1237,21 @@ _FSGetHostname(char *buf, int maxlen)
      */
     struct utsname name;
 
-    uname(&name);
-    len = strlen(name.nodename);
-    if (len >= maxlen)
-	len = maxlen - 1;
-    strncpy(buf, name.nodename, len);
+    if ((maxlen <= 0) || (buf == NULL))
+	return 0;
+
+    len = 0;
+    if (uname(&name) >= 0) {
+	len = strlen(name.nodename);
+	if (len >= maxlen)
+	    len = maxlen - 1;
+	strncpy(buf, name.nodename, len);
+    }
     buf[len] = '\0';
 #else
+    if ((maxlen <= 0) || (buf == NULL))
+	return 0;
+
     buf[0] = '\0';
     (void) gethostname(buf, maxlen);
     buf[maxlen - 1] = '\0';

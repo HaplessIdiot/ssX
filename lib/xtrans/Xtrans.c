@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.35 2004/04/03 22:26:21 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.36tsi Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -1381,15 +1381,24 @@ int TRANS(GetHostname) (char *buf, int maxlen)
 #ifdef NEED_UTSNAME
     struct utsname name;
 
-    uname (&name);
-    len = strlen (name.nodename);
-    if (len >= maxlen) len = maxlen - 1;
-    strncpy (buf, name.nodename, len);
+    if ((maxlen <= 0) || (buf == NULL))
+	return 0;
+
+    len = 0;
+    if (uname(&name) >= 0) {
+	len = strlen(name.nodename);
+	if (len >= maxlen)
+	    len = maxlen - 1;
+	strncpy(buf, name.nodename, len);
+    }
     buf[len] = '\0';
 #else
+    if ((maxlen <= 0) || (buf == NULL))
+	return 0;
+
     buf[0] = '\0';
-    (void) gethostname (buf, maxlen);
-    buf [maxlen - 1] = '\0';
+    (void) gethostname(buf, maxlen);
+    buf[maxlen - 1] = '\0';
     len = strlen(buf);
 #endif /* NEED_UTSNAME */
     return len;

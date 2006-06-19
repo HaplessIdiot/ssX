@@ -23,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.20 2001/12/14 19:55:39 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.21tsi Exp $ */
 
 /*
  * This file contains routines to handle common selection targets.
@@ -112,7 +112,7 @@ get_os_name(void)
 #ifdef USE_UNAME
 	struct utsname utss;
 
-	if (uname (&utss) == 0) {
+	if (uname(&utss) >= 0) {
 	    char *os_name;
 	    int len = strlen(utss.sysname) + 1;
 #ifndef hpux				/* because of hostname length crock */

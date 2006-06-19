@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization from
 The Open Group.
 
 */
-/* $XFree86: xc/programs/xrx/rx/XUrls.c,v 1.12 2003/07/20 16:12:20 tsi Exp $ */
+/* $XFree86: xc/programs/xrx/rx/XUrls.c,v 1.13tsi Exp $ */
 
 #include "RxI.h"
 #include "XUrls.h"
@@ -135,7 +135,8 @@ MyBestHostname (
 #endif 
   /* none of the above worked, punt */
 
-    uname(&host);
+    if (uname(&host) < 0)
+	host.nodename[0] = '\0';
     strncpy (myname, host.nodename, myname_len);
     myname[MAXHOSTNAMELEN] = '\0';
   } else {	/* otherwise believe the display_name */

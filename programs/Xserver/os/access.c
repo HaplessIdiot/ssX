@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.59tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.60tsi Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -518,7 +518,8 @@ DefineSelf (int fd)
      * see), whereas gethostname() kindly truncates it for me.
      */
 #ifndef QNX4
-    uname(&name);
+    if (uname(&name) < 0)
+	name.nodename[0] = '\0';
 #else
     /* QNX4's uname returns node number in name.nodename, not the hostname
        have to overwrite it */

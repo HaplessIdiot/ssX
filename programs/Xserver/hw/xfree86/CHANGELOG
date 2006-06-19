@@ -1,4 +1,6 @@
 XFree86 4.6.99.2 (xx June 2006)
+  15. Fix uname(2) usage throughout the source tree.  This is an extension of
+      Alan Coopersmith's response to X.Org Bugzilla #2123 (Marc La France).
   14. Xterm patch #214 (Thomas Dickey).
   13. Make sure the thread stub library is built when needed (David Dawes).
 
@@ -20164,7 +20166,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3743 2006/06/13 22:06:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3744 2006/06/19 00:36:49 dickey Exp $
 
 
 

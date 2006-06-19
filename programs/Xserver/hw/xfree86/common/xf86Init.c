@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.240 2006/04/08 18:30:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.241tsi Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -2058,7 +2058,7 @@ xf86PrintBanner()
     {
 	struct utsname name;
 
-	if (uname(&name) == 0) {
+	if (uname(&name) >= 0) {
 	    ErrorF("Current Operating System: %s %s %s %s %s\n",
 		   name.sysname, name.nodename, name.release, name.version,
 		   name.machine);

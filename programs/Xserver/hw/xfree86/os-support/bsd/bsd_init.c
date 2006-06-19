@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.24 2005/10/14 15:17:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.25tsi Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -242,8 +242,8 @@ xf86OpenConsole()
 	     * switching hack.
 	     */
 	    if (xf86Info.consType == SYSCONS) {
-		uname(&uts);
-		if (strcmp(uts.sysname, "FreeBSD") == 0) {
+		if ((uname(&uts) >= 0) && 
+		    (strcmp(uts.sysname, "FreeBSD") == 0)) {
 		    i = atof(uts.release) * 100;
 		    if (i < 310)
 			needSwitchToVT1 = TRUE;

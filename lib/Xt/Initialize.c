@@ -30,7 +30,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Initialize.c,v 3.23 2004/05/05 00:07:03 dickey Exp $ */
+/* $XFree86: xc/lib/Xt/Initialize.c,v 3.24tsi Exp $ */
 
 /*
 
@@ -154,21 +154,21 @@ static void GetHostname (
     int len;
     struct utsname name;
 
-    if (maxlen <= 0 || buf == NULL)
+    if ((maxlen <= 0) || (buf == NULL) || (uname(&name) < 0))
 	return;
 
-    uname (&name);
-    len = strlen (name.nodename);
-    if (len >= maxlen) len = maxlen;
-    (void) strncpy (buf, name.nodename, len-1);
-    buf[len-1] = '\0';
+    len = strlen(name.nodename);
+    if (len >= maxlen)
+	len = maxlen - 1;
+    (void) strncpy(buf, name.nodename, len);
+    buf[len] = '\0';
 #else
     if (maxlen <= 0 || buf == NULL)
 	return;
 
     buf[0] = '\0';
-    (void) gethostname (buf, maxlen);
-    buf [maxlen - 1] = '\0';
+    (void) gethostname(buf, maxlen);
+    buf[maxlen - 1] = '\0';
 #endif
 }
 
@@ -550,7 +550,7 @@ XrmDatabase XtScreenDatabase(
 			PATH_MAX - strlen (slashDotXdefaultsDash) - 1);
 	    (void) strcat(filename, slashDotXdefaultsDash);
 	    len = strlen(filename);
-	    GetHostname (filename+len, PATH_MAX-len);
+	    GetHostname (filename+len, PATH_MAX-1-len);
 	}
 	(void)XrmCombineFileDatabase(filename, &db, False);
     }
