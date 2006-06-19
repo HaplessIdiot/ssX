@@ -21,7 +21,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/VISmoveImage.s,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/VISmoveImage.s,v 1.3tsi Exp $ */
 
 
 /* NOTE NOTE NOTE: All loads in these routines _MUST_ be 64-byte block
@@ -783,7 +783,7 @@ roll_wide:
 	 sub			%tmp3, %rightw, %curw
 
 return: return			%i7+8
-#ifdef __NetBSD__
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 	 wr			%g0, 4, %fprs
 #else
 	 wr			%g0, 0, %fprs
@@ -2182,7 +2182,7 @@ rroll_wide:
 	 sub			%curw, %rightw, %curw
 
 rreturn:return			%i7+8
-#ifdef __NetBSD__
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 	 wr			%g0, 4, %fprs
 #else
 	 wr			%g0, 0, %fprs
