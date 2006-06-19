@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Sbus.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Sbus.c,v 1.11tsi Exp $ */
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -41,12 +41,19 @@
 int promRootNode;
 
 static int promFd = -1;
-static int promCurrentNode;
 static int promOpenCount = 0;
 static int promP1275 = -1;
+
 #define MAX_PROP	128
 #define MAX_VAL		(4096-128-4)
+
+#if defined(__OpenBSD__) || defined(__NetBSD__)
+/* These two use their own OBP access scheme */
+static struct opiocdesc promOpio;
+static char promval[MAX_VAL + 1];
+#else
 static struct openpromio *promOpio;
+#endif
 
 sbusDevicePtr *xf86SbusInfo = NULL;
 
@@ -69,6 +76,60 @@ struct sbus_devtable sbusDeviceTable[] = {
     { 0, 0, NULL, NULL }
 };
 
+#if defined(__OpenBSD__) || defined(__NetBSD__)
+int
+promGetSibling(int node)
+{
+    if (node == -1)
+	return 0;
+
+    promOpio.op_nodeid = node;
+    if (ioctl(promFd, OPIOCGETNEXT, &promOpio) < 0)
+	return 0;
+
+    return promOpio.op_nodeid;
+}
+
+int
+promGetChild(int node)
+{
+    if (!node || (node == -1))
+	return 0;
+
+    promOpio.op_nodeid = node;
+    if (ioctl(promFd, OPIOCGETCHILD, &promOpio) < 0)
+	return 0;
+
+    return promOpio.op_nodeid;
+}
+
+char *
+promGetProperty(const char *prop, int *lenp)
+{
+    promOpio.op_namelen = strlen(prop);
+    promOpio.op_name = (char *)prop;
+    promOpio.op_buflen = MAX_VAL;
+    promOpio.op_buf = promval;
+
+    if (ioctl(promFd, OPIOCGET, &promOpio) < 0)
+	return NULL;
+
+    if (lenp)
+	*lenp = promOpio.op_buflen;
+    return promOpio.op_buf;
+}
+
+int
+promGetBool(const char *prop)
+{
+    int length;
+
+    if (!promGetProperty(prop, &length) || (length < 0))
+	return 0;
+
+    return 1;
+}
+#else
 int
 promGetSibling(int node)
 {
@@ -80,8 +141,7 @@ promGetSibling(int node)
     if (ioctl(promFd, OPROMNEXT, promOpio) < 0)
 	return 0;
 
-    promCurrentNode = *(int *)promOpio->oprom_array;
-    return promCurrentNode;
+    return *(int *)promOpio->oprom_array;
 }
 
 int
@@ -95,8 +155,7 @@ promGetChild(int node)
     if (ioctl(promFd, OPROMCHILD, promOpio) < 0)
 	return 0;
 
-    promCurrentNode = *(int *)promOpio->oprom_array;
-    return promCurrentNode;
+    return *(int *)promOpio->oprom_array;
 }
 
 char *
@@ -105,7 +164,7 @@ promGetProperty(const char *prop, int *lenp)
     promOpio->oprom_size = MAX_VAL;
     strcpy(promOpio->oprom_array, prop);
     if (ioctl(promFd, OPROMGETPROP, promOpio) < 0)
-	return 0;
+	return NULL;
 
     if (lenp)
 	*lenp = promOpio->oprom_size;
@@ -128,6 +187,7 @@ promGetBool(const char *prop)
 	    return 1;
     }
 }
+#endif
 
 #define PROM_NODE_SIBLING 0x01
 #define PROM_NODE_PREF    0x02
@@ -164,7 +224,7 @@ promIsP1275(void)
 
     if (promP1275 != -1)
 	return;
-    promP1275 = 0;
+    promP1275 = FALSE;
     f = fopen("/proc/cpuinfo", "r");
     if (!f) return;
     while (fgets(buffer, 1024, f) != NULL)
@@ -183,10 +243,15 @@ promIsP1275(void)
 	promP1275 = TRUE;
     else
 	promP1275 = FALSE;
-#elif defined(__FreeBSD__)
+#elif defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
+# if defined(__arch64__) || defined(__sparc_v9__) || defined(__sparc64__)
     promP1275 = TRUE;
+# else
+    /* Might need to check for a 32-bit userland running on a sun4u */
+    promP1275 = FALSE;
+# endif
 #else
-#error Missing promIsP1275() function for this OS
+# error Missing promIsP1275() function for this OS
 #endif
 }
 
@@ -203,10 +268,12 @@ sparcPromClose(void)
 	promFd = -1;
     }
 
+#if !defined(__OpenBSD__) && !defined(__NetBSD__)
     if (promOpio) {
 	xfree(promOpio);
 	promOpio = NULL;
     }
+#endif
 
     promOpenCount = 0;
 }
@@ -219,15 +286,21 @@ sparcPromInit(void)
 	return 0;
     }
 
-    promFd = open("/dev/openprom", O_RDONLY, 0);
-    if (promFd == -1)
-	return -1;
-
-    promOpio = (struct openpromio *)xalloc(4096);
-    if (!promOpio) {
-	sparcPromClose();
-	return -1;
+    if (promFd < 0) {
+	promFd = open("/dev/openprom", O_RDONLY, 0);
+	if (promFd == -1)
+	    return -1;
     }
+
+#if !defined(__OpenBSD__) && !defined(__NetBSD__)
+    if (!promOpio) {
+	promOpio = (struct openpromio *)xalloc(4096);
+	if (!promOpio) {
+	    sparcPromClose();
+	    return -1;
+	}
+    }
+#endif
 
     promRootNode = promGetSibling(0);
     if (!promRootNode) {
