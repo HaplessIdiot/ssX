@@ -1,6 +1,6 @@
-/* $XTermId: wcwidth.c,v 1.16 2006/03/19 21:20:46 tom Exp $ */
+/* $XTermId: wcwidth.c,v 1.18 2006/06/16 22:29:17 tom Exp $ */
 
-/* $XFree86: xc/programs/xterm/wcwidth.c,v 1.7 2005/05/03 00:38:25 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/wcwidth.c,v 1.8 2006/03/20 00:36:19 dickey Exp $ */
 
 /*
  * This is an implementation of wcwidth() and wcswidth() (defined in
@@ -289,7 +289,7 @@ int mk_wcwidth_cjk(wchar_t ucs)
   };
 
   /* binary search in table of non-spacing characters */
-  if (bisearch(ucs, ambiguous,
+  if (bisearch((unsigned long) ucs, ambiguous,
                sizeof(ambiguous) / sizeof(struct interval) - 1))
     return 2;
 
