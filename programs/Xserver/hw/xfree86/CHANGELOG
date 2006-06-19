@@ -1,4 +1,5 @@
 XFree86 4.6.99.2 (xx June 2006)
+  14. Xterm patch #214 (Thomas Dickey).
   13. Make sure the thread stub library is built when needed (David Dawes).
 
 XFree86 4.6.99.1 (7 June 2006)
@@ -20163,7 +20164,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3742 2006/06/07 11:03:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3743 2006/06/13 22:06:34 dawes Exp $
 
 
 
