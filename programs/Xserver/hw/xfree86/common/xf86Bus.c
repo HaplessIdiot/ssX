@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.93 2005/10/14 15:16:32 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.94 2006/06/19 13:56:47 tsi Exp $ */
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -2430,14 +2430,7 @@ xf86PostProbe(void)
     }
     xf86FreeResList(acc);
 
-#if !(defined(__alpha__) && defined(linux)) && \
-    !(defined(__sparc64__) && defined(__OpenBSD__))
-    /*
-     * No need to validate on Alpha Linux or OpenBSD/sparc64,
-     * trust the kernel.
-     */
     ValidatePci();
-#endif
 
     xf86MsgVerb(X_INFO, 3, "resource ranges after probing:\n");
     xf86PrintResList(3, Acc);
