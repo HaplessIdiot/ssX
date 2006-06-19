@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.c,v 3.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.c,v 3.10 2005/10/14 15:16:34 tsi Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -726,6 +726,10 @@ xf86SbusUseBuiltinMode(ScrnInfoPtr pScrn, sbusDevicePtr psdp)
     pScrn->virtualY = psdp->height;
 }
 
+/*
+ * Colourmap control.
+ */
+
 static int sbusPaletteIndex = -1;
 static unsigned long sbusPaletteGeneration = 0;
 typedef struct _sbusCmap {
@@ -737,8 +741,7 @@ typedef struct _sbusCmap {
     unsigned char origBlue[16];
 } sbusCmapRec, *sbusCmapPtr;
 
-#define SBUSCMAPPTR(pScreen) \
-    ((sbusCmapPtr)((pScreen)->devPrivates[sbusPaletteIndex].ptr))
+#define SBUSCMAPPTR(pScreen) (pScreen)->devPrivates[sbusPaletteIndex].ptr
 
 static void
 xf86SbusCmapLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
@@ -813,7 +816,7 @@ xf86SbusHandleColormaps(ScreenPtr pScreen, sbusDevicePtr psdp)
     }
 
     cmap = xnfcalloc(1, sizeof(sbusCmapRec));
-    pScreen->devPrivates[sbusPaletteIndex].ptr = cmap;
+    SBUSCMAPPTR(pScreen) = cmap;
     cmap->psdp = psdp;
     fbcmap.index = 0;
     fbcmap.count = 16;
@@ -843,4 +846,51 @@ xf86SbusHandleColormaps(ScreenPtr pScreen, sbusDevicePtr psdp)
     pScreen->CloseScreen = xf86SbusCmapCloseScreen;
     return xf86HandleColormaps(pScreen, 256, 8,
 			       xf86SbusCmapLoadPalette, NULL, 0);
+}
+
+/*
+ * Cursor control.
+ */
+
+/* Tell OS that we are driving the HW cursor ourselves. */
+void
+xf86SbusHideOsHwCursor(sbusDevicePtr psdp)
+{
+    struct fbcursor fbcursor;
+    unsigned char zeros[8];
+
+    memset(&fbcursor, 0, sizeof(fbcursor));
+    memset(&zeros, 0, sizeof(zeros));
+    fbcursor.cmap.count = 2;
+    fbcursor.cmap.red = zeros;
+    fbcursor.cmap.green = zeros;
+    fbcursor.cmap.blue = zeros;
+    fbcursor.image = (char *)zeros;
+    fbcursor.mask = (char *)zeros;
+    fbcursor.size.x = 32;
+    fbcursor.size.y = 1;
+    fbcursor.set = FB_CUR_SETALL;
+    ioctl(psdp->fd, FBIOSCURSOR, &fbcursor);
+}
+
+/* Set HW cursor colormap. */
+void
+xf86SbusSetOsHwCursorCmap(sbusDevicePtr psdp, int bg, int fg)
+{
+    struct fbcursor fbcursor;
+    unsigned char red[2], green[2], blue[2];
+
+    memset(&fbcursor, 0, sizeof(fbcursor));
+    red[0] = bg >> 16;
+    green[0] = bg >> 8;
+    blue[0] = bg;
+    red[1] = fg >> 16;
+    green[1] = fg >> 8;
+    blue[1] = fg;
+    fbcursor.cmap.count = 2;
+    fbcursor.cmap.red = red;
+    fbcursor.cmap.green = green;
+    fbcursor.cmap.blue = blue;
+    fbcursor.set = FB_CUR_SETCMAP;
+    ioctl(psdp->fd, FBIOSCURSOR, &fbcursor);
 }
