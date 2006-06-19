@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Sbus.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Sbus.c,v 1.8 2006/06/19 13:43:26 tsi Exp $ */
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -775,47 +775,4 @@ xf86UnmapSbusMem(sbusDevicePtr psdp, pointer addr, unsigned long size)
     unsigned long len = (((unsigned long)addr + size + mask) & ~mask) - base;
 
     munmap((pointer)base, len);
-}
-
-/* Tell OS that we are driving the HW cursor ourselves. */
-void
-xf86SbusHideOsHwCursor(sbusDevicePtr psdp)
-{
-    struct fbcursor fbcursor;
-    unsigned char zeros[8];
-
-    memset(&fbcursor, 0, sizeof(fbcursor));
-    memset(&zeros, 0, sizeof(zeros));
-    fbcursor.cmap.count = 2;
-    fbcursor.cmap.red = zeros;
-    fbcursor.cmap.green = zeros;
-    fbcursor.cmap.blue = zeros;
-    fbcursor.image = (char *)zeros;
-    fbcursor.mask = (char *)zeros;
-    fbcursor.size.x = 32;
-    fbcursor.size.y = 1;
-    fbcursor.set = FB_CUR_SETALL;
-    ioctl(psdp->fd, FBIOSCURSOR, &fbcursor);
-}
-
-/* Set HW cursor colormap. */
-void
-xf86SbusSetOsHwCursorCmap(sbusDevicePtr psdp, int bg, int fg)
-{
-    struct fbcursor fbcursor;
-    unsigned char red[2], green[2], blue[2];
-
-    memset(&fbcursor, 0, sizeof(fbcursor));
-    red[0] = bg >> 16;
-    green[0] = bg >> 8;
-    blue[0] = bg;
-    red[1] = fg >> 16;
-    green[1] = fg >> 8;
-    blue[1] = fg;
-    fbcursor.cmap.count = 2;
-    fbcursor.cmap.red = red;
-    fbcursor.cmap.green = green;
-    fbcursor.cmap.blue = blue;
-    fbcursor.set = FB_CUR_SETCMAP;
-    ioctl(psdp->fd, FBIOSCURSOR, &fbcursor);
 }
