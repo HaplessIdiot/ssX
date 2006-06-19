@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Sbus.c,v 1.8 2006/06/19 13:43:26 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Sbus.c,v 1.10tsi Exp $ */
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -739,6 +739,7 @@ xf86MapSbusMem(sbusDevicePtr psdp, unsigned long offset, unsigned long size)
 	psdp->fd = open(psdp->device, O_RDWR);
 	if (psdp->fd == -1)
 	    return NULL;
+	psdp->mmapCount = 0;
     } else if (psdp->fd < 0) {
 	return NULL;
     }
@@ -764,6 +765,7 @@ xf86MapSbusMem(sbusDevicePtr psdp, unsigned long offset, unsigned long size)
 	    return NULL;
     }
 
+    psdp->mmapCount++;
     return (char *)ret + (offset - off);
 }
 
@@ -775,4 +777,9 @@ xf86UnmapSbusMem(sbusDevicePtr psdp, pointer addr, unsigned long size)
     unsigned long len = (((unsigned long)addr + size + mask) & ~mask) - base;
 
     munmap((pointer)base, len);
+
+    if (!--psdp->mmapCount) {
+	close(psdp->fd);
+	psdp->fd = -1;
+    }
 }
