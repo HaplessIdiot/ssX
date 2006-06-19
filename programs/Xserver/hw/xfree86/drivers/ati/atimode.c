@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.c,v 1.24tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.c,v 1.25tsi Exp $ */
 /*
  * Copyright 2000 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -54,8 +54,14 @@ ATICopyVGAMemory
 
     for (iBank = 0;  iBank < pATIHW->nBank;  iBank++)
     {
+        int i = 0x00010000;
+        volatile CARD8 *t = *to, *f = *from;
+
         (*pATIHW->SetBank)(pATI, iBank);
-        (void)memcpy(*to, *from, 0x00010000U);
+
+        while (--i >= 0)
+            *(t++) = *(f++);
+
         *saveptr = (char *)(*saveptr) + 0x00010000U;
     }
 }

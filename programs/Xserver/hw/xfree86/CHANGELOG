@@ -1,4 +1,8 @@
 XFree86 4.6.99.2 (xx June 2006)
+  19. Replace atimisc's transfers into, and out of, VGA memory with byte-wise
+      copies.  This avoids (and stays well away from) 64-bit accesses because
+      some VGA aperture implementations are not designed to reliably implement
+      them (Marc La France).
   18. Fix -configure's setup of the keyboard under OpenBSD's wscons
       (Marc La France).
   17. Always validate PCI resource assignment, even on Linux/Alpha and
@@ -20176,7 +20180,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3747 2006/06/19 14:01:21 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3748 2006/06/19 14:08:11 tsi Exp $
 
 
 
