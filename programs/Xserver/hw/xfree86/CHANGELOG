@@ -1,4 +1,6 @@
 XFree86 4.6.99.2 (xx June 2006)
+  21. Close SBUS device file descriptors when all mmap(2)'s against them have
+      been unmapped (Marc La France).
   20. Fix window move performance issue on OpenBSD (Marc La France).
   19. Replace atimisc's transfers into, and out of, VGA memory with byte-wise
       copies.  This avoids (and stays well away from) 64-bit accesses because
@@ -20181,7 +20183,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3749 2006/06/19 14:41:00 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3750 2006/06/19 14:44:13 tsi Exp $
 
 
 
