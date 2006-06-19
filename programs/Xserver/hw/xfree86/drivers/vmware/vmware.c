@@ -2,7 +2,7 @@
  * Copyright (C) 1998-2001 VMware, Inc.
  * All Rights Reserved
  * **********************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.25 2006/01/09 15:00:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.26tsi Exp $ */
 
 /*
  * TODO: support the vmware linux kernel fb driver (Option "UseFBDev").
@@ -367,6 +367,10 @@ RewriteTagString(const char *istr, char *ostr, int osize)
 static void
 VMWAREIdentify(int flags)
 {
+    char buildString[sizeof(VMWAREBuildStr)];
+
+    RewriteTagString(VMWAREBuildStr, buildString, sizeof(VMWAREBuildStr));
+    xf86MsgVerb(X_PROBED, 4, "%s", buildString);
     xf86PrintChipsets(VMWARE_NAME, "driver for VMware SVGA", VMWAREChipsets);
 }
 
@@ -1361,10 +1365,6 @@ VMWAREProbe(DriverPtr drv, int flags)
     int *usedChips;
     int i;
     Bool foundScreen = FALSE;
-    char buildString[sizeof(VMWAREBuildStr)];
-
-    RewriteTagString(VMWAREBuildStr, buildString, sizeof(VMWAREBuildStr));
-    xf86MsgVerb(X_PROBED, 4, "%s", buildString);
 
     numDevSections = xf86MatchDevice(VMWARE_DRIVER_NAME, &devSections);
     if (numDevSections <= 0) {
