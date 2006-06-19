@@ -1,4 +1,6 @@
 XFree86 4.6.99.2 (xx June 2006)
+  18. Fix -configure's setup of the keyboard under OpenBSD's wscons
+      (Marc La France).
   17. Always validate PCI resource assignment, even on Linux/Alpha and
       OpenBSD/sparc64.  If the OS does the right thing, this validation will
       end up being a no-op anyway (Marc La France).
@@ -20174,7 +20176,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3746 2006/06/19 13:56:46 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3747 2006/06/19 14:01:21 tsi Exp $
 
 
 

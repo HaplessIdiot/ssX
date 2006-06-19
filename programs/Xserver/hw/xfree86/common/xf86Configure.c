@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.88tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.89 2005/10/14 15:16:32 tsi Exp $ */
 /*
  * Copyright 2000-2002 by Alan Hourihane, Flint Mountain, North Wales.
  *
@@ -306,17 +306,22 @@ configureInputSection (void)
     configPrologue(XF86ConfInputPtr)
 
     ptr->inp_identifier = "Keyboard0";
-#if defined(WSCONS_SUPPORT) && defined(__NetBSD__)
+#if defined(WSCONS_SUPPORT)
     /* check for /dev/wskbd */
     {
-	int fd = open("/dev/wskbd", 0);
+#if defined(__NetBSD__)
+# define WSKBD "/dev/wskbd"
+#elif defined(__OpenBSD__)
+# define WSKBD "/dev/wskbd0"
+#endif
+	int fd = open(WSKBD, 0);
 	if (fd > 0) {
 	    close(fd);
 	    ptr->inp_driver = "kbd";
 	    ptr->inp_option_lst = 
 		xf86addNewOption(ptr->inp_option_lst, "Protocol", "wskbd");
 	    ptr->inp_option_lst = 
-		xf86addNewOption(ptr->inp_option_lst, "Device", "/dev/wskbd");
+		xf86addNewOption(ptr->inp_option_lst, "Device", WSKBD);
         } else {
     	    /* no /dev/wskbd - fall back to legacy driver */
             ptr->inp_driver = "keyboard";
