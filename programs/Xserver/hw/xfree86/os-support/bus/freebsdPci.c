@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/freebsdPci.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/freebsdPci.c,v 1.8tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -120,6 +120,10 @@ static int pciFd = -1;
 void
 freebsdPciInit()
 {
+	/* Always prefer a hardware-derived mechanism over an OS-provided one */
+	if (pciNumBuses)
+		return;
+
 	pciFd = open("/dev/pci", O_RDWR);
 	if (pciFd < 0) {
 		if (errno != EPERM)

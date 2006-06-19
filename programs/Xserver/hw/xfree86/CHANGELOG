@@ -1,4 +1,7 @@
 XFree86 4.6.99.2 (xx June 2006)
+  22. Change freebsdPciInit() and netbsdPciInit() to prefer a hardware-derived
+      PCI configuration space access mechanism (should one exist) over an
+      OS-provided one (Marc La France).
   21. Close SBUS device file descriptors when all mmap(2)'s against them have
       been unmapped (Marc La France).
   20. Fix window move performance issue on OpenBSD (Marc La France).
@@ -20183,7 +20186,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3750 2006/06/19 14:44:13 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3751 2006/06/19 14:59:13 tsi Exp $
 
 
 
