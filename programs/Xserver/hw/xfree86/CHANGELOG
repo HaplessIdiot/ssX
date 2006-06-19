@@ -1,4 +1,9 @@
 XFree86 4.6.99.2 (xx June 2006)
+  16. Fix bug I inadvertently introduced over two years ago that could cause
+      PCI VGA routing to be incorrectly restored on server exit or switchout.
+      This also ensures only one VGA per domain is enabled while the server is
+      switched in despite buggy firmware or OSes that leave more than one VGA
+      enabled on server entry (Marc La France).
   15. Fix uname(2) usage throughout the source tree.  This is an extension of
       Alan Coopersmith's response to X.Org Bugzilla #2123 (Marc La France).
   14. Xterm patch #214 (Thomas Dickey).
@@ -20166,7 +20171,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3744 2006/06/19 00:36:49 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3745 2006/06/19 13:43:24 tsi Exp $
 
 
 
