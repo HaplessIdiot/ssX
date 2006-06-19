@@ -1,4 +1,6 @@
 XFree86 4.6.99.2 (xx June 2006)
+  25. Add an interface to SPARC openprom for OpenBSD and NetBSD, but, for now,
+      only enable it for OpenBSD (Marc La France).
   24. Allow for 32-bit PCI I/O ranges on Linux/MIPS (Marc La France).
   23. Fix bug that occurs when the SPARC PCI scan code is compiled for 64-bit
       (Marc La France).
@@ -20189,7 +20191,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3753 2006/06/19 15:09:56 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3754 2006/06/19 15:14:56 tsi Exp $
 
 
 
