@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.21 2005/04/30 17:04:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.22 2006/02/18 03:31:38 dawes Exp $ */
 /*
  * Copyright (C) 2001-2005 The XFree86 Project, Inc.
  * All rights reserved.
@@ -636,7 +636,7 @@ newDomain:
 	     */
 	    prop_len /= 20;
 	    for (;  prop_len--;  prop_val += 20)
-		SetBitInMap(PCI_DFN_FROM_TAG(*(PCITAG *)prop_val),
+		SetBitInMap(PCI_DFN_FROM_TAG(*(CARD32 *)prop_val),
 		    pDomain->dfn_mask);
 	}
 
