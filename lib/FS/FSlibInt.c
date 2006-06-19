@@ -22,7 +22,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS 
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/FS/FSlibInt.c,v 3.12tsi Exp $ */
+/* $XFree86: xc/lib/FS/FSlibInt.c,v 3.13 2006/06/19 13:43:23 tsi Exp $ */
 
 /*
 
@@ -49,7 +49,6 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/FS/FSlibInt.c,v 3.12 2005/03/23 03:11:23 dawes Exp $ */
 
 /*
  *	FSlibInt.c - Internal support routines for the C subroutine
