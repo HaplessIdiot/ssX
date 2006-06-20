@@ -1,4 +1,5 @@
 XFree86 4.6.99.2 (xx June 2006)
+  26. Xterm patch #215 (Thomas Dickey).
   25. Add an interface to SPARC openprom for OpenBSD and NetBSD, but, for now,
       only enable it for OpenBSD (Marc La France).
   24. Allow for 32-bit PCI I/O ranges on Linux/MIPS (Marc La France).
@@ -20191,7 +20192,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3754 2006/06/19 15:14:56 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3755 2006/06/19 19:57:08 tsi Exp $
 
 
 
