@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.89 2005/10/14 15:16:32 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.90tsi Exp $ */
 /*
  * Copyright 2000-2002 by Alan Hourihane, Flint Mountain, North Wales.
  *
@@ -933,26 +933,26 @@ DoConfigure()
 	goto bail;
     }
 
-    xf86DoConfigurePass1 = FALSE;
-    
-    dev2screen = xnfcalloc(1,xf86NumDrivers*sizeof(int));
+    dev2screen = xnfcalloc(1, nDevToConfig * sizeof(int));
 
     {
-	Bool *driverProbed = xnfcalloc(1,xf86NumDrivers*sizeof(Bool));
+	Bool *driverProbed = xnfcalloc(1, xf86NumDrivers * sizeof(Bool));
+	int nextPrimary = 0;
+
 	for (screennum = 0;  screennum < nDevToConfig;  screennum++) {
-	    int k,l,n,oldNumScreens;
+	    int k, l, n, oldNumScreens;
 
 	    i = DevToConfig[screennum].iDriver;
 
-	    if (driverProbed[i]) continue;
+	    if (driverProbed[i])
+		continue;
 	    driverProbed[i] = TRUE;
 	    
 	    oldNumScreens = xf86NumScreens;
 
 	    (*xf86DriverList[i]->Probe)(xf86DriverList[i], 0);
 
-	    /* reorder */
-	    k = screennum > 0 ? screennum : 1;
+	    /* Possibly reorder */
 	    for (l = oldNumScreens; l < xf86NumScreens; l++) {
 	        /* is screen primary? */
 	        Bool primary = FALSE;
@@ -963,22 +963,19 @@ DoConfigure()
 			break;
 		    }
 		}
-		if (primary) continue;
-		/* not primary: assign it to next device of same driver */
-		/* 
-		 * NOTE: we assume that devices in DevToConfig 
-		 * and xf86Screens[] have the same order except
-		 * for the primary device which always comes first.
-		 */
-		for (; k < nDevToConfig; k++) {
-		    if (DevToConfig[k].iDriver == i) {
-		        dev2screen[k++] = l;
-			break;
-		    }
+
+		if (primary) {
+		    for (k = l; --k >= nextPrimary; )
+			dev2screen[k + 1] = dev2screen[k];
+		    dev2screen[nextPrimary++] = l;
+		} else {
+		    dev2screen[l] = l;
 		}
 	    }
-	    xf86SetPciVideo(NULL,NONE);
+
+	    xf86SetPciVideo(NULL, NONE);
 	}
+
 	xfree(driverProbed);
     }
     
