@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.118 2006/04/18 15:57:25 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.119tsi Exp $
 XCOMM
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -262,10 +262,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # define OverrideShlibRevs     HasGccStackProtector
 #endif
 
-
-#define StandardDefines	-DCSRG_BASED
 #define XawI18nDefines	-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
-
 
 #define	AdmDir			/var/log
 
@@ -308,7 +305,6 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #  define MkCookieCmd \
 	'dd if=/dev/urandom bs=16 count=1 2>/dev/null | hexdump -e \\"%08x\\"'
 #endif
-
 
 /*
  * Man pages need to be formatted when installed, so override the default
@@ -399,7 +395,6 @@ InstallHtmlManPageAliases(file,aliases,suffix)				@@\
 									@@\
 InstallManPageAliasesBase(file,destdir,aliases)
 
-
 /*
  * InstallFontAliases - generate rules to install font aliases
  *                      databases without comments for X11R5 servers
@@ -427,7 +422,6 @@ install::								@@\
  * Architecture specific sections - put all architecture dependent
  * options and setting here into the correct section
  */
-
 
 /*
  * Definitions for the alpha architecture
@@ -563,7 +557,6 @@ install::								@@\
 #   define HasAgpGart   YES 
 #  endif 
 # endif 
- 
 
 # ifndef DefaultGcc2i386Opt
 #   if (OSMajorVersion == 2 && OSMinorVersion >= 3) || OSMajorVersion > 2
@@ -589,7 +582,6 @@ install::								@@\
 #  endif
 # endif
 
-
 /* A hack to work around an optimization problem with gcc 2.95.2 */
 # if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 6)
 #  define GccOptBug295
@@ -608,7 +600,6 @@ install::								@@\
 # include <xfree86.cf>
 
 #endif /* i386Architecture */
-
 
 /*
  * Definitions for the m68k architecture (currently amiga, hp300,
@@ -630,7 +621,6 @@ install::								@@\
  
 #endif /* Mc68020Architecture */
 
-
 /*
  * Definitions for the amiga architecture
  */
@@ -645,7 +635,6 @@ install::								@@\
 # include <xfree86.cf>
 
 #endif /* AmigaArchitecture */
-
 
 /*
  * Definitions for the hp300 architecture
@@ -665,7 +654,6 @@ install::								@@\
 
 #endif /* Hp300Architecture */
 
-
 /*
  * Definitions for the mac68k architecture
  */
@@ -681,7 +669,6 @@ install::								@@\
 
 #endif /* mac68kArchitecture */
 
-
 /*
  * Definitions for the mvme68k architecture
  */
@@ -696,7 +683,6 @@ install::								@@\
 # include <xfree86.cf>
 
 #endif /* Mvme68kArchitecture */
-
 
 /*
  * Definitions for the sun3 architecture
@@ -726,7 +712,6 @@ install::								@@\
 
 #endif /* Sun3Architecture */
 
-
 /*
  * Definitions for the mips architecture (currently arc, pmax)
  */
@@ -742,7 +727,6 @@ install::								@@\
 
 #endif /* MipsArchitecture */
 
-
 /*
  * Definitions for the arc architecture
  */
@@ -756,7 +740,6 @@ install::								@@\
 # include <xfree86.cf>
 
 #endif /* ArcArchitecture */
-
 
 /*
  * Definitions for the pmax architecture
@@ -835,14 +818,14 @@ install::								@@\
 /*
  * Definitions for the sparc architecture
  */
-#ifdef SparcArchitecture
+#if defined(SparcArchitecture) && !defined(Sparc64Architecture)
 
 # define BuildXF86MiscExt	NO
 # define BuildMITMiscExt	NO
 
 # if OSMajorVersion > 3 || OSMajorVersion == 3 && OSMinorVersion >= 2
 #  define HasWeakSymbols	YES
-#endif 
+# endif 
 
 # if OSMajorVersion == 2 || OSMajorVersion == 3 && OSMinorVersion < 2
 #  define ServerOSDefines 	-DDDXOSINIT
@@ -870,6 +853,7 @@ install::								@@\
 #  endif
 # endif
 
+# define StandardDefines	-DCSRG_BASED -Dsparc -D__sparc__
 # define XkbServerDefines	-DXKB_ALWAYS_USES_SOFT_REPEAT
 
 # define BuildXF86VidModeExt	NO
@@ -881,6 +865,13 @@ install::								@@\
 #  define OptimizedCDebugFlags	DefaultGcc2SparcOpt
 # endif
 
+# if UseElfFormat && !defined(AsVISOption)
+#  define AsVISOption		-Av9a
+#  ifndef AsOutputArchSize
+#   define AsOutputArchSize	32
+#  endif
+# endif
+
 #endif /* SparcArchitecture */
 
 /*
@@ -888,6 +879,16 @@ install::								@@\
  */
 
 #ifdef Sparc64Architecture
+
+# ifndef Xsun24Server
+#  define Xsun24Server		NO
+# endif
+# ifndef XsunServer
+#  define XsunServer		NO
+# endif
+# ifndef XsunMonoServer
+#  define XsunMonoServer	NO
+# endif
 
 # if OSMajorVersion == 3 && OSMinorVersion > 1 || OSMajorVersion > 3
 #  define HasWeakSymbols	YES
@@ -897,6 +898,7 @@ install::								@@\
 #  define XF86Server		YES
 # endif
 
+# define StandardDefines	-DCSRG_BASED -Dsparc -D__sparc__
 # define ServerExtraDefines	GccGasOption -D_XSERVER64 XFree86ServerDefines
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXOSINIT
 # define XkbServerDefines	-DXKB_ALWAYS_USES_SOFT_REPEAT
@@ -912,6 +914,13 @@ install::								@@\
 
 # if defined(DefaultGcc2SparcOpt) && !defined(OptimizedCDebugFlags)
 #  define OptimizedCDebugFlags	DefaultGcc2SparcOpt
+# endif
+
+# if UseElfFormat && !defined(AsVISOption)
+#  define AsVISOption		-Av9a
+#  ifndef AsOutputArchSize
+#   define AsOutputArchSize	64
+#  endif
 # endif
 
 #endif /* Sparc64Architecture */
@@ -947,6 +956,9 @@ install::								@@\
  * Generic settings for all architectures
  * which can be overridden by architecture specific sections above
  */
+#ifndef StandardDefines
+#define StandardDefines	-DCSRG_BASED
+#endif
 
 #if !defined(OptimizedCDebugFlags)
 # define OptimizedCDebugFlags	-O2
@@ -981,7 +993,6 @@ install::								@@\
 #else
 #  define ThreadedX			NO
 #endif
-
 
 /* Set this to YES when getpwuid_r is added to libc_r */
 #define HasThreadSafeAPI		NO

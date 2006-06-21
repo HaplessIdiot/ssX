@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.259 2006/03/16 16:50:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.260tsi Exp $ */
 
 /*
  *
@@ -105,7 +105,7 @@
 #include "xf86_ansic.h"
 #include "xisb.h"
 #include "vbe.h"
-#ifndef __OpenBSD__
+#if defined(__sparc__)
 #include "xf86sbusBus.h"
 #endif
 #include "compiler.h"
@@ -663,7 +663,7 @@ LOOKUP xfree86LookupTab[] = {
     SYMFUNC(xf86AddModuleInfo)
     SYMFUNC(xf86DeleteModuleInfo)
 
-#if defined(__sparc__) && !defined(__OpenBSD__)
+#if defined(__sparc__)
     /* xf86sbusBus.c */
     SYMFUNC(xf86ParseSbusBusString)
     SYMFUNC(xf86CompareSbusBusString)
