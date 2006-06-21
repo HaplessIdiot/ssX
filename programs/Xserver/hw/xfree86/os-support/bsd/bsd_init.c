@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.25tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.26tsi Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -300,7 +300,6 @@ xf86OpenConsole()
 #endif /* SYSCONS_SUPPORT || PCVT_SUPPORT */
 #ifdef WSCONS_SUPPORT
 	case WSCONS:
-	    fprintf(stderr, "xf86OpenConsole\n");
 	    /* xf86Info.consoleFd = open("/dev/wskbd0", 0); */
    	    break; 
 #endif
@@ -598,27 +597,35 @@ xf86OpenWScons()
 {
     int fd = -1;
     int mode = WSDISPLAYIO_MODE_MAPPED;
-    int i;
     char ttyname[16];
+
+#if defined(__NetBSD__)
+    int i;
 
     /* XXX Is this ok? */
     for (i = 0; i < 8; i++) {
-#if defined(__NetBSD__)
 	sprintf(ttyname, "/dev/ttyE%d", i);
-#elif defined(__OpenBSD__)
-	sprintf(ttyname, "/dev/ttyC%d", i);
-#endif
 	if ((fd = open(ttyname, 2)) != -1)
 	    break;
     }
-    if (fd != -1) {
+#elif defined(__OpenBSD__)
+    const char *c1, *c2;
+
+    for (c1 = "CDEFGHIJ"; *c1 && (fd < 0); c1++) {
+	for (c2 = "0123456789ab"; *c2 && (fd < 0); c2++) {
+	    sprintf(ttyname, "/dev/tty%c%c", *c1, *c2);
+	    fd = open(ttyname, O_RDWR);
+	}
+    }
+#endif
+    if (fd > -1) {
 	if (ioctl(fd, WSDISPLAYIO_SMODE, &mode) < 0) {
 	    FatalError("%s: WSDISPLAYIO_MODE_MAPPED failed (%s)\n%s",
 		       "xf86OpenConsole", strerror(errno),
 		       CHECK_DRIVER_MSG);
 	}
 	xf86Info.consType = WSCONS;
-	xf86Msg(X_PROBED, "Using wscons driver\n");
+	xf86Msg(X_PROBED, "Using wscons driver with %s\n", ttyname);
     }
     return fd;
 }
@@ -629,7 +636,7 @@ void
 xf86CloseConsole()
 {
 #if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
-    struct vt_mode   VT;
+    struct vt_mode VT;
 #endif
 
     switch (xf86Info.consType)

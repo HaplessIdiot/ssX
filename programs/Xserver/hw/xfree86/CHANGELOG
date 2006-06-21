@@ -1,4 +1,6 @@
 XFree86 4.6.99.2 (xx June 2006)
+  28. Make the server on OpenBSD look harder for a wscons console
+      (Marc La France).
   27. Fix -configure's re-ordering of device sections (Marc La France).
   26. Xterm patch #215 (Thomas Dickey).
   25. Add an interface to SPARC openprom for OpenBSD and NetBSD, but, for now,
@@ -20193,7 +20195,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3756 2006/06/20 00:42:37 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3757 2006/06/21 01:25:23 tsi Exp $
 
 
 
