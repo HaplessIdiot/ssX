@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.94 2006/06/19 13:56:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.95 2006/06/19 14:01:22 tsi Exp $ */
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1907,7 +1907,7 @@ setAccess(EntityPtr pEnt, xf86State state)
     if (state == OPERATING)
 	prop = pEnt->entityProp;
     else
-	prop = NEED_SHARED | NEED_MEM | NEED_IOI;
+	prop = NEED_SHARED | NEED_MEM | NEED_IO;
 
     switch (prop & NEED_SHARED) {
     case NEED_SHARED:
