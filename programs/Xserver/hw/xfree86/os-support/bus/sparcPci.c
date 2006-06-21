@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.22 2006/02/18 03:31:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.23tsi Exp $ */
 /*
  * Copyright (C) 2001-2005 The XFree86 Project, Inc.
  * All rights reserved.
@@ -89,6 +89,12 @@ sparcMapAperture(int iScreen, int Flags,
 
     if (result == MAP_FAILED)
 	FatalError("sparcMapAperture:  mmap failure:  %s\n", strerror(errno));
+
+#if !defined(sun) && !defined(__bsdi__) && \
+    !(defined(MACH) && defined(__GNU__))
+    /* Register this mapping */
+    xf86MakeNewMapping(iScreen, Flags, Base, Size, result);
+#endif
 
     return result;
 }

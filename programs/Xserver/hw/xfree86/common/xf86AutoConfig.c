@@ -45,7 +45,7 @@
  * Author: David Dawes <dawes@x-oz.com>.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AutoConfig.c,v 1.10 2005/07/26 18:32:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AutoConfig.c,v 1.11tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86Parser.h"
@@ -55,7 +55,7 @@
 #include "xf86_OSlib.h"
 #include "xf86Bus.h"
 
-#if defined(__sparc__) && !defined(__OpenBSD__)
+#if defined(__sparc__)
 #define SBUS_SUPPORT
 #endif
 

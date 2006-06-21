@@ -804,6 +804,9 @@ xf86MapSbusMem(sbusDevicePtr psdp, unsigned long offset, unsigned long size)
     pointer ret;
     unsigned long pagemask, off, len;
     unsigned int devOffset[2], fbSize;
+#ifdef __OpenBSD__
+    static const unsigned int fbmode = WSDISPLAYIO_MODE_MAPPED;
+#endif
 
     if (!psdp || !size)
 	return NULL;
@@ -813,6 +816,10 @@ xf86MapSbusMem(sbusDevicePtr psdp, unsigned long offset, unsigned long size)
 	if (psdp->fd == -1)
 	    return NULL;
 	psdp->mmapCount = 0;
+#ifdef __OpenBSD__
+	if (ioctl(psdp->fd, WSDISPLAYIO_SMODE, &fbmode) < 0)
+	    return NULL;
+#endif
     } else if (psdp->fd < 0) {
 	return NULL;
     }
@@ -852,6 +859,12 @@ xf86UnmapSbusMem(sbusDevicePtr psdp, pointer addr, unsigned long size)
     munmap((pointer)base, len);
 
     if (!--psdp->mmapCount) {
+#ifdef __OpenBSD__
+	static const unsigned int fbmode = WSDISPLAYIO_MODE_EMUL;
+
+	/* Ignore errors */
+	ioctl(psdp->fd, WSDISPLAYIO_SMODE, &fbmode);
+#endif
 	close(psdp->fd);
 	psdp->fd = -1;
     }

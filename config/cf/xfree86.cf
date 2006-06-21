@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.511 2006/04/26 00:28:16 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.512tsi Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -512,10 +512,9 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.511 2006/04/26 00:28:16 dawes Exp $
 
 /* SPARC and UltraSPARC drivers */
 
-#if  (defined(SparcArchitecture) || defined(Sparc64Architecture)) && \
+#if  defined(SparcArchitecture) && \
     !defined(LynxOSArchitecture) && \
-    !defined(NetBSDArchitecture) && \
-    !defined(OpenBSDArchitecture)
+    !defined(NetBSDArchitecture)
 # ifndef XF86Server
 #  define XF86Server		YES
 # endif
@@ -614,100 +613,6 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.511 2006/04/26 00:28:16 dawes Exp $
 #  define DriDrivers		ffb
 # endif
 
-#endif
-
-/* Sparc64 Drivers */
-#if defined(OpenBSDArchitecture) && defined(Sparc64Architecture)
-# ifndef XF86Server
-#  define XF86Server		YES
-# endif
-/* Amiga framebuffer module */
-# ifndef XF86AFB
-#  define XF86AFB		NO
-# endif
-/* 1bpp module */
-# ifndef XF1Bpp
-#  define XF1Bpp		YES
-# endif
-/* 4bpp module */
-# ifndef XF4Bpp
-#  define XF4Bpp		YES
-# endif
-/* 8/32bpp overlay module */
-# ifndef XF8_32Bpp
-#  define XF8_32Bpp		YES
-# endif
-/* 8/16bpp dual fb module */
-# ifndef XF8_16Bpp
-#  define XF8_16Bpp		YES
-# endif
-/* 24/32bpp conversion module */
-# ifndef XF24_32Bpp
-#  define XF24_32Bpp		YES
-# endif
-/* shadow fb module */
-# ifndef XFShadowFB
-#  define XFShadowFB		YES
-# endif
-/* vgahw module */
-# ifndef XF86VgaHw
-#  define XF86VgaHw		YES
-# endif
-/* fbdevhw module */
-# ifndef XF86FBDevHw
-#  define XF86FBDevHw		YES
-# endif
-/* XAA module */
-# ifndef XF86XAA
-#  define XF86XAA		YES
-# endif
-/* ramdac module */
-# ifndef XF86Ramdac
-#  define XF86Ramdac		YES
-# endif
-/* I2C module */
-# ifndef XF86I2C
-#  define XF86I2C		YES
-# endif
-/* DDC module */
-# ifndef XF86DDC
-#  define XF86DDC		YES
-# endif
-/* RAC (Resource Access Control) module */
-# ifndef XF86RAC
-#  define XF86RAC		YES
-# endif
-
-/* int10 module */
-# ifndef XF86Int10
-#  define XF86Int10		YES
-# endif
-# ifndef UseX86Emu
-#  define UseX86Emu		NO
-# endif
-/* vbe module */
-# ifndef XF86VBE
-#  define XF86VBE		YES
-# endif
-
-# ifndef DevelDrivers
-#  if XFree86Devel
-#   define DevelDrivers		/* */
-#  else
-#   define DevelDrivers		/* */
-#  endif
-# endif
-
-/* Pure PCI drivers should go first */
-# ifndef XF86CardDrivers
-#  define XF86CardDrivers	ati \
-				DevelDrivers \
-				XF86OSCardDrivers XF86ExtraCardDrivers
-# endif
-# define TdfxDriDriver		/**/
-# ifndef DriDrivers
-#  define DriDrivers		/**/
-# endif
 #endif
 
 /* MIPS drivers */

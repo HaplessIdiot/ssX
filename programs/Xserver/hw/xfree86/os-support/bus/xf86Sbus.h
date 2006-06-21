@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Sbus.h,v 1.10tsi Exp $ */
 /*
  * Platform specific SBUS and OpenPROM access declarations.
  *
@@ -20,7 +21,6 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Sbus.h,v 1.9 2004/12/07 21:53:46 tsi Exp $ */
 
 #ifndef _XF86_SBUS_H
 #define _XF86_SBUS_H
@@ -36,8 +36,22 @@
 #elif defined(SVR4)
 # include <sys/fbio.h>
 # include <sys/openpromio.h>
-#elif defined(__OpenBSD__) && defined(__sparc64__)
-/* XXX */
+#elif defined(__OpenBSD__)
+# include <machine/openpromio.h>
+  /* Translate from WSDISPLAY_TYPE_* to FBTYPE_* */
+# include <dev/wscons/wsconsio.h>
+# define FBTYPE_SUN2BW		WSDISPLAY_TYPE_SUNBW
+# define FBTYPE_SUN2COLOR	WSDISPLAY_TYPE_SUNCG2
+# define FBTYPE_SUN3COLOR	WSDISPLAY_TYPE_SUNCG3
+# define FBTYPE_SUN4COLOR	WSDISPLAY_TYPE_SUNCG4
+# define FBTYPE_SUNFAST_COLOR	WSDISPLAY_TYPE_SUNCG6
+# define FBTYPE_MEMCOLOR	WSDISPLAY_TYPE_SUNCG8
+# define FBTYPE_SUNGP3		WSDISPLAY_TYPE_SUNCG12
+# define FBTYPE_SUNGT		(-1)	/* Doesn't seem to exist */
+# define FBTYPE_SUNLEO		WSDISPLAY_TYPE_SUNLEO
+# define FBTYPE_MDICOLOR	WSDISPLAY_TYPE_SUNCG14
+# define FBTYPE_TCXCOLOR	WSDISPLAY_TYPE_SUNTCX
+# define FBTYPE_CREATOR		WSDISPLAY_TYPE_SUNFFB
 #elif defined(CSRG_BASED)
 # if defined(__FreeBSD__)
 #  include <sys/types.h>

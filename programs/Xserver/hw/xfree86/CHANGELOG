@@ -1,4 +1,5 @@
 XFree86 4.6.99.2 (xx June 2006)
+  29. Add support for UPA and SBUS devices on OpenBSD (Marc La France).
   28. Make the server on OpenBSD look harder for a wscons console
       (Marc La France).
   27. Fix -configure's re-ordering of device sections (Marc La France).
@@ -20195,7 +20196,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3757 2006/06/21 01:25:23 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3758 2006/06/21 01:35:49 tsi Exp $
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.95 2006/06/19 14:01:22 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.96tsi Exp $ */
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -130,7 +130,7 @@ void
 xf86BusProbe(void)
 {
     xf86PciProbe();
-#if defined(__sparc__) && !defined(__OpenBSD__)
+#if defined(__sparc__)
     xf86SbusProbe();
 #endif
 }
@@ -2362,7 +2362,7 @@ xf86PostProbe(void)
 
     if (fbSlotClaimed) {
 	if (pciSlotClaimed || isaSlotClaimed
-#if defined(__sparc__) && !defined(__OpenBSD__)
+#if defined(__sparc__)
 	    || sbusSlotClaimed
 #endif
 	    ) {
@@ -3283,7 +3283,7 @@ xf86LocateMemoryArea(int entityIndex, char **devName,
 		   pEntity->pciBusId.func),
 	    devName, devOffset, fbSize, fbOffset, flags);
 
-#if defined(__sparc__) && !defined(__OpenBSD__)
+#if defined(__sparc__)
     case BUS_SBUS:
 	return xf86LocateSbusMemoryArea(xf86GetSbusInfoForEntity(entityIndex),
 					devName, devOffset,

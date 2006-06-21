@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.c,v 3.10 2005/10/14 15:16:34 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.c,v 3.11tsi Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -56,20 +56,32 @@ Bool sbusSlotClaimed = FALSE;
 static int xf86nSbusInfo;
 
 static void
+#ifdef __OpenBSD__
+CheckSbusDevice(const char *device)
+#else
 CheckSbusDevice(const char *device, int fbNum)
+#endif
 {
     int fd, i;
-    struct fbgattr fbattr;
     sbusDevicePtr psdp;
 #ifdef sun
     struct vis_identifier vid;
+#endif
+#ifdef __OpenBSD__
+    struct wsdisplay_fbinfo fbinfo;
+#else
+    struct fbgattr fbattr;
 #endif
 
     fd = open(device, O_RDONLY, 0);
     if (fd < 0)
 	return;
 
+#ifdef __OpenBSD__
+    memset(&fbinfo, 0, sizeof(fbinfo));
+#else
     memset(&fbattr, 0, sizeof(fbattr));
+#endif
 
 #ifdef sun
     if (ioctl(fd, VIS_GETIDENTIFIER, &vid) >= 0)
@@ -87,6 +99,25 @@ CheckSbusDevice(const char *device, int fbNum)
     }
     else
 #endif
+#ifdef __OpenBSD__
+    {
+	int fbtype;
+
+	if (ioctl(fd, WSDISPLAYIO_GTYPE, &fbtype) < 0) {
+	    close(fd);
+	    return;
+	}
+
+	if (ioctl(fd, WSDISPLAYIO_GINFO, &fbinfo) < 0) {
+	    close(fd);
+	    return;
+	}
+
+	for (i = 0; sbusDeviceTable[i].devId; i++)
+	    if (sbusDeviceTable[i].fbType == fbtype)
+		break;
+    }
+#else
     {
 	if (ioctl(fd, FBIOGATTR, &fbattr) < 0) {
 	    if (ioctl(fd, FBIOGTYPE, &fbattr.fbtype) < 0) {
@@ -99,6 +130,7 @@ CheckSbusDevice(const char *device, int fbNum)
 	    if (sbusDeviceTable[i].fbType == fbattr.fbtype.fb_type)
 		break;
     }
+#endif
 
     close(fd);
 
@@ -110,28 +142,51 @@ CheckSbusDevice(const char *device, int fbNum)
     xf86SbusInfo[xf86nSbusInfo] = NULL;
     xf86SbusInfo[xf86nSbusInfo - 1] = psdp = xnfcalloc(sizeof(sbusDevice), 1);
     psdp->devId = sbusDeviceTable[i].devId;
-    psdp->fbNum = fbNum;
     psdp->device = xnfstrdup(device);
     psdp->descr = sbusDeviceTable[i].descr;
+#ifdef __OpenBSD__
+    psdp->fbNum = xf86nSbusInfo - 1;
+    psdp->width = fbinfo.width;
+    psdp->height = fbinfo.height;
+#else
+    psdp->fbNum = fbNum;
     psdp->width = fbattr.fbtype.fb_width;
     psdp->height = fbattr.fbtype.fb_height;
+#endif
     psdp->fd = -1;
 }
 
 void
 xf86SbusProbe(void)
 {
-    int i, useProm = 0;
+    int useProm = 0;
     char fbDevName[32];
     sbusDevicePtr psdp, *psdpp;
 
     xf86SbusInfo = xalloc(sizeof(psdp));
     *xf86SbusInfo = NULL;
 
-    for (i = 0; i < 32; i++) {
-	sprintf(fbDevName, "/dev/fb%d", i);
-	CheckSbusDevice(fbDevName, i);
+#ifdef __OpenBSD__
+    {
+	const char *c1, *c2;
+
+	for (c1 = "CDEFGHIJ"; *c1; c1++) {
+	    for (c2 = "0123456789ab"; *c2; c2++) {
+		sprintf(fbDevName, "/dev/tty%c%c", *c1, *c2);
+		CheckSbusDevice(fbDevName);
+	    }
+	}
     }
+#else
+    {
+	int i;
+
+	for (i = 0; i < 32; i++) {
+	    sprintf(fbDevName, "/dev/fb%d", i);
+	    CheckSbusDevice(fbDevName, i);
+	}
+    }
+#endif
 
     if (sparcPromInit() >= 0) {
 	useProm = 1;
@@ -331,54 +386,57 @@ xf86ParseSbusBusString(const char *busID, int *fbNum)
 {
     /*
      * The format is assumed to be one of:
-     * "fbN", e.g. "fb1", which means the device corresponding to /dev/fbN
+     * the name of the device (with or without the "/dev/" part)
      * "nameN", e.g. "cgsix0", which means Nth instance of card NAME
      * "/prompath", e.g. "/sbus@0,10001000/cgsix@3,0" which is PROM pathname
      * to the device.
      */
 
+    sbusDevicePtr *psdpp;
     const char *id;
-    int i, len;
+    int i, len, devId;
 
     if (StringToBusType(busID, &id) != BUS_SBUS)
 	return FALSE;
 
-    if (*id != '/') {
-	if (!strncmp(id, "fb", 2)) {
-	    if (!isdigit(id[2]))
-		return FALSE;
-
-	    *fbNum = atoi(id + 2);
+    for (psdpp = xf86SbusInfo;  *psdpp; ++psdpp) {
+	if (!strcmp((*psdpp)->device, id)) {
+	    *fbNum = (*psdpp)->fbNum;
 	    return TRUE;
+	}
+    }
 
-	} else {
-	    sbusDevicePtr *psdpp;
-	    int devId;
+    if (*id != '/') {
+	for (psdpp = xf86SbusInfo;  *psdpp; ++psdpp) {
+	    if (!strcmp((*psdpp)->device + 5, id)) {
+		*fbNum = (*psdpp)->fbNum;
+		return TRUE;
+	    }
+	}
 
-	    len = 0;
-	    for (i = 0; sbusDeviceTable[i].devId; i++) {
-		len = strlen(sbusDeviceTable[i].promName);
-		if (!strncmp(sbusDeviceTable[i].promName, id, len) &&
-		    isdigit(id[len]))
-		    break;
+	len = 0;
+	for (i = 0; sbusDeviceTable[i].devId; i++) {
+	    len = strlen(sbusDeviceTable[i].promName);
+	    if (!strncmp(sbusDeviceTable[i].promName, id, len) &&
+		isdigit(id[len]))
+		break;
+	}
+
+	devId = sbusDeviceTable[i].devId;
+	if (!devId)
+	    return FALSE;
+
+	i = atoi(id + len);
+	for (psdpp = xf86SbusInfo; *psdpp; ++psdpp) {
+	    if ((*psdpp)->devId != devId)
+		continue;
+
+	    if (!i) {
+		*fbNum = (*psdpp)->fbNum;
+		return TRUE;
 	    }
 
-	    devId = sbusDeviceTable[i].devId;
-	    if (!devId)
-		return FALSE;
-
-	    i = atoi(id + len);
-	    for (psdpp = xf86SbusInfo; *psdpp; ++psdpp) {
-		if ((*psdpp)->devId != devId)
-		    continue;
-
-		if (!i) {
-		    *fbNum = (*psdpp)->fbNum;
-		    return TRUE;
-		}
-
-		i--;
-	    }
+	    i--;
 	}
 
 	return FALSE;
@@ -743,6 +801,13 @@ typedef struct _sbusCmap {
 
 #define SBUSCMAPPTR(pScreen) (pScreen)->devPrivates[sbusPaletteIndex].ptr
 
+#ifdef __OpenBSD__
+/* Compatibility definitions */
+# define fbcmap wsdisplay_cmap
+# define FBIOGETCMAP WSDISPLAYIO_GETCMAP
+# define FBIOPUTCMAP WSDISPLAYIO_PUTCMAP
+#endif
+
 static void
 xf86SbusCmapLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
 			LOCO *colors, VisualPtr pVisual)
@@ -851,6 +916,22 @@ xf86SbusHandleColormaps(ScreenPtr pScreen, sbusDevicePtr psdp)
 /*
  * Cursor control.
  */
+
+#ifdef __OpenBSD__
+/* Compatibility definitions */
+# define fbcursor wsdisplay_cursor
+# define set which
+
+# define FBIOSCURSOR     WSDISPLAYIO_SCURSOR
+# define FBIOGCURSOR     WSDISPLAYIO_GCURSOR
+
+# define FB_CUR_SETCUR   WSDISPLAY_CURSOR_DOCUR
+# define FB_CUR_SETPOS   WSDISPLAY_CURSOR_DOPOS
+# define FB_CUR_SETHOT   WSDISPLAY_CURSOR_DOHOT
+# define FB_CUR_SETCMAP  WSDISPLAY_CURSOR_DOCMAP
+# define FB_CUR_SETSHAPE WSDISPLAY_CURSOR_DOSHAPE
+# define FB_CUR_SETALL   WSDISPLAY_CURSOR_DOALL
+#endif
 
 /* Tell OS that we are driving the HW cursor ourselves. */
 void

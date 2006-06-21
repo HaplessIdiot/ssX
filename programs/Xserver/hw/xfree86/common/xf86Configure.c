@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.90tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.91tsi Exp $ */
 /*
  * Copyright 2000-2002 by Alan Hourihane, Flint Mountain, North Wales.
  *
@@ -90,7 +90,7 @@
 #include "xf86Parser.h"
 #include "xf86tokens.h"
 #include "xf86DDC.h"
-#if defined(__sparc__) && !defined(__OpenBSD__)
+#if defined(__sparc__)
 #include "xf86Bus.h"
 #include "xf86Sbus.h"
 #endif
@@ -99,7 +99,7 @@
 typedef struct _DevToConfig {
     GDevRec GDev;
     pciVideoPtr pVideo;
-#if defined(__sparc__) && !defined(__OpenBSD__)
+#if defined(__sparc__)
     sbusDevicePtr sVideo;
 #endif
     int iDriver;
@@ -170,7 +170,7 @@ xf86AddBusDeviceToConfigure(const char *driver, BusType bus, void *busData, int 
 	    if (!DevToConfig[i].pVideo)
 		return NULL;
 	break;
-#if defined(__sparc__) && !defined(__OpenBSD__)
+#if defined(__sparc__)
     case BUS_SBUS:
 	for (i = 0;  i < nDevToConfig;  i++)
 	    if (DevToConfig[i].sVideo &&
@@ -249,7 +249,7 @@ xf86AddBusDeviceToConfigure(const char *driver, BusType bus, void *busData, int 
 	NewDevice.GDev.identifier = "ISA Adapter";
 	NewDevice.GDev.busID = "ISA";
 	break;
-#if defined(__sparc__) && !defined(__OpenBSD__)
+#if defined(__sparc__)
     case BUS_SBUS: {
 	char *promPath = NULL;
 	NewDevice.sVideo = (sbusDevicePtr) busData;
