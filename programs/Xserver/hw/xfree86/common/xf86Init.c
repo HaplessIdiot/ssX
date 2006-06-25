@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.241tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.242 2006/06/19 13:43:26 tsi Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -211,7 +211,14 @@ static PixmapFormatRec formats[MAXFORMATS] = {
 #endif
 };
 
-static int numFormats = sizeof(formats) / sizeof(formats[0]);
+#ifdef RENDER
+#define NUMDEFFORMATS 7
+#else
+#define NUMDEFFORMATS 6
+#endif
+
+static int numFormats = NUMDEFFORMATS;
+
 static Bool formatsDone = FALSE;
 
 InputDriverRec xf86KEYBOARD = {
