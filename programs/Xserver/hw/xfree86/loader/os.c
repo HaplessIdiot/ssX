@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/os.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/os.c,v 1.7 2005/07/19 14:42:26 tsi Exp $ */
 
 /*
  * Copyright (c) 1999-2002 by The XFree86 Project, Inc.
@@ -56,6 +56,8 @@
 
 #if defined(__linux__)
 #define OSNAME "linux"
+#elif defined(__DragonFly__)
+#define OSNAME "dragonfly"
 #elif defined(__FreeBSD__)
 #define OSNAME "freebsd"
 #elif defined(__NetBSD__)

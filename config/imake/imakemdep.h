@@ -23,9 +23,9 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.81 2005/03/28 02:50:58 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.82 2005/06/29 01:14:08 dawes Exp $ */
 /*
- * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -330,7 +330,8 @@ in this Software without prior written authorization from The Open Group.
 #if defined(__386BSD__)
 #define DEFAULT_CPP "/usr/libexec/cpp"
 #endif
-#if defined(__FreeBSD__)  || defined(__NetBSD__) || defined(__OpenBSD__)
+#if defined(__FreeBSD__)  || defined(__NetBSD__) || defined(__OpenBSD__) || \
+    defined(__DragonFly__)
 #define USE_CC_E
 #endif
 #if defined(__sgi) && defined(__ANSI_CPP__)
@@ -394,7 +395,8 @@ char *cpp_argv[ARGUMENTS] = {
 #endif
 #if defined(__386BSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || \
     defined(__FreeBSD__) || defined(MACH) || defined(linux) || \
-    defined(__GNU__) || defined(__bsdi__) || defined(__GNUC__)
+    defined(__GNU__) || defined(__bsdi__) || defined(__GNUC__) || \
+    defined(__DragonFly__)
 # ifdef __i386__
 	"-D__i386__",
 #  if defined(__GNUC__) && (__GNUC__ >= 3)
@@ -852,7 +854,7 @@ char *cpp_argv[ARGUMENTS] = {
 #  define DEFAULT_OS_MINOR_REV   "r %*d.%[0-9]"
 #  define DEFAULT_OS_TEENY_REV   "v %[0-9]" 
 /* # define DEFAULT_OS_NAME        "srm %[^\n]" */ /* Not useful on ISC */
-# elif defined(__FreeBSD__) || defined(__OpenBSD__)
+# elif defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__DragonFly__)
 /* BSD/OS too? */
 /* uname -r returns "x.y[.z]-mumble", e.g. "2.1.5-RELEASE" or "2.2-0801SNAP" */
 #  define DEFAULT_OS_MAJOR_REV   "r %[0-9]"
@@ -1302,6 +1304,9 @@ struct symtab	predefs[] = {
 #ifdef __FreeBSD__
 	{"__FreeBSD__", DEF_STRINGIFY(__FreeBSD__)},
 #endif
+#ifdef __DragonFly__
+	{"__DragonFly__", DEF_STRINGIFY(__DragonFly__)},
+#endif
 #ifdef __OpenBSD__
 	{"__OpenBSD__", "1"},
 #endif
@@ -1467,11 +1472,14 @@ typedef enum {
   netBSD,
   LinuX,
   emx,
-  win32
+  win32,
+  dragonFly
 } System;
 
 #   ifdef linux
 System sys = LinuX;
+#   elif defined __DragonFly__
+System sys = dragonfly;
 #   elif defined __FreeBSD__
 System sys = freebsd;
 #   elif defined __NetBSD__

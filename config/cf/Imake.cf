@@ -16,7 +16,7 @@
  *
  *     4.  Create a .cf file with the name given by MacroFile.
  */
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.92tsi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.93 2006/06/21 04:03:15 tsi Exp $
 
 #if defined(__APPLE__)
 # undef __APPLE__
@@ -285,6 +285,36 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.92tsi Exp $
 #if defined(__FreeBSD_kernel__)
 #define KFreeBSDArchitecture
 #endif
+
+#ifdef __DragonFly__
+# define MacroIncludeFile <DragonFly.cf>
+# define MacroFile DragonFly.cf
+# undef __DragonFly__
+# define DragonFlyArchitecture
+# ifdef __i386__
+#  define i386BsdArchitecture
+#  define i386Architecture
+#  undef i386
+# endif
+# ifdef __alpha__
+#  define AlphaBsdArchitecture
+#  define AlphaArchitecture
+#  undef __alpha__
+# endif
+# ifdef __sparc64__
+#  define Sparc64Architecture
+#  undef __sparc64__
+# endif
+# ifdef __ia64__
+#  define ia64Architecture
+#  undef __ia64__
+# endif
+# ifdef __amd64__
+#  define AMD64Architecture
+#  undef __amd64__
+#  undef __x86_64__
+# endif
+#endif /* __DragonFly__ */
 
 #ifdef AMOEBA
  /* Should be before the 'sun' entry because we may be cross-compiling */

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.37tsi Exp $
+XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.38 2005/10/14 15:15:52 tsi Exp $
 
 #ifdef BuilderEMailAddr
 BUILDERADDR = BuilderEMailAddr
@@ -45,9 +45,11 @@ BUGMSG = -DBUILDERADDR='$(BUILDERADDR)'
 #define HasGccStackProtector	NO
 #endif
 
+#if 0
 #if HasGccStackProtector
 MODULE_GCC_FLAGS1 = -fno-stack-protector
 #endif 
+#endif
 
 #ifndef HasGccMergeConstants
 #define HasGccMergeConstants	NO
