@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.79 2006/04/03 18:08:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.80 2006/04/08 17:53:40 dawes Exp $ */
 
 /*
  * Copyright 1995-1998 by Metro Link, Inc.
@@ -2100,11 +2100,14 @@ LoaderClearOptions(unsigned long opts)
 }
 
 unsigned long LoaderDebugLevel = 0;
+static unsigned long LoaderSaveDebugLevel = 0;
+static const char **LoaderDebugList = NULL;
+static int numLoaderDebugList = 0;
 
 void
 LoaderSetDebug(unsigned long level)
 {
-    LoaderDebugLevel = level;
+    LoaderSaveDebugLevel = LoaderDebugLevel = level;
 }
 
 void
@@ -2116,6 +2119,47 @@ LoaderDebugMsg(unsigned long debug, const char *f, ...)
     if (debug & LoaderDebugLevel)
 	VErrorF(f, args);
     va_end(args);
+}
+
+static int
+LoaderDebugModuleInList(const char *module)
+{
+    int i;
+
+    /* If no list, debugging applies to all modules. */
+    if (!LoaderDebugList || !numLoaderDebugList)
+	return 1;
+
+    for (i = 0; i < numLoaderDebugList; i++)
+	if (LoaderDebugList[i] && strcmp(module, LoaderDebugList[i]) == 0)
+	    return 1;
+    return 0;
+}
+
+void
+LoaderDebugAddModule(const char *module)
+{
+    const char **l;
+
+    if (LoaderDebugList && LoaderDebugModuleInList(module))
+	return;
+
+    numLoaderDebugList++;
+    l = xrealloc(LoaderDebugList,
+		 numLoaderDebugList * sizeof(*LoaderDebugList));
+    if (l) {
+	l[numLoaderDebugList - 1] = module;
+	LoaderDebugList = l;
+    }
+}
+
+void
+LoaderDebugForModule(const char *module)
+{
+    if (LoaderDebugModuleInList(module))
+	LoaderDebugLevel = LoaderSaveDebugLevel;
+    else
+	LoaderDebugLevel = 0;
 }
 
 /*
