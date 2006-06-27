@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.25 2006/03/16 16:50:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.26 2006/04/08 17:53:40 dawes Exp $ */
 
 /*
  *
@@ -175,6 +175,7 @@ void LoaderResetOptions(void);
 void LoaderSetOptions(unsigned long);
 void LoaderClearOptions(unsigned long);
 void LoaderSetDebug(unsigned long);
+void LoaderDebugAddModule(const char *module);
 
 int LoaderPrintSymbol(unsigned long);
 

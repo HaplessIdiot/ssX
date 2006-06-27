@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.32 2006/03/09 17:34:43 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.33 2006/03/16 16:50:34 dawes Exp $ */
 
 /*
  *
@@ -345,6 +345,7 @@ extern ModuleVersions LoaderVersionInfo;
 
 extern unsigned long LoaderOptions;
 extern unsigned long LoaderDebugLevel;
+extern void LoaderDebugForModule(const char *module);
 
 /* Internal Functions */
 

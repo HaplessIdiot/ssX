@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.78 2006/03/16 16:50:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.79 2006/03/26 02:25:08 dawes Exp $ */
 
 /*
  *
@@ -1003,6 +1003,7 @@ LoadModule(const char *module, const char *path, const char **subdirlist,
 
     patterns = InitPatterns(patternlist);
     name = LoaderGetCanonicalName(module, patterns);
+    LoaderDebugForModule(name);
     noncanonical = (name && strcmp(module, name) != 0);
     if (noncanonical) {
 	xf86ErrorFVerb(3, " (%s)\n", name);

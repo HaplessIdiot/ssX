@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.242 2006/06/19 13:43:26 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.243 2006/06/25 04:12:54 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -1729,6 +1729,12 @@ ddxProcessArgument(int argc, char **argv, int i)
 	if (++i >= argc)
 	    return 0;
 	LoaderSetDebug(atoi(argv[i]));
+	return 2;
+    }
+    if (!strcmp(argv[i], "-loaderdebugmod")) {
+	if (++i >= argc)
+	    return 0;
+	LoaderDebugAddModule(argv[i]);
 	return 2;
     }
 #endif
