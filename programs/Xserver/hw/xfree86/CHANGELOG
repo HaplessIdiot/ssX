@@ -1,4 +1,5 @@
 XFree86 4.6.99.3 (xx July 2006)
+  36. Fix mga_hal build problem (#10659, Peter Breitenlohner).
   35. Don't disable gcc stack protector for modules (David Dawes).
   34. Basic support for building on DragonFly (David Dawes).
   33. Don't limit imake's gcc stack protector test to OpenBSD (David Dawes).
@@ -20208,7 +20209,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3761 2006/06/27 00:43:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3762 2006/06/27 00:52:48 dawes Exp $
 
 
 
