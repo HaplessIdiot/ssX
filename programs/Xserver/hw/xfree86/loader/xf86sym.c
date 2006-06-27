@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.260tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.261 2006/06/21 04:03:17 tsi Exp $ */
 
 /*
  *
@@ -23,7 +23,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 /*
- * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -263,8 +263,9 @@ void _savef27();
 void _savef28();
 void _savef29();
 
-/* even if we compile without -DNO_INLINE we still provide
- * the usual port i/o functions for module use
+/*
+ * Even if we compile without -DNO_INLINE we still provide
+ * the usual port i/o functions for module use.
  */
 
 extern volatile unsigned char *ioBase;
@@ -283,6 +284,14 @@ extern void stw_brx(unsigned short, volatile unsigned char *, int);
 extern unsigned long ldl_brx(volatile unsigned char *, int);
 extern unsigned short ldw_brx(volatile unsigned char *, int);
 #endif
+
+/*
+ * For propolice/gcc stack protector.
+ */
+extern long __guard[8];
+extern void __stack_smash_handler(char func[], int damaged  __unused);
+#pragma weak __guard
+#pragma weak __stack_smash_handler
 
 /* XFree86 things */
 
@@ -1292,6 +1301,12 @@ LOOKUP xfree86LookupTab[] = {
     SYMFUNC(_Qp_dtoq)
 #endif
 #endif
+
+    /*
+     * For propolice/gcc stack protector.
+     */
+    SYMFUNC(__stack_smash_handler)
+    SYMVAR(__guard)
 
     /* Some variables. */
 

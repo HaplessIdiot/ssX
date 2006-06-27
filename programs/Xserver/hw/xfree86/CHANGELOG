@@ -1,10 +1,13 @@
 XFree86 4.6.99.3 (xx July 2006)
-  33. Don't limit imake's gcc stack protector test to OpenBSD.
+  35. Don't disable gcc stack protector for modules (David Dawes).
+  34. Basic support for building on DragonFly (David Dawes).
+  33. Don't limit imake's gcc stack protector test to OpenBSD (David Dawes).
   32. Make imake's methods of finding the cc (gcc) command to use
       for its internal tests consistent, and thus fix bad PostIncDir
       settings when using a compiler from other than the built-in set of paths
       (David Dawes).
-  31. Add an option to imake to save the temporary .c file that it generates.
+  31. Add an option to imake to save the temporary .c file that it generates
+      (David Dawes).
   30. Fix crash introduced by recent xf86Init.c changes (David Dawes).
 
 XFree86 4.6.99.2 (21 June 2006)
@@ -20205,7 +20208,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3760 2006/06/21 11:03:00 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3761 2006/06/27 00:43:51 dawes Exp $
 
 
 
