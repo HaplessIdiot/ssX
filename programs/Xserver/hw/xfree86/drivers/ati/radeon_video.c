@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.31tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.32 2005/10/14 15:16:37 tsi Exp $ */
 
 #include "radeon.h"
 #include "radeon_macros.h"
@@ -165,7 +165,7 @@ typedef struct tagREF_TRANSFORM
 } REF_TRANSFORM;
 
 /* Parameters for ITU-R BT.601 and ITU-R BT.709 colour spaces */
-REF_TRANSFORM trans[2] =
+static REF_TRANSFORM trans[2] =
 {
     {1.1678, 0.0, 1.6007, -0.3929, -0.8154, 2.0232, 0.0}, /* BT.601 */
     {1.1678, 0.0, 1.7980, -0.2139, -0.5345, 2.1186, 0.0}  /* BT.709 */
@@ -181,7 +181,7 @@ typedef struct
 } GAMMA_SETTINGS;
 
 /* Recommended gamma curve parameters */
-GAMMA_SETTINGS def_gamma[18] =
+static GAMMA_SETTINGS def_gamma[18] =
 {
     {RADEON_OV0_GAMMA_000_00F, 0x100, 0x0000},
     {RADEON_OV0_GAMMA_010_01F, 0x100, 0x0020},
