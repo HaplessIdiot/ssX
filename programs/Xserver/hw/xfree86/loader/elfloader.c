@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.71 2006/04/08 17:53:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.72 2006/06/06 01:20:43 dawes Exp $ */
 
 /*
  *
@@ -1959,11 +1959,12 @@ Elf_RelocateEntry(ELFRelocPtr p)
 
     case R_ALPHA_GPRELHIGH:
 	{
+	    int nonfatal = 0;
 	    dest64 = (unsigned long *)(secp + rel->r_offset);
 	    dest16 = (unsigned short *)dest64;
 
 #if LOADERDEBUG
-	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "R_ALPHA_GPRELLOW %s\t",
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "R_ALPHA_GPRELHIGH %s\t",
 		     ElfGetSymbolName(elffile, ELF_R_SYM(rel->r_info)));
 	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "secp=%p\t", secp);
 	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "symval=%lx\t", symval);
@@ -1976,6 +1977,11 @@ Elf_RelocateEntry(ELFRelocPtr p)
 #if LOADERDEBUG
 	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "symval=%lx\t", symval);
 #endif
+	    /*
+	     * R_ALPHA_GPRELHIGH relocations to LoaderDefaultFunc should be
+	     * temporary, so ignore out of range problems with them.
+	     */
+	    nonfatal = (symval == (Elf_Addr) &LoaderDefaultFunc);
 	    symval = ((unsigned char *)symval) -
 		    ((unsigned char *)elffile->got);
 #if LOADERDEBUG
@@ -1983,10 +1989,22 @@ Elf_RelocateEntry(ELFRelocPtr p)
 #endif
 	    symval = ((long)symval >> 16) + ((symval >> 15) & 1);
 	    if ((long)symval > 0x7fff || (long)symval < -(long)0x8000) {
-		FatalError
-			("R_ALPHA_GPRELHIGH symval-got is too large for %s:%lx (%ld)\n",
-			 ElfGetSymbolName(elffile, ELF_R_SYM(rel->r_info)),
-			 symval, symval);
+		if (nonfatal) {
+#if LOADERDEBUG
+		    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL,
+				   "R_ALPHA_GPRELHIGH symval-got is too large "
+				   "for %s:%lx (%ld)\n", 
+				   ElfGetSymbolName(elffile,
+						    ELF_R_SYM(rel->r_info)),
+				   symval, symval);
+#endif
+		} else {
+		    FatalError("R_ALPHA_GPRELHIGH symval-got is too large "
+			       "for %s:%lx (%ld)\n",
+			       ElfGetSymbolName(elffile,
+						ELF_R_SYM(rel->r_info)),
+			       symval, symval);
+		}
 	    }
 
 #if LOADERDEBUG
@@ -2217,8 +2235,8 @@ Elf_RelocateEntry(ELFRelocPtr p)
 #if LOADERDEBUG
 	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "R_ALPHA_BRSGP %s\t",
 			   ElfGetSymbolName(elffile, ELF_R_SYM(rel->r_info)));
-	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "secp=%lx\t", secp);
-	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "dest32=%lx\t", dest32);
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "secp=%p\t", secp);
+	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "dest32=%p\t", dest32);
 	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "symval=%lx\t", symval);
 	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "*dest32=%8.8x\t", *dest32);
 #endif
