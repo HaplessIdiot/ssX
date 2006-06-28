@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/SM/sm_genid.c,v 3.18 2004/01/20 03:36:27 dawes Exp $ */
+/* $XFree86: xc/lib/SM/sm_genid.c,v 3.19 2005/03/23 03:11:25 dawes Exp $ */
 
 /*
  * Author: Ralph Mor, X Consortium
@@ -174,8 +174,12 @@ SmsGenerateClientID(SmsConn smsConn)
     {
 	ptr2 = strchr (ptr1, '.');
 	len = ptr2 - ptr1;
-	if (!ptr2 || len > 3)
+	if (!ptr2 || len > 3) {
+#if defined(IPv6) && defined(AF_INET6)
+	    freeaddrinfo(first_ai);
+#endif
 	    return (NULL);
+	}
 	strncpy (temp, ptr1, len);
 	temp[len] = '\0';
 	decimal[i] = atoi (temp);

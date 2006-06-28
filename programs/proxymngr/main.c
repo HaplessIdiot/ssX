@@ -23,7 +23,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86: xc/programs/proxymngr/main.c,v 1.9 2003/07/09 15:27:36 tsi Exp $ */
+/* $XFree86: xc/programs/proxymngr/main.c,v 1.10 2006/01/09 15:00:49 dawes Exp $ */
 
 #include <stdlib.h>
 #include "pmint.h"
@@ -516,8 +516,6 @@ Bool		 swap;
 			hints.ai_flags = AI_CANONNAME;
 			if (getaddrinfo(hostname, NULL, &hints, &ai) == 0) {
 			    canonname = ai->ai_canonname;
-			} else {
-			    ai = NULL;
 			}
 		    }
 #else
