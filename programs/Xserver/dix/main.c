@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.49 2006/02/19 15:51:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.50 2006/03/16 21:43:59 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -259,6 +259,9 @@ main(int argc, char *argv[], char *envp[])
 #endif
 
     InitConnectionLimits();
+
+    /* Setup the allocator so that xalloc/xfree can be used early. */
+    OsInitAllocator();
 
     /* These are needed by some routines which are called from interrupt
      * handlers, thus have no direct calling path back to main and thus
