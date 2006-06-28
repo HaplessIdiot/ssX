@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PM.c,v 3.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PM.c,v 3.11 2005/10/14 15:16:33 tsi Exp $ */
 /*
  * Copyright (c) 2000-2002 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -84,7 +84,7 @@ suspend (pmEvent event, Bool undo)
     int i;
     InputInfoPtr pInfo;
 
-   xf86inSuspend = TRUE;
+    xf86inSuspend = TRUE;
     
     for (i = 0; i < xf86NumScreens; i++) {
         xf86EnableAccess(xf86Screens[i]);

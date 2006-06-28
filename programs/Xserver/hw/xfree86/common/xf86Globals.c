@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.46 2005/10/14 15:16:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.47 2006/03/02 03:00:36 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -236,9 +236,9 @@ xf86InfoRec xf86Info = {
 	{ FALSE, NULL, FALSE, FALSE, },	/* grabInfo */
 	NULL,		/* config */
 	NULL,		/* serverLayout */
-	NULL,		/* configFiles */
-	NULL,		/* configFlags */
-	NULL		/* configModules */
+	NULL,		/* confFiles */
+	NULL,		/* confFlags */
+	NULL		/* confModules */
 };
 const char *xf86ConfigFile = NULL;
 Bool xf86LogFileWasOpened = FALSE;

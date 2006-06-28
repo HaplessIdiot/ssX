@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.243 2006/06/25 04:12:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.244 2006/06/27 18:43:59 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -172,9 +172,9 @@ static Bool doLoaderTest = FALSE;
 
 /* forward declarations */
 
-static void xf86PrintBanner(void);
-static void xf86PrintMarkers(void);
-static void xf86RunVtInit(void);
+static void PrintBanner(void);
+static void PrintMarkers(void);
+static void RunVtInit(void);
 
 static Bool autoconfig = FALSE;
 static Bool appendauto = FALSE;
@@ -316,7 +316,7 @@ PostConfigInit(void)
 
     if (!noVT) {
 	/* Run an external VT Init program if specified in the config file */
-	xf86RunVtInit();
+	RunVtInit();
     }
 
     /* Do this after XF86Config is read (it's normally in OsInit()) */
@@ -384,8 +384,8 @@ InitOutput(ScreenInfo * pScreenInfo, int argc, char **argv)
 
 	xf86FilePaths->identifier = xstrdup("<combined pre-config>");
 
-	xf86PrintBanner();
-	xf86PrintMarkers();
+	PrintBanner();
+	PrintMarkers();
 	if (xf86FilePaths->logFile) {
 	    time_t t;
 	    const char *ct;
@@ -1596,11 +1596,6 @@ xf86SetLogVerbosity(int verb)
 int
 ddxProcessArgument(int argc, char **argv, int i)
 {
-    /*
-     * Note: can't use xalloc/xfree here because OsInit() hasn't been called
-     * yet.  Use malloc/free instead.
-     */
-
     /* Make a copy of the command line to log later. */
     if (!cmdline) {
 	int j, len;
@@ -1608,7 +1603,7 @@ ddxProcessArgument(int argc, char **argv, int i)
 	for (j = 0; j < argc; j++) {
 	    if (cmdline) {
 		len = strlen(argv[j]) + 1 + strlen(cmdline) + 1;
-		cmdline = realloc(cmdline, len);
+		cmdline = xrealloc(cmdline, len);
 		if (!cmdline)
 		    FatalError
 			    ("Cannot allocate memory for the command line.\n");
@@ -1616,7 +1611,7 @@ ddxProcessArgument(int argc, char **argv, int i)
 		strlcat(cmdline, argv[j], len);
 	    } else {
 		len = strlen(argv[j]) + 1;
-		cmdline = malloc(len);
+		cmdline = xalloc(len);
 		if (!cmdline)
 		    FatalError
 			    ("Cannot allocate memory for the command line.\n");
@@ -1630,7 +1625,8 @@ ddxProcessArgument(int argc, char **argv, int i)
 	if (!strcmp(argv[i], "-modulepath")) {
 	    if (!argv[++i])
 		return 0;
-	    xf86FileCmdline.modulePath = strdup(argv[i]);
+	    xfree(xf86FileCmdline.modulePath);
+	    xf86FileCmdline.modulePath = xstrdup(argv[i]);
 	    if (!xf86FileCmdline.modulePath)
 		FatalError
 			("Cannot allocate memory for the module path name.\n");
@@ -1639,7 +1635,8 @@ ddxProcessArgument(int argc, char **argv, int i)
 	} else if (!strcmp(argv[i], "-logfile")) {
 	    if (!argv[++i])
 		return 0;
-	    xf86FileCmdline.logFile = strdup(argv[i]);
+	    xfree(xf86FileCmdline.logFile);
+	    xf86FileCmdline.logFile = xstrdup(argv[i]);
 	    if (!xf86FileCmdline.logFile)
 		FatalError("Cannot allocate memory for the log file name.\n");
 	    xf86FileCmdline.logFileFrom = X_CMDLINE;
@@ -1771,7 +1768,7 @@ ddxProcessArgument(int argc, char **argv, int i)
 	return 1;
     }
     if (!strcmp(argv[i], "-showconfig") || !strcmp(argv[i], "-version")) {
-	xf86PrintBanner();
+	PrintBanner();
 	exit(0);
     }
     /* Snoop the -fp flag, still allowing it to pass to the dix layer. */
@@ -1787,24 +1784,25 @@ ddxProcessArgument(int argc, char **argv, int i)
     /* Snoop the -co flag, still allowing it to pass to the dix layer. */
     if (!strcmp(argv[i], "-co")) {
 	if (++i < argc && argv[i]) {
-	    xf86FileCmdline.rgbPath = strdup(argv[i]);
+	    xfree(xf86FileCmdline.rgbPath);
+	    xf86FileCmdline.rgbPath = xstrdup(argv[i]);
 	    if (!xf86FileCmdline.rgbPath)
 		FatalError("Cannot allocate memory for RGBPath.\n");
 	    xf86FileCmdline.rgbPathFrom = X_CMDLINE;
 	}
 	return 0;
     }
-    /* Notice the -bs flag, but allow it to pass to the dix layer */
+    /* Notice the -bs flag, but allow it to pass to the dix layer. */
     if (!strcmp(argv[i], "-bs")) {
 	xf86bsDisableFlag = TRUE;
 	return 0;
     }
-    /* Notice the +bs flag, but allow it to pass to the dix layer */
+    /* Notice the +bs flag, but allow it to pass to the dix layer. */
     if (!strcmp(argv[i], "+bs")) {
 	xf86bsEnableFlag = TRUE;
 	return 0;
     }
-    /* Notice the -s flag, but allow it to pass to the dix layer */
+    /* Notice the -s flag, but allow it to pass to the dix layer. */
     if (!strcmp(argv[i], "-s")) {
 	xf86sFlag = TRUE;
 	return 0;
@@ -1932,9 +1930,6 @@ ddxProcessArgument(int argc, char **argv, int i)
     }
     if (!strcmp(argv[i], "-probe")) {
 	xf86DoProbe = TRUE;
-#if 0
-	DoProbe(argc, argv, i);
-#endif
 	return 1;
     }
     if (!strcmp(argv[i], "-configure")) {
@@ -2039,8 +2034,11 @@ ddxUseMsg()
 #endif
 
 static void
-xf86PrintBanner()
+PrintBanner()
 {
+#if defined(XF86_CUSTOM_BANNER)
+    ErrorF("%s", XF86_CUSTOM_BANNER);
+#else
 #if PRE_RELEASE
     ErrorF("\n"
      "This is a pre-release version of XFree86, and is not supported in any\n"
@@ -2048,6 +2046,7 @@ xf86PrintBanner()
      "to fixes@XFree86.Org.  Before reporting bugs in pre-release versions,\n"
      "please check the latest version in the XFree86 CVS repository\n"
      "(http://www.XFree86.Org/cvs).\n");
+#endif
 #endif
     ErrorF("\nXFree86 Version %d.%d.%d", XF86_VERSION_MAJOR,
 	   XF86_VERSION_MINOR, XF86_VERSION_PATCH);
@@ -2109,8 +2108,12 @@ xf86PrintBanner()
 #if defined(BUILDERSTRING)
     ErrorF("%s\n", BUILDERSTRING);
 #endif
+#if defined(XF86_PROBLEM_STRING)
+    ErrorF("%s", XF86_PROBLEM_STRING);
+#else
     ErrorF("\tBefore reporting problems, check http://www.XFree86.Org/\n"
 	   "\tto make sure that you have the latest version.\n");
+#endif
 #ifdef XFree86LOADER
     ErrorF("Module Loader present\n");
 #endif
@@ -2119,13 +2122,13 @@ xf86PrintBanner()
 }
 
 static void
-xf86PrintMarkers()
+PrintMarkers()
 {
     LogPrintMarkers();
 }
 
 static void
-xf86RunVtInit(void)
+RunVtInit(void)
 {
     int i;
 
@@ -2136,7 +2139,7 @@ xf86RunVtInit(void)
     if (xf86Info.vtinit) {
 	switch (fork()) {
 	case -1:
-	    FatalError("xf86RunVtInit: fork failed (%s)\n", strerror(errno));
+	    FatalError("RunVtInit: fork failed (%s)\n", strerror(errno));
 	    break;
 	case 0:		/* child */
 	    setuid(getuid());

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.512tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.513 2006/06/21 04:03:15 tsi Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -95,8 +95,8 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.512tsi Exp $
 
 #ifndef ChangelogDateCmd
 # define ChangelogDateCmd if tail $(CHANGELOGFILE) | \			@@\
-	fgrep '$$XFree86:' >/dev/null 2>&1; then \			@@\
-	  tail $(CHANGELOGFILE) | fgrep '$$XFree86:' | \		@@\
+	fgrep '$$$(CHANGELOGID):' >/dev/null 2>&1; then \		@@\
+	  tail $(CHANGELOGFILE) | fgrep '$$$(CHANGELOGID):' | \		@@\
 	  sed s,'.* \([0-9][0-9]*\)/\([0-9][0-9]*\)/\([0-9][0-9]*\).*,\1\2\3,'; \ @@\
 	else echo 0; fi
 #endif

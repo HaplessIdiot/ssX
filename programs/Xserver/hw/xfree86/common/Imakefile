@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.166tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.167 2006/06/21 04:03:17 tsi Exp $
 
 #include <Server.tmpl>
 
@@ -183,6 +183,14 @@ OFILES = \
 CUSTOMVERSION = XFree86CustomVersion
  CUSTOMVERDEF = -DXF86_CUSTOM_VERSION='$(CUSTOMVERSION)'
 #endif
+#if defined(XFree86CustomBanner)
+CUSTOMBANNER = XFree86CustomBanner
+CUSTOMBANNERDEF = -DXF86_CUSTOM_BANNER='$(CUSTOMBANNER)'
+#endif
+#if defined(XFree86ProblemString)
+PROBLEMSTRING = XFree86ProblemString
+PROBLEMSTRINGDEF = -DXF86_PROBLEM_STRING='$(PROBLEMSTRING)'
+#endif
 #if defined(BuilderString)
   BUILDERSTRING = BuilderString
   BUILDERMSG = -DBUILDERSTRING='$(BUILDERSTRING)'
@@ -204,7 +212,7 @@ XCONFIGUREDEFINES = -DXF86CONFIGFILE='"$(XF86CONFIGFILE)"'
 AllTarget($(OFILES))
 
 SpecialCObjectRule(xf86Bus,NullParameter,$(BUGMSG) $(VGAINCLUDES))
-SpecialCObjectRule(xf86Init,$(ICONFIGFILES),$(OSNAMEDEF) $(BUILDERMSG) $(BUGMSG) $(CUSTOMVERDEF) $(MDEBUGDEFS) $(LOADERTESTDEFS))
+SpecialCObjectRule(xf86Init,$(ICONFIGFILES),$(OSNAMEDEF) $(BUILDERMSG) $(BUGMSG) $(CUSTOMVERDEF) $(CUSTOMBANNERDEF) $(PROBLEMSTRINGDEF) $(MDEBUGDEFS) $(LOADERTESTDEFS))
 SpecialCObjectRule(xf86Events,$(ICONFIGFILES),$(MDEBUGDEFS))
 SpecialCObjectRule(xf86Globals,$(ICONFIGFILES),$(MODPATHDEFINES) $(LOGDEFINES))
 SpecialCObjectRule(xf86AutoConfig,$(ICONFIGFILES),$(XCONFIGDEFINES))
