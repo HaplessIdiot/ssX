@@ -23,7 +23,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86: xc/programs/lbxproxy/di/pm.c,v 1.16 2004/04/03 22:38:54 tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/pm.c,v 1.17 2006/01/09 15:00:45 dawes Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -389,7 +389,7 @@ PMprocessMessages (
 	if (colon)
 	{
 #if defined(IPv6) && defined(AF_INET6)
-	    struct addrinfo *ai, hints;
+	    struct addrinfo *ai = NULL, hints;
 	    Bool bracketed = False;
 	    char canonaddr[INET6_ADDRSTRLEN];
 	    int addrtype = AF_UNSPEC;

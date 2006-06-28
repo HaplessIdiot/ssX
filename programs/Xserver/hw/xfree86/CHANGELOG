@@ -1,4 +1,9 @@
 XFree86 4.6.99.3 (xx July 2006)
+  40. Make sure that there is a one-to-one correspondence between
+      successful getaddrinfo() calls and freeaddrdinfo() calls (#10660,
+      Peter Breitenlohner).
+  39. Fix the problem where xdm compiled with IPv6 support failed to accept
+      any chooser connections (#10660, Peter Breitenlohner).
   38. Allow finer control of loader debugging (David Dawes).
   37. Fix for loader R_ALPHA_GPRELHIGH fatal error (Bugzilla #1665,
       David Dawes, reported by Will L G).
@@ -20212,7 +20217,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3764 2006/06/27 18:41:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3765 2006/06/27 18:43:57 dawes Exp $
 
 
 

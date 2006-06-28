@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.33tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.34 2005/10/14 15:17:26 tsi Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -1617,6 +1617,10 @@ get_fromaddr_by_name(
       , &ai, &aifirst
 #endif
 	);
+#if defined(IPv6) && defined(AF_INET6)
+    if (aifirst != NULL)
+	freeaddrinfo(aifirst);
+#endif
     xdm_from = argv[i];
 }
 
