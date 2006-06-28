@@ -1,4 +1,4 @@
-# $XFree86: xc/Makefile,v 3.29 2003/10/21 17:41:43 tsi Exp $
+# $XFree86: xc/Makefile,v 3.30 2005/06/10 19:43:59 dawes Exp $
 
 # Luna users will need to either run make as "make MAKE=make"
 # or add "MAKE = make" to this file.
@@ -21,9 +21,12 @@ IMAKE_CMD = $(IMAKE) -I$(IRULESRC) $(IMAKE_DEFINES)
 MAKE_OPTS = -f xmakefile
 MAKE_CMD = $(MAKE) $(MAKE_OPTS)
 FLAGS = $(MFLAGS) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)" CC="$(CC)"
-VERSINC = -Iprograms/Xserver/hw/xfree86
+VERSINC = -Iprograms/Xserver/hw/xfree86 -I$(CONFIGSRC)/cf
 VERSSRC = $(CONFIGSRC)/util/printver.c
 VERSPROG = $(CONFIGSRC)/util/printver.exe
+VERSSITEDEF = $(CONFIGSRC)/cf/site.def
+VERSHOSTDEF = $(CONFIGSRC)/cf/host.def
+VERSSITEINC = $(CONFIGSRC)/cf/site.h
 
 all:
 	@$(MAKE_CMD) xmakefile-exists || $(MAKE) all-initial
@@ -37,8 +40,14 @@ all-initial:
 	@echo Do not name your log file make.log or it will be deleted.
 
 World:
+	@$(RM) $(VERSSITEINC)
+	@if [ -f $(VERSHOSTDEF) ]; then \
+		sed -e /^XCOMM/d < $(VERSHOSTDEF) > $(VERSSITEINC); \
+	fi
+	@sed -e /^XCOMM/d < $(VERSSITEDEF) >> $(VERSSITEINC)
 	@$(RM) $(VERSPROG)
 	@$(CC) $(VERSINC) -o $(VERSPROG) $(VERSSRC)
+	@$(RM) $(VERSSITEINC)
 	@echo ""
 	@echo Building XFree86`$(VERSPROG)`.
 	@echo ""
@@ -85,8 +94,14 @@ World:
 	@echo ""
 	@date
 	@echo ""
+	@$(RM) $(VERSSITEINC)
+	@if [ -f $(VERSHOSTDEF) ]; then \
+		sed -e /^XCOMM/d < $(VERSHOSTDEF) > $(VERSSITEINC); \
+	fi
+	@sed -e /^XCOMM/d < $(VERSSITEDEF) >> $(VERSSITEINC)
 	@$(RM) $(VERSPROG)
 	@$(CC) $(VERSINC) -o $(VERSPROG) $(VERSSRC)
+	@$(RM) $(VERSSITEINC)
 	@echo Full build of XFree86`$(VERSPROG)` complete.
 	@$(RM) $(VERSPROG)
 	@echo ""

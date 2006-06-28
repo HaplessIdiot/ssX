@@ -1,10 +1,14 @@
-XCOMM $XFree86: xc/Imakefile,v 3.34tsi Exp $
+XCOMM $XFree86: xc/Imakefile,v 3.35 2006/05/16 16:01:49 tsi Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
 #ifdef XFree86VersionString
+#ifndef XFree86CustomVersion
 VERSTRING = " "version XFree86VersionString "("XFree86DateString")"
+#else
+VERSTRING = " "version XFree86VersionString "("XFree86DateString") ("XFree86CustomVersion")"
+#endif
 #endif
 
 #ifndef OSName
@@ -51,7 +55,7 @@ DependSubdirs($(SUBDIRS))
 #ifdef XFree86VersionString
 VerifyOS::
 	@echo ""
-	@echo Building XFree86 version XFree86VersionString "("XFree86DateString")."
+	@echo Building XFree86$(VERSTRING).
 #endif
 #ifdef OSRelVersion
 VerifyOS::

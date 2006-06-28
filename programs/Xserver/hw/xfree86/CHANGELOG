@@ -1,4 +1,7 @@
 XFree86 4.6.99.3 (xx July 2006)
+  42. Avoid memory leaks in command line processing (David Dawes).
+  41. Improve support for the XFree86CustomVersion imake parmeter,
+      and customisation of some initial server messages (David Dawes).
   40. Make sure that there is a one-to-one correspondence between
       successful getaddrinfo() calls and freeaddrdinfo() calls (#10660,
       Peter Breitenlohner).
@@ -20217,7 +20220,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3765 2006/06/27 18:43:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3766 2006/06/28 02:31:46 dawes Exp $
 
 
 
