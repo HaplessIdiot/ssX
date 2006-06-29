@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.261 2006/06/21 04:03:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.262 2006/06/27 00:52:49 dawes Exp $ */
 
 /*
  *
@@ -289,7 +289,7 @@ extern unsigned short ldw_brx(volatile unsigned char *, int);
  * For propolice/gcc stack protector.
  */
 extern long __guard[8];
-extern void __stack_smash_handler(char func[], int damaged  __unused);
+extern void __stack_smash_handler(char func[], int damaged);
 #pragma weak __guard
 #pragma weak __stack_smash_handler
 
