@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.28 2006/04/03 18:08:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.29tsi Exp $ */
 
 /*
  *
@@ -369,11 +369,13 @@ LoaderAddSymbols(int handle, int module, LOOKUP *list, unsigned long scope,			 c
 	scope = LOOKUP_SCOPE_GLOBAL;
 
     for (l = list; l->symName; l++) {
-	if ((exports && l == exports) || (moddata && l == moddata))
+	if (l == exports)
 	    continue;
 
 	i = xf86loadercalloc(1, sizeof(itemRec));
+	i->scope = scope;
 	if (exports && scope == LOOKUP_SCOPE_AUTO) {
+	    i->scope = LOOKUP_SCOPE_SELF;
 	    /* Check if the symbols is in the exports list. */
 	    for (s = exportedSymbols; *s; s++) {
 		if (strcmp(*s, l->symName) == 0) {
@@ -381,10 +383,6 @@ LoaderAddSymbols(int handle, int module, LOOKUP *list, unsigned long scope,			 c
 		    break;
 		}
 	    }
-	    if (!*s)
-		i->scope = LOOKUP_SCOPE_SELF;
-	} else {
-	    i->scope = scope;
 	}
 	i->name = l->symName;
 	i->address = (char *)l->offset;
