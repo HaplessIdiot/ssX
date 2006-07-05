@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.80 2006/04/08 17:53:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.81tsi Exp $ */
 
 /*
  * Copyright 1995-1998 by Metro Link, Inc.
@@ -722,6 +722,11 @@ _LoaderFileToMem(int fd, unsigned long offset, int size, char *label)
 	new_size += pagesize;
     ret = (unsigned long)mmap(0, new_size, MMAP_PROT, MMAP_FLAGS, fd,
 			      new_off);
+#  if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_MEM,
+		   "mmap: new_off %lx, new_off_bias %lx, new_size %lu, ret %lx\n",
+		   new_off, new_off_bias, new_size, ret);
+#  endif
     if (ret == -1)
 	FatalError("mmap() failed: %s\n", strerror(errno));
     return (void *)(ret + new_off_bias);
