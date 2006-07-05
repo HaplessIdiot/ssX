@@ -1,4 +1,9 @@
 XFree86 4.6.99.3 (xx July 2006)
+  45. Allow a module to export its own ModuleData structure, and use this to
+      fix atimisc's module version check.  Problem reported by Mike Boyer.
+      (Marc La France).
+  44. Fix typo that caused the loader to incorrectly complain about an
+      undefined reference in atimisc  (Marc La France).
   43. ELF loader changes:  Remove unnecessary resetDest*() calls;  Fix support
       for R_SPARC_LO10 and R_SPARC_OLO10 relocations;  Add support for
       additional SPARC relocations  (Marc La France).
@@ -20223,7 +20228,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3767 2006/06/28 03:20:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3768 2006/07/05 16:42:20 tsi Exp $
 
 
 

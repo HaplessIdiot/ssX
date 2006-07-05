@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.c,v 1.22 2006/03/02 03:00:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.c,v 1.23tsi Exp $ */
 /*
  * Copyright 2000 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -46,7 +46,7 @@ const char *ATIint10Symbols[] =
 const char *ATIddcSymbols[] =
 {
     "xf86PrintEDID",
-    "xf86SetDDCProperties",
+    "xf86SetDDCproperties",
     NULL
 };
 
