@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.73tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.74tsi Exp $ */
 
 /*
  *
@@ -252,8 +252,7 @@
     defined(__amd64__) || \
     defined(__x86_64__) || \
     (defined(__sparc__) && \
-     (defined(__arch64__) || \
-      defined(__sparcv9)))
+     (defined(__arch64__) || defined(__sparcv9) || defined(__sparcv9__)))
 typedef Elf64_Ehdr Elf_Ehdr;
 typedef Elf64_Shdr Elf_Shdr;
 typedef Elf64_Sym Elf_Sym;
@@ -269,7 +268,8 @@ typedef Elf64_Word Elf_Word;
 #define ELF_ST_TYPE ELF64_ST_TYPE
 #define ELF_R_SYM ELF64_R_SYM
 
-#if !defined(__sparcv9)
+#if !defined(__sparc__) || \
+    (!defined(__sparcv9) && !defined(__sparcv9__) && !defined(__arch64__))
 #define ELF_R_TYPE ELF64_R_TYPE
 #else
 /*
@@ -647,8 +647,7 @@ ElfCOMMONSize(void)
     defined(__amd64__) || \
     defined(__x86_64__) || \
     (defined(__sparc__) && \
-     (defined(__arch64__) || \
-      defined(__sparcv9)))
+     (defined(__arch64__) || defined(__sparcv9) || defined(__sparcv9__)))
 	size = (size + 7) & ~0x7;
 #endif
     }
@@ -672,8 +671,7 @@ ElfCreateCOMMON(ELFModulePtr elffile, LOOKUP *pLookup)
     defined(__amd64__) || \
     defined(__x86_64__) || \
     (defined(__sparc__) && \
-     (defined(__arch64__) || \
-      defined(__sparcv9)))
+     (defined(__arch64__) || defined(__sparcv9) || defined(__sparcv9__)))
 	size = (size + 7) & ~0x7;
 #endif
 	numsyms++;
@@ -730,8 +728,7 @@ ElfCreateCOMMON(ELFModulePtr elffile, LOOKUP *pLookup)
     defined(__amd64__) || \
     defined(__x86_64__) || \
     (defined(__sparc__) && \
-     (defined(__arch64__) || \
-      defined(__sparcv9)))
+     (defined(__arch64__) || defined(__sparcv9) || defined(__sparcv9__)))
 	offset = (offset + 7) & ~0x7;
 #endif
 	xf86loaderfree(common);
@@ -1520,7 +1517,8 @@ ELFCreatePLT(ELFModulePtr elffile)
 }
 #endif /* __powerpc__ */
 
-#if !defined(__ia64__)
+#if defined(i386) || defined(__x86_64__) || defined(__amd64__) || \
+    defined(__alpha__) || defined(__powerpc__) || defined(__arm__)
 static void
 resetDest32(ELFRelocPtr p, unsigned int *dest32)
 {
@@ -1542,52 +1540,8 @@ resetDest32(ELFRelocPtr p, unsigned int *dest32)
 }
 #endif
 
-#if defined(__powerpc__) || defined(__sparc__)
-static void
-resetDest16(ELFRelocPtr p, unsigned short *dest16)
-{
-#if LOADERDEBUG
-    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "*dest16=%4.4x\t", *dest16);
-#endif
-    if (p->assigned) {
-#if LOADERDEBUG
-	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "was assigned\t");
-#endif
-	*dest16 = p->olddata.d16;
-#if LOADERDEBUG
-	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "*dest16=%8.8x\t", *dest16);
-#endif
-    } else {
-	p->olddata.d16 = *dest16;
-	p->assigned = 1;
-    }
-}
-#endif
-
-#if defined(__sparc__)
-static void
-resetDest8(ELFRelocPtr p, unsigned char *dest8)
-{
-#if LOADERDEBUG
-    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "*dest8=%2.2x\t", *dest8);
-#endif
-    if (p->assigned) {
-#if LOADERDEBUG
-	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "was assigned\t");
-#endif
-	*dest8 = p->olddata.d8;
-#if LOADERDEBUG
-	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "*dest8=%2.2x\t", *dest8);
-#endif
-    } else {
-	p->olddata.d8 = *dest8;
-	p->assigned = 1;
-    }
-}
-#endif
-
-#if defined(__alpha__) || defined(__amd64__) || \
-    defined(__x86_64__) || defined(__ia64__)
+#if defined(__alpha__) || defined(__amd64__) || defined(__x86_64__) || \
+    defined(__sparc__)
 static void
 resetDest64(ELFRelocPtr p, unsigned long *dest64)
 {
@@ -2120,7 +2074,6 @@ Elf_RelocateEntry(ELFRelocPtr p)
 	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "symval=%lx\t", symval);
 	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "dest32=%p\t", dest32);
 #endif
-	resetDest32(p, dest32);
 #if LOADERDEBUG
 	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "symval=%lx\t", symval);
 #endif
@@ -2183,7 +2136,6 @@ Elf_RelocateEntry(ELFRelocPtr p)
     case R_ALPHA_SREL32:
 	{
 	    dest32 = (unsigned int *)(secp + rel->r_offset);
-	    resetDest32(p, dest32);
 #if LOADERDEBUG
 	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "R_ALPHA_SREL32 %s\t",
 		     ElfGetSymbolName(elffile, ELF_R_SYM(rel->r_info)));
@@ -2214,7 +2166,6 @@ Elf_RelocateEntry(ELFRelocPtr p)
 	    Elf_Sym *syms;
 	    int      Delta;
 	    dest32 = (unsigned int *)(secp + rel->r_offset + rel->r_addend);
-	    resetDest32(p, dest32);
 
 #if LOADERDEBUG
 	    LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "R_ALPHA_BRSGP %s\t",
@@ -2288,7 +2239,6 @@ Elf_RelocateEntry(ELFRelocPtr p)
 	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "r_addend=%x\t", rel->r_addend);
 	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "dest32=%8.8x\t", dest32);
 #endif
-	resetDest32(p, dest32);
 	{
 	    unsigned long val;
 
@@ -2611,7 +2561,6 @@ Elf_RelocateEntry(ELFRelocPtr p)
 	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "r_addend=%x\t", rel->r_addend);
 	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "dest32=%8.8x\t", dest32);
 #endif
-	resetDest32(p, dest32);
 	{
 	    unsigned long val;
 
@@ -2662,45 +2611,72 @@ Elf_RelocateEntry(ELFRelocPtr p)
 
     case R_SPARC_DISP8:		/*  4 */
 	dest8 = (unsigned char *)(secp + rel->r_offset);
-	resetDest8(p, dest8);
 	symval += rel->r_addend;
 	*dest8 = symval - (Elf_Addr) dest8;
 	break;
 
     case R_SPARC_DISP16:	/*  5 */
 	dest16 = (unsigned short *)(secp + rel->r_offset);
-	resetDest16(p, dest16);
 	symval += rel->r_addend;
 	*dest16 = symval - (Elf_Addr) dest16;
 	break;
 
     case R_SPARC_DISP32:	/*  6 */
 	dest32 = (unsigned int *)(secp + rel->r_offset);
-	resetDest32(p, dest32);
 	symval += rel->r_addend;
 	*dest32 = symval - (Elf_Addr) dest32;
 	break;
 
     case R_SPARC_WDISP30:	/*  7 */
 	dest32 = (unsigned int *)(secp + rel->r_offset);
-	resetDest32(p, dest32);
 	symval += rel->r_addend;
 	*dest32 = (*dest32 & ~0x3fffffff) |
 		  (((symval - (Elf_Addr) dest32) >> 2) & 0x3fffffff);
 	break;
 
+    case R_SPARC_WDISP22:	/*  8 */
+	dest32 = (unsigned int *)(secp + rel->r_offset);
+	symval += rel->r_addend;
+	*dest32 = (*dest32 & ~0x003fffff) |
+		   (((symval - (Elf_Addr) dest32) >> 2) & 0x003fffff);
+	break;
+
     case R_SPARC_HI22:		/*  9 */
 	dest32 = (unsigned int *)(secp + rel->r_offset);
-	resetDest32(p, dest32);
 	symval += rel->r_addend;
 	*dest32 = (*dest32 & ~0x003fffff) | ((symval >> 10) & 0x003fffff);
 	break;
 
+    case R_SPARC_22:		/* 10 */
+	dest32 = (unsigned int *)(secp + rel->r_offset);
+	symval += rel->r_addend;
+	*dest32 = (*dest32 & ~0x003fffff) | (symval & 0x003fffff);
+	break;
+
+    case R_SPARC_13:		/* 11 */
+	dest32 = (unsigned int *)(secp + rel->r_offset);
+	symval += rel->r_addend;
+	*dest32 = (*dest32 & ~0x001fff) | (symval & 0x001fff);
+	break;
+
     case R_SPARC_LO10:		/* 12 */
 	dest32 = (unsigned int *)(secp + rel->r_offset);
-	resetDest32(p, dest32);
 	symval += rel->r_addend;
-	*dest32 = (*dest32 & ~0x3ff) | (symval & 0x3ff);
+	*dest32 = (*dest32 & ~0x001fff) | (symval & 0x03ff);
+	break;
+
+    case R_SPARC_PC10:		/* 16 */
+	dest32 = (unsigned int *)(secp + rel->r_offset);
+	symval += rel->r_addend;
+	*dest32 = (*dest32 & ~0x001fff) |
+		   ((symval - (Elf_Addr) dest32) & 0x03ff);
+	break;
+
+    case R_SPARC_PC22:		/* 17 */
+	dest32 = (unsigned int *)(secp + rel->r_offset);
+	symval += rel->r_addend;
+	*dest32 = (*dest32 & ~0x03fffff) |
+		   (((symval - (Elf_Addr) dest32) >> 10) & 0x03fffff);
 	break;
 
     case R_SPARC_COPY:		/* 19 */
@@ -2737,18 +2713,120 @@ Elf_RelocateEntry(ELFRelocPtr p)
 
     case R_SPARC_RELATIVE:	/* 22 */
 	dest64 = (unsigned long *)(secp + rel->r_offset);
-	*dest64 = (unsigned long)secp + rel->r_addend;
+	resetDest64(p, dest64);
+	*dest64 += (unsigned long)secp + rel->r_addend;
 	break;
 
-#ifdef __sparcv9
+    case R_SPARC_10:		/* 30 */
+	dest32 = (unsigned int *)(secp + rel->r_offset);
+	symval += rel->r_addend;
+	*dest32 = (*dest32 & ~0x03ff) | (symval & 0x03ff);
+	break;
+
+    case R_SPARC_11:		/* 31 */
+	dest32 = (unsigned int *)(secp + rel->r_offset);
+	symval += rel->r_addend;
+	*dest32 = (*dest32 & ~0x07ff) | (symval & 0x07ff);
+	break;
+
     case R_SPARC_OLO10:		/* 33 */
 	dest32 = (unsigned int *)(secp + rel->r_offset);
-	resetDest32(p, dest32); /* Not really needed. */
-	symval += rel->r_addend
-	    + (((ELF64_R_TYPE(rel->r_info) >> 8) ^ 0x800000) - 0x800000);
-	*dest32 = (*dest32 & ~0x3ff) | (symval & 0x3ff);
+	symval = ((symval + rel->r_addend) & 0x03ff) +
+		  (ELF64_R_TYPE(rel->r_info) >> 8);
+	*dest32 = (*dest32 & ~0x1fff) | (symval & 0x1fff);
 	break;
-#endif
+
+    case R_SPARC_HH22:		/* 34 */
+	dest32 = (unsigned int *)(secp + rel->r_offset);
+	symval += rel->r_addend;
+	*dest32 = (*dest32 & ~0x003fffff) |
+		  /* Avoid warnings on SPARC32 */
+		  (((symval >> 21) >> 21) & 0x003fffff);
+	break;
+
+    case R_SPARC_HM10:		/* 35 */
+	dest32 = (unsigned int *)(secp + rel->r_offset);
+	symval += rel->r_addend;
+	*dest32 = (*dest32 & ~0x001fff) |
+		  /* Avoid warnings on SPARC32 */
+		  (((symval >> 16) >> 16) & 0x03ff);
+	break;
+
+    case R_SPARC_LM22:		/* 36 */
+	dest32 = (unsigned int *)(secp + rel->r_offset);
+	symval += rel->r_addend;
+	*dest32 = (*dest32 & ~0x003fffff) | ((symval >> 10) & 0x003fffff);
+	break;
+
+    case R_SPARC_7:		/* 43 */
+	dest32 = (unsigned int *)(secp + rel->r_offset);
+	symval += rel->r_addend;
+	*dest32 = (*dest32 & ~0x007f) | (symval & 0x007f);
+	break;
+
+    case R_SPARC_5:		/* 44 */
+	dest32 = (unsigned int *)(secp + rel->r_offset);
+	symval += rel->r_addend;
+	*dest32 = (*dest32 & ~0x001f) | (symval & 0x001f);
+	break;
+
+    case R_SPARC_6:		/* 45 */
+	dest32 = (unsigned int *)(secp + rel->r_offset);
+	symval += rel->r_addend;
+	*dest32 = (*dest32 & ~0x003f) | (symval & 0x003f);
+	break;
+
+    case R_SPARC_HIX22:		/* 48 */
+	dest32 = (unsigned int *)(secp + rel->r_offset);
+	symval += rel->r_addend;
+	*dest32 = (*dest32 & ~0x003fffff) |
+		  (((symval ^ ~0L) >> 10) & 0x003fffff);
+	break;
+
+    case R_SPARC_LOX10:		/* 49 */
+	dest32 = (unsigned int *)(secp + rel->r_offset);
+	symval += rel->r_addend;
+	*dest32 = (*dest32 & ~0x03ff) | 0x001c00 | (symval & 0x03ff);
+	break;
+
+    case R_SPARC_H44:		/* 50 */
+	dest32 = (unsigned int *)(secp + rel->r_offset);
+	symval += rel->r_addend;
+	*dest32 = (*dest32 & ~0x003fffff) | ((symval >> 22) & 0x003fffff);
+	break;
+
+    case R_SPARC_M44:		/* 51 */
+	dest32 = (unsigned int *)(secp + rel->r_offset);
+	symval += rel->r_addend;
+	*dest32 = (*dest32 & ~0x03ff) | ((symval >> 12) & 0x03ff);
+	break;
+
+    case R_SPARC_L44:		/* 52 */
+	dest32 = (unsigned int *)(secp + rel->r_offset);
+	symval += rel->r_addend;
+	*dest32 = (*dest32 & ~0x1fff) | (symval & 0x0fff);
+	break;
+
+    case R_SPARC_UA64:		/* 54 */
+	dest64 = (unsigned long *)(secp + rel->r_offset);
+	symval += rel->r_addend;
+	/* Avoid warnings on SPARC32 */
+	((unsigned char *)dest64)[0] = (unsigned char)((symval >> 28) >> 28);
+	((unsigned char *)dest64)[1] = (unsigned char)((symval >> 24) >> 24);
+	((unsigned char *)dest64)[2] = (unsigned char)((symval >> 20) >> 20);
+	((unsigned char *)dest64)[3] = (unsigned char)((symval >> 16) >> 16);
+	((unsigned char *)dest64)[4] = (unsigned char)(symval >> 24);
+	((unsigned char *)dest64)[5] = (unsigned char)(symval >> 16);
+	((unsigned char *)dest64)[6] = (unsigned char)(symval >> 8);
+	((unsigned char *)dest64)[7] = (unsigned char)(symval);
+	break;
+
+    case R_SPARC_UA16:		/* 55 */
+	dest16 = (unsigned short *)(secp + rel->r_offset);
+	symval += rel->r_addend;
+	((unsigned char *)dest16)[0] = (unsigned char)(symval >> 8);
+	((unsigned char *)dest16)[1] = (unsigned char)(symval);
+	break;
 #endif /*__sparc__*/
 
 #ifdef __ia64__
@@ -2910,7 +2988,6 @@ Elf_RelocateEntry(ELFRelocPtr p)
 	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "symval=%lx\t", symval);
 	LoaderDebugMsg(LOADER_DEBUG_LOWLEVEL, "dest64=%lx\n", dest64);
 #endif
-	resetDest64(p, dest64);
 	*dest64 = symval + rel->r_addend - (unsigned long)dest64;
 	break;
 
