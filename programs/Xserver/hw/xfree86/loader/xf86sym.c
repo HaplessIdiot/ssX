@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.262 2006/06/27 00:52:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.263tsi Exp $ */
 
 /*
  *
@@ -149,7 +149,11 @@ extern void *__remq(long, long);
 extern void *__remqu(long, long);
 #endif
 
-#if defined(__sparc__) && defined(__FreeBSD__)
+#undef NO_HARD_QUAD
+#if defined(CSRG_BASED) && defined(__sparc__) && defined(__GNUC__) && \
+    ((__GNUC__ > 3) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 2)) && \
+    (defined(__arch64__) || defined(__sparcv9) || defined(__sparcv9__)))
+#define NO_HARD_QUAD
 extern float _Qp_qtos(unsigned int *);
 extern double _Qp_qtod(unsigned int *);
 extern unsigned long long _Qp_qtoux(unsigned int *);
@@ -1292,14 +1296,12 @@ LOOKUP xfree86LookupTab[] = {
     SYMFUNC(inl)
 #endif
 
-#ifdef __FreeBSD__
-#if defined(__sparc__)
+#if defined(NO_HARD_QUAD)
     SYMFUNC(_Qp_qtos)
     SYMFUNC(_Qp_qtod)
     SYMFUNC(_Qp_qtoux)
     SYMFUNC(_Qp_uitoq)
     SYMFUNC(_Qp_dtoq)
-#endif
 #endif
 
     /*
