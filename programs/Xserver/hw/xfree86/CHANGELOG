@@ -1,4 +1,7 @@
 XFree86 4.6.99.3 (xx July 2006)
+  43. ELF loader changes:  Remove unnecessary resetDest*() calls;  Fix support
+      for R_SPARC_LO10 and R_SPARC_OLO10 relocations;  Add support for
+      additional SPARC relocations  (Marc La France).
   42. Avoid memory leaks in command line processing (David Dawes).
   41. Improve support for the XFree86CustomVersion imake parmeter,
       and customisation of some initial server messages (David Dawes).
@@ -20220,7 +20223,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3766 2006/06/28 02:31:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3767 2006/06/28 03:20:26 dawes Exp $
 
 
 
