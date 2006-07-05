@@ -1,4 +1,6 @@
 XFree86 4.6.99.3 (xx July 2006)
+  46. Fix cases where ELFAddressToSymbol() returns an empty string
+      (David Dawes).
   45. Allow a module to export its own ModuleData structure, and use this to
       fix atimisc's module version check.  Problem reported by Mike Boyer.
       (Marc La France).
@@ -20228,7 +20230,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3768 2006/07/05 16:42:20 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3769 2006/07/05 20:08:29 tsi Exp $
 
 
 

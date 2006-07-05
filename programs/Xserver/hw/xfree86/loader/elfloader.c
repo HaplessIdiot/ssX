@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.74tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.75 2006/07/05 16:42:22 tsi Exp $ */
 
 /*
  *
@@ -4109,6 +4109,9 @@ ELFAddressToSymbol(void *modptr, unsigned long address, unsigned long *symaddr,
 	if (syms[i].st_shndx != sectnum && !exe)
 	    continue;
 
+	if (syms[i].st_name == 0)
+	    continue;
+
 	switch (ELF_ST_TYPE(syms[i].st_info)) {
 	case STT_OBJECT:
 	case STT_FUNC:
@@ -4116,7 +4119,7 @@ ELFAddressToSymbol(void *modptr, unsigned long address, unsigned long *symaddr,
 	    saddr = syms[i].st_value + (unsigned long)elffile->saddr[sectnum];
 	    diff = address - saddr;
 	    if (diff >= 0) {
-		if ((best && diff < bestDiff && syms[i].st_name > 0) || !best) {
+		if ((best && diff < bestDiff) || !best) {
 		    best = ElfGetString(elffile, syms[i].st_name);
 		    bestDiff = diff;
 		    bestAddr = saddr;
