@@ -1,4 +1,6 @@
-XFree86 4.6.99.3 (xx July 2006)
+XFree86 4.6.99.4 (xx July 2006)
+
+XFree86 4.6.99.3 (7 July 2006)
   47. Fix unaligned accesses in the ELF loader on non-Linux SPARC that occur
       because the first and subsequent members in an archive are not guaranteed
       to be on a sizeof(long) boundary  (Marc La France).
@@ -20233,7 +20235,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3770 2006/07/05 20:45:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3771 2006/07/05 22:45:58 tsi Exp $
 
 
 
