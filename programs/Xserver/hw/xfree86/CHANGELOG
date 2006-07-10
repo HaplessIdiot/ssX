@@ -1,4 +1,6 @@
 XFree86 4.6.99.4 (xx July 2006)
+  48. Update Macintosh french keymap (Adapted from Etienne Bersac, Bugzilla
+      #1574, X.Org Bugzilla #6382).
 
 XFree86 4.6.99.3 (7 July 2006)
   47. Fix unaligned accesses in the ELF loader on non-Linux SPARC that occur
@@ -20235,7 +20237,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3771 2006/07/05 22:45:58 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3772 2006/07/07 11:03:37 dawes Exp $
 
 
 

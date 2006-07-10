@@ -1,12 +1,20 @@
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/symbols/macintosh/fr,v 1.3tsi Exp $
 //
 // Marc.Shapiro@inria.fr 19-sep-1998
 // modifications : Etienne Herlent <eherlent@linux-france.org> june 2000
 // adapted to the new input layer :
 //        Martin Costabel <costabel@wanadoo.fr> 3-jan-2001
-// adapted for Latin9 alphabet (ISO-8859-15): 
+// adapted for Latin9 alphabet (ISO-8859-15):
 //        Etienne Herlent <eherlent@linux-france.org> march 2005
-
+//////////////////////////////////////////////////////////////////
+// Petites Modification le juillet 2005 par Bin Zhang <bb.zhang@free.fr> :
+// 1) La ligne 83 : remplacer les deux "VoidSymbol" par oe et OE
+// 2) La ligne 89 : remplacer "VoidSymbol" par "EuroSign"
+// ( 1) et 2) fonctionnent sous UTF-8, mais pas sous iso-8859-1. )
+// 3) Remplacer la ligne 148 par la ligne 149 pour que la touche Alt_L
+// (la touche Apple-Pomme) fonctionne correctement sous Xorg, une idée
+// motivée par http://www.linux-france.org/macintosh/clavier_gentoo.html
+//////////////////////////////////////////////////////////////////
 // This map is an almost-complete mapping of the standard French
 // MacIntosh keyboard under Xwindows.  I tried to remain as faithful
 // as possible to the Mac meaning of each key.	I did this entirely by
@@ -29,19 +37,19 @@ xkb_symbols "extended" {
 
     // Alphanumeric section
     key <TLDE> {	[	   at,	  numbersign	],
-			[periodcentered,  Ydiaeresis	]	}; // MISSING: Ydiaeresis; eherlent : ok in Latin9
+			[periodcentered,  Ydiaeresis	]	};
     key <ENTR> {        [    KP_Enter                   ]       };
     key <AE01> {	[   ampersand,	  1		],
 			[  VoidSymbol,	  dead_acute	]	}; // MISSING: Apple
     key <AE02> {	[      eacute,	  2		],
 			[  ediaeresis,	  Eacute	]	};
     key <AE03> {	[    quotedbl,	  3		],
-			[  VoidSymbol,    VoidSymbol	] 	}; // CHECK all quotemarks
+			[leftdoublequotemark, rightdoublequotemark	] 	};
     key <AE04> {	[  apostrophe,	  4		],
-			[  VoidSymbol,	  VoidSymbol	] 	};
+			[leftsinglequotemark, rightsinglequotemark	] 	};
     key <AE05> {	[   parenleft,	  5		],
 			[   braceleft,	  bracketleft	]	};
-    key <AE06> {	[     section,	  6		],	// CHECK section
+    key <AE06> {	[     section,	  6		],
 			[   paragraph,	  aring		]	};
     key <AE07> {	[      egrave,	  7		],
 			[guillemotleft,	  guillemotright]	};
@@ -50,11 +58,11 @@ xkb_symbols "extended" {
     key <AE09> {	[    ccedilla,	  9		],
 			[    Ccedilla,	  Aacute	]	};
     key <AE10> {	[      agrave,	  0		],
-			[      oslash,	  VoidSymbol	]	}; // MISSING: Oslash
+			[      oslash,	  Oslash	]	};
     key <AE11> {	[  parenright,	  degree	],
 			[  braceright,	  bracketright	]	};
     key <AE12> {	[	minus,	  underscore	],
-			[      emdash,	  endash	]	}; // CHECK dashes
+			[      emdash,	  endash	]	};
     key <BKSP> {	[   BackSpace,    VoidSymbol	],
 			[      Delete,	  VoidSymbol	]	};
 
@@ -68,33 +76,33 @@ xkb_symbols "extended" {
     key <AD04> {	[	    r,	R		],
 			[  registered,	currency	]	};
     key <AD05> {	[	    t,	T		],
-			[  VoidSymbol,	VoidSymbol	]	};
+			[      dagger,	trademark	]	};
     key <AD06> {	[	    y,	Y		],
-			[      Uacute,  Ydiaeresis	]	}; // MISSING: Ydiaeresis; eherlent : ok in Latin9
+			[      Uacute,  Ydiaeresis	]	};
     key <AD07> {	[	    u,	U		],
-			[  VoidSymbol,	ordfeminine	]	}; // MISSING: ordmasculine?
+			[   masculine,	ordfeminine	]	};
     key <AD08> {	[	    i,	I		],
 			[ icircumflex,	idiaeresis	]	};
     key <AD09> {	[	    o,	O		],
-			[          oe,	OE      	]	}; // MISSING: oe, OE lacking in Latin1; eherlent ok in Latin9
+			[          oe,	OE      	]	};
     key <AD10> {	[	    p,	P		],
-			[  VoidSymbol,  VoidSymbol	]	};
+			[    Greek_pi,  Greek_PI	]	};
     key <AD11> {	[dead_circumflex,dead_diaeresis	],
 			[ ocircumflex, Ocircumflex	]	};
     key <AD12> {	[      dollar,	asterisk	],
-			[  EuroSign, yen		]	}; // eherlent : EuroSign in Latin9
+			[  EuroSign, yen		]	};
 
     key <CAPS> {	[	Caps_Lock		]	};
     key <AC01> {	[	  q,	Q		],
-			[acircumflex,	Agrave		]	};
+			[doubledagger,	Greek_OMEGA	]	};
     key <AC02> {	[	  s,	S		],
-			[    Ograve,	VoidSymbol	]	};
+			[    Ograve,	Greek_SIGMA	]	};
     key <AC03> {	[	  d,	D		],
-			[VoidSymbol,	VoidSymbol	]	};
+			[Greek_delta,	Greek_DELTA	]	};
     key <AC04> {	[	  f,	F		],
-			[VoidSymbol,	periodcentered	]	}; // MISSING: oblong script f??
+			[VoidSymbol,	periodcentered	]	};
     key <AC05> {	[	  g,	G		],
-			[VoidSymbol,	VoidSymbol	]	}; // MISSING: kerned fi, fl
+			[VoidSymbol,	VoidSymbol	]	}; // MISSING: ligature fi, fl
     key <AC06> {	[	  h,	H		],
 			[    Igrave,	Icircumflex	]	};
     key <AC07> {	[	  j,	J		],
@@ -106,48 +114,38 @@ xkb_symbols "extended" {
     key <AC10> {	[	  m,	M		],
 			[  	 mu,	Oacute		]	};
     key <AC11> {	[    ugrave,	percent		],
-			[    Ugrave,	ucircumflex	]	}; // MISSING: per-mille
+			[    Ugrave,	0x1002030	]	};
     key <BKSL> {	[ dead_grave,	sterling	],
 			[	 at,	numbersign	]	};
     key <RTRN> {	[    Return			]	};
 
     key <LSGT> {	[	 less,	  greater	],
-			[VoidSymbol, 	VoidSymbol	]	};
+			[lessthanequal, greaterthanequal	]	};
     key <AB01> {	[	  w,	W		],
-			[VoidSymbol,	VoidSymbol	]	};	// MISSING: half-guillemot (single angle bracket)
+			[guilsinglleft,	guilsinglright	]	}; // MISSING: half-guillemot (single angle bracket)
     key <AB02> {	[	  x,	X		],
-			[VoidSymbol,	VoidSymbol	]	}; // CHECK similarequal; MISSING: extra-slanted slash
+			[VoidSymbol,	VoidSymbol	]	}; // CHECK: similarequal; MISSING: extra-slanted slash
     key <AB03> {	[	  c,	C		],
 			[ copyright,	cent		]	};
     key <AB04> {	[	  v,	V		],
-			[   diamond,	leftradical	]	}; // CHECK diamond, leftradical
+			[   diamond,	radical		]	}; // CHECK diamond
     key <AB05> {	[	  b,	B		],
-			[    ssharp,    VoidSymbol	]	}; // CHECK: Greek_beta or ssharp?; MISSING: oblong script s
+			[    ssharp,    integral	]	};
     key <AB06> {	[	  n,	N		],
 			[ dead_tilde,	asciitilde	]	};
     key <AB07> {	[     comma,	question	],
-			[VoidSymbol,	questiondown	]	};
+			[  infinity,	questiondown	]	};
     key <AB08> {	[ semicolon,	period		],
-			[VoidSymbol,	periodcentered	]	};
+			[  ellipsis,	periodcentered	]	};
     key <AB09> {	[     colon,	slash		],
 			[  division,	backslash	]	};
     key <AB10> {	[     equal,	plus		],
-			[VoidSymbol,	plusminus	]	};
+			[  notequal,	plusminus	]	};
 
     key <SPCE> {	[     space,	space		],
 			[nobreakspace,	nobreakspace	]	};
     // End alphanumeric section
 
-    // Begin modifier mappings
-    key <LWIN> {	[  Alt_L, 	Meta_L	]	};
-    key <LFSH> {	[  Shift_L		]	};
-    key <LCTL> {	[  Control_L		]	};
-    key <LALT> {	[  Mode_switch		]	};
-    key <RMTA> {	[  Meta_R		]	};
-    key <RTSH> {	[  Shift_R		]	};
-    key <RCTL> {	[  Control_R		]	};
-    key <RALT> {	[  script_switch	]	};
-    // End modifier mappings
 
     // Begin "Function" section
     key <FK01> {	[  F1			]	};
@@ -167,6 +165,7 @@ xkb_symbols "extended" {
     key <FK15> {	[  F15, Pause		]	};
     // End "Function" section
 
+
     // Begin "Editing" section
     key	 <INS> {	[  Insert		]	};
     key <HOME> {	[  Home			]	};
@@ -180,6 +179,7 @@ xkb_symbols "extended" {
     key <DOWN> {	[  Down			]	};
     key <RGHT> {	[  Right		]	};
     // End "Editing" section
+
 
     // Begin "Keypad" section
     key <KPCL> {	[  Clear		]	};
@@ -204,7 +204,22 @@ xkb_symbols "extended" {
 
     key	 <KP0> {	[  KP_0			]	};
     key <KPDL> {	[  comma,KP_Decimal	]	};
- // End "Keypad" section
+    // End "Keypad" section
+
+
+    // Begin modifier mappings
+    key <LWIN> {	[  Alt_L, 	Meta_L	]	};
+//  key <LMTA> {	[  Meta_L,		]	};
+    key <LFSH> {	[  Shift_L		]	};
+    key <LCTL> {	[  Control_L		]	};
+    key <LALT> {	[  Mode_switch,	Mode_switch	]	};
+
+    key <RWIN> {	[  Alt_R,	Meta_R	]	};
+    key <RMTA> {	[  Meta_R		]	};
+    key <RTSH> {	[  Shift_R		]	};
+    key <RCTL> {	[  Control_R		]	};
+    key <RALT> {	[  Mode_switch,	Mode_switch	]	};
+    // End modifier mappings
 
 
     // begin modifier mappings
@@ -216,5 +231,3 @@ xkb_symbols "extended" {
     modifier_map Mod3	{ Mode_switch	       };
     // end modifier mappings
 };
-
-
