@@ -2,9 +2,6 @@
  * Copyright (c) 2003 The NetBSD Foundation, Inc.
  * All rights reserved.
  *
- * This code is derived from software contributed to The NetBSD Foundation
- * by Ben Collver <collver1@attbi.com>.
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -13,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *        This product includes software developed by the NetBSD
- *        Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
+ * 3. Neither the name of The NetBSD Foundation nor the names of its
  *    contributors may be used to endorse or promote products derived
  *    from this software without specific prior written permission.
  *
@@ -33,7 +26,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-/* $XFree86: xc/fonts/util/ucs2any.c,v 1.1 2003/09/21 10:54:14 herrb Exp $ */
+/* $XFree86: xc/fonts/util/ucs2any.c,v 1.2tsi Exp $ */
 /*
  * This utility allows you to generate from an ISO10646-1 encoded
  * BDF font other BDF fonts in any possible encoding. This way, you can
