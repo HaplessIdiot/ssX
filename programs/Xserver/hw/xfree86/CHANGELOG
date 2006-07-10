@@ -1,4 +1,6 @@
 XFree86 4.6.99.4 (xx July 2006)
+  50. Extend the SunOS/Solaris aperture driver to sun4v and amd64
+      (Martin Bochnig).
   49. Recognise the newer sun4v's as sun4u's  (Marc La France).
   48. Update Macintosh french keymap (Adapted from Etienne Bersac, Bugzilla
       #1574, X.Org Bugzilla #6382).
@@ -20238,7 +20240,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3773 2006/07/10 17:01:29 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3774 2006/07/10 17:38:07 tsi Exp $
 
 
 
