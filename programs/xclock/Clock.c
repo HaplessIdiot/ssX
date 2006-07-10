@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xclock/Clock.c,v 3.28 2005/05/19 01:02:44 dawes Exp $ */
+/* $XFree86: xc/programs/xclock/Clock.c,v 3.29tsi Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/StringDefs.h>
@@ -867,7 +867,7 @@ static void
 RenderHands (ClockWidget w, struct tm *tm, Boolean draw)
 {
     RenderHand (w, tm->tm_hour * 300 + tm->tm_min*5, HOUR_HAND_FRACT, &w->clock.hour_color, draw);
-    RenderHand (w, tm->tm_min * 60 + tm->tm_sec, MINUTE_HAND_FRACT, &w->clock.min_color, draw);
+    RenderHand (w, tm->tm_min * 60 /* + tm->tm_sec */, MINUTE_HAND_FRACT, &w->clock.min_color, draw);
 }
 
 static void
