@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Sbus.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Sbus.c,v 1.12tsi Exp $ */
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -228,7 +228,8 @@ promIsP1275(void)
     f = fopen("/proc/cpuinfo", "r");
     if (!f) return;
     while (fgets(buffer, 1024, f) != NULL)
-	if (!strncmp(buffer, "type", 4) && strstr(buffer, "sun4u")) {
+	if (!strncmp(buffer, "type", 4) &&
+	    (strstr(buffer, "sun4u") || strstr(buffer, "sun4v"))) {
 	    promP1275 = 1;
 	    break;
 	}
@@ -239,7 +240,8 @@ promIsP1275(void)
     if (promP1275 != -1)
 	return;
 
-    if ((uname(&buffer) >= 0) && !strcmp(buffer.machine, "sun4u"))
+    if ((uname(&buffer) >= 0) &&
+        (!strcmp(buffer.machine, "sun4u") || !strcmp(buffer.machine, "sun4v")))
 	promP1275 = TRUE;
     else
 	promP1275 = FALSE;
@@ -247,7 +249,7 @@ promIsP1275(void)
 # if defined(__arch64__) || defined(__sparc_v9__) || defined(__sparc64__)
     promP1275 = TRUE;
 # else
-    /* Might need to check for a 32-bit userland running on a sun4u */
+    /* Might need to check for a 32-bit userland running on a sun4u or sun4v */
     promP1275 = FALSE;
 # endif
 #else
