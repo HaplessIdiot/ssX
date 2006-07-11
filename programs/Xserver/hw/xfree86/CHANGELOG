@@ -1,5 +1,5 @@
 XFree86 4.6.99.4 (xx July 2006)
-  51. Fix stack overflow in libXfont's FreeType code (Matthieu Herbb, Bugzilla
+  51. Fix stack overflow in libXfont's FreeType code (Matthieu Herrb, Bugzilla
       #1669).
   50. Extend the SunOS/Solaris aperture driver to sun4v and amd64
       (Martin Bochnig).
@@ -20242,7 +20242,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3775 2006/07/10 22:19:09 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3776 2006/07/11 03:05:13 tsi Exp $
 
 
 
