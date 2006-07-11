@@ -21,7 +21,7 @@
   THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/fttools.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/lib/font/FreeType/fttools.c,v 1.9tsi Exp $ */
 
 #include "fontmisc.h"
 #ifndef FONTMODULE
@@ -122,6 +122,8 @@ FTGetEnglishName(FT_Face face, int nid, char *name_return, int name_len)
     FT_SfntName name;
     int len;
 
+    name_len--;
+
     if(FTGetName(face, nid, 
                  TT_PLATFORM_MICROSOFT, TT_MS_ID_UNICODE_CS, &name) ||
        FTGetName(face, nid, 
@@ -135,6 +137,7 @@ FTGetEnglishName(FT_Face face, int nid, char *name_return, int name_len)
         if(len > name_len)
             len = name_len;
         memcpy(name_return, name.string, len);
+        name_return[len] = 0;
         return len;
     }
 
