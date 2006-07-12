@@ -1,11 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/ar.h,v 1.3 1998/07/25 16:56:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/ar.h,v 1.4tsi Exp $ */
 
 #ifndef _AR_H
 #define _AR_H
 
-#define ARMAG "!<arch>\n"
+#define ARMAG "!<arch>\012"
 #define SARMAG 8
-#define ARFMAG "`\n"
+#define ARFMAG "`\012"
 
 #if !(defined(__powerpc__) && defined(Lynx))
 struct ar_hdr {
