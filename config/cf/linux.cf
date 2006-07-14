@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.241 2006/04/02 23:12:46 dickey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.242tsi Exp $
 
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
@@ -204,10 +204,16 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 # define HasThreadSafeAPI	YES
 # define ThreadsLibraries	-lpthread
 # define SystemMTDefines	-D_REENTRANT
+# define InstallXtermSetGID	YES
+# if 1	/* XXX - This isn't dependent on [g]libc version.
+#  ifndef InstUtmpFlags
+#   define InstUtmpFlags	-m 2755 -g utmp
+#  endif
+# endif
+
 # ifndef HasLibCrypt
 #  define HasLibCrypt		YES
 # endif
-# define InstallXtermSetGID	YES
 /* netscape wraps select but not poll as of communicator 4.72 */
 # ifndef HasPoll
 #  define HasPoll		NO

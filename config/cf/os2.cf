@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.47 2005/06/07 08:02:14 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.48tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -221,14 +221,16 @@ XCOMM hv: but in future a separate system)
 /* "shell scripts" in OS/2 have this extension */
 #define SHsuf sh
 
-#define InstPgmFlags /**/
-#define InstBinFlags /**/
-#define InstUidFlags /**/
-#define InstLibFlags /**/
-#define InstIncFlags /**/
-#define InstManFlags /**/
-#define InstDatFlags /**/
-#define InstallFlags /**/
+#define InstPgmFlags	/**/
+#define InstBinFlags	/**/
+#define InstUidFlags	/**/
+#define InstLibFlags	/**/
+#define InstIncFlags	/**/
+#define InstManFlags	/**/
+#define InstDatFlags	/**/
+#define InstKmemFlags	/**/
+#define InstUtmpFlags	/**/
+#define InstallFlags	/**/
 
 #define OptimizedCDebugFlags 	DefaultGcc2i386Opt
 #define ServerOSDefines		XFree86ServerOSDefines -DXNO_SYSCONF

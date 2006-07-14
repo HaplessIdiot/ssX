@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.131 2006/04/25 02:50:27 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.132tsi Exp $
 
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
@@ -139,6 +139,13 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define HasShadowPasswd		NO
 
 #define InstallXloadSetGID	NO
+
+#if (OSMajorVersion >= 1)
+#define InstallXtermSetGID	YES
+#ifndef InstUtmpFlags
+#define InstUtmpFlags		-m 2755 -g utmp
+#endif
+#endif
 
 #if OSMajorVersion < 1 || (OSMajorVersion == 1 && OSMinorVersion < 5)
 #define BuildIPv6		NO
