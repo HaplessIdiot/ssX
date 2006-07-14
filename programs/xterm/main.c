@@ -87,7 +87,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.211 2006/06/19 00:36:51 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.212tsi Exp $ */
 
 /* main.c */
 
@@ -1579,16 +1579,20 @@ posix_signal(int signo, sigfunc func)
 
 #endif /* linux && _POSIX_SOURCE */
 
-#if defined(DISABLE_SETUID) || defined(USE_UTMP_SETGID)
+#if defined(DISABLE_SETUID)
 static void
 disableSetUid(void)
 {
+    int ruid;
+
     TRACE(("disableSetUid\n"));
-    if (seteuid(getuid()) == -1) {
+
+    ruid = getuid();
+    if (seteuid(ruid) == -1) {
 	fprintf(stderr, "%s: unable to reset effective uid\n", ProgramName);
 	exit(1);
     }
-    if (setuid(getuid()) == -1) {
+    if (setuid(ruid) == -1) {
 	fprintf(stderr, "%s: unable to reset uid\n", ProgramName);
 	exit(1);
     }
@@ -1597,27 +1601,15 @@ disableSetUid(void)
 
 #if defined(USE_UTMP_SETGID)
 static void
-disableSetGid(void)
-{
-    TRACE(("disableSetGid\n"));
-    if (setegid(getgid()) == -1) {
-	fprintf(stderr, "%s: unable to reset effective gid\n", ProgramName);
-	exit(1);
-    }
-    if (setgid(getgid()) == -1) {
-	fprintf(stderr, "%s: unable to reset gid\n", ProgramName);
-	exit(1);
-    }
-}
-
-static void
 revoke_utmp_gid(void)
 {
-    /* Switch to real gid after writing utmp entry */
-    if (getgid() != getegid()) {
-	utmpGid = getegid();
-	setegid(getgid());
-	TRACE(("switch to real gid %d after writing utmp\n", getgid()));
+    int rgid = getgid(), egid = getegid();
+
+    /* Switch to real gid */
+    if (rgid != egid) {
+	utmpGid = egid;
+	setegid(rgid);
+	TRACE(("switch to real gid %d after writing utmp\n", (int) getgid()));
     }
 }
 
@@ -1700,9 +1692,7 @@ main(int argc, char *argv[]ENVP_ARG)
 
 #if defined(USE_UTMP_SETGID)
     get_pty(NULL, NULL);
-    utmpGid = getegid();
-    disableSetUid();
-    disableSetGid();
+    revoke_utmp_gid();	/* Temporarily */
 #define get_pty(pty, from) really_get_pty(pty, from)
 #endif
 
@@ -4583,33 +4573,41 @@ Exit(int n)
 	    memset(utptr, 0, sizeof(*utptr));	/* keep searching */
 	}
 	(void) call_endutent();
+#ifdef USE_UTMP_SETGID
+	revoke_utmp_gid();
+#endif
     }
 #else /* not USE_SYSV_UTMP */
     int wfd;
     struct utmp utmp;
 
     if (!resource.utmpInhibit && added_utmp_entry &&
-	(am_slave < 0 && tslot > 0 && (wfd = open(etc_utmp, O_WRONLY)) >= 0)) {
-	bzero((char *) &utmp, sizeof(utmp));
-	lseek(wfd, (long) (tslot * sizeof(utmp)), 0);
-	write(wfd, (char *) &utmp, sizeof(utmp));
-	close(wfd);
-#ifdef WTMP
-	if (term->misc.login_shell &&
-	    (wfd = open(etc_wtmp, O_WRONLY | O_APPEND)) >= 0) {
-	    (void) strncpy(utmp.ut_line,
-			   my_pty_name(ttydev),
-			   sizeof(utmp.ut_line));
-	    utmp.ut_time = time((time_t *) 0);
+	(am_slave < 0 && tslot > 0)) {
+#if defined(USE_UTMP_SETGID)
+	acquire_utmp_gid();
+#endif
+	if ((wfd = open(etc_utmp, O_WRONLY)) >= 0) {
+	    bzero((char *) &utmp, sizeof(utmp));
+	    lseek(wfd, (long) (tslot * sizeof(utmp)), 0);
 	    write(wfd, (char *) &utmp, sizeof(utmp));
 	    close(wfd);
-	}
+#ifdef WTMP
+	    if (term->misc.login_shell &&
+		(wfd = open(etc_wtmp, O_WRONLY | O_APPEND)) >= 0) {
+		(void) strncpy(utmp.ut_line,
+			       my_pty_name(ttydev),
+			       sizeof(utmp.ut_line));
+		utmp.ut_time = time((time_t *) 0);
+		write(wfd, (char *) &utmp, sizeof(utmp));
+		close(wfd);
+	    }
 #endif /* WTMP */
+	}
+#ifdef USE_UTMP_SETGID
+	revoke_utmp_gid();
+#endif
     }
 #endif /* USE_SYSV_UTMP */
-#ifdef USE_UTMP_SETGID
-    revoke_utmp_gid();
-#endif
 #endif /* HAVE_UTMP */
 
     close(screen->respond);	/* close explicitly to avoid race with slave side */

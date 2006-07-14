@@ -1,4 +1,4 @@
-$XFree86: xc/config/cf/README,v 1.27 2006/04/02 23:12:46 dickey Exp $
+$XFree86: xc/config/cf/README,v 1.28tsi Exp $
 
 The easiest way to write an Imakefile is to find another one that does
 something similar and copy/modify it!
@@ -100,7 +100,8 @@ Imake.tmpl provides defaults for the following variables:
 	InstManFlags		install flags for manual pages
 	InstPgmFlags		install flags for normal programs
 	InstUidFlags		install flags for xterm to chown /dev/ptys
-	InstGidFlags		install flags for xterm to open utmp
+	InstUtmpFlags		install flags for utmp access
+	InstKmemFlags		install flags for /dev/kmem access
 	InstallCmd		command to install files
 	KrbIVIncludes		where to include KerberosIV header files from
 	KrbIVLibraries		where to load KerberosIV libraries from

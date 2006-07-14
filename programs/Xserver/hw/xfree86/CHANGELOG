@@ -1,4 +1,21 @@
 XFree86 4.6.99.4 (xx July 2006)
+  53. Another swipe at dealing with xterm's setgid woes:
+      - Fix xterm, when compiled with setgid support, to actually be able to
+        modify utmp data.  This whether xterm is setgid utmp, or setuid root.
+        Neither was the case before.  Also, fix utmp handling on exit.
+      - Rename InstGidFlags imake symbol to a more descriptive InstUtmpFlags
+        and add toleration for this to xterm's Imakefile.
+      - Install xterm setgid utmp on NetBSD 1.0 or higher.  Untested.  This is
+        based on their CVS repository that shows the introduction of a utmp
+        group in NetBSD 1.0.
+      - On Linux, decide whether to install xterm setgid utmp or setuid root
+        based on the existence of a utmp group on the build system.  The
+        Xinstall script already remakes this decision for the target system.
+        This avoids having to produce different binaries for different Linux
+        distributions.
+      - In xterm's Imakefile, tolerate the absence of CHANGELOG #161, and
+        anticipate FreeBSD's potential move to a setgid xterm.
+      (Marc La France).
   52. Fix gccmakedep script to disable filename expansion in its quoted
       arguments and extend it to allow for single quotes in its options, along
       with blanks and single quotes in its filename arguments
@@ -20246,7 +20263,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3777 2006/07/11 15:23:28 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3778 2006/07/11 15:51:10 tsi Exp $
 
 
 

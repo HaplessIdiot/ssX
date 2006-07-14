@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.175 2006/04/02 23:12:46 dickey Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.176tsi Exp $
 XCOMM ----------------------------------------------------------------------
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -1068,9 +1068,6 @@ TCLIBDIR = TclLibDir
 #ifndef InstUidFlags
 #define InstUidFlags -m 4711
 #endif
-#ifndef InstGidFlags
-#define InstGidFlags -m 2755 -g utmp
-#endif
 #ifndef InstLibFlags
 #define InstLibFlags -m 0644
 #endif
@@ -1085,6 +1082,9 @@ TCLIBDIR = TclLibDir
 #endif
 #ifndef InstKmemFlags     /* put -g kmem -m 2711 in site.def... */
 #define InstKmemFlags InstUidFlags
+#endif
+#ifndef InstUtmpFlags     /* put -m 2755 -g utmp in site.def... */
+#define InstUtmpFlags InstUidFlags
 #endif
 #ifndef ParallelMakeFlags
 #define ParallelMakeFlags /**/
@@ -2061,6 +2061,7 @@ MODLDCOMBINEFLAGS = ModuleLdCombineFlags
      INSTMANFLAGS = InstManFlags	/* install flags for man pages */
      INSTDATFLAGS = InstDatFlags	/* install flags for data files */
     INSTKMEMFLAGS = InstKmemFlags	/* install flags for /dev/kmem progs */
+    INSTUTMPFLAGS = InstUtmpFlags	/* install flags for utmp access */
 
 #ifdef ProjectRoot
       PROJECTROOT = ProjectRoot

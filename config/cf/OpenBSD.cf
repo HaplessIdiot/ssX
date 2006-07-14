@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.119tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.120tsi Exp $
 XCOMM
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -282,6 +282,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define DefaultSystemPath	/sbin:/usr/sbin:/bin:/usr/bin:$(BINDIR)
 
 #define InstUidFlags		-m 4755
+#ifndef InstUtmpFlags
+#define InstUtmpFlags		-m 2755 -g utmp
+#endif
 
 #ifdef  InstallCmd
 # undef  InstallCmd
