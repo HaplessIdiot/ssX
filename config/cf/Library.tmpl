@@ -14,7 +14,7 @@
  * Define LargePICTable YES if large (32-bit) PIC tables are needed.
  */
 
-XCOMM $XFree86: xc/config/cf/Library.tmpl,v 3.26 2006/01/09 14:56:12 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Library.tmpl,v 3.27tsi Exp $
 
 #ifndef DoNormalLib
 #define DoNormalLib NO
@@ -174,11 +174,7 @@ LIB_MT_DEFINES = LibraryMTDefines
 # define _DebuggedObjCompile(options) DebuggedLibObjCompile(options)
 # define _DebuggedObjCplusplusCompile(options) DebuggedLibObjCplusplusCompile(options)
 # define _DebuggedCleanDir() LibCleanDir(debugger)
-# ifdef DebuggedLibObjAsm
-#  define _DebuggedObjAsm(options) DebuggedLibObjAsm(options)
-# else
-#  define _DebuggedObjAsm(options) $(_NULLCMD_)
-# endif
+# define _DebuggedObjAsm(options) DebuggedLibObjAsm(options)
 #else
 # define _DebuggedLibMkdir() $(_NULLCMD_)
 # define _DebuggedObjCompile(options) $(_NULLCMD_)
@@ -192,11 +188,7 @@ LIB_MT_DEFINES = LibraryMTDefines
 # define _ProfiledObjCompile(options) ProfiledLibObjCompile(options)
 # define _ProfiledObjCplusplusCompile(options) ProfiledLibObjCplusplusCompile(options)
 # define _ProfiledCleanDir() LibCleanDir(profiled)
-# ifdef ProfiledLibObjAsm
-#  define _ProfiledObjAsm(options) ProfiledLibObjAsm(options)
-# else
-#  define _ProfiledObjAsm(options) $(_NULLCMD_)
-# endif
+# define _ProfiledObjAsm(options) ProfiledLibObjAsm(options)
 #else
 # define _ProfiledLibMkdir() $(_NULLCMD_)
 # define _ProfiledObjCompile(options) $(_NULLCMD_)
@@ -217,25 +209,17 @@ LIB_MT_DEFINES = LibraryMTDefines
 #  define _NormalObjCompile(options) UnsharedLibObjCompile(options)
 #  define _NormalObjCplusplusCompile(options) UnsharedLibObjCplusplusCompile(options)
 #  define _NormalCleanDir() LibCleanDir(unshared)
-#  ifdef UnsharedLibObjAsm
-#   define _NormalObjAsm(options) UnsharedLibObjAsm(options)
-#  else
-#   define _NormalObjAsm(options) $(_NULLCMD_)
-#  endif
+#  define _NormalObjAsm(options) UnsharedLibObjAsm(options)
 # else
 #  define _NormalLibMkdir() $(_NULLCMD_)
-#  if !DoSharedLib &&  defined(IncludeSharedObjectInNormalLib)
+#  if !DoSharedLib && defined(IncludeSharedObjectInNormalLib)
 #   define _NormalObjCompile(options) NormalRelocLibObjCompile(options)
 #  else
 #   define _NormalObjCompile(options) NormalLibObjCompile(options)
 #  endif
 #  define _NormalObjCplusplusCompile(options) NormalLibObjCplusplusCompile(options)
 #  define _NormalCleanDir() $(_NULLCMD_)
-#  ifdef NormalLibObjAsm
-#   define _NormalObjAsm(options) NormalLibObjAsm(options)
-#  else
-#   define _NormalObjAsm(options) $(_NULLCMD_)
-#  endif
+#  define _NormalObjAsm(options) NormalLibObjAsm(options)
 # endif
 #endif
 
@@ -247,20 +231,12 @@ LIB_MT_DEFINES = LibraryMTDefines
 # if SeparateSharedCompile
 #  define _SharedObjCompile(options) NormalSharedLibObjCompile(options)
 #  define _SharedObjCplusplusCompile(options) NormalSharedLibObjCplusplusCompile(options)
-# ifdef NormalSharedLibObjAsm
 #  define _SharedObjAsm(options) NormalSharedLibObjAsm(options)
 # else
-#  define _SharedObjAsm(options) $(_NULLCMD_)
-# endif
-#else
-# define _SharedObjCompile(options) NormalLibObjCompile(options)
-# define _SharedObjCplusplusCompile(options) NormalLibObjCplusplusCompile(options)
-# ifdef NormalLibObjAsm
+#  define _SharedObjCompile(options) NormalLibObjCompile(options)
+#  define _SharedObjCplusplusCompile(options) NormalLibObjCplusplusCompile(options)
 #  define _SharedObjAsm(options) NormalLibObjAsm(options)
-# else
-#  define _SharedObjAsm(options) $(_NULLCMD_)
 # endif
-#endif
 #endif
 
 #ifndef LibInstallBuild
@@ -272,11 +248,7 @@ LIB_MT_DEFINES = LibraryMTDefines
 # define _ExtraObjCompile(options) ExtraObjCompile(options)
 # define _ExtraObjCplusplusCompile(options) ExtraObjCplusplusCompile(options)
 # define _ExtraCleanDir() ExtraCleanDir()
-# ifdef ExtraObjAsm
-#  define _ExtraObjAsm(options) ExtraObjAsm(options)
-# else
-#  define _ExtraObjAsm(options) $(_NULLCMD_)
-# endif
+# define _ExtraObjAsm(options) ExtraObjAsm(options)
 #else
 # define _ExtraLibMkdir() $(_NULLCMD_)
 # define _ExtraObjCompile(options) $(_NULLCMD_)
