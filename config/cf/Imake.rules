@@ -1,6 +1,6 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.149 2006/04/03 15:59:08 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.150tsi Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -2371,6 +2371,10 @@ LintLibReferences(varname,libname,libsource)
 #define DebuggedLibObjCompile(options) LibObjCompile(debugger,DebuggableCDebugFlags options)
 #endif
 
+#ifndef DebuggedLibObjAsm
+#define DebuggedLibObjAsm(options) LibObjAsm(debugger,DebuggableCDebugFlags options,$(ASMOPTS))
+#endif
+
 #ifndef DebuggedLibObjCplusplusCompile
 #define DebuggedLibObjCplusplusCompile(options) LibObjCplusplusCompile(debugger,DebuggableCplusplusDebugFlags options)
 #endif
@@ -2380,6 +2384,10 @@ LintLibReferences(varname,libname,libsource)
  */
 #ifndef ProfiledLibObjCompile
 #define ProfiledLibObjCompile(options) LibObjCompile(profiled,ProfiledCDebugFlags options)
+#endif
+
+#ifndef ProfiledLibObjAsm
+#define ProfiledLibObjAsm(options) LibObjAsm(profiled,ProfiledCDebugFlags options,$(ASMOPTS))
 #endif
 
 #ifndef ProfiledLibObjCplusplusCompile
@@ -2393,10 +2401,8 @@ LintLibReferences(varname,libname,libsource)
 #define UnsharedLibObjCompile(options) LibObjCompile(unshared,$(CDEBUGFLAGS) $(CLIBDEBUGFLAGS) options)
 #endif
 
-#if 0
 #ifndef UnsharedLibObjAsm
-#define UnsharedLibObjAsm(options) LibObjAsm(unshared,$(CDEBUGFLAGS) $(CLIBDEBUGFLAGS) options,NullParameter)
-#endif
+#define UnsharedLibObjAsm(options) LibObjAsm(unshared,$(CDEBUGFLAGS) $(CLIBDEBUGFLAGS) options,$(ASMOPTS))
 #endif
 
 #ifndef UnsharedLibObjCplusplusCompile

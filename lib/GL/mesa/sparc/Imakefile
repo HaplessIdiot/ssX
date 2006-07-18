@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/sparc/Imakefile,v 1.3tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/sparc/Imakefile,v 1.4tsi Exp $
 
 /*
  * Need both shared and unshared Mesa objects in the following cases:
@@ -51,11 +51,5 @@ STD_CPP_DEFINES = StandardDefines $(PROJECT_DEFINES)
 
 AllTarget($(OBJS))
 NormalLintTarget($(SRCS))
-
-#if 0
-ObjectFromAsmSource(xform, NullParameter)
-ObjectFromAsmSource(clip, NullParameter)
-ObjectFromAsmSource(norm, NullParameter)
-#endif
 
 DependTarget()

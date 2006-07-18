@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.34 2005/10/17 15:35:55 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.35tsi Exp $
 XCOMM The contents of this file are subject to the GLX Public License Version 1.0
 XCOMM (the "License"). You may not use this file except in compliance with the
 XCOMM License. You may obtain a copy of the License at Silicon Graphics, Inc.,
@@ -215,14 +215,6 @@ ALIAS_DEFINES = -DGLX_ALIAS_UNSUPPORTED
 #include <Library.tmpl>
 
 LibraryObjectRule()
-
-#if BuildXF86DRI && defined(i386Architecture) && MesaUseX86Asm
-ObjectFromAsmSource(glapi_x86, NullParameter)
-#endif
-#if BuildXF86DRI && defined(SparcArchitecture)
-STD_CPP_DEFINES = StandardDefines $(PROJECT_DEFINES)
-ObjectFromAsmSource(glapi_sparc, NullParameter)
-#endif
 
 SubdirLibraryRule($(OBJS))
 NormalLintTarget($(SRCS))
