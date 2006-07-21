@@ -1,4 +1,6 @@
-XFree86 4.6.99.4 (xx July 2006)
+XFree86 4.6.99.5 (xx August 2006)
+
+XFree86 4.6.99.4 (21 July 2006)
   54. Remove the "special case"'ing of assembler objects WRT their inclusion
       in libraries.  They were being included only in one library type
       (shared/static/debug/profiled/extra) even when more than one type is
@@ -20267,7 +20269,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3779 2006/07/14 15:26:39 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3780 2006/07/18 03:05:29 tsi Exp $
 
 
 
