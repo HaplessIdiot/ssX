@@ -1,4 +1,6 @@
 XFree86 4.6.99.5 (xx August 2006)
+  55. Fix typo/brain fart that prevented hardware cursor support in the sunffb
+      driver  (Marc La France).
 
 XFree86 4.6.99.4 (21 July 2006)
   54. Remove the "special case"'ing of assembler objects WRT their inclusion
@@ -20269,7 +20271,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3780 2006/07/18 03:05:29 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3781 2006/07/21 11:02:55 dawes Exp $
 
 
 

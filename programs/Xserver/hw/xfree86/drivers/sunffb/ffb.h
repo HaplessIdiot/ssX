@@ -24,7 +24,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.14tsi Exp $ */
 
 #ifndef FFB_H
 #define FFB_H
@@ -63,8 +63,8 @@
 #define		FFB_DFB8X_VOFF		0x04c04000
 #define		FFB_DFB24_VOFF		0x05004000
 #ifdef sun
-# define	FFB_DAC_VOFF		0x07018000
-# define	FFB_EXP_VOFF		0x07006000
+# define	FFB_DAC_VOFF		0x07006000
+# define	FFB_EXP_VOFF		0x07018000
 #else
 # define	FFB_DAC_VOFF		0x0bc06000
 # define	FFB_EXP_VOFF		0x0bc18000
