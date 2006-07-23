@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/r200/Imakefile,v 1.8tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/r200/Imakefile,v 1.9tsi Exp $
 
 /*
  * Copyright (c) 2000-2004 by The XFree86 Project, Inc.
@@ -94,7 +94,8 @@ XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/r200/Imakefile,v 1.8tsi Exp $
          OBJS = $(DRMOBJS) $(COREMESAOBJS) \
 		$(MESA_ASM_OBJS) $(COMMONOBJS) $(R200OBJS) 
 
-REQUIREDLIBS = MathLibrary $(LDPRELIB) $(GLXLIB) $(XONLYLIB) ExpatLibrary
+REQUIREDLIBS = MathLibrary $(LDPRELIB) $(GLXLIB) $(XXF86VMLIB) \
+	       $(XLIB) ExpatLibrary
 
 #include <Library.tmpl>
 

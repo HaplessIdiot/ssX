@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/bsdLib.tmpl,v 3.24 2003/11/20 16:18:19 dawes Exp $
+XCOMM $XFree86: xc/config/cf/bsdLib.tmpl,v 3.25tsi Exp $
 
 /*
  * NetBSD/FreeBSD/OpenBSD shared library template
@@ -72,7 +72,7 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #define SharedGLReqs	$(LDPRELIBS) $(XLIB)
 #endif
 #ifndef SharedGLUReqs
-#define SharedGLUReqs	$(LDPRELIB) $(XLIB) $(GLXLIB)
+#define SharedGLUReqs	$(LDPRELIB) $(GLXLIB) $(XXF86VMLIB) $(XLIB)
 #endif
 #define SharedXcursorReqs   $(LDPRELIB) $(XRENDERLIB) $(XLIB)
 

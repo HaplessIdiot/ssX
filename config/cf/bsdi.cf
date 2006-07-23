@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.40tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.41tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -84,7 +84,8 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define Krb5Libraries		-lkrb5 -lk5crypto -lprofile -lcom_err
 #endif
 
-#define SharedGLUReqs		$(LDPRELIB) $(XLIB) $(GLXLIB) -lstdc++
+#define SharedGLUReqs		$(LDPRELIB) $(GLXLIB) $(XXF86VMLIB) \
+				$(XLIB) -lstdc++
 
 #if (OSMajorVersion == 4 && OSMinorVersion >= 1) || (OSMajorVersion > 4)
 #define HasNCurses		YES
