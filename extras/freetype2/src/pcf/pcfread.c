@@ -23,7 +23,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/extras/freetype2/src/pcf/pcfread.c,v 1.4 2003/10/22 17:26:29 tsi Exp $ */
+/* $XFree86: xc/extras/freetype2/src/pcf/pcfread.c,v 1.5tsi Exp $ */
 
 #include <ft2build.h>
 
@@ -399,6 +399,10 @@ THE SOFTWARE.
         if ( FT_STREAM_READ_FIELDS( pcf_property_header, props + i ) )
           goto Bail;
       }
+      if (props[i].name < 0 
+	  || (props[i].isString != 0 && props[i].isString != 1)
+	  || (props[i].isString && props[i].value < 0))
+	goto Bail;
     }
 
     /* pad the property array                                            */
