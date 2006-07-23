@@ -1,4 +1,6 @@
 XFree86 4.6.99.5 (xx August 2006)
+  57. Allow glxinfo and glxgears to be linked with a static libGL (add
+      XF86VIDMODE refrences)  (Marc La France).
   56. Fix segfaults in PCF font handling (adapted from Matthieu Herrb).
   55. Fix typo that crippled hardware cursor support in the sunffb driver
       (Marc La France).
@@ -20272,7 +20274,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3782 2006/07/22 15:34:06 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3783 2006/07/23 19:44:49 tsi Exp $
 
 
 
