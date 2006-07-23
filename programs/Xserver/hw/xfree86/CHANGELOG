@@ -1,4 +1,5 @@
 XFree86 4.6.99.5 (xx August 2006)
+  58. More fixes for linking with a static libGL  (Marc La France).
   57. Allow glxinfo and glxgears to be linked with a static libGL (add
       XF86VIDMODE refrences)  (Marc La France).
   56. Fix segfaults in PCF font handling (adapted from Matthieu Herrb).
@@ -20274,7 +20275,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3783 2006/07/23 19:44:49 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3784 2006/07/23 20:21:11 tsi Exp $
 
 
 

@@ -1,9 +1,9 @@
-XCOMM platform: $XFree86: xc/config/cf/OpenBSDLib.tmpl,v 1.12 2006/01/09 14:56:12 dawes Exp $
+XCOMM platform: $XFree86: xc/config/cf/OpenBSDLib.tmpl,v 1.13tsi Exp $
 XCOMM
 
 /* Shared libraries dependencies */
 #if HasGcc && GccMajorVersion >= 3
-# define SharedGLUReqs	$(LDPRELIB) $(XLIB) $(GLXLIB) -lsupc++
+# define SharedGLUReqs	$(LDPRELIB) $(GLXLIB) $(XXF86VMLIB) $(XLIB) -lsupc++
 #endif 
 
 /* Shared Library Revisions. Crank major on API Changes */

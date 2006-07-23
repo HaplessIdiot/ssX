@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.20 2005/10/14 15:15:52 tsi Exp $
+XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.21tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -258,8 +258,8 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #define SharedXfontReqs     $(LDPRELIB) $(FONTSTUBLIB) GzipLibrary $(FREETYPE2LIB) $(XLIB)
 #define SharedFontencReqs   $(LDPRELIB) GzipLibrary
 #define SharedGLReqs        $(LDPRELIB) $(XLIB)
-#define SharedGLUReqs       $(LDPRELIB) $(XLIB) $(GLXLIB)
-#define SharedOSMesaReqs    $(LDPRELIB) $(XLIB) $(GLXLIB)
+#define SharedGLUReqs       $(LDPRELIB) $(GLXLIB) $(XXF86VMLIB) $(XLIB)
+#define SharedOSMesaReqs    $(LDPRELIB) $(GLXLIB) $(XXF86VMLIB) $(XLIB)
 #define SharedSMReqs        $(LDPRELIB) $(ICELIB)
 #define SharedX11Reqs       $(LDPRELIB) -lsocket
 #define SharedXawReqs       $(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XPMLIB) $(XLIB)

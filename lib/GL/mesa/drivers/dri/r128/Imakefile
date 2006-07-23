@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/r128/Imakefile,v 1.7tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/r128/Imakefile,v 1.8tsi Exp $
 
 /*
  * Copyright (c) 2000-2004 by The XFree86 Project, Inc.
@@ -95,7 +95,8 @@ XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/r128/Imakefile,v 1.7tsi Exp $
          OBJS = $(DRMOBJS) $(COREMESAOBJS) \
 		$(MESA_ASM_OBJS) $(COMMONOBJS) $(R128OBJS) 
 
-REQUIREDLIBS = MathLibrary $(LDPRELIB) $(GLXLIB) $(XONLYLIB) ExpatLibrary
+REQUIREDLIBS = MathLibrary $(LDPRELIB) $(GLXLIB) $(XXF86VMLIB) \
+	       $(XLIB) ExpatLibrary
 
 #include <Library.tmpl>
 
@@ -117,4 +118,3 @@ InstallLibrary($(SOPROF_LIBNAME),$(MODULEDIR)/dri)
 #endif
 
 DependTarget()
-

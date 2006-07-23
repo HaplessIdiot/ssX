@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.20 2005/02/07 01:38:23 tsi Exp $
+XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.21tsi Exp $
 
 /*
  * OS2/EMX shared library template
@@ -28,7 +28,7 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.20 2005/02/07 01:38:23 tsi Exp $
 #define SharedXpmReqs $(LDPRELIB) $(XLIB)
 #define SharedDPSReqs $(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
 #define SharedDPSTKReqs $(LDPRELIB) $(DPSLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
-#define SharedGLUReqs $(LDPRELIB) $(XLIB) $(GLXLIB)
+#define SharedGLUReqs $(LDPRELIB) $(GLXLIB) $(XXF86VMLIB) $(XLIB)
 #define SharedXrandrReqs $(LDPRELIB) $(XRENDERLIB) $(XLIB)
 #define SharedXcursorReqs $(LDPRELIB) $(XRENDERLIB) $(XLIB)
 #define SharedXssReqs $(LDPRELIB) $(XLIB)
