@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.242tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.243 2006/07/14 15:26:39 tsi Exp $
 
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
@@ -205,7 +205,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 # define ThreadsLibraries	-lpthread
 # define SystemMTDefines	-D_REENTRANT
 # define InstallXtermSetGID	YES
-# if 1	/* XXX - This isn't dependent on [g]libc version.
+# if 1	/* XXX - This isn't dependent on [g]libc version. */
 #  ifndef InstUtmpFlags
 #   define InstUtmpFlags	-m 2755 -g utmp
 #  endif
