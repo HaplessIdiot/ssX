@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile.inc,v 1.8tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile.inc,v 1.9tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -128,10 +128,6 @@ OBJS =   cfbgc.o cfbrrop.o cfbwindow.o \
 	 cfbply1rctC.o cfbply1rctG.o cfbcppl.o $(PSZOBJS) $(STIPPLEOBJ) \
 	 $(XFMODOBJ)
 
-#ifdef XFree86Version
-PLATFORMDEFS = -DXFREE86
-#endif
-
 #if BuildLowMem
   LMDEFINES = -ULOWMEMFTPT
 #endif
@@ -140,7 +136,7 @@ PLATFORMDEFS = -DXFREE86
 	      -I$(SERVERSRC)/cfb24 -I$(SERVERSRC)/include -I$(SERVERSRC)/Xext
    LINTLIBS = $(SERVERSRC)/dix/llib-ldix.ln $(SERVERSRC)/os/llib-los.ln \
 	     $(SERVERSRC)/mfb/llib-lmfb.ln $(SERVERSRC)/mi/llib-lmi.ln
-    DEFINES = $(LMDEFINES) -DPSZ=PixelSize $(PLATFORMDEFS)
+    DEFINES = $(LMDEFINES) -DPSZ=PixelSize
 
 #if PixelSize == 8
 CFBNAME = cfb

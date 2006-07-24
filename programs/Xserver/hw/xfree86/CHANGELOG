@@ -1,10 +1,12 @@
 XFree86 4.6.99.5 (xx August 2006)
+  59. Re-implement an old hack that was meant to deal with unaligned accesses
+      in cfb  (Marc La France).
   58. More fixes for linking with a static libGL  (Marc La France).
   57. Allow glxinfo and glxgears to be linked with a static libGL (add
       XF86VIDMODE refrences)  (Marc La France).
   56. Fix segfaults in PCF font handling (adapted from Matthieu Herrb).
-  55. Fix typo that crippled hardware cursor support in the sunffb driver
-      (Marc La France).
+  55. Fix typo that crippled hardware cursor support in the sunffb driver on
+      SunOS (Marc La France).
 
 XFree86 4.6.99.4 (21 July 2006)
   54. Remove the "special case"'ing of assembler objects WRT their inclusion
@@ -20275,7 +20277,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3784 2006/07/23 20:21:11 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3785 2006/07/23 20:51:50 tsi Exp $
 
 
 

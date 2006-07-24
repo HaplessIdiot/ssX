@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.15tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.16tsi Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -33,11 +33,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include	<X11/X.h>
 #include	<X11/Xmd.h>
 #include	"servermd.h"
-#if defined(XFREE86) || ( defined(__OpenBSD__) && defined(__alpha__) ) \
-	|| (defined(__bsdi__))
-#include	"xf86_ansic.h"
-#include	"compiler.h"
-#endif
 
 /*
  * ==========================================================================
@@ -823,15 +818,15 @@ if ((x) + (w) <= PPW) {\
 }
 #else /* BITMAP_BIT_ORDER == LSB */
 
-/* this must load 32 bits worth; for most machines, thats an int */
-#define CfbFetchUnaligned(x)	ldl_u(x)
-
 #define getstipplepixels( psrcstip, xt, w, ones, psrcpix, destpix ) \
 { \
-    PixelGroup q; \
-    q = CfbFetchUnaligned(psrcstip) >> (xt); \
-    if ( ((xt)+(w)) > (PPW*PSZ) ) \
-        q |= (CfbFetchUnaligned((psrcstip)+1)) << ((PPW*PSZ)-(xt)); \
+    PixelGroup q, tmp; \
+    memmove(&tmp, psrcstip, sizeof(PixelGroup)); \
+    q = tmp >> (xt); \
+    if ( ((xt)+(w)) > (PPW*PSZ) ) { \
+        memmove(&tmp, (psrcstip) + 1, sizeof(PixelGroup)); \
+        q |= tmp << ((PPW*PSZ)-(xt); \
+    } \
     q = QuartetBitsTable[(w)] & ((ones) ? q : ~q); \
     *(destpix) = (*(psrcpix)) & QuartetPixelMaskTable[q]; \
 }
