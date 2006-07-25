@@ -1,4 +1,4 @@
-# $XFree86: xc/Makefile,v 3.30 2005/06/10 19:43:59 dawes Exp $
+# $XFree86: xc/Makefile,v 3.31tsi Exp $
 
 # Luna users will need to either run make as "make MAKE=make"
 # or add "MAKE = make" to this file.
@@ -42,9 +42,9 @@ all-initial:
 World:
 	@$(RM) $(VERSSITEINC)
 	@if [ -f $(VERSHOSTDEF) ]; then \
-		sed -e /^XCOMM/d < $(VERSHOSTDEF) > $(VERSSITEINC); \
+		sed -e '/^XCOMM/d' < $(VERSHOSTDEF) > $(VERSSITEINC); \
 	fi
-	@sed -e /^XCOMM/d < $(VERSSITEDEF) >> $(VERSSITEINC)
+	@sed -e '/^XCOMM/d' < $(VERSSITEDEF) >> $(VERSSITEINC)
 	@$(RM) $(VERSPROG)
 	@$(CC) $(VERSINC) -o $(VERSPROG) $(VERSSRC)
 	@$(RM) $(VERSSITEINC)
