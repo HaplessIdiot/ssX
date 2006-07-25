@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.16tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.17tsi Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -825,7 +825,7 @@ if ((x) + (w) <= PPW) {\
     q = tmp >> (xt); \
     if ( ((xt)+(w)) > (PPW*PSZ) ) { \
         memmove(&tmp, (psrcstip) + 1, sizeof(PixelGroup)); \
-        q |= tmp << ((PPW*PSZ)-(xt); \
+        q |= tmp << ((PPW*PSZ)-(xt)); \
     } \
     q = QuartetBitsTable[(w)] & ((ones) ? q : ~q); \
     *(destpix) = (*(psrcpix)) & QuartetPixelMaskTable[q]; \
