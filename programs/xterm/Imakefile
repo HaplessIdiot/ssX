@@ -7,7 +7,7 @@ XCOMM Xterm assumes that bcopy can handle overlapping arguments.  If your
 XCOMM bcopy (or memcpy) cannot, write a routine called bcopy and link it in
 XCOMM or add -Dbcopy=mybcopy to the DEFINES list below.
 XCOMM
-XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.74 2006/07/14 15:26:40 tsi Exp $
+XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.75 2006/07/14 16:39:37 tsi Exp $
 XCOMM
 
 /* Uncomment SCROLLBAR_RIGHT if you want the scroll bar to be on the right */
@@ -306,7 +306,7 @@ INSTUTMPFLAGS = $(INSTPGMFLAGS) InstUtmpFlags
 /* Install xterm setgid if there is a utmp group;  setuid otherwise */
 install::
 	MakeDir($(DESTDIR)$(BINDIR))
-	@if [ "`grep ^utmp: /etc/group`" ]; then \
+	@if [ "`grep '^utmp:' /etc/group`" ]; then \
 	    InstallNamedInline(xterm,$(INSTUTMPFLAGS),$(BINDIR),xterm); \
 	else \
 	    InstallNamedInline(xterm,$(INSTUIDFLAGS),$(BINDIR),xterm); \
