@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/Xprint/Imakefile,v 1.23tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xprint/Imakefile,v 1.24 2006/02/19 15:51:17 tsi Exp $
 
 #include <Server.tmpl>
 
@@ -118,7 +118,7 @@ MKTMP_DEFINES = -DHAS_MKSTEMP
 
 /* Go ahead:  Call me paranoid ... */
 Makefiles::
-	RemoveFiles(Quark.c Xlcint.h Xresource.h Xrm.c XrmI.h)
+	@RemoveFiles(Quark.c Xlcint.h Xresource.h Xrm.c XrmI.h)
 
 LinkSourceFile(Quarks.c,$(XLIBSRC))
 
