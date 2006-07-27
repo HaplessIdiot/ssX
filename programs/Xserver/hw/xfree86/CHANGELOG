@@ -1,4 +1,8 @@
 XFree86 4.6.99.5 (xx August 2006)
+  60. Some X11.tmpl housecleaning;  Don't generate references to libraries that
+      would not be built even when UseInstalled is set to NO;  Add imake
+      Build{Debug,Profile}Libraries symbols to allow generating debuggable and
+      profiled libraries, respectively  (Marc La France).
   59. Re-implement an old hack that was meant to deal with unaligned accesses
       in cfb  (Marc La France).
   58. More fixes for linking with a static libGL  (Marc La France).
@@ -20277,7 +20281,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3785 2006/07/23 20:51:50 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3786 2006/07/24 16:08:01 tsi Exp $
 
 
 
