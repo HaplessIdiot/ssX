@@ -1,4 +1,6 @@
-XFree86 4.6.99.5 (xx August 2006)
+XFree86 4.6.99.6 (xx August 2006)
+
+XFree86 4.6.99.5 (7 August 2006)
   60. Some X11.tmpl housecleaning;  Don't generate references to libraries that
       would not be built even when UseInstalled is set to NO;  Add imake
       Build{Debug,Profile}Libraries symbols to allow generating debuggable and
@@ -20281,7 +20283,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3786 2006/07/24 16:08:01 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3787 2006/07/27 22:04:36 tsi Exp $
 
 
 
