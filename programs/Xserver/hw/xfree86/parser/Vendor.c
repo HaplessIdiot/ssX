@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Vendor.c,v 1.18 2004/02/13 23:58:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Vendor.c,v 1.19 2005/01/26 05:31:50 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -27,7 +27,7 @@
  * 
  */
 /*
- * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -137,13 +137,13 @@ static xf86ConfigSymTabRec VendorSubTab[] =
 #define CLEANUP xf86freeVendorSubList
 
 XF86ConfVendSubPtr
-xf86parseVendorSubSection (XF86ConfVendSubPtr head, char *name)
+xf86parseVendorSubSection (XF86ConfVendSubPtr head, const char *name)
 {
 	int has_ident = FALSE;
 	int token;
 	parsePrologue (XF86ConfVendSubPtr, XF86ConfVendSubRec)
 
-	ptr->vs_name = name;
+	ptr->vs_name = xf86configStrdup(name);
 	ptr->vs_option_lst = NULL;
 	ptr->list.next = NULL;
 
@@ -159,7 +159,7 @@ xf86parseVendorSubSection (XF86ConfVendSubPtr head, char *name)
 				Error (QUOTE_MSG, "Identifier");
 			if (has_ident == TRUE)
 				Error (MULTIPLE_MSG, "Identifier");
-			ptr->vs_identifier = val.str;
+			ptr->vs_identifier = xf86configStrdup(val.str);
 			has_ident = TRUE;
 			break;
 		case OPTION:
@@ -215,13 +215,13 @@ xf86parseVendorSection (void)
 				Error (QUOTE_MSG, "Identifier");
 			if (has_ident == TRUE)
 				Error (MULTIPLE_MSG, "Identifier");
-			ptr->vnd_identifier = val.str;
+			ptr->vnd_identifier = xf86configStrdup(val.str);
 			has_ident = TRUE;
 			break;
 		case VENDORNAME:
 			if (xf86getSubToken (&(ptr->vnd_comment)) != STRING)
 				Error (QUOTE_MSG, "VendorName");
-			ptr->vnd_name = val.str;
+			ptr->vnd_name = xf86configStrdup(val.str);
 			break;
 		case OPTION:
 			ptr->vnd_option_lst = xf86parseOption(ptr->vnd_option_lst);

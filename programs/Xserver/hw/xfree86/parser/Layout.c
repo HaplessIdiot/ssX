@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.24 2003/08/24 17:37:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.25 2004/02/13 23:58:50 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -27,7 +27,7 @@
  * 
  */
 /*
- * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -126,7 +126,7 @@ xf86parseLayoutSection (void)
 				Error (QUOTE_MSG, "Identifier");
 			if (has_ident == TRUE)
 				Error (MULTIPLE_MSG, "Identifier");
-			ptr->lay_identifier = val.str;
+			ptr->lay_identifier = xf86configStrdup(val.str);
 			has_ident = TRUE;
 			break;
 		case INACTIVE:
@@ -137,7 +137,7 @@ xf86parseLayoutSection (void)
 				iptr->list.next = NULL;
 				if (xf86getSubToken (&(ptr->lay_comment)) != STRING)
 					Error (INACTIVE_MSG, NULL);
-				iptr->inactive_device_str = val.str;
+				iptr->inactive_device_str = xf86configStrdup(val.str);
 				ptr->lay_inactive_lst = (XF86ConfInactivePtr)
 					xf86addListItem ((glp) ptr->lay_inactive_lst, (glp) iptr);
 			}
@@ -161,7 +161,7 @@ xf86parseLayoutSection (void)
 				token = xf86getSubToken(&(ptr->lay_comment));
 				if (token != STRING)
 					Error (SCREEN_MSG, NULL);
-				aptr->adj_screen_str = val.str;
+				aptr->adj_screen_str = xf86configStrdup(val.str);
 
 				token = xf86getSubTokenWithTab(&(ptr->lay_comment), AdjTab);
 				switch (token)
@@ -223,7 +223,7 @@ xf86parseLayoutSection (void)
 					token = xf86getSubToken(&(ptr->lay_comment));
 					if (token != STRING)
 						Error(INVALID_SCR_MSG, NULL);
-					aptr->adj_refscreen = val.str;
+					aptr->adj_refscreen = xf86configStrdup(val.str);
 					if (aptr->adj_where == CONF_ADJ_RELATIVE)
 					{
 						token = xf86getSubToken(&(ptr->lay_comment));
@@ -238,22 +238,22 @@ xf86parseLayoutSection (void)
 					break;
 				case CONF_ADJ_OBSOLETE:
 					/* top */
-					aptr->adj_top_str = val.str;
+					aptr->adj_top_str = xf86configStrdup(val.str);
 
 					/* bottom */
 					if (xf86getSubToken (&(ptr->lay_comment)) != STRING)
 						Error (SCREEN_MSG, NULL);
-					aptr->adj_bottom_str = val.str;
+					aptr->adj_bottom_str = xf86configStrdup(val.str);
 
 					/* left */
 					if (xf86getSubToken (&(ptr->lay_comment)) != STRING)
 						Error (SCREEN_MSG, NULL);
-					aptr->adj_left_str = val.str;
+					aptr->adj_left_str = xf86configStrdup(val.str);
 
 					/* right */
 					if (xf86getSubToken (&(ptr->lay_comment)) != STRING)
 						Error (SCREEN_MSG, NULL);
-					aptr->adj_right_str = val.str;
+					aptr->adj_right_str = xf86configStrdup(val.str);
 
 				}
 				ptr->lay_adjacency_lst = (XF86ConfAdjacencyPtr)
@@ -269,7 +269,7 @@ xf86parseLayoutSection (void)
 				iptr->iref_option_lst = NULL;
 				if (xf86getSubToken (&(ptr->lay_comment)) != STRING)
 					Error (INPUTDEV_MSG, NULL);
-				iptr->iref_inputdev_str = val.str;
+				iptr->iref_inputdev_str = xf86configStrdup(val.str);
 				while ((token = xf86getSubToken (&(ptr->lay_comment))) == STRING)
 				{
 					iptr->iref_option_lst =

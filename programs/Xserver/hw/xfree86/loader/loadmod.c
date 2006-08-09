@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.79 2006/03/26 02:25:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.80 2006/06/27 18:43:59 dawes Exp $ */
 
 /*
  *
@@ -162,7 +162,7 @@ static void
 PrintDiagnostics(const char *module, const char *what)
 {
 #ifdef linux
-    char procdev[] = "/proc/XXXXX/maps";
+    char *procdev = NULL;
     FILE *f = NULL;
     char buf[1024];
 #endif
@@ -173,7 +173,9 @@ PrintDiagnostics(const char *module, const char *what)
     LoaderDebugMsg(LOADER_DEBUG_DIAGNOSTICS,
 		   "LoaderDiagnostics for %s of module %s\n", what, module);
 #ifdef linux
-    sprintf(procdev, "/proc/%d/maps", getpid());
+    xasprintf(procdev, "/proc/%d/maps", getpid());
+    if (!procdev)
+	return;
     f = fopen(procdev, "r");
     if (f) {
 	while (fgets(buf, sizeof(buf), f))
@@ -183,6 +185,7 @@ PrintDiagnostics(const char *module, const char *what)
 	LoaderDebugMsg(LOADER_DEBUG_DIAGNOSTICS,
 		       "Cannot open %s: %s\n", procdev, strerror(errno));
     }
+    xfree(procdev);
 #endif
 }
 #endif
@@ -435,8 +438,9 @@ InitSubdirs(const char **subdirlist)
 		len++;
 	    } else
 		slash = "";
-	    len += oslen + 2;
-	    if (!(subdirs[i] = xalloc(len))) {
+	    /* Tack on the OS name. */
+	    xasprintf(&subdirs[i], "%s%s%s/", *s, slash, osname);
+	    if (!subdirs[i]) {
 		while (--i >= 0)
 		    xfree(subdirs[i]);
 		xfree(subdirs);
@@ -444,11 +448,17 @@ InitSubdirs(const char **subdirlist)
 		    xfree(tmp_subdirlist);
 		return NULL;
 	    }
-	    /* tack on the OS name */
-	    sprintf(subdirs[i], "%s%s%s/", *s, slash, osname);
 	    i++;
-	    /* path as given */
+	    /* The path as given. */
 	    subdirs[i] = xstrdup(*s);
+	    if (!subdirs[i]) {
+		while (--i >= 0)
+		    xfree(subdirs[i]);
+		xfree(subdirs);
+		if (tmp_subdirlist)
+		    xfree(tmp_subdirlist);
+		return NULL;
+	    }
 	    i++;
 	    s++;
 	    if (indefault && !s) {

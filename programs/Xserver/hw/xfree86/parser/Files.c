@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Files.c,v 1.19tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Files.c,v 1.20 2005/04/30 17:04:00 tsi Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -27,7 +27,7 @@
  * 
  */
 /*
- * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -141,10 +141,10 @@ static xf86ConfigSymTabRec FilesTab[] =
 };
 
 static char *
-prependRoot (char *pathname)
+prependRoot (const char *pathname)
 {
 #ifndef __EMX__
-	return pathname;
+	return xf86configStrdup(pathname);
 #else
 	/* XXXX caveat: multiple path components in line */
 	return (char *) __XOS2RedirRoot (pathname);
@@ -175,7 +175,7 @@ xf86parseFilesSection (void)
 				Error (QUOTE_MSG, "Identifier");
 			if (has_ident)
 				Error (MULTIPLE_MSG, "Identifier");
-			ptr->file_identifier = val.str;
+			ptr->file_identifier = xf86configStrdup(val.str);
 			has_ident = TRUE;
 			break;
 		case FONTPATH:
@@ -204,12 +204,12 @@ xf86parseFilesSection (void)
 				strcat (ptr->file_fontpath, ",");
 
 			strcat (ptr->file_fontpath, str);
-			xf86conffree (val.str);
+			xf86conffree (str);
 			break;
 		case RGBPATH:
 			if (xf86getSubToken (&(ptr->file_comment)) != STRING)
 				Error (QUOTE_MSG, "RGBPath");
-			ptr->file_rgbpath = val.str;
+			ptr->file_rgbpath = xf86configStrdup(val.str);
 			break;
 		case MODULEPATH:
 			if (xf86getSubToken (&(ptr->file_comment)) != STRING)
@@ -236,7 +236,7 @@ xf86parseFilesSection (void)
 				strcat (ptr->file_modulepath, ",");
 
 			strcat (ptr->file_modulepath, str);
-			xf86conffree (val.str);
+			xf86conffree (str);
 			break;
 		case INPUTDEVICES:
 			if (xf86getSubToken (&(ptr->file_comment)) != STRING)
@@ -263,12 +263,12 @@ xf86parseFilesSection (void)
 				strcat (ptr->file_inputdevs, ",");
 
 			strcat (ptr->file_inputdevs, str);
-			xf86conffree (val.str);
+			xf86conffree (str);
 			break;
 		case LOGFILEPATH:
 			if (xf86getSubToken (&(ptr->file_comment)) != STRING)
 				Error (QUOTE_MSG, "LogFile");
-			ptr->file_logfile = val.str;
+			ptr->file_logfile = xf86configStrdup(val.str);
 			break;
 		case OPTION:
 			ptr->file_option_lst = xf86parseOption(ptr->file_option_lst);

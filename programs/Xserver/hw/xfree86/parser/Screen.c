@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.29 2004/02/13 23:58:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.30 2005/01/07 17:19:32 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -27,7 +27,7 @@
  * 
  */
 /*
- * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -147,7 +147,7 @@ xf86parseDisplaySubSection (void)
 		case VISUAL:
 			if (xf86getSubToken (&(ptr->disp_comment)) != STRING)
 				Error (QUOTE_MSG, "Display");
-			ptr->disp_visual = val.str;
+			ptr->disp_visual = xf86configStrdup(val.str);
 			break;
 		case WEIGHT:
 			if (xf86getSubToken (&(ptr->disp_comment)) != NUMBER)
@@ -189,7 +189,7 @@ xf86parseDisplaySubSection (void)
 				while ((token = xf86getSubTokenWithTab (&(ptr->disp_comment), DisplayTab)) == STRING)
 				{
 					mptr = xf86confcalloc (1, sizeof (XF86ModeRec));
-					mptr->mode_name = val.str;
+					mptr->mode_name = xf86configStrdup(val.str);
 					mptr->list.next = NULL;
 					ptr->disp_mode_lst = (XF86ModePtr)
 						xf86addListItem ((glp) ptr->disp_mode_lst, (glp) mptr);
@@ -262,7 +262,7 @@ xf86parseScreenSection (void)
 		case IDENTIFIER:
 			if (xf86getSubToken (&(ptr->scrn_comment)) != STRING)
 				Error (QUOTE_MSG, "Identifier");
-			ptr->scrn_identifier = val.str;
+			ptr->scrn_identifier = xf86configStrdup(val.str);
 			if (has_ident || has_driver)
 				Error (ONLY_ONE_MSG,"Identifier or Driver");
 			has_ident = TRUE;
@@ -270,7 +270,7 @@ xf86parseScreenSection (void)
 		case OBSDRIVER:
 			if (xf86getSubToken (&(ptr->scrn_comment)) != STRING)
 				Error (QUOTE_MSG, "Driver");
-			ptr->scrn_obso_driver = val.str;
+			ptr->scrn_obso_driver = xf86configStrdup(val.str);
 			if (has_ident || has_driver)
 				Error (ONLY_ONE_MSG,"Identifier or Driver");
 			has_driver = TRUE;
@@ -293,7 +293,7 @@ xf86parseScreenSection (void)
 		case MDEVICE:
 			if (xf86getSubToken (&(ptr->scrn_comment)) != STRING)
 				Error (QUOTE_MSG, "Device");
-			ptr->scrn_device_str = val.str;
+			ptr->scrn_device_str = xf86configStrdup(val.str);
 			break;
 		case MONITOR:
 			{
@@ -309,7 +309,7 @@ xf86parseScreenSection (void)
 				token = xf86getSubToken(&(ptr->scrn_comment));
 				if (token != STRING)
 					Error (MONITOR_MSG, NULL);
-				mlptr->monitor_str = val.str;
+				mlptr->monitor_str = xf86configStrdup(val.str);
 
 				/*
 				 * For compatibility, set scrn_monitor_str to the first
@@ -341,7 +341,7 @@ xf86parseScreenSection (void)
 				{
 					aptr = xf86confcalloc (1, sizeof (XF86ConfAdaptorLinkRec));
 					aptr->list.next = NULL;
-					aptr->al_adaptor_str = val.str;
+					aptr->al_adaptor_str = xf86configStrdup(val.str);
 					ptr->scrn_adaptor_lst = (XF86ConfAdaptorLinkPtr)
 						xf86addListItem ((glp) ptr->scrn_adaptor_lst, (glp) aptr);
 				}
@@ -354,7 +354,6 @@ xf86parseScreenSection (void)
 			if (xf86getSubToken (&(ptr->scrn_comment)) != STRING)
 				Error (QUOTE_MSG, "SubSection");
 			{
-				xf86conffree(val.str);
 				HANDLE_LIST (scrn_display_lst, xf86parseDisplaySubSection,
 							 XF86ConfDisplayPtr);
 			}

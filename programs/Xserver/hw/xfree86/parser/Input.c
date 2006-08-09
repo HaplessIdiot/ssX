@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Input.c,v 1.14 2003/08/24 17:37:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Input.c,v 1.15 2004/02/13 23:58:49 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -27,7 +27,7 @@
  * 
  */
 /*
- * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -113,13 +113,13 @@ xf86parseInputSection (void)
 				Error (QUOTE_MSG, "Identifier");
 			if (has_ident == TRUE)
 				Error (MULTIPLE_MSG, "Identifier");
-			ptr->inp_identifier = val.str;
+			ptr->inp_identifier = xf86configStrdup(val.str);
 			has_ident = TRUE;
 			break;
 		case DRIVER:
 			if (xf86getSubToken (&(ptr->inp_comment)) != STRING)
 				Error (QUOTE_MSG, "Driver");
-			ptr->inp_driver = val.str;
+			ptr->inp_driver = xf86configStrdup(val.str);
 			break;
 		case OPTION:
 			ptr->inp_option_lst = xf86parseOption(ptr->inp_option_lst);

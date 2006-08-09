@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.69 2005/10/14 15:17:26 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.70 2006/03/06 16:06:23 dawes Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -471,15 +471,14 @@ AuthAudit (ClientPtr client, Bool letin,
     struct sockaddr *saddr, int len, 
     unsigned int proto_n, char *auth_proto, int auth_id)
 {
-    char addr[128];
-    char *out = addr;
+    char *prefix = "";
+    char *addr = NULL;
 
     if (!((OsCommPtr)client->osPrivate)->trans_conn) {
-	strcpy(addr, "LBX proxy at ");
-	out += strlen(addr);
+	prefix = "LBX proxy at ";
     }
     if (!len)
-        strcpy(out, "local host");
+	addr = xstrdup("local host");
     else
 	switch (saddr->sa_family)
 	{
@@ -487,11 +486,11 @@ AuthAudit (ClientPtr client, Bool letin,
 #if defined(UNIXCONN) || defined(LOCALCONN) || defined(OS2PIPECONN)
 	case AF_UNIX:
 #endif
-	    strcpy(out, "local host");
+	    addr = xstrdup("local host");
 	    break;
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(MNX_TCPCONN)
 	case AF_INET:
-	    sprintf(out, "IP %s",
+	    xasprintf(&addr, "IP %s",
 		inet_ntoa(((struct sockaddr_in *) saddr)->sin_addr));
 	    break;
 #if defined(IPv6) && defined(AF_INET6)
@@ -499,28 +498,33 @@ AuthAudit (ClientPtr client, Bool letin,
 	    char ipaddr[INET6_ADDRSTRLEN];
 	    inet_ntop(AF_INET6, &((struct sockaddr_in6 *) saddr)->sin6_addr,
 	      ipaddr, sizeof(ipaddr));
-	    sprintf(out, "IP %s", ipaddr);
+	    xasprintf(&addr, "IP %s", ipaddr);
 	}
 	    break;
 #endif
 #endif
 #ifdef DNETCONN
 	case AF_DECnet:
-	    sprintf(out, "DN %s",
+	    xasprintf(&addr, "DN %s",
 		    dnet_ntoa(&((struct sockaddr_dn *) saddr)->sdn_add));
 	    break;
 #endif
 	default:
-	    strcpy(out, "unknown address");
+	    /* unknown address */
+	    addr = NULL;
 	}
     
     if (proto_n)
-	AuditF("client %d %s from %s\n  Auth name: %.*s ID: %d\n", 
-	       client->index, letin ? "connected" : "rejected", addr,
+	AuditF("client %d %s from %s%s\n  Auth name: %.*s ID: %d\n", 
+	       client->index, letin ? "connected" : "rejected", prefix,
+	       addr ? addr : "unknown address",
 	       (int)proto_n, auth_proto, auth_id);
     else 
-	AuditF("client %d %s from %s\n", 
-	       client->index, letin ? "connected" : "rejected", addr);
+	AuditF("client %d %s from %s%s\n", 
+	       client->index, letin ? "connected" : "rejected", prefix,
+	       addr ? addr : "unknown address");
+    if (addr)
+	xfree(addr);
 }
 
 XID

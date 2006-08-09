@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.23 2005/01/07 17:19:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.24 2005/01/07 23:03:14 dawes Exp $ */
 /*
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -27,7 +27,7 @@
  * 
  */
 /*
- * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -136,7 +136,7 @@
 typedef struct
 {
 	int num;		/* returned number */
-	char *str;		/* private copy of the return-string */
+	const char *str;	/* the return-string (not a private copy!) */
 	double realnum;		/* returned number as a real */
 }
 LexRec, *LexPtr;
