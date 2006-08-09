@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Module.c,v 1.17 2005/01/26 05:31:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Module.c,v 1.18 2005/02/15 03:06:01 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -27,7 +27,7 @@
  * 
  */
 /*
- * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -147,12 +147,12 @@ static xf86ConfigSymTabRec ModuleTab[] =
 #define CLEANUP xf86freeModulesList
 
 XF86LoadPtr
-xf86parseModuleSubSection (XF86LoadPtr head, char *name)
+xf86parseModuleSubSection (XF86LoadPtr head, const char *name)
 {
 	int token;
 	parsePrologue (XF86LoadPtr, XF86LoadRec)
 
-	ptr->load_name = name;
+	ptr->load_name = xf86configStrdup(name);
 	ptr->load_type = XF86_LOAD_MODULE;
 	ptr->load_opt  = NULL;
 	ptr->list.next = NULL;
@@ -201,7 +201,7 @@ xf86parseModuleSection (void)
 				Error (QUOTE_MSG, "Identifier");
 			if (has_ident)
 				Error (MULTIPLE_MSG, "Identifier");
-			ptr->mod_identifier = val.str;
+			ptr->mod_identifier = xf86configStrdup(val.str);
 			has_ident = TRUE;
 			break;
 		case LOAD:
@@ -300,13 +300,13 @@ xf86printModuleSection (FILE * cf, XF86ConfModulePtr ptr)
 }
 
 XF86LoadPtr
-xf86addNewLoadDirective (XF86LoadPtr head, char *name, int type, XF86OptionPtr opts)
+xf86addNewLoadDirective (XF86LoadPtr head, const char *name, int type, XF86OptionPtr opts)
 {
 	XF86LoadPtr new;
 	int token;
 
 	new = xf86confcalloc (1, sizeof (XF86LoadRec));
-	new->load_name = name;
+	new->load_name = xf86configStrdup(name);
 	new->load_type = type;
 	new->load_opt  = opts;
 	new->list.next = NULL;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Pointer.c,v 1.13 2003/08/24 17:37:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Pointer.c,v 1.14 2004/02/13 23:58:50 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -27,7 +27,7 @@
  * 
  */
 /*
- * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -116,13 +116,13 @@ static xf86ConfigSymTabRec ZMapTab[] =
 XF86ConfInputPtr
 xf86parsePointerSection (void)
 {
-	char *s, *s1, *s2;
-	int l;
-	int token;
+	char *s;
+	int n1, n2, token;
 	parsePrologue (XF86ConfInputPtr, XF86ConfInputRec)
 
 	while ((token = xf86getToken (PointerTab)) != ENDSECTION)
 	{
+		s = NULL;
 		switch (token)
 		{
 		case COMMENT:
@@ -132,84 +132,75 @@ xf86parsePointerSection (void)
 			if (xf86getSubToken (&(ptr->inp_comment)) != STRING)
 				Error (QUOTE_MSG, "Protocol");
 			ptr->inp_option_lst = xf86addNewOption(ptr->inp_option_lst,
-												xf86configStrdup("Protocol"),
-												val.str);
+												"Protocol", val.str);
 			break;
 		case PDEVICE:
 			if (xf86getSubToken (&(ptr->inp_comment)) != STRING)
 				Error (QUOTE_MSG, "Device");
 			ptr->inp_option_lst = xf86addNewOption(ptr->inp_option_lst,
-												xf86configStrdup("Device"),
-												val.str);
+												"Device", val.str);
 			break;
 		case EMULATE3:
 			ptr->inp_option_lst = xf86addNewOption(ptr->inp_option_lst,
-												xf86configStrdup("Emulate3Buttons"),
-												NULL);
+												"Emulate3Buttons", NULL);
 			break;
 		case EM3TIMEOUT:
 			if (xf86getSubToken (&(ptr->inp_comment)) != NUMBER || val.num < 0)
 				Error (POSITIVE_INT_MSG, "Emulate3Timeout");
 			s = xf86uLongToString(val.num);
 			ptr->inp_option_lst = xf86addNewOption(ptr->inp_option_lst,
-												xf86configStrdup("Emulate3Timeout"),
-												s);
+												"Emulate3Timeout", s);
 			break;
 		case CHORDMIDDLE:
 			ptr->inp_option_lst = xf86addNewOption(ptr->inp_option_lst,
-												xf86configStrdup("ChordMiddle"),
-												NULL);
+												"ChordMiddle", NULL);
 			break;
 		case PBUTTONS:
 			if (xf86getSubToken (&(ptr->inp_comment)) != NUMBER || val.num < 0)
 				Error (POSITIVE_INT_MSG, "Buttons");
 			s = xf86uLongToString(val.num);
 			ptr->inp_option_lst = xf86addNewOption(ptr->inp_option_lst,
-												xf86configStrdup("Buttons"), s);
+												"Buttons", s);
 			break;
 		case BAUDRATE:
 			if (xf86getSubToken (&(ptr->inp_comment)) != NUMBER || val.num < 0)
 				Error (POSITIVE_INT_MSG, "BaudRate");
 			s = xf86uLongToString(val.num);
 			ptr->inp_option_lst = xf86addNewOption(ptr->inp_option_lst,
-												xf86configStrdup("BaudRate"), s);
+												"BaudRate", s);
 			break;
 		case SAMPLERATE:
 			if (xf86getSubToken (&(ptr->inp_comment)) != NUMBER || val.num < 0)
 				Error (POSITIVE_INT_MSG, "SampleRate");
 			s = xf86uLongToString(val.num);
 			ptr->inp_option_lst = xf86addNewOption(ptr->inp_option_lst,
-												xf86configStrdup("SampleRate"), s);
+												"SampleRate", s);
 			break;
 		case PRESOLUTION:
 			if (xf86getSubToken (&(ptr->inp_comment)) != NUMBER || val.num < 0)
 				Error (POSITIVE_INT_MSG, "Resolution");
 			s = xf86uLongToString(val.num);
 			ptr->inp_option_lst = xf86addNewOption(ptr->inp_option_lst,
-												xf86configStrdup("Resolution"), s);
+												"Resolution", s);
 			break;
 		case CLEARDTR:
 			ptr->inp_option_lst = xf86addNewOption(ptr->inp_option_lst,
-												xf86configStrdup("ClearDTR"), NULL);
+												"ClearDTR", NULL);
 			break;
 		case CLEARRTS:
 			ptr->inp_option_lst = xf86addNewOption(ptr->inp_option_lst,
-												xf86configStrdup("ClearRTS"), NULL);
+												"ClearRTS", NULL);
 			break;
 		case ZAXISMAPPING:
 			switch (xf86getToken(ZMapTab)) {
 			case NUMBER:
 				if (val.num < 0)
 					Error (ZAXISMAPPING_MSG, NULL);
-				s1 = xf86uLongToString(val.num);
+				n1 = val.num;
 				if (xf86getSubToken (&(ptr->inp_comment)) != NUMBER || val.num < 0)
 					Error (ZAXISMAPPING_MSG, NULL);
-				s2 = xf86uLongToString(val.num);
-				l = strlen(s1) + 1 + strlen(s2) + 1;
-				s = xf86confmalloc(l);
-				sprintf(s, "%s %s", s1, s2);
-				xf86conffree(s1);
-				xf86conffree(s2);
+				n2 = val.num;
+				xf86configAsprintf(&s, "%d %d", n1, n2);
 				break;
 			case XAXIS:
 				s = xf86configStrdup("x");
@@ -222,8 +213,7 @@ xf86parsePointerSection (void)
 				break;
 			}
 			ptr->inp_option_lst = xf86addNewOption(ptr->inp_option_lst,
-												xf86configStrdup("ZAxisMapping"),
-												s);
+												"ZAxisMapping", s);
 			break;
 		case ALWAYSCORE:
 			break;
@@ -234,12 +224,13 @@ xf86parsePointerSection (void)
 			Error (INVALID_KEYWORD_MSG, xf86tokenString ());
 			break;
 		}
+		TestFree(s);
 	}
 
 	ptr->inp_identifier = xf86configStrdup(CONF_IMPLICIT_POINTER);
 	ptr->inp_driver = xf86configStrdup("mouse");
 	ptr->inp_option_lst = xf86addNewOption(ptr->inp_option_lst,
-										xf86configStrdup("CorePointer"), NULL);
+										"CorePointer", NULL);
 
 #ifdef DEBUG
 	printf ("Pointer section parsed\n");

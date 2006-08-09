@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.155 2006/03/16 16:49:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.156 2006/03/17 02:25:02 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
@@ -1411,14 +1411,12 @@ xf86LogInit()
 	xf86FileCmdline.logFile = (char *)LogInit(lf, LOGOLDSUFFIX);
     } else {
 	/* Append the display number and ".log" */
-	lf = malloc(strlen(xf86FileDefaults.logFile) + strlen("%s") +
-		    strlen(LOGSUFFIX) + 1);
+	xasprintf(&lf, "%s%%s" LOGSUFFIX, xf86FileDefaults.logFile);
 	if (!lf)
-	    FatalError("Cannot allocate space for the log file name\n");
-	sprintf(lf, "%s%%s" LOGSUFFIX, xf86FileDefaults.logFile);
+	    FatalError("Cannot allocate space for the log file name.\n");
 	xf86FileDefaults.logFile = (char *)LogInit(lf, LOGOLDSUFFIX);
     }
-    free(lf);
+    xfree(lf);
     xf86LogFileWasOpened = TRUE;
 
     xf86SetVerbosity(xf86Verbose);

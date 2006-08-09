@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.36 2005/01/07 23:03:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.37 2005/01/26 05:31:50 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -27,7 +27,7 @@
  * 
  */
 /*
- * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -590,6 +590,6 @@ int xf86itemNotSublist(GenericListPtr list_1, GenericListPtr list_2);
 
 int xf86pathIsAbsolute(const char *path);
 int xf86pathIsSafe(const char *path);
-char *xf86addComment(char *cur, char *add);
+char *xf86addComment(char *cur, const char *add);
 
 #endif /* _xf86Parser_h_ */

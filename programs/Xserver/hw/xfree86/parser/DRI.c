@@ -24,11 +24,11 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $XFree86: xc/programs/Xserver/hw/xfree86/parser/DRI.c,v 1.14 2003/01/04 20:20:22 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/parser/DRI.c,v 1.15 2005/01/26 05:31:50 dawes Exp $
  * 
  */
 /*
- * Copyright (c) 2003-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 2003-2006 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -151,7 +151,7 @@ xf86parseBuffers (void)
     ptr->buf_size = val.num;
 
     if ((token = xf86getSubToken (&(ptr->buf_comment))) == STRING) {
-	ptr->buf_flags = val.str;
+	ptr->buf_flags = xf86configStrdup(val.str);
     } else
 	xf86unGetToken(token);
     if ((token = xf86getToken (NULL)) == COMMENT)
@@ -187,12 +187,12 @@ xf86parseDRISection (void)
 		    Error (QUOTE_MSG, "Identifier");
 		if (has_ident == TRUE)
 		    Error (MULTIPLE_MSG, "Identifier");
-		ptr->dri_identifier = val.str;
+		ptr->dri_identifier = xf86configStrdup(val.str);
 		has_ident = TRUE;
 		break;
 	    case GROUP:
 		if ((token = xf86getSubToken (&(ptr->dri_comment))) == STRING)
-		    ptr->dri_group_name = val.str;
+		    ptr->dri_group_name = xf86configStrdup(val.str);
 		else if (token == NUMBER)
 		    ptr->dri_group = val.num;
 		else

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.67 2006/03/06 16:06:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.68 2006/03/16 21:44:00 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -594,6 +594,12 @@ extern void FatalError(const char *f, ...) _printf_attribute(1,2)
 __attribute((noreturn))
 #endif
 ;
+
+#ifdef __GNUC__
+#define FatalAlloc()	FatalError("Out of Memory: %s() %s:%d", __FUNCTION__, __FILE__, __LINE__); 
+#else
+#define FatalAlloc()	FatalError("Out of Memory: %s:%d", __FILE__, __LINE__); 
+#endif
 
 extern void VErrorF(const char *f, va_list args);
 extern void ErrorF(const char *f, ...) _printf_attribute(1,2);

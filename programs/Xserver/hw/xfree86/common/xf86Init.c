@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.244 2006/06/27 18:43:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.245 2006/06/28 03:20:27 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -919,12 +919,15 @@ InitOutput(ScreenInfo * pScreenInfo, int argc, char **argv)
 	for (i = 0; i < xf86NumScreens; i++) {
 	    int warned = 0;
 
-	    if (xf86Screens[i]->name == NULL) {
-		xf86Screens[i]->name = xnfalloc(strlen("screen") + 1 + 1);
+	    if (!xf86Screens[i]->name) {
+		char c;
 		if (i < 10)
-		    sprintf(xf86Screens[i]->name, "screen%c", i + '0');
+		    c = i + '0';
 		else
-		    sprintf(xf86Screens[i]->name, "screen%c", i - 10 + 'A');
+		    c = i - 10 + 'A';
+		xasprintf(&xf86Screens[i]->name, "screen%c", c);
+		if (!xf86Screens[i]->name)
+		    FatalAlloc();
 		xf86MsgVerb(X_WARNING, 0,
 			    "Screen driver %d has no name set, using `%s'.\n",
 			    i, xf86Screens[i]->name);

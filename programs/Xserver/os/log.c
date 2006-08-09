@@ -96,14 +96,13 @@ OR PERFORMANCE OF THIS SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/os/log.c,v 1.13 2005/10/14 15:17:26 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/log.c,v 1.14 2006/03/06 16:06:23 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <stdio.h>
 #include <time.h>
 #include <sys/stat.h>
 #include <stdarg.h>
-#include <stdlib.h>	/* for malloc() */
 #include <errno.h>
 
 #include "site.h"
@@ -171,11 +170,9 @@ LogInit(const char *fname, const char *backup)
     char *logFileName = NULL;
 
     if (fname && *fname) {
-	/* xalloc() can't be used yet. */
-	logFileName = malloc(strlen(fname) + strlen(display) + 1);
+	xasprintf(&logFileName, fname, display);
 	if (!logFileName)
-	    FatalError("Cannot allocate space for the log file name\n");
-	sprintf(logFileName, fname, display);
+	    FatalError("Cannot allocate space for the log file name.\n");
 
 	if (backup && *backup) {
 	    struct stat buf;
@@ -184,14 +181,13 @@ LogInit(const char *fname, const char *backup)
 		char *suffix;
 		char *oldLog;
 
-		oldLog = malloc(strlen(logFileName) + strlen(backup) +
-				strlen(display) + 1);
-		suffix = malloc(strlen(backup) + strlen(display) + 1);
-		if (!oldLog || !suffix)
-		    FatalError("Cannot allocate space for the log file name\n");
-		sprintf(suffix, backup, display);
-		sprintf(oldLog, "%s%s", logFileName, suffix);
-		free(suffix);
+		xasprintf(&suffix, backup, display);
+		if (!suffix)
+		    FatalError("Cannot allocate space for the log file name.\n");
+		xasprintf(&oldLog, "%s%s", logFileName, suffix);
+		if (!oldLog)
+		    FatalError("Cannot allocate space for the log file name.\n");
+		xfree(suffix);
 #ifdef __UNIXOS2__
 		remove(oldLog);
 #endif
@@ -199,7 +195,7 @@ LogInit(const char *fname, const char *backup)
 		    FatalError("Cannot move old log file (\"%s\" to \"%s\"\n",
 			       logFileName, oldLog);
 		}
-		free(oldLog);
+		xfree(oldLog);
 	    }
 	}
 	if ((logFile = fopen(logFileName, "w")) == NULL)
@@ -219,7 +215,7 @@ LogInit(const char *fname, const char *backup)
      * needed.
      */
     if (saveBuffer && bufferSize > 0) {
-	free(saveBuffer);	/* Must be free(), not xfree() */
+	xfree(saveBuffer);
 	saveBuffer = NULL;
 	bufferSize = 0;
     }
@@ -286,19 +282,15 @@ LogVWrite(int verb, const char *f, va_list args)
 		    fsync(fileno(logFile));
 	    }
 	} else if (needBuffer) {
-	    /*
-	     * Note, this code is used before OsInit() has been called, so
-	     * xalloc() and friends can't be used.
-	     */
 	    if (len > bufferUnused) {
 		bufferSize += 1024;
 		bufferUnused += 1024;
 		if (saveBuffer)
-		    saveBuffer = realloc(saveBuffer, bufferSize);
+		    saveBuffer = xrealloc(saveBuffer, bufferSize);
 		else
-		    saveBuffer = malloc(bufferSize);
+		    saveBuffer = xalloc(bufferSize);
 		if (!saveBuffer)
-		    FatalError("realloc() failed while saving log messages\n");
+		    FatalError("xrealloc() failed while saving log messages\n");
 	    }
 	    bufferUnused -= len;
 	    memcpy(saveBuffer + bufferPos, tmpBuffer, len);
@@ -368,14 +360,12 @@ LogVMessageVerb(MessageType type, int verb, const char *format, va_list args)
 	 * so that LogVWrite() is only called once per message.
 	 */
 	if (s) {
-	    tmpBuf = malloc(strlen(format) + strlen(s) + 1 + 1);
-	    /* Silently return if malloc fails here. */
+	    xasprintf(&tmpBuf, "%s %s", s, format);
+	    /* Silently return if alloc fails here. */
 	    if (!tmpBuf)
 		return;
-	    sprintf(tmpBuf, "%s ", s);
-	    strcat(tmpBuf, format);
 	    LogVWrite(verb, tmpBuf, args);
-	    free(tmpBuf);
+	    xfree(tmpBuf);
 	} else
 	    LogVWrite(verb, format, args);
     }
@@ -423,6 +413,8 @@ FreeAuditTimer(void)
 	TimerFree(auditTimer);
 	auditTimer = NULL;
     }
+    /* Clear old message. */
+    oldlen = -1;
 }
 
 static char *
@@ -431,7 +423,6 @@ AuditPrefix(void)
     time_t tm;
     char *autime, *s;
     char *tmpBuf;
-    int len;
 
     time(&tm);
     autime = ctime(&tm);
@@ -441,11 +432,9 @@ AuditPrefix(void)
 	s++;
     else
 	s = argvGlobal[0];
-    len = strlen(AUDIT_PREFIX) + strlen(autime) + 10 + strlen(s) + 1;
-    tmpBuf = malloc(len);
+    xasprintf(&tmpBuf, AUDIT_PREFIX, autime, (unsigned long)getpid(), s);
     if (!tmpBuf)
 	return NULL;
-    snprintf(tmpBuf, len, AUDIT_PREFIX, autime, (unsigned long)getpid(), s);
     return tmpBuf;
 }
 
@@ -471,7 +460,7 @@ AuditFlush(OsTimerPtr timer, CARD32 now, pointer arg)
 	       prefix != NULL ? prefix : "", nrepeat);
 	nrepeat = 0;
 	if (prefix != NULL)
-	    free(prefix);
+	    xfree(prefix);
 	return AUDIT_TIMEOUT;
     } else {
 	/* if the timer expires without anything to print, flush the message */
@@ -505,7 +494,7 @@ VAuditF(const char *f, va_list args)
 	auditTimer = TimerSet(auditTimer, 0, AUDIT_TIMEOUT, AuditFlush, NULL);
     }
     if (prefix != NULL)
-	free(prefix);
+	xfree(prefix);
 }
 
 void
@@ -585,12 +574,11 @@ Error(char *str)
     int saveErrno = errno;
 
     if (str) {
-	err = malloc(strlen(strerror(saveErrno)) + strlen(str) + 2 + 1);
+	xasprintf(&err, "%s: %s", str, strerror(saveErrno));
 	if (!err)
 	    return;
-	sprintf(err, "%s: ", str);
-	strcat(err, strerror(saveErrno));
 	LogWrite(-1, err);
+	xfree(err);
     } else
 	LogWrite(-1, strerror(saveErrno));
 }

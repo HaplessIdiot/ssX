@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.31tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.32 2005/10/14 15:16:34 tsi Exp $ */
 
 /*
  * Copyright (c) 1998-2001 by The XFree86 Project, Inc.
@@ -1033,7 +1033,7 @@ localFreeOffscreenLinear(FBLinearPtr linear)
       FBLinearLinkPtr p = pLink->next;
       pLink->linear.size += p->linear.size;
       pLink->next = p->next;
-      free(p);
+      xfree(p);
    }
 
    if(pLinkPrev) {
@@ -1041,7 +1041,7 @@ localFreeOffscreenLinear(FBLinearPtr linear)
       	    FBLinearLinkPtr p = pLinkPrev->next;
       	    pLinkPrev->linear.size += p->linear.size;
       	    pLinkPrev->next = p->next;
-      	    free(p);
+      	    xfree(p);
     	}
    } 
    

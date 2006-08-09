@@ -1,4 +1,15 @@
 XFree86 4.6.99.6 (xx August 2006)
+  63. Fix a case where X server audit messages do not get printed (David Dawes).
+  62. Initialise the allocator even earlier in the X server startup, and use
+      it for the logging functions (David Dawes).
+  61. Parser option handling cleanups/fixes:
+       - Ensure that option data is allocated by the parser, rather than
+         externally allocated or static.
+       - Free replaced option data.
+       - Make xf86ParseOption's handling of multiple options of the same
+         name consistent with all other cases (last occurrence is used).
+       - Fix a bug in the handling of the Keyboard section "xleds" keyword.
+      (David Dawes).
 
 XFree86 4.6.99.5 (7 August 2006)
   60. Some X11.tmpl housecleaning;  Don't generate references to libraries that
@@ -20283,7 +20294,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3787 2006/07/27 22:04:36 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3788 2006/08/07 11:02:51 dawes Exp $
 
 
 
