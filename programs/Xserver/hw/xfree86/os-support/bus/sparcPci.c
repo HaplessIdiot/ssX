@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.23tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.24tsi Exp $ */
 /*
  * Copyright (C) 2001-2005 The XFree86 Project, Inc.
  * All rights reserved.
@@ -53,10 +53,15 @@
 #include "Pci.h"
 #include "xf86sbusBus.h"
 
-#if defined(sun)
+#if defined(sun) || defined(__OpenBSD__)
 
+#if defined(__OpenBSD__)
+#define apertureDevName "/dev/mem"
+#else
 extern char *apertureDevName;
-static int  apertureFd = -1;
+#endif
+
+static int apertureFd = -1;
 
 /*
  * A version of xf86MapVidMem() that allows for 64-bit displacements (but not
@@ -77,9 +82,10 @@ sparcMapAperture(int iScreen, int Flags,
 	lastFlags = Flags;
 	apertureFd = open(apertureDevName,
 	    (Flags & VIDMEM_READONLY) ? O_RDONLY : O_RDWR);
-	if (apertureFd < 0)
-	    FatalError("sparcMapAperture:  open failure:  %s\n",
-		       strerror(errno));
+	if (apertureFd < 0) {
+	    ErrorF("sparcMapAperture:  open failure:  %s\n", strerror(errno));
+	    return MAP_FAILED;
+	}
     }
 
     result = mmap(NULL, Size,
@@ -87,8 +93,10 @@ sparcMapAperture(int iScreen, int Flags,
 		      PROT_READ : (PROT_READ | PROT_WRITE),
 		  MAP_SHARED, apertureFd, (off_t)Base);
 
-    if (result == MAP_FAILED)
-	FatalError("sparcMapAperture:  mmap failure:  %s\n", strerror(errno));
+    if (result == MAP_FAILED) {
+	ErrorF("sparcMapAperture:  mmap failure:  %s\n", strerror(errno));
+	return MAP_FAILED;
+    }
 
 #if !defined(sun) && !defined(__bsdi__) && \
     !(defined(MACH) && defined(__GNU__))
@@ -490,6 +498,9 @@ sparcPciInit(void)
 		((unsigned long long *)prop_val)[2] - 0x000000010000ull,
 		0x00010000ul);
 
+	    if (pSchizo == MAP_FAILED)
+		goto nextNode;
+
 	    /* Determine where PCI config, I/O and memory spaces reside */
 	    if ((((unsigned long long *)prop_val)[0] & 0x000000700000ull) ==
 		0x000000600000ull)
@@ -537,6 +548,9 @@ newDomain:
 	    pci_addr + PCI_MAKE_TAG(domain.bus_min, 0, 0),
 	    PCI_MAKE_TAG(domain.bus_max - domain.bus_min + 1, 0, 0)) -
 	    PCI_MAKE_TAG(domain.bus_min, 0, 0);
+
+	if (domain.pci == MAP_FAILED)
+	    continue;
 
 	/* Allocate a domain record */
 	pDomain = xnfalloc(sizeof(sparcDomainRec));
@@ -686,6 +700,9 @@ xf86MapDomainMemory(int ScreenNum, int Flags, PCITAG Tag,
 
     result = sparcMapAperture(ScreenNum, Flags, pDomain->mem_addr + Base, Size);
 
+    if (result == MAP_FAILED)
+	FatalError("xf86MapDomainMemory():  sparcMapAperture() failure.\n");
+
     if (apertureFd >= 0) {
 	close(apertureFd);
 	apertureFd = -1;
@@ -710,6 +727,9 @@ xf86MapDomainIO(int ScreenNum, int Flags, PCITAG Tag,
     if (!pDomain->io) {
 	pDomain->io = sparcMapAperture(ScreenNum, Flags,
 	    pDomain->io_addr, pDomain->io_size);
+
+	if (pDomain->io == MAP_FAILED)
+	    FatalError("xf86MapDomainIO():  sparcMapAperture() failure.\n");
 
 	if (apertureFd >= 0) {
 	    close(apertureFd);
@@ -874,9 +894,9 @@ xf86LocatePciMemoryArea(PCITAG Tag, char **devName, unsigned int *devOffset,
     return TRUE;
 }
 
-#endif /* !INCLUDE_XF86_NO_DOMAIN */
+#endif /* !defined(INCLUDE_XF86_NO_DOMAIN) */
 
-#endif /* defined(sun) */
+#endif /* defined(sun) || defined(__OpenBSD__) */
 
 #if defined(ARCH_PCI_PCI_BRIDGE)
 
