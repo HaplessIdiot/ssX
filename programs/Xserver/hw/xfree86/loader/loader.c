@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.81tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.82tsi Exp $ */
 
 /*
  * Copyright 1995-1998 by Metro Link, Inc.
@@ -1845,13 +1845,14 @@ LoaderOpen(const char *module, const char *cname, int handle,
 	    *errmaj = LDR_UNKTYPE;
 	if (errmin)
 	    *errmin = LDR_UNKTYPE;
+	close(fd);
 	return -1;
-    } else {
-#if LOADERDEBUG
-	LoaderDebugMsg(LOADER_DEBUG_FILES, "Module %s is type %d (%s)\n",
-		       module, modtype, loaderNames[modtype]);
-#endif
     }
+
+#if LOADERDEBUG
+    LoaderDebugMsg(LOADER_DEBUG_FILES, "Module %s is type %d (%s)\n",
+		   module, modtype, loaderNames[modtype]);
+#endif
 
     tmp = _LoaderListPush();
     tmp->name = xf86loadermalloc(strlen(module) + 1);
@@ -1870,6 +1871,7 @@ LoaderOpen(const char *module, const char *cname, int handle,
 	    *errmaj = LDR_NOLOAD;
 	if (errmin)
 	    *errmin = LDR_NOLOAD;
+	close(fd);
 	return -1;
     }
 
