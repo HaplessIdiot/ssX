@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.52tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.53tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -134,7 +134,8 @@
  */
 #define MAX_PCI_DEVICES 128	/* Max number of devices accomodated */
 				/* by xf86scanpci		     */
-#if defined(sun) && defined(SVR4) && defined(sparc)
+#if (defined(sparc) || defined(__sparc__)) && \
+    ((defined(sun) && defined(SVR4)) || defined(__OpenBSD__))
 # define MAX_PCI_BUSES   4096	/* Max number of PCI buses           */
 #elif defined(__alpha__) && defined (linux)
 # define MAX_PCI_DOMAINS	512
@@ -339,12 +340,16 @@
 # elif defined(sun)
 #  define ARCH_PCI_INIT sparcPciInit
 #  define INCLUDE_XF86_MAP_PCI_MEM
-# elif (defined(__OpenBSD__) || defined(__FreeBSD__)) && defined(__sparc64__)
-#  define  ARCH_PCI_INIT freebsdPciInit
+# elif defined(__FreeBSD__)
+#  define ARCH_PCI_INIT freebsdPciInit
 #  define INCLUDE_XF86_MAP_PCI_MEM
 #  define INCLUDE_XF86_NO_DOMAIN
+# elif defined(__OpenBSD__)
+#  define ARCH_PCI_INIT sparcPciInit
+#  define INCLUDE_XF86_MAP_PCI_MEM
+#  define ARCH_PCI_OS_INIT freebsdPciInit
 # endif
-# if !defined(__FreeBSD__) && !defined(__OpenBSD__)
+# if !defined(__FreeBSD__)
 #  define ARCH_PCI_PCI_BRIDGE sparcPciPciBridge
 # endif
 #elif defined(__amd64__) || defined(__x86_64__)
