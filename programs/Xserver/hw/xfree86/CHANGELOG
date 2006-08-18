@@ -1,4 +1,6 @@
 XFree86 4.6.99.6 (xx August 2006)
+  65. Fix file descriptor leaks in the module loader's error paths  (an
+      extension of Matthieu Heerb's X.Org source fix for the same problem).
   64. Support multiple PCI domains on OpenBSD/sparc64, pending kernel changes
       (Marc La France).
   63. Fix a case where X server audit messages do not get printed (David Dawes).
@@ -20296,7 +20298,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3789 2006/08/09 20:53:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3790 2006/08/18 14:32:21 tsi Exp $
 
 
 
