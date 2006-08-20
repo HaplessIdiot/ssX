@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapw.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapw.c,v 1.13tsi Exp $ */
 /*
  * Copyright 2002 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -240,7 +240,8 @@ main(int argc, char **argv)
     pagesize = getpagesize();
     offset = Offset & (off_t)(-pagesize);
     length = ((Offset + size + pagesize - 1) & (off_t)(-pagesize)) - offset;
-    buffer = mmap((caddr_t)0, length, PROT_WRITE, MAP_SHARED, fd, offset);
+    buffer = mmap((caddr_t)0, length, PROT_READ | PROT_WRITE, MAP_SHARED, fd,
+        offset);
     close(fd);
     if (buffer == MAP_FAILED)
     {
