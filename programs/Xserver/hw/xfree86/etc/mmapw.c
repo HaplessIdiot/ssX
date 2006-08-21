@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapw.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapw.c,v 1.14tsi Exp $ */
 /*
  * Copyright 2002 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -74,6 +74,11 @@ typedef void *ptr;
 # endif
 #endif
 
+#ifdef WSCONS_SUPPORT
+# include <sys/ioctl.h>
+# include <dev/wscons/wsconsio.h>
+#endif
+
 #define datab unsigned char
 #define dataw unsigned short
 #define datal unsigned int
@@ -89,7 +94,14 @@ usage(void)
 	" -i   select /proc/bus/pci/<bus>/<dfn> I/O space\n"
 	" -m   select /proc/bus/pci/<bus>/<dfn> memory space\n\n"
 #else
+#ifdef WSCONS_SUPPORT
+	"mmapw [-{emd}] [-{bwlqL}] [-{au}] <file> <offset> <value>\n\n"
+	" -e   select wsdisplay emulation mapping\n"
+	" -m   select wsdisplay graphics mapping\n"
+	" -d   select wsdisplay framebuffer mapping\n\n"
+#else
 	"mmapw [-{bwlqL}] [-{au}] <file> <offset> <value>\n\n"
+#endif
 #endif
 	"access size flags:\n\n"
 	" -b   write one byte\n"
@@ -148,9 +160,12 @@ main(int argc, char **argv)
     size_t length;
     char *BadString;
     void *buffer;
-    int fd, pagesize, aligned = 1;
+    int fd, pagesize, aligned = 1, error;
 #ifdef linux
     int mmap_ioctl = 0;
+#endif
+#ifdef WSCONS_SUPPORT
+    int wsdisplay_mode = -1, old_mode;
 #endif
     char size = sizeof(datal);
 
@@ -196,6 +211,19 @@ main(int argc, char **argv)
 		    mmap_ioctl = PCIIOC_MMAP_IS_MEM;
 		    break;
 #endif
+#ifdef WSCONS_SUPPORT
+		case 'e':
+		    wsdisplay_mode = WSDISPLAYIO_MODE_EMUL;
+		    break;
+
+		case 'm':
+		    wsdisplay_mode = WSDISPLAYIO_MODE_MAPPED;
+		    break;
+
+		case 'd':
+		    wsdisplay_mode = WSDISPLAYIO_MODE_DUMBFB;
+		    break;
+#endif
 		default:
 		    usage();
 	    }
@@ -226,7 +254,7 @@ main(int argc, char **argv)
 
     if ((fd = open(argv[1], O_RDWR)) < 0)
     {
-	fprintf(stderr, "mmapw:  Unable to open \"%s\":  %s.\n",
+	fprintf(stderr, "mmapw:  Unable to open \"%s\":  \"%s\".\n",
 	    argv[1], strerror(errno));
 	exit(1);
     }
@@ -237,79 +265,101 @@ main(int argc, char **argv)
 	    strerror(errno));
 #endif
 
+#ifdef WSCONS_SUPPORT
+    if ((wsdisplay_mode >= 0) &&
+	((ioctl(fd, WSDISPLAYIO_GMODE, &old_mode) < 0) ||
+	 (ioctl(fd, WSDISPLAYIO_SMODE, &wsdisplay_mode) < 0)))
+	fprintf(stderr, "mmapw:  ioctl error:  \"%s\";  Ignored.\n",
+	    strerror(errno));
+#endif
+
     pagesize = getpagesize();
     offset = Offset & (off_t)(-pagesize);
     length = ((Offset + size + pagesize - 1) & (off_t)(-pagesize)) - offset;
     buffer = mmap((caddr_t)0, length, PROT_READ | PROT_WRITE, MAP_SHARED, fd,
-        offset);
-    close(fd);
+	offset);
+
     if (buffer == MAP_FAILED)
     {
-	fprintf(stderr, "mmapw:  Unable to mmap \"%s\":  %s.\n",
+	fprintf(stderr, "mmapw:  Unable to mmap \"%s\":  \"%s\".\n",
 	    argv[1], strerror(errno));
-	exit(1);
+	error = 1;
     }
-
+    else
+    {
 #ifdef SIGBUS
-    if (!aligned)
-	signal(SIGBUS, sigbus);
+	if (!aligned)
+	    signal(SIGBUS, sigbus);
 #endif
 
-    Offset -= offset;
-    if ((size == sizeof(datab)) || (aligned && (Offset & sizeof(datab))))
-    {
-	do
+	Offset -= offset;
+	if ((size == sizeof(datab)) || (aligned && (Offset & sizeof(datab))))
 	{
-	    *(volatile unsigned char *)(ptr)((char *)buffer + Offset) =
-		(unsigned char)data;
-	    data >>= 8 * (sizeof(datab) & (sizeof(data) - 1));
-	    Offset += sizeof(datab);
-	    size -= sizeof(datab);
-	} while (size);
-    }
-    else
-    if ((size == sizeof(dataw)) || (aligned && (Offset & sizeof(dataw))))
-    {
-	do
+	    do
+	    {
+		*(volatile unsigned char *)(ptr)((char *)buffer + Offset) =
+		    (unsigned char)data;
+		data >>= 8 * (sizeof(datab) & (sizeof(data) - 1));
+		Offset += sizeof(datab);
+		size -= sizeof(datab);
+	    } while (size);
+	}
+	else
+	if ((size == sizeof(dataw)) || (aligned && (Offset & sizeof(dataw))))
 	{
-	    *(volatile unsigned short *)(ptr)((char *)buffer + Offset) =
-		(unsigned short)data;
-	    data >>= 8 * (sizeof(dataw) & (sizeof(data) - 1));
-	    Offset += sizeof(dataw);
-	    size -= sizeof(dataw);
-	} while (size);
-    }
-    else
-    if ((size == sizeof(datal)) || (aligned && (Offset & sizeof(datal))))
-    {
-	do
+	    do
+	    {
+		*(volatile unsigned short *)(ptr)((char *)buffer + Offset) =
+		    (unsigned short)data;
+		data >>= 8 * (sizeof(dataw) & (sizeof(data) - 1));
+		Offset += sizeof(dataw);
+		size -= sizeof(dataw);
+	    } while (size);
+	}
+	else
+	if ((size == sizeof(datal)) || (aligned && (Offset & sizeof(datal))))
 	{
-	    *(volatile unsigned int *)(ptr)((char *)buffer + Offset) =
-		(unsigned int)data;
-	    data >>= 8 * (sizeof(datal) & (sizeof(data) - 1));
-	    Offset += sizeof(datal);
-	    size -= sizeof(datal);
-	} while (size);
-    }
-    else
-    if ((size == sizeof(dataL)) || (aligned && (Offset & sizeof(dataL))))
-    {
-	do
+	    do
+	    {
+		*(volatile unsigned int *)(ptr)((char *)buffer + Offset) =
+		    (unsigned int)data;
+		data >>= 8 * (sizeof(datal) & (sizeof(data) - 1));
+		Offset += sizeof(datal);
+		size -= sizeof(datal);
+	    } while (size);
+	}
+	else
+	if ((size == sizeof(dataL)) || (aligned && (Offset & sizeof(dataL))))
 	{
-	    *(volatile unsigned long *)(ptr)((char *)buffer + Offset) =
-		(unsigned long)data;
-	    data >>= 8 * (sizeof(dataL) & (sizeof(data) - 1));
-	    Offset += sizeof(dataL);
-	    size -= sizeof(dataL);
-	} while (size);
-    }
-    else
-    {
-	*(volatile unsigned long long *)(ptr)((char *)buffer + Offset) =
-	    (unsigned long long)data;
+	    do
+	    {
+		*(volatile unsigned long *)(ptr)((char *)buffer + Offset) =
+		    (unsigned long)data;
+		data >>= 8 * (sizeof(dataL) & (sizeof(data) - 1));
+		Offset += sizeof(dataL);
+		size -= sizeof(dataL);
+	    } while (size);
+	}
+	else
+	{
+	    *(volatile unsigned long long *)(ptr)((char *)buffer + Offset) =
+		(unsigned long long)data;
+	}
+
+	error = 0;
     }
 
     munmap(buffer, length);
 
-    return 0;
+#ifdef WSCONS_SUPPORT
+    /* Sigh...  This must be done _after_ the data has been accessed */
+    if ((wsdisplay_mode >= 0) &&
+	(ioctl(fd, WSDISPLAYIO_SMODE, &old_mode) < 0))
+	fprintf(stderr, "mmapw:  ioctl error:  \"%s\";  Ignored.\n",
+	    strerror(errno));
+#endif
+
+    close(fd);
+
+    return error;
 }

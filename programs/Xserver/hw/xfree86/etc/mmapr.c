@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapr.c,v 1.14tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapr.c,v 1.15tsi Exp $ */
 /*
  * Copyright 2002 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -46,6 +46,8 @@ typedef void *ptr;
 # define MAP_FAILED ((ptr)(-1))
 #endif
 
+#undef OPEN_ACCESS
+
 #if defined(_SCO_DS) && !defined(_SCO_DS_LL)
 # define strtoull (unsigned long long)strtoul
 #endif
@@ -75,6 +77,17 @@ typedef void *ptr;
 # endif
 #endif
 
+#ifdef WSCONS_SUPPORT
+# include <sys/ioctl.h>
+# include <dev/wscons/wsconsio.h>
+
+# define OPEN_ACCESS O_RDWR
+#endif
+
+#ifndef OPEN_ACCESS
+# define OPEN_ACCESS O_RDONLY
+#endif
+
 static unsigned char datab;
 static unsigned short dataw;
 static unsigned int datal;
@@ -92,7 +105,14 @@ usage(void)
 	" -i   select /proc/bus/pci/<bus>/<dfn> I/O space\n"
 	" -m   select /proc/bus/pci/<bus>/<dfn> memory space\n\n"
 #else
+#ifdef WSCONS_SUPPORT
+	"mmapr [-p] [-{emd}] [-{bwlqL}] [-{au}] <file> <offset> <length>\n\n"
+	" -e   select wsdisplay emulation mapping\n"
+	" -m   select wsdisplay graphics mapping\n"
+	" -d   select wsdisplay framebuffer mapping\n\n"
+#else
 	"mmapr [-p] [-{bwlqL}] [-{au}] <file> <offset> <length>\n\n"
+#endif
 #endif
 	" -p   pretty-print output\n\n"
 	" access size flags:\n\n"
@@ -151,9 +171,12 @@ main(int argc, char **argv)
     size_t Length = 0, length, size;
     char *BadString, *data;
     void *buffer;
-    int fd, pagesize, prettyprint = 0, aligned = 1;
+    int fd, pagesize, prettyprint = 0, aligned = 1, error;
 #ifdef linux
     int mmap_ioctl = 0;
+#endif
+#ifdef WSCONS_SUPPORT
+    int wsdisplay_mode = -1, old_mode;
 #endif
     char Address[20], Hex[36], Glyph[17];
     char Size = sizeof(datal), Format = 0;
@@ -204,6 +227,19 @@ main(int argc, char **argv)
 		    mmap_ioctl = PCIIOC_MMAP_IS_MEM;
 		    break;
 #endif
+#ifdef WSCONS_SUPPORT
+		case 'e':
+		    wsdisplay_mode = WSDISPLAYIO_MODE_EMUL;
+		    break;
+
+		case 'm':
+		    wsdisplay_mode = WSDISPLAYIO_MODE_MAPPED;
+		    break;
+
+		case 'd':
+		    wsdisplay_mode = WSDISPLAYIO_MODE_DUMBFB;
+		    break;
+#endif
 		default:
 		    usage();
 	    }
@@ -229,9 +265,9 @@ main(int argc, char **argv)
     if (Length <= 0)
 	return 0;
 
-    if ((fd = open(argv[1], O_RDONLY)) < 0)
+    if ((fd = open(argv[1], OPEN_ACCESS)) < 0)
     {
-	fprintf(stderr, "mmapr:  Unable to open \"%s\":  %s.\n",
+	fprintf(stderr, "mmapr:  Unable to open \"%s\":  \"%s\".\n",
 	    argv[1], strerror(errno));
 	exit(1);
     }
@@ -242,169 +278,196 @@ main(int argc, char **argv)
 	    strerror(errno));
 #endif
 
+#ifdef WSCONS_SUPPORT
+    if ((wsdisplay_mode >= 0) &&
+	((ioctl(fd, WSDISPLAYIO_GMODE, &old_mode) < 0) ||
+	 (ioctl(fd, WSDISPLAYIO_SMODE, &wsdisplay_mode) < 0)))
+	fprintf(stderr, "mmapr:  ioctl error:  \"%s\";  Ignored.\n",
+	    strerror(errno));
+#endif
+
     pagesize = getpagesize();
     offset = Offset & (off_t)(-pagesize);
     length = ((Offset + Length + pagesize - 1) & (off_t)(-pagesize)) - offset;
     buffer = mmap((caddr_t)0, length, PROT_READ, MAP_SHARED, fd, offset);
-    close(fd);
+
     if (buffer == MAP_FAILED)
     {
-	fprintf(stderr, "mmapr:  Unable to mmap \"%s\":  %s.\n",
+	fprintf(stderr, "mmapr:  Unable to mmap \"%s\":  \"%s\".\n",
 	    argv[1], strerror(errno));
-	exit(1);
+	error = 1;
     }
-
-    if (prettyprint)
+    else
     {
-	End = Offset + Length - 1;
-
-	if ((sizeof(Offset) > sizeof(dataL)) &&
-	    ((unsigned long long)End != (unsigned long)End))
-	{
-	    sprintf(Address, "0x%015llX0", (unsigned long long)Offset >> 4);
-	    Format = 3;
-	}
-	else
-	if ((sizeof(Offset) > sizeof(dataw)) &&
-	    ((unsigned long long)End != (unsigned short)End))
-	{
-	    sprintf(Address, "0x%07lX0", (unsigned long)Offset >> 4);
-	    Format = 2;
-	}
-	else
-	if ((sizeof(Offset) > sizeof(datab)) &&
-	    ((unsigned long long)End != (unsigned char)End))
-	{
-	    sprintf(Address, "0x%03X0", (unsigned short)Offset >> 4);
-	    Format = 1;
-	}
-	else
-	{
-	    sprintf(Address, "0x%01X0", (unsigned char)Offset >> 4);
-	 /* Format = 0; */
-	}
-
-	memset(Hex, ' ', 35);
-	Hex[35] = 0;
-	memset(Glyph, ' ', 16);
-	Glyph[16] = 0;
-    }
-
-#ifdef SIGBUS
-    if (!aligned)
-	signal(SIGBUS, sigbus);
-#endif
-
-    Offset -= offset;
-    while (Length > 0)
-    {
-	if ((Length < sizeof(dataw)) ||
-	    (Size < sizeof(dataw)) ||
-	    (aligned && (Offset & sizeof(datab))))
-	{
-	    datab = *(volatile unsigned char *)(ptr)((char *)buffer + Offset);
-	    data = (ptr)&datab;
-	    size = sizeof(datab);
-	}
-	else
-	if ((Length < sizeof(datal)) ||
-	    (Size < sizeof(datal)) ||
-	    (aligned && (Offset & sizeof(dataw))))
-	{
-	    dataw = *(volatile unsigned short *)(ptr)((char *)buffer + Offset);
-	    data = (ptr)&dataw;
-	    size = sizeof(dataw);
-	}
-	else
-	if ((Length < sizeof(dataL)) ||
-	    (Size < sizeof(dataL)) ||
-	    (aligned && (Offset & sizeof(datal))))
-	{
-	    datal = *(volatile unsigned int *)(ptr)((char *)buffer + Offset);
-	    data = (ptr)&datal;
-	    size = sizeof(datal);
-	}
-	else
-	if ((Length < sizeof(dataq)) ||
-	    (Size < sizeof(dataq)) ||
-	    (aligned && (Offset & sizeof(dataL))))
-	{
-	    dataL = *(volatile unsigned long *)(ptr)((char *)buffer + Offset);
-	    data = (ptr)&dataL;
-	    size = sizeof(dataL);
-	}
-	else
-	{
-	    dataq =
-		*(volatile unsigned long long *)(ptr)((char *)buffer + Offset);
-	    data = (ptr)&dataq;
-	    size = sizeof(dataq);
-	}
-
 	if (prettyprint)
 	{
-	    unsigned int i = (offset + Offset) & 15;
+	    End = Offset + Length - 1;
 
-	    Offset += size;
-	    Length -= size;
-
-	    for (;  size > 0;  --size, ++i, ++data)
+	    if ((sizeof(Offset) > sizeof(dataL)) &&
+		((unsigned long long)End != (unsigned long)End))
 	    {
-		Hex[((i >> 2) * 9) + ((i & 3) << 1)] =
-		    hextab[(unsigned char)*data >> 4];
-		Hex[((i >> 2) * 9) + ((i & 3) << 1) + 1] =
-		    hextab[(unsigned char)*data & 15];
-
-		if ((*data >= 0x20) && (*data < 0x7F))
-		    Glyph[i] = *data;
-		else
-		    Glyph[i] = '.';
+		sprintf(Address, "0x%015llX0",
+		    (unsigned long long)Offset >> 4);
+		Format = 3;
+	    }
+	    else
+	    if ((sizeof(Offset) > sizeof(dataw)) &&
+		((unsigned long long)End != (unsigned short)End))
+	    {
+		sprintf(Address, "0x%07lX0", (unsigned long)Offset >> 4);
+		Format = 2;
+	    }
+	    else
+	    if ((sizeof(Offset) > sizeof(datab)) &&
+		((unsigned long long)End != (unsigned char)End))
+	    {
+		sprintf(Address, "0x%03X0", (unsigned short)Offset >> 4);
+		Format = 1;
+	    }
+	    else
+	    {
+		sprintf(Address, "0x%01X0", (unsigned char)Offset >> 4);
+		/* Format = 0; */
 	    }
 
-	    if (!Length || !(Offset & 15))
+	    memset(Hex, ' ', 35);
+	    Hex[35] = 0;
+	    memset(Glyph, ' ', 16);
+	    Glyph[16] = 0;
+	}
+
+#ifdef SIGBUS
+	if (!aligned)
+	    signal(SIGBUS, sigbus);
+#endif
+
+	Offset -= offset;
+	while (Length > 0)
+	{
+	    if ((Length < sizeof(dataw)) ||
+		(Size < sizeof(dataw)) ||
+		(aligned && (Offset & sizeof(datab))))
 	    {
-		printf("%s:  %s  |%s|\n", Address, Hex, Glyph);
+		datab =
+		    *(volatile unsigned char *)(ptr)((char *)buffer + Offset);
+		data = (ptr)&datab;
+		size = sizeof(datab);
+	    }
+	    else
+	    if ((Length < sizeof(datal)) ||
+		(Size < sizeof(datal)) ||
+		(aligned && (Offset & sizeof(dataw))))
+	    {
+		dataw =
+		    *(volatile unsigned short *)(ptr)((char *)buffer + Offset);
+		data = (ptr)&dataw;
+		size = sizeof(dataw);
+	    }
+	    else
+	    if ((Length < sizeof(dataL)) ||
+		(Size < sizeof(dataL)) ||
+		(aligned && (Offset & sizeof(datal))))
+	    {
+		datal =
+		    *(volatile unsigned int *)(ptr)((char *)buffer + Offset);
+		data = (ptr)&datal;
+		size = sizeof(datal);
+	    }
+	    else
+	    if ((Length < sizeof(dataq)) ||
+		(Size < sizeof(dataq)) ||
+		(aligned && (Offset & sizeof(dataL))))
+	    {
+		dataL =
+		    *(volatile unsigned long *)(ptr)((char *)buffer + Offset);
+		data = (ptr)&dataL;
+		size = sizeof(dataL);
+	    }
+	    else
+	    {
+		dataq = *(volatile unsigned long long *)(ptr)
+		    ((char *)buffer + Offset);
+		data = (ptr)&dataq;
+		size = sizeof(dataq);
+	    }
 
-		if (!Length)
-		    break;
+	    if (prettyprint)
+	    {
+		unsigned int i = (offset + Offset) & 15;
 
-		switch(Format)
+		Offset += size;
+		Length -= size;
+
+		for (;  size > 0;  --size, ++i, ++data)
 		{
-		    case 0:
-			sprintf(Address, "0x%02X",
-				(unsigned char)(Offset + offset));
-			break;
+		    Hex[((i >> 2) * 9) + ((i & 3) << 1)] =
+			hextab[(unsigned char)*data >> 4];
+		    Hex[((i >> 2) * 9) + ((i & 3) << 1) + 1] =
+			hextab[(unsigned char)*data & 15];
 
-		    case 1:
-			sprintf(Address, "0x%04X",
-				(unsigned short)(Offset + offset));
-			break;
-
-		    case 2:
-			sprintf(Address, "0x%08lX",
-				(unsigned long)(Offset + offset));
-			break;
-
-		    case 3:  default:
-			sprintf(Address, "0x%016llX",
-				(unsigned long long)(Offset + offset));
-			break;
+		    if ((*data >= 0x20) && (*data < 0x7F))
+			Glyph[i] = *data;
+		    else
+			Glyph[i] = '.';
 		}
 
-		memset(Hex, ' ', 35);
-		memset(Glyph, ' ', 16);
+		if (!Length || !(Offset & 15))
+		{
+		    printf("%s:  %s  |%s|\n", Address, Hex, Glyph);
+
+		    if (!Length)
+			break;
+
+		    switch(Format)
+		    {
+			case 0:
+			    sprintf(Address, "0x%02X",
+				(unsigned char)(Offset + offset));
+			    break;
+
+			case 1:
+			    sprintf(Address, "0x%04X",
+				(unsigned short)(Offset + offset));
+			    break;
+
+			case 2:
+			    sprintf(Address, "0x%08lX",
+				(unsigned long)(Offset + offset));
+			    break;
+
+			case 3:  default:
+			    sprintf(Address, "0x%016llX",
+				(unsigned long long)(Offset + offset));
+			    break;
+		    }
+
+		    memset(Hex, ' ', 35);
+		    memset(Glyph, ' ', 16);
+		}
+	    }
+	    else
+	    {
+		Offset += size;
+		Length -= size;
+
+		fwrite(data, size, 1, stdout);
 	    }
 	}
-	else
-	{
-	    Offset += size;
-	    Length -= size;
 
-	    fwrite(data, size, 1, stdout);
-	}
+	error = 0;
     }
 
     munmap(buffer, length);
 
-    return 0;
+#ifdef WSCONS_SUPPORT
+    /* Sigh...  This must be done _after_ the data has been accessed */
+    if ((wsdisplay_mode >= 0) &&
+	(ioctl(fd, WSDISPLAYIO_SMODE, &old_mode) < 0))
+	fprintf(stderr, "mmapr:  ioctl error:  \"%s\";  Ignored.\n",
+	    strerror(errno));
+#endif
+
+    close(fd);
+
+    return error;
 }
