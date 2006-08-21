@@ -1,4 +1,6 @@
-XFree86 4.6.99.6 (xx August 2006)
+XFree86 4.6.99.7 (xx September 2006)
+
+XFree86 4.6.99.6 (21 August 2006)
   66. Fix mmapw segfault that can occur on some systems (Marc La France).
   65. Fix file descriptor leaks in the module loader's error paths  (an
       extension of Matthieu Heerb's X.Org source fix for the same problem).
@@ -20299,7 +20301,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3791 2006/08/18 14:36:04 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3792 2006/08/20 19:44:19 tsi Exp $
 
 
 
