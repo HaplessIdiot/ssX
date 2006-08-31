@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/Imakefile,v 1.8tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/Imakefile,v 1.9 2006/03/03 16:43:14 tsi Exp $
 /*
  * Copyright (c) 2004-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -83,7 +83,67 @@ IPAQ_DEFINES = -DXIPAQ
 MTRR_DEFINES = -DHAS_MTRR
 #endif
 
-SUBDIRS = sys dix os Xext $(RENDERSUBDIRS) $(RANDRSUBDIRS)
+#if defined(LinuxArchitecture)
+OSDIRS = linux
+#elif defined(VXWORKS)
+OSDIRS = vxworks
+#endif
+
+#if defined(XfbdevServer) && XfbdevServer
+FBDEVDIR = fbdev
+#endif
+#if defined(XSavageServer) && XSavageServer
+SAVAGEDIR = savage
+#endif
+#if defined(XIgsServer) && XIgsServer
+IGSDIR = igs
+#endif
+#if defined(XTridentServer) && XTridentServer
+FBDEVDIR = fbdev
+VESADIR = vesa
+TRIDENTDIR = trident
+#endif
+#if defined(XchipsServer) && XchipsServer
+VESADIR = vesa
+CHIPSDIR = chips
+#endif
+#if defined(Xmach64Server) && Xmach64Server
+VESADIR = vesa
+MACH64DIR = mach64
+#endif
+#if defined(Xi810Server) && Xi810Server
+FBDEVDIR = fbdev
+VESADIR = vesa
+I810DIR = i810
+#endif
+#if defined(XSis530Server) && XSis530Server
+SIS530DIR = sis530
+#endif
+#if defined(XTrioServer) && XTrioServer
+TRIODIR = trio
+#endif
+#if defined(XipaqServer) && XipaqServer
+FBDEVDIR = fbdev
+PCMCIADIR = pcmcia
+IPAQDIR = ipaq
+#endif
+#if defined(XTS300Server) && XTS300Server
+TRIODIR = trio
+SIS530DIR = sis530
+TS300DIR = ts300
+#endif
+#if defined(XItsyServer) && XItsyServer
+ITSYDIR = itsy
+#endif
+#if defined(XvesaServer) && XvesaServer
+VESADIR = vesa
+#endif
+
+
+SUBDIRS = sys dix os Xext $(RENDERSUBDIRS) $(RANDRSUBDIRS) $(OSDIRS) \
+	$(CHIPSDIR) $(FBDEVDIR) $(I810DIR) $(IGSDIR) $(IPAQDIR) $(ITSYDIR) \
+	$(MACH64DIR) $(PCMCIADIR) $(SAVAGEDIR) $(SIS530DIR) $(TRIDENTDIR) \
+	$(TRIODIR) $(TS300DIR) $(VESADIR) 
 
 DEFINES = $(EXT_DEFINES) $(IPAQ_DEFINES) $(TINY_DEFINES) $(MTRR_DEFINES)
 
