@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/Pcl.h,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/Pcl.h,v 1.14 2005/10/14 15:16:16 tsi Exp $ */
 /*******************************************************************
 **
 **    *********************************************************
@@ -379,12 +379,12 @@ extern Bool InitializeColorPclDriver(
     int ndx,
     ScreenPtr pScreen,
     int argc,
-    char **argv);
+    const char **argv);
 extern Bool InitializeMonoPclDriver(
     int ndx,
     ScreenPtr pScreen,
     int argc,
-    char **argv);
+    const char **argv);
 extern Bool InitializeLj3PclDriver(
     int ndx,
     ScreenPtr pScreen,

@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtrans.h,v 3.22 2003/07/24 13:50:19 eich Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.h,v 3.23 2006/01/09 14:59:38 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -343,7 +343,7 @@ int TRANS(CreateListener)(
 );
 
 int TRANS(NoListen) (
-    char*               /* protocol*/
+    const char*         /* protocol*/
 );
 
 int TRANS(ResetListener)(

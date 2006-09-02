@@ -20,7 +20,7 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/savage/s3stub.c,v 1.4 2001/10/12 06:33:11 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/savage/s3stub.c,v 1.1 2004/06/02 22:43:02 dawes Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -72,7 +72,7 @@
 #include "linux.h"
 
 void
-InitCard (char *name)
+InitCard (const char *name)
 {
     KdCardAttr	attr;
 #ifdef VXWORKS
@@ -94,13 +94,13 @@ InitCard (char *name)
 }
 
 void
-InitOutput (ScreenInfo *pScreenInfo, int argc, char **argv)
+InitOutput (ScreenInfo *pScreenInfo, int argc, const char **argv)
 {
     KdInitOutput (pScreenInfo, argc, argv);
 }
 
 void
-InitInput (int argc, char **argv)
+InitInput (int argc, const char **argv)
 {
 #ifdef VXWORKS
     KdInitInput (&VxWorksMouseFuncs, &VxWorksKeyboardFuncs);
@@ -111,7 +111,7 @@ InitInput (int argc, char **argv)
 }
 
 int
-ddxProcessArgument (int argc, char **argv, int i)
+ddxProcessArgument (int argc, const char **argv, int i)
 {
     if (!strcmp (argv[i], "-cpu"))
     {

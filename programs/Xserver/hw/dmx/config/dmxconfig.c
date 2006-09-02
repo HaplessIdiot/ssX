@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/config/dmxconfig.c,v 1.2 2005/01/30 17:48:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/config/dmxconfig.c,v 1.3 2005/03/25 02:22:56 dawes Exp $ */
 /*
  * Copyright 2002-2003 Red Hat Inc., Durham, North Carolina.
  *
@@ -296,7 +296,7 @@ static void dmxConfigCopyFromOption(DMXConfigOptionPtr o)
 {
     DMXConfigStringPtr pt;
     int                argc   = 0;
-    char               **argv = NULL;
+    char               const **argv = NULL;
 
     if (serverGeneration != 1) return; /* FIXME: only do once, for now */
     if (!o || !o->string) return;

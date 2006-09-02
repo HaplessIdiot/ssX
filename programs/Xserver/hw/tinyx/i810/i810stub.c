@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/tinyx/i810/i810stub.c,v 1.3 2001/10/28 03:33:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/i810/i810stub.c,v 1.1 2004/06/02 22:43:01 dawes Exp $ */
 /* COPYRIGHT AND PERMISSION NOTICE
 
 Copyright (c) 2000, 2001 Nokia Home Communications
@@ -92,7 +92,7 @@ static const int i810Cards[]={ PCI_CHIP_I810, PCI_CHIP_I810_DC100, PCI_CHIP_I810
 #define numI810Cards (sizeof(i810Cards) / sizeof(i810Cards[0]))
 
 void
-InitCard (char *name)
+InitCard (const char *name)
 {
     KdCardAttr	attr;
     int		i;
@@ -104,19 +104,19 @@ InitCard (char *name)
 
 
 void
-InitOutput (ScreenInfo *pScreenInfo, int argc, char **argv)
+InitOutput (ScreenInfo *pScreenInfo, int argc, const char **argv)
 {
     KdInitOutput (pScreenInfo, argc, argv);
 }
 
 void
-InitInput (int argc, char **argv)
+InitInput (int argc, const char **argv)
 {
     KdInitInput (&LinuxMouseFuncs, &LinuxKeyboardFuncs);
 }
 
 int
-ddxProcessArgument (int argc, char **argv, int i)
+ddxProcessArgument (int argc, const char **argv, int i)
 {
     return KdProcessArgument(argc, argv, i);
 }

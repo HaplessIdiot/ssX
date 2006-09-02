@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.8 2005/08/12 13:42:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.9 2006/01/12 02:41:51 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -296,7 +296,7 @@ xf86CloseConsole(void)
 }
 
 int
-xf86ProcessArgument(int argc, char **argv, int i)
+xf86ProcessArgument(int argc, const char **argv, int i)
 {
     /*
      * Keep server from detaching from controlling tty.  This is useful when

@@ -24,7 +24,7 @@
  * used in advertising or otherwise to promote the sale, use or other dealings
  * in this Software without prior written authorization from Sebastien Marineau.
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/qnx4/qnx_init.c,v 1.1tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/qnx4/qnx_init.c,v 1.2 2005/10/14 15:17:06 tsi Exp $
  */
 
 /* This module contains the qnx-specific functions used at server init.
@@ -57,7 +57,7 @@ xf86UseMsg()
 int
 xf86ProcessArgument(argc, argv, i)
 int argc;
-char **argv;
+const char **argv;
 int i;
 {
 

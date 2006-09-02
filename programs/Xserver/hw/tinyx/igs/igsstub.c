@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/tinyx/igs/igsstub.c,v 1.3 2001/10/12 06:33:09 keithp Exp $
+ * $XFree86: xc/programs/Xserver/hw/tinyx/igs/igsstub.c,v 1.1 2004/06/02 22:43:01 dawes Exp $
  *
  * Copyright © 2000 Keith Packard
  *
@@ -72,7 +72,7 @@
 #include "linux.h"
 
 void
-InitCard (char *name)
+InitCard (const char *name)
 {
     KdCardAttr	attr;
     CARD32	count;
@@ -92,19 +92,19 @@ InitCard (char *name)
 }
 
 void
-InitOutput (ScreenInfo *pScreenInfo, int argc, char **argv)
+InitOutput (ScreenInfo *pScreenInfo, int argc, const char **argv)
 {
     KdInitOutput (pScreenInfo, argc, argv);
 }
 
 void
-InitInput (int argc, char **argv)
+InitInput (int argc, const char **argv)
 {
     KdInitInput (&LinuxMouseFuncs, &LinuxKeyboardFuncs);
 }
 
 int
-ddxProcessArgument (int argc, char **argv, int i)
+ddxProcessArgument (int argc, const char **argv, int i)
 {
     return KdProcessArgument (argc, argv, i);
 }

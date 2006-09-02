@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/dmxinit.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxinit.c,v 1.10 2006/06/19 13:43:24 tsi Exp $ */
 /*
  * Copyright 2001-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -563,7 +563,7 @@ static const char *dmxExecHost(void)
 }
 
 /** This routine is called in Xserver/dix/main.c from \a main(). */
-void InitOutput(ScreenInfo *pScreenInfo, int argc, char *argv[])
+void InitOutput(ScreenInfo *pScreenInfo, int argc, const char *argv[])
 {
     int                  i;
     static unsigned long dmxGeneration = 0;
@@ -816,7 +816,7 @@ void InitOutput(ScreenInfo *pScreenInfo, int argc, char *argv[])
 /* RATS: Assuming the fp string (which comes from the command-line argv
          vector) is NULL-terminated, the buffer is large enough for the
          strcpy. */ 
-static void dmxSetDefaultFontPath(char *fp)
+static void dmxSetDefaultFontPath(const char *fp)
 {
     int fplen = strlen(fp) + 1;
     
@@ -887,7 +887,7 @@ void ddxInitGlobals(void)
 #endif
 
 /** Process our command line arguments. */
-int ddxProcessArgument(int argc, char *argv[], int i)
+int ddxProcessArgument(int argc, const char *argv[], int i)
 {
     int retval = 0;
     

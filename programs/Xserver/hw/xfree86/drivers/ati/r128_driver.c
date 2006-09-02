@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.93 2006/03/02 03:00:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.94 2006/03/16 16:49:59 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -2075,7 +2075,7 @@ R128BlockHandler(int i, pointer blockData, pointer pTimeout, pointer pReadmask)
 }
 
 /* Called at the start of each server generation. */
-Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
+Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
 {
     ScrnInfoPtr pScrn  = xf86Screens[pScreen->myNum];
     R128InfoPtr info   = R128PTR(pScrn);

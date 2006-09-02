@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/dummy/dummy_driver.c,v 1.10 2005/10/14 15:16:39 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/dummy/dummy_driver.c,v 1.11 2006/03/16 16:50:03 dawes Exp $ */
 
 /*
  * Copyright 2002, SuSE Linux AG, Author: Egbert Eich
@@ -51,7 +51,7 @@ static void     DUMMYIdentify(int flags);
 static Bool     DUMMYProbe(DriverPtr drv, int flags);
 static Bool     DUMMYPreInit(ScrnInfoPtr pScrn, int flags);
 static Bool     DUMMYScreenInit(int Index, ScreenPtr pScreen, int argc,
-                                  char **argv);
+                                  const char **argv);
 static Bool     DUMMYEnterVT(int scrnIndex, int flags);
 static void     DUMMYLeaveVT(int scrnIndex, int flags);
 static Bool     DUMMYCloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -494,7 +494,7 @@ DUMMYLoadPalette(
 
 /* Mandatory */
 static Bool
-DUMMYScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
+DUMMYScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
 {
     ScrnInfoPtr pScrn;
     DUMMYPtr dPtr;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.26tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.27 2006/06/21 01:35:50 tsi Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -693,7 +693,7 @@ xf86CloseConsole()
 }
 
 int
-xf86ProcessArgument(int argc, char *argv[], int i)
+xf86ProcessArgument(int argc, const char *argv[], int i)
 {
 	/*
 	 * Keep server from detaching from controlling tty.  This is useful 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/globals.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/globals.c,v 1.14 2005/10/14 15:16:21 tsi Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -116,11 +116,11 @@ int  defaultScreenSaverAllowExposures = DEFAULT_SCREEN_SAVER_EXPOSURES;
 int  logoScreenSaver = DEFAULT_LOGO_SCREEN_SAVER;
 #endif
 
-char *defaultFontPath = COMPILEDDEFAULTFONTPATH;
-char *defaultTextFont = COMPILEDDEFAULTFONT;
-char *defaultCursorFont = COMPILEDCURSORFONT;
-char *rgbPath = RGB_DB;
-char *defaultDisplayClass = COMPILEDDISPLAYCLASS;
+const char *defaultFontPath = COMPILEDDEFAULTFONTPATH;
+const char *defaultTextFont = COMPILEDDEFAULTFONT;
+const char *defaultCursorFont = COMPILEDCURSORFONT;
+const char *rgbPath = RGB_DB;
+const char *defaultDisplayClass = COMPILEDDISPLAYCLASS;
 FontPtr defaultFont;   /* not declared in dix.h to avoid including font.h in
 			every compilation of dix code */
 Bool loadableFonts = FALSE;
@@ -138,10 +138,10 @@ Bool permitOldBugs = FALSE; /* turn off some error checking, to permit certain
 int defaultColorVisualClass = -1;
 int monitorResolution = 0;
 
-char *display;
+const char *display;
 
 CARD32 TimeOutValue = DEFAULT_TIMEOUT * MILLI_PER_SECOND;
 int	argcGlobal;
-char	**argvGlobal;
+const char	**argvGlobal;
 
 DDXPointRec dixScreenOrigins[MAXSCREENS];

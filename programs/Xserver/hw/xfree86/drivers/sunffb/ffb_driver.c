@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_driver.c,v 1.16 2005/09/23 05:07:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_driver.c,v 1.17 2006/03/16 16:50:17 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -45,7 +45,7 @@ static void	FFBIdentify(int flags);
 static Bool	FFBProbe(DriverPtr drv, int flags);
 static Bool	FFBPreInit(ScrnInfoPtr pScrn, int flags);
 static Bool	FFBScreenInit(int Index, ScreenPtr pScreen, int argc,
-			      char **argv);
+			      const char **argv);
 static Bool	FFBEnterVT(int scrnIndex, int flags);
 static void	FFBLeaveVT(int scrnIndex, int flags);
 static Bool	FFBCloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -664,7 +664,7 @@ CreatorUnaccelWidInit(ScreenPtr pScreen)
 /* This gets called at the start of each server generation */
 
 static Bool
-FFBScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
+FFBScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
 {
     ScrnInfoPtr pScrn;
     FFBPtr pFfb;

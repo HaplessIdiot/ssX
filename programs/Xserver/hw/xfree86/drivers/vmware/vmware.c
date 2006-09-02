@@ -2,7 +2,7 @@
  * Copyright (C) 1998-2001 VMware, Inc.
  * All Rights Reserved
  * **********************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.26tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.27 2006/06/19 14:46:54 tsi Exp $ */
 
 /*
  * TODO: support the vmware linux kernel fb driver (Option "UseFBDev").
@@ -1129,7 +1129,7 @@ VMWARELoadPalette(ScrnInfoPtr pScrn, int numColors, int* indices,
 }
 
 static Bool
-VMWAREScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
+VMWAREScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
 {
     ScrnInfoPtr pScrn;
     vgaHWPtr hwp;

@@ -45,7 +45,7 @@
    * Support static loading.  
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.31 2006/03/02 03:00:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.32 2006/03/16 16:50:04 dawes Exp $ */
 
 #include "xf86Cursor.h"
 #include "colormapst.h"
@@ -140,7 +140,7 @@ static const OptionInfoRec * GLIDEAvailableOptions(int chipid, int busid);
 static void	GLIDEIdentify(int flags);
 static Bool	GLIDEProbe(DriverPtr drv, int flags);
 static Bool	GLIDEPreInit(ScrnInfoPtr pScrn, int flags);
-static Bool	GLIDEScreenInit(int Index, ScreenPtr pScreen, int argc, char **argv);
+static Bool	GLIDEScreenInit(int Index, ScreenPtr pScreen, int argc, const char **argv);
 static Bool	GLIDEEnterVT(int scrnIndex, int flags);
 static void	GLIDELeaveVT(int scrnIndex, int flags);
 static Bool	GLIDECloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -649,7 +649,7 @@ GLIDEPreInit(ScrnInfoPtr pScrn, int flags)
 /* Mandatory */
 /* This gets called at the start of each server generation */
 static Bool
-GLIDEScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
+GLIDEScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
 {
   ScrnInfoPtr pScrn;
   GLIDEPtr pGlide;

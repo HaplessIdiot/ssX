@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.77tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.78 2006/02/19 15:51:31 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -231,7 +231,7 @@ extern void DMXExtensionInit(INITARGS);
 
 /*ARGSUSED*/
 void
-InitExtensions(int argc, char *argv[])
+InitExtensions(int argc, const char *argv[])
 {
 #ifdef PANORAMIX
   if (!noPanoramiXExtension) PanoramiXExtensionInit();
@@ -498,7 +498,7 @@ static ExtensionModule staticExtensions[] = {
     
 /*ARGSUSED*/
 void
-InitExtensions(int argc, char *argv[])
+InitExtensions(int argc, const char *argv[])
 {
     int i;
     ExtensionModule *ext;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_driver.c,v 1.16 2006/01/09 14:59:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_driver.c,v 1.17 2006/03/16 16:50:11 dawes Exp $ */
 /*
  * File Contents: This is the main module configures the interfacing 
  *                with the X server. The individual modules will be 
@@ -243,7 +243,7 @@ MemOffset GeodeMemOffset[] = {
 static int MemIndex = 0;
 
 static Bool GX1PreInit(ScrnInfoPtr, int);
-static Bool GX1ScreenInit(int, ScreenPtr, int, char **);
+static Bool GX1ScreenInit(int, ScreenPtr, int, const char **);
 static Bool GX1EnterVT(int, int);
 static void GX1LeaveVT(int, int);
 static void GX1FreeScreen(int, int);
@@ -1757,7 +1757,7 @@ GX1DPMSSet(ScrnInfoPtr pScreenInfo, int mode, int flags)
 *----------------------------------------------------------------------------
 */
 static Bool
-GX1ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
+GX1ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
 {
    ScrnInfoPtr pScreenInfo = xf86Screens[pScreen->myNum];
    GeodePtr pGeode;

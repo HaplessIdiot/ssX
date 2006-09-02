@@ -76,7 +76,7 @@ copyright holders.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/Xprint/ddxInit.c,v 1.17tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ddxInit.c,v 1.18 2006/02/19 15:51:17 tsi Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xproto.h>
@@ -116,7 +116,7 @@ void
 InitOutput(
     ScreenInfo 	  *pScreenInfo,
     int     	  argc,
-    char    	  **argv)
+    const char    	  **argv)
 {
     pScreenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
     pScreenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
@@ -213,7 +213,7 @@ PointerProc(
 void
 InitInput(
      int	argc,
-     char **argv)
+     const char **argv)
 {
     DeviceIntPtr ptr, kbd;
 
@@ -298,7 +298,7 @@ void ddxGiveUp(void)	/* Called by GiveUp() */
 int
 ddxProcessArgument (
     int argc,
-    char *argv[],
+    const char *argv[],
     int i)
 {
     return XprintOptions(argc, argv, i) - i;

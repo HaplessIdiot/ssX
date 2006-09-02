@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclInit.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclInit.c,v 1.14 2006/02/19 15:51:18 tsi Exp $ */
 /*******************************************************************
 **
 **    *********************************************************
@@ -166,7 +166,7 @@ InitializePclDriver(
      int ndx,
      ScreenPtr pScreen,
      int argc,
-     char **argv)
+     const char **argv)
 {
     int maxRes, xRes, yRes, maxDim;
     unsigned i;

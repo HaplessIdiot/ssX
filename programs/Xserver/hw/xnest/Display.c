@@ -11,7 +11,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Display.c,v 3.5 2003/11/16 05:05:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Display.c,v 3.6 2006/01/09 15:00:29 dawes Exp $ */
 
 
 #include <X11/X.h>
@@ -51,7 +51,7 @@ Window xnestConfineWindow;
 unsigned long xnestEventMask;
 
 void
-xnestOpenDisplay(int argc, char *argv[])
+xnestOpenDisplay(int argc, const char *argv[])
 {
   XVisualInfo vi;
   long mask;

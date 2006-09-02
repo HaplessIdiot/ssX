@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/pcmcia/pcmciastub.c,v 1.2 2001/10/12 06:33:11 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/pcmcia/pcmciastub.c,v 1.1 2004/06/02 22:43:02 dawes Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -72,7 +72,7 @@
 #include "pcmcia.h"
 
 void
-InitCard (char *name)
+InitCard (const char *name)
 {
     KdCardAttr	attr;
 
@@ -80,13 +80,13 @@ InitCard (char *name)
 }
 
 void
-InitOutput (ScreenInfo *pScreenInfo, int argc, char **argv)
+InitOutput (ScreenInfo *pScreenInfo, int argc, const char **argv)
 {
     KdInitOutput (pScreenInfo, argc, argv);
 }
 
 void
-InitInput (int argc, char **argv)
+InitInput (int argc, const char **argv)
 {
     KdInitInput (&LinuxMouseFuncs, &LinuxKeyboardFuncs);
 }
@@ -94,7 +94,7 @@ InitInput (int argc, char **argv)
 extern pcmciaDisplayModeRec pcmciaDefaultModes[];
 
 int
-ddxProcessArgument (int argc, char **argv, int i)
+ddxProcessArgument (int argc, const char **argv, int i)
 {
     return KdProcessArgument (argc, argv, i);
 }

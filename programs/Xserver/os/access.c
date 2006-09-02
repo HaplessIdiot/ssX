@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.60tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.61 2006/06/19 13:43:26 tsi Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -1063,7 +1063,7 @@ AddLocalHosts (void)
 
 /* Reset access control list to initial hosts */
 void
-ResetHosts (char *display)
+ResetHosts (const char *display)
 {
     HOST	*host;
     char                lhostname[120], ohostname[120];

@@ -11,7 +11,7 @@
  *    Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.40 2005/10/14 15:16:38 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.41 2006/03/16 16:50:01 dawes Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -80,7 +80,7 @@ static void AlpProbeI2C(int scrnIndex);
 /* Mandatory functions */
 
 Bool AlpPreInit(ScrnInfoPtr pScrn, int flags);
-Bool AlpScreenInit(int Index, ScreenPtr pScreen, int argc, char **argv);
+Bool AlpScreenInit(int Index, ScreenPtr pScreen, int argc, const char **argv);
 Bool AlpEnterVT(int scrnIndex, int flags);
 void AlpLeaveVT(int scrnIndex, int flags);
 static Bool	AlpCloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -1493,7 +1493,7 @@ AlpRestore(ScrnInfoPtr pScrn)
 /* This gets called at the start of each server generation */
 
 Bool
-AlpScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
+AlpScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
 {
 	ScrnInfoPtr pScrn;
 	vgaHWPtr hwp;

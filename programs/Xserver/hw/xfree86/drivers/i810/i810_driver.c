@@ -72,7 +72,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.124 2006/03/10 12:44:20 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.125 2006/03/16 16:50:08 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -138,7 +138,7 @@ static Bool I810Probe(DriverPtr drv, int flags);
 #ifndef I830_ONLY
 static Bool I810PreInit(ScrnInfoPtr pScrn, int flags);
 static Bool I810ScreenInit(int Index, ScreenPtr pScreen, int argc,
-			   char **argv);
+			   const char **argv);
 static Bool I810EnterVT(int scrnIndex, int flags);
 static void I810LeaveVT(int scrnIndex, int flags);
 static Bool I810CloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -2129,7 +2129,7 @@ I810AllocateFront(ScrnInfoPtr pScrn)
 }
 
 static Bool
-I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
+I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
 {
    ScrnInfoPtr pScrn;
    vgaHWPtr hwp;

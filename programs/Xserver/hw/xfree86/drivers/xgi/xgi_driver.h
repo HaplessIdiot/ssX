@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_driver.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_driver.h,v 1.2 2005/06/07 01:33:39 tsi Exp $ */
 /*
  * Global data and definitions
  *
@@ -893,7 +893,7 @@ static const unsigned char XGI301CScaling[] = {
 static void XGIIdentify(int flags);
 static Bool XGIProbe(DriverPtr drv, int flags);
 static Bool XGIPreInit(ScrnInfoPtr pScrn, int flags);
-static Bool XGIScreenInit(int Index, ScreenPtr pScreen, int argc, char **argv);
+static Bool XGIScreenInit(int Index, ScreenPtr pScreen, int argc, const char **argv);
 static Bool XGIEnterVT(int scrnIndex, int flags);
 static void XGILeaveVT(int scrnIndex, int flags);
 static Bool XGICloseScreen(int scrnIndex, ScreenPtr pScreen);

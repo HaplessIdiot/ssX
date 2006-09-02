@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.32tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.33 2005/10/14 15:16:21 tsi Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -140,7 +140,7 @@ FontToXError(int err)
  * adding RT_FONT prevents conflict with default cursor font
  */
 Bool
-SetDefaultFont(char *defaultfontname)
+SetDefaultFont(const char *defaultfontname)
 {
     int         err;
     FontPtr     pf;
@@ -393,7 +393,7 @@ bail:
 
 int
 OpenFont(ClientPtr client, XID fid, Mask flags, unsigned lenfname,
-	 char *pfontname)
+	 const char *pfontname)
 {
     OFclosurePtr c;
     int         i;
@@ -1812,7 +1812,7 @@ SetFontPath(ClientPtr client, int npaths, unsigned char *paths, int *error)
 }
 
 int
-SetDefaultFontPath(char *path)
+SetDefaultFontPath(const char *path)
 {
     unsigned char *cp,
                *pp,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/auth.c,v 1.14tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/auth.c,v 1.15 2005/10/14 15:17:26 tsi Exp $ */
 /*
 
 Copyright 1988, 1998  The Open Group
@@ -117,12 +117,12 @@ static struct protocol   protocols[] = {
  * specified authorization file
  */
 
-static char *authorization_file = (char *)NULL;
+static const char *authorization_file = (char *)NULL;
 
 static Bool ShouldLoadAuth = TRUE;
 
 void
-InitAuthorization (char *file_name)
+InitAuthorization (const char *file_name)
 {
     authorization_file = file_name;
 }

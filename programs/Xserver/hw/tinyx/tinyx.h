@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/tinyx.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/tinyx.h,v 1.2 2005/10/14 15:16:27 tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -261,7 +261,7 @@ extern int KdTsPhyScreen;
 #endif
 
 KdMouseInfo *KdMouseInfoAdd (void);
-void	    KdParseMouse (char *);
+void	    KdParseMouse (const char *);
 
 typedef struct _KdMouseFuncs {
     int		    (*Init) (void);
@@ -580,7 +580,7 @@ KdSubRotation (Rotation a, Rotation b);
 
 void
 KdParseScreen (KdScreenInfo *screen,
-	       char	    *arg);
+	       const char    *arg);
 
 char *
 KdSaveString (char *str);
@@ -598,24 +598,24 @@ Bool
 KdSaveScreen (ScreenPtr pScreen, int on);
 
 Bool
-KdScreenInit(int index, ScreenPtr pScreen, int argc, char **argv);
+KdScreenInit(int index, ScreenPtr pScreen, int argc, const char **argv);
 
 void
 KdInitScreen (ScreenInfo    *pScreenInfo,
 	      KdScreenInfo  *screen,
 	      int	    argc,
-	      char	    **argv);
+	      const char    **argv);
 
 void
 KdInitCard (ScreenInfo	    *pScreenInfo,
 	    KdCardInfo	    *card,
 	    int		    argc,
-	    char	    **argv);
+	    const char	    **argv);
 
 void
 KdInitOutput (ScreenInfo    *pScreenInfo,
 	      int	    argc,
-	      char	    **argv);
+	      const char    **argv);
 
 void
 KdSetSubpixelOrder (ScreenPtr pScreen, Rotation randr);
@@ -624,7 +624,7 @@ Bool
 KdCreateWindow (WindowPtr pWin);
 
 int
-KdProcessArgument (int argc, char **argv, int i);
+KdProcessArgument (int argc, const char **argv, int i);
 
 void
 KdUseMsg (void);
@@ -808,4 +808,4 @@ KdFrameBufferSize (CARD8 *base, int max);
 
 /* function prototypes to be imlpemented by the drivers */
 void
-InitCard (char *name);
+InitCard (const char *name);

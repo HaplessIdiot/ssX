@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.53 2005/10/14 15:16:38 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.54 2006/03/16 16:50:02 dawes Exp $ */
 
 #define EXPERIMENTAL
 
@@ -71,7 +71,7 @@
 
 /* Mandatory functions */
 Bool LgPreInit(ScrnInfoPtr pScrn, int flags);
-Bool LgScreenInit(int Index, ScreenPtr pScreen, int argc, char **argv);
+Bool LgScreenInit(int Index, ScreenPtr pScreen, int argc, const char **argv);
 Bool LgEnterVT(int scrnIndex, int flags);
 void LgLeaveVT(int scrnIndex, int flags);
 static Bool	LgCloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -1304,7 +1304,7 @@ LgRestore(ScrnInfoPtr pScrn)
 /* This gets called at the start of each server generation */
 
 Bool
-LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
+LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
 {
 	/* The vgaHW references will disappear one day */
 	ScrnInfoPtr pScrn;

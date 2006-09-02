@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.68 2004/11/26 11:50:22 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.69 2006/03/16 16:50:21 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -76,7 +76,7 @@ static const OptionInfoRec *GenericAvailableOptions(int chipid, int busid);
 static void                 GenericIdentify(int);
 static Bool                 GenericProbe(DriverPtr, int);
 static Bool                 GenericPreInit(ScrnInfoPtr, int);
-static Bool                 GenericScreenInit(int, ScreenPtr, int, char **);
+static Bool                 GenericScreenInit(int, ScreenPtr, int, const char **);
 static Bool                 GenericSwitchMode(int, DisplayModePtr, int);
 static void                 GenericAdjustFrame(int, int, int, int);
 static Bool                 GenericEnterVT(int, int);
@@ -1365,7 +1365,7 @@ GenericRefreshArea4bpp(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 #endif /* SPECIAL_FB_BYTE_ACCESS */
 
 static Bool
-GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
+GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
 {
     ScrnInfoPtr pScreenInfo = xf86Screens[scrnIndex];
 

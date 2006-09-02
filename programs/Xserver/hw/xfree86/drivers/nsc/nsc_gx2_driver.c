@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_driver.c,v 1.15 2006/01/09 14:59:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_driver.c,v 1.16 2006/03/16 16:50:11 dawes Exp $ */
 /*
  * File Contents: This is the main module configures the interfacing 
  *                with the X server. The individual modules will be 
@@ -204,7 +204,7 @@ extern OptionInfoRec GeodeOptions[];
 
 /* Forward definitions */
 static Bool GX2PreInit(ScrnInfoPtr, int);
-static Bool GX2ScreenInit(int, ScreenPtr, int, char **);
+static Bool GX2ScreenInit(int, ScreenPtr, int, const char **);
 static Bool GX2EnterVT(int, int);
 static void GX2LeaveVT(int, int);
 static void GX2FreeScreen(int, int);
@@ -1696,7 +1696,7 @@ GX2DPMSSet(ScrnInfoPtr pScreenInfo, int mode, int flags)
 *----------------------------------------------------------------------------
 */
 static Bool
-GX2ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
+GX2ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
 {
    ScrnInfoPtr pScreenInfo = xf86Screens[pScreen->myNum];
    GeodePtr pGeode;

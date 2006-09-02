@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.56 2005/10/14 15:16:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.57 2006/03/16 16:50:13 dawes Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -42,7 +42,7 @@ static void SavageSave(ScrnInfoPtr pScrn);
 static void SavageWriteMode(ScrnInfoPtr pScrn, vgaRegPtr, SavageRegPtr, Bool);
 
 static Bool SavageScreenInit(int scrnIndex, ScreenPtr pScreen, int argc,
-			     char **argv);
+			     const char **argv);
 static int SavageInternalScreenInit(int scrnIndex, ScreenPtr pScreen);
 static ModeStatus SavageValidMode(int index, DisplayModePtr mode,
 				  Bool verbose, int flags);
@@ -2244,7 +2244,7 @@ static void SavageUnmapMem(ScrnInfoPtr pScrn, int All)
 
 
 static Bool SavageScreenInit(int scrnIndex, ScreenPtr pScreen,
-			     int argc, char **argv)
+			     int argc, const char **argv)
 {
     ScrnInfoPtr pScrn;
     SavagePtr psav;

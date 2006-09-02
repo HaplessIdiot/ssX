@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_init.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_init.c,v 1.4 2005/10/14 15:17:06 tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -379,7 +379,7 @@ void xf86CloseConsole()
 
 int xf86ProcessArgument(argc, argv, i)
 int argc;
-char *argv[];
+const char *argv[];
 int i;
 {
 	/*

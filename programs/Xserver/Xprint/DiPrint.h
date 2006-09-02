@@ -29,7 +29,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/DiPrint.h,v 1.4 2001/01/17 22:36:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/DiPrint.h,v 1.5 2006/01/09 14:59:42 dawes Exp $ */
 
 /*
  * The XpDiListEntry struct is the type of each element of the array
@@ -63,9 +63,9 @@ extern char * XpDiGetDriverName(int index, char *printerName);
 
 extern WindowPtr XpDiValidatePrinter(char *printerName, int printerNameLen);
 
-extern int XprintOptions(int argc, char **argv, int i);
+extern int XprintOptions(int argc, const char **argv, int i);
 
-extern void PrinterInitOutput(ScreenInfo *pScreenInfo, int argc, char **argv);
+extern void PrinterInitOutput(ScreenInfo *pScreenInfo, int argc, const char **argv);
 
 extern void _XpVoidNoop(void);
 

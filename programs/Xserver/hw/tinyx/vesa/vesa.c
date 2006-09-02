@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/vesa/vesa.c,v 1.1 2004/06/02 22:43:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/vesa/vesa.c,v 1.2 2004/10/04 21:58:08 tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1787,7 +1787,7 @@ vesaGetColors (ScreenPtr pScreen, int fb, int n, xColorItem *pdefs)
 }
 
 int
-vesaProcessArgument (int argc, char **argv, int i)
+vesaProcessArgument (int argc, const char **argv, int i)
 {
     if(!strcmp(argv[i], "-mode")) {
         if(i+1 < argc) {

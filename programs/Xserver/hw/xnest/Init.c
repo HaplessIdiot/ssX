@@ -11,7 +11,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.27tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.28 2006/02/19 15:51:30 tsi Exp $ */
 /*
  * Copyright (c) 1996-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -86,7 +86,7 @@ is" without express or implied warranty.
 Bool xnestDoFullGeneration = True;
 
 void
-InitOutput(ScreenInfo *screenInfo, int argc, char *argv[])
+InitOutput(ScreenInfo *screenInfo, int argc, const char *argv[])
 {
   int i, j;
 
@@ -127,7 +127,7 @@ InitOutput(ScreenInfo *screenInfo, int argc, char *argv[])
 }
 
 void
-InitInput(int argc, char *argv[])
+InitInput(int argc, const char *argv[])
 {
   pointer ptr, kbd;
 
