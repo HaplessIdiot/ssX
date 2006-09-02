@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.21 2006/01/09 15:00:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.22 2006/04/08 18:30:26 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -233,7 +233,7 @@ void xf86CloseConsole()
 
 int xf86ProcessArgument (argc, argv, i)
 int argc;
-char *argv[];
+const char *argv[];
 int i;
 {
 	return 0;

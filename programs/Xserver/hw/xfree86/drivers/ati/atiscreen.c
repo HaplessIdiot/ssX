@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.35tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.36 2006/01/05 18:55:30 tsi Exp $ */
 /*
  * Copyright 1999 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -91,7 +91,7 @@ ATIScreenInit
     int       iScreen,
     ScreenPtr pScreen,
     int       argc,
-    char      **argv
+    const char **argv
 )
 {
     ScrnInfoPtr  pScreenInfo = xf86Screens[iScreen];

@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_init.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_init.c,v 1.3 2005/10/14 15:17:03 tsi Exp $ */
 
 #include <X11/X.h>
 
@@ -41,7 +41,7 @@
 #include <mach.h>
 
 int 
-xf86ProcessArgument( int argc,char **argv, int i )
+xf86ProcessArgument( int argc, const char **argv, int i )
 {
     return 0;
 }

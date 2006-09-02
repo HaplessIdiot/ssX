@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.36tsi Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.37 2006/06/19 13:43:24 tsi Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -158,7 +158,7 @@ TRANS(FreeConnInfo) (XtransConnInfo ciptr)
 #define PROTOBUFSIZE	20
 
 static Xtransport *
-TRANS(SelectTransport) (char *protocol)
+TRANS(SelectTransport) (const char *protocol)
 
 {
     char 	protobuf[PROTOBUFSIZE];
@@ -774,7 +774,7 @@ TRANS(CreateListener) (XtransConnInfo ciptr, char *port, unsigned int flags)
 }
 
 int
-TRANS(NoListen) (char * protocol)
+TRANS(NoListen) (const char * protocol)
 	
 {
    Xtransport *trans;

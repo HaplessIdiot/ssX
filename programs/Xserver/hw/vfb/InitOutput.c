@@ -81,7 +81,7 @@ from The Open Group.
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.32tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.33 2006/05/16 14:05:03 tsi Exp $ */
 
 #if defined(WIN32)
 #include <X11/Xwinsock.h>
@@ -165,7 +165,7 @@ static int vfbNumScreens;
 static vfbScreenInfo vfbScreens[MAXSCREENS];
 static Bool vfbPixmapDepths[33];
 #ifdef HAS_MMAP
-static char *pfbdir = NULL;
+static const char *pfbdir = NULL;
 #endif
 typedef enum { NORMAL_MEMORY_FB, SHARED_MEMORY_FB, MMAPPED_FILE_FB } fbMemType;
 static fbMemType fbmemtype = NORMAL_MEMORY_FB;
@@ -335,7 +335,7 @@ ddxUseMsg()
 }
 
 int
-ddxProcessArgument(int argc, char *argv[], int i)
+ddxProcessArgument(int argc, char const *argv[], int i)
 {
     static Bool firstTime = TRUE;
 
@@ -349,6 +349,7 @@ ddxProcessArgument(int argc, char *argv[], int i)
     if (strcmp (argv[i], "-screen") == 0)	/* -screen n WxHxD */
     {
 	int screenNum;
+	char *arg2;
  	char *s;
 	if (i + 2 >= argc) return 0;
 	screenNum = atoi(argv[i+1]);
@@ -357,12 +358,18 @@ ddxProcessArgument(int argc, char *argv[], int i)
 	    ErrorF("Invalid screen number %d\n", screenNum);
 	    return 0;
 	}
-	s = strtok(argv[i+2], "@");
+	arg2 = xstrdup(argv[i+2]);
+	if (!arg2) {
+	    ErrorF("Memory allocation error\n");
+	    return 0;
+	}
+	s = strtok(arg2, "@");
 	if (3 != sscanf(s, "%dx%dx%d",
 			&vfbScreens[screenNum].width,
 			&vfbScreens[screenNum].height,
 			&vfbScreens[screenNum].depth))
 	{
+	    xfree(arg2);
 	    ErrorF("Invalid screen configuration %s\n", s);
 	    return 0;
 	}
@@ -373,6 +380,7 @@ ddxProcessArgument(int argc, char *argv[], int i)
 			    &vfbScreens[screenNum].xOrigin,
 			    &vfbScreens[screenNum].yOrigin))
 	    {
+		xfree(arg2);
 		ErrorF("Invalid screen position %s\n", s);
 		return 0;
 	    }
@@ -386,6 +394,7 @@ ddxProcessArgument(int argc, char *argv[], int i)
 	if (screenNum >= vfbNumScreens)
 	    vfbNumScreens = screenNum + 1;
 	lastScreen = screenNum;
+	xfree(arg2);
 	return 3;
     }
 
@@ -973,7 +982,7 @@ vfbCloseScreen(int index, ScreenPtr pScreen)
 }
 
 static Bool
-vfbScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
+vfbScreenInit(int index, ScreenPtr pScreen, int argc, const char **argv)
 {
     vfbScreenInfoPtr pvfb = &vfbScreens[index];
     int dpix = 100, dpiy = 100;
@@ -1057,7 +1066,7 @@ vfbScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
 
 
 void
-InitOutput(ScreenInfo *screenInfo, int argc, char **argv)
+InitOutput(ScreenInfo *screenInfo, int argc, const char **argv)
 {
     int i;
     int NumFormats = 0;

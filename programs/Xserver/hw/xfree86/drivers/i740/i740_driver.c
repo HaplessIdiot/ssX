@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.59 2006/02/17 17:05:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.60 2006/03/16 16:50:07 dawes Exp $ */
 
 /*
  * Authors:
@@ -100,7 +100,7 @@ static Bool I740Probe(DriverPtr drv, int flags);
 static Bool I740PreInit(ScrnInfoPtr pScrn, int flags);
 
 /* Initialize a screen */
-static Bool I740ScreenInit(int Index, ScreenPtr pScreen, int argc, char **argv);
+static Bool I740ScreenInit(int Index, ScreenPtr pScreen, int argc, const char **argv);
 
 /* Enter from a virtual terminal */
 static Bool I740EnterVT(int scrnIndex, int flags);
@@ -1513,7 +1513,7 @@ I740LoadPalette24(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 }
 
 static Bool
-I740ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
+I740ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv) {
   ScrnInfoPtr pScrn;
   vgaHWPtr hwp;
   I740Ptr pI740;

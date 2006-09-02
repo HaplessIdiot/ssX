@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_driver.c,v 1.8 2006/02/19 15:51:27 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_driver.c,v 1.9 2006/03/16 16:50:23 dawes Exp $ */
 /*
  * XGI driver main code
  *
@@ -3961,7 +3961,7 @@ XGIBlockHandler(int i, pointer blockData, pointer pTimeout, pointer pReadmask)
  * depth, bitsPerPixel)
  */
 static Bool
-XGIScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
+XGIScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
 {
     ScrnInfoPtr pScrn;
     vgaHWPtr hwp;

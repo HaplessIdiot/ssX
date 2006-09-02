@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.34 2005/10/14 15:17:26 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.35 2006/06/28 02:31:47 dawes Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -75,7 +75,7 @@
 #define X_INCLUDE_NETDB_H
 #include <X11/Xos_r.h>
 
-extern char *defaultDisplayClass;
+extern const char *defaultDisplayClass;
 
 static int		    xdmcpSocket, sessionSocket;
 static xdmcp_states	    state;
@@ -94,7 +94,7 @@ static CARD32		    keepaliveDormancy = XDM_DEF_DORMANCY;
 static CARD16		    DisplayNumber;
 static xdmcp_states	    XDM_INIT_STATE = XDM_OFF;
 #ifdef HASXDMAUTH
-static char		    *xdmAuthCookie;
+static const char	    *xdmAuthCookie;
 #endif
 
 static XdmcpBuffer	    buffer;
@@ -191,13 +191,13 @@ static void XdmcpWarning(char */*str*/);
 
 static void get_manager_by_name(
     int /*argc*/,
-    char **/*argv*/,
+    const char **/*argv*/,
     int /*i*/);
 
-static void get_fromaddr_by_name(int /*argc*/, char **/*argv*/, int /*i*/);
+static void get_fromaddr_by_name(int /*argc*/, const char **/*argv*/, int /*i*/);
 
 #if defined(IPv6) && defined(AF_INET6)
-static int get_mcast_options(int /*argc*/, char **/*argv*/, int /*i*/);
+static int get_mcast_options(int /*argc*/, const char **/*argv*/, int /*i*/);
 #endif
 
 static void receive_packet(int /*socketfd*/);
@@ -221,7 +221,7 @@ static void XdmcpWakeupHandler(
     pointer /*LastSelectMask*/);
 
 void XdmcpRegisterManufacturerDisplayID(
-    char    * /*name*/,
+    const char    * /*name*/,
     int	    /*length*/);
 
 
@@ -249,7 +249,7 @@ XdmcpUseMsg (void)
 }
 
 int 
-XdmcpOptions(int argc, char **argv, int i)
+XdmcpOptions(int argc, const char **argv, int i)
 {
     if (strcmp(argv[i], "-query") == 0) {
 	get_manager_by_name(argc, argv, i++);
@@ -561,7 +561,7 @@ XdmcpRegisterAuthorization (char *name, int namelen)
 ARRAY8	DisplayClass;
 
 void
-XdmcpRegisterDisplayClass (char *name, int length)
+XdmcpRegisterDisplayClass (const char *name, int length)
 {
     int	    i;
 
@@ -579,7 +579,7 @@ XdmcpRegisterDisplayClass (char *name, int length)
 ARRAY8 ManufacturerDisplayID;
 
 void
-XdmcpRegisterManufacturerDisplayID (char *name, int length)
+XdmcpRegisterManufacturerDisplayID (const char *name, int length)
 {
     int	    i;
 
@@ -1494,8 +1494,8 @@ XdmcpWarning(char *str)
 
 static void
 get_addr_by_name(
-    char *	argtype,
-    char *	namestr,
+    const char *argtype,
+    const char *namestr,
     int		port,
     int		socktype,
     SOCKADDR_TYPE *addr,
@@ -1578,7 +1578,7 @@ get_addr_by_name(
 static void
 get_manager_by_name(
     int	    argc,
-    char    **argv,
+    const char    **argv,
     int	    i)
 {
 
@@ -1600,7 +1600,7 @@ get_manager_by_name(
 static void
 get_fromaddr_by_name(
     int	    argc,
-    char    **argv,
+    const char    **argv,
     int	    i)
 {
 #if defined(IPv6) && defined(AF_INET6)
@@ -1629,9 +1629,9 @@ get_fromaddr_by_name(
 static int
 get_mcast_options(argc, argv, i)
     int	    argc, i;
-    char    **argv;
+    const char    **argv;
 {
-    char *address = XDM_DEFAULT_MCAST_ADDR6;
+    const char *address = XDM_DEFAULT_MCAST_ADDR6;
     int hopcount = 1;
     struct addrinfo hints;
     char portstr[6];

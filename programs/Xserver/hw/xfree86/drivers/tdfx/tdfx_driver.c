@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.113 2006/02/08 01:34:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.114 2006/03/16 16:50:17 dawes Exp $ */
 
 /*
  * Authors:
@@ -111,7 +111,7 @@ static Bool TDFXProbe(DriverPtr drv, int flags);
 static Bool TDFXPreInit(ScrnInfoPtr pScrn, int flags);
 
 /* Initialize a screen */
-static Bool TDFXScreenInit(int Index, ScreenPtr pScreen, int argc, char **argv);
+static Bool TDFXScreenInit(int Index, ScreenPtr pScreen, int argc, const char **argv);
 
 /* Enter from a virtual terminal */
 static Bool TDFXEnterVT(int scrnIndex, int flags);
@@ -2050,7 +2050,7 @@ static void allocateMemory(ScrnInfoPtr pScrn) {
 }
 
 static Bool
-TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
+TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv) {
   ScrnInfoPtr pScrn;
   vgaHWPtr hwp;
   TDFXPtr pTDFX;

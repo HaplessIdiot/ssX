@@ -1,4 +1,5 @@
 XFree86 4.6.99.7 (xx September 2006)
+  69. Make X server argv strings constant (David Dawes).
   68. Handle tinyx directories as subdirs of Xserver/hw/tinyx rather than
       of Xserver (David Dawes).
   67. Extend the mmapr and mmapw utilities to allow specification of wscons
@@ -20305,7 +20306,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3794 2006/08/21 15:20:10 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3795 2006/08/31 01:31:44 dawes Exp $
 
 
 

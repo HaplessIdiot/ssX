@@ -50,7 +50,7 @@
  *		(note that most of the data books have been released by
  *		 NatSemi and are downloadable for free as pdf files)
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.35 2005/10/14 15:16:39 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.36 2006/03/16 16:50:03 dawes Exp $ */
 
 #include "fb.h"
 #include "mibank.h"
@@ -85,7 +85,7 @@ static void	CYRIXIdentify(int flags);
 static Bool	CYRIXProbe(DriverPtr drv, int flags);
 static Bool	CYRIXPreInit(ScrnInfoPtr pScrn, int flags);
 static Bool	CYRIXScreenInit(int Index, ScreenPtr pScreen, int argc,
-			      char **argv);
+			      const char **argv);
 static Bool	CYRIXEnterVT(int scrnIndex, int flags);
 static void	CYRIXLeaveVT(int scrnIndex, int flags);
 static Bool	CYRIXCloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -1133,7 +1133,7 @@ static void CYRIXRestorePalette(ScrnInfoPtr pScrn)
 /* This gets called at the start of each server generation */
 
 static Bool
-CYRIXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
+CYRIXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
 {
     /* The vgaHW references will disappear one day */
     ScrnInfoPtr pScrn;

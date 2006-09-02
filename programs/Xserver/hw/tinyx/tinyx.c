@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/tinyx/tinyx.c,v 1.1tsi Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/tinyx/tinyx.c,v 1.2 2006/02/19 15:51:21 tsi Exp $ 
  *
  * Copyright © 1999 Keith Packard
  *
@@ -394,8 +394,8 @@ ddxGiveUp ()
 Bool	kdDumbDriver;
 Bool	kdSoftCursor;
 
-static char *
-KdParseFindNext (char *cur, char *delim, char *save, char *last)
+static const char *
+KdParseFindNext (const char *cur, const char *delim, char *save, char *last)
 {
     while (*cur && !strchr (delim, *cur))
     {
@@ -432,7 +432,7 @@ KdSubRotation (Rotation a, Rotation b)
 
 void
 KdParseScreen (KdScreenInfo *screen,
-	       char	    *arg)
+	       const char    *arg)
 {
     char    delim;
     char    save[1024];
@@ -586,7 +586,7 @@ KdSaveString (char *str)
  */
 
 void
-KdParseMouse (char *arg)
+KdParseMouse (const char *arg)
 {
     char	save[1024];
     char	delim;
@@ -662,7 +662,7 @@ KdParseMouse (char *arg)
 }
 
 static void
-KdParseRgba (char *rgba)
+KdParseRgba (const char *rgba)
 {
     if (!strcmp (rgba, "rgb"))
 	kdSubpixelOrder = SubPixelHorizontalRGB;
@@ -679,7 +679,7 @@ KdParseRgba (char *rgba)
 }
 
 int
-KdProcessArgument (int argc, char **argv, int i)
+KdProcessArgument (int argc, const char **argv, int i)
 {
     KdCardInfo	    *card;
     KdScreenInfo    *screen;
@@ -746,7 +746,7 @@ KdProcessArgument (int argc, char **argv, int i)
     {
 	if ((i+1) < argc)
 	{
-	    char    *x = argv[i+1];
+	    const char    *x = argv[i+1];
 	    char    *y = strchr (x, ',');
 	    if (x)
 		kdOrigin.x = atoi (x);
@@ -997,7 +997,7 @@ KdSetSubpixelOrder (ScreenPtr pScreen, Rotation randr)
 static KdScreenInfo *kdCurrentScreen;
 
 Bool
-KdScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
+KdScreenInit(int index, ScreenPtr pScreen, int argc, const char **argv)
 {
     KdScreenInfo	*screen = kdCurrentScreen;
     KdCardInfo		*card = screen->card;
@@ -1192,7 +1192,7 @@ void
 KdInitScreen (ScreenInfo    *pScreenInfo,
 	      KdScreenInfo  *screen,
 	      int	    argc,
-	      char	    **argv)
+	      const char	    **argv)
 {
     KdCardInfo	*card = screen->card;
     
@@ -1274,7 +1274,7 @@ static void
 KdAddScreen (ScreenInfo	    *pScreenInfo,
 	     KdScreenInfo   *screen,
 	     int	    argc,
-	     char	    **argv)
+	     const char	    **argv)
 {
     int	    i;
     /*
@@ -1328,7 +1328,7 @@ KdDepthToFb (ScreenPtr	pScreen, int depth)
 void
 KdInitOutput (ScreenInfo    *pScreenInfo,
 	      int	    argc,
-	      char	    **argv)
+	      const char	    **argv)
 {
     KdCardInfo	    *card;
     KdScreenInfo    *screen;

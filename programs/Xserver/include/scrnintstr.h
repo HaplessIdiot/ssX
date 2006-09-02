@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/scrnintstr.h,v 1.13 2003/07/16 01:38:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/scrnintstr.h,v 1.14 2006/01/09 15:00:34 dawes Exp $ */
 
 #ifndef SCREENINTSTRUCT_H
 #define SCREENINTSTRUCT_H
@@ -726,7 +726,7 @@ extern ScreenInfo screenInfo;
 
 extern void InitOutput(
     ScreenInfo 	* /*pScreenInfo*/,
-    int     	/*argc*/,
-    char    	** /*argv*/);
+    const int     	/*argc*/,
+    const char    	** /*argv*/);
 
 #endif /* SCREENINTSTRUCT_H */

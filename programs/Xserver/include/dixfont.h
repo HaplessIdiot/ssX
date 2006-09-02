@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/dixfont.h,v 3.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dixfont.h,v 3.9 2005/10/14 15:17:18 tsi Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -38,7 +38,7 @@ extern FPEFunctions *fpe_functions;
 
 extern int FontToXError(int /*err*/);
 
-extern Bool SetDefaultFont(char * /*defaultfontname*/);
+extern Bool SetDefaultFont(const char * /*defaultfontname*/);
 
 extern void QueueFontWakeup(FontPathElementPtr /*fpe*/);
 
@@ -52,7 +52,7 @@ extern int OpenFont(ClientPtr /*client*/,
 		    XID /*fid*/,
 		    Mask /*flags*/,
 		    unsigned /*lenfname*/,
-		    char * /*pfontname*/);
+		    const char * /*pfontname*/);
 
 extern int CloseFont(pointer /*pfont*/,
 		     XID /*fid*/);
@@ -104,7 +104,7 @@ extern int SetFontPath(ClientPtr /*client*/,
 		       unsigned char * /*paths*/,
 		       int * /*error*/);
 
-extern int SetDefaultFontPath(char * /*path*/);
+extern int SetDefaultFontPath(const char * /*path*/);
 
 extern unsigned char *GetFontPath(int * /*count*/,
 				  int * /*length*/);
@@ -145,7 +145,7 @@ extern Bool QueryTextExtents(FontPtr     /*pFont*/,
 			     unsigned char * /*chars*/,
 			     ExtentInfoPtr /*info*/);
 
-extern Bool ParseGlyphCachingMode(char * /*str*/);
+extern Bool ParseGlyphCachingMode(const char * /*str*/);
 
 extern void InitGlyphCaching(void);
 

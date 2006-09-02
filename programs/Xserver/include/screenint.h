@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/screenint.h,v 1.7 2005/03/28 02:51:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/screenint.h,v 1.8 2005/04/01 14:27:02 tsi Exp $ */
 #ifndef SCREENINT_H
 #define SCREENINT_H
 
@@ -80,13 +80,13 @@ extern Bool AllocateGCPrivate(
 typedef Bool (*ScrnInitProcPtr)(
     int /* index */,
     ScreenPtr /* pScreen */,
-    int /* argc */,
-    char ** /* argv */);
+    const int /* argc */,
+    const char ** /* argv */);
 
 extern int AddScreen(
     ScrnInitProcPtr /* pfnInit */,
-    int /* argc */,
-    char** /* argv */);
+    const int /* argc */,
+    const char** /* argv */);
 
 #ifdef PIXPRIV
 

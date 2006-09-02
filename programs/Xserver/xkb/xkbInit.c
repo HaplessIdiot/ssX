@@ -23,7 +23,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.35tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.36 2005/10/14 15:17:28 tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -112,11 +112,11 @@ typedef struct	_SrvXkmInfo {
 #define	XKB_DFLT_RULES_PROP	True
 #endif
 
-char	*		XkbBaseDirectory=	XKB_BASE_DIRECTORY;
+const char	*	XkbBaseDirectory=	XKB_BASE_DIRECTORY;
 char	*		XkbInitialMap=		NULL;
 int	 		XkbWantAccessX=		0;	
 static XkbFileInfo *	_XkbInitFileInfo=	NULL;
-char *			XkbDB=			NULL;
+const char *		XkbDB=			NULL;
 int			XkbAutoLoad=		1;
 
 static Bool		rulesDefined=		False;
@@ -890,7 +890,7 @@ extern unsigned int	XkbDfltAccessXFeedback;
 extern unsigned char	XkbDfltAccessXOptions;
 
 int
-XkbProcessArguments(int argc,char *argv[],int i)
+XkbProcessArguments(int argc,const char *argv[],int i)
 {
     if (strcmp(argv[i],"-kb")==0) {
 	noXkbExtension= True;
@@ -925,7 +925,7 @@ XkbProcessArguments(int argc,char *argv[],int i)
     else if (strncmp(argv[i], "-xkbmap", 7) == 0) {
 	if(++i < argc) {
 	    if (strlen(argv[i]) < PATH_MAX) {
-		XkbInitialMap= argv[i];
+		XkbInitialMap= xstrdup(argv[i]);
 		return 2;
 	    } else {
 		LogMessage(X_ERROR, "-xkbmap pathname too long\n");

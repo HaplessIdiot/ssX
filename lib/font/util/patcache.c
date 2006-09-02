@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/font/util/patcache.c,v 3.5tsi Exp $ */
+/* $XFree86: xc/lib/font/util/patcache.c,v 3.6 2005/10/14 15:16:06 tsi Exp $ */
 /*
 
 Copyright 1991, 1998  The Open Group
@@ -126,7 +126,7 @@ Hash (const char *string, int len)
 /* add entry */
 void
 CacheFontPattern (FontPatternCachePtr cache, 
-		  char *pattern, 
+		  const char *pattern, 
 		  int patlen, 
 		  FontPtr pFont)
 {
@@ -172,7 +172,7 @@ CacheFontPattern (FontPatternCachePtr cache,
 /* find matching entry */
 FontPtr
 FindCachedFontPattern (FontPatternCachePtr cache, 
-		       char *pattern, 
+		       const char *pattern, 
 		       int patlen)
 {
     int				hash;

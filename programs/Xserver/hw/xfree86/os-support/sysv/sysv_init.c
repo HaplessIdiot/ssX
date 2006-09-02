@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_init.c,v 3.6 2005/10/14 15:17:08 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_init.c,v 3.7 2006/01/09 15:00:25 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -203,7 +203,7 @@ xf86CloseConsole()
 }
 
 int
-xf86ProcessArgument(int argc, char *argv[], int i)
+xf86ProcessArgument(int argc, const char *argv[], int i)
 {
 	/*
 	 * Keep server from detaching from controlling tty.  This is useful 

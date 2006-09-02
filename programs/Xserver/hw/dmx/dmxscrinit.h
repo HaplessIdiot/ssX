@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxscrinit.h,v 1.1 2004/06/30 20:21:39 martin Exp $ */
 /*
  * Copyright 2001-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -44,7 +44,7 @@
 /** Private index.  \see dmxscrrinit.c \see input/dmxconcole.c */
 extern int dmxScreenPrivateIndex;
 
-extern Bool dmxScreenInit(int idx, ScreenPtr pScreen, int argc, char *argv[]);
+extern Bool dmxScreenInit(int idx, ScreenPtr pScreen, int argc, const char *argv[]);
 
 extern void dmxBEScreenInit(int idx, ScreenPtr pScreen);
 extern void dmxBECloseScreen(ScreenPtr pScreen);

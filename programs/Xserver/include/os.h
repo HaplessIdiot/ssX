@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.68 2006/03/16 21:44:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.69 2006/08/09 20:53:16 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -292,7 +292,7 @@ extern SIGVAL AbortServer(int /*sig*/) NORET;
 
 extern void UseMsg(void);
 
-extern void ProcessCommandLine(int /*argc*/, char* /*argv*/[]);
+extern void ProcessCommandLine(const int /*argc*/, const char* /*argv*/[]);
 
 extern int set_font_authorizations(
     char ** /* authorizations */, 
@@ -358,10 +358,10 @@ void OsBlockSignals (void);
 void OsReleaseSignals (void);
 
 #if !defined(WIN32) && !defined(__UNIXOS2__)
-extern int System(char *);
-extern pointer Popen(char *, char *);
+extern int System(const char *);
+extern pointer Popen(const char *, const char *);
 extern int Pclose(pointer);
-extern pointer Fopen(char *, char *);
+extern pointer Fopen(const char *, const char *);
 extern int Fclose(pointer);
 #else
 #define System(a) system(a)
@@ -371,7 +371,7 @@ extern int Fclose(pointer);
 #define Fclose(a) fclose(a)
 #endif
 
-extern void CheckUserParameters(int argc, char **argv, char **envp);
+extern void CheckUserParameters(const int argc, const char **argv, char **envp);
 extern void CheckUserAuthorization(void);
 
 extern int AddHost(
@@ -415,7 +415,7 @@ extern int GetAccessControl(void);
 
 extern void AddLocalHosts(void);
 
-extern void ResetHosts(char *display);
+extern void ResetHosts(const char *display);
 
 extern void EnableLocalHost(void);
 
@@ -427,7 +427,7 @@ extern void DefineSelf(int /*fd*/);
 
 extern void AugmentSelf(pointer /*from*/, int /*len*/);
 
-extern void InitAuthorization(char * /*filename*/);
+extern void InitAuthorization(const char * /*filename*/);
 
 /* extern int LoadAuthorization(void); */
 
@@ -481,7 +481,7 @@ extern XID GenerateAuthorization(
 extern void ExpandCommandLine(int * /*pargc*/, char *** /*pargv*/);
 #endif
 
-extern int ddxProcessArgument(int /*argc*/, char * /*argv*/ [], int /*i*/);
+extern int ddxProcessArgument(int /*argc*/, const char * /*argv*/ [], int /*i*/);
 
 extern void ddxUseMsg(void);
 
@@ -628,6 +628,7 @@ extern int Xasprintf(char **ret, const char *format, ...)
 #define printf xf86printf
 #endif
 extern int getArgc(void);
+extern const char **getArgvp(void);
 extern const char *getArgv(int i);
 
 #endif /* OS_H */

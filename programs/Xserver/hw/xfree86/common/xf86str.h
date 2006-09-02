@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.108 2006/03/02 03:00:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.109 2006/03/16 16:49:56 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
@@ -939,7 +939,8 @@ typedef struct _ScrnInfoRec *ScrnInfoPtr;
 
 typedef Bool xf86ProbeProc                (DriverPtr, int);
 typedef Bool xf86PreInitProc              (ScrnInfoPtr, int);
-typedef Bool xf86ScreenInitProc           (int, ScreenPtr, int, char**);
+typedef Bool xf86ScreenInitProc           (int, ScreenPtr, const int,
+					   const char**);
 typedef Bool xf86SwitchModeProc           (int, DisplayModePtr, int);
 typedef void xf86AdjustFrameProc          (int, int, int, int);
 typedef Bool xf86EnterVTProc              (int, int);

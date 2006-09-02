@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.47 2006/03/02 03:00:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.48 2006/06/28 03:20:27 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -287,15 +287,15 @@ const char *xf86VisualNames[] = {
 };
 
 /* Parameters set only from the command line */
-char *xf86ServerName = "no-name";
+const char *xf86ServerName = "no-name";
 Bool xf86sFlag = FALSE;
 Bool xf86bsEnableFlag = FALSE;
 Bool xf86bsDisableFlag = FALSE;
 Bool xf86silkenMouseDisableFlag = FALSE;
-char *xf86LayoutName = NULL;
-char *xf86ScreenName = NULL;
-char *xf86PointerName = NULL;
-char *xf86KeyboardName = NULL;
+const char *xf86LayoutName = NULL;
+const char *xf86ScreenName = NULL;
+const char *xf86PointerName = NULL;
+const char *xf86KeyboardName = NULL;
 Bool xf86ProbeOnly = FALSE;
 int xf86Verbose = DEFAULT_VERBOSE;
 int xf86LogVerbose = DEFAULT_LOG_VERBOSE;

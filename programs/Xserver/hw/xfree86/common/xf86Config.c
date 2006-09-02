@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.291 2006/02/17 18:17:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.292 2006/03/16 16:49:55 dawes Exp $ */
 
 
 /*
@@ -1455,7 +1455,8 @@ configFiles(ConfigHandle handle, const XF86ConfFilesRec *filesConf,
 	fp = xf86ValidateFontPath(xf86FilePaths->fontPath);
 	xfree(xf86FilePaths->fontPath);
 	if (fp && *fp) {
-	    xf86FilePaths->fontPath = defaultFontPath = fp;
+	    xf86FilePaths->fontPath = fp;
+	    defaultFontPath = fp;
 	} else {
 	    xf86Msg(X_WARNING, "FontPath is completely invalid.  "
 			       "Using compiled-in default.\n");

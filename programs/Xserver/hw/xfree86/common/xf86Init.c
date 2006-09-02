@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.245 2006/06/28 03:20:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.246 2006/08/09 20:53:15 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -324,7 +324,7 @@ PostConfigInit(void)
 }
 
 void
-InitOutput(ScreenInfo * pScreenInfo, int argc, char **argv)
+InitOutput(ScreenInfo * pScreenInfo, int argc, const char **argv)
 {
     int i, j, k, scr_index;
     static unsigned long generation = 0;
@@ -1263,7 +1263,7 @@ MatchInput(IDevPtr pDev)
  */
 
 void
-InitInput(int argc, char **argv)
+InitInput(int argc, const char **argv)
 {
     int i;
     IDevPtr pDev;
@@ -1597,7 +1597,7 @@ xf86SetLogVerbosity(int verb)
 
 /* ARGSUSED */
 int
-ddxProcessArgument(int argc, char **argv, int i)
+ddxProcessArgument(int argc, const char **argv, int i)
 {
     /* Make a copy of the command line to log later. */
     if (!cmdline) {

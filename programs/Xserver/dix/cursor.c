@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/cursor.c,v 3.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/cursor.c,v 3.11 2005/10/14 15:16:21 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -405,7 +405,7 @@ AllocGlyphCursor(Font source, unsigned int sourceChar,
  *************************************************************/
 
 CursorPtr 
-CreateRootCursor(char *pfilename, unsigned int glyph)
+CreateRootCursor(const char *pfilename, unsigned int glyph)
 {
     CursorPtr 	curs;
     FontPtr 	cursorfont;

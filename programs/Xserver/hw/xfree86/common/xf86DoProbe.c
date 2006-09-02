@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoProbe.c,v 1.18tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoProbe.c,v 1.19 2005/10/14 15:16:32 tsi Exp $ */
 /*
  * Copyright (c) 1999-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -66,7 +66,7 @@
 #endif /* XFree86LOADER */
 
 void
-DoProbeArgs(int argc, char **argv, int i)
+DoProbeArgs(int argc, const char **argv, int i)
 {
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_init.c,v 3.16 2005/10/14 15:17:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_init.c,v 3.17 2006/01/09 15:00:22 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -295,7 +295,7 @@ xf86CloseConsole()
 }
 
 int
-xf86ProcessArgument(int argc, char *argv[], int i)
+xf86ProcessArgument(int argc, const char *argv[], int i)
 {
 	/*
 	 * Keep server from detaching from controlling tty.  This is useful

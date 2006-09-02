@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/globals.h,v 1.3 1999/09/25 14:38:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/globals.h,v 1.4 2000/06/28 18:21:22 tsi Exp $ */
 
 #ifndef _XSERV_GLOBAL_H_
 #define _XSERV_GLOBAL_H_
@@ -12,8 +12,8 @@ extern CARD32 defaultScreenSaverInterval;
 extern CARD32 ScreenSaverTime;
 extern CARD32 ScreenSaverInterval;
 
-extern char *defaultFontPath;
-extern char *rgbPath;
+extern const char *defaultFontPath;
+extern const char *rgbPath;
 extern int monitorResolution;
 extern Bool loadableFonts;
 extern int defaultColorVisualClass;

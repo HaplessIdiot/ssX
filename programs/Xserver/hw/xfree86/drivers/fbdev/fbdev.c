@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.49 2006/03/09 02:16:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.50 2006/03/16 16:50:04 dawes Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -51,7 +51,7 @@ static void	FBDevIdentify(int flags);
 static Bool	FBDevProbe(DriverPtr drv, int flags);
 static Bool	FBDevPreInit(ScrnInfoPtr pScrn, int flags);
 static Bool	FBDevScreenInit(int Index, ScreenPtr pScreen, int argc,
-				char **argv);
+				const char **argv);
 static Bool	FBDevCloseScreen(int scrnIndex, ScreenPtr pScreen);
 static void *	FBDevWindowLinear(ScreenPtr pScreen, CARD32 row, CARD32 offset, int mode,
 				  CARD32 *size, void *closure);
@@ -597,7 +597,7 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 }
 
 static Bool
-FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
+FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
 {
 	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
 	FBDevPtr fPtr = FBDEVPTR(pScrn);

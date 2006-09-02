@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xprint/Init.c,v 1.16tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/Init.c,v 1.17 2006/02/19 15:51:17 tsi Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -95,12 +95,12 @@ static void GenericScreenInit(
     int index,
     ScreenPtr pScreen,
     int argc,
-    char **argv);
+    const char **argv);
 static Bool InitPrintDrivers(
     int index,
     ScreenPtr pScreen,
     int argc,
-    char **argv);
+    const char **argv);
 
 /*
  * The following two defines are used to build the name "X*printers", where
@@ -324,9 +324,9 @@ typedef struct _driverMapping {
     int screenNum;
 } DriverMapEntry, *DriverMapPtr;
 
-static char *configFileName = (char *)NULL;
+static const char *configFileName = (char *)NULL;
 static Bool freeDefaultFontPath = FALSE;
-static char *origFontPath = (char *)NULL;
+static const char *origFontPath = (char *)NULL;
 
 /*
  * XprintOptions checks argv[i] to see if it is our command line
@@ -336,7 +336,7 @@ static char *origFontPath = (char *)NULL;
 int
 XprintOptions(
     int argc,
-    char **argv,
+    const char **argv,
     int i)
 {
     if(strcmp(argv[i], "-XpFile") == 0)
@@ -1227,7 +1227,7 @@ void
 PrinterInitOutput(
      ScreenInfo *pScreenInfo,
      int argc,
-     char **argv)
+     const char **argv)
 {
     PrinterDbPtr pDb, pDbEntry;
     int driverCount, i;
@@ -1400,7 +1400,7 @@ InitPrintDrivers(
     int index,
     ScreenPtr pScreen,
     int argc,
-    char **argv)
+    const char **argv)
 {
     PrinterDbPtr pDb, pDb2;
 
@@ -1456,7 +1456,7 @@ GenericScreenInit(
      int index,
      ScreenPtr pScreen,
      int argc,
-     char **argv)
+     const char **argv)
 {
     float fWidth, fHeight, maxWidth, maxHeight;
     unsigned short width, height;

@@ -96,7 +96,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/os/log.c,v 1.14 2006/03/06 16:06:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/log.c,v 1.15 2006/08/09 20:53:16 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <stdio.h>
@@ -421,13 +421,14 @@ static char *
 AuditPrefix(void)
 {
     time_t tm;
-    char *autime, *s;
+    char *autime, *a;
+    const char *s;
     char *tmpBuf;
 
     time(&tm);
     autime = ctime(&tm);
-    if ((s = strchr(autime, '\n')))
-	*s = '\0';
+    if ((a = strchr(autime, '\n')))
+	*a = '\0';
     if ((s = strrchr(argvGlobal[0], '/')))
 	s++;
     else

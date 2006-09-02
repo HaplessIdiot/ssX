@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/closestr.h,v 3.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/include/closestr.h,v 3.6 2005/10/14 15:17:18 tsi Exp $ */
 /*
 
 Copyright 1991, 1998  The Open Group
@@ -51,7 +51,7 @@ typedef struct _OFclosure {
     Bool        slept;
 
 /* XXX -- get these from request buffer instead? */
-    char       *origFontName;
+    const char       *origFontName;
     int		origFontNameLen;
     XID         fontid;
     char       *fontname;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/fonts/font.h,v 3.6 2005/10/14 15:15:54 tsi Exp $ */
+/* $XFree86: xc/include/fonts/font.h,v 3.7 2006/01/09 14:58:20 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -141,7 +141,7 @@ extern void		    EmptyFontPatternCache (
 
 extern void		    CacheFontPattern (
     FontPatternCachePtr /* cache */,
-    char * /* pattern */,
+    const char * /* pattern */,
     int /* patlen */,
     FontPtr /* pFont */
 );
@@ -151,7 +151,7 @@ extern FontResolutionPtr GetClientResolutions(
 
 extern FontPtr		    FindCachedFontPattern (
     FontPatternCachePtr /* cache */,
-    char * /* pattern */,
+    const char * /* pattern */,
     int /* patlen */
 );
 

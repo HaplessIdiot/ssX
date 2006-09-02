@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suntcx/tcx_driver.c,v 1.11 2005/02/18 02:55:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suntcx/tcx_driver.c,v 1.12 2006/03/16 16:50:17 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -39,7 +39,7 @@ static void	TCXIdentify(int flags);
 static Bool	TCXProbe(DriverPtr drv, int flags);
 static Bool	TCXPreInit(ScrnInfoPtr pScrn, int flags);
 static Bool	TCXScreenInit(int Index, ScreenPtr pScreen, int argc,
-			      char **argv);
+			      const char **argv);
 static Bool	TCXEnterVT(int scrnIndex, int flags);
 static void	TCXLeaveVT(int scrnIndex, int flags);
 static Bool	TCXCloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -466,7 +466,7 @@ TCXPreInit(ScrnInfoPtr pScrn, int flags)
 /* This gets called at the start of each server generation */
 
 static Bool
-TCXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
+TCXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
 {
     ScrnInfoPtr pScrn;
     TcxPtr pTcx;

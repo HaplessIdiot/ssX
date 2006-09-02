@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xprint/raster/Raster.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/raster/Raster.c,v 1.13 2005/10/14 15:16:16 tsi Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -181,7 +181,7 @@ InitializeRasterDriver(
      int ndx,
      ScreenPtr pScreen,
      int argc,
-     char **argv)
+     const char **argv)
 {
     int xRes, yRes;
     int maxRes, maxDim, numBytes;

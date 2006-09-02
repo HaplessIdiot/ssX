@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/cursor.h,v 1.7 2003/04/27 21:31:04 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/include/cursor.h,v 1.8 2006/01/09 15:00:33 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -112,7 +112,7 @@ extern int AllocGlyphCursor(
     ClientPtr /*client*/);
 
 extern CursorPtr CreateRootCursor(
-    char* /*pfilename*/,
+    const char* /*pfilename*/,
     unsigned int /*glyph*/);
 
 extern int ServerBitsFromGlyph(

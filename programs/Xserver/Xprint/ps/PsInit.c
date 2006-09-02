@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsInit.c,v 1.15tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsInit.c,v 1.16 2006/02/19 15:51:18 tsi Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -110,7 +110,7 @@ InitializePsDriver(ndx, pScreen, argc, argv)
   int         ndx;
   ScreenPtr   pScreen;
   int         argc;
-  char      **argv;
+  const char      **argv;
 {
 #if 0
   PsScreenPrivPtr   pPriv;

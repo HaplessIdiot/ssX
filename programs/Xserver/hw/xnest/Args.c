@@ -11,7 +11,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Args.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Args.c,v 1.4 2005/10/14 15:17:14 tsi Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xproto.h>
@@ -26,7 +26,7 @@ is" without express or implied warranty.
 #include "Display.h"
 #include "Args.h"
 
-char *xnestDisplayName = NULL;        
+const char *xnestDisplayName = NULL;        
 Bool xnestSynchronize = False;
 Bool xnestFullGeneration = False;
 int xnestDefaultClass;                
@@ -41,14 +41,14 @@ unsigned int xnestHeight;
 int xnestUserGeometry = 0;
 int xnestBorderWidth; 
 Bool xnestUserBorderWidth = False;
-char *xnestWindowName = NULL;        
+const char *xnestWindowName = NULL;        
 int xnestNumScreens = 0;
 Bool xnestDoDirectColormaps = False;
 Window xnestParentWindow = 0;
 Bool xnestInputEnabled = True;
 
 int
-ddxProcessArgument (int argc, char *argv[], int i)
+ddxProcessArgument (int argc, const char *argv[], int i)
 {
   if (!strcmp(argv[i], "-display")) {
     if (++i < argc) {

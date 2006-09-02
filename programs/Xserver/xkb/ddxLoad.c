@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.36tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.37 2005/10/14 15:17:28 tsi Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -369,7 +369,7 @@ int i;
 }
 
 FILE *
-XkbDDXOpenConfigFile(char *mapName,char *fileNameRtrn,int fileNameRtrnLen)
+XkbDDXOpenConfigFile(const char *mapName,char *fileNameRtrn,int fileNameRtrnLen)
 {
 char	buf[PATH_MAX],xkm_output_dir[PATH_MAX];
 FILE *	file;

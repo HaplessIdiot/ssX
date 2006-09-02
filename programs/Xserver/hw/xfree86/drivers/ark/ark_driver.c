@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.24 2004/11/26 13:44:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.25 2006/03/16 16:49:58 dawes Exp $ */
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
  *
@@ -57,7 +57,7 @@ static Bool ARKEnterVT(int scrnIndex, int flags);
 static void ARKLeaveVT(int scrnIndex, int flags);
 static void ARKSave(ScrnInfoPtr pScrn);
 static Bool ARKScreenInit(int scrnIndex, ScreenPtr pScreen, int argc,
-			  char **argv);
+			  const char **argv);
 static Bool ARKMapMem(ScrnInfoPtr pScrn);
 static void ARKUnmapMem(ScrnInfoPtr pScrn);
 static Bool ARKModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
@@ -504,7 +504,7 @@ static Bool ARKPreInit(ScrnInfoPtr pScrn, int flags)
 }
 
 static Bool ARKScreenInit(int scrnIndex, ScreenPtr pScreen, int argc,
-			  char **argv)
+			  const char **argv)
 {
 	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
 	ARKPtr pARK = ARKPTR(pScrn);

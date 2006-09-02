@@ -48,7 +48,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.109 2006/03/06 16:06:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.110 2006/03/21 03:56:27 dawes Exp $ */
 /*
  * Copyright (c) 1996-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -215,7 +215,7 @@ long Memory_fail = 0;
 int userdefinedfontpath = 0;
 #endif /* sgi */
 
-char *dev_tty_from_init = NULL;		/* since we need to parse it anyway */
+const char *dev_tty_from_init = NULL;	/* since we need to parse it anyway */
 
 extern char dispatchExceptionAtReset;
 
@@ -673,7 +673,7 @@ VerifyDisplayName(const char *d)
  * argc or any of the strings pointed to by argv.
  */
 void
-ProcessCommandLine(int argc, char *argv[])
+ProcessCommandLine(int argc, const char *argv[])
 {
     int i, skip;
 
@@ -1696,7 +1696,7 @@ OsReleaseSignals (void)
  */
 
 int
-System(char *command)
+System(const char *command)
 {
     int pid, p;
 #ifdef SIGCHLD
@@ -1744,7 +1744,7 @@ static struct pid {
 } *pidlist;
 
 pointer
-Popen(char *command, char *type)
+Popen(const char *command, const char *type)
 {
     struct pid *cur;
     FILE *iop;
@@ -1818,7 +1818,7 @@ Popen(char *command, char *type)
 
 /* fopen that drops privileges */
 pointer
-Fopen(char *file, char *type)
+Fopen(const char *file, const char *type)
 {
     FILE *iop;
 #ifndef HAS_SAVED_IDS_AND_SETEUID
@@ -2031,11 +2031,11 @@ enum BadCode {
       "the \"super user\" (root).\n"
 
 void
-CheckUserParameters(int argc, char **argv, char **envp)
+CheckUserParameters(int argc, const char **argv, char **envp)
 {
     enum BadCode bad = NotBad;
     int i = 0, j;
-    char *a, *e = NULL;
+    const char *a, *e = NULL;
 #if defined(__QNX__) && !defined(__QNXNTO__)
     char cmd_name[64];
 #endif
@@ -2224,6 +2224,12 @@ int
 getArgc()
 {
     return argcGlobal;
+}
+
+const char **
+getArgvp()
+{
+    return argvGlobal;
 }
 
 const char *

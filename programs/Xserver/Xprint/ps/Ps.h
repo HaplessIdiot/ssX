@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xprint/ps/Ps.h,v 1.14tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/Ps.h,v 1.15 2005/10/14 15:16:16 tsi Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -289,7 +289,7 @@ typedef struct
  */
 
 extern Bool InitializePsDriver(int ndx, ScreenPtr pScreen, int argc,
-    char **argv);
+    const char **argv);
 extern XpContextPtr PsGetContextFromWindow(WindowPtr win);
 
 /*

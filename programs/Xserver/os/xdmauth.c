@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/xdmauth.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmauth.c,v 1.12 2005/10/14 15:17:26 tsi Exp $ */
 /*
 
 Copyright 1988, 1998  The Open Group
@@ -110,7 +110,7 @@ XdmAuthenticationAddAuth (unsigned int name_len, char *name,
 		 'A' <= c && c <= 'F' ? c - 'A' + 10 : -1)
 
 static int
-HexToBinary (char *in, char *out, int len)
+HexToBinary (const char *in, char *out, int len)
 {
     int	    top, bottom;
 
@@ -133,7 +133,7 @@ HexToBinary (char *in, char *out, int len)
 }
 
 void
-XdmAuthenticationInit (char *cookie, int cookie_len)
+XdmAuthenticationInit (const char *cookie, int cookie_len)
 {
     bzero (privateKey.data, 8);
     if (!strncmp (cookie, "0x", 2) || !strncmp (cookie, "0X", 2))

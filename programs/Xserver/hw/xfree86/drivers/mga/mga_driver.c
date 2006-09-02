@@ -44,7 +44,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.254 2005/08/28 20:04:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.255 2006/03/16 16:50:09 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -108,7 +108,7 @@ static void	MGAIdentify(int flags);
 static Bool	MGAProbe(DriverPtr drv, int flags);
 static Bool	MGAPreInit(ScrnInfoPtr pScrn, int flags);
 static Bool	MGAScreenInit(int Index, ScreenPtr pScreen, int argc,
-			      char **argv);
+			      const char **argv);
 static Bool	MGAEnterVT(int scrnIndex, int flags);
 static Bool	MGAEnterVTFBDev(int scrnIndex, int flags);
 static void	MGALeaveVT(int scrnIndex, int flags);
@@ -3066,7 +3066,7 @@ MGACrtc2FillStrip(ScrnInfoPtr pScrn)
 /* This gets called at the start of each server generation */
 
 static Bool
-MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
+MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
 {
     ScrnInfoPtr pScrn;
     vgaHWPtr hwp;

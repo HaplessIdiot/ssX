@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.92 2006/02/28 22:32:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.93 2006/03/07 01:03:40 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -125,10 +125,10 @@ extern Bool xf86sFlag;
 extern Bool xf86bsEnableFlag;
 extern Bool xf86bsDisableFlag;
 extern Bool xf86silkenMouseDisableFlag;
-extern char *xf86LayoutName;
-extern char *xf86ScreenName;
-extern char *xf86PointerName;
-extern char *xf86KeyboardName;
+extern const char *xf86LayoutName;
+extern const char *xf86ScreenName;
+extern const char *xf86PointerName;
+extern const char *xf86KeyboardName;
 #ifdef KEEPBPP
 extern int xf86Bpp;
 #endif
@@ -139,7 +139,7 @@ extern rgb xf86Weight;
 extern Bool xf86FlipPixels;
 extern Bool xf86BestRefresh;
 extern Gamma xf86Gamma;
-extern char *xf86ServerName;
+extern const char *xf86ServerName;
 extern Bool xf86ShowUnresolved;
 
 /* Other parameters */
@@ -234,10 +234,10 @@ extern DisplayModeRec xf86DefaultModes [];
 
 /* xf86DoScanPci.c */
 
-void DoScanPci(int argc, char **argv, int i);
+void DoScanPci(int argc, const char **argv, int i);
 
 /* xf86DoProbe.c */
-void DoProbeArgs(int argc, char **argv, int i);
+void DoProbeArgs(int argc, const char **argv, int i);
 void DoProbe(void);
 void DoConfigure(void);
 

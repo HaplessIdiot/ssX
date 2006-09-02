@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoScanPci.c,v 1.18 2005/10/14 15:16:32 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoScanPci.c,v 1.19 2006/03/02 03:00:36 dawes Exp $ */
 /*
  * Copyright (c) 1999-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -65,7 +65,7 @@
 #include "xf86ScanPci.h"
 
 
-void DoScanPci(int argc, char **argv, int i)
+void DoScanPci(int argc, const char **argv, int i)
 {
   int j,skip,globalVerbose,scanpciVerbose;
   ScanPciSetupProcPtr PciSetup;

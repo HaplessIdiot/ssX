@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.57 2003/10/07 23:14:54 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.58 2005/09/22 12:32:32 alanh Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -221,7 +221,7 @@ extern Bool xf86VTSwitchPending(void);
 extern Bool xf86VTSwitchAway(void);
 extern Bool xf86VTSwitchTo(void);
 extern void xf86VTRequest(int sig);
-extern int xf86ProcessArgument(int, char **, int);
+extern int xf86ProcessArgument(int, const char **, int);
 extern void xf86UseMsg(void);
 extern void xf86SetKbdLeds(int);
 extern int xf86GetKbdLeds(void);

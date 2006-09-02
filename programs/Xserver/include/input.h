@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/include/input.h,v 3.8 2003/04/27 21:31:04 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/include/input.h,v 3.9 2006/01/09 15:00:33 dawes Exp $ */
 
 #ifndef INPUT_H
 #define INPUT_H
@@ -369,7 +369,7 @@ extern Bool LegalModifier(
 extern void ProcessInputEvents(void);
 
 extern void InitInput(
-    int  /*argc*/,
-    char ** /*argv*/);
+    const int  /*argc*/,
+    const char ** /*argv*/);
 
 #endif /* INPUT_H */

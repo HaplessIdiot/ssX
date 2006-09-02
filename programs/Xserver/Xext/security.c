@@ -69,7 +69,7 @@ in this Software without prior written authorization from The Open Group.
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.19tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.20 2005/10/14 15:16:11 tsi Exp $ */
 
 #include "dixstruct.h"
 #include "extnsionst.h"
@@ -1333,7 +1333,7 @@ typedef struct _PropertyAccessRec {
 
 static PropertyAccessPtr PropertyAccessList = NULL;
 static char SecurityDefaultAction = SecurityErrorOperation;
-static char *SecurityPolicyFile = DEFAULTPOLICYFILE;
+static const char *SecurityPolicyFile = DEFAULTPOLICYFILE;
 static ATOM SecurityMaxPropertyName = 0;
 
 static char *SecurityKeywords[] = {
@@ -1912,7 +1912,7 @@ SecurityResetProc(ExtensionEntry *extEntry)
 
 
 int
-XSecurityOptions(int argc, char **argv, int i)
+XSecurityOptions(int argc, const char **argv, int i)
 {
     if (strcmp(argv[i], "-sp") == 0)
     {

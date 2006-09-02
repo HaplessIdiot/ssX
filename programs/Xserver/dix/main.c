@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.51 2006/06/28 02:56:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.52 2006/08/09 20:53:13 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -228,7 +228,7 @@ static int indexForScanlinePad[ 65 ] = {
 #endif
 
 int
-main(int argc, char *argv[], char *envp[])
+main(int argc, const char *argv[], char *envp[])
 {
     int		i, j, k, error;
     char	*xauthfile;
@@ -656,7 +656,7 @@ with its screen number, a pointer to its ScreenRec, argc, and argv.
 */
 
 int
-AddScreen(ScrnInitProcPtr pfnInit, int argc, char **argv)
+AddScreen(ScrnInitProcPtr pfnInit, int argc, const char **argv)
 {
 
     int i;

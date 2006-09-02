@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/dgux/dgux_init.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/dgux/dgux_init.c,v 1.3 2005/10/14 15:17:02 tsi Exp $ */
 /*
  * INTEL DG/UX RELEASE 4.20 MU03
  * Copyright 1997 Takis Psarogiannakopoulos Cambridge,UK
@@ -144,7 +144,7 @@ void xf86CloseConsole()
 
 int xf86ProcessArgument(argc, argv, i)
 int argc;
-char *argv[];
+const char *argv[];
 int i;
 {
 	if (!strcmp(argv[i], "-keeptty"))

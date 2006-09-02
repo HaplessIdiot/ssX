@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.21 2003/08/23 15:03:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.22 2006/03/16 16:50:09 dawes Exp $ */
 
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
@@ -73,7 +73,7 @@ static void IMSTTLeaveVT(int scrnIndex, int flags);
 static void IMSTTSave(ScrnInfoPtr pScrn);
 #endif
 static Bool IMSTTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc,
-			    char **argv);
+			    const char **argv);
 #if 0
 static int IMSTTInternalScreenInit(int scrnIndex, ScreenPtr pScreen);
 static ModeStatus IMSTTValidMode(int index, DisplayModePtr mode,
@@ -659,7 +659,7 @@ static void IMSTTGetVideoMemSize(ScrnInfoPtr pScrn)
 
 
 static Bool IMSTTScreenInit(int scrnIndex, ScreenPtr pScreen,
-			    int argc, char **argv)
+			    int argc, const char **argv)
 {
 	ScrnInfoPtr pScrn;
 	IMSTTPtr iptr;

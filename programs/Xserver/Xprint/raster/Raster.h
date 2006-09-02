@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xprint/raster/Raster.h,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/raster/Raster.h,v 1.5 2005/10/14 15:16:16 tsi Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -109,6 +109,6 @@ typedef struct {
 extern XpValidatePoolsRec RasterValidatePoolsRec;
 
 extern Bool InitializeRasterDriver(int ndx, ScreenPtr pScreen, int argc,
-				   char **argv);
+				   const char **argv);
 
 #endif  /* _RASTER_H_ */

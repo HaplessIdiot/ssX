@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/vesa/vesainit.c,v 1.8 2001/10/12 06:33:12 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/vesa/vesainit.c,v 1.1 2004/06/02 22:43:03 dawes Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -100,26 +100,26 @@ const KdCardFuncs vesaFuncs = {
 };
 
 void
-InitCard(char *name)
+InitCard(const char *name)
 {
     KdCardAttr attr;
     KdCardInfoAdd((KdCardFuncs *) &vesaFuncs, &attr, 0);
 }
 
 void
-InitOutput (ScreenInfo *pScreenInfo, int argc, char **argv)
+InitOutput (ScreenInfo *pScreenInfo, int argc, const char **argv)
 {
     KdInitOutput (pScreenInfo, argc, argv);
 }
 
 void
-InitInput (int argc, char **argv)
+InitInput (int argc, const char **argv)
 {
     KdInitInput(&LinuxMouseFuncs, &LinuxKeyboardFuncs);
 }
 
 int
-ddxProcessArgument (int argc, char **argv, int i)
+ddxProcessArgument (int argc, const char **argv, int i)
 {
     int	ret;
     

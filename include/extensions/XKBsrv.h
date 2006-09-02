@@ -23,7 +23,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/include/extensions/XKBsrv.h,v 3.23 2003/11/17 22:20:02 dawes Exp $ */
+/* $XFree86: xc/include/extensions/XKBsrv.h,v 3.24 2006/01/09 14:58:17 dawes Exp $ */
 
 #ifndef _XKBSRV_H_
 #define	_XKBSRV_H_
@@ -242,7 +242,7 @@ extern int	XkbReqCode;
 extern int	XkbEventBase;
 extern int	XkbKeyboardErrorCode;
 extern int	XkbDisableLockActions;
-extern char *	XkbBaseDirectory;
+extern const char *	XkbBaseDirectory;
 extern char *	XkbInitialMap;
 extern int	_XkbClientMajor;
 extern int	_XkbClientMinor;
@@ -318,7 +318,7 @@ extern void XkbUseMsg(
 
 extern int XkbProcessArguments(
     int				/* argc */,
-    char **			/* argv */,
+    const char **		/* argv */,
     int				/* i */
 );
 
@@ -1114,9 +1114,9 @@ extern	Bool XkbDDXNamesFromRules(
 );
 
 extern	FILE *XkbDDXOpenConfigFile(
-	char *	/* mapName */,
-	char *	/* fileNameRtrn */,
-	int	/* fileNameRtrnLen */
+	const char *	/* mapName */,
+	char *		/* fileNameRtrn */,
+	int		/* fileNameRtrnLen */
 );
 
 extern	Bool XkbDDXApplyConfig(

@@ -22,7 +22,7 @@
  */
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_init.c,v 3.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_init.c,v 3.4 2005/10/14 15:17:04 tsi Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xmd.h>
@@ -165,7 +165,7 @@ xf86CloseConsole()
 }
 
 int
-xf86ProcessArgument(int argc, char *argv[], int i)
+xf86ProcessArgument(int argc, const char *argv[], int i)
 {
 	if ((argv[i][0] == 'v') && (argv[i][1] == 't'))
 	{
