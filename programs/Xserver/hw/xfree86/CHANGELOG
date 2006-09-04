@@ -1,4 +1,6 @@
 XFree86 4.6.99.7 (xx September 2006)
+  71. Extend xwd to allow selection of a rectangular sub-region of a window to
+      dump  (Bugzilla #1671, Alexander Pohoyda).
   70. Fix infinite loops and/or segfaults that can occur when libXpm reads
       comments in image files.  This has been optimised after applying a patch
       by Matthieu Herrb.
@@ -20309,7 +20311,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3796 2006/09/02 16:44:06 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3797 2006/09/04 15:17:14 tsi Exp $
 
 
 
