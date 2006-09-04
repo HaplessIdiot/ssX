@@ -31,7 +31,7 @@
 *                                                                             *
 *  Developed by Arnaud Le Hors                                                *
 \*****************************************************************************/
-/* $XFree86: xc/extras/Xpm/lib/data.c,v 1.6 2004/11/18 21:30:51 herrb Exp $ */
+/* $XFree86: xc/extras/Xpm/lib/data.c,v 1.7tsi Exp $ */
 
 /* October 2004, source code review by Thomas Biege <thomas@suse.de> */
 
@@ -51,7 +51,6 @@ ParseComment(xpmData *data)
     if (data->type == XPMBUFFER) {
 	register char c;
 	register unsigned int n = 0;
-	unsigned int notend;
 	char *s, *s2;
 
 	s = data->Comment;
@@ -74,12 +73,15 @@ ParseComment(xpmData *data)
 	/* store comment */
 	data->Comment[0] = *s;
 	s = data->Comment;
-	notend = 1;
 	n = 0;
-	while (notend) {
+	while (1) {
 	    s2 = data->Ecmt;
 	    while (*s != *s2 && c) {
 		c = *data->cptr++;
+		if (c == '\0') {	/* unterminated comment, stop */
+		    data->cptr--;
+		    return 0;
+		}
 		if (n == XPMMAXCMTLEN - 1)  { /* forget it */
 		    s = data->Comment;
 		    n = 0;
@@ -90,6 +92,10 @@ ParseComment(xpmData *data)
 	    data->CommentLength = n;
 	    do {
 		c = *data->cptr++;
+		if (c == '\0') {
+		    data->cptr--;
+		    return 0;
+		}
 		if (n == XPMMAXCMTLEN - 1)  { /* forget it */
 		    s = data->Comment;
 		    n = 0;
@@ -97,19 +103,17 @@ ParseComment(xpmData *data)
 		*++s = c;
 		n++;
 		s2++;
-	    } while (c == *s2 && *s2 != '\0' && c);
+	    } while (c == *s2 && *s2 != '\0');
 	    if (*s2 == '\0') {
 		/* this is the end of the comment */
-		notend = 0;
 		data->cptr--;
+		return 0;
 	    }
 	}
-	return 0;
     } else {
 	FILE *file = data->stream.file;
 	register int c;
 	register unsigned int n = 0, a;
-	unsigned int notend;
 	char *s, *s2;
 
 	s = data->Comment;
@@ -134,9 +138,8 @@ ParseComment(xpmData *data)
 	/* store comment */
 	data->Comment[0] = *s;
 	s = data->Comment;
-	notend = 1;
 	n = 0;
-	while (notend) {
+	while (1) {
 	    s2 = data->Ecmt;
 	    while (*s != *s2 && c != EOF) {
 		c = Getc(data, file);
@@ -150,6 +153,9 @@ ParseComment(xpmData *data)
 	    data->CommentLength = n;
 	    do {
 		c = Getc(data, file);
+		if (c == EOF) {	/* unterminated comment, stop */
+		    return 0;
+		}
 		if (n == XPMMAXCMTLEN - 1)  { /* forget it */
 		    s = data->Comment;
 		    n = 0;
@@ -157,14 +163,13 @@ ParseComment(xpmData *data)
 		*++s = c;
 		n++;
 		s2++;
-	    } while (c == *s2 && *s2 != '\0' && c != EOF);
+	    } while (c == *s2 && *s2 != '\0');
 	    if (*s2 == '\0') {
 		/* this is the end of the comment */
-		notend = 0;
 		Ungetc(data, *s, file);
+		return 0;
 	    }
 	}
-	return 0;
     }
 }
 

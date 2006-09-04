@@ -1,4 +1,7 @@
 XFree86 4.6.99.7 (xx September 2006)
+  70. Fix infinite loops and/or segfaults that can occur when libXpm reads
+      comments in image files.  This has been optimised after applying a patch
+      by Matthieu Herrb.
   69. Make X server argv strings constant (David Dawes).
   68. Handle tinyx directories as subdirs of Xserver/hw/tinyx rather than
       of Xserver (David Dawes).
@@ -20306,7 +20309,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3795 2006/08/31 01:31:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3796 2006/09/02 16:44:06 dawes Exp $
 
 
 
