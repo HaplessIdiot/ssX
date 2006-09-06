@@ -1,4 +1,4 @@
-/* $XFree86: xc/config/util/lndir.c,v 3.20tsi Exp $ */
+/* $XFree86: xc/config/util/lndir.c,v 3.21 2006/05/16 14:57:09 tsi Exp $ */
 /* Create shadow link tree (after X11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 
@@ -26,6 +26,52 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
+/*
+ * Copyright (c) 2005-2006 by The XFree86 Project, Inc.
+ * All rights reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject
+ * to the following conditions:
+ *
+ *   1.  Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions, and the following disclaimer.
+ *
+ *   2.  Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer
+ *       in the documentation and/or other materials provided with the
+ *       distribution, and in the same place and form as other copyright,
+ *       license and disclaimer information.
+ *
+ *   3.  The end-user documentation included with the redistribution,
+ *       if any, must include the following acknowledgment: "This product
+ *       includes software developed by The XFree86 Project, Inc
+ *       (http://www.xfree86.org/) and its contributors", in the same
+ *       place and form as other third-party acknowledgments.  Alternately,
+ *       this acknowledgment may appear in the software itself, in the
+ *       same form and location as other such third-party acknowledgments.
+ *
+ *   4.  Except as contained in this notice, the name of The XFree86
+ *       Project, Inc shall not be used in advertising or otherwise to
+ *       promote the sale, use or other dealings in this Software without
+ *       prior written authorization from The XFree86 Project, Inc.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE XFREE86 PROJECT, INC OR ITS CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 /* From the original /bin/sh script:
 
@@ -73,6 +119,8 @@ struct except {
 static int silent = 0;			/* -silent */
 static int ignore_links = 0;		/* -ignorelinks */
 static int with_revinfo = 0;		/* -withrevinfo */
+static int clean = 0;			/* -clean */
+static int clean_only = 0;		/* -cleanonly */
 static int no_exceptions = 0;
 static struct except *exceptions = 0;
 
@@ -353,17 +401,119 @@ next:;
     return 0;
 }
 
+/*
+ * Recursively clean out symbolic links that point nowhere and remove
+ * empty directories.
+ *
+ * Return values:
+ *   1: directory is empty and should be removed.
+ *   0: OK, nothing else to do for this directory.
+ *  -1: error.
+ */
+static int
+cleandir(const char *dir)
+{
+    DIR *df;
+    struct dirent *dp;
+    char reldir[MAXPATHLEN + 1];
+    char symbuf[MAXPATHLEN + 1];
+    struct stat sb;
+    int empty = 1;
+
+    if (!(df = opendir("."))) {
+	msg ("%s: Cannot opendir", dir);
+	return -1;
+    }
+
+    while ((dp = readdir(df))) {
+
+	if (strcmp(dp->d_name, ".") == 0 ||
+	    strcmp(dp->d_name, "..") == 0) {
+	    continue;
+	}
+
+	/* Check for dangling links, and remove them. */
+	if (stat(dp->d_name, &sb) < 0 && errno == ENOENT) {
+	    if (strcmp(dir, ".") == 0)
+		msg("Removing dangling link: %s", dp->d_name);
+	    else
+		msg("Removing dangling link: %s/%s", dir, dp->d_name);
+	    if (unlink(dp->d_name) < 0)
+		mperror("Link removal failed");
+	    continue;
+	}
+
+#ifdef S_ISDIR
+	if (S_ISDIR(sb.st_mode))
+#else
+	if ((sb.st_mode & S_IFMT) == S_IFDIR) 
+#endif
+	{
+	    /* directory */
+	    if (readlink (dp->d_name, symbuf, sizeof(symbuf) - 1) < 0) {
+		/* Not a symlink to a directory. */
+		if (chdir (dp->d_name) < 0) {
+		    mperror (dp->d_name);
+		    continue;
+		}
+		if (strcmp(dir, ".") == 0)
+		    strcpy(reldir, dp->d_name);
+		else {
+		    if (strlen(dir) + strlen(dp->d_name) + 1 > MAXPATHLEN)
+			quit(1, "path name too long: %s/%s", dir, dp->d_name);
+		    sprintf(reldir, "%s/%s", dir, dp->d_name);
+		}
+		switch (cleandir(reldir)) {
+		case -1:
+		    return -1;
+		    break;
+		case 0:
+		    /* Directory not empty, which means curdir is not empty. */
+		    if (chdir ("..") < 0)
+			quiterr (1, "..");
+		    empty = 0;
+		    break;
+		case 1:
+		    /* Directory is empty, so remove it. */
+		    if (chdir ("..") < 0)
+			quiterr (1, "..");
+		    msg("Removing empty directory: %s", reldir);
+		    if (rmdir(dp->d_name) < 0)
+			mperror("Directory removal failed");
+		    break;
+		default:
+		    /* Never get here. */
+		    break;
+		}
+
+	    }
+	    continue;
+	}
+
+	/* A remaining entry, so this directory is not empty. */
+	empty = 0;
+    }
+    closedir (df);
+    return empty;
+}
+
 int
 main (int ac, char *av[])
 {
     char *prog_name = av[0];
     char *fn, *tn;
     struct stat fs, ts;
+    int ret = 0;
 
     while (++av, --ac) {
 	if ((strcmp(*av, "-silent") == 0) ||
 	    (strcmp(*av, "-s") == 0))
 	    silent = 1;
+	else if ((strcmp(*av, "-clean") == 0) ||
+		 (strcmp(*av, "-c") == 0))
+	    clean = 1;
+	else if ((strcmp(*av, "-cleanonly") == 0))
+	    clean_only = 1;
 	else if ((strcmp(*av, "-ignorelinks") == 0) ||
 		 (strcmp(*av, "-i") == 0))
 	    ignore_links = 1;
@@ -389,13 +539,17 @@ main (int ac, char *av[])
 	    break;
     }
 
-    if (ac < 1 || ac > 2)
-	quit (1, "usage: %s [-s] [-i] [-E] [-r] [-e <filename>] ... fromdir [todir]",
+    if ((ac < 1 && !clean_only) || ac > 2 || (clean_only && ac > 1))
+	quit (1, "usage: %s [-s] [-i] [-E] [-r] [-c] [-e <filename>] ... fromdir [todir]",
 	      prog_name);
 
-    fn = av[0];
-    if (ac == 2)
-	tn = av[1];
+    if (!clean_only) {
+	fn = av[0];
+	av++, --ac;
+    }
+
+    if (ac == 1)
+	tn = av[0];
     else
 	tn = ".";
 
@@ -411,6 +565,12 @@ main (int ac, char *av[])
     if (chdir (tn) < 0)
 	quiterr (1, tn);
 
+    if (clean_only) {
+	if (cleandir(tn) == -1)
+	    exit(1);
+	exit(0);
+    }
+
     /* from directory */
     if (stat (fn, &fs) < 0)
 	quiterr (1, fn);
@@ -421,5 +581,11 @@ main (int ac, char *av[])
 #endif
 	quit (2, "%s: Not a directory", fn);
 
-    exit (dodir (fn, &fs, &ts, 0));
+    ret = dodir (fn, &fs, &ts, 0);
+
+    if (ret == 0 && clean)
+	if (cleandir(tn) < 0)
+	    ret = 1;
+
+    exit(ret);
 }

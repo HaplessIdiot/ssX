@@ -23,7 +23,7 @@
 .\" from The Open Group.
 .\" 
 .\"
-.\" $XFree86: xc/config/util/lndir.man,v 1.7tsi Exp $
+.\" $XFree86: xc/config/util/lndir.man,v 1.8 2006/05/16 14:57:09 tsi Exp $
 .\"
 .TH LNDIR 1 __vendorversion__
 .SH NAME
@@ -78,7 +78,7 @@ never\-never land.
 .IP \-silent
 Normally \fIlndir\fP outputs the name of each subdirectory as it
 descends into it.  The \fB\-silent\fP option suppresses these status
-messages.  \fB\-silent\fP may be abbrieviated to \fB\-s\fP.
+messages.  \fB\-silent\fP may be abbreviated to \fB\-s\fP.
 .IP \-ignorelinks
 If a file in \fIfromdir\fP is a symbolic link, \fIlndir\fP will make the same
 link in \fItodir\fP rather than making a link back to the (symbolic link) entry
@@ -86,7 +86,14 @@ in \fIfromdir.\fP  The \fB\-ignorelinks\fP flag changes this behavior.  The
 link created in \fItodir\fP will point back to the corresponding (symbolic
 link) file in \fIfromdir\fP.  If the link is to a directory, this is almost
 certainly the wrong thing.  The \fB\-ignorelinks\fP option may be
-abbrieviated to \fB\-i\fP.
+abbreviated to \fB\-i\fP.
+.IP \-clean
+\fIlndir\fP will remove dangling symbolic links and empty directories in the
+shadow tree.  The \fB\-clean\fP option may be abbreviated to \fB\-c\fP.
+.IP \-cleanonly
+\fIlndir\fP will do the cleaning phase only, not creating the shadow tree.
+The \fItodir\fP argument may be provided, and defaults to the current
+directory when not provided.
 .IP \-withrevinfo
 \fIlndir\fP will normally not shadow any BitKeeper, RCS, SCCS, CVS, CVS.adm
 or .svn subdirectories.  This option causes these directories to be treated as
@@ -95,7 +102,7 @@ to \fB\-r\fP.
 .IP \-noexceptions
 By default, \fIlndir\fP does not shadow files or directories whose name is
 \&.DS_Store, or ._.DS_Store, or starts with '.#', or ends in '~'.  This option,
-which may be abbrieviated to \fB\-E\fP, causes such files to also be shadowed.
+which may be abbreviated to \fB\-E\fP, causes such files to also be shadowed.
 .IP \-except \fIname\fP
 This option adds \fIname\fP to an initially empty list of filenames in
 \fIfromdir\fP that are not to be shadowed.  \fB\-except\fP may be specified as
