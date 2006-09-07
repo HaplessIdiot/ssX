@@ -1,4 +1,6 @@
-XFree86 4.6.99.7 (xx September 2006)
+XFree86 4.6.99.8 (xx September 2006)
+
+XFree86 4.6.99.7 (7 September 2006)
   72. Add the cleandir utility's functionality to lndir (David Dawes).
   71. Extend xwd to allow selection of a rectangular sub-region of a window to
       dump  (Bugzilla #1671, Alexander Pohoyda).
@@ -20312,7 +20314,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3798 2006/09/04 15:57:54 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3799 2006/09/06 04:58:31 dawes Exp $
 
 
 
