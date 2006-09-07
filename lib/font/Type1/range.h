@@ -1,4 +1,6 @@
-/* Copyright (c) 1994-1999 Silicon Graphics, Inc. All Rights Reserved.
+/* $XFree86$ */
+/*
+ * Copyright (c) 1994-1999 Silicon Graphics, Inc. All Rights Reserved.
  *
  * The contents of this file are subject to the CID Font Code Public Licence
  * Version 1.0 (the "License"). You may not use this file except in compliance
@@ -24,6 +26,9 @@ typedef struct spacerange_code {
     unsigned int srcCodeHi;
 } spacerangecode;
 
+#define MAX_CID_SPACERANGECODES \
+    ((int)((unsigned int)(-1) / (2 * sizeof(spacerangecode))))
+
 typedef struct space_range {
     struct space_range *next;
     int rangecnt;
@@ -35,6 +40,9 @@ typedef struct cidrange_code {
     unsigned int srcCodeHi;
     unsigned int dstCIDLo;
 } cidrangecode;
+
+#define MAX_CID_CIDRANGECODES \
+    ((int)((unsigned int)(-1) / (2 * sizeof(cidrangecode))))
 
 typedef struct cid_range {
     struct cid_range *next;

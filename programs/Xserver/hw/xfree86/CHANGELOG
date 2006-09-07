@@ -1,4 +1,6 @@
 XFree86 4.6.99.8 (xx September 2006)
+  73. Fix integer overflow problems in the handling of Type1 fonts
+      (Marc La France).
 
 XFree86 4.6.99.7 (7 September 2006)
   72. Add the cleandir utility's functionality to lndir (David Dawes).
@@ -20314,7 +20316,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3799 2006/09/06 04:58:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3800 2006/09/07 11:02:58 dawes Exp $
 
 
 

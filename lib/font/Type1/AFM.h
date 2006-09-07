@@ -1,4 +1,6 @@
-/* Copyright (c) 1994-1999 Silicon Graphics, Inc. All Rights Reserved.
+/* $XFree86$ */
+/*
+ * Copyright (c) 1994-1999 Silicon Graphics, Inc. All Rights Reserved.
  *
  * The contents of this file are subject to the CID Font Code Public Licence
  * Version 1.0 (the "License"). You may not use this file except in compliance
@@ -46,6 +48,8 @@ typedef struct
     int wx;		/* key: WX or W0X */
     BBox charBBox;	/* key: B */
 } Metrics;
+
+#define MAX_CID_METRICS ((int)((unsigned int)(-1) / (2 * sizeof(Metrics))))
 
 typedef struct
 { 

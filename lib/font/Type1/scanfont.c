@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/font/Type1/scanfont.c,v 1.17tsi Exp $ */
+/* $XFree86: xc/lib/font/Type1/scanfont.c,v 1.18tsi Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -1732,6 +1732,10 @@ scan_cidfont(cidfont *CIDFontP, cmapres *CMapP)
         break;
       case TOKEN_NAME:
         if (0 == strncmp(tokenStartP,"begincodespacerange",19)) {
+	  if ((rangecnt <= 0) || (rangecnt > MAX_CID_SPACERANGECODES)) {
+	    rc = SCAN_OUT_OF_MEMORY;
+	    break;
+	  }
           CIDFontP->spacerangecnt++;
           spacerangeP = (spacerange *)vm_alloc(sizeof(spacerange));
           if (!spacerangeP) {
@@ -1787,6 +1791,10 @@ scan_cidfont(cidfont *CIDFontP, cmapres *CMapP)
           }
         }
         if (0 == strncmp(tokenStartP,"begincidrange",13)) {
+	  if ((rangecnt <= 0) || (rangecnt > MAX_CID_CIDRANGECODES)) {
+	    rc = SCAN_OUT_OF_MEMORY;
+	    break;
+	  }
           CIDFontP->cidrangecnt++;
           cidrangeP = (cidrange *)vm_alloc(sizeof(cidrange));
           if (!cidrangeP) {
@@ -1868,6 +1876,10 @@ scan_cidfont(cidfont *CIDFontP, cmapres *CMapP)
         }
 
         if (0 == strncmp(tokenStartP,"beginnotdefrange",16)) {
+	  if ((rangecnt <= 0) || (rangecnt > MAX_CID_CIDRANGECODES)) {
+	    rc = SCAN_OUT_OF_MEMORY;
+	    break;
+	  }
           CIDFontP->notdefrangecnt++;
           notdefrangeP = (cidrange *)vm_alloc(sizeof(cidrange));
           if (!notdefrangeP) {
