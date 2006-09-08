@@ -1,4 +1,4 @@
-/* $XFree86: xc/config/util/lndir.c,v 3.21 2006/05/16 14:57:09 tsi Exp $ */
+/* $XFree86: xc/config/util/lndir.c,v 3.22 2006/09/06 04:58:30 dawes Exp $ */
 /* Create shadow link tree (after X11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 
@@ -501,7 +501,7 @@ int
 main (int ac, char *av[])
 {
     char *prog_name = av[0];
-    char *fn, *tn;
+    char *fn = NULL, *tn;
     struct stat fs, ts;
     int ret = 0;
 
