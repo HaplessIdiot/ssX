@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.324 2006/03/02 03:00:34 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.325 2006/08/31 01:31:44 dawes Exp $
 
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
@@ -799,6 +799,7 @@ XCOMM
              TINYX = $(TINYXDIR)/LibraryTargetName(tinyx)
         TINYXFBDEV = $(TINYXDIR)/fbdev/LibraryTargetName(fbdev)
 
+         TINYXDIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(DEPDIRS)
 
 #if defined(XfbdevServer) && XfbdevServer
 XCOMM
@@ -808,10 +809,8 @@ XCOMM
           FBDEVDIR = $(TINYXDIR)/fbdev
              FBDEV = $(FBDEVDIR)/LibraryTargetName(fbdev)
 
-         TINYXDIRS = $(DEPDIRS)
 
-         FBDEVDIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
-		     $(FBSUBDIR) $(SHADOWDIR) $(LAYERDIR)
+         FBDEVDIRS = $(TINYXDIRS) $(FBSUBDIR) $(SHADOWDIR) $(LAYERDIR)
 
          FBDEVLIBS = $(TINY_DIX) $(TINY_OS) $(FBDEV) $(LAYER) $(TINYX) \
 		     $(TINYXOS) $(SHADOW) $(FB) $(MI) $(TINY_EXTENSIONS)
@@ -842,10 +841,7 @@ XCOMM
          SAVAGEDIR = $(TINYXDIR)/savage
             SAVAGE = $(SAVAGEDIR)/LibraryTargetName(savage)
 
-         TINYXDIRS = $(TINYXOSDIR) $(DEPDIRS)
-
-        SAVAGEDIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
-		     $(FBSUBDIR)
+        SAVAGEDIRS = $(TINYXDIRS) $(FBSUBDIR)
 
         SAVAGEOBJS = $(TINYXDIR)/miinitext.o $(TINYXDIR)/register.o \
 		     $(TINYXDIR)/ffcheck.o
@@ -876,10 +872,7 @@ XCOMM
             IGSDIR = $(TINYXDIR)/igs
                IGS = $(IGSDIR)/LibraryTargetName(igs)
 
-         TINYXDIRS = $(TINYXOSDIR) $(DEPDIRS)
-
-           IGSDIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
-		     $(FBSUBDIR)
+           IGSDIRS = $(TINYXDIRS) $(FBSUBDIR)
 
            IGSOBJS = $(TINYXDIR)/miinitext.o $(TINYXDIR)/register.o \
 		     $(TINYXDIR)/ffcheck.o
@@ -916,10 +909,7 @@ XCOMM
         TRIDENTDIR = $(TINYXDIR)/trident
            TRIDENT = $(TRIDENTDIR)/LibraryTargetName(trident)
 
-         TINYXDIRS = $(TINYXOSDIR) $(DEPDIRS)
-
-       TRIDENTDIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
-		     $(FBSUBDIR) $(SHADOWDIR) $(LAYERDIR)
+       TRIDENTDIRS = $(TINYXDIRS) $(FBSUBDIR) $(SHADOWDIR) $(LAYERDIR)
 
        TRIDENTOBJS = $(TINYXDIR)/miinitext.o $(TINYXDIR)/register.o \
 		     $(TINYXDIR)/ffcheck.o
@@ -954,10 +944,7 @@ XCOMM
           CHIPSDIR = $(TINYXDIR)/chips
              CHIPS = $(CHIPSDIR)/LibraryTargetName(chips)
 
-         TINYXDIRS = $(TINYXOSDIR) $(DEPDIRS)
-
-         CHIPSDIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
-		     $(FBSUBDIR) $(SHADOWDIR) $(LAYERDIR)
+         CHIPSDIRS = $(TINYXDIRS) $(FBSUBDIR) $(SHADOWDIR) $(LAYERDIR)
 
          CHIPSOBJS = $(TINYXDIR)/miinitext.o $(TINYXDIR)/register.o \
 		     $(TINYXDIR)/ffcheck.o
@@ -992,10 +979,7 @@ XCOMM
          MACH64DIR = $(TINYXDIR)/mach64
             MACH64 = $(MACH64DIR)/LibraryTargetName(mach64)
 
-         TINYXDIRS = $(TINYXOSDIR) $(DEPDIRS)
-
-        MACH64DIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
-		     $(FBSUBDIR) $(SHADOWDIR) $(LAYERDIR)
+        MACH64DIRS = $(TINYXDIRS) $(FBSUBDIR) $(SHADOWDIR) $(LAYERDIR)
 
         MACH64OBJS = $(TINYXDIR)/miinitext.o $(TINYXDIR)/register.o \
 		     $(TINYXDIR)/ffcheck.o
@@ -1027,10 +1011,7 @@ XCOMM
            I810DIR = $(TINYXDIR)/i810
               I810 = $(I810DIR)/LibraryTargetName(i810)
 
-         TINYXDIRS = $(TINYXOSDIR) $(DEPDIRS)
-
-          I810DIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
-		     $(FBSUBDIR) $(SHADOWDIR) $(I810DIR)
+          I810DIRS = $(TINYXDIRS) $(FBSUBDIR) $(SHADOWDIR)
 
           I810OBJS = $(TINYXDIR)/miinitext.o $(TINYXDIR)/register.o \
 		     $(TINYXDIR)/ffcheck.o
@@ -1061,10 +1042,7 @@ XCOMM
          SIS530DIR = $(TINYXDIR)/sis530
             SIS530 = $(SIS530DIR)/LibraryTargetName(sis530)
 
-         TINYXDIRS = $(TINYXOSDIR) $(DEPDIRS)
-
-        SIS530DIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
-		     $(FBSUBDIR) $(SIS530DIR)
+        SIS530DIRS = $(TINYXDIRS) $(FBSUBDIR)
 
         SIS530OBJS = $(TINYXDIR)/miinitext.o $(TINYXDIR)/register.o \
 		     $(TINYXDIR)/ffcheck.o
@@ -1095,10 +1073,7 @@ XCOMM
            TRIODIR = $(TINYXDIR)/trio
               TRIO = $(TRIODIR)/LibraryTargetName(trio)
 
-         TINYXDIRS = $(TINYXOSDIR) $(DEPDIRS)
-
-          TRIODIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
-		     $(FBSUBDIR)
+          TRIODIRS = $(TINYXDIRS) $(FBSUBDIR)
 
           TRIOOBJS = $(TINYXDIR)/miinitext.o $(TINYXDIR)/register.o \
 		     $(TINYXDIR)/ffcheck.o
@@ -1135,10 +1110,7 @@ XCOMM
            IPAQDIR = $(TINYXDIR)/ipaq
               IPAQ = $(IPAQDIR)/LibraryTargetName(ipaq)
 
-         TINYXDIRS = $(TINYXOSDIR) $(DEPDIRS)
-
-          IPAQDIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
-		     $(FBSUBDIR) $(LAYERDIR) $(SHADOWDIR)
+          IPAQDIRS = $(TINYXDIRS) $(FBSUBDIR) $(LAYERDIR) $(SHADOWDIR)
 
           IPAQOBJS = $(TINYXDIR)/miinitext.o $(TINYXDIR)/register.o \
 		     $(TINYXDIR)/ffcheck.o
@@ -1176,10 +1148,7 @@ XCOMM
           TS300DIR = $(TINYXDIR)/ts300
              TS300 = $(TS300DIR)/LibraryTargetName(ts300)
 
-         TINYXDIRS = $(TINYXOSDIR) $(DEPDIRS)
-
-         TS300DIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
-		     $(FBSUBDIR)
+         TS300DIRS = $(TINYXDIRS) $(FBSUBDIR)
 
          TS300OBJS = $(TINYXDIR)/miinitext.o $(TINYXDIR)/register.o \
 		     $(TINYXDIR)/ffcheck.o
@@ -1211,10 +1180,7 @@ XCOMM
            ITSYDIR = $(TINYXDIR)/itsy
               ITSY = $(ITSYDIR)/LibraryTargetName(itsy)
 
-         TINYXDIRS = $(TINYXOSDIR) $(DEPDIRS)
-
-          ITSYDIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
-		     $(FBSUBDIR)
+          ITSYDIRS = $(TINYXDIRS) $(FBSUBDIR)
 
           ITSYOBJS = $(TINYXDIR)/miinitext.o $(TINYXDIR)/register.o \
 		     $(TINYXDIR)/ffcheck.o
@@ -1245,10 +1211,7 @@ XCOMM
            VESADIR = $(TINYXDIR)/vesa
               VESA = $(VESADIR)/LibraryTargetName(vesa)
 
-         TINYXDIRS = $(TINYXOSDIR) $(DEPDIRS)
-
-          VESADIRS = $(STDDIRS) $(HWSUBDIR) $(TINY_EXTDIRS) $(TINYXDIRS) \
-		     $(FBSUBDIR) $(SHADOWDIR) $(LAYERDIR)
+          VESADIRS = $(TINYXDIRS) $(FBSUBDIR) $(SHADOWDIR) $(LAYERDIR)
 
           VESAOBJS = $(TINYXDIR)/miinitext.o $(TINYXDIR)/register.o \
 		     $(TINYXDIR)/ffcheck.o
@@ -1270,10 +1233,6 @@ ServerTarget(Xvesa, \
 	$(VESASYSLIBS))
 #endif /* XvesaServer */
 
-      TINYXSUBDIRS = $(TINYXDIRS) $(FBDEVDIR) $(SAVAGEDIR) $(TRIDENTDIR) \
-		     $(I810DIR) $(SIS530DIR) $(TRIODIR) $(TS300DIR) \
-		     $(ITSYDIR) $(IGSDIR) $(VESADIR) $(PCMCIADIR) $(IPAQDIR) \
-		     $(MACH64DIR) $(CHIPSDIR)
 #endif	/* TinyXServer */
 
 
@@ -1731,7 +1690,7 @@ Xnon: $(XNONSUBDIRS)
            SUBDIRS = $(STDDIRS) $(DIXSUBDIR) $(OSSUBDIR) $(HWSUBDIR) \
 		     $(EXTDIRS) $(LMFCFBSUBDIR) $(MFBSUBDIR) $(CFBSUBDIRS) \
 		     $(IPLANDIRS) $(ILBMDIR) $(AFBSUBDIR) \
-		     $(LMFCFBDIR) $(FBSUBDIR) $(TINYXSUBDIRS) \
+		     $(LMFCFBDIR) $(FBSUBDIR) \
 		     $(MIEXTDIRS) $(XWINPARSERDIR)
 
 #if defined(ServerToInstall) && !defined(OS2Architecture)
