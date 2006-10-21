@@ -1,4 +1,6 @@
-XFree86 4.6.99.10 (xx October 2006)
+XFree86 4.6.99.11 (xx November 2006)
+
+XFree86 4.6.99.10 (21 October 2006)
   74. Fix 'make distclean' problem related to hw/tinyx subdir handling
       (David Dawes, reported by Andrew Aitchison).
 
@@ -20322,7 +20324,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3803 2006/10/07 11:03:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3804 2006/10/09 01:56:54 dawes Exp $
 
 
 
