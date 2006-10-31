@@ -23,7 +23,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/xkbparse.y,v 3.12 2002/10/16 21:33:04 tsi Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbparse.y,v 3.13tsi Exp $ */
 
 %token
 	END_OF_FILE	0
@@ -135,7 +135,7 @@
 	DoodadDef	*doodad;
 	XkbFile		*file;
 }
-%type <ival>	Number Integer Float
+%type <ival>	Number Integer Float SignedNumber
 %type <uval>	XkbCompositeType FileType MergeMode OptMergeMode KeySym
 %type <uval>	DoodadType Flag Flags OptFlags
 %type <str>	KeyName MapName OptMapName
@@ -533,7 +533,7 @@ CoordList	:	CoordList COMMA Coord
 			{ $$= $1; }
 		;
 
-Coord		:	OBRACKET Number COMMA Number CBRACKET
+Coord		:	OBRACKET SignedNumber COMMA SignedNumber CBRACKET
 			{
 			    ExprDef *expr;
 			    expr= ExprCreate(ExprCoord,TypeUnknown);
@@ -743,6 +743,12 @@ KeySym		:	IDENT
 			    if ($1<10)	$$= $1+'0';	/* XK_0 .. XK_9 */
 			    else	$$= $1;
 			}
+		;
+
+
+SignedNumber	:	MINUS Number	{ $$= -$2; }
+		|	PLUS Number	{ $$= $2; }
+		|	Number		{ $$= $1; }
 		;
 
 Number		:	FLOAT		{ $$= scanInt; }
