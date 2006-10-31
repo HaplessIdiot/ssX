@@ -36,7 +36,7 @@
 *
 ****************************************************************************/
 
-/* $XFree86: xc/extras/x86emu/include/x86emu/types.h,v 1.7 2003/07/07 15:34:21 eich Exp $ */
+/* $XFree86: xc/extras/x86emu/include/x86emu/types.h,v 1.8tsi Exp $ */
 
 #ifndef __X86EMU_TYPES_H
 #define __X86EMU_TYPES_H
@@ -90,15 +90,15 @@ typedef unsigned NUM32 		u32;
 typedef unsigned long long 	u64;
 #endif
 
-typedef char 				s8;
-typedef short 				s16;
-typedef NUM32 				s32;
+typedef signed char 		s8;
+typedef short 			s16;
+typedef NUM32 			s32;
 #ifdef __HAS_LONG_LONG__
-typedef long long 			s64;
+typedef long long 		s64;
 #endif
 
-typedef unsigned int			uint;
-typedef int 				sint;
+typedef unsigned int		uint;
+typedef int 			sint;
 
 typedef u16 X86EMU_pioAddr;
 
