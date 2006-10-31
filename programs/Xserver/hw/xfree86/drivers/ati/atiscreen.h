@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.h,v 1.9 2006/01/05 18:55:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.h,v 1.10tsi Exp $ */
 /*
  * Copyright 1999 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -28,7 +28,8 @@
 
 #include "screenint.h"
 
-extern Bool ATIScreenInit  FunctionPrototype((int, ScreenPtr, int, const char **));
+extern Bool ATIScreenInit  FunctionPrototype((int, ScreenPtr, int,
+                                              const char **));
 extern Bool ATICloseScreen FunctionPrototype((int, ScreenPtr));
 
 #endif /* ___ATISCREEN_H___ */
