@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.36 2006/01/05 18:55:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.37tsi Exp $ */
 /*
  * Copyright 1999 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -88,9 +88,9 @@ ATIRefreshArea
 Bool
 ATIScreenInit
 (
-    int       iScreen,
-    ScreenPtr pScreen,
-    int       argc,
+    int        iScreen,
+    ScreenPtr  pScreen,
+    int        argc,
     const char **argv
 )
 {
