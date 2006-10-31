@@ -1,4 +1,7 @@
 XFree86 4.6.99.11 (xx November 2006)
+  75. On Linux, ignore ENOSYS errors on iopl() and ioperm() calls, as some
+      systems only provide non-functional stubs for these syscalls
+      (Marc La France).
 
 XFree86 4.6.99.10 (21 October 2006)
   74. Fix 'make distclean' problem related to hw/tinyx subdir handling
@@ -20324,7 +20327,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3804 2006/10/09 01:56:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3805 2006/10/21 11:02:56 dawes Exp $
 
 
 

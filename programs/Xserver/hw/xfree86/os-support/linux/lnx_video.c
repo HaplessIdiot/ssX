@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.72 2006/02/18 03:31:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.73tsi Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -501,8 +501,9 @@ xf86EnableIO(void)
 #endif
 	}
 	close(fd);
-#elif !defined(__mc68000__) && !defined(__sparc__) && !defined(__mips__) && !defined(__sh__) && !defined(__hppa__)
-	if (ioperm(0, 1024, 1) || iopl(3))
+#elif !defined(__mc68000__) && !defined(__sparc__) && !defined(__mips__) && \
+      !defined(__sh__) && !defined(__hppa__)
+	if ((ioperm(0, 1024, 1) || iopl(3)) && (errno != ENOSYS))
 		FatalError("xf86EnableIOPorts: Failed to set IOPL for I/O\n");
 # if !defined(__alpha__)
 	ioperm(0x40,4,0); /* trap access to the timer chip */
@@ -522,7 +523,8 @@ xf86DisableIO(void)
 #if defined(__powerpc__)
 	munmap((void *)ioBase, 0x20000);
 	ioBase = NULL;
-#elif !defined(__mc68000__) && !defined(__sparc__) && !defined(__mips__) && !defined(__sh__) && !defined(__hppa__)
+#elif !defined(__mc68000__) && !defined(__sparc__) && !defined(__mips__) && \
+      !defined(__sh__) && !defined(__hppa__)
 	iopl(0);
 	ioperm(0, 1024, 0);
 #endif
@@ -541,12 +543,17 @@ xf86DisableIO(void)
 Bool
 xf86DisableInterrupts()
 {
-#if !defined(__mc68000__) && !defined(__powerpc__) && !defined(__sparc__) && !defined(__mips__) && !defined(__ia64__) && !defined(__sh__) && !defined(__hppa__)
+#if !defined(__mc68000__) && !defined(__powerpc__) && !defined(__sparc__) && \
+    !defined(__mips__) && !defined(__ia64__) && !defined(__sh__) && \
+    !defined(__hppa__)
 	if (!ExtendedEnabled)
 	    if (iopl(3) || ioperm(0, 1024, 1))
+		if (errno != ENOSYS)
 			return (FALSE);
 #endif
-#if defined(__alpha__) || defined(__mc68000__) || defined(__powerpc__) || defined(__sparc__) || defined(__mips__) || defined(__arm__) || defined(__sh__) || defined(__ia64__) || defined(__hppa__)
+#if defined(__alpha__) || defined(__mc68000__) || defined(__powerpc__) || \
+    defined(__sparc__) || defined(__mips__) || defined(__arm__) || \
+    defined(__sh__) || defined(__ia64__) || defined(__hppa__)
 #else
 # ifdef __GNUC__
 #  if defined(__ia64__)
@@ -560,7 +567,9 @@ xf86DisableInterrupts()
 	asm("cli");
 # endif
 #endif
-#if !defined(__mc68000__) && !defined(__powerpc__) && !defined(__sparc__) && !defined(__mips__) && !defined(__sh__) && !defined(__ia64__) && !defined(__hppa__)
+#if !defined(__mc68000__) && !defined(__powerpc__) && !defined(__sparc__) && \
+    !defined(__mips__) && !defined(__sh__) && !defined(__ia64__) && \
+    !defined(__hppa__)
 	if (!ExtendedEnabled) {
 	    iopl(0);
 	    ioperm(0, 1024, 0);
@@ -573,12 +582,17 @@ xf86DisableInterrupts()
 void
 xf86EnableInterrupts()
 {
-#if !defined(__mc68000__) && !defined(__powerpc__) && !defined(__sparc__) && !defined(__mips__) && !defined(__ia64__) && !defined(__sh__) && !defined(__hppa__)
+#if !defined(__mc68000__) && !defined(__powerpc__) && !defined(__sparc__) && \
+    !defined(__mips__) && !defined(__ia64__) && !defined(__sh__) && \
+    !defined(__hppa__)
 	if (!ExtendedEnabled)
 	    if (iopl(3) || ioperm(0, 1024, 1))
+		if (errno != ENOSYS)
 			return;
 #endif
-#if defined(__alpha__) || defined(__mc68000__) || defined(__powerpc__) || defined(__sparc__) || defined(__mips__) || defined(__arm__) || defined(__sh__) || defined(__ia64__) || defined(__hppa__)
+#if defined(__alpha__) || defined(__mc68000__) || defined(__powerpc__) || \
+    defined(__sparc__) || defined(__mips__) || defined(__arm__) || \
+    defined(__sh__) || defined(__ia64__) || defined(__hppa__)
 #else
 # ifdef __GNUC__
 #  if defined(__ia64__)
@@ -592,7 +606,9 @@ xf86EnableInterrupts()
 	asm("sti");
 # endif
 #endif
-#if !defined(__mc68000__) && !defined(__powerpc__) && !defined(__sparc__) && !defined(__mips__) && !defined(__sh__) && !defined(__ia64__) && !defined(__hppa__)
+#if !defined(__mc68000__) && !defined(__powerpc__) && !defined(__sparc__) && \
+    !defined(__mips__) && !defined(__sh__) && !defined(__ia64__) && \
+    !defined(__hppa__)
 	if (!ExtendedEnabled) {
 	    iopl(0);
 	    ioperm(0, 1024, 0);
