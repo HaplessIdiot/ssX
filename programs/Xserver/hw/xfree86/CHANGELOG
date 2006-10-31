@@ -1,4 +1,6 @@
 XFree86 4.6.99.11 (xx November 2006)
+  76. Change xkbcomp to accept signed coordinates in shape definitions
+      (Bugzilla #1675, Andriy Gapon).
   75. On Linux, ignore ENOSYS errors on iopl() and ioperm() calls, as some
       systems only provide non-functional stubs for these syscalls
       (Marc La France).
@@ -20327,7 +20329,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3805 2006/10/21 11:02:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3806 2006/10/31 15:45:33 tsi Exp $
 
 
 
