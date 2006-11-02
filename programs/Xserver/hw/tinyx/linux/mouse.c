@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/tinyx/linux/mouse.c,v 1.1tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/tinyx/linux/mouse.c,v 1.2 2005/10/14 15:16:28 tsi Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -977,6 +977,8 @@ MouseInit (void)
 	{
 	    for (i = 0; i < NUM_DEFAULT_MOUSE; i++)
 	    {
+		if (kdNoSerialMouse && strstr(kdefaultMouse[i], "/dev/ttyS"))
+		    continue;
 		fd = open (kdefaultMouse[i], 2);
 		if (fd >= 0)
 		{

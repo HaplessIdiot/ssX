@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/tinyx/tinyx.c,v 1.2 2006/02/19 15:51:21 tsi Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/tinyx/tinyx.c,v 1.3tsi Exp $ 
  *
  * Copyright © 1999 Keith Packard
  *
@@ -98,6 +98,7 @@ int		    kdSubpixelOrder;
 int		    kdVirtualTerminal = -1;
 Bool		    kdSwitchPending;
 DDXPointRec	    kdOrigin;
+Bool		    kdNoSerialMouse = FALSE;
 
 /*
  * Carry arguments from InitOutput through driver initialization
@@ -381,6 +382,7 @@ KdUseMsg()
   ErrorF("-videoTest	Start the server, pause momentarily and exit\n");
   ErrorF("-origin X,Y	Locates the next screen in the the virtual screen (Xinerama)\n");
   ErrorF("-mouse path[,n]	Filename of mouse device, n is number of buttons\n");
+  ErrorF("-noserialmouse	Don't probe for a serial mouse\n");
   ErrorF("vtxx		Use virtual terminal xx instead of the next available\n");
   ErrorF("\n");
 }
@@ -768,6 +770,11 @@ KdProcessArgument (int argc, const char **argv, int i)
 	else
 	    UseMsg ();
 	return 2;
+    }
+    if (!strcmp (argv[i], "-noserialmouse"))
+    {
+	kdNoSerialMouse = TRUE;
+	return 1;
     }
     if (!strcmp (argv[i], "-rgba"))
     {
