@@ -1,4 +1,6 @@
 XFree86 4.6.99.11 (xx November 2006)
+  80. Avoid malloc() calls during server log message processing
+      (Marc La France).
   79. Add an option to the TinyX servers to prevent them from probing serial
       ports (Bugzilla #1674, Dmitry Pervushin).
   78. Fix granularity handling in framebuffer manager (Marc La France).
@@ -20334,7 +20336,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3809 2006/11/02 17:36:58 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3810 2006/11/02 21:55:26 tsi Exp $
 
 
 

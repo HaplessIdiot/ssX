@@ -96,7 +96,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/os/log.c,v 1.15 2006/08/09 20:53:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/log.c,v 1.16tsi Exp $ */
 
 #include <X11/Xos.h>
 #include <stdio.h>
@@ -313,7 +313,6 @@ void
 LogVMessageVerb(MessageType type, int verb, const char *format, va_list args)
 {
     const char *s  = X_UNKNOWN_STRING;
-    char *tmpBuf = NULL;
 
     /* Ignore verbosity for X_ERROR */
     if (logVerbosity >= verb || logFileVerbosity >= verb || type == X_ERROR) {
@@ -360,12 +359,10 @@ LogVMessageVerb(MessageType type, int verb, const char *format, va_list args)
 	 * so that LogVWrite() is only called once per message.
 	 */
 	if (s) {
-	    xasprintf(&tmpBuf, "%s %s", s, format);
-	    /* Silently return if alloc fails here. */
-	    if (!tmpBuf)
-		return;
+	    char tmpBuf[4096];
+
+	    snprintf(tmpBuf, sizeof(tmpBuf), "%s %s", s, format);
 	    LogVWrite(verb, tmpBuf, args);
-	    xfree(tmpBuf);
 	} else
 	    LogVWrite(verb, format, args);
     }
