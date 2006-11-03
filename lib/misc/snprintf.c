@@ -51,7 +51,7 @@
  * All Rights Reserved
  */
 
-/* $XFree86: xc/lib/misc/snprintf.c,v 3.2 2005/02/07 01:01:16 tsi Exp $ */
+/* $XFree86: xc/lib/misc/snprintf.c,v 3.3tsi Exp $ */
 
 
 /*
@@ -369,8 +369,8 @@ vsnprintf(char *str, size_t size, const char *fmt, va_list ap)
     char *q;
     int s_len;
 
-    int min_width;
-    int precision;
+    int min_width = 0;
+    int precision = 0;
     enum {
 	LEFT, RIGHT
     } adjust;
@@ -548,7 +548,7 @@ vsnprintf(char *str, size_t size, const char *fmt, va_list ap)
 		s = conv_p2(ui_num, 4, *fmt,
 		    &num_buf[NUM_BUF_SIZE], &s_len);
 		FIX_PRECISION(adjust_precision, precision, s, s_len);
-		if (alternate_form && i_num != 0) {
+		if (alternate_form && ui_num != 0) {
 		    *--s = *fmt;       /* 'x' or 'X' */
 		    *--s = '0';
 		    s_len += 2;
@@ -628,8 +628,8 @@ vsnprintf(char *str, size_t size, const char *fmt, va_list ap)
 
 	    case 'n':
 		*(va_arg(ap, int *)) = cc;
-
-		break;
+		fmt++;
+		continue;
 
 		/*
 		 * If the pointer size is equal to the size of an unsigned
