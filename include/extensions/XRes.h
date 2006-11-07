@@ -1,11 +1,12 @@
 /*
    Copyright (c) 2002  XFree86 Inc
 */
-/* $XFree86: xc/include/extensions/XRes.h,v 1.3 2002/03/10 22:05:51 mvojkovi Exp $ */
+/* $XFree86: xc/include/extensions/XRes.h,v 1.4tsi Exp $ */
 
 #ifndef _XRES_H
 #define _XRES_H
 
+#include <X11/X.h>
 #include <X11/Xfuncproto.h>
 
 typedef struct {
