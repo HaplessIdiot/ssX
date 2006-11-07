@@ -1,4 +1,6 @@
-XFree86 4.6.99.11 (xx November 2006)
+XFree86 4.6.99.12 (xx November 2006)
+
+XFree86 4.6.99.11 (7 November 2006)
   80. Avoid malloc() calls during server log message processing
       (Marc La France).
   79. Add an option to the TinyX servers to prevent them from probing serial
@@ -20336,7 +20338,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3810 2006/11/02 21:55:26 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3811 2006/11/03 21:43:23 tsi Exp $
 
 
 
