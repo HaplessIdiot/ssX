@@ -1,4 +1,4 @@
-/* $XFree86: xc/config/util/lndir.c,v 3.22 2006/09/06 04:58:30 dawes Exp $ */
+/* $XFree86: xc/config/util/lndir.c,v 3.23tsi Exp $ */
 /* Create shadow link tree (after X11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 
@@ -251,6 +251,11 @@ dodir (char *fn,		/* name of "from" directory, either absolute or
 	    /* Ignore these Mac OS X Finder data files */
 	    if (!strcmp(dp->d_name, ".DS_Store") || 
 		!strcmp(dp->d_name, "._.DS_Store")) 
+		continue;
+	}
+
+	if (!with_revinfo) {
+	    if (!strcmp (dp->d_name, ".cvsignore"))
 		continue;
 	}
 
