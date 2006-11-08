@@ -23,7 +23,7 @@
 .\" from The Open Group.
 .\" 
 .\"
-.\" $XFree86: xc/config/util/lndir.man,v 1.8 2006/05/16 14:57:09 tsi Exp $
+.\" $XFree86: xc/config/util/lndir.man,v 1.9tsi Exp $
 .\"
 .TH LNDIR 1 __vendorversion__
 .SH NAME
@@ -96,9 +96,9 @@ The \fItodir\fP argument may be provided, and defaults to the current
 directory when not provided.
 .IP \-withrevinfo
 \fIlndir\fP will normally not shadow any BitKeeper, RCS, SCCS, CVS, CVS.adm
-or .svn subdirectories.  This option causes these directories to be treated as
-any other directory, rather than ignored.  \fB\-withrevinfo\fP may be shortened
-to \fB\-r\fP.
+or .svn subdirectories, nor .cvsignore files.  This option causes these
+directories and files to be treated as any other, rather than ignored.
+\fB\-withrevinfo\fP may be shortened to \fB\-r\fP.
 .IP \-noexceptions
 By default, \fIlndir\fP does not shadow files or directories whose name is
 \&.DS_Store, or ._.DS_Store, or starts with '.#', or ends in '~'.  This option,
@@ -106,7 +106,7 @@ which may be abbreviated to \fB\-E\fP, causes such files to also be shadowed.
 .IP \-except \fIname\fP
 This option adds \fIname\fP to an initially empty list of filenames in
 \fIfromdir\fP that are not to be shadowed.  \fB\-except\fP may be specified as
-\fB\-e\fP.
+\fB\-e\fP.  This option may be repeated as many times as necessary.
 .SH DIAGNOSTICS
 The program displays the name of each subdirectory it enters, followed
 by a colon.  The \fB\-silent\fP option suppresses these messages.

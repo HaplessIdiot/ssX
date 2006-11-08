@@ -1,4 +1,6 @@
 XFree86 4.6.99.12 (xx November 2006)
+  81. Add .cvsignore files to the list of filenames lndir does not shadow by
+      default (unless -withrevinfo is given)  (Marc La France).
 
 XFree86 4.6.99.11 (7 November 2006)
   80. Avoid malloc() calls during server log message processing
@@ -20338,7 +20340,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3811 2006/11/03 21:43:23 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3812 2006/11/07 12:02:51 dawes Exp $
 
 
 
