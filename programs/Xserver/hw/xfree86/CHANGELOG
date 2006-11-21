@@ -1,4 +1,6 @@
-XFree86 4.6.99.12 (xx November 2006)
+XFree86 4.6.99.13 (xx December 2006)
+
+XFree86 4.6.99.12 (21 November 2006)
   81. Add .cvsignore files to the list of filenames lndir does not shadow by
       default (unless -withrevinfo is given)  (Marc La France).
 
@@ -20340,7 +20342,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3812 2006/11/07 12:02:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3813 2006/11/08 16:25:18 tsi Exp $
 
 
 
