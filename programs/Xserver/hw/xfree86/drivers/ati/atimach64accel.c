@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64accel.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64accel.c,v 1.10 2006/02/17 17:01:39 tsi Exp $ */
 /*
  * Copyright 2003 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -341,7 +341,7 @@ ATIMach64SubsequentScreenToScreenCopy
      * operation to commit its results to video memory before starting the next
      * one.  The probability of such occurrences increases with GUI_WB_FLUSH
      * (or GUI_WB_FLUSH_P) setting, bitsPerPixel and/or CRTC clock.  This
-     * would point to some kind of video memory bandwidth problem were it noti
+     * would point to some kind of video memory bandwidth problem were it not
      * for the fact that the problem occurs less often (but still occurs) when
      * copying larger rectangles.
      */
