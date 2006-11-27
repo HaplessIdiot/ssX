@@ -1,4 +1,5 @@
 XFree86 4.6.99.13 (xx December 2006)
+  83. Fix __projectroot_ expansion in X & xmodmap man pages (Luke Mewburn).
   82. Normalise EXTRALIBRARYDEPS usage.  Inspired by a change found in NetBSD's
       repository (Marc La France).
 
@@ -20344,7 +20345,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3814 2006/11/21 12:02:55 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3815 2006/11/27 21:02:23 tsi Exp $
 
 
 
