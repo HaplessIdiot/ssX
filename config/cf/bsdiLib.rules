@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/bsdiLib.rules,v 3.8 2004/04/08 01:40:19 dawes Exp $
+XCOMM $XFree86: xc/config/cf/bsdiLib.rules,v 3.9tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -121,7 +121,7 @@ install::								@@\
 #define SharedLibraryTarget(libname,rev,solist,down,up)			@@\
 AllTarget(Concat($(LIBPREFIX),libname.so.rev))				@@\
 									@@\
-Concat($(LIBPREFIX),libname.so.rev):  solist				@@\
+Concat($(LIBPREFIX),libname.so.rev):  solist $(EXTRALIBRARYDEPS)	@@\
 	$(RM) $@~							@@\
 	@SetSonameRev(rev); \						@@\
 	SONAME=Concat($(LIBPREFIX),libname.so.$$S); \			@@\
@@ -156,7 +156,7 @@ clean::									@@\
 #define SharedDepLibraryTarget(libname,rev,deplist,solist,down,up)	@@\
 AllTarget(Concat($(LIBPREFIX),libname.so.rev))				@@\
 									@@\
-Concat($(LIBPREFIX),libname.so.rev):  deplist				@@\
+Concat($(LIBPREFIX),libname.so.rev):  deplist $(EXTRALIBRARYDEPS)	@@\
 	$(RM) $@~							@@\
 	@SetSonameRev(rev); \						@@\
 	SONAME=Concat($(LIBPREFIX),libname.so.$$S); \			@@\
