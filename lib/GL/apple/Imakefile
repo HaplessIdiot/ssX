@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/apple/Imakefile,v 1.8tsi Exp $
+XCOMM $XFree86: xc/lib/GL/apple/Imakefile,v 1.9 2005/10/14 15:15:55 tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -29,8 +29,8 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 
       DEFINES = $(ALLOC_DEFINES) GlxDefines $(GLX_DEFS) -DXP_NO_X_HEADERS=1 \
                 -DOSVERSION=OSMajorVersion*100+OSMinorVersion
-     INCLUDES = -I$(XF86OSSRC) \
-                -I$(DRMINCLUDESDIR) -I$(DRI_INCS) -F$(AS)/Frameworks
+     INCLUDES = -I$(XF86OSSRC) -I$(DRMINCLUDESDIR) $(DRI_INCS) \
+		-F$(AS)/Frameworks
          SRCS = appledri.c $(DRI_SRCS)
          OBJS = appledri.o $(DRI_OBJS)
 
