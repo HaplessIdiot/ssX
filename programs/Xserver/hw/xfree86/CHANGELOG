@@ -1,4 +1,6 @@
-XFree86 4.6.99.13 (xx December 2006)
+XFree86 4.6.99.14 (xx December 2006)
+
+XFree86 4.6.99.13 (7 December 2006)
   84. Fix Apple DRI build failure on Darwin (Reported by Frank J. R. Hanstick).
   83. Fix __projectroot_ expansion in X & xmodmap man pages (Luke Mewburn).
   82. Normalise EXTRALIBRARYDEPS usage.  Inspired by a change found in NetBSD's
@@ -20346,7 +20348,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3816 2006/11/27 21:45:45 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3817 2006/12/03 00:42:10 tsi Exp $
 
 
 
