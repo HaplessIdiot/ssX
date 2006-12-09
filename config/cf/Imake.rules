@@ -1,6 +1,6 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.150tsi Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.151tsi Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -2001,7 +2001,7 @@ DependDependency()							@@\
 									@@\
 depend:: DependFileName							@@\
 									@@\
-DependFileName::							@@\
+DependFileName:: $(SRCS)						@@\
 	RemoveFile($@)							@@\
 	RunProgram(DEPEND,-f- $(DEPENDFLAGS) -- $(ALLDEFINES) $(DEPEND_DEFINES) -- $(SRCS)) > $@
 #else /* HasMakefileSafeInclude */
@@ -2023,7 +2023,7 @@ DependDependency()							@@\
 									@@\
 depend:: DependFileName							@@\
 									@@\
-DependFileName::							@@\
+DependFileName:: srcs1 srcs2 srcs3					@@\
 	RemoveFile($@)							@@\
 	RunProgram(DEPEND,-f- $(DEPENDFLAGS) -- $(ALLDEFINES) $(DEPEND_DEFINES) -- srcs1) > $@	@@\
 	RunProgram(DEPEND,-f- $(DEPENDFLAGS) -- $(ALLDEFINES) $(DEPEND_DEFINES) -- srcs2) >> $@	@@\
