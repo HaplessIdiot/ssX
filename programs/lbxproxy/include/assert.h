@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/lbxproxy/include/assert.h,v 1.2tsi Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -21,8 +21,13 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
  */
+
+#ifndef _LBX_ASSERT_H_
+#define _LBX_ASSERT_H_
+
 #ifdef DEBUG
 #include	<stdio.h>
+#include	<stdlib.h>
 #ifdef SABER
 #define assert(ex)	{if (!(ex)){(void)fprintf(stderr,"Assertion \"ex\" failed: file \"%s\", line %d\n", __FILE__, __LINE__);saber_stop();}}
 #else
@@ -30,4 +35,6 @@
 #endif
 #else
 #define assert(ex)
+#endif
+
 #endif

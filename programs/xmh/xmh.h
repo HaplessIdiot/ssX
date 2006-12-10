@@ -21,7 +21,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xmh/xmh.h,v 1.3 2002/07/01 02:26:05 tsi Exp $ */
+/* $XFree86: xc/programs/xmh/xmh.h,v 1.4tsi Exp $ */
 
 #ifndef _xmh_h
 #define _xmh_h
@@ -60,6 +60,8 @@
 
 #define xMargin 2
 #define yMargin 2
+
+#undef DEBUG
 
 #define DEBUG(msg) \
 	if (app_resources.debug) \

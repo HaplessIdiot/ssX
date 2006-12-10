@@ -23,7 +23,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/parseutils.c,v 1.5 2002/07/01 02:26:01 tsi Exp $ */
+/* $XFree86: xc/programs/xkbcomp/parseutils.c,v 1.6tsi Exp $ */
 
 #define DEBUG_VAR_NOT_LOCAL
 #define	DEBUG_VAR parseDebug
@@ -660,14 +660,14 @@ BAIL:
 void
 PrintStmtAddrs(ParseCommon *stmt)
 {
-    fprintf(stderr,"0x%x",stmt);
+    fprintf(stderr, "0x%lx", (unsigned long)stmt);
     if (stmt) {
 	do {
-	    fprintf(stderr,"->0x%x",stmt->next);
+	    fprintf(stderr, "->0x%lx", (unsigned long)stmt->next);
 	    stmt= stmt->next;
 	} while (stmt);
     }
-    fprintf(stderr,"\n");
+    fprintf(stderr, "\n");
 }
 #endif
 

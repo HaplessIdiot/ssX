@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_accel.c,v 1.1tsi Exp $ */
 /*
 
  *
@@ -116,10 +116,10 @@ Volari_InitCmdQueue(ScrnInfoPtr pScrn)
  /*   unsigned long ulFlag = 0 ; */
 
     PDEBUG(ErrorF("Volari_InitCmdQueue()\n"));
-    PDEBUG(ErrorF( "pXGI->IOBase = 0x%08lX, [%04X] = 0x%08lX\n",(unsigned long)(pXGI->IOBase),0x85c0, XGIMMIOLONG(0x85c0))) ;
-    PDEBUG(ErrorF( "pXGI->IOBase = 0x%08lX, [%04X] = 0x%08lX\n",(unsigned long)(pXGI->IOBase),0x85c4, XGIMMIOLONG(0x85c4))) ;
-    PDEBUG(ErrorF( "pXGI->IOBase = 0x%08lX, [%04X] = 0x%08lX\n",(unsigned long)(pXGI->IOBase),0x85c8, XGIMMIOLONG(0x85c8))) ;
-    PDEBUG(ErrorF( "pXGI->IOBase = 0x%08lX, [%04X] = 0x%08lX\n",(unsigned long)(pXGI->IOBase),0x85cc, XGIMMIOLONG(0x85cc))) ;
+    PDEBUG(ErrorF( "pXGI->IOBase = 0x%08lX, [%04X] = 0x%08lX\n", (unsigned long)pXGI->IOBase, 0x85c0, (unsigned long)XGIMMIOLONG(0x85c0))) ;
+    PDEBUG(ErrorF( "pXGI->IOBase = 0x%08lX, [%04X] = 0x%08lX\n", (unsigned long)pXGI->IOBase, 0x85c4, (unsigned long)XGIMMIOLONG(0x85c4))) ;
+    PDEBUG(ErrorF( "pXGI->IOBase = 0x%08lX, [%04X] = 0x%08lX\n", (unsigned long)pXGI->IOBase, 0x85c8, (unsigned long)XGIMMIOLONG(0x85c8))) ;
+    PDEBUG(ErrorF( "pXGI->IOBase = 0x%08lX, [%04X] = 0x%08lX\n", (unsigned long)pXGI->IOBase, 0x85cc, (unsigned long)XGIMMIOLONG(0x85cc))) ;
 
     inXGIIDXREG(XGICR, 0x55, ulCR55) ;
     andXGIIDXREG(XGICR, 0x55, 0x33) ;
@@ -223,18 +223,18 @@ Volari_InitCmdQueue(ScrnInfoPtr pScrn)
     temp += pXGI->cmdQueueOffset ;
     pXGI->cmdQueueBase = (unsigned char *)temp ;
 
-    PDEBUG(ErrorF( "pXGI->FbBase = 0x%lX\n", pXGI->FbBase )) ;
-    PDEBUG(ErrorF( "pXGI->cmdQueueOffset = 0x%lX\n", pXGI->cmdQueueOffset )) ;
-    PDEBUG(ErrorF( "pXGI->cmdQueueBase = 0x%lX\n", pXGI->cmdQueueBase )) ;
+    PDEBUG(ErrorF( "pXGI->FbBase = 0x%lX\n", (unsigned long)pXGI->FbBase )) ;
+    PDEBUG(ErrorF( "pXGI->cmdQueueOffset = 0x%lX\n", (unsigned long)pXGI->cmdQueueOffset )) ;
+    PDEBUG(ErrorF( "pXGI->cmdQueueBase = 0x%lX\n", (unsigned long)pXGI->cmdQueueBase )) ;
 
     outXGIIDXREG(XGISR, 0x26, ulSR26) ;
 
     ulXGITempRP=Volari_GetHwRP() ;
 
-    PDEBUG(ErrorF( "pXGI->IOBase = 0x%08lX, [%04X] = 0x%08lX\n",(unsigned long)(pXGI->IOBase),0x85c0, XGIMMIOLONG(0x85c0))) ;
-    PDEBUG(ErrorF( "pXGI->IOBase = 0x%08lX, [%04X] = 0x%08lX\n",(unsigned long)(pXGI->IOBase),0x85c4, XGIMMIOLONG(0x85c4))) ;
-    PDEBUG(ErrorF( "pXGI->IOBase = 0x%08lX, [%04X] = 0x%08lX\n",(unsigned long)(pXGI->IOBase),0x85c8, XGIMMIOLONG(0x85c8))) ;
-    PDEBUG(ErrorF( "pXGI->IOBase = 0x%08lX, [%04X] = 0x%08lX\n",(unsigned long)(pXGI->IOBase),0x85cc, XGIMMIOLONG(0x85cc))) ;
+    PDEBUG(ErrorF( "pXGI->IOBase = 0x%08lX, [%04X] = 0x%08lX\n", (unsigned long)pXGI->IOBase, 0x85c0, (unsigned long)XGIMMIOLONG(0x85c0))) ;
+    PDEBUG(ErrorF( "pXGI->IOBase = 0x%08lX, [%04X] = 0x%08lX\n", (unsigned long)pXGI->IOBase, 0x85c4, (unsigned long)XGIMMIOLONG(0x85c4))) ;
+    PDEBUG(ErrorF( "pXGI->IOBase = 0x%08lX, [%04X] = 0x%08lX\n", (unsigned long)pXGI->IOBase, 0x85c8, (unsigned long)XGIMMIOLONG(0x85c8))) ;
+    PDEBUG(ErrorF( "pXGI->IOBase = 0x%08lX, [%04X] = 0x%08lX\n", (unsigned long)pXGI->IOBase, 0x85cc, (unsigned long)XGIMMIOLONG(0x85cc))) ;
 
     /* XGI315 */
     pXGI->cmdQueue_shareWP_only2D = ulXGITempRP;

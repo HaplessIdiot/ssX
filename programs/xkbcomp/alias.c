@@ -23,7 +23,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/alias.c,v 1.5 2002/07/01 02:26:00 tsi Exp $ */
+/* $XFree86: xc/programs/xkbcomp/alias.c,v 1.6tsi Exp $ */
 
 #include "xkbcomp.h"
 #include "misc.h"
@@ -249,7 +249,8 @@ Status		status;
     }
 #ifdef DEBUG
     if ((a-old)!=(nOld+nNew)) {
-	WSGO2("Expected %d aliases total but created %d\n",nOld+nNew,a-old);
+	WSGO2("Expected %d aliases total but created %ld\n",
+	      nOld+nNew, (unsigned long)(a-old));
     }
 #endif
     if (toGeom)	

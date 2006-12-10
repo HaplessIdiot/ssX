@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbtrap.c,v 1.9 2002/09/26 02:56:48 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbtrap.c,v 1.10tsi Exp $
  *
  * Copyright © 2000 University of Southern California
  *
@@ -35,8 +35,10 @@
 #include "fbpict.h"
 
 #ifdef DEBUG
+#ifndef IN_MODULE
 #include <stdio.h>
 #include <assert.h>
+#endif
 
 #define ASSERT(e)   assert(e)
 
@@ -940,10 +942,10 @@ PixelAlpha(xFixed	pixel_x,
 
 #ifdef DEBUG
     fprintf(stderr, "alpha (%f, %f) - (%f, %f) = ",
-	    (double) pw->p1.x / (1 << 16),
-	    (double) pw->p1.y / (1 << 16),
-	    (double) pw->p2.x / (1 << 16),
-	    (double) pw->p2.y / (1 << 16));
+	    (double) pw->p_trap_top.x / (1 << 16),
+	    (double) pw->p_trap_top.y / (1 << 16),
+	    (double) pw->p_trap_bottom.x / (1 << 16),
+	    (double) pw->p_trap_bottom.y / (1 << 16));
     fflush(stderr);
 #endif
 

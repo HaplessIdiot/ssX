@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_driver.h,v 1.2 2005/06/07 01:33:39 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_driver.h,v 1.3tsi Exp $ */
 /*
  * Global data and definitions
  *
@@ -940,7 +940,7 @@ USHORT         XGI_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode,
 				 unsigned long VBFlags, BOOLEAN hcm);
 unsigned char  XGI_GetSetBIOSScratch(ScrnInfoPtr pScrn, USHORT offset, unsigned char value);
 #ifdef DEBUG
-static void    XGIDumpModeInfo(ScrnInfoPtr pScrn, DisplayModePtr mode);
+void           XGIDumpModeInfo(ScrnInfoPtr pScrn, DisplayModePtr mode);
 #endif
 
 extern USHORT   XGI_GetModeID(int VGAEngine, ULONG VBFlags, int HDisplay, int VDisplay,

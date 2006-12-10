@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/twm/add_window.c,v 1.15tsi Exp $ */
 /*****************************************************************************/
 /*
 
@@ -179,7 +179,7 @@ IconMgr *iconp;
     char *name;
 
 #ifdef DEBUG
-    fprintf(stderr, "AddWindow: w = 0x%x\n", w);
+    fprintf(stderr, "AddWindow: w = 0x%lx\n", (unsigned long)w);
 #endif
 
     /* allocate space for the twm window */

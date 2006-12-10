@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/bitmap/BitmapP.h,v 1.4 2001/12/14 20:00:40 dawes Exp $ */
+/* $XFree86: xc/programs/bitmap/BitmapP.h,v 1.5tsi Exp $ */
 
 /*
  * Author:  Davor Matic, MIT X Consortium
@@ -35,6 +35,8 @@ from The Open Group.
 
 #ifndef _BitmapP_h
 #define _BitmapP_h
+
+#undef DEBUG
 
 #define bit int
 

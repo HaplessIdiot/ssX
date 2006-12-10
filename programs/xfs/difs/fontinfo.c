@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xfs/difs/fontinfo.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/xfs/difs/fontinfo.c,v 1.12tsi Exp $ */
 /*
  * font data query
  */
@@ -50,6 +50,7 @@ in this Software without prior written authorization from The Open Group.
 #include        <X11/fonts/FS.h>
 #include        <X11/fonts/FSproto.h>
 #include        <stdio.h>
+#include        <stdlib.h>
 #include        <X11/Xos.h>
 #include        "clientstr.h"
 #include        "difsfnst.h"

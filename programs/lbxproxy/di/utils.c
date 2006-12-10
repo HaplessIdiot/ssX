@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/lbxproxy/di/utils.c,v 1.19 2004/04/03 22:38:54 tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/utils.c,v 1.20tsi Exp $ */
 
 #include "lbx.h"
 #include <stdio.h>
@@ -95,10 +95,8 @@ static Bool Must_have_memory = FALSE;
 /*
  * Debug stuff
  */
-#ifdef DEBUG
-#ifndef SPECIAL_MALLOC
-#define MEMBUG
-#endif
+#ifdef SPECIAL_MALLOC
+#undef MEMBUG
 #endif
 
 #ifdef MEMBUG

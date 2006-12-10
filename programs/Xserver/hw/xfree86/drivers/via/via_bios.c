@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_bios.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_bios.c,v 1.13tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -7202,7 +7202,7 @@ Bool VIAGetBIOSTable(VIABIOSInfoPtr pBIOSInfo)
 
     /* Get the start of biosver structure */
     pRom = pTable + VIA_BIOS_BIOSVER_POS;
-    DEBUG(xf86DrvMsg(pBIOSInfo->scrnIndex, X_INFO, "bcpPost: %X\n", i, *((CARD16 *)pRom)));
+    DEBUG(xf86DrvMsg(pBIOSInfo->scrnIndex, X_INFO, "bcpPost: %X\n", *((CARD16 *)pRom)));
     pRom = pBIOS + *((CARD16 *)pRom);
 
     /* The offset should be 44, but the actual image is less three char. */

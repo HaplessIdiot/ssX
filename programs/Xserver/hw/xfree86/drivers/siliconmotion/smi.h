@@ -24,7 +24,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from the XFree86 Project and Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi.h,v 1.17tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi.h,v 1.18tsi Exp $ */
 
 #ifndef _SMI_H
 #define _SMI_H
@@ -252,7 +252,7 @@ typedef struct
 /*			M A C R O S					      */
 /******************************************************************************/
 
-#if SMI_DEBUG
+#if SMI_DEBUG || defined(DEBUG)
 # define VERBLEV 1
 # define ENTER_PROC(PROCNAME)						\
 	 xf86ErrorFVerb(VERBLEV, "ENTER\t" PROCNAME "(%d)\n", __LINE__);\
@@ -263,6 +263,7 @@ typedef struct
 # define LEAVE_PROC(PROCNAME)						\
 	 xf86ErrorFVerb(VERBLEV, "LEAVE\t" PROCNAME "(%d)\n", __LINE__);\
 	 xf86Break1()
+# undef  DEBUG
 # define DEBUG(arg)	xf86ErrorFVerb arg
 #else
 # define VERBLEV 4

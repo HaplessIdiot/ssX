@@ -19,7 +19,7 @@ INCIDENTAL OR CONSEQUENTIAL DAMAGES, ARISING OUT OF OR IN ANY WAY CONNECTED
 WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 
 */
-/* $XFree86: xc/lib/font/Speedo/out_bl2d.c,v 1.4 2001/01/17 19:43:17 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/out_bl2d.c,v 1.5tsi Exp $ */
 
 /*************************** O U T _ B L 2 D . C *****************************
  *                                                                           *
@@ -30,12 +30,14 @@ WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 #include "spdo_prv.h"              /* General definitions for speedo */
 
 #define   CLOCKWISE  1
+#ifndef   DEBUG
 #define   DEBUG      0
+#endif
 #define   ABS(X)     ( (X < 0) ? -X : X)
 
 #if DEBUG
 #include <stdio.h>
-#define SHOW(X) printf("X = %d\n", X)
+#define SHOW(X) printf("X = %lx\n", (unsigned long)X)
 #else
 #define SHOW(X)
 #endif

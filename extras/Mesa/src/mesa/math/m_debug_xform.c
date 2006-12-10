@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Mesa 3-D graphics library
  * Version:  6.1
@@ -187,7 +188,7 @@ static int test_transform_function( transform_func func, int psize,
    mat->type = mtypes[mtype];
 
    m = mat->m;
-   ASSERT( ((GLuint)m & 15) == 0 );
+   ASSERT( ((unsigned long)m & 15) == 0 );
 
    init_matrix( m );
 

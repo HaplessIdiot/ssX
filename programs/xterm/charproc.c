@@ -1,6 +1,6 @@
 /* $XTermId: charproc.c,v 1.681 2006/06/19 22:45:57 tom Exp $ */
 
-/* $XFree86: xc/programs/xterm/charproc.c,v 3.184 2006/06/19 00:36:51 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/charproc.c,v 3.185tsi Exp $ */
 
 /*
 
@@ -2812,8 +2812,8 @@ v_write(int f, Char * data, unsigned len)
     }
 #ifdef DEBUG
     if (debug) {
-	fprintf(stderr, "v_write called with %d bytes (%d left over)",
-		len, v_bufptr - v_bufstr);
+	fprintf(stderr, "v_write called with %d bytes (%ld left over)",
+		len, (unsigned long)(v_bufptr - v_bufstr));
 	if (len > 1 && len < 10)
 	    fprintf(stderr, " \"%.*s\"", len, (char *) data);
 	fprintf(stderr, "\n");
@@ -2847,8 +2847,8 @@ v_write(int f, Char * data, unsigned len)
 		/* possibly overlapping memmove here */
 #ifdef DEBUG
 		if (debug)
-		    fprintf(stderr, "moving data down %d\n",
-			    v_bufstr - v_buffer);
+		    fprintf(stderr, "moving data down %ld\n",
+			    (unsigned long)(v_bufstr - v_buffer));
 #endif
 		memmove(v_buffer, v_bufstr, (unsigned) (v_bufptr - v_bufstr));
 		v_bufptr -= v_bufstr - v_buffer;
@@ -2925,9 +2925,10 @@ v_write(int f, Char * data, unsigned len)
 	}
 #ifdef DEBUG
 	if (debug)
-	    fprintf(stderr, "write called with %d, wrote %d\n",
+	    fprintf(stderr, "write called with %ld, wrote %d\n",
+		    (unsigned long)(
 		    v_bufptr - v_bufstr <= MAX_PTY_WRITE ?
-		    v_bufptr - v_bufstr : MAX_PTY_WRITE,
+		    v_bufptr - v_bufstr : MAX_PTY_WRITE),
 		    riten);
 #endif
 	v_bufstr += riten;

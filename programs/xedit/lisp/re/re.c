@@ -27,11 +27,14 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/re/re.c,v 1.8 2002/11/17 07:51:30 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/re/re.c,v 1.9tsi Exp $ */
 
 #include <stdio.h>
 #include "rep.h"
+
+#undef DEBUG
 #define DEBUG
+
 /*
  * Types
  */

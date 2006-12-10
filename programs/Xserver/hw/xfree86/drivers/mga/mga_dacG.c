@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200, MGA-G400, MGA-G550 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.57 2004/11/26 11:48:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.58tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -797,8 +797,8 @@ MGA_NOT_HAL(
 		ErrorF("0x%02X, ", mgaReg->DacRegs[i]);
 #endif
 	}
-	ErrorF("\nOPTION  = %08lX\n", mgaReg->Option);
-	ErrorF("OPTION2 = %08lX\n", mgaReg->Option2);
+	ErrorF("\nOPTION  = %08lX\n", (unsigned long)mgaReg->Option);
+	ErrorF("OPTION2 = %08lX\n", (unsigned long)mgaReg->Option2);
 	ErrorF("CRTCEXT:");
 	for (i=0; i<6; i++) ErrorF(" %02X", mgaReg->ExtVga[i]);
 	ErrorF("\n");
@@ -907,8 +907,8 @@ MGAGSave(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 		ErrorF("0x%02X, ", mgaReg->DacRegs[i]);
 #endif
 	}
-	ErrorF("\nOPTION  = %08lX\n:", mgaReg->Option);
-	ErrorF("OPTION2 = %08lX\nCRTCEXT:", mgaReg->Option2);
+	ErrorF("\nOPTION  = %08lX\n:", (unsigned long)mgaReg->Option);
+	ErrorF("OPTION2 = %08lX\nCRTCEXT:", (unsigned long)mgaReg->Option2);
 	for (i=0; i<6; i++) ErrorF(" %02X", mgaReg->ExtVga[i]);
 	ErrorF("\n");
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.94 2006/03/30 22:35:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.95tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -3853,7 +3853,7 @@ static void I830SetCloneVBERefresh(ScrnInfoPtr pScrn, int mode, VbeCRTCInfoBlock
          clock = VBEGetPixelClock(pI830->pVbe, mode, block->PixelClock);
 #ifdef DEBUG
          ErrorF("Setting clock %.2fMHz, closest is %.2fMHz\n",
-                    (double)data->block->PixelClock / 1000000.0, 
+                    (double)block->PixelClock / 1000000.0, 
                     (double)clock / 1000000.0);
 #endif
          if (clock)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_driver.c,v 1.17 2006/03/16 16:50:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_driver.c,v 1.18tsi Exp $ */
 /*
  * File Contents: This is the main module configures the interfacing 
  *                with the X server. The individual modules will be 
@@ -144,7 +144,6 @@
  * Alan Hourihane <alanh@fairlite.demon.co.uk>
  */
 
-#define DEBUG(x)
 #define GEODE_TRACE 0
 #define HWVGA 0
 

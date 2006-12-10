@@ -69,7 +69,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.38tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.39tsi Exp $ */
 
 #include "misc.h"
 #include "scrnintstr.h"
@@ -159,7 +159,7 @@ int deltaSaveUndersViewable = 0;
  *    For debugging only
  ******/
 
-int
+void
 PrintChildren(WindowPtr p1, int indent)
 {
     WindowPtr p2;
@@ -169,13 +169,14 @@ PrintChildren(WindowPtr p1, int indent)
     {
 	p2 = p1->firstChild;
 	for (i=0; i<indent; i++) ErrorF( " ");
-	ErrorF( "%x\n", p1->drawable.id);
+	ErrorF( "%lx\n", (unsigned long)p1->drawable.id);
 	miPrintRegion(&p1->clipList);
 	PrintChildren(p2, indent+4);
 	p1 = p1->nextSib;
     }
 }
 
+void
 PrintWindowTree()
 {
     int i;

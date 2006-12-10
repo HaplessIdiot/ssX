@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_g450pll.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_g450pll.c,v 1.9tsi Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -137,7 +137,8 @@ static CARD32 G450FindNextPLLParam(ScrnInfoPtr pScrn, CARD32 ulFout,
       *pulPLLMNP |= (CARD32)ucP;
       
 #ifdef DEBUG
-      ErrorF("FINS_S: VCO = %d, S = %02X, *pulPLLMNP = %08X\n", ulVCO, (ULONG)ucS, *pulPLLMNP);
+      ErrorF("FINS_S: VCO = %ld, S = %02X, *pulPLLMNP = %08lX\n",
+	(unsigned long)ulVCO, ucS, (unsigned long)*pulPLLMNP);
 #endif
   }
 
@@ -319,7 +320,7 @@ double MGAG450SetPLLFreq(ScrnInfoPtr pScrn, long f_out)
    MGAPtr pMga = MGAPTR(pScrn);
 
 #ifdef DEBUG
-   xf86DrvMsg(pScrn->scrnIndex,X_INFO, "Restoring PLLClk = %d\n",f_out);
+   xf86DrvMsg(pScrn->scrnIndex,X_INFO, "Restoring PLLClk = %ld\n",f_out);
 #endif
    G450FindFirstPLLParam(pScrn, f_out, &ulMNP);
    ulMNPTable[0] = ulMNP;

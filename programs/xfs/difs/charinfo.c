@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xfs/difs/charinfo.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/xfs/difs/charinfo.c,v 1.13tsi Exp $ */
 /*
  
 Copyright 1990, 1991, 1998  The Open Group
@@ -50,6 +50,7 @@ in this Software without prior written authorization from The Open Group.
  * the font library interface as util/fsfuncs.c.
  */
 
+#include <stdlib.h>
 #include <X11/Xos.h>
 #include "misc.h"
 #include <X11/fonts/fontstruct.h>

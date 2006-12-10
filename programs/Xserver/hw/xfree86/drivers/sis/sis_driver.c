@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.204 2006/03/16 16:50:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.205tsi Exp $ */
 /*
  * SiS driver main code
  *
@@ -9045,7 +9045,7 @@ SISSaveScreenDH(ScreenPtr pScreen, int mode)
 #endif
 
 #ifdef DEBUG
-static void
+void
 SiSDumpModeInfo(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
     xf86DrvMsg(pScrn->scrnIndex,X_INFO, "Clock : %x\n", mode->Clock);

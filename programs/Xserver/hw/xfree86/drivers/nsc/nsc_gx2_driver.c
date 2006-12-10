@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_driver.c,v 1.16 2006/03/16 16:50:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_driver.c,v 1.17tsi Exp $ */
 /*
  * File Contents: This is the main module configures the interfacing 
  *                with the X server. The individual modules will be 
@@ -139,7 +139,6 @@
  *
  * END_NSC_LIC_GPL */
 
-#define DEBUG(x)
 #define GEODE_TRACE 0
 
 /* Includes that are used by all drivers */

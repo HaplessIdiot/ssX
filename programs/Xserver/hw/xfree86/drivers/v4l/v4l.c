@@ -2,7 +2,7 @@
  *  video4linux Xv Driver 
  *  based on Michael Schimek's permedia 2 driver.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.35 2005/10/14 15:16:48 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.36dawes Exp $ */
 
 #include "videodev.h"
 #include "xf86.h"
@@ -19,7 +19,8 @@
 
 #include <asm/ioctl.h>		/* _IORW(xxx) #defines are here */
 
-#if 0
+#ifdef DEBUG
+# undef DEBUG
 # define DEBUG(x) (x)
 #else
 # define DEBUG(x)

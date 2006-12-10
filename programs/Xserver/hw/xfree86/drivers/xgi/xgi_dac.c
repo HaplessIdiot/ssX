@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_dac.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_dac.c,v 1.2tsi Exp $ */
 /*
  * DAC helper functions (Save/Restore, MemClk, etc)
  *
@@ -177,7 +177,7 @@ XGICalcClock(ScrnInfoPtr pScrn, int clock, int max_VLD, unsigned int *vclk)
     double Fvco, Fout;
     double error, aerror;
 #ifdef DEBUG
-    double bestFout;
+    double bestFout = 0;
 #endif
 
     /*
@@ -345,7 +345,7 @@ PDEBUG(ErrorF("--- Volari_Restore(). \n")) ;
     PDEBUG(ErrorF("--- MMIO Info. \n")) ;
 	for( i = 0x85c0 ;i <= 0x85CC ; i+=4 )
 	{
-		ErrorF("MMIO[0x%04lX] = 0x%08X\n", i, MMIO_IN32(pXGI->IOBase,i)) ;
+		ErrorF("MMIO[0x%04X] = 0x%08X\n", i, MMIO_IN32(pXGI->IOBase,i)) ;
 	}
 #endif
 #else

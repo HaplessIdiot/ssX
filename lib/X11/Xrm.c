@@ -47,7 +47,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xrm.c,v 3.24 2004/03/30 10:34:05 eich Exp $ */
+/* $XFree86: xc/lib/X11/Xrm.c,v 3.25tsi Exp $ */
 
 #include	<stdio.h>
 #include	<ctype.h>
@@ -434,7 +434,7 @@ XrmStringToBindingQuarkList(
 
 #ifdef DEBUG
 
-static void PrintQuarkList(
+void PrintQuarkList(
     XrmQuarkList    quarks,
     FILE	    *stream)
 {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.h,v 1.42 2006/01/09 15:00:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.h,v 1.43tsi Exp $ */
 /*
  * Global data and definitions
  *
@@ -1319,7 +1319,7 @@ BOOLEAN        SiSBridgeIsInSlaveMode(ScrnInfoPtr pScrn);
 USHORT	       SiS_GetModeNumber(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBFlags);
 unsigned char  SiS_GetSetBIOSScratch(ScrnInfoPtr pScrn, USHORT offset, unsigned char value);
 #ifdef DEBUG
-static void    SiSDumpModeInfo(ScrnInfoPtr pScrn, DisplayModePtr mode);
+void           SiSDumpModeInfo(ScrnInfoPtr pScrn, DisplayModePtr mode);
 #endif
 void           SISDetermineLCDACap(ScrnInfoPtr pScrn);
 void           SISSaveDetectedDevices(ScrnInfoPtr pScrn);

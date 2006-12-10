@@ -23,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/cmsMath.c,v 3.5 2001/12/14 19:54:10 dawes Exp $ */
+/* $XFree86: xc/lib/X11/cmsMath.c,v 3.6tsi Exp $ */
 
 /*
  * Stephen Gildea, MIT X Consortium, January 1991
@@ -31,6 +31,9 @@ in this Software without prior written authorization from The Open Group.
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
+#ifdef DEBUG
+#include <stdio.h>
+#endif
 
 #include <float.h>
 #ifndef DBL_EPSILON
