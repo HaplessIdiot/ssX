@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.57tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.58tsi Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -150,7 +150,7 @@ Mask DontPropagateMasks[DNPMCOUNT];
 static int DontPropagateRefCnts[DNPMCOUNT];
 
 #ifdef DEBUG
-static debug_events = 0;
+static int debug_events = 0;
 #endif
 InputInfo inputInfo;
 
@@ -2639,7 +2639,7 @@ ProcessKeyboardEvent(xEvent *xE, DeviceIntPtr keybd, int count)
     kptr = &keyc->down[key >> 3];
     bit = 1 << (key & 7);
     modifiers = keyc->modifierMap[key];
-#ifdef DEBUG
+#if defined(DEBUG) && defined(XKB)
     if ((xkbDebugFlags&0x4)&&
 	((xE->u.u.type==KeyPress)||(xE->u.u.type==KeyRelease))) {
 	ErrorF("CoreProcessKbdEvent: Key %d %s\n",key,

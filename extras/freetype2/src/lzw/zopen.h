@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*-
  * Copyright (c) 1985, 1986, 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -40,7 +41,9 @@
  *
  */
 
+#ifndef FONTMODULE
 #include <stdio.h>
+#endif
 
 #define	BITS		16		/* Default bits. */
 #define	HSIZE		69001		/* 95% occupancy */

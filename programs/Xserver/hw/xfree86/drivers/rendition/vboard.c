@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.c,v 1.19 2003/11/06 18:38:04 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.c,v 1.20tsi Exp $ */
 /*
  * includes
  */
@@ -157,7 +157,7 @@ verite_getmemorysize(ScrnInfoPtr pScreenInfo)
     verite_write_memory32(pRendition->board.vmem_base, 0, START);
     for (offset=ONEMEG; offset<16*ONEMEG; offset+=ONEMEG) {
 #ifdef DEBUG
-        ErrorF( "Testing %d MB: ", offset/ONEMEG);
+        ErrorF( "Testing %ld MB: ", (unsigned long)(offset/ONEMEG));
 #endif
         pattern=verite_read_memory32(pRendition->board.vmem_base, offset);
         if (START == pattern) {
@@ -215,8 +215,8 @@ verite_check_csucode(ScrnInfoPtr pScreenInfo)
   verite_out8(iob+MEMENDIAN, MEMENDIAN_NO);
 
 #ifdef DEBUG
-  ErrorF("Checking presence of csucode @ 0x%x + 0x800\n",
-	 pRendition->board.vmem_base);
+  ErrorF("Checking presence of csucode @ 0x%lx + 0x800\n",
+	 (unsigned long)pRendition->board.vmem_base);
 
   if (0x800 != pRendition->board.csucode_base)
     ErrorF("pRendition->board.csucode_base == 0x%x\n",
@@ -235,9 +235,9 @@ verite_check_csucode(ScrnInfoPtr pScreenInfo)
       mismatches++;
     }
 #ifdef DEBUG
-  ErrorF("Encountered %d out of %d possible mismatches\n",
+  ErrorF("Encountered %d out of %ld possible mismatches\n",
 	 mismatches,
-	 sizeof(csrisc)/sizeof(vu32));
+	 (unsigned long)(sizeof(csrisc)/sizeof(vu32)));
 #endif
 
   verite_out8(iob+MEMENDIAN, memend);

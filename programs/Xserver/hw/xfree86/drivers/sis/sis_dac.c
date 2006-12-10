@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.64 2004/07/07 21:20:41 twini Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.65tsi Exp $ */
 /*
  * DAC helper functions (Save/Restore, MemClk, etc)
  *
@@ -220,7 +220,7 @@ SiSCalcClock(ScrnInfoPtr pScrn, int clock, int max_VLD, unsigned int *vclk)
     double Fvco, Fout;
     double error, aerror;
 #ifdef DEBUG
-    double bestFout;
+    double bestFout=0;
 #endif
 
     /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.173 2006/03/21 03:56:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.174tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -318,7 +318,7 @@ void
 xf86ProcessActionEvent(ActionEvent action, void *arg)
 {
 #ifdef DEBUG
-    ErrorF("ProcessActionEvent(%d,%x)\n", (int) action, arg);
+    ErrorF("ProcessActionEvent(%d,%lx)\n", (int)action, (unsigned long)arg);
 #endif
     switch (action) {
     case ACTION_TERMINATE:

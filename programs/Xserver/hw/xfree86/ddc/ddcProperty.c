@@ -3,7 +3,7 @@
  * 
  * Copyright 1999 by Andrew C Aitchison <A.C.Aitchison@dpmms.cam.ac.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/ddcProperty.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/ddcProperty.c,v 1.12tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -134,7 +134,7 @@ xf86SetDDCproperties(ScrnInfoPtr pScrnInfo, xf86MonPtr DDC)
 	     xf86RegisterRootWindowProperty,
 	     pScrnInfo->scrnIndex,
 	     VDIFAtom, XA_STRING, 8,
-	     strlen(VDIF_DUMMY_STRING), VDIF_DUMMY_STRING 
+	     (int)strlen(VDIF_DUMMY_STRING), VDIF_DUMMY_STRING 
 	     );
 #endif
 

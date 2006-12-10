@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/TranslateI.h,v 1.5 2004/05/05 00:07:03 dickey Exp $ */
+/* $XFree86: xc/lib/Xt/TranslateI.h,v 1.6tsi Exp $ */
 
 /*
  * TranslateI.h - Header file private to translation management
@@ -259,7 +259,7 @@ typedef struct _TMConvertRec {
     XtTranslations	new; /* table to merge from */
 } TMConvertRec;
 
-#define _XtEventTimerEventType ((TMLongCard)~0L)
+#define _XtEventTimerEventType ((TMLongCard)~0U)
 #define KeysymModMask		(1L<<27) /* private to TM */
 #define AnyButtonMask		(1L<<28) /* private to TM */
 

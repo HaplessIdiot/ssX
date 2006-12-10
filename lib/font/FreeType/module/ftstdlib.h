@@ -1,5 +1,5 @@
 /* ftstdlib.h -- modified for XFree86. */
-/* $XFree86: xc/lib/font/FreeType/module/ftstdlib.h,v 1.3tsi Exp $ */
+/* $XFree86: xc/lib/font/FreeType/module/ftstdlib.h,v 1.4tsi Exp $ */
 
 /***************************************************************************/
 /*                                                                         */
@@ -187,10 +187,19 @@
 #define ft_setjmp    setjmp
 #define ft_longjmp   longjmp
 
+#undef  exit
+#define exit         xf86exit
+
+#undef  fprintf
+#define fprintf      xf86fprintf
+
 #undef  memcpy
 #define memcpy       xf86memcpy
 #undef  memset
 #define memset       xf86memset
+
+#undef  stderr
+#define stderr       xf86stderr
 
 #endif /* FONTMODULE */
 

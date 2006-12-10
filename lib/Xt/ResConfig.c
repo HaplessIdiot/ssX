@@ -51,7 +51,7 @@ dealings in this Software without prior written authorization from the IBM
 Corporation.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/ResConfig.c,v 3.10 2005/11/13 21:25:00 dickey Exp $ */
+/* $XFree86: xc/lib/Xt/ResConfig.c,v 3.11tsi Exp $ */
 
 #include "Intrinsic.h"
 #include "IntrinsicI.h"
@@ -930,10 +930,12 @@ _XtResourceConfigurationEH (
 	XtPerDisplay	pd;
 
 #ifdef DEBUG
-	fprintf (stderr, "in _XtResourceConfiguationEH atom = %d\n",event->xproperty.atom);
-	fprintf (stderr, "    window = %x\n", XtWindow (w));
+	fprintf (stderr, "in _XtResourceConfiguationEH atom = %ld\n",
+		 event->xproperty.atom);
+	fprintf (stderr, "    window = %lx\n", (unsigned long)XtWindow (w));
 	if (XtIsWidget (w))
-		fprintf (stderr, "    widget = %x   name = %s\n", w, w->core.name);
+		fprintf (stderr, "    widget = %lx   name = %s\n",
+			 (unsigned long)w, w->core.name);
 #endif
 
 	pd = _XtGetPerDisplay (XtDisplay (w));
@@ -999,7 +1001,7 @@ _XtResourceConfigurationEH (
 			resource = XtNewString (data_ptr);
 			value = XtNewString (&data_ptr[resource_len + 1]);
 #ifdef DEBUG
-			fprintf (stderr, "resource_len=%d\n",resource_len);
+			fprintf (stderr, "resource_len=%ld\n",resource_len);
 			fprintf (stderr, "resource = %s\t value = %s\n",
 					resource, value);
 #endif

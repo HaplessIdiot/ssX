@@ -8,7 +8,7 @@
    subject to change. Applications should only use zlib.h.
  */
 
-/* $XFree86: xc/extras/freetype2/src/gzip/zutil.h,v 1.3 2004/04/26 16:15:54 dawes Exp $ */
+/* $XFree86: xc/extras/freetype2/src/gzip/zutil.h,v 1.4tsi Exp $ */
 
 #ifndef _Z_UTIL_H
 #define _Z_UTIL_H
@@ -186,7 +186,9 @@ typedef unsigned long  ulg;
 
 /* Diagnostic functions */
 #ifdef DEBUG
-#  include <stdio.h>
+#  ifndef FONTMODULE
+#    include <stdio.h>
+#  endif
    extern int z_verbose;
    extern void z_error    OF((char *m));
 #  define Assert(cond,msg) {if(!(cond)) z_error(msg);}

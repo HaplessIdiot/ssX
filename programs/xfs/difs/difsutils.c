@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xfs/difs/difsutils.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/xfs/difs/difsutils.c,v 1.9tsi Exp $ */
 /*
  * misc utility routines
  */
@@ -52,6 +52,7 @@ in this Software without prior written authorization from The Open Group.
 #include	<difsutils.h>
 
 #include	<stdio.h>
+#include	<stdlib.h>
 #include	<ctype.h>
 #include	"misc.h"
 #include	"globals.h"

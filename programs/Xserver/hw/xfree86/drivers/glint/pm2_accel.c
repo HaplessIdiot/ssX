@@ -30,7 +30,7 @@
  * 
  * Permedia 2 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.32tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.33tsi Exp $ */
 
 #include <X11/Xarch.h>
 #include "xf86.h"
@@ -49,7 +49,9 @@
 
 #include "xaalocal.h"		/* For replacements */
 
+#ifndef DEBUG
 #define DEBUG 0
+#endif
 
 #if DEBUG
 # define TRACE_ENTER(str)       ErrorF("pm2_accel: " str " %d\n",pScrn->scrnIndex)

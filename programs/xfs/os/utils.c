@@ -45,7 +45,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/utils.c,v 3.22 2004/04/03 10:50:36 herrb Exp $ */
+/* $XFree86: xc/programs/xfs/os/utils.c,v 3.23tsi Exp $ */
 
 #include	<stdio.h>
 #include	<X11/Xos.h>
@@ -106,10 +106,12 @@ Bool        portFromCmdline = FALSE;
 OldListenRec *OldListen = NULL;
 int 	     OldListenCount = 0;
 
+#ifdef DEBUG
 #ifdef STDERR_FILENO
-# define WRITES write(STDERR_FILENO, s, strlen(s))
+# define WRITES(s) write(STDERR_FILENO, s, strlen(s))
 #else
-# define WRITES write(fileno(stderr), s, strlen(s))
+# define WRITES(s) write(fileno(stderr), s, strlen(s))
+#endif
 #endif
 
 static char *pidFile = XFSPIDDIR "/xfs.pid";

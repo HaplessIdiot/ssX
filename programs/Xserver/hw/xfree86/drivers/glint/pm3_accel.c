@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.32tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.33tsi Exp $ */
 
 #include <X11/Xarch.h>
 #include "xf86.h"
@@ -44,7 +44,9 @@
 #include "pm3_regs.h"
 #include "glint.h"
 
+#ifndef DEBUG
 #define DEBUG 0
+#endif
 
 #if DEBUG
 # define TRACE_ENTER(str)       ErrorF("pm3_accel: " str " %d\n",pScrn->scrnIndex)

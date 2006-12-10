@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.87tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.88tsi Exp $ */
 /*
  * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1414,7 +1414,7 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, unsigned long type)
     (*p_base) = H2B(tag,range.rBegin,type);
 #ifdef DEBUG
     ErrorF("New PCI res %i base: 0x%lx, size: 0x%lx, type %s\n",
-	   res_n,(*p_base),(1 << (*p_size)),
+	   res_n, *p_base, (1UL << *p_size),
 	   ((type & ResPhysMask) == ResMem) ? "Mem" : "Io");
 #endif
     if (res_n != 0xff) {

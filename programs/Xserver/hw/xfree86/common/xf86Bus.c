@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.96tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.97tsi Exp $ */
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -2557,7 +2557,7 @@ xf86PostScreenInit(void)
 	}
 #endif
 #ifdef DEBUG
-    ErrorF("PostScreenInit  generation: %i\n",serverGeneration);
+    ErrorF("PostScreenInit  generation: %li\n",serverGeneration);
 #endif
     if (serverGeneration == 1) {
 	checkRoutingForScreens(OPERATING);

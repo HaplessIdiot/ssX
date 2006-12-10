@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xf86dga/dga.c,v 3.19 2001/10/28 03:34:32 tsi Exp $ */
+/* $XFree86: xc/programs/xf86dga/dga.c,v 3.20tsi Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Intrinsic.h>
@@ -148,8 +148,8 @@ main(int argc, char *argv[])
 
    banks = (ram * 1024)/bank;
 #ifdef DEBUG
-   fprintf(stderr, "%x ram:%x, addr %x, banks %d\n", True,
-	   ram, addr, banks);
+   fprintf(stderr, "%x ram:%x, addr %lx, banks %d\n", True,
+	   ram, (unsigned long)addr, banks);
 #endif
    while (1) {
       XMotionEvent *mevent = (XMotionEvent *) &event;
@@ -225,7 +225,8 @@ main(int argc, char *argv[])
 		memset(addr, buf[0], bank);
 #ifdef DEBUG
    fprintf(stderr, "XF86DGASetVidPage(dis, DefaultScreen(dis), %d);\n",i);
-   fprintf(stderr, "memset(addr:%x, buf[0]:%d, bank:%d);\n",addr,buf[0],bank);
+   fprintf(stderr, "memset(addr:%lx, buf[0]:%d, bank:%d);\n",
+	   (unsigned long)addr,buf[0],bank);
 #endif
 	 }
 	 break;

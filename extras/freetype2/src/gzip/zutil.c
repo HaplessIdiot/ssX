@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /* zutil.c -- target dependent utility functions for the compression library
  * Copyright (C) 1995-2002 Jean-loup Gailly.
  * For conditions of distribution and use, see copyright notice in zlib.h
@@ -7,6 +8,24 @@
 
 #ifndef STDC
 extern void exit OF((int));
+#endif
+
+#ifdef DEBUG
+#  ifndef FONTMODULE
+#    include <stdlib.h>
+#  endif
+
+#  ifndef verbose
+#    define verbose 0
+#  endif
+int z_verbose = verbose;
+
+void z_error (m)
+    char *m;
+{
+    fprintf(stderr, "%s\n", m);
+    exit(1);
+}
 #endif
 
 

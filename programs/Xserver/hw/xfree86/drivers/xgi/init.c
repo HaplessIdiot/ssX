@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/init.c,v 1.2 2005/06/07 01:33:39 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/init.c,v 1.3tsi Exp $ */
 /*
  * Mode initializing code (CRT1 section) 
  * (Universal module for Linux kernel framebuffer and XFree86 4.x)
@@ -1652,7 +1652,7 @@ XGIBIOSSetMode(XGI_Private *XGI_Pr, PXGI_HW_DEVICE_INFO HwInfo, ScrnInfoPtr pScr
 
    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3, "Setting standard mode 0x%x\n", ModeNo);
 
-   PDEBUG(ErrorF("C code setmode: ModeNo: 0x%08lX \n",ModeNo));
+   PDEBUG(ErrorF("C code setmode: ModeNo: 0x%04X \n",ModeNo));
 
 /* PDEBUG(XGIDumpRegs(pScrn)) ; */
 /*

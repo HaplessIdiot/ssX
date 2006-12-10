@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_driver.c,v 1.9 2006/03/16 16:50:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_driver.c,v 1.10tsi Exp $ */
 /*
  * XGI driver main code
  *
@@ -5127,7 +5127,7 @@ XGISaveScreenDH(ScreenPtr pScreen, int mode)
 #endif
 
 #ifdef DEBUG
-static void
+void
 XGIDumpModeInfo(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
     xf86DrvMsg(pScrn->scrnIndex,X_INFO, "Clock : %x\n", mode->Clock);
@@ -6119,7 +6119,7 @@ XGIDumpRegs(ScrnInfoPtr pScrn)
     ErrorF("----------------------------------------------------------------------\n") ;
     for( i = 0 ; i < 0x40 ; i++ ){
         inXGIIDXREG(XGISR, i, temp ) ;
-        ErrorF("SR%02X = 0x%02X   ", i, temp ) ;
+        ErrorF("SR%02X = 0x%02lX   ", i, temp ) ;
         if( ((i+1) % 4) == 0 )
         {
             ErrorF("\n") ;
@@ -6135,7 +6135,7 @@ XGIDumpRegs(ScrnInfoPtr pScrn)
     ErrorF("----------------------------------------------------------------------\n") ;
     for( i = 0 ; i < 0x80 ; i++ ){
         inXGIIDXREG(XGICR, i, temp ) ;
-        ErrorF("CR%02X = 0x%02X   ", i, temp ) ;
+        ErrorF("CR%02X = 0x%02lX   ", i, temp ) ;
         if( ((i+1) % 4) == 0 )
         {
             ErrorF("\n") ;
@@ -6151,7 +6151,7 @@ XGIDumpRegs(ScrnInfoPtr pScrn)
     ErrorF("----------------------------------------------------------------------\n") ;
     for( i = 0 ; i < 0x9 ; i++ ){
         inXGIIDXREG(XGIGR, i, temp ) ;
-        ErrorF("GR%02X = 0x%02X   ", i, temp ) ;
+        ErrorF("GR%02X = 0x%02lX   ", i, temp ) ;
         if( ((i+1) % 4) == 0 )
         {
             ErrorF("\n") ;
@@ -6168,7 +6168,7 @@ XGIDumpRegs(ScrnInfoPtr pScrn)
     ErrorF("----------------------------------------------------------------------\n") ;
     for( i = 0 ; i < 0x100 ; i++ ){
         inXGIIDXREG(XGIPART1, i, temp ) ;
-        ErrorF("PART1_%02X = 0x%02X   ", i, temp ) ;
+        ErrorF("PART1_%02X = 0x%02lX   ", i, temp ) ;
         if( ((i+1) % 4) == 0 )
         {
             ErrorF("\n") ;
@@ -6185,7 +6185,7 @@ XGIDumpRegs(ScrnInfoPtr pScrn)
     ErrorF("----------------------------------------------------------------------\n") ;
     for( i = 0 ; i < 0x100 ; i++ ){
         inXGIIDXREG(XGIPART2, i, temp ) ;
-        ErrorF("PART2_%02X = 0x%02X   ", i, temp ) ;
+        ErrorF("PART2_%02X = 0x%02lX   ", i, temp ) ;
         if( ((i+1) % 4) == 0 )
         {
             ErrorF("\n") ;
@@ -6202,7 +6202,7 @@ XGIDumpRegs(ScrnInfoPtr pScrn)
     ErrorF("----------------------------------------------------------------------\n") ;
     for( i = 0 ; i < 0x100 ; i++ ){
         inXGIIDXREG(XGIPART3, i, temp ) ;
-        ErrorF("PART3_%02X = 0x%02X   ", i, temp ) ;
+        ErrorF("PART3_%02X = 0x%02lX   ", i, temp ) ;
         if( ((i+1) % 4) == 0 )
         {
             ErrorF("\n") ;
@@ -6219,7 +6219,7 @@ XGIDumpRegs(ScrnInfoPtr pScrn)
     ErrorF("----------------------------------------------------------------------\n") ;
     for( i = 0 ; i < 0x100 ; i++ ){
         inXGIIDXREG(XGIPART4, i, temp ) ;
-        ErrorF("PART4_%02X = 0x%02X   ", i, temp ) ;
+        ErrorF("PART4_%02X = 0x%02lX   ", i, temp ) ;
         if( ((i+1) % 4) == 0 )
         {
             ErrorF("\n") ;

@@ -19,7 +19,7 @@ INCIDENTAL OR CONSEQUENTIAL DAMAGES, ARISING OUT OF OR IN ANY WAY CONNECTED
 WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 
 */
-/* $XFree86: xc/lib/font/Speedo/set_trns.c,v 1.6 2003/05/27 22:26:44 tsi Exp $ */
+/* $XFree86: xc/lib/font/Speedo/set_trns.c,v 1.7tsi Exp $ */
 
 
 
@@ -34,14 +34,17 @@ WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 
 #include "spdo_prv.h"               /* General definitions for Speedo   */
 
-#define   DEBUG      0
+#ifndef DEBUG
+#define DEBUG 0
+#endif
 
 #if DEBUG
 #include <stdio.h>
-#define SHOW(X) printf("X = %d\n", X)
+#define SHOW(X) printf("X = %lx\n", (unsigned long)X)
 #else
 #define SHOW(X)
 #endif
+
 /***** LOCAL MACROS     *****/
 
 #define SQUEEZE_X_ORU(A,B,C) ((((fix31)A * (fix31)B) + C) >> 16)

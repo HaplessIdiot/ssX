@@ -24,11 +24,12 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Chris D. Peterson, MIT X Consortium
  */
-/* $XFree86: xc/programs/editres/editresP.h,v 1.7 2001/12/14 20:00:42 dawes Exp $ */
+/* $XFree86: xc/programs/editres/editresP.h,v 1.8tsi Exp $ */
 
 #include <X11/Xmu/EditresP.h>
 #include <X11/Xresource.h>
 
+#undef DEBUG
 #define DEBUG
 
 #ifdef DEBUG

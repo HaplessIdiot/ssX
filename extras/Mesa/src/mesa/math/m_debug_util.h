@@ -1,9 +1,9 @@
-
+/* $XFree86$ */
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  6.1
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2004  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -194,8 +194,8 @@ extern char *mesa_profile;
 #define  BEGIN_RACE(x)                                                        \
 x = LONG_MAX;                                                                 \
 for (cycle_i = 0; cycle_i <10; cycle_i++) {                                   \
-   register long cycle_tmp1 asm("l0");					      \
-   register long cycle_tmp2 asm("l1");					      \
+   register long cycle_tmp1 __asm__("l0");				      \
+   register long cycle_tmp2 __asm__("l1");				      \
    /* rd %tick, %l0 */							      \
    __asm__ __volatile__ (".word 0xa1410000" : "=r" (cycle_tmp1));  /*  save timestamp   */
 
@@ -265,11 +265,13 @@ enum { NIL = 0, ONE = 1, NEG = -1, VAR = 2 };
 /* Ensure our arrays are correctly aligned.
  */
 #if defined(__GNUC__)
-#  define ALIGN16	__attribute__ ((aligned (16)))
+#  define ALIGN16(type, array)	type array __attribute__ ((aligned (16)))
 #elif defined(__MSC__)
-#  define ALIGN16	__declspec(align(16)) /* GH: Does this work? */
+#  define ALIGN16(type, array)	type array __declspec(align(16)) /* GH: Does this work? */
 #elif defined(__WATCOMC__)
-#  define ALIGN16	                    /* Watcom does not support this */ 
+#  define ALIGN16(type, array)	                    /* Watcom does not support this */ 
+#elif defined(__xlC__)
+#  define ALIGN16(type, array)       type __align (16) array 
 #else
 #  warning "ALIGN16 will not 16-byte align!\n"
 #  define ALIGN16

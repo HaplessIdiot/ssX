@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/Speedo/nsample.c,v 1.2tsi Exp $ */
 /*
 
 Copyright 1989-1991, Bitstream Inc., Cambridge, MA.
@@ -53,10 +53,12 @@ void* malloc();
 #include "speedo.h"                 /* General definition for make_bmap */
 #include "keys.h"                  /* Font decryption keys */
 
-#define DEBUG  0
+#ifndef DEBUG
+#define DEBUG 0
+#endif
 
 #if DEBUG
-#define SHOW(X) printf("X = %d\n", X)
+#define SHOW(X) printf("X = %lx\n", (unsigned long)X)
 #else
 #define SHOW(X)
 #endif

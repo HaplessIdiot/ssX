@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.41tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.42tsi Exp $ */
 /*
  * Copyright 1996, 1997, 1998 by David Bateman <dbateman@ee.uts.edu.au>
  *   Modified 1997, 1998 by Nozomi Ytow
@@ -1556,7 +1556,7 @@ CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
     
     DEBUG_P("WritePixmap");
 #ifdef DEBUG
-    ErrorF("WritePixmap x %d, y %d, w %d, h %d, src 0x%X, srcwidth %d, rop 0x%X, planemask 0x%X, trans 0x%X, bpp %d, depth %d\n", x, y, w, h, src, srcwidth, rop, planemask, trans, bpp, depth);
+    ErrorF("WritePixmap x %d, y %d, w %d, h %d, src 0x%lX, srcwidth %d, rop 0x%X, planemask 0x%X, trans 0x%X, bpp %d, depth %d\n", x, y, w, h, (unsigned long)src, srcwidth, rop, planemask, trans, bpp, depth);
 #endif
     bytesPerLine = w * (bpp >> 3);
     byteWidthSrc = ((srcwidth * (bpp >> 3) + 3L) & ~0x3L);

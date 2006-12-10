@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_driver.c,v 1.10 2006/01/09 14:59:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_driver.c,v 1.11tsi Exp $ */
 /*
  * File Contents: This is the main module configures the interfacing 
  *                with the X server. The individual modules will be 
@@ -139,7 +139,6 @@
  *
  * END_NSC_LIC_GPL */
 
-#define DEBUG(x)
 #define NSC_TRACE 0
 #define HWVGA 1
 

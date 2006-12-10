@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/netaddr.c,v 3.8 2003/07/18 15:53:28 tsi Exp $ */
+/* $XFree86: xc/programs/xdm/netaddr.c,v 3.9tsi Exp $ */
 
 /*
  * xdm - X display manager
@@ -241,8 +241,9 @@ addressEqual (XdmcpNetaddr a1, int len1, XdmcpNetaddr a2, int len2)
 #ifdef DEBUG
 /*ARGSUSED*/
 void
-PrintSockAddr (struct sockaddr *a, int len)
+PrintSockAddr (XdmcpNetaddr addr, int len)
 {
+    struct sockaddr *a = (void *)addr;
     unsigned char    *t, *p;
 
     Debug ("family %d, ", a->sa_family);

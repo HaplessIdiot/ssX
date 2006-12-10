@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_setup.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_setup.c,v 1.4tsi Exp $ */
 /*
  * Basic hardware and memory detection
  *
@@ -138,7 +138,7 @@ xgiXG40_Setup(ScrnInfoPtr pScrn)
     inXGIIDXREG(XGISR, 0x3A, ulDramType) ;
 
     PDEBUG(ErrorF("xg40_Setup(): ulMemConfig = %02X\n",ulMemConfig)) ;
-    PDEBUG(ErrorF("xg40_Setup(): ulDramType = %02X\n",ulDramType)) ;
+    PDEBUG(ErrorF("xg40_Setup(): ulDramType = %02lX\n",ulDramType)) ;
     (void)ulDramType;
 
     pXGI->BusWidth = (ulMemConfig & (1<<1) )?64:32 ;
@@ -393,7 +393,8 @@ XGI_InitHwDevInfo(ScrnInfoPtr pScrn)
         pHwDevInfo -> szVBIOSVer[i] = '\0' ;
     }
 
-    PDEBUG(ErrorF("pHwDevInfo->jChipType = %08lX done\n",pHwDevInfo->jChipType)) ;
+    PDEBUG(ErrorF("pHwDevInfo->jChipType = %08lX done\n",
+		  (unsigned long)pHwDevInfo->jChipType)) ;
     XGINew_InitVBIOSData(pHwDevInfo,pXGI->pVBInfo) ;
     PDEBUG(ErrorF("XGINew_InitVBIOSData(pHwDevInfo) done\n")) ;
     return TRUE ;

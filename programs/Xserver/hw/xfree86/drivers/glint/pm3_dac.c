@@ -26,7 +26,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.34 2003/11/03 05:11:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.35tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -40,7 +40,9 @@
 #include "pm3_regs.h"
 #include "glint.h"
 
+#ifndef DEBUG
 #define DEBUG 0
+#endif
 
 #if DEBUG
 # define TRACE_ENTER(str)       ErrorF("glint: " str " %d\n",pScrn->scrnIndex)

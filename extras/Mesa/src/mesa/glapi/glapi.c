@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/mesa/glapi/glapi.c,v 1.2tsi Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  6.3
@@ -955,6 +955,7 @@ _glapi_check_table(const struct _glapi_table *table)
    for (i = 1; i < entries; i++) {
       assert(tab[i]);
    }
+   (void)tab;
 
    /* Do some spot checks to be sure that the dispatch table
     * slots are assigned correctly.
@@ -965,6 +966,8 @@ _glapi_check_table(const struct _glapi_table *table)
       GLuint offset = (BeginFunc - (char *) table) / sizeof(void *);
       assert(BeginOffset == _gloffset_Begin);
       assert(BeginOffset == offset);
+      (void)BeginOffset;
+      (void)offset;
    }
    {
       GLuint viewportOffset = _glapi_get_proc_offset("glViewport");
@@ -972,6 +975,8 @@ _glapi_check_table(const struct _glapi_table *table)
       GLuint offset = (viewportFunc - (char *) table) / sizeof(void *);
       assert(viewportOffset == _gloffset_Viewport);
       assert(viewportOffset == offset);
+      (void)viewportOffset;
+      (void)offset;
    }
    {
       GLuint VertexPointerOffset = _glapi_get_proc_offset("glVertexPointer");
@@ -979,6 +984,8 @@ _glapi_check_table(const struct _glapi_table *table)
       GLuint offset = (VertexPointerFunc - (char *) table) / sizeof(void *);
       assert(VertexPointerOffset == _gloffset_VertexPointer);
       assert(VertexPointerOffset == offset);
+      (void)VertexPointerOffset;
+      (void)offset;
    }
    {
       GLuint ResetMinMaxOffset = _glapi_get_proc_offset("glResetMinmax");
@@ -986,6 +993,8 @@ _glapi_check_table(const struct _glapi_table *table)
       GLuint offset = (ResetMinMaxFunc - (char *) table) / sizeof(void *);
       assert(ResetMinMaxOffset == _gloffset_ResetMinmax);
       assert(ResetMinMaxOffset == offset);
+      (void)ResetMinMaxOffset;
+      (void)offset;
    }
    {
       GLuint blendColorOffset = _glapi_get_proc_offset("glBlendColor");
@@ -993,6 +1002,8 @@ _glapi_check_table(const struct _glapi_table *table)
       GLuint offset = (blendColorFunc - (char *) table) / sizeof(void *);
       assert(blendColorOffset == _gloffset_BlendColor);
       assert(blendColorOffset == offset);
+      (void)blendColorOffset;
+      (void)offset;
    }
    {
       GLuint istextureOffset = _glapi_get_proc_offset("glIsTextureEXT");
@@ -1000,6 +1011,8 @@ _glapi_check_table(const struct _glapi_table *table)
       GLuint offset = (istextureFunc - (char *) table) / sizeof(void *);
       assert(istextureOffset == _gloffset_IsTextureEXT);
       assert(istextureOffset == offset);
+      (void)istextureOffset;
+      (void)offset;
    }
    {
       GLuint secondaryColor3fOffset = _glapi_get_proc_offset("glSecondaryColor3fEXT");
@@ -1008,6 +1021,8 @@ _glapi_check_table(const struct _glapi_table *table)
       assert(secondaryColor3fOffset == _gloffset_SecondaryColor3fEXT);
       assert(secondaryColor3fOffset == offset);
       assert(_glapi_get_proc_address("glSecondaryColor3fEXT") == (_glapi_proc) &glSecondaryColor3fEXT);
+      (void)secondaryColor3fOffset;
+      (void)offset;
    }
    {
       GLuint pointParameterivOffset = _glapi_get_proc_offset("glPointParameterivNV");
@@ -1016,6 +1031,8 @@ _glapi_check_table(const struct _glapi_table *table)
       assert(pointParameterivOffset == _gloffset_PointParameterivNV);
       assert(pointParameterivOffset == offset);
       assert(_glapi_get_proc_address("glPointParameterivNV") == (_glapi_proc) &glPointParameterivNV);
+      (void)pointParameterivOffset;
+      (void)offset;
    }
    {
       GLuint setFenceOffset = _glapi_get_proc_offset("glSetFenceNV");
@@ -1024,6 +1041,8 @@ _glapi_check_table(const struct _glapi_table *table)
       assert(setFenceOffset == _gloffset_SetFenceNV);
       assert(setFenceOffset == offset);
       assert(_glapi_get_proc_address("glSetFenceNV") == (_glapi_proc) &glSetFenceNV);
+      (void)setFenceOffset;
+      (void)offset;
    }
 #else
    (void) table;

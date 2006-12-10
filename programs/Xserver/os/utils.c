@@ -48,7 +48,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.110 2006/03/21 03:56:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.111tsi Exp $ */
 /*
  * Copyright (c) 1996-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -195,10 +195,8 @@ int SyncOn  = 0;
 extern int SelectWaitTime;
 #endif
 
-#ifdef DEBUG
-#ifndef SPECIAL_MALLOC
-#define MEMBUG
-#endif
+#ifdef SPECIAL_MALLOC
+#undef MEMBUG
 #endif
 
 #if defined(SVR4) || defined(__linux__) || defined(CSRG_BASED)

@@ -26,7 +26,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 /*
  * Copyright 2002 SuSE Linux AG, Author: Egbert Eich
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_video.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_video.c,v 1.8tsi Exp $ */
 
 #include "neo.h"
 #include "neo_video.h"
@@ -938,7 +938,8 @@ NEOAllocateMemory(ScrnInfoPtr pScrn, FBLinearPtr linear, int size)
     size = (size + bytespp - 1) / bytespp;
 #ifdef DEBUG
     xf86DrvMsg(pScrn->scrnIndex,X_INFO,
-	       "NEOAllocateMemory: linear=%x, size=%d\n", linear, size);
+	       "NEOAllocateMemory: linear=%lx, size=%d\n",
+	       (unsigned long)linear, size);
 #endif
     if (linear){
 #ifdef DEBUG

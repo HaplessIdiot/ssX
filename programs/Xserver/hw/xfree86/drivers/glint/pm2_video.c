@@ -21,7 +21,7 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.27tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.28tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -184,7 +184,12 @@ do {					\
 #define PORTNUM(p) ((int)((p) - &pAPriv->Port[0]))
 #define BPPSHIFT(g) (2 - (g)->BppShift)	/* Bytes per pixel = 1 << BPPSHIFT(pGlint) */
 
+#ifdef DEBUG
+#undef DEBUG
+#define DEBUG(x) x
+#else
 #define DEBUG(x)
+#endif
 
 static const Bool ColorBars = FALSE;
 

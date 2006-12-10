@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/lbxproxy/include/lbx.h,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/include/lbx.h,v 1.9tsi Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -376,8 +376,6 @@ extern int numLargeRequestsInQueue;
 #define	PROTOCOL_FULL	0		/* DEFAULT - best w/ accuracy */
 #define	PROTOCOL_MOST	1		/* cheat on errors */
 #define	PROTOCOL_POOR	2		/* cheat on errors & events */
-
-#undef	DEBUG
 
 #undef	TRACE
 

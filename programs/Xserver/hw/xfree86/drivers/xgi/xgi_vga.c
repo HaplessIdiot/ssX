@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_vga.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/xgi_vga.c,v 1.2tsi Exp $ */
 /*
  * Mode setup and basic video bridge detection
  *
@@ -111,9 +111,9 @@ PDEBUG(ErrorF("XG40Init()\n"));
     pXGI->scrnOffset >>= 4 ;
     pXGI->scrnOffset <<= 4 ;
 
-    PDEBUG(ErrorF("XG40Init: pScrn->displayWidth = %ld\n",pScrn->displayWidth )) ;
-    PDEBUG(ErrorF("XG40Init: pScrn->bitsPerPixel = %ld\n",pScrn->bitsPerPixel )) ;
-    PDEBUG(ErrorF("XG40Init: pXGI->scrnOffset = %ld\n",pXGI->scrnOffset )) ;
+    PDEBUG(ErrorF("XG40Init: pScrn->displayWidth = %d\n",pScrn->displayWidth )) ;
+    PDEBUG(ErrorF("XG40Init: pScrn->bitsPerPixel = %d\n",pScrn->bitsPerPixel )) ;
+    PDEBUG(ErrorF("XG40Init: pXGI->scrnOffset = %ld\n", (unsigned long)pXGI->scrnOffset )) ;
 
     pReg->xgiRegs3D4[0x19] = 0;
     pReg->xgiRegs3D4[0x1A] &= 0xFC;

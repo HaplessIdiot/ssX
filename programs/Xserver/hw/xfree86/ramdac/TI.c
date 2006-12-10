@@ -24,7 +24,7 @@
  * Modified from IBM.c to support TI RAMDAC routines 
  *   by Jens Owen, <jens@tungstengraphics.com>.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/TI.c,v 1.7 2003/02/17 16:08:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/TI.c,v 1.8tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -114,7 +114,7 @@ TIramdacCalculateMNPForClock(
     ActualClock = VCO / ( 1 << p );
 
 #ifdef DEBUG
-    ErrorF( "f_out=%ld f_vco=%.1f n=%d m=%d p=%d\n",
+    ErrorF( "f_out=%ld f_vco=%.1f n=%ld m=%ld p=%ld\n",
 	    ActualClock, VCO, *rN, *rM, *rP);
 #endif
 

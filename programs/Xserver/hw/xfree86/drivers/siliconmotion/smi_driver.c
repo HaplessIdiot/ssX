@@ -24,7 +24,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.44 2006/03/16 16:50:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.45tsi Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -2443,8 +2443,8 @@ SMI_InternalScreenInit(int scrnIndex, ScreenPtr pScreen)
 	 * pScreen fields.
 	 */
 
-	DEBUG((VERBLEV, "\tInitializing FB @ 0x%08X for %dx%d (%d)\n",
-			pSmi->FBBase, width, height, displayWidth));
+	DEBUG((VERBLEV, "\tInitializing FB @ 0x%08lX for %dx%d (%d)\n",
+	      (unsigned long)pSmi->FBBase, width, height, displayWidth));
 	switch (pScrn->bitsPerPixel)
 	{
 	case 8:

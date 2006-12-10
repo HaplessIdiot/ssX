@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/Speedo/htest.c,v 1.2tsi Exp $ */
 /*
 
 Copyright 1989-1991, Bitstream Inc., Cambridge, MA.
@@ -31,10 +31,12 @@ WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 #include "speedo.h"                 /* General definition for make_bmap */
 #include <stdio.h>
 
-#define DEBUG  0
+#ifndef DEBUG
+#define DEBUG 0
+#endif
 
 #if DEBUG
-#define SHOW(X) printf("X = %d\n", X)
+#define SHOW(X) printf("X = %lx\n", (unsigned long)X)
 #else
 #define SHOW(X)
 #endif

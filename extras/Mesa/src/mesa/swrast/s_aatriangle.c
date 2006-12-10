@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Mesa 3-D graphics library
  * Version:  5.1
@@ -207,6 +208,7 @@ compute_coveragef(const GLfloat v0[3], const GLfloat v1[3],
    {
       const GLfloat area = dx0 * dy1 - dx1 * dy0;
       ASSERT(area >= 0.0);
+      (void)area;
    }
 #endif
 
@@ -300,6 +302,7 @@ compute_coveragei(const GLfloat v0[3], const GLfloat v1[3],
    {
       const GLfloat area = dx0 * dy1 - dx1 * dy0;
       ASSERT(area >= 0.0);
+      (void)area;
    }
 #endif
 

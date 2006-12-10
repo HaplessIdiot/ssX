@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.156 2006/03/17 02:25:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.157tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
@@ -3007,7 +3007,8 @@ xf86RegisterRootWindowProperty(int ScrnIndex, Atom property, Atom type,
 
 #ifdef DEBUG
     ErrorF("xf86RegisterRootWindowProperty(%d, %ld, %ld, %d, %ld, %p)\n",
-	   ScrnIndex, property, type, format, len, value);
+	   ScrnIndex, (unsigned long)property, (unsigned long)type,
+	   format, len, value);
 #endif
 
     if (ScrnIndex<0 || ScrnIndex>=xf86NumScreens) {

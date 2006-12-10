@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.167 2006/03/16 16:50:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.168tsi Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -66,7 +66,9 @@
 #define DPMS_SERVER
 #include <X11/extensions/dpms.h>
 
+#ifndef DEBUG
 #define DEBUG 0
+#endif
 
 #if DEBUG
 # define TRACE_ENTER(str)       ErrorF("glint: " str " %d\n",pScrn->scrnIndex)

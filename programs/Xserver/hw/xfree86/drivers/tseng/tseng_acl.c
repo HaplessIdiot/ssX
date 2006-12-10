@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.23 2000/08/08 08:58:06 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.25tsi Exp $ */
 
 
 
@@ -149,7 +149,8 @@ tseng_init_acl(ScrnInfoPtr pScrn)
 	/*      MMIO_IN32(pTseng->MMioBase, 0x08<<0) = 200000; *//* TEST */
     }
 #ifdef DEBUG    
-    ErrorF("MMioBase = 0x%x, scratchMemBase = 0x%x\n", pTseng->MMioBase, pTseng->scratchMemBase);
+    ErrorF("MMioBase = 0x%lx, scratchMemBase = 0x%lx\n",
+	   (unsigned long)pTseng->MMioBase, (unsigned long)pTseng->scratchMemBase);
 #endif
 
     /*
