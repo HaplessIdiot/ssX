@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.67tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.68tsi Exp $ */
 /*
  * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -193,30 +193,30 @@ typedef int xf86jmp_buf[1024];
  * They start at 1000 just so they don't match real errnos at all
  */
 #define xf86_UNKNOWN		1000
-#define xf86_EACCES		1001
-#define xf86_EAGAIN		1002
-#define xf86_EBADF		1003
-#define xf86_EEXIST		1004
-#define xf86_EFAULT		1005
-#define xf86_EINTR		1006
-#define xf86_EINVAL		1007
-#define xf86_EISDIR		1008
-#define xf86_ELOOP		1009
-#define xf86_EMFILE		1010
-#define xf86_ENAMETOOLONG	1011
-#define xf86_ENFILE		1012
-#define xf86_ENOENT		1013
-#define xf86_ENOMEM		1014
-#define xf86_ENOSPC		1015
-#define xf86_ENOTDIR		1016
-#define xf86_EPIPE		1017
-#define xf86_EROFS		1018
-#define xf86_ETXTBSY		1019
-#define xf86_ENOTTY		1020
-#define xf86_ENOSYS		1021
-#define xf86_EBUSY		1022
-#define xf86_ENODEV		1023
-#define xf86_EIO		1024
+#define XF86_EACCES		1001
+#define XF86_EAGAIN		1002
+#define XF86_EBADF		1003
+#define XF86_EEXIST		1004
+#define XF86_EFAULT		1005
+#define XF86_EINTR		1006
+#define XF86_EINVAL		1007
+#define XF86_EISDIR		1008
+#define XF86_ELOOP		1009
+#define XF86_EMFILE		1010
+#define XF86_ENAMETOOLONG	1011
+#define XF86_ENFILE		1012
+#define XF86_ENOENT		1013
+#define XF86_ENOMEM		1014
+#define XF86_ENOSPC		1015
+#define XF86_ENOTDIR		1016
+#define XF86_EPIPE		1017
+#define XF86_EROFS		1018
+#define XF86_ETXTBSY		1019
+#define XF86_ENOTTY		1020
+#define XF86_ENOSYS		1021
+#define XF86_EBUSY		1022
+#define XF86_ENODEV		1023
+#define XF86_EIO		1024
 
 /* sysv IPV */
 /* xf86shmget() */
@@ -379,6 +379,8 @@ typedef int xf86jmp_buf[1024];
 #define perror(ccp)		xf86perror(ccp)
 #undef pow
 #define pow(d1,d2)		xf86pow(d1,d2)
+#undef rand
+#define rand			xf86rand
 #undef realloc
 #define realloc(vp,I)		xf86realloc(vp,I)
 #undef remove
@@ -658,53 +660,53 @@ typedef int xf86jmp_buf[1024];
 #define puts(s)			xf86fputs(s, xf86stdout)
 
 #undef EACCES
-#define EACCES		xf86_EACCES
+#define EACCES		XF86_EACCES
 #undef EAGAIN
-#define EAGAIN		xf86_EAGAIN
+#define EAGAIN		XF86_EAGAIN
 #undef EBADF
-#define EBADF		xf86_EBADF
+#define EBADF		XF86_EBADF
 #undef EEXIST
-#define EEXIST		xf86_EEXIST
+#define EEXIST		XF86_EEXIST
 #undef EFAULT
-#define EFAULT		xf86_EFAULT
+#define EFAULT		XF86_EFAULT
 #undef EINTR
-#define EINTR		xf86_EINTR
+#define EINTR		XF86_EINTR
 #undef EINVAL
-#define EINVAL		xf86_EINVAL
+#define EINVAL		XF86_EINVAL
 #undef EISDIR
-#define EISDIR		xf86_EISDIR
+#define EISDIR		XF86_EISDIR
 #undef ELOOP
-#define ELOOP		xf86_ELOOP
+#define ELOOP		XF86_ELOOP
 #undef EMFILE
-#define EMFILE		xf86_EMFILE
+#define EMFILE		XF86_EMFILE
 #undef ENAMETOOLONG
-#define ENAMETOOLONG	xf86_ENAMETOOLONG
+#define ENAMETOOLONG	XF86_ENAMETOOLONG
 #undef ENFILE
-#define ENFILE		xf86_ENFILE
+#define ENFILE		XF86_ENFILE
 #undef ENOENT
-#define ENOENT		xf86_ENOENT
+#define ENOENT		XF86_ENOENT
 #undef ENOMEM
-#define ENOMEM		xf86_ENOMEM
+#define ENOMEM		XF86_ENOMEM
 #undef ENOSPC
-#define ENOSPC		xf86_ENOSPC
+#define ENOSPC		XF86_ENOSPC
 #undef ENOTDIR
-#define ENOTDIR		xf86_ENOTDIR
+#define ENOTDIR		XF86_ENOTDIR
 #undef EPIPE
-#define EPIPE		xf86_EPIPE
+#define EPIPE		XF86_EPIPE
 #undef EROFS
-#define EROFS		xf86_EROFS
+#define EROFS		XF86_EROFS
 #undef ETXTBSY
-#define ETXTBSY		xf86_ETXTBSY
+#define ETXTBSY		XF86_ETXTBSY
 #undef ENOTTY
-#define ENOTTY		xf86_ENOTTY
+#define ENOTTY		XF86_ENOTTY
 #undef ENOSYS
-#define ENOSYS		xf86_ENOSYS
+#define ENOSYS		XF86_ENOSYS
 #undef EBUSY
-#define EBUSY		xf86_EBUSY
+#define EBUSY		XF86_EBUSY
 #undef ENODEV
-#define ENODEV		xf86_ENODEV
+#define ENODEV		XF86_ENODEV
 #undef EIO
-#define EIO		xf86_EIO
+#define EIO		XF86_EIO
 
 /* IPC stuff */
 #undef SHM_RDONLY

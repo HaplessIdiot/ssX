@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.110tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.111tsi Exp $ */
 /*
  * Copyright 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -540,7 +540,7 @@ xf86mmap(void *start, xf86size_t length, int prot,
     if(mmapFd < 0) {
       if ((mmapFd = open("/dev/mmap", O_RDWR)) == -1) {
           ErrorF("Warning: failed to open /dev/mmap \n");
-          xf86errno = xf86_ENOSYS;
+          xf86errno = XF86_ENOSYS;
           return XF86_MAP_FAILED;
       }
     }
@@ -558,7 +558,7 @@ xf86mmap(void *start, xf86size_t length, int prot,
 	return rc;
 #else
     ErrorF("Warning: mmap() is not supported on this platform\n");
-    xf86errno = xf86_ENOSYS;
+    xf86errno = XF86_ENOSYS;
     return XF86_MAP_FAILED;
 #endif
 #endif
@@ -580,7 +580,7 @@ xf86munmap(void *start, xf86size_t length)
     return rc;
 #else
     ErrorF("Warning: munmap() is not supported on this platform\n");
-    xf86errno = xf86_ENOSYS;
+    xf86errno = XF86_ENOSYS;
     return -1;
 #endif
 #endif
@@ -907,7 +907,7 @@ xf86ftell(XF86FILE* f)
 	return ftell(fp->filehnd);
 }
 
-#define mapnum(e) case (xf86_##e): err = e; break
+#define mapnum(e) case (XF86_##e): err = e; break
 
 char*
 xf86strerror(int n)
@@ -1857,7 +1857,7 @@ xf86getpagesize()
 }
 
 
-#define mapnum(e) case (e): return (xf86_##e)
+#define mapnum(e) case (e): return (XF86_##e)
 
 int
 xf86GetErrno ()
@@ -2087,3 +2087,8 @@ xf86setjmperror(xf86jmp_buf env)
     return 0;
 }
 
+int
+xf86rand(void)
+{
+    return rand();
+}

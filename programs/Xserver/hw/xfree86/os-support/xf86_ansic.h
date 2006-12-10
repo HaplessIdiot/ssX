@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.62 2006/02/20 00:14:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.63tsi Exp $ */
 /*
  * Copyright 1997-2004 by The XFree86 Project, Inc
  * All rights reserved.
@@ -48,6 +48,9 @@
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
+
+#include <X11/Xmd.h>
+#include <X11/Xdefs.h>
 
 /* Handle <stdarg.h> */
 
@@ -173,6 +176,9 @@
 #ifndef MAXLONG
 #define MAXLONG LONG_MAX
 #endif
+#ifndef RAND_MAX
+#define RAND_MAX INT_MAX
+#endif
 
 #endif /* (XFree86LOADER && IN_MODULE) || NEED_XF86_TYPES */
 
@@ -269,6 +275,7 @@ extern void xf86perror(const char*);
 extern double xf86pow(double,double);
 extern void xf86qsort(void*, xf86size_t, xf86size_t, 
                       int(*)(const void*, const void*));
+extern int xf86rand(void);
 extern void* xf86realloc(void*,xf86size_t);
 extern int xf86remove(const char*);
 extern int xf86rename(const char*,const char*);
@@ -380,6 +387,7 @@ extern void xf86longjmp(xf86jmp_buf env, int val);
 #else /* (XFree86LOADER && IN_MODULE) || NEED_XF86_PROTOTYPES */
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/ioctl.h>
 #include <errno.h>
 #include <fcntl.h>
