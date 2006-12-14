@@ -56,12 +56,12 @@ Sun Microsystems, Inc. or its licensors is granted.
 #include "XlcPubI.h"
 
 #if defined(_LP64) && defined(__sparcv9) && defined(sun)
-# define	_MACH64_NAME		"sparcv9"
+# define _MACH64_NAME "sparcv9"
 #else
-# undef _MACH64_NAME
+# undef  _MACH64_NAME
 #endif
 
-#define XI18N_DLREL		2
+#define XI18N_DLREL 2
 
 #define	iscomment(ch)	((ch) == '\0' || (ch) == '#')
 
@@ -133,18 +133,18 @@ strdup_with_underscore(const char *symbol)
 
 #ifndef hpux
 static void *
-try_both_dlsym (void *handle, char *name)
+try_both_dlsym(void *handle, char *name)
 {
     void    *ret;
 
-    ret = dlsym (handle, name);
+    ret = dlsym(handle, name);
     if (!ret)
     {
-	 name = strdup_with_underscore (name);
+	 name = strdup_with_underscore(name);
 	 if (name)
 	 {
-	     ret = dlsym (handle, name);
-	     free (name);
+	     ret = dlsym(handle, name);
+	     free(name);
 	 }
     }
     return ret;
@@ -231,7 +231,7 @@ __lc_path(const char *dl_name, const char *lc_dir)
     /*
      * reject this for possible security issue
      */
-    if (strstr (dl_name, "../"))
+    if (strstr(dl_name, "../"))
 	return NULL;
 
 #if defined(_MACH64_NAME)
@@ -398,17 +398,17 @@ _XlcDynamicLoad(const char *lc_name)
     for (; count-- > 0; objects_list++) {
         if (objects_list->type != XLC_OBJECT ||
 	    strcmp(objects_list->locale_name, lc_name)) continue;
-	if (!open_object (objects_list, lc_dir))
+	if (!open_object(objects_list, lc_dir))
 	    continue;
 
-	lc_loader = (dynamicLoadProc)fetch_symbol (objects_list, objects_list->open);
+	lc_loader = (dynamicLoadProc)fetch_symbol(objects_list, objects_list->open);
 	if (!lc_loader) continue;
 	lcd = (*lc_loader)(lc_name);
 	if (lcd != (XLCd)NULL) {
 	    break;
 	}
 	
-	close_object (objects_list);
+	close_object(objects_list);
     }
     return (XLCd)lcd;
 }
@@ -436,7 +436,7 @@ _XDynamicOpenIM(XLCd lcd, Display *display, XrmDatabase rdb,
     if (objects_list->type != XIM_OBJECT ||
 	strcmp(objects_list->locale_name, lc_name)) continue;
 
-    if (!open_object (objects_list, lc_dir))
+    if (!open_object(objects_list, lc_dir))
         continue;
 
     im_openIM = (dynamicOpenProcp)fetch_symbol(objects_list, objects_list->open);
@@ -446,7 +446,7 @@ _XDynamicOpenIM(XLCd lcd, Display *display, XrmDatabase rdb,
         break;
     }
     
-    close_object (objects_list);
+    close_object(objects_list);
   }
   return (XIM)im;
 }
@@ -484,7 +484,7 @@ _XDynamicRegisterIMInstantiateCallback(
     if (objects_list->type != XIM_OBJECT ||
 	strcmp(objects_list->locale_name, lc_name)) continue;
 
-    if (!open_object (objects_list, lc_dir))
+    if (!open_object(objects_list, lc_dir))
         continue;
     im_registerIM = (dynamicRegisterCBProcp)fetch_symbol(objects_list,
 					    objects_list->im_register);
@@ -494,7 +494,7 @@ _XDynamicRegisterIMInstantiateCallback(
 				callback, client_data);
     if (ret_flag) break;
 
-    close_object (objects_list);
+    close_object(objects_list);
   }
   return (Bool)ret_flag;
 }
@@ -542,7 +542,7 @@ _XDynamicUnRegisterIMInstantiateCallback(
 				  res_name, res_class,
 				  callback, client_data);
     if (ret_flag) {
-        close_object (objects_list); /* opened in RegisterIMInstantiateCallback */
+        close_object(objects_list); /* opened in RegisterIMInstantiateCallback */
 	break;
     }
   }
@@ -587,7 +587,7 @@ _XDynamicOpenOM(XLCd lcd, Display *display, XrmDatabase rdb,
   for (; count-- > 0; objects_list++) {
     if (objects_list->type != XOM_OBJECT ||
 	strcmp(objects_list->locale_name, lc_name)) continue;
-    if (!open_object (objects_list, lc_dir))
+    if (!open_object(objects_list, lc_dir))
         continue;
     
     om_openOM = (dynamicIOpenProcp)fetch_symbol(objects_list, objects_list->open);
