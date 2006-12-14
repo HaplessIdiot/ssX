@@ -47,7 +47,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xrm.c,v 3.25tsi Exp $ */
+/* $XFree86: xc/lib/X11/Xrm.c,v 3.26tsi Exp $ */
 
 #include	<stdio.h>
 #include	<ctype.h>
@@ -2651,6 +2651,7 @@ void XrmDestroyDatabase(
 	    else
 		DestroyNTable(table);
 	}
+	_XUnlockMutex(&db->linfo);
 	_XFreeMutex(&db->linfo);
 	(*db->methods->destroy)(db->mbstate);
 	Xfree((char *)db);
