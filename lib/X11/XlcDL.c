@@ -41,7 +41,7 @@ interest in or to any trademark, service mark, logo or trade name of
 Sun Microsystems, Inc. or its licensors is granted.
 
 */
-/* $XFree86: xc/lib/X11/XlcDL.c,v 1.12 2003/04/13 19:22:19 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlcDL.c,v 1.13tsi Exp $ */
 
 #include <stdio.h>
 #if defined(hpux)
@@ -55,14 +55,10 @@ Sun Microsystems, Inc. or its licensors is granted.
 #include "XlcPublic.h"
 #include "XlcPubI.h"
 
-#if defined(_LP64)  && defined(__sparcv9)
+#if defined(_LP64) && defined(__sparcv9) && defined(sun)
 # define	_MACH64_NAME		"sparcv9"
 #else
 # undef _MACH64_NAME
-#endif /* defined(_LP64)  && defined(__sparcv9) */
-
-#ifdef _MACH64_NAME
-#  define	_MACH64_NAME_LEN	(sizeof (_MACH64_NAME) - 1)
 #endif
 
 #define XI18N_DLREL		2
@@ -238,9 +234,9 @@ __lc_path(const char *dl_name, const char *lc_dir)
     if (strstr (dl_name, "../"))
 	return NULL;
 
-#if defined (_LP64) && defined (_MACH64_NAME)
+#if defined(_MACH64_NAME)
     len = (lc_dir ? strlen(lc_dir) : 0 ) +
-	(dl_name ? strlen(dl_name) : 0) + _MACH64_NAME_LEN + 10;
+	(dl_name ? strlen(dl_name) : 0) + sizeof(_MACH64_NAME)  + 9;
     path = Xmalloc(len + 1);
 
     if (strchr(dl_name, '/') != NULL) {
@@ -269,7 +265,7 @@ __lc_path(const char *dl_name, const char *lc_dir)
 #else
     len = (lc_dir ? strlen(lc_dir) : 0 ) +
 	(dl_name ? strlen(dl_name) : 0) + 10;
-#if defined POSTLOCALELIBDIR
+#if defined(POSTLOCALELIBDIR)
     len += (strlen(POSTLOCALELIBDIR) + 1);
 #endif
     path = Xmalloc(len + 1);
@@ -279,14 +275,14 @@ __lc_path(const char *dl_name, const char *lc_dir)
 	slash_p = strrchr(lc_dir, '/');
 	*slash_p = '\0';
 	strcpy(path, lc_dir); strcat(path, "/");
-#if defined POSTLOCALELIBDIR
+#if defined(POSTLOCALELIBDIR)
 	strcat(path, POSTLOCALELIBDIR); strcat(path, "/");
 #endif
 	strcat(path, dl_name); strcat(path, ".so.2");
 	*slash_p = '/';
     } else {
 	strcpy(path, lc_dir); strcat(path, "/");
-#if defined POSTLOCALELIBDIR
+#if defined(POSTLOCALELIBDIR)
 	strcat(path, POSTLOCALELIBDIR); strcat(path, "/");
 #endif
 	strcat(path, dl_name); strcat(path, ".so.2");
