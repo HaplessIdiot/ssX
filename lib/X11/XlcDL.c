@@ -41,7 +41,7 @@ interest in or to any trademark, service mark, logo or trade name of
 Sun Microsystems, Inc. or its licensors is granted.
 
 */
-/* $XFree86: xc/lib/X11/XlcDL.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/lib/X11/XlcDL.c,v 1.15tsi Exp $ */
 
 #include <stdio.h>
 #if defined(hpux)
@@ -124,7 +124,7 @@ strdup_with_underscore(const char *symbol)
 {
 	char *result;
 
-	if ((result = malloc(strlen(symbol) + 2)) == NULL) 
+	if ((result = malloc(strlen(symbol) + 2)) == NULL)
 		return NULL;
 	result[0] = '_';
 	strcpy(result + 1, symbol);
@@ -194,7 +194,7 @@ Limit the length of path to prevent stack buffer corruption.
 	  if (!xi18n_objects_list) return;
 	}
 	n = parse_line(p, args, 6);
-	
+
 	if (n == 3 || n == 5) {
 	  if (!strcmp(args[0], "XLC")){
 	    xi18n_objects_list[lc_count].type = XLC_OBJECT;
@@ -304,7 +304,7 @@ open_object(
      char *lc_dir)
 {
   char *path;
-  
+
   if (object->refcount == 0) {
       path = __lc_path(object->dl_name, lc_dir);
       if (!path)
@@ -336,21 +336,21 @@ fetch_symbol(
 #endif
 
     if (symbol == NULL)
-    	return NULL;
+	return NULL;
 
 #if defined(hpux)
     getsyms_cnt = shl_getsymbols(object->dl_module, TYPE_PROCEDURE,
 				 EXPORT_SYMBOLS, malloc, &symbols);
 
     for(i=0; i<getsyms_cnt; i++) {
-        if(!strcmp(symbols[i].name, symbol)) {
+	if(!strcmp(symbols[i].name, symbol)) {
 	    result = symbols[i].value;
 	    break;
-         }
+	 }
     }
 
     if(getsyms_cnt > 0) {
-        free(symbols);
+	free(symbols);
     }
 #else
     result = try_both_dlsym(object->dl_module, symbol);
@@ -366,11 +366,11 @@ close_object(XI18NObjectsList object)
   if (object->refcount == 0)
     {
 #if defined(hpux)
-        shl_unload(object->dl_module);
+	shl_unload(object->dl_module);
 #else
-        dlclose(object->dl_module);
+	dlclose(object->dl_module);
 #endif
-        object->dl_module = NULL;
+	object->dl_module = NULL;
     }
 }
 
@@ -396,7 +396,7 @@ _XlcDynamicLoad(const char *lc_name)
     objects_list = xi18n_objects_list;
     count = lc_count;
     for (; count-- > 0; objects_list++) {
-        if (objects_list->type != XLC_OBJECT ||
+	if (objects_list->type != XLC_OBJECT ||
 	    strcmp(objects_list->locale_name, lc_name)) continue;
 	if (!open_object(objects_list, lc_dir))
 	    continue;
@@ -407,7 +407,7 @@ _XlcDynamicLoad(const char *lc_name)
 	if (lcd != (XLCd)NULL) {
 	    break;
 	}
-	
+
 	close_object(objects_list);
     }
     return (XLCd)lcd;
@@ -437,15 +437,15 @@ _XDynamicOpenIM(XLCd lcd, Display *display, XrmDatabase rdb,
 	strcmp(objects_list->locale_name, lc_name)) continue;
 
     if (!open_object(objects_list, lc_dir))
-        continue;
+	continue;
 
     im_openIM = (dynamicOpenProcp)fetch_symbol(objects_list, objects_list->open);
     if (!im_openIM) continue;
     im = (*im_openIM)(lcd, display, rdb, res_name, res_class);
     if (im != (XIM)NULL) {
-        break;
+	break;
     }
-    
+
     close_object(objects_list);
   }
   return (XIM)im;
@@ -485,7 +485,7 @@ _XDynamicRegisterIMInstantiateCallback(
 	strcmp(objects_list->locale_name, lc_name)) continue;
 
     if (!open_object(objects_list, lc_dir))
-        continue;
+	continue;
     im_registerIM = (dynamicRegisterCBProcp)fetch_symbol(objects_list,
 					    objects_list->im_register);
     if (!im_registerIM) continue;
@@ -532,7 +532,7 @@ _XDynamicUnRegisterIMInstantiateCallback(
 	strcmp(objects_list->locale_name, lc_name)) continue;
 
     if (!objects_list->refcount) /* Must already be opened */
-        continue;
+	continue;
 
     im_unregisterIM = (dynamicUnregisterProcp)fetch_symbol(objects_list,
 					      objects_list->im_unregister);
@@ -542,7 +542,7 @@ _XDynamicUnRegisterIMInstantiateCallback(
 				  res_name, res_class,
 				  callback, client_data);
     if (ret_flag) {
-        close_object(objects_list); /* opened in RegisterIMInstantiateCallback */
+	close_object(objects_list); /* opened in RegisterIMInstantiateCallback */
 	break;
     }
   }
@@ -562,7 +562,7 @@ _XInitDynamicIM(XLCd lcd)
 
 
 typedef XOM (*dynamicIOpenProcp)(
-        XLCd, Display *, XrmDatabase, _Xconst char *, _Xconst char *);
+	XLCd, Display *, XrmDatabase, _Xconst char *, _Xconst char *);
 
 static XOM
 _XDynamicOpenOM(XLCd lcd, Display *display, XrmDatabase rdb,
@@ -588,13 +588,13 @@ _XDynamicOpenOM(XLCd lcd, Display *display, XrmDatabase rdb,
     if (objects_list->type != XOM_OBJECT ||
 	strcmp(objects_list->locale_name, lc_name)) continue;
     if (!open_object(objects_list, lc_dir))
-        continue;
-    
+	continue;
+
     om_openOM = (dynamicIOpenProcp)fetch_symbol(objects_list, objects_list->open);
     if (!om_openOM) continue;
     om = (*om_openOM)(lcd, display, rdb, res_name, res_class);
     if (om != (XOM)NULL) {
-        break;
+	break;
     }
     close_object(objects_list);
   }
