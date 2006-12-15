@@ -23,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/CmapAlloc.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/lib/Xmu/CmapAlloc.c,v 1.9tsi Exp $ */
 
 /*
  * Author:  Donna Converse, MIT X Consortium
@@ -324,12 +324,12 @@ icbrt_with_guess(int a, int guess)
 	guess = 1;
 
     do {
+	delta = (guess - a/(guess*guess))/3;
 #ifdef _X_ROOT_STATS
 	icbrt_loopcount++;
-#endif
-	delta = (guess - a/(guess*guess))/3;
-#if defined(DEBUG) && defined(_X_ROOT_STATS)
+#ifdef DEBUG
 	printf("pass %d: guess=%d, delta=%d\n", icbrt_loopcount, guess, delta);
+#endif
 #endif
 	guess -= delta;
     } while (delta != 0);
