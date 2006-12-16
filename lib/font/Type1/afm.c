@@ -15,7 +15,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/afm.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/lib/font/Type1/afm.c,v 1.6tsi Exp $ */
 
 #ifdef BUILDCID
 #ifndef FONTMODULE
@@ -27,7 +27,7 @@
 #include <X11/Xdefs.h>      /* For Bool */
 #include "xf86_ansic.h"
 #endif
-#include "fontmisc.h"			/* for xalloc/xfree */
+#include "fontmisc.h"       /* for xalloc/xfree */
 #include "AFM.h"
 
 #define PBUF 256
@@ -111,11 +111,11 @@ int CIDAFM(FILE *fd, FontInfo **pfi) {
             
             fi->nChars = atoi(p);
 
-	    if ((fi->nChars <= 0) || (fi->nChars > MAX_CID_METRICS)) {
-		xfree(afmbuf);
-		xfree(fi);
-		return(1);
-	    }
+            if ((fi->nChars <= 0) || (fi->nChars > MAX_CID_METRICS)) {
+                xfree(afmbuf);
+                xfree(fi);
+                return(1);
+            }
 
             fi->metrics = (Metrics *)xalloc(fi->nChars * 
                 sizeof(Metrics));

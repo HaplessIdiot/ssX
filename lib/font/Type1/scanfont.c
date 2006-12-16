@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/font/Type1/scanfont.c,v 1.18tsi Exp $ */
+/* $XFree86: xc/lib/font/Type1/scanfont.c,v 1.19tsi Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -630,7 +630,7 @@ getFDArray(psobj *arrayP)
   scan_token(inputP);
   if (tokenType == TOKEN_INTEGER) {
       /* an FD array must contain at least one element */
-      if (tokenValue.integer <= 0)
+      if ((tokenValue.integer <= 0) || (tokenValue.integer > MAX_PS_PSFONTS))
           return(SCAN_ERROR);
       arrayP->len = tokenValue.integer;
   } else
@@ -816,7 +816,7 @@ BuildSubrs(psfont *FontP)
    /* note: rc is set by getInt. */
    N = getInt();
    if (rc) return(rc);
-   if (N < 0 ) return(SCAN_ERROR);
+   if ((N < 0) || (N > MAX_PS_PSOBJS)) return(SCAN_ERROR);
    /* if we already have a Subrs, then skip the second one */
    /* The second one is for hiresolution devices.          */
    if (FontP->Subrs.data.arrayP != NULL) {
@@ -902,7 +902,7 @@ BuildCharStrings(psfont *FontP)
      }
      else return(rc);  /* if next token was not an Int */
    }
-   if (N<=0) return(SCAN_ERROR);
+   if ((N<=0) || (N >= MAX_PS_PSDICTS)) return(SCAN_ERROR);
    /* save number of entries in the dictionary */
  
    dictP = (psdict *)vm_alloc((N+1)*sizeof(psdict));

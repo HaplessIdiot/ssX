@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.34tsi Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.35tsi Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -215,7 +215,7 @@ CIDOpenScalable (FontPathElementPtr fpe,
     cidglyphs *cid;
     char *p;
     double t1 = .001, t2 = 0.0, t3 = 0.0, t4 = .001;
-    double sxmult;
+    double sxmult, fsize;
     char CIDFontName[CID_NAME_MAX];
     char CMapName[CID_NAME_MAX];
     char cidfontname[CID_PATH_MAX];
@@ -341,10 +341,11 @@ CIDOpenScalable (FontPathElementPtr fpe,
     bzero(cid, sizeof(cidglyphs));
 
     /* heuristic for "maximum" size of pool we'll need: */
-    size = 200000 + 600 *
-              (int)hypot(vals->pixel_matrix[2], vals->pixel_matrix[3])
-              * sizeof(short);
-    if (size < 0 || NULL == (pool = (long *) xalloc(size))) {
+    fsize = 200000 + 600 * sizeof(short) *
+              floor(hypot(vals->pixel_matrix[2], vals->pixel_matrix[3]));
+    size = (int)fsize;
+    if ((fsize < 0) || (fsize != (double)size) ||
+        (NULL == (pool = (long *) xalloc(size)))) {
             xfree(cid);
             DestroyFontRec(pFont);
             return AllocError;
@@ -388,7 +389,7 @@ CIDOpenScalable (FontPathElementPtr fpe,
     delmemory();
     xfree(pool);
 
-    if (pFont->info.firstCol > pFont->info.lastCol)
+    if ((nchars < 0) || (pFont->info.firstCol > pFont->info.lastCol))
     {
       xfree(cid);
       DestroyFontRec(pFont);
@@ -518,7 +519,7 @@ Type1OpenScalable (FontPathElementPtr fpe,
        psobj *fontmatrix;
        long x0, total_width = 0, total_raw_width = 0;
        double x1, y1, t1 = .001, t2 = 0.0, t3 = 0.0, t4 = .001;
-       double sxmult;
+       double sxmult, fsize;
 
        /* Reject ridiculously small font sizes that will blow up the math */
        if (hypot(vals->pixel_matrix[0], vals->pixel_matrix[1]) < 1.0 ||
@@ -550,13 +551,14 @@ Type1OpenScalable (FontPathElementPtr fpe,
  
        /* heuristic for "maximum" size of pool we'll need: */
 #ifdef BUILDCID
-       size = 400000 + 600 *
+       fsize = 400000 + 600 * sizeof(short) *
 #else
-       size = 200000 + 600 *
+       fsize = 200000 + 600 * sizeof(short) *
 #endif
-	      (int)hypot(vals->pixel_matrix[2], vals->pixel_matrix[3])
-	      * sizeof(short);
-       if (size < 0 || NULL == (pool = (long *) xalloc(size))) {
+	      floor(hypot(vals->pixel_matrix[2], vals->pixel_matrix[3]));
+       size = (int)fsize;
+       if ((fsize < 0) || (fsize != (double)size) ||
+           (NULL == (pool = (long *) xalloc(size)))) {
                xfree(type1);
                DestroyFontRec(pFont);
                return AllocError;
@@ -1525,7 +1527,7 @@ CIDRenderGlyph(FontPtr pFont, psobj *charstringP, psobj *subarrayP,
        int len, rc;
        long x0;
        double x1, y1, t1 = .001, t2 = 0.0, t3 = 0.0, t4 = .001;
-       double sxmult;
+       double sxmult, fsize;
        long h,w;
        long paddedW;
        cidglyphs *cid;
@@ -1549,10 +1551,11 @@ CIDRenderGlyph(FontPtr pFont, psobj *charstringP, psobj *subarrayP,
 #define  PAD(bits, pad)  (((bits)+(pad)-1)&-(pad))
 
        /* heuristic for "maximum" size of pool we'll need: */
-       size = 200000 + 600 *
-              (int)hypot(cid->pixel_matrix[2], cid->pixel_matrix[3])
-              * sizeof(short);
-       if (size < 0 || NULL == (pool = (long *) xalloc(size))) {
+       fsize = 200000 + 600 * sizeof(short) *
+              floor(hypot(cid->pixel_matrix[2], cid->pixel_matrix[3]));
+       size = (int)fsize;
+       if ((fsize < 0) || (fsize != (double)size) ||
+           (NULL == (pool = (long *) xalloc(size)))) {
               *mode = AllocError;
               return(NULL);
        }

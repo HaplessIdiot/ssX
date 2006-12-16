@@ -1,3 +1,4 @@
+/* $XFree86: xc/lib/font/Type1/fontfcn.h,v 1.6tsi Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -43,7 +44,6 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/fontfcn.h,v 1.5 2001/01/17 19:43:22 dawes Exp $ */
 
 
 #ifdef BUILDCID
@@ -81,8 +81,12 @@ typedef struct ps_font {
             psdict  *CharStringsP;
             psdict  *Private;
             psdict  *fontInfoP;
-struct blues_struct *BluesP;
+            struct blues_struct *BluesP;
 } psfont;
+
+#define MAX_PS_PSFONTS \
+    ((int)((unsigned int)(-1) / (2 * sizeof(psfont))))
+
 /***================================================================***/
 /*  Routines in scan_font                                             */
 /***================================================================***/

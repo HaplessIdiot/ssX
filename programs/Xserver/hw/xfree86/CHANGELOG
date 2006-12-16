@@ -1,4 +1,6 @@
 XFree86 4.6.99.14 (xx December 2006)
+  89. More work on integer overflows and memory leaks in Type1 font code.
+      Needs further testing (Marc La France).
   88. In libX11's XrmDestroyDatabase(), release the mutex before freeing it
       (Charles M. Hannum).
   87. Some -DDEBUG build cleanups (Marc La France).
@@ -20354,7 +20356,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3821 2006/12/10 15:58:26 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3822 2006/12/14 03:02:36 tsi Exp $
 
 
 
