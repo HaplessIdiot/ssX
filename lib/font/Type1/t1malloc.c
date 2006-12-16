@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/font/Type1/t1malloc.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1malloc.c,v 1.13tsi Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -414,6 +414,8 @@ char *
 xiMalloc(unsigned size)
 {
   char *memaddr;
+
+  if ((int)size <= 0) return (char *)0;
  
   while ( (memaddr = malloc_local(size)) == NULL ) {
     /* Ask TYPE1IMAGER to give us some of its cache back */
@@ -452,10 +454,13 @@ Then we ensure that the block will be large enough to hold our
 (longs), not bytes, increased to span an integral number of double
 words, so that all memory blocks dispensed with be properly aligned.
 */
+        if (size < 0) return (char *)0;
         size += 2*sizeof(long) + DEBUGWORDS*sizeof(long);
+        if (size < 0) return (char *)0;
         if (size < sizeof(struct freeblock) + sizeof(long))
                size = sizeof(struct freeblock) + sizeof(long);
         size = ((unsigned) (size + sizeof(double) - 1) / sizeof(double)) * (sizeof(double)/sizeof(long));
+        if ((size < 0) || (size != (int)size)) return (char *)0;
  
 /*
 For speed, we will try first to give the user back a very recently

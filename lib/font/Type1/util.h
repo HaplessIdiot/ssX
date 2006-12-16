@@ -1,3 +1,4 @@
+/* $XFree86: xc/lib/font/Type1/util.h,v 1.6tsi Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -43,7 +44,6 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/util.h,v 1.5 2001/01/17 19:43:24 dawes Exp $ */
 
 #ifndef UTIL_H
 #define UTIL_H
@@ -145,6 +145,9 @@ typedef struct ps_obj {
   unsigned short len;
   union ps_value data;
 } psobj;
+
+#define MAX_PS_PSOBJS \
+    ((int)((unsigned int)(-1) / (2 * sizeof(psobj))))
  
 /***================================================================***/
 /*     Definition of a PostScript Dictionary Entry */
@@ -153,6 +156,9 @@ typedef struct ps_dict {
   psobj   key;
   psobj   value;
 } psdict;
+ 
+#define MAX_PS_PSDICTS \
+    ((int)((unsigned int)(-1) / (2 * sizeof(psdict))))
  
 /***================================================================***/
 /* Macros for testing type of PostScript objects */

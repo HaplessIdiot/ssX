@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/font/Type1/objects.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/lib/font/Type1/objects.c,v 1.12tsi Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -298,21 +298,24 @@ t1_Allocate(int size,     /* number of bytes to allocate & initialize     */
 {
        register struct xobject *template = (struct xobject *)ptr;
        register struct xobject *r;
+       int sizer, extrar;
  
        /*
        * round up 'size' and 'extra' to be an integer number of 'long's:
        */
-       size = (size + sizeof(long) - 1) & -(int)sizeof(long);
-       extra = (extra + sizeof(long) - 1) & -(int)sizeof(long);
-       if (size + extra <= 0)
+       sizer = (size + sizeof(long) - 1) & -(int)sizeof(long);
+       extrar = (extra + sizeof(long) - 1) & -(int)sizeof(long);
+       if ((size < 0) || (sizer < size) ||
+           (extra < 0) ||  (extrar < extra) ||
+           (sizer + extrar <= 0))
                Abort("Non-positive allocate?");
-       r = (struct xobject *) xiMalloc(size + extra);
+       r = (struct xobject *) xiMalloc(sizer + extrar);
  
        while (r == NULL) {
                if (!GimeSpace()) {
                        Abort("We have REALLY run out of memory");
                }
-               r = (struct xobject *) xiMalloc(size + extra);
+               r = (struct xobject *) xiMalloc(sizer + extrar);
        }
  
        /*
@@ -324,7 +327,7 @@ t1_Allocate(int size,     /* number of bytes to allocate & initialize     */
           function, which was in turn called by Unique(). (PNM)        */
                if (!ISPERMANENT(template->flag))
                    --template->references;
-               LONGCOPY(r, template, size);
+               LONGCOPY(r, template, sizer);
                r->flag &= ~(ISPERMANENT(ON) | ISIMMORTAL(ON));
        /* added reference field 3-2-6-91 PNM */
                r->references = 1;
@@ -332,7 +335,7 @@ t1_Allocate(int size,     /* number of bytes to allocate & initialize     */
        else {
                register char **p1;
  
-               for (p1=(char **)r; size > 0; size -= sizeof(char *))
+               for (p1=(char **)r; sizer > 0; sizer -= sizeof(char *))
                        *p1++ = NULL;
        }
  

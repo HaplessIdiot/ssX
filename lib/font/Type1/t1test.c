@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/Type1/t1test.c,v 1.2tsi Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -229,6 +229,7 @@ char *Xalloc(size)
        int size;
 {
        extern char *malloc();
+       if (size <= 0) return (char *)0;
        return(malloc(size));
 }
  
