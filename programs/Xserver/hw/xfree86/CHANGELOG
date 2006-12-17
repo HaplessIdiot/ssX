@@ -1,4 +1,6 @@
 XFree86 4.6.99.14 (xx December 2006)
+  90. cfb's stipple SPARC assembler code isn't 64-bit clean, so disable it for
+      sparc64 (Martin Husemann).
   89. More work on integer overflows and memory leaks in Type1 font code.
       Needs further testing (Marc La France).
   88. In libX11's XrmDestroyDatabase(), release the mutex before freeing it
@@ -20356,7 +20358,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3822 2006/12/14 03:02:36 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3823 2006/12/16 15:08:37 tsi Exp $
 
 
 
