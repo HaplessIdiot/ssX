@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile.inc,v 1.9tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile.inc,v 1.10tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -71,7 +71,7 @@ STIPPLESRC = stipmips.s stipmipste.s
 STIPPLEOBJ = stipmips.o stipmipste.o
 STIPPLEDEF = -DHAS_STIPPLE_CODE
 #endif
-#ifdef SparcArchitecture
+#ifdef SparcArchitecture && !defined(Sparc64Architecture)
 STIPPLESRC = stipsparc.s stipsparcte.s
 STIPPLEOBJ = stipsparc.o stipsparcte.o
 STIPPLEDEF = -DHAS_STIPPLE_CODE
@@ -79,7 +79,7 @@ STIPPLEDEF = -DHAS_STIPPLE_CODE
 #endif
 
 #if PixelSize == 32
-#ifdef SparcArchitecture
+#ifdef SparcArchitecture && !defined(Sparc64Architecture)
 STIPPLESRC = stipsprc32.s stipsprcte32.s
 STIPPLEOBJ = stipsprc32.o stipsprcte32.o
 STIPPLEDEF = -DHAS_STIPPLE_CODE
