@@ -1,30 +1,28 @@
+/* $XFree86: xc/programs/Xserver/cfb/stipsprc32.S,v 1.0tsi Exp $ */
 /*
+ * Copyright 1990, 1998  The Open Group
  *
-Copyright 1990, 1998  The Open Group
-
-Permission to use, copy, modify, distribute, and sell this software and its
-documentation for any purpose is hereby granted without fee, provided that
-the above copyright notice appear in all copies and that both that
-copyright notice and this permission notice appear in supporting
-documentation.
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
-AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-Except as contained in this notice, the name of The Open Group shall not be
-used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from The Open Group.
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that copyright
+ * notice and this permission notice appear in supporting documentation.
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Except as contained in this notice, the name of The Open Group shall not be
+ * used in advertising or otherwise to promote the sale, use or other dealings
+ * in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/cfb/stipsparc.s,v 1.5 2001/12/14 19:59:26 dawes Exp $ */
 
 /*
  * SPARC assembly code for optimized text rendering.
@@ -36,23 +34,19 @@ in this Software without prior written authorization from The Open Group.
 
 /* not that I expect to ever see an LSB SPARC, but ... */
 #ifdef LITTLE_ENDIAN
-# define BitsR		sll
-# define BitsL		srl
-# define BO(o)		o
-# define HO(o)		o
-# define WO(o)		o
+# define BitsR			sll
+# define BitsL			srl
+# define WO(o)			3-o
 # define FourBits(dest,bits)	and	bits, 0xf, dest
 #else
-# define BitsR		srl
-# define BitsL		sll
-# define BO(o)		3-o
-# define HO(o)		2-o
-# define WO(o)		o
+# define BitsR			srl
+# define BitsL			sll
+# define WO(o)			o
 # define FourBits(dest,bits)	srl	bits, 28, dest
 #endif
 
 /*
- * cfbStippleStack(addr, stipple, value, stride, Count, Shift)
+ * cfb32StippleStack(addr, stipple, value, stride, Count, Shift)
  *               4       5       6      7     16(sp) 20(sp)
  *
  *  Apply successive 32-bit stipples starting at addr, addr+stride, ...
@@ -86,19 +80,20 @@ in this Software without prior written authorization from The Open Group.
 
 #if defined(SVR4) || defined(__ELF__)
 #ifdef TETEXT
-#define	_cfbStippleStack	cfbStippleStackTE
+#define	_cfb32StippleStack	cfb32StippleStackTE
 #else
-#define	_cfbStippleStack	cfbStippleStack
+#define	_cfb32StippleStack	cfb32StippleStack
 #endif
 #else
 #ifdef TETEXT
-#define	_cfbStippleStack	_cfbStippleStackTE
+#define	_cfb32StippleStack	_cfb32StippleStackTE
 #endif
 #endif
+
 	.seg	"text"
 	.proc	16
-	.globl	_cfbStippleStack
-_cfbStippleStack:
+	.globl	_cfb32StippleStack
+_cfb32StippleStack:
 	save	%sp,-64,%sp
 	sethi	%hi(CaseBegin),sbase		/* load up switch table */
 	or	sbase,%lo(CaseBegin),sbase
@@ -127,7 +122,7 @@ ForEachLine:
 	tst	bits
 
 ForEachBits:
-	inc	4, atemp
+	inc	16, atemp
 ForEachBits1:
 	FourBits(stemp, bits)			/* compute jump for */
 	sll	stemp, CASE_SIZE, stemp		/*  these four bits */
@@ -136,9 +131,10 @@ ForEachBits1:
 	tst	bits
 CaseBegin:
 	bnz,a	ForEachBits1			/* 0 */
-	inc	4, atemp
+	inc	16, atemp
 NextLine:
 	deccc	1, count
+NextLine1:
 	bnz,a	ForEachLine
 	inc	4, stipple
 	ret
@@ -146,133 +142,136 @@ NextLine:
 	nop
 
 	bnz	ForEachBits			/* 1 */
-	stb	value, [atemp+BO(0)]
+	st	value, [atemp+WO(12)]
 	deccc	1, count
 	bnz,a	ForEachLine
 	inc	4, stipple
 	ret
 	restore
 	nop
-					
+
 	bnz	ForEachBits			/* 2 */
-	stb	value, [atemp+BO(1)]
+	st	value, [atemp+WO(8)]
 	deccc	1, count
 	bnz,a	ForEachLine
 	inc	4, stipple
 	ret
 	restore
 	nop
-					
-	bnz	ForEachBits			/* 3 */
-	sth	value, [atemp+HO(0)]
+
+	st	value, [atemp+WO(8)]		/* 3 */
+	bnz	ForEachBits
+	st	value, [atemp+WO(12)]
 	deccc	1, count
 	bnz,a	ForEachLine
 	inc	4, stipple
 	ret
 	restore
-	nop
-					
+
 	bnz	ForEachBits			/* 4 */
-	stb	value, [atemp+BO(2)]
+	st	value, [atemp+WO(4)]
 	deccc	1, count
 	bnz,a	ForEachLine
 	inc	4, stipple
 	ret
 	restore
 	nop
-					
-	stb	value, [atemp+BO(0)]		/* 5 */
+
+	st	value, [atemp+WO(4)]		/* 5 */
 	bnz	ForEachBits
-	stb	value, [atemp+BO(2)]
+	st	value, [atemp+WO(12)]
 	deccc	1, count
 	bnz,a	ForEachLine
 	inc	4, stipple
 	ret
 	restore
-					
-	stb	value, [atemp+BO(1)]		/* 6 */
+
+	st	value, [atemp+WO(4)]		/* 6 */
 	bnz	ForEachBits
-	stb	value, [atemp+BO(2)]
+	st	value, [atemp+WO(8)]
 	deccc	1, count
 	bnz,a	ForEachLine
 	inc	4, stipple
 	ret
 	restore
-					
-	sth	value, [atemp+HO(0)]		/* 7 */
+
+	st	value, [atemp+WO(4)]		/* 7 */
+	st	value, [atemp+WO(8)]
 	bnz	ForEachBits
-	stb	value, [atemp+BO(2)]
+	st	value, [atemp+WO(12)]
+	b	NextLine1
 	deccc	1, count
-	bnz,a	ForEachLine
-	inc	4, stipple
-	ret
-	restore
-					
+	nop
+	nop
+
 	bnz	ForEachBits			/* 8 */
-	stb	value, [atemp+BO(3)]
-	deccc	1, count
-	bnz,a	ForEachLine
-	inc	4, stipple
-	ret
-	restore
-	nop
-					
-	stb	value, [atemp+BO(0)]		/* 9 */
-	bnz	ForEachBits
-	stb	value, [atemp+BO(3)]
-	deccc	1, count
-	bnz,a	ForEachLine
-	inc	4, stipple
-	ret
-	restore
-					
-	stb	value, [atemp+BO(1)]		/* a */
-	bnz	ForEachBits
-	stb	value, [atemp+BO(3)]
-	deccc	1, count
-	bnz,a	ForEachLine
-	inc	4, stipple
-	ret
-	restore
-					
-	sth	value, [atemp+HO(0)]		/* b */
-	bnz	ForEachBits
-	stb	value, [atemp+BO(3)]
-	deccc	1, count
-	bnz,a	ForEachLine
-	inc	4, stipple
-	ret
-	restore
-					
-	bnz	ForEachBits			/* c */
-	sth	value, [atemp+HO(2)]
-	deccc	1, count
-	bnz,a	ForEachLine
-	inc	4, stipple
-	ret
-	restore
-	nop
-					
-	stb	value, [atemp+BO(0)]		/* d */
-	bnz	ForEachBits
-	sth	value, [atemp+HO(2)]
-	deccc	1, count
-	bnz,a	ForEachLine
-	inc	4, stipple
-	ret
-	restore
-					
-	stb	value, [atemp+BO(1)]		/* e */
-	bnz	ForEachBits
-	sth	value, [atemp+HO(2)]
-	deccc	1, count
-	bnz,a	ForEachLine
-	inc	4, stipple
-	ret
-	restore
-					
-	bnz	ForEachBits			/* f */
 	st	value, [atemp+WO(0)]
+	deccc	1, count
+	bnz,a	ForEachLine
+	inc	4, stipple
+	ret
+	restore
+	nop
+
+	st	value, [atemp+WO(0)]		/* 9 */
+	bnz	ForEachBits
+	st	value, [atemp+WO(12)]
+	deccc	1, count
+	bnz,a	ForEachLine
+	inc	4, stipple
+	ret
+	restore
+
+	st	value, [atemp+WO(0)]		/* a */
+	bnz	ForEachBits
+	st	value, [atemp+WO(8)]
+	deccc	1, count
+	bnz,a	ForEachLine
+	inc	4, stipple
+	ret
+	restore
+
+	st	value, [atemp+WO(0)]		/* b */
+	st	value, [atemp+WO(8)]
+	bnz	ForEachBits
+	st	value, [atemp+WO(12)]
+	b	NextLine1
+	deccc	1, count
+	nop
+	nop
+
+	st	value, [atemp+WO(0)]		/* c */
+	bnz	ForEachBits
+	st	value, [atemp+WO(4)]
+	deccc	1, count
+	bnz,a	ForEachLine
+	inc	4, stipple
+	ret
+	restore
+
+	st	value, [atemp+WO(0)]		/* d */
+	st	value, [atemp+WO(4)]
+	bnz	ForEachBits
+	st	value, [atemp+WO(12)]
+	b	NextLine1
+	deccc	1, count
+	nop
+	nop
+
+	st	value, [atemp+WO(0)]		/* e */
+	st	value, [atemp+WO(4)]
+	bnz	ForEachBits
+	st	value, [atemp+WO(8)]
+	b	NextLine1
+	deccc	1, count
+	nop
+	nop
+
+	st	value, [atemp+WO(0)]		/* f */
+	st	value, [atemp+WO(4)]
+	st	value, [atemp+WO(8)]
+	bnz	ForEachBits
+	st	value, [atemp+WO(12)]
 	deccc	1, count
 	bnz,a	ForEachLine
 	inc	4, stipple
