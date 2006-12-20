@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile.inc,v 1.10tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile.inc,v 1.11tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -205,12 +205,12 @@ LinkSourceFile(cfbteblt8.c,LinkDirectory)
     !defined(Mips64Architecture)
 LinkSourceFile(stipmips.s,LinkDirectory)
 #endif
-#ifdef SparcArchitecture
+#if defined(SparcArchitecture) && !defined(Sparc64Architecture)
 LinkSourceFile(stipsparc.s,LinkDirectory)
 #endif
 #endif
 #if PixelSize == 32
-#ifdef SparcArchitecture
+#if defined(SparcArchitecture) && !defined(Sparc64Architecture)
 LinkSourceFile(stipsprc32.s,LinkDirectory)
 #endif
 #endif
@@ -277,7 +277,7 @@ stipmipste.o: stipmipste.s
 	$(AS) -o $@ -DTETEXT stipmipste.s
 #endif
 
-#ifdef SparcArchitecture
+#if defined(SparcArchitecture) && !defined(Sparc64Architecture)
 stipsparcte.s: stipsparc.s
 	$(RM) $@
 	$(LN) stipsparc.s stipsparcte.s
@@ -293,7 +293,7 @@ stipsparcte.o: stipsparcte.s
 #endif
 
 #if PixelSize == 32
-#ifdef SparcArchitecture
+#if defined(SparcArchitecture) && !defined(Sparc64Architecture)
 stipsprcte32.s: stipsprc32.s
 	$(RM) $@
 	$(LN) stipsprc32.s stipsprcte32.s
