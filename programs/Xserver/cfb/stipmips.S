@@ -1,27 +1,25 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/cfb/stipmips.S,v 1.0tsi Exp $ */
 /*
+ * Copyright 1990, 1998  The Open Group
  *
-Copyright 1990, 1998  The Open Group
-
-Permission to use, copy, modify, distribute, and sell this software and its
-documentation for any purpose is hereby granted without fee, provided that
-the above copyright notice appear in all copies and that both that
-copyright notice and this permission notice appear in supporting
-documentation.
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
-AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-Except as contained in this notice, the name of The Open Group shall not be
-used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from The Open Group.
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that copyright
+ * notice and this permission notice appear in supporting documentation.
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Except as contained in this notice, the name of The Open Group shall not be
+ * used in advertising or otherwise to promote the sale, use or other dealings
+ * in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
@@ -35,25 +33,25 @@ in this Software without prior written authorization from The Open Group.
  */
 
 #ifdef MIPSEL
-# define BitsR		sll
-# define BitsL		srl
-# define BO(o)		o
-# define HO(o)		o
-# define WO(o)		o
+# define BitsR			sll
+# define BitsL			srl
+# define BO(o)			o
+# define HO(o)			o
+# define WO(o)			o
 # define FourBits(dest,bits)	and	dest, bits, 0xf
 #else
-# define BitsR	srl
-# define BitsL	sll
-# define BO(o)		3-o
-# define HO(o)		2-o
-# define WO(o)		o
+# define BitsR			srl
+# define BitsL			sll
+# define BO(o)			3-o
+# define HO(o)			2-o
+# define WO(o)			o
 # define FourBits(dest,bits)	srl	dest, bits, 28
 #endif
 
 /* reordering instructions would be fatal here */
 	.set	noreorder
 
-	
+
 /*
  * cfbStippleStack(addr, stipple, value, stride, Count, Shift)
  *               4       5       6      7     16(sp) 20(sp)
@@ -136,7 +134,7 @@ CaseBegin:
 	bnez	bits, ForEachBits1		/* 0 */
 	addu	atemp, atemp, 4
 NextLine:
- 	addu	count, count, -1
+	addu	count, count, -1
 	bnez	count, ForEachLine
 	addu	stipple, stipple, 4
 	j	$31
@@ -145,89 +143,89 @@ NextLine:
 
 	bnez	bits, ForEachBits		/* 1 */
 	sb	value, BO(0)(atemp)
- 	addu	count, count, -1
+	addu	count, count, -1
 	bnez	count, ForEachLine
 	addu	stipple, stipple, 4
 	j	$31
 	nop
 	nop
-					
+
 	bnez	bits, ForEachBits		/* 2 */
 	sb	value, BO(1)(atemp)
- 	addu	count, count, -1
+	addu	count, count, -1
 	bnez	count, ForEachLine
 	addu	stipple, stipple, 4
 	j	$31
 	nop
 	nop
-					
+
 	bnez	bits, ForEachBits		/* 3 */
 	sh	value, HO(0)(atemp)
- 	addu	count, count, -1
+	addu	count, count, -1
 	bnez	count, ForEachLine
 	addu	stipple, stipple, 4
 	j	$31
 	nop
 	nop
-					
+
 	bnez	bits, ForEachBits		/* 4 */
 	sb	value, BO(2)(atemp)
- 	addu	count, count, -1
+	addu	count, count, -1
 	bnez	count, ForEachLine
 	addu	stipple, stipple, 4
 	j	$31
 	nop
 	nop
-					
+
 	sb	value, BO(0)(atemp)		/* 5 */
 	bnez	bits, ForEachBits
 	sb	value, BO(2)(atemp)
- 	addu	count, count, -1
+	addu	count, count, -1
 	bnez	count, ForEachLine
 	addu	stipple, stipple, 4
 	j	$31
 	nop
-					
+
 	sb	value, BO(1)(atemp)		/* 6 */
 	bnez	bits, ForEachBits
 	sb	value, BO(2)(atemp)
- 	addu	count, count, -1
+	addu	count, count, -1
 	bnez	count, ForEachLine
 	addu	stipple, stipple, 4
 	j	$31
 	nop
-					
+
 	bnez	bits, ForEachBits		/* 7 */
 	swl	value, BO(2)(atemp)		/* untested on MSB */
- 	addu	count, count, -1
+	addu	count, count, -1
 	bnez	count, ForEachLine
 	addu	stipple, stipple, 4
 	j	$31
 	nop
 	nop
-					
+
 	bnez	bits, ForEachBits		/* 8 */
 	sb	value, BO(3)(atemp)
- 	addu	count, count, -1
+	addu	count, count, -1
 	bnez	count, ForEachLine
 	addu	stipple, stipple, 4
 	j	$31
 	nop
 	nop
-					
+
 	sb	value, BO(0)(atemp)		/* 9 */
 	bnez	bits, ForEachBits
 	sb	value, BO(3)(atemp)
- 	addu	count, count, -1
+	addu	count, count, -1
 	bnez	count, ForEachLine
 	addu	stipple, stipple, 4
 	j	$31
 	nop
-					
+
 	sb	value, BO(1)(atemp)		/* a */
 	bnez	bits, ForEachBits
 	sb	value, BO(3)(atemp)
- 	addu	count, count, -1
+	addu	count, count, -1
 	bnez	count, ForEachLine
 	addu	stipple, stipple, 4
 	j	$31
@@ -236,25 +234,25 @@ NextLine:
 	sh	value, HO(0)(atemp)		/* b */
 	bnez	bits, ForEachBits
 	sb	value, BO(3)(atemp)
- 	addu	count, count, -1
+	addu	count, count, -1
 	bnez	count, ForEachLine
 	addu	stipple, stipple, 4
 	j	$31
 	nop
-					
+
 	bnez	bits, ForEachBits		/* c */
 	sh	value, HO(2)(atemp)
- 	addu	count, count, -1
+	addu	count, count, -1
 	bnez	count, ForEachLine
 	addu	stipple, stipple, 4
 	j	$31
 	nop
 	nop
-					
+
 	sb	value, BO(0)(atemp)		/* d */
 	bnez	bits, ForEachBits
 	sh	value, HO(2)(atemp)
- 	addu	count, count, -1
+	addu	count, count, -1
 	bnez	count, ForEachLine
 	addu	stipple, stipple, 4
 	j	$31
@@ -262,20 +260,20 @@ NextLine:
 
 	bnez	bits, ForEachBits		/* e */
 	swr	value, BO(1)(atemp)		/* untested on MSB */
- 	addu	count, count, -1
+	addu	count, count, -1
 	bnez	count, ForEachLine
 	addu	stipple, stipple, 4
 	j	$31
 	nop
 	nop
-					
+
 	bnez	bits, ForEachBits		/* f */
 	sw	value, WO(0)(atemp)
- 	addu	count, count, -1
+	addu	count, count, -1
 	bnez	count, ForEachLine
 	addu	stipple, stipple, 4
 	j	$31
 	nop
 	nop
-					
+
 	.end	cfbStippleStack

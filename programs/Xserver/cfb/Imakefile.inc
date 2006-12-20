@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile.inc,v 1.11tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile.inc,v 1.12tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -67,20 +67,20 @@ PSZOBJS = cfb8bit.o cfbteblt8.o cfbglrop8.o cfbpush8.o cfbrctstp8.o
 #if defined(MipsArchitecture) && \
     !defined(ArcArchitecture) && \
     !defined(Mips64Architecture)
-STIPPLESRC = stipmips.s stipmipste.s
+STIPPLESRC = stipmips.S stipmipste.S
 STIPPLEOBJ = stipmips.o stipmipste.o
 STIPPLEDEF = -DHAS_STIPPLE_CODE
 #endif
-#ifdef SparcArchitecture && !defined(Sparc64Architecture)
-STIPPLESRC = stipsparc.s stipsparcte.s
+#if defined(SparcArchitecture) && !defined(Sparc64Architecture)
+STIPPLESRC = stipsparc.S stipsparcte.S
 STIPPLEOBJ = stipsparc.o stipsparcte.o
 STIPPLEDEF = -DHAS_STIPPLE_CODE
 #endif
 #endif
 
 #if PixelSize == 32
-#ifdef SparcArchitecture && !defined(Sparc64Architecture)
-STIPPLESRC = stipsprc32.s stipsprcte32.s
+#if defined(SparcArchitecture) && !defined(Sparc64Architecture)
+STIPPLESRC = stipsprc32.S stipsprcte32.S
 STIPPLEOBJ = stipsprc32.o stipsprcte32.o
 STIPPLEDEF = -DHAS_STIPPLE_CODE
 #endif
@@ -203,15 +203,15 @@ LinkSourceFile(cfbteblt8.c,LinkDirectory)
 #if defined(MipsArchitecture) && \
     !defined(ArcArchitecture) && \
     !defined(Mips64Architecture)
-LinkSourceFile(stipmips.s,LinkDirectory)
+LinkSourceFile(stipmips.S,LinkDirectory)
 #endif
 #if defined(SparcArchitecture) && !defined(Sparc64Architecture)
-LinkSourceFile(stipsparc.s,LinkDirectory)
+LinkSourceFile(stipsparc.S,LinkDirectory)
 #endif
 #endif
 #if PixelSize == 32
 #if defined(SparcArchitecture) && !defined(Sparc64Architecture)
-LinkSourceFile(stipsprc32.s,LinkDirectory)
+LinkSourceFile(stipsprc32.S,LinkDirectory)
 #endif
 #endif
 #endif
@@ -267,44 +267,20 @@ ObjectFromSpecialSource(cfbglrop8,cfbglblt8,-DGLYPHROP)
 #if defined(MipsArchitecture) && \
     !defined(ArcArchitecture) && \
     !defined(Mips64Architecture)
-stipmipste.s: stipmips.s
-	$(RM) $@
-	$(LN) stipmips.s stipmipste.s
-clean::
-	$(RM) stipmipste.s
-
-stipmipste.o: stipmipste.s
-	$(AS) -o $@ -DTETEXT stipmipste.s
+ObjectFromSpecialAsmSource(stipmipste,stipmips,-DTETEXT)
+NormalAsmObjectRule()
 #endif
 
 #if defined(SparcArchitecture) && !defined(Sparc64Architecture)
-stipsparcte.s: stipsparc.s
-	$(RM) $@
-	$(LN) stipsparc.s stipsparcte.s
-clean::
-	$(RM) stipsparcte.s
-
-stipsparc.o: stipsparc.s
-	$(CPP) stipsparc.s AsmDefines | $(AS) -o $@ -
-
-stipsparcte.o: stipsparcte.s
-	$(CPP) -DTETEXT stipsparcte.s AsmDefines | $(AS) -o $@ -
+ObjectFromSpecialAsmSource(stipsparcte,stipsparc,-DTETEXT)
+NormalAsmObjectRule()
 #endif
 #endif
 
 #if PixelSize == 32
 #if defined(SparcArchitecture) && !defined(Sparc64Architecture)
-stipsprcte32.s: stipsprc32.s
-	$(RM) $@
-	$(LN) stipsprc32.s stipsprcte32.s
-clean::
-	$(RM) stipsprcte32.s
-
-stipsprc32.o: stipsprc32.s
-	$(CPP) stipsprc32.s AsmDefines | $(AS) -o $@ -
-
-stipsprcte32.o: stipsprcte32.s
-	$(CPP) -DTETEXT stipsprcte32.s AsmDefines | $(AS) -o $@ -
+ObjectFromSpecialAsmSource(stipsprcte32,stipsprc32,-DTETEXT)
+NormalAsmObjectRule()
 #endif
 #endif
 

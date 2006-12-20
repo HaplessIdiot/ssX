@@ -1,30 +1,28 @@
+/* $XFree86: xc/programs/Xserver/cfb/stipple68k.S,v 1.0tsi Exp $ */
 /*
+ * Copyright 1990, 1998  The Open Group
  *
-Copyright 1990, 1998  The Open Group
-
-Permission to use, copy, modify, distribute, and sell this software and its
-documentation for any purpose is hereby granted without fee, provided that
-the above copyright notice appear in all copies and that both that
-copyright notice and this permission notice appear in supporting
-documentation.
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
-AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-Except as contained in this notice, the name of The Open Group shall not be
-used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from The Open Group.
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that copyright
+ * notice and this permission notice appear in supporting documentation.
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Except as contained in this notice, the name of The Open Group shall not be
+ * used in advertising or otherwise to promote the sale, use or other dealings
+ * in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/cfb/stipple68k.s,v 3.3 2001/12/14 19:59:26 dawes Exp $ */
 
 /*
  * Stipple code for 68k processors
@@ -59,6 +57,7 @@ in this Software without prior written authorization from The Open Group.
 
 #define PushMask	#0x3e38
 #define PopMask		#0x1c7c
+
 #define NumReg	8
 #define arg0	36
 #define arg1	40
@@ -71,6 +70,7 @@ in this Software without prior written authorization from The Open Group.
 #ifdef __ELF__
 #define ForEachLine	.L2
 #define ForEachBits	.L5
+
 #define a0 %A0
 #define a1 %A1
 #define a2 %A2
@@ -134,8 +134,8 @@ ForEachBits:
 	jmp	case@(ctemp:l)
 
 #define Break				\
-	andl	c,c		 	; \
-	jne	ForEachBits	 	; \
+	andl	c,c			; \
+	jne	ForEachBits		; \
 	dbra	count,ForEachLine	; \
 	moveml	sp@+,PopMask		; \
 	rts				;
@@ -146,7 +146,7 @@ NextLine:
 	dbra	count,ForEachLine
 	moveml	sp@+,PopMask
 	rts
-	
+
 	. = CaseBegin + 0x20
 
 	moveb	value,atemp@(3)		/* 1 */
@@ -181,7 +181,7 @@ NextLine:
 	. = CaseBegin + 0xe0
 
 	movew	value,atemp@(2)		/* 7 */
-	moveb	value,atemp@(1)	
+	moveb	value,atemp@(1)
 	Break
 
 	. = CaseBegin + 0x100
