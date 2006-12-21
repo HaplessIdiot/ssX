@@ -1,4 +1,7 @@
 XFree86 4.6.99.15 (xx January 2007)
+  93. In cfb's assembler stipple code, rely on Xarch.h for endianness
+      determination (Marc La France).
+  92. Fix `make depend` in Xserver/cfb* (Marc La France).
 
 XFree86 4.6.99.14 (21 December 2006)
   91. Rename cfb's assembler code to tie into more generic imake assembly
@@ -20362,7 +20365,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3825 2006/12/20 16:48:30 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3826 2006/12/21 12:02:52 dawes Exp $
 
 
 

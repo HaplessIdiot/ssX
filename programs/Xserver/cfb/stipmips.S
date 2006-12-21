@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/stipmips.S,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/stipmips.S,v 1.1tsi Exp $ */
 /*
  * Copyright 1990, 1998  The Open Group
  *
@@ -32,7 +32,9 @@
  * optimized already.
  */
 
-#ifdef MIPSEL
+#include <X11/Xarch.h>
+
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
 # define BitsR			sll
 # define BitsL			srl
 # define BO(o)			o
@@ -102,7 +104,7 @@ cfbStippleStack:
 	lw	shift, Shift
 	li	lshift, 4			/* compute offset within */
 	subu	lshift, lshift, shift		/*  stipple of remaining bits */
-#ifdef MIPSEL
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
 	addu	shift, shift, CASE_SIZE		/* first shift for LSB */
 #else
 	addu	shift, shift, 28-CASE_SIZE	/* first shift for MSB */

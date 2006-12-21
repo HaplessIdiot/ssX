@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbcppl.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbcppl.c,v 1.9tsi Exp $ */
 /*
 Copyright 1990, 1998  The Open Group
 
@@ -34,9 +34,7 @@ in this Software without prior written authorization from The Open Group.
 #include "windowstr.h"
 #include "cfb.h"
 #if PSZ == 8
-#undef   PSZ /* for maskbits.h */
 #include "maskbits.h"
-#define PSZ 8
 #include "mergerop.h"
 #else /* PSZ==8 */
 #include "cfbtab.h" /* provides starttab, endttab, partmasks */

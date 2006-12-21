@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/stipsprc32.S,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/stipsprc32.S,v 1.1tsi Exp $ */
 /*
  * Copyright 1990, 1998  The Open Group
  *
@@ -33,7 +33,7 @@
  */
 
 /* not that I expect to ever see an LSB SPARC, but ... */
-#ifdef LITTLE_ENDIAN
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
 # define BitsR			sll
 # define BitsL			srl
 # define WO(o)			3-o
@@ -100,7 +100,7 @@ _cfb32StippleStack:
 
 	mov	4,lshift			/* compute offset within */
 	sub	lshift, shift, lshift		/*  stipple of remaining bits */
-#ifdef LITTLE_ENDIAN
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
 	inc	CASE_SIZE, shift		/* first shift for LSB */
 #else
 	inc	28-CASE_SIZE, shift		/* first shift for MSB */
