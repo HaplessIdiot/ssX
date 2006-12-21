@@ -1,4 +1,6 @@
-XFree86 4.6.99.14 (xx December 2006)
+XFree86 4.6.99.15 (xx January 2007)
+
+XFree86 4.6.99.14 (21 December 2006)
   91. Rename cfb's assembler code to tie into more generic imake assembly
       rules (Marc La France).
   90. cfb's stipple SPARC assembler code isn't 64-bit clean, so disable it for
@@ -20360,7 +20362,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3824 2006/12/17 17:07:35 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3825 2006/12/20 16:48:30 tsi Exp $
 
 
 
