@@ -7,7 +7,7 @@
  * are used for depths other than 8.  Perhaps the file should be
  * renamed.  dpw
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfb8bit.h,v 3.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb8bit.h,v 3.10tsi Exp $ */
 
 /*
 
@@ -51,9 +51,8 @@ in this Software without prior written authorization from The Open Group.
 
 #if defined(__GNUC__) && defined(mc68020)
 #undef RotBitsLeft
-#define RotBitsLeft(x,k)	asm("rol%.l %2,%0" \
-				: "=d" (x) \
- 				: "0" (x), "dI" (k))
+#define RotBitsLeft(x,k) \
+    __asm__ __volatile__("rol%.l %2,%0" : "=d" (x) : "0" (x), "dI" (k))
 #endif
 
 #if PSZ == 8

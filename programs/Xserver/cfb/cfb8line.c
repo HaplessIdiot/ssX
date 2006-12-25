@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfb8line.c,v 3.22tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb8line.c,v 3.23tsi Exp $ */
 
 /*
 Copyright 1990, 1998  The Open Group
@@ -93,7 +93,7 @@ in this Software without prior written authorization from The Open Group.
 #ifdef PIXEL_ADDR
 
 #if defined(__GNUC__) && defined(mc68020)
-#define STUPID volatile
+#define STUPID __volatile__
 #define REARRANGE
 #else
 #define STUPID

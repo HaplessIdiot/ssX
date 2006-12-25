@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.18tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.19tsi Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -576,8 +576,10 @@ else \
 #if defined(__GNUC__) && defined(mc68020)
 #undef getbits
 #define FASTGETBITS(psrc, x, w, dst) \
-    asm ("bfextu %3{%1:%2},%0" \
-	 : "=d" (dst) : "di" (x), "di" (w), "o" (*(char *)(psrc)))
+    __asm__ __volatile__ ( \
+	"bfextu %3{%1:%2},%0" \
+	: "=d" (dst) \
+	: "di" (x), "di" (w), "o" (*(char *)(psrc)))
 
 #define getbits(psrc,x,w,dst) \
 { \
@@ -586,9 +588,10 @@ else \
 }
 
 #define FASTPUTBITS(src, x, w, pdst) \
-    asm ("bfins %3,%0{%1:%2}" \
-	 : "=o" (*(char *)(pdst)) \
-	 : "di" (x), "di" (w), "d" (src), "0" (*(char *) (pdst)))
+    __asm__ __volatile__ ( \
+	"bfins %3,%0{%1:%2}" \
+	: "+o" (*(char *)(pdst)) \
+	: "di" (x), "di" (w), "d" (src))
 
 #undef putbits
 #define putbits(src, x, w, pdst, planemask) \
