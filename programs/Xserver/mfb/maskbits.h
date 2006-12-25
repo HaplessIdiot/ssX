@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/maskbits.h,v 3.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/maskbits.h,v 3.12 2006/12/25 16:10:21 tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.1, 1/24/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -349,8 +349,8 @@ extern PixelType mask[];
 #define FASTPUTBITS(src, x, w, pdst) \
     __asm__ __volatile__ ( \
 	"bfins %3,%0{%1:%2}" \
-	: "=o" (*(char *)(pdst)) \
-	: "di" (x), "di" (w), "d" (src), "0" (*(char *) (pdst)))
+	: "+o" (*(char *)(pdst)) \
+	: "di" (x), "di" (w), "d" (src))
 
 #define putbits(src, x, w, pdst) FASTPUTBITS(SHR((src),32-(w)), x, w, pdst)
 
