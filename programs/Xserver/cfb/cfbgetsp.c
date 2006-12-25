@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbgetsp.c,v 3.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbgetsp.c,v 3.12tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -139,14 +139,14 @@ cfbGetSpans(DrawablePtr pDrawable, int wMax, DDXPointPtr ppt,
     while(ppt < pptLast)
     {
 #if PSZ == 24
-	xEnd = min(ppt->x + *pwidth, widthSrc * sizeof(CfbBits) / 3);
+	xEnd = min(ppt->x + *pwidth, widthSrc * sizeof(CfbBits) / PSZB);
 	w = xEnd - ppt->x;
 	psrc = psrcBase + ppt->y * widthSrc;
 	srcBit = ppt->x;
-	psrcb = (char *)psrc + (ppt->x * 3);
+	psrcb = (char *)psrc + (ppt->x * PSZB);
 	xIndex = 0;
 	pdstb = (char *)pdst;
-    	pdstNext = pdst + ((w * 3 + 3) >> 2);
+    	pdstNext = pdst + (((w + 1) * PSZB) / PGSZB);
 #else
 	xEnd = min(ppt->x + *pwidth, widthSrc << PWSH);
 	w = xEnd - ppt->x;
@@ -160,14 +160,14 @@ cfbGetSpans(DrawablePtr pDrawable, int wMax, DDXPointPtr ppt,
 	  FatalError("cfb24GetSpans: Internal error (w < 0)\n");
 	nl = w;
 	while (nl--){ 
-	  psrc = (PixelGroup *)((unsigned long)psrcb & ~0x03);
+	  psrc = (PixelGroup *)((unsigned long)psrcb & ~(PGSZB - 1));
 	  getbits24(psrc, tmpSrc, srcBit);
-	  pdst = (PixelGroup *)((unsigned long)pdstb & ~0x03);
+	  pdst = (PixelGroup *)((unsigned long)pdstb & ~(PGSZB - 1));
 	  putbits24(tmpSrc, PPW, pdst, ~((CfbBits)0), xIndex);
 	  srcBit++;
-	  psrcb += 3;
+	  psrcb += PSZB;
 	  xIndex++;
-	  pdstb += 3;
+	  pdstb += PSZB;
 	} 
 	pdst = pdstNext;
 #else /* PSZ == 24 */

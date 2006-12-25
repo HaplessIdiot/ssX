@@ -2,7 +2,7 @@
  * cfb copy area
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.22tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.23tsi Exp $ */
 
 /*
 
@@ -790,13 +790,6 @@ cfbCopyPlane1to8(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable,
 # define StoreRopBits(o,c)  StoreRopBitsPlain(o,c)
 # define FirstStep(c)	Step(c)
 #else /* BITMAP_BIT_ORDER == LSBFirst */
-#if PGSZ == 64
-# define StoreBits(o,c)	StorePixels(pdst,o, (cfb8Pixels[c & 0xff]))
-# define StoreRopBits(o,c)  StoreRopPixels(pdst,o, \
-    (cfb8StippleAnd[c & 0xff]), \
-    (cfb8StippleXor[c & 0xff]))
-# define FirstStep(c)	c = BitLeft (c, 8);
-#else
 /* 0x3c is 0xf << 2 (4 bits, long word) */
 # define StoreBits(o,c)	StorePixels(pdst,o,*((CfbBits *)\
 			    (((char *) cfb8Pixels) + (c & 0x3c))))
@@ -804,7 +797,6 @@ cfbCopyPlane1to8(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable,
     *((CfbBits *) (((char *) cfb8StippleAnd) + (c & 0x3c))), \
     *((CfbBits *) (((char *) cfb8StippleXor) + (c & 0x3c))))
 # define FirstStep(c)	c = BitLeft (c, 2);
-#endif /* PGSZ */
 #endif /* BITMAP_BIT_ORDER */
 
 		    StoreBits0(tmp);	FirstStep(tmp);
@@ -1067,7 +1059,7 @@ cfbCopyPlane1to32
 	pdstLine = (unsigned short *)pdstBase + dsty * widthDst + dstx;
 #endif
 #if PSZ == 24
-	pdstLine = (unsigned char *)pdstBase + dsty * widthDst + dstx * 3;
+	pdstLine = (unsigned char *)pdstBase + dsty * widthDst + dstx * PSZB;
 #endif
 #if PSZ == 32
 	pdstLine = (unsigned int *)pdstBase + dsty * widthDst + dstx;
@@ -1153,7 +1145,7 @@ cfbCopyPlane1to32
 		            *(pdst + 1) = bgpixel >> 8;
 		            *(pdst + 2) = bgpixel >> 16;
 		        }
-		        pdst += 3;
+		        pdst += PSZB;
 		        i++;
 		    }
 #endif
@@ -1205,7 +1197,7 @@ cfbCopyPlane1to32
 		            *(pdst + 1) = bgpixel >> 8;
 		            *(pdst + 2) = bgpixel >> 16;
 		        }
-		        pdst += 3;
+		        pdst += PSZB;
 #else
 		        *pdst = ((tmp >> (31 - i)) & 0x01) ? fgpixel : bgpixel;
 		        pdst++;
@@ -1245,7 +1237,7 @@ cfbCopyPlane1to32
 		  	        ((result & planemask) >> 8);
 			*(pdst+2) = ((dst & ~planemask) >> 16) |
 		  	        ((result & planemask) >> 16);
-			pdst += 3;
+			pdst += PSZB;
 #else
                         DoRop (result, rop, src, *pdst);
 
@@ -1285,7 +1277,7 @@ cfbCopyPlane1to32
 		  	        ((result & planemask) >> 8);
 			*(pdst+2) = ((dst & ~planemask) >> 16) |
 		  	        ((result & planemask) >> 16);
-			pdst += 3;
+			pdst += PSZB;
 #else
                         DoRop (result, rop, src, *pdst);
 

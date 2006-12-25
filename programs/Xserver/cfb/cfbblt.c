@@ -1,7 +1,7 @@
 /*
  * cfb copy area
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbblt.c,v 3.15tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbblt.c,v 3.16tsi Exp $ */
 
 /*
 
@@ -104,16 +104,9 @@ Author: Keith Packard
 /* ................................................. */
 
 #if PSZ == 24
-#define BYPP 3
-#if PGSZ == 32
 #define P3W 4 /* pixels in 3 machine words */
 #define PAM 3 /* pixel align mask; PAM = P3W -1 */
 #define P2WSH 2
-#else
-#define P3W 8 /* pixels in 3 machine words */
-#define PAM 7 /* pixel align mask; PAM = P3W -1 */
-#define P2WSH 3
-#endif
 #endif
 
 void
@@ -289,7 +282,7 @@ MROP_NAME(cfbDoBitblt)(DrawablePtr pSrc, DrawablePtr pDst, int alu,
 
 #if PSZ == 24
 #ifdef DO_MEMCPY
-	w2 = w * BYPP;
+	w2 = w * PSZB;
 #endif
 #endif
 	if (ydir == -1) /* start at last scanline of rectangle */
@@ -336,8 +329,8 @@ MROP_NAME(cfbDoBitblt)(DrawablePtr pSrc, DrawablePtr pDst, int alu,
 		|| (pptSrc->x + w <= pbox->x1))
 	{
 #if PSZ == 24
-	    char *psrc = (char *) psrcLine + (pptSrc->x * BYPP);
-	    char *pdst = (char *) pdstLine + (pbox->x1 * BYPP);
+	    char *psrc = (char *) psrcLine + (pptSrc->x * PSZB);
+	    char *pdst = (char *) pdstLine + (pbox->x1 * PSZB);
 #else
 	    char *psrc = (char *) psrcLine + pptSrc->x;
 	    char *pdst = (char *) pdstLine + pbox->x1;
@@ -380,9 +373,9 @@ MROP_NAME(cfbDoBitblt)(DrawablePtr pSrc, DrawablePtr pDst, int alu,
 	      for (i = 0, si = pptSrc->x, di = pbox->x1;
 		   i < w;
 		   i++, si++, di++) {
-		    psrc = psrcLine + ((si * BYPP) >> P2WSH);
-		    pdst = pdstLine + ((di * BYPP) >> P2WSH);
-		sii = (si & 3);
+		    psrc = psrcLine + ((si * PSZB) >> P2WSH);
+		    pdst = pdstLine + ((di * PSZB) >> P2WSH);
+		sii = (si & PSZB);
 		MROP_SOLID24P(psrc, pdst, sii, di);
 	      }
 	      pdstLine += widthDst;
@@ -399,8 +392,8 @@ MROP_NAME(cfbDoBitblt)(DrawablePtr pSrc, DrawablePtr pDst, int alu,
 	    xoffSrc = ( - pptSrc->x) & PAM;
 	    xoffDst = ( - pbox->x1) & PAM;
 #endif
-	    pdstLine += (pbox->x1 * BYPP) >> P2WSH;
-	    psrcLine += (pptSrc->x * BYPP) >> P2WSH;
+	    pdstLine += (pbox->x1 * PSZB) >> P2WSH;
+	    psrcLine += (pptSrc->x * PSZB) >> P2WSH;
 #else
 	    xoffSrc = pptSrc->x & PIM;
 	    xoffDst = pbox->x1 & PIM;
@@ -431,14 +424,14 @@ MROP_NAME(cfbDoBitblt)(DrawablePtr pSrc, DrawablePtr pDst, int alu,
 		    psrcLine += widthSrc;
 #if PSZ == 24 && MROP == 0
 		    index = (int)(pdst - pdstBase);
-		    im3 = index % 3;
+		    im3 = index % PSZB;
 #endif /*  PSZ == 24 && MROP == 0 */
 		    if (startmask)
 		    {
 #if PSZ == 24 && MROP == 0
 		      	*pdst = DoMaskMergeRop24u(*psrc, *pdst, startmask, im3);
 			index++;
-			im3 = index % 3;
+			im3 = index % PSZB;
 #else /* PSZ != 24 || MROP != 0 */
 			*pdst = MROP_MASK(*psrc, *pdst, startmask);
 #endif /*  PSZ == 24 && MROP == 0 */
@@ -454,8 +447,12 @@ MROP_NAME(cfbDoBitblt)(DrawablePtr pSrc, DrawablePtr pDst, int alu,
 		    pdst += nl & (UNROLL-1);
 
 #if PSZ == 24 && MROP == 0
-#define BodyOdd(n) pdst[-n] = DoMergeRop24u(psrc[-n], pdst[-n], ((int)(pdst - n - pdstBase))%3);
-#define BodyEven(n) pdst[-n] = DoMergeRop24u(psrc[-n], pdst[-n], ((int)(pdst - n - pdstBase))%3);
+#define BodyOdd(n) \
+    pdst[-n] = DoMergeRop24u(psrc[-n], pdst[-n], \
+        ((int)(pdst - n - pdstBase)) % PSZB);
+#define BodyEven(n) \
+    pdst[-n] = DoMergeRop24u(psrc[-n], pdst[-n], \
+        ((int)(pdst - n - pdstBase)) % PSZB);
 #else /* PSZ != 24 || MROP != 0 */
 #define BodyOdd(n) pdst[-n] = MROP_SOLID (psrc[-n], pdst[-n]);
 #define BodyEven(n) pdst[-n] = MROP_SOLID (psrc[-n], pdst[-n]);
@@ -468,7 +465,12 @@ psrc += UNROLL;
 #else
 
 #if PSZ == 24 && MROP == 0
-#define BodyOdd(n)  *pdst = DoMergeRop24u(*psrc, *pdst, im3); pdst++; psrc++; index++; im3 = index % 3;
+#define BodyOdd(n)  \
+    *pdst = DoMergeRop24u(*psrc, *pdst, im3); \
+    pdst++; \
+    psrc++; \
+    index++; \
+    im3 = index % PSZB;
 #define BodyEven(n) BodyOdd(n)
 #else /* PSZ != 24 || MROP != 0 */
 #define BodyOdd(n)  *pdst = MROP_SOLID (*psrc, *pdst); pdst++; psrc++;
@@ -506,7 +508,7 @@ psrc += UNROLL;
 #if 0 /*PSZ == 24 && MROP == 0*/
 		    DuffL(nl, label1,
 			    *pdst = DoMergeRop24u(*psrc, *pdst, im3);
-			    pdst++; psrc++; index++;im3 = index % 3;)
+			    pdst++; psrc++; index++;im3 = index % PSZB;)
 #else /* !(PSZ == 24 && MROP == 0) */
 		    DuffL(nl, label1,
 			    *pdst = MROP_SOLID (*psrc, *pdst);
@@ -516,7 +518,7 @@ psrc += UNROLL;
 
 		    if (endmask)
 #if PSZ == 24 && MROP == 0
-			*pdst = DoMaskMergeRop24u(*psrc, *pdst, endmask, (int)(pdst - pdstBase) % 3);
+			*pdst = DoMaskMergeRop24u(*psrc, *pdst, endmask, (int)(pdst - pdstBase) % PSZB);
 #else /* !(PSZ == 24 && MROP == 0) */
 			*pdst = MROP_MASK(*psrc, *pdst, endmask);
 #endif /* PSZ == 24 && MROP == 0 */
@@ -533,11 +535,7 @@ psrc += UNROLL;
 #if PSZ == 24
 		    leftShift = (xoffSrc - xoffDst) << 3;
 #else
-#if PGSZ == 32
 		    leftShift = (xoffSrc - xoffDst) << (5 - PWSH);
-#else /* PGSZ == 64 */
-		    leftShift = (xoffSrc - xoffDst) << (6 - PWSH);
-#endif /* PGSZ */
 #endif
 		    rightShift = PGSZ - leftShift;
 		}
@@ -546,11 +544,7 @@ psrc += UNROLL;
 #if PSZ == 24
 		    rightShift = (xoffDst - xoffSrc) << 3;
 #else
-#if PGSZ == 32
 		    rightShift = (xoffDst - xoffSrc) << (5 - PWSH);
-#else /* PGSZ == 64 */
-		    rightShift = (xoffDst - xoffSrc) << (6 - PWSH);
-#endif /* PGSZ */
 #endif
 		    leftShift = PGSZ - rightShift;
 		}
@@ -662,8 +656,8 @@ pdst++;
 		    for (i = 0, si = pptSrc->x + w - 1, di = pbox->x2 - 1;
 		   i < w;
 			 i++, si--, di--) {
-		      psrc = psrcLine + ((si * BYPP) >> P2WSH);
-		      pdst = pdstLine + ((di * BYPP) >> P2WSH);
+		      psrc = psrcLine + ((si * PSZB) >> P2WSH);
+		      pdst = pdstLine + ((di * PSZB) >> P2WSH);
 		      sii = (si & PAM);
 		MROP_SOLID24P(psrc, pdst, sii, di);
 	      }
@@ -681,8 +675,8 @@ pdst++;
 	    xoffSrc = (pptSrc->x + w) & PAM;
 	    xoffDst = pbox->x2 & PAM;
 #endif
-	    pdstLine += ((pbox->x2 * BYPP - 1) >> P2WSH) + 1;
-	    psrcLine += (((pptSrc->x+w) * BYPP - 1) >> P2WSH) + 1;
+	    pdstLine += ((pbox->x2 * PSZB - 1) >> P2WSH) + 1;
+	    psrcLine += (((pptSrc->x+w) * PSZB - 1) >> P2WSH) + 1;
 #else
 	    xoffSrc = (pptSrc->x + w - 1) & PIM;
 	    xoffDst = (pbox->x2 - 1) & PIM;
@@ -725,7 +719,7 @@ pdst++;
 			psrc--;
 #if PSZ == 24 && MROP == 0
 			index--;
-			im3 = index % 3;
+			im3 = index % PSZB;
 			*pdst = DoMaskMergeRop24u(*psrc, *pdst, endmask, im3);
 #else /* !(PSZ == 24 && MROP == 0) */
 			*pdst = MROP_MASK (*psrc, *pdst, endmask);
@@ -738,7 +732,9 @@ pdst++;
 		    pdst -= nl & (UNROLL - 1);
 
 #if PSZ == 24 && MROP == 0
-#define BodyOdd(n) pdst[n-1] = DoMergeRop24u(psrc[n-1], pdst[n-1], ((int)(pdst - (n - 1) -pdstBase)) % 3);
+#define BodyOdd(n) \
+    pdst[n-1] = DoMergeRop24u(psrc[n-1], pdst[n-1], \
+        ((int)(pdst - (n - 1) -pdstBase)) % PSZB);
 #else /* !(PSZ == 24 && MROP == 0) */
 #define BodyOdd(n) pdst[n-1] = MROP_SOLID (psrc[n-1], pdst[n-1]);
 #endif /* PSZ == 24 && MROP == 0 */
@@ -752,7 +748,12 @@ psrc -= UNROLL;
 #else
 
 #if PSZ == 24 && MROP == 0
-#define BodyOdd(n)  --pdst; --psrc; --index; im3 = index % 3;*pdst = DoMergeRop24u(*psrc, *pdst, im3);
+#define BodyOdd(n) \
+    --pdst; \
+    --psrc; \
+    --index; \
+    im3 = index % PSZB; \
+    *pdst = DoMergeRop24u(*psrc, *pdst, im3);
 #else /* !(PSZ == 24 && MROP == 0) */
 #define BodyOdd(n)  --pdst; --psrc; *pdst = MROP_SOLID(*psrc, *pdst);
 #endif /* PSZ == 24 && MROP == 0 */
@@ -769,7 +770,7 @@ psrc -= UNROLL;
 #else
 #if PSZ == 24 && MROP == 0
 		    DuffL(nl,label3,
-			  --pdst; --psrc; --index; im3= index%3;*pdst = DoMergeRop24u(*psrc, *pdst, im3);)
+			  --pdst; --psrc; --index; im3= index % PSZB;*pdst = DoMergeRop24u(*psrc, *pdst, im3);)
 #else /* !(PSZ == 24 && MROP == 0) */
 		    DuffL(nl,label3,
 			 --pdst; --psrc; *pdst = MROP_SOLID (*psrc, *pdst);)
@@ -781,7 +782,7 @@ psrc -= UNROLL;
 			--pdst;
 			--psrc;
 #if PSZ == 24 && MROP == 0
-			*pdst = DoMaskMergeRop24u(*psrc, *pdst, startmask, (int)(pdst - pdstBase) % 3);
+			*pdst = DoMaskMergeRop24u(*psrc, *pdst, startmask, (int)(pdst - pdstBase) % PSZB);
 #else /* !(PSZ == 24 && MROP == 0) */
 			*pdst = MROP_MASK(*psrc, *pdst, startmask);
 #endif /* PSZ == 24 && MROP == 0 */
@@ -800,11 +801,7 @@ psrc -= UNROLL;
 		    leftShift = (xoffDst - xoffSrc) << 3;
 		    rightShift = PGSZ - leftShift;
 #else
-#if PGSZ == 32
 		    rightShift = (xoffDst - xoffSrc) << (5 - PWSH);
-#else /* PGSZ == 64 */
-		    rightShift = (xoffDst - xoffSrc) << (6 - PWSH);
-#endif /* PGSZ */
 		    leftShift = PGSZ - rightShift;
 #endif
 		}
@@ -814,11 +811,7 @@ psrc -= UNROLL;
 		    rightShift = (xoffSrc - xoffDst) << 3;
 		    leftShift = PGSZ - rightShift;
 #else
-#if PGSZ == 32
 		    leftShift = (xoffSrc - xoffDst) << (5 - PWSH);
-#else /* PGSZ == 64 */
-		    leftShift = (xoffSrc - xoffDst) << (6 - PWSH);
-#endif /* PGSZ */
 		    rightShift = PGSZ - leftShift;
 #endif
 		}

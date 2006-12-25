@@ -2,7 +2,7 @@
  * Fill 32 bit tiled rectangles.  Used by both PolyFillRect and PaintWindow.
  * no depth dependencies.
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbtile32.c,v 3.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbtile32.c,v 3.10tsi Exp $ */
 
 /*
 
@@ -81,7 +81,7 @@ in this Software without prior written authorization from The Open Group.
 	while (nlw--) \
 	{ \
 	    STORE24(p,xtmp); \
-	    if(xtmp&3) p++; \
+	    if(xtmp & (PGSZB - 1)) p++; \
 	    xtmp++; \
 	} \
 	right \
@@ -212,15 +212,17 @@ MROP_NAME(cfbFillRectTile32)(DrawablePtr pDrawable, GCPtr pGC, int nBox,
 	y = pBox->y1;
 #if PSZ == 24
 	xtmp = pBox->x1;
-	p = pbits + (y * nlwDst) + ((pBox->x1*3) >> 2);
-/*	p = pbits + (y * nlwDst) + ((pBox->x1>> 2)*3);*/
+	p = pbits + (y * nlwDst) + ((pBox->x1 * PSZB) / PGSZB);
+/*	p = pbits + (y * nlwDst) + ((pBox->x1 / PGSZB) * PSZB); */
 #else
 	p = pbits + (y * nlwDst) + (pBox->x1 >> PWSH);
 #endif
 	srcy = y % tileHeight;
 
 #if PSZ == 24
-	if (w == 1  &&  ((pBox->x1 & 3) == 0  ||  (pBox->x1 & 3) == 3))
+	if (w == 1 &&
+            ((pBox->x1 & (PGSZB - 1)) == 0 ||
+             (pBox->x1 & (PGSZB - 1)) == (PGSZB - 1)))
 #else
 	if ( ((pBox->x1 & PIM) + w) <= PPW)
 #endif
@@ -346,9 +348,9 @@ MROP_NAME(cfbTile32FS)(DrawablePtr pDrawable, GCPtr pGC, int nInit,
 	    ++ppt;
 	    w = *pwidth++;
 #if PSZ == 24
-/*	    p = pbits + (y * nlwDst) + ((x*3) >> 2);*/
+/*	    p = pbits + (y * nlwDst) + ((x * PSZB) / PGSZB); */
 	    xtmp = x;
-	    p = pbits + (y * nlwDst) + ((x >> 2)*3);
+	    p = pbits + (y * nlwDst) + ((x / PGSZB) * PSZB);
 #else
 	    p = pbits + (y * nlwDst) + (x >> PWSH);
 #endif
@@ -356,7 +358,7 @@ MROP_NAME(cfbTile32FS)(DrawablePtr pDrawable, GCPtr pGC, int nInit,
 	    MROP_PREBUILD(srcpix);
 
 #if PSZ == 24
-	    if ((x & 3) + w < 5)
+	    if ((x & (PGSZB - 1)) + w < 5)
 #else
 	    if ((x & PIM) + w < PPW)
 #endif
@@ -371,7 +373,7 @@ MROP_NAME(cfbTile32FS)(DrawablePtr pDrawable, GCPtr pGC, int nInit,
 		{
 		    *p = MROP_PREBUILT_MASK(srcpix, *p, startmask);
 #if PSZ == 24
-		    if(xtmp&3) p++;
+		    if(xtmp & (PGSZB - 1)) p++;
 		    xtmp++;
 #else
 		    p++;
@@ -381,7 +383,7 @@ MROP_NAME(cfbTile32FS)(DrawablePtr pDrawable, GCPtr pGC, int nInit,
 		{
 #if PSZ == 24
 		    STORE24(p,xtmp);
-		    if(xtmp&3) p++;
+		    if(xtmp & (PGSZB - 1)) p++;
 		    ++xtmp;
 #else
 		    STORE(p);
@@ -405,8 +407,8 @@ MROP_NAME(cfbTile32FS)(DrawablePtr pDrawable, GCPtr pGC, int nInit,
 	    ++ppt;
 	    w = *pwidth++;
 #if PSZ == 24
-/*	    p = pbits + (y * nlwDst) + ((x *3)>> 2);*/
-	    p = pbits + (y * nlwDst) + ((x >> 2)*3);
+/*	    p = pbits + (y * nlwDst) + ((x * PSZB) / PGSZB); */
+	    p = pbits + (y * nlwDst) + ((x / PGSZB) * PSZB);
 	    xtmp = x;
 #else
 	    p = pbits + (y * nlwDst) + (x >> PWSH);
@@ -415,7 +417,7 @@ MROP_NAME(cfbTile32FS)(DrawablePtr pDrawable, GCPtr pGC, int nInit,
 	    MROP_PREBUILD(srcpix);
 
 #if PSZ == 24
-	    if ((x & 3) + w < 5)
+	    if ((x & (PGSZB - 1)) + w < 5)
 #else
 	    if ((x & PIM) + w < PPW)
 #endif
@@ -430,7 +432,7 @@ MROP_NAME(cfbTile32FS)(DrawablePtr pDrawable, GCPtr pGC, int nInit,
 		{
 		    *p = MROP_PREBUILT_MASK(srcpix, *p, startmask);
 #if PSZ == 24
-		    if(xtmp&3)p++;
+		    if (xtmp & (PGSZB - 1)) p++;
 		    xtmp++;
 #else
 		    p++;
@@ -440,7 +442,7 @@ MROP_NAME(cfbTile32FS)(DrawablePtr pDrawable, GCPtr pGC, int nInit,
 		{
 #if PSZ == 24
 		    STORE24(p,xtmp);
-		    if(xtmp&3)p++;
+		    if (xtmp & (PGSZB - 1)) p++;
 		    xtmp++;
 #else
 		    STORE(p);

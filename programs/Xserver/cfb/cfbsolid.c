@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbsolid.c,v 3.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbsolid.c,v 3.11tsi Exp $ */
 /*
  *
 Copyright 1990, 1998  The Open Group
@@ -45,7 +45,7 @@ in this Software without prior written authorization from The Open Group.
 
 #if defined(FAST_CONSTANT_OFFSET_MODE) && (RROP != GXcopy)
 # define Expand(left,right,leftAdjust) {\
-    int part = nmiddle & 3; \
+    int part = nmiddle & (PGSZB - 1); \
     int widthStep; \
     widthStep = widthDst - nmiddle - leftAdjust; \
     nmiddle >>= 2; \
@@ -152,19 +152,19 @@ RROP_NAME(cfbFillRectSolid)(DrawablePtr pDrawable, GCPtr pGC, int nBox,
 	{
 #endif
 #if PSZ == 24
-	leftIndex = pBox->x1 &3;
-/*	rightIndex = ((leftIndex+w)<5)?0:pBox->x2 &3;*/
-	rightIndex = pBox->x2 &3;
+	leftIndex = pBox->x1 & (PGSZB - 1);
+/*	rightIndex = ((leftIndex + w) < 5) ? 0 : pBox->x2 & (PGSZB - 1); */
+	rightIndex = pBox->x2 & (PGSZB - 1);
 
 	nmiddle = w - rightIndex;
 	if(leftIndex){
-	  nmiddle -= (4 - leftIndex);
+	  nmiddle -= (PGSZB - leftIndex);
 	}
 	nmiddle >>= 2;
 	if(nmiddle < 0)
 	  nmiddle = 0;
 
-	pdstRect += (pBox->x1 * 3) >> 2;
+	pdstRect += (pBox->x1 * PSZB) / PGSZB;
 	pdst = pdstRect;	
 	switch(leftIndex+w){
 	case 4:
@@ -824,20 +824,20 @@ RROP_NAME(cfbSolidSpans)(DrawablePtr pDrawable, GCPtr pGC, int nInit,
 	if (!w)
 	    continue;
 #if PSZ == 24
-	leftIndex = x &3;
-/*	rightIndex = ((leftIndex+w)<5)?0:(x+w)&3;*/
-	rightIndex = (x+w)&3;
+	leftIndex = x & (PGSZB - 1);
+/*	rightIndex = ((leftIndex + w) < 5) ? 0 : (x + w) & (PGSZB - 1); */
+	rightIndex = (x + w) & (PGSZB - 1);
 
 	nlmiddle = w - rightIndex;
 	if(leftIndex){
-	  nlmiddle -= (4 - leftIndex);
+	  nlmiddle -= (PGSZB - leftIndex);
 	}
-/*	nlmiddle += 3;*/
+/*	nlmiddle += PSZB; */
 	nlmiddle >>= 2;
 	if(nlmiddle < 0)
 	  nlmiddle = 0;
 
-	pdst += (x >> 2)*3;
+	pdst += (x / PGSZB) * PSZB;
 	pdst += leftIndex? (leftIndex -1):0;
 	switch(leftIndex+w){
 	case 4:
@@ -1018,7 +1018,7 @@ RROP_NAME(cfbSolidSpans)(DrawablePtr pDrawable, GCPtr pGC, int nInit,
 		    pdst--;
 		break;
 	    case 2:
-/*		pdst++;*/
+/*		pdst++; */
 #if RROP == GXcopy
 		    *pdst = ((*pdst) & 0xFFFF) | (piQxelXor[1] & 0xFFFF0000);
 		    pdst++;

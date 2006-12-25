@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbtegblt.c,v 3.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbtegblt.c,v 3.9 2005/10/14 15:16:19 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -174,7 +174,7 @@ cfbTEGlyphBlt(DrawablePtr pDrawable, GC *pGC, int x, int y,
 		{
 #if PSZ == 24
 		    w = 1;
-		    ptemp = (CfbBits *)(pglyph + ((xtemp *3)>> 2));
+		    ptemp = (CfbBits *)(pglyph + ((xtemp * PSZB) / PGSZB));
 		    getstipplepixels24(ptemp,xtemp,0,&bgfill,&tmpDst1, xtemp);
 		    getstipplepixels24(ptemp,xtemp,1,&fgfill,&tmpDst2, xtemp);
 #else
@@ -189,7 +189,7 @@ cfbTEGlyphBlt(DrawablePtr pDrawable, GC *pGC, int x, int y,
 		    {
 			CfbBits tmpDst = tmpDst1 | tmpDst2;
 #if PSZ == 24
-			CfbBits *pdsttmp = pdst + ((x*3) >> 2);
+			CfbBits *pdsttmp = pdst + ((x * PSZB) / PGSZB);
 			putbits24(tmpDst,w,pdsttmp,pGC->planemask,x);
 #else
 			CfbBits *pdsttmp = pdst + (x >> PWSH);

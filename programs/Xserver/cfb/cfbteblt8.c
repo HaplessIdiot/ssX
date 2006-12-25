@@ -3,7 +3,7 @@
  * 8 bit displays, in Copy mode with no clipping.
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbteblt8.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbteblt8.c,v 1.9tsi Exp $ */
 /*
 
 Copyright 1989, 1998  The Open Group
@@ -308,13 +308,8 @@ extern CfbBits endtab[];
 #define StoreBits(o)	StorePixels(o,GetPixelGroup(c));
 #define FirstStep	Step
 #else
-#if PGSZ == 64
-#define StoreBits(o)	StorePixels(o,cfb8Pixels[(c) & PGSZBMSK]);
-#define FirstStep	Step
-#else /* PGSZ == 32 */
 #define StoreBits(o)	StorePixels(o,*((CfbBits *) (((char *) cfb8Pixels) + (c & 0x3c))));
 #define FirstStep	c = BitLeft (c, 2);
-#endif /* PGSZ */
 #endif /* BITMAP_BIT_ORDER */
 
 
@@ -477,7 +472,7 @@ CFBTEGBLT8(DrawablePtr pDrawable, GC *pGC, int xInit, int yInit,
 	    }
 	    else
 	    {
-#if NGLYPHS == 4 && PGSZ == 32
+#if NGLYPHS == 4
 	    	ew = widthGlyph;    /* widthGlyphs >> 2 */
 #else
 	    	ew = widthGlyphs >> PWSH;

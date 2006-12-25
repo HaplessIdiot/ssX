@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbbresd.c,v 3.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbbresd.c,v 3.8tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -134,7 +134,7 @@ cfbBresD(cfbRRopPtr rrops, int *pdashIndex, unsigned char *pDash,
     /* point to first point */
     nlwidth <<= PWSH;
     addrp = (PixelType *)(addrl) + (y1 * nlwidth);
-    addrb = (char *)addrp + x1 * 3;
+    addrb = (char *)addrp + x1 * PSZB;
 
 #else
 #define Loop(store) while (thisDash--) {\
@@ -147,7 +147,7 @@ cfbBresD(cfbRRopPtr rrops, int *pdashIndex, unsigned char *pDash,
 #endif
     signdy *= nlwidth;
 #if PSZ == 24
-    signdx3 = signdx * 3;
+    signdx3 = signdx * PSZB;
     signdy3 = signdy * sizeof (CfbBits);
 #endif
     if (axis == Y_AXIS)
@@ -168,8 +168,8 @@ cfbBresD(cfbRRopPtr rrops, int *pdashIndex, unsigned char *pDash,
     {
 #if PSZ == 24
 #define body_copy(pix) { \
-	addrp = (PixelType *)((unsigned long)addrb & ~0x03); \
-	switch((unsigned long)addrb & 3){ \
+	addrp = (PixelType *)((unsigned long)addrb & ~(PGSZB - 1)); \
+	switch((unsigned long)addrb & (PGSZB - 1)){ \
 	case 0: \
 	  *addrp = (*addrp & 0xFF000000)|((pix)[0] & 0xFFFFFF); \
 	  break; \
@@ -217,8 +217,8 @@ cfbBresD(cfbRRopPtr rrops, int *pdashIndex, unsigned char *pDash,
     else
     {
 #define body_set(and, xor) { \
-	addrp = (PixelType *)((unsigned long)addrb & ~0x03); \
-	switch((unsigned long)addrb & 3){ \
+	addrp = (PixelType *)((unsigned long)addrb & ~(PGSZB - 1)); \
+	switch((unsigned long)addrb & (PGSZB - 1)){ \
 	case 0: \
 	  *addrp = (*addrp & ((and)[0]|0xFF000000)) ^ ((xor)[0] & 0xFFFFFF); \
 	  break; \
@@ -269,7 +269,7 @@ cfbBresD(cfbRRopPtr rrops, int *pdashIndex, unsigned char *pDash,
 
     	/* point to longword containing first point */
 #if PSZ == 24
-    	addrl = (addrl + (y1 * nlwidth) + ((x1*3) >> 2);
+    	addrl = (addrl + (y1 * nlwidth) + ((x1 * PSZB) / PGSZB);
 #else
     	addrl = (addrl + (y1 * nlwidth) + (x1 >> PWSH));
 #endif
@@ -279,8 +279,8 @@ cfbBresD(cfbRRopPtr rrops, int *pdashIndex, unsigned char *pDash,
 	    startbit = cfbmask[0];
 	else
 #if PSZ == 24
-	    startbit = cfbmask[(PPW-1)<<1];
-    	bit = cfbmask[(x1 & 3)<<1];
+	    startbit = cfbmask[(PPW - 1) << 1];
+    	bit = cfbmask[(x1 & (PGSZB - 1)) << 1];
 #else
 	    startbit = cfbmask[PPW-1];
     	bit = cfbmask[x1 & PIM];

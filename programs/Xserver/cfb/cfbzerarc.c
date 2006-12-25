@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbzerarc.c,v 3.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbzerarc.c,v 3.7tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -73,11 +73,11 @@ RROP_NAME(cfbZeroArcSS8)(DrawablePtr pDraw, GCPtr pGC, xArc *arc)
     info.xorgo += pDraw->x;
 #if PSZ == 24
     xorg = info.xorg;
-    xorg3 = xorg * 3;
-    info.xorg = (info.xorg * 3) >> 2;
+    xorg3 = xorg * PSZB;
+    info.xorg = (info.xorg * PSZB) / PGSZB;
     xorgo = info.xorgo;
-    xorgo3 = xorgo * 3; 
-    info.xorgo = (info.xorgo * 3) >> 2;
+    xorgo3 = xorgo * PSZB; 
+    info.xorgo = (info.xorgo * PSZB) / PGSZB;
 #endif
     MIARCSETUP();
     yoffset = y ? npwidth : 0;
@@ -110,23 +110,23 @@ RROP_NAME(cfbZeroArcSS8)(DrawablePtr pDraw, GCPtr pGC, xArc *arc)
 	int tmp1, tmp2, tmp1_3, tmp2_3;
 
 	tmp1 = xorg + info.h;
-	tmp1_3 = tmp1 * 3;
+	tmp1_3 = tmp1 * PSZB;
 	tmp2 = xorg - info.h;
-	tmp2_3 = tmp2 * 3;
+	tmp2_3 = tmp2 * PSZB;
 	while (1)
 	{
-	    xtmp = (xorg3 + x * 3) >> 2;
+	    xtmp = (xorg3 + x * PSZB) / PGSZB;
 	    RROP_SOLID24(yorgp + yoffset + xtmp, xorg + x);
 	    RROP_SOLID24(yorgop - yoffset + xtmp, xorg + x);
-	    xtmp = (xorg3 - x * 3) >> 2;
+	    xtmp = (xorg3 - x * PSZB) / PGSZB;
 	    RROP_SOLID24(yorgp + yoffset + xtmp, xorg - x);
 	    RROP_SOLID24(yorgop - yoffset + xtmp, xorg - x);
 	    if (a < 0)
 		break;
-	    xtmp = (tmp1_3 - y * 3) >> 2;
+	    xtmp = (tmp1_3 - y * PSZB) / PGSZB;
 	    RROP_SOLID24(yorghb - xoffset + xtmp, tmp1 - y);
 	    RROP_SOLID24(yorghb + xoffset + xtmp, tmp1 - y);
-	    xtmp = (tmp2_3 + y * 3) >> 2;
+	    xtmp = (tmp2_3 + y * PSZB) / PGSZB;
 	    RROP_SOLID24(yorghb - xoffset + xtmp, tmp2 + y);
 	    RROP_SOLID24(yorghb + xoffset + xtmp, tmp2 + y);
 	    xoffset += npwidth;
@@ -166,10 +166,10 @@ RROP_NAME(cfbZeroArcSS8)(DrawablePtr pDraw, GCPtr pGC, xArc *arc)
 	{
 	    MIARCOCTANTSHIFT(dyoffset = npwidth;);
 #if PSZ == 24
-	    xtmp = (xorg3 + x * 3) >> 2;
+	    xtmp = (xorg3 + x * PSZB) / PGSZB;
 	    RROP_SOLID24(yorgp + yoffset + xtmp, xorg + x);
 	    RROP_SOLID24(yorgop - yoffset + xtmp, xorg + x);
-	    xtmp = (xorgo3 - x * 3) >> 2;
+	    xtmp = (xorgo3 - x * PSZB) / PGSZB;
 	    RROP_SOLID24(yorgp + yoffset + xtmp, xorgo - x);
 	    RROP_SOLID24(yorgop - yoffset + xtmp, xorgo - x);
 #else
@@ -193,19 +193,19 @@ RROP_NAME(cfbZeroArcSS8)(DrawablePtr pDraw, GCPtr pGC, xArc *arc)
 	    }
 #if PSZ == 24
 	    if (mask & 1){
-	      xtmp = (xorg3 + x * 3) >> 2;
+	      xtmp = (xorg3 + x * PSZB) / PGSZB;
 	      RROP_SOLID24(yorgp + yoffset + xtmp, xorg + x);
 	    }
 	    if (mask & 2){
-	      xtmp = (xorgo3 - x * 3) >> 2;
+	      xtmp = (xorgo3 - x * PSZB) / PGSZB;
 	      RROP_SOLID24(yorgp + yoffset + xtmp, xorgo - x);
 	    }
 	    if (mask & 4){
-	      xtmp = (xorgo3 - x * 3) >> 2;
+	      xtmp = (xorgo3 - x * PSZB) / PGSZB;
 	      RROP_SOLID24(yorgop - yoffset + xtmp, xorgo - x);
 	    }
 	    if (mask & 8){
-	      xtmp = (xorg3 + x * 3) >> 2;
+	      xtmp = (xorg3 + x * PSZB) / PGSZB;
 	      RROP_SOLID24(yorgop - yoffset + xtmp, xorg + x);
 	    }
 #else
@@ -230,11 +230,11 @@ RROP_NAME(cfbZeroArcSS8)(DrawablePtr pDraw, GCPtr pGC, xArc *arc)
 	mask = info.start.mask;
 #if PSZ == 24
     if (mask & 1){
-      xtmp = (xorg3 + x * 3) >> 2;
+      xtmp = (xorg3 + x * PSZB) / PGSZB;
       RROP_SOLID24(yorgp + yoffset + xtmp, xorg + x);
     }
     if (mask & 4){
-      xtmp = (xorgo3 - x * 3) >> 2;
+      xtmp = (xorgo3 - x * PSZB) / PGSZB;
       RROP_SOLID24(yorgop - yoffset + xtmp, xorgo - x);
     }
 #else
@@ -247,11 +247,11 @@ RROP_NAME(cfbZeroArcSS8)(DrawablePtr pDraw, GCPtr pGC, xArc *arc)
     {
 #if PSZ == 24
 	if (mask & 2){
-	  xtmp = (xorgo3 - x * 3) >> 2;
+	  xtmp = (xorgo3 - x * PSZB) / PGSZB;
 	  RROP_SOLID24(yorgp + yoffset + xtmp, xorgo - x);
 	}
 	if (mask & 8){
-	  xtmp = (xorg3 + x * 3) >> 2;
+	  xtmp = (xorg3 + x * PSZB) / PGSZB;
 	  RROP_SOLID24(yorgop - yoffset + xtmp, xorg + x);
 	}
 #else

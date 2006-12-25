@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbsetsp.c,v 3.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbsetsp.c,v 3.8tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -59,7 +59,7 @@ SOFTWARE.
 
 #include "cfb.h"
 #include "cfbmskbits.h"
-#include <mergerop.h>
+#include "mergerop.h"
 
 /* cfbSetScanline -- copies the bits from psrc to the drawable starting at
  * (xStart, y) and continuing to (xEnd, y).  xOrigin tells us where psrc 
@@ -103,9 +103,9 @@ cfbSetScanline(int y, int xOrigin, int xStart, int xEnd, unsigned int *psrc,
 #if PSZ == 24
     pdst = pdstBase + (y * widthDst);
     xIndex = xStart;
-    pdstb = (char *)pdst + (xStart * 3);
+    pdstb = (char *)pdst + (xStart * PSZB);
     offSrc = xStart - xOrigin;
-    psrcb = (char *)psrc + (offSrc * 3);
+    psrcb = (char *)psrc + (offSrc * PSZB);
 #else
     pdst = pdstBase + (y * widthDst) + (xStart >> PWSH); 
     psrc += (xStart - xOrigin) >> PWSH;
@@ -116,14 +116,14 @@ cfbSetScanline(int y, int xOrigin, int xStart, int xEnd, unsigned int *psrc,
 #if PSZ == 24
     nl = w;
     while (nl--){
-      psrc = (unsigned int *)((unsigned long)psrcb & ~0x03);
+      psrc = (unsigned int *)((unsigned long)psrcb & ~(PGSZB - 1));
       getbits24(psrc, tmpSrc, offSrc);
-      pdst = (int *)((unsigned long)pdstb & ~0x03);
+      pdst = (int *)((unsigned long)pdstb & ~(PGSZB - 1));
       DoMergeRop24(tmpSrc, pdst, xIndex);
       offSrc++;
-      psrcb += 3;
+      psrcb += PSZB;
       xIndex++;
-      pdstb += 3;
+      pdstb += PSZB;
     } 
 #else /* PSZ == 24 */
     dstBit = xStart & PIM;

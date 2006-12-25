@@ -2,7 +2,7 @@
  * Fill odd tiled rectangles and spans.
  * no depth dependencies.
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbtileodd.c,v 3.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbtileodd.c,v 3.9tsi Exp $ */
 
 /*
 
@@ -63,13 +63,13 @@ in this Software without prior written authorization from The Open Group.
     pSrc = pSrcLine; \
     nlwSrc = widthSrc;\
     if (tileEndPart) { \
-	if (4 - xoff + tileEndPart <= 4) {\
+	if (PGSZB - xoff + tileEndPart <= PGSZB) {\
 	    bits = *pSrc++; \
 	    nlwSrc--; \
 	} else \
 	    bits = BitLeft(tmp, tileEndLeftShift) | \
 		   BitRight(bits, tileEndRightShift); \
-	xoff = (xoff + xoffStep) & 3; \
+	xoff = (xoff + xoffStep) & (PGSZB - 1); \
 	leftShift = xoff << LEFTSHIFT_AMT; \
 	rightShift = PGSZ - leftShift; \
     }\
@@ -180,8 +180,8 @@ MROP_NAME(cfbFillBoxTileOdd)(DrawablePtr pDrawable, int nBox, BoxPtr pBox,
     cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase)
 
 #if PSZ == 24
-    tileEndPart = (4 - tileWidth) & 3;
-    tileEndMask = cfbendpartial[tileWidth & 3];
+    tileEndPart = (PGSZB - tileWidth) & (PGSZB - 1);
+    tileEndMask = cfbendpartial[tileWidth & (PGSZB - 1)];
 #else
     tileEndPart = tileWidth & PIM;
     tileEndMask = cfbendpartial[tileEndPart];
@@ -189,7 +189,7 @@ MROP_NAME(cfbFillBoxTileOdd)(DrawablePtr pDrawable, int nBox, BoxPtr pBox,
     tileEndLeftShift = (tileEndPart) << LEFTSHIFT_AMT;
     tileEndRightShift = PGSZ - tileEndLeftShift;
 #if PSZ == 24
-    xoffStep = 4 - tileEndPart;
+    xoffStep = PGSZB - tileEndPart;
 #else
     xoffStep = PPW - tileEndPart;
 #endif /* PSZ == 24 */
@@ -203,7 +203,7 @@ MROP_NAME(cfbFillBoxTileOdd)(DrawablePtr pDrawable, int nBox, BoxPtr pBox,
 	modulus (pBox->x1 - xrot, tileWidth, srcx);
 	modulus (pBox->y1 - yrot, tileHeight, srcy);
 #if PSZ == 24
-	xoffDst = (4 - pBox->x1) & 3;
+	xoffDst = (PGSZB - pBox->x1) & (PGSZB - 1);
 	if (w == 1  &&  (xoffDst == 0  ||  xoffDst == 1))
 #else
 	xoffDst = pBox->x1 & PIM;
@@ -219,13 +219,14 @@ MROP_NAME(cfbFillBoxTileOdd)(DrawablePtr pDrawable, int nBox, BoxPtr pBox,
 	    maskbits (pBox->x1, w, startmask, endmask, nlwMiddle)
 	}
 #if PSZ == 24
-	pDstLine = pdstBase + (pBox->y1 * widthDst) + ((pBox->x1*3) >> 2);
+	pDstLine = pdstBase + (pBox->y1 * widthDst) +
+	    ((pBox->x1 * PSZB) / PGSZB);
 #else
 	pDstLine = pdstBase + (pBox->y1 * widthDst) + (pBox->x1 >> PWSH);
 #endif
 	pSrcLine = pSrcBase + (srcy * widthSrc);
 #if PSZ == 24
-	xoffSrc = (4 - srcx) & 3;
+	xoffSrc = (PGSZB - srcx) & (PGSZB - 1);
 #else
 	xoffSrc = srcx & PIM;
 #endif
@@ -237,7 +238,7 @@ MROP_NAME(cfbFillBoxTileOdd)(DrawablePtr pDrawable, int nBox, BoxPtr pBox,
 	else
 	{
 #if PSZ == 24
-	    xoffStart = 4 - (xoffDst - xoffSrc);
+	    xoffStart = PGSZB - (xoffDst - xoffSrc);
 #else
 	    xoffStart = PPW - (xoffDst - xoffSrc);
 #endif
@@ -246,7 +247,7 @@ MROP_NAME(cfbFillBoxTileOdd)(DrawablePtr pDrawable, int nBox, BoxPtr pBox,
 	leftShiftStart = (xoffStart) << LEFTSHIFT_AMT;
 	rightShiftStart = PGSZ - leftShiftStart;
 #if PSZ == 24
-	nlwSrcStart = widthSrc - ((srcx*3) >> 2);
+	nlwSrcStart = widthSrc - ((srcx * PSZB) / PGSZB);
 #else
 	nlwSrcStart = widthSrc - (srcx >> PWSH);
 #endif
@@ -271,7 +272,7 @@ MROP_NAME(cfbFillBoxTileOdd)(DrawablePtr pDrawable, int nBox, BoxPtr pBox,
 	    rightShift = rightShiftStart;
 	    nlwSrc = nlwSrcStart;
 #if PSZ == 24
-	    pSrc = pSrcLine + ((srcx * 3) >> 2);
+	    pSrc = pSrcLine + ((srcx * PSZB) / PGSZB);
 #else
 	    pSrc = pSrcLine + (srcx >> PWSH);
 #endif
@@ -438,8 +439,8 @@ MROP_NAME(cfbFillSpanTileOdd)(DrawablePtr pDrawable, int n, DDXPointPtr ppt,
     cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase)
 
 #if PSZ == 24
-    tileEndPart = (4 - tileWidth) & 3;
-    tileEndMask = cfbendpartial[tileWidth & 3];
+    tileEndPart = (PGSZB - tileWidth) & (PGSZB - 1);
+    tileEndMask = cfbendpartial[tileWidth & (PGSZB - 1)];
 #else
     tileEndPart = tileWidth & PIM;
     tileEndMask = cfbendpartial[tileEndPart];
@@ -447,7 +448,7 @@ MROP_NAME(cfbFillSpanTileOdd)(DrawablePtr pDrawable, int n, DDXPointPtr ppt,
     tileEndLeftShift = (tileEndPart) << LEFTSHIFT_AMT;
     tileEndRightShift = PGSZ - tileEndLeftShift;
 #if PSZ == 24
-    xoffStep = 4 - tileEndPart;
+    xoffStep = PGSZB - tileEndPart;
 #else
     xoffStep = PPW - tileEndPart;
 #endif
@@ -457,7 +458,7 @@ MROP_NAME(cfbFillSpanTileOdd)(DrawablePtr pDrawable, int n, DDXPointPtr ppt,
 	modulus (ppt->x - xrot, tileWidth, srcx);
 	modulus (ppt->y - yrot, tileHeight, srcy);
 #if PSZ == 24
-	xoffDst = (4 - ppt->x) & 3;
+	xoffDst = (PGSZB - ppt->x) & (PGSZB - 1);
 	if (w == 1  &&  (xoffDst == 0  ||  xoffDst == 1))
 #else
 	xoffDst = ppt->x & PIM;
@@ -473,13 +474,13 @@ MROP_NAME(cfbFillSpanTileOdd)(DrawablePtr pDrawable, int n, DDXPointPtr ppt,
 	    maskbits (ppt->x, w, startmask, endmask, nlw)
 	}
 #if PSZ == 24
-	pDstLine = pdstBase + (ppt->y * widthDst)  + ((ppt->x *3)>> 2);
+	pDstLine = pdstBase + (ppt->y * widthDst) + ((ppt->x * PSZB) / PGSZB);
 #else
 	pDstLine = pdstBase + (ppt->y * widthDst) + (ppt->x >> PWSH);
 #endif
 	pSrcLine = pSrcBase + (srcy * widthSrc);
 #if PSZ == 24
-	xoffSrc = (4 - srcx) & 3;
+	xoffSrc = (PGSZB - srcx) & (PGSZB - 1);
 #else
 	xoffSrc = srcx & PIM;
 #endif
@@ -491,7 +492,7 @@ MROP_NAME(cfbFillSpanTileOdd)(DrawablePtr pDrawable, int n, DDXPointPtr ppt,
 	else
 	{
 #if PSZ == 24
-	    xoffStart = 4 - (xoffDst - xoffSrc);
+	    xoffStart = PGSZB - (xoffDst - xoffSrc);
 #else
 	    xoffStart = PPW - (xoffDst - xoffSrc);
 #endif
@@ -500,7 +501,7 @@ MROP_NAME(cfbFillSpanTileOdd)(DrawablePtr pDrawable, int n, DDXPointPtr ppt,
 	leftShiftStart = (xoffStart) << LEFTSHIFT_AMT;
 	rightShiftStart = PGSZ - leftShiftStart;
 #if PSZ == 24
-	nlwSrcStart = widthSrc - ((srcx*3) >> 2);
+	nlwSrcStart = widthSrc - ((srcx * PSZB) / PGSZB);
 #else
 	nlwSrcStart = widthSrc - (srcx >> PWSH);
 #endif
@@ -523,7 +524,7 @@ MROP_NAME(cfbFillSpanTileOdd)(DrawablePtr pDrawable, int n, DDXPointPtr ppt,
 	rightShift = rightShiftStart;
 	nlwSrc = nlwSrcStart;
 #if PSZ == 24
-	pSrc = pSrcLine + ((srcx * 3) >> 2);
+	pSrc = pSrcLine + ((srcx * PSZB) / PGSZB);
 #else
 	pSrc = pSrcLine + (srcx >> PWSH);
 #endif
@@ -683,8 +684,8 @@ MROP_NAME(cfbFillBoxTile32s)(DrawablePtr pDrawable, int nBox, BoxPtr pBox,
 	modulus (pBox->x1 - xrot, tileWidth, srcx);
 	modulus (pBox->y1 - yrot, tileHeight, srcy);
 #if PSZ == 24
-	xoffSrc = (4 - srcx) & 3;
-	srcStart = (srcx * 3) >> 2;
+	xoffSrc = (PGSZB - srcx) & (PGSZB - 1);
+	srcStart = (srcx * PSZB) / PGSZB;
 #else
 	xoffSrc = srcx & PIM;
 	srcStart = (srcx >> PWSH);
@@ -694,8 +695,9 @@ MROP_NAME(cfbFillBoxTile32s)(DrawablePtr pDrawable, int nBox, BoxPtr pBox,
 
 	/* set up dest */
 #if PSZ == 24
-	xoffDst = (4 - pBox->x1) & 3;
-	pdstLine = pdstBase + (pBox->y1 * widthDst) + ((pBox->x1*3) >> 2);
+	xoffDst = (PGSZB - pBox->x1) & (PGSZB - 1);
+	pdstLine = pdstBase + (pBox->y1 * widthDst) +
+	     ((pBox->x1 * PSZB) / PGSZB);
 #else
 	xoffDst = pBox->x1 & PIM;
 	pdstLine = pdstBase + (pBox->y1 * widthDst) + (pBox->x1 >> PWSH);
@@ -995,8 +997,8 @@ MROP_NAME(cfbFillSpanTile32s)(DrawablePtr pDrawable, int n, DDXPointPtr ppt,
 	modulus (ppt->x - xrot, tileWidth, srcx);
 	modulus (ppt->y - yrot, tileHeight, srcy);
 #if PSZ == 24
-	xoffSrc = (4 - srcx) & 3;
-	srcStart = (srcx * 3) >> 2;
+	xoffSrc = (PGSZB - srcx) & (PGSZB - 1);
+	srcStart = (srcx * PSZB) / PGSZB;
 #else
 	xoffSrc = srcx & PIM;
 	srcStart = (srcx >> PWSH);
@@ -1006,8 +1008,8 @@ MROP_NAME(cfbFillSpanTile32s)(DrawablePtr pDrawable, int n, DDXPointPtr ppt,
 
 	/* set up dest */
 #if PSZ == 24
-	xoffDst = (4 - ppt->x) & 3;
-	pdstLine = pdstBase + (ppt->y * widthDst) + ((ppt->x *3) >> 2);
+	xoffDst = (PGSZB - ppt->x) & (PGSZB - 1);
+	pdstLine = pdstBase + (ppt->y * widthDst) + ((ppt->x * PSZB) / PGSZB);
 	/* set up masks */
 	if (w == 1  &&  (xoffDst == 0  ||  xoffDst == 1))
 #else
