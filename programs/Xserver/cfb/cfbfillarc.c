@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbfillarc.c,v 3.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbfillarc.c,v 3.9tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -91,7 +91,7 @@ RROP_NAME(cfbFillEllipseSolid)(DrawablePtr pDraw, GCPtr pGC, xArc *arc)
 	    continue;
 	xpos = xorg - x;
 #if PSZ == 24
-	xpos3 = (xpos * 3) & ~0x03;
+	xpos3 = (xpos * PSZB) & ~(PGSZB - 1);
 	addrl = (CfbBits *)((char *)addrlt + xpos3);
 	if (slw == 1){
 	  RROP_SOLID24(addrl, xpos);
@@ -102,7 +102,7 @@ RROP_NAME(cfbFillEllipseSolid)(DrawablePtr pDraw, GCPtr pGC, xArc *arc)
 	  continue;
 	}
 	maskbits(xpos, slw, startmask, endmask, nlmiddle);
-	xpos &= 3;
+	xpos &= (PGSZB - 1);
 	pidx = xpos;
 	if (startmask){
 	  RROP_SOLID_MASK(addrl, startmask, pidx-1);
@@ -183,13 +183,13 @@ RROP_NAME(cfbFillEllipseSolid)(DrawablePtr pDraw, GCPtr pGC, xArc *arc)
 #define FILLSPAN(xl,xr,addr) \
     if (xr >= xl){ \
 	n = xr - xl + 1; \
-	addrl = (CfbBits *)((char *)addr + ((xl * 3) & ~0x03)); \
+	addrl = (CfbBits *)((char *)addr + ((xl * PSZB) & ~(PGSZB - 1))); \
 	if (n <= 1){ \
           if (n) \
             RROP_SOLID24(addrl, xl); \
 	} else { \
 	  maskbits(xl, n, startmask, endmask, n); \
-          pidx = xl & 3; \
+          pidx = xl & (PGSZB - 1); \
 	  if (startmask){ \
 	    RROP_SOLID_MASK(addrl, startmask, pidx-1); \
 	    addrl++; \

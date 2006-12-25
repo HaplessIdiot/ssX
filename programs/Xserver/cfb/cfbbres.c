@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbbres.c,v 3.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbbres.c,v 3.7tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -86,7 +86,7 @@ cfbBresS(int rop, CfbBits and, CfbBits xor, CfbBits *addrl, int nlwidth,
     nlwidth <<= PWSH;
 #if PSZ == 24
     addrp = (PixelType *)(addrl) + (y1 * nlwidth);
-    addrb = (char *)addrp + x1 * 3;
+    addrb = (char *)addrp + x1 * PSZB;
 
     piQxelXor[0] = (xor << 24) | xor;
     piQxelXor[1] = (xor << 16)| (xor >> 8);
@@ -102,7 +102,7 @@ cfbBresS(int rop, CfbBits and, CfbBits xor, CfbBits *addrl, int nlwidth,
     e = e-e1;			/* to make looping easier */
 #if PSZ == 24
     nlwidth3 = nlwidth * sizeof (CfbBits);
-    signdx3 = signdx * 3;
+    signdx3 = signdx * PSZB;
 #endif
     
     if (axis == Y_AXIS)
@@ -123,8 +123,8 @@ cfbBresS(int rop, CfbBits and, CfbBits xor, CfbBits *addrl, int nlwidth,
 	--len;
 #if PSZ == 24
 #define body_copy \
-	    addrp = (PixelType *)((unsigned long)addrb & ~0x03); \
-	    switch((unsigned long)addrb & 3){ \
+	    addrp = (PixelType *)((unsigned long)addrb & ~(PGSZB - 1)); \
+	    switch((unsigned long)addrb & (PGSZB - 1)){ \
 	    case 0: \
 	      *addrp = ((*addrp)&0xFF000000)|(piQxelXor[0] & 0xFFFFFF); \
 	      break; \
@@ -184,8 +184,8 @@ cfbBresS(int rop, CfbBits and, CfbBits xor, CfbBits *addrl, int nlwidth,
 	while(len--)
 	{ 
 #if PSZ == 24
-	    addrp = (PixelType *)((unsigned long)addrb & ~0x03);
-	    switch((unsigned long)addrb & 3){
+	    addrp = (PixelType *)((unsigned long)addrb & ~(PGSZB - 1));
+	    switch((unsigned long)addrb & (PGSZB - 1)){
 	    case 0:
 	      *addrp = (*addrp & (piQxelAnd[0]|0xFF000000))
 			^ (piQxelXor[0] & 0xFFFFFF);
@@ -232,7 +232,7 @@ cfbBresS(int rop, CfbBits and, CfbBits xor, CfbBits *addrl, int nlwidth,
 
     /* point to longword containing first point */
 #if PSZ == 24
-    addrl = (addrl + (y1 * nlwidth) + ((x1 * 3) >>2);
+    addrl = (addrl + (y1 * nlwidth) + ((x1 * PSZB) / PGSZB);
 #else
     addrl = (addrl + (y1 * nlwidth) + (x1 >> PWSH));
 #endif
@@ -242,8 +242,8 @@ cfbBresS(int rop, CfbBits and, CfbBits xor, CfbBits *addrl, int nlwidth,
 
     leftbit = cfbmask[0];
 #if PSZ == 24
-    rightbit = cfbmask[(PPW-1)<<1];
-    bit = cfbmask[(x1 & 3)<<1];
+    rightbit = cfbmask[(PPW - 1) << 1];
+    bit = cfbmask[(x1 & (PGSZB - 1)) << 1];
 #else
     rightbit = cfbmask[PPW-1];
     bit = cfbmask[x1 & PIM];

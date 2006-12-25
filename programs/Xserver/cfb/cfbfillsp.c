@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbfillsp.c,v 3.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbfillsp.c,v 3.10tsi Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -121,7 +121,9 @@ fgPixel != bgPixel.  based on the fill style, it uses
 */
 
 #ifdef	notdef
-#include	<stdio.h>
+#ifndef XFree86LOADER
+#include <stdio.h>
+#endif
 static
 dumpspans(int n, DDXPointPtr ppt, int *pwidth)
 {
@@ -150,7 +152,7 @@ cfbUnnaturalTileFS(DrawablePtr pDrawable, GC *pGC, int nInit,
 	return;
 
 #if PSZ == 24
-    if (pGC->tile.pixmap->drawable.width & 3)
+    if (pGC->tile.pixmap->drawable.width & (PGSZB - 1))
 #else
     if (pGC->tile.pixmap->drawable.width & PIM)
 #endif
@@ -521,8 +523,8 @@ cfbUnnaturalStippleFS(DrawablePtr pDrawable, GC *pGC, int nInit,
 	        xtemp = (xrem & MFB_PIM);
 	        ptemp = (CfbBits *)(psrcS + (xrem >> MFB_PWSH));
 #if PSZ == 24
-		tmpx = x & 3;
-		pdsttmp = pdst + ((x * 3)>>2);
+		tmpx = x & (PGSZB - 1);
+		pdsttmp = pdst + ((x * PSZB) / PGSZB);
 #else
 #if PSZ != 32 || PPW != 1
 		tmpx = x & PIM;

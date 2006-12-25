@@ -25,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbrrop.h,v 3.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbrrop.h,v 3.14tsi Exp $ */
 
 #ifndef GXcopy
 #include <X11/X.h>
@@ -274,41 +274,29 @@ in this Software without prior written authorization from The Open Group.
 #define RROP_NAME(prefix)   RROP_NAME_CAT(prefix,General)
 #endif /* GXset */
 
-#define RROP_UNROLL_CASE1(p,i)    case (i): RROP_SOLID((p) - (i));
-#define RROP_UNROLL_CASE2(p,i)    RROP_UNROLL_CASE1(p,(i)+1) RROP_UNROLL_CASE1(p,i)
-#define RROP_UNROLL_CASE4(p,i)    RROP_UNROLL_CASE2(p,(i)+2) RROP_UNROLL_CASE2(p,i)
-#define RROP_UNROLL_CASE8(p,i)    RROP_UNROLL_CASE4(p,(i)+4) RROP_UNROLL_CASE4(p,i)
-#define RROP_UNROLL_CASE16(p,i)   RROP_UNROLL_CASE8(p,(i)+8) RROP_UNROLL_CASE8(p,i)
-#define RROP_UNROLL_CASE32(p,i)   RROP_UNROLL_CASE16(p,(i)+16) RROP_UNROLL_CASE16(p,i)
+#define RROP_UNROLL_CASE1(p,i)	case (i): RROP_SOLID((p) - (i));
+#define RROP_UNROLL_CASE2(p,i)	RROP_UNROLL_CASE1(p,(i)+1) RROP_UNROLL_CASE1(p,i)
+#define RROP_UNROLL_CASE4(p,i)	RROP_UNROLL_CASE2(p,(i)+2) RROP_UNROLL_CASE2(p,i)
+#define RROP_UNROLL_CASE8(p,i)	RROP_UNROLL_CASE4(p,(i)+4) RROP_UNROLL_CASE4(p,i)
+#define RROP_UNROLL_CASE16(p,i)	RROP_UNROLL_CASE8(p,(i)+8) RROP_UNROLL_CASE8(p,i)
+
 #define RROP_UNROLL_CASE3(p)	RROP_UNROLL_CASE2(p,2) RROP_UNROLL_CASE1(p,1)
 #define RROP_UNROLL_CASE7(p)	RROP_UNROLL_CASE4(p,4) RROP_UNROLL_CASE3(p)
 #define RROP_UNROLL_CASE15(p)	RROP_UNROLL_CASE8(p,8) RROP_UNROLL_CASE7(p)
 #define RROP_UNROLL_CASE31(p)	RROP_UNROLL_CASE16(p,16) RROP_UNROLL_CASE15(p)
-#ifdef LONG64
-#define RROP_UNROLL_CASE63(p)	RROP_UNROLL_CASE32(p,32) RROP_UNROLL_CASE31(p)
-#endif /* LONG64 */
 
-#define RROP_UNROLL_LOOP1(p,i) RROP_SOLID((p) + (i));
-#define RROP_UNROLL_LOOP2(p,i) RROP_UNROLL_LOOP1(p,(i)) RROP_UNROLL_LOOP1(p,(i)+1)
-#define RROP_UNROLL_LOOP4(p,i) RROP_UNROLL_LOOP2(p,(i)) RROP_UNROLL_LOOP2(p,(i)+2)
-#define RROP_UNROLL_LOOP8(p,i) RROP_UNROLL_LOOP4(p,(i)) RROP_UNROLL_LOOP4(p,(i)+4)
-#define RROP_UNROLL_LOOP16(p,i) RROP_UNROLL_LOOP8(p,(i)) RROP_UNROLL_LOOP8(p,(i)+8)
-#define RROP_UNROLL_LOOP32(p,i) RROP_UNROLL_LOOP16(p,(i)) RROP_UNROLL_LOOP16(p,(i)+16)
-#ifdef LONG64
-#define RROP_UNROLL_LOOP64(p,i) RROP_UNROLL_LOOP32(p,(i)) RROP_UNROLL_LOOP32(p,(i)+32)
-#endif /* LONG64 */
+#define RROP_UNROLL_LOOP1(p,i)	RROP_SOLID((p) + (i));
+#define RROP_UNROLL_LOOP2(p,i)	RROP_UNROLL_LOOP1(p,(i)) RROP_UNROLL_LOOP1(p,(i)+1)
+#define RROP_UNROLL_LOOP4(p,i)	RROP_UNROLL_LOOP2(p,(i)) RROP_UNROLL_LOOP2(p,(i)+2)
+#define RROP_UNROLL_LOOP8(p,i)	RROP_UNROLL_LOOP4(p,(i)) RROP_UNROLL_LOOP4(p,(i)+4)
+#define RROP_UNROLL_LOOP16(p,i)	RROP_UNROLL_LOOP8(p,(i)) RROP_UNROLL_LOOP8(p,(i)+8)
+#define RROP_UNROLL_LOOP32(p,i)	RROP_UNROLL_LOOP16(p,(i)) RROP_UNROLL_LOOP16(p,(i)+16)
 
 #if defined (FAST_CONSTANT_OFFSET_MODE) && defined (SHARED_IDCACHE) && (RROP == GXcopy)
 
-#ifdef LONG64
-#define RROP_UNROLL_SHIFT	6
-#define RROP_UNROLL_CASE(p)	RROP_UNROLL_CASE63(p)
-#define RROP_UNROLL_LOOP(p)	RROP_UNROLL_LOOP64(p,-64)
-#else /* not LONG64 */
 #define RROP_UNROLL_SHIFT	5
 #define RROP_UNROLL_CASE(p)	RROP_UNROLL_CASE31(p)
 #define RROP_UNROLL_LOOP(p)	RROP_UNROLL_LOOP32(p,-32)
-#endif /* LONG64 */
 #define RROP_UNROLL		(1<<RROP_UNROLL_SHIFT)
 #define RROP_UNROLL_MASK	(RROP_UNROLL-1)
 

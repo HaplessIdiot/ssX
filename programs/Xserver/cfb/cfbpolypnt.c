@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbpolypnt.c,v 3.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbpolypnt.c,v 3.8tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -131,7 +131,8 @@ cfbPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
 #if PSZ == 24
 	    PointLoop(
 		      xtmp = pDrawable->x + intToX(pt);
-		      p = addrp + (intToY(pt) << npwidth) + ((xtmp * 3) >>2);
+		      p = addrp + (intToY(pt) << npwidth) +
+			  ((xtmp * PSZB) / PGSZB);
 		      RROP_SOLID24_COPY(p, xtmp))
 #else
 	    PointLoop(*(addrp + (intToY(pt) << npwidth) + intToX(pt)) = xor;)
@@ -149,7 +150,8 @@ cfbPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
 #if PSZ == 24
 	    PointLoop(
 		      xtmp = pDrawable->x + intToX(pt);
-		      p = addrp + intToY(pt) * npwidth + ((xtmp * 3) >> 2);
+		      p = addrp + intToY(pt) * npwidth +
+			  ((xtmp * PSZB) / PGSZB);
 		      RROP_SOLID24_COPY(p, xtmp))
 #else
 	    PointLoop(*(addrp + intToY(pt) * npwidth + intToX(pt)) = xor;)
@@ -163,7 +165,7 @@ cfbPolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
 	RROP_SET_SETUP(xor, and)
 	PointLoop(  
 		  xtmp = pDrawable->x + intToX(pt);
-		  p = addrp + intToY(pt) * npwidth + ((xtmp * 3) >> 2);
+		  p = addrp + intToY(pt) * npwidth + ((xtmp * PSZB) / PGSZB);
 		  RROP_SOLID24_SET(p, xtmp))
 #else
 	PointLoop(  addrpt = addrp + intToY(pt) * npwidth + intToX(pt);

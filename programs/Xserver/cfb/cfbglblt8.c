@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbglblt8.c,v 3.10 2005/10/14 15:16:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbglblt8.c,v 3.11tsi Exp $ */
 /*
 
 Copyright 1989, 1998  The Open Group
@@ -225,19 +225,20 @@ cfbPolyGlyphBlt8(DrawablePtr pDrawable, GCPtr pGC, int x, int y,
 	glyphBits = (glyphPointer) FONTGLYPHBITS(pglyphBase,pci);
 	xoff = x + pci->metrics.leftSideBearing;
 #if PSZ == 24
-	dstLine = pdstBase + (y - pci->metrics.ascent) * widthDst +((xoff>> 2)*3);
+	dstLine = pdstBase +
+	    (y - pci->metrics.ascent) * widthDst + ((xoff / PGSZB) * PSZB);
 #else
 	dstLine = pdstBase +
-	          (y - pci->metrics.ascent) * widthDst + (xoff >> PWSH);
+	    (y - pci->metrics.ascent) * widthDst + (xoff >> PWSH);
 #endif
 	x += pci->metrics.characterWidth;
 	if ((hTmp = pci->metrics.descent + pci->metrics.ascent))
 	{
 #if PSZ == 24
-	    xoff &= 0x03;
+	    xoff &= (PGSZB - 1);
 #else
 	    xoff &= PIM;
-#endif /* PSZ == 24 */
+#endif
 #ifdef STIPPLE
 	    STIPPLE(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
 #else
@@ -358,13 +359,12 @@ cfbPolyGlyphBlt8Clipped(DrawablePtr pDrawable, GCPtr pGC, int x, int y,
 	if ((hTmp = pci->metrics.descent + pci->metrics.ascent))
 	{
 #if PSZ == 24
-	    dstLine = pdstBase + yG * widthDst + ((xG>> 2)*3);
-	    /* never use (xG*3)>>2 */
+	    dstLine = pdstBase + yG * widthDst + ((xG / PGSZB) * PSZB);
 #else
 	    dstLine = pdstBase + yG * widthDst + (xG >> PWSH);
 #endif
 #if PSZ == 24
-	    xoff = xG & 3;
+	    xoff = xG & (PGSZB - 1);
 #else
 	    xoff = xG & PIM;
 #endif

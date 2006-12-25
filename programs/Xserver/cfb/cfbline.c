@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbline.c,v 3.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbline.c,v 3.8tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -425,8 +425,8 @@ cfbLineSS(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
 		CfbBits scrbits;
 
 #if PSZ == 24
-		mask = cfbmask[(x2 & 3)<<1];
-		addrl += (y2 * nlwidth) + ((x2*3) >> 2);
+		mask = cfbmask[(x2 & (PGSZB - 1)) << 1];
+		addrl += (y2 * nlwidth) + ((x2 * PSZB) / PGSZB);
 #else
 		mask = cfbmask[x2 & PIM];
 		addrl += (y2 * nlwidth) + (x2 >> PWSH);
@@ -720,8 +720,8 @@ dontStep:	;
 		if (dashIndex & 1)
 		    pix = 1;
 #if PSZ == 24
-		mask = cfbmask[(x2 & 3)<<1];
-		addrl += (y2 * nlwidth) + ((x2 *3)>> 2);
+		mask = cfbmask[(x2 & (PGSZB - 1)) << 1];
+		addrl += (y2 * nlwidth) + ((x2 * PSZB) / PGSZB);
 #else
 		mask = cfbmask[x2 & PIM];
 		addrl += (y2 * nlwidth) + (x2 >> PWSH);

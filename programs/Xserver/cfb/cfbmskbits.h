@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.17tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.18tsi Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -53,6 +53,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * name	    explanation
  * ----	    -----------
  * PSZ	    pixel size (in bits)
+ * PSZB     pixel size (in bytes)
  * PGSZ     pixel group size (in bits)
  * PGSZB    pixel group size (in bytes)
  * PGSZBMSK mask with lowest PGSZB bits set to 1
@@ -122,11 +123,16 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define PixelGroup CARD32
 #define PGSZB 4
 #endif /* PixelGroup */
+
+#if !defined(PGSZB) || (PGSZB != 4)
+# error "PGSZB is unspecified or no longer supported."
+#endif
     
 #ifndef CfbBits
 #define CfbBits	CARD32
 #endif
 
+#define PSZB	(PSZ >> 3)
 #define PGSZ	(PGSZB << 3)
 #define PPW	(PGSZ/PSZ)
 #define PLST	(PPW-1)
@@ -404,30 +410,31 @@ getleftbits(psrc, w, dst)
 
 # if (PSZ == 24 && PPW == 1)
 #define maskbits(x, w, startmask, endmask, nlw) {\
-    startmask = cfbstarttab[(x)&3]; \
-    endmask = cfbendtab[((x)+(w)) & 3]; \
-    nlw = ((((x)+(w))*3)>>2) - (((x)*3 +3)>>2); \
+    startmask = cfbstarttab[(x) & (PGSZB - 1)]; \
+    endmask = cfbendtab[((x) + (w)) & (PGSZB - 1)]; \
+    nlw = ((((x) + (w)) * PSZB) / PGSZB) - ((((x) + 1) * PSZB) / PGSZB); \
 }
 
 #define mask32bits(x, w, startmask, endmask) \
-    startmask = cfbstarttab[(x)&3]; \
-    endmask = cfbendtab[((x)+(w)) & 3];
+    startmask = cfbstarttab[(x) & (PGSZB - 1)]; \
+    endmask = cfbendtab[((x) + (w)) & (PGSZB - 1)];
 
 #define maskpartialbits(x, w, mask) \
-    mask = cfbstartpartial[(x) & 3] & cfbendpartial[((x)+(w)) & 3];
+    mask = cfbstartpartial[(x) & (PGSZB - 1)] & \
+	   cfbendpartial[((x) + (w)) & (PGSZB - 1)];
 
 #define maskbits24(x, w, startmask, endmask, nlw) \
-    startmask = cfbstarttab24[(x) & 3]; \
-    endmask = cfbendtab24[((x)+(w)) & 3]; \
+    startmask = cfbstarttab24[(x) & (PGSZB - 1)]; \
+    endmask = cfbendtab24[((x) + (w)) & (PGSZB - 1)]; \
     if (startmask){ \
-	nlw = (((w) - (4 - ((x) & 3))) >> 2); \
+	nlw = (((w) - (PGSZB - ((x) & (PGSZB - 1)))) / PGSZB); \
     } else { \
-	nlw = (w) >> 2; \
+	nlw = (w) / PGSZB; \
     }
 
 #define getbits24(psrc, dst, index) {\
     int idx; \
-    switch(idx = ((index)&3)<<1){ \
+    switch(idx = ((index) & (PGSZB - 1)) << 1){ \
     	case 0: \
 		dst = (*(psrc) &cfbmask[idx]); \
 		break; \
@@ -443,7 +450,7 @@ getleftbits(psrc, w, dst)
 #define putbits24(src, w, pdst, planemask, index) {\
     PixelGroup dstpixel; \
     unsigned int idx; \
-    switch(idx = ((index)&3)<<1){ \
+    switch(idx = ((index) & (PGSZB - 1)) << 1){ \
     	case 0: \
 		dstpixel = (*(pdst) &cfbmask[idx]); \
 		break; \
@@ -725,7 +732,7 @@ if ((x) + (w) <= PPW) {\
 #define getleftbits(psrc, w, dst)	dst = *((unsigned int *) psrc)
 #define getleftbits24(psrc, w, dst, idx){	\
 	regiseter int index; \
-	switch(index = ((idx)&3)<<1){ \
+	switch(index = ((idx) & (PGSZB - 1)) << 1){ \
 	case 0: \
 	dst = (*((unsigned int *) psrc))&cfbmask[index]; \
 	break; \
@@ -838,12 +845,12 @@ if ((x) + (w) <= PPW) {\
     CfbBits src; \
     unsigned int sidx; \
     unsigned int didx; \
-    sidx = ((srcindex) & 3)<<1; \
-    didx = ((dstindex) & 3)<<1; \
+    sidx = ((srcindex) & (PGSZB - 1)) << 1; \
+    didx = ((dstindex) & (PGSZB - 1)) << 1; \
     q = *(psrcstip) >> (xt); \
-/*    if((srcindex)!=0)*/ \
-/*    src = (((*(psrcpix)) << cfb24Shift[sidx]) & (cfbmask[sidx])) |*/ \
-/*	(((*((psrcpix)+1)) << cfb24Shift[sidx+1]) & (cfbmask[sidx+1])); */\
+/*    if((srcindex)!=0) */ \
+/*    src = (((*(psrcpix)) << cfb24Shift[sidx]) & (cfbmask[sidx])) | */ \
+/*	(((*((psrcpix)+1)) << cfb24Shift[sidx+1]) & (cfbmask[sidx+1])); */ \
 /*    else */\
 	src = (*(psrcpix))&0xFFFFFF; \
     if ( ((xt)+(w)) > PGSZ ) \

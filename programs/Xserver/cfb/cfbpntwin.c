@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbpntwin.c,v 3.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbpntwin.c,v 3.11tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -230,18 +230,18 @@ cfbFillBoxSolid(DrawablePtr pDrawable, int nBox, BoxPtr pBox,
 	{
 #endif
 #if PSZ == 24
-/* _Box has x1, y1, x2, y2*/
-	  leftIndex = pBox->x1 & 3;
-	  rightIndex = ((leftIndex+w)<5)?0:(pBox->x2 &3);
+	  /* _Box has x1, y1, x2, y2*/
+	  leftIndex = pBox->x1 & (PGSZB - 1);
+	  rightIndex = ((leftIndex + w) < 5) ? 0 : (pBox->x2 & (PGSZB - 1));
 	  nmiddle = w - rightIndex;
 	  if(leftIndex){
-	      nmiddle -= (4 - leftIndex);
+	      nmiddle -= (PGSZB - leftIndex);
 	  }
 	  nmiddle >>= 2;
 	  if(nmiddle < 0)
 	    nmiddle = 0;
 
-	  pdst = pdstBase + pBox->y1 * widthDst + ((pBox->x1*3) >> 2);
+	  pdst = pdstBase + pBox->y1 * widthDst + ((pBox->x1 * PSZB) / PGSZB);
 
 	  switch(leftIndex+w){
 	  case 4:
@@ -341,7 +341,7 @@ cfbFillBoxSolid(DrawablePtr pDrawable, int nBox, BoxPtr pBox,
 	  {
 	    w = nmiddle;
 	    pdstULC = pdst;
-/*	    maskbits (pBox->x1, w, leftMask, rightMask, nmiddle);*/
+/*	    maskbits (pBox->x1, w, leftMask, rightMask, nmiddle); */
 	    while(h--){
 	      nmiddle = w;
 	      pdst = pdstULC;
@@ -477,28 +477,29 @@ cfbFillBoxTile32(DrawablePtr pDrawable, int nBox, BoxPtr pBox, PixmapPtr tile)
 	w = pBox->x2 - pBox->x1;
 	h = pBox->y2 - pBox->y1;
 	y = pBox->y1;
-	leftIndex = pBox->x1 & 3;
-/*	rightIndex = ((leftIndex+w)<5)?0:pBox->x2 &3;*/
-	rightIndex = pBox->x2 &3;
+	leftIndex = pBox->x1 & (PGSZB - 1);
+/*	rightIndex = ((leftIndex + w) < 5) ? 0 : pBox->x2 & (PGSZB - 1); */
+	rightIndex = pBox->x2 & (PGSZB - 1);
 	nmiddle = w - rightIndex;
 	if(leftIndex){
-	  nmiddle -= (4 - leftIndex);
+	  nmiddle -= (PGSZB - leftIndex);
 	}
 	nmiddle >>= 2;
 	if(nmiddle < 0)
 	  nmiddle = 0;
 
-	pdst = pdstBase + ((pBox->x1 *3)>> 2) +  pBox->y1 * widthDst;
+	pdst = pdstBase + ((pBox->x1 * PSZB) / PGSZB) + pBox->y1 * widthDst;
 	srcy = y % tileHeight;
 
-#define StepTile    piQxelArray[0] = (psrc[srcy] & 0xFFFFFF) | ((psrc[srcy] & 0xFF)<<24); \
-		    piQxelArray[1] = (psrc[srcy] & 0xFFFF00) | ((psrc[srcy] & 0xFFFF)<<16); \
-		    piQxelArray[2] = ((psrc[srcy] & 0xFF0000)>>16) | \
-		    		     ((psrc[srcy] & 0xFFFFFF)<<8); \
-		    /*rrop_xor = psrc[srcy];*/ \
-		    ++srcy; \
-		    if (srcy == tileHeight) \
-		        srcy = 0;
+#define StepTile \
+    piQxelArray[0] = (psrc[srcy] & 0xFFFFFF) | ((psrc[srcy] & 0xFF) << 24); \
+    piQxelArray[1] = (psrc[srcy] & 0xFFFF00) | ((psrc[srcy] & 0xFFFF) << 16); \
+    piQxelArray[2] = ((psrc[srcy] & 0xFF0000) >> 16) | \
+		     ((psrc[srcy] & 0xFFFFFF) << 8); \
+ /* rrop_xor = psrc[srcy]; */ \
+    ++srcy; \
+    if (srcy == tileHeight) \
+	srcy = 0;
 
 	  switch(leftIndex+w){
 	  case 4:

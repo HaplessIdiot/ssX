@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbply1rct.c,v 3.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbply1rct.c,v 3.13tsi Exp $ */
 /*
  *
 Copyright 1990, 1998  The Open Group
@@ -276,20 +276,16 @@ RROP_NAME(cfbFillPoly1Rect)(DrawablePtr pDrawable, GCPtr pGC, int shape,
 	    l -= c;
 #endif
 
-#if PGSZ == 32
 #define LWRD_SHIFT 2
-#else /* PGSZ == 64 */
-#define LWRD_SHIFT 3
-#endif /* PGSZ */
 
 #if PSZ == 24
-	    addr = (CfbBits *)((char *)addrl + ((l * 3) & ~0x03));
+	    addr = (CfbBits *)((char *)addrl + ((l * PSZB) & ~(PGSZB - 1)));
 	    if (nmiddle <= 1){
 	      if (nmiddle)
 	        RROP_SOLID24(addr, l);
 	    } else {
 	      maskbits(l, nmiddle, startmask, endmask, nmiddle);
-	      pidx = l & 3;
+	      pidx = l & (PGSZB - 1);
 	      if (startmask){
 		RROP_SOLID_MASK(addr, startmask, pidx-1);
 		addr++;
