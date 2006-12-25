@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/include/DPS/dpsconfig.h,v 1.8 2004/03/21 11:27:05 herrb Exp $ */
+/* $XFree86: xc/include/DPS/dpsconfig.h,v 1.9tsi Exp $ */
 
 #ifndef	DPSCONFIG_H
 #define	DPSCONFIG_H
@@ -161,7 +161,7 @@
 #define SWAPBITS 0
 #endif /* _IBMR2 */
 
-#ifdef __i386__
+#if defined(__i386__) || defined(__amd64__) || defined(__x86_64__)
 #define SWAPBITS 1
 #endif /* __i386__ */
 
