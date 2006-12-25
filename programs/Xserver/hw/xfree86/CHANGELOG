@@ -1,4 +1,5 @@
 XFree86 4.6.99.15 (xx January 2007)
+  95. Fix incorrect x86_64 endianness in DPS client libraries (Marc La France).
   94. Generalise Imake.cf's handling of MIPS endianness (Marc La France).
   93. In cfb's assembler stipple code, rely on Xarch.h for endianness
       determination (Marc La France).
@@ -20366,7 +20367,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3827 2006/12/21 21:34:15 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3828 2006/12/25 15:24:40 tsi Exp $
 
 
 
