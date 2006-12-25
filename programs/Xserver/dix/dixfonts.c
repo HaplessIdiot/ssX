@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.34tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.35tsi Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -2147,7 +2147,7 @@ dump_char_ascii(CharInfoPtr cip)
 
     bpr = GLYPH_SIZE(cip, 4);
     for (r = 0; r < (cip->metrics.ascent + cip->metrics.descent); r++) {
-	char * row = cip->bits + (r * bpr);
+	unsigned *row = (unsigned *)(cip->bits + (r * bpr));
 
 	byte = 0;
 	for (l = 0; l <= (cip->metrics.rightSideBearing -
