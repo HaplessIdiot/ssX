@@ -16,7 +16,7 @@
  *
  *     4.  Create a .cf file with the name given by MacroFile.
  */
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.93 2006/06/21 04:03:15 tsi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.94tsi Exp $
 
 #if defined(__APPLE__)
 # undef __APPLE__
@@ -883,11 +883,6 @@ XCOMM Keep cpp from replacing path elements containing i486/i586/i686
 #  define MipsArchitecture
 #  undef mips
 #  undef __mips__
-#  if defined(MIPSEL) || defined(_MIPSEL)
-#   define MipselArchitecture
-#  endif
-#  undef MIPSEL
-#  undef _MIPSEL
 # endif
 # ifdef __hppa__
 #  ifndef HPArchitecture
@@ -1098,6 +1093,30 @@ XCOMM Keep cpp from replacing path elements containing i486/i586/i686
 #  undef __i386__
 # endif /* __i386__ */
 #endif /* QNX/Neutrino */
+
+#ifdef MipsArchitecture
+# if defined(__MIPSEL__) || defined(__MIPSEL) || \
+     defined(_MIPSEL) || defined(MIPSEL)
+#  undef  __MIPSEL__
+#  undef  __MIPSEL
+#  undef  _MIPSEL
+#  undef  MIPSEL
+#  undef  MipselArchitecture
+#  define MipselArchitecture
+# endif
+# if defined(__MIPSEB__) || defined(__MIPSEB) || \
+     defined(_MIPSEB) || defined(MIPSEB)
+#  undef  __MIPSEB__
+#  undef  __MIPSEB
+#  undef  _MIPSEB
+#  undef  MIPSEB
+#  undef  MipsebArchitecture
+#  define MipsebArchitecture
+# endif
+# if defined(MipselArchitecture) && defined(MipsebArchitecture)
+#  error "Conflicting MIPS endianness."
+# endif
+#endif
 
 #if defined(SparcArchitecture) && !defined(Sparc64Architecture)
 # if defined(__sparc_v9__) || defined(__sparc_v9) || \
