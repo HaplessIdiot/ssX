@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/maskbits.h,v 3.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/maskbits.h,v 3.11tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.1, 1/24/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -320,21 +320,25 @@ extern PixelType mask[];
 #ifdef __GNUC__ /* XXX don't want for Alpha? */
 #ifdef vax
 #define FASTGETBITS(psrc,x,w,dst) \
-    __asm ("extzv %1,%2,%3,%0" \
-	 : "=g" (dst) \
-	 : "g" (x), "g" (w), "m" (*(char *)(psrc)))
+    __asm__ __volatile__ ( \
+	"extzv %1,%2,%3,%0" \
+	: "=g" (dst) \
+	: "g" (x), "g" (w), "m" (*(char *)(psrc)))
 #define getbits(psrc,x,w,dst) FASTGETBITS(psrc,x,w,dst)
 
 #define FASTPUTBITS(src, x, w, pdst) \
-    __asm ("insv %3,%1,%2,%0" \
-	 : "=m" (*(char *)(pdst)) \
-	 : "g" (x), "g" (w), "g" (src))
+    __asm__ __volatile__ ( \
+	"insv %3,%1,%2,%0" \
+	: "=m" (*(char *)(pdst)) \
+	: "g" (x), "g" (w), "g" (src))
 #define putbits(src, x, w, pdst) FASTPUTBITS(src, x, w, pdst)
 #endif /* vax */
 #ifdef mc68020
 #define FASTGETBITS(psrc, x, w, dst) \
-    __asm ("bfextu %3{%1:%2},%0" \
-    : "=d" (dst) : "di" (x), "di" (w), "o" (*(char *)(psrc)))
+    __asm__ __volatile__ ( \
+	"bfextu %3{%1:%2},%0" \
+	: "=d" (dst) \
+	: "di" (x), "di" (w), "o" (*(char *)(psrc)))
 
 #define getbits(psrc,x,w,dst) \
 { \
@@ -343,9 +347,10 @@ extern PixelType mask[];
 }
 
 #define FASTPUTBITS(src, x, w, pdst) \
-    __asm ("bfins %3,%0{%1:%2}" \
-	 : "=o" (*(char *)(pdst)) \
-	 : "di" (x), "di" (w), "d" (src), "0" (*(char *) (pdst)))
+    __asm__ __volatile__ ( \
+	"bfins %3,%0{%1:%2}" \
+	: "=o" (*(char *)(pdst)) \
+	: "di" (x), "di" (w), "d" (src), "0" (*(char *) (pdst)))
 
 #define putbits(src, x, w, pdst) FASTPUTBITS(SHR((src),32-(w)), x, w, pdst)
 

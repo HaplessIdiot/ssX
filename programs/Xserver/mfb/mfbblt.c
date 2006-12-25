@@ -1,7 +1,7 @@
 /*
  * mfb copy area
  */
-/* $XFree86: xc/programs/Xserver/mfb/mfbblt.c,v 3.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbblt.c,v 3.6tsi Exp $ */
 
 /*
 
@@ -281,11 +281,11 @@ psrc += UNROLL;
 		     */
 		    while ((nl -= 6) >= 0)
 		    {
-			asm ("moveml %1+,#0x0c0f;moveml#0x0c0f,%0"
-			     : "=m" (*(char *)pdst)
-			     : "m" (*(char *)psrc)
-			     : "d0", "d1", "d2", "d3",
-			       "a2", "a3");
+			__asm__ __volatile__ (
+			    "moveml %1+,#0x0c0f;moveml#0x0c0f,%0"
+			    : "=m" (*(char *)pdst)
+			    : "m" (*(char *)psrc)
+			    : "d0", "d1", "d2", "d3", "a2", "a3");
 			pdst += 6;
 		    }
 		    nl += 6;

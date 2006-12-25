@@ -24,14 +24,14 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/cfb/stip68kgnu.h,v 3.4 2001/12/14 19:59:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/stip68kgnu.h,v 3.5tsi Exp $ */
 
 /*
  * Stipple stack macro for 68k GCC
  */
 
 #define STIPPLE(addr,stipple,value,width,count,shift) \
-    __asm volatile ( \
+    __asm__ __volatile__ ( \
        "lea	5f,%/a1\n\
 	moveq	#28,%/d2\n\
 	addl	%2,%/d2\n\

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbfillarc.c,v 3.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbfillarc.c,v 3.10tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -39,7 +39,7 @@ in this Software without prior written authorization from The Open Group.
 
 /* gcc 1.35 is stupid */
 #if defined(__GNUC__) && __GNUC__ < 2 && defined(mc68020)
-#define STUPID volatile
+#define STUPID __volatile__
 #else
 #define STUPID
 #endif
