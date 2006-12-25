@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.19tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.20tsi Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -732,20 +732,20 @@ if ((x) + (w) <= PPW) {\
 }
 
 #if GETLEFTBITS_ALIGNMENT == 1
-#define getleftbits(psrc, w, dst)	dst = *((unsigned int *) psrc)
+#define getleftbits(psrc, w, dst) dst = *((unsigned int *) psrc)
 #define getleftbits24(psrc, w, dst, idx){	\
 	regiseter int index; \
 	switch(index = ((idx) & (PGSZB - 1)) << 1){ \
 	case 0: \
-	dst = (*((unsigned int *) psrc))&cfbmask[index]; \
+	dst = *((unsigned int *) psrc) & cfbmask[index]; \
 	break; \
 	case 2: \
 	case 4: \
-	dst = BitLeft(((*((unsigned int *) psrc))&cfbmask[index]), cfb24Shift[index]); \
-	dst |= BitRight(((*((unsigned int *) psrc)+1)&cfbmask[index]), cfb4Shift[index]); \
+	dst = BitLeft((*((unsigned int *) psrc) & cfbmask[index]), cfb24Shift[index]); \
+	dst |= BitRight(((*((unsigned int *) psrc) + 1) & cfbmask[index]), cfb4Shift[index]); \
 	break; \
 	case 6: \
-	dst = BitLeft((*((unsigned int *) psrc)),cfb24Shift[index]); \
+	dst = BitLeft(*((unsigned int *) psrc), cfb24Shift[index]); \
 	break; \
 	}; \
 }
@@ -754,16 +754,17 @@ if ((x) + (w) <= PPW) {\
 #define getglyphbits(psrc, x, w, dst) \
 { \
     dst = BitLeft((unsigned) *(psrc), (x)); \
-    if ( ((x) + (w)) > 32) \
+    if (((x) + (w)) > 32) \
 	dst |= (BitRight((unsigned) *((psrc)+1), 32-(x))); \
 }
 #if GETLEFTBITS_ALIGNMENT == 2
 #define getleftbits(psrc, w, dst) \
     { \
-	if ( ((int)(psrc)) & 0x01 ) \
-		getglyphbits( ((unsigned int *)(((char *)(psrc))-1)), 8, (w), (dst) ); \
+	if (((int)(psrc)) & 0x01 ) \
+	    getglyphbits(((unsigned int *)(((char *)(psrc)) - 1)), 8, (w), \
+			 (dst)); \
 	else \
-		dst = *((unsigned int *) psrc); \
+	    dst = *((unsigned int *) psrc); \
     }
 #endif /* GETLEFTBITS_ALIGNMENT == 2 */
 
@@ -771,11 +772,9 @@ if ((x) + (w) <= PPW) {\
 #define getleftbits(psrc, w, dst) \
     { \
 	int off, off_b; \
-	off_b = (off = ( ((int)(psrc)) & 0x03)) << 3; \
-	getglyphbits( \
-		(unsigned int *)( ((char *)(psrc)) - off), \
-		(off_b), (w), (dst) \
-	       ); \
+	off_b = (off = (((int)(psrc)) & (PGSZB - 1))) << 3; \
+	getglyphbits((unsigned int *)(((char *)(psrc)) - off), (off_b), (w), \
+		     (dst)); \
     }
 #endif /* GETLEFTBITS_ALIGNMENT == 4 */
 
