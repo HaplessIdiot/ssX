@@ -1,4 +1,6 @@
 XFree86 4.6.99.15 (xx January 2007)
+  99. Fix fbCompose() for ABGR framebuffers, such as Sun's ffb.  Inspired by
+      a change found in NetBSD's repository (Marc La France).
   98. A collection of cfb24 cleanups (Marc La France).
   97. Fix unaligned accesses in cfb's horizontal polysegment drawing
       (Shin Takemura).
@@ -20372,7 +20374,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3829 2006/12/25 15:27:41 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3830 2006/12/25 15:35:17 tsi Exp $
 
 
 

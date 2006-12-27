@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.16tsi Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.17tsi Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -17,7 +17,7 @@
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL SuSE
  * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  Keith Packard, SuSE, Inc.
@@ -57,7 +57,7 @@
 		      ((*((CARD16 *) (a)) = (CARD16) (v)),\
 		       (*((a)+2) = (CARD8) ((v) >> 16))))
 #endif
-		      
+
 CARD32
 fbOver (CARD32 x, CARD32 y)
 {
@@ -136,6 +136,17 @@ fbIn (CARD32 x, CARD8 y)
     (line) = ((type *) __bits__) + (stride) * ((y) - __yoff__) + (mul) * ((x) - __xoff__); \
 }
 
+#define fbComposeConvertFormat(source, picture) { \
+    if (PICT_FORMAT_TYPE((picture)->pFormat->format) == PICT_TYPE_ABGR) { \
+	CARD32 tmp = source; \
+\
+	src = (tmp & 0xff00ff00) | \
+	      ((tmp & 0x00ff0000) >> 16) | \
+	      ((tmp & 0x000000ff) << 16); \
+    } \
+}
+
+
 /*
  * Naming convention:
  *
@@ -163,15 +174,17 @@ fbCompositeSolidMask_nx8x8888 (CARD8      op,
     CARD16	w;
 
     fbComposeGetSolid(pSrc, src);
-    
-    dstMask = FbFullMask (pDst->pDrawable->depth);
-    srca = src >> 24;
     if (src == 0)
 	return;
-    
+
+    fbComposeConvertFormat(src, pDst);
+
+    dstMask = FbFullMask (pDst->pDrawable->depth);
+    srca = src >> 24;
+
     fbComposeGetStart (pDst, xDst, yDst, CARD32, dstStride, dstLine, 1);
     fbComposeGetStart (pMask, xMask, yMask, CARD8, maskStride, maskLine, 1);
-    
+
     while (height--)
     {
 	dst = dstLine;
@@ -222,15 +235,17 @@ fbCompositeSolidMask_nx8888x8888C (CARD8      op,
     CARD32	m, n, o, p;
 
     fbComposeGetSolid(pSrc, src);
-    
-    dstMask = FbFullMask (pDst->pDrawable->depth);
-    srca = src >> 24;
     if (src == 0)
 	return;
-    
+
+    fbComposeConvertFormat(src, pDst);
+
+    dstMask = FbFullMask (pDst->pDrawable->depth);
+    srca = src >> 24;
+
     fbComposeGetStart (pDst, xDst, yDst, CARD32, dstStride, dstLine, 1);
     fbComposeGetStart (pMask, xMask, yMask, CARD32, maskStride, maskLine, 1);
-    
+
     while (height--)
     {
 	dst = dstLine;
@@ -295,14 +310,16 @@ fbCompositeSolidMask_nx8x0888 (CARD8      op,
     CARD16	w;
 
     fbComposeGetSolid(pSrc, src);
-    
-    srca = src >> 24;
     if (src == 0)
 	return;
-    
+
+    fbComposeConvertFormat(src, pDst);
+
+    srca = src >> 24;
+
     fbComposeGetStart (pDst, xDst, yDst, CARD8, dstStride, dstLine, 3);
     fbComposeGetStart (pMask, xMask, yMask, CARD8, maskStride, maskLine, 1);
-    
+
     while (height--)
     {
 	dst = dstLine;
@@ -357,14 +374,16 @@ fbCompositeSolidMask_nx8x0565 (CARD8      op,
     CARD16	w;
 
     fbComposeGetSolid(pSrc, src);
-    
-    srca = src >> 24;
     if (src == 0)
 	return;
-    
+
+    fbComposeConvertFormat(src, pDst);
+
+    srca = src >> 24;
+
     fbComposeGetStart (pDst, xDst, yDst, CARD16, dstStride, dstLine, 1);
     fbComposeGetStart (pMask, xMask, yMask, CARD8, maskStride, maskLine, 1);
-    
+
     while (height--)
     {
 	dst = dstLine;
@@ -422,16 +441,18 @@ fbCompositeSolidMask_nx8888x0565C (CARD8      op,
     CARD32	m, n, o;
 
     fbComposeGetSolid(pSrc, src);
-    
-    srca = src >> 24;
     if (src == 0)
 	return;
-    
+
+    fbComposeConvertFormat(src, pDst);
+
+    srca = src >> 24;
+
     src16 = cvt8888to0565(src);
-    
+
     fbComposeGetStart (pDst, xDst, yDst, CARD16, dstStride, dstLine, 1);
     fbComposeGetStart (pMask, xMask, yMask, CARD32, maskStride, maskLine, 1);
-    
+
     while (height--)
     {
 	dst = dstLine;
@@ -490,10 +511,10 @@ fbCompositeSrc_8888x8888 (CARD8      op,
     FbStride	dstStride, srcStride;
     CARD8	a;
     CARD16	w;
-    
+
     fbComposeGetStart (pDst, xDst, yDst, CARD32, dstStride, dstLine, 1);
     fbComposeGetStart (pSrc, xSrc, ySrc, CARD32, srcStride, srcLine, 1);
-    
+
     dstMask = FbFullMask (pDst->pDrawable->depth);
 
     while (height--)
@@ -537,10 +558,10 @@ fbCompositeSrc_8888x0888 (CARD8      op,
     CARD8	a;
     FbStride	dstStride, srcStride;
     CARD16	w;
-    
+
     fbComposeGetStart (pDst, xDst, yDst, CARD8, dstStride, dstLine, 3);
     fbComposeGetStart (pSrc, xSrc, ySrc, CARD32, srcStride, srcLine, 1);
-    
+
     while (height--)
     {
 	dst = dstLine;
@@ -586,7 +607,7 @@ fbCompositeSrc_8888x0565 (CARD8      op,
     CARD8	a;
     FbStride	dstStride, srcStride;
     CARD16	w;
-    
+
     fbComposeGetStart (pSrc, xSrc, ySrc, CARD32, srcStride, srcLine, 1);
     fbComposeGetStart (pDst, xDst, yDst, CARD16, dstStride, dstLine, 1);
 
@@ -636,9 +657,8 @@ fbCompositeSrc_0565x0565 (CARD8      op,
     CARD16	*srcLine, *src;
     FbStride	dstStride, srcStride;
     CARD16	w;
-    
-    fbComposeGetStart (pSrc, xSrc, ySrc, CARD16, srcStride, srcLine, 1);
 
+    fbComposeGetStart (pSrc, xSrc, ySrc, CARD16, srcStride, srcLine, 1);
     fbComposeGetStart (pDst, xDst, yDst, CARD16, dstStride, dstLine, 1);
 
     while (height--)
@@ -674,7 +694,7 @@ fbCompositeSrcAdd_8000x8000 (CARD8	op,
     CARD16	w;
     CARD8	s, d;
     CARD16	t;
-    
+
     fbComposeGetStart (pSrc, xSrc, ySrc, CARD8, srcStride, srcLine, 1);
     fbComposeGetStart (pDst, xDst, yDst, CARD8, dstStride, dstLine, 1);
 
@@ -725,7 +745,7 @@ fbCompositeSrcAdd_8888x8888 (CARD8	op,
     CARD32	s, d;
     CARD16	t;
     CARD32	m,n,o,p;
-    
+
     fbComposeGetStart (pSrc, xSrc, ySrc, CARD32, srcStride, srcLine, 1);
     fbComposeGetStart (pDst, xDst, yDst, CARD32, dstStride, dstLine, 1);
 
@@ -780,9 +800,8 @@ fbCompositeSrcAdd_1000x1000 (CARD8	op,
     int		dstBpp, srcBpp;
     int		dstXoff, dstYoff;
     int		srcXoff, srcYoff;
-    
-    fbGetDrawable(pSrc->pDrawable, srcBits, srcStride, srcBpp, srcXoff, srcYoff);
 
+    fbGetDrawable(pSrc->pDrawable, srcBits, srcStride, srcBpp, srcXoff, srcYoff);
     fbGetDrawable(pDst->pDrawable, dstBits, dstStride, dstBpp, dstXoff, dstYoff);
 
     fbBlt (srcBits + srcStride * (ySrc + srcYoff),
@@ -825,22 +844,24 @@ fbCompositeSolidMask_nx1xn (CARD8      op,
     int		dstXoff, dstYoff;
     int		maskXoff, maskYoff;
     FbBits	src;
-    
+
     fbComposeGetSolid(pSrc, src);
 
     if ((src & 0xff000000) != 0xff000000)
     {
 	fbCompositeGeneral  (op, pSrc, pMask, pDst,
-			     xSrc, ySrc, xMask, yMask, xDst, yDst, 
+			     xSrc, ySrc, xMask, yMask, xDst, yDst,
 			     width, height);
 	return;
     }
+
+    fbComposeConvertFormat(src, pDst);
+
     fbGetStipDrawable (pMask->pDrawable, maskBits, maskStride, maskBpp, maskXoff, maskYoff);
     fbGetDrawable (pDst->pDrawable, dstBits, dstStride, dstBpp, dstXoff, dstYoff);
 
     switch (dstBpp) {
     case 32:
-	break;
     case 24:
 	break;
     case 16:
@@ -895,7 +916,7 @@ fbComposite (CARD8      op,
     Bool	    dstAlphaMap = pDst->alphaMap != 0;
     int		    x_msk, y_msk, x_src, y_src, x_dst, y_dst;
     int		    w, h, w_this, h_this;
-    
+
     xDst += pDst->pDrawable->x;
     yDst += pDst->pDrawable->y;
     xSrc += pSrc->pDrawable->x;
@@ -907,7 +928,7 @@ fbComposite (CARD8      op,
 	maskRepeat = pMask->repeat;
 	maskAlphaMap = pMask->alphaMap != 0;
     }
-    
+
     if (!miComputeCompositeRegion (&region,
 				   pSrc,
 				   pMask,
@@ -921,7 +942,7 @@ fbComposite (CARD8      op,
 				   width,
 				   height))
 	return;
-				   
+
     func = fbCompositeGeneral;
     if (!pSrc->transform && !(pMask && pMask->transform))
     if (!maskAlphaMap && !srcAlphaMap && !dstAlphaMap)
@@ -929,7 +950,7 @@ fbComposite (CARD8      op,
     case PictOpOver:
 	if (pMask)
 	{
-	    if (srcRepeat && 
+	    if (srcRepeat &&
 		pSrc->pDrawable->width == 1 &&
 		pSrc->pDrawable->height == 1)
 	    {
@@ -1126,7 +1147,7 @@ fbComposite (CARD8      op,
 			w_this = pSrc->pDrawable->width - x_src;
 		}
 		(*func) (op, pSrc, pMask, pDst,
-			 x_src, y_src, x_msk, y_msk, x_dst, y_dst, 
+			 x_src, y_src, x_msk, y_msk, x_dst, y_dst,
 			 w_this, h_this);
 		w -= w_this;
 		x_src += w_this;
