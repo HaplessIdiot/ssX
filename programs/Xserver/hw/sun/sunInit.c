@@ -14,7 +14,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunInit.c,v 3.16 2006/02/19 15:51:20 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunInit.c,v 3.17tsi Exp $ */
 
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -93,7 +93,7 @@ extern Bool sunCG3Init(
 #define CG2I NULL
 #define CG4I NULL
 #else /* }{ */
-#ifdef INCLUDE_CG2_HEADER
+#if defined(INCLUDE_CG2_HEADER) || !defined(SVR4)
 extern Bool sunCG2Init(
     int /* screen */,
     ScreenPtr /* pScreen */,
@@ -101,7 +101,7 @@ extern Bool sunCG2Init(
     char** /* argv */
 );
 #define CG2I sunCG2Init
-#endif /* INCLUDE_CG2_HEADER */
+#endif /* INCLUDE_CG2_HEADER || !SVR4 */
 extern Bool sunCG4Init(
     int /* screen */,
     ScreenPtr /* pScreen */,
@@ -186,9 +186,11 @@ sunFbDataRec sunFbData[XFBTYPE_LASTPLUSONE] = {
   { NULL, "SUN1BW        (bw1)" },
   { NULL, "SUN1COLOR     (cg1)" },
   { BW2I, "SUN2BW        (bw2)" },	
-#ifdef INCLUDE_CG2_HEADER
+#if defined(INCLUDE_CG2_HEADER) || !defined(SVR4)
   { CG2I, "SUN2COLOR     (cg2)" },
-#endif /* INCLUDE_CG2_HEADER */
+#else
+  { NULL, "SUN2COLOR     (cg2)" },
+#endif /* INCLUDE_CG2_HEADER || !defined(SVR4) */
   { NULL, "SUN2GP        (gp1/gp2)" },
   { NULL, "SUN5COLOR     (cg5/386i accel)" },
   { CG3I, "SUN3COLOR     (cg3)" },
@@ -203,21 +205,11 @@ sunFbDataRec sunFbData[XFBTYPE_LASTPLUSONE] = {
   { NULL, "SUNFB_VIDEO" },
   { NULL, "SUNGIFB" },
   { NULL, "SUNPLAS" },
-#ifdef FBTYPE_SUNGP3
   { NULL, "SUNGP3        (cg12/gs)" },
-#endif
-#ifdef FBTYPE_SUNGT
   { NULL, "SUNGT         (gt)" },
-#endif
-#ifdef FBTYPE_SUNLEO
   { NULL, "SUNLEO        (zx)" },
-#endif
-#ifdef FBTYPE_MDICOLOR
   { NULL, "MDICOLOR      (cgfourteen)" },
-#endif
-#ifdef XFBTYPE_TCX
   { TCXI, "TCX           (tcx)" },
-#endif
 #endif /* } */
 };
 

@@ -15,7 +15,7 @@
  *
  * Author:  Doug Moran, SRI
  */
-/* $XFree86: xc/programs/Xserver/hw/sun/constype.c,v 3.10 2004/03/08 15:37:04 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/constype.c,v 3.11tsi Exp $ */
 
 /*
 SUN-SPOTS DIGEST         Thursday, 17 March 1988       Volume 6 : Issue 31
@@ -65,7 +65,11 @@ struct vis_identifier {
 # ifndef CSRG_BASED
 #  include <sun/fbio.h>
 # else
-#  include <machine/fbio.h>
+#  ifdef __NetBSD__
+#   include <dev/sun/fbio.h>
+#  else
+#   include <machine/fbio.h>
+#  endif
 # endif
 #endif
 
