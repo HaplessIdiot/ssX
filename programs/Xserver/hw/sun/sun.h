@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/sun/sun.h,v 3.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sun.h,v 3.14tsi Exp $ */
 /*
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -96,7 +96,7 @@ extern int getrlimit();
 extern int setrlimit();
 extern int getpagesize();
 # else
-#  if defined(CSRG_BASED) && !defined(__bsdi__)
+#  if defined(CSRG_BASED) && !defined(__bsdi__) && !defined(__NetBSD__)
 #   include <machine/fbio.h>
 #   include <machine/kbd.h>
 #   include <machine/kbio.h>
@@ -107,6 +107,12 @@ extern int getpagesize();
 #   include </sys/sparc/dev/kbd.h>
 #   include </sys/sparc/dev/kbio.h>
 #   include </sys/sparc/dev/vuid_event.h>
+#  endif
+#  ifdef __NetBSD__
+#   include <dev/sun/fbio.h>
+#   include <machine/kbd.h>
+#   include <dev/sun/kbio.h>
+#   include <dev/sun/vuid_event.h>
 #  endif
 # endif
 #endif

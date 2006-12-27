@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.120tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.121tsi Exp $
 XCOMM
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -698,8 +698,7 @@ install::								@@\
 # define BootstrapCFlags       -Dsun3
 # define UnalignedReferencesAllowed	YES /* changes _XtCopyArgs() */
 /* Note: -ansi turns off -Dmc68000 */
-# define ServerExtraDefines    GccGasOption -Dmc68000 -Dmc68020 \
-				-DXFree86Server -DINCLUDE_CG2_HEADER
+# define ServerExtraDefines    GccGasOption -Dmc68000 -Dmc68020 -DXFree86Server
 
 # ifndef Xsun24Server
 #  define Xsun24Server		NO
@@ -832,9 +831,8 @@ install::								@@\
 
 # if OSMajorVersion == 2 || OSMajorVersion == 3 && OSMinorVersion < 2
 #  define ServerOSDefines 	-DDDXOSINIT
-#  define ServerExtraDefines	-DAVOID_GLYPHBLT -DPIXPRIV  -DXFree86Server \
-				DebugDefines -DINCLUDE_CG2_HEADER \
-				-DX_BYTE_ORDER=$(X_BYTE_ORDER)
+#  define ServerExtraDefines	-DAVOID_GLYPHBLT -DPIXPRIV -DXFree86Server \
+				DebugDefines -DX_BYTE_ORDER=$(X_BYTE_ORDER)
 #  ifndef Xsun24Server
 #   define Xsun24Server		YES
 #  endif

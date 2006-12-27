@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/sun/sunKbd.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunKbd.c,v 1.11tsi Exp $ */
 /*
  * Copyright 1987 by the Regents of the University of California
  *
@@ -483,19 +483,20 @@ static void sunInitKbdNames (
 	    else
 		(void) strcat (names->symbols, "sun/us(sun4)");
 	} else {
-	    (void) strcat (names->keycodes, "sun(type5)");
-
 	    switch (pKbd->layout) {
 	    case 33: case 80: /* U.S. */
 	    case 47: case 94: /* Korea */
 	    case 48: case 95: /* Taiwan */
 	    case 49: case 96: /* Japan */
+		(void) strcat (names->keycodes, "sun(type5)");
 		(void) strcat (names->geometry, "sun(type5)");
 		break;
 	    case 34: case 81: /* U.S. Unix */
+		(void) strcat (names->keycodes, "sun(type5)");
 		(void) strcat (names->geometry, "sun(type5unix)");
 		break;
 	    default:
+		(void) strcat (names->keycodes, "sun(type5_euro)");
 		(void) strcat (names->geometry, "sun(type5euro)");
 	    }
 
