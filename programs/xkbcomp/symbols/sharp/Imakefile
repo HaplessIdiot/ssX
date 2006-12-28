@@ -1,0 +1,8 @@
+XCOMM $XFree86$
+
+    DATAFILES = jp
+
+all::
+
+InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/symbols/sharp)
+DependTarget()
