@@ -1,8 +1,7 @@
-XCOMM $XFree86: xc/programs/xkbcomp/keymap/sun/Imakefile,v 3.5 2001/01/17 23:45:56 dawes Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/keymap/sun/Imakefile,v 3.6tsi Exp $
 
-     DATAFILES = de es fi fr no pl ru se uk us 
+    DATAFILES = de es fi fr no pl ru se uk us
 
 all::
 
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/keymap/sun)
-DependTarget()

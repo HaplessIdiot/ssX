@@ -1,6 +1,7 @@
-XCOMM $XFree86: xc/programs/xkbcomp/geometry/Imakefile,v 3.17tsi Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/geometry/Imakefile,v 3.18tsi Exp $
 
 #define IHaveSubdirs
+#define PassCDebugFlags /**/
 
      TESTDATA =
     DATAFILES = README amiga ataritt chicony dell everex fujitsu hp keytronic \
@@ -19,4 +20,3 @@ install::
 	fi
 
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/geometry)
-DependSubdirs($(SUBDIRS))

@@ -1,8 +1,7 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/xkbcomp/symbols/fujitsu/Imakefile,v 1.2tsi Exp $
 
-     DATAFILES = jp us
+    DATAFILES = jp us
 
 all::
 
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/symbols/fujitsu)
-DependTarget()

@@ -1,12 +1,11 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/xkbcomp/geometry/digital/Imakefile,v 1.2tsi Exp $
 
 #undef lk
 #undef pc
 #undef unix
 
-     DATAFILES = lk pc unix
+    DATAFILES = lk pc unix
 
 all::
 
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/geometry/digital)
-DependTarget()

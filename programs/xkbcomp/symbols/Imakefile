@@ -1,6 +1,7 @@
-XCOMM $XFree86: xc/programs/xkbcomp/symbols/Imakefile,v 3.66tsi Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/symbols/Imakefile,v 3.67tsi Exp $
 
 #define IHaveSubdirs
+#define PassCDebugFlags /**/
 
      TESTDATA =
     DATAFILES = README al altwin am apple ar az be ben bg br bs by ca \
@@ -13,9 +14,8 @@ XCOMM $XFree86: xc/programs/xkbcomp/symbols/Imakefile,v 3.66tsi Exp $
 		si sk sk_qwerty sr srvr_ctrl syr syr_phonetic tel th th_tis \
 		th_pat tj tml tr tr_f ua us us_intl us_group2 us_group3 uz vn \
 		yu $(TESTDATA)
-
       SUBDIRS = digital fujitsu hp macintosh nec pc sgi sharp sony sun xfree68
 
 MakeXkbDir($(LIBDIR)/xkb,symbols)
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/symbols)
-DependSubdirs($(SUBDIRS))
+MakeSubdirs($(SUBDIRS))

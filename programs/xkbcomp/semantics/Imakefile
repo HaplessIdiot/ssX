@@ -1,8 +1,7 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/xkbcomp/semantics/Imakefile,v 1.2tsi Exp $
 
-DATAFILES = basic complete default xtest 
+    DATAFILES = basic complete default xtest
 
 all::
 
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/semantics)
-DependTarget()

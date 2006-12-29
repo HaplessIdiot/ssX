@@ -1,8 +1,7 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/xkbcomp/symbols/hp/Imakefile,v 1.3tsi Exp $
 
-     DATAFILES = us
+    DATAFILES = us
 
 all::
 
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/symbols/hp)
-DependTarget()

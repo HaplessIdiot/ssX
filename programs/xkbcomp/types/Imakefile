@@ -1,11 +1,9 @@
-XCOMM $XFree86: xc/programs/xkbcomp/types/Imakefile,v 3.8 2003/08/09 14:30:49 pascal Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/types/Imakefile,v 3.9tsi Exp $
 
-
-     DATAFILES = README basic caps complete default mousekeys iso9995 \
-		 pc extra numpad
+    DATAFILES = README basic caps complete default extra iso9995 mousekeys \
+		numpad pc
 
 all::
 
 MakeXkbDir($(LIBDIR)/xkb,types)
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/types)
-DependTarget()
