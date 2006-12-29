@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/xkbcomp/keycodes/Imakefile,v 3.18tsi Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/keycodes/Imakefile,v 3.19 2006/12/29 19:19:57 tsi Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags /**/
@@ -11,4 +11,3 @@ all::
 
 MakeXkbDir($(LIBDIR)/xkb,keycodes)
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/keycodes)
-MakeSubdirs($(SUBDIRS))
