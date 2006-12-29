@@ -1,10 +1,9 @@
-XCOMM $XFree86: xc/programs/xkbcomp/compat/Imakefile,v 3.10 2003/02/15 22:22:43 dawes Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/compat/Imakefile,v 3.11tsi Exp $
 
-     DATAFILES = README accessx basic complete default group_led iso9995 japan \
-		 keypad misc mousekeys norepeat pc pc98 xtest leds xfree86
+    DATAFILES = README accessx basic complete default group_led iso9995 japan \
+		keypad leds misc mousekeys norepeat pc pc98 xfree86 xtest
 
 all::
 
 MakeXkbDir($(LIBDIR)/xkb,compat)
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/compat)
-DependTarget()

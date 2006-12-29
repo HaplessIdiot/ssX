@@ -1,12 +1,11 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/xkbcomp/symbols/digital/Imakefile,v 1.2tsi Exp $
 
 #undef lk
 #undef pc
 #undef vt
 
-     DATAFILES = lk pc us vt
+    DATAFILES = lk pc us vt
 
 all::
 
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/symbols/digital)
-DependTarget()

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/xkbcomp/keymap/sgi/Imakefile,v 3.5 2001/05/19 02:05:55 dawes Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/keymap/sgi/Imakefile,v 3.6tsi Exp $
 
     DATAFILES = be bg ca cz cz_qwerty de de_CH dk dvorak en_US es fi fr fr_CH \
 		gb hu it jp no pl pt ru se sk sk_qwerty th us
@@ -6,4 +6,3 @@ XCOMM $XFree86: xc/programs/xkbcomp/keymap/sgi/Imakefile,v 3.5 2001/05/19 02:05:
 all::
 
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/keymap/sgi)
-DependTarget()

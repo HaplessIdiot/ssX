@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/xkbcomp/cross/Imakefile,v 1.4tsi Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/cross/Imakefile,v 1.5tsi Exp $
 
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -43,3 +43,5 @@ LinkSourceFile(xkbcomp.c,..)
 LinkSourceFile(xkbpath.c,..)
 LinkSourceFile(xkbscan.c,..)
 LinkSourceFile(xkbparse.y,..)
+
+DependTarget()

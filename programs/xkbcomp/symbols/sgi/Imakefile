@@ -1,8 +1,7 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/xkbcomp/symbols/sgi/Imakefile,v 1.3tsi Exp $
 
-     DATAFILES = jp
+    DATAFILES = jp
 
 all::
 
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/symbols/sgi)
-DependTarget()

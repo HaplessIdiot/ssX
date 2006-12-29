@@ -1,6 +1,7 @@
-XCOMM $XFree86: xc/programs/xkbcomp/keymap/Imakefile,v 3.11tsi Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/keymap/Imakefile,v 3.12tsi Exp $
 
 #define IHaveSubdirs
+#define PassCDebugFlags /**/
 
     DATAFILES = README amiga ataritt macintosh sony x68k xfree86 xfree98
       SUBDIRS = digital sgi sun
@@ -9,4 +10,4 @@ all::
 
 MakeXkbDir($(LIBDIR)/xkb,keymap)
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/keymap)
-DependSubdirs($(SUBDIRS))
+MakeSubdirs($(SUBDIRS))

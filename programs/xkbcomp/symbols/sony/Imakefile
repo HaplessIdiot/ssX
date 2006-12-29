@@ -1,8 +1,7 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/xkbcomp/symbols/sony/Imakefile,v 1.2tsi Exp $
 
-     DATAFILES = us
+    DATAFILES = us
 
 all::
 
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/symbols/sony)
-DependTarget()

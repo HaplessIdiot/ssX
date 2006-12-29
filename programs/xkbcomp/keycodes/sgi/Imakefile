@@ -1,11 +1,11 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/xkbcomp/keycodes/sgi/Imakefile,v 3.3tsi Exp $
 
 #undef indy
 #undef indigo
+#undef iris
 
-     DATAFILES = indy indigo iris
+    DATAFILES = indy indigo iris
 
 all::
 
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/keycodes/sgi)
-DependTarget()

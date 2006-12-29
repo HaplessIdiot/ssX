@@ -1,8 +1,7 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/xkbcomp/compiled/Imakefile,v 1.2tsi Exp $
 
-     DATAFILES = README
+    DATAFILES = README
 
 all::
 
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/compiled)
-DependTarget()

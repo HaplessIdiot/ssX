@@ -1,8 +1,7 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/xkbcomp/geometry/sgi/Imakefile,v 1.4tsi Exp $
 
-     DATAFILES = indy indigo O2
+    DATAFILES = indy indigo O2
 
 all::
 
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/geometry/sgi)
-DependTarget()

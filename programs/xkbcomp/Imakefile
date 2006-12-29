@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/xkbcomp/Imakefile,v 3.22tsi Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/Imakefile,v 3.23tsi Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
@@ -16,8 +16,8 @@ XCOMM $XFree86: xc/programs/xkbcomp/Imakefile,v 3.22tsi Exp $
 		 xkbparse.o parseutils.o utils.o
         DEPLIBS = $(DEPXKBFILELIB) $(DEPXONLYLIB)
 LOCAL_LIBRARIES = $(XKBFILELIB) $(XONLYLIB)
-        SUBDIRS = $(CROSS) compat geometry keycodes keymap semantics symbols \
-		  types compiled rules
+        SUBDIRS = compat compiled $(CROSS) geometry keycodes keymap rules \
+		  semantics symbols types
       DATAFILES = README README.config README.enhancing
 
 ROOT_DEFINES = -DDFLT_XKB_CONFIG_ROOT=\"$(LIBDIR)/xkb\"
@@ -47,5 +47,6 @@ all::
 LinkBuildBinary(ProgramTargetName(xkbcomp))
 
 MakeSubdirs($(SUBDIRS))
-DependSubdirs($(SUBDIRS))
-
+#if CrossCompiling
+DependSubdirs($(CROSS))
+#endif
