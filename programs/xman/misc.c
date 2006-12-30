@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/misc.c,v 1.12 2004/04/03 22:26:26 dawes Exp $ */
+/* $XFree86: xc/programs/xman/misc.c,v 1.13tsi Exp $ */
 
 /*
  * xman - X window system manual page display program.
@@ -42,6 +42,10 @@ from the X Consortium.
 #include <errno.h>
 #include <X11/Xaw/Dialog.h>
 #include <X11/Shell.h>
+
+#if defined(__OpenBSD__) || defined(__NetBSD__)
+#include <sys/utsname.h>
+#endif
 
 static FILE * Uncompress(ManpageGlobals * man_globals, char * filename);
 #ifndef HAS_MKSTEMP
@@ -187,6 +191,9 @@ FindManualFile(ManpageGlobals * man_globals, int section_num, int entry_num)
 #if defined(ISC) || defined(__SCO__)
   int i;
 #endif
+#if defined(__OpenBSD__) || defined(__NetBSD__)
+  struct utsname uts;
+#endif
 
   temp = CreateManpageName(entry, section_num, manual[section_num].flags);
   sprintf(man_globals->manpage_title, "The current manual page is: %s.", temp);
@@ -200,11 +207,14 @@ FindManualFile(ManpageGlobals * man_globals, int section_num, int entry_num)
  * Look for uncompressed files first.
  */
 #if defined(__OpenBSD__) || defined(__NetBSD__)
+  /* XXX: No way to deal w. error here so just move on. */
+  if (uname(&uts) == 0) {
   /* look in machine subdir first */
   sprintf(filename, "%s/%s%s/%s/%s", path, CAT,
-	  section + len_cat, MACHINE, page);
+  	  section + len_cat, uts.machine, page);
   if ( (file = fopen(filename,"r")) != NULL)
     return(file);
+  }
 #endif
 
   sprintf(filename, "%s/%s%s/%s", path, CAT, section + len_cat, page);
@@ -217,11 +227,14 @@ FindManualFile(ManpageGlobals * man_globals, int section_num, int entry_num)
 
 #if !defined(ISC) && !defined(__SCO__)
 #if defined(__OpenBSD__) || defined(__NetBSD__)
+  /* XXX: No way to deal w. error here so just move on. */
+  if (uname(&uts) == 0) {
   /* look in machine subdir first */
   sprintf(filename, "%s/%s%s/%s/%s.%s", path, CAT,
-	  section + len_cat, MACHINE, page, COMPRESSION_EXTENSION);
+	  section + len_cat, uts.machine, page, COMPRESSION_EXTENSION);
   if ( (file = Uncompress(man_globals, filename)) != NULL)
     return(file);
+  }
 #endif
   sprintf(filename, "%s/%s%s/%s.%s", path, CAT,
 	  section + len_cat, page, COMPRESSION_EXTENSION);
@@ -230,11 +243,14 @@ FindManualFile(ManpageGlobals * man_globals, int section_num, int entry_num)
 #ifdef GZIP_EXTENSION
   else {
 #if defined(__OpenBSD__) || defined(__NetBSD__)
+      /* XXX: No way to deal w. error here so just move on. */
+      if (uname(&uts) == 0) {
       /* look in machine subdir first */
       sprintf(filename, "%s/%s%s/%s/%s.%s", path, CAT,
-	      section + len_cat, MACHINE, page, GZIP_EXTENSION);
+	      section + len_cat, uts.machine, page, GZIP_EXTENSION);
       if ( (file = Uncompress(man_globals, filename)) != NULL)
 	  return(file);
+      }
 #endif
     sprintf(filename, "%s/%s%s/%s.%s", path, CAT,
 	    section + len_cat, page, GZIP_EXTENSION);
@@ -726,23 +742,29 @@ UncompressUnformatted(ManpageGlobals * man_globals, char * entry,
 		      char * filename, FILE **file)
 #endif
 {
+#if defined(__OpenBSD__) || defined(__NetBSD__)
+  struct utsname uts;
+#endif
   char path[BUFSIZ], page[BUFSIZ], section[BUFSIZ], input[BUFSIZ];
   int len_cat = strlen(CAT), len_man = strlen(MAN);
 
   ParseEntry(entry, path, section, page);
 
 #if defined(__OpenBSD__) || defined(__NetBSD__)
+  /* XXX: No way to deal w. error here so just move on. */
+  if (uname(&uts) == 0) {
   /*
    * look for uncomressed file in machine subdir first
    */
   sprintf(filename, "%s/%s%s/%s/%s", path, MAN,
-	  section + len_cat, MACHINE, page);
+	  section + len_cat, uts.machine, page);
   if ( access( filename, R_OK ) == 0 ) {
     man_globals->compress = FALSE;
     man_globals->gzip = FALSE;
     sprintf(man_globals->save_file, "%s/%s%s/%s/%s", path,
-	    CAT, section + len_cat, MACHINE, page);
+	    CAT, section + len_cat, uts.machine, page);
     return(TRUE);
+  }
   }
  /*
   * Then for compressed files in an uncompressed directory.
@@ -960,6 +982,9 @@ void
 ParseEntry(char *entry, char *path, char *sect, char *page)
 {
   char *c, temp[BUFSIZ];
+#if defined(__OpenBSD__) || defined(__NetBSD__)
+  struct utsname uts;
+#endif
 
   strcpy(temp, entry);
 
@@ -975,12 +1000,15 @@ ParseEntry(char *entry, char *path, char *sect, char *page)
     PrintError("index failure in ParseEntry.");
   *c++ = '\0';
 #if defined(__OpenBSD__) || defined(__NetBSD__)
+  /* XXX: No way to deal w. error here so just move on. */
+  if (uname(&uts) == 0) {
   /* Skip machine subdirectory if present */
-  if (strcmp(c, MACHINE) == 0) {
+    if (strcmp(c, uts.machine) == 0) {
       c = rindex(temp, '/');
       if (c == NULL)
 	  PrintError("index failure in ParseEntry.");
       *c++ = '\0';
+    }
   }
 #endif
   if (sect != NULL)

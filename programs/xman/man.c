@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/man.c,v 1.11 2004/04/03 22:26:26 dawes Exp $ */
+/* $XFree86: xc/programs/xman/man.c,v 1.12tsi Exp $ */
 
 
 #include "globals.h"
@@ -48,6 +48,10 @@ from the X Consortium.
 #endif
 #endif
 #endif
+#endif
+
+#if defined(__OpenBSD__) || defined(__NetBSD__)
+#include <sys/utsname.h>
 #endif
 
 #ifdef DEBUG
@@ -396,11 +400,17 @@ int flags)
 static void
 AddToCurrentSection(Manual * local_manual, char * path)
 {
+#if defined(__OpenBSD__) || defined(__NetBSD__)
+  struct utsname uts;
+#endif
   char temp_path[BUFSIZ];
 
 #if defined(__OpenBSD__) || defined(__NetBSD__)
-  sprintf(temp_path, "%s/%s", path, MACHINE);
+  /* XXX: No way to deal w. error here so just move on. */
+  if (uname(&uts) == 0) {
+    sprintf(temp_path, "%s/%s", path, uts.machine);
   ReadCurrentSection(local_manual, temp_path);
+  }
 #endif
   ReadCurrentSection(local_manual, path);
   sprintf(temp_path, "%s.%s", path, COMPRESSION_EXTENSION);
