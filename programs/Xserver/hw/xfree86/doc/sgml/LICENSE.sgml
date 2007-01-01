@@ -8,7 +8,7 @@
 <date>April 2006</date>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.43tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.44 2006/07/10 02:26:29 tsi Exp $
 </ident>
 
 <sect>Introduction
@@ -176,7 +176,7 @@ Copyright (C) 2001 by J. Kean Johnston<newline>
 Copyright (C) 2000, 2001 Ani Joshi<newline>
 Copyright (C) 2000 by Rainer Keller<newline>
 Copyright (C) 1999-2003 by Peter Kunzmann, Citron GmbH, Germany.<newline>
-Copyright (C) 1994 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org<newline>
+Copyright (C) 1994 through 2007 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org<newline>
 Copyright (C) 1996 by Steven Lang<newline>
 Copyright (C) 1995, 1999 by Patrick Lecoanet, France.<newline>
 Copyright (C) 2001 by Patrick LERDA<newline>

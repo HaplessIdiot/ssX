@@ -188,7 +188,7 @@ Copyright (C) 2000 by Rainer Keller
 
 Copyright (C) 1999-2003 by Peter Kunzmann, Citron GmbH, Germany.
 
-Copyright (C) 1994 through 2006 by Marc Aurele La France (TSI @ UQV),
+Copyright (C) 1994 through 2007 by Marc Aurele La France (TSI @ UQV),
 tsi@xfree86.org
 
 Copyright (C) 1996 by Steven Lang
@@ -1631,7 +1631,7 @@ the sale, use or other dealings in this Font Software without prior written
 authorization from the Gnome Foundation or Bitstream Inc., respectively. For
 further information, contact: fonts at gnome dot org.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.44 tsi Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.45 tsi Exp $
 
 
-$XFree86: xc/LICENSE.txt,v 1.6tsi Exp $
+$XFree86: xc/LICENSE.txt,v 1.7tsi Exp $
