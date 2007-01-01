@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.h,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.h,v 1.11 2006/10/31 15:28:56 tsi Exp $ */
 /*
- * Copyright 1999 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
+ * Copyright 1999 through 2007 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that

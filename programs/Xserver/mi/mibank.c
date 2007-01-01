@@ -1,5 +1,5 @@
 /*
- * Copyright 1997 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
+ * Copyright 1997 through 2007 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -44,7 +44,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/mi/mibank.c,v 1.17tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibank.c,v 1.18 2006/01/05 18:55:33 tsi Exp $ */
 
 /*
  * This thing originated from an idea of Edwin Goei and his bank switching
