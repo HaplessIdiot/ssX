@@ -23,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings in
 this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunCfb24.c,v 1.3 2001/12/14 19:59:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunCfb24.c,v 1.4tsi Exp $ */
 
 /*
  * The CG8 is similar to the CG4 in that it has a mono plane, an enable 
@@ -127,7 +127,7 @@ Bool sunCG8Init (screen, pScreen, argc, argv)
     int		    screen;    	/* what screen am I going to be */
     ScreenPtr	    pScreen;  	/* The Screen to initialize */
     int		    argc;    	/* The number of the Server's arguments. */
-    char	    **argv;   	/* The arguments themselves. Don't change! */
+    const char	    **argv;   	/* The arguments themselves. Don't change! */
 {
     sunFbs[screen].EnterLeave = (void (*)())NoopDDA;
     return sunInitCommon (screen, pScreen, (off_t) 0,

@@ -51,7 +51,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/sun/sunCfb.c,v 3.16tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunCfb.c,v 3.17tsi Exp $ */
 
 /*
  * Copyright 1987 by the Regents of the University of California
@@ -256,7 +256,7 @@ static void CGScreenInit (pScreen)
 
 static void checkMono (argc, argv)
     int argc;
-    char** argv;
+    const char** argv;
 {
     int i;
 
@@ -279,7 +279,7 @@ Bool sunCG3Init (screen, pScreen, argc, argv)
     int	    	  screen;    	/* what screen am I going to be */
     ScreenPtr	  pScreen;  	/* The Screen to initialize */
     int	    	  argc;	    	/* The number of the Server's arguments. */
-    char    	  **argv;   	/* The arguments themselves. Don't change! */
+    const char    **argv;   	/* The arguments themselves. Don't change! */
 {
     checkMono (argc, argv);
     sunFbs[screen].EnterLeave = (void (*)())NoopDDA;
@@ -292,7 +292,7 @@ Bool sunTCXInit (screen, pScreen, argc, argv)
     int	    	  screen;    	/* what screen am I going to be */
     ScreenPtr	  pScreen;  	/* The Screen to initialize */
     int	    	  argc;	    	/* The number of the Server's arguments. */
-    char    	  **argv;   	/* The arguments themselves. Don't change! */
+    const char    **argv;   	/* The arguments themselves. Don't change! */
 {
     checkMono (argc, argv);
     sunFbs[screen].EnterLeave = (void (*)())NoopDDA;
@@ -386,7 +386,7 @@ Bool sunCG2Init (screen, pScreen, argc, argv)
     int		screen;    	/* what screen am I going to be */
     ScreenPtr	pScreen;  	/* The Screen to initialize */
     int		argc;	    	/* The number of the Server's arguments. */
-    char**	argv;   	/* The arguments themselves. Don't change! */
+    const char**argv;   	/* The arguments themselves. Don't change! */
 {
     int		i;
     Bool	ret;
@@ -444,7 +444,7 @@ Bool sunCG4Init (screen, pScreen, argc, argv)
     int		screen;    	/* what screen am I going to be */
     ScreenPtr	pScreen;  	/* The Screen to initialize */
     int		argc;	    	/* The number of the Server's arguments. */
-    char**	argv;   	/* The arguments themselves. Don't change! */
+    const char**argv;   	/* The arguments themselves. Don't change! */
 {
     checkMono (argc, argv);
     if (sunCG4Frob)
@@ -465,7 +465,7 @@ Bool sunCG6Init (screen, pScreen, argc, argv)
     int		screen;    	/* The index of pScreen in the ScreenInfo */
     ScreenPtr	pScreen;  	/* The Screen to initialize */
     int		argc;	    	/* The number of the Server's arguments. */
-    char**	argv;   	/* The arguments themselves. Don't change! */
+    const char**argv;   	/* The arguments themselves. Don't change! */
 {
     pointer	fb;
 
