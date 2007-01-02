@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.95tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.96tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -2418,10 +2418,15 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
 
    pI830->LinearAlloc = 0;
-   if (xf86GetOptValInteger(pI830->Options, OPTION_LINEARALLOC,
-			    &(pI830->LinearAlloc))) {
-      xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Allocating %dKbytes of memory\n",
-		 pI830->LinearAlloc);
+   if (xf86GetOptValInteger(pI830->Options, OPTION_LINEARALLOC, &memsize)) {
+      if (memsize > 0) {
+	 pI830->LinearAlloc = memsize;
+	 xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		    "Allocating %dKbytes of memory\n", pI830->LinearAlloc);
+      } else {
+	 xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		    "Ignoring non-positive LinearAlloc specification\n");
+      }
    }
 
    pI830->fixedPipe = -1;
