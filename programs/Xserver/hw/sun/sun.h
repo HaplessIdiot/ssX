@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/sun/sun.h,v 3.14tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sun.h,v 3.15tsi Exp $ */
 /*
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -270,7 +270,7 @@ typedef Bool (*sunFbInitProc)(
     int /* screen */,
     ScreenPtr /* pScreen */,
     int /* argc */,
-    char** /* argv */
+    const char** /* argv */
 );
 
 typedef struct {

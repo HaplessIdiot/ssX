@@ -21,7 +21,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunMfb.c,v 3.4 2001/12/14 19:59:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunMfb.c,v 3.5tsi Exp $ */
 
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -88,7 +88,7 @@ Bool sunBW2Init (screen, pScreen, argc, argv)
     int		    screen;    	/* what screen am I going to be */
     ScreenPtr	    pScreen;  	/* The Screen to initialize */
     int		    argc;    	/* The number of the Server's arguments. */
-    char	    **argv;   	/* The arguments themselves. Don't change! */
+    const char	    **argv;   	/* The arguments themselves. Don't change! */
 {
     sunFbs[screen].EnterLeave = (void (*)())NoopDDA;
     if (sunFlipPixels) {

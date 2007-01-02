@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/sun/sunGX.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunGX.c,v 1.11tsi Exp $ */
 /*
 Copyright 1991, 1998  The Open Group
 
@@ -441,8 +441,8 @@ sunGXCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask,
     int			dstLastx, dstRightx;
     int			xoffSrc, widthSrc, widthRest;
     int			widthLast;
-    unsigned int	*psrcBase, *psrc;
-    unsigned int	bits, tmp;
+    CfbBits		*psrcBase, *psrc;
+    CfbBits		bits, tmp;
     register int	leftShift, rightShift;
     register int	nl, nlMiddle;
     int			nbox;
@@ -478,8 +478,8 @@ sunGXCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask,
 	dstLastx--;
 	dstRightx = dstx + BITMAP_SCANLINE_UNIT - 1;
 	nlMiddle = (width + BITMAP_SCANLINE_UNIT - 1) >> 5;
-	widthLast = width & BITMAP_SCANLLINE_UNIT - 1;
-	xoffSrc = srcx & ((1 << LOB2_BITMAP_PAD) - 1);
+	widthLast = width & (BITMAP_SCANLINE_UNIT - 1);
+	xoffSrc = srcx & ((1 << LOG2_BITMAP_PAD) - 1);
 	leftShift = xoffSrc;
 	rightShift = BITMAP_SCANLINE_UNIT - leftShift;
 	widthRest = widthSrc - nlMiddle;

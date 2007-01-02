@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyIo.c,v 3.6 2003/11/17 22:20:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyIo.c,v 3.7tsi Exp $ */
 
  /*
  *
@@ -297,7 +297,7 @@ ddxGiveUp()
 int
 ddxProcessArgument (argc, argv, i)
     int	argc;
-    char *argv[];
+    const char *argv[];
     int	i;
 {
     extern void UseMsg();

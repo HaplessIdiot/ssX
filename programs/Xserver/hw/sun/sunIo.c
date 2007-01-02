@@ -14,7 +14,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunIo.c,v 3.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunIo.c,v 3.12tsi Exp $ */
 
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -195,7 +195,7 @@ ddxGiveUp()
 int
 ddxProcessArgument (argc, argv, i)
     int	argc;
-    char *argv[];
+    const char *argv[];
     int	i;
 {
     extern void UseMsg();

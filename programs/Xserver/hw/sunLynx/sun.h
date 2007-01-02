@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/sunLynx/sun.h,v 3.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sunLynx/sun.h,v 3.9tsi Exp $ */
 
 /* This is sun.h modified for LynxOS */
 
@@ -295,7 +295,7 @@ typedef Bool (*sunFbInitProc)(
     int /* screen */,
     ScreenPtr /* pScreen */,
     int /* argc */,
-    char** /* argv */
+    const char** /* argv */
 );
 
 typedef struct {

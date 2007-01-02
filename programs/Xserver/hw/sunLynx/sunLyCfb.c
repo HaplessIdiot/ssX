@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyCfb.c,v 3.5 2001/12/14 19:59:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyCfb.c,v 3.6tsi Exp $ */
 
 /*
 Copyright 1990, 1998  The Open Group
@@ -258,7 +258,7 @@ static void CGScreenInit (pScreen)
 
 static void checkMono (argc, argv)
     int argc;
-    char** argv;
+    const char** argv;
 {
     int i;
 
@@ -271,7 +271,7 @@ Bool sunCG3Init (screen, pScreen, argc, argv)
     int	    	  screen;    	/* what screen am I going to be */
     ScreenPtr	  pScreen;  	/* The Screen to initialize */
     int	    	  argc;	    	/* The number of the Server's arguments. */
-    char    	  **argv;   	/* The arguments themselves. Don't change! */
+    const char    **argv;   	/* The arguments themselves. Don't change! */
 {
     unsigned long addr;
 
@@ -291,7 +291,7 @@ Bool sunCG6Init (screen, pScreen, argc, argv)
     int		screen;    	/* The index of pScreen in the ScreenInfo */
     ScreenPtr	pScreen;  	/* The Screen to initialize */
     int		argc;	    	/* The number of the Server's arguments. */
-    char**	argv;   	/* The arguments themselves. Don't change! */
+    const char**argv;   	/* The arguments themselves. Don't change! */
 {
     unsigned long dacoffset;
     unsigned long addr;

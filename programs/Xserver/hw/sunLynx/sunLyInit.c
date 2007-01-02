@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyInit.c,v 3.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyInit.c,v 3.12tsi Exp $ */
 
 /*
  * Copyright 1987 by the Regents of the University of California
@@ -83,7 +83,7 @@ extern Bool sunBW2Init(
     int /* screen */,
     ScreenPtr /* pScreen */,
     int /* argc */,
-    char** /* argv */
+    const char** /* argv */
 );
 #define BW2I sunBW2Init
 #if SUNMAXDEPTH == 1 /* { */
@@ -94,7 +94,7 @@ extern Bool sunCG3Init(
     int /* screen */,
     ScreenPtr /* pScreen */,
     int /* argc */,
-    char** /* argv */
+    const char** /* argv */
 );
 #define CG3I sunCG3Init
 #ifdef FBTYPE_SUNFAST_COLOR /* { */
@@ -102,7 +102,7 @@ extern Bool sunCG6Init(
     int /* screen */,
     ScreenPtr /* pScreen */,
     int /* argc */,
-    char** /* argv */
+    const char** /* argv */
 );
 #define CG6I sunCG6Init
 #else /* }{ */
@@ -357,7 +357,7 @@ void sunNonBlockConsoleOff(
 
 static char** GetDeviceList (argc, argv)
     int		argc;
-    char	**argv;
+    const char	**argv;
 {
     int		i;
     char	*envList = NULL;
@@ -366,7 +366,7 @@ static char** GetDeviceList (argc, argv)
 
     for (i = 1; i < argc; i++)
 	if (strcmp (argv[i], "-dev") == 0 && i+1 < argc) {
-	    cmdList = argv[i + 1];
+	    cmdList = (char *)argv[i + 1];
 	    break;
 	}
     if (!cmdList)
@@ -490,7 +490,7 @@ void OsVendorInit(
 void InitOutput(pScreenInfo, argc, argv)
     ScreenInfo 	  *pScreenInfo;
     int     	  argc;
-    char    	  **argv;
+    const char    **argv;
 {
     int     	i, scr;
     char	**devList;
@@ -547,7 +547,7 @@ void InitOutput(pScreenInfo, argc, argv)
  */
 void InitInput(argc, argv)
     int     	  argc;
-    char    	  **argv;
+    const char    **argv;
 {
     DevicePtr p, k;
     extern Bool mieqInit();
