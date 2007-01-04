@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.132tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.133tsi Exp $
 
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
@@ -129,6 +129,15 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 #if (OSMajorVersion == 1 && OSMinorVersion >= 5 || OSMajorVersion > 1) 
 #define HasGetIfAddrs		YES
+#endif
+
+#if (OSMajorVersion >= 3)
+#ifndef HasPam
+#define HasPam			YES
+#endif
+#ifndef PamDefines
+#define PamDefines		-D_OPENPAM
+#endif
 #endif
 
 #define HasUsableFileMmap	YES

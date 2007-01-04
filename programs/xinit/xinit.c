@@ -23,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.34 2005/01/29 00:22:02 dawes Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.35tsi Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xos.h>
@@ -591,7 +591,11 @@ startServer(char *server[])
 		 * if client is xterm -L
 		 */
 #ifndef __UNIXOS2__
-		setpgrp(0,getpid());
+#ifdef USE_PAM
+		(void) signal(SIGHUP, SIG_IGN);
+#else
+		setpgrp(0, getpid());
+#endif
 #endif
 		Execute (server, environ);
 		Error ("no server \"%s\" in PATH\n", server[0]);

@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.325 2006/08/31 01:31:44 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.326tsi Exp $
 
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
@@ -174,7 +174,8 @@ XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.325 2006/08/31 01:31:44 dawes 
        SITEEXTDIRS = SiteExtensionDirs
 #endif
 
-#if DoLoadableServer && HasDlopen
+/* Don't link with -ldl twice */
+#if DoLoadableServer && HasDlopen && !UsePam
              LIBDL = DlLibrary
 #endif
           LIBREGEX = RegexLibrary
@@ -254,13 +255,11 @@ XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.325 2006/08/31 01:31:44 dawes 
 #ifdef ServerExtraSysLibs
       EXTRASYSLIBS = ServerExtraSysLibs
 #endif
-#if HasPam && HasPamMisc
-           PAMLIBS = PamLibraries PamMiscLibraries
-#endif
            SYSLIBS = $(ZLIB) MathLibrary Krb5Libraries $(USB) \
-		     $(PAMLIBS) $(XAUTHLIB) $(XDMCPLIB) $(EXTRASYSLIBS)
+		     $(XAUTHLIB) $(XDMCPLIB) $(SERVERPAMLIBRARIES) \
+		     $(EXTRASYSLIBS)
     NOAUTH_SYSLIBS = $(ZLIB) MathLibrary Krb5Libraries $(USB) \
-		     $(PAMLIBS) $(XDMCPLIB) $(EXTRASYSLIBS)
+		     $(XDMCPLIB) $(SERVERPAMLIBRARIES) $(EXTRASYSLIBS)
 #if !HasCbrt
               CBRT = mi/LibraryTargetName(cbrt)
 #endif
@@ -368,7 +367,7 @@ XCOMM
      XF86LOADERLIB = $(XF86SRC)/loader/LibraryTargetName(loader)
       XF86MAINLIBS = $(DIX) $(OS) $(FONTBASE) $(XF86COMLIB) $(XPDDX) $(MI) \
 		     $(XF86EXTENSIONS)
- XF86SERVERSYSLIBS = $(XPFBLIBS) $(SYSLIBS) $(LIBDL) $(LIBREGEX)
+ XF86SERVERSYSLIBS = $(XPFBLIBS) $(LIBREGEX) $(SYSLIBS) $(LIBDL)
     XF86SERVERLIBS = $(XF86LIBS) $(XF86LOADERLIB) $(XF86MAINLIBS) $(XF86OSLIB)
 #else
     XF86EXTENSIONS = $(STATICEXTS) $(LOADABLEEXTS)
@@ -443,7 +442,7 @@ XCOMM
       XF86MAINLIBS = $(SHADOW) $(DIX) $(OS) $(XPDDX) $(FB) \
 		     $(CFB32) $(CFB16) $(CFB8) $(MFB) $(MI) \
 		     $(XF86EXTENSIONS) $(XF86COMLIB)
- XF86SERVERSYSLIBS = $(FONTLIBS) $(SYSLIBS) $(LIBDL) $(LIBREGEX)
+ XF86SERVERSYSLIBS = $(FONTLIBS) $(LIBREGEX) $(SYSLIBS) $(LIBDL)
     XF86SERVERLIBS = $(XF86DRVLIBS) $(XF86IDRVLIBS) $(XF86LIBS) \
 		     $(XF86MAINLIBS) $(XF86SCANLIB)
 #endif

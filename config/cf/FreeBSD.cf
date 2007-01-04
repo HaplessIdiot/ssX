@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.159tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.160tsi Exp $
 
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -439,6 +439,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #if (OSMajorVersion > 3) || (OSMajorVersion == 3 && OSMinorVersion >=1 )
 #ifndef HasPam
 #define HasPam		YES
+#endif
+#ifndef PamDefines
+#define PamDefines	-D_OPENPAM
 #endif
 #endif
 
