@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xwin/Imakefile,v 1.19 2005/10/14 15:17:15 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xwin/Imakefile,v 1.20tsi Exp $
 
 #include <Server.tmpl>
 
@@ -57,7 +57,6 @@ SRCS =	InitInput.c \
 	winclipboardunicode.c \
 	winclipboardwndproc.c \
 	winclipboardxevents.c \
-	winvideo.c \
 	wintrayicon.c \
 	windialogs.c \
 	winrop.c \
@@ -135,7 +134,6 @@ OBJS =	InitInput.o \
 	winclipboardunicode.o \
 	winclipboardwndproc.o \
 	winclipboardxevents.o \
-	winvideo.o \
 	wintrayicon.o \
 	windialogs.o \
 	winrop.o \
@@ -144,10 +142,11 @@ OBJS =	InitInput.o \
 	winprefsyacc.o \
 	winprefslex.o
 
-INCLUDES = -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi \
+INCLUDES = -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi -I$(SERVERSRC)/mfb \
 	   -I$(SERVERSRC)/miext/shadow -I$(SERVERSRC)/miext/layer \
-	   -I$(SERVERSRC)/include -I$(SERVERSRC)/os  \
-	   -I$(SERVERSRC)/render -I$(SERVERSRC)/randr
+	   -I$(SERVERSRC)/include -I$(SERVERSRC)/Xext -I$(SERVERSRC)/os  \
+	   -I$(SERVERSRC)/render -I$(SERVERSRC)/randr \
+	   -I$(XF86COMSRC) -I$(XF86PARSERSRC)
 
 DEFINES = $(OS_DEFINES) $(SHMDEF) $(MMAPDEF) -UXFree86LOADER -UXF86DRI \
           -DPROJECTROOT="\"$(PROJECTROOT)\""

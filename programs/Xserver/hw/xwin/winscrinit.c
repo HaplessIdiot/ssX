@@ -31,7 +31,7 @@
  *		Harold L Hunt II
  *		Kensuke Matsuzaki
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.28 2003/08/07 23:47:58 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.29 2005/02/15 01:09:37 dawes Exp $ */
 
 #include "win.h"
 
@@ -45,7 +45,7 @@
 Bool
 winScreenInit (int index,
 	       ScreenPtr pScreen,
-	       int argc, char **argv)
+	       int argc, const char **argv)
 {
   winScreenInfoPtr      pScreenInfo = &g_ScreenInfo[index];
   winPrivScreenPtr	pScreenPriv;
@@ -189,7 +189,7 @@ winScreenInit (int index,
 Bool
 winFinishScreenInitFB (int index,
 		       ScreenPtr pScreen,
-		       int argc, char **argv)
+		       int argc, const char **argv)
 {
   winScreenPriv(pScreen);
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
@@ -580,7 +580,7 @@ winFinishScreenInitFB (int index,
 Bool
 winFinishScreenInitNativeGDI (int index,
 			      ScreenPtr pScreen,
-			      int argc, char **argv)
+			      int argc, const char **argv)
 {
   winScreenPriv(pScreen);
   winScreenInfoPtr      pScreenInfo = &g_ScreenInfo[index];

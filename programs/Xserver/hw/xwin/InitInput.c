@@ -25,10 +25,10 @@
   from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitInput.c,v 1.13 2003/07/29 21:25:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitInput.c,v 1.14tsi Exp $ */
 
 #include "win.h"
-#include "../../Xext/xf86miscproc.h"
+#include "xf86miscproc.h"
 
 CARD32		g_c32LastInputEventTime = 0;
 
@@ -81,7 +81,7 @@ TimeSinceLastInputEvent ()
 
 /* See Porting Layer Definition - p. 17 */
 void
-InitInput (int argc, char *argv[])
+InitInput (int argc, const char *argv[])
 {
   DeviceIntPtr		pMouse, pKeyboard;
 

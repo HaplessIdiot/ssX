@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xwin/winpushpxl.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winpushpxl.c,v 1.2tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -50,7 +50,7 @@ SOFTWARE.
 #include "scrnintstr.h"
 #include "pixmapstr.h"
 #include "miscstruct.h"
-#include "../mfb/maskbits.h"
+#include "maskbits.h"
 #include "mi.h"
 
 #define NPT 128

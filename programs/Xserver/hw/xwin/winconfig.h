@@ -27,12 +27,12 @@
  *
  * Authors: Alexander Gottwald	
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winconfig.h,v 1.1tsi Exp $ */
 #ifndef __WIN_CONFIG_H__
 #define __WIN_CONFIG_H__
 
 #include "win.h"
-#include "../xfree86/parser/xf86Parser.h"
+#include "xf86Parser.h"
 
 
 /* These are taken from hw/xfree86/common/xf86str.h */
