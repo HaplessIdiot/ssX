@@ -31,7 +31,7 @@
  *		Harold L Hunt II
  *		Kensuke Matsuzaki
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.38tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.39tsi Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -274,7 +274,7 @@ typedef Bool (*winAdjustVideoModeProcPtr)(ScreenPtr);
 
 typedef Bool (*winCreateBoundingWindowProcPtr)(ScreenPtr);
 
-typedef Bool (*winFinishScreenInitProcPtr)(int, ScreenPtr, int, char **);
+typedef Bool (*winFinishScreenInitProcPtr)(int, ScreenPtr, int, const char **);
 
 typedef Bool (*winBltExposedRegionsProcPtr)(ScreenPtr);
 
@@ -1171,17 +1171,17 @@ winPolyLineNativeGDI (DrawablePtr	pDrawable,
 Bool
 winScreenInit (int index,
 	       ScreenPtr pScreen,
-	       int argc, char **argv);
+	       int argc, const char **argv);
 
 Bool
 winFinishScreenInitFB (int index,
 		       ScreenPtr pScreen,
-		       int argc, char **argv);
+		       int argc, const char **argv);
 
 Bool
 winFinishScreenInitNativeGDI (int index,
 			      ScreenPtr pScreen,
-			      int argc, char **argv);
+			      int argc, const char **argv);
 
 Bool
 winSaveScreen (ScreenPtr pScreen, int on);
