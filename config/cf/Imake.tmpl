@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.176tsi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.177tsi Exp $
 XCOMM ----------------------------------------------------------------------
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -486,6 +486,13 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef HasDlopen
 #define HasDlopen		NO	/* assume not */
 #endif
+#ifndef DlLibrary
+#if HasDlopen
+#define DlLibrary		-ldl
+#else
+#define DlLibrary		/**/
+#endif
+#endif
 #ifndef HasWeakSymbols
 #define HasWeakSymbols		NO	/* assume not */
 #endif
@@ -513,8 +520,26 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef HasPam
 #define HasPam			NO
 #endif
-#ifndef HasPamMisc
-#define HasPamMisc		NO
+#ifndef PamDefines
+#define PamDefines		/**/
+#endif
+#ifndef PamLibraries
+#define PamLibraries		-lpam DlLibrary
+#endif
+#ifndef ServerPamLibraries
+#define ServerPamLibraries	PamLibraries
+#endif
+/*
+ * By default, don't generate PAM-aware binaries, as they would not run on
+ * (older/different) systems without PAM.
+ */
+#ifndef UsePam
+#define UsePam			NO
+#endif
+#if UsePam && HasPam
+         PAMDEFINES = -DUSE_PAM PamDefines
+       PAMLIBRARIES = PamLibraries
+ SERVERPAMLIBRARIES = ServerPamLibraries
 #endif
 #ifndef HasGetpeereid
 #define HasGetpeereid		NO
@@ -1418,9 +1443,6 @@ TCLIBDIR = TclLibDir
 #endif
 #ifndef DBMLibrary
 #define DBMLibrary -ldbm
-#endif
-#ifndef DlLibrary
-#define DlLibrary -ldl
 #endif
 #ifndef ExtraLibraries
 #if SystemV4

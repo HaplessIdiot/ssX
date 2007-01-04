@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.82 2006/01/29 00:57:54 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.83tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -537,26 +537,18 @@ man_keywords::								@@\
 	catman -M $(DESTDIR)manpath -w
 #endif
 
-#if !defined(UsePamLibrary)
-# if (OSMajorVersion > 5) || ((OSMajorVersion == 5) && (OSMinorVersion >= 4))
-#  define UsePamLibrary		YES
-# endif
-#endif
-
 /* PAM appeared in SunOS 5.6 */
-#if !defined(HasPam)
+/*
+ * WARNING:  Binaries generated with PAM support will not run on older systems.
+ */
+#ifndef HasPam
 # if (OSMajorVersion > 5) || (OSMajorVersion == 5 && OSMinorVersion >= 6)
 #  define HasPam		YES
 # endif
 #endif
 
-#ifndef PamLibraries
-#define PamLibraries		-lpam
-#endif
-
 #define MotifDefines			\
 	-DNO_ISDIR -DNO_REGCOMP -DNO_ALLOCA -DBOGUS_MB_MAX -DNO_CONST
-#define PamUnixDefines		-DPAM_NIS
 #define TtLargePICTable		YES
 #define DtSvcDefines		-DXK_MISCELLANY -DMULTIBYTE -DNO_REGCOMP
 #define DtSearchDefines		-DI18N_MSG DtSvcDefines

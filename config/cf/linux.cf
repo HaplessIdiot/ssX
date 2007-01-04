@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.243 2006/07/14 15:26:39 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.244tsi Exp $
 
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
@@ -951,12 +951,30 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 
 #define ServerExtraSysLibs	/**/
 
-#ifndef PamLibraries
-#define PamLibraries		-lpam DlLibrary
+/*
+ * Note:  Leave the setting of HasPam and UsePam to distribution maintainers
+ *        (in their host.def, for example), because a binary generated with PAM
+ *        support will not run on a system without PAM.
+ */
+#ifndef HasPam
+#define HasPam			NO
 #endif
 
-#ifndef PamMiscLibraries
-#define PamMiscLibraries	-lpam_misc
+#ifndef PamLibraries
+#if HasPam
+#define PamLibraries		-lpam DlLibrary
+#else
+#define PamLibraries		/**/
+#endif
+#endif
+
+/* libpam_misc includes a generic conversation function */
+#ifndef ServerPamLibraries
+#if HasPam
+#define ServerPamLibraries	-lpam_misc -lpam DlLibrary
+#else
+#define ServerPamLibraries	PamLibraries
+#endif
 #endif
 
 #ifndef HasDECnet

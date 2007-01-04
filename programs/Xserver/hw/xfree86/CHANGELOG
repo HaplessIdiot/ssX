@@ -1,4 +1,12 @@
 XFree86 4.6.99.15 (xx January 2007)
+ 106. PAM-related changes:
+      - Add OpenPAM support on FreeBSD and NetBSD (Christos Zoulas).
+      - Fix xinit for PAM-aware X servers (Christos Zoulas).
+      - Add a PAM interface for Solaris (Marc La France).
+      - PAM-aware binaries won't run on systems without PAM, so relegate the
+        building of PAM-aware binaries to host.def.  This avoids, for example,
+        having different binary distributions for Red Hat & Slackware
+        (Marc La France).
  105. On OpenBSD and NetBSD, change xman to derive machine-specific man paths
       from uname(3) rather than a definition found in a system header file
       (James Chacon).
@@ -37,7 +45,7 @@ XFree86 4.6.99.14 (21 December 2006)
 
 XFree86 4.6.99.13 (7 December 2006)
   84. Fix Apple DRI build failure on Darwin (Reported by Frank J. R. Hanstick).
-  83. Fix __projectroot_ expansion in X & xmodmap man pages (Luke Mewburn).
+  83. Fix __projectroot__ expansion in X & xmodmap man pages (Luke Mewburn).
   82. Normalise EXTRALIBRARYDEPS usage.  Inspired by a change found in NetBSD's
       repository (Marc La France).
 
@@ -20383,7 +20391,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3833 2006/12/28 21:06:28 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3834 2006/12/30 00:58:09 tsi Exp $
 
 
 

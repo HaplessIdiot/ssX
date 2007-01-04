@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/os/Imakefile,v 3.46tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/os/Imakefile,v 3.47tsi Exp $
 /*
  * Copyright (c) 1996-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -173,9 +173,6 @@ BOOTSTRAPCFLAGS =
    KRB5_DEFINES = Krb5Defines
  XALLOC_DEFINES = XallocDefines
   ERROR_DEFINES = ServerErrorDefines
-#if HasPam && HasPamMisc
-    PAM_DEFINES = -DUSE_PAM
-#endif
 
 #ifndef LinkDefines
 #define LinkDefines /**/
@@ -188,7 +185,7 @@ STRLCAT_DEFINES = -DNEED_STRLCAT
 		  $(XDMAUTHDEFS) $(RPCDEFS) $(SIGNAL_DEFINES) $(OS_DEFINES) \
 		  $(KRB5_DEFINES) $(RGB_DEFINES) $(GETPEEREID_DEFINES) \
 		  $(STRLCAT_DEFINES) $(RANDOM_DEFINES) $(ASPRINTF_DEFINES) \
-		  $(EXT_DEFINES) LinkDefines
+		  $(EXT_DEFINES) $(PAMDEFINES) LinkDefines
        INCLUDES = -I$(SERVERSRC)/include -I$(SERVERSRC)/os \
 		  -I$(SERVERSRC)/Xext -I$(SERVERSRC)/render \
 		  -I$(SERVERSRC)/lbx -I$(SERVERSRC)/Xprint \
@@ -229,7 +226,7 @@ SpecialCObjectRule(io,$(ICONFIGFILES),NullParameter)
 #if BuildLBX
 SpecialCObjectRule(lbxio,$(ICONFIGFILES),NullParameter)
 #endif
-SpecialCObjectRule(utils,$(ICONFIGFILES),$(XDMCP_DEFINES) $(ERROR_DEFINES) $(PAM_DEFINES))
+SpecialCObjectRule(utils,$(ICONFIGFILES),$(XDMCP_DEFINES) $(ERROR_DEFINES))
 SpecialCObjectRule(xalloc,$(ICONFIGFILES),$(XALLOC_DEFINES))
 #if defined(SparcArchitecture) && HasGcc && !HasGcc2
 oscolor.o: oscolor.c $(ICONFIGFILES)

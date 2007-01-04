@@ -48,7 +48,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.111tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.112tsi Exp $ */
 /*
  * Copyright (c) 1996-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -2170,9 +2170,146 @@ CheckUserParameters(int argc, const char **argv, char **envp)
  */
 
 #ifdef USE_PAM
-#include <security/pam_appl.h>
-#include <security/pam_misc.h>
 #include <pwd.h>
+#include <security/pam_appl.h>
+#ifndef sun
+#ifdef _OPENPAM
+#include <security/openpam.h>
+#undef   misc_conv
+#define  misc_conv openpam_ttyconv
+#else  /* _OPENPAM */
+#include <security/pam_misc.h>
+#endif /* _OPENPAM */
+#else  /* sun */
+
+#include <termio.h>
+
+static volatile int SIGINTed;
+
+static void
+SIGINThandler(int signo)
+{
+    SIGINTed = 1;
+}
+
+/* A conversation function for Solaris */
+static int
+misc_conv(int nummsgs, struct pam_message **pamms, struct pam_response **pamrs,
+	  void *data)
+{
+    struct pam_message *pamm;
+    struct pam_response *pamr;
+    struct termio tty;
+    void (*handler_save)(int);
+    int echo, c;
+    unsigned short flags_save = 0;
+    char input[PAM_MAX_RESP_SIZE + 1], *pchar;
+
+    if ((nummsgs <= 0) || (nummsgs >= PAM_MAX_NUM_MSG)) {
+	ErrorF("PAM authentication error, invalid number of messages:"
+		"  %d, (max %d)\n", nummsgs, PAM_MAX_NUM_MSG);
+	return PAM_CONV_ERR;
+    }
+
+    pamr = xcalloc(nummsgs, sizeof(struct pam_response));
+    if (!pamr) {
+	ErrorF("PAM authentication error, memory allocation failure\n");
+	return PAM_CONV_ERR;
+    }
+
+    *pamrs = pamr;
+    for (pamm = *pamms;  nummsgs > 0;  nummsgs--, pamm++, pamr++) {
+	if (pamm->msg == NULL) {
+	    ErrorF("PAM authentication error, NULL message\n");
+	    break;
+	}
+
+	/* Strip any trailing newline */
+	pchar = pamm->msg + strlen(pamm->msg);
+	if (*pchar == '\n')
+	    *pchar = '\0';
+
+	echo = 0;
+	switch (pamm->msg_style) {
+	default:
+	    ErrorF("PAM authentication error, unknown message type:  %d\n",
+		   pamm->msg_style);
+	    goto fail;
+
+	case PAM_ERROR_MSG:
+	    (void) fputs(pamm->msg, stderr);
+	    (void) fputc('\n', stderr);
+	    break;
+
+	case PAM_TEXT_INFO:
+	    (void) fputs(pamm->msg, stdout);
+	    (void) fputc('\n', stdout);
+	    break;
+
+	case PAM_PROMPT_ECHO_ON:
+	    echo = 1;
+	    /* Fall through */
+
+	case PAM_PROMPT_ECHO_OFF:
+	    (void) fputs(pamm->msg, stderr);
+
+	    SIGINTed = 0;
+	    handler_save = signal(SIGINT, SIGINThandler);
+
+	    if (!echo) {
+		(void) ioctl(fileno(stdin), TCGETA, &tty);
+		flags_save = tty.c_lflag;
+		tty.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL);
+		(void) ioctl(fileno(stdin), TCSETAF, &tty);
+	    }
+
+	    flockfile(stdin);
+
+	    pchar = input;
+	    while (!SIGINTed &&
+		 ((c = getchar_unlocked()) != '\n') &&
+		 (c != '\r') &&
+		 (c != EOF)) {
+		if (pchar < (input + PAM_MAX_RESP_SIZE))
+		    *pchar++ = c;
+	    }
+	    *pchar = '\0';
+
+	    if (!SIGINTed)
+		pamr->resp = xstrdup(input);
+	    bzero(input, sizeof(input));
+
+	    funlockfile(stdin);
+
+	    if (!echo) {
+		tty.c_lflag = flags_save;
+		(void) ioctl(fileno(stdin), TCSETAW, &tty);
+		(void) fputc('\n', stdout);
+	    }
+
+	    (void) signal(SIGINT, handler_save);
+
+	    if (SIGINTed || !pamr->resp)
+		goto fail;
+	    break;
+	}
+    }
+
+    return PAM_SUCCESS;
+
+fail:
+    while (--pamr >= *pamrs) {
+	if (pamr->resp) {
+	    bzero(pamr->resp, strlen(pamr->resp));
+	    xfree(pamr->resp);
+	}
+    }
+    xfree(*pamrs);
+    *pamrs = NULL;
+    return PAM_CONV_ERR;
+}
+
+#endif /* sun */
 #endif /* USE_PAM */
 
 void
@@ -2191,7 +2328,8 @@ CheckUserAuthorization(void)
     if (getuid() != geteuid()) {
 	pw = getpwuid(getuid());
 	if (pw == NULL)
-	    FatalError("getpwuid() failed for uid %d\n", getuid());
+	    FatalError("getpwuid() failed for uid %ld\n",
+			(unsigned long)getuid());
 
 	retval = pam_start("xserver", pw->pw_name, &conv, &pamh);
 	if (retval != PAM_SUCCESS)

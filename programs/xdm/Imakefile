@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.72 2004/07/25 20:17:04 dawes Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.73tsi Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
@@ -67,7 +67,9 @@ GREET_DIR = greeter
      (defined(LinuxArchitecture) || \
       defined(NetBSDArchitecture) || \
       defined(GNUMachArchitecture)))
+#if !UsePam	/* Don't link with -ldl twice */
     DLLIBRARY = DlLibrary
+#endif
 #endif
 #else
 XPM_DEFINES = -DXPM
@@ -83,12 +85,6 @@ GREETSHADOWOBJS = greetsh.o verifysh.o Loginsh.o
 SHADOWLIB = -lshadow
 #endif
 #endif
-#endif
-
-/* This is correct for Linux and FreeBSD */
-#if HasPam
-PAM_LIBRARIES = PamLibraries
-PAM_DEFINES = -DUSE_PAM
 #endif
 
 #if HasBSDAuth
@@ -203,7 +199,7 @@ INCLUDES = $(KRB5_INCLUDE)
 DEPLIBS = $(GREETDEPLIBS) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB) \
 	  $(DEPXAUTHLIB) $(DEPXDMCPLIB)
 LOCAL_LIBRARIES = $(GREETLIBS) $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) \
-	$(XDMCPLIB) $(RPCLIB) $(PAM_LIBRARIES) $(DLLIBRARY) \
+	$(XDMCPLIB) $(RPCLIB) $(PAMLIBRARIES) $(DLLIBRARY) \
 	$(CRYPT_LIBRARIES) $(KRBIVLIB)
 
           SRCS1 = auth.c daemon.c server.c dpylist.c dm.c error.c file.c \
@@ -258,7 +254,7 @@ LOCAL_LIBRARIES = $(GREETLIBS) $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) \
         DEFINES = -DBINDIR=\"$(BINDIR)\" -DXDMDIR=\"$(XDMDIR)\" \
 		$(SIGNAL_DEFINES) $(CRYPT_DEFINES) $(BSDAUTH_DEFINES) \
 		$(XDMAUTH_DEFINES) $(RPC_DEFINES) $(KRB5_DEFINES) \
-		$(PWD_DEFINES) $(PAM_DEFINES) $(CONN_DEFINES) \
+		$(PWD_DEFINES) $(PAMDEFINES) $(CONN_DEFINES) \
 		$(GREET_DEFINES) $(FRAGILE_DEFINES) $(RANDOM_DEFINES) \
 		-DOSMAJORVERSION=$(OSMAJORVERSION) \
 		-DOSMINORVERSION=$(OSMINORVERSION) \
