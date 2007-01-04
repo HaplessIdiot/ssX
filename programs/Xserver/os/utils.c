@@ -48,7 +48,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.112tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.113tsi Exp $ */
 /*
  * Copyright (c) 1996-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -2298,7 +2298,7 @@ misc_conv(int nummsgs, struct pam_message **pamms, struct pam_response **pamrs,
     return PAM_SUCCESS;
 
 fail:
-    while (--pamr >= *pamrs) {
+    for (;  pamr >= *pamrs;  pamr--) {
 	if (pamr->resp) {
 	    bzero(pamr->resp, strlen(pamr->resp));
 	    xfree(pamr->resp);
