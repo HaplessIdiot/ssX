@@ -33,7 +33,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/iokit/xfIOKit.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/iokit/xfIOKit.c,v 1.5tsi Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xproto.h>
@@ -651,7 +651,7 @@ Bool DarwinModeSetupScreen(
  */
 void DarwinModeInitOutput(
     int argc,
-    char **argv)
+    const char **argv)
 {
     static unsigned long    generation = 0;
     kern_return_t           kr;
@@ -740,7 +740,7 @@ void DarwinModeInitOutput(
  */
 void DarwinModeInitInput(
     int argc,
-    char **argv)
+    const char **argv)
 {
     kern_return_t           kr;
     int                     fd[2];

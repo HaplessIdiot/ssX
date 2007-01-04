@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvdix.h,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvdix.h,v 1.9tsi Exp $ */
 
 #ifndef XVDIX_H
 #define XVDIX_H
@@ -54,6 +54,7 @@ SOFTWARE.
 */
 
 #include "scrnintstr.h"
+#include "extnsionst.h"
 #include <X11/extensions/Xvproto.h>
 
 extern int  XvScreenIndex;
@@ -241,7 +242,7 @@ typedef struct {
 extern int ProcXvDispatch(ClientPtr);
 extern int SProcXvDispatch(ClientPtr);
 
-extern void XvExtensionInit(void);
+extern void XvExtensionInit(INITARGS);
 extern int XvScreenInit(ScreenPtr);
 extern int XvGetScreenIndex(void);
 extern unsigned long XvGetRTPort(void);

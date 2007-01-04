@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/glxext.h,v 1.8 2004/02/09 23:46:31 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/glx/glxext.h,v 1.9tsi Exp $ */
 #ifndef _glxext_h_
 #define _glxext_h_
 
@@ -84,7 +84,7 @@ extern int DoCreateContext(__GLXclientState *cl, GLXContextID gcId,
 extern int DoCreateGLXPixmap(__GLXclientState *cl, VisualID visual,
     GLuint screenNum, XID pixmapId, XID glxpixmapId);
 
-extern void GlxExtensionInit(void);
+extern void GlxExtensionInit(INITARGS);
 
 extern Bool __glXCoreType(void);
 

@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xprScreen.c,v 1.10 2004/07/02 01:30:33 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xprScreen.c,v 1.11tsi Exp $ */
 
 #include "quartzCommon.h"
 #include "quartz.h"
@@ -350,7 +350,7 @@ xprUpdateScreen(ScreenPtr pScreen)
  *  Finalize xpr specific setup.
  */
 static void
-xprInitInput(int argc, char **argv)
+xprInitInput(int argc, const char **argv)
 {
     int i;
 

@@ -68,7 +68,7 @@ Equipment Corporation.
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.45tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.46tsi Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -574,7 +574,7 @@ void XineramaReinitData(ScreenPtr pScreen)
  *		Initialize global variables.
  */
 
-void PanoramiXExtensionInit(int argc, char *argv[])
+void PanoramiXExtensionInit(INITARGS)
 {
     int			i;
     Bool		success = FALSE;

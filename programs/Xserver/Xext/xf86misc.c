@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.47tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.48tsi Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -158,7 +158,7 @@ static unsigned char XF86MiscReqCode = 0;
 #define MISCERR(x)	(miscErrorBase + x)
 
 void
-XFree86MiscExtensionInit(void)
+XFree86MiscExtensionInit(INITARGS)
 {
     ExtensionEntry* extEntry;
 

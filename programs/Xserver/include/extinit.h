@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/extinit.h,v 3.2 2001/08/01 00:44:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/include/extinit.h,v 3.3tsi Exp $ */
 /************************************************************
 
 Copyright 1996 by Thomas E. Dickey <dickey@clark.net>
@@ -34,10 +34,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "extnsionst.h"
 
 void
-XInputExtensionInit(
-	void
-	);
-
+XInputExtensionInit(INITARGS);
 
 int
 ProcIDispatch (

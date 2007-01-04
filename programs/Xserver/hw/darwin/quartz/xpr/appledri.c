@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/appledri.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/appledri.c,v 1.2tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -75,7 +75,7 @@ typedef struct _DRIEvent {
 
 
 void
-AppleDRIExtensionInit(void)
+AppleDRIExtensionInit(INITARGS)
 {
     ExtensionEntry* extEntry;
 

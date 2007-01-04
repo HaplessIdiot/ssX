@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.60tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.61tsi Exp $ */
 
 /*
 
@@ -160,7 +160,7 @@ static int ScreenPrivateIndex;
 #endif
 
 void
-XFree86VidModeExtensionInit(void)
+XFree86VidModeExtensionInit(INITARGS)
 {
     ExtensionEntry* extEntry;
     ScreenPtr pScreen;

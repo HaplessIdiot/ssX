@@ -1,10 +1,11 @@
-/* $XFree86: xc/programs/Xserver/Xext/vidmodeproc.h,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/vidmodeproc.h,v 1.6tsi Exp $ */
 
 /* Prototypes for VidMode functions that the DDX must provide */
 
 #ifndef _VIDMODEPROC_H_
 #define _VIDMODEPROC_H_
 
+#include "extnsionst.h"
 
 typedef enum {
     VIDMODE_H_DISPLAY,
@@ -37,7 +38,7 @@ typedef union {
   float f;
 } vidMonitorValue;
 
-void XFree86VidModeExtensionInit(void);
+void XFree86VidModeExtensionInit(INITARGS);
 
 Bool VidModeAvailable(int scrnIndex);
 Bool VidModeGetCurrentModeline(int scrnIndex, pointer *mode, int *dotClock);

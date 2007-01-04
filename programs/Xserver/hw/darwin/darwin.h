@@ -23,7 +23,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.20tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.21tsi Exp $ */
 
 #ifndef _DARWIN_H
 #define _DARWIN_H
@@ -31,6 +31,7 @@
 #include <IOKit/IOTypes.h>
 #include "inputstr.h"
 #include "scrnintstr.h"
+#include "extnsionst.h"
 #include <X11/extensions/XKB.h>
 
 typedef struct {
@@ -69,9 +70,9 @@ int DarwinModifierStringToNXKey(const char *string);
 // Mode specific functions
 Bool DarwinModeAddScreen(int index, ScreenPtr pScreen);
 Bool DarwinModeSetupScreen(int index, ScreenPtr pScreen);
-void DarwinModeInitOutput(int argc,char **argv);
-void DarwinModeInitInput(int argc, char **argv);
-int DarwinModeProcessArgument(int argc, char *argv[], int i);
+void DarwinModeInitOutput(int argc, const char **argv);
+void DarwinModeInitInput(int argc, const char **argv);
+int DarwinModeProcessArgument(int argc, const char *argv[], int i);
 void DarwinModeProcessEvent(xEvent *xe);
 void DarwinModeGiveUp(void);
 void DarwinModeBell(int volume, DeviceIntPtr pDevice, pointer ctrl, int class);

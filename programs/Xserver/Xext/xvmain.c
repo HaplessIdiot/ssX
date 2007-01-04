@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvmain.c,v 1.17tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvmain.c,v 1.18tsi Exp $ */
 
 /*
 ** File: 
@@ -152,7 +152,7 @@ static int XvdiSendVideoNotify(XvPortPtr, DrawablePtr, int);
 */
 
 void 
-XvExtensionInit()
+XvExtensionInit(INITARGS)
 {
   ExtensionEntry *extEntry;
 

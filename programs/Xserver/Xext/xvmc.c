@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xvmc.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvmc.c,v 1.11tsi Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -575,7 +575,7 @@ SProcXvMCDispatch(ClientPtr client)
 }
 
 void 
-XvMCExtensionInit()
+XvMCExtensionInit(INITARGS)
 {
    ExtensionEntry *extEntry;
 

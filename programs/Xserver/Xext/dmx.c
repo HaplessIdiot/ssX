@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/dmx.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/dmx.c,v 1.6tsi Exp $ */
 /*
  * Copyright 2002-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -64,8 +64,6 @@ extern unsigned long XRT_WINDOW;
 extern int           PanoramiXNumScreens;
 #endif
 
-extern void DMXExtensionInit(void);
-
 static DISPATCH_PROC(ProcDMXDispatch);
 static DISPATCH_PROC(ProcDMXQueryVersion);
 static DISPATCH_PROC(ProcDMXSync);
@@ -117,7 +115,7 @@ DMXResetProc(ExtensionEntry *extEntry)
 
 /** Initialize the extension. */
 void
-DMXExtensionInit(void)
+DMXExtensionInit(INITARGS)
 {
     AddExtension(DMX_EXTENSION_NAME, 0, 0,
                  ProcDMXDispatch, SProcDMXDispatch,

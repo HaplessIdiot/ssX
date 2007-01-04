@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/lbx/lbxmain.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxmain.c,v 1.14tsi Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -118,7 +118,7 @@ int lbxDebug = 0;
 
 
 void
-LbxExtensionInit(void)
+LbxExtensionInit(INITARGS)
 {
     ExtensionEntry *extEntry;
 

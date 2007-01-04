@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xvmcext.h,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvmcext.h,v 1.3tsi Exp $ */
 
 #ifndef _XVMC_H
 #define _XVMC_H
@@ -102,7 +102,7 @@ typedef struct {
   XvMCDestroySubpictureProcPtr      DestroySubpicture;
 } XvMCAdaptorRec, *XvMCAdaptorPtr;
 
-void XvMCExtensionInit(void);
+void XvMCExtensionInit(INITARGS);
 
 int XvMCScreenInit(ScreenPtr pScreen, int num, XvMCAdaptorPtr adapt);
 

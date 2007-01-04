@@ -32,7 +32,7 @@ shall not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/pseudoramiX.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/pseudoramiX.c,v 1.5tsi Exp $ */
 
 #include "pseudoramiX.h"
 
@@ -104,7 +104,7 @@ PseudoramiXAddScreen(int x, int y, int w, int h)
 
 // Initialize PseudoramiX.
 // Copied from PanoramiXExtensionInit
-void PseudoramiXExtensionInit(int argc, char *argv[])
+void PseudoramiXExtensionInit(INITARGS)
 {
     Bool	     	success = FALSE;
     ExtensionEntry 	*extEntry;

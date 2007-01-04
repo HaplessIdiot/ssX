@@ -1,9 +1,11 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86miscproc.h,v 1.5 2002/11/20 04:04:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86miscproc.h,v 1.6tsi Exp $ */
 
 /* Prototypes for Pointer/Keyboard functions that the DDX must provide */
 
 #ifndef _XF86MISCPROC_H_
 #define _XF86MISCPROC_H_
+
+#include "extnsionst.h"
 
 typedef enum {
     MISC_MSE_PROTO,
@@ -44,7 +46,7 @@ typedef enum {
 #define MISC_MSEFLAG_CLEARRTS	2
 #define MISC_MSEFLAG_REOPEN	128
 
-void XFree86MiscExtensionInit(void);
+void XFree86MiscExtensionInit(INITARGS);
 
 Bool MiscExtGetMouseSettings(pointer *mouse, char **devname);
 int  MiscExtGetMouseValue(pointer mouse, MiscExtMseValType valtype);

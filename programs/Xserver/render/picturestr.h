@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.22 2002/11/23 02:38:15 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.23tsi Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -29,6 +29,7 @@
 #include "glyphstr.h"
 #include "scrnintstr.h"
 #include "resource.h"
+#include "extnsionst.h"
 
 typedef struct _DirectFormat {
     CARD16	    red, redMask;
@@ -494,7 +495,7 @@ Bool
 PictureTransformPoint (PictTransformPtr transform,
 		       PictVectorPtr	vector);
 
-void RenderExtensionInit (void);
+void RenderExtensionInit (INITARGS);
 
 Bool
 AnimCurInit (ScreenPtr pScreen);
