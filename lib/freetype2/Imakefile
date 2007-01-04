@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.24tsi Exp $
+XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.25 2005/10/14 15:16:07 tsi Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -257,5 +257,3 @@ LinkSourceFile(type42.c,$(FREETYPESRC)/type42)
 LinkSourceFile(winfnt.c,$(FREETYPESRC)/winfonts)
 
 DependTarget()
-
-DependSubdirs($(SUBDIRS))
