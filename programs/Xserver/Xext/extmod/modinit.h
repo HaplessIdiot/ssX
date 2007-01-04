@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.h,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.h,v 1.5tsi Exp $ */
 
 #include "extnsionst.h"
 
@@ -54,7 +54,7 @@ extern void XCMiscExtensionInit(INITARGS);
 #endif
 
 #ifdef XF86VIDMODE
-extern void	XFree86VidModeExtensionInit(INITARGS);
+extern void XFree86VidModeExtensionInit(INITARGS);
 #define _XF86VIDMODE_SERVER_
 #include <X11/extensions/xf86vmstr.h>
 #endif
@@ -134,7 +134,7 @@ extern void XpExtensionInit(INITARGS);
 #endif
 
 #if 1
-extern void PanoramiXExtensionInit(int argc, char *argv[]);
+extern void PanoramiXExtensionInit(INITARGS);
 #endif
 
 #if 1

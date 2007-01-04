@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzStartup.c,v 1.8 2003/11/05 00:15:00 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzStartup.c,v 1.9tsi Exp $ */
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -45,7 +45,7 @@ char **envpGlobal;      // argcGlobal and argvGlobal
                         // are from dix/globals.c
 
 // GLX bundle function pointers
-typedef void (*GlxExtensionInitPtr)(void); 
+typedef void (*GlxExtensionInitPtr)(INITARGS); 
 static GlxExtensionInitPtr GlxExtensionInit = NULL;
 
 typedef void (*GlxWrapInitVisualsPtr)(miInitVisualsProcPtr *);
@@ -234,7 +234,7 @@ static void LoadGlxBundle(void)
  * DarwinGlxExtensionInit
  *  Initialize the GLX extension.
  */
-void DarwinGlxExtensionInit(void)
+void DarwinGlxExtensionInit(INITARGS)
 {
     if (!GlxExtensionInit)
         LoadGlxBundle();
@@ -256,7 +256,7 @@ void DarwinGlxWrapInitVisuals(
 }
 
 
-int DarwinModeProcessArgument( int argc, char *argv[], int i )
+int DarwinModeProcessArgument( int argc, const char *argv[], int i )
 {
     // fullscreen: CoreGraphics full-screen mode
     // rootless: Cocoa rootless mode

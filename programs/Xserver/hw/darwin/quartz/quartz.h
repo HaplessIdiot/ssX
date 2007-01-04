@@ -30,7 +30,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.h,v 1.9 2004/07/02 01:30:33 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.h,v 1.10tsi Exp $ */
 
 #ifndef _QUARTZ_H
 #define _QUARTZ_H
@@ -50,7 +50,7 @@
 typedef void (*DisplayInitProc)(void);
 typedef Bool (*AddScreenProc)(int index, ScreenPtr pScreen);
 typedef Bool (*SetupScreenProc)(int index, ScreenPtr pScreen);
-typedef void (*InitInputProc)(int argc, char **argv);
+typedef void (*InitInputProc)(int argc, const char **argv);
 
 /*
  * Cursor functions

@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/cr/crScreen.m,v 1.7 2004/07/02 01:30:33 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/cr/crScreen.m,v 1.8tsi Exp $ */
 
 #include "quartzCommon.h"
 #include "cr.h"
@@ -295,7 +295,7 @@ CRUpdateScreen(ScreenPtr pScreen)
  *  Finalize CR specific setup.
  */
 static void
-CRInitInput(int argc, char **argv)
+CRInitInput(int argc, const char **argv)
 {
     int i;
 

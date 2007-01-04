@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.22tsi Exp $
+ * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.23tsi Exp $
  *
  * Copyright © 2000, Compaq Computer Corporation, 
  * Copyright © 2002, Hewlett Packard, Inc.
@@ -276,7 +276,7 @@ RRFreeEvents (pointer data, XID id)
 }
 
 void
-RRExtensionInit (void)
+RRExtensionInit (INITARGS)
 {
     ExtensionEntry *extEntry;
 

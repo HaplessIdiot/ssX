@@ -81,7 +81,7 @@ from The Open Group.
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.33 2006/05/16 14:05:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.34tsi Exp $ */
 
 #if defined(WIN32)
 #include <X11/Xwinsock.h>
@@ -282,11 +282,11 @@ DarwinHandleGUI(int argc, char *argv[])
 {
 }
 
-void GlxExtensionInit();
+void GlxExtensionInit(INITARGS);
 void GlxWrapInitVisuals(void *procPtr);
 
 void
-DarwinGlxExtensionInit()
+DarwinGlxExtensionInit(INITARGS)
 {
     GlxExtensionInit();
 }

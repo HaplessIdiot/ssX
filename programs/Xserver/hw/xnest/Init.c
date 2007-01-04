@@ -11,7 +11,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.28 2006/02/19 15:51:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.29tsi Exp $ */
 /*
  * Copyright (c) 1996-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -165,11 +165,11 @@ DarwinHandleGUI(int argc, char *argv[])
 {
 }
 
-void GlxExtensionInit();
+void GlxExtensionInit(INITARGS);
 void GlxWrapInitVisuals(void *procPtr);
 
 void
-DarwinGlxExtensionInit()
+DarwinGlxExtensionInit(INITARGS)
 {
     GlxExtensionInit();
 }

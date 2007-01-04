@@ -30,7 +30,7 @@ This work benefited from earlier work done by Martha Zimet of NCD
 and Jim Haggerty of Metheus.
 
 */
-/* $XFree86: xc/programs/Xserver/record/record.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/record/record.c,v 1.14tsi Exp $ */
 
 #define NEED_EVENTS
 #include "dixstruct.h"
@@ -2947,7 +2947,7 @@ RecordCloseDown(ExtensionEntry *extEntry)
  *	Enables the RECORD extension if possible.
  */
 void 
-RecordExtensionInit(void)
+RecordExtensionInit(INITARGS)
 {
     ExtensionEntry *extentry;
 

@@ -1,10 +1,17 @@
 /*
  * Minimal implementation of PanoramiX/Xinerama
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/pseudoramiX.h,v 1.2 2003/04/30 23:15:39 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/pseudoramiX.h,v 1.3tsi Exp $ */
+
+#ifndef _PSEUDORAMIX_H_
+#define _PSEUDORAMIX_H_ 1
+
+#include "extnsionst.h"
 
 extern int noPseudoramiXExtension;
 
 void PseudoramiXAddScreen(int x, int y, int w, int h);
-void PseudoramiXExtensionInit(int argc, char *argv[]);
+void PseudoramiXExtensionInit(INITARGS);
 void PseudoramiXResetScreens(void);
+
+#endif

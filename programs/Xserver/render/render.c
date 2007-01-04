@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/render.c,v 1.32tsi Exp $
+ * $XFree86: xc/programs/Xserver/render/render.c,v 1.33tsi Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -213,7 +213,7 @@ RenderClientCallback (CallbackListPtr	*list,
 }
 
 void
-RenderExtensionInit (void)
+RenderExtensionInit (INITARGS)
 {
     ExtensionEntry *extEntry;
 

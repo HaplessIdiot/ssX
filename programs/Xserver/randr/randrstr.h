@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/randrstr.h,v 1.7tsi Exp $
+ * $XFree86: xc/programs/Xserver/randr/randrstr.h,v 1.8tsi Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation
  *
@@ -25,6 +25,7 @@
 #ifndef _RANDRSTR_H_
 #define _RANDRSTR_H_
 
+#include "extnsionst.h"
 #include <X11/extensions/randr.h>
 
 typedef struct _rrScreenRate {
@@ -85,7 +86,7 @@ extern int rrPrivIndex;
 
 /* Initialize the extension */
 void
-RRExtensionInit (void);
+RRExtensionInit (INITARGS);
 
 /*
  * Then, register the specific size with the screen

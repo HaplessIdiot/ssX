@@ -1,7 +1,9 @@
-/* $XFree86: xc/programs/Xserver/dbe/dbeproc.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dbe/dbeproc.h,v 1.2tsi Exp $ */
 
 #ifndef DBEPROC_H
 #define DBEPROC_H 1
+
+#include "extnsionst.h"
 
 #ifndef DBE_EXT_INIT_ONLY
 
@@ -16,6 +18,6 @@ void DbeRegisterFunction(ScreenPtr pScreen, DbeInitFuncPtr funct);
 
 #endif /* DBE_EXT_INIT_ONLY */
 
-void DbeExtensionInit(void);
+void DbeExtensionInit(INITARGS);
 
 #endif /* DBEPROC_H */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/lbx/lbxserve.h,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxserve.h,v 1.6tsi Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -56,6 +56,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/extensions/lbxstr.h>
 #include <X11/extensions/lbxdeltastr.h>
 #include <X11/extensions/lbxopts.h>
+#include "extnsionst.h"
 
 #define MAX_LBX_CLIENTS	MAXCLIENTS
 #define	MAX_NUM_PROXIES	(MAXCLIENTS >> 1)
@@ -214,7 +215,7 @@ extern int LbxDecodeArc ( char *in, char *inend, short *out );
 extern LbxProxyPtr LbxPidToProxy ( int pid );
 extern void LbxReencodeOutput ( ClientPtr client, char *pbuf, int *pcount,
 				char *cbuf, int *ccount );
-extern void LbxExtensionInit ( void );
+extern void LbxExtensionInit ( INITARGS );
 extern void LbxCloseClient ( ClientPtr client );
 extern void LbxSetForBlock ( LbxClientPtr lbxClient );
 extern int ProcLbxDispatch ( ClientPtr client );

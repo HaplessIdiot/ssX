@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.16tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.17tsi Exp $ */
 
 #include "quartzCommon.h"
 #include "quartz.h"
@@ -118,7 +118,7 @@ Bool DarwinModeSetupScreen(
  */
 void DarwinModeInitOutput(
     int argc,
-    char **argv )
+    const char **argv )
 {
     static unsigned long generation = 0;
 
@@ -146,7 +146,7 @@ void DarwinModeInitOutput(
     // This should be in InitExtensions, but that causes link errors
     // for servers that don't link in pseudoramiX.c.
     if (!noPseudoramiXExtension) {
-        PseudoramiXExtensionInit(argc, argv);
+        PseudoramiXExtensionInit();
     }
 }
 
@@ -157,7 +157,7 @@ void DarwinModeInitOutput(
  */
 void DarwinModeInitInput(
     int argc,
-    char **argv )
+    const char **argv )
 {
     QuartzMessageMainThread(kQuartzServerStarted, NULL, 0);
 

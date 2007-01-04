@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/xf86dri.c,v 1.14tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/xf86dri.c,v 1.15tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -86,10 +86,8 @@ static void XF86DRIResetProc(ExtensionEntry* extEntry);
 
 static unsigned char DRIReqCode = 0;
 
-extern void XFree86DRIExtensionInit(void);
-
 void
-XFree86DRIExtensionInit(void)
+XFree86DRIExtensionInit(INITARGS)
 {
     ExtensionEntry* extEntry;
 

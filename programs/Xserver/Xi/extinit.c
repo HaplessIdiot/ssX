@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xi/extinit.c,v 3.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/extinit.c,v 3.8tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -213,7 +213,7 @@ static	XExtensionVersion	thisversion =
  */
 
 void
-XInputExtensionInit()
+XInputExtensionInit(INITARGS)
 {
     ExtensionEntry *extEntry;
 

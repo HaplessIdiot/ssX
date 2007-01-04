@@ -29,7 +29,7 @@
  *     DIX DBE code
  *
  *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/dbe/dbe.c,v 3.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dbe/dbe.c,v 3.14tsi Exp $ */
 
 
 /* INCLUDES */
@@ -1778,7 +1778,7 @@ DbeDestroyWindow(WindowPtr pWin)
  *****************************************************************************/
 
 void
-DbeExtensionInit(void)
+DbeExtensionInit(INITARGS)
 {
     ExtensionEntry	*extEntry;
     int	i, j;
