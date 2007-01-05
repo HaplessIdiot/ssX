@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/zx1PCI.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/zx1PCI.c,v 1.11tsi Exp $ */
 /*
  * Copyright (C) 2002-2003 The XFree86 Project, Inc.
  * All rights reserved.
@@ -1012,7 +1012,8 @@ xf86PostScanZX1(void)
 		continue;
 
 	    case PCI_CLASS_DISPLAY:
-		if (pPCI->pci_sub_class == PCI_SUBCLASS_DISPLAY_VGA)
+		if ((pPCI->pci_sub_class == PCI_SUBCLASS_DISPLAY_VGA) &&
+		    (pPCI->pci_prog_if == PCI_IF_DISPLAY_VGA))
 		    break;
 		continue;
 
