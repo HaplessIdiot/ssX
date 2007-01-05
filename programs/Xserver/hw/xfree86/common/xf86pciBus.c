@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.88tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.89tsi Exp $ */
 /*
  * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -3516,17 +3516,17 @@ xf86CheckPciGAType(pciVideoPtr pPci)
 	    && pPci->func == pcp->funcnum) {
 	    if (pcp->pci_base_class == PCI_CLASS_PREHISTORIC &&
 		pcp->pci_sub_class == PCI_SUBCLASS_PREHISTORIC_VGA)
-		return PCI_CHIP_VGA ;
+		return PCI_CHIP_VGA;
 	    if (pcp->pci_base_class == PCI_CLASS_DISPLAY &&
 		pcp->pci_sub_class == PCI_SUBCLASS_DISPLAY_VGA) {
-		if (pcp->pci_prog_if == 0)
-		    return PCI_CHIP_VGA ;
-		if (pcp->pci_prog_if == 1)
+		if (pcp->pci_prog_if == PCI_IF_DISPLAY_VGA)
+		    return PCI_CHIP_VGA;
+		if (pcp->pci_prog_if == PCI_IF_DISPLAY_8514)
 		    return PCI_CHIP_8514;
 	    }
 	    return -1;
 	}
-    i++;
+	i++;
     }
     return -1;
 }
