@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.74 2006/05/16 13:43:43 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.75tsi Exp $ */
 /*
  * Copyright 1997 through 2007 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1904,7 +1904,8 @@ ATIProbe
                         continue;
 
                     case PCI_CLASS_DISPLAY:
-                        if (pVideo->subclass == PCI_SUBCLASS_DISPLAY_VGA)
+                        if ((pVideo->subclass == PCI_SUBCLASS_DISPLAY_VGA) &&
+                            (pVideo->interface == PCI_IF_DISPLAY_VGA))
                             break;
                         continue;
 
