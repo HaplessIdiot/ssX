@@ -1,4 +1,6 @@
 XFree86 4.6.99.16 (xx January 2007)
+ 108. Fix for CVE-2006-6101, CVE-2006-6102 and CVE-2006-6103 advisories
+      (Matthieu Herrb).
  107. Change the r128 and radeon drivers to respect the size PCI allocates for
       their MMIO regions (Marc La France).
 
@@ -20395,7 +20397,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3836 2007/01/07 12:02:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3837 2007/01/09 17:04:43 tsi Exp $
 
 
 
