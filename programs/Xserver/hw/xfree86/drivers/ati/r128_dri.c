@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.32 2003/11/10 18:41:20 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.33tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -805,7 +805,7 @@ static Bool R128DRIMapInit(R128InfoPtr info, ScreenPtr pScreen)
     else                 flags = 0;
 
 				/* Map registers */
-    info->registerSize = R128_MMIOSIZE;
+    info->registerSize = 1L << info->PciInfo->size[2];
     if (drmAddMap(info->drmFD, info->MMIOAddr, info->registerSize,
 		  DRM_REGISTERS, flags, &info->registerHandle) < 0) {
 	return FALSE;
