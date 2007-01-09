@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.132 2006/03/16 16:49:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.133tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -530,7 +530,7 @@ static Bool RADEONMapMMIO(ScrnInfoPtr pScrn)
 				   VIDMEM_MMIO | VIDMEM_READSIDEEFFECT,
 				   info->PciTag,
 				   info->MMIOAddr,
-				   RADEON_MMIOSIZE);
+				   1L << info->PciInfo->size[2]);
     }
 
     if (!info->MMIO) return FALSE;
@@ -547,7 +547,8 @@ static Bool RADEONUnmapMMIO(ScrnInfoPtr pScrn)
     if (info->FBDev)
 	fbdevHWUnmapMMIO(pScrn);
     else {
-	xf86UnMapVidMem(pScrn->scrnIndex, info->MMIO, RADEON_MMIOSIZE);
+	xf86UnMapVidMem(pScrn->scrnIndex, info->MMIO,
+			1L << info->PciInfo->size[2]);
     }
     info->MMIO = NULL;
     return TRUE;

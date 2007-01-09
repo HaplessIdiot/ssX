@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.94 2006/03/16 16:49:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.95tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -376,7 +376,7 @@ static Bool R128MapMMIO(ScrnInfoPtr pScrn)
 				   VIDMEM_MMIO | VIDMEM_READSIDEEFFECT,
 				   info->PciTag,
 				   info->MMIOAddr,
-				   R128_MMIOSIZE);
+				   1L << info->PciInfo->size[2]);
     }
 
     if (!info->MMIO) return FALSE;
@@ -392,7 +392,8 @@ static Bool R128UnmapMMIO(ScrnInfoPtr pScrn)
     if (info->FBDev)
 	fbdevHWUnmapMMIO(pScrn);
     else {
-	xf86UnMapVidMem(pScrn->scrnIndex, info->MMIO, R128_MMIOSIZE);
+	xf86UnMapVidMem(pScrn->scrnIndex, info->MMIO,
+			1L << info->PciInfo->size[2]);
     }
     info->MMIO = NULL;
     return TRUE;
