@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/itsy/itsy.c,v 1.3 2000/02/23 20:29:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/itsy/itsy.c,v 1.1tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -267,13 +267,13 @@ InitCard (void)
 }
 
 void
-InitOutput (ScreenInfo *pScreenInfo, int argc, char **argv)
+InitOutput (ScreenInfo *pScreenInfo, const int argc, const char **argv)
 {
     KdInitOutput (pScreenInfo, argc, argv);
 }
 
 void
-InitInput (int argc, char **argv)
+InitInput (const int argc, const char **argv)
 {
     KdInitInput (&itsyTsMouseFuncs, &itsyKeyboardFuncs);
 }
@@ -361,7 +361,7 @@ OsVendorInit (void)
 }
 
 int
-ddxProcessArgument (int argc, char **argv, int i)
+ddxProcessArgument (int argc, const char **argv, int i)
 {
     return KdProcessArgument (argc, argv, i);
 }

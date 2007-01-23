@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_probe.h,v 1.9 2006/03/16 16:49:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_probe.h,v 1.10tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -58,7 +58,8 @@ extern void                  R128LoaderRefSymLists
 extern Bool                  R128PreInit
 			     FunctionPrototype((ScrnInfoPtr, int));
 extern Bool                  R128ScreenInit
-			     FunctionPrototype((int, ScreenPtr, int, const char **));
+			     FunctionPrototype((int, ScreenPtr, const int,
+						const char **));
 extern Bool                  R128SwitchMode
 			     FunctionPrototype((int, DisplayModePtr, int));
 extern void                  R128AdjustFrame

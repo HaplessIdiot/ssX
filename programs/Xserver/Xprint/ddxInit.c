@@ -76,7 +76,7 @@ copyright holders.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/Xprint/ddxInit.c,v 1.18 2006/02/19 15:51:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ddxInit.c,v 1.19tsi Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xproto.h>
@@ -84,6 +84,7 @@ copyright holders.
 #include "servermd.h"
 #include <X11/Xos.h>
 #include "DiPrint.h"
+#include "mipointer.h"
 
 /*
  *-----------------------------------------------------------------------
@@ -115,8 +116,8 @@ copyright holders.
 void 
 InitOutput(
     ScreenInfo 	  *pScreenInfo,
-    int     	  argc,
-    const char    	  **argv)
+    const int     argc,
+    const char    **argv)
 {
     pScreenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
     pScreenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
@@ -150,9 +151,7 @@ static CARD8 printModMap[256];
 static int
 KeyboardProc(
     DevicePtr pKbd,
-    int what,
-    int argc,
-    char *argv[])
+    int what)
 {
     KeySymsRec keySyms;
 
@@ -178,13 +177,10 @@ KeyboardProc(
     return Success;
 }
 
-#include "../mi/mipointer.h"
 static int
 PointerProc(
      DevicePtr pPtr,
-     int what,
-     int argc,
-     char *argv[])
+     int what)
 {
 #define NUM_BUTTONS 1
     CARD8 map[NUM_BUTTONS];
@@ -212,7 +208,7 @@ PointerProc(
 
 void
 InitInput(
-     int	argc,
+     const int	argc,
      const char **argv)
 {
     DeviceIntPtr ptr, kbd;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/config/dmxconfig.c,v 1.3 2005/03/25 02:22:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/config/dmxconfig.c,v 1.4tsi Exp $ */
 /*
  * Copyright 2002-2003 Red Hat Inc., Durham, North Carolina.
  *
@@ -307,8 +307,9 @@ static void dmxConfigCopyFromOption(DMXConfigOptionPtr o)
             argv[argc] = (char *)pt->string;
         }
     }
-    argv[0] = NULL;
-    ProcessCommandLine(argc+1, argv);
+    argc++;
+    argv[0] = argv[argc] = NULL;
+    ProcessCommandLine(argc, argv);
     free(argv);
 }
 

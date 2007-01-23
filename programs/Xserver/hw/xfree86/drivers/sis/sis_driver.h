@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.h,v 1.43tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.h,v 1.44tsi Exp $ */
 /*
  * Global data and definitions
  *
@@ -1266,7 +1266,7 @@ static const unsigned char SiS301CScaling[] = {
 static void SISIdentify(int flags);
 static Bool SISProbe(DriverPtr drv, int flags);
 static Bool SISPreInit(ScrnInfoPtr pScrn, int flags);
-static Bool SISScreenInit(int Index, ScreenPtr pScreen, int argc, const char **argv);
+static Bool SISScreenInit(int Index, ScreenPtr pScreen, const int argc, const char **argv);
 static Bool SISEnterVT(int scrnIndex, int flags);
 static void SISLeaveVT(int scrnIndex, int flags);
 static Bool SISCloseScreen(int scrnIndex, ScreenPtr pScreen);

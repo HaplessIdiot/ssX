@@ -24,7 +24,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.45tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.46tsi Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -58,8 +58,8 @@ static Bool SMI_EnterVT(int scrnIndex, int flags);
 static void SMI_LeaveVT(int scrnIndex, int flags);
 static void SMI_Save (ScrnInfoPtr pScrn);
 static void SMI_WriteMode (ScrnInfoPtr pScrn, vgaRegPtr, SMIRegPtr);
-static Bool SMI_ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc,
-                           const char **argv);
+static Bool SMI_ScreenInit(int scrnIndex, ScreenPtr pScreen,
+                           const int argc, const char **argv);
 static int SMI_InternalScreenInit(int scrnIndex, ScreenPtr pScreen);
 static void SMI_PrintRegs(ScrnInfoPtr);
 static ModeStatus SMI_ValidMode(int scrnIndex, DisplayModePtr mode,
@@ -2136,7 +2136,7 @@ SMI_UnmapMem(ScrnInfoPtr pScrn)
 /* This gets called at the start of each server generation. */
 
 static Bool
-SMI_ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
+SMI_ScreenInit(int scrnIndex, ScreenPtr pScreen, const int argc, const char **argv)
 {
 	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
 	SMIPtr pSmi = SMIPTR(pScrn);

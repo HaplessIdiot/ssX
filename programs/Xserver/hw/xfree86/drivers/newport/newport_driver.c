@@ -28,7 +28,7 @@
  * Project.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.29 2006/03/16 16:50:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.30tsi Exp $ */
 
 /* function prototypes, common data structures & generic includes */
 #include "newport.h"
@@ -63,7 +63,7 @@ static void	NewportIdentify(int flags);
 static const OptionInfoRec * NewportAvailableOptions(int chipid, int busid);
 static Bool NewportProbe(DriverPtr drv, int flags);
 static Bool NewportPreInit(ScrnInfoPtr pScrn, int flags);
-static Bool NewportScreenInit(int Index, ScreenPtr pScreen, int argc, const char **argv);
+static Bool NewportScreenInit(int Index, ScreenPtr pScreen, const int argc, const char **argv);
 static Bool NewportEnterVT(int scrnIndex, int flags);
 static void NewportLeaveVT(int scrnIndex, int flags);
 static Bool NewportCloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -472,7 +472,7 @@ NewportPreInit(ScrnInfoPtr pScrn, int flags)
 }
 
 static Bool 
-NewportScreenInit(int index, ScreenPtr pScreen, int argc, const char **argv)
+NewportScreenInit(int index, ScreenPtr pScreen, const int argc, const char **argv)
 {
 	ScrnInfoPtr pScrn;
 	NewportPtr pNewport;

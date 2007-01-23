@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.63 2006/03/16 16:50:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.64tsi Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -99,7 +99,7 @@ static const OptionInfoRec * renditionAvailableOptions(int, int);
 static void       renditionIdentify(int);
 static Bool       renditionProbe(DriverPtr, int);
 static Bool       renditionPreInit(ScrnInfoPtr, int);
-static Bool       renditionScreenInit(int, ScreenPtr, int, const char **);
+static Bool       renditionScreenInit(int, ScreenPtr, const int, const char **);
 static Bool       renditionSwitchMode(int, DisplayModePtr, int);
 static void       renditionAdjustFrame(int, int, int, int);
 static Bool       renditionEnterVT(int, int);
@@ -1105,7 +1105,7 @@ renditionDPMSSet(ScrnInfoPtr pScreen, int mode, int flags)
 }
 
 static Bool
-renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
+renditionScreenInit(int scrnIndex, ScreenPtr pScreen, const int argc, const char **argv)
 {
     ScrnInfoPtr pScreenInfo = xf86Screens[scrnIndex];
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);

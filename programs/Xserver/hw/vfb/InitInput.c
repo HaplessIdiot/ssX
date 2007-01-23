@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitInput.c,v 3.12 2006/02/19 15:51:22 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitInput.c,v 3.13tsi Exp $ */
 /*
 
 Copyright 1993, 1998  The Open Group
@@ -308,7 +308,7 @@ vfbMouseProc(DeviceIntPtr pDevice, int onoff)
 }
 
 void
-InitInput(int argc, const char *argv[])
+InitInput(const int argc, const char *argv[])
 {
     DeviceIntPtr p, k;
     p = AddInputDevice(vfbMouseProc, TRUE);

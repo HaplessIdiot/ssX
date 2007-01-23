@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.205tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.206tsi Exp $ */
 /*
  * SiS driver main code
  *
@@ -7170,7 +7170,7 @@ SISBlockHandler(int i, pointer blockData, pointer pTimeout, pointer pReadmask)
  * depth, bitsPerPixel)
  */
 static Bool
-SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
+SISScreenInit(int scrnIndex, ScreenPtr pScreen, const int argc, const char **argv)
 {
     ScrnInfoPtr pScrn;
     vgaHWPtr hwp;

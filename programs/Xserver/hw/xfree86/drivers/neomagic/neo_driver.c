@@ -30,7 +30,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * Copyright 2002 Shigehiro Nomura
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.82 2006/03/16 16:50:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.83tsi Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -117,8 +117,8 @@ static const OptionInfoRec *	NEOAvailableOptions(int chipid, int busid);
 static void     NEOIdentify(int flags);
 static Bool     NEOProbe(DriverPtr drv, int flags);
 static Bool     NEOPreInit(ScrnInfoPtr pScrn, int flags);
-static Bool     NEOScreenInit(int Index, ScreenPtr pScreen, int argc,
-                                  const char **argv);
+static Bool     NEOScreenInit(int Index, ScreenPtr pScreen,
+                              const int argc, const char **argv);
 static Bool     NEOEnterVT(int scrnIndex, int flags);
 static void     NEOLeaveVT(int scrnIndex, int flags);
 static Bool     NEOCloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -1487,7 +1487,8 @@ NEOLoadPalette(
 
 /* Mandatory */
 static Bool
-NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
+NEOScreenInit(int scrnIndex, ScreenPtr pScreen,
+              const int argc, const char **argv)
 {
     ScrnInfoPtr pScrn;
     vgaHWPtr hwp;

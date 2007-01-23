@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/aspeed/ast_driver.c,v 1.1 2006/04/14 00:50:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/aspeed/ast_driver.c,v 1.2tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -46,7 +46,7 @@ static void ASTIdentify(int flags);
 const OptionInfoRec *ASTAvailableOptions(int chipid, int busid);
 static Bool ASTProbe(DriverPtr drv, int flags);
 static Bool ASTPreInit(ScrnInfoPtr pScrn, int flags);
-static Bool ASTScreenInit(int Index, ScreenPtr pScreen, int argc, const char **argv);
+static Bool ASTScreenInit(int Index, ScreenPtr pScreen, const int argc, const char **argv);
 static Bool ASTSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 static void ASTAdjustFrame(int scrnIndex, int x, int y, int flags);
 static Bool ASTEnterVT(int scrnIndex, int flags);
@@ -660,7 +660,7 @@ ASTPreInit(ScrnInfoPtr pScrn, int flags)
 
 
 static Bool
-ASTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
+ASTScreenInit(int scrnIndex, ScreenPtr pScreen, const int argc, const char **argv)
 {
    ScrnInfoPtr pScrn;
    ASTRecPtr pAST;

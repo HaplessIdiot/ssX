@@ -11,7 +11,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Screen.c,v 3.16 2006/02/09 17:38:08 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Screen.c,v 3.17tsi Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xproto.h>
@@ -124,7 +124,7 @@ static miPointerScreenFuncRec xnestPointerCursorFuncs =
 };
 
 Bool
-xnestOpenScreen(int index, ScreenPtr pScreen, int argc, const char *argv[])
+xnestOpenScreen(int index, ScreenPtr pScreen, const int argc, const char *argv[])
 {
   VisualPtr visuals;
   DepthPtr depths;

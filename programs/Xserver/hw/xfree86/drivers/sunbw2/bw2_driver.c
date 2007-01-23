@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunbw2/bw2_driver.c,v 1.8 2006/03/16 16:50:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunbw2/bw2_driver.c,v 1.9tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -38,8 +38,8 @@ static const OptionInfoRec * BW2AvailableOptions(int chipid, int busid);
 static void	BW2Identify(int flags);
 static Bool	BW2Probe(DriverPtr drv, int flags);
 static Bool	BW2PreInit(ScrnInfoPtr pScrn, int flags);
-static Bool	BW2ScreenInit(int Index, ScreenPtr pScreen, int argc,
-			      const char **argv);
+static Bool	BW2ScreenInit(int Index, ScreenPtr pScreen,
+			      const int argc, const char **argv);
 static Bool	BW2EnterVT(int scrnIndex, int flags);
 static void	BW2LeaveVT(int scrnIndex, int flags);
 static Bool	BW2CloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -386,7 +386,8 @@ BW2PreInit(ScrnInfoPtr pScrn, int flags)
 /* This gets called at the start of each server generation */
 
 static Bool
-BW2ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
+BW2ScreenInit(int scrnIndex, ScreenPtr pScreen,
+	      const int argc, const char **argv)
 {
     ScrnInfoPtr pScrn;
     Bw2Ptr pBw2;

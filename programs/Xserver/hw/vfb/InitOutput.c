@@ -81,7 +81,7 @@ from The Open Group.
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.34tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.35tsi Exp $ */
 
 #if defined(WIN32)
 #include <X11/Xwinsock.h>
@@ -335,7 +335,7 @@ ddxUseMsg()
 }
 
 int
-ddxProcessArgument(int argc, char const *argv[], int i)
+ddxProcessArgument(int argc, const char *argv[], int i)
 {
     static Bool firstTime = TRUE;
 
@@ -982,7 +982,7 @@ vfbCloseScreen(int index, ScreenPtr pScreen)
 }
 
 static Bool
-vfbScreenInit(int index, ScreenPtr pScreen, int argc, const char **argv)
+vfbScreenInit(int index, ScreenPtr pScreen, const int argc, const char **argv)
 {
     vfbScreenInfoPtr pvfb = &vfbScreens[index];
     int dpix = 100, dpiy = 100;
@@ -1066,7 +1066,7 @@ vfbScreenInit(int index, ScreenPtr pScreen, int argc, const char **argv)
 
 
 void
-InitOutput(ScreenInfo *screenInfo, int argc, const char **argv)
+InitOutput(ScreenInfo *screenInfo, const int argc, const char **argv)
 {
     int i;
     int NumFormats = 0;

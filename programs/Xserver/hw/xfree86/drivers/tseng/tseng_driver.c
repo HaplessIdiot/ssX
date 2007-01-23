@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.102 2006/03/16 16:50:19 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.103tsi Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -60,7 +60,7 @@ static const OptionInfoRec * TsengAvailableOptions(int chipid, int busid);
 static void TsengIdentify(int flags);
 static Bool TsengProbe(DriverPtr drv, int flags);
 static Bool TsengPreInit(ScrnInfoPtr pScrn, int flags);
-static Bool TsengScreenInit(int Index, ScreenPtr pScreen, int argc,
+static Bool TsengScreenInit(int Index, ScreenPtr pScreen, const int argc,
     const char **argv);
 static Bool TsengEnterVT(int scrnIndex, int flags);
 static void TsengLeaveVT(int scrnIndex, int flags);
@@ -2019,7 +2019,8 @@ end_memsetup:
 }
 
 static Bool
-TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
+TsengScreenInit(int scrnIndex, ScreenPtr pScreen,
+    const int argc, const char **argv)
 {
     ScrnInfoPtr pScrn;
     TsengPtr pTseng;

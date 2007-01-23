@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.52 2006/08/09 20:53:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.53tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -656,7 +656,7 @@ with its screen number, a pointer to its ScreenRec, argc, and argv.
 */
 
 int
-AddScreen(ScrnInitProcPtr pfnInit, int argc, const char **argv)
+AddScreen(ScrnInitProcPtr pfnInit, const int argc, const char **argv)
 {
 
     int i;

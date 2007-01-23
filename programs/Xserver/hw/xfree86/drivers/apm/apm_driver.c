@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.71 2006/03/16 16:49:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.72tsi Exp $ */
 
 #include "apm.h"
 #include "xf86cmap.h"
@@ -30,8 +30,8 @@ static const OptionInfoRec *	ApmAvailableOptions(int chipid, int busid);
 static void     ApmIdentify(int flags);
 static Bool     ApmProbe(DriverPtr drv, int flags);
 static Bool     ApmPreInit(ScrnInfoPtr pScrn, int flags);
-static Bool     ApmScreenInit(int Index, ScreenPtr pScreen, int argc,
-                                  const char **argv);
+static Bool     ApmScreenInit(int Index, ScreenPtr pScreen,
+                              const int argc, const char **argv);
 static Bool     ApmEnterVT(int scrnIndex, int flags);
 static void     ApmLeaveVT(int scrnIndex, int flags);
 static Bool     ApmCloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -1847,7 +1847,7 @@ ApmRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 /* This gets called at the start of each server generation */
 
 static Bool
-ApmScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
+ApmScreenInit(int scrnIndex, ScreenPtr pScreen, const int argc, const char **argv)
 {
     ScrnInfoPtr		pScrn = xf86Screens[pScreen->myNum];
     APMDECL(pScrn);

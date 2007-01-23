@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.65 2006/03/16 16:50:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.66tsi Exp $ */
 
 /* everybody includes these */
 #include "xf86.h"
@@ -74,8 +74,8 @@ static const OptionInfoRec * TGAAvailableOptions(int chipid, int busid);
 static void	TGAIdentify(int flags);
 static Bool	TGAProbe(DriverPtr drv, int flags);
 static Bool	TGAPreInit(ScrnInfoPtr pScrn, int flags);
-static Bool	TGAScreenInit(int Index, ScreenPtr pScreen, int argc,
-			      const char **argv);
+static Bool	TGAScreenInit(int Index, ScreenPtr pScreen,
+			      const int argc, const char **argv);
 static Bool	TGAEnterVT(int scrnIndex, int flags);
 static void	TGALeaveVT(int scrnIndex, int flags);
 static Bool	TGACloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -1222,7 +1222,8 @@ TGARestore(ScrnInfoPtr pScrn)
 /* This gets called at the start of each server generation */
 
 static Bool
-TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
+TGAScreenInit(int scrnIndex, ScreenPtr pScreen,
+	      const int argc, const char **argv)
 {
     ScrnInfoPtr pScrn;
     TGAPtr pTga;

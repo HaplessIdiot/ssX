@@ -31,7 +31,7 @@
  *		Harold L Hunt II
  *		Kensuke Matsuzaki
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.29 2005/02/15 01:09:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.30tsi Exp $ */
 
 #include "win.h"
 
@@ -45,7 +45,7 @@
 Bool
 winScreenInit (int index,
 	       ScreenPtr pScreen,
-	       int argc, const char **argv)
+	       const int argc, const char **argv)
 {
   winScreenInfoPtr      pScreenInfo = &g_ScreenInfo[index];
   winPrivScreenPtr	pScreenPriv;

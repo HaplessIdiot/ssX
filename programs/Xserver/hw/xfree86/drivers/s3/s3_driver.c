@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.30 2006/03/16 16:50:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.31tsi Exp $ */
 
 
 #include "xf86.h"
@@ -95,8 +95,8 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags);
 static Bool S3EnterVT(int scrnIndex, int flags);
 static void S3LeaveVT(int scrnIndex, int flags);
 static void S3Save(ScrnInfoPtr pScrn);
-static Bool S3ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc,
-			 const char **argv);
+static Bool S3ScreenInit(int scrnIndex, ScreenPtr pScreen,
+			 const int argc, const char **argv);
 static Bool S3MapMem(ScrnInfoPtr pScrn);
 static void S3UnmapMem(ScrnInfoPtr pScrn);
 static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
@@ -726,8 +726,8 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
 }
 
 
-static Bool S3ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc,
-			 const char **argv)
+static Bool S3ScreenInit(int scrnIndex, ScreenPtr pScreen,
+			 const int argc, const char **argv)
 {
 	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
 	S3Ptr pS3 = S3PTR(pScrn);

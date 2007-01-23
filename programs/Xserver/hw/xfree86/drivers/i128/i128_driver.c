@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.38 2006/03/16 16:50:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.39tsi Exp $ */
 
 
 /* All drivers should typically include these */
@@ -75,8 +75,8 @@ static const OptionInfoRec *	I128AvailableOptions(int chipid, int busid);
 static void	I128Identify(int flags);
 static Bool	I128Probe(DriverPtr drv, int flags);
 static Bool	I128PreInit(ScrnInfoPtr pScrn, int flags);
-static Bool	I128ScreenInit(int Index, ScreenPtr pScreen, int argc,
-			      const char **argv);
+static Bool	I128ScreenInit(int Index, ScreenPtr pScreen,
+			       const int argc, const char **argv);
 static Bool	I128EnterVT(int scrnIndex, int flags);
 static void	I128LeaveVT(int scrnIndex, int flags);
 static Bool	I128CloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -1450,7 +1450,8 @@ I128ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 /* This gets called at the start of each server generation */
 
 static Bool
-I128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
+I128ScreenInit(int scrnIndex, ScreenPtr pScreen,
+	       const int argc, const char **argv)
 {
     ScrnInfoPtr pScrn;
     I128Ptr pI128;

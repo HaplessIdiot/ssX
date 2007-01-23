@@ -23,7 +23,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.144 2006/06/16 00:19:32 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.145tsi Exp $ */
 
 #include "nv_include.h"
 
@@ -40,8 +40,8 @@ static const OptionInfoRec * NVAvailableOptions(int chipid, int busid);
 static void    NVIdentify(int flags);
 static Bool    NVProbe(DriverPtr drv, int flags);
 static Bool    NVPreInit(ScrnInfoPtr pScrn, int flags);
-static Bool    NVScreenInit(int Index, ScreenPtr pScreen, int argc,
-                            const char **argv);
+static Bool    NVScreenInit(int Index, ScreenPtr pScreen,
+                            const int argc, const char **argv);
 static Bool    NVEnterVT(int scrnIndex, int flags);
 static Bool    NVEnterVTFBDev(int scrnIndex, int flags);
 static void    NVLeaveVT(int scrnIndex, int flags);
@@ -1855,7 +1855,8 @@ NVDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
 /* This gets called at the start of each server generation */
 
 static Bool
-NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
+NVScreenInit(int scrnIndex, ScreenPtr pScreen,
+             const int argc, const char **argv)
 {
     ScrnInfoPtr pScrn;
     vgaHWPtr hwp;
