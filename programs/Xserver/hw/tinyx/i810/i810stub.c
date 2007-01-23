@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/tinyx/i810/i810stub.c,v 1.1 2004/06/02 22:43:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/i810/i810stub.c,v 1.2tsi Exp $ */
 /* COPYRIGHT AND PERMISSION NOTICE
 
 Copyright (c) 2000, 2001 Nokia Home Communications
@@ -104,13 +104,13 @@ InitCard (const char *name)
 
 
 void
-InitOutput (ScreenInfo *pScreenInfo, int argc, const char **argv)
+InitOutput (ScreenInfo *pScreenInfo, const int argc, const char **argv)
 {
     KdInitOutput (pScreenInfo, argc, argv);
 }
 
 void
-InitInput (int argc, const char **argv)
+InitInput (const int argc, const char **argv)
 {
     KdInitInput (&LinuxMouseFuncs, &LinuxKeyboardFuncs);
 }

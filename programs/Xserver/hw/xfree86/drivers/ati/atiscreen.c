@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.38 2006/10/31 15:28:55 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.39tsi Exp $ */
 /*
  * Copyright 1999 through 2007 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -90,7 +90,7 @@ ATIScreenInit
 (
     int        iScreen,
     ScreenPtr  pScreen,
-    int        argc,
+    const int  argc,
     const char **argv
 )
 {

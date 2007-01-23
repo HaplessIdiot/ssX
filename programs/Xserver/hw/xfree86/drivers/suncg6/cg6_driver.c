@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg6/cg6_driver.c,v 1.15 2006/03/16 16:50:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg6/cg6_driver.c,v 1.16tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -38,8 +38,8 @@ static const OptionInfoRec * CG6AvailableOptions(int chipid, int busid);
 static void	CG6Identify(int flags);
 static Bool	CG6Probe(DriverPtr drv, int flags);
 static Bool	CG6PreInit(ScrnInfoPtr pScrn, int flags);
-static Bool	CG6ScreenInit(int Index, ScreenPtr pScreen, int argc,
-			      const char **argv);
+static Bool	CG6ScreenInit(int Index, ScreenPtr pScreen,
+			      const int argc, const char **argv);
 static Bool	CG6EnterVT(int scrnIndex, int flags);
 static void	CG6LeaveVT(int scrnIndex, int flags);
 static Bool	CG6CloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -463,7 +463,8 @@ CG6PreInit(ScrnInfoPtr pScrn, int flags)
 /* This gets called at the start of each server generation */
 
 static Bool
-CG6ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
+CG6ScreenInit(int scrnIndex, ScreenPtr pScreen,
+	      const int argc, const char **argv)
 {
     ScrnInfoPtr pScrn;
     Cg6Ptr pCg6;

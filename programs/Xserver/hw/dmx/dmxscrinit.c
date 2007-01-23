@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/dmxscrinit.c,v 1.2 2005/01/22 16:01:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxscrinit.c,v 1.3tsi Exp $ */
 /*
  * Copyright 2001-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -201,7 +201,7 @@ void dmxBEScreenInit(int idx, ScreenPtr pScreen)
 }
 
 /** Initialize screen number \a idx. */
-Bool dmxScreenInit(int idx, ScreenPtr pScreen, int argc, const char *argv[])
+Bool dmxScreenInit(int idx, ScreenPtr pScreen, const int argc, const char *argv[])
 {
     DMXScreenInfo        *dmxScreen = &dmxScreens[idx];
     int                   i, j;

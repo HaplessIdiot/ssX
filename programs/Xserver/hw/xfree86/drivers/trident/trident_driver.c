@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.199 2006/03/16 16:50:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.200tsi Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -70,8 +70,8 @@ static const OptionInfoRec * TRIDENTAvailableOptions(int chipid, int busid);
 static void	TRIDENTIdentify(int flags);
 static Bool	TRIDENTProbe(DriverPtr drv, int flags);
 static Bool	TRIDENTPreInit(ScrnInfoPtr pScrn, int flags);
-static Bool	TRIDENTScreenInit(int Index, ScreenPtr pScreen, int argc,
-			      const char **argv);
+static Bool	TRIDENTScreenInit(int Index, ScreenPtr pScreen,
+				  const int argc, const char **argv);
 static Bool	TRIDENTEnterVT(int scrnIndex, int flags);
 static void	TRIDENTLeaveVT(int scrnIndex, int flags);
 static Bool	TRIDENTCloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -2779,7 +2779,8 @@ TRIDENTRestore(ScrnInfoPtr pScrn)
 /* This gets called at the start of each server generation */
 
 static Bool
-TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
+TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen,
+		  const int argc, const char **argv)
 {
     /* The vgaHW references will disappear one day */
     ScrnInfoPtr pScrn;

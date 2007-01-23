@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.138 2006/03/16 16:50:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.139tsi Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -135,8 +135,8 @@ static const OptionInfoRec *	CHIPSAvailableOptions(int chipid, int busid);
 static void     CHIPSIdentify(int flags);
 static Bool     CHIPSProbe(DriverPtr drv, int flags);
 static Bool     CHIPSPreInit(ScrnInfoPtr pScrn, int flags);
-static Bool     CHIPSScreenInit(int Index, ScreenPtr pScreen, int argc,
-                                  const char **argv);
+static Bool     CHIPSScreenInit(int Index, ScreenPtr pScreen,
+                                const int argc, const char **argv);
 static Bool     CHIPSEnterVT(int scrnIndex, int flags);
 static void     CHIPSLeaveVT(int scrnIndex, int flags);
 static Bool     CHIPSCloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -3806,7 +3806,8 @@ chipsLoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices,
 
 /* Mandatory */
 static Bool
-CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
+CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen,
+		const int argc, const char **argv)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     vgaHWPtr hwp;

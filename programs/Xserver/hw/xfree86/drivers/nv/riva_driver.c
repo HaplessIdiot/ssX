@@ -23,7 +23,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_driver.c,v 1.9 2006/03/16 16:50:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_driver.c,v 1.10tsi Exp $ */
 
 #include "riva_include.h"
 
@@ -34,8 +34,8 @@
  */
 /* Mandatory functions */
 static Bool    RivaPreInit(ScrnInfoPtr pScrn, int flags);
-static Bool    RivaScreenInit(int Index, ScreenPtr pScreen, int argc,
-                            const char **argv);
+static Bool    RivaScreenInit(int Index, ScreenPtr pScreen,
+                              const int argc, const char **argv);
 static Bool    RivaEnterVT(int scrnIndex, int flags);
 static Bool    RivaEnterVTFBDev(int scrnIndex, int flags);
 static void    RivaLeaveVT(int scrnIndex, int flags);
@@ -1113,7 +1113,8 @@ RivaDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
 /* This gets called at the start of each server generation */
 
 static Bool
-RivaScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
+RivaScreenInit(int scrnIndex, ScreenPtr pScreen,
+               const int argc, const char **argv)
 {
     ScrnInfoPtr pScrn;
     vgaHWPtr hwp;

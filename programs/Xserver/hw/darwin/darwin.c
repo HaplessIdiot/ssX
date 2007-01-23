@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.60tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.61tsi Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xproto.h>
@@ -181,7 +181,7 @@ static Bool DarwinSaveScreen(ScreenPtr pScreen, int on)
 static Bool DarwinAddScreen(
     int         index,
     ScreenPtr   pScreen,
-    int         argc,
+    const int   argc,
     const char  **argv )
 {
     int         bitsPerRGB, i, dpi;
@@ -529,7 +529,7 @@ static int DarwinParseModifierList(
  * InitInput
  *  Register the keyboard and mouse devices
  */
-void InitInput( int argc, const char **argv )
+void InitInput( const int argc, const char **argv )
 {
     darwinPointer = AddInputDevice(DarwinMouseProc, TRUE);
     RegisterPointerDevice( darwinPointer );
@@ -607,7 +607,7 @@ DarwinAdjustScreenOrigins(ScreenInfo *pScreenInfo)
  *  After other screen setup has been done, a mode specific
  *  SetupScreen function can be called to finalize screen setup.
  */
-void InitOutput( ScreenInfo *pScreenInfo, int argc, const char **argv )
+void InitOutput( ScreenInfo *pScreenInfo, const int argc, const char **argv )
 {
     int i;
     static unsigned long generation = 0;

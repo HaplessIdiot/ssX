@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.96tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.97tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -4597,7 +4597,8 @@ I830_dump_registers(ScrnInfoPtr pScrn)
 #endif
 
 static Bool
-I830BIOSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
+I830BIOSScreenInit(int scrnIndex, ScreenPtr pScreen,
+		   const int argc, const char **argv)
 {
    ScrnInfoPtr pScrn;
    vgaHWPtr hwp;

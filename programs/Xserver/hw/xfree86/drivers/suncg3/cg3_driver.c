@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg3/cg3_driver.c,v 1.10 2006/03/16 16:50:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg3/cg3_driver.c,v 1.11tsi Exp $ */
 
 #define PSZ 8
 #include "xf86.h"
@@ -39,8 +39,8 @@ static const OptionInfoRec * CG3AvailableOptions(int chipid, int busid);
 static void	CG3Identify(int flags);
 static Bool	CG3Probe(DriverPtr drv, int flags);
 static Bool	CG3PreInit(ScrnInfoPtr pScrn, int flags);
-static Bool	CG3ScreenInit(int Index, ScreenPtr pScreen, int argc,
-			      const char **argv);
+static Bool	CG3ScreenInit(int Index, ScreenPtr pScreen,
+			      const int argc, const char **argv);
 static Bool	CG3EnterVT(int scrnIndex, int flags);
 static void	CG3LeaveVT(int scrnIndex, int flags);
 static Bool	CG3CloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -387,7 +387,8 @@ CG3PreInit(ScrnInfoPtr pScrn, int flags)
 /* This gets called at the start of each server generation */
 
 static Bool
-CG3ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
+CG3ScreenInit(int scrnIndex, ScreenPtr pScreen,
+	      const int argc, const char **argv)
 {
     ScrnInfoPtr pScrn;
     Cg3Ptr pCg3;

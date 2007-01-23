@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.246 2006/08/09 20:53:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.247tsi Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -324,7 +324,7 @@ PostConfigInit(void)
 }
 
 void
-InitOutput(ScreenInfo * pScreenInfo, int argc, const char **argv)
+InitOutput(ScreenInfo * pScreenInfo, const int argc, const char **argv)
 {
     int i, j, k, scr_index;
     static unsigned long generation = 0;
@@ -1263,7 +1263,7 @@ MatchInput(IDevPtr pDev)
  */
 
 void
-InitInput(int argc, const char **argv)
+InitInput(const int argc, const char **argv)
 {
     int i;
     IDevPtr pDev;

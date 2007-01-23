@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.45 2006/03/16 16:50:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.46tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -66,8 +66,8 @@ static Bool VIACloseScreen(int scrnIndex, ScreenPtr pScreen);
 static Bool VIASaveScreen(ScreenPtr pScreen, int mode);
 static void VIALoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies,
 			   LOCO *colors, VisualPtr pVisual);
-static Bool VIAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc,
-			  const char **argv);
+static Bool VIAScreenInit(int scrnIndex, ScreenPtr pScreen,
+			  const int argc, const char **argv);
 static int VIAInternalScreenInit(int scrnIndex, ScreenPtr pScreen);
 static void VIAFreeScreen(int scrnIndex, int flags);
 static ModeStatus VIAValidMode(int index, DisplayModePtr mode,
@@ -2268,7 +2268,7 @@ static void VIAUnmapMem(ScrnInfoPtr pScrn)
 
 
 static Bool VIAScreenInit(int scrnIndex, ScreenPtr pScreen,
-			  int argc, const char **argv)
+			  const int argc, const char **argv)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     vgaHWPtr hwp = VGAHWPTR(pScrn);

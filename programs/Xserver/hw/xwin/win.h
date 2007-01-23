@@ -31,7 +31,7 @@
  *		Harold L Hunt II
  *		Kensuke Matsuzaki
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.39tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.40tsi Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -1171,7 +1171,7 @@ winPolyLineNativeGDI (DrawablePtr	pDrawable,
 Bool
 winScreenInit (int index,
 	       ScreenPtr pScreen,
-	       int argc, const char **argv);
+	       const int argc, const char **argv);
 
 Bool
 winFinishScreenInitFB (int index,

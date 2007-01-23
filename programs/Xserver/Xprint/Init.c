@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xprint/Init.c,v 1.17 2006/02/19 15:51:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/Init.c,v 1.18tsi Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -99,7 +99,7 @@ static void GenericScreenInit(
 static Bool InitPrintDrivers(
     int index,
     ScreenPtr pScreen,
-    int argc,
+    const int argc,
     const char **argv);
 
 /*
@@ -1399,7 +1399,7 @@ static Bool
 InitPrintDrivers(
     int index,
     ScreenPtr pScreen,
-    int argc,
+    const int argc,
     const char **argv)
 {
     PrinterDbPtr pDb, pDb2;

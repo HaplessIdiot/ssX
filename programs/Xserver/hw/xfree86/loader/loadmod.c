@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.80 2006/06/27 18:43:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.81tsi Exp $ */
 
 /*
  *
@@ -381,7 +381,7 @@ InitSubdirs(const char **subdirlist)
     const char **s, **stmp = NULL;
     const char *osname;
     const char *slash;
-    int oslen = 0, len;
+    int len;
     Bool indefault;
 
     if (subdirlist == NULL) {
@@ -393,7 +393,6 @@ InitSubdirs(const char **subdirlist)
     }
 
     LoaderGetOS(&osname, NULL, NULL, NULL);
-    oslen = strlen(osname);
 
     {
 	/* Count number of entries and check for invalid paths */

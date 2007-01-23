@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.37tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.38tsi Exp $ */
 
 #include "win.h"
 #include "winconfig.h"
@@ -1265,7 +1265,7 @@ GetTimeInMillis (void)
  */
 
 void
-InitOutput (ScreenInfo *screenInfo, int argc, const char *argv[])
+InitOutput (ScreenInfo *screenInfo, const int argc, const char *argv[])
 {
   int		i;
   int		iMaxConsecutiveScreen = 0;

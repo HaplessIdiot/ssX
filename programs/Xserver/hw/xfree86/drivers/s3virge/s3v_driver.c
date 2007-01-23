@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.100 2006/03/16 16:50:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.101tsi Exp $ */
 
 /*
  * Copyright (C) 1994-1999 The XFree86 Project, Inc.
@@ -107,7 +107,7 @@ static void S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr, S3VRegPtr);
 static void S3VSaveSTREAMS(ScrnInfoPtr pScrn, unsigned int *streams);
 static void S3VRestoreSTREAMS(ScrnInfoPtr pScrn, unsigned int *streams);
 static void S3VDisableSTREAMS(ScrnInfoPtr pScrn);
-static Bool S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv);
+static Bool S3VScreenInit(int scrnIndex, ScreenPtr pScreen, const int argc, const char **argv);
 static int S3VInternalScreenInit( int scrnIndex, ScreenPtr pScreen);
 static void S3VPrintRegs(ScrnInfoPtr);
 static ModeStatus S3VValidMode(int index, DisplayModePtr mode, Bool verbose, int flags);
@@ -2465,7 +2465,7 @@ S3VUnmapMem(ScrnInfoPtr pScrn)
 /* This gets called at the start of each server generation */
 
 static Bool
-S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
+S3VScreenInit(int scrnIndex, ScreenPtr pScreen, const int argc, const char **argv)
 {
   ScrnInfoPtr pScrn;
   S3VPtr ps3v;

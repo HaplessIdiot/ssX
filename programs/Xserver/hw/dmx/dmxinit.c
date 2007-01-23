@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/dmxinit.c,v 1.10 2006/06/19 13:43:24 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxinit.c,v 1.11tsi Exp $ */
 /*
  * Copyright 2001-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -563,7 +563,7 @@ static const char *dmxExecHost(void)
 }
 
 /** This routine is called in Xserver/dix/main.c from \a main(). */
-void InitOutput(ScreenInfo *pScreenInfo, int argc, const char *argv[])
+void InitOutput(ScreenInfo *pScreenInfo, const int argc, const char *argv[])
 {
     int                  i;
     static unsigned long dmxGeneration = 0;

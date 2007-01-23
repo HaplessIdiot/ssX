@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyInit.c,v 3.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyInit.c,v 3.13 2007/01/02 01:24:12 tsi Exp $ */
 
 /*
  * Copyright 1987 by the Regents of the University of California
@@ -489,7 +489,7 @@ void OsVendorInit(
 
 void InitOutput(pScreenInfo, argc, argv)
     ScreenInfo 	  *pScreenInfo;
-    int     	  argc;
+    const int     argc;
     const char    **argv;
 {
     int     	i, scr;
@@ -546,7 +546,7 @@ void InitOutput(pScreenInfo, argc, argv)
  *-----------------------------------------------------------------------
  */
 void InitInput(argc, argv)
-    int     	  argc;
+    const int     argc;
     const char    **argv;
 {
     DevicePtr p, k;

@@ -48,7 +48,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.113tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.114tsi Exp $ */
 /*
  * Copyright (c) 1996-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -671,7 +671,7 @@ VerifyDisplayName(const char *d)
  * argc or any of the strings pointed to by argv.
  */
 void
-ProcessCommandLine(int argc, const char *argv[])
+ProcessCommandLine(const int argc, const char *argv[])
 {
     int i, skip;
 
@@ -2029,7 +2029,7 @@ enum BadCode {
       "the \"super user\" (root).\n"
 
 void
-CheckUserParameters(int argc, const char **argv, char **envp)
+CheckUserParameters(const int argc, const char **argv, char **envp)
 {
     enum BadCode bad = NotBad;
     int i = 0, j;

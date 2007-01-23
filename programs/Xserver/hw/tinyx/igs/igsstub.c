@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/tinyx/igs/igsstub.c,v 1.1 2004/06/02 22:43:01 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/tinyx/igs/igsstub.c,v 1.2tsi Exp $
  *
  * Copyright © 2000 Keith Packard
  *
@@ -92,13 +92,13 @@ InitCard (const char *name)
 }
 
 void
-InitOutput (ScreenInfo *pScreenInfo, int argc, const char **argv)
+InitOutput (ScreenInfo *pScreenInfo, const int argc, const char **argv)
 {
     KdInitOutput (pScreenInfo, argc, argv);
 }
 
 void
-InitInput (int argc, const char **argv)
+InitInput (const int argc, const char **argv)
 {
     KdInitInput (&LinuxMouseFuncs, &LinuxKeyboardFuncs);
 }

@@ -28,7 +28,7 @@
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *          David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.55 2006/03/16 16:50:20 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.56tsi Exp $
  */
 /*
  * Copyright (c) 2000-2005 by The XFree86 Project, Inc.
@@ -98,8 +98,8 @@ static const OptionInfoRec * VESAAvailableOptions(int chipid, int busid);
 static void VESAIdentify(int flags);
 static Bool VESAProbe(DriverPtr drv, int flags);
 static Bool VESAPreInit(ScrnInfoPtr pScrn, int flags);
-static Bool VESAScreenInit(int Index, ScreenPtr pScreen, int argc,
-			   const char **argv);
+static Bool VESAScreenInit(int Index, ScreenPtr pScreen,
+			   const int argc, const char **argv);
 static Bool VESAEnterVT(int scrnIndex, int flags);
 static void VESALeaveVT(int scrnIndex, int flags);
 static Bool VESACloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -854,7 +854,8 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 }
 
 static Bool
-VESAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
+VESAScreenInit(int scrnIndex, ScreenPtr pScreen,
+	       const int argc, const char **argv)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     VESAPtr pVesa = VESAGetRec(pScrn);

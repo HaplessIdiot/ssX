@@ -25,7 +25,7 @@
   from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitInput.c,v 1.14tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitInput.c,v 1.15tsi Exp $ */
 
 #include "win.h"
 #include "xf86miscproc.h"
@@ -81,7 +81,7 @@ TimeSinceLastInputEvent ()
 
 /* See Porting Layer Definition - p. 17 */
 void
-InitInput (int argc, const char *argv[])
+InitInput (const int argc, const char *argv[])
 {
   DeviceIntPtr		pMouse, pKeyboard;
 

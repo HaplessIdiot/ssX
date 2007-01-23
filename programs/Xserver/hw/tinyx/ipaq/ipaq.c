@@ -22,7 +22,7 @@
  * Adapted from ts300.c by Alan Hourihane <alanh@fairlite.demon.co.uk>
  * For the Compaq IPAQ handheld, with the HP VGA Out Card (F1252A).
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/ipaq/ipaq.c,v 1.1 2004/06/02 22:43:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/ipaq/ipaq.c,v 1.2tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -83,13 +83,13 @@ InitCard (const char *name)
 }
 
 void
-InitOutput (ScreenInfo *pScreenInfo, int argc, const char **argv)
+InitOutput (ScreenInfo *pScreenInfo, const int argc, const char **argv)
 {
     KdInitOutput (pScreenInfo, argc, argv);
 }
 
 void
-InitInput (int argc, const char **argv)
+InitInput (const int argc, const char **argv)
 {
     KdInitInput (&LinuxMouseFuncs, &LinuxKeyboardFuncs);
 #ifdef TOUCHSCREEN

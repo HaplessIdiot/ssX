@@ -14,7 +14,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunInit.c,v 3.18tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunInit.c,v 3.19tsi Exp $ */
 
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -570,7 +570,7 @@ void OsVendorFatalError(void)
 
 void InitOutput(pScreenInfo, argc, argv)
     ScreenInfo 	  *pScreenInfo;
-    int     	  argc;
+    const int     argc;
     const char    **argv;
 {
     int     	i, scr;
@@ -658,7 +658,7 @@ void InitOutput(pScreenInfo, argc, argv)
  *-----------------------------------------------------------------------
  */
 void InitInput(argc, argv)
-    int     	  argc;
+    const int     argc;
     const char    **argv;
 {
     pointer	p, k;

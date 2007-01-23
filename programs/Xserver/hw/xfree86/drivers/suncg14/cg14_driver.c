@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg14/cg14_driver.c,v 1.13 2006/03/16 16:50:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg14/cg14_driver.c,v 1.14tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -38,8 +38,8 @@ static const OptionInfoRec * CG14AvailableOptions(int chipid, int busid);
 static void	CG14Identify(int flags);
 static Bool	CG14Probe(DriverPtr drv, int flags);
 static Bool	CG14PreInit(ScrnInfoPtr pScrn, int flags);
-static Bool	CG14ScreenInit(int Index, ScreenPtr pScreen, int argc,
-			      const char **argv);
+static Bool	CG14ScreenInit(int Index, ScreenPtr pScreen,
+			       const int argc, const char **argv);
 static Bool	CG14EnterVT(int scrnIndex, int flags);
 static void	CG14LeaveVT(int scrnIndex, int flags);
 static Bool	CG14CloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -415,7 +415,8 @@ CG14PreInit(ScrnInfoPtr pScrn, int flags)
 /* This gets called at the start of each server generation */
 
 static Bool
-CG14ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, const char **argv)
+CG14ScreenInit(int scrnIndex, ScreenPtr pScreen,
+	       const int argc, const char **argv)
 {
     ScrnInfoPtr pScrn;
     Cg14Ptr pCg14;

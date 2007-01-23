@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/dmxinput.c,v 1.1 2004/06/30 20:21:39 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxinput.c,v 1.2tsi Exp $ */
 /*
  * Copyright 2001,2002 Red Hat Inc., Durham, North Carolina.
  *
@@ -57,7 +57,7 @@ Bool LegalModifier(unsigned int key, DevicePtr pDev)
 /** Called from dix/main.c on each server generation to initialize
  * inputs.  All the work is done in dmxInputInit.  \see
  * dmxInputInit() */
-void InitInput(int argc, const char **argv)
+void InitInput(const int argc, const char **argv)
 {
     int          i;
     DMXInputInfo *dmxInput;

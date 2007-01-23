@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/sgi.cf,v 1.25tsi Exp $
+XCOMM $XFree86: xc/config/cf/sgi.cf,v 1.26tsi Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -243,11 +243,17 @@ XCOMM operating system: OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVer
 	&& $(CC) -c $(CCOPTIONS) $(ALLDEFINES) options $*.c \		@@\
 	&& $(MV) $@ dir/$@
 
+#ifndef HasGnuMake
+#define HasGnuMake NO	/* Assume IRIX make */
+#endif
+
+#if !HasGnuMake
 #ifndef HasMakefileSafeInclude
 #define HasMakefileSafeInclude YES
 #endif
 #ifndef IncludeMakefile
 #define IncludeMakefile(file) @@sinclude file
+#endif
 #endif
 
 /* needs to find nroff on the system to work */

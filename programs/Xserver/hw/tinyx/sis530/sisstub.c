@@ -20,7 +20,7 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/sis530/sisstub.c,v 1.2 2006/02/18 03:31:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/sis530/sisstub.c,v 1.3tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -88,13 +88,13 @@ InitCard (const char *name)
 }
 
 void
-InitOutput (ScreenInfo *pScreenInfo, int argc, const char **argv)
+InitOutput (ScreenInfo *pScreenInfo, const int argc, const char **argv)
 {
     KdInitOutput (pScreenInfo, argc, argv);
 }
 
 void
-InitInput (int argc, const char **argv)
+InitInput (const int argc, const char **argv)
 {
     KdInitInput (&LinuxMouseFuncs, &LinuxKeyboardFuncs);
 }
