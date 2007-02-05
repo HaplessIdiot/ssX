@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoProbe.c,v 1.19 2005/10/14 15:16:32 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoProbe.c,v 1.20tsi Exp $ */
 /*
  * Copyright (c) 1999-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -120,6 +120,7 @@ DoProbe()
 	}
     }
 
+    CloseWellKnownConnections();
     OsCleanup(TRUE);
     AbortDDX();
     fflush(stderr);
