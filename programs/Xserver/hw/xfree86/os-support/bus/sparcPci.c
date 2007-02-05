@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.24tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.25tsi Exp $ */
 /*
  * Copyright (C) 2001-2005 The XFree86 Project, Inc.
  * All rights reserved.
@@ -551,6 +551,15 @@ newDomain:
 
 	if (domain.pci == MAP_FAILED)
 	    continue;
+
+	xf86Msg(X_INFO, "Adding PCI domain %d:\n", pciNumDomains);
+	xf86Msg(X_INFO, "PCI Configuration space: 0x%016llx\n", pci_addr);
+	xf86Msg(X_INFO, "PCI Input/Output space:  0x%016llx, size: 0x%09llx\n",
+	    domain.io_addr, domain.io_size);
+	xf86Msg(X_INFO, "PCI Memory space:        0x%016llx, size: 0x%09llx\n",
+	    domain.mem_addr, domain.mem_size);
+	xf86Msg(X_INFO, "PCI Bus range:           %d-%d\n",
+	    domain.bus_min, domain.bus_max);
 
 	/* Allocate a domain record */
 	pDomain = xnfalloc(sizeof(sparcDomainRec));
