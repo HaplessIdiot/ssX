@@ -1,4 +1,7 @@
 XFree86 4.6.99.17 (xx February 2007)
+ 110. Ensure the X server closes all sockets during termination after
+      processing the -configure, -probe or -probeonly command line options.
+      Noticed by Matthieu Herrb.
  109. For each PCI domain found while scanning a SPARC's PROM, include in the
       log its bus number range, along with address & size of its configuration,
       I/O and memory spaces (Marc La France).
@@ -20402,7 +20405,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3839 2007/01/21 12:02:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3840 2007/02/05 14:58:39 tsi Exp $
 
 
 
