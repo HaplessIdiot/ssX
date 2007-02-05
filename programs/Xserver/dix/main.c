@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.53tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.54tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -472,16 +472,12 @@ main(int argc, const char *argv[], char *envp[])
 	if (dispatchException & DE_TERMINATE)
 	{
 	    CloseWellKnownConnections();
-	}
-
-	OsCleanup((dispatchException & DE_TERMINATE) != 0);
-
-	if (dispatchException & DE_TERMINATE)
-	{
+	    OsCleanup(TRUE);
 	    ddxGiveUp();
 	    break;
 	}
 
+	OsCleanup(FALSE);
 	xfree(ConnectionInfo);
 	ConnectionInfo = NULL;
 	OsPrepareRestart();
