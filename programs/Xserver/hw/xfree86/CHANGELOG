@@ -1,4 +1,7 @@
 XFree86 4.6.99.17 (xx February 2007)
+ 109. For each PCI domain found while scanning a SPARC's PROM, include in the
+      log its bus number range, along with address & size of its configuration,
+      I/O and memory spaces (Marc La France).
 
 XFree86 4.6.99.16 (21 January 2007)
  108. Fix for CVE-2006-6101, CVE-2006-6102 and CVE-2006-6103 advisories
@@ -20399,7 +20402,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3838 2007/01/09 17:26:01 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3839 2007/01/21 12:02:44 dawes Exp $
 
 
 
