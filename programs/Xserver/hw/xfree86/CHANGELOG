@@ -1,4 +1,6 @@
-XFree86 4.6.99.17 (xx February 2007)
+XFree86 4.6.99.18 (xx February 2007)
+
+XFree86 4.6.99.17 (7 February 2007)
  110. Ensure the X server closes all sockets during termination after
       processing the -configure, -probe or -probeonly command line options.
       Noticed by Matthieu Herrb.
@@ -20405,7 +20407,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3840 2007/02/05 14:58:39 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3841 2007/02/05 15:03:45 tsi Exp $
 
 
 
