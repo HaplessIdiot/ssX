@@ -23,7 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.94tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.95tsi Exp $ */
 
 #include <X11/X.h>
 #include "os.h"
@@ -611,7 +611,7 @@ print_header_type_1(pciConfigPtr pcr)
 
     if (pcr->basesize[1]) {
 	if ((pcr->pci_base1 & 0x7) == 0x4) {
-	    printf("  BASE1     0x%08x (invalid)\n", pcr->pci_base0);
+	    printf("  BASE1     0x%08x (invalid)\n", (int)pcr->pci_base0);
 	} else {
 	    printf("  BASE1     0x%08x  addr 0x%08x",
 		   (int)pcr->pci_base1,
@@ -669,27 +669,27 @@ print_header_type_2(pciConfigPtr pcr)
 
     if (pcr->pci_cb_membase0 || pcr->pci_cb_memlimit0)
 	printf("  MEMBASE0 0x%08x  MEMLIM0 0x%08x%s\n",
-	       pcr->pci_cb_membase0, pcr->pci_cb_memlimit0,
+	       (int)pcr->pci_cb_membase0, (int)pcr->pci_cb_memlimit0,
 	       (pcr->pci_bridge_control & PCI_CB_BRIDGE_CTL_PREFETCH_MEM0) ?
 		" PREFETCHABLE" : "");
 
     if (pcr->pci_cb_membase1 || pcr->pci_cb_memlimit1)
 	printf("  MEMBASE1 0x%08x  MEMLIM1 0x%08x%s\n",
-	       pcr->pci_cb_membase1, pcr->pci_cb_memlimit1,
+	       (int)pcr->pci_cb_membase1, (int)pcr->pci_cb_memlimit1,
 	       (pcr->pci_bridge_control & PCI_CB_BRIDGE_CTL_PREFETCH_MEM1) ?
 		" PREFETCHABLE" : "");
 
     if (pcr->pci_cb_iobase0 || pcr->pci_cb_iolimit0)
 	printf("  IOBASE0  0x%04x      IOLIM0  0x%04x\n",
-	       pcr->pci_cb_iobase0, pcr->pci_cb_iolimit0);
+	       (int)pcr->pci_cb_iobase0, (int)pcr->pci_cb_iolimit0);
 
     if (pcr->pci_cb_iobase1 || pcr->pci_cb_iolimit1)
 	printf("  IOBASE1  0x%04x      IOLIM1  0x%04x\n",
-	       pcr->pci_cb_iobase1, pcr->pci_cb_iolimit1);
+	       (int)pcr->pci_cb_iobase1, (int)pcr->pci_cb_iolimit1);
 
     if (pcr->basesize[0]) {
 	if ((pcr->pci_base0 & 0x7) == 0x4) {
-	    printf("  BASE0     0x%08x (invalid)\n", pcr->pci_base0);
+	    printf("  BASE0     0x%08x (invalid)\n", (int)pcr->pci_base0);
 	} else {
 	    printf("  BASE0     0x%08x  addr 0x%08x",
 		   (int)pcr->pci_base0,
