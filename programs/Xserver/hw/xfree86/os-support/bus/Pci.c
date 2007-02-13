@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.94tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.95tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -505,7 +505,7 @@ pciHostAddrToBusAddr(PCITAG tag, PciAddrType type, ADDRESS addr)
 int
 pciGetBaseSize(pciConfigPtr device, int index, Bool destructive, int *min)
 {
-  CARD32 addr1, addr2, mask1, mask2, csr;
+  CARD32 addr1, addr2, mask1 = 0, mask2 = 0, csr;
   int offset, bits;
 
   /*
