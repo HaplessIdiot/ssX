@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.93tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.94tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -65,7 +65,7 @@
  *      3) Overide default settings for global PCI access functions if
  *	   required. These include pciFindFirstFP, pciFindNextFP,
  *	   Of course, if you choose not to use one of the generic
- *	   functions, you will need to provide a platform specifc replacement.
+ *	   functions, you will need to provide a platform specific replacement.
  *
  * Gary Barton
  * Concurrent Computer Corporation
@@ -169,7 +169,7 @@
  *
  */
 /*
- * Copyright (c) 1999-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1999-2007 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -469,24 +469,44 @@ pciHostAddrToBusAddr(PCITAG tag, PciAddrType type, ADDRESS addr)
 /*
  * pciGetBaseSize() returns the size of a PCI base address mapping in bits.
  * The index identifies the base register: 0-5 are the six standard registers,
- * and 6 is the ROM base register.  If destructive is TRUE, it will write
- * to the base address register to get an accurate result.  Otherwise it
- * makes a conservative guess based on the alignment of the already allocated
- * address.  If the result is accurate (ie, not an over-estimate), this is
- * indicated by setting *min to TRUE (when min is non-NULL).  This happens
- * when either the destructive flag is set, the information is supplied by
- * the OS if the OS supports this.
+ * 6 is the type 0 ROM base register, and 7 is is the type 1 ROM base pointer.
+ * If destructive is TRUE, it will write to the base address register to get an
+ * accurate result.  Otherwise it makes a conservative guess based on the
+ * alignment of the already allocated address.  If the result is accurate (ie,
+ * not an over-estimate), this is indicated by setting the appropriate bit in
+ * *min to one (when min is non-NULL).  This happens when either the
+ * destructive flag is set, the appropriate decode enable is off, or the
+ * information is supplied by the OS.
+ *
+ * By default, destructive probes are now also done for unassigned bases, all
+ * of whose modifiable bits are zero.  This allows us to differentiate between
+ * unassigned and non-existent bases, and to correctly size them.
+ *
+ * Note that, contrary to the PCI specs, we do not first disable decoding
+ * before destructively sizing (non-ROM) BARs.  This could be changed, but the
+ * risk of causing a crash would be higher.
  */
 
+/*
+ * Minimum value of estimateSizesAggressively at which destructive sizing of
+ * unassigned bases starts to occur.  Higher values than this minimum (by more
+ * than one) also cause all-ones bases to be destructively sized (dangerous).
+ * Lower values than this minimum disable this behaviour altogether.  This
+ * minimum should be non-negative.
+ */
+#ifndef AggressivePCISizing	/* Upper case is too loud ;-) */
+#define AggressivePCISizing 0
+#endif
+#if     AggressivePCISizing < 0
+#undef  AggressivePCISizing
+#define AggressivePCISizing 0
+#endif
+
 int
-pciGetBaseSize(PCITAG tag, int index, Bool destructive, Bool *min)
+pciGetBaseSize(pciConfigPtr device, int index, Bool destructive, int *min)
 {
-  int offset;
-  CARD32 addr1;
-  CARD32 addr2;
-  CARD32 mask1;
-  CARD32 mask2;
-  int bits = 0;
+  CARD32 addr1, addr2, mask1, mask2, csr;
+  int offset, bits;
 
   /*
    * Eventually a function for this should be added to pciBusFuncs_t, but for
@@ -495,91 +515,207 @@ pciGetBaseSize(PCITAG tag, int index, Bool destructive, Bool *min)
    */
 
   /*
-   * silently ignore bogus index values.  Valid values are 0-6.  0-5 are
-   * the 6 base address registers, and 6 is the ROM base address register.
+   * Silently ignore bogus index values.  Valid values are 0-7.  0-5 are
+   * the 6 base address registers, and 6 or 7 is the ROM base address register.
    */
-  if (index < 0 || index > 6)
+  if (index < 0 || index > 7)
     return 0;
 
-  pciInit();
+  switch (index) {
+  case 6:
+    if (min && (*min & (2 << 6)))
+      return device->basesize[6];
 
-  if (xf86GetPciSizeFromOS(tag, index, &bits)) {
-      if (min)
-	  *min = TRUE;
-      return bits;
-  }
-
-  if (min)
-    *min = destructive;
-
-  /* Get the PCI offset */
-  if (index == 6)
     offset = PCI_MAP_ROM_REG;
-  else
+    goto do_rom;
+
+  case 7:
+    if (min && (*min & (2 << 7)))
+      return device->basesize[6];
+
+    offset = PCI_PCI_BRIDGE_ROM_REG;
+
+do_rom:
+    bits = 0;
+    csr = pciReadLong(device->tag, PCI_CMD_STAT_REG);
+
+    addr1 = pciReadLong(device->tag, offset);
+    if (!(addr1 & PCI_MAP_ROM_DECODE_ENABLE) || !(csr & PCI_CMD_MEM_ENABLE)) {
+      destructive = TRUE;
+    } else {
+      mask1 = PCIGETROM(addr1);
+      if (xf86Info.estimateSizesAggressively >= AggressivePCISizing) {
+	if (mask1 == 0) {
+	  destructive = TRUE;
+	} else
+	if (xf86Info.estimateSizesAggressively > (AggressivePCISizing + 1)) {
+	  if (mask1 & (1 << 24)) {	/* 16M maximum */
+	    if ((mask1 | (mask1 - 1)) == (CARD32)(-1))
+	      destructive = TRUE;
+	  }
+	}
+      }
+    }
+
+    if (destructive) {
+      pciWriteLong(device->tag, offset,
+	0xffffffff & ~PCI_MAP_ROM_DECODE_ENABLE);
+      mask1 = pciReadLong(device->tag, offset);
+      pciWriteLong(device->tag, offset, addr1);
+      if ((mask1 = PCIGETROM(mask1)) == 0)
+	goto return_bits;		/* Does not exist */
+    }
+
+    mask1 |= (1 << 24);			/* 16M maximum */
+    break;
+
+  default:
+    if (min && (*min & (2 << index)))
+      return device->basesize[index];
+
+    bits = 0;
+
     offset = PCI_MAP_REG_START + (index << 2);
 
-  addr1 = pciReadLong(tag, offset);
-  /*
-   * Check if this is the second part of a 64 bit address.
-   * XXX need to check how endianness affects 64 bit addresses.
-   */
-  if (index > 0 && index < 6) {
-    addr2 = pciReadLong(tag, offset - 4);
-    if (PCI_MAP_IS_MEM(addr2) && PCI_MAP_IS64BITMEM(addr2))
-      return 0;
-  }
+    /* Check if this is the second part of a 64 bit address */
+    if (index > 0) {
+      addr1 = pciReadLong(device->tag, offset - 4);
+      if (PCI_MAP_IS_MEM(addr1) && PCI_MAP_IS64BITMEM(addr1)) {
+	destructive = TRUE;
+	goto return_bits;
+      }
+    }
 
-  if (destructive) {
-    pciWriteLong(tag, offset, 0xffffffff);
-    mask1 = pciReadLong(tag, offset);
-    pciWriteLong(tag, offset, addr1);
-  } else {
-    mask1 = addr1;
-  }
+    csr = pciReadLong(device->tag, PCI_CMD_STAT_REG);
 
-  /* Check if this is the first part of a 64 bit address. */
-  if (index < 5 && PCI_MAP_IS_MEM(mask1) && PCI_MAP_IS64BITMEM(mask1)) {
-    if (PCIGETMEMORY(mask1) == 0) {
-      addr2 = pciReadLong(tag, offset + 4);
-      if (destructive) {
-	pciWriteLong(tag, offset + 4, 0xffffffff);
-	mask2 = pciReadLong(tag, offset + 4);
-	pciWriteLong(tag, offset + 4, addr2);
+    addr1 = pciReadLong(device->tag, offset);
+    if (PCI_MAP_IS_IO(addr1)) {
+      if (!(csr & PCI_CMD_IO_ENABLE)) {
+	destructive = TRUE;
       } else {
+	mask1 = PCIGETIO(addr1);
+	if (xf86Info.estimateSizesAggressively >= AggressivePCISizing) {
+	  if (mask1 == 0) {
+	    destructive = TRUE;
+	  } else
+	  if (xf86Info.estimateSizesAggressively > (AggressivePCISizing + 1)) {
+	    if (mask1 & (1 << 8)) {	/* 256 bytes maximum */
+	      mask2 = mask1 | (mask1 - 1);
+	      /* Allow for both 16-bit and 32-bit bases */
+	      if ((mask2 == (CARD16)(-1)) || (mask2 == (CARD32)(-1)))
+	        destructive = TRUE;
+	    }
+	  }
+	}
+      }
+
+      if (destructive) {
+	pciWriteLong(device->tag, offset, 0xffffffff);
+	mask1 = pciReadLong(device->tag, offset);
+	pciWriteLong(device->tag, offset, addr1);
+	if ((mask1 = PCIGETIO(mask1)) == 0)
+	  goto return_bits;		/* Does not exist */
+      }
+
+      mask1 |= (1 << 8);		/* 256 bytes maximum */
+      break;
+    }
+
+    if ((index < 5) && PCI_MAP_IS64BITMEM(addr1)) {
+      addr2 = pciReadLong(device->tag, offset + 4);
+      if (!(csr & PCI_CMD_MEM_ENABLE)) {
+	destructive = TRUE;
+      } else {
+	mask1 = PCIGETMEMORY(addr1);
 	mask2 = addr2;
+	if (xf86Info.estimateSizesAggressively >= AggressivePCISizing) {
+	  if ((mask1 == 0) && (mask2 == 0)) {
+	    destructive = TRUE;
+	  } else
+	  if (xf86Info.estimateSizesAggressively > (AggressivePCISizing + 1)) {
+	    unsigned long long mask64;
+
+	    mask64 = ((unsigned long long)mask2 << 32) | mask1;
+	    mask64 |= mask64 - 1;
+	    /* Allow for both 32-bit and 64-bit bases */
+	    if ((mask64 == (CARD32)(-1)) ||
+	        (mask64 == (unsigned long long)(-1LL)))
+	      destructive = TRUE;
+	  }
+	}
       }
-      if (mask2 == 0)
-	return 0;
-      bits = 32;
-      while ((mask2 & 1) == 0) {
-	bits++;
-	mask2 >>= 1;
+
+      if (destructive) {
+	pciWriteLong(device->tag, offset, 0xffffffff);
+	pciWriteLong(device->tag, offset + 4, 0xffffffff);
+	mask1 = pciReadLong(device->tag, offset);
+	mask2 = pciReadLong(device->tag, offset + 4);
+	pciWriteLong(device->tag, offset, addr1);
+	pciWriteLong(device->tag, offset + 4, addr2);
+	mask1 = PCIGETMEMORY(mask1);
       }
-      if (bits > 32)
-	  return bits;
+
+      if (mask1 == 0) {
+	if (mask2 == 0)
+	  goto return_bits;
+
+	bits = 32;
+	mask1 = mask2;
+      }
+      break;
+    }
+
+    if (!(csr & PCI_CMD_MEM_ENABLE)) {
+      destructive = TRUE;
+    } else {
+      mask1 = PCIGETMEMORY(addr1);
+      if (xf86Info.estimateSizesAggressively >= AggressivePCISizing) {
+	if (mask1 == 0) {
+	  destructive = TRUE;
+	} else
+	if (xf86Info.estimateSizesAggressively > (AggressivePCISizing + 1)) {
+	  if ((mask1 | (mask1 - 1)) == (CARD32)(-1))
+	    destructive = TRUE;
+	}
+      }
+    }
+
+    if (destructive) {
+      pciWriteLong(device->tag, offset, 0xffffffff);
+      mask1 = pciReadLong(device->tag, offset);
+      pciWriteLong(device->tag, offset, addr1);
+      mask1 = PCIGETMEMORY(mask1);
+    }
+
+    if (mask1 == 0)
+      goto return_bits;
+
+    break;
+  }
+
+  while (!(mask1 & 1)) {
+    mask1 >>= 1;
+    bits++;
+  }
+
+  if (!destructive) {
+    int osbits = 0;
+
+    if (xf86GetPciSizeFromOS(device->tag, index, &osbits) &&
+	(osbits <= bits)) {
+      bits = osbits;
+      destructive = TRUE;	/* ? */
     }
   }
-  if (index < 6)
-    if (PCI_MAP_IS_MEM(mask1))
-      mask1 = PCIGETMEMORY(mask1);
-    else
-      mask1 = PCIGETIO(mask1);
-  else
-    mask1 = PCIGETROM(mask1);
-  if (mask1 == 0)
-    return 0;
-  bits = 0;
-  while ((mask1 & 1) == 0) {
-    bits++;
-    mask1 >>= 1;
-  }
-  /* I/O maps can be no larger than 8 bits */
 
-  if ((index < 6) && PCI_MAP_IS_IO(addr1) && bits > 8)
-    bits = 8;
-  /* ROM maps can be no larger than 24 bits */
-  if (index == 6 && bits > 24)
-    bits = 24;
+return_bits:
+  if (min) {
+    if (destructive)
+      *min |= (2 << index);
+    else
+      *min &= ~(2 << index);
+  }
+
   return bits;
 }
 
@@ -763,7 +899,7 @@ pciGenFindNext(void)
 	if (speculativeProbe && (pciDevNum == 0) && (pciFuncNum == 0) &&
 	    (PCI_BUS_NO_DOMAIN(pciBusNum) > 0)) {
 	    for (;;) {
-	        if (++pciDevNum >= pciBusInfo[pciBusNum]->numDevices)
+		if (++pciDevNum >= pciBusInfo[pciBusNum]->numDevices)
 		    goto NextSpeculativeBus;
 		inProbe = TRUE;
 		tmp = pciReadLong(PCI_MAKE_TAG(pciBusNum, pciDevNum, 0),
@@ -834,7 +970,12 @@ pciGenFindNext(void)
 		 */
 		if (pciReadLong(pciDeviceTag, PCI_CMD_STAT_REG) &
 		    PCI_STAT_CAPABILITY) {
-		    CARD8 capptr = pciReadByte(pciDeviceTag, PCI_CAP_PTR);
+		    CARD8 capptr;
+
+		    if (sub_class == PCI_SUBCLASS_BRIDGE_PCI)
+			capptr = pciReadByte(pciDeviceTag, PCI_CAP_PTR);
+		    else
+			capptr = pciReadByte(pciDeviceTag, PCI_CB_CAP_PTR);
 
 		    while (capptr &= ~0x03) {
 			if (pciReadByte(pciDeviceTag, capptr + PCI_CAP_ID) !=
@@ -990,11 +1131,37 @@ xf86scanpci(int flags)
 	    /* Get base address sizes for type 0 headers */
 	    for (i = 0; i < 7; i++)
 		devp->basesize[i] =
-		    pciGetBaseSize(tag, i, FALSE, &devp->minBasesize);
+		    pciGetBaseSize(devp, i, FALSE, &devp->minBasesize);
 	    break;
 
 	case 1:
+	    /* Get base address sizes for type 1 headers */
+	    for (i = 0; i < 2; i++)
+		devp->basesize[i] =
+		    pciGetBaseSize(devp, i, FALSE, &devp->minBasesize);
+
+	    /* Get bridge ROM size */
+	    devp->basesize[6] =  /* Yep, the 6 & 7 are correct */
+		pciGetBaseSize(devp, 7, FALSE, &devp->minBasesize);
+
+	    /* Allow master aborts to complete normally on secondary buses */
+	    if (!(devp->pci_bridge_control & PCI_PCI_BRIDGE_MASTER_ABORT_EN))
+		break;
+	    pciWriteWord(tag, PCI_PCI_BRIDGE_CONTROL_REG,
+		devp->pci_bridge_control &
+		     ~(PCI_PCI_BRIDGE_MASTER_ABORT_EN |
+		       PCI_PCI_BRIDGE_SECONDARY_RESET));
+	    break;
+
 	case 2:
+	    /* Read more config space for this device */
+	    for (i = 17; i < 32; i++)
+		devp->cfgspc.dwords[i] = pciReadLong(tag, i * sizeof(CARD32));
+
+	    /* Get base address size for type 2 headers */
+	    devp->basesize[0] =
+		pciGetBaseSize(devp, 0, FALSE, &devp->minBasesize);
+
 	    /* Allow master aborts to complete normally on secondary buses */
 	    if (!(devp->pci_bridge_control & PCI_PCI_BRIDGE_MASTER_ABORT_EN))
 		break;
@@ -1052,7 +1219,7 @@ xf86scanpci(int flags)
 		if (pciBusInfo[i]) {
 		    pciBusInfo[i]->bridge = devp;
 		    /*
-                     * The back link needs to be set here, and is unlikely to
+		     * The back link needs to be set here, and is unlikely to
 		     * change.
 		     */
 		    devp->businfo = pciBusInfo[i];

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.292 2006/03/16 16:49:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.293tsi Exp $ */
 
 
 /*
@@ -1982,12 +1982,10 @@ configServerFlags(ConfigHandle handle, const XF86ConfFlagsPtr flagsConf,
 	xf86Info.randRFrom = X_CONFIG;
     }
 #endif
-    i = -1;
-    xf86GetOptValInteger(FlagOptions, FLAG_ESTIMATE_SIZES_AGGRESSIVELY, &i);
-    if (i >= 0)
-	xf86Info.estimateSizesAggressively = i;
-    else
-	xf86Info.estimateSizesAggressively = 0;
+
+    /* Allow negative values */
+    xf86GetOptValInteger(FlagOptions, FLAG_ESTIMATE_SIZES_AGGRESSIVELY,
+	&xf86Info.estimateSizesAggressively);
 	
     i = -1;
     xf86GetOptValInteger(FlagOptions, FLAG_SAVER_BLANKTIME, &i);

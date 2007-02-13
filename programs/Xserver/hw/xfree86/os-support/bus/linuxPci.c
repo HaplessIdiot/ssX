@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxPci.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxPci.c,v 1.13tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -42,7 +42,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 /*
- * Copyright 2004 The XFree86 Project, Inc.
+ * Copyright 2004-2007 by The XFree86 Project, Inc.
  *
  * All rights reserved.
  *
@@ -322,7 +322,7 @@ linuxPciInit(void)
 	long int iDevice = 0, maxdevice = MAX_PCI_DEVICES;
 	char buffer[512];
 
-	while (fgets(buffer, sizeof(buffer), fp)) {
+	while (fgets(buffer, sizeof(buffer) - 1, fp)) {
 	    static const char format[] =
 		/* An optional domain, then bus+dev, vendorid, deviceid, irq */
 		"%04lx:%02lx%02x\t%*04x%*04x\t%*x"
@@ -376,9 +376,15 @@ linuxPciInit(void)
 	    } else {
 		linuxSize[iDevice].tag =
 		    PCI_MAKE_TAG(pcibus, devfn >> 3, devfn & 7);
-		for (Index = 0;  Index < 7;  Index++)
-		    for (;  size[Index];  size[Index] >>= 1)
-			linuxSize[iDevice].size[Index]++;
+		for (Index = 0;  Index < 7;  Index++) {
+		    if ((size[Index] & (size[Index] - 1)) == 0) {
+			for (;  size[Index];  size[Index] >>= 1)
+			    linuxSize[iDevice].size[Index]++;
+		    } else {
+			linuxSize[iDevice].size[Index] = 1;
+		    }
+		}
+
 		linuxSize[iDevice].empty = FALSE;
 	    }
 
@@ -419,7 +425,7 @@ xf86GetPciSizeFromOS(PCITAG tag, int Index, int *bits)
 {
     unsigned int pcibus, device;
 
-    if ((Index < 0) || (Index >= 7))
+    if ((Index < 0) || (Index > 7))
 	return FALSE;
 
     pcibus = PCI_BUS_FROM_TAG(tag);
@@ -430,7 +436,10 @@ xf86GetPciSizeFromOS(PCITAG tag, int Index, int *bits)
 	if (linuxSize[device].empty || (linuxSize[device].tag != tag))
 	    continue;
 
-	if (linuxSize[device].size[Index] < 2)
+	if (Index == 7)	/* P2P bridge ROM pointer */
+	    Index = 6;
+
+	if (linuxSize[device].size[Index] == 1)
 	    return FALSE;
 
 	*bits = linuxSize[device].size[Index];

@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.109 2006/03/16 16:49:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.110tsi Exp $ */
 
 /*
- * Copyright (c) 1997-2006 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2007 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -480,7 +480,7 @@ typedef struct {
     memType		biosBase;
     int			biosSize;
     pointer		thisCard;
-    Bool		validSize;
+    int			validSize;	/* was Bool, now a bit mask */
     Bool		validate;
     CARD32		listed_class;
 } pciVideoRec, *pciVideoPtr;
