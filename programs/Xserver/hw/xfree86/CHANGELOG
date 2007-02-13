@@ -1,4 +1,28 @@
 XFree86 4.6.99.18 (xx February 2007)
+ 111. Various PCI-related changes (Marc La France):
+      - Don't ignore any BARs or ROM pointer a PCI-to-PCI bridge might have.
+      - Don't ignore any BAR a PCI-to-CardBus bridge might have.
+      - Destructively size PCI bases when the approriate decode enable is not
+        set.
+      - By default, destructively size PCI bases whose modifiable bits are all
+        zero.  Optionally also do the same in the all-ones case (dangerous).
+        Both behavious are controlled by the XF86Config Server section
+        "EstimateSizesAggressively" option.
+      - When destructively sizing ROMs, do not set the decode enable bit.
+      - Do not destructively size a base more than once.
+      - Do not ask the OS for a base's size if the base was destructively
+        sized.
+      - When retrieving base sizes from the OS, filter out those that are not
+        a power of 2, or are less than 4.
+      - For SunOS and OpenBSD on SPARCs, add a means of extracting base sizes
+        from PROM information.  As this information is incomplete, additional
+        changes were needed to handle devices with a mix of estimated and
+        non-estimated resources.
+      - Fix page alignment issues in the mapping of PCI configuration spaces
+        for SunOS and OpenBSD on SPARCs.
+      - Rework the scanpci utility to print type 2 PCI headers, resource size
+        information, and, optionally, a hexadecimal dump of PCI configuration
+        space.
 
 XFree86 4.6.99.17 (7 February 2007)
  110. Ensure the X server closes all sockets during termination after
@@ -20407,9 +20431,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3841 2007/02/05 15:03:45 tsi Exp $
-
-
-
-
-
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3842tsi Exp $

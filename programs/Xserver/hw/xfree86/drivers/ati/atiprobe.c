@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.75tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.76tsi Exp $ */
 /*
  * Copyright 1997 through 2007 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -145,14 +145,18 @@ ATIScanPCIBases
     const int    Domain,
     const CARD32 *pBase,
     const int    *pSize,
-    const CARD8  ProbeFlag,
-    const CARD8  ProbeFlag2
+          int    nBARs,
+          int    minMask,
+    const CARD8  ProbeFlag
 )
 {
     CARD16 Base;
-    int    i, j;
+    int    i;
 
-    for (i = 6;  --i >= 0;  pBase++, pSize++)
+    if (minMask == TRUE)
+        minMask = -1;
+
+    for (;  minMask >>= 1, --nBARs >= 0;  pBase++, pSize++)
     {
         if (*pBase & PCI_MAP_IO)
         {
@@ -160,23 +164,26 @@ ATIScanPCIBases
                 continue;
 
             Base = *pBase & ~IO_BYTE_SELECT;
-            for (j = 0;  ;  j++)
+            for (i = 0;  ;  i++)
             {
-                if (j >= *nPCIPort)
+                if (i >= *nPCIPort)
                 {
                     (*nPCIPort)++;
                     *PCIPorts = (PortPtr)xnfrealloc(*PCIPorts,
                         *nPCIPort * SizeOf(PortRec));
-                    (*PCIPorts)[j].Domain = Domain;
-                    (*PCIPorts)[j].Base = Base;
-                    (*PCIPorts)[j].Size = (CARD8)*pSize;
-                    (*PCIPorts)[j].Flag = ProbeFlag;
-                    (*PCIPorts)[j].Flag2 = ProbeFlag2;
+                    (*PCIPorts)[i].Domain = Domain;
+                    (*PCIPorts)[i].Base = Base;
+                    (*PCIPorts)[i].Size = (CARD8)*pSize;
+                    (*PCIPorts)[i].Flag = ProbeFlag;
+                    if (minMask & 1)
+                        (*PCIPorts)[i].Flag2 = ProbeFlag;
+                    else
+                        (*PCIPorts)[i].Flag2 = Allowed;
                     break;
                 }
 
-                if ((Domain == (*PCIPorts)[j].Domain) &&
-                    (Base == (*PCIPorts)[j].Base))
+                if ((Domain == (*PCIPorts)[i].Domain) &&
+                    (Base == (*PCIPorts)[i].Base))
                     break;
             }
 
@@ -187,7 +194,7 @@ ATIScanPCIBases
         if (!PCI_MAP_IS64BITMEM(*pBase))
             continue;
 
-        i--;
+        nBARs--;
         pBase++;
         pSize++;
     }
@@ -1136,7 +1143,7 @@ ATIProbe
     IOADDRESS           *pDomainIOBase = NULL;
     PortPtr             PCIPorts = NULL;
     CARD8               *ProbeFlags = NULL;
-    int                 ProbeSize;
+    int                 ProbeSize, nBARs;
     int                 nPCIPort = 0;
     int                 Domain, MaxDomain = 0;
     int                 i, j, k;
@@ -1263,21 +1270,13 @@ ATIProbe
 
                 if (!(pciReadLong(pPCI->tag, PCI_CMD_STAT_REG) &
                       PCI_CMD_IO_ENABLE))
-                {
-                    ProbeFlag = ProbeFlag2 = Allowed;
-                }
+                    ProbeFlag = Allowed;
                 else
-                {
                     ProbeFlag = 0;
-                    if (pPCI->minBasesize)
-                        ProbeFlag2 = 0;
-                    else
-                        ProbeFlag2 = Allowed;
-                }
 
                 ATIScanPCIBases(&PCIPorts, &nPCIPort,
                     Domain, &pPCI->pci_base0, pVideo->size,
-                    ProbeFlag, ProbeFlag2);
+                    6, pPCI->minBasesize, ProbeFlag);
             }
         }
 
@@ -1290,29 +1289,37 @@ ATIProbe
                 if (Domain > MaxDomain)
                     MaxDomain = Domain;
 
-                if ((pPCI->pci_vendor == PCI_VENDOR_ATI) ||
-                    (pPCI->pci_base_class == PCI_CLASS_BRIDGE) ||
-                    (pPCI->pci_header_type &
-                      ~GetByte(PCI_HEADER_MULTIFUNCTION, 2)))
+                if (pPCI->pci_vendor == PCI_VENDOR_ATI)
                     continue;
+
+                switch (pPCI->pci_header_type &
+                        ~GetByte(PCI_HEADER_MULTIFUNCTION, 2))
+                {
+                    case 0:
+                        nBARs = 6;
+                        break;
+
+                    case 1:
+                        nBARs = 2;
+                        break;
+
+                    case 2:
+                        nBARs = 1;
+                        break;
+
+                    default:
+                        continue;
+                }
 
                 if (!(pciReadLong(pPCI->tag, PCI_CMD_STAT_REG) &
                       PCI_CMD_IO_ENABLE))
-                {
-                    ProbeFlag = ProbeFlag2 = Allowed;
-                }
+                    ProbeFlag = Allowed;
                 else
-                {
                     ProbeFlag = Conflict;
-                    if (pPCI->minBasesize)
-                        ProbeFlag2 = Conflict;
-                    else
-                        ProbeFlag2 = Allowed;
-                }
 
                 ATIScanPCIBases(&PCIPorts, &nPCIPort,
                     Domain, &pPCI->pci_base0, pPCI->basesize,
-                    ProbeFlag, ProbeFlag2);
+                    nBARs, pPCI->minBasesize, ProbeFlag);
             }
         }
 

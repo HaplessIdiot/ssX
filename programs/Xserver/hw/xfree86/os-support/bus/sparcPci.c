@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.25tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.26tsi Exp $ */
 /*
- * Copyright (C) 2001-2005 The XFree86 Project, Inc.
+ * Copyright (C) 2001-2007 The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -61,6 +61,7 @@
 extern char *apertureDevName;
 #endif
 
+static unsigned long long pagemask;
 static int apertureFd = -1;
 
 /*
@@ -284,7 +285,94 @@ static pciBusFuncs_t sabrePCIFunctions =
     pciAddrNOOP
 };
 
-static long pagemask;
+
+static struct {
+    CARD32 tag;
+    int size;
+} *pAddressSizes = NULL;
+static int nAddressSizes = 0;
+
+/*
+ * Extract base size information from "assigned-addresses" properties.
+ */
+
+static void
+sparcAssignedAddresses(sparcDomainPtr pDomain, int node)
+{
+    char *prop_val;
+    int prop_len;
+
+    /* Retrieve and validate "assigned-addresses" property */
+    prop_val = promGetProperty("assigned-addresses", &prop_len);
+    if (prop_val && !(prop_len % 20)) {
+	prop_len /= 20;
+	for (;  prop_len--;  prop_val += 20) {
+	    if (((unsigned char)prop_val[1] < pDomain->bus_min) ||
+		((unsigned char)prop_val[1] > pDomain->bus_max) ||
+		(prop_val[3] & 0x3) || (prop_val[3] < PCI_MAP_REG_START) ||
+		((CARD32 *)prop_val)[1] || ((CARD32 *)prop_val)[3] ||
+		(((CARD32 *)prop_val)[4] < 4) ||
+		(((CARD32 *)prop_val)[4] & (((CARD32 *)prop_val)[4] - 1)) ||
+		(((CARD32 *)prop_val)[2] & (((CARD32 *)prop_val)[4] - 1)))
+		continue;
+
+	    if ((prop_val[3] >= PCI_MAP_REG_END) &&
+		(prop_val[3] != PCI_MAP_ROM_REG) &&
+		(prop_val[3] != PCI_PCI_BRIDGE_ROM_REG))
+		continue;
+
+	    prop_val[0] = pciNumDomains;
+	    pAddressSizes = xnfrealloc(pAddressSizes,
+		sizeof(*pAddressSizes) * (nAddressSizes + 1));
+	    pAddressSizes[nAddressSizes].tag = ((CARD32 *)prop_val)[0];
+	    for (pAddressSizes[nAddressSizes].size = -1;
+		 ((CARD32 *)prop_val)[4];
+		 ((CARD32 *)prop_val)[4] >>= 1)
+		pAddressSizes[nAddressSizes].size++;
+	    nAddressSizes++;
+	}
+    }
+
+    /* Retrieve and validate "class-code" property */
+    prop_val = promGetProperty("class-code", &prop_len);
+    if (prop_val && (prop_len == 4) &&
+	(prop_val[0] == 0) && (prop_val[1] == PCI_CLASS_BRIDGE) &&
+	((prop_val[2] == PCI_SUBCLASS_BRIDGE_PCI) ||
+	 (prop_val[2] == PCI_SUBCLASS_BRIDGE_CARDBUS)))
+	for (node = promGetChild(node);  node;  node = promGetSibling(node))
+	    sparcAssignedAddresses(pDomain, node);
+}
+
+/* Return the PCI allocation sizes derived above */
+Bool
+xf86GetPciSizeFromOS(PCITAG tag, int Index, int *bits)
+{
+    int i;
+
+    if ((Index < 0) || (Index > 7) || !pAddressSizes || (tag != (CARD32)tag))
+	return FALSE;
+
+    switch (Index) {
+    case 6:
+	tag |= PCI_MAP_ROM_REG;
+	break;
+    case 7:
+	tag |= PCI_PCI_BRIDGE_ROM_REG;
+	break;
+    default:
+	tag |= PCI_MAP_REG_START + (Index * 4);
+	break;
+    }
+
+    for (i = 0;  i < nAddressSizes;  i++) {
+	if (tag == pAddressSizes[i].tag) {
+	    *bits = pAddressSizes[i].size;
+	    return TRUE;
+	}
+    }
+
+    return FALSE;
+}
 
 /* Scan PROM for all PCI host bridges in the system */
 void
@@ -308,7 +396,7 @@ sparcPciInit(void)
     for (node = promGetChild(promRootNode);
 	 node;
 	 node = promGetSibling(node)) {
-	unsigned long long pci_addr;
+	unsigned long long pci_addr, phys_addr, phys_size;
 	sparcDomainRec     domain;
 	sparcDomainPtr     pDomain;
 	pciBusFuncs_p      pFunctions;
@@ -405,7 +493,7 @@ sparcPciInit(void)
 	    domain.bus_min = ((int *)prop_val)[0];
 	    domain.bus_max = ((int *)prop_val)[1];
 
-	    /* Get "ranges" property */
+	    /* Retrieve and validate "ranges" property */
 	    prop_val = promGetProperty("ranges", &prop_len);
 	    if (!prop_val || (prop_len != 112) ||
 		prop_val[0] || (prop_val[28] != 0x01u) ||
@@ -447,6 +535,7 @@ sparcPciInit(void)
 
 	do {
 	    volatile unsigned long long mem_match, mem_mask, io_match, io_mask;
+	    unsigned long long schizo_addr;
 	    unsigned long Offset;
 	    pointer pSchizo;
 
@@ -478,7 +567,7 @@ sparcPciInit(void)
 	    xf86Msg(X_INFO, "%s PCI host bridge found (\"%s\")\n",
 		bridge_name, prop_val);
 
-	    /* Get "bus-range" property */
+	    /* Retrieve and validate "bus-range" property */
 	    prop_val = promGetProperty("bus-range", &prop_len);
 	    if (!prop_val || (prop_len != 8) ||
 		(((unsigned int *)prop_val)[1] >= 256) ||
@@ -494,9 +583,13 @@ sparcPciInit(void)
 		goto nextNode;
 
 	    /* Temporarily map some of Schizo's registers */
-	    pSchizo = sparcMapAperture(-1, VIDMEM_MMIO,
-		((unsigned long long *)prop_val)[2] - 0x000000010000ull,
-		0x00010000ul);
+	    phys_addr = schizo_addr =
+		((unsigned long long *)prop_val)[2] - 0x000000010000ull;
+	    phys_addr &= ~pagemask;
+	    phys_size = ((unsigned long long *)prop_val)[2] + pagemask;
+	    phys_size &= ~pagemask;
+	    phys_size -= phys_addr;
+	    pSchizo = sparcMapAperture(-1, VIDMEM_MMIO, phys_addr, phys_size);
 
 	    if (pSchizo == MAP_FAILED)
 		goto nextNode;
@@ -508,13 +601,14 @@ sparcPciInit(void)
 	    else
 		Offset = 0x0060;
 
+	    Offset += phys_addr - schizo_addr;
 	    mem_match = PciReg(pSchizo, 0, Offset, unsigned long long);
 	    mem_mask  = PciReg(pSchizo, 0, Offset + 8, unsigned long long);
 	    io_match  = PciReg(pSchizo, 0, Offset + 16, unsigned long long);
 	    io_mask   = PciReg(pSchizo, 0, Offset + 24, unsigned long long);
 
 	    /* Unmap Schizo registers */
-	    xf86UnMapVidMem(-1, pSchizo, 0x00010000ul);
+	    xf86UnMapVidMem(-1, pSchizo, phys_size);
 
 	    /* Calculate sizes */
 	    mem_mask = (((mem_mask - 1) ^ mem_mask) >> 1) + 1;
@@ -544,21 +638,30 @@ newDomain:
 	}
 
 	/* Only map as much PCI configuration as we need */
+	phys_addr = pci_addr + PCI_MAKE_TAG(domain.bus_min, 0, 0);
+	phys_addr &= ~pagemask;
+	phys_size = pci_addr + PCI_MAKE_TAG(domain.bus_max + 1, 0, 0);
+	phys_size += pagemask;
+	phys_size &= ~pagemask;
+	phys_size -= phys_addr;
 	domain.pci = (char *)sparcMapAperture(-1, VIDMEM_MMIO,
-	    pci_addr + PCI_MAKE_TAG(domain.bus_min, 0, 0),
-	    PCI_MAKE_TAG(domain.bus_max - domain.bus_min + 1, 0, 0)) -
-	    PCI_MAKE_TAG(domain.bus_min, 0, 0);
+	    phys_addr, phys_size);
 
 	if (domain.pci == MAP_FAILED)
 	    continue;
 
-	xf86Msg(X_INFO, "Adding PCI domain %d:\n", pciNumDomains);
-	xf86Msg(X_INFO, "PCI Configuration space: 0x%016llx\n", pci_addr);
-	xf86Msg(X_INFO, "PCI Input/Output space:  0x%016llx, size: 0x%09llx\n",
+	domain.pci = (char *)domain.pci - (phys_addr - pci_addr);
+
+	xf86MsgVerb(X_INFO, 4, "Adding PCI domain %d:\n", pciNumDomains);
+	xf86MsgVerb(X_INFO, 4, "PCI Configuration space: 0x%016llx\n",
+	    pci_addr);
+	xf86MsgVerb(X_INFO, 4,
+	    "PCI Input/Output space:  0x%016llx, size: 0x%09llx\n",
 	    domain.io_addr, domain.io_size);
-	xf86Msg(X_INFO, "PCI Memory space:        0x%016llx, size: 0x%09llx\n",
+	xf86MsgVerb(X_INFO, 4,
+	    "PCI Memory space:        0x%016llx, size: 0x%09llx\n",
 	    domain.mem_addr, domain.mem_size);
-	xf86Msg(X_INFO, "PCI Bus range:           %d-%d\n",
+	xf86MsgVerb(X_INFO, 4, "PCI Bus range:           %d-%d\n",
 	    domain.bus_min, domain.bus_max);
 
 	/* Allocate a domain record */
@@ -586,7 +689,7 @@ newDomain:
 	}
 
 	/* Next domain, please... */
-	xf86DomainInfo[pciNumDomains++] = pDomain;
+	xf86DomainInfo[pciNumDomains] = pDomain;
 
 	/*
 	 * OK, enough of the straight-forward stuff.  Time to deal with some
@@ -612,9 +715,9 @@ newDomain:
 	 * detect when master aborts occur.  Obviously, PCI discovery is much
 	 * simpler when master aborts are allowed to complete normally.
 	 *
-	 * Unfortunately, a number of non-Intel PCI implementations have chosen
-	 * to treat master aborts as severe errors.  The net effect is to
-	 * cripple PCI discovery algorithms in userland.
+	 * Unfortunately, a number of PCI implementations have chosen to treat
+	 * master aborts as severe errors.  The net effect is to cripple PCI
+	 * discovery algorithms in userland.
 	 *
 	 * On SPARCs, master aborts cause a number of different behaviours,
 	 * including delivering a signal to the userland application, rebooting
@@ -656,21 +759,26 @@ newDomain:
 	     node2 = promGetSibling(node2)) {
 	    /* Get "reg" property */
 	    prop_val = promGetProperty("reg", &prop_len);
-	    if (!prop_val || (prop_len % 20))
-		continue;
+	    if (prop_val && !(prop_len % 20)) {
 
-	    /*
-	     * It's unnecessary to scan the entire "reg" property, but I'll do
-	     * so anyway.
-	     */
-	    prop_len /= 20;
-	    for (;  prop_len--;  prop_val += 20)
-		SetBitInMap(PCI_DFN_FROM_TAG(*(CARD32 *)prop_val),
-		    pDomain->dfn_mask);
+		/*
+		 * It's unnecessary to scan the entire "reg" property, but I'll
+		 * do so anyway.
+		 */
+		prop_len /= 20;
+		for (;  prop_len--;  prop_val += 20)
+		    SetBitInMap(PCI_DFN_FROM_TAG(*(CARD32 *)prop_val),
+			pDomain->dfn_mask);
+	    }
+
+	    /* Scan "assigned-addresses" properties for resource sizes */
+	    sparcAssignedAddresses(&domain, node2);
 	}
 
 	/* Assume the host bridge is device 0, function 0 on its bus */
 	SetBitInMap(0, pDomain->dfn_mask);
+
+	pciNumDomains++;
 
 nextNode:;
     }

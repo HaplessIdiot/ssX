@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.69tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.70tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -188,14 +188,23 @@ VIDEO_OBJ = sparc64_video.o
 #error Unknown architecture !
 #endif
 
+/*
+ * This is actually predicated on ARCH_PCI_INIT not being #define'd to
+ * sparcPciInit in bus/Pci.h
+ */
+#if !defined(OpenBSDArchitecture) || !defined(SparcArchitecture)
+PCI_SRC = stdPci.c
+PCI_OBJ = stdPci.o
+#endif
+
 SRCS = bsd_init.c $(VIDEO_SRC) bsd_io.c bsd_VTsw.c \
        libc_wrapper.c $(IOPERM_SRC) std_kbdEv.c posix_tty.c $(MOUSESRC) \
-       $(RES_SRC) stdPci.c vidmem.c $(JOYSTICK_SRC) sigio.c $(APMSRC) \
+       $(RES_SRC) $(PCI_SRC) vidmem.c $(JOYSTICK_SRC) sigio.c $(APMSRC) \
        $(AXP_SRC) $(KMODSRC) $(AGP_SRC) $(KBDSRC)
 
 OBJS = bsd_init.o $(VIDEO_OBJ) bsd_io.o bsd_VTsw.o \
        libc_wrapper.o $(IOPERM_OBJ) std_kbdEv.o posix_tty.o $(MOUSEOBJ) \
-       $(RES_OBJ) stdPci.o vidmem.o $(JOYSTICK_OBJ) sigio.o $(APMOBJ) \
+       $(RES_OBJ) $(PCI_OBJ) vidmem.o $(JOYSTICK_OBJ) sigio.o $(APMOBJ) \
        $(AXP_OBJ) $(KMODOBJ) $(AGP_OBJ) $(KBDOBJ)
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/include \
@@ -248,7 +257,9 @@ LinkSourceFile(at_scancode.c,../shared)
 LinkSourceFile(posix_tty.c,../shared)
 LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(stdResource.c,../shared)
+#if !defined(OpenBSDArchitecture) || !defined(SparcArchitecture)
 LinkSourceFile(stdPci.c,../shared)
+#endif
 LinkSourceFile(vidmem.c,../shared)
 LinkSourceFile(sigio.c,../shared)
 LinkSourceFile(kmod_noop.c,../shared)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.46tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.47tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -70,7 +70,7 @@
  *
  */
 /*
- * Copyright (c) 1999-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1999-2007 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -456,6 +456,7 @@
 #define PCI_PCI_BRIDGE_IO_REG		0x1c
 #define PCI_PCI_BRIDGE_MEM_REG		0x20
 #define PCI_PCI_BRIDGE_PMEM_REG		0x24
+#define PCI_PCI_BRIDGE_ROM_REG		0x38
 
 #define PCI_PPB_IOBASE_EXTRACT(x)	(((x) << 8) & 0xFF00)
 #define PCI_PPB_IOLIMIT_EXTRACT(x)	(((x) << 0) & 0xFF00)
@@ -478,6 +479,7 @@
 #define PCI_CB_BRIDGE_CTL_PREFETCH_MEM1	0x200
 #define PCI_CB_BRIDGE_CTL_POST_WRITES	0x400
 
+#define PCI_CB_CAP_PTR			0x14
 #define PCI_CB_SEC_STATUS_REG		0x16	/* Secondary status */
 #define PCI_CB_PRIMARY_BUS_REG		0x18	/* PCI bus number */
 #define PCI_CB_CARD_BUS_REG		0x19	/* CardBus bus number */
@@ -723,10 +725,17 @@ typedef struct pci_cfg_regs {
 #endif
 		} b_u_io;
 	    } uio_rom;
-	    struct {
-		CARD32 rsvd3;		/* Offset 0x34 - 0x37 */
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+	    CARD8 capptr;		/* Offset 0x34 */
+	    CARD8 rsvd3[3];		/* Offset 0x35 - 0x37 */
+#else
+	    CARD8 rsvd3[3];		/* Offset 0x35 - 0x37 */
+	    CARD8 capptr;		/* Offset 0x34 */
+#endif
+	    union {
 		CARD32 rsvd4;		/* Offset 0x38 - 0x3b */
-	    } rsvd;
+		CARD32 br_rom;
+	    } ubr_rom;
 	} cd;
     } cx;
     union {				/* Offset 0x3c - 0x3f */
@@ -746,15 +755,15 @@ typedef struct pci_cfg_regs {
 #endif
 	    } mmii;
 	} mmii;
-	struct {				/* header type 1 */
+	struct {				/* header type 1 & 2 */
 #if X_BYTE_ORDER == X_BIG_ENDIAN
-	    CARD16 bridge_control;	/* upper 8 bits reserved */
-	    CARD8  rsvd2;
-	    CARD8  rsvd1;
+	    CARD16 bridge_control;
+	    CARD8  int_pin;
+	    CARD8  int_line;
 #else
-	    CARD8  rsvd1;
-	    CARD8  rsvd2;
-	    CARD16 bridge_control;	/* upper 8 bits reserved */
+	    CARD8  int_line;
+	    CARD8  int_pin;
+	    CARD16 bridge_control;
 #endif
 	} bctrl;
     } bm;
@@ -781,7 +790,7 @@ typedef struct pci_device {
     int	      funcnum;
     pciCfgSpc cfgspc;
     int	      basesize[7];	/* number of bits in base addr allocations */
-    Bool      minBasesize;
+    int       minBasesize;	/* was a Bool, now a bit mask */
     CARD32    listed_class;
     pointer   businfo;		/* pointer to secondary's bus info structure */
     Bool      fakeDevice;	/* Device added by system chipset support */
@@ -857,6 +866,8 @@ typedef enum {
 #define pci_prefetch_upper_mem_limit  cfgspc.regs.cx.cd.um_ssys_id.pftch_umem_limit
 #define pci_upper_io_base	      cfgspc.regs.cx.cd.uio_rom.b_u_io.io_ubase
 #define pci_upper_io_limit	      cfgspc.regs.cx.cd.uio_rom.b_u_io.io_ulimit
+#define pci_capptr		      cfgspc.regs.cx.cd.capptr
+#define pci_br_rom		      cfgspc.regs.cx.cd.ubr_rom.br_rom
 #define pci_int_line		      cfgspc.regs.bm.mmii.mmii.int_line
 #define pci_int_pin		      cfgspc.regs.bm.mmii.mmii.int_pin
 #define pci_min_gnt		      cfgspc.regs.bm.mmii.mmii.min_gnt
@@ -892,7 +903,8 @@ void	      pciSetBitsByte(PCITAG tag, int offset, CARD8 mask, CARD8 val);
 ADDRESS	      pciBusAddrToHostAddr(PCITAG tag, PciAddrType type, ADDRESS addr);
 ADDRESS	      pciHostAddrToBusAddr(PCITAG tag, PciAddrType type, ADDRESS addr);
 PCITAG	      pciTag(int busnum, int devnum, int funcnum);
-int	      pciGetBaseSize(PCITAG tag, int indx, Bool destructive, Bool *min);
+int	      pciGetBaseSize(pciConfigPtr device, int indx,
+			     Bool destructive, int *min);
 CARD32	      pciCheckForBrokenBase(PCITAG tag,int basereg);
 Bool          xf86LocatePciMemoryArea(PCITAG tag,
 				      char **devName, unsigned int *devOffset,
