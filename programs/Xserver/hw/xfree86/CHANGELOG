@@ -1,4 +1,6 @@
 XFree86 4.6.99.18 (xx February 2007)
+ 112. Minor fixes to the handling of 64-bit PCI BARs and to the scanpci
+      utility's decoding of type 1 & 2 PCI headers (Marc La France).
  111. Various PCI-related changes (Marc La France):
       - Don't ignore any BARs or ROM pointer a PCI-to-PCI bridge might have.
       - Don't ignore any BAR a PCI-to-CardBus bridge might have.
@@ -20431,4 +20433,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3842tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3843 2007/02/13 18:30:07 tsi Exp $
