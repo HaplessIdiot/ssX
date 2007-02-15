@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.95tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.96tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -506,7 +506,7 @@ int
 pciGetBaseSize(pciConfigPtr device, int index, Bool destructive, int *min)
 {
   CARD32 addr1, addr2, mask1 = 0, mask2 = 0, csr;
-  int offset, bits;
+  int offset, bits, lastBAR;
 
   /*
    * Eventually a function for this should be added to pciBusFuncs_t, but for
@@ -531,7 +531,7 @@ pciGetBaseSize(pciConfigPtr device, int index, Bool destructive, int *min)
 
   case 7:
     if (min && (*min & (2 << 7)))
-      return device->basesize[6];
+      return device->basesize[6];	/* Yup, 6, not 7 */
 
     offset = PCI_PCI_BRIDGE_ROM_REG;
 
@@ -574,6 +574,28 @@ do_rom:
       return device->basesize[index];
 
     bits = 0;
+
+    switch (device->pci_header_type & 0x7f) {
+    case 0:
+	lastBAR = 5;
+	break;
+
+    case 1:
+	lastBAR = 1;
+	break;
+
+    case 2:
+	lastBAR = 0;
+	break;
+
+    default:
+	goto return_bits;
+    }
+
+    if (index > lastBAR) {
+	destructive = TRUE;
+	goto return_bits;
+    }
 
     offset = PCI_MAP_REG_START + (index << 2);
 
@@ -621,7 +643,7 @@ do_rom:
       break;
     }
 
-    if ((index < 5) && PCI_MAP_IS64BITMEM(addr1)) {
+    if ((index < lastBAR) && PCI_MAP_IS64BITMEM(addr1)) {
       addr2 = pciReadLong(device->tag, offset + 4);
       if (!(csr & PCI_CMD_MEM_ENABLE)) {
 	destructive = TRUE;

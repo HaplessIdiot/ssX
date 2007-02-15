@@ -23,7 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.95tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.96tsi Exp $ */
 
 #include <X11/X.h>
 #include "os.h"
@@ -496,20 +496,20 @@ print_header_type_0(pciConfigPtr pcr)
     }
 
     if (pcr->basesize[5]) {
-	printf("  BASE5     0x%08x  addr 0x%08x",
-	       (int)pcr->pci_base5,
-	       (int)(pcr->pci_base5 &
-		     (pcr->pci_base5 & 0x1 ?  0xFFFFFFFC : 0xFFFFFFF0)));
-	printf("  %ssize ",
-	       (pcr->minBasesize & (2 << 5)) ? "" : "estimated ");
-	if (pcr->basesize[5] < 32)
-	    printf("0x%08x", 1 << pcr->basesize[5]);
-	else
-	    printf("0x%08x00000000", 1 << (pcr->basesize[5] - 32));
-	printf("  %s%s%s\n",
-	       (pcr->pci_base5 & 0x1) ? "I/O" : "MEM",
-	       ((pcr->pci_base5 & 0x9) == 0x8) ? " PREFETCHABLE" : "",
-	       ((pcr->pci_base5 & 0x7) == 0x4) ? " 64BIT" : "");
+	if ((pcr->pci_base5 & 0x7) == 0x4) {
+	    printf("  BASE5     0x%08x  (invalid)\n", (int)pcr->pci_base5);
+	} else {
+	    printf("  BASE5     0x%08x  addr 0x%08x",
+		   (int)pcr->pci_base5,
+		   (int)(pcr->pci_base5 &
+			(pcr->pci_base5 & 0x1 ?  0xFFFFFFFC : 0xFFFFFFF0)));
+	    printf("  %ssize 0x%08x",
+		   (pcr->minBasesize & (2 << 5)) ? "" : "estimated ",
+		   1 << pcr->basesize[5]);
+	    printf("  %s%s\n",
+		   (pcr->pci_base5 & 0x1) ? "I/O" : "MEM",
+		   ((pcr->pci_base5 & 0x9) == 0x8) ? " PREFETCHABLE" : "");
+	}
     }
 
     if (pcr->basesize[6]) {
@@ -548,17 +548,24 @@ print_header_type_1(pciConfigPtr pcr)
 	pcr->pci_upper_io_base || pcr->pci_upper_io_limit) {
 	if (((pcr->pci_io_base & 0x0f) == 0x01) ||
 	    ((pcr->pci_io_limit & 0x0f) == 0x01)) {
-	    printf("  IOBASE    0x%04x%04x  IOLIM 0x%04x%04x\n",
-		   pcr->pci_upper_io_base, (pcr->pci_io_base & 0x00f0) << 8,
-		   pcr->pci_upper_io_limit, (pcr->pci_io_limit << 8) | 0x0fff);
-	} else {
+	    if ((pcr->pci_upper_io_base < pcr->pci_upper_io_limit) ||
+		((pcr->pci_upper_io_base == pcr->pci_upper_io_limit) &&
+		 ((pcr->pci_io_base & 0x00f0) <=
+		  (pcr->pci_io_limit & 0x00f0))))
+		printf("  IOBASE    0x%04x%04x  IOLIM 0x%04x%04x\n",
+		       pcr->pci_upper_io_base, (pcr->pci_io_base & 0x00f0) << 8,
+		       pcr->pci_upper_io_limit,
+		       (pcr->pci_io_limit << 8) | 0x0fff);
+	} else if ((pcr->pci_io_base & 0x00f0) <=
+		   (pcr->pci_io_limit & 0x00f0)) {
 	    printf("  IOBASE    0x%04x  IOLIM 0x%04x\n",
 		   (pcr->pci_io_base & 0x00f0) << 8,
 		   (pcr->pci_io_limit << 8) | 0x0fff);
 	}
     }
 
-    if (pcr->pci_mem_base || pcr->pci_mem_limit)
+    if ((pcr->pci_mem_base || pcr->pci_mem_limit) &&
+	((pcr->pci_mem_base & 0x00fff0) <= (pcr->pci_mem_limit & 0x00fff0)))
 	printf("  NOPREFETCH_MEMBASE 0x%08x  MEMLIM 0x%08x\n",
 	       (pcr->pci_mem_base & 0x00fff0) << 16,
 	       (pcr->pci_mem_limit << 16) | 0x0fffff);
@@ -568,12 +575,20 @@ print_header_type_1(pciConfigPtr pcr)
 	pcr->pci_prefetch_upper_mem_limit) {
 	if (((pcr->pci_prefetch_mem_base & 0x0f) == 0x01) ||
 	    ((pcr->pci_prefetch_mem_limit & 0x0f) == 0x01)) {
-	    printf("  PREFETCH_MEMBASE   0x%08x%08x  MEMLIM 0x%08x%08x\n",
-		   (int)pcr->pci_prefetch_upper_mem_base,
-		   (pcr->pci_prefetch_mem_base & 0x00fff0) << 16,
-		   (int)pcr->pci_prefetch_upper_mem_limit,
-		   (pcr->pci_prefetch_mem_limit << 16) | 0x0fffff);
-	} else {
+	    if ((pcr->pci_prefetch_upper_mem_base <
+		 pcr->pci_prefetch_upper_mem_limit) ||
+		((pcr->pci_prefetch_upper_mem_base ==
+		  pcr->pci_prefetch_upper_mem_limit) &&
+		 ((pcr->pci_prefetch_mem_base & 0x00fff0) <=
+		  (pcr->pci_prefetch_mem_limit & 0x00fff0)))) {
+		printf("  PREFETCH_MEMBASE   0x%08x%08x  MEMLIM 0x%08x%08x\n",
+		       (int)pcr->pci_prefetch_upper_mem_base,
+		       (pcr->pci_prefetch_mem_base & 0x00fff0) << 16,
+		       (int)pcr->pci_prefetch_upper_mem_limit,
+		       (pcr->pci_prefetch_mem_limit << 16) | 0x0fffff);
+	    }
+	} else if ((pcr->pci_prefetch_mem_base & 0x00fff0) <=
+		   (pcr->pci_prefetch_mem_limit & 0x00fff0)) {
 	    printf("  PREFETCH_MEMBASE   0x%08x  MEMLIM 0x%08x\n",
 		   (pcr->pci_prefetch_mem_base & 0x00fff0) << 16,
 		   (pcr->pci_prefetch_mem_limit << 16) | 0x0fffff);
@@ -667,25 +682,37 @@ print_header_type_2(pciConfigPtr pcr)
     printf("  SECLT     0x%02x  SECSTATUS 0x%04x\n",
 	   pcr->pci_cb_latency_timer, pcr->pci_cb_secondary_status);
 
-    if (pcr->pci_cb_membase0 || pcr->pci_cb_memlimit0)
+    if ((pcr->pci_cb_membase0 || pcr->pci_cb_memlimit0) &&
+	((pcr->pci_cb_membase0 & 0xFFFFF000) <=
+	 (pcr->pci_cb_memlimit0 & 0xFFFFF000)))
 	printf("  MEMBASE0 0x%08x  MEMLIM0 0x%08x%s\n",
-	       (int)pcr->pci_cb_membase0, (int)pcr->pci_cb_memlimit0,
+	       (int)pcr->pci_cb_membase0 & 0xFFFFF000,
+	       (int)pcr->pci_cb_memlimit0 | 0x00000FFF,
 	       (pcr->pci_bridge_control & PCI_CB_BRIDGE_CTL_PREFETCH_MEM0) ?
 		" PREFETCHABLE" : "");
 
-    if (pcr->pci_cb_membase1 || pcr->pci_cb_memlimit1)
+    if ((pcr->pci_cb_membase1 || pcr->pci_cb_memlimit1) &&
+	((pcr->pci_cb_membase1 & 0xFFFFF000) <=
+	 (pcr->pci_cb_memlimit1 & 0xFFFFF000)))
 	printf("  MEMBASE1 0x%08x  MEMLIM1 0x%08x%s\n",
-	       (int)pcr->pci_cb_membase1, (int)pcr->pci_cb_memlimit1,
+	       (int)pcr->pci_cb_membase1 & 0xFFFFF000,
+	       (int)pcr->pci_cb_memlimit1 | 0x00000FFF,
 	       (pcr->pci_bridge_control & PCI_CB_BRIDGE_CTL_PREFETCH_MEM1) ?
 		" PREFETCHABLE" : "");
 
-    if (pcr->pci_cb_iobase0 || pcr->pci_cb_iolimit0)
-	printf("  IOBASE0  0x%04x      IOLIM0  0x%04x\n",
-	       (int)pcr->pci_cb_iobase0, (int)pcr->pci_cb_iolimit0);
+    if ((pcr->pci_cb_iobase0 || pcr->pci_cb_iolimit0) &&
+	((pcr->pci_cb_iobase0 & 0xFFFFFFFC) <=
+	 (pcr->pci_cb_iolimit0 & 0xFFFFFFFC)))
+	printf("  IOBASE0  0x%08x      IOLIM0  0x%08x\n",
+	       (int)pcr->pci_cb_iobase0 & 0xFFFFFFFC,
+	       (int)pcr->pci_cb_iolimit0 | 0x00000003);
 
-    if (pcr->pci_cb_iobase1 || pcr->pci_cb_iolimit1)
-	printf("  IOBASE1  0x%04x      IOLIM1  0x%04x\n",
-	       (int)pcr->pci_cb_iobase1, (int)pcr->pci_cb_iolimit1);
+    if ((pcr->pci_cb_iobase1 || pcr->pci_cb_iolimit1) &&
+	((pcr->pci_cb_iobase1 & 0xFFFFFFFC) <=
+	 (pcr->pci_cb_iolimit1 & 0xFFFFFFFC)))
+	printf("  IOBASE1  0x%08x      IOLIM1  0x%08x\n",
+	       (int)pcr->pci_cb_iobase1 & 0xFFFFFFFC,
+	       (int)pcr->pci_cb_iolimit1 | 0x00000003);
 
     if (pcr->basesize[0]) {
 	if ((pcr->pci_base0 & 0x7) == 0x4) {

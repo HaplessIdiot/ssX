@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.90tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.91tsi Exp $ */
 /*
  * Copyright (c) 1997-2007 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -826,7 +826,7 @@ correctPciSize(memType base, memType oldsize, memType newsize,
 		     B2I(pcrp->tag,PCIGETIO(basep[i]) == base)) ||
 		    (((type & ResPhysMask) == ResMem) &&
 		     PCI_MAP_IS_MEM(basep[i]) &&
-		     (((!PCI_MAP_IS64BITMEM(basep[i])) &&
+		     (((!PCI_MAP_IS64BITMEM(basep[i]) || i == (numbars - 1)) &&
 		       (B2M(pcrp->tag,PCIGETMEMORY(basep[i])) == base))
 #if defined(LONG64) || defined(WORD64)
 		      ||
@@ -1051,6 +1051,8 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 			      ResExcMemBlock | resMisc | resMisc2)
 		} else {
 		    i++;
+		    if (i >= numbars)
+			break;
 #if defined(LONG64) || defined(WORD64)
 		    P_M_RANGE(range,pcrp->tag,PCIGETMEMORY64(basep[i - 1]),
 			      pcrp->basesize[i - 1],
@@ -1503,7 +1505,7 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, unsigned long type)
 	    (CARD32)(*p_base) | (CARD32)(p_type);
 	pciWriteLong(tag, PCI_MAP_REG_START + (res_n * sizeof(CARD32)),
 		     ((CARD32 *)(&(pcp->pci_base0)))[res_n]);
-	if (PCI_MAP_IS64BITMEM(p_type)) {
+	if (PCI_MAP_IS64BITMEM(p_type) && (res_n < 5)) {
 #if defined(LONG64) || defined(WORD64)
 	    ((CARD32 *)(&(pcp->pci_base0)))[res_n + 1] =
 		(CARD32)(*p_base >> 32);
@@ -2492,6 +2494,8 @@ ValidatePci(void)
 			      pcrp->basesize[i], ResExcMemBlock)
 		} else {
 		    i++;
+		    if (i >= numbars)
+			break;
 		    if (!(pcrp->pci_command & PCI_CMD_MEM_ENABLE))
 			continue;
 #if defined(LONG64) || defined(WORD64)
