@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.513 2006/06/21 04:03:15 tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.514tsi Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -159,59 +159,6 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.513 2006/06/21 04:03:15 tsi Exp $
 #endif
 #ifndef BuildServersOnly
 #define BuildServersOnly	NO
-#endif
-
-/*
- * BuildXFree86ConfigTools:
- *
- * Turning this on allows the XFree86 config tools to build when
- * BuildServersOnly is YES.  This requires more than the servonly CVS
- * module.  This cannot be used to disable building the config tools with
- * a full build.
- */
-#ifndef BuildXFree86ConfigTools
-#if BuildServer
-#define BuildXFree86ConfigTools		!BuildServersOnly
-#else
-#define BuildXFree86ConfigTools		NO
-#endif
-#endif
-
-#ifndef BuildLibrariesForConfigTools
-#define BuildLibrariesForConfigTools	BuildXFree86ConfigTools
-#endif
-
-#if BuildXFree86ConfigTools && BuildLibrariesForConfigTools
-#ifndef BuildX11Lib
-#define BuildX11Lib		YES
-#endif
-#ifndef BuildXawLibrary
-#define BuildXawLibrary		YES
-#endif
-#ifndef BuildXtLibrary
-#define BuildXtLibrary		YES
-#endif
-#ifndef BuildXmuLibrary
-#define BuildXmuLibrary		YES
-#endif
-#ifndef BuildXpmLibrary
-#define BuildXpmLibrary		YES
-#endif
-#ifndef BuildXF86MiscLibrary
-#define BuildXF86MiscLibrary	YES
-#endif
-#ifndef BuildXF86VidModeLibrary
-#define BuildXF86VidModeLibrary	YES
-#endif
-#ifndef BuildXKBlib
-#define BuildXKBlib		YES
-#endif
-#ifndef BuildXKBfilelib
-#define BuildXKBfilelib		YES
-#endif
-#ifndef BuildXKBuilib
-#define BuildXKBuilib		YES
-#endif
 #endif
 
 #ifndef MakeDllModules
@@ -1062,6 +1009,59 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.513 2006/06/21 04:03:15 tsi Exp $
 #if !XF86Server
 # undef DoLoadableServer
 # define DoLoadableServer	NO
+#endif
+
+/*
+ * BuildXFree86ConfigTools:
+ *
+ * Turning this on allows the XFree86 config tools to build when
+ * BuildServersOnly is YES.  This requires more than the servonly CVS
+ * module.  This cannot be used to disable building the config tools with
+ * a full build.
+ */
+#ifndef BuildXFree86ConfigTools
+#if BuildServer
+#define BuildXFree86ConfigTools		(!BuildServersOnly && XF86Server)
+#else
+#define BuildXFree86ConfigTools		NO
+#endif
+#endif
+
+#ifndef BuildLibrariesForConfigTools
+#define BuildLibrariesForConfigTools	BuildXFree86ConfigTools
+#endif
+
+#if BuildXFree86ConfigTools && BuildLibrariesForConfigTools
+#ifndef BuildX11Lib
+#define BuildX11Lib		YES
+#endif
+#ifndef BuildXawLibrary
+#define BuildXawLibrary		YES
+#endif
+#ifndef BuildXtLibrary
+#define BuildXtLibrary		YES
+#endif
+#ifndef BuildXmuLibrary
+#define BuildXmuLibrary		YES
+#endif
+#ifndef BuildXpmLibrary
+#define BuildXpmLibrary		YES
+#endif
+#ifndef BuildXF86MiscLibrary
+#define BuildXF86MiscLibrary	YES
+#endif
+#ifndef BuildXF86VidModeLibrary
+#define BuildXF86VidModeLibrary	YES
+#endif
+#ifndef BuildXKBlib
+#define BuildXKBlib		YES
+#endif
+#ifndef BuildXKBfilelib
+#define BuildXKBfilelib		YES
+#endif
+#ifndef BuildXKBuilib
+#define BuildXKBuilib		YES
+#endif
 #endif
 
 /* The glide driver only works for the loadable server at the moment */
