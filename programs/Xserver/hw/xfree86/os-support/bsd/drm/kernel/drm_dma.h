@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/drm_dma.h,v 1.17 2005/03/03 03:35:41 dawes Exp $ */
 
 /* drm_dma.c -- DMA IOCTL and function support -*- linux-c -*-
  * Created: Fri Mar 19 14:30:16 1999 by faith@valinux.com
@@ -105,10 +105,14 @@ void DRM(dma_takedown)(drm_device_t *dev)
 		}
 	}
 
-	DRM(free)(dma->buflist, dma->buf_count * sizeof(*dma->buflist),
-	    DRM_MEM_BUFS);
-	DRM(free)(dma->pagelist, dma->page_count * sizeof(*dma->pagelist),
-	    DRM_MEM_PAGES);
+	if (dma->buflist != NULL)
+		DRM(free)(dma->buflist,
+		    dma->buf_count * sizeof(*dma->buflist), DRM_MEM_BUFS);
+
+	if (dma->pagelist != NULL)
+		DRM(free)(dma->pagelist,
+		    dma->page_count * sizeof(*dma->pagelist), DRM_MEM_PAGES);
+
 	DRM(free)(dev->dma, sizeof(*dev->dma), DRM_MEM_DRIVER);
 	dev->dma = NULL;
 	DRM_SPINUNINIT(dev->dma_lock);
