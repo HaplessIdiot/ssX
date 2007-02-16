@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/drmP.h,v 1.19 2005/03/03 03:35:40 dawes Exp $ */
 
 /* drmP.h -- Private header for Direct Rendering Manager -*- linux-c -*-
  * Created: Mon Jan  4 10:05:05 1999 by faith@precisioninsight.com
@@ -307,6 +307,9 @@ typedef struct drm_vbl_sig {
 struct drm_device {
 #ifdef __NetBSD__
 	struct device	  device;	/* NetBSD's softc is an extension of struct device */
+
+	DRM_SPINTYPE	dev_lock;
+	DRM_SPINTYPE	dma_lock;
 #endif
 	const char	  *name;	/* Simple driver name		   */
 	char		  *unique;	/* Unique identifier: e.g., busid  */

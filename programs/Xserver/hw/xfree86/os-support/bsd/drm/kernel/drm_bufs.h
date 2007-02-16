@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/drm_bufs.h,v 1.13 2005/03/03 03:35:40 dawes Exp $ */
 
 /* drm_bufs.h -- Generic buffer template -*- linux-c -*-
  * Created: Thu Nov 23 03:10:50 2000 by gareth@valinux.com
@@ -884,8 +884,9 @@ int DRM(mapbufs)( DRM_IOCTL_ARGS )
 	vm_offset_t vaddr;
 #endif /* __FreeBSD__ */
 #ifdef __NetBSD__
+	voff_t foff;
 	struct vnode *vn;
-	vm_size_t size;
+	vsize_t size;
 	vaddr_t vaddr;
 #endif /* __NetBSD__ */
 
