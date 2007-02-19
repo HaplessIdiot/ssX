@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.96tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.97tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -506,7 +506,7 @@ int
 pciGetBaseSize(pciConfigPtr device, int index, Bool destructive, int *min)
 {
   CARD32 addr1, addr2, mask1 = 0, mask2 = 0, csr;
-  int offset, bits, lastBAR;
+  int offset, bits, lastBAR, minsize;
 
   /*
    * Eventually a function for this should be added to pciBusFuncs_t, but for
@@ -567,6 +567,7 @@ do_rom:
     }
 
     mask1 |= (1 << 24);			/* 16M maximum */
+    minsize = 11;			/* 2K minimum */
     break;
 
   default:
@@ -640,8 +641,11 @@ do_rom:
       }
 
       mask1 |= (1 << 8);		/* 256 bytes maximum */
+      minsize = 2;			/* 4 bytes minimum */
       break;
     }
+
+    minsize = 4;			/* Memory BARs are 16 bytes minimum */
 
     if ((index < lastBAR) && PCI_MAP_IS64BITMEM(addr1)) {
       addr2 = pciReadLong(device->tag, offset + 4);
@@ -720,7 +724,9 @@ do_rom:
     bits++;
   }
 
-  if (!destructive) {
+  if (bits <= minsize)
+    destructive = TRUE;
+  else if (!destructive) {
     int osbits = 0;
 
     if (xf86GetPciSizeFromOS(device->tag, index, &osbits) &&

@@ -1,4 +1,7 @@
 XFree86 4.6.99.18 (xx February 2007)
+ 114. Consider PCI resource sizes as accurate if they are estimated to be at
+      their minimum size (Marc La France).
+ 113. Fix scanpci utility's idea of minimum PCI ROM sizes (Marc La France).
  114. Add a geometry specification for the Dell Inspiron 8000 notebook keyboard
       (Alexander Pohoyda, Bugzilla #1678).
  113. Merge in NetBSD's changes to the drm kernel module.
@@ -20436,4 +20439,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3845 2007/02/16 15:57:26 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3846 2007/02/16 16:39:46 tsi Exp $
