@@ -1,4 +1,6 @@
 XFree86 4.6.99.18 (xx February 2007)
+ 115. Add an XKB geometry for Enermax Aurora keyboards (Alexander Pohoyda,
+      Bugzilla #1677).
  114. Consider PCI resource sizes as accurate if they are estimated to be at
       their minimum size (Marc La France).
  113. Fix scanpci utility's idea of minimum PCI ROM sizes (Marc La France).
@@ -20439,4 +20441,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3846 2007/02/16 16:39:46 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3847 2007/02/19 15:13:04 tsi Exp $

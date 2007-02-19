@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/xkbcomp/geometry/Imakefile,v 3.18tsi Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/geometry/Imakefile,v 3.19tsi Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags /**/
@@ -7,7 +7,7 @@ XCOMM $XFree86: xc/programs/xkbcomp/geometry/Imakefile,v 3.18tsi Exp $
     DATAFILES = README amiga ataritt chicony dell everex fujitsu hp keytronic \
 		kinesis macintosh microsoft nec northgate pc sharp sony sun \
 		winbook $(TESTDATA)
-      SUBDIRS = digital ibm sgi
+      SUBDIRS = digital enermax ibm sgi
 
 all::
 
