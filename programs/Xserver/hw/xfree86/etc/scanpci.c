@@ -23,7 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.96tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.97tsi Exp $ */
 
 #include <X11/X.h>
 #include "os.h"
@@ -514,7 +514,7 @@ print_header_type_0(pciConfigPtr pcr)
 
     if (pcr->basesize[6]) {
 	printf("  BASEROM   0x%08x  addr 0x%08x",
-	       (int)pcr->pci_baserom, (int)(pcr->pci_baserom & 0xFFFF8000));
+	       (int)pcr->pci_baserom, (int)(pcr->pci_baserom & 0xFFFFF800));
 	printf("  %ssize 0x%08x",
 	       (pcr->minBasesize & (2 << 6)) ? "" : "estimated ",
 	       1 << pcr->basesize[6]);
@@ -530,7 +530,7 @@ print_header_type_0(pciConfigPtr pcr)
 
     if (pcr->pci_user_config)
 	printf("  BYTE_0    0x%02x  BYTE_1  0x%02x"
-	       "  BYTE_2  0x%02x  BYTE_3  0x%02x\n",
+	       "  BYTE_2  0x%02x  BYTE_3   0x%02x\n",
 	       (int)pcr->pci_user_config_0, (int)pcr->pci_user_config_1,
 	       (int)pcr->pci_user_config_2, (int)pcr->pci_user_config_3);
 }
@@ -643,7 +643,7 @@ print_header_type_1(pciConfigPtr pcr)
 
     if (pcr->basesize[6]) {
 	printf("  BASEROM   0x%08x  addr 0x%08x",
-	       (int)pcr->pci_br_rom, (int)(pcr->pci_br_rom & 0xFFFF8000));
+	       (int)pcr->pci_br_rom, (int)(pcr->pci_br_rom & 0xFFFFF800));
 	printf("  %ssize 0x%08x",
 	       (pcr->minBasesize & (2 << 7)) ? "" : "estimated ",
 	       1 << pcr->basesize[6]);
