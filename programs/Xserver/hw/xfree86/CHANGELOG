@@ -1,4 +1,6 @@
 XFree86 4.6.99.19 (xx March 2007)
+ 116. Merge in (from X.Org) support for Matrox MGA G200e SE adapters (#17228,
+      Loic Mahe).
 
 XFree86 4.6.99.18 (21 February 2007)
  115. Add an XKB geometry for Enermax Aurora keyboards (Alexander Pohoyda,
@@ -20443,4 +20445,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3848 2007/02/19 15:44:30 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3849 2007/02/21 12:03:12 dawes Exp $

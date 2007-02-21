@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.88 2004/02/20 16:59:48 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.89tsi Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -117,6 +117,14 @@ void MGAdbg_outreg32(ScrnInfoPtr, int,int, char*);
 #define OUTREG16(addr,val) MGAdbg_outreg16(pScrn, addr, val, __FUNCTION__)
 #define OUTREG(addr,val) MGAdbg_outreg32(pScrn, addr, val, __FUNCTION__)
 #endif /* EXTRADEBUG */
+
+#ifndef PCI_CHIP_MGAG200_SE_A_PCI
+#define PCI_CHIP_MGAG200_SE_A_PCI 0x0522
+#endif
+
+#ifndef PCI_CHIP_MGAG200_SE_B_PCI
+#define PCI_CHIP_MGAG200_SE_B_PCI 0x0524
+#endif
 
 /*
  * Read/write to the DAC via MMIO 
@@ -600,6 +608,8 @@ void MGAG450PrintPLL(ScrnInfoPtr pScrn);
 #endif
 long MGAG450SavePLLFreq(ScrnInfoPtr pScrn);
 void MGAprintDac(ScrnInfoPtr pScrn);
+void MGAG200SESaveFonts(ScrnInfoPtr, vgaRegPtr);
+void MGAG200SERestoreFonts(ScrnInfoPtr, vgaRegPtr);
 
 #ifdef USEMGAHAL
 /************ ESC Call Definition ***************/

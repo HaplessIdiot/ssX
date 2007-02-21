@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.18 2001/09/26 12:59:18 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.19tsi Exp $ */
 
 /*
  * MGA Millennium (MGA2064W) functions
@@ -351,6 +351,7 @@
 #define MGA1064_GEN_CTL		0x1d
 #define MGA1064_MISC_CTL	0x1e
 #define MGA1064_MISC_CTL_DAC_POW_DN   		( 0x01 << 0 )
+#define MGA1064_MISC_CTL_DAC_EN                ( 0x01 << 0 )
 #define MGA1064_MISC_CTL_VGA   		( 0x01 << 1 )
 #define MGA1064_MISC_CTL_DIS_CON   		( 0x03 << 1 )
 #define MGA1064_MISC_CTL_MAFC   		( 0x02 << 1 )
