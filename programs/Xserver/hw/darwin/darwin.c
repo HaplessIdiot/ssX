@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.61tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.62tsi Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xproto.h>
@@ -145,8 +145,8 @@ DarwinPrintBanner()
   ErrorF(" (%s)", XF86_CUSTOM_VERSION);
 #endif
   ErrorF(" / X Window System\n");
-  ErrorF("(protocol Version %d, revision %d, vendor release %d)\n",
-         X_PROTOCOL, X_PROTOCOL_REVISION, VENDOR_RELEASE );
+  ErrorF("(protocol Version %d, revision %d)\n",
+         X_PROTOCOL, X_PROTOCOL_REVISION);
   ErrorF("Release Date: %s\n", XF86_DATE);
   ErrorF("\tIf the server is older than 6-12 months, or if your hardware is\n"
          "\tnewer than the above date, look for a newer version before\n"
