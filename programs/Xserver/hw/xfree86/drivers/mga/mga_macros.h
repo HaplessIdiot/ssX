@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_macros.h,v 1.21 2001/09/26 12:59:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_macros.h,v 1.22tsi Exp $ */
 
 #ifndef _MGA_MACROS_H_
 #define _MGA_MACROS_H_
@@ -94,6 +94,8 @@ while(INREG(MGAREG_DWGSYNC) != MGA_SYNC_XTAG) ; \
 #ifdef USEMGAHAL
 #define HAL_CHIPSETS ((pMga->Chipset == PCI_CHIP_MGAG200_PCI) || \
 		  (pMga->Chipset == PCI_CHIP_MGAG200) || \
+                  (pMga->Chipset == PCI_CHIP_MGAG200_SE_A_PCI) || \
+                  (pMga->Chipset == PCI_CHIP_MGAG200_SE_B_PCI) || \
 		  (pMga->Chipset == PCI_CHIP_MGAG400) || \
 		  (pMga->Chipset == PCI_CHIP_MGAG550))
     
