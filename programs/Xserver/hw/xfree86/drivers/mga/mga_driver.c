@@ -44,7 +44,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.257tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.258tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -3251,6 +3251,9 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen,
         (pMga->Chipset == PCI_CHIP_MGAG200_SE_B_PCI)) {
         pScrn->videoRam = VRTemp;
         pMga->FbMapSize = FBTemp;
+	/* Need to remap */
+	MGAUnmapMem(pScrn);
+	MGAMapMem(pScrn);
     }
 #ifdef USEMGAHAL
     MGA_HAL(
