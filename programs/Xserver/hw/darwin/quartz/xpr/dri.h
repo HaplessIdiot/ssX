@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/dri.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/dri.h,v 1.2tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -36,6 +36,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /* Prototypes for AppleDRI functions */
 
 #ifndef _DRI_H_
+#define _DRI_H_
 
 #include <X11/Xdefs.h>
 #include "scrnintstr.h"
@@ -124,7 +125,5 @@ extern void DRISurfaceNotify (xp_surface_id id, int kind);
 extern void DRIQueryVersion(int *majorVersion,
                             int *minorVersion,
                             int *patchVersion);
-
-#define _DRI_H_
 
 #endif
