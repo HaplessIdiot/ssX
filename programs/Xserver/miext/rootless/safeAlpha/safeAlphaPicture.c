@@ -32,7 +32,7 @@
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  */
- /* $XFree86: xc/programs/Xserver/miext/rootless/safeAlpha/safeAlphaPicture.c,v 1.3 2003/10/24 00:33:15 torrey Exp $ */
+ /* $XFree86: xc/programs/Xserver/miext/rootless/safeAlpha/safeAlphaPicture.c,v 1.4tsi Exp $ */
 
 #ifdef RENDER
 
@@ -46,7 +46,7 @@
 # define mod(a,b)	((b) == 1 ? 0 : (a) >= 0 ? (a) % (b) : (b) - (-a) % (b))
 
 
-// Replacement for fbStore_x8r8g8b8 that sets the alpha channel
+/* Replacement for fbStore_x8r8g8b8 that sets the alpha channel */
 void
 SafeAlphaStore_x8r8g8b8 (FbCompositeOperand *op, CARD32 value)
 {
@@ -56,7 +56,7 @@ SafeAlphaStore_x8r8g8b8 (FbCompositeOperand *op, CARD32 value)
 }
 
 
-// Defined in fbcompose.c
+/* Defined in fbcompose.c */
 extern FbCombineFunc fbCombineFuncU[];
 extern FbCombineFunc fbCombineFuncC[];
 
@@ -235,7 +235,7 @@ SafeAlphaCompositeGeneral(
     if (!fbBuildCompositeOperand (pDst, dst, xDst, yDst, FALSE, TRUE))
 	return;
 
-    // Use SafeAlpha operands for on screen picture formats
+    /* Use SafeAlpha operands for on screen picture formats */
     if (pDst->format == PICT_x8r8g8b8) {
         dst[0].store = SafeAlphaStore_x8r8g8b8;
     }
@@ -355,8 +355,10 @@ SafeAlphaComposite(
 				   height))
 	return;
 
-    // To preserve the alpha channel we have a special,
-    // non-optimzied compositor.
+    /*
+     * To preserve the alpha channel we have a special, non-optimzied
+     * compositor.
+     */
     func = SafeAlphaCompositeGeneral;
 
     /*
@@ -589,7 +591,7 @@ SafeAlphaComposite(
     }
     REGION_UNINIT (pDst->pDrawable->pScreen, &region);
 
-    // Reset destination depth to its true value
+    /* Reset destination depth to its true value */
     pDst->pDrawable->depth = dstDepth;
 }
 

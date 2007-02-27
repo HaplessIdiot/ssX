@@ -1,17 +1,25 @@
-XCOMM $XFree86: xc/programs/Xserver/miext/rootless/Imakefile,v 1.5tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/miext/rootless/Imakefile,v 1.6tsi Exp $
 
 #include <Server.tmpl>
 
-#ifdef DarwinArchitecture
-#define RootlessSafeAlpha YES
-#define RootlessAcceleration YES
+#if defined(DarwinArchitecture) || (defined(XnonServer) && XnonServer)
+# ifndef RootlessSafeAlpha
+#  define RootlessSafeAlpha YES
+# endif
+# ifndef RootlessAcceleration
+#  define RootlessAcceleration YES
+# endif
 #else
-#define RootlessSafeAlpha NO
-#define RootlessAcceleration NO
+# ifndef RootlessSafeAlpha
+#  define RootlessSafeAlpha NO
+# endif
+# ifndef RootlessAcceleration
+#  define RootlessAcceleration NO
+# endif
 #endif
 
 #if RootlessSafeAlpha || RootlessAcceleration
-#define IHaveSubdirs
+# define IHaveSubdirs
 #endif
 
 #if RootlessSafeAlpha
@@ -43,9 +51,9 @@ LibraryModuleTarget(rootless,$(OBJS),.)
 
 DependTarget()
 
+#ifdef IHaveSubdirs
 SUBDIRS = $(ALPHADIRS) $(ACCELDIRS)
 
-#if RootlessSafeAlpha || RootlessAcceleration
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
 #endif
