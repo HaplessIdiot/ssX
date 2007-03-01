@@ -44,7 +44,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.258tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.259tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -278,6 +278,7 @@ static const char *xaaSymbols[] = {
     "XAAFallbackOps",
     "XAAInit",
     "XAAMoveDWORDS",
+    "XAAScreenIndex",
     "XAA_888_plus_PICT_a8_to_8888",
     NULL
 };
@@ -3249,11 +3250,11 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen,
     }
     if ((pMga->Chipset == PCI_CHIP_MGAG200_SE_A_PCI) ||
         (pMga->Chipset == PCI_CHIP_MGAG200_SE_B_PCI)) {
+	/* Need to remap */
+        MGAUnmapMem(pScrn);
         pScrn->videoRam = VRTemp;
         pMga->FbMapSize = FBTemp;
-	/* Need to remap */
-	MGAUnmapMem(pScrn);
-	MGAMapMem(pScrn);
+        MGAMapMem(pScrn);
     }
 #ifdef USEMGAHAL
     MGA_HAL(
