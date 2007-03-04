@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/Imakefile,v 3.35 2006/05/16 16:01:49 tsi Exp $
+XCOMM $XFree86: xc/Imakefile,v 3.36tsi Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
@@ -101,6 +101,7 @@ version.def::
 
 includes::
 	MakeDir($(BUILDINCDIR))
+	MakeDir($(BUILDLIBDIR))
 	MakeDir($(BUILDBINDIR))
 
 XCOMM
