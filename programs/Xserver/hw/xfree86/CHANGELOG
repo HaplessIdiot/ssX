@@ -1,4 +1,6 @@
-XFree86 4.6.99.19 (xx March 2007)
+XFree86 4.6.99.20 (xx March 2007)
+
+XFree86 4.6.99.19 (7 March 2007)
  118. Update to the 2007-02-12 snapshot of pci.ids.
  117. Fix the ioport, pcitweak and scanpci utilities to use the correct page
       size on those platforms where it is not 4K (Marc La France).
@@ -20448,4 +20450,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3851 2007/02/24 15:51:24 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3852 2007/03/01 16:01:38 tsi Exp $
