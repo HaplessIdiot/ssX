@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.h,v 1.11 2005/08/28 20:04:52 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.h,v 1.12tsi Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -119,7 +119,7 @@ typedef struct vbeControllerInfoBlock {
 
 	return xf86LoadSubModuleWithRequirements(pScreenInfo, "vbe",
 						 &vbeModuleVersionRequirements);
-}
+    }
 
 #    define xf86LoadVBEModule(_pScreenInfo) \
 	    xf86LoadVBEModule(_pScreenInfo)
