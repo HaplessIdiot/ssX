@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.92tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.93tsi Exp $ */
 /*
  * Copyright 2000-2002 by Alan Hourihane, Flint Mountain, North Wales.
  *
@@ -900,7 +900,7 @@ DoConfigure()
 #ifdef __UNIXOS2__
 #define PATH_MAX 2048
 #endif
-#if defined(__SCO__)
+#ifndef PATH_MAX
 #define PATH_MAX 1024
 #endif
         const char* configfile = XF86CONFIGFILE".new";

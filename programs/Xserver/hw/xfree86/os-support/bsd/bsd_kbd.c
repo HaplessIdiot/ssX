@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_kbd.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_kbd.c,v 1.10tsi Exp $ */
 
 /*
  * Copyright (c) 2002 by The XFree86 Project, Inc.
@@ -496,10 +496,8 @@ OpenKeyboard(InputInfoPtr pInfo)
                break;
 #endif
            default:
-               xf86Msg(X_ERROR, "%s: Unsupported wskbd type \"%d\"",
-                                pInfo->name, pKbd->wsKbdType);
-               close(pInfo->fd);
-               return FALSE;
+               printWsType("Unknown", pInfo->name);
+               break;
        }
     }
 #endif

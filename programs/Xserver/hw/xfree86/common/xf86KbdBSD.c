@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdBSD.c,v 3.24 2005/10/14 15:16:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdBSD.c,v 3.25 2006/01/09 14:59:52 dawes Exp $ */
 /*
  * Derived from xf86Kbd.c by S_ren Schmidt (sos@login.dkuug.dk)
  * which is Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -1272,8 +1272,7 @@ WSKbdToKeycode(int keycode)
 			return wsSunMap[keycode];
 #endif
 	default:
-		ErrorF("Unknown wskbd type %d\n", xf86Info.wsKbdType);
-		return KEY_UNKNOWN;
+		return keycode;
 	}
 }
 

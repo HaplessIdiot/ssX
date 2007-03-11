@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.70tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.71tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -147,7 +147,9 @@ KMODSRC = kmod_noop.c
 KMODOBJ = kmod_noop.o
 #endif
 
-#if defined(i386Architecture) || defined(ia64Architecture)
+#if defined(i386Architecture) || \
+    defined(ia64Architecture) || \
+    defined(AMD64Architecture)
 RES_SRC=stdResource.c
 RES_OBJ=stdResource.o
 #else

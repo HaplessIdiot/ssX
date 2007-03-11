@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.293tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.294 2007/02/13 18:30:09 tsi Exp $ */
 
 
 /*
@@ -2175,10 +2175,8 @@ configInputKbd(IDevPtr pIDev)
 	    break;
 #endif
 	default:
-	    xf86ConfigError("Unsupported wskbd type \"%d\"", 
-			    xf86Info.wsKbdType);
-	    close(xf86Info.kbdFd);
-	    return FALSE;
+	    xf86Msg(X_PROBED, "Keyboard type: unknown (%d)\n",
+		xf86Info.wsKbdType);
 	}
 #endif
     } else {
