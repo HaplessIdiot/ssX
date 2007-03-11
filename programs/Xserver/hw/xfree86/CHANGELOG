@@ -1,4 +1,14 @@
 XFree86 4.6.99.20 (xx March 2007)
+ 119. Another merge of NetBSD changes:
+      - Support absolute mouse position events (Ty Sarna).
+      - Fix bug that caused an entire batch of mouse events to be rejected
+        when one of an unknown type was encountered (Ty Sarna).
+      - Support horizontal scroll wheels (Iain Hibbert, #13821).
+      - Don't error out on unknown wskbd types (Nathan J. Williams).
+      - Add support for NetBSD/x86_64 (Frank van der Linden).
+      - Update NetBSD section of Imake.cf.  Ditto for NetBSD.cf.  Note that
+        the latter might temporarily cause build breakage
+        (Marc La France).
 
 XFree86 4.6.99.19 (7 March 2007)
  118. Update to the 2007-02-12 snapshot of pci.ids.
@@ -20450,4 +20460,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3852 2007/03/01 16:01:38 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3853 2007/03/07 12:02:59 dawes Exp $
