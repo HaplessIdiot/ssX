@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Sbus.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Sbus.c,v 1.13tsi Exp $ */
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -73,6 +73,7 @@ struct sbus_devtable sbusDeviceTable[] = {
     { SBUS_DEVICE_TCX, FBTYPE_TCXCOLOR, "tcx", "Sun TCX" },
     { SBUS_DEVICE_FFB, FBTYPE_CREATOR, "ffb", "Sun FFB" },
     { SBUS_DEVICE_FFB, FBTYPE_CREATOR, "afb", "Sun Elite3D" },
+    { SBUS_DEVICE_P9100, FBTYPE_P9100, "pnozz", "Weitek P9100" },
     { 0, 0, NULL, NULL }
 };
 
@@ -84,7 +85,7 @@ promGetSibling(int node)
 	return 0;
 
     promOpio.op_nodeid = node;
-    if (ioctl(promFd, OPIOCGETNEXT, &promOpio) < 0)
+    if (ioctl(promFd, OPIOCGETNEXT, &promOpio.op_nodeid) < 0)
 	return 0;
 
     return promOpio.op_nodeid;
@@ -97,7 +98,7 @@ promGetChild(int node)
 	return 0;
 
     promOpio.op_nodeid = node;
-    if (ioctl(promFd, OPIOCGETCHILD, &promOpio) < 0)
+    if (ioctl(promFd, OPIOCGETCHILD, &promOpio.op_nodeid) < 0)
 	return 0;
 
     return promOpio.op_nodeid;
@@ -106,6 +107,7 @@ promGetChild(int node)
 char *
 promGetProperty(const char *prop, int *lenp)
 {
+    /* op_nodeid has already been set */
     promOpio.op_namelen = strlen(prop);
     promOpio.op_name = (char *)prop;
     promOpio.op_buflen = MAX_VAL;

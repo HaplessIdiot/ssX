@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Sbus.h,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Sbus.h,v 1.11tsi Exp $ */
 /*
  * Platform specific SBUS and OpenPROM access declarations.
  *
@@ -57,6 +57,26 @@
 #  include <sys/types.h>
 #  include <sys/fbio.h>
 #  include <dev/ofw/openpromio.h>
+# elif defined(__NetBSD__)
+#  include <dev/sun/fbio.h>
+#  include <dev/ofw/openfirmio.h>
+   /*
+    * Translate from openpromio to openfirmio.  This could likely be avoided by
+    * #include'ing <machine/openpromio.h> or <sparc/openpromio.h> instead.
+    */
+#  define opiocdesc		ofiocdesc
+#  define op_nodeid		of_nodeid
+#  define op_namelen		of_namelen
+#  define op_name		of_name
+#  define op_buflen		of_buflen
+#  define op_buf		of_buf
+#  define OPIOCGET		OFIOCGET
+#  define OPIOCSET		OFIOCSET
+#  define OPIOCNEXTPROP		OFIOCNEXTPROP
+#  define OPIOCGETOPTNODE	OFIOCGETOPTNODE
+#  define OPIOCGETNEXT		OFIOCGETNEXT
+#  define OPIOCGETCHILD		OFIOCGETCHILD
+#  define OPIOCFINDDEVICE	OFIOCFINDDEVICE
 # else
 #  include <machine/fbio.h>
 # endif
@@ -99,7 +119,7 @@
 #endif
 
 #ifndef   FBTYPE_MDICOLOR
-# ifdef CSRG_BASED
+# if defined(CSRG_BASED) && !defined(__NetBSD__)
 #  define FBTYPE_MDICOLOR 28
 # else
 #  define FBTYPE_MDICOLOR 20
@@ -115,12 +135,20 @@
 #endif
 
 #ifndef   FBTYPE_CREATOR
-# if defined(linux)
+# if defined(linux) || defined(__NetBSD__)
 #  define FBTYPE_CREATOR 22
 # elif defined(CSRG_BASED)
 #  define FBTYPE_CREATOR 30
 # elif defined(sun)
 #  define FBTYPE_CREATOR 65535	/* Larger than life ... */
+# endif
+#endif
+
+#ifndef   FBTYPE_P9100
+# ifdef __NetBSD__
+#  define  FBTYPE_P9100 21
+# else
+#  define  FBTYPE_P9100 -1	/* Not supported */
 # endif
 #endif
 

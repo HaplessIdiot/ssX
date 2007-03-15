@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.264tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.265tsi Exp $ */
 
 /*
  *
@@ -690,7 +690,12 @@ LOOKUP xfree86LookupTab[] = {
     SYMFUNC(xf86UnmapSbusMem)
     SYMFUNC(xf86SbusHideOsHwCursor)
     SYMFUNC(xf86SbusSetOsHwCursorCmap)
+    SYMFUNC(xf86SbusSetOsHwCursorImage)
+    SYMFUNC(xf86SbusSetOsHwCursor)
+    SYMFUNC(xf86SbusSetOsHwCursorPosition)
+    SYMFUNC(xf86SbusSetOsHwCursorHotSpot)
     SYMFUNC(xf86SbusHandleColormaps)
+    SYMFUNC(xf86SbusSaveScreen)
     SYMFUNC(sparcPromInit)
     SYMFUNC(sparcPromClose)
     SYMFUNC(sparcPromGetProperty)

@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.h,v 3.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.h,v 3.9tsi Exp $ */
 
 #ifndef _XF86_SBUSBUS_H
 #define _XF86_SBUSBUS_H
@@ -40,6 +40,7 @@
 #define SBUS_DEVICE_FFB		0x000b
 #define SBUS_DEVICE_GT		0x000c
 #define SBUS_DEVICE_MGX		0x000d
+#define SBUS_DEVICE_P9100	0x000e
 
 typedef struct sbus_prom_node {
     int			node;
@@ -93,9 +94,18 @@ Bool xf86LocateSbusMemoryArea(sbusDevicePtr psdp,
 pointer xf86MapSbusMem(sbusDevicePtr psdp, unsigned long offset,
 		       unsigned long size);
 void xf86UnmapSbusMem(sbusDevicePtr psdp, pointer addr, unsigned long size);
+
 void xf86SbusHideOsHwCursor(sbusDevicePtr psdp);
 void xf86SbusSetOsHwCursorCmap(sbusDevicePtr psdp, int bg, int fg);
+void xf86SbusSetOsHwCursorImage(sbusDevicePtr psdp, pointer image,
+				pointer mask);
+void xf86SbusSetOsHwCursor(sbusDevicePtr psdp, Bool onoff);
+void xf86SbusSetOsHwCursorPosition(sbusDevicePtr psdp, int x, int y);
+void xf86SbusSetOsHwCursorHotSpot(sbusDevicePtr psdp, int hotx, int hoty);
+
 Bool xf86SbusHandleColormaps(ScreenPtr pScreen, sbusDevicePtr psdp);
+
+Bool xf86SbusSaveScreen(sbusDevicePtr, int mode);
 
 extern int promRootNode;
 

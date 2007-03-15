@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.514tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.515tsi Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -459,9 +459,7 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.514tsi Exp $
 
 /* SPARC and UltraSPARC drivers */
 
-#if  defined(SparcArchitecture) && \
-    !defined(LynxOSArchitecture) && \
-    !defined(NetBSDArchitecture)
+#if  defined(SparcArchitecture) && !defined(LynxOSArchitecture)
 # ifndef XF86Server
 #  define XF86Server		YES
 # endif
@@ -551,9 +549,9 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.514tsi Exp $
 
 /* Pure SBUS and PCI drivers should go first */
 # ifndef XF86CardDrivers
-#  define XF86CardDrivers	sunffb sunleo suncg6 suncg3 suncg14 suntcx \
-				sunbw2 glint mga tdfx ati vesa vga fbdev \
-				XF86OSCardDrivers XF86ExtraCardDrivers \
+#  define XF86CardDrivers	pnozz sunffb sunleo suncg6 suncg3 suncg14 \
+				suntcx sunbw2 glint mga tdfx ati vesa vga \
+				fbdev XF86OSCardDrivers XF86ExtraCardDrivers \
 				DevelDrivers
 # endif
 # ifndef DriDrivers
@@ -828,7 +826,9 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.514tsi Exp $
 /*
  * Intel StrongARM and Hewlett-Packard PA-RISC
  */
-#if defined(Arm32Architecture) || defined(HPArchitecture)
+#if defined(Arm32Architecture) || \
+    defined(HPArchitecture) || \
+    defined(CatsArchitecture)
 # ifndef XF86Server
 #  define XF86Server		YES
 # endif

@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.c,v 3.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.c,v 3.12tsi Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -933,7 +933,7 @@ xf86SbusHandleColormaps(ScreenPtr pScreen, sbusDevicePtr psdp)
 # define FB_CUR_SETALL   WSDISPLAY_CURSOR_DOALL
 #endif
 
-/* Tell OS that we are driving the HW cursor ourselves. */
+/* Tell OS that we are driving the HW cursor ourselves */
 void
 xf86SbusHideOsHwCursor(sbusDevicePtr psdp)
 {
@@ -954,7 +954,7 @@ xf86SbusHideOsHwCursor(sbusDevicePtr psdp)
     ioctl(psdp->fd, FBIOSCURSOR, &fbcursor);
 }
 
-/* Set HW cursor colormap. */
+/* Set HW cursor colormap */
 void
 xf86SbusSetOsHwCursorCmap(sbusDevicePtr psdp, int bg, int fg)
 {
@@ -974,4 +974,88 @@ xf86SbusSetOsHwCursorCmap(sbusDevicePtr psdp, int bg, int fg)
     fbcursor.cmap.blue = blue;
     fbcursor.set = FB_CUR_SETCMAP;
     ioctl(psdp->fd, FBIOSCURSOR, &fbcursor);
+}
+
+/* Set HW cursor image & mask */
+void
+xf86SbusSetOsHwCursorImage(sbusDevicePtr psdp, pointer image, pointer mask)
+{
+    struct fbcursor fbcursor;
+
+    memset(&fbcursor, 0, sizeof(fbcursor));
+    fbcursor.image = image;
+    fbcursor.mask = mask;
+    fbcursor.set = FB_CUR_SETSHAPE;
+    ioctl(psdp->fd, FBIOSCURSOR, &fbcursor);
+}
+
+/* Set hide/un-hide HW cursor */
+void
+xf86SbusSetOsHwCursor(sbusDevicePtr psdp, Bool onoff)
+{
+    struct fbcursor fbcursor;
+
+    memset(&fbcursor, 0, sizeof(fbcursor));
+    if (onoff)
+	fbcursor.enable = 1;
+    fbcursor.set = FB_CUR_SETCUR;
+    ioctl(psdp->fd, FBIOSCURSOR, &fbcursor);
+}
+
+/* Set HW cursor position */
+void
+xf86SbusSetOsHwCursorPosition(sbusDevicePtr psdp, int x, int y)
+{
+    struct fbcursor fbcursor;
+
+    memset(&fbcursor, 0, sizeof(fbcursor));
+    fbcursor.pos.x = x;
+    fbcursor.pos.y = y;
+    fbcursor.set = FB_CUR_SETPOS;
+    ioctl(psdp->fd, FBIOSCURSOR, &fbcursor);
+}
+
+/* Set HW cursor hot spot */
+void
+xf86SbusSetOsHwCursorHotSpot(sbusDevicePtr psdp, int hotx, int hoty)
+{
+    struct fbcursor fbcursor;
+
+    memset(&fbcursor, 0, sizeof(fbcursor));
+    fbcursor.hot.x = hotx;
+    fbcursor.hot.y = hoty;
+    fbcursor.set = FB_CUR_SETHOT;
+    ioctl(psdp->fd, FBIOSCURSOR, &fbcursor);
+}
+
+/*
+ * Screen on/off
+ */
+
+#ifdef __OpenBSD__
+/* Compatibility definitions */
+# define FBIOSVIDEO	WSDISPLAYIO_SVIDEO
+#endif
+
+Bool
+xf86SbusSaveScreen(sbusDevicePtr psdp, int mode)
+{
+    int state;
+
+    switch (mode) {
+    case SCREEN_SAVER_ON:
+    case SCREEN_SAVER_CYCLE:
+	state = 0;
+	break;
+
+    case SCREEN_SAVER_OFF:
+    case SCREEN_SAVER_FORCER:
+	state = 1;
+	break;
+
+    default:
+	return FALSE;
+    }
+
+    return (ioctl(psdp->fd, FBIOSVIDEO, &state) >= 0);
 }

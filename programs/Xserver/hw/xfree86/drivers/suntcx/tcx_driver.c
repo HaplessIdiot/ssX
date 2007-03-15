@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suntcx/tcx_driver.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suntcx/tcx_driver.c,v 1.14tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -742,11 +742,11 @@ TCXValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 /* Mandatory */
 static Bool
 TCXSaveScreen(ScreenPtr pScreen, int mode)
-    /* this function should blank the screen when unblank is FALSE and
-       unblank it when unblank is TRUE -- it doesn't actually seem to be
-       used for much though */
 {
-    return TRUE;
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    TcxPtr pTcx = GET_TCX_FROM_SCRN(pScrn);
+
+    return xf86SbusSaveScreen(pTcx->psdp, mode);
 }
 
 /*

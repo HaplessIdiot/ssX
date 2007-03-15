@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.53tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.54tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -337,19 +337,23 @@
 # if defined(linux)
 #  define ARCH_PCI_INIT linuxPciInit
 #  define INCLUDE_XF86_MAP_PCI_MEM
+#  define ARCH_PCI_PCI_BRIDGE sparcPciPciBridge
 # elif defined(sun)
 #  define ARCH_PCI_INIT sparcPciInit
 #  define INCLUDE_XF86_MAP_PCI_MEM
+#  define ARCH_PCI_PCI_BRIDGE sparcPciPciBridge
 # elif defined(__FreeBSD__)
 #  define ARCH_PCI_INIT freebsdPciInit
+#  define INCLUDE_XF86_MAP_PCI_MEM
+#  define INCLUDE_XF86_NO_DOMAIN
+# elif defined(__NetBSD__)
+#  define ARCH_PCI_INIT netbsdPciInit
 #  define INCLUDE_XF86_MAP_PCI_MEM
 #  define INCLUDE_XF86_NO_DOMAIN
 # elif defined(__OpenBSD__)
 #  define ARCH_PCI_INIT sparcPciInit
 #  define INCLUDE_XF86_MAP_PCI_MEM
 #  define ARCH_PCI_OS_INIT freebsdPciInit
-# endif
-# if !defined(__FreeBSD__)
 #  define ARCH_PCI_PCI_BRIDGE sparcPciPciBridge
 # endif
 #elif defined(__amd64__) || defined(__x86_64__)
