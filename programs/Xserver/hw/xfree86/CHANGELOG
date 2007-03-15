@@ -1,4 +1,11 @@
 XFree86 4.6.99.20 (xx March 2007)
+ 120. More changes derived from NetBSD/sparc:
+      - Enable openprom interface for NetBSD/sparc (Marc La France).
+      - Add a generic SaveScreen() implementation for SBUS adapters that don't
+        provide their own (Marc La France).
+      - Beef up generic cursor handling for SBUS adapters (Marc La France).
+      - Add a cleaned up version of Michael Lorenz's driver for SBUS Weitek
+        P9100 adapters.
  119. Another merge of NetBSD changes:
       - Support absolute mouse position events (Ty Sarna).
       - Fix bug that caused an entire batch of mouse events to be rejected
@@ -20460,4 +20467,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3853 2007/03/07 12:02:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3854 2007/03/11 17:38:00 tsi Exp $

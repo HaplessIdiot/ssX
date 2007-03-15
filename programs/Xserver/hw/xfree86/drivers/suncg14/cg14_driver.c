@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg14/cg14_driver.c,v 1.14tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg14/cg14_driver.c,v 1.15tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -635,11 +635,11 @@ CG14ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 /* Mandatory */
 static Bool
 CG14SaveScreen(ScreenPtr pScreen, int mode)
-    /* this function should blank the screen when unblank is FALSE and
-       unblank it when unblank is TRUE -- it doesn't actually seem to be
-       used for much though */
 {
-    return TRUE;
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    Cg14Ptr pCg14 = GET_CG14_FROM_SCRN(pScrn);
+
+    return xf86SbusSaveScreen(pCg14->psdp, mode);
 }
 
 /*

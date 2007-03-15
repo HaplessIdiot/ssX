@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg3/cg3_driver.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg3/cg3_driver.c,v 1.12tsi Exp $ */
 
 #define PSZ 8
 #include "xf86.h"
@@ -576,9 +576,9 @@ CG3ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 /* Mandatory */
 static Bool
 CG3SaveScreen(ScreenPtr pScreen, int mode)
-    /* this function should blank the screen when unblank is FALSE and
-       unblank it when unblank is TRUE -- it doesn't actually seem to be
-       used for much though */
 {
-    return TRUE;
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    Cg3Ptr pCg3 = GET_CG3_FROM_SCRN(pScrn);
+
+    return xf86SbusSaveScreen(pCg3->psdp, mode);
 }
