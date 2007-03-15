@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Sbus.h,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Sbus.h,v 1.12tsi Exp $ */
 /*
  * Platform specific SBUS and OpenPROM access declarations.
  *
@@ -38,8 +38,8 @@
 # include <sys/openpromio.h>
 #elif defined(__OpenBSD__)
 # include <machine/openpromio.h>
-  /* Translate from WSDISPLAY_TYPE_* to FBTYPE_* */
 # include <dev/wscons/wsconsio.h>
+  /* Compatibility #defines */
 # define FBTYPE_SUN2BW		WSDISPLAY_TYPE_SUNBW
 # define FBTYPE_SUN2COLOR	WSDISPLAY_TYPE_SUNCG2
 # define FBTYPE_SUN3COLOR	WSDISPLAY_TYPE_SUNCG3
@@ -52,6 +52,26 @@
 # define FBTYPE_MDICOLOR	WSDISPLAY_TYPE_SUNCG14
 # define FBTYPE_TCXCOLOR	WSDISPLAY_TYPE_SUNTCX
 # define FBTYPE_CREATOR		WSDISPLAY_TYPE_SUNFFB
+
+# define fbcmap			wsdisplay_cmap
+
+# define FBIOGETCMAP		WSDISPLAYIO_GETCMAP
+# define FBIOPUTCMAP		WSDISPLAYIO_PUTCMAP
+
+# define fbcursor		wsdisplay_cursor
+# define set			which
+
+# define FBIOSCURSOR		WSDISPLAYIO_SCURSOR
+# define FBIOGCURSOR		WSDISPLAYIO_GCURSOR
+
+# define FB_CUR_SETCUR		WSDISPLAY_CURSOR_DOCUR
+# define FB_CUR_SETPOS		WSDISPLAY_CURSOR_DOPOS
+# define FB_CUR_SETHOT		WSDISPLAY_CURSOR_DOHOT
+# define FB_CUR_SETCMAP		WSDISPLAY_CURSOR_DOCMAP
+# define FB_CUR_SETSHAPE	WSDISPLAY_CURSOR_DOSHAPE
+# define FB_CUR_SETALL		WSDISPLAY_CURSOR_DOALL
+
+# define FBIOSVIDEO		WSDISPLAYIO_SVIDEO
 #elif defined(CSRG_BASED)
 # if defined(__FreeBSD__)
 #  include <sys/types.h>
@@ -70,6 +90,7 @@
 #  define op_name		of_name
 #  define op_buflen		of_buflen
 #  define op_buf		of_buf
+
 #  define OPIOCGET		OFIOCGET
 #  define OPIOCSET		OFIOCSET
 #  define OPIOCNEXTPROP		OFIOCNEXTPROP
