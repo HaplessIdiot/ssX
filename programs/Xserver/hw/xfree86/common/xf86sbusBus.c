@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.c,v 3.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.c,v 3.13tsi Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -801,13 +801,6 @@ typedef struct _sbusCmap {
 
 #define SBUSCMAPPTR(pScreen) (pScreen)->devPrivates[sbusPaletteIndex].ptr
 
-#ifdef __OpenBSD__
-/* Compatibility definitions */
-# define fbcmap wsdisplay_cmap
-# define FBIOGETCMAP WSDISPLAYIO_GETCMAP
-# define FBIOPUTCMAP WSDISPLAYIO_PUTCMAP
-#endif
-
 static void
 xf86SbusCmapLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
 			LOCO *colors, VisualPtr pVisual)
@@ -917,22 +910,6 @@ xf86SbusHandleColormaps(ScreenPtr pScreen, sbusDevicePtr psdp)
  * Cursor control.
  */
 
-#ifdef __OpenBSD__
-/* Compatibility definitions */
-# define fbcursor wsdisplay_cursor
-# define set which
-
-# define FBIOSCURSOR     WSDISPLAYIO_SCURSOR
-# define FBIOGCURSOR     WSDISPLAYIO_GCURSOR
-
-# define FB_CUR_SETCUR   WSDISPLAY_CURSOR_DOCUR
-# define FB_CUR_SETPOS   WSDISPLAY_CURSOR_DOPOS
-# define FB_CUR_SETHOT   WSDISPLAY_CURSOR_DOHOT
-# define FB_CUR_SETCMAP  WSDISPLAY_CURSOR_DOCMAP
-# define FB_CUR_SETSHAPE WSDISPLAY_CURSOR_DOSHAPE
-# define FB_CUR_SETALL   WSDISPLAY_CURSOR_DOALL
-#endif
-
 /* Tell OS that we are driving the HW cursor ourselves */
 void
 xf86SbusHideOsHwCursor(sbusDevicePtr psdp)
@@ -1031,11 +1008,6 @@ xf86SbusSetOsHwCursorHotSpot(sbusDevicePtr psdp, int hotx, int hoty)
 /*
  * Screen on/off
  */
-
-#ifdef __OpenBSD__
-/* Compatibility definitions */
-# define FBIOSVIDEO	WSDISPLAYIO_SVIDEO
-#endif
 
 Bool
 xf86SbusSaveScreen(sbusDevicePtr psdp, int mode)
