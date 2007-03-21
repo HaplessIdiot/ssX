@@ -1,4 +1,6 @@
-XFree86 4.6.99.20 (xx March 2007)
+XFree86 4.6.99.21 (xx April 2007)
+
+XFree86 4.6.99.20 (21 March 2007)
  121. Consolidate compatilibity definitions for OpenBSD/sparc and bump video
       ABI version due to yesterday's SBUS ABI changes (Marc La France).
  120. More changes derived from NetBSD/sparc:
@@ -20469,4 +20471,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3855 2007/03/15 02:11:34 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3856 2007/03/15 14:38:35 tsi Exp $
