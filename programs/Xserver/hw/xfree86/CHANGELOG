@@ -1,4 +1,7 @@
 XFree86 4.6.99.21 (xx April 2007)
+ 123. Resurrect support for Ti3026 RAMDACs found on original I128 adapters.
+      8bpp still has incorrect colourmap entries and hardware cursor support
+      is still disabled  (Christos Zoulas).
  122. Fix text mode restoration issues in radeon driver (Matthieu Herrb and
       Matthias Drochner, via NetBSD repository).
 
@@ -20473,4 +20476,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3857 2007/03/21 12:03:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3858 2007/03/24 02:29:43 tsi Exp $
