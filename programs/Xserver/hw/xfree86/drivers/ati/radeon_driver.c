@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.134tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.135tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -5540,7 +5540,7 @@ static void RADEONSave(ScrnInfoPtr pScrn)
 	 */
 	vgaHWSave(pScrn, &hwp->SavedReg, VGA_SR_MODE); /* Save mode only */
 #else
-	vgaHWSave(pScrn, &hwp->SavedReg, VGA_SR_MODE | VGA_SR_FONTS); /* Save mode
+	vgaHWSave(pScrn, &hwp->SavedReg, VGA_SR_ALL); /* Save mode
 						       * & fonts & cmap
 						       */
 #endif
@@ -5608,9 +5608,9 @@ static void RADEONRestore(ScrnInfoPtr pScrn)
 	/* Temporary hack to prevent crashing on PowerMacs when trying to
 	 * write VGA fonts, will find a better solution in the future
 	 */
-	vgaHWRestore(pScrn, &hwp->SavedReg, VGA_SR_MODE );
+	vgaHWRestore(pScrn, &hwp->SavedReg, VGA_SR_MODE);
 #else
-	vgaHWRestore(pScrn, &hwp->SavedReg, VGA_SR_MODE | VGA_SR_FONTS );
+	vgaHWRestore(pScrn, &hwp->SavedReg, VGA_SR_ALL);
 #endif
 	vgaHWLock(hwp);
     } else {
@@ -6956,6 +6956,8 @@ Bool RADEONEnterVT(int scrnIndex, int flags)
     RADEONInfoPtr  info  = RADEONPTR(pScrn);
 
     RADEONTRACE(("RADEONEnterVT\n"));
+
+    RADEONSave(pScrn);
 
     if (info->FBDev) {
 	unsigned char *RADEONMMIO = info->MMIO;
