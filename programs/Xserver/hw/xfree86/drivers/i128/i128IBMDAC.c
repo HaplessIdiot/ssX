@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128IBMDAC.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128IBMDAC.c,v 1.5 2007/03/24 02:58:18 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -336,7 +336,7 @@ I128ProgramTi3025(ScrnInfoPtr pScrn, DisplayModePtr mode)
    if (freq < 20000) {
       xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 	 "Specified dot clock (%.3f) too low for TI 3025",
-	 X_PROBED, freq / 1000.0);
+	 (double)freq / 1000.0);
        return(FALSE);
    }
 
