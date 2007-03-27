@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.36 2004/03/29 16:25:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.37tsi Exp $ */
 
 /*
  * Modified 1996 by Egbert Eich <eich@xfree86.org>
@@ -196,6 +196,9 @@ typedef struct {
     unsigned int ScratchAddress;
     /* 64k for color expansion and imagewrites */
     unsigned char * BltDataWindow;
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    unsigned char * BltDataWindowLE;
+#endif
     /* Hardware cursor address */
     unsigned int CursorAddress;
     Bool UseHWCursor;
@@ -277,6 +280,9 @@ typedef struct _CHIPSRec {
     unsigned int	IOBase;
     unsigned char *	FbBase;
     unsigned char *	MMIOBase;
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    unsigned char *	MMIOBaseLE;
+#endif
     unsigned char *	MMIOBaseVGA;
     unsigned char *	MMIOBasePipeA;
     unsigned char *	MMIOBasePipeB;
