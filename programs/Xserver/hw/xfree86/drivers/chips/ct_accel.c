@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.42tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.43tsi Exp $ */
 /*
  * Copyright 1996, 1997, 1998 by David Bateman <dbateman@ee.uts.edu.au>
  *   Modified 1997, 1998 by Nozomi Ytow
@@ -280,7 +280,10 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
 
 #ifdef CHIPS_HIQV 
     infoPtr->CPUToScreenColorExpandFillFlags =
-	BIT_ORDER_IN_BYTE_MSBFIRST | CPU_TRANSFER_PAD_QWORD |
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
+	BIT_ORDER_IN_BYTE_MSBFIRST | 
+#endif
+	CPU_TRANSFER_PAD_QWORD |
 	LEFT_EDGE_CLIPPING | LEFT_EDGE_CLIPPING_NEGATIVE_X |
 	ROP_NEEDS_SOURCE;
 #ifdef UNDOCUMENTED_FEATURE
@@ -333,7 +336,11 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
     }
 #endif    
 
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    infoPtr->ColorExpandBase = (unsigned char *)cAcl->BltDataWindowLE;
+#else
     infoPtr->ColorExpandBase = (unsigned char *)cAcl->BltDataWindow;
+#endif
     infoPtr->ColorExpandRange = 64 * 1024;
 
     /* Mono 8x8 pattern fills */
