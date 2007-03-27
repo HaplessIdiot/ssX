@@ -1,4 +1,8 @@
 XFree86 4.6.99.21 (xx April 2007)
+ 124. Add a -withsymdirs option to lndir that causes it to shadow directory
+      structures pointed to by symbolic links.  Also fix bug that can occur
+      when -ignorelinks is not used and a symbolic link is encountered in the
+      "from" tree  (Marc La France).
  123. Resurrect support for Ti3026 RAMDACs found on original I128 adapters.
       8bpp still has incorrect colourmap entries and hardware cursor support
       is still disabled  (Christos Zoulas).
@@ -20476,4 +20480,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3858 2007/03/24 02:29:43 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3859 2007/03/24 02:58:16 tsi Exp $

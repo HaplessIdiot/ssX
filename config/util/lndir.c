@@ -1,4 +1,4 @@
-/* $XFree86: xc/config/util/lndir.c,v 3.23tsi Exp $ */
+/* $XFree86: xc/config/util/lndir.c,v 3.24tsi Exp $ */
 /* Create shadow link tree (after X11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 
@@ -119,6 +119,7 @@ struct except {
 static int silent = 0;			/* -silent */
 static int ignore_links = 0;		/* -ignorelinks */
 static int with_revinfo = 0;		/* -withrevinfo */
+static int with_symdirs = 0;		/* -withsymdirs */
 static int clean = 0;			/* -clean */
 static int clean_only = 0;		/* -cleanonly */
 static int no_exceptions = 0;
@@ -218,7 +219,7 @@ dodir (char *fn,		/* name of "from" directory, either absolute or
     struct stat sb, sc;
     int n_dirs;
     int symlen;
-    int basesymlen = -1;
+    int basesymlen;
     char *ocurdir;
     struct except *cur;
 
@@ -279,6 +280,8 @@ dodir (char *fn,		/* name of "from" directory, either absolute or
 	    {
 		/* directory */
 		n_dirs--;
+
+	do_symdir:
 		if (dp->d_name[0] == '.' &&
 		    (dp->d_name[1] == '\0' || (dp->d_name[1] == '.' &&
 					       dp->d_name[2] == '\0')))
@@ -336,6 +339,7 @@ dodir (char *fn,		/* name of "from" directory, either absolute or
 	/* The option to ignore links exists mostly because
 	   checking for them slows us down by 10-20%.
 	   But it is off by default because this really is a useful check. */
+	basesymlen = -1;
 	if (!ignore_links) {
 	    /* see if the file in the base tree was a symlink */
 	    basesymlen = readlink(buf, basesym, sizeof(basesym) - 1);
@@ -350,6 +354,17 @@ dodir (char *fn,		/* name of "from" directory, either absolute or
 		msg ("%s: %s", dp->d_name, symbuf);
 	} else {
 	    char *sympath;
+
+	    if (with_symdirs) {
+		if (stat (buf, &sb) < 0)
+		    mperror (buf);
+#ifdef S_ISDIR
+		else if (S_ISDIR(sb.st_mode))
+#else
+		else if ((sb.st_mode & S_FMT) == S_IFDIR)
+#endif
+		    goto do_symdir;
+	    }
 
 	    if (basesymlen>=0) {
 		if ((buf[0] == '.') && (buf[1] == '.') && (buf[2] == '/') &&
@@ -525,6 +540,9 @@ main (int ac, char *av[])
 	else if ((strcmp(*av, "-withrevinfo") == 0) ||
 		 (strcmp(*av, "-r") == 0))
 	    with_revinfo = 1;
+	else if ((strcmp(*av, "-withsymdirs") == 0) ||
+		 (strcmp(*av, "-d") == 0))
+	    with_symdirs = 1;
 	else if ((strcmp(*av, "-noexceptions") == 0) ||
 		 (strcmp(*av, "-E") == 0))
 	    no_exceptions = 1;
@@ -545,7 +563,7 @@ main (int ac, char *av[])
     }
 
     if ((ac < 1 && !clean_only) || ac > 2 || (clean_only && ac > 1))
-	quit (1, "usage: %s [-s] [-i] [-E] [-r] [-c] [-e <filename>] ... fromdir [todir]",
+	quit (1, "usage: %s [-s] [-i] [-E] [-r] [-d] [-c] [-e <filename>] ... fromdir [todir]",
 	      prog_name);
 
     if (!clean_only) {
