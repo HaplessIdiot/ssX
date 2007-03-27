@@ -23,7 +23,7 @@
 .\" from The Open Group.
 .\" 
 .\"
-.\" $XFree86: xc/config/util/lndir.man,v 1.9tsi Exp $
+.\" $XFree86: xc/config/util/lndir.man,v 1.10tsi Exp $
 .\"
 .TH LNDIR 1 __vendorversion__
 .SH NAME
@@ -82,11 +82,17 @@ messages.  \fB\-silent\fP may be abbreviated to \fB\-s\fP.
 .IP \-ignorelinks
 If a file in \fIfromdir\fP is a symbolic link, \fIlndir\fP will make the same
 link in \fItodir\fP rather than making a link back to the (symbolic link) entry
-in \fIfromdir.\fP  The \fB\-ignorelinks\fP flag changes this behavior.  The
+in \fIfromdir.\fP  The \fB\-ignorelinks\fP option changes this behavior.  The
 link created in \fItodir\fP will point back to the corresponding (symbolic
 link) file in \fIfromdir\fP.  If the link is to a directory, this is almost
 certainly the wrong thing.  The \fB\-ignorelinks\fP option may be
 abbreviated to \fB\-i\fP.
+.IP \-withsymdirs
+If a file in \fIfromdir\fP is a symbolic link to a directory and the
+\fB\-withsymdirs\fP option is specified, \fIlndir\fP will shadow the directory
+tree the symbolic link points to, whether or not the \fB\-ignorelinks\fP is
+also specified.  The \fB\-withsymdirs\fP option may be abbreviated to
+\fB\-d\fP.
 .IP \-clean
 \fIlndir\fP will remove dangling symbolic links and empty directories in the
 shadow tree.  The \fB\-clean\fP option may be abbreviated to \fB\-c\fP.
