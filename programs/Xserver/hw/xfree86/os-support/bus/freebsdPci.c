@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/freebsdPci.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/freebsdPci.c,v 1.9tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -150,14 +150,19 @@ freebsdPciCfgRead(PCITAG tag, int off)
 {
 	struct pci_io io;
 	int error;
+
 	io.pi_sel.pc_bus = BUS(tag);
 	io.pi_sel.pc_dev = DFN(tag) >> 3;
 	io.pi_sel.pc_func = DFN(tag) & 7;
 	io.pi_reg = off;
 	io.pi_width = 4;
 	error = ioctl(pciFd, PCIOCREAD, &io);
-	if (error)
+	if (error) {
+		ErrorF("PciCfgRead(%d:%d:%d, %02x) failed (%s)\n",
+			io.pi_sel.pc_bus, io.pi_sel.pc_dev, io.pi_sel.pc_func,
+			off, strerror(errno));
 		return ~0;
+	}
 	return PCI_CPU(io.pi_data);
 }
 
@@ -165,13 +170,19 @@ static void
 freebsdPciCfgWrite(PCITAG tag, int off, CARD32 val)
 {
 	struct pci_io io;
+	int error;
+
 	io.pi_sel.pc_bus = BUS(tag);
 	io.pi_sel.pc_dev = DFN(tag) >> 3;
 	io.pi_sel.pc_func = DFN(tag) & 7;
 	io.pi_reg = off;
 	io.pi_width = 4;
 	io.pi_data = PCI_CPU(val);
-	ioctl(pciFd, PCIOCWRITE, &io);
+	error = ioctl(pciFd, PCIOCWRITE, &io);
+	if (error)
+		ErrorF("PciCfgWrite(%d:%d:%d, %02x, %08lx) failed (%s)\n",
+			io.pi_sel.pc_bus, io.pi_sel.pc_dev, io.pi_sel.pc_func,
+			off, (unsigned long)val, strerror(errno));
 }
 
 static void
