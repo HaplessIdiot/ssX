@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Imakefile,v 1.36tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Imakefile,v 1.37tsi Exp $
 
 #include <Server.tmpl>
 
@@ -129,9 +129,7 @@ XCOMM no PCI driver -- shouldn't get here
 #endif
 
 #if defined(SparcArchitecture)
-# if !defined(SunArchitecture) && \
-     !defined(NetBSDArchitecture) && \
-     !defined(FreeBSDArchitecture)
+# if !defined(SunArchitecture)
 PCIARCHSRC = sparcPci.c
 PCIARCHOBJ = sparcPci.o
 # endif

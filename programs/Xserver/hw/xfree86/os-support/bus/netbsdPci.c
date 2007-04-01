@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/netbsdPci.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/netbsdPci.c,v 1.7tsi Exp $ */
 /*
  * Copyright (C) 1994-2003 The XFree86 Project, Inc.
  * All rights reserved.
@@ -108,13 +108,19 @@ netbsdPciInit()
 			" read-only\n");
 	}
 
+	/* Use businfo to get the number of devs */
+	if (ioctl(devpci, PCI_IOC_BUSINFO, &pci_businfo) != 0) {
+	    ErrorF("netbsdPciInit: /dev/pci0 not a PCI bus device (%s)",
+		strerror(errno));
+	    close(devpci);
+	    devpci = -1;
+	    return;
+	}
+
 	pciNumBuses    = 1;
 	pciBusInfo[0]  = &netbsdPci0;
 	pciFindFirstFP = pciGenFindFirst;
 	pciFindNextFP  = pciGenFindNext;
-	/* use businfo to get the number of devs */
-	if (ioctl(devpci, PCI_IOC_BUSINFO, &pci_businfo) != 0)
-	    FatalError("netbsdPciInit: not a PCI bus device");
 	netbsdPci0.numDevices = pci_businfo.maxdevs;
 }
 
@@ -128,9 +134,12 @@ netbsdPciConfRead(PCITAG tag, int reg)
 	bdfr.function = PCI_FUNC_FROM_TAG(tag);
 	bdfr.cfgreg.reg = reg;
 
-	if (ioctl(devpci, PCI_IOC_BDF_CFGREAD, &bdfr) == -1)
-		FatalError("netbsdPciConfRead: failed on %d/%d/%d\n",
-		    bdfr.bus, bdfr.device, bdfr.function);
+	if (ioctl(devpci, PCI_IOC_BDF_CFGREAD, &bdfr) == -1) {
+		ErrorF("netbsdPciConfRead: failed on %d:%d:%d %02x (%s)\n",
+		    bdfr.bus, bdfr.device, bdfr.function, reg,
+		    strerror(errno));
+		return ~0;
+	}
 
 	return (bdfr.cfgreg.val);
 }
@@ -147,8 +156,9 @@ netbsdPciConfWrite(PCITAG tag, int reg, CARD32 val)
 	bdfr.cfgreg.val = val;
 
 	if (ioctl(devpci, PCI_IOC_BDF_CFGWRITE, &bdfr) == -1)
-		FatalError("netbsdPciConfWrite: failed on %d/%d/%d\n",
-		    bdfr.bus, bdfr.device, bdfr.function);
+		ErrorF("netbsdPciConfWrite: failed on %d:%d:%d %02x %08lx (%s)\n",
+		    bdfr.bus, bdfr.device, bdfr.function, reg,
+		    (unsigned long)val, strerror(errno));
 }
 
 static void
