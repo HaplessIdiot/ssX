@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Imakefile,v 3.59 2006/01/29 01:12:27 tsi Exp $
+XCOMM $XFree86: xc/programs/Imakefile,v 3.60tsi Exp $
 
 #if BuildServer || BuildClients
 #define IHaveSubdirs
@@ -104,6 +104,10 @@ XTRAPCLIENTDIRS = xtrap
    XCURSORGENDIR = xcursorgen
 #endif
 
+#if BuildXResLibrary
+      RESTESTDIR = restest
+#endif
+
 #if BuildFontconfigLibrary
           FCDIRS = fc-cache fc-list
 #endif
@@ -132,7 +136,7 @@ SUBDIRS = \
 	xrefresh $(XRXSRCDIR) xset \
 	xsetroot $(XSMSRCDIR) xstdcmap $(XINPUTCLIENTDIRS) \
 	$(XTERMSRCDIR) $(XTRAPCLIENTDIRS) $(XVIDTUNESRCDIR) xwd xwininfo xwud \
-	$(XPMCLIENTDIRS) $(XVINFOSRCDIR) \
+	$(XPMCLIENTDIRS) $(XVINFOSRCDIR) $(RESTESTDIR) \
 	$(XSSRCDIR) $(LBXPROXYSRCDIR) $(SCRIPTSDIR) \
 	$(GLXCLIENTDIRS) $(XRANDRDIR) $(XCURSORGENDIR) 
 #endif

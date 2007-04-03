@@ -1,4 +1,7 @@
 XFree86 4.6.99.21 (xx April 2007)
+ 129. Add a rewrite of Mark Vojkovich's restest utility that avoids deadlocks
+      by buffering data and delaying its display until after the server is
+      ungrabbed (Marc La France).
  128. Update Darwin port with selected changes from X.Org and a liberal
       sprinkling of build fixes (Marc La France, with help from
       Frank J. R. Hanstick).
@@ -20488,4 +20491,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3862 2007/04/01 15:55:48 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3863 2007/04/03 00:21:12 tsi Exp $
