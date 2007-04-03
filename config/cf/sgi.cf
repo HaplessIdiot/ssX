@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/sgi.cf,v 1.26tsi Exp $
+XCOMM $XFree86: xc/config/cf/sgi.cf,v 1.27tsi Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -178,10 +178,10 @@ XCOMM operating system: OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVer
 #endif
 
 #ifndef DefaultCCOptions
-#define DefaultCCOptions sgiCCOptions SymbolTables
+#define DefaultCCOptions sgiCCOptions -U__INLINE_INTRINSICS SymbolTables
 #endif
 #ifndef ServerCCOptions
-#define ServerCCOptions sgiCCOptions ServerSymbolTables
+#define ServerCCOptions sgiCCOptions -U__INLINE_INTRINSICS ServerSymbolTables
 #endif
 #ifndef DefaultCplusplusOptions
 #define DefaultCplusplusOptions DefaultCCOptions
