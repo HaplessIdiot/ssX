@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/apple/dri_driver.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/lib/GL/apple/dri_driver.c,v 1.5tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -60,9 +60,15 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifdef GLX_DIRECT_RENDERING
 
+/* These are first to ensure that Apple's GL headers are used. */
+#include <OpenGL/OpenGL.h>
+#include <OpenGL/CGLContext.h>
+
 #include <unistd.h>
 #include <X11/Xlibint.h>
 #include <X11/extensions/Xext.h>
+
+#define GLAPIENTRYP *
 #include <X11/extensions/extutil.h>
 #include "glxclient.h"
 #include "appledri.h"
@@ -112,7 +118,7 @@ static void driMesaCreateSurface(Display *dpy, int scrn,
 static void unwrap_context(__DRIcontextPrivate *pcp);
 static void wrap_context(__DRIcontextPrivate *pcp);
 
-extern const CGLContextObj XAppleDRIGetIndirectContext(void);
+extern CGLContextObj XAppleDRIGetIndirectContext(void);
 
 /*****************************************************************/
 

@@ -14,7 +14,7 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
-/* $XFree86: xc/extras/freetype2/src/base/ftmac.c,v 1.5 2003/05/29 02:13:03 dawes Exp $ */
+/* $XFree86: xc/extras/freetype2/src/base/ftmac.c,v 1.6tsi Exp $ */
 
   /*
     Notes
@@ -62,10 +62,13 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_INTERNAL_STREAM_H
+#include FT_INTERNAL_OBJECTS_H
 
 #ifdef __GNUC__
+#if 0
 #include "../truetype/ttobjs.h"
 #include "../type1/t1objs.h"
+#endif
   /* This is for Mac OS X.  Without redefinition, OS_INLINE */
   /* expands to `static inline' which doesn't survive the   */
   /* -ansi compilation flag of GCC.                         */
@@ -253,8 +256,8 @@
                   FSSpec*              spec )
   {
     FT_Error  error;
-    short     ref_num, v_ref_num;
-    long      dir_id;
+    short     ref_num, v_ref_num = 0;
+    long      dir_id = 0;
     Str255    fond_file_name;
 
 
@@ -262,10 +265,12 @@
 
     error = ResError();
     if ( !error )
+    {
       error = get_file_location( ref_num, &v_ref_num,
                                  &dir_id, fond_file_name );
-    if ( !error )
-      error = FSMakeFSSpec( v_ref_num, dir_id, file_name, spec );
+      if ( !error )
+        error = FSMakeFSSpec( v_ref_num, dir_id, file_name, spec );
+    }
 
     return error;
   }
@@ -673,8 +678,8 @@
                          FT_Long        face_index,
                          FT_Face       *aface )
   {
-    FT_Byte*  pfb_data;
-    FT_ULong  pfb_size;
+    FT_Byte*  pfb_data = NULL;
+    FT_ULong  pfb_size = 0;
     FT_Error  error;
     short     res_ref;
 
@@ -842,8 +847,8 @@
     OSStatus              status = FMCreateFontFamilyIterator( NULL, NULL,
                                                                options,
                                                                &famIter );
-    FMFont                the_font = NULL;
-    FMFontFamily          family   = NULL;
+    FMFont                the_font = 0;
+    FMFontFamily          family   = 0;
 
 
     *face_index = 0;
@@ -1012,11 +1017,13 @@
                            FT_Long       face_index,
                            FT_Face      *aface )
   {
-    FT_Open_Args  args;
     FT_Error      error;
+#if defined( __MWERKS__ ) && !TARGET_RT_MAC_MACHO
+    FT_Open_Args  args;
     FT_Stream     stream;
     FILE*         file;
     FT_Memory     memory;
+#endif
 
 
     /* test for valid `library' and `aface' delayed to FT_Open_Face() */

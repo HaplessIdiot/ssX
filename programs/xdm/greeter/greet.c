@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/greet.c,v 3.17 2003/07/09 15:27:40 tsi Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/greet.c,v 3.18tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -82,7 +82,7 @@ char    **(*__xdm_parseArgs)(char **argv, char *string) = NULL;
 void    (*__xdm_printEnv)(char **e) = NULL;
 char    **(*__xdm_systemEnv)(struct display *d, char *user, char *home) = NULL;
 void    (*__xdm_LogOutOfMem)(char * fmt, ...) = NULL;
-void    (*__xdm_setgrent)(void) = NULL;
+SETGRENT_TYPE    (*__xdm_setgrent)(void) = NULL;
 struct group    *(*__xdm_getgrent)(void) = NULL;
 void    (*__xdm_endgrent)(void) = NULL;
 #ifdef USESHADOW

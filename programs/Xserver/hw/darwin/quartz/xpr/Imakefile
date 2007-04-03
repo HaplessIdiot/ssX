@@ -1,8 +1,8 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/Imakefile,v 1.4tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/Imakefile,v 1.5tsi Exp $
 
 #include <Server.tmpl>
 
-SRCS =  appledir.c \
+SRCS =  appledri.c \
         dri.c \
         xprAppleWM.c \
         xprCursor.c \

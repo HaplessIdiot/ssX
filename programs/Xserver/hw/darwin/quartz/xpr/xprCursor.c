@@ -30,7 +30,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xprCursor.c,v 1.1 2003/04/30 23:15:42 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xprCursor.c,v 1.2tsi Exp $ */
 
 #include "quartzCommon.h"
 #include "xpr.h"
@@ -55,9 +55,7 @@ typedef struct {
 static int darwinCursorScreenIndex = -1;
 static unsigned long darwinCursorGeneration = 0;
 
-#define CURSOR_PRIV(pScreen) \
-    ((QuartzCursorScreenPtr)pScreen->devPrivates[darwinCursorScreenIndex].ptr)
-
+#define CURSOR_PRIV(pScreen) pScreen->devPrivates[darwinCursorScreenIndex].ptr
 
 static Bool
 load_cursor(CursorPtr src, int screen)

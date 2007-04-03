@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.53tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.54tsi Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -167,7 +167,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # define CppCmd                 /usr/bin/cpp
 #endif
 #if (GccMajorVersion == 3) && (GccMinorVersion == 3) || (GccMajorVersion > 3)
-# define StandardCppOptions	-traditional -D__GNUC__
+# define StandardCppOptions	-traditional
 #endif
 #if HasGcc3
 # define RawCppCmd              CppCmd -undef
@@ -178,6 +178,23 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 /* we have a gcc compatible compiler, but its not called gcc */
 #define CcCmd                   /usr/bin/cc
 #define CplusplusCmd            /usr/bin/c++
+
+/*
+ * makedepend doesn't understand ObjectiveC's #import directives, frameworks,
+ * and perhaps other things...
+ */
+#if HasGcc
+# ifndef UseGccMakeDepend
+#  define UseGccMakeDepend	YES
+# endif
+# ifndef PostIncDir
+#  define PostIncDir		DefaultGccIncludeDir
+# endif
+#else
+# ifndef UseCCMakeDepend
+#  define UseCCMakeDepend	YES
+# endif
+#endif
 
 /* default flags to pass to cc */
 #ifndef DefaultCCOptions
@@ -205,7 +222,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #ifdef PpcDarwinArchitecture
 # define DarwinMachineDefines   -D__powerpc__
 # if HasGcc3
-#  define OptimizedCDebugFlags  -Os
+#  define OptimizedCDebugFlags  -Os GccAliasingArgs
 # else
 #  define OptimizedCDebugFlags  -O2
 # endif
@@ -215,7 +232,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #ifdef i386DarwinArchitecture
 # define DarwinMachineDefines   -D__i386__
 # if HasGcc3
-#  define OptimizedCDebugFlags  -Os
+#  define OptimizedCDebugFlags  -Os GccAliasingArgs
 # else
 #  define OptimizedCDebugFlags  -O2 -fno-strength-reduce
 # endif
@@ -238,6 +255,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  */
 #define StandardDefines         DarwinMachineDefines -D__DARWIN__ \
                                 -DNO_ALLOCA -DCSRG_BASED DarwinLocaleDefines
+#define StandardCppDefines      StandardDefines
 
 /*
  * Set this to NO to just build the client libs, which should work without

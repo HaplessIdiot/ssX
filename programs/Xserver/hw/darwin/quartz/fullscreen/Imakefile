@@ -1,6 +1,13 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/fullscreen/Imakefile,v 1.1tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/fullscreen/Imakefile,v 1.2tsi Exp $
 
 #include <Server.tmpl>
+
+XCOMM Ensure any old/duplicate copy is removed
+Makefiles::
+	-RemoveFiles(quartzCursor.c quartzCursor.h)
+
+LinkSourceFile(quartzCursor.c,..)
+LinkSourceFile(quartzCursor.h,..)
 
 SRCS =  fullscreen.c \
         quartzCursor.c

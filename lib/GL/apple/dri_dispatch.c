@@ -27,7 +27,7 @@
    copyright holders shall not be used in advertising or otherwise to
    promote the sale, use or other dealings in this Software without
    prior written authorization. */
-/* $XFree86: xc/lib/GL/apple/dri_dispatch.c,v 1.6 2005/10/14 15:15:55 tsi Exp $ */
+/* $XFree86: xc/lib/GL/apple/dri_dispatch.c,v 1.7tsi Exp $ */
 
 #include <OpenGL/OpenGL.h>
 #include <OpenGL/CGLContext.h>
@@ -123,7 +123,7 @@ ret gl ## gn proto					\
 
 #include "dri_dispatch.h"
 
-__private_extern__ const CGLContextObj
+__private_extern__ CGLContextObj
 XAppleDRIGetIndirectContext (void)
 {
     static CGLContextObj ctx;

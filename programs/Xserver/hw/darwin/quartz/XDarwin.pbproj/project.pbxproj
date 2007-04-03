@@ -63,8 +63,7 @@
 			sourceTree = "<group>";
 		};
 		015EDCEA004203A8CE6F79C2 = {
-			fallbackIsa = PBXFileReference;
-			isa = PBXFrameworkReference;
+			isa = PBXFileReference;
 			lastKnownFileType = wrapper.framework;
 			name = IOKit.framework;
 			path = /System/Library/Frameworks/IOKit.framework;
@@ -197,7 +196,7 @@
 		02E03CA100348209CE6F79C2 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = text.html;
 			name = English;
 			path = English.lproj/XDarwinHelp.html;
 			refType = 4;
@@ -291,7 +290,7 @@
 		089C165DFE840E0CC02AAC07 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = text.plist.strings;
 			name = English;
 			path = English.lproj/InfoPlist.strings;
 			refType = 4;
@@ -309,8 +308,7 @@
 //0A4
 		0A79E19E004499A1CE6F79C2 = {
 			explicitFileType = wrapper.application;
-			fallbackIsa = PBXFileReference;
-			isa = PBXApplicationReference;
+			isa = PBXFileReference;
 			path = XDarwin.app;
 			refType = 3;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -508,8 +506,7 @@
 			sourceTree = "<group>";
 		};
 		1058C7A1FEA54F0111CA2CBB = {
-			fallbackIsa = PBXFileReference;
-			isa = PBXFrameworkReference;
+			isa = PBXFileReference;
 			lastKnownFileType = wrapper.framework;
 			name = Cocoa.framework;
 			path = /System/Library/Frameworks/Cocoa.framework;
@@ -699,7 +696,7 @@
 		1BD8DE4700B8A3C77F000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = sourcecode.cpp.cpp;
 			name = Japanese;
 			path = Japanese.lproj/InfoPlist.strings.cpp;
 			refType = 4;
@@ -715,8 +712,7 @@
 			sourceTree = "<group>";
 		};
 		1BE4F84D0006C9890A000002 = {
-			fallbackIsa = PBXFileReference;
-			isa = PBXFrameworkReference;
+			isa = PBXFileReference;
 			lastKnownFileType = wrapper.framework;
 			name = Carbon.framework;
 			path = /System/Library/Frameworks/Carbon.framework;
@@ -760,8 +756,6 @@
 			sourceTree = "<group>";
 		};
 		237A34C20076E37E7F000001 = {
-			buildRules = (
-			);
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -775,8 +769,6 @@
 			name = Development;
 		};
 		237A34C30076E37E7F000001 = {
-			buildRules = (
-			);
 			buildSettings = {
 				COPY_PHASE_STRIP = YES;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
@@ -922,8 +914,7 @@
 			sourceTree = "<group>";
 		};
 		29B97324FDCFA39411CA2CEA = {
-			fallbackIsa = PBXFileReference;
-			isa = PBXFrameworkReference;
+			isa = PBXFileReference;
 			lastKnownFileType = wrapper.framework;
 			name = AppKit.framework;
 			path = /System/Library/Frameworks/AppKit.framework;
@@ -931,8 +922,7 @@
 			sourceTree = "<absolute>";
 		};
 		29B97325FDCFA39411CA2CEA = {
-			fallbackIsa = PBXFileReference;
-			isa = PBXFrameworkReference;
+			isa = PBXFileReference;
 			lastKnownFileType = wrapper.framework;
 			name = Foundation.framework;
 			path = /System/Library/Frameworks/Foundation.framework;
@@ -1064,7 +1054,7 @@
 		43B962E100617B49416877C2 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = text.plist.strings;
 			name = Japanese;
 			path = Japanese.lproj/InfoPlist.strings;
 			refType = 4;
@@ -1081,7 +1071,7 @@
 		43B962E300617B93416877C2 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = text.html;
 			name = Japanese;
 			path = Japanese.lproj/XDarwinHelp.html;
 			refType = 4;
@@ -1188,8 +1178,7 @@
 		};
 		6E11A985048BDFEE006877C2 = {
 			explicitFileType = wrapper.cfbundle;
-			fallbackIsa = PBXFileReference;
-			isa = PBXBundleReference;
+			isa = PBXFileReference;
 			path = glxCGL.bundle;
 			refType = 3;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -1197,7 +1186,35 @@
 		6E11A986048BDFFB006877C2 = {
 			isa = PBXTargetDependency;
 			target = 6E11A984048BDFEE006877C2;
-			targetProxy = 6EF7158A0676791C00556977;
+			targetProxy = 6E4CAF650702464F001A7398;
+		};
+		6E4CAF630702464F001A7398 = {
+			containerPortal = 29B97313FDCFA39411CA2CEA;
+			isa = PBXContainerItemProxy;
+			proxyType = 1;
+			remoteGlobalIDString = 6EF7C58603D3BC6D00000104;
+			remoteInfo = glxAGL;
+		};
+		6E4CAF640702464F001A7398 = {
+			containerPortal = 29B97313FDCFA39411CA2CEA;
+			isa = PBXContainerItemProxy;
+			proxyType = 1;
+			remoteGlobalIDString = 6E79040F0500F05600EEC080;
+			remoteInfo = xpr;
+		};
+		6E4CAF650702464F001A7398 = {
+			containerPortal = 29B97313FDCFA39411CA2CEA;
+			isa = PBXContainerItemProxy;
+			proxyType = 1;
+			remoteGlobalIDString = 6E11A984048BDFEE006877C2;
+			remoteInfo = glxCGL;
+		};
+		6E4CAF660702464F001A7398 = {
+			containerPortal = 29B97313FDCFA39411CA2CEA;
+			isa = PBXContainerItemProxy;
+			proxyType = 1;
+			remoteGlobalIDString = 6EF065C503D4EE19006877C2;
+			remoteInfo = glxMesa;
 		};
 		6E5F5F0005537A1A008FEAD7 = {
 			fileEncoding = 30;
@@ -1406,8 +1423,7 @@
 		};
 		6E7904100500F05600EEC080 = {
 			explicitFileType = wrapper.cfbundle;
-			fallbackIsa = PBXFileReference;
-			isa = PBXBundleReference;
+			isa = PBXFileReference;
 			path = xpr.bundle;
 			refType = 3;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -1415,7 +1431,7 @@
 		6E7904110500F33B00EEC080 = {
 			isa = PBXTargetDependency;
 			target = 6E79040F0500F05600EEC080;
-			targetProxy = 6EF715890676791C00556977;
+			targetProxy = 6E4CAF640702464F001A7398;
 		};
 		6E97A0F2050798B100B8294C = {
 			fileEncoding = 4;
@@ -1815,8 +1831,7 @@
 		};
 		6EF065C603D4EE19006877C2 = {
 			explicitFileType = wrapper.cfbundle;
-			fallbackIsa = PBXFileReference;
-			isa = PBXBundleReference;
+			isa = PBXFileReference;
 			path = glxMesa.bundle;
 			refType = 3;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -1824,12 +1839,12 @@
 		6EF065C703D4EE19006877C2 = {
 			isa = PBXTargetDependency;
 			target = 6EF065C503D4EE19006877C2;
-			targetProxy = 6EF7158B0676791C00556977;
+			targetProxy = 6E4CAF660702464F001A7398;
 		};
 		6EF065C903D4F0CA006877C2 = {
 			isa = PBXTargetDependency;
 			target = 6EF7C58603D3BC6D00000104;
-			targetProxy = 6EF715880676791C00556977;
+			targetProxy = 6E4CAF630702464F001A7398;
 		};
 		6EF4719E04478B08006877C2 = {
 			fileEncoding = 4;
@@ -1878,34 +1893,6 @@
 			path = "x-list.c";
 			refType = 4;
 			sourceTree = "<group>";
-		};
-		6EF715880676791C00556977 = {
-			containerPortal = 29B97313FDCFA39411CA2CEA;
-			isa = PBXContainerItemProxy;
-			proxyType = 1;
-			remoteGlobalIDString = 6EF7C58603D3BC6D00000104;
-			remoteInfo = glxAGL;
-		};
-		6EF715890676791C00556977 = {
-			containerPortal = 29B97313FDCFA39411CA2CEA;
-			isa = PBXContainerItemProxy;
-			proxyType = 1;
-			remoteGlobalIDString = 6E79040F0500F05600EEC080;
-			remoteInfo = xpr;
-		};
-		6EF7158A0676791C00556977 = {
-			containerPortal = 29B97313FDCFA39411CA2CEA;
-			isa = PBXContainerItemProxy;
-			proxyType = 1;
-			remoteGlobalIDString = 6E11A984048BDFEE006877C2;
-			remoteInfo = glxCGL;
-		};
-		6EF7158B0676791C00556977 = {
-			containerPortal = 29B97313FDCFA39411CA2CEA;
-			isa = PBXContainerItemProxy;
-			proxyType = 1;
-			remoteGlobalIDString = 6EF065C503D4EE19006877C2;
-			remoteInfo = glxMesa;
 		};
 		6EF7C58103D3BC6D00000104 = {
 			buildActionMask = 2147483647;
@@ -1997,8 +1984,7 @@
 		};
 		6EF7C58703D3BC6D00000104 = {
 			explicitFileType = wrapper.cfbundle;
-			fallbackIsa = PBXFileReference;
-			isa = PBXBundleReference;
+			isa = PBXFileReference;
 			path = glxAGL.bundle;
 			refType = 3;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -2024,7 +2010,7 @@
 		F51BF62B02026DDA01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = text.plist.strings;
 			name = Portuguese;
 			path = Portuguese.lproj/InfoPlist.strings;
 			refType = 4;
@@ -2033,7 +2019,7 @@
 		F51BF62C02026E0601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = sourcecode.cpp.cpp;
 			name = Portuguese;
 			path = Portuguese.lproj/InfoPlist.strings.cpp;
 			refType = 4;
@@ -2059,7 +2045,7 @@
 		F51BF62F02026E5C01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = text.html;
 			name = Portuguese;
 			path = Portuguese.lproj/XDarwinHelp.html;
 			refType = 4;
@@ -2101,7 +2087,7 @@
 		F533213A0193CBA201000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = text.plist.strings;
 			name = German;
 			path = German.lproj/InfoPlist.strings;
 			refType = 4;
@@ -2110,7 +2096,7 @@
 		F533213B0193CBB401000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = sourcecode.cpp.cpp;
 			name = German;
 			path = German.lproj/InfoPlist.strings.cpp;
 			refType = 4;
@@ -2136,7 +2122,7 @@
 		F533213E0193CBF401000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = text.html;
 			name = German;
 			path = German.lproj/XDarwinHelp.html;
 			refType = 4;
@@ -2152,8 +2138,7 @@
 			sourceTree = "<group>";
 		};
 		F53321400193CCF001000001 = {
-			fallbackIsa = PBXFileReference;
-			isa = PBXFrameworkReference;
+			isa = PBXFileReference;
 			lastKnownFileType = wrapper.framework;
 			name = ApplicationServices.framework;
 			path = /System/Library/Frameworks/ApplicationServices.framework;
@@ -2161,8 +2146,7 @@
 			sourceTree = "<absolute>";
 		};
 		F53321410193CCF001000001 = {
-			fallbackIsa = PBXFileReference;
-			isa = PBXFrameworkReference;
+			isa = PBXFileReference;
 			lastKnownFileType = wrapper.framework;
 			name = CoreAudio.framework;
 			path = /System/Library/Frameworks/CoreAudio.framework;
@@ -2180,7 +2164,7 @@
 		F533214301A4B3F001000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = text.plist.strings;
 			name = Dutch;
 			path = Dutch.lproj/InfoPlist.strings;
 			refType = 4;
@@ -2189,7 +2173,7 @@
 		F533214401A4B40F01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = sourcecode.cpp.cpp;
 			name = Dutch;
 			path = Dutch.lproj/InfoPlist.strings.cpp;
 			refType = 4;
@@ -2215,7 +2199,7 @@
 		F533214701A4B48301000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = text.html;
 			name = Dutch;
 			path = Dutch.lproj/XDarwinHelp.html;
 			refType = 4;
@@ -2240,7 +2224,7 @@
 		};
 		F54BF6EC017D506E01000001 = {
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = text.script.sh;
 			path = startXClients;
 			refType = 4;
 			sourceTree = "<group>";
@@ -2289,7 +2273,7 @@
 		F587E16101924C2F01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = text.plist.strings;
 			name = Swedish;
 			path = Swedish.lproj/InfoPlist.strings;
 			refType = 4;
@@ -2298,7 +2282,7 @@
 		F587E16201924C5301000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = sourcecode.cpp.cpp;
 			name = Swedish;
 			path = Swedish.lproj/InfoPlist.strings.cpp;
 			refType = 4;
@@ -2324,7 +2308,7 @@
 		F587E16501924C7401000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = text.html;
 			name = Swedish;
 			path = Swedish.lproj/XDarwinHelp.html;
 			refType = 4;
@@ -2350,7 +2334,7 @@
 		F58D65DC018F794D01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = sourcecode.cpp.cpp;
 			name = French;
 			path = French.lproj/InfoPlist.strings.cpp;
 			refType = 4;
@@ -2359,7 +2343,7 @@
 		F58D65DD018F798F01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = text.plist.strings;
 			name = French;
 			path = French.lproj/InfoPlist.strings;
 			refType = 4;
@@ -2385,7 +2369,7 @@
 		F58D65E0018F79C001000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = text.html;
 			name = French;
 			path = French.lproj/XDarwinHelp.html;
 			refType = 4;
@@ -2419,7 +2403,7 @@
 		F5ACD25DC5B5E97701000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = sourcecode.cpp.cpp;
 			name = Spanish;
 			path = Spanish.lproj/InfoPlist.strings.cpp;
 			refType = 4;
@@ -2454,7 +2438,7 @@
 		F5ACD261C5B5EA2001000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = text.html;
 			name = Spanish;
 			path = Spanish.lproj/XDarwinHelp.html;
 			refType = 4;
@@ -2463,7 +2447,7 @@
 		F5ACD262C5B5EA4D01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = text.plist.strings;
 			name = Spanish;
 			path = Spanish.lproj/InfoPlist.strings;
 			refType = 4;
@@ -2480,7 +2464,7 @@
 		F5ACD264C5BE035B01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = sourcecode.cpp.cpp;
 			name = ko;
 			path = ko.lproj/InfoPlist.strings.cpp;
 			refType = 4;
@@ -2515,7 +2499,7 @@
 		F5ACD268C5BE046401000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = text.html;
 			name = ko;
 			path = ko.lproj/XDarwinHelp.html;
 			refType = 4;
@@ -2524,7 +2508,7 @@
 		F5ACD269C5BE049301000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = text.plist.strings;
 			name = ko;
 			path = ko.lproj/InfoPlist.strings;
 			refType = 4;

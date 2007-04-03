@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dristruct.h,v 1.10 2001/03/21 16:21:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/dristruct.h,v 1.1tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -49,7 +49,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define DRI_DRAWABLE_PRIV_FROM_PIXMAP(pPix) \
     ((DRIPixmapPrivIndex < 0) ? \
      NULL : \
-     ((DRIDrawablePrivPtr)((pPix)->devPrivates[DRIWindowPrivIndex].ptr)))
+     ((DRIDrawablePrivPtr)((pPix)->devPrivates[DRIPixmapPrivIndex].ptr)))
 
 typedef struct _DRIDrawablePrivRec
 {

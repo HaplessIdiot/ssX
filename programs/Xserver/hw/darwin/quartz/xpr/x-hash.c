@@ -26,7 +26,7 @@
    copyright holders shall not be used in advertising or otherwise to
    promote the sale, use or other dealings in this Software without
    prior written authorization. */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/x-hash.c,v 1.2 2003/06/30 01:45:13 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/x-hash.c,v 1.3tsi Exp $ */
 
 #include "x-hash.h"
 #include "x-list.h"
@@ -34,8 +34,8 @@
 #include <assert.h>
 
 struct x_hash_table_struct {
-    int bucket_index;
-    int total_keys;
+    unsigned int bucket_index;
+    unsigned int total_keys;
     x_list **buckets;
 
     x_hash_fun *hash_key;
@@ -222,7 +222,7 @@ hash_table_modify (x_hash_table *h, void *k, void *v, int replace)
 	    {
 		hash_table_destroy_item (h, ITEM_KEY (item),
 					 ITEM_VALUE (item));
-		ITEM_KEY (item) = k;
+		item->next = k;
 		ITEM_VALUE (item) = v;
 	    }
 	    else

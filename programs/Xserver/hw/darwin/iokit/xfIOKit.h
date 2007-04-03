@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/iokit/xfIOKit.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/iokit/xfIOKit.h,v 1.2tsi Exp $ */
 
 #ifndef _XFIOKIT_H
 #define _XFIOKIT_H
@@ -47,7 +47,7 @@ typedef struct {
 } XFIOKitScreenRec, *XFIOKitScreenPtr;
 
 #define XFIOKIT_SCREEN_PRIV(pScreen) \
-    ((XFIOKitScreenPtr)pScreen->devPrivates[xfIOKitScreenIndex].ptr)
+    pScreen->devPrivates[xfIOKitScreenIndex].ptr
 
 extern int xfIOKitScreenIndex; // index into pScreen.devPrivates
 extern io_connect_t xfIOKitInputConnect;

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.13tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.14tsi Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -38,11 +38,13 @@ CUSTOMVERSION = XFree86CustomVersion
 CUSTOMVERDEF =  -DXF86_CUSTOM_VERSION='$(CUSTOMVERSION)'
 #endif
 
+CONFIGURATION=`if [ "\`$(PROJ_BUILD) -help 2>&1 | grep buildstyle\`" ]; then echo buildstyle; else echo configuration; fi`
+
 #if XFree86Devel
-BUILDSTYLE = -buildstyle Development
+BUILDSTYLE = -$(CONFIGURATION) Development
 DEBUGDEFINES = -DROOTLESSDEBUG
 #else
-BUILDSTYLE = -buildstyle Deployment
+BUILDSTYLE = -$(CONFIGURATION) Deployment
 #endif
 
 #if OSMajorVersion >= 7

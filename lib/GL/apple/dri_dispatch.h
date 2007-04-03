@@ -1,5 +1,5 @@
 /* dri_dispatch.h -- built automatically, DO NOT EDIT
-   $XFree86: xc/lib/GL/apple/dri_dispatch.h,v 1.7 2004/12/10 17:47:24 alanh Exp $ */
+   $XFree86: xc/lib/GL/apple/dri_dispatch.h,v 1.8tsi Exp $ */
 /*
    Actually, this file has been edited to add necessary
    dependencies on the version of Mac OS X. Someday the
@@ -3176,14 +3176,6 @@ DEFUN_ALIAS_VOID (PointParameterfSGIS, PointParameterf,
 
 DEFUN_ALIAS_VOID (PointParameterfvSGIS, PointParameterfv,
     (GLenum pname, const GLfloat * params),
-    (pname, params))
-
-DEFUN_ALIAS_VOID (PointParameteri, PointParameteriNV,
-    (GLenum pname, GLint params),
-    (pname, params))
-
-DEFUN_ALIAS_VOID (PointParameteriv, PointParameterivNV,
-    (GLenum pname, const GLint * params),
     (pname, params))
 
 DEFUN_ALIAS_VOID (PrioritizeTexturesEXT, PrioritizeTextures,

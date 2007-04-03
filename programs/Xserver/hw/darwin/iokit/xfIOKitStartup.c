@@ -4,7 +4,7 @@
  *
  **************************************************************/
 /*
- * Copyright (c) 2001-2003 Torrey T. Lyons. All Rights Reserved.
+ * Copyright (c) 2001-2004 Torrey T. Lyons. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/iokit/xfIOKitStartup.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/iokit/xfIOKitStartup.c,v 1.3tsi Exp $ */
 
 #include "darwin.h"
 #include "darwinKeyboard.h"
@@ -45,7 +45,7 @@ void GlxWrapInitVisuals(miInitVisualsProcPtr *procPtr);
  */
 void DarwinHandleGUI(
     int         argc,
-    char        *argv[],
+    const char  *argv[],
     char        *envp[] )
 {
 }
@@ -100,6 +100,17 @@ int DarwinModeProcessArgument(
     }
 #endif
 
+    return 0;
+}
+
+
+/*
+ * DarwinModeSystemKeymapSeed
+ *  Changes to NXKeyMapping are not tracked.
+ */
+unsigned int
+DarwinModeSystemKeymapSeed(void)
+{
     return 0;
 }
 

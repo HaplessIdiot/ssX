@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from the copyright holders.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.72 2006/01/09 14:59:38 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.73tsi Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -278,10 +278,12 @@ static int TRANS(SocketINETClose) (XtransConnInfo ciptr);
  * that don't have IPv6 support.
  */
 #if defined(IPv6) && defined(AF_INET6)
+#ifndef __DARWIN__
 static const struct in6_addr local_in6addr_any = IN6ADDR_ANY_INIT;
 #pragma weak in6addr_any = local_in6addr_any
 #ifndef __USLC__
 #pragma weak getaddrinfo
+#endif
 #endif
 static int haveIPv6 = 1;
 #endif

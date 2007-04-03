@@ -11,7 +11,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.30tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.31tsi Exp $ */
 /*
  * Copyright (c) 1996-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -69,6 +69,7 @@ is" without express or implied warranty.
 #include "servermd.h"
 #include "mi.h"
 #include <X11/fonts/fontstruct.h>
+#include "extnsionst.h"
 
 #include "Xnest.h"
 
@@ -161,7 +162,7 @@ void ddxGiveUp()
 
 #ifdef __DARWIN__
 void
-DarwinHandleGUI(int argc, char *argv[])
+DarwinHandleGUI(int argc, const char *argv[], char *envp[])
 {
 }
 

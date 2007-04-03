@@ -33,7 +33,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/iokit/xfIOKit.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/iokit/xfIOKit.c,v 1.6tsi Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xproto.h>
@@ -59,7 +59,7 @@
 #include <IOKit/IOKitLib.h>
 #include <IOKit/hidsystem/IOHIDShared.h>
 #include <IOKit/graphics/IOGraphicsLib.h>
-#include <drivers/event_status_driver.h>
+#include <IOKit/hidsystem/event_status_driver.h>
 
 // Define this to work around bugs in the display drivers for
 // older PowerBook G3's. If the X server starts without this

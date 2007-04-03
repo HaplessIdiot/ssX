@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.326tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.327tsi Exp $
 
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
@@ -127,6 +127,9 @@ XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.326tsi Exp $
 #endif
             GLXDIR = GL
             GLXEXT = $(GLXLIB)
+#if defined(DarwinArchitecture) && BuildAppleDRI
+            GLOBJS = GL/mesa/main/dispatch.o
+#endif
 #endif
 
 #if BuildXInputExt
@@ -1325,7 +1328,8 @@ XCOMM
    XNESTEXTENSIONS = $(XNESTLOADABLEEXTS) $(XNESTSTATICEXTS)
       XNESTEXTDIRS = $(GLXDIR) $(LBXDIRS) $(SITEEXTDIRS)
          XNESTDIRS = $(STDDIRS) $(HWSUBDIR) $(XNESTEXTDIRS) $(DEPDIRS)
-         XNESTOBJS = $(XNESTDDXDIR)/dix/main.o $(XNESTDDXDIR)/miinitext.o
+         XNESTOBJS = $(XNESTDDXDIR)/dix/main.o $(XNESTDDXDIR)/miinitext.o \
+                     $(GLOBJS)
              XNEST = $(XNESTDDXDIR)/LibraryTargetName(xnest)
          XNESTLIBS = $(XNESTDDXDIR)/$(DIX) $(XNESTDDXDIR)/$(OS) $(XNEST) \
 		     $(MI) $(XNESTEXTENSIONS)
@@ -1381,7 +1385,8 @@ XCOMM
        XVFBEXTDIRS = $(GLXDIR) $(LBXDIRS) $(SITEEXTDIRS)
           XVFBDIRS = $(STDDIRS) $(HWSUBDIR) $(XVFBEXTDIRS) \
 		     $(MFBSUBDIR) $(FBSUBDIR) $(DEPDIRS)
-          XVFBOBJS = $(XVFBDDXDIR)/dix/main.o $(XVFBDDXDIR)/miinitext.o
+          XVFBOBJS = $(XVFBDDXDIR)/dix/main.o $(XVFBDDXDIR)/miinitext.o \
+                     $(GLOBJS)
               XVFB = $(XVFBDDXDIR)/LibraryTargetName(vfb)
           XVFBLIBS = $(XVFBDDXDIR)/$(DIX) $(XVFBDDXDIR)/$(OS) $(XVFB) $(FB) \
 		     $(MFB) $(MI) $(XVFBEXTENSIONS)
@@ -1422,8 +1427,10 @@ XCOMM
 		     $(DMXEXTDIRS) $(SHADOWDIR) $(DEPDIRS)
 #if BuildGlxInDmx
        GLXPROXYLIB = $(XDMXDDXDIR)/glxProxy/LibraryTargetName(glxProxy)
+        XDMXGLOBJS = $(GLOBJS)
 #endif
-          XDMXOBJS = $(XDMXDDXDIR)/dix/main.o $(XDMXDDXDIR)/miinitext.o
+          XDMXOBJS = $(XDMXDDXDIR)/dix/main.o $(XDMXDDXDIR)/miinitext.o \
+                     $(XDMXGLOBJS)
          XDMXINPUT = $(XDMXDDXDIR)/input/LibraryTargetName(dmxinput)
         XDMXCONFIG = $(XDMXDDXDIR)/config/LibraryTargetName(dmxconfig)
               XDMX = $(XDMXDDXDIR)/LibraryTargetName(dmxlib) $(XDMXCONFIG) \
@@ -1546,7 +1553,7 @@ XCOMM
  */
 SetUIDServerTarget(XDarwin, \
 	$(DARWINDIRS), \
-	$(DARWINOBJS), \
+	$(DARWINOBJS) $(GLOBJS), \
 	$(DARWINLIBS) $(IOKITLIB) $(DARWINEXTLIBS), \
 	$(DARWINSYSLIBS))
 
@@ -1651,7 +1658,7 @@ BundleProgramTarget(glxMesa, \
 	XDarwinApp, \
 	GL, \
 	GL/glx/glxext.o, \
-	GL/glx/libglx.a GL/mesa/GLcore/libGLcore.a, \
+	GL/glx/libglx.a GL/mesa/GLcore/libGLcore.a $(GLOBJS), \
 	NullParameter, \
 	$(XDARWINAPPDIR)/Resources)
 

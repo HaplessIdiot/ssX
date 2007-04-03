@@ -5,7 +5,7 @@
  *
  **************************************************************/
 /*
- * Copyright (c) 2001-2003 Torrey T. Lyons. All Rights Reserved.
+ * Copyright (c) 2001-2004 Torrey T. Lyons. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.62tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.63tsi Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xproto.h>
@@ -89,13 +89,16 @@ unsigned int            darwinDesiredWidth = 0, darwinDesiredHeight = 0;
 int                     darwinDesiredDepth = -1;
 int                     darwinDesiredRefresh = -1;
 char                    *darwinKeymapFile = "USA.keymapping";
+int                     darwinSyncKeymap = FALSE;
+int                     darwinSwapAltMeta = FALSE;
 
 // modifier masks for faking mouse buttons
 int                     darwinFakeMouse2Mask = NX_COMMANDMASK;
 int                     darwinFakeMouse3Mask = NX_ALTERNATEMASK;
 
-static DeviceIntPtr     darwinPointer;
-static DeviceIntPtr     darwinKeyboard;
+// devices
+DeviceIntPtr            darwinPointer = NULL;
+DeviceIntPtr            darwinKeyboard = NULL;
 
 // Common pixmap formats
 static PixmapFormatRec formats[] = {
@@ -347,7 +350,7 @@ static int DarwinMouseProc(
     DeviceIntPtr    pPointer,
     int             what )
 {
-    char map[6];
+    unsigned char map[6];
 
     switch (what) {
 
@@ -734,16 +737,31 @@ int ddxProcessArgument( int argc, const char *argv[], int i )
         return 2;
     }
 
+    if ( !strcmp( argv[i], "-swapAltMeta" ) ) {
+        darwinSwapAltMeta = 1;
+        return 1;
+    }
+
     if ( !strcmp( argv[i], "-keymap" ) ) {
         if ( i == argc-1 ) {
             FatalError( "-keymap must be followed by a filename\n" );
         }
-        darwinKeymapFile = argv[i+1];
+        darwinKeymapFile = (char *)argv[i+1];
         return 2;
     }
 
     if ( !strcmp( argv[i], "-nokeymap" ) ) {
         darwinKeymapFile = NULL;
+        return 1;
+    }
+
+    if ( !strcmp( argv[i], "+synckeymap" ) ) {
+        darwinSyncKeymap = TRUE;
+        return 1;
+    }
+
+    if ( !strcmp( argv[i], "-synckeymap" ) ) {
+        darwinSyncKeymap = FALSE;
         return 1;
     }
 

@@ -57,7 +57,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKitCursor.c,v 1.6 2002/12/10 00:00:39 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/iokit/xfIOKitCursor.c,v 1.1tsi Exp $ */
 
 #include "scrnintstr.h"
 #include "cursorstr.h"
@@ -477,19 +477,19 @@ XFIOKitSetCursor(
         if (dfb->bitsPerPixel == 8) {
             cursorPrivPtr newCursor =
                     (cursorPrivPtr) pCursor->devPriv[pScreen->myNum];
-            memcpy(cshmem->cursor.bw8.image[0], newCursor->image,
+            memcpy((void *)cshmem->cursor.bw8.image[0], newCursor->image,
                         CURSORWIDTH*CURSORHEIGHT);
-            memcpy(cshmem->cursor.bw8.mask[0], newCursor->mask,
+            memcpy((void *)cshmem->cursor.bw8.mask[0], newCursor->mask,
                         CURSORWIDTH*CURSORHEIGHT);
         } else if (dfb->bitsPerPixel == 16) {
             unsigned short *newCursor =
                     (unsigned short *) pCursor->devPriv[pScreen->myNum];
-            memcpy(cshmem->cursor.rgb.image[0], newCursor,
+            memcpy((void *)cshmem->cursor.rgb.image[0], newCursor,
                         2*CURSORWIDTH*CURSORHEIGHT);
         } else {
             unsigned int *newCursor =
                     (unsigned int *) pCursor->devPriv[pScreen->myNum];
-            memcpy(cshmem->cursor.rgb24.image[0], newCursor,
+            memcpy((void *)cshmem->cursor.rgb24.image[0], newCursor,
                         4*CURSORWIDTH*CURSORHEIGHT);
         }
 

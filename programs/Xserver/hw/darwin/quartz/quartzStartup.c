@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzStartup.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzStartup.c,v 1.11tsi Exp $ */
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -64,7 +64,7 @@ typedef Bool (*QuartzModeBundleInitPtr)(void);
  */
 void DarwinHandleGUI(
     int         argc,
-    char        *argv[],
+    const char  *argv[],
     char        *envp[] )
 {
     static Bool been_here = FALSE;
@@ -107,7 +107,7 @@ void DarwinHandleGUI(
         }
     }
 
-    main_exit = NSApplicationMain(argc, argv);
+    main_exit = NSApplicationMain(argc, (char **)argv);
     exit(main_exit);
 }
 

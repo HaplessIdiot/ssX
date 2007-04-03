@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/GL/dri/drimodule.c,v 1.7 2005/03/01 03:48:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/drimodule.c,v 1.8tsi Exp $ */
 
 /*
  * Authors:
@@ -103,7 +103,6 @@ driSetup(ModuleDescPtr module, pointer opts, int *errmaj, int *errmin)
 	if (errmaj) *errmaj = LDR_NOSUBENT;
     } else {
 	LoaderModReqSymLists(drm, drmSymbols, NULL);
-	LoaderModRefSymbols(module, "noPanoramiXExtension", NULL);
 	LoadExtension(&XF86DRIExt, FALSE);
     }
     /* Need a non-NULL return value to indicate success. */

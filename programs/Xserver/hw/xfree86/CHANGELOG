@@ -1,4 +1,7 @@
 XFree86 4.6.99.21 (xx April 2007)
+ 128. Update Darwin port with selected changes from X.Org and a liberal
+      sprinkling of build fixes (Marc La France, with help from
+      Frank J. R. Hanstick).
  127. Re-instate correct decoding of Simba PCI routing on all SPARC OSes
       (Marc La France).
  126. Fix up handling of PCI configuration space access errors on the *BSDs
@@ -20485,4 +20488,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3861 2007/03/27 17:00:41 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3862 2007/04/01 15:55:48 tsi Exp $

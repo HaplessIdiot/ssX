@@ -81,7 +81,7 @@ from The Open Group.
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.35tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.36tsi Exp $ */
 
 #if defined(WIN32)
 #include <X11/Xwinsock.h>
@@ -278,7 +278,7 @@ AbortDDX()
 
 #ifdef __DARWIN__
 void
-DarwinHandleGUI(int argc, char *argv[])
+DarwinHandleGUI(int argc, const char *argv[], char *envp[])
 {
 }
 

@@ -31,10 +31,12 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCommon.h,v 1.14 2003/11/12 20:21:51 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCommon.h,v 1.15tsi Exp $ */
 
 #ifndef _QUARTZCOMMON_H
 #define _QUARTZCOMMON_H
+
+#include <X11/Xdefs.h>
 
 // QuickDraw in ApplicationServices has the following conflicts with
 // the basic X server headers. Use QD_<name> to use the QuickDraw
@@ -58,8 +60,7 @@ typedef struct {
     CGDirectDisplayID *displayIDs;
 } QuartzScreenRec, *QuartzScreenPtr;
 
-#define QUARTZ_PRIV(pScreen) \
-    ((QuartzScreenPtr)pScreen->devPrivates[quartzScreenIndex].ptr)
+#define QUARTZ_PRIV(pScreen) pScreen->devPrivates[quartzScreenIndex].ptr
 
 // Data stored at startup for Cocoa front end
 extern int              quartzEventWriteFD;
@@ -88,7 +89,7 @@ void QuartzSetWindowMenu(int nitems, const char **items,
 void QuartzFSCapture(void);
 void QuartzFSRelease(void);
 int  QuartzFSUseQDCursor(int depth);
-void QuartzBlockHandler(void *blockData, void *pTimeout, void *pReadmask);
+void QuartzBlockHandler(void *blockData, OSTimePtr pTimeout, void *pReadmask);
 void QuartzWakeupHandler(void *blockData, int result, void *pReadmask);
 
 // Messages that can be sent to the main thread.

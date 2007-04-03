@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.69 2006/08/09 20:53:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.70tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -627,8 +627,13 @@ extern int Xasprintf(char **ret, const char *format, ...)
 #if defined(printf_is_xf86printf) && !defined(printf)
 #define printf xf86printf
 #endif
+
 extern int getArgc(void);
 extern const char **getArgvp(void);
 extern const char *getArgv(int i);
+
+#ifdef __DARWIN__
+extern void DarwinHandleGUI(int argc, const char *argv[], char *envp[]);
+#endif
 
 #endif /* OS_H */
