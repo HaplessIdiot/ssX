@@ -26,7 +26,7 @@
    copyright holders shall not be used in advertising or otherwise to
    promote the sale, use or other dealings in this Software without
    prior written authorization. */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/x-hook.c,v 1.1 2003/06/30 01:45:13 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/x-hook.c,v 1.2tsi Exp $ */
 
 #include "x-hook.h"
 #include <stdlib.h>
@@ -64,6 +64,8 @@ X_PFX (hook_remove) (x_list *lst, x_hook_function *fun, void *data)
     }
 
     X_PFX (list_free) (to_delete);
+
+    return lst;
 }
 
 X_EXTERN void

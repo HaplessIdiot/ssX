@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xload/get_load.c,v 1.22 2003/12/22 17:48:13 tsi Exp $ */
+/* $XFree86: xc/programs/xload/get_load.c,v 1.23tsi Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -464,7 +464,7 @@ void GetLoadPoint( w, closure, call_data )
     double *loadavg = (double *)call_data;
 
     struct host_load_info load_data;
-    int host_count;
+    unsigned int host_count;
     kern_return_t kr;
 
     host_count = sizeof(load_data)/sizeof(integer_t);

@@ -8,7 +8,7 @@
 //
 /*
  * Copyright (c) 2001 Andreas Monitzer. All Rights Reserved.
- * Copyright (c) 2002-2003 Torrey T. Lyons. All Rights Reserved.
+ * Copyright (c) 2002-2005 Torrey T. Lyons. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -34,7 +34,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.24tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.25tsi Exp $ */
 
 #include "quartzCommon.h"
 
@@ -90,8 +90,6 @@ static shellList_t const shellList[] = {
     { NULL,     shell_Unknown }
 };
 
-extern int argcGlobal;
-extern char **argvGlobal;
 extern char **envpGlobal;
 extern int main(int argc, char *argv[], char *envp[]);
 extern void HideMenuBar(void);
@@ -257,18 +255,17 @@ static io_connect_t root_port;
 
     switch (type) {
         case NSLeftMouseUp:
-            [self getMousePosition:&xe fromEvent:anEvent];
             if (quartzRootless && !mouse1Pressed) {
                 // MouseUp after MouseDown in menu - ignore
                 return NO;
             }
             mouse1Pressed = NO;
+            [self getMousePosition:&xe fromEvent:anEvent];
             xe.u.u.type = ButtonRelease;
             xe.u.u.detail = 1;
             break;
 
         case NSLeftMouseDown:
-            [self getMousePosition:&xe fromEvent:anEvent];
             if (quartzRootless) {
                 // Check that event is in X11 window
                 if (!quartzProcs->IsX11Window([anEvent window],
@@ -283,9 +280,42 @@ static io_connect_t root_port;
                 }
             }
             mouse1Pressed = YES;
+            [self getMousePosition:&xe fromEvent:anEvent];
             xe.u.u.type = ButtonPress;
             xe.u.u.detail = 1;
             break;
+
+        case NSRightMouseUp:
+            [self getMousePosition:&xe fromEvent:anEvent];
+            xe.u.u.type = ButtonRelease;
+            xe.u.u.detail = 3;
+            break;
+
+        case NSRightMouseDown:
+            [self getMousePosition:&xe fromEvent:anEvent];
+            xe.u.u.type = ButtonPress;
+            xe.u.u.detail = 3;
+            break;
+
+        case NSOtherMouseUp:
+        {
+            int hwButton = [anEvent buttonNumber];
+
+            [self getMousePosition:&xe fromEvent:anEvent];
+            xe.u.u.type = ButtonRelease;
+            xe.u.u.detail = (hwButton == 2) ? hwButton : hwButton + 1;
+            break;
+        }
+
+        case NSOtherMouseDown:
+        {
+            int hwButton = [anEvent buttonNumber];
+
+            [self getMousePosition:&xe fromEvent:anEvent];
+            xe.u.u.type = ButtonPress;
+            xe.u.u.detail = (hwButton == 2) ? hwButton : hwButton + 1;
+            break;
+        }
 
         case NSMouseMoved:
         case NSLeftMouseDragged:
@@ -294,23 +324,6 @@ static io_connect_t root_port;
             [self getMousePosition:&xe fromEvent:anEvent];
             xe.u.u.type = MotionNotify;
             break;
-
-        case NSSystemDefined:
-        {
-            long hwButtons = [anEvent data2];
-
-            if (![anEvent subtype]==7)
-                return NO; // we only use multibutton mouse events
-            if (mouseState == hwButtons)
-                return NO; // ignore double events
-            mouseState = hwButtons;
-
-            [self getMousePosition:&xe fromEvent:anEvent];
-            xe.u.u.type = kXDarwinUpdateButtons;
-            xe.u.clientMessage.u.l.longs0 = [anEvent data1];
-            xe.u.clientMessage.u.l.longs1 =[anEvent data2];
-            break;
-        }
 
         case NSScrollWheel:
             [self getMousePosition:&xe fromEvent:anEvent];
@@ -817,7 +830,7 @@ static io_connect_t root_port;
                 snprintf(buf, sizeof(buf), ":%s", display);
                 setenv("DISPLAY", buf, TRUE);
                 tem = getenv("PATH");
-                if (tem != NULL && tem[0] != NULL)
+                if (tem != NULL && tem[0] != '\0')
                     snprintf(buf, sizeof(buf), "%s:/usr/X11R6/bin", tem);
                 else
                     snprintf(buf, sizeof(buf), "/bin:/usr/bin:/usr/X11R6/bin");
@@ -843,7 +856,7 @@ static io_connect_t root_port;
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
     [serverLock lock];
-    main(argcGlobal, argvGlobal, envpGlobal);
+    main(argcGlobal, (char **)argvGlobal, envpGlobal);
     serverVisible = NO;
     [pool release];
     [serverLock unlock];

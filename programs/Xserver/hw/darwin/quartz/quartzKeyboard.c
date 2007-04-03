@@ -31,7 +31,7 @@
    promote the sale, use or other dealings in this Software without
    prior written authorization.
 */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzKeyboard.c,v 1.4 2005/10/14 15:16:24 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzKeyboard.c,v 1.5tsi Exp $ */
 
 #include "quartzCommon.h"
 
@@ -146,7 +146,7 @@ const static struct {
 };
 
 unsigned int
-DarwinSystemKeymapSeed (void)
+DarwinModeSystemKeymapSeed (void)
 {
     static unsigned int seed;
 
@@ -370,6 +370,12 @@ DarwinModeReadSystemKeymap (darwinKeyboardInfo *info)
 }
 
 #else /* !HAS_KL_API */
+
+unsigned int
+DarwinModeSystemKeymapSeed (void)
+{
+    return 0;
+}
 
 Bool
 DarwinModeReadSystemKeymap (darwinKeyboardInfo *info)

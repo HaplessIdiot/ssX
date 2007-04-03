@@ -4,7 +4,7 @@
 /**************************************************************************
 
 Copyright (c) 2002 Apple Computer, Inc. All Rights Reserved.
-Copyright (c) 2003 Torrey T. Lyons. All Rights Reserved.
+Copyright (c) 2003-2004 Torrey T. Lyons. All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the
@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/applewmExt.h,v 1.3 2003/11/17 22:20:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/applewmExt.h,v 1.4tsi Exp $ */
 
 #ifndef _APPLEWMEXT_H_
 #define _APPLEWMEXT_H_
@@ -44,8 +44,7 @@ typedef int (*FrameHitTestProc)(int class, int x, int y,
                                 const BoxRec *inner, int *ret);
 typedef int (*FrameDrawProc)(WindowPtr pWin, int class, unsigned int attr,
                              const BoxRec *outer, const BoxRec *inner,
-                             unsigned int title_len,
-                             const unsigned char *title_bytes);
+                             unsigned int title_len, const char *title_bytes);
 
 /*
  * AppleWM implementation function list
@@ -64,6 +63,10 @@ void AppleWMExtensionInit(
 );
 
 void AppleWMSetScreenOrigin(
+    WindowPtr pWin
+);
+
+Bool AppleWMDoReorderWindow(
     WindowPtr pWin
 );
 

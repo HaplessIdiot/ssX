@@ -26,7 +26,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/cr/crAppleWM.m,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/cr/crAppleWM.m,v 1.2tsi Exp $ */
 
 #include "quartzCommon.h"
 #include "cr.h"
@@ -107,7 +107,7 @@ static int CRFrameDraw(
     const BoxRec *outer,
     const BoxRec *inner,
     unsigned int title_len,
-    const unsigned char *title_bytes)
+    const char *title_bytes)
 {
     CRWindowPtr crWinPtr;
     NSWindow *window;

@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greet.h,v 1.10 2003/09/21 13:03:03 herrb Exp $ */
+/* $XFree86: xc/programs/xdm/greet.h,v 1.11tsi Exp $ */
 
 /*
  * greet.h - interface to xdm's dynamically-loadable modular greeter
@@ -46,7 +46,10 @@ from The Open Group.
 #define GETPWNAM_ARGS /*unknown*/
 #endif
 
-#if defined(__FreeBSD__) || defined(__bsdi__) || defined(__osf__)
+#if defined(__FreeBSD__) || \
+    defined(__bsdi__) || \
+    defined(__osf__) || \
+    defined(__DARWIN__)
 #define SETGRENT_TYPE int
 #else
 #define SETGRENT_TYPE void
@@ -154,7 +157,7 @@ extern	char    **(*__xdm_parseArgs)(char **argv, char *string);
 extern	void    (*__xdm_printEnv)(char **e);
 extern	char    **(*__xdm_systemEnv)(struct display *d, char *user, char *home);
 extern	void    (*__xdm_LogOutOfMem)(char * fmt, ...);
-extern	void    (*__xdm_setgrent)(void);
+extern	SETGRENT_TYPE    (*__xdm_setgrent)(void);
 extern	struct group    *(*__xdm_getgrent)(void);
 extern	void    (*__xdm_endgrent)(void);
 #ifdef USESHADOW

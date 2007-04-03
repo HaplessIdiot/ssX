@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/dmxinit.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxinit.c,v 1.12tsi Exp $ */
 /*
  * Copyright 2001-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -1065,7 +1065,7 @@ CARD32 GetTimeInMillis(void)
 
 #ifdef __DARWIN__
 void
-DarwinHandleGUI(int argc, char *argv[])
+DarwinHandleGUI(int argc, const char *argv[], char *envp[])
 {
 }
 #endif

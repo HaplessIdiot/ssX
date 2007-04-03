@@ -1,7 +1,7 @@
-XCOMM $XFree86: xc/programs/xauth/Imakefile,v 3.6 2003/07/09 15:27:37 tsi Exp $
+XCOMM $XFree86: xc/programs/xauth/Imakefile,v 3.7tsi Exp $
 
-        DEPLIBS = $(DEPXAUTHLIB) $(DEPXMUULIB) $(DEPXLIB)
-LOCAL_LIBRARIES = $(XAUTHLIB) $(XMUULIB) $(XLIB)
+        DEPLIBS = $(DEPXMUULIB) $(DEPXLIB) $(DEPXAUTHLIB)
+LOCAL_LIBRARIES = $(XMUULIB) $(XLIB) $(XAUTHLIB)
            SRCS = xauth.c gethost.c process.c parsedpy.c
            OBJS = xauth.o gethost.o process.o parsedpy.o
    CONN_DEFINES = $(CONNECTION_FLAGS)

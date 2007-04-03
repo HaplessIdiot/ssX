@@ -26,7 +26,7 @@
    copyright holders shall not be used in advertising or otherwise to
    promote the sale, use or other dealings in this Software without
    prior written authorization. */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/x-list.c,v 1.2 2003/06/30 01:45:13 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/x-list.c,v 1.3tsi Exp $ */
 
 #include "x-list.h"
 #include <stdlib.h>
@@ -162,6 +162,25 @@ X_PFX (list_nth) (x_list *lst, int n)
 {
     while (n-- > 0 && lst != NULL)
 	lst = lst->next;
+
+    return lst;
+}
+
+X_EXTERN x_list *
+X_PFX (list_pop) (x_list *lst, void **data_ret)
+{
+    void *data = NULL;
+
+    if (lst != NULL)
+    {
+        x_list *tem = lst;
+        data = lst->data;
+        lst = lst->next;
+        X_PFX (list_free_1) (tem);
+    }
+
+    if (data_ret != NULL)
+        *data_ret = data;
 
     return lst;
 }

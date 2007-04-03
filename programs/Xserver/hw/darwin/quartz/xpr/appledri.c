@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/appledri.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/appledri.c,v 1.3tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -173,7 +173,7 @@ ProcAppleDRIAuthConnection(
     rep.authenticated = 1;
 
     if (!DRIAuthConnection( screenInfo.screens[stuff->screen], stuff->magic)) {
-        ErrorF("Failed to authenticate %u\n", stuff->magic);
+        ErrorF("Failed to authenticate %u\n", (unsigned int)stuff->magic);
         rep.authenticated = 0;
     }
     WriteToClient(client, sizeof(xAppleDRIAuthConnectionReply), (char *)&rep);

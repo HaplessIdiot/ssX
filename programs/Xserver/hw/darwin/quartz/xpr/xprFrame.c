@@ -27,13 +27,14 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xprFrame.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xprFrame.c,v 1.6tsi Exp $ */
 
 #include "xpr.h"
 #include "rootlessCommon.h"
 #include "Xplugin.h"
 #include "x-hash.h"
 #include "x-list.h"
+#include "applewmExt.h"
 
 #include "propertyst.h"
 #include "dix.h"
@@ -342,6 +343,17 @@ xprSwitchWindow(RootlessWindowPtr pFrame, WindowPtr oldWin)
 
 
 /*
+ * Called to check if the frame should be reordered when it is restacked.
+ */
+Bool xprDoReorderWindow(RootlessWindowPtr pFrame)
+{
+    WindowPtr pWin = pFrame->win;
+
+    return AppleWMDoReorderWindow(pWin);
+}
+
+
+/*
  * Copy area in frame to another part of frame.
  *  Used to accelerate scrolling.
  */
@@ -367,6 +379,7 @@ static RootlessFrameProcsRec xprRootlessProcs = {
     xprUpdateRegion,
     xprDamageRects,
     xprSwitchWindow,
+    xprDoReorderWindow,
     xp_copy_bytes,
     xp_fill_bytes,
     xp_composite_pixels,

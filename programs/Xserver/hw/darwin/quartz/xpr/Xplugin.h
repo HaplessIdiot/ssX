@@ -29,7 +29,7 @@
 
    Note that these interfaces are provided solely for the use of the
    X11 server. Any other uses are unsupported and strongly discouraged. */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/Xplugin.h,v 1.3 2003/06/27 20:21:42 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/Xplugin.h,v 1.4tsi Exp $ */
 
 #ifndef XPLUGIN_H
 #define XPLUGIN_H 1
@@ -525,7 +525,7 @@ extern xp_error xp_frame_hit_test (int class, int x, int y,
 extern xp_error xp_frame_draw (xp_window_id wid, int class, unsigned int attr,
 			       const xp_box *outer, const xp_box *inner,
 			       unsigned int title_len,
-			       const unsigned char *title_bytes);
+			       const char *title_bytes);
 
 
 

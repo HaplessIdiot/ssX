@@ -76,7 +76,7 @@ copyright holders.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/Xprint/ddxInit.c,v 1.19tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ddxInit.c,v 1.20tsi Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xproto.h>
@@ -236,7 +236,7 @@ ProcessInputEvents(void)
 
 #ifdef __DARWIN__
 void
-DarwinHandleGUI(int argc, char *argv[])
+DarwinHandleGUI(int argc, const char *argv[], char *envp[])
 {
 }
 #endif

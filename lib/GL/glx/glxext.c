@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.30tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.31tsi Exp $ */
 
 /*
 ** License Applicability. Except to the extent portions of this file are
@@ -659,6 +659,7 @@ __glXInitializeVisualConfigFromTags( __GLcontextModes *config, int count,
 
 
 #ifdef GLX_DIRECT_RENDERING
+#ifndef GLX_USE_APPLEGL
 static unsigned
 filter_modes( __GLcontextModes ** server_modes,
 	      const __GLcontextModes * driver_modes )
@@ -712,7 +713,7 @@ filter_modes( __GLcontextModes ** server_modes,
 
     return modes_count;
 }
-
+#endif /* !GLX_USE_APPLEGL */
 
 
 /**

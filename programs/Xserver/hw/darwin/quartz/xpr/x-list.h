@@ -26,7 +26,7 @@
    copyright holders shall not be used in advertising or otherwise to
    promote the sale, use or other dealings in this Software without
    prior written authorization. */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/x-list.h,v 1.2 2003/06/30 01:45:13 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/x-list.h,v 1.3tsi Exp $ */
 
 #ifndef X_LIST_H
 #define X_LIST_H 1
@@ -54,6 +54,7 @@ X_EXTERN x_list *X_PFX (list_prepend) (x_list *lst, void *data);
 X_EXTERN x_list *X_PFX (list_append) (x_list *lst, void *data);
 X_EXTERN x_list *X_PFX (list_remove) (x_list *lst, void *data);
 X_EXTERN void X_PFX (list_free) (x_list *lst);
+X_EXTERN x_list *X_PFX (list_pop) (x_list *lst, void **data_ret);
 
 X_EXTERN x_list *X_PFX (list_copy) (x_list *lst);
 X_EXTERN x_list *X_PFX (list_reverse) (x_list *lst);

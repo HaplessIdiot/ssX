@@ -3,7 +3,7 @@ XCOMM!/bin/sh
 XCOMM
 XCOMM makedepend which uses 'gcc -M'
 XCOMM
-XCOMM $XFree86: xc/config/util/gccmdep.cpp,v 3.11tsi Exp $
+XCOMM $XFree86: xc/config/util/gccmdep.cpp,v 3.12tsi Exp $
 XCOMM
 XCOMM Based on mdepend.cpp and code supplied by Hongjiu Lu <hjl@nynexst.com>
 XCOMM
@@ -31,7 +31,11 @@ while [ $# != 0 ]; do
 	endmarker=
     else
 	case "$1" in
+#ifdef __DARWIN__
+	    -D*|-F*|-I*|-U*)
+#else
 	    -D*|-I*|-U*)
+#endif
 XCOMM allow single quotes in args
 		qarg=`echo "$1" | sed "s/'/'\\\\\\\\''/g"`
 		args="$args '$qarg'"

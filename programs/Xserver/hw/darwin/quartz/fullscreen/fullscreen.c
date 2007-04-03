@@ -25,7 +25,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/fullscreen/fullscreen.c,v 1.5 2004/07/02 01:30:33 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/fullscreen/fullscreen.c,v 1.6tsi Exp $ */
 
 #include "quartzCommon.h"
 #include "darwin.h"
@@ -47,8 +47,7 @@ typedef struct {
     unsigned char      *shadowPtr;
 } FSScreenRec, *FSScreenPtr;
 
-#define FULLSCREEN_PRIV(pScreen) \
-    ((FSScreenPtr)pScreen->devPrivates[fsScreenIndex].ptr)
+#define FULLSCREEN_PRIV(pScreen) pScreen->devPrivates[fsScreenIndex].ptr
 
 static int                  fsScreenIndex;
 static CGDirectDisplayID   *quartzDisplayList = NULL;
@@ -58,8 +57,7 @@ static FSScreenPtr          quartzScreens[MAXSCREENS];
 static int                  darwinCmapPrivateIndex = -1;
 static unsigned long        darwinCmapGeneration = 0;
 
-#define CMAP_PRIV(pCmap) \
-    ((CGDirectPaletteRef) (pCmap)->devPrivates[darwinCmapPrivateIndex].ptr)
+#define CMAP_PRIV(pCmap) (pCmap)->devPrivates[darwinCmapPrivateIndex].ptr
 
 /*
  =============================================================================
