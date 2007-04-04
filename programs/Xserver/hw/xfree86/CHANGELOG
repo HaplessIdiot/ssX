@@ -1,4 +1,5 @@
 XFree86 4.6.99.21 (xx April 2007)
+ 131. Fix installation of xkbcomp 'dir' files  (Marc La France).
  130. Prevent the IRIX compiler's use of its intrinsic builtin functions as
       many of them are buggy (an understatement) (Marc La France).
  129. Add a rewrite of Mark Vojkovich's restest utility that avoids deadlocks
@@ -20493,4 +20494,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3864 2007/04/03 14:09:59 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3865 2007/04/03 15:17:55 tsi Exp $
