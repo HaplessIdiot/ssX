@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/xkbcomp/Imakefile,v 3.24tsi Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/Imakefile,v 3.25tsi Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
@@ -46,7 +46,7 @@ all::
 
 LinkBuildBinary(ProgramTargetName(xkbcomp))
 
+MakeSubdirs($(CROSS) compat geometry keycodes keymap symbols types)
 #if CrossCompiling
-MakeSubdirs($(CROSS))
 DependSubdirs($(CROSS))
 #endif
