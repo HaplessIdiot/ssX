@@ -1,10 +1,11 @@
+/* $XFree86: xc/extras/freetype2/include/freetype/fterrdef.h,v 1.0tsi Exp $ */
 /***************************************************************************/
 /*                                                                         */
 /*  fterrdef.h                                                             */
 /*                                                                         */
 /*    FreeType error codes (specification).                                */
 /*                                                                         */
-/*  Copyright 2002 by                                                      */
+/*  Copyright 2002, 2004 by                                                */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -52,6 +53,8 @@
                 "broken table" )
   FT_ERRORDEF_( Invalid_Offset,                              0x09, \
                 "broken offset within table" )
+  FT_ERRORDEF_( Array_too_Large,                             0x0A, \
+                "array allocation size too large" )
 
   /* glyph/character errors */
 
@@ -207,6 +210,8 @@
                 "opcode syntax error" )
   FT_ERRORDEF_( Stack_Underflow,                             0xA1, \
                 "argument stack underflow" )
+  FT_ERRORDEF_( Ignore,                                      0xA2, \
+                "ignore" )
 
   /* BDF errors */
 
@@ -224,6 +229,8 @@
                 "`ENCODING' field missing" )
   FT_ERRORDEF_( Missing_Bbx_Field,                           0xB6, \
                 "`BBX' field missing" )
+  FT_ERRORDEF_( Bbx_Too_Big,                                 0xB7, \
+                "`BBX' too big" )
 
 
 /* END */

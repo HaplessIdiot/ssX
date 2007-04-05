@@ -1,3 +1,4 @@
+/* $XFree86: xc/extras/freetype2/src/base/ftutil.c,v 1.0 tsi Exp $ */
 /***************************************************************************/
 /*                                                                         */
 /*  ftutil.c                                                               */
@@ -51,6 +52,8 @@
             FT_Long    size,
             void*     *P )
   {
+    FT_Error error = FT_Err_Ok;
+
     FT_ASSERT( P != 0 );
 
     if ( size > 0 )
@@ -64,16 +67,20 @@
 
         return FT_Err_Out_Of_Memory;
       }
-      FT_MEM_SET( *P, 0, size );
+      FT_MEM_ZERO( *P, size );
     }
     else
+    {
       *P = NULL;
+      if ( size < 0 )
+        error = FT_Err_Invalid_Argument;
+    }
 
     FT_TRACE7(( "FT_Alloc:" ));
     FT_TRACE7(( " size = %ld, block = 0x%08p, ref = 0x%08p\n",
                 size, *P, P ));
 
-    return FT_Err_Ok;
+    return error;
   }
 
 
@@ -86,9 +93,15 @@
               void**     P )
   {
     void*  Q;
-
+    FT_Error error;
 
     FT_ASSERT( P != 0 );
+
+    if ( ( size < 0 ) || ( current < 0 ) )
+    {
+      error = FT_Err_Invalid_Argument;
+      goto Fail;
+    }
 
     /* if the original pointer is NULL, call FT_Alloc() */
     if ( !*P )
@@ -103,10 +116,13 @@
 
     Q = memory->realloc( memory, current, size, *P );
     if ( !Q )
+    {
+      error = FT_Err_Out_Of_Memory;
       goto Fail;
+    }
 
     if ( size > current )
-      FT_MEM_SET( (char*)Q + current, 0, size - current );
+      FT_MEM_ZERO( (char*)Q + current, size - current );
 
     *P = Q;
     return FT_Err_Ok;
@@ -115,7 +131,7 @@
     FT_ERROR(( "FT_Realloc:" ));
     FT_ERROR(( " Failed (current %ld, requested %ld)\n",
                current, size ));
-    return FT_Err_Out_Of_Memory;
+    return error;
   }
 
 

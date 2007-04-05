@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/xcmisc.c,v 3.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xcmisc.c,v 3.10tsi Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
@@ -136,11 +136,13 @@ ProcXCMiscGetXIDList(ClientPtr client)
 
     REQUEST_SIZE_MATCH(xXCMiscGetXIDListReq);
 
-    pids = (XID *)ALLOCATE_LOCAL(stuff->count * sizeof(XID));
-    if (!pids)
-    {
+    if (stuff->count > ((CARD32)(-1) / sizeof(XID) / 2))
 	return BadAlloc;
-    }
+
+    pids = (XID *)Xalloc(stuff->count * sizeof(XID));
+    if (!pids)
+	return BadAlloc;
+
     count = GetXIDList(client, stuff->count, pids);
     rep.type = X_Reply;
     rep.sequenceNumber = client->sequence;
@@ -152,12 +154,11 @@ ProcXCMiscGetXIDList(ClientPtr client)
 	swapl(&rep.count, n);
     }
     WriteToClient(client, sizeof(xXCMiscGetXIDListReply), (char *)&rep);
-    if (count)
-    {
+    if (count) {
     	client->pSwapReplyFunc = (ReplySwapPtr) Swap32Write;
 	WriteSwappedDataToClient(client, count * sizeof(XID), pids);
     }
-    DEALLOCATE_LOCAL(pids);
+    Xfree(pids);
     return(client->noClientException);
 }
 
