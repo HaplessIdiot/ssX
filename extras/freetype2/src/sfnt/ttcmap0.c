@@ -1,3 +1,4 @@
+/* $XFree86: xc/extras/freetype2/src/sfnt/ttcmap0.c,v 1.5tsi Exp $ */
 /***************************************************************************/
 /*                                                                         */
 /*  ttcmap0.c                                                              */
@@ -14,7 +15,6 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
-/* $XFree86: xc/extras/freetype2/src/sfnt/ttcmap0.c,v 1.4 2003/05/29 02:13:05 dawes Exp $ */
 
 #include <ft2build.h>
 #include FT_INTERNAL_DEBUG_H
@@ -1932,7 +1932,7 @@
       charmap.encoding    = FT_ENCODING_NONE;  /* will be filled later */
       offset              = TT_NEXT_ULONG( p );
 
-      if ( offset && table + offset + 2 < limit )
+      if ( offset && ( offset < face->cmap_size - 2 ) )
       {
         FT_Byte*                       cmap   = table + offset;
         volatile FT_UInt               format = TT_PEEK_USHORT( cmap );

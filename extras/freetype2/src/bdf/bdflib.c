@@ -1,3 +1,4 @@
+/* $XFree86: xc/extras/freetype2/src/bdf/bdflib.c,v 1.4tsi Exp $ */
 /*
  * Copyright 2000 Computing Research Labs, New Mexico State University
  * Copyright 2001, 2002, 2003, 2004 Francesco Zappa Nardelli
@@ -20,7 +21,6 @@
  * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
  * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/freetype2/src/bdf/bdflib.c,v 1.3 2003/05/29 02:13:04 dawes Exp $ */
 
   /*************************************************************************/
   /*                                                                       */
@@ -386,8 +386,8 @@
   } _bdf_parse_t;
 
 
-#define setsbit( m, cc )  ( m[(cc) >> 3] |= (FT_Byte)( 1 << ( (cc) & 7 ) ) )
-#define sbitset( m, cc )  ( m[(cc) >> 3]  & ( 1 << ( (cc) & 7 ) ) )
+#define setsbit( m, cc )  ( m[(FT_Byte)(cc) >> 3] |= (FT_Byte)( 1 << ( (cc) & 7 ) ) )
+#define sbitset( m, cc )  ( m[(FT_Byte)(cc) >> 3]  & ( 1 << ( (cc) & 7 ) ) )
 
 
   /* An empty string for empty fields. */
@@ -1099,7 +1099,7 @@
 #define ERRMSG1  "[line %ld] Missing \"%s\" line.\n"
 #define ERRMSG2  "[line %ld] Font header corrupted or missing fields.\n"
 #define ERRMSG3  "[line %ld] Font glyphs corrupted or missing fields.\n"
-
+#define ERRMSG4  "[line %ld] BBX too big.\n"
 
   static FT_Error
   _bdf_add_comment( bdf_font_t*    font,
@@ -1142,7 +1142,7 @@
                             bdf_options_t*  opts )
   {
     unsigned long  len;
-    char           name[128];
+    char           name[256];
     _bdf_list_t    list;
     FT_Memory      memory;
     FT_Error       error = BDF_Err_Ok;
@@ -1159,6 +1159,13 @@
     font->spacing = opts->font_spacing;
 
     len = (unsigned long)( ft_strlen( font->name ) + 1 );
+    /* Limit font names to 256 characters */
+    if ( len >= 256 )
+    {
+      error = BDF_Err_Invalid_Argument;
+      goto Exit;
+    }
+
     FT_MEM_COPY( name, font->name, len );
 
     list.size = list.used = 0;
@@ -1493,6 +1500,12 @@
       /* Make sure the number of glyphs is non-zero. */
       if ( p->cnt == 0 )
         font->glyphs_size = 64;
+      else  /* Limit to the number of code points in Unicode */
+      if ( p->cnt < 0 || p->cnt > 1114112 )
+      {
+        error = BDF_Err_Invalid_Argument;
+        goto Exit;
+      }
 
       if ( FT_NEW_ARRAY( font->glyphs, font->glyphs_size ) )
         goto Exit;
@@ -1570,6 +1583,13 @@
       if ( error )
         goto Exit;
       p->glyph_enc = _bdf_atol( p->list.field[1], 0, 10 );
+
+      /* Ensure p->have doesn't overflow */
+      if ( p->glyph_enc > ( sizeof ( p->have ) * 8 ) )
+      {
+        error = BDF_Err_Invalid_File_Format;
+        goto Exit;
+      }
 
       /* Check to see whether this encoding has already been encountered. */
       /* If it has then change it to unencoded so it gets added if        */
@@ -1821,6 +1841,8 @@
     /* And finally, gather up the bitmap. */
     if ( ft_memcmp( line, "BITMAP", 6 ) == 0 )
     {
+      FT_ULong bytes;
+
       if ( !( p->flags & _BDF_BBX ) )
       {
         /* Missing BBX field. */
@@ -1831,6 +1853,15 @@
 
       /* Allocate enough space for the bitmap. */
       glyph->bpr   = ( glyph->bbx.width * p->font->bpp + 7 ) >> 3;
+      bytes = glyph->bpr * glyph->bbx.height;
+
+      if ( bytes != (unsigned short)bytes )
+      {
+        FT_ERROR(( "_bdf_parse_glyphs: " ERRMSG4, lineno ));
+        error = BDF_Err_Bbx_Too_Big;
+        goto Exit;
+      }
+
       glyph->bytes = (unsigned short)( glyph->bpr * glyph->bbx.height );
 
       if ( FT_NEW_ARRAY( glyph->bitmap, glyph->bytes ) )

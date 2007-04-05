@@ -48,7 +48,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bdfread.c,v 1.13 2003/05/27 22:26:48 tsi Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bdfread.c,v 1.14tsi Exp $ */
 
 #ifndef FONTMODULE
 #include <ctype.h>
@@ -278,7 +278,7 @@ bdfReadCharacters(FontFilePtr file, FontPtr pFont, bdfFileState *pState,
 	bdfError("bad 'CHARS' in bdf file\n");
 	return (FALSE);
     }
-    if (nchars < 1) {
+    if ((nchars < 1) || (nchars > (0x7fffffff / sizeof(CharInfoRec)))) {
 	bdfError("invalid number of CHARS in BDF file\n");
 	return (FALSE);
     }

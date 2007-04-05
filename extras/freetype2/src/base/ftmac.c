@@ -1,3 +1,4 @@
+/* $XFree86: xc/extras/freetype2/src/base/ftmac.c,v 1.7tsi Exp $ */
 /***************************************************************************/
 /*                                                                         */
 /*  ftmac.c                                                                */
@@ -14,7 +15,6 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
-/* $XFree86: xc/extras/freetype2/src/base/ftmac.c,v 1.6tsi Exp $ */
 
   /*
     Notes
@@ -438,7 +438,7 @@
     FT_Error       error = FT_Err_Ok;
     short          res_id;
     unsigned char  *buffer, *p, *size_p = NULL;
-    FT_ULong       total_size = 0;
+    FT_ULong       total_size = 0, old_total_size = 0;
     FT_ULong       post_size, pfb_chunk_size;
     Handle         post_data;
     char           code, last_code;
@@ -470,6 +470,15 @@
       total_size += GetHandleSize( post_data ) - 2;
       last_code = code;
     }
+
+    /* Detect integer overflows */
+    if ( total_size < old_total_size )
+    {
+      error = FT_Err_Array_Too_Large;
+      goto Error;
+    }
+
+    old_total_size = total_size;
 
     if ( FT_ALLOC( buffer, (FT_Long)total_size ) )
       goto Error;

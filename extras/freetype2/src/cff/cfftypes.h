@@ -1,3 +1,4 @@
+/* $XFree86: xc/extras/freetype2/src/cff/cfftypes.h,v 1.0tsi Exp $ */
 /***************************************************************************/
 /*                                                                         */
 /*  cfftypes.h                                                             */
@@ -84,6 +85,7 @@ FT_BEGIN_HEADER
     FT_UShort*  sids;
     FT_UShort*  cids;       /* the inverse mapping of `sids'; only needed */
                             /* for CID-keyed fonts                        */
+    FT_UInt     max_cid;
   } CFF_CharsetRec, *CFF_Charset;
 
 
