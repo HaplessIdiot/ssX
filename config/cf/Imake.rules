@@ -1,6 +1,6 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.152 2006/12/09 15:18:01 tsi Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.153tsi Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -3370,6 +3370,7 @@ MakeMakeSubdirs(dirs,Makefiles)
 #ifndef CppSedMagic
 #define CppSedMagic sed -e '/^#  *[0-9][0-9]*  *.*$$/d' \
 			-e '/^#line  *[0-9][0-9]*  *.*$$/d' \
+			-e '/^#[ 	]*pragma[ 	]/d' \
 			-e '/^[ 	]*XCOMM$$/s/XCOMM/#/' \
 			-e '/^[ 	]*XCOMM[^a-zA-Z0-9_]/s/XCOMM/#/' \
 			-e '/^[ 	]*XHASH/s/XHASH/#/' \

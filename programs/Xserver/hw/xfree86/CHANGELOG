@@ -1,4 +1,11 @@
 XFree86 4.6.99.22 (xx April 2007)
+ 136. Refix Darwin bundle install rules when DESTDIR is specified
+      (Marc La France).
+ 135. Use /usr/bin/login for `xterm -ls` on Darwin (Yves de Champlain,
+      Bugzilla #1680).
+ 134. Define proper default $PATH's for xdm on Darwin (Yves de Champlain,
+      Bugzilla #1680).
+ 133. Add PAM support to Darwin port (Yves de Champlain, Bugzilla #1680).
 
 XFree86 4.6.99.21 (7 April 2007)
  132. Address vulnerabilities CVE-2006-0747, CVE-2006-1861, CVE-1006-2661,
@@ -20500,4 +20507,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3867 2007/04/05 16:08:59 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3868 2007/04/07 11:02:58 dawes Exp $

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.54tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.55tsi Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -52,6 +52,16 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 #ifndef HasGcc4
 # define HasGcc4                NO
+#endif
+#if OSMajorVersion >= 7
+#define HasPam                  YES
+#ifndef PamLibraries
+#define PamLibraries            -lpam
+#endif
+
+#ifndef PamMiscLibraries
+#define PamMiscLibraries        -lpam_misc
+#endif
 #endif
 
 /* Older versions don't really support IPv6, but #define AF_INET6. */
@@ -158,21 +168,22 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 /*
  * Our cpp isn't in /lib/cpp and early versions don't like -undef.
- * The gcc 3.3 cpp that Apple ships inserts spurious #pragmas,
- * so we use the 3.1-based version in this case.
+ * We support gcc 3.3 and 4.0 as the default compiler
  */
 #if (GccMajorVersion == 3) && (GccMinorVersion == 3)
-# define CppCmd                 /usr/bin/cpp3
-#else
-# define CppCmd                 /usr/bin/cpp
-#endif
-#if (GccMajorVersion == 3) && (GccMinorVersion == 3) || (GccMajorVersion > 3)
-# define StandardCppOptions	-traditional
-#endif
-#if HasGcc3
+# define CppCmd                 /usr/bin/cpp-3.3
+# define StandardCppOptions     -traditional -P
 # define RawCppCmd              CppCmd -undef
 #else
+#if (GccMajorVersion > 3)
+# define CppCmd                 /usr/bin/cpp-4.0
+# define StandardCppOptions     -traditional -P
+# define RawCppCmd              CppCmd -undef
+#else
+# define CppCmd                 /usr/bin/cpp
+# define StandardCppOptions     -traditional
 # define RawCppCmd              CppCmd
+#endif
 #endif
 
 /* we have a gcc compatible compiler, but its not called gcc */
@@ -296,23 +307,36 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 #define BuildLibPathVar         DYLD_LIBRARY_PATH
 
+#define DefaultUserPath         /bin:/sbin:/usr/bin:/usr/sbin:$(BINDIR)
+#define DefaultSystemPath       DefaultUserPath
+
 /* include rules to build shared libraries */
 #include <darwinLib.rules>
+
+#ifndef NothingOutsideProjectRoot
+#define NothingOutsideProjectRoot NO
+#endif
+
+#if NothingOutsideProjectRoot
+     XDARWINAPPDIR = $(BINDIR)/XDarwin.app/Contents
+#else
+     XDARWINAPPDIR = /Applications/XDarwin.app/Contents
+#endif
 
 /*
  * BundleProgramTarget - Generate rules for compiling, linking and
  * installing a bundle executable. 
  */
 #ifndef BundleProgramTarget
-#define BundleProgramTarget(program,loader,subdirs,objs,deplib,syslib,dstdir) @@\
+#define BundleProgramTarget(program,loader,subdirs,objs,deplib,syslib)	@@\
                                                                         @@\
 AllTarget(program)							@@\
 									@@\
 program: loader subdirs objs deplib					@@\
 	RemoveTargetProgram($@)						@@\
-	LinkRule($@,-bundle $(LDOPTIONS),objs,deplib $(LDLIBS) syslib -bundle_loader loader) @@\
+	LinkRule($@,-bundle $(LDOPTIONS),objs,deplib $(LDLIBS) syslib -bundle_loader loader)	@@\
 									@@\
-InstallProgram(program,dstdir/program.bundle/Contents/MacOS)		@@\
+InstallProgram(program,$(XDARWINAPPDIR)/Resources/program.bundle/Contents/MacOS)	@@\
 									@@\
 clean::									@@\
 	RemoveFile(program)
