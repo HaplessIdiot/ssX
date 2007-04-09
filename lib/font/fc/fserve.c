@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/font/fc/fserve.c,v 3.27tsi Exp $ */
+/* $XFree86: xc/lib/font/fc/fserve.c,v 3.28tsi Exp $ */
 /*
 
 Copyright 1990, 1998  The Open Group
@@ -2737,6 +2737,7 @@ _fs_get_conn_setup (FSFpePtr conn, int *error, int *setup_len)
 	*error = ret;
 	return 0;
     }
+    *error = 0;
     *setup_len = len;
     return (fsConnSetup *) data;
 }

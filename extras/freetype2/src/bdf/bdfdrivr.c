@@ -23,7 +23,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/extras/freetype2/src/bdf/bdfdrivr.c,v 1.2 2003/06/15 16:45:50 tsi Exp $ */
+/* $XFree86: xc/extras/freetype2/src/bdf/bdfdrivr.c,v 1.3tsi Exp $ */
 
 #include <ft2build.h>
 
@@ -319,7 +319,7 @@ THE SOFTWARE.
     FT_Error       error  = BDF_Err_Ok;
     FT_Memory      memory = FT_FACE_MEMORY( face );
 
-    bdf_font_t*    font;
+    bdf_font_t*    font = NULL;
     bdf_options_t  options;
 
     FT_UNUSED( num_params );

@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xmessage/makeform.c,v 1.7 2003/04/14 23:03:13 herrb Exp $ */
+/* $XFree86: xc/programs/xmessage/makeform.c,v 1.8tsi Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
@@ -216,7 +216,7 @@ make_queryform(Widget parent,	/* into whom widget should be placed */
     Dimension max_width,
     Dimension max_height)
 {
-    ButtonRecord *br;
+    ButtonRecord *br = NULL;
     int npairs, i;
     Widget form, text, prev;
     Arg args[10];

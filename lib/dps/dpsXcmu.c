@@ -54,7 +54,7 @@
  *
  * Author: Adobe Systems Incorporated and Donna Converse, MIT X Consortium
  */
-/* $XFree86: xc/lib/dps/dpsXcmu.c,v 1.5 2001/07/25 15:04:54 dawes Exp $ */
+/* $XFree86: xc/lib/dps/dpsXcmu.c,v 1.6tsi Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
@@ -1086,8 +1086,8 @@ static void FindStaticGrayRamp(
     XStandardColormap *colorCube)
 {
     XColor *ramp, *black, *white, *altBlack, *altWhite;
-    int i, r0, r1, r2, r3, size, entries, redMult;
-    unsigned long base;
+    int i, r0, r1, r2, r3, size, entries, redMult = 0;
+    unsigned long base = 0;
 
     entries = 1 << vinfo->depth;
     ramp = (XColor *) calloc(entries, sizeof(XColor));

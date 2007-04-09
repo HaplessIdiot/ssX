@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vmodes.c,v 1.13 2002/12/11 17:23:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vmodes.c,v 1.14tsi Exp $ */
 /*
  * file vmodes.c
  *
@@ -215,7 +215,7 @@ verite_setmode(ScrnInfoPtr pScreenInfo, struct verite_modeinfo_t *mode)
 
     int tmp;
     int doubleclock=0;
-    int M, N, P;
+    int M = 0, N = 0, P = 0;
     int iob=pRendition->board.io_base;
 
 #ifdef DEBUG

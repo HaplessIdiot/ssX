@@ -30,7 +30,7 @@ Author:	Ralph R. Swick, DEC/MIT Project Athena
 	one weekend in November, 1989
 Modified: Mark Leisher <mleisher@crl.nmsu.edu> to deal with UCS sample text.
 */
-/* $XFree86: xc/programs/xfontsel/xfontsel.c,v 1.9 2004/04/03 22:38:55 tsi Exp $ */
+/* $XFree86: xc/programs/xfontsel/xfontsel.c,v 1.10tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -987,6 +987,7 @@ Boolean Matches(
     register int field = (*fontName == DELIM) ? -1 : 0;
     register Boolean marked_this_field = False;
 
+    *maxField = 0;
     while (*pattern) {
 	if (*pattern == *fontName || *pattern == '?') {
 	    pattern++;

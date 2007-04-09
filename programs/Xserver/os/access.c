@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.61 2006/06/19 13:43:26 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.62tsi Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -1684,6 +1684,7 @@ ConvertAddr (
     int				*len,
     pointer			*addr)
 {
+    *addr = NULL;
     if (*len == 0)
         return (FamilyLocal);
     switch (saddr->sa_family)

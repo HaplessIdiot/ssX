@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/durango.c,v 1.5 2003/01/24 17:16:52 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/durango.c,v 1.6tsi Exp $ */
 /*
  * This is the main file used to add Durango graphics support to a software 
  * project.  The main reason to have a single file include the other files
@@ -588,6 +588,8 @@ gfx_msr_asm_read(unsigned short msrReg, unsigned long msrAddr,
    nsc_asm_msr_vsa_rd(addr, &val2, &val1);
    *ptrHigh = val2;
    *ptrLow = val1;
+#else
+   *ptrHigh = *ptrLow = (unsigned long)(-1L);
 #endif
 }
 

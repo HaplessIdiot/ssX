@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/fontconfig/src/fccharset.c,v 1.2tsi Exp $ */
 
 #include <stdlib.h>
 #include "fcint.h"
@@ -254,6 +254,7 @@ FcCharSetIterSet (const FcCharSet *fcs, FcCharSetIter *iter)
 	{
 	    iter->ucs4 = ~0;
 	    iter->leaf = 0;
+	    iter->pos = 0;
 	    return;
 	}
         iter->ucs4 = (FcChar32) fcs->numbers[pos] << 8;

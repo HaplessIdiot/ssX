@@ -30,7 +30,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Converters.c,v 3.17 2006/01/09 14:59:20 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Converters.c,v 3.18tsi Exp $ */
 
 /*
 
@@ -256,6 +256,8 @@ static Boolean IsInteger(
     Boolean isPositive = False;
     int val = 0;
     char ch;
+
+    *value = 0;
     /* skip leading whitespace */
 #ifndef __UNIXOS2__
     while ((ch = *string) == ' ' || ch == '\t') string++;

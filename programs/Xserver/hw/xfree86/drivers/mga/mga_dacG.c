@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200, MGA-G400, MGA-G550 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.59tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.60tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -62,7 +62,6 @@ MGAG200SEComputePLLParam(ScrnInfoPtr pScrn, long lFo, int *M, int *N, int *P)
 {
     unsigned int ulComputedFo;
     unsigned int ulFDelta;
-    unsigned int ulFPermitedDelta;
     unsigned int ulFTmpDelta;
     unsigned int ulVCOMax, ulVCOMin;
     unsigned int ulTestP;
@@ -75,8 +74,6 @@ MGAG200SEComputePLLParam(ScrnInfoPtr pScrn, long lFo, int *M, int *N, int *P)
     ulPLLFreqRef    = 25000;
 
     ulFDelta = 0xFFFFFFFF;
-    /* Permited delta is 0.5% as VESA Specification */
-    ulFPermitedDelta = lFo * 5 / 1000;
 
     /* Then we need to minimize the M while staying within 0.5% */
     for (ulTestP = 8; ulTestP > 0; ulTestP >>= 1) {
@@ -473,7 +470,7 @@ MGAGSetPCLK( ScrnInfoPtr pScrn, long f_out )
 	MGARegPtr pReg = &pMga->ModeReg;
 
 	/* Pixel clock values */
-	int m, n, p, s;
+	int m = 0, n = 0, p = 0, s = 0;
 
 	if(MGAISGx50(pMga)) {
 	    pReg->Clock = f_out;

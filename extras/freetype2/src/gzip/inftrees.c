@@ -1,3 +1,4 @@
+/* $XFree86: xc/extras/freetype2/src/gzip/inftrees.c,v 1.0tsi Exp $ */
 /* inftrees.c -- generate Huffman trees for efficient decoding
  * Copyright (C) 1995-2002 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
@@ -253,8 +254,10 @@ uIntf *v                /* working area: values in order of bit length */
 
       /* set up table entry in r */
       r.bits = (Byte)(k - w);
-      if (p >= v + n)
+      if (p >= v + n) {
         r.exop = 128 + 64;      /* out of values--invalid code */
+        r.base = 0;
+      }
       else if (*p < s)
       {
         r.exop = (Byte)(*p < 256 ? 0 : 32 + 64);     /* 256 is end-of-block */
@@ -401,11 +404,11 @@ local inflate_huft *fixed_td;
 
 
 local int inflate_trees_fixed( /* bl, bd, tl, td, z) */
-uIntf *bl,               /* literal desired/actual bit depth */
-uIntf *bd,               /* distance desired/actual bit depth */
-inflate_huft * FAR *tl,  /* literal/length tree result */
-inflate_huft * FAR *td,  /* distance tree result */
-z_streamp z              /* for memory allocation */
+uIntf *bl,                      /* literal desired/actual bit depth */
+uIntf *bd,                      /* distance desired/actual bit depth */
+const inflate_huft * FAR *tl,   /* literal/length tree result */
+const inflate_huft * FAR *td,   /* distance tree result */
+z_streamp z                     /* for memory allocation */
 )
 {
 #ifdef BUILDFIXED
@@ -451,6 +454,8 @@ z_streamp z              /* for memory allocation */
     ZFREE(z, c);
     fixed_built = 1;
   }
+#else
+  FT_UNUSED(z);
 #endif
   *bl = fixed_bl;
   *bd = fixed_bd;

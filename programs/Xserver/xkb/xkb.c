@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 /*
- * Copyright (c) 2005 by The XFree86 Project, Inc.
+ * Copyright (c) 2005-2007 by The XFree86 Project, Inc.
  * Copyright (c) 2005 by Michal Maruska.
  * All rights reserved.
  *
@@ -71,7 +71,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.25tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.26tsi Exp $ */
 
 #include <stdio.h>
 #include <X11/X.h>
@@ -3664,7 +3664,7 @@ ProcXkbSetNames(ClientPtr client)
     XkbNamesRec		*names;
     xkbNamesNotify	 nn;
     CARD32		*tmp;
-    Atom		 bad;
+    Atom		 bad = 0;
 
     REQUEST(xkbSetNamesReq);
     REQUEST_AT_LEAST_SIZE(xkbSetNamesReq);

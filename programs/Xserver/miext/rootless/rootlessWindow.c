@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessWindow.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessWindow.c,v 1.14tsi Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
@@ -70,13 +70,12 @@ RootlessCreateWindow(WindowPtr pWin)
         HUGE_ROOT(pWin);
         SetWinSize(pWin);
         SetBorderSize(pWin);
-    }
+    } else REGION_NULL(pWin->drawable.pScreen, &saveRoot);
 
     result = pWin->drawable.pScreen->CreateWindow(pWin);
 
-    if (pWin->parent) {
+    if (!IsRoot(pWin))
         NORMAL_ROOT(pWin);
-    }
 
     SCREEN_WRAP(pWin->drawable.pScreen, CreateWindow);
 
@@ -411,11 +410,15 @@ RootlessRealizeWindow(WindowPtr pWin)
         }
     }
 
-    if (!IsRoot(pWin)) HUGE_ROOT(pWin);
+    if (!IsRoot(pWin))
+	HUGE_ROOT(pWin);
+    else
+	REGION_NULL(pWin->drawable.pScreen, &saveRoot);
     SCREEN_UNWRAP(pScreen, RealizeWindow);
     result = pScreen->RealizeWindow(pWin);
     SCREEN_WRAP(pScreen, RealizeWindow);
-    if (!IsRoot(pWin)) NORMAL_ROOT(pWin);
+    if (!IsRoot(pWin))
+	NORMAL_ROOT(pWin);
 
     RL_DEBUG_MSG(("realizewindow end\n"));
     return result;

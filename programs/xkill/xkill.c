@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xkill/xkill.c,v 1.6 2001/12/14 20:02:06 dawes Exp $ */
+/* $XFree86: xc/programs/xkill/xkill.c,v 1.7tsi Exp $ */
 
 /*
  * xkill - simple program for destroying unwanted clients
@@ -101,7 +101,7 @@ main(int argc, char *argv[])
     int screenno;			/* screen number of dpy */
     XID id = None;			/* resource to kill */
     char *button_name = NULL;		/* name of button for window select */
-    int button;				/* button number or negative for all */
+    int button = 0;			/* button number or negative for all */
     Bool kill_all = False;
     Bool top = False;
 

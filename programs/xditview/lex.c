@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xditview/lex.c,v 1.3 2000/12/04 21:01:01 dawes Exp $ */
+/* $XFree86: xc/programs/xditview/lex.c,v 1.4tsi Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/IntrinsicP.h>
@@ -31,7 +31,7 @@ GetLine(dw, Buffer, Length)
 	char	*Buffer;
 	int	Length;
 {
-	int 	i = 0, c;
+	int 	i = 0, c = 0;
 	char	*p = Buffer;
 
 	Length--;			    /* Save room for final NULL */

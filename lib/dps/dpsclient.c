@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/lib/dps/dpsclient.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/lib/dps/dpsclient.c,v 1.5tsi Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -353,7 +353,10 @@ static void NumFormatFromTokenType(
     case DPS_LO_NATIVE:
       *numFormat = dps_native;
       break;
-    default: DPSCantHappen();
+    default:
+      DPSCantHappen();
+      *numFormat = dps_native;
+      break;
     }
 }
  

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miexpose.c,v 3.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miexpose.c,v 3.13tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -110,7 +110,7 @@ miHandleExposures(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable,
 				   the window background
 				*/
     WindowPtr pSrcWin;
-    BoxRec expBox;
+    BoxRec expBox = {0, };
     Bool extents;
 
     /* This prevents warning about pscr not being used. */
@@ -566,9 +566,9 @@ miPaintWindow(WindowPtr pWin, RegionPtr prgn, int what)
     ChangeGCVal gcval[7];
     ChangeGCVal newValues [COUNT_BITS];
 
-    BITS32 gcmask, index, mask;
+    BITS32 gcmask = 0, index, mask;
     RegionRec prgnWin;
-    DDXPointRec oldCorner;
+    DDXPointRec oldCorner = {0, 0};
     BoxRec box;
     WindowPtr	pBgWin;
     GCPtr pGC;
@@ -578,7 +578,7 @@ miPaintWindow(WindowPtr pWin, RegionPtr prgn, int what)
     xRectangle *prect;
     int numRects;
 
-    gcmask = 0;
+    REGION_NULL(pWin->drawable.pScreen, &prgnWin);
 
     if (what == PW_BACKGROUND)
     {

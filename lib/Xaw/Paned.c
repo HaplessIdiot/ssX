@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Paned.c,v 1.12 2001/12/14 19:54:41 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Paned.c,v 1.13tsi Exp $ */
 
 /*
  * Updated and significantly modified from the Athena VPaned Widget.
@@ -1509,6 +1509,7 @@ GetPaneStack(PanedWidget pw, Bool shrink, Pane *pane, int *start_size)
 {
     if (pw->paned.stack == NULL) {
 	*pane = NULL; 
+	*start_size = 0;
 	return;
     }
 

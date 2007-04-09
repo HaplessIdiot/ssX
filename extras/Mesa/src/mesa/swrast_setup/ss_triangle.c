@@ -1,9 +1,9 @@
-
+/* $XFree86: xc/extras/Mesa/src/mesa/swrast_setup/ss_triangle.c,v 1.0 tsi Exp $ */
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  6.1
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2004  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -42,8 +42,8 @@
 #define SS_UNFILLED_BIT	    0x8
 #define SS_MAX_TRIFUNC      0x10
 
-static triangle_func tri_tab[SS_MAX_TRIFUNC];
-static quad_func     quad_tab[SS_MAX_TRIFUNC];
+static tnl_triangle_func tri_tab[SS_MAX_TRIFUNC];
+static tnl_quad_func     quad_tab[SS_MAX_TRIFUNC];
 
 
 static void _swsetup_render_line_tri( GLcontext *ctx,
@@ -57,9 +57,9 @@ static void _swsetup_render_line_tri( GLcontext *ctx,
    SWvertex *v0 = &verts[e0];
    SWvertex *v1 = &verts[e1];
    SWvertex *v2 = &verts[e2];
-   GLchan c[2][4];
-   GLchan s[2][4];
-   GLuint i[2];
+   GLchan c[2][4] = {{0, }, };
+   GLchan s[2][4] = {{0, }, };
+   GLfloat i[2] = {0.0, 0.0};
 
    /* cull testing */
    if (ctx->Polygon.CullFlag) {
@@ -116,9 +116,9 @@ static void _swsetup_render_point_tri( GLcontext *ctx,
    SWvertex *v0 = &verts[e0];
    SWvertex *v1 = &verts[e1];
    SWvertex *v2 = &verts[e2];
-   GLchan c[2][4];
-   GLchan s[2][4];
-   GLuint i[2];
+   GLchan c[2][4] = {{0, }, };
+   GLchan s[2][4] = {{0, }, };
+   GLfloat i[2] = {0.0, };
 
    /* cull testing */
    if (ctx->Polygon.CullFlag) {
@@ -291,7 +291,8 @@ void _swsetup_choose_trifuncs( GLcontext *ctx )
        ctx->Polygon.OffsetFill)
       ind |= SS_OFFSET_BIT;
 
-   if (ctx->Light.Enabled && ctx->Light.Model.TwoSide)
+   if ((ctx->Light.Enabled && ctx->Light.Model.TwoSide) ||
+       (ctx->VertexProgram._Enabled && ctx->VertexProgram.TwoSideEnabled))
       ind |= SS_TWOSIDE_BIT;
 
    /* We piggyback the two-sided stencil front/back determination on the

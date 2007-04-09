@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxpixmap.c,v 1.1tsi Exp $ */
 /*
  * Copyright 2001-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -211,6 +211,7 @@ RegionPtr dmxBitmapToRegion(PixmapPtr pPixmap)
     pTmpReg = REGION_CREATE(pScreen, NullBox, 1);
     if(!pReg || !pTmpReg) return NullRegion;
 
+    Box.x1 = 0;
     for (y = 0; y < pPixmap->drawable.height; y++) {
 	Box.y1 = y;
 	Box.y2 = y + 1;

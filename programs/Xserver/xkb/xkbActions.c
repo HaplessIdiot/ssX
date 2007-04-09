@@ -23,7 +23,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbActions.c,v 3.15tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbActions.c,v 3.16tsi Exp $ */
 
 #include <stdio.h>
 #include <math.h>
@@ -829,6 +829,8 @@ unsigned	mods,mask,oldCoreState = 0,oldCorePrevState = 0;
     ev.u.keyButtonPointer.time = GetTimeInMillis();
     ev.u.keyButtonPointer.rootX = x;
     ev.u.keyButtonPointer.rootY = y;
+
+    (void) memset(&old, 0, sizeof(old));
 
     if (filter->keycode==0) {		/* initial press */
 	if ((pAction->redirect.new_key<xkbi->desc->min_key_code)||

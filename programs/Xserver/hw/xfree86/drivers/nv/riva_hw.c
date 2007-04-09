@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.51tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.52tsi Exp $ */
 
 #include "riva_local.h"
 #include "compiler.h"
@@ -655,7 +655,7 @@ static void CalcStateExt
     int		   flags 
 )
 {
-    int pixelDepth, VClk, m, n, p;
+    int pixelDepth, VClk = 0, m = 0, n = 0, p = 0;
     /*
      * Save mode parameters.
      */

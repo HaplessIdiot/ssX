@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/Type1/fonts.h,v 1.2tsi Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -37,7 +37,7 @@
 #define   CopyText(t)     t
 #define   I_DumpText(t)
 #define   CoerceText(t)   t
-#define   TextDelta(t,pt)
+#define   TextDelta(t,pt) (pt)->x = (pt)->y = 0;
 #define   XformText(p,s)
 #define   GimeSpace()     FALSE
  

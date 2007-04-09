@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128IBMDAC.c,v 1.5 2007/03/24 02:58:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128IBMDAC.c,v 1.6tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -319,7 +319,7 @@ Bool
 I128ProgramTi3025(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
    I128Ptr pI128 = I128PTR(pScrn);
-   unsigned char tmp, misc_ctrl, aux_ctrl, oclk, col_key, mux1_ctrl, mux2_ctrl;
+   unsigned char misc_ctrl, aux_ctrl, oclk, col_key, mux1_ctrl, mux2_ctrl;
    unsigned char n, m, p;
    double ffreq, diff, mindiff;
    int ni, mi, pi;
@@ -389,8 +389,6 @@ I128ProgramTi3025(ScrnInfoPtr pScrn, DisplayModePtr mode)
    n = (unsigned char )best_n;
    m = (unsigned char )best_m;
    p = (unsigned char )pi;
-
-   tmp = pI128->mem.rbase_g[INDEX_TI] & 0xFF;
 
    /*
     * Reset the clock data index

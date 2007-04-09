@@ -1,5 +1,5 @@
 /*
-Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
+Copyright (C) 1994-2007 The XFree86 Project, Inc.  All Rights Reserved.
 Copyright (C) 2000 Silicon Motion, Inc.  All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -24,7 +24,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_501.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_501.c,v 1.1tsi Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -185,6 +185,8 @@ static void adjustMode(mode_table_t *vesaMode, mode_table_t *mode, display_t dis
 {
     LONG blank_width, sync_start, sync_width;
     clock_select_t clock;
+
+    memset(&clock, 0, sizeof(clock));
 
     /* Calculate the VESA line and screen frequencies. */
     vesaMode->horizontal_frequency = roundDiv(vesaMode->pixel_clock,

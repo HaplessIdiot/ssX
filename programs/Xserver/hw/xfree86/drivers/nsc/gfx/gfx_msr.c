@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/gfx_msr.c,v 1.1tsi Exp $ */
 /*
  * $Workfile: gfx_msr.c $
  *
@@ -229,6 +229,7 @@ gfx_msr_read(unsigned int device, unsigned int msrRegister, Q_WORD * msrValue)
       ret_value = redcloud_msr_read(device, msrRegister, msrValue);
 #	endif
 
+   msrValue->high = msrValue->low = 0;
    return ret_value;
 }
 

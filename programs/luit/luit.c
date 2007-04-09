@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/luit/luit.c,v 1.12 2004/09/11 01:33:06 dawes Exp $ */
+/* $XFree86: xc/programs/luit/luit.c,v 1.13tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -453,8 +453,8 @@ condom(int argc, char **argv)
     int pty;
     int pid;
     char *line;
-    char *path;
-    char **child_argv;
+    char *path = NULL;
+    char **child_argv = NULL;
     int rc;
     int val;
 

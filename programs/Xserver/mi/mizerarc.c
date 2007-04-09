@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mizerarc.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mizerarc.c,v 1.9tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -773,7 +773,10 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
 	if (miCanZeroArc(arc))
 	{
 	    if (pGC->lineStyle == LineSolid)
+	    {
 		pts = miZeroArcPts(arc, points);
+		oddPts = NULL;
+	    }
 	    else
 	    {
 		pts = points;

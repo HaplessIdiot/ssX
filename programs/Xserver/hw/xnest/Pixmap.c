@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xnest/Pixmap.c,v 3.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Pixmap.c,v 3.9tsi Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -99,6 +99,7 @@ xnestPixmapToRegion(PixmapPtr pPixmap)
   pTmpReg = REGION_CREATE(pPixmap->drawable.pScreen, NULL, 1);
   if(!pReg || !pTmpReg) return NullRegion;
   
+  Box.x1 = 0;
   for (y = 0; y < pPixmap->drawable.height; y++) {
     Box.y1 = y;
     Box.y2 = y + 1;

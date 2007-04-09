@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbfillsp.c,v 3.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbfillsp.c,v 3.11tsi Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -399,7 +399,7 @@ cfbUnnaturalStippleFS(DrawablePtr pDrawable, GC *pGC, int nInit,
     PixmapPtr		    pStipple;	/* pointer to stipple we want to fill with */
     int	    w;
     int			    width,  x, xrem, xSrc, ySrc;
-    CfbBits	    tmpSrc, tmpDst1, tmpDst2;
+    CfbBits	    tmpSrc, tmpDst1 = 0, tmpDst2 = 0;
     int			    stwidth, stippleWidth;
     CfbBits	    *psrcS;
     int			    rop, stiprop = 0;

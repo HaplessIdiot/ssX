@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xtrap/xtrapin.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/xtrap/xtrapin.c,v 1.3tsi Exp $ */
 /*
  * @DEC_COPYRIGHT@
  */
@@ -142,6 +142,7 @@ main(int argc, char *argv[])
     poptarg = XEgetoptarg();
 #endif
 
+    (void) memset(&rec, 0, sizeof(rec));
     ifp = NULL;
     *popterr = 0; /* don't complain about -d for display */
     grabFlag = False;
