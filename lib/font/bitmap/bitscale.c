@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.30 2003/05/27 22:26:48 tsi Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.31tsi Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -732,6 +732,7 @@ ComputeScaledProperties(FontInfoPtr sourceFontInfo, /* the font to be scaled */
     fp = (FontPropPtr) xalloc(sizeof(FontPropRec) * nProps);
     *pProps = fp;
     if (!fp) {
+	*pIsStringProp = NULL;
 	fprintf(stderr, "Error: Couldn't allocate font properties (%ld*%d)\n",
 		(unsigned long)sizeof(FontPropRec), nProps);
 	return 1;

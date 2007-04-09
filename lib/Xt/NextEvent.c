@@ -56,7 +56,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.29 2004/05/05 00:07:03 dickey Exp $ */
+/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.30tsi Exp $ */
 
 #include "IntrinsicI.h"
 #include <stdio.h>
@@ -574,6 +574,7 @@ int _XtWaitForSomething(
 #ifdef USE_POLL
     wf.fdlist = NULL;
     wf.stack = fdlist;
+    wf.fdlistlen = wf.num_dpys = 0;
 #endif
 
     app->rebuild_fdlist = TRUE;

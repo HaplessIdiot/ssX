@@ -1,3 +1,4 @@
+/* $XFree86: xc/extras/Mesa/src/mesa/shader/arbprogram.c,v 1.0tsi Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  5.1
@@ -262,7 +263,7 @@ _mesa_ProgramEnvParameter4fARB(GLenum target, GLuint index,
       }
       ASSIGN_4V(ctx->FragmentProgram.Parameters[index], x, y, z, w);
    }
-   if (target == GL_VERTEX_PROGRAM_ARB
+   else if (target == GL_VERTEX_PROGRAM_ARB
        && ctx->Extensions.ARB_vertex_program) {
       if (index >= ctx->Const.MaxVertexProgramEnvParams) {
          _mesa_error(ctx, GL_INVALID_VALUE, "glProgramEnvParameter(index)");
@@ -322,7 +323,7 @@ _mesa_GetProgramEnvParameterfvARB(GLenum target, GLuint index,
       }
       COPY_4V(params, ctx->FragmentProgram.Parameters[index]);
    }
-   if (target == GL_VERTEX_PROGRAM_ARB
+   else if (target == GL_VERTEX_PROGRAM_ARB
        && ctx->Extensions.ARB_vertex_program) {
       if (index >= ctx->Const.MaxVertexProgramEnvParams) {
          _mesa_error(ctx, GL_INVALID_VALUE, "glGetProgramEnvParameter(index)");
@@ -472,7 +473,7 @@ _mesa_GetProgramLocalParameterdvARB(GLenum target, GLuint index,
                                     GLdouble *params)
 {
    GET_CURRENT_CONTEXT(ctx);
-   GLfloat floatParams[4];
+   GLfloat floatParams[4] = {0.0, };
    _mesa_GetProgramLocalParameterfvARB(target, index, floatParams);
    if (ctx->ErrorValue == GL_NO_ERROR) {
       COPY_4V(params, floatParams);

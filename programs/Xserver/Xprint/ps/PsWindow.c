@@ -72,7 +72,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsWindow.c,v 1.13 2003/10/29 22:11:55 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsWindow.c,v 1.14tsi Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -234,7 +234,7 @@ PsPaintWindow(
 
   BITS32               gcmask, index, mask;
   RegionRec            prgnWin;
-  DDXPointRec          oldCorner;
+  DDXPointRec          oldCorner = {0, };
   BoxRec               box;
   WindowPtr            pBgWin;
   GCPtr                pGC;
@@ -244,13 +244,15 @@ PsPaintWindow(
   register xRectangle *prect;
   int                  numRects;
 
-  gcmask = 0;
-
   /*
    * We don't want to paint a window that has no place to put the
    * PS output.
    */
   if( PsGetContextFromWindow(pWin)==(XpContextPtr)NULL ) return;
+
+  gcmask = 0;
+  (void) memset(newValues, 0, sizeof(newValues));
+  REGION_NULL(pWin->drawable.pScreen, &prgnWin);
 
   if( what==PW_BACKGROUND )
   {

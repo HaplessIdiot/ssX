@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/mi/miwideline.c,v 1.14tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miwideline.c,v 1.15tsi Exp $ */
 
 /* Author:  Keith Packard, MIT X Consortium */
 
@@ -1659,7 +1659,7 @@ miWideDashSegment (
     double	    L, l;
     double	    k;
     PolyVertexRec   vertices[4];
-    PolyVertexRec   saveRight, saveBottom;
+    PolyVertexRec   saveRight = {0.0, 0.0}, saveBottom = {0.0, 0.0};
     PolySlopeRec    slopes[4];
     PolyEdgeRec	    left[2], right[2];
     LineFaceRec	    lcapFace, rcapFace;

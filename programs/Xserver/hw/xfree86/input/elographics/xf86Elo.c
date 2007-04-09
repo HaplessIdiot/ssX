@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.21 2006/01/09 15:00:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.22dawes Exp $ */
 
 /*
  * Copyright 1995, 1999 by Patrick Lecoanet, France. <lecoanet@cena.dgac.fr>
@@ -399,12 +399,12 @@ xf86EloConvert(LocalDevicePtr	local,
 static void
 xf86EloReadInput(LocalDevicePtr	local)
 {
-  EloPrivatePtr     priv = (EloPrivatePtr)(local->private);
-  int				cur_x = 0, cur_y = 0;
-  int				state = 0;
-  int               post_needed = 0;
-  int x; /* output */
-  int y; /* output */
+  EloPrivatePtr	priv = (EloPrivatePtr)(local->private);
+  int		cur_x = 0, cur_y = 0;
+  int		state = 0;
+  int		post_needed = 0;
+  int		x = 0; /* output */
+  int		y = 0; /* output */
 
   DBG(4, ErrorF("Entering ReadInput\n"));
 
@@ -439,7 +439,7 @@ xf86EloReadInput(LocalDevicePtr	local)
      * calib and before posting the event.
      */
 
-     DBG(3, ErrorF("EloConvert Before Fix: Screen(%d) - x(%d), y(%d)\n", priv->screen_no, x, y));
+     DBG(3, ErrorF("EloConvert Before Fix: Screen(%d) - x(%d), y(%d)\n", priv->screen_no, cur_x, cur_y));
      /* 
       * Use the conversion method to send correct coordinates
       * since it contains all necessary logic

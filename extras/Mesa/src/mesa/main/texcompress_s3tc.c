@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/mesa/main/texcompress_s3tc.c,v 1.2tsi Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  6.1
@@ -278,7 +278,8 @@ static void
 fetch_texel_2d_rgb_dxt1( const struct gl_texture_image *texImage,
                          GLint i, GLint j, GLint k, GLchan *texel )
 {
-   (void) texImage; (void) i; (void) j; (void) k; (void) texel;
+   (void) texImage; (void) i; (void) j; (void) k;
+   texel[RCOMP] = texel[GCOMP] = texel[BCOMP] = texel[ACOMP] = 0;
 }
 
 
@@ -300,7 +301,8 @@ static void
 fetch_texel_2d_rgba_dxt1( const struct gl_texture_image *texImage,
                           GLint i, GLint j, GLint k, GLchan *texel )
 {
-   (void) texImage; (void) i; (void) j; (void) k; (void) texel;
+   (void) texImage; (void) i; (void) j; (void) k;
+   texel[RCOMP] = texel[GCOMP] = texel[BCOMP] = texel[ACOMP] = 0;
 }
 
 
@@ -322,7 +324,8 @@ static void
 fetch_texel_2d_rgba_dxt3( const struct gl_texture_image *texImage,
                           GLint i, GLint j, GLint k, GLchan *texel )
 {
-   (void) texImage; (void) i; (void) j; (void) k; (void) texel;
+   (void) texImage; (void) i; (void) j; (void) k;
+   texel[RCOMP] = texel[GCOMP] = texel[BCOMP] = texel[ACOMP] = 0;
 }
 
 
@@ -344,7 +347,8 @@ static void
 fetch_texel_2d_rgba_dxt5( const struct gl_texture_image *texImage,
                           GLint i, GLint j, GLint k, GLchan *texel )
 {
-   (void) texImage; (void) i; (void) j; (void) k; (void) texel;
+   (void) texImage; (void) i; (void) j; (void) k;
+   texel[RCOMP] = texel[GCOMP] = texel[BCOMP] = texel[ACOMP] = 0;
 }
 
 

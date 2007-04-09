@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/bitmap/Bitmap.c,v 1.6 2002/02/18 21:43:17 herrb Exp $ */
+/* $XFree86: xc/programs/bitmap/Bitmap.c,v 1.7tsi Exp $ */
 
 /*
  * Author:  Davor Matic, MIT X Consortium
@@ -1798,7 +1798,7 @@ SetValues(Widget old, Widget request, Widget new,
   }
   
   if (NE(bitmap.size)) {
-    Dimension width, height;
+    Dimension width = 0, height = 0;
     
     if (BWParseSize(newbw->bitmap.size, &width, &height)) { 
       ResizeGrid(newbw, width, height);

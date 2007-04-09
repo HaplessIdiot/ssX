@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/lib/dps/csfindNX.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/lib/dps/csfindNX.c,v 1.8tsi Exp $ */
 
 #include <sys/param.h>				/* for MAXHOSTNAMELEN */
 #include <stdlib.h>
@@ -170,7 +170,7 @@ GetAgentIdList(
   oldErrorHandler = XSetErrorHandler(TmpErrorHandler);    
   current = 0;
   for (i=0; i < *nAgents; i++) {
-    unsigned long len;
+    unsigned long len = 0;
     int *agentWillingness;
     unsigned long k;
 
@@ -285,7 +285,7 @@ XDPSNXOnDisplay(
 	   (i < nAgents) && (agentList[i].willingness > 0) && (match == False);
 	   i++) {
 	Atom *licenseMethods = NULL;
-	unsigned long nMethods;
+	unsigned long nMethods = 0;
 	unsigned long j;
 	
 	if (GetProperty(dpy, agentList[i].id,

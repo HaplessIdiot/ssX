@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/X11/XKBMisc.c,v 3.6tsi Exp $ */
+/* $XFree86: xc/lib/X11/XKBMisc.c,v 3.7tsi Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -776,12 +776,11 @@ XkbVirtualModsToReal(XkbDescPtr xkb,unsigned virtual_mask,unsigned *mask_rtrn)
 register int i,bit;
 register unsigned mask;
 
+    *mask_rtrn = 0;
     if (xkb==NULL)
 	return False;
-    if (virtual_mask==0) {
-	*mask_rtrn= 0;
+    if (virtual_mask==0)
 	return True;
-    }
     if (xkb->server==NULL)
 	return False;
     for (i=mask=0,bit=1;i<XkbNumVirtualMods;i++,bit<<=1) {

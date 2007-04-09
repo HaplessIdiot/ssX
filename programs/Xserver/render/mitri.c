@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/mitri.c,v 1.5 2002/05/31 16:48:52 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/mitri.c,v 1.6tsi Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -151,7 +151,7 @@ miTriangles (CARD8	    op,
 	     xTriangle	    *tris)
 {
     ScreenPtr		pScreen = pDst->pDrawable->pScreen;
-    BoxRec		bounds;
+    BoxRec		bounds = {0, };
     PicturePtr		pPicture = 0;
     INT16		xDst, yDst;
     INT16		xRel, yRel;
@@ -218,7 +218,7 @@ miTriStrip (CARD8	    op,
 {
     ScreenPtr		pScreen = pDst->pDrawable->pScreen;
     xTriangle		tri;
-    BoxRec		bounds;
+    BoxRec		bounds = {0, };
     PicturePtr		pPicture = 0;
     INT16		xDst, yDst;
     INT16		xRel, yRel;
@@ -289,7 +289,7 @@ miTriFan (CARD8		op,
 {
     ScreenPtr		pScreen = pDst->pDrawable->pScreen;
     xTriangle		tri;
-    BoxRec		bounds;
+    BoxRec		bounds = {0, };
     PicturePtr		pPicture = 0;
     xPointFixed		*first;
     INT16		xDst, yDst;

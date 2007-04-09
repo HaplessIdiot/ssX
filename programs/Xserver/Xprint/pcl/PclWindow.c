@@ -43,7 +43,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclWindow.c,v 1.11 2003/10/29 22:11:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclWindow.c,v 1.12tsi Exp $ */
 
 
 #include <stdio.h>
@@ -219,11 +219,11 @@ PclPaintWindow(
 #define COUNT_BITS	8
 
     pointer gcval[7];
-    pointer newValues [COUNT_BITS];
+    pointer newValues [COUNT_BITS] = {NULL, };
 
-    BITS32 gcmask, index, mask;
+    BITS32 gcmask = 0, index, mask;
     RegionRec prgnWin;
-    DDXPointRec oldCorner;
+    DDXPointRec oldCorner = {0, 0};
     BoxRec box;
     WindowPtr	pBgWin;
     GCPtr pGC;
@@ -233,7 +233,7 @@ PclPaintWindow(
     register xRectangle *prect;
     int numRects;
 
-    gcmask = 0;
+    REGION_NULL(pWin->drawable.pScreen, &prgnWin);
 
     /*
      * We don't want to paint a window that has no place to put the

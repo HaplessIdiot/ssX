@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/freetype2/src/bdf/bdflib.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/extras/freetype2/src/bdf/bdflib.c,v 1.5tsi Exp $ */
 /*
  * Copyright 2000 Computing Research Labs, New Mexico State University
  * Copyright 2001, 2002, 2003, 2004 Francesco Zappa Nardelli
@@ -569,11 +569,10 @@
     unsigned long  i, j;
     char           *fp, *dp;
 
+    *len = 0;
 
     if ( list == 0 || list->used == 0 )
       return 0;
-
-    *len = 0;
 
     dp = list->field[0];
     for ( i = j = 0; i < list->used; i++ )

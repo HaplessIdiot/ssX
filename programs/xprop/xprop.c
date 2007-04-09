@@ -1,7 +1,7 @@
 /*
 
 Copyright 1990, 1998  The Open Group
-Copyright (c) 2000  The XFree86 Project, Inc.
+Copyright (c) 2000-2007  The XFree86 Project, Inc.
 
 Permission to use, copy, modify, distribute, and sell this software and its
 documentation for any purpose is hereby granted without fee, provided that
@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xprop/xprop.c,v 1.16 2003/10/31 21:49:48 herrb Exp $ */
+/* $XFree86: xc/programs/xprop/xprop.c,v 1.17tsi Exp $ */
 
 
 #include <X11/Xlib.h>
@@ -294,7 +294,7 @@ Lookup_Formats (Atom atom, const char **format, const char **dformat)
 static void
 Add_Mapping (Atom atom, const char *format, const char *dformat)
 {
-    thunk t;
+    thunk t = {0, };
 
     if (!_property_formats)
 	_property_formats = Create_Thunk_List();
@@ -1113,7 +1113,7 @@ static thunk *
 Break_Down_Property (const char *pointer, int length, Atom type, const char *format, int size)
 {
     thunk *thunks;
-    thunk t;
+    thunk t = {0, };
     int i;
     char format_char;
 
@@ -1127,8 +1127,10 @@ Break_Down_Property (const char *pointer, int length, Atom type, const char *for
 	else if (format_char == 't') {
 	    t.extra_encoding = type;
 	    t.value = Extract_Len_String(&pointer,&length,size,&t.extra_value);
-	} else
+	} else {
 	    t.value = Extract_Value(&pointer,&length,size,format_char=='i');
+	    t.extra_value = NULL;
+	}
 	thunks = Add_Thunk(thunks, t);
 	i++;
     }
@@ -1282,7 +1284,7 @@ static thunk *
 Handle_Prop_Requests (int argc, char **argv)
 {
     char *format, *dformat, *prop;
-    thunk *thunks, t;
+    thunk *thunks, t = {0, };
 
     thunks = Create_Thunk_List();
 
@@ -1669,7 +1671,7 @@ main (int argc, char **argv)
 	    continue;
 	}
 	if (!strcmp(argv[0], "-remove")) {
-	    thunk t;
+	    thunk t = {0, };
 	    if (++argv, --argc == 0) usage();
 	    t.propname = argv[0];
 	    if (remove_props == NULL) remove_props = Create_Thunk_List();
@@ -1677,7 +1679,7 @@ main (int argc, char **argv)
 	    continue;
 	}
 	if (!strcmp(argv[0], "-set")) {
-	    thunk t;
+	    thunk t = {0, };
 	    if (argc < 3) usage();
 	    t.propname = argv[1];
 	    t.extra_value = argv[2];

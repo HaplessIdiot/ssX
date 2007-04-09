@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/shader/arbprogparse.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/shader/arbprogparse.c,v 1.3tsi Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  6.1
@@ -843,6 +843,7 @@ parse_texcoord_num (GLcontext * ctx, GLubyte ** inst,
       _mesa_set_program_error (ctx, Program->Position,
                                "Invalid texture unit index");
       _mesa_error (ctx, GL_INVALID_OPERATION, "Invalid texture unit index");
+      *coord = 0;
       return 1;
    }
 

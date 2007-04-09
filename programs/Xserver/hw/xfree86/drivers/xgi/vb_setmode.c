@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/vb_setmode.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/xgi/vb_setmode.c,v 1.2tsi Exp $ */
 
 #include "osdef.h"
 
@@ -4545,6 +4545,10 @@ void XGI_GetVCLKLen(UCHAR tempal,UCHAR* di_0,UCHAR* di_1, PVB_DEVICE_INFO pVBInf
         {
             *di_0 = ( UCHAR )XGI_VBVCLKData[ tempal ].SR2B ;
             *di_1 = XGI_VBVCLKData[ tempal ].SR2C ;
+        }
+        else
+        {
+            *di_0 = *di_1 = 0;
         }
     }
     else

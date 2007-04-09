@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Sbus.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Sbus.c,v 1.14tsi Exp $ */
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -597,7 +597,7 @@ static int
 promWalkNode2Pathname(char *path, int parent, int node, int searchNode, int type)
 {
     int nextnode;
-    int len, ntype = type;
+    int len = 0, ntype = type;
     char *prop, *p;
 
     prop = promGetProperty("name", &len);

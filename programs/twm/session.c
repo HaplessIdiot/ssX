@@ -24,7 +24,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author:  Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/programs/twm/session.c,v 3.9 2003/04/21 11:46:13 herrb Exp $ */
+/* $XFree86: xc/programs/twm/session.c,v 3.10tsi Exp $ */
 
 #include <X11/Xos.h>
 
@@ -548,7 +548,7 @@ char *filename;
     FILE *configFile;
     TWMWinConfigEntry *entry;
     int done = 0;
-    unsigned short version;
+    unsigned short version = 0;
 
     configFile = fopen (filename, "rb");
     if (!configFile)

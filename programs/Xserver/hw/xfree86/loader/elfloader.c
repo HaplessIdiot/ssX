@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.75 2006/07/05 16:42:22 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.76tsi Exp $ */
 
 /*
  *
@@ -23,7 +23,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 /*
- * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2007 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -3516,7 +3516,7 @@ ELFLoadModule(loaderPtr modrec, int elffd, LOOKUP **ppLookup)
     ELFRelocPtr elf_reloc, tail;
     LDRModulePtr elfmod;
     int totalsize, maxalign, i;
-    unsigned short *secttable;
+    unsigned short *secttable = NULL;
     LOOKUP *pLookup;
 
     ldrCommons = 0;

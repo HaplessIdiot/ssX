@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillPoly.c,v 1.16tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillPoly.c,v 1.17tsi Exp $ */
 
 /*
- * Copyright 1996  The XFree86 Project
+ * Copyright 1996-2007  The XFree86 Project
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -127,6 +127,7 @@ XAAIsEasyPolygon(
 
     *topY = 32767;
     *bottomY = 0;
+    *topPoint = NULL;
 
     origin -= (origin & 0x8000) << 1;
     vertex1 = *((int *) &extents->x1) - origin;

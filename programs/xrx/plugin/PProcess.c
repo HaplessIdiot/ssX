@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization from
 The Open Group.
 
 */
-/* $XFree86: xc/programs/xrx/plugin/PProcess.c,v 1.8 2004/04/03 22:38:55 tsi Exp $ */
+/* $XFree86: xc/programs/xrx/plugin/PProcess.c,v 1.9tsi Exp $ */
 
 #include "RxPlugin.h"
 #include "XUrls.h"
@@ -395,7 +395,7 @@ SubstructureRedirectHandler (
 	    Position x, y;
 	    Dimension width, height;
 	    Dimension border_width;
-	    Colormap cmap;
+	    Colormap cmap = 0;
 	    int n;
 	    Atom* wm_proto;
 	    windowrec* wp;

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.23tsi Exp $
+ * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.24tsi Exp $
  *
  * Copyright © 2000, Compaq Computer Corporation, 
  * Copyright © 2002, Hewlett Packard, Inc.
@@ -1147,6 +1147,7 @@ RRRegisterSize (ScreenPtr	    pScreen,
     tmp.nRatesInUse = 0;
     tmp.referenced = TRUE;
     tmp.oldReferenced = FALSE;
+    tmp.id = 0;
     for (i = 0; i < pScrPriv->nSizes; i++)
 	if (RRScreenSizeMatches (&tmp, &pScrPriv->pSizes[i]))
 	{

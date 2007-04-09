@@ -26,7 +26,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-/* $XFree86: xc/fonts/util/ucs2any.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/fonts/util/ucs2any.c,v 1.4tsi Exp $ */
 /*
  * This utility allows you to generate from an ISO10646-1 encoded
  * BDF font other BDF fonts in any possible encoding. This way, you can
@@ -512,7 +512,7 @@ main(int argc, char *argv[])
 	int i;
 	int j;
 	int *chars = NULL;
-	bbx_t bbx;
+	bbx_t bbx = {0, 0, 0, 0};
 	char *fout = NULL;
 	FILE *fout_fp;
 	int k;

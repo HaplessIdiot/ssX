@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init301.c,v 1.80 2005/02/19 01:03:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init301.c,v 1.81tsi Exp $ */
 /*
  * Mode initializing code (CRT2 section)
  * for SiS 300/305/540/630/730 and
@@ -6737,7 +6737,7 @@ SiS_SetGroup2(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,USHORT Refr
   const       UCHAR *PhasePoint;
   const       UCHAR *TimingPoint;
 #ifdef SIS315H
-  USHORT      resindex, CRT2Index;
+  USHORT      resindex = 0, CRT2Index = 0;
   const       SiS_Part2PortTblStruct *CRT2Part2Ptr = NULL;
 
   if(SiS_Pr->SiS_VBInfo & SetCRT2ToLCDA) return;
@@ -7793,7 +7793,7 @@ SiS_ModCRT1CRTC(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,
                 USHORT RefreshRateTableIndex, PSIS_HW_INFO HwInfo)
 {
   USHORT tempah,i,modeflag,j;
-  USHORT ResIndex,DisplayType;
+  USHORT ResIndex = 0, DisplayType = 0;
   const SiS_LVDSCRT1DataStruct *LVDSCRT1Ptr=NULL;
 
   if(ModeNo <= 0x13) modeflag = SiS_Pr->SiS_SModeIDTable[ModeIdIndex].St_ModeFlag;

@@ -1,10 +1,10 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.21tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.22tsi Exp $ */
 /*
  * BIGFONT extension for sharing font metrics between clients (if possible)
  * and for transmitting font metrics to clients in a compressed form.
  *
  * Copyright (c) 1999-2000  Bruno Haible
- * Copyright (c) 1999-2000  The XFree86 Project, Inc.
+ * Copyright (c) 1999-2007  The XFree86 Project, Inc.
  */
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
@@ -409,7 +409,7 @@ ProcXF86BigfontQueryFont(ClientPtr client)
     int nCharInfos;
     int shmid;
 #ifdef HAS_SHM
-    ShmDescPtr pDesc;
+    ShmDescPtr pDesc = NULL;
 #else
 #define pDesc 0
 #endif

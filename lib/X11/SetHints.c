@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/SetHints.c,v 1.5 2003/11/17 22:20:08 dawes Exp $ */
+/* $XFree86: xc/lib/X11/SetHints.c,v 1.6tsi Exp $ */
 
 #include <X11/Xlibint.h>
 #include <X11/Xutil.h>
@@ -228,7 +228,7 @@ XSetStandardProperties (
     	XSizeHints *hints)	/* size hints for window in its normal state */
 {
 	XWMHints phints;
-	phints.flags = 0;
+	(void) memset(&phints, 0, sizeof(phints));
 
 	if (name != NULL) XStoreName (dpy, w, name);
 

@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_hw.c,v 1.20 2006/01/21 01:17:59 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_hw.c,v 1.21tsi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -840,7 +840,7 @@ void NVCalcStateExt (
     int		   flags 
 )
 {
-    int pixelDepth, VClk;
+    int pixelDepth, VClk = 0;
     /*
      * Save mode parameters.
      */

@@ -24,7 +24,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Jim Fulton, MIT X Consortium
  */
-/* $XFree86: xc/programs/xlsatoms/xlsatoms.c,v 1.6 2001/12/14 20:02:08 dawes Exp $ */
+/* $XFree86: xc/programs/xlsatoms/xlsatoms.c,v 1.7tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -175,7 +175,7 @@ static void
 do_range(Display *dpy, char *format, char *range)
 {
     int mask;
-    long low, high;
+    long low = 0, high = 0;
 
     mask = parse_range (range, &low, &high);
     list_atoms (dpy, format, mask, low, high);

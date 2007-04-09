@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.97tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.98tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -2846,7 +2846,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
     * or, at least it's meant to..... alas it doesn't seem to always work.
     */
    if (pI830->devicePresence) {
-      int req, att, enc;
+      int req = 0, att = 0, enc = 0;
       GetDevicePresence(pScrn, &req, &att, &enc);
       for (i = 0; i < NumDisplayTypes; i++) {
          xf86DrvMsg(pScrn->scrnIndex, X_INFO,

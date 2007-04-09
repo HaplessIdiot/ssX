@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.97tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.98tsi Exp $ */
 /*
- * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2007 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -1865,11 +1865,11 @@ busTypeSpecific(EntityPtr pEnt, xf86State state, xf86AccessPtr *acc_mem,
 		*acc_io = &(*ppaccp)->ioAccess;
 		*acc_mem = &(*ppaccp)->memAccess;
 		*acc_mem_io = &(*ppaccp)->io_memAccess;
-		break;
+		return;
 	    }
 	    ppaccp++;
 	}
-	break;
+	/* Fall through */
     default:
 	*acc_mem = *acc_io = *acc_mem_io = NULL;
 	break;
@@ -2708,7 +2708,8 @@ x_isSubsetOf(resRange range, resPtr list1, resPtr list2)
 		    if (range.rBegin >= list->block_begin
 			&& range.rEnd <= list->block_end)
 			return TRUE;
-		    else if (range.rBegin < list->block_begin
+
+		    if (range.rBegin < list->block_begin
 			     && range.rEnd > list->block_end) {
 			RANGE(range1, range.rBegin, list->block_begin - 1,
 			      range.type);
@@ -2717,12 +2718,15 @@ x_isSubsetOf(resRange range, resPtr list1, resPtr list2)
 			return (x_isSubsetOf(range1,list->next,list2) &&
 				x_isSubsetOf(range2,list->next,list2));
 		    }
-		    else if (range.rBegin >= list->block_begin
+
+		    if (range.rBegin >= list->block_begin
 			     && range.rBegin <= list->block_end) {
 			RANGE(range1, list->block_end + 1, range.rEnd,
 			      range.type);
 			return (x_isSubsetOf(range1,list->next,list2));
-		    } else if (range.rEnd >= list->block_begin
+		    }
+
+		    if (range.rEnd >= list->block_begin
 			       && range.rEnd <= list->block_end) {
 			RANGE(range1,range.rBegin, list->block_begin - 1,
 			      range.type);
@@ -2730,6 +2734,7 @@ x_isSubsetOf(resRange range, resPtr list1, resPtr list2)
 		    }
 		}
 		break;
+
 	    case ResSparse:
 		if ((list->res_type & ResExtMask) == ResSparse) {
 		    memType test;
@@ -2759,14 +2764,17 @@ x_isSubsetOf(resRange range, resPtr list1, resPtr list2)
 		    test = list->sparse_mask & ~range.rMask;
 		    if (test == 0)
 			return TRUE;
-		    for (i = 0; i < sizeof(memType); i++) {
+		    for (i = 0; i < sizeof(memType) * 8; i++) {
 			if ((test >> i) & 0x1) {
-			    RANGE(range1, ((range.rBase & list->sparse_base)
-				  | (range.rBase & ~list->sparse_mask)
-				  | ((~list->sparse_base & list->sparse_mask)
-				     & ~range.rMask)) & range1.rMask,
-				  ((range.rMask | list->sparse_mask) & ~test)
-				  | (1 << i), range.type);
+			    RANGE(
+				range1,
+				((range.rBase & list->sparse_base) |
+				 (range.rBase & ~list->sparse_mask) |
+				 ((~list->sparse_base & list->sparse_mask) &
+				  ~range.rMask)) & range.rMask,
+				((range.rMask | list->sparse_mask) & ~test) |
+				 (1 << i),
+				range.type);
 			    return (x_isSubsetOf(range1,list->next,list2));
 			}
 		    }
@@ -2774,32 +2782,40 @@ x_isSubsetOf(resRange range, resPtr list1, resPtr list2)
 		break;
 	    }
 	}
+
 	return (x_isSubsetOf(range,list->next,list2));
-    } else if (list2) {
+    }
+
+    if (list2) {
 	resPtr tmpList = NULL;
+
 	switch (range.type & ResExtMask) {
 	case ResBlock:
-	    tmpList = decomposeSparse(range);
+	    list = tmpList = decomposeSparse(range);
+
 	    while (tmpList) {
 		if (!x_isSubsetOf(tmpList->val,list2,NULL)) {
-		    xf86FreeResList(tmpList);
+		    xf86FreeResList(list);
 		    return FALSE;
 		}
+
 		tmpList = tmpList->next;
 	    }
-	    xf86FreeResList(tmpList);
+
+	    xf86FreeResList(list);
 	    return TRUE;
+
 	case ResSparse:
 	    while (list2) {
 		tmpList = xf86JoinResLists(tmpList,decomposeSparse(list2->val));
 		list2 = list2->next;
 	    }
-	    ret = x_isSubsetOf(range,tmpList,NULL);
+
+	    ret = x_isSubsetOf(range, tmpList, NULL);
 	    xf86FreeResList(tmpList);
 	    return ret;
 	}
-    } else
-	return FALSE;
+    }
 
     return FALSE;
 }
@@ -2877,26 +2893,31 @@ findIntersect(resRange Range, resPtr list)
 			}
 			break;
 		    case ResSparse:
-			new = xf86JoinResLists(new,xf86FindIntersectOfLists(new,decomposeSparse(list->val)));
+			new = xf86JoinResLists(new,
+				xf86FindIntersectOfLists(new,
+				  decomposeSparse(list->val)));
 			break;
 		    }
 		    break;
 		case ResSparse:
 		    switch (list->res_type & ResExtMask) {
 		    case ResSparse:
-			if (!((~(range.rBase ^ list->sparse_base)
-			    & (range.rMask & list->sparse_mask)))) {
-			    RANGE(range, (range.rBase & list->sparse_base)
-				  | (~range.rMask & list->sparse_base)
-				  | (~list->sparse_mask & range.rBase),
-				  range.rMask | list->sparse_mask,
-				  Range.type);
-			    new = xf86AddResToList(new,&range,-1);
+			if (!((~(Range.rBase ^ list->sparse_base)
+			    & (Range.rMask & list->sparse_mask)))) {
+			    RANGE(
+				range,
+				(Range.rBase & list->sparse_base) |
+				 (~Range.rMask & list->sparse_base) |
+				 (~list->sparse_mask & Range.rBase),
+				Range.rMask | list->sparse_mask,
+				Range.type);
+			    new = xf86AddResToList(new, &range, -1);
 			}
 			break;
 		    case ResBlock:
-			new = xf86JoinResLists(new,xf86FindIntersectOfLists(
-			    decomposeSparse(range),list));
+			new = xf86JoinResLists(new,
+				xf86FindIntersectOfLists(
+				  decomposeSparse(Range), list));
 			break;
 		    }
 		}

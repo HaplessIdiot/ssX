@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xaw/Form.c,v 1.22tsi Exp $ */
+/* $XFree86: xc/lib/Xaw/Form.c,v 1.23tsi Exp $ */
 
 /***********************************************************
 
@@ -853,7 +853,7 @@ XawFormGeometryManager(Widget w, XtWidgetGeometry *request,
 
     if (request->request_mode & XtCWQueryOnly) {
 	Boolean always_resize_children;
-	Dimension ret_width, ret_height;
+	Dimension ret_width = 0, ret_height = 0;
 
 	fw->form.resize_in_layout = False;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/config/xdmxconfig.c,v 1.3 2005/03/25 02:22:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/config/xdmxconfig.c,v 1.4tsi Exp $ */
 /*
  * Copyright 2002 Red Hat Inc., Durham, North Carolina.
  *
@@ -55,7 +55,7 @@
 
 extern FILE                *yyin;
 
-#define DMX_INFO "xdmxconfig v0.9\nCopyright 2002 Red Hat Inc.\n$XFree86$"
+#define DMX_INFO "xdmxconfig v0.9\nCopyright 2002 Red Hat Inc.\n$XFree86: xc/programs/Xserver/hw/dmx/config/xdmxconfig.c,v 1.4 2006/01/09 14:59:48 dawes Exp $"
 
 #define DMX_MAIN_WIDTH    800
 #define DMX_MAIN_HEIGHT   600
@@ -137,7 +137,7 @@ static void dmxConfigGetDims(int *maxWidth, int *maxHeight)
     DMXConfigEntryPtr e;
     
     *maxWidth = dmxConfigWallWidth  = 0;
-    *maxWidth = dmxConfigWallHeight = 0;
+    *maxHeight = dmxConfigWallHeight = 0;
     if (!dmxConfigCurrent) return;
     
     dmxConfigWallWidth  = dmxConfigCurrent->width;

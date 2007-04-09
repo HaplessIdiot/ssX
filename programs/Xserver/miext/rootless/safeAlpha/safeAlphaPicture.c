@@ -32,7 +32,7 @@
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  */
- /* $XFree86: xc/programs/Xserver/miext/rootless/safeAlpha/safeAlphaPicture.c,v 1.4tsi Exp $ */
+ /* $XFree86: xc/programs/Xserver/miext/rootless/safeAlpha/safeAlphaPicture.c,v 1.5tsi Exp $ */
 
 #ifdef RENDER
 
@@ -224,9 +224,6 @@ SafeAlphaCompositeGeneral(
     CARD16              height)
 {
     FbCompositeOperand	src[4],msk[4],dst[4],*pmsk;
-    FbCompositeOperand	*srcPict, *srcAlpha;
-    FbCompositeOperand	*dstPict, *dstAlpha;
-    FbCompositeOperand	*mskPict = 0, *mskAlpha = 0;
     FbCombineFunc	f;
     int			w;
 
@@ -240,26 +237,6 @@ SafeAlphaCompositeGeneral(
         dst[0].store = SafeAlphaStore_x8r8g8b8;
     }
 
-    if (pSrc->alphaMap)
-    {
-	srcPict = &src[1];
-	srcAlpha = &src[2];
-    }
-    else
-    {
-	srcPict = &src[0];
-	srcAlpha = 0;
-    }
-    if (pDst->alphaMap)
-    {
-	dstPict = &dst[1];
-	dstAlpha = &dst[2];
-    }
-    else
-    {
-	dstPict = &dst[0];
-	dstAlpha = 0;
-    }
     f = fbCombineFuncU[op];
     if (pMask)
     {
@@ -268,16 +245,6 @@ SafeAlphaCompositeGeneral(
 	pmsk = msk;
 	if (pMask->componentAlpha)
 	    f = fbCombineFuncC[op];
-	if (pMask->alphaMap)
-	{
-	    mskPict = &msk[1];
-	    mskAlpha = &msk[2];
-	}
-	else
-	{
-	    mskPict = &msk[0];
-	    mskAlpha = 0;
-	}
     }
     else
 	pmsk = 0;

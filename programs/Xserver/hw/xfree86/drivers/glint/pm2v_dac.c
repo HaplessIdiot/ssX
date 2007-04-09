@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.29tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.30tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -217,7 +217,7 @@ Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
   
     {
 	/* Get the programmable clock values */
-    	unsigned char m,n,p;
+    	unsigned char m = 0, n = 0, p = 0;
 	
 	(void) PM2VDAC_CalculateClock(mode->Clock/2,pGlint->RefClock,
 								&m,&n,&p);

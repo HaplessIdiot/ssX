@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.37tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.38tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -942,7 +942,7 @@ int GLX_PREFIX(glXGetConfig)(Display *dpy, XVisualInfo *vis, int attribute,
 		 int *value_return)
 {
     __GLXdisplayPrivate *priv;
-    __GLXscreenConfigs *psc;
+    __GLXscreenConfigs *psc = NULL;
     int   status;
 
     status = GetGLXPrivScreenConfig( dpy, vis->screen, & priv, & psc );
@@ -1692,6 +1692,7 @@ GLXFBConfig *GLX_PREFIX(glXGetFBConfigs)(Display *dpy, int screen, int *nelement
     __GLcontextModes ** config = NULL;
     int   i;
 
+    *nelements = 0;
     if ( (priv->screenConfigs != NULL)
 	 && (screen >= 0) && (screen <= ScreenCount(dpy))
 	 && (priv->screenConfigs[screen].configs != NULL)
@@ -2160,7 +2161,7 @@ GLXContext GLX_PREFIX(glXCreateContextWithConfigSGIX)(Display *dpy, GLXFBConfigS
 GLXFBConfigSGIX GLX_PREFIX(glXGetFBConfigFromVisualSGIX)(Display *dpy, XVisualInfo *vis)
 {
     __GLXdisplayPrivate *priv;
-    __GLXscreenConfigs *psc;
+    __GLXscreenConfigs *psc = NULL;
 
     if ( (GetGLXPrivScreenConfig( dpy, vis->screen, & priv, & psc ) != Success)
 	 && __glXExtensionBitIsEnabled( psc, SGIX_fbconfig_bit )

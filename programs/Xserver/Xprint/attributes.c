@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.22tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.23tsi Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -1366,6 +1366,8 @@ VectorizeCommand(
     XpContextPtr pContext)
 {
     char *cmdName;
+
+    *pVector = NULL;
 
     if(command == (char *)NULL)
 	return (char *)NULL;

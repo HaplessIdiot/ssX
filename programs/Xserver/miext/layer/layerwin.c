@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/layer/layerwin.c,v 1.7tsi Exp $
+ * $XFree86: xc/programs/Xserver/miext/layer/layerwin.c,v 1.8tsi Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -368,6 +368,7 @@ layerChangeWindowAttributes (WindowPtr pWin, unsigned long mask)
     LayerWinLoopRec loop;
     Bool	    ret = TRUE;
 
+    (void) memset(&loop, 0, sizeof(loop));
     for (pLay = LayerWindowFirst (pWin, &loop);
 	 pLay;
 	 pLay = LayerWindowNext (pWin, &loop))
@@ -388,6 +389,7 @@ layerPaintWindowBackground (WindowPtr pWin, RegionPtr pRegion, int what)
     LayerPtr	    pLay;
     LayerWinLoopRec loop;
 
+    (void) memset(&loop, 0, sizeof(loop));
     for (pLay = LayerWindowFirst (pWin, &loop);
 	 pLay;
 	 pLay = LayerWindowNext (pWin, &loop))
@@ -406,6 +408,7 @@ layerPaintWindowBorder (WindowPtr pWin, RegionPtr pRegion, int what)
     LayerPtr	    pLay;
     LayerWinLoopRec loop;
 
+    (void) memset(&loop, 0, sizeof(loop));
     for (pLay = LayerWindowFirst (pWin, &loop);
 	 pLay;
 	 pLay = LayerWindowNext (pWin, &loop))
@@ -425,6 +428,7 @@ layerCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
     LayerWinLoopRec loop;
     int		    dx = 0, dy = 0;
 
+    (void) memset(&loop, 0, sizeof(loop));
     for (pLay = LayerWindowFirst (pWin, &loop);
 	 pLay;
 	 pLay = LayerWindowNext (pWin, &loop))

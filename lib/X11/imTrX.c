@@ -27,7 +27,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imTrX.c,v 1.4 2003/11/17 22:20:12 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imTrX.c,v 1.5tsi Exp $ */
 
 #include <string.h>
 #include <X11/Xatom.h>
@@ -432,7 +432,7 @@ _XimXRead(Xim im, XPointer recv_buf, int buf_len, int *ret_len)
 {
     XEvent	*ev;
     XEvent	 event;
-    int		 len;
+    int		 len = 0;
     XSpecRec	*spec = (XSpecRec *)im->private.proto.spec;
     XPointer	  arg = spec->ev;
 

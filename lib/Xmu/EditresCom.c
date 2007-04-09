@@ -23,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/EditresCom.c,v 1.22 2004/01/23 02:36:34 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/EditresCom.c,v 1.23tsi Exp $ */
 
 /*
  * Author:  Chris D. Peterson, Dave Sternlicht, MIT X Consortium
@@ -277,7 +277,7 @@ BuildEvent(Widget w, Atom sel, XtPointer data, ResIdent ident,
 {
   EditresEvent *event;
     ProtocolStream alloc_stream, *stream;
-    unsigned char temp;
+    unsigned char temp = 0;
     register unsigned int i;
 
   stream = &alloc_stream;
