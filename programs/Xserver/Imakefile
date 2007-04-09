@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.327tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.328tsi Exp $
 
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
@@ -1568,12 +1568,6 @@ SetUIDServerTarget(XDarwin, \
 		     $(ROOTLESSDIR)/accel/LibraryTargetName(rlAccel)
         XPLUGINLIB = XpluginLibrary
 
-#if NothingOutsideProjectRoot
-     XDARWINAPPDIR = $(BINDIR)/XDarwin.app/Contents
-#else
-     XDARWINAPPDIR = /Applications/XDarwin.app/Contents
-#endif
-
 /*
  * Quartz X server (installed in its application bundle)
  */
@@ -1588,7 +1582,7 @@ install::
 	$(MV) $(DESTDIR)$(BINDIR)/XDarwinApp \
 		$(DESTDIR)$(XDARWINAPPDIR)/MacOS/XDarwin
 	-(cd $(DESTDIR)$(BINDIR); $(RM) XDarwinQuartz; \
-		$(LN) $(XDARWINAPPDIR)/MacOS/XDarwin XDarwinQuartz)
+		$(LN) $(DESTDIR)$(XDARWINAPPDIR)/MacOS/XDarwin XDarwinQuartz)
 
 /*
  * Display mode bundles for Quartz
@@ -1603,8 +1597,7 @@ BundleProgramTarget(xpr, \
 	$(XPRDIRS), \
 	$(QUARTZDIR)/xpr/xprScreen.o, \
 	$(XPRLIBS), \
-	-framework ApplicationServices $(XPLUGINLIB), \
-	$(XDARWINAPPDIR)/Resources)
+	-framework ApplicationServices $(XPLUGINLIB))
 #endif
 
             CRDIRS = $(QUARTZDIR)/cr $(ROOTLESSDIR) $(ROOTLESSDIR)/safeAlpha
@@ -1617,8 +1610,7 @@ BundleProgramTarget(cr, \
 	$(CRLIBS), \
 	-framework ApplicationServices \
 	    -framework Cocoa \
-	    -framework Carbon -ObjC, \
-	$(XDARWINAPPDIR)/Resources)
+	    -framework Carbon -ObjC);
 
             FSDIRS = $(QUARTZDIR)/fullscreen $(SHADOWDIR)
             FSLIBS = $(QUARTZDIR)/fullscreen/LibraryTargetName(fullscreen) \
@@ -1629,8 +1621,7 @@ BundleProgramTarget(fullscreen, \
 	$(FSDIRS), \
 	$(QUARTZDIR)/fullscreen/fullscreen.o, \
 	$(FSLIBS), \
-	-framework ApplicationServices, \
-	$(XDARWINAPPDIR)/Resources)
+	-framework ApplicationServices)
 
 /*
  * GLX bundles for Quartz
@@ -1641,8 +1632,7 @@ BundleProgramTarget(glxAGL, \
 	GL, \
 	GL/glx/glxext.o, \
 	GL/glx/libglx.a GL/apple/libAGLcore.a, \
-	-framework AGL -framework OpenGL, \
-	$(XDARWINAPPDIR)/Resources)
+	-framework AGL -framework OpenGL)
 
 #if BuildAppleDRI
 BundleProgramTarget(glxCGL, \
@@ -1650,8 +1640,7 @@ BundleProgramTarget(glxCGL, \
 	GL, \
 	GL/glx/glxext.o, \
 	GL/glx/libglx.a GL/apple/libCGLcore.a, \
-	-framework OpenGL $(XPLUGINLIB), \
-	$(XDARWINAPPDIR)/Resources)
+	-framework OpenGL $(XPLUGINLIB))
 #endif
 
 BundleProgramTarget(glxMesa, \
@@ -1659,8 +1648,7 @@ BundleProgramTarget(glxMesa, \
 	GL, \
 	GL/glx/glxext.o, \
 	GL/glx/libglx.a GL/mesa/GLcore/libGLcore.a $(GLOBJS), \
-	NullParameter, \
-	$(XDARWINAPPDIR)/Resources)
+	NullParameter)
 
 #else /* !DarwinQuartzSupport */
 

@@ -87,7 +87,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.212tsi Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.213tsi Exp $ */
 
 /* main.c */
 
@@ -706,6 +706,10 @@ static char etc_wtmp[] = WTMP_FILENAME;
  * to implement xterm -ls.  They can turn on USE_LOGIN_DASH_P and turn off
  * WTMP and USE_LASTLOG.
  */
+#ifdef __APPLE__
+#define USE_LOGIN_DASH_P
+#define LOGIN_FILENAME "/usr/bin/login"
+#endif
 #ifdef USE_LOGIN_DASH_P
 #ifndef LOGIN_FILENAME
 #define LOGIN_FILENAME "/bin/login"
@@ -4350,6 +4354,9 @@ spawn(void)
 #endif /* !TERMIO_STRUCT */
 
 #ifdef USE_LOGIN_DASH_P
+#ifdef __APPLE__
+	    added_utmp_entry = 1;	/* login does this for us */
+#endif
 	    if (term->misc.login_shell && pw && added_utmp_entry)
 		execl(bin_login, "login", "-p", "-f", login_name, (void *) 0);
 #endif
