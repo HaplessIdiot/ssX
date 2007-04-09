@@ -1,4 +1,8 @@
 XFree86 4.6.99.22 (xx April 2007)
+ 138. Resave text mode on re-entry into the mga driver to catch changes in text
+      mode font while the server was switched away (Matthias Drochner).
+ 137. Fix determination of mode on server entry in the mga driver
+      (Eike Dehling).
  136. Refix Darwin bundle install rules when DESTDIR is specified
       (Marc La France).
  135. Use /usr/bin/login for `xterm -ls` on Darwin (Yves de Champlain,
@@ -20507,4 +20511,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3868 2007/04/07 11:02:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3869 2007/04/09 15:19:11 tsi Exp $

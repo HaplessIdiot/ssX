@@ -44,7 +44,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.259tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.260tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -715,10 +715,6 @@ MGAReadBios(ScrnInfoPtr pScrn)
 	pBios = &pMga->Bios;
 	pBios2 = &pMga->Bios2;
         
-	/* Get the output mode set by the BIOS */
-	xf86ReadDomainMemory(pMga->PciTag, pMga->BiosAddress + 0x7ff1u,
-			     sizeof(CARD8), &pMga->BiosOutputMode); 
-
 	/*
 	 * If the BIOS address was probed, it was found from the PCI config
 	 * space.  If it was given in the config file, try to guess when it
@@ -741,8 +737,11 @@ MGAReadBios(ScrnInfoPtr pScrn)
 			   "Could not retrieve video BIOS!\n");
 		return;
 	}
-        
-        /* Get the video BIOS info block */
+
+	/* Get the output mode set by the BIOS */
+	pMga->BiosOutputMode = BIOS[0x7ff1u];
+
+	/* Get the video BIOS info block */
 	if (strncmp((char *)(&BIOS[45]), "MATROX", 6)) {
 		xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 			       "Video BIOS info block not detected!\n");
@@ -3842,6 +3841,9 @@ MGAEnterVT(int scrnIndex, int flags)
         DRIUnlock(screenInfo.screens[scrnIndex]);
     }
 #endif
+
+    /* Resave text mode */
+    MGASave(pScrn);
 
     if (!MGAModeInit(pScrn, pScrn->currentMode))
 	return FALSE;
