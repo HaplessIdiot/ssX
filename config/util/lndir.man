@@ -23,7 +23,7 @@
 .\" from The Open Group.
 .\" 
 .\"
-.\" $XFree86: xc/config/util/lndir.man,v 1.10tsi Exp $
+.\" $XFree86: xc/config/util/lndir.man,v 1.11tsi Exp $
 .\"
 .TH LNDIR 1 __vendorversion__
 .SH NAME
@@ -102,8 +102,9 @@ The \fItodir\fP argument may be provided, and defaults to the current
 directory when not provided.
 .IP \-withrevinfo
 \fIlndir\fP will normally not shadow any BitKeeper, RCS, SCCS, CVS, CVS.adm
-or .svn subdirectories, nor .cvsignore files.  This option causes these
-directories and files to be treated as any other, rather than ignored.
+and .svn subdirectories, nor any .cvsignore and .gitignore files.  This option
+causes these directories and files to be treated as any other, rather than
+ignored.
 \fB\-withrevinfo\fP may be shortened to \fB\-r\fP.
 .IP \-noexceptions
 By default, \fIlndir\fP does not shadow files or directories whose name is

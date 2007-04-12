@@ -1,4 +1,4 @@
-/* $XFree86: xc/config/util/lndir.c,v 3.24tsi Exp $ */
+/* $XFree86: xc/config/util/lndir.c,v 3.25tsi Exp $ */
 /* Create shadow link tree (after X11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 
@@ -257,6 +257,8 @@ dodir (char *fn,		/* name of "from" directory, either absolute or
 
 	if (!with_revinfo) {
 	    if (!strcmp (dp->d_name, ".cvsignore"))
+		continue;
+	    if (!strcmp (dp->d_name, ".gitignore"))
 		continue;
 	}
 
