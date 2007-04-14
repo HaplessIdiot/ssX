@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.85 2005/10/14 15:16:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.86tsi Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -1991,13 +1991,9 @@ Emulate3ButtonsSoft(InputInfoPtr pInfo)
     if (!pMse->emulate3ButtonsSoft)
 	return TRUE;
 
-    pMse->emulate3Buttons = FALSE;
-    
     if (pMse->emulate3Pending)
 	buttonTimer(pInfo);
 
-    xf86Msg(X_INFO,"3rd Button detected: disabling emulate3Button\n");
-    
     return FALSE;
 }
 
