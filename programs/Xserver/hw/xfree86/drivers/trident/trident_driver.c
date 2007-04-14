@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.200tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.201tsi Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -3186,10 +3186,14 @@ TRIDENTEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
 
     if (IsPciCard && UseMMIO) TRIDENTEnableMMIO(pScrn);
 
     /* Should we re-save the text mode on each VT enter? */
+    vgaHWUnlock(hwp);
+    TRIDENTSave(pScrn);
+
     if (!TRIDENTModeInit(pScrn, pScrn->currentMode))
 	return FALSE;
 

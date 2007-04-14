@@ -1,4 +1,5 @@
 XFree86 4.6.99.22 (xx April 2007)
+ 141. Resave text mode on re-entry into the trident driver (Matthias Drochner).
  140. Add DPMS support to the newport driver (Christopher Sekiya).
  139. Add .gitignore to the list of files the lndir utility ignores by default
       (Marc La France).
@@ -20514,4 +20515,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3871 2007/04/12 15:53:03 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3872 2007/04/13 17:16:49 tsi Exp $
