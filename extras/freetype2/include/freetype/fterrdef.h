@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/freetype2/include/freetype/fterrdef.h,v 1.0tsi Exp $ */
+/* $XFree86: xc/extras/freetype2/include/freetype/fterrdef.h,v 1.2 2007/04/05 16:08:57 tsi Exp $ */
 /***************************************************************************/
 /*                                                                         */
 /*  fterrdef.h                                                             */
@@ -53,7 +53,7 @@
                 "broken table" )
   FT_ERRORDEF_( Invalid_Offset,                              0x09, \
                 "broken offset within table" )
-  FT_ERRORDEF_( Array_too_Large,                             0x0A, \
+  FT_ERRORDEF_( Array_Too_Large,                             0x0A, \
                 "array allocation size too large" )
 
   /* glyph/character errors */
