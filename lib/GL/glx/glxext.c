@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.31tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.32tsi Exp $ */
 
 /*
 ** License Applicability. Except to the extent portions of this file are
@@ -1006,11 +1006,11 @@ static Bool AllocAndFetchScreenConfigs(Display *dpy, __GLXdisplayPrivate *priv)
 	if (!_XReply(dpy, (xReply*) &reply, 0, False)) {
 	    /* Something is busted. Punt. */
 	    UnlockDisplay(dpy);
+	    SyncHandle();
 	    FreeScreenConfigs(priv);
 	    return GL_FALSE;
 	}
 
-	UnlockDisplay(dpy);
 	if (!reply.numVisuals) {
 	    /* This screen does not support GL rendering */
 	    UnlockDisplay(dpy);
