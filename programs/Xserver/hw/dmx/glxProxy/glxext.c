@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/glxext.c,v 1.2tsi Exp $
+/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/glxext.c,v 1.3tsi Exp $
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
 ** License. You may obtain a copy of the License at Silicon Graphics, Inc.,
@@ -518,3 +518,17 @@ void __glXNoSuchRenderOpcode(GLbyte *pc)
     return;
 }
 
+#ifdef __DARWIN__
+void
+DarwinGlxExtensionInit(INITARGS)
+{
+    GlxExtensionInit();
+}
+
+void
+DarwinGlxWrapInitVisuals(
+    void *procPtr)
+{
+    GlxWrapInitVisuals(procPtr);
+}
+#endif

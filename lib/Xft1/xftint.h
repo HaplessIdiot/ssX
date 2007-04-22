@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft1/xftint.h,v 1.2 2002/03/01 01:00:53 keithp Exp $
+ * $XFree86: xc/lib/Xft1/xftint.h,v 1.3tsi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -91,6 +91,17 @@ typedef struct _FcPatternElt FcPatternElt;
 /*
  * Yes, these are stolen from fcint.h
  */
+/*
+ * Unfortunately, fontconfig's version number was not updated when these were
+ * renamed (in 2.3.95).
+ */
+#if FC_VERSION == 20395
+# error "fontconfig 2.3.95 not supported"
+#endif
+#if FC_VERSION > 20395
+# define FcPatternFindElt   FcPatternObjectFindElt
+# define FcPatternInsertElt FcPatternObjectInsertElt
+#endif
 FcPatternElt *
 FcPatternFindElt (const FcPattern *p, const char *object);
 

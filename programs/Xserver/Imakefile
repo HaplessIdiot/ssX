@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.328tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.329tsi Exp $
 
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
@@ -1427,10 +1427,8 @@ XCOMM
 		     $(DMXEXTDIRS) $(SHADOWDIR) $(DEPDIRS)
 #if BuildGlxInDmx
        GLXPROXYLIB = $(XDMXDDXDIR)/glxProxy/LibraryTargetName(glxProxy)
-        XDMXGLOBJS = $(GLOBJS)
 #endif
-          XDMXOBJS = $(XDMXDDXDIR)/dix/main.o $(XDMXDDXDIR)/miinitext.o \
-                     $(XDMXGLOBJS)
+          XDMXOBJS = $(XDMXDDXDIR)/dix/main.o $(XDMXDDXDIR)/miinitext.o
          XDMXINPUT = $(XDMXDDXDIR)/input/LibraryTargetName(dmxinput)
         XDMXCONFIG = $(XDMXDDXDIR)/config/LibraryTargetName(dmxconfig)
               XDMX = $(XDMXDDXDIR)/LibraryTargetName(dmxlib) $(XDMXCONFIG) \

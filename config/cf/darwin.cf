@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.55tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.56tsi Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -341,6 +341,39 @@ InstallProgram(program,$(XDARWINAPPDIR)/Resources/program.bundle/Contents/MacOS)
 clean::									@@\
 	RemoveFile(program)
 #endif /* BundleProgramTarget */
+
+/*
+ * BundleSymbolicLink - Generate 'unsymlink' and 'resymlink' rules to
+ * temporarily replace symbolic links with the files they reference.
+ */
+#ifndef BundleSymbolicLink
+#define BundleSymbolicLink(symdir,subdir,target)			@@\
+									@@\
+unsymlink::								@@\
+	MakeDir(symdir/subdir)						@@\
+	@if [ -h target ]; then \					@@\
+	    set -x; \							@@\
+	    $(MV) target symdir/target; \				@@\
+	    touch target; \						@@\
+	    $(CP) symdir/target target; \				@@\
+	fi								@@\
+									@@\
+resymlink clean::							@@\
+	@if [ -h symdir/target ]; then \				@@\
+	    set -x; \							@@\
+	    $(MV) symdir/target target; \				@@\
+	fi
+#endif /* BundleSymbolicLink */
+
+/*
+ * BundleSymbolicLinkSubdirs - Subdirectory recursion for 'unsymlink' and
+ * 'resymlink' targets.
+ */
+#ifndef BundleSymbolicLinkSubdirs
+#define BundleSymbolicLinkSubdirs(dirs)					@@\
+NamedTargetSubdirs(unsymlink,dirs,"unsymlinking",NullParameter,unsymlink)	@@\
+NamedTargetSubdirs(resymlink,dirs,"resymlinking",NullParameter,resymlink)
+#endif /* BundleSymbolicLinkSubdirs */
 
 /*
  * Darwin specific Imake Config files
