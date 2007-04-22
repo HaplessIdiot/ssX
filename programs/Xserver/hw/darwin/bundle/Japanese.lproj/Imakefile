@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/bundle/Japanese.lproj/Imakefile,v 1.2 2001/11/04 07:09:48 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/bundle/Japanese.lproj/Imakefile,v 1.3tsi Exp $
 
 #include <Server.tmpl>
 
@@ -23,3 +23,9 @@ InfoPlist.strings: InfoPlist.strings.cpp
 
 clean::
 	RemoveFiles(InfoPlist.strings)
+
+SYMLINKDIR = ../../symlinks/Japanese.lproj
+
+BundleSymbolicLink($(SYMLINKDIR),.,Localizable.strings)
+BundleSymbolicLink($(SYMLINKDIR),MainMenu.nib,MainMenu.nib/classes.nib)
+BundleSymbolicLink($(SYMLINKDIR),MainMenu.nib,MainMenu.nib/objects.nib)

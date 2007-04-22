@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.178tsi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.179tsi Exp $
 XCOMM ----------------------------------------------------------------------
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -2254,6 +2254,11 @@ XCOMM common rules for all Makefiles - do not edit
 
 .cc.s:
 	CompileCplusplusToAsm($(_NOOP_))
+
+.SUFFIXES: .m
+
+.m.o:
+	$(CC) -c $(CFLAGS) -o $@ $<
 
 /*
  * These need to be here so that rules in Imakefile occur first;  the blank

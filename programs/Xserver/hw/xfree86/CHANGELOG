@@ -1,4 +1,17 @@
 XFree86 4.6.99.23 (xx May 2007)
+ 148. Remove unnecessary #include in fonttosfnt/util.c that prevents successful
+      builds against newer freetype2 versions.  Problem reported by "SciFi".
+      (Marc La France)
+ 147. Fix XDarwin build when BuildGlxInDmx is asserted.  Problem reported by
+      "SciFi".  (Marc La France)
+ 146. Fix libXft1 build against newer fontconfig versions.  Specifically
+      exclude support for fontconfig 2.3.95 because it introduces an
+      incompatibility without a version bump.  Problem reported by "SciFi".
+      (Marc La France)
+ 145. Darwin build workaround for XCode's inability to follow symlinks.
+      Problem reported by "SciFi".  (Marc La France)
+ 144. Add an implicit rule for Objective-C sources so that XDarwin build don't
+      depend on Apple-only GNU make changes.  Problem pointed out by "SciFi".
 
 XFree86 4.6.99.22 (21 April 2007)
  143. Fix double UnlockDisplay() in libGL (Jamey Sharp, freedesktop bug #8521).
@@ -20521,4 +20534,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3875 2007/04/19 14:08:02 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3876 2007/04/21 11:02:55 dawes Exp $

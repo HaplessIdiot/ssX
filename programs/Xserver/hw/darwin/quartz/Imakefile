@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.14tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.15tsi Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -92,8 +92,14 @@ install::
 	-(cd $(DESTDIR)$(BINDIR); $(RM) X; $(LN) XDarwinStartup X)
 
 AllTarget(XDarwin)
+/*
+ * $(PROJ_BUILD) doesn't follow all symbolic links.
+ */
 XDarwin:
+	cd ../bundle && $(MAKE) unsymlink
 	$(PROJ_BUILD) $(PROJ_TARGET) $(BUILDSTYLE)
+	cd ../bundle && $(MAKE) resymlink
+	$(RM) -r ../symlinks
 
 install::
 	$(PROJ_BUILD) install $(PROJ_TARGET) $(BUILDSTYLE) \
