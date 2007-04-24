@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.56tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.57tsi Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -267,6 +267,14 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define StandardDefines         DarwinMachineDefines -D__DARWIN__ \
                                 -DNO_ALLOCA -DCSRG_BASED DarwinLocaleDefines
 #define StandardCppDefines      StandardDefines
+
+/*
+ * Ensure locally built static libraries are found before dynamic libraries
+ * in system library search paths.
+ */
+#ifndef  ExtraLoadOptions
+# define ExtraLoadOptions       -Wl,-search_paths_first
+#endif
 
 /*
  * Set this to NO to just build the client libs, which should work without
