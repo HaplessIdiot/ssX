@@ -1,7 +1,7 @@
 XFree86 4.6.99.23 (xx May 2007)
  149. Fix linking of Darwin executables by ensuring locally built static
       libraries are found before dynamic libraries in system library search
-      paths  (Marc La France).
+      paths. Problem reported by "SciFi".  (Marc La France)
  148. Remove unnecessary #include in fonttosfnt/util.c that prevents successful
       builds against newer freetype2 versions.  Problem reported by "SciFi".
       (Marc La France)
@@ -15,6 +15,7 @@ XFree86 4.6.99.23 (xx May 2007)
       Problem reported by "SciFi".  (Marc La France)
  144. Add an implicit rule for Objective-C sources so that XDarwin build don't
       depend on Apple-only GNU make changes.  Problem pointed out by "SciFi".
+      (Marc La France)
 
 XFree86 4.6.99.22 (21 April 2007)
  143. Fix double UnlockDisplay() in libGL (Jamey Sharp, freedesktop bug #8521).
@@ -20537,4 +20538,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3877 2007/04/22 00:37:19 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3878 2007/04/24 14:13:49 tsi Exp $
