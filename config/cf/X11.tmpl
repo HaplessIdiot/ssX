@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.296tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.297tsi Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -187,9 +187,6 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.296tsi Exp $
 #endif
 #ifndef BuildFreeType
 #define BuildFreeType		NO
-#endif
-#ifndef BuildXTrueType
-#define BuildXTrueType		NO
 #endif
 #ifndef BuildBuiltinFonts
 #define BuildBuiltinFonts	NO
@@ -1656,45 +1653,6 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.296tsi Exp $
 #define DefaultFSConfigFile $(LIBDIR)/fs/config
 #endif
 
-/* X-TrueType settings */
-#ifndef HasBlindFaithInUnicode
-#define HasBlindFaithInUnicode YES
-#endif
-#ifndef XTrueTypeCConvModule
-#if DoLoadableServer
-#define XTrueTypeCConvModule YES
-#else
-#define XTrueTypeCConvModule NO
-#endif
-#endif
-#ifndef XTrueTypeUseOptEncodings
-#define XTrueTypeUseOptEncodings YES
-#endif
-#ifndef XTrueTypeCConvIncDir
-#define XTrueTypeCConvIncDir $(INCROOT)/X11/fonts/codeconv
-#endif
-#ifndef XTrueTypeInstallCConvHeaders
-#define XTrueTypeInstallCConvHeaders BuildLibraries
-#endif
-#ifndef XTrueTypeCConvModuleDir
-#define XTrueTypeCConvModuleDir $(USRLIBDIR)/modules
-#endif
-#ifndef XTrueTypeCConvModuleSubDir
-#define XTrueTypeCConvModuleSubDir codeconv
-#endif
-#ifndef XTrueTypeDebugXTT
-#define XTrueTypeDebugXTT NO
-#endif
-#ifndef XTrueTypeStandAloneCConv
-#define XTrueTypeStandAloneCConv NO
-#endif
-#ifndef XTrueTypeSrcDir
-#define XTrueTypeSrcDir $(TOP)/extras/X-TrueType
-#endif
-#ifndef FreeTypeSrcDir
-#define FreeTypeSrcDir $(TOP)/extras/FreeType
-#endif
-
 #ifndef BinDir
 #ifdef ProjectRoot
 #define BinDir Concat(ProjectRoot,/bin)
@@ -2038,8 +1996,6 @@ XCOMM X Window System make variables; these need to be coordinated with rules
     FONTSERVERSRC = $(PROGRAMSRC)/xfs
        FONTINCSRC = $(XTOP)/include/fonts
         EXTINCSRC = $(XTOP)/include/extensions
-      FTSOURCEDIR = FreeTypeSrcDir
-     XTTSOURCEDIR = XTrueTypeSrcDir
        MESASRCDIR = MesaSrcDir
    DRMINCLUDESDIR = DRMIncludesDir
   OGLSAMPLESRCDIR = OglSampleSrcDir
