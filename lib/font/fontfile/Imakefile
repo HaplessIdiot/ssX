@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/fontfile/Imakefile,v 3.22tsi Exp $
+XCOMM $XFree86: xc/lib/font/fontfile/Imakefile,v 3.23 2005/10/14 15:16:06 tsi Exp $
 
 #include <Server.tmpl>
 
@@ -42,8 +42,7 @@ FONTENCDEFS = -DFONT_ENCODINGS_DIRECTORY=\"$(FONTDIR)/encodings/encodings.dir\"
 
     DEFINES = StrcasecmpDefines $(ATTRIBDEFS) \
 	      $(SPEEDO_DEFINES) $(TYPE1_DEFINES) $(CID_DEFINES) \
-	      $(FREETYPE_DEFINES) $(XTRUETYPE_DEFINES) $(FONTENCDEFS) \
-              $(GZIP_DEFS)
+	      $(FREETYPE_DEFINES) $(FONTENCDEFS) $(GZIP_DEFS)
 
        SRCS = dirfile.c fontdir.c fontfile.c fileio.c fontscale.c \
               defaults.c bitsource.c register.c renderers.c bufio.c \
