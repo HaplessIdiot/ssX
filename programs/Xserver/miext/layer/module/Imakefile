@@ -1,6 +1,6 @@
-XCOMM $XFree86: xc/programs/Xserver/miext/layer/Imakefile,v 1.7tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/miext/layer/module/Imakefile,v 1.0tsi Exp $
 /*
- * Copyright (c) 1994-2007 by The XFree86 Project, Inc.
+ * Copyright (c) 2000-2007 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -46,75 +46,8 @@ XCOMM $XFree86: xc/programs/Xserver/miext/layer/Imakefile,v 1.7tsi Exp $
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if DoLoadableServer
-#if !BuildModuleInSubdir
 #define IHaveModules
-#elif !defined(IHaveModules)
-#define IHaveSubdirs
-SUBDIRS= module
-#endif
-#endif
+#define LinkDirectory ..
 
-#include <Server.tmpl>
+#include "../Imakefile"
 
-#if defined(IHaveModules)
-XFMODSRC = laymodule.c
-XFMODOBJ = laymodule.o
-#endif
-
-#if BuildRender
-RENDERSRC = layerpict.c
-RENDEROBJ = layerpict.o
-#endif
-
-SRCS = layergc.c \
-       layerinit.c \
-       $(RENDERSRC) \
-       layerwin.c \
-       $(XFMODSRC)
-
-OBJS = layergc.o \
-       layerinit.o \
-       $(RENDEROBJ) \
-       layerwin.o \
-       $(XFMODOBJ)
-
-   INCLUDES = -I$(SERVERSRC)/miext/layer -I$(SERVERSRC)/miext/shadow \
-	      -I$(SERVERSRC)/mi -I$(SERVERSRC)/fb -I$(SERVERSRC)/include \
-	      -I$(XF86SRC)/common $(EXTRAINCLUDES) -I$(SERVERSRC)/render
-   LINTLIBS = $(SERVERSRC)/dix/llib-ldix.ln $(SERVERSRC)/os/llib-los.ln \
-	      $(SERVERSRC)/mi/llib-lmi.ln
-
-#if defined(IHaveModules)
-ModuleObjectRule()
-LibraryModuleTarget(layer,$(OBJS),.)
-#else
-NormalLibraryObjectRule()
-LibraryModuleTarget(layer,$(OBJS),.)
-#endif
-
-LintLibraryTarget(layer,$(SRCS))
-NormalLintTarget($(SRCS))
-
-#if defined(IHaveModules)
-InstallLibraryModule(layer,$(MODULEDIR),.)
-#endif
-
-DependTarget()
-
-#ifdef IHaveSubdirs
-MakeSubdirs($(SUBDIRS))
-DependSubdirs($(SUBDIRS))
-#endif
-
-#ifdef LinkDirectory
-LinkSourceFile(layergc.c,LinkDirectory)
-LinkSourceFile(layerinit.c,LinkDirectory)
-LinkSourceFile(layerwin.c,LinkDirectory)
-#if BuildRender
-LinkSourceFile($(RENDERSRC),LinkDirectory)
-#endif
-#endif
-
-InstallDriverSDKLibraryModule(layer,$(DRIVERSDKMODULEDIR),.)
-InstallDriverSDKNonExecFile(layer.h,$(DRIVERSDKINCLUDEDIR))
