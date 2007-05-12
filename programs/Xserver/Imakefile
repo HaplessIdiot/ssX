@@ -1,10 +1,10 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.329tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.330tsi Exp $
 
 /*
- * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
+ * Copyright (c) 1994-2007 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -82,16 +82,6 @@ XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.329tsi Exp $
                 OS = os/LibraryTargetName(os)
                 MI = mi/LibraryTargetName(mi)
                DIX = dix/LibraryTargetName(dix)
-#if DoLoadableServer
-               MFB = mfb/ModuleLibraryTargetName(mfb)
-                FB = fb/ModuleLibraryTargetName(fb)
-              CFB8 = cfb/ModuleLibraryTargetName(cfb)
-             CFB16 = cfb16/ModuleLibraryTargetName(cfb16)
-             CFB24 = cfb24/ModuleLibraryTargetName(cfb24)
-             CFB32 = cfb32/ModuleLibraryTargetName(cfb32)
-            SHADOW = miext/shadow/ModuleLibraryTargetName(shadow)
-             LAYER = miext/layer/ModuleLibraryTargetName(layer)
-#else
                MFB = mfb/LibraryTargetName(mfb)
                 FB = fb/LibraryTargetName(fb)
               CFB8 = cfb/LibraryTargetName(cfb)
@@ -100,28 +90,27 @@ XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.329tsi Exp $
              CFB32 = cfb32/LibraryTargetName(cfb32)
             SHADOW = miext/shadow/LibraryTargetName(shadow)
              LAYER = miext/layer/LibraryTargetName(layer)
-#endif
 #if BuildLowMem
             LMFCFB = lmfcfb/LibraryTargetName(cfb)
 #endif
 
 #if BuildGlxExt
 #if BuildXF86DRI
-            DRILIB = GL/dri/ModuleLibraryTargetName(dri)
+            DRILIB = GL/dri/LibraryTargetName(dri)
 #else
             DRILIB =
 #endif
 #if GlxUseSGISI
-            GLXLIB = GL/glx/ModuleLibraryTargetName(glx) \
-		     GL/sgi-si/ModuleLibraryTargetName(GLcore) \
+            GLXLIB = GL/glx/LibraryTargetName(glx) \
+		     GL/sgi-si/LibraryTargetName(GLcore) \
 		     $(DRILIB)
 #else
 #if DoLoadableServer
-            GLXLIB = GL/glx/ModuleLibraryTargetName(glx) \
-		     GL/mesa/GLcore/ModuleLibraryTargetName(GLcore)
+            GLXLIB = GL/glx/LibraryTargetName(glx) \
+		     GL/mesa/GLcore/LibraryTargetName(GLcore)
 #else
-            GLXLIB = GL/glx/ModuleLibraryTargetName(glx) \
-		     GL/mesa/GLcore/ModuleLibraryTargetName(GLcore) \
+            GLXLIB = GL/glx/LibraryTargetName(glx) \
+		     GL/mesa/GLcore/LibraryTargetName(GLcore) \
 		     $(DRILIB)
 #endif
 #endif
