@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.31 2005/10/14 15:15:59 tsi Exp $
+XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.32tsi Exp $
 
 #define DoNormalLib NormalLibXft
 #define DoSharedLib SharedLibXft
@@ -23,7 +23,8 @@ XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.31 2005/10/14 15:15:59 tsi Exp $
 #endif
 
 #ifdef UseInstalled
-/* when using xmkmf, make sure the needed definitions for the fontconfig
+/*
+ * when using xmkmf, make sure the needed definitions for the fontconfig
  * library are available
  */
 
@@ -44,7 +45,7 @@ TYPE1DIR=XftType1Dir
 WARNINGS=-Wall -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs
 #endif
 INCLUDES=$(FONTCONFIGINCLUDES) $(FREETYPE2INCLUDES) $(WARNINGS)
-DEFINES=$(FREETYPE2DEFINES) $(RENDERDEFINES) -DXFREE86_FT2
+DEFINES=$(FREETYPE2DEFINES) $(RENDERDEFINES)
 
 XFT_REVISION=0
 

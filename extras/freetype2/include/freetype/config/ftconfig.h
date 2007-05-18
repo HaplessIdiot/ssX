@@ -1,3 +1,5 @@
+/* $XFree86: xc/extras/freetype2/include/freetype/config/ftconfig.h,v 1.6tsi Exp $ */
+
 /***************************************************************************/
 /*                                                                         */
 /*  ftconfig.h                                                             */
@@ -14,7 +16,6 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
-/* $XFree86: xc/extras/freetype2/include/freetype/config/ftconfig.h,v 1.5 2003/10/22 18:51:24 tsi Exp $ */
 
   /*************************************************************************/
   /*                                                                       */
@@ -72,11 +73,12 @@ FT_BEGIN_HEADER
 
 
   /* The size of an `int' type.  */
-#if   FT_UINT_MAX == 0xFFFFFFFFUL
+#if FT_UINT_MAX == 0xFFFFFFFFUL
 #define FT_SIZEOF_INT  (32 / FT_CHAR_BIT)
 #elif FT_UINT_MAX == 0xFFFFU
 #define FT_SIZEOF_INT  (16 / FT_CHAR_BIT)
-#elif FT_UINT_MAX > 0xFFFFFFFFU && FT_UINT_MAX == 0xFFFFFFFFFFFFFFFFU
+#elif ((FT_UINT_MAX & ~0xFFFFFFFFU) != 0) && \
+      (FT_UINT_MAX == 0xFFFFFFFFFFFFFFFFU)
 #define FT_SIZEOF_INT  (64 / FT_CHAR_BIT)
 #else
 #error "Unsupported size of `int' type!"
@@ -85,7 +87,8 @@ FT_BEGIN_HEADER
   /* The size of a `long' type.  */
 #if   FT_ULONG_MAX == 0xFFFFFFFFUL
 #define FT_SIZEOF_LONG  (32 / FT_CHAR_BIT)
-#elif FT_ULONG_MAX > 0xFFFFFFFFU && FT_ULONG_MAX == 0xFFFFFFFFFFFFFFFFU
+#elif ((FT_ULONG_MAX & ~0xFFFFFFFFU) != 0) && \
+      (FT_ULONG_MAX == 0xFFFFFFFFFFFFFFFFU)
 #define FT_SIZEOF_LONG  (64 / FT_CHAR_BIT)
 #else
 #error "Unsupported size of `long' type!"

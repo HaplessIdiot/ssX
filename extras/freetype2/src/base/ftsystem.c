@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/freetype2/src/base/ftsystem.c,v 1.2tsi Exp $ */
 
 /***************************************************************************/
 /*                                                                         */
@@ -35,8 +35,28 @@
 #include FT_TYPES_H
 #include FT_INTERNAL_STREAM_H
 
+#ifndef FONTMODULE
 #include <stdio.h>
 #include <stdlib.h>
+#else
+#include <X11/Xmd.h>
+#define _XTYPEDEF_BOOL
+#include <X11/Xdefs.h>
+#define DONT_DEFINE_WRAPPERS
+#include "xf86_ansic.h"
+#undef DONT_DEFINE_WRAPPERS
+#define malloc(x) xf86malloc(x)
+#define realloc(x, y) xf86realloc(x, y)
+#define free(x) xf86free(x)
+#define FILE XF86FILE
+#define fopen(x, y) xf86fopen(x, y)
+#define fclose(x) xf86fclose(x)
+#define fseek(x, y, z) xf86fseek(x, y, z)
+#define ftell(x) xf86ftell(x)
+#define SEEK_SET XF86_SEEK_SET
+#define SEEK_END XF86_SEEK_END
+#define fread(x, y, z, t) xf86fread(x, y, z, t)
+#endif
 
 
   /*************************************************************************/
@@ -266,6 +286,10 @@
 
 #endif
 
+
+#ifdef FONTMODULE
+#undef free
+#endif
 
   /* documentation is in ftobjs.h */
 

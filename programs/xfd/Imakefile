@@ -1,11 +1,11 @@
-XCOMM $XFree86: xc/programs/xfd/Imakefile,v 1.6tsi Exp $
+XCOMM $XFree86: xc/programs/xfd/Imakefile,v 1.7tsi Exp $
 
 #ifndef XFdUseRender
 #define XFdUseRender BuildRenderLibrary
 #endif
 
 #if XFdUseRender
-    XRENDERDEFS = -DXRENDER -DXFREE86_FT2
+    XRENDERDEFS = -DXRENDER
     XRENDERDEPS = XftClientDepLibs
     XRENDERLIBS = XftClientLibs
     XRENDERINCS = $(XFTINCLUDES) $(XRENDERINCLUDES)

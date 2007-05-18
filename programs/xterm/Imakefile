@@ -7,7 +7,7 @@ XCOMM Xterm assumes that bcopy can handle overlapping arguments.  If your
 XCOMM bcopy (or memcpy) cannot, write a routine called bcopy and link it in
 XCOMM or add -Dbcopy=mybcopy to the DEFINES list below.
 XCOMM
-XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.76 2006/07/26 13:30:49 tsi Exp $
+XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.77tsi Exp $
 XCOMM
 
 /* Uncomment SCROLLBAR_RIGHT if you want the scroll bar to be on the right */
@@ -171,7 +171,7 @@ module.o: ; $(CC) -c defines $(CFLAGS) module.c
 #endif
 
 #ifdef XRenderSupport
-         XRFDEF = -DXRENDERFONT -DXFREE86_FT2
+         XRFDEF = -DXRENDERFONT
         XRFLIBS = XftClientLibs
      XRFDEPLIBS = XftClientDepLibs
     XRFINCLUDES = $(XFTINCLUDES)

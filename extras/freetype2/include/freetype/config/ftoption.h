@@ -1,3 +1,5 @@
+/* $XFree86: xc/extras/freetype2/include/freetype/config/ftoption.h,v 1.0tsi Exp $ */
+
 /***************************************************************************/
 /*                                                                         */
 /*  ftoption.h                                                             */
@@ -526,7 +528,11 @@ FT_BEGIN_HEADER
   /* files into an existing face.  Note that if set, the T1 driver will be */
   /* unable to produce kerning distances.                                  */
   /*                                                                       */
+#ifdef FONTMODULE
+#define T1_CONFIG_OPTION_NO_AFM
+#else
 #undef T1_CONFIG_OPTION_NO_AFM
+#endif
 
 
   /*************************************************************************/
@@ -535,7 +541,11 @@ FT_BEGIN_HEADER
   /* compilation of the Multiple Masters font support in the Type 1        */
   /* driver.                                                               */
   /*                                                                       */
+#ifdef FONTMODULE
+#define T1_CONFIG_OPTION_NO_MM_SUPPORT
+#else
 #undef T1_CONFIG_OPTION_NO_MM_SUPPORT
+#endif
 
  /* */
 

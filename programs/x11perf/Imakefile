@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/x11perf/Imakefile,v 3.12tsi Exp $
+XCOMM $XFree86: xc/programs/x11perf/Imakefile,v 3.13tsi Exp $
 
 #ifndef X11perfcompLib
 #define X11perfcompLib $(LIBDIR)/x11perfcomp
@@ -14,7 +14,7 @@ XCOMM $XFree86: xc/programs/x11perf/Imakefile,v 3.12tsi Exp $
     XRENDERINCS = $(XRENDERINCLUDES)
 #endif
 #if BuildXftLibrary
-        XFTDEFS = -DXFT -DXFREE86_FT2
+        XFTDEFS = -DXFT
         XFTDEPS = XftClientDepLibs
         XFTLIBS = XftClientLibs
         XFTINCS = $(XFTINCLUDES)
