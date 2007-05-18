@@ -3,7 +3,7 @@ XFree86 4.6.99.24 (xx May 2007)
       the version we provide under xc/extras/).  However, still build
       libXfont's FreeType backend module with the freetype2 version we provide
       because it is the only version known to be modified to correctly build
-      the module (Jie Luo, Marc La France).
+      the module.  Problem reported in Bugzilla #1683 (Jie Luo, Marc La France).
 
 XFree86 4.6.99.23 (7 May 2007)
  149. Fix linking of Darwin executables by ensuring locally built static
@@ -20545,4 +20545,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3880 2007/05/07 11:02:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3881 2007/05/18 18:01:58 tsi Exp $
