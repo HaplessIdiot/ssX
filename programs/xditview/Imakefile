@@ -1,10 +1,10 @@
-XCOMM $XFree86: xc/programs/xditview/Imakefile,v 1.8 2005/10/14 15:17:32 tsi Exp $
+XCOMM $XFree86: xc/programs/xditview/Imakefile,v 1.9tsi Exp $
 
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 #if BuildXftLibrary
     DEPFONTLIBS = XftClientDepLibs
        FONTLIBS = XftClientLibs
-       FONTDEFS = -DUSE_XFT -DXFREE86_FT2
+       FONTDEFS = -DUSE_XFT
       INCLUDES = $(XFTINCLUDES)
 #endif
 #if HasMkstemp

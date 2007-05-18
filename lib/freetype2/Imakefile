@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.25 2005/10/14 15:16:07 tsi Exp $
+XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.26tsi Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -32,7 +32,7 @@ DARWINDEFINES = -DDARWIN_NO_CARBON
 # endif
 #endif
 
-DEFINES = $(DARWINDEFINES) Freetype2BuildDefines -DXFREE86_FT2
+DEFINES = $(DARWINDEFINES) Freetype2BuildDefines
 
 INCLUDES = \
 	-I$(FREETYPESRC)\

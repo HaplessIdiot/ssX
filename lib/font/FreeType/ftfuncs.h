@@ -1,3 +1,4 @@
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.h,v 1.19tsi Exp $ */
 /*
 Copyright (c) 1998-2002 by Juliusz Chroboczek
 Copyright (c) 2003 After X-TT Project, All rights reserved.
@@ -20,7 +21,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.h,v 1.18 2004/02/24 01:13:04 dawes Exp $ */
 
 /* Number of buckets in the hashtable holding faces */
 #define NUMFACEBUCKETS 32
@@ -47,6 +47,7 @@ typedef struct _FTFace {
     char *filename;
     FT_Face face;
     int bitmap;
+    FT_UInt num_hmetrics;
     struct _FTInstance *instances;
     struct _FTInstance *active_instance;
     struct _FTFace *next;       /* link to next face in bucket */

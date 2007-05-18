@@ -1,3 +1,5 @@
+/* $XFree86: xc/extras/freetype2/include/freetype/config/ftstdlib.h,v 1.0tsi Exp $ */
+
 /***************************************************************************/
 /*                                                                         */
 /*  ftstdlib.h                                                             */
@@ -5,7 +7,7 @@
 /*    ANSI-specific library and header configuration file (specification   */
 /*    only).                                                               */
 /*                                                                         */
-/*  Copyright 2002 by                                                      */
+/*  Copyright 2002, 2003, 2004 by                                          */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -58,6 +60,8 @@
   /**********************************************************************/
 
 
+#ifndef FONTMODULE
+
 #include <limits.h>
 
 #define FT_UINT_MAX   UINT_MAX
@@ -73,23 +77,27 @@
 
 #include <ctype.h>
 
-#define ft_isalnum  isalnum
-#define ft_isupper  isupper
-#define ft_islower  islower
-#define ft_xdigit   isxdigit
+#define ft_isalnum   isalnum
+#define ft_isupper   isupper
+#define ft_islower   islower
+#define ft_isdigit   isdigit
+#define ft_isxdigit  isxdigit
 
 
 #include <string.h>
 
-#define ft_strlen   strlen
-#define ft_strcmp   strcmp
-#define ft_strncmp  strncmp
-#define ft_memcpy   memcpy
-#define ft_strcpy   strcpy
-#define ft_strncpy  strncpy
-#define ft_memset   memset
-#define ft_memmove  memmove
 #define ft_memcmp   memcmp
+#define ft_memcpy   memcpy
+#define ft_memmove  memmove
+#define ft_memset   memset
+#define ft_strcat   strcat
+#define ft_strcmp   strcmp
+#define ft_strcpy   strcpy
+#define ft_strlen   strlen
+#define ft_strncmp  strncmp
+#define ft_strncpy  strncpy
+#define ft_strrchr  strrchr
+
 
 #include <stdio.h>
 
@@ -108,7 +116,7 @@
 #define ft_qsort  qsort
 #define ft_exit   exit    /* only used to exit from unhandled exceptions */
 
-#define ft_atoi   atoi
+#define ft_atol   atol
 
 
   /**********************************************************************/
@@ -126,6 +134,74 @@
 
 #define ft_setjmp   setjmp    /* same thing here */
 #define ft_longjmp  longjmp   /* "               */
+
+
+#else
+
+#include <X11/Xmd.h>
+#define _XTYPEDEF_BOOL
+#include <X11/Xdefs.h>
+#define DONT_DEFINE_WRAPPERS
+#define DEFINE_SETJMP_WRAPPERS
+#include "xf86_ansic.h"
+#undef DONT_DEFINE_WRAPPERS
+
+#ifndef offsetof
+#define offsetof(TYPE, MEMBER) ((xf86size_t)&((TYPE*)0)->MEMBER)
+#endif
+
+#define FT_CHAR_BIT  8
+#define FT_UINT_MAX  4294967295U
+#ifdef LONG64
+#define FT_ULONG_MAX 18446744073709551615UL
+#else
+#define FT_ULONG_MAX 4294967295UL
+#endif
+
+#define ft_isalnum   xf86isalnum
+#define ft_isupper   xf86isupper
+#define ft_islower   xf86islower
+#define ft_isdigit   xf86isdigit
+#define ft_isxdigit  xf86isxdigit
+
+#define ft_memcmp    xf86memcmp
+#define ft_memcpy    xf86memcpy
+#define ft_memmove   xf86memmove
+#define ft_memset    xf86memset
+#define ft_strcat    xf86strcat
+#define ft_strcmp    xf86strcmp
+#define ft_strcpy    xf86strcpy
+#define ft_strlen    xf86strlen
+#define ft_strncmp   xf86strncmp
+#define ft_strncpy   xf86strncpy
+#define ft_strrchr   xf86strrchr
+
+#define ft_sprintf   xf86sprintf
+
+#define ft_qsort     xf86qsort
+#define ft_exit      xf86exit
+
+#define ft_atol      xf86atol
+
+#define ft_jmp_buf   jmp_buf
+#define ft_setjmp    setjmp
+#define ft_longjmp   longjmp
+
+#undef  exit
+#define exit         xf86exit
+
+#undef  fprintf
+#define fprintf      xf86fprintf
+
+#undef  memcpy
+#define memcpy       xf86memcpy
+#undef  memset
+#define memset       xf86memset
+
+#undef  stderr
+#define stderr       xf86stderr
+
+#endif /* FONTMODULE */
 
 
   /* the following is only used for debugging purposes, i.e. when */

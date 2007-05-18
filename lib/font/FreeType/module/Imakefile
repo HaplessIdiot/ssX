@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/FreeType/module/Imakefile,v 1.22tsi Exp $
+XCOMM $XFree86: xc/lib/font/FreeType/module/Imakefile,v 1.23tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -52,7 +52,7 @@ FT2INCDIR = $(TOP)/extras/freetype2/include
 #define IHaveModules
 #include <Server.tmpl>
 
-DEFINES = -DFONTMODULE Freetype2BuildDefines -DXFREE86_FT2
+DEFINES = -DFONTMODULE Freetype2BuildDefines
 
 INCLUDES = -I.. -I../../include \
            -I$(SERVERSRC)/include \
@@ -96,7 +96,7 @@ LinkSourceFile(ftbase.c,$(FT2SOURCEDIR)/base)
 LinkSourceFile(ftinit.c,$(FT2SOURCEDIR)/base)
 LinkSourceFile(ftglyph.c,$(FT2SOURCEDIR)/base)
 LinkSourceFile(ftbbox.c,$(FT2SOURCEDIR)/base)
-LinkSourceFile(ftsystem.c,..)
+LinkSourceFile(ftsystem.c,$(FT2SOURCEDIR)/base)
 LinkSourceFile(ftutil.c,$(FT2SOURCEDIR)/base)
 LinkSourceFile(fttype1.c,$(FT2SOURCEDIR)/base)
 LinkSourceFile(ftxf86.c,$(FT2SOURCEDIR)/base)
