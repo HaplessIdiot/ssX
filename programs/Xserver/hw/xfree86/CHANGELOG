@@ -1,4 +1,6 @@
-XFree86 4.6.99.24 (xx May 2007)
+XFree86 4.6.99.25 (xx June 2007)
+
+XFree86 4.6.99.24 (21 May 2007)
  150. Fix build with an external freetype2 library (both newer and older than
       the version we provide under xc/extras/).  However, still build
       libXfont's FreeType backend module with the freetype2 version we provide
@@ -20545,4 +20547,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3881 2007/05/18 18:01:58 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3882 2007/05/18 18:20:42 tsi Exp $
