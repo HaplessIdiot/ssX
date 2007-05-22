@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.265tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.266tsi Exp $ */
 
 /*
  *
@@ -233,10 +233,6 @@ extern unsigned long long __xtoull(long);
 #pragma weak __xtoll
 #pragma weak __xtoul
 #pragma weak __xtoull
-#endif
-
-#if defined(__arm__) && defined(__linux__)
-#include <sys/io.h>
 #endif
 
 #if defined(__powerpc__) && (defined(Lynx) || defined(linux))
