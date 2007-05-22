@@ -68,7 +68,7 @@
 	<key>CFBundleExecutable</key>
 	<string>XDarwin</string>
 	<key>CFBundleGetInfoString</key>
-	<string>XDarwin 1.4a1, ©2001-2004 XFree86 Project, Inc.</string>
+	<string>XDarwin 1.5, ©2001-2007 XFree86 Project, Inc.</string>
 	<key>CFBundleIconFile</key>
 	<string>XDarwin.icns</string>
 	<key>CFBundleIdentifier</key>
