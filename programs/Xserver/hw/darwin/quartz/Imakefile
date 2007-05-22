@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.16tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.17tsi Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -47,11 +47,7 @@ DEBUGDEFINES = -DROOTLESSDEBUG
 BUILDSTYLE = -$(CONFIGURATION) Deployment
 #endif
 
-#if OSMajorVersion >= 7
-PROJ_TARGET = -project XDarwin.pbproj -target XDarwin
-#else
 PROJ_TARGET = -target XDarwin
-#endif
 
 #if (OSMajorVersion == 1 && OSMinorVersion >= 4) || OSMajorVersion >= 5
 QUARTZDEFINES = -DHAS_CG_MACH_PORT
