@@ -1,4 +1,6 @@
 XFree86 4.6.99.25 (xx June 2007)
+ 152. On Darwin, make xcodebuild and the older pbxbuild use different project
+      descriptions (Marc La France).
  151. Change `make install` on Darwin to work around XCode's inability to
       follow symlinks (Marc La France).
 
@@ -20549,4 +20551,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3883 2007/05/21 11:02:50 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3884 2007/05/22 14:16:12 tsi Exp $
