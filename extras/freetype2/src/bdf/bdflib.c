@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/freetype2/src/bdf/bdflib.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/extras/freetype2/src/bdf/bdflib.c,v 1.6 2007/04/09 15:37:11 tsi Exp $ */
 /*
  * Copyright 2000 Computing Research Labs, New Mexico State University
  * Copyright 2001, 2002, 2003, 2004 Francesco Zappa Nardelli
@@ -1500,7 +1500,7 @@
       if ( p->cnt == 0 )
         font->glyphs_size = 64;
       else  /* Limit to the number of code points in Unicode */
-      if ( p->cnt < 0 || p->cnt > 1114112 )
+      if ( p->cnt > 1114112 )
       {
         error = BDF_Err_Invalid_Argument;
         goto Exit;
