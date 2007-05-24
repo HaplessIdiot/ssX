@@ -23,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.82 2005/06/29 01:14:08 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.83tsi Exp $ */
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1155,6 +1155,27 @@ struct symtab	predefs[] = {
 #endif
 #ifdef __HIGHC__
 	{"__HIGHC__", "1"},
+#endif
+#ifdef __CHAR_UNSIGNED__
+	{"__CHAR_UNSIGNED__", "1"},
+#endif
+#ifdef __CHAR_BIT__
+	{"__CHAR_BIT__", DEF_STRINGIFY(__CHAR_BIT__)},
+#endif
+#ifdef __SCHAR_MAX__
+	{"__SCHAR_MAX__", DEF_STRINGIFY(__SCHAR_MAX__)},
+#endif
+#ifdef __SHRT_MAX__
+	{"__SHRT_MAX__", DEF_STRINGIFY(__SHRT_MAX__)},
+#endif
+#ifdef __INT_MAX__
+	{"__INT_MAX__", DEF_STRINGIFY(__INT_MAX__)},
+#endif
+#ifdef __LONG_MAX__
+	{"__LONG_MAX__", DEF_STRINGIFY(__LONG_MAX__)},
+#endif
+#ifdef __LONG_LONG_MAX__
+	{"__LONG_LONG_MAX__", DEF_STRINGIFY(__LONG_LONG_MAX__)},
 #endif
 #ifdef CMU
 	{"CMU", "1"},
