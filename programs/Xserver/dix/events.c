@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.58tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.59tsi Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -353,8 +353,10 @@ XineramaCheckPhysLimits(
 	if (new.y >= sprite.physLimits.y2)
 	    new.y = sprite.physLimits.y2 - 1;
 
+#ifdef SHAPE
     if (sprite.hotShape)  /* more work if the shape is a mess */
 	ConfineToShape(sprite.hotShape, &new.x, &new.y);
+#endif
 
     if((new.x != sprite.hotPhys.x) || (new.y != sprite.hotPhys.y))
     {
@@ -485,8 +487,10 @@ XineramaCheckMotion(xEvent *xE)
 	else if (sprite.hot.y >= sprite.physLimits.y2)
 	    sprite.hot.y = sprite.physLimits.y2 - 1;
 
+#ifdef SHAPE
 	if (sprite.hotShape) 
 	    ConfineToShape(sprite.hotShape, &sprite.hot.x, &sprite.hot.y);
+#endif
 
 	sprite.hotPhys = sprite.hot;
 	if ((sprite.hotPhys.x != XE_KBPTR.rootX) ||
@@ -554,10 +558,12 @@ XineramaConfineCursorToWindow(WindowPtr pWin, Bool generateEvents)
 
 	sprite.hotLimits = *REGION_EXTENTS(sprite.screen, &sprite.Reg1);
 
+#ifdef SHAPE
 	if(REGION_NUM_RECTS(&sprite.Reg1) > 1)
 	   sprite.hotShape = &sprite.Reg1;
 	else
 	   sprite.hotShape = NullRegion;
+#endif
 	
 	sprite.confined = FALSE;
 	sprite.confineWin = (pWin == WindowTable[0]) ? NullWindow : pWin;
@@ -2227,8 +2233,10 @@ XineramaWarpPointer(ClientPtr client)
 	y = sprite.physLimits.y1;
     else if (y >= sprite.physLimits.y2)
 	y = sprite.physLimits.y2 - 1;
+#ifdef SHAPE
     if (sprite.hotShape)
 	ConfineToShape(sprite.hotShape, &x, &y);
+#endif
 
     XineramaSetCursorPosition(x, y, TRUE);
 
