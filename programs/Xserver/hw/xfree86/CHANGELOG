@@ -1,4 +1,6 @@
 XFree86 4.6.99.25 (xx June 2007)
+ 154. Back-port a fix for CVE-2007-2754, another integer overflow vulnerability
+      in the freetype2 library's TrueType font handling  (Victor Stinner).
  153. Allow DefaultUserPath overrides on Darwin.  Requested by "SciFi"
       (Marc La France).
  152. On Darwin, make xcodebuild and the older pbxbuild use different project
@@ -20553,4 +20555,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3885 2007/05/22 17:01:29 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3886 2007/05/22 20:50:13 tsi Exp $
