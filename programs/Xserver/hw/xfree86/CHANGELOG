@@ -1,4 +1,6 @@
 XFree86 4.6.99.25 (xx June 2007)
+ 156. Allow scanpci utility to dump all 4K bytes of a PCI Express device's
+      configuration space (Marc La France).
  155. Generalise the scanning of SPARC PROMs for PCI host bridges by relying
       more on PROM information and less on chipset specifics.  In particular,
       this adds support for PCI Express as found in some UltraSPARC IV systems
@@ -20559,4 +20561,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3887 2007/05/25 16:23:26 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3888 2007/05/30 14:51:16 tsi Exp $
