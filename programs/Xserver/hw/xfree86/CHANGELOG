@@ -1,4 +1,8 @@
 XFree86 4.6.99.25 (xx June 2007)
+ 155. Generalise the scanning of SPARC PROMs for PCI host bridges by relying
+      more on PROM information and less on chipset specifics.  In particular,
+      this adds support for PCI Express as found in some UltraSPARC IV systems
+      (Marc La France).
  154. Back-port a fix for CVE-2007-2754, another integer overflow vulnerability
       in the freetype2 library's TrueType font handling  (Victor Stinner).
  153. Allow DefaultUserPath overrides on Darwin.  Requested by "SciFi"
@@ -20555,4 +20559,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3886 2007/05/22 20:50:13 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3887 2007/05/25 16:23:26 tsi Exp $
