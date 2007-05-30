@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.man,v 3.3tsi Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.man,v 3.4tsi Exp $ 
 .TH SCANPCI 1 __vendorversion__
 .SH NAME
 scanpci - scan/probe PCI buses
@@ -22,7 +22,7 @@ each device.
 .B \-x
 Show hexadecimal dump of the first 64 bytes of each PCI device's
 configuration space.  For CardBus bridges, the first 128 bytes are
-dumped instead.  This option can be repeated to dump all 256 bytes,
+dumped instead.  This option can be repeated to dump all 256 or 4096 bytes,
 but doing so might cause
 .B scanpci
 (or the system) to crash because some devices cannot tolerate reads of

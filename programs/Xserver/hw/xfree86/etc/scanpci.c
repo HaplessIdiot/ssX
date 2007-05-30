@@ -23,7 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.97tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.98tsi Exp $ */
 
 #include <X11/X.h>
 #include "os.h"
@@ -315,7 +315,7 @@ dump_config(pciConfigPtr pcr, int verbose)
 
     for (i = 0;  i < limit;  i++) {
 	if (!(i & 3))
-	    printf("    0x%02x: ", i * 4);
+	    printf("    0x%03x: ", i * 4);
 	if (!(i & 1))
 	    printf(" ");
 	/* Always display little-endian */
@@ -331,11 +331,17 @@ dump_config(pciConfigPtr pcr, int verbose)
     if (verbose <= 1)
 	return;
 
+    i = limit * 4;
+    if (verbose > 2)
+	limit = 4096;
+    else
+	limit = 256;
+
     /* Print the rest */
-    for (i = limit * 4;  i < 256;  i += 4) {
+    for (;  i < limit;  i += 4) {
 	CARD32 pcireg = pciReadLong(pcr->tag, i);
 	if (!(i & 15))
-	    printf("    0x%02x: ", i);
+	    printf("    0x%03x: ", i);
 	if (!(i & 7))
 	    printf(" ");
 	/* Always display little-endian */
