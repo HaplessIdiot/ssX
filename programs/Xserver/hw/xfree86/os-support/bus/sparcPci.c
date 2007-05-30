@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.27tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.28 2007/05/30 14:51:17 tsi Exp $ */
 /*
  * Copyright (C) 2001-2007 The XFree86 Project, Inc.
  * All rights reserved.
@@ -529,9 +529,8 @@ sparcPciInit(void)
 	phys_size += pagemask;
 	phys_size &= ~pagemask;
 	phys_size -= phys_addr;
-	domain.pci = (char *)sparcMapAperture(-1, VIDMEM_MMIO,
-	    phys_addr, phys_size);
 
+	domain.pci = sparcMapAperture(-1, VIDMEM_MMIO, phys_addr, phys_size);
 	if (domain.pci == MAP_FAILED)
 	    continue;
 
