@@ -1,4 +1,6 @@
 XFree86 4.6.99.26 (xx June 2007)
+ 157. Fix endianness bug in Render extension's SetPictureClipRectangles
+      request  (Matthieu Herrb).
 
 XFree86 4.6.99.25 (7 June 2007)
  156. Allow scanpci utility to dump all 4K bytes of a PCI Express device's
@@ -20563,4 +20565,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3889 2007/05/30 15:50:39 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3890 2007/06/07 11:03:00 dawes Exp $

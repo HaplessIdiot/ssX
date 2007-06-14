@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/render.c,v 1.34tsi Exp $
+ * $XFree86: xc/programs/Xserver/render/render.c,v 1.35tsi Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -1896,6 +1896,8 @@ SProcRenderSetPictureClipRectangles (ClientPtr client)
     REQUEST(xRenderSetPictureClipRectanglesReq);
     swaps(&stuff->length, n);
     swapl(&stuff->picture, n);
+    swaps(&stuff->xOrigin, n);
+    swaps(&stuff->yOrigin, n);
     SwapRestS(stuff);
     return (*ProcRenderVector[stuff->renderReqType]) (client);
 }
