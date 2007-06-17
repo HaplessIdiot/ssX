@@ -23,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/def.h,v 3.16 2004/06/09 19:00:09 tsi Exp $ */
+/* $XFree86: xc/config/makedepend/def.h,v 3.17tsi Exp $ */
 
 #include "Xos.h"
 #include "Xfuncproto.h"
@@ -75,6 +75,8 @@ in this Software without prior written authorization from The Open Group.
 #define ELIFGUESSFALSE	21	/* pseudo value --- never matched */
 #define INCLUDENEXTDOT	22	/* pseudo value --- never matched */
 
+#undef DEBUG
+#define DEBUG 1
 #ifdef DEBUG
 extern int	_debugmask;
 /*
@@ -114,8 +116,6 @@ struct	inclist {
 	struct symtab	**i_defs;	/* symbol table for this file and its
 					   children when merged */
 	int		i_ndefs;	/* current # defines */
-	boolean		*i_merged;      /* whether we have merged child
-					   defines */
 	unsigned char   i_flags;
 };
 
@@ -138,13 +138,9 @@ char *malloc(), *realloc();
 
 char			*copy(char *str);
 int			match(char *str, char **list);
-char			*base_name(char *file);
 char			*getnextline(struct filepointer *fp);
 struct symtab		**slookup(char *symbol, struct inclist *file);
-struct symtab		**isdefined(char *symbol, struct inclist *file,
-				    struct inclist **srcfile);
-struct symtab		**fdefined(char *symbol, struct inclist *file,
-				   struct inclist **srcfile);
+struct symtab		**isdefined(char *symbol, struct inclist *file);
 struct filepointer	*getfile(char *file);
 void			included_by(struct inclist *ip,
 				    struct inclist *newfile);
@@ -165,7 +161,7 @@ int			find_includes(struct filepointer *filep,
 
 void			recursive_pr_include(struct inclist *head,
 					     char *file, char *base);
-void			add_include(struct filepointer *filep,
+struct inclist *	add_include(struct filepointer *filep,
 				    struct inclist *file,
 				    struct inclist *file_red,
 				    char *include, int type,
