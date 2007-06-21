@@ -1,4 +1,6 @@
-XFree86 4.6.99.26 (xx June 2007)
+XFree86 4.6.99.27 (xx July 2007)
+
+XFree86 4.6.99.26 (21 June 2007)
  158. Improve makedepend's accuracy when -U command line flags and/or #undef
       directives are involved  (Marc La France).
  157. Fix endianness bug in Render extension's SetPictureClipRectangles
@@ -20567,4 +20569,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3891 2007/06/14 14:30:17 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3892 2007/06/17 20:25:00 tsi Exp $
