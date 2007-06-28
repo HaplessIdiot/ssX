@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/ioport.c,v 1.7 2006/01/05 18:55:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/ioport.c,v 1.8tsi Exp $ */
 /*
  * Copyright 2002 through 2007 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -250,7 +250,7 @@ do_inb(argc, argv)
 
 	if (Index >= 0)
 	{
-		if (Port == 0x03C0U)
+		if ((Port & 0x03FFU) == 0x03C0U)
 		{	/* Attribute Controller is different */
 			unsigned short gens1;
 
@@ -345,7 +345,7 @@ do_outb(argc, argv)
 
 	if (Index >= 0)
 	{
-		if (Port == 0x03C0U)
+		if ((Port & 0x03FFU) == 0x03C0U)
 		{	/* Attribute controller is different */
 			unsigned short gens1;
 
