@@ -1,4 +1,5 @@
 XFree86 4.6.99.27 (xx July 2007)
+ 159. Fix ioport utility to allow for VGA I/O aliases (Marc La France).
 
 XFree86 4.6.99.26 (21 June 2007)
  158. Improve makedepend's accuracy when -U command line flags and/or #undef
@@ -20569,4 +20570,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3892 2007/06/17 20:25:00 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3893 2007/06/21 11:02:58 dawes Exp $
