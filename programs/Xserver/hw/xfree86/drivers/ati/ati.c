@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.c,v 1.27 2006/01/05 18:55:29 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.c,v 1.28 2007/01/01 16:08:15 tsi Exp $ */
 /*
  * Copyright 1997 through 2007 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -46,9 +46,9 @@
  * ... and, many, many others from around the world.
  *
  * In addition, this work would not have been possible without the active
- * support, both moral and otherwise, of the staff and management of Computing
- * and Network Services at the University of Alberta, in Edmonton, Alberta,
- * Canada.
+ * support, both moral and otherwise, of the staff and management of Academic
+ * Information and Communications Technologies at the University of Alberta, in
+ * Edmonton, Alberta, Canada.
  *
  * The driver is intended to support all ATI adapters since their VGA Wonder
  * V3, including OEM counterparts.
