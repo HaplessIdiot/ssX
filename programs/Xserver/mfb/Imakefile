@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/mfb/Imakefile,v 3.19tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/mfb/Imakefile,v 3.20tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -160,6 +160,7 @@ SpecialCObjectRule(mfbpixmap,$(ICONFIGFILES),$(_NOOP_))
 
 #ifdef IHaveModules
 InstallLibraryModule(mfb,$(MODULEDIR),.)
+InstallDriverSDKLibraryModule(mfb,$(DRIVERSDKMODULEDIR),.)
 #endif
 
 DependTarget()
@@ -169,10 +170,9 @@ MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
 #endif
 
-InstallDriverSDKLibraryModule(mfb,$(DRIVERSDKMODULEDIR),.)
-
+#if !defined(IHaveModules) || !BuildModuleInSubdir
 InstallDriverSDKNonExecFile(mfb.h,$(DRIVERSDKINCLUDEDIR))
-
+#endif
 
 #ifdef LinkDirectory
 LinkSourceFile(maskbits.c,LinkDirectory)

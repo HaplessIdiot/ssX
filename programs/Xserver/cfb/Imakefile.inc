@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile.inc,v 1.13tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile.inc,v 1.14tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -276,6 +276,7 @@ NormalAsmObjectRule()
 
 #ifdef IHaveModules
 InstallLibraryModule($(CFBNAME),$(MODULEDIR),.)
+InstallDriverSDKLibraryModule($(CFBNAME),$(DRIVERSDKMODULEDIR),.)
 #endif
 
 DependTarget()
@@ -285,8 +286,7 @@ MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
 #endif
 
-InstallDriverSDKLibraryModule($(CFBNAME),$(DRIVERSDKMODULEDIR),.)
-
+#if !defined(IHaveModules) || !BuildModuleInSubdir
 #if PixelSize == 8
 InstallDriverSDKNonExecFile(cfb.h,$(DRIVERSDKINCLUDEDIR))
 InstallDriverSDKNonExecFile(cfb16.h,$(DRIVERSDKINCLUDEDIR))
@@ -294,4 +294,5 @@ InstallDriverSDKNonExecFile(cfb24.h,$(DRIVERSDKINCLUDEDIR))
 InstallDriverSDKNonExecFile(cfb32.h,$(DRIVERSDKINCLUDEDIR))
 InstallDriverSDKNonExecFile(cfbmap.h,$(DRIVERSDKINCLUDEDIR))
 InstallDriverSDKNonExecFile(cfbunmap.h,$(DRIVERSDKINCLUDEDIR))
+#endif
 #endif

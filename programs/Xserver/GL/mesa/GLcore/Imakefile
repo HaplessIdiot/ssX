@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/GLcore/Imakefile,v 1.8tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/GLcore/Imakefile,v 1.9tsi Exp $
 /*
  * Copyright (c) 2000-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -101,13 +101,12 @@ ModuleObjectRule()
 
 DepLibraryModuleTarget(GLcore, $(DONES) $(OBJS),$(OBJS) $(XOBJS),extensions)
 InstallLibraryModule(GLcore,$(MODULEDIR),extensions)
+InstallDriverSDKLibraryModule(GLcore,$(DRIVERSDKMODULEDIR),extensions)
 
 #else
 NormalDepLibraryTarget(GLcore, $(DONES) $(OBJS), $(OBJS) $(XOBJS))
 NormalLibraryObjectRule()
 #endif
-
-InstallDriverSDKLibraryModule(GLcore,$(DRIVERSDKMODULEDIR),extensions)
 
 #ifdef IHaveSubdirs
 MakeSubdirs($(SUBDIRS))
