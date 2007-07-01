@@ -1,4 +1,7 @@
 XFree86 4.6.99.27 (xx July 2007)
+ 160. Fix various issues related to install.sdk targets when
+      BuildModuleInSubdir is asserted during a build  (Marc La France,
+      problem reported by Loic Mahe).
  159. Fix ioport utility to allow for VGA I/O aliases (Marc La France).
 
 XFree86 4.6.99.26 (21 June 2007)
@@ -20570,4 +20573,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3893 2007/06/21 11:02:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3894 2007/06/28 13:22:25 tsi Exp $

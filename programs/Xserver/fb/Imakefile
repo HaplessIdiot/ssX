@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/fb/Imakefile,v 1.20tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/fb/Imakefile,v 1.21tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -158,6 +158,7 @@ NormalLintTarget($(SRCS))
 
 #ifdef IHaveModules
 InstallLibraryModule(fb,$(MODULEDIR),.)
+InstallDriverSDKLibraryModule(fb,$(DRIVERSDKMODULEDIR),.)
 #endif
 
 DependTarget()
@@ -205,6 +206,7 @@ LinkSourceFile(fbutil.c,LinkDirectory)
 LinkSourceFile(fbwindow.c,LinkDirectory)
 #endif
 
-InstallDriverSDKLibraryModule(fb,$(DRIVERSDKMODULEDIR),.)
+#if !defined(IHaveModules) || !BuildModuleInSubdir
 InstallDriverSDKNonExecFile(fb.h,$(DRIVERSDKINCLUDEDIR))
 InstallDriverSDKNonExecFile(fbrop.h,$(DRIVERSDKINCLUDEDIR))
+#endif

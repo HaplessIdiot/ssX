@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/miext/shadow/Imakefile,v 1.10tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/miext/shadow/Imakefile,v 1.11tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -115,6 +115,7 @@ NormalLintTarget($(SRCS))
 
 #ifdef IHaveModules
 InstallLibraryModule(shadow,$(MODULEDIR),.)
+InstallDriverSDKLibraryModule(shadow,$(DRIVERSDKMODULEDIR),.)
 #endif
 
 DependTarget()
@@ -143,5 +144,6 @@ LinkSourceFile(shrot32pack_180.c,LinkDirectory)
 LinkSourceFile(shrot32pack_270.c,LinkDirectory)
 #endif
 
-InstallDriverSDKLibraryModule(shadow,$(DRIVERSDKMODULEDIR),.)
+#if !defined(IHaveModules) || !BuildModuleInSubdir
 InstallDriverSDKNonExecFile(shadow.h,$(DRIVERSDKINCLUDEDIR))
+#endif

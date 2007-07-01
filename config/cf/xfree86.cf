@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.515tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.516tsi Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1947,14 +1947,47 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 #define TouchScreenDefines /**/
 #endif
 
+#ifndef XsunServer
+#define XsunServer	NO
+#endif
+#ifndef Xsun24Server
+#define Xsun24Server	NO
+#endif
+#ifndef XsunMonoServer
+#define XsunMonoServer	NO
+#endif
+
+#ifndef XsunLynxServer
+#define XsunLynxServer	NO
+#endif
+#ifndef XsunLynxMonoServer
+#define XsunLynxMonoServer	NO
+#endif
+
+#ifndef XWinServer
+#define XWinServer	NO
+#endif
+
+#ifndef XDarwinServer
+#define XDarwinServer	NO
+#endif
+
+#ifndef XnonServer
+#define XnonServer	NO
+#endif
+
 /*
  * When this is set, modules are always built separately from the libraries
- * that statically link into an Xserver.  This is for platforms where the
+ * that statically link into an Xserver.  This deals with platforms where the
  * module and native object formats are different (e.g., OS/2).
+ * BuildModuleInSubdir should also be set when both the loader server and
+ * another server are to be built in the same build.
  */
 #ifndef BuildModuleInSubdir
 #if TinyXServer || XVirtualFramebufferServer || XdmxServer || XnestServer || \
-	XprtServer
+    XprtServer || XsunServer || Xsun24Server || XsunMonoServer || \
+    XsunLynxServer || XsunLynxMonoServer || XWinServer || XDarwinServer || \
+    XnonServer
 #define BuildModuleInSubdir	YES
 #else
 #define BuildModuleInSubdir	NO
@@ -1966,4 +1999,3 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 #include <cross.def>
 #endif
 #include <xf86.rules>
-

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/miext/layer/Imakefile,v 1.7tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/miext/layer/Imakefile,v 1.8tsi Exp $
 /*
  * Copyright (c) 1994-2007 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -98,6 +98,7 @@ NormalLintTarget($(SRCS))
 
 #if defined(IHaveModules)
 InstallLibraryModule(layer,$(MODULEDIR),.)
+InstallDriverSDKLibraryModule(layer,$(DRIVERSDKMODULEDIR),.)
 #endif
 
 DependTarget()
@@ -116,5 +117,6 @@ LinkSourceFile($(RENDERSRC),LinkDirectory)
 #endif
 #endif
 
-InstallDriverSDKLibraryModule(layer,$(DRIVERSDKMODULEDIR),.)
+#if !defined(IHaveModules) || !BuildModuleInSubdir
 InstallDriverSDKNonExecFile(layer.h,$(DRIVERSDKINCLUDEDIR))
+#endif
