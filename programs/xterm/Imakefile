@@ -7,7 +7,7 @@ XCOMM Xterm assumes that bcopy can handle overlapping arguments.  If your
 XCOMM bcopy (or memcpy) cannot, write a routine called bcopy and link it in
 XCOMM or add -Dbcopy=mybcopy to the DEFINES list below.
 XCOMM
-XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.77tsi Exp $
+XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.78tsi Exp $
 XCOMM
 
 /* Uncomment SCROLLBAR_RIGHT if you want the scroll bar to be on the right */
@@ -291,12 +291,12 @@ install::
 	RemoveFile(ProgramTargetName(xterm.inst))
 
 # else
-#   if !InstallXtermSetGID || \
-       (!defined(LinuxArchitecture) && !defined(FreeBSDArchitecture))
+#  if !InstallXtermSetGID || \
+      (!defined(LinuxArchitecture) && !defined(FreeBSDArchitecture))
 
 InstallProgramWithFlags(xterm,$(BINDIR),$(INSTSETIDFLAGS))
 
-#   else
+#  else
 
 /*
  * Install xterm either setgid utmp or setuid root.  Base this decision on the
@@ -317,8 +317,12 @@ install::
 	    InstallNamedInline(xterm,$(INSTUIDFLAGS),$(BINDIR),xterm); \
 	fi
 
-#   endif
+#  endif
 # endif
+#else
+
+InstallProgram(xterm,$(BINDIR))
+
 #endif
 
 InstallNamedProg(uxterm,uxterm,$(BINDIR))

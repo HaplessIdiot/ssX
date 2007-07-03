@@ -1,4 +1,6 @@
 XFree86 4.6.99.27 (xx July 2007)
+ 161. Add missing install rule for xterm when it is to be installed neither
+      setuid nor setgid (Marc La France, problem reported by Loic Mahe).
  160. Fix various issues related to install.sdk targets when
       BuildModuleInSubdir is asserted during a build  (Marc La France,
       problem reported by Loic Mahe).
@@ -20573,4 +20575,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3894 2007/06/28 13:22:25 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3895 2007/07/01 15:14:50 tsi Exp $
