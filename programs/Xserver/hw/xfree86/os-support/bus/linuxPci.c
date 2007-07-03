@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxPci.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxPci.c,v 1.14tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -439,7 +439,7 @@ xf86GetPciSizeFromOS(PCITAG tag, int Index, int *bits)
 	if (Index == 7)	/* P2P bridge ROM pointer */
 	    Index = 6;
 
-	if (linuxSize[device].size[Index] == 1)
+	if (linuxSize[device].size[Index] < 2)
 	    return FALSE;
 
 	*bits = linuxSize[device].size[Index];

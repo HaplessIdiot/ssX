@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.97tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.98tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -730,7 +730,7 @@ do_rom:
     int osbits = 0;
 
     if (xf86GetPciSizeFromOS(device->tag, index, &osbits) &&
-	(osbits <= bits)) {
+	(osbits >= minsize) && (osbits <= bits)) {
       bits = osbits;
       destructive = TRUE;	/* ? */
     }

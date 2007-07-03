@@ -1,4 +1,6 @@
 XFree86 4.6.99.27 (xx July 2007)
+ 162. Beef up validity check on PCI resource sizes returned from the OS
+      (Marc La France, problem reported by Loic Mahe).
  161. Add missing install rule for xterm when it is to be installed neither
       setuid nor setgid (Marc La France, problem reported by Loic Mahe).
  160. Fix various issues related to install.sdk targets when
@@ -20575,4 +20577,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3895 2007/07/01 15:14:50 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3896 2007/07/03 15:19:52 tsi Exp $
