@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.28 2007/05/30 14:51:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.29 2007/05/30 16:38:37 tsi Exp $ */
 /*
  * Copyright (C) 2001-2007 The XFree86 Project, Inc.
  * All rights reserved.
@@ -407,9 +407,11 @@ sparcPciInit(void)
 	int                prop_len, bus;
 
 	prop_val = promGetProperty("name", &prop_len);
-	/* Some PROMs include the trailing null;  some don't */
-	if (!prop_val || (prop_len < 3) || (prop_len > 4) ||
-	    strcmp(prop_val, "pci"))
+	if (!prop_val || (prop_len < 3))
+	    continue;
+
+	prop_val[prop_len] = '\0';
+	if (strcmp(prop_val, "pci") && strcmp(prop_val, "pciex"))
 	    continue;
 
 	prop_val = promGetProperty("model", &prop_len);
