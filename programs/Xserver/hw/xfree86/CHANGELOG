@@ -1,4 +1,6 @@
 XFree86 4.6.99.27 (xx July 2007)
+ 163. Update locale information for Serbia and Montenegro (Bugzilla #1684,
+      Milos Komarcevic).
  162. Beef up validity check on PCI resource sizes returned from the OS
       (Marc La France, problem reported by Loic Mahe).
  161. Add missing install rule for xterm when it is to be installed neither
@@ -20577,4 +20579,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3896 2007/07/03 15:19:52 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3897 2007/07/03 15:23:07 tsi Exp $
