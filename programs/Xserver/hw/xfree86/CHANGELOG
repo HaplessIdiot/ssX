@@ -1,4 +1,5 @@
 XFree86 4.6.99.28 (xx July 2007)
+ 164. Default noise reductions during PCI scans on the *BSDs (Marc La France).
 
 XFree86 4.6.99.27 (7 July 2007)
  163. Update locale information for Serbia and Montenegro (Bugzilla #1684,
@@ -20581,4 +20582,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3898 2007/07/05 14:52:06 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3899 2007/07/07 11:03:24 dawes Exp $

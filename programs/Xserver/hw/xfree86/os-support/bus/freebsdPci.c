@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/freebsdPci.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/freebsdPci.c,v 1.10tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -158,7 +158,8 @@ freebsdPciCfgRead(PCITAG tag, int off)
 	io.pi_width = 4;
 	error = ioctl(pciFd, PCIOCREAD, &io);
 	if (error) {
-		ErrorF("PciCfgRead(%d:%d:%d, %02x) failed (%s)\n",
+		xf86MsgVerb(X_WARNING, 4,
+			"PciCfgRead(%d:%d:%d, %02x) failed (%s)\n",
 			io.pi_sel.pc_bus, io.pi_sel.pc_dev, io.pi_sel.pc_func,
 			off, strerror(errno));
 		return ~0;
@@ -180,7 +181,8 @@ freebsdPciCfgWrite(PCITAG tag, int off, CARD32 val)
 	io.pi_data = PCI_CPU(val);
 	error = ioctl(pciFd, PCIOCWRITE, &io);
 	if (error)
-		ErrorF("PciCfgWrite(%d:%d:%d, %02x, %08lx) failed (%s)\n",
+		xf86MsgVerb(X_WARNING, 4,
+			"PciCfgWrite(%d:%d:%d, %02x, %08lx) failed (%s)\n",
 			io.pi_sel.pc_bus, io.pi_sel.pc_dev, io.pi_sel.pc_func,
 			off, (unsigned long)val, strerror(errno));
 }

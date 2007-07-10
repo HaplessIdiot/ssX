@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/netbsdPci.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/netbsdPci.c,v 1.8tsi Exp $ */
 /*
  * Copyright (C) 1994-2003 The XFree86 Project, Inc.
  * All rights reserved.
@@ -135,7 +135,8 @@ netbsdPciConfRead(PCITAG tag, int reg)
 	bdfr.cfgreg.reg = reg;
 
 	if (ioctl(devpci, PCI_IOC_BDF_CFGREAD, &bdfr) == -1) {
-		ErrorF("netbsdPciConfRead: failed on %d:%d:%d %02x (%s)\n",
+		xf86MsgVerb(X_WARNING, 4,
+		    "netbsdPciConfRead: failed on %d:%d:%d %02x (%s)\n",
 		    bdfr.bus, bdfr.device, bdfr.function, reg,
 		    strerror(errno));
 		return ~0;
@@ -156,7 +157,8 @@ netbsdPciConfWrite(PCITAG tag, int reg, CARD32 val)
 	bdfr.cfgreg.val = val;
 
 	if (ioctl(devpci, PCI_IOC_BDF_CFGWRITE, &bdfr) == -1)
-		ErrorF("netbsdPciConfWrite: failed on %d:%d:%d %02x %08lx (%s)\n",
+		xf86MsgVerb(X_WARNING, 4,
+		    "netbsdPciConfWrite: failed on %d:%d:%d %02x %08lx (%s)\n",
 		    bdfr.bus, bdfr.device, bdfr.function, reg,
 		    (unsigned long)val, strerror(errno));
 }
