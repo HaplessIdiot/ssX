@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.29 2007/05/30 16:38:37 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.30tsi Exp $ */
 /*
  * Copyright (C) 2001-2007 The XFree86 Project, Inc.
  * All rights reserved.
@@ -405,6 +405,7 @@ sparcPciInit(void)
 	pciBusFuncs_p      pFunctions;
 	char               *prop_val;
 	int                prop_len, bus;
+	char               shared_pci;
 
 	prop_val = promGetProperty("name", &prop_len);
 	if (!prop_val || (prop_len < 3))
@@ -432,6 +433,12 @@ sparcPciInit(void)
 	    pFunctions = &sparcPCIFunctions;
 	else
 	    pFunctions = &sabrePCIFunctions;
+
+	if (strcmp("SUNW,psycho", prop_val) &&
+	    strcmp("pci108e,8000", prop_val))
+	    shared_pci = 0;
+	else
+	    shared_pci = 1;
 
 	xf86Msg(X_INFO, "PCI host bridge found (\"%s\")\n", prop_val);
 
@@ -476,6 +483,11 @@ sparcPciInit(void)
 
 		if (pci_size)
 		    goto nextNode;
+		if (shared_pci) {
+		    phys_size <<= 1;
+		    if (!phys_size)
+			goto nextNode;
+		}
 		pci_addr = phys_addr;
 		pci_size = phys_size;
 		break;
