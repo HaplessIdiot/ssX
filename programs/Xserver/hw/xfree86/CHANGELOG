@@ -1,4 +1,6 @@
-XFree86 4.6.99.28 (xx July 2007)
+XFree86 4.6.99.29 (xx August 2007)
+
+XFree86 4.6.99.28 (21 July 2007)
  165. Fix new PCI scan for SPARCs based on Sun's Psycho chipset
       (Marc La France).
  164. Default noise reductions during PCI scans on the *BSDs (Marc La France).
@@ -20584,4 +20586,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3900 2007/07/10 17:15:52 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3901 2007/07/10 19:08:41 tsi Exp $
