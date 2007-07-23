@@ -1,4 +1,5 @@
 XFree86 4.6.99.29 (xx August 2007)
+ 166. Fix #include's in GLw documentation (Marc Balmer).
 
 XFree86 4.6.99.28 (21 July 2007)
  165. Fix new PCI scan for SPARCs based on Sun's Psycho chipset
@@ -20586,4 +20587,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3901 2007/07/10 19:08:41 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3902 2007/07/21 11:03:19 dawes Exp $
