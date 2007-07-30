@@ -22,7 +22,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86: xc/programs/xsetroot/xsetroot.man,v 1.9 2005/02/11 03:03:21 dawes Exp $
+.\" $XFree86: xc/programs/xsetroot/xsetroot.man,v 1.10tsi Exp $
 .\"
 .TH XSETROOT 1 __vendorversion__
 .SH NAME
@@ -37,7 +37,7 @@ xsetroot \- root window parameter setting utility for X
 [-solid \fIcolor\fP] [-name \fIstring\fP]
 .SH DESCRIPTION
 The 
-.I setroot
+.I xsetroot
 program
 allows you to tailor the appearance of the background ("root")
 window on a workstation display running X.  Normally, you experiment with
