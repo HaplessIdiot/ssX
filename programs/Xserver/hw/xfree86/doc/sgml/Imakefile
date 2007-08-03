@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.91 2005/03/08 21:11:14 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.92tsi Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -28,6 +28,7 @@ MANSGMLDEPENDS = mdefs.ent
               apm.sgml ati.sgml chips.sgml cyrix.sgml DECtga.sgml \
 	      I128.sgml i740.sgml i810.sgml newport.sgml \
 	      r128.sgml rendition.sgml s3virge.sgml SiS.sgml
+FORMATTEDDIR = ..
 
 LinuxDocReadmeTarget(Darwin)
 LinuxDocReadmeTarget(isc)
@@ -123,9 +124,6 @@ clean::
 	RemoveFile(lindex.sgml)
 
 #endif
-
-
-FORMATTEDDIR = ..
 
 /* Update top level docs. */
 UpdateFormattedDocLong(README,$(TOP),README.txt)
