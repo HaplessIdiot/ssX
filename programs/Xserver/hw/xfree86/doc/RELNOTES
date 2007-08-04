@@ -552,7 +552,7 @@ version 1.0 is provided.
 
 6.8  DDC
 
-The VESA Display Data Channel (DDC[tm]) standard allows the monitor to tell
+The VESA® Display Data Channel (DDC[tm]) standard allows the monitor to tell
 the video card (or on some cases the computer directly) about itself; partic-
 ularly the supported screen resolutions and refresh rates.
 
@@ -575,7 +575,7 @@ section of the config file.
 
 6.9  GLX and the Direct Rendering Infrastructure (DRI)
 
-Direct rendered OpenGL support is provided for several hardware platforms by
+Direct rendered OpenGL® support is provided for several hardware platforms by
 the Direct Rendering Infrastructure (DRI), which is part of Mesa.  Mesa also
 provides the 3D core rendering component of GLX.  Further information can be
 found at the DRI Project's web site <URL:http://dri.sf.net/> and the Mesa web
@@ -899,4 +899,4 @@ oz.com/).
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.143 tsi Exp $
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/RELNOTES,v 3.152tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/RELNOTES,v 3.153 2007/08/04 02:16:07 tsi Exp $

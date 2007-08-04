@@ -567,9 +567,9 @@ when none are provided explicitly in the configuration file.
 
 6.8.1  Changed behavior caused by DDC.
 
-Several drivers uses DDC information to set the screen size and pitch.  This
-can be overridden by explicitly resetting it to the and non-DDC default value
-75 with the -dpi 75 command line option for the X server, or by specifying
+Several drivers use DDC information to set the screen size and pitch.  This
+can be overridden by explicitly resetting it to the non-DDC default value 75
+with the -dpi 75 command line option for the X server, or by specifying
 appropriate screen dimensions with the "DisplaySize" keyword in the "Monitor"
 section of the config file.
 
@@ -899,4 +899,4 @@ oz.com/).
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.143 tsi Exp $
 
 
-$XFree86: xc/RELNOTES.txt,v 1.7tsi Exp $
+$XFree86: xc/RELNOTES.txt,v 1.8 2007/08/04 02:16:06 tsi Exp $
