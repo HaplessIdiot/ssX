@@ -1,4 +1,4 @@
-                          README for XFree86® 4.6.0
+                          README for XFree86® 4.7.0
 
                           The XFree86 Project, Inc
 
@@ -11,20 +11,20 @@
      Linux, FreeBSD, NetBSD, OpenBSD and Solaris) on Intel and other
      platforms.  This version is compatible with X11R6.6.
 
-1.  What is XFree86 4.6.0?
+1.  What is XFree86 4.7.0?
 
-XFree86 4.6.0 is the ninth full release in the XFree86 4.x series.
+XFree86 4.7.0 is the tenth full release in the XFree86 4.x series.
 
 XFree86 4.x is the current XFree86 release series.  The first release in this
 series was in early 2000.  The core of XFree86 4.x is a modular X server.
-The 4.6.0 version is a new release that includes additional hardware support,
+The 4.7.0 version is a new release that includes additional hardware support,
 functional enhancements and bug fixes.  Specific release enhancements can be
 viewed in the Release Notes.
 
-Most modern PC video hardware is supported in XFree86 4.6.0, and most PC
+Most modern PC video hardware is supported in XFree86 4.7.0, and most PC
 video hardware that isn't supported explicitly can be used with the "vesa"
 driver.  The Release Notes has a table showing the drivers provided with
-XFree86 4.6.0, and links to related documentation.
+XFree86 4.7.0, and links to related documentation.
 
 XFree86® is produced by The XFree86 Project, Inc through the work of a group
 of volunteer independent developers.  The XFree86 Project is a non-commercial
@@ -61,7 +61,7 @@ you find any omissions in that document, please contact us with details at
 3.  Pointers to additional information
 
 The documentation for this release can be found online at the XFree86 web
-site <URL:http://www.xfree86.org/4.6.0/>.  Documentation for the latest
+site <URL:http://www.xfree86.org/4.7.0/>.  Documentation for the latest
 release version can always be found here <URL:http://www.xfree86.org/cur-
 rent/>, and documentation for the latest pre-release snapshot can be found
 here <URL:http://www.xfree86.org/snapshot/>.
@@ -116,23 +116,23 @@ inclusion in future releases.  New works should be discussed on our
 Current information about the XFree86 development process can be found at our
 web site <URL:http://www.xfree86.org/developer/>.
 
-6.  How to get XFree86 4.6.0
+6.  How to get XFree86 4.7.0
 
-XFree86 4.6.0 can be found at the XFree86 ftp server
-<URL:ftp://ftp.xfree86.org/pub/XFree86/4.6.0/>.  Information about obtaining
+XFree86 4.7.0 can be found at the XFree86 ftp server
+<URL:ftp://ftp.xfree86.org/pub/XFree86/4.7.0/>.  Information about obtaining
 and installing binary distributions of this release can be found in the
 Installation Document.  Information about obtaining the release in source
 form is given below.
 
-The source for version 4.6.0 is split into seven tarballs:
+The source for version 4.7.0 is split into seven tarballs:
 
-     XFree86-4.6.0-src-1.tgz
-     XFree86-4.6.0-src-2.tgz
-     XFree86-4.6.0-src-3.tgz
-     XFree86-4.6.0-src-4.tgz
-     XFree86-4.6.0-src-5.tgz
-     XFree86-4.6.0-src-6.tgz
-     XFree86-4.6.0-src-7.tgz
+     XFree86-4.7.0-src-1.tgz
+     XFree86-4.7.0-src-2.tgz
+     XFree86-4.7.0-src-3.tgz
+     XFree86-4.7.0-src-4.tgz
+     XFree86-4.7.0-src-5.tgz
+     XFree86-4.7.0-src-6.tgz
+     XFree86-4.7.0-src-7.tgz
 
 The first three contain everything except the fonts and general X11 documen-
 tation.  Those three are sufficient for building XFree86 if you already have
@@ -140,31 +140,31 @@ a set of fonts.  The fourth and fifth contain the fonts.  The sixth contains
 the source for the general X11 documentation.  The seventh contains the gen-
 eral X11 documentation in hardcopy format.
 
-A source patch relative to version 4.5.0 is also available.  Because of its
+A source patch relative to version 4.6.0 is also available.  Because of its
 size, it is split into four parts.  The patch files are:
 
-     XFree86-4.5.0-4.6.0.diff1.gz
-     XFree86-4.5.0-4.6.0.diff2.gz
-     XFree86-4.5.0-4.6.0.diff3.gz
-     XFree86-4.5.0-4.6.0.diff4.gz
+     XFree86-4.6.0-4.7.0.diff1.gz
+     XFree86-4.6.0-4.7.0.diff2.gz
+     XFree86-4.6.0-4.7.0.diff3.gz
+     XFree86-4.6.0-4.7.0.diff4.gz
 
 There is also a tarball and a cleanup script that handle files that have com-
 ponents that can't be included in a diff.  These are:
 
-     XFree86-4.5.0-4.6.0-diff0.tgz
-     XFree86-4.5.0-4.6.0-cleanup.sh
+     XFree86-4.6.0-4.7.0-diff0.tgz
+     XFree86-4.6.0-4.7.0-cleanup.sh
 
-These patches should be applied to a clean 4.5.0 source tree, working from
+These patches should be applied to a clean 4.6.0 source tree, working from
 the directory containing the xc/ directory.  The patches should be applied by
 running:
 
-     gzip -d < XFree86-4.5.0-4.6.0.diff1.gz | patch -p0 -E
-     gzip -d < XFree86-4.5.0-4.6.0.diff2.gz | patch -p0 -E
-     gzip -d < XFree86-4.5.0-4.6.0.diff3.gz | patch -p0 -E
-     gzip -d < XFree86-4.5.0-4.6.0.diff4.gz | patch -p0 -E
+     gzip -d < XFree86-4.6.0-4.7.0.diff1.gz | patch -p0 -E
+     gzip -d < XFree86-4.6.0-4.7.0.diff2.gz | patch -p0 -E
+     gzip -d < XFree86-4.6.0-4.7.0.diff3.gz | patch -p0 -E
+     gzip -d < XFree86-4.6.0-4.7.0.diff4.gz | patch -p0 -E
 
-     sh XFree86-4.5.0-4.6.0-cleanup.sh
-     gzip -d < XFree86-4.5.0-4.6.0-diff0.tgz | tar vxf -
+     sh XFree86-4.6.0-4.7.0-cleanup.sh
+     gzip -d < XFree86-4.6.0-4.7.0-diff0.tgz | tar vxf -
 
 To format the XFree86 documentation use the latest version of our doctools
 package available from the XFree86 CVS repository's "doctools" module, and
@@ -177,8 +177,8 @@ mation about accessing this can be found at the CVS page
 <URL:http://www.xfree86.org/cvs/> on our web site.  It's also possible to
 browse the XFree86 CVS repository at our CVSWeb server
 <URL:http://cvsweb.xfree86.org/>.  The CVS tag for this version is
-"xf-4_6_0".  The CVS tag for the stable branch for this release is
-"xf-4_6-branch".  To check out the latest development version, don't specify
+"xf-4_7_0".  The CVS tag for the stable branch for this release is
+"xf-4_7-branch".  To check out the latest development version, don't specify
 any tag.
 
 7.  Reporting Bugs
@@ -203,4 +203,4 @@ in our work, please consider a small donation
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.149 dawes Exp $
 
 
-$XFree86$
+$XFree86: xc/README.txt,v 1.5tsi Exp $

@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&reg; &relvers;
 <author>The XFree86 Project, Inc
-<date>April 2006
+<date>August 2007
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.141 2006/04/29 03:32:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.142tsi Exp $
 </ident>
 
 <abstract>
@@ -33,9 +33,8 @@ latest full release in that series.
 <![ %fullrel [
 The current release (&relvers;) is the latest in that series.
 ]]>
-The XFree86 4.x series  represents a significant redesign of the XFree86 X server,
-with a strong focus on modularity
-and configurability.
+The XFree86 4.x series represents a significant redesign of the XFree86 X
+server, with a strong focus on modularity and configurability.
 
 <![ %relcandidate [
 <sect1>&fullrelvers; RC&rcnum;
@@ -52,16 +51,17 @@ feature-complete.  Known problems with this release candidate include:
 
 <sect>Configuration: a Quick Synopsis
 <p>
-Automatic configuration was introduced with XFree86 4.4.0 
-which makes it possible to start XFree86 without first creating a 
-configuration file.  This has been further improved in XFree86
-4.5.0 and 4.6.0.  If you experienced any problems with automatic configuration
-in a previous release, it is worth trying it again with this release.
+Automatic configuration was introduced with XFree86 4.4.0 which makes it
+possible to start XFree86 without first creating a configuration file.
+This has been further improved in subsequent releases.
+If you experienced any problems with automatic configuration in a previous
+release, it is worth trying it again with this release.
 
-While the initial automatic configuration support was originally targeted
-ust for Linux and the FreeBSD variants, as of 4.5.0 it also includes
-Solaris, NetBSD and OpenBSD support. Full support for automatic
-configuration is planned for other platforms in future releases.
+While the initial automatic configuration support was originally targeted just
+for Linux and the FreeBSD variants, as of 4.5.0 it also includes Solaris,
+NetBSD and OpenBSD support.
+Full support for automatic configuration is planned for other platforms in
+future releases.
 
 If you are running Linux, FreeBSD, NetBSD, OpenBSD, or Solaris, try Auto
 Configuration by running:
@@ -72,24 +72,25 @@ XFree86 -autoconfig
 
 If you want to customise some things afterwards, you can cut and paste the
 automatically generated configuration from the
-<tt>/var/log/XFree86.0.log</tt> file into an <tt>XF86Config</tt> file
-and make your customisations there.  If you need to customise some parts
-of the configuration while leaving others to be automatically detected,
-you can combine a partial static configuration with the automatically
-detected one by running:
+<tt>/var/log/XFree86.0.log</tt> file into an <tt>XF86Config</tt> file and make
+your customisations there.
+If you need to customise some parts of the configuration while leaving others
+to be automatically detected, you can combine a partial static configuration
+with the automatically detected one by running:
 
 <tscreen><verb>
 XFree86 -appendauto
 </verb></tscreen>
 
-If you using a platform that is not currently supported, then you must try one 
-of the older methods for getting started like <tt>xf86cfg</tt>", 
-which is our graphical configuration tool.  It also has a text mode 
-interface that an be used to create an initial configuration file and 
-customise existing configurations.
+If you are using a platform that is not currently supported, then you must try
+one of the older methods for getting started like "<tt>xf86cfg</tt>", which is
+our graphical configuration tool.
+It also has a text mode interface that an be used to create an initial
+configuration file and customise existing configurations.
 
-After that, you can use XFree86 server's ability to create a 
-starting configuration file.  To do so you must login as root, and run:
+After that, you can use XFree86 server's ability to create a starting
+configuration file.
+To do so you must login as root, and run:
 
 <tscreen><verb>
 XFree86 -configure
@@ -98,36 +99,31 @@ XFree86 -configure
 and then follow the instructions.
 
 Finally, if all else fails, the trusty old standby text-based tool
-"<tt>xf86config</tt>" can also be used for generating X server config
-files.
+"<tt>xf86config</tt>" can also be used for generating X server config files.
 
 Hopefully, at least one, and perhaps all of these various configuration options 
-will give you a reasonable starting point for a suitable configuration
-file but we think that with the automatic mechanism you will probably not 
-need any. 
+will give you a reasonable starting point for a suitable configuration file but
+we think that with the automatic mechanism you will probably not need any. 
 
 If you would like to customise the configuration file, see the <htmlurl
-name="XF86Config manual page" url="XF86Config.5.html">.  You should also
-check the driver-specific manual pages and the related documentation, which
-is found at <ref id="drivertables" name="tables below">.
+name="XF86Config manual page" url="XF86Config.5.html">.  You should also check
+the driver-specific manual pages and the related documentation, which is found
+at <ref id="drivertables" name="tables below">.
 
-Before downloading any of the binary distributions for this release, 
-read through the <htmlurl name="Installation Document"
-url="Install.html"> as it can point out which particular binary you should 
-download. 
+Before downloading any of the binary distributions for this release, read
+through the <htmlurl name="Installation Document" url="Install.html"> as it can
+point out which particular binary you should download. 
 
 <![ %updaterel [
-The following sections describe what has changed in the update release(s)
-as well as what is <bf>new</bf> in the latest full release (&fullrelvers;).
+The following sections describe what has changed in the update release(s) as
+well as what is <bf>new</bf> in the latest full release (&fullrelvers;).
 ]]>
 <![ %fullrel [
-The next section describes what is <bf>new</bf> in the latest version (&relvers;)
-compared with the previous full release (&prevfullrelvers).
+The next section describes what is <bf>new</bf> in the latest version
+(&relvers;) compared with the previous full release (&prevfullrelvers;).
 ]]>
 There are many new features in this release and we unfortunately do not have 
-enough space
-to cover
-them all here.
+enough space to cover them all here.
 
 </sect>
 
@@ -141,134 +137,81 @@ them all here.
 <sect>Summary of new features in &fullrelvers;.
 <p>
 
-This is a sampling of the new features in XFree86 &fullrelvers;.  A more
-complete list of changes can be found in the CHANGELOG that is part of
-the XFree86 source tree.  It can also be viewed online at our <url
-name="CVSweb server"
+This is a sampling of the new features in XFree86 &fullrelvers;.
+A more complete list of changes can be found in the CHANGELOG that is part of
+the XFree86 source tree.
+It can also be viewed online at our <url name="CVSweb server"
 url="http://cvsweb.xfree86.org/cvsweb/xc/programs/Xserver/hw/xfree86/CHANGELOG?rev=HEAD">.
 
 <sect1>Security Updates
 <p>
-The following security issue has been fixed in this release:
+A number of reported security issues have been addressed in this release.
+They include:
 
 <itemize>
 
-<item>X server pixmap allocation flaw (<url name="CERT Vulnerability
-Note VU#102441" url="http://www.kb.cert.org/vuls/id/102441">, <url
-name="CAN-2005-2495"
-url="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CAN-2005-2495">).
+<item><htmlurl name="CVE-2006-0747"
+url="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-0747">.
+<item><htmlurl name="CVE-2006-1861"
+url="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-1861">.
+<item><htmlurl name="CVE-2006-2661"
+url="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-2661">.
+<item><htmlurl name="CVE-2006-6101"
+url="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-6101">.
+<item><htmlurl name="CVE-2006-6102"
+url="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-6102">.
+<item><htmlurl name="CVE-2006-6103"
+url="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-6103">.
+<item><htmlurl name="CVE-2007-1003"
+url="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-1003">.
+<item><htmlurl name="CVE-2007-1351"
+url="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-1351">.
+<item><htmlurl name="CVE-2007-1352"
+url="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-1352">.
+<item><htmlurl name="CVE-2007-1667"
+url="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-1667">.
+<item><htmlurl name="CVE-2007-2754"
+url="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-2754">.
 
 </itemize>
+<p>
+In addition, a number of potential integer overflow problems in the Type 1
+font rendering code have been corrected.
 
 <sect1>Video Driver Enhancements
 <p>
 
-<itemize>
-<item>Remove cfb support from the i740, nsc, s3virge, siliconmotion and via
-drivers.
-
-</itemize>
-
-<sect2>aspeed
+<sect2>ati, atimisc, r128 and radeon
 <p>
 
 <itemize>
-<item>A new driver for ASPEED Technologies' AST2000 graphics chips.
+<item>Fix bug that caused the version check between the ati and atimisc modules
+to fail.
+
+<item>The atimisc module's saving and restoring of the mode on server entry has
+been made more reliable on 64-bit systems.
+
+<item>Fix bug that prevented detection of non-PCI adapters on systems that do
+not provide accurate PCI resource sizes.
+
+<item>Fix the radeon driver's saving and restoring of the mode on server entry.
 
 </itemize>
 
-<sect2>ati
+<sect2>chips
 <p>
 
 <itemize>
-<item>Reinstate support for all ATI adapters on all architectures supported
-by the XFree86 common layer.
-
-<item>Restore accuracy of atimisc's clock probe despite certain I/O errors.
-
-<item>Change the atimisc driver on big-endian systems to allow depth 24
-even if the big-endian aperture is not available, by swapping RGB masks.
-
-<item>Fix an ATI driver probe crash.
-
-<item>Workaround for screen-to-screen copy corruption in second-generation
-integrated controllers.
-
-<item>Improve accuracy of atmisc's calculations that are based on a
-29.5&nbsp;MHz reference clock.
-
-<item>Chrontel 8398 related changes to the Mach64 support.
-
-<item>Fix one cause of video memory corruption when using XAA with second
-generation integrated Mach64 controllers.
+<item>Fix some of this driver's endianness problems.
 
 </itemize>
 
-<sect2>glint
+<sect2>i128
 <p>
 
 <itemize>
-<item>Fix the size of the DAC registers storage for pm2v and pm3 chipsets.
-
-</itemize>
-
-<sect2>i740
-<p>
-
-<itemize>
-<item>Save and restore more of the mode on server entry.
-
-</itemize>
-
-<sect2>i810
-<p>
-
-<itemize>
-<item>Make sure the DDC-probed parameters are applied before modes are
-selected.
-
-<item>Fix some bad alignment problems when allocating memory from the end of
-AGP space.
-
-<item>Adjust the display width according to the VESA BIOS scanline
-requirements.
-
-<item>Add support for the Intel E7221 server chipset.
-
-<item>Improve display switching support for mobile chipsets using the
-Fn+F? combination keys.
-
-<item>Add DirectColor support for the i830 and later.
-
-<item>Add gamma correction support for the i830 and later.
-
-<item>Add rotation support for the i830 and later.
-
-<item>Improve refresh rate selection for custom modelines.
-
-<item>Add support for the 945G and 945GM.
-
-<item>Support custom video modes in the video BIOS, when available.
-
-<item>Fix some offset, pitch, and overlay scaler size problems with the
-video overlay.  This solves various spontaneous lockups.
-
-<item>Fix text restoration when display switching has been activated.
-
-<item>Add support to check the built-in VESA mode list.
-
-<item>Fix XVideo when operating in one line mode and video is pushed off the
-top of the screen, and fix some XVideo skew problems at certain resolutions.
-
-<item>Sync the accelerator before calling AdjustFrame to avoid lockups.
-
-<item>Fix a lockup when spend and resume when playing video (shutdown the
-overlay on LeaveVT).
-
-<item>Support 1920x1088 for HDTV movies using a new option (LinearAlloc) to add
-more memory for the video overlay.
-
-<item>Add ACPI hotkey switching support.
+<item>Resurrect support for Ti3026 RAMDACs found on the original I128 adapters.
+Note that there are still issues with depth 8 visuals and hardware cursors.
 
 </itemize>
 
@@ -276,15 +219,18 @@ more memory for the video overlay.
 <p>
 
 <itemize>
-<item>Reduce the Mystique's SYSCLK from 197&nbsp;MHz to 166&nbsp;MHz,
-allowing the higher clock to still be used when the "OverclockMem" option
-is activated.  This fixes the instability seen on some Mystique cards,
-and removes the need for the workaround in previous releases.
+<item>Add support for Matrox MGA G200e SE adapters.
 
-<item>Revert the HALlib MGASetDisplayStart interface back to
-HALSetDisplayStart.
+<item>Fix determination of the mode on server entry.
+Also, save and restore it on VC switches.
 
-<item>Make 8+24 mode honour the default visual.
+</itemize>
+
+<sect2>newport
+<p>
+
+<itemize>
+<item>Add support for the DPMS extension.
 
 </itemize>
 
@@ -292,42 +238,25 @@ HALSetDisplayStart.
 <p>
 
 <itemize>
-<item>Some of the panel DPMS support in 4.5.0 only works for TMDS, and
-caused some panel blooming on some LVDS panels, so skip the DPMS panel code
-when the panel is LVDS.
-
-<item>Add DPMS support for GeForce4 and newer laptops.
-
-<item>Fix some console restore code for the NV11.
-
-<item>Workaround for 512MB video cards (can only map 256MB of it).
-
-<item>Fix a graphics acceleration hang that occurred on some NVIDIA GeForce
-6xxx cards.
-
-<item>Fix a potential problem with pixmap cache corruption on GeForce 6xxx
-and 7xxx parts.
-
 <item>Add support for new hardware.
 
 </itemize>
 
-<sect2>siliconmotion
+<sect2>pnozz
 <p>
 
 <itemize>
-<item>Merge in support for SiliconMotion's SM501 controller.
+<item>This accelerated driver supports the Weitek POWER 9100 SBUS adapters
+found in some SPARC laptops.
 
 </itemize>
 
-<sect2>suncg6
+<sect2>sunbw2, suncg14, suncg3, sunleo, suntcx
 <p>
 
 <itemize>
-<item>Add screen-to-screen copy, solid fill, and CPU-to-screen colour
-expansion acceleration.
-
-<item>Map more of a Sun CG6's video memory for use by the pixmap cache.
+<item>These drivers, intended for various SPARC SBUS and UPA adapters, can now
+blank and unblank the screen correctly.
 
 </itemize>
 
@@ -335,21 +264,11 @@ expansion acceleration.
 <p>
 
 <itemize>
-<item>Prevent turning off the FPU on NetBSD.
+<item>Prevent turning off the FPU on OpenBSD.
 
-<item>Fix build problems on NetBSD (global register usage declaration,
-and increase stack usage).
+<item>Fix bug that prevented use of this driver on SunOS and Solaris.
 
 <item>Workaround for VRAM corruption when unblanking FFB1 adapters.
-
-
-</itemize>
-
-<sect2>tdfx
-<p>
-
-<itemize>
-<item>Add DDC2 support.
 
 </itemize>
 
@@ -357,64 +276,22 @@ and increase stack usage).
 <p>
 
 <itemize>
-<item>Do not wait for vertical retrace on PC98 systems.
-
-<item>Fix an offset problem in Xv for the Cyber9397 and later chipsets.
-
-<item>Add XGI (Trident) Volari XP5 support to the trident driver.
-
-</itemize>
-
-<sect2>via
-<p>
-
-<itemize>
-<item>Add a "ConnectedDevice" option to the via driver to force selection
-of output devices.
-
-</itemize>
-
-<sect2>vmware
-<p>
-
-<itemize>
-<item>Implement a workaround in the generic int10 module to allow unaligned
-I/O access specific to VMWare's second generation emulated adapter.
-
-</itemize>
-
-<sect2>xgi
-<p>
-
-<itemize>
-<item>A new driver for the Volari V3XT, V5, V8, Z7 chipsets.
+<item>Resave the mode on server entry when switching back to the server's
+virtual console.
 
 </itemize>
 
 <sect1>Input Driver Enhancements
 
 <p>
-<sect2>keyboard
-<p>
-
-<itemize>
-<item>Ignore <tt>KEY_UNUSED</tt> scancodes.
-
-</itemize>
-
 <sect2>mouse
 <p>
 
 <itemize>
-<item>Fix auto-detection of Sun mice on Linux/SPARC.
-
-</itemize>
-
-<sect2>magictouch
-<p>
-
-<itemize>
-<item>Port of the magictouch driver to XFree86 4.x.
+<item>Do not disable 3-button mouse emulation even when the mouse is found to
+actually have a third button.
+This helps laptops, and the like, running systems that combine a touchpad and
+an external mouse into one device.
 
 </itemize>
 
@@ -422,138 +299,40 @@ I/O access specific to VMWare's second generation emulated adapter.
 <p>
 
 <itemize>
-<item>Replace the macintosh/fr map with the "fr_new" map, release 4.
+<item>Add an XKB geometry for Dell Inspiron 8000 notebook keyboard.
 
-<item>Fix a bug in XKB group adjustment.
+<item>Add an XKB geometry for Enermax Aurora keyboards.
 
-<item>Fix off-by-one errors in XKBMalloc.c.
+<item>Add XKB keycodes for MacIntosh USB keyboards.
 
-<item>Shrink tables instead of only growing them.
+<item>Add XKB definitions for X860x0 keyboards.
 
-<item>Fix various vmodmap vs modmap cut and paste bugs.
+<item>Update Macintosh french keymap.
 
-<item>Improve synthesized core X events for reporting XKB changes to
-XKB-unaware clients.
-
-<item>Fix a setxkbmap segfault.
-
-<item>Add Eszett (ssharp) to the us_intl map.
-
-<item>Add dvorak_intl map.
-
-<item>Add a Khmer layout.
-
-<item>Add multimedia keysyms for the Inspiron 6000 laptop to the "inspiron"
-set.
+<item>Allow signed coordinates in XKB shape definitions.
 
 </itemize>
-
 
 <sect1>X Server and Extension Updates
 
 <p>
 
-<itemize>
-<item>Updates to the handling of the X server RGB database:
-
-  <itemize>
-  <item>Ignore white space, dash, and underscore characters, as well as
-  case when matching colour names, and remove the unnecessary duplicates
-  in rgb.txt.
-
-  <item>Allow a copy of the RGB database to be included into the X servers
-  as a fallback for when the rgb.txt file cannot be found.
-
-  <item>Remove the (unused) support for DBM-compiled RGB database files.
-
-  </itemize>
-
-<item>Make the AMD64/x86_64 platform tests consistent throughout.
-
-<item>Rework the way that extension support is built into the servers to
-allow for servers with different sets of extensions in the same build.  This
-includes minimising the number of pervasive extensions, and adding DIX helpers
-for extensions such as Xinerama and XCSECURITY.
-
-<item>Modify the X server handling of SIGINT to provide a faster exit path
-than SIGTERM, while ensuring that all hardware state gets restored.  This
-change is used by xinit as a cleaner alternative to using SIGKILL for a
-slowly exiting server.
-
-</itemize>
-
 <sect2>Loader
 <p>
 
 <itemize>
-<item>Add support for relocation type 10 for Alpha to the ELF loader.
+<item>Fixed support for <tt>R_ALPHA_GPRELHIGH</tt> relocations.
 
-<item>Fix issues with Linux/SPARC 2.6 kernels.
+<item>Added support for <tt>R_ALPHA_BRSGP</tt> relocations.
 
-<item>Add loader infrastructure to implement inter-module version checks.
+<item>Fixed handling of archives on non-Linux SPARC.
 
-<item>Use mprotect on NetBSD.
+<item>Fixed support for <tt>R_SPARC_LO10</tt> and <tt>R_SPARC_OLO10</tt>
+relocations.
 
-<item>Fix support for NetBSD/arm.
+<item>Added support for most ELF SPARC relocation types.
 
-<item>Add support for <tt>R_SPARC_OLO10</tt> relocations.
-
-<item>Make error messages for unsupported relocations more useful.
-
-<item>Improve the loader server's emulation of shmctl() calls.
-
-<item>Fix some problems with the a.out header macros used by the loader,
-which was causing incorrect header interpretation for some a.out object
-types.
-
-<item>Major loader enhancements, including:
-
-  <itemize>
-  <item>Per-module export symbol lists.
-
-  <item>Improved symbol hash.
-
-  <item>A mechanism for specifying the scope of symbols.
-
-  <item>Keep track of relocations, and undo them when they become unresolved
-  on module unload, and recalculate them when they change on module load.
-
-  <item>Check relocations on each module load/unload, ensuring that function
-  references that are unresolved at any time are always mapped to the
-  catch-all function, preventing calls into nowhere.
-
-  <item>Efficient handling of invariant relocations.
-
-  <item>Cleanup/update the memleak stack trace code, and print a stack trace
-  when an unresolved function is called or when XFree86 aborts.
-
-  <item>Update the catch-all function to identify the unresolved function that
-  was called.
-
-  <item>Read the XFree86 executable's symbol table in order to get the most
-  useful stack traces, and use dladdr() where available for identifying shared
-  library references.
-
-  <item>Cleanup and unify debug messages for the loader components.
-
-  <item>Use module-instance-specific referenced and required symbol lists.
-
-  <item>Update drivers to make use of some of the new loader functionality,
-  including the instance-specific ref/req lists, and some unloading of
-  modules when they are no longer needed.
-
-  <item>Don't build the coff loader on platforms that it doesn't support.
-
-  <item>Use stronger typing of the module-visible instance-specific module
-  descriptor.
-
-  <item>No longer disable xf86UnloadSubModule() since the loader now handles
-  unloads and reloads cleanly.
-
-  <item>Do not defer unloading drivers when using autoconfig, since that is
-  not necessary with the loader updates.
-
-  </itemize>
+<item>Added an emulation of rand(3) calls.
 
 </itemize>
 
@@ -561,82 +340,42 @@ types.
 <p>
 
 <itemize>
-<item>Modify the handling of preferred EDID modes to allow user-specified
-modes that are larger than the preferred mode.
-
-<item>Refine VGA routing emulation through Sun's Simba P2P bridges.
-
-<item>Allow a static server's -configure to generate an XF86Config for the
-loader server.
-
-<item>Fix a bug relating to the forwarding of 64-bit memory addresses by
-PCI-to-PCI bridges on 32-bit systems.
-
-<item>Fix a bug in the decoding of I/O forwarding by Cardbus bridges.
-
 <item>Update -configure to detect when wscons support should be used for the
-keyboard on NetBSD.
+keyboard on OpenBSD.
 
-<item>Fix an endianness bug in the xf4bpp module.
+<item>Added preliminary support for PCI domains on OpenBSD/sparc64.  This
+currently requires a kernel change.
 
-<item>Fix some of the endianness bugs in the vbe module.
+<item>On the *BSD's, added support for absolute mouse position events and
+horizontal scroll wheels.
 
-<item>Remove obsolete VBE functions that have not been compiled-in for some
-time.
+<item>Fixed a bug that caused an entire batch of mouse events to be rejected
+when one of an unknown type was encountered.
 
-<item>Fix VBE's reporting of video memory size.
+<item>Don't error out on unknown wskbd types on the *BSD's.
 
-<item>Re-implement Alpha kludge in x86emu's ops.c to be more portable.
+<item>Fixed memory leaks in option processing.
 
-<item>Intercept "raw" requests for PCI configuration space from video
-BIOSes on all architectures.
+<item>Fixed area granularity handling in the framebuffer manager.
 
-<item>Handle unaligned I/O requests more gracefully and be more tolerant
-of spurious I/O errors in the int10 module.
+<item>Reworked the sizing of PCI resources.  More specifically, reduced the X
+server's reliance on the OS to provide such information.
 
-<item>Make sparse I/O masks more portable throughout the server.
+<item>Added support for SBUS and UPA adapters on NetBSD and OpenBSD.
 
-<item>Fix a long-standing off-by-one bug in the setting of RGB offsets
-when the driver supplies RGB masks.
+<item>Added support for Solaris/amd64.
 
-<item>Make I/O error handling more reliable on SPARC.
+<item>Added support for UltraSPARC IV systems, including support for PCI
+Express.
 
-<item>Change the OS-specific module subdirectory name for all SunOS variants
-from "solaris" to "sunos".
+<item>Added support for DrangonFly, a variant of FreeBSD.
 
-<item>Port of SBUS drivers to SunOS variants.  This also allows for multihead
-using a mix of SBUS and PCI devices.
+<item>Added support for x86_64 architectures on the *BSD's.
 
-<item>Fix text mode restore on x86/Solaris 8 and later.
+<item>Fixed page size determination in various server-related utilities.
 
-<item>Change autoconfiguration to include PCI and SBUS BusIDs in generated
-device sections.  This fixes some problems when fbdev is active.
-
-<item>Prevent the sharing of a PCI entity by more than one driver.
-
-<item>Insulate various common layer functions against out-of-bounds entity
-indices.
-
-<item>Fix XAA's support for <tt>TRIPLE_BITS_24BPP</tt> on big-endian systems.
-
-<item>Fix unaligned access in XAA's handling of 24bpp.
-
-<item>The xf24_32bpp module is no longer used by any of our drivers, so don't
-include it in static builds.
-
-<item>The xf8_32wid module is only used by the sunffb driver, so don't include
-it in non-SPARC static builds.
-
-<item>Fix generic int10 memory accesses on little-endian systems.
-
-<item>Fix a SEGV that can occur under certain builds of glibc 2.3.4 and
-up, when linux/int10 attempts to determine kernel support for the vm86()
-system call.
-
-<item>Add an xf86DeallocateGARTMemory() function.
-
-<item>Make autoconfig stop at the first successful probe on each retry,
-minimising unnecessary probes.
+<item>Made the mmapr and mmapw utilities understand wscons mapping modes on
+the *BSD's.
 
 </itemize>
 
@@ -644,25 +383,8 @@ minimising unnecessary probes.
 <p>
 
 <itemize>
-<item>Allow build-time selection of which font renderers get built in to
-the TinyX servers.
-
-<item>Fix a problem where VT switching back to TinyX servers was failing
-due to blocking on keyboard read.
-
-<item>Fix a TinyX build issue under <tt>!XserverStaticFontLib</tt>.
-
-<item>Move Xserver/*/tiny directories under Xserver/hw/tinyx.
-
-<item>TinyX build fixes.
-
-</itemize>
-
-<sect2>Xnest
-<p>
-
-<itemize>
-<item>Add a "-noinput" option that allows Xnest to be run in a view-only mode.
+<item>Added an option to the TinyX servers to prevent them from probing
+serial ports on Linux.
 
 </itemize>
 
@@ -670,8 +392,25 @@ due to blocking on keyboard read.
 <p>
 
 <itemize>
-<item>Fix incorrect bitsPerPixel for depth 12 in pixmap formats advertised by
-the Xsun24 server.
+<item>Changes to port the various Xsun servers to NetBSD/sparc have been merged
+in.
+
+</itemize>
+
+<sect2>XDarwin
+<p>
+
+<itemize>
+<item>This X server has been heavily upgraded by integrating a wide selection
+of changes from its now defunct X.Org implementation.
+
+</itemize>
+
+<sect2>Xvfb
+<p>
+
+<itemize>
+<item>Fixed segfaults in Xvfb's command line parsing.
 
 </itemize>
 
@@ -679,57 +418,21 @@ the Xsun24 server.
 <p>
 
 <itemize>
-<item>Fix a bug that occurs when using cfb to tile 32-bit rectangles on SPARC.
+<item>Fix a number of bugs in cfb24, even though it is no longer used by any
+driver provided in the distribution.
 
-<item>cfb24 is no longer needed.  Keep the loadable module, but no longer
-statically link it into servers.
-
-</itemize>
-
-<sect2>shadow
-<p>
-
-<itemize>
-<item>Rewrite shadowUpdateRotatePacked() to reduce cache misses.
+<item>Fix stipple handling on sparc64.
 
 </itemize>
 
-<sect2>Xinerama
+<sect2>fb
 <p>
 
 <itemize>
-<item>Cause the server to FatalError() when Xinerama attempts to create
-a screen whose root depth has no visuals, causing Xlib to segfault.
+<item>A problem that prevented the use of the GLX extension in some cases has
+been corrected.
 
-<item>Allow Xinerama to initialise even when there is only one screen
-to combine.
-
-<item>Make loadable modules and MI independent of Xinerama:
-
-  <itemize>
-  <item>Add a DIX helper to determine whether Xinerama is active and use it
-  instead of #ifdef's code in all loadable modules.
-
-  <item>Re-implement, as a screen wrapper, Xinerama's PaintWindow*() hacks.
-
-  <item>Move down to DIX Xinerama's only MI hook.
-
-  </itemize>
-
-</itemize>
-
-<sect2>XFree86-DGA
-<p>
-
-<itemize>
-<item>Do not call a screen's PointerMoved entry if a DGA mode is active on that
-screen.
-
-<item>Fix client-side framebuffer mapping on NetBSD.
-
-<item>Make sure that DGAShutdown() is always called before HW state is restored
-on exit and reset, and make sure that it is not called after the HW state has
-been restored.
+<item>Fix fbCompose() for ABGR framebuffers.
 
 </itemize>
 
@@ -737,414 +440,19 @@ been restored.
 <p>
 
 <itemize>
-<item>Fix unaligned access in RenderCompositeGlyphs request.
-
-</itemize>
-
-<sect2>RandR
-<p>
-
-<itemize>
-<item>Use xf86SetViewport as well as SetCursorPosition during RandR
-rotation, as xf86SetViewport will call AdjustFrame to reposition the
-window if necessary and avoid the cursor ending up off screen.
-
-<item>Add a new function xf86GetRotation() to allow third party modules
-to obtain the current rotation.
-
-<item>Fix up error case when rotation fails and the framebuffer needs to
-be re-enabled.
+<item>Endianness fix for RenderSetPictureClipRectangles request.
 
 </itemize>
 
 <sect1>Library, Client and Utility Updates
-
 <p>
 
-<sect2>Xlib
-<p>
-<itemize>
-<item>Fix typos in XErrorDB that were preventing descriptive messages
-for some extension errors.
-
-</itemize>
-
-<sect2>Xt
-<p>
-
-<itemize>
-<item>Fix an uninitialised pointer dereference in Xt/Initialize.c on WIN32
-platforms that happens if <tt>$HOME</tt> is set in the environment.
-
-<item>Add support to Xt's string to float converter to read resources in
-fractional notation.
-
-<item>Add some XChar2b string manipulation functions to Xt.
-
-<item>Bump the minor revision of the Xt shared library to reflect
-the fact that some new interfaces have been added.
-
-</itemize>
-
-<sect2>Xaw
-<p>
-
-<itemize>
-
-<item>Extend the tool tip resource for Xaw's simpleWidgetClass to allow
-a function to be called
-
-<item>Fix problems with Xaw's label widget when using XChar2b strings.
-
-<item>Add a new connectionType property to Xaw's tree widget.
-
-<item>Make Xaw Form widgets inherit dimensions from their parent at widget
-initialisation time.
-
-<item>Add mouse wheel support for Scrollbars in Xaw's Viewport widget.
-
-<item>Fix a performance issue with Xaw's Tree widget caused by useless
-relayouts.
-
-<item>Fix i18n for Xaw's tooltip widget.
-
-<item>Add two new functions that can be used to scroll the content of an
-Xaw viewport from outside the viewportWidgetClass.
-
-<item>Fix the cursor in Xaw textWidget when the input field has focus.
-
-<item>Bump the minor revision of the Xaw shared library to reflect
-the fact that some new interfaces have been added.
-
-<item>Add user_data field to Xaw's simpleWidgetClass.
-
-<item>Fix Xaw viewport scrollbar flickering problem.
-
-</itemize>
-
-<sect2>pswrap
-<p>
-
-<itemize>
-<item>Fix a problem where pswrap generates a bogus .c file when the -h option
-is not used.
-
-<item>Document pswrap's -f option.
-
-</itemize>
-
-<sect2>mmapr, mmapw
-<p>
-
-<itemize>
-<item>Extend mmapr and mmapw on Linux to allow specification of which
-PCI address space (I/O or memory) to mmap.
-
-<item>Add options to mmapr and mmapw to allow unaligned accesses for testing
-purposes
-
-</itemize>
-
-<sect2>cpconfig
-<p>
-
-<itemize>
-<item>Use the same default XF86Config search path as the XFree86 server.
-
-</itemize>
-
-<sect2>xterm
-<p>
-These changes correspond to xterm patches #200 through #212.
-
-<itemize>
-<item>Improved behavior
-
-  <itemize>
-  <item>add a new selection feature:  regular expressions, and new resources
-       which specify what happens on multiple mouse clicks:  on2Clicks,
-       on3Clicks, on4Clicks and on5Clicks.
-
-  <item>improve initialization of toolbar so that individual pulldown menus
-       are initialized on demand, as they are in the scenario where they
-       are invoked as popup menus.
-
-  <item>improve error-reporting when chown/chmod of the pseudo-terminal
-       fails, e.g., if a copy of xterm which was designed to work with
-       old-style pseudo-terminals is not installed setuid or setgid.
-
-  <item>add support for interpreting the underline attribute as an italic
-       font in Xft mode.
-
-  <item>modify configure script --disable-imake to use the script's
-       definitions anyway if it cannot detect imake.
-
-  <item>improve resource files to show how the menubar and popup menus can
-       be colored.
-
-  <item>modify initialization of allowSendEvents and allowWindowOps to
-       prevent modification with the editres protocol.
-
-  <item>improved some of the built-in line-drawing glyphs.
-
-  <item>set the _NET_WM_PID property.
-
-  <item>update table for mk_width() from UnicodeData 4.1.0.
-
-  <item>implement the remaining pieces to make xterm allocate cells for
-       wide-characters when the "UTF-8" menu entry is selected.  Also, load
-       the UTF-8 font when that menu entry is selected, or the escape
-       sequence for UTF-8 mode is received :
-
-  <item>improve behavior when switching to UTF-8 mode after startup so
-       xterm will check if the current fonts are already wide
-       (ISO-10646-1).  If they are not, xterm will use the utf8Fonts
-       subresource to load appropriate fonts.
-
-  <item>modify initialization for wide-bold fontname, to search for one if
-       none is given.
-
-  <item>modify interaction between +u8 and locale resource to allow the
-       command-line option to override the resource.
-
-  <item>modify initialization to decide whether to default to built-in
-       wcwidth() versus system's version based on the starting locale and
-       whether the system's version is poor quality.
-
-  <item>make paste of UTF-8 faster for Western character sets by checking
-       range of incoming data.
-
-  <item>improve initialization due to utf8 resource by loading the
-       utf8Fonts resource in the case where locale resource is false.  Also
-       in this case, do not disable switching UTF-8 mode on/off.
-
-  </itemize>
-
-<item>Modified behavior
-
-  <itemize>
-  <item>modify parsing of OSC (and SOS, etc), strings so their contents are
-       not interpreted as UTF-8.  This allows non-ASCII title strings to be
-       set, provided that the window manager complies.
-
-  <item>modify parsing of control sequence CSI T to allow scroll-down to be
-       sent while mouse tracking is enabled.
-
-  <item>modify command-processing to accept an optional parameter that
-       tells xterm which shell program to use.
-
-  <item>change xterm manpage to show the actual color resource names
-       XtDefaultForeground and XtDefaultBackground rather than black and
-       white.
-
-  <item>modify xterm-new terminfo entry to use capabilities for shifted
-       scroll forward/reverse as shifted cursor up/down.
-
-  <item>remove menu entry for "Enable Curses Emulation" (to make room for
-       "Select To Clipboard").
-
-  <item>modify resource files to make the font-resources a little more
-       specific, e.g., changing "*VT100*" to "*VT100.", to make the
-       distinction between VT100.font and VT100.utf8Fonts.font sharper, in
-       case a packager modifies one of those.
-
-  <item>allow cursor to have the same color as foreground (text), since it
-       is rendered as reverse.
-
-  <item>modify Imakefile to use setgid mode for installing with Linux,
-       OpenBSD and FreeBSD.
-
-  </itemize>
-
-<item>New resource settings
-
-  <itemize>
-
-  <item>add utf8Title resource and menu entry, allowing the user to control
-       whether title strings are interpreted as ISO-8859-1 or UTF-8
-       encoding.
-
-  <item>add scrollBarBorder resource.
-
-  <item>add resource selectToClipboard, action set-select and a menu entry
-       to allow users to switch between PRIMARY and CLIPBOARD for
-       select/paste.
-
-  <item>add resource mkWidth and command-line option -mk_width to control
-       whether xterm uses the built-in version of wcwidth().
-
-  <item>add resource settings for minimum/maximum input buffer size, and
-       call to sched_yield to improve performance with newer Linux kernels
-
-  <item>add simpler resource keyboardType which, when set, overrides the
-       individual keyboard-type resources and eliminates the possibility
-       of conflict between them.
-
-  </itemize>
-
-<item>New configure script options
-
-  <itemize>
-
-  <item>the --with-utmp-setgid allows the packager to configure xterm to
-       use setgid permissions for utmp.
-
-  <item>add configure option --enable-readline-mouse, which turns on the
-       experimental OPT_READLINE code.
-
-  <item>add --enable-narrowproto configure option to accommodate X.org
-       "modular" build.
-
-  <item>add configure --with-app-defaults option to allow app-defaults
-       directory for install-rules to be customized.
-
-  <item>add configure option --with-tty-group to help work around
-       deficiencies in packager's build environment.
-
-  <item>add configure --with-setuid and --with-reference options to allow
-       packagers more flexibility in customizing install permissions.
-
-  <item>add configure --with-symlink option to make it simpler to install
-       successive versions of xterm renamed using the --program-prefix,
-       etc., options with a symbolic link pointing to the most recent.
-
-  <item>add a configure check for the actual path of luit, to work around
-       broken imake configurations.
-
-  <item>add a configure check for pkg-config.
-
-  <item>modify install rule for uxterm to account for the --program-prefix,
-       etc., options by invoking the transformed name of xterm rather than
-       simply "xterm".
-
-  <item>modify configure --with-app-defaults option to allow
-       --without-app-defaults.
-
-  <item>add configure option --disable-leaks.
-
-  <item>add experimental option to allow applications to get or set the
-       selection data as a BASE64 string.
-
-  </itemize>
-
-<item>Other new features
-
-  <itemize>
-
-  <item>add select-cursor-extend() action.
-
-  <item>add environment variables $XTERM_SHELL and $XTERM_VERSION.
-
-  <item>add menu entry (alt-esc) and corresponding action (alt-sends-esc)
-       to toggle the eightBitInput resource setting.
-
-  <item>add command-line options (-tb, +tb) and resource toolBar to allow
-       menu/toolbar to disabled or enabled at startup.
-
-  <item>add extended shift- and control-modifier cursor keys to
-       "xterm+pcfkeys" terminfo entry to correspond to ncurses 20050430
-       patch.
-
-  <item>enable lastlogx support for NetBSD (was added, but not enabled in
-       patch #186).
-
-  </itemize>
-
-<item>Bug-fixes (see http://invisible-island.net/xterm/xterm.log.html for a
-more complete list):
-
-  <itemize>
-
-  <item>correct typo in configure script's --enable-dec-locator option
-
-  <item>correct a typo in CF_FUNC_TGETENT introduced in patch #198 fix
-
-  <item>fix an off-by-one error parsing -S/nn option.
-
-  <item>add a check in Bell to ensure that the VT100 widget is realized,
-       since it may be called by xtermLoadFont given an incorrect font
-       resource.
-
-  <item>correct treatment of iconBorderWidth for resizing an active-icon,
-       and its description in manpage.
-
-  <item>add a limit check for scrolling margins in a one-line screen,
-       overlooked in fixes for patch #198.
-
-  <item>correct computation of width for wide characters with the invisible
-       attribute.
-
-  <item>improve fix from patch #198 for Cleanup() by ensuring it is
-       not called from the SIGCHLD handler.
-
-  <item>fixes to make -geom option work properly with the toolbar
-       configuration.
-
-  <item>fix logic in find_utmp, which did not reset result in getutid(),
-       causing an infinite loop in some conditions.
-
-  <item>fix a rare case where text would be written with the wrong colors
-       because output of scrolled text would reset the colors and the new
-       text would be written with the same colors.
-
-  <item>implement logic in termcap query to process multiple parameters as
-       documented in ctlseqs.ms
-
-  <item>fix buffer size used for termcap query, which was not long enough
-       for the terminfo "colors" name.
-
-  <item>initialize the saved-cursor data so a restore-cursor operation
-       without a preceding save-cursor operation will not modify the
-       foreground color.
-
-  <item>modify Imakefile to work around old problems in imake configuration
-       to allow test-builds using xmkmf on Linux.  (This was not noticed
-       since several releases had broken definitions relating to Xft which
-       were harder to work around).
-
-  <item>remove default translations for dabbrev-expand() due to conflicts
-       with existing keyboard arrangements.
-
-  <item>set icon border width explicitly to work around fvwm problem with
-       active icon resizing.
-
-  <item>eliminate a retry for a better-matching bold font, to work around
-       recent font server changes.
-
-  <item>modify prefix/suffix transformation in makefile to make uxterm
-       install properly on Cygwin.
-
-  <item>correct termcap "me" (mode-end) string so it does not modify the
-       alternate character set.
-
-  <item>modify computation of rows/columns on resize to avoid extending
-       beyond the given limits, e.g., if resizing in response to a
-       "maximize" in Gnome or KDE which do not use the window manager
-       hints for this case.
-
-  <item>make a special case of resizing work like vt100:  a hard reset also
-       resets the 132/80 mode.  The code to support this was present since
-       X11R5, but not used because the corresponding initial state of the
-       -132 option was not saved.
-
-  </itemize>
-
-</itemize>
-
-<sect2>GLX/DRI
-<p>
-
-<itemize>
-<item>Mesa build fixes for NetBSD/sparc64.
-
-<item>Solaris/SPARC 64-bit libGL fixes.
-
-</itemize>
-
-<sect2>dbedizzy
+<sect2>restest
 <p>
 <itemize>
-<item>Resurrect this DBE extension test utility.
+<item>This XRes extension client, originally written by Mark Vojkovich, has
+been integrated, after rewriting it to prevent deadlocks that could occur when
+displaying its results in an X session.
 
 </itemize>
 
@@ -1152,32 +460,9 @@ more complete list):
 <p>
 
 <itemize>
-<item>Use the Xaw tooltip to display the date in xclock.
-
-</itemize>
-
-<sect2>twm
-<p>
-
-<itemize>
-<item>Add a new function to allow the window text title to be changed
-interactively.
-
-<item>Allow environment variables to be used in menu names.
-
-<item>Add a new "f.totalzoom" function that zooms windows to cover the whole
-area of a screen with no window decoration visible.
-
-<item>Don't highlight "f.nop" menu items in menus.
-
-</itemize>
-
-<sect2>xbiff
-<p>
-
-<itemize>
-<item>Add a tooltip to xbiff that shows the number of messages in a mail
-folder.
+<item>Make an analog xclock, when using Render, update the minute hand at most
+every minute instead of every update interval.
+This makes it consistent with non-Render mode.
 
 </itemize>
 
@@ -1185,81 +470,41 @@ folder.
 <p>
 
 <itemize>
-<item>Fix a potential infinite loop when the "willing" command fails to produce
-any output.
+<item>Fixed a number of memory leaks.
+
+<item>Fixed bug that prevented an IPv6-aware xdm from accepting chooser
+connections.
 
 </itemize>
 
-<sect2>xfd
+<sect2>xwd
 <p>
 
 <itemize>
-<item>Fix a bug that prevents properly paging through xft fonts beyond
-0xFFFF.
+<item>This utility has been extended to allow selection of a rectangular region
+to dump.
 
 </itemize>
 
-<sect2>xfs
+<sect2>xterm
 <p>
 
 <itemize>
-<item>Modify the font server transport messages to go through xfs's
-logging mechanism.
+<item>Xterm patches upto and including #215 have been integrated.
 
-<item>Fix a bug introduced when syslog support was added that prevents
-exit on fatal errors.
-
-</itemize>
-
-<sect2>xinit
-<p>
-
-<itemize>
-<item>Send SIGINT to slowing exiting X servers instead of SIGKILL.  This
-works together with the new SIGINT handling in the X servers, and results
-in a clean exit.  Sending SIGKILL only results in the hardware state not
-being restored, often requiring a reboot to recover from.
+<item>Change xterm, on various platforms, to not require that the OS define a
+utmp group.
 
 </itemize>
-
-<sect2>xmessage
-<p>
-
-<itemize>
-<item>Fix a bug in the handling of escapes in button labels.
-
-</itemize>
-
-<sect2>xvidtune
-<p>
-
-<itemize>
-<item>Fix the -timeout &lt;n&gt; option.
-
-</itemize>
-
 
 <sect1>I18n and Fonts
 <p>
 <itemize>
-<item>Update mkfontscale's handling of font weights.
+<item>Eliminated a number of issues related to the use of external fontconfig
+and freetype2 libraries.
 
-<item>Replace lib/font/fontfile/decompress.c with a version derived from
-BSD's src/usr.bin/compress/zopen.c.
-
-<item>Modify the fontconfig library to use getpwnam/getpwuid to find the
-home directory when <tt>$HOME</tt> is not set.
-
-<item>Fix a bug in fontconfig's pattern matching that can cause FcFontMatch()
-to fail when it shouldn't.
-
-<item>Fix a double-free problem in fontconfig.
-
-<item>Rework printf format specifiers used in XLFD code to make them more
-portable and avoid infinite loops in some glibc versions.
-
-<item>Update the Serbian locale naming to reflect the country's name change
-from "Yugoslavia" to "Serbia and Montenegro".
+<item>Updated the Serbian locale naming to reflect the country's name change
+from "Yugoslavia" to "Serbia and MonteNegro".
 
 </itemize>
 
@@ -1267,14 +512,9 @@ from "Yugoslavia" to "Serbia and Montenegro".
 <p>
 
 <itemize>
-<item>Fix some cases in the Darwin build where a  variable is declared
-static and later as extern.
+<item>Added support for PAM on Solaris and Darwin.
 
-<item>Avoid /tmp files in NetBSD.cf's man page creation.
-
-<item>Install man page source as well as formatted man pages on NetBSD.
-
-<item>Fix a problem where builds would continue past errors on NetBSD.
+<item>Added support for OpenPAM on FreeBSD and NetBSD.
 
 </itemize>
 
@@ -1332,6 +572,8 @@ XFree86 &relvers; includes the following video drivers:
 		name="nsc(4)" url="nsc.4.html"></tabrow>
    <tabrow><tt>nv</tt><colsep>NVIDIA<colsep><htmlurl
 		name="nv(4)" url="nv.4.html"></tabrow>
+   <tabrow><tt>pnozz</tt> (+)<colsep>Weitek P9100<colsep><htmlurl
+		name="pnozz(4)" url="pnozz.4.html"></tabrow>
    <tabrow><tt>rendition</tt><colsep>Rendition<colsep><htmlurl
 		name="README.rendition" url="rendition.html">, <htmlurl
 		name="rendition(4)" url="rendition.4.html"></tabrow>
@@ -1377,7 +619,7 @@ Drivers marked with (*) are present in a preliminary form in this release,
 but are not complete and/or stable yet.
 <p>
 
-Drivers marked with (+) are for Linux/SPARC only.
+Drivers marked with (+) are for SPARC only.
 <p>
 
 Drivers marked with (-) are for Linux/mips only.
@@ -1592,9 +834,9 @@ mode when none are provided explicitly in the configuration file.
 
 <sect2>Changed behavior caused by DDC.
 <p>
-Several drivers uses DDC information to
+Several drivers use DDC information to
 set the screen size and pitch.  This can be overridden by explicitly
-resetting it to the and non-DDC default value 75 with the <tt>-dpi
+resetting it to the non-DDC default value 75 with the <tt>-dpi
 75</tt> command line option for the X server, or by specifying appropriate
 screen dimensions with the "DisplaySize" keyword in the "Monitor" section
 of the config file.
@@ -1930,26 +1172,16 @@ or the 'cvs log' information for individual source files.
 <descrip>
 <tag>New Features, Enhancements and Updates:</tag>
   <descrip>
-  <tag>Security Updates:</tag> Marc La France.
-
-  <tag>ASPEED Technologies driver:</tag>Y. C. Chen, ASPEED Technologies.
-
-  <tag>Xabre Graphics driver:</tag>Jong Lin, XGI.
-
-  <tag>X server extension rework:</tag> Marc La France.
-
-  <tag>Loader Enhancements:</tag>David H. Dawes, X-Oz Technologies.
-
-  <tag>Intel i945G/i945GM support and other driver enhancements:</tag>Alan
-  Hourihane, Tungsten Graphics.
+  <tag>Security Updates:</tag> Josh Bressens, Chris Evans, Matthieu Herrb,
+  Marc La France, Sean Larsson, Victor Stinner, iDefense.
 
   <tag>NVIDIA driver updates and new hardware support:</tag>Mark Vojkovich
 
-  <tag>Improved SunOS/SPARC and SBUS support:</tag> Marc La France.
+  <tag>Improved SPARC support:</tag> Marc La France.
 
   <tag>Xterm enhancements and updates:</tag>Thomas Dickey.
 
-  <tag>Xaw enhancements:</tag>Alexander Pohoyda.
+  <tag>DragonFly support:</tag>David H. Dawes.
   </descrip>
 
 <tag>Integration:</tag>
@@ -1959,69 +1191,53 @@ or the 'cvs log' information for individual source files.
 <tag>Release Engineering:</tag>David H. Dawes.
 
 <tag>Patches and other submissions (in alphabetical order):</tag>
-ASPEED Technologies,
 Andrew Aitchison,
-James Ascroft-Leigh,
-&Eacute;tienne Bersac,
+Marc Balmer,
+Etienne Bersac,
+Martin Bochnig,
 Peter Breitenlohner,
-Terry Chang,
-Y. C. Chen,
-Jeff Chua,
-James Cloos,
+Josh Bressers,
+James Chacon,
+Yves de Champlain,
 Alan Coopersmith,
-Miguel Gonz&aacute;lez Cuadrado,
 David Dawes,
+Eike Dehling,
 Thomas Dickey,
-Stefan Dirsch,
-Bernd Ernesti,
-Jordan Frank,
+Matthias Drochner,
+Jay Estabrook,
+Chris Evans,
 Will L G,
-Frank Giessler,
-Thorsten Glaser,
-Damian Janusz Gruszka,
-Lukas Hejtmanek,
-Evil Mr Henry,
-Jens Herden,
-Alan Hourihane,
-Nicolas Joly,
-Bang Jun-Young,
-Alexander Kabaev,
-Satoshi Kimura,
+Andriy Gapon,
+Charles M. Hannum,
+Frank J. R. Hanstick,
+Ben Harris,
+Matthieu Herrb,
+Iain Hibbert,
+Martin Husemann,
+iDefense,
 Milos Komarcevic,
 Marc La France,
-Dejan Lesjak,
-Khong Jye Liew,
-Jong Lin,
+Sean Larrson,
 Michael Lorenz,
-Michael Macallan,
-Michal Maruska,
+Jie Luo,
+Loic Mahe,
+Minoura Makoto,
+Martin Mares,
 Luke Mewburn,
-Timothy Musson,
-Newsh,
-Takaaki Nomura,
-Ivan Pascal,
-Bob Peterson,
-Pierre,
-Aaron Plattner,
+NetBSD,
+Dmitry Pervushin,
 Alexander Pohoyda,
-Jeremy C. Reed,
-Conrad Schuler,
-Bruno Schwander,
-Olaf Seibert,
-Aaron Solochek,
-Helmar Spangenberg,
-Ken Stailey,
-Tobias Stoeckmann,
-Tungsten Graphics,
-James Richard Tyrer,
-Staffan Ulfberg,
-Denis Vlasenko,
+Ty Sarna,
+SciFi,
+Christopher Sekiya,
+Jamey Sharp,
+Victor Stinner,
+Frank van der Linden,
+Shin Takemura,
 Mark Vojkovich,
-Tom Williams,
-Dave Williss,
-X-Oz Technologies,
-XGI,
-Christos Zoulas.
+Nathan J. Williams,
+X.Org,
+Christos Zoulos.
 
 <tag>Webmaster:</tag>Georgina O. Economou
 

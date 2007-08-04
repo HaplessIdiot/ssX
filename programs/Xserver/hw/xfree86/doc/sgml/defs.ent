@@ -1,23 +1,23 @@
-<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.49 2006/04/12 01:39:22 dawes Exp $ -->
+<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.50tsi Exp $ -->
 
 <!-- shared entity definitions for the XFree86 documentation -->
 
 <!-- XFree86 version string -->
-<!ENTITY relvers CDATA "4.6.0">
-<!ENTITY prevrelvers CDATA "4.5.0">
-<!ENTITY fullrelvers CDATA "4.6.0">
-<!ENTITY prevfullrelvers CDATA "4.5.0">
-<!ENTITY nextfullrelvers CDATA "4.7.0">
+<!ENTITY relvers CDATA "4.7.0">
+<!ENTITY prevrelvers CDATA "4.6.0">
+<!ENTITY fullrelvers CDATA "4.7.0">
+<!ENTITY prevfullrelvers CDATA "4.6.0">
+<!ENTITY nextfullrelvers CDATA "4.8.0">
 <!ENTITY nextfullreldate CDATA "not scheduled">
-<!ENTITY nextupdrelvers CDATA "4.6.1">
-<!ENTITY srcvers CDATA "460">
-<!ENTITY prevsrcvers CDATA "450">
-<!ENTITY fullsrcvers CDATA "460">
-<!ENTITY prevfullsrcvers CDATA "450">
-<!ENTITY whichfullrel CDATA "ninth">
+<!ENTITY nextupdrelvers CDATA "4.7.1">
+<!ENTITY srcvers CDATA "470">
+<!ENTITY prevsrcvers CDATA "460">
+<!ENTITY fullsrcvers CDATA "470">
+<!ENTITY prevfullsrcvers CDATA "460">
+<!ENTITY whichfullrel CDATA "tenth">
 <!ENTITY whichupdaterel CDATA "none">
-<!ENTITY reltag CDATA "xf-4_6_0">
-<!ENTITY relbranchtag CDATA "xf-4_6-branch">
+<!ENTITY reltag CDATA "xf-4_7_0">
+<!ENTITY relbranchtag CDATA "xf-4_7-branch">
 <!ENTITY rcnum CDATA "none">
 
 <!-- Version of the most recent 3.3.x release -->
