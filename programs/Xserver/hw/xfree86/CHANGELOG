@@ -1,4 +1,5 @@
-XFree86 4.6.99.30 (xx August 2007)
+XFree86 4.7.0 (12 August 2007)
+ 167. 4.7.0 release.
 
 XFree86 4.6.99.29 (7 August 2007)
  166. Fix #include's in GLw documentation (Marc Balmer).
@@ -20589,4 +20590,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3903 2007/07/23 14:57:22 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3904 2007/08/07 11:02:56 dawes Exp $

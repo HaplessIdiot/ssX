@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.95 2006/04/24 04:06:05 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.96 2006/05/10 00:25:38 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -31,7 +31,7 @@
 #
 
 #
-# Copyright © 1996-2006 by The XFree86 Project, Inc.
+# Copyright © 1996-2007 by The XFree86 Project, Inc.
 # All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining
@@ -78,7 +78,7 @@
 #
 
 #
-# This script should be used to install XFree86 4.5.99.903
+# This script should be used to install XFree86 4.7.0
 #
 # Parts of this script are based on the old preinst.sh and postinst.sh
 # scripts.
@@ -118,7 +118,7 @@ if [ $SNAPSHOT = y ]; then
 	PATCHLEVEL=0
 	FULLVERSION=$VERSION
 else
-	FULLPREFIX=4.6
+	FULLPREFIX=4.7
 	PATCHLEVEL=0
 	VERSION=$FULLPREFIX.$PATCHLEVEL
 	FULLVERSION=$FULLPREFIX.0
