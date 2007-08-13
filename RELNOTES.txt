@@ -450,7 +450,7 @@ either have one or more video and input drivers linked in statically, or more
 usually, dynamically, and in that manner load the video drivers, input driv-
 ers, and other modules that are needed.
 
-XFree86 4.7.0 has X server support for most UNIX and UNIX-like operating
+XFree86 4.7.0 has X server support for most UNIX® and UNIX-like operating
 systems on Intel/x86 platforms, plus support for Linux and some BSD OSs on
 Alpha, PowerPC, IA-64, AMD64, SPARC, and Mips platforms, and for Darwin on
 PowerPC.  Support for additional architectures and operating systems is in
@@ -899,4 +899,4 @@ oz.com/).
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.143 tsi Exp $
 
 
-$XFree86: xc/RELNOTES.txt,v 1.8 2007/08/04 02:16:06 tsi Exp $
+$XFree86$
