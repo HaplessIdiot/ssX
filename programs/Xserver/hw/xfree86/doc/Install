@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                               2 February 2005
+                               12 August 2007
 
                                   Abstract
 
@@ -393,7 +393,7 @@ Once that's done, the main part of the installation can be done:
      /sbin/ldconfig -m /usr/X11R6/lib    # For FreeBSD, NetBSD, OpenBSD
      /usr/X11R6/bin/mkfontdir /usr/X11R6/lib/X11/fonts/misc
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.22 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.23 tsi Exp $
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/Install,v 1.39tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/Install,v 1.40tsi Exp $
