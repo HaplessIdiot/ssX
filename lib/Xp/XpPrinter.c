@@ -1,3 +1,4 @@
+/* $XFree86: xc/lib/Xp/XpPrinter.c,v 1.10tsi Exp $ */
 /******************************************************************************
  ******************************************************************************
  **
@@ -33,7 +34,6 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86: xc/lib/Xp/XpPrinter.c,v 1.9 2002/10/16 00:37:32 dawes Exp $ */
 
 #define NEED_REPLIES
 
@@ -88,7 +88,7 @@ XpGetPrinterList (
      */
     if ( printer_name == (char *) NULL )
 	req->printerNameLen = 0;
-    else if ( *printer_name == (char) NULL )
+    else if ( *printer_name == (char) 0 )
 	req->printerNameLen = 0;
     else {
 	printer_name_len    = strlen( printer_name );
@@ -98,7 +98,7 @@ XpGetPrinterList (
 
     if ( locale == (char *) NULL )
 	req->localeLen = 0;
-    else if ( *locale == (char) NULL )
+    else if ( *locale == (char) 0 )
 	req->localeLen = 0;
     else {
 	locale_len     = strlen( locale );

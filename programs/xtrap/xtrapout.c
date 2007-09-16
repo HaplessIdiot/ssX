@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xtrap/xtrapout.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/xtrap/xtrapout.c,v 1.4tsi Exp $ */
 /*
  * @DEC_COPYRIGHT@
  */
@@ -228,7 +228,7 @@ main(int argc, char *argv[])
 
     appW = XtAppInitialize(&app,"XTrap",optionTable,(Cardinal)2L,
         (int *)&argc, (String *)argv, (String *)NULL,(ArgList)&tmp,
-        (Cardinal)NULL);
+        (Cardinal)0);
 
     dpy = XtDisplay(appW);
 #ifdef DEBUG

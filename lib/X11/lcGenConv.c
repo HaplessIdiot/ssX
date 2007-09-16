@@ -34,7 +34,7 @@
  *  2000  
  *  Modifier: Ivan Pascal      The XFree86 Project
  */
-/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.28 2003/05/27 22:26:26 tsi Exp $ */
+/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.29tsi Exp $ */
 
 /*
  * A generic locale loader for all kinds of ISO-2022 based codesets.
@@ -841,6 +841,8 @@ output_one_wc:
     return unconv_num;
 }
 
+#ifdef STDCVT
+
 static int
 stdc_mbstowcs(
     XlcConv conv,
@@ -888,6 +890,8 @@ stdc_mbstowcs(
 
     return unconv_num;
 }
+
+#endif /* STDCVT */
 
 static int
 wcstombs_org(
@@ -1007,6 +1011,8 @@ wcstombs_org(
     return unconv_num;
 }
 
+#ifdef STDCVT
+
 static int
 stdc_wcstombs(
     XlcConv conv,
@@ -1047,6 +1053,8 @@ stdc_wcstombs(
 
     return unconv_num;
 }
+
+#endif /* STDCVT */
 
 static int
 wcstocts(
@@ -1200,6 +1208,8 @@ wcstocts(
     return unconv_num;
 }
 
+#ifdef STDCVT
+
 static int
 stdc_wcstocts(
     XlcConv conv,
@@ -1235,6 +1245,8 @@ ret:
 
     return (unconv_num1 + unconv_num2);
 }
+
+#endif /* STDCVT */
 
 static int
 ctstowcs(
@@ -1523,6 +1535,8 @@ cstowcs(
     return unconv_num;
 }
 
+#ifdef STDCVT
+
 static int
 stdc_ctstowcs(
     XlcConv conv,
@@ -1594,6 +1608,8 @@ ret:
 
     return (unconv_num1 + unconv_num2);
 }
+
+#endif /* STDCVT */
 
 static int
 mbstocts(
@@ -2052,6 +2068,8 @@ wcstostr(
     return unconv_num;
 }
 
+#ifdef STDCVT
+
 static int
 stdc_wcstostr(
     XlcConv conv,
@@ -2087,6 +2105,8 @@ ret:
 
     return (unconv_num1 + unconv_num2);
 }
+
+#endif /* STDCVT */
 
 static int
 wctocs(
@@ -2179,6 +2199,8 @@ end:
     return 0;
 }
 
+#ifdef STDCVT
+
 static int
 stdc_wctocs(
     XlcConv conv,
@@ -2229,6 +2251,8 @@ end:
 
     return 0;
 }
+
+#endif /* STDCVT */
 
 static int
 wcstocs(
@@ -2328,7 +2352,7 @@ stdc_wcstocs(
     return(0);
 }
 
-#endif
+#endif /* STDCVT */
 
 static int
 ctstombs(
@@ -2581,6 +2605,8 @@ strtowcs(
     return unconv_num;
 }
 
+#ifdef STDCVT
+
 static int
 stdc_strtowcs(
     XlcConv conv,
@@ -2616,6 +2642,8 @@ ret:
 
     return (unconv_num1 + unconv_num2);
 }
+
+#endif /* STDCVT */
 
 /* -------------------------------------------------------------------------- */
 /*				Close                                         */

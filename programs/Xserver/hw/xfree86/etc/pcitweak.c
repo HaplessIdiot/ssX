@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/pcitweak.c,v 1.18tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/pcitweak.c,v 1.19tsi Exp $ */
 /*
  * Copyright (c) 1999-2002 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -88,7 +88,7 @@ main(int argc, char *argv[])
 {
     int c;
     PCITAG tag;
-    int bus, device, func;
+    int bus = 0, device = 0, func = 0;
     Bool list = FALSE, rd = FALSE, wr = FALSE;
     Bool byte = FALSE, halfword = FALSE;
     int offset = 0;

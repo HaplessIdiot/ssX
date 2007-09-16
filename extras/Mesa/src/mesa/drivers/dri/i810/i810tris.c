@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810tris.c,v 1.7 2002/10/30 12:51:33 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/i810/i810tris.c,v 1.1.1.2tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -199,10 +199,10 @@ do { 						\
 
 
 static struct {
-   points_func	        points;
-   line_func		line;
-   triangle_func	triangle;
-   quad_func		quad;
+   tnl_points_func	        points;
+   tnl_line_func		line;
+   tnl_triangle_func	triangle;
+   tnl_quad_func		quad;
 } rast_tab[I810_MAX_TRIFUNC];
 
 
@@ -269,7 +269,7 @@ do {							\
 
 #define LOCAL_VARS(n)							\
    i810ContextPtr imesa = I810_CONTEXT(ctx);				\
-   GLuint color[n], spec[n];						\
+   GLuint color[n] = {0, }, spec[n] = {0, };				\
    GLuint coloroffset = (imesa->vertex_size == 4 ? 3 : 4);		\
    GLboolean havespec = (imesa->vertex_size > 4);			\
    (void) color; (void) spec; (void) coloroffset; (void) havespec;

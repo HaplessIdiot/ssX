@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/tinyx/trio/s3.h,v 1.1tsi Exp $ */
 /*
  * Copyright © 1999 Keith Packard
  *
@@ -19,7 +20,6 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/trio/s3.h,v 1.5 2000/09/03 05:11:20 keithp Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1065,7 +1065,7 @@ typedef struct _crtc {
 				    ((crtc)->ge_screen_width_2 << 2))
 
 #define crtc_set_ge_screen_width(crtc,v) { \
-    (crtc)->ge_screen_width_0_1 = (v); \
+    (crtc)->ge_screen_width_0_1 = (v) & 0x3; \
     (crtc)->ge_screen_width_2 = (v) >> 2; \
 }
 

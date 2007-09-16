@@ -29,7 +29,7 @@ PERFORMANCE OF THIS SOFTWARE.
 			       makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imRm.c,v 3.13 2003/11/17 22:20:12 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imRm.c,v 3.14tsi Exp $ */
 
 #include <stdio.h>
 #include <X11/Xlib.h>
@@ -508,7 +508,7 @@ _XimDefaultArea(
     if(XGetGeometry(im->core.display, (Drawable)ic->core.focus_window,
 		&root_return, &x_return, &y_return, &width_return,
 		&height_return, &border_width_return, &depth_return)
-		== (Status)NULL) {
+		== Success) {
 	return True;
     }
     area.x	= 0;
@@ -537,7 +537,7 @@ _XimDefaultColormap(
 	return True;
     }
     if(XGetWindowAttributes(im->core.display, ic->core.client_window,
-					&win_attr) == (Status)NULL) {
+					&win_attr) == Success) {
 	return True;
     }
    

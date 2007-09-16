@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/common/dri_util.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/common/dri_util.c,v 1.4tsi Exp $ */
 /**
  * \file dri_util.c
  * DRI utility functions.
@@ -150,7 +150,7 @@ typedef __DRIscreen *(*PFNGLXFINDDRISCREEN)(__DRInativeDisplay *, int);
 static __DRIscreen *glx_find_dri_screen(__DRInativeDisplay *d, int i)
 {
     PFNGLXFINDDRISCREEN findscreen = 
-        (PFNGLXFINDDRISCREEN)glXGetProcAddress("__glXFindDRIScreen");
+        (PFNGLXFINDDRISCREEN)glXGetProcAddress((const GLubyte *)"__glXFindDRIScreen");
 
     if (!findscreen)
     {

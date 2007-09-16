@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_swtcl.c,v 1.1.1.4 2004/12/10 15:33:03 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_swtcl.c,v 1.4tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -480,10 +480,10 @@ do {							\
 #undef INIT
 
 #define LOCAL_VARS(n)							\
-   r200ContextPtr rmesa = R200_CONTEXT(ctx);			\
-   GLuint color[n], spec[n];						\
-   GLuint coloroffset = rmesa->swtcl.coloroffset;	\
-   GLuint specoffset = rmesa->swtcl.specoffset;			\
+   r200ContextPtr rmesa = R200_CONTEXT(ctx);				\
+   GLuint color[n] = {0, }, spec[n] = {0, };				\
+   GLuint coloroffset = rmesa->swtcl.coloroffset;			\
+   GLuint specoffset = rmesa->swtcl.specoffset;				\
    (void) color; (void) spec; (void) coloroffset; (void) specoffset;
 
 /***********************************************************************

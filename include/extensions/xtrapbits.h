@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/xtrapbits.h,v 1.1tsi Exp $ */
 /*
  * This include file is designed to be a portable way for systems to define
  * bit field manipulation of arrays of bits.
@@ -78,6 +78,11 @@ typedef unsigned char *UByteP;  /* Pointer to an unsigned byte array */
     (BitIsTrue((array),(bit)) ? True : False)
 
 #define BitSet(array,bit,value) /* Set bit to given value in array */ \
-    (value) ? BitTrue((array),(bit)) : BitFalse((array),(bit))
+    do { \
+	if (value) \
+	    BitTrue((array),(bit)); \
+	else \
+	    BitFalse((array),(bit)); \
+    } while (0)
 
 #endif /* __XTRAPBITS__ */

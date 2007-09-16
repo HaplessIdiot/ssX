@@ -1,3 +1,4 @@
+/* $XFree86: xc/lib/Xp/XpNotifyPdm.c,v 1.9tsi Exp $ */
 /******************************************************************************
  ******************************************************************************
  **
@@ -40,7 +41,6 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86: xc/lib/Xp/XpNotifyPdm.c,v 1.8 2003/12/22 17:48:04 tsi Exp $ */
 
 #include <X11/extensions/Print.h>
 #include <X11/Xlibint.h>
@@ -229,7 +229,7 @@ XpGetPdmStartParams (
 	/*
 	 * Error - cannot determine or establish a selection_display.
 	 */
-	return( (Status) NULL );
+	return( (Status) 0 );
     }
 
     /*
@@ -266,7 +266,7 @@ XpGetPdmStartParams (
 	    XCloseDisplay( *selection_display );
 	    *selection_display = (Display *) NULL;
 	}
-	return( (Status) NULL );
+	return( (Status) 0 );
     }
 
     status = XmbTextListToTextProperty( *selection_display, list, 6,
@@ -281,7 +281,7 @@ XpGetPdmStartParams (
 	    XCloseDisplay( *selection_display );
 	    *selection_display = (Display *) NULL;
 	}
-	return( (Status) NULL );
+	return( (Status) 0 );
     }
 
     *type              = text_prop.encoding;
@@ -361,7 +361,7 @@ Status XpSendOneTicket(
 	return( (Status) 0 );
 
     if (!ticket)
-	return( (Status) 1 );;
+	return( (Status) 1 );
 
     /*
      * Break down the remaining ticket data and build the

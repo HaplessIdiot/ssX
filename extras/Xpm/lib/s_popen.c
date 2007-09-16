@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Xpm/lib/s_popen.c,v 1.2 2004/12/17 16:38:03 tsi Exp $ */
+/* $XFree86: xc/extras/Xpm/lib/s_popen.c,v 1.3tsi Exp $ */
 /*
  * Copyright (C) 2004 The X.Org fundation
  * 
@@ -58,7 +58,7 @@ FILE *s_popen(char *cmd, const char *type)
   char *cmdcpy;
 
 
-  if(cmd == NULL || cmd == "")
+  if(cmd == NULL || *cmd == '\0')
     return(NULL);
 
   if(type[0] != 'r' && type[0] != 'w')

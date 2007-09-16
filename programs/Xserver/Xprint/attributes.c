@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.23tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.24tsi Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -268,8 +268,8 @@ AddDbEntry(
     for(;*quarks; quarks++)
 	xrm_name[1] = xrm_class[1] = *quarks;
 
-    xrm_name[2] = (XrmQuark)NULL;
-    xrm_class[2] = (XrmQuark)NULL;
+    xrm_name[2] = (XrmQuark)0;
+    xrm_class[2] = (XrmQuark)0;
 
     if(XrmQGetResource (*sourceDB, xrm_name, xrm_class, &rep_type, &realVal))
     {
@@ -317,7 +317,7 @@ BuildPrinterAttrs(
          */
         xrm_name[0] = XrmStringToQuark (qualifierName);
         xrm_name[1] = XrmStringToQuark ("xp-model-identifier");
-        xrm_name[2] = (XrmQuark)NULL;
+        xrm_name[2] = (XrmQuark)0;
         XrmQGetResource (systemAttributes.printers, xrm_name, xrm_name, 
 			 &rep_type, &value);
 
@@ -350,9 +350,9 @@ BuildPrinterAttrs(
 	     modelDB = systemAttributes.printers;
 
         xrm_name[0] = XrmStringToQuark (qualifierName);
-	xrm_name[1] = (XrmQuark)NULL;
+	xrm_name[1] = (XrmQuark)0;
 	xrm_class[0] = XrmStringToQuark((char *)value.addr);
-	xrm_class[1] = (XrmQuark)NULL;
+	xrm_class[1] = (XrmQuark)0;
 	enumStruct.pDb = &printerDB;
 	enumStruct.qualifier = (char *)qualifierName;
 	enumStruct.modelId = (char *)value.addr;
@@ -397,7 +397,7 @@ BuildABase(
          */
         xrm_name[0] = XrmStringToQuark (printerName);
         xrm_name[1] = XrmStringToQuark ("xp-model-identifier");
-        xrm_name[2] = (XrmQuark)NULL;
+        xrm_name[2] = (XrmQuark)0;
         XrmQGetResource (systemAttributes.printers, xrm_name, xrm_name, 
 			 &rep_type, &value);
 	/*
@@ -408,9 +408,9 @@ BuildABase(
 	    xrm_class[0] = XrmStringToQuark((char *)value.addr);
 	else
 	    xrm_class[0] = xrm_name[0];
-	xrm_class[1] = (XrmQuark)NULL;
+	xrm_class[1] = (XrmQuark)0;
 
-	xrm_name[1] = (XrmQuark)NULL;
+	xrm_name[1] = (XrmQuark)0;
 
 	enumStruct.pDb = &builtDB;
 	enumStruct.qualifier = (char *)qualifierName;
@@ -615,7 +615,7 @@ XpGetOneAttribute(
 	    return NULL_STRING;
 
         xrm_name[0] = XrmStringToQuark (attributeName);
-        xrm_name[1] = (XrmQuark)NULL;
+        xrm_name[1] = (XrmQuark)0;
         XrmQGetResource(systemAttributes.server, xrm_name, xrm_name, 
 			&rep_type, &value);
 
@@ -648,12 +648,12 @@ XpGetOneAttribute(
 	return NULL_STRING;
 
     xrm_name[0] = XrmStringToQuark ("qualifier");
-    xrm_name[1] = (XrmQuark)NULL;
+    xrm_name[1] = (XrmQuark)0;
     XrmQGetResource(db, xrm_name, xrm_name, &rep_type, &value);
 
     xrm_name[0] = XrmStringToQuark (value.addr);
     xrm_name[1] = XrmStringToQuark (attributeName);
-    xrm_name[2] = (XrmQuark)NULL;
+    xrm_name[2] = (XrmQuark)0;
     if(XrmQGetResource(db, xrm_name, xrm_name, &rep_type, &value))
 	return (char *)value.addr;
     else
@@ -698,7 +698,7 @@ XpPutOneAttribute(
     }
     bindings[0] = XrmBindLoosely;
     quarks[0] = XrmStringToQuark(attributeName);
-    quarks[1] = (XrmQuark)NULL;
+    quarks[1] = (XrmQuark)0;
     XrmQPutStringResource(&db, bindings, quarks, value ? value : "");
 }
 

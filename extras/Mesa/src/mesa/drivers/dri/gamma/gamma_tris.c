@@ -1,3 +1,4 @@
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/gamma/gamm_tris.c,v 1.0tsi Exp $ */
 /*
  * Copyright 2001 by Alan Hourihane.
  *
@@ -275,10 +276,10 @@ do {						\
 
 
 static struct {
-   points_func		points;
-   line_func		line;
-   triangle_func	triangle;
-   quad_func		quad;
+   tnl_points_func		points;
+   tnl_line_func		line;
+   tnl_triangle_func	triangle;
+   tnl_quad_func		quad;
 } rast_tab[GAMMA_MAX_TRIFUNC];
 
 
@@ -321,8 +322,8 @@ do {								\
 #define VERT_RESTORE_RGBA( idx ) v[idx]->ui[4] = color[idx]   
 
 #define LOCAL_VARS(n)					\
-   gammaContextPtr gmesa = GAMMA_CONTEXT(ctx);	\
-   GLuint color[n];				\
+   gammaContextPtr gmesa = GAMMA_CONTEXT(ctx);		\
+   GLuint color[n] = {0, };				\
    (void) color;
 
 

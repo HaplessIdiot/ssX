@@ -1,3 +1,4 @@
+/* $XFree86: xc/lib/X11/lcFile.c,v 3.34tsi Exp $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -22,7 +23,6 @@
  * SOFTWARE.
  *
 */
-/* $XFree86: xc/lib/X11/lcFile.c,v 3.33 2003/07/16 01:38:26 dawes Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -366,8 +366,7 @@ _XlcFileName(
 	char buf[PATH_MAX], *name;
 
 	name = NULL;
-	if ((5 + (args[i] ? strlen (args[i]) : 0) +
-	    (cat ? strlen (cat) : 0)) < PATH_MAX) {
+	if ((5 + (args[i] ? strlen (args[i]) : 0) + strlen (cat)) < PATH_MAX) {
 	    sprintf(buf, "%s/%s.dir", args[i], cat);
 	    name = resolve_name(siname, buf, RtoL);
 	}
