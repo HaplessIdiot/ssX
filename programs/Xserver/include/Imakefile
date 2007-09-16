@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/include/Imakefile,v 3.22 2004/01/27 01:29:03 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/include/Imakefile,v 3.23tsi Exp $
 
 #if defined(XFree86Version) || defined(BSDOSArchitecture)
 #if DoLoadableServer
@@ -9,6 +9,7 @@ LinkSourceFile(xf86_libc.h,$(XF86OSSRC))
 LinkSourceFile(xf86_ansic.h,$(XF86OSSRC))
 LinkSourceFile(xf86Version.h,$(XF86SRC))
 LinkSourceFile(compiler.h,$(XF86COMSRC))
+LinkSourceFile(xf86Pci.h,$(XF86OSSRC)/bus)
 #endif
 
 LinkSourceFile(osdep.h,../os)
