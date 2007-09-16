@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/tinyx/sis530/sisdraw.c,v 1.3tsi Exp $ */
 /*
  * Copyright © 1999 Keith Packard
  *
@@ -19,7 +20,6 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/sis530/sisdraw.c,v 1.2 2005/10/14 15:16:29 tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -849,7 +849,7 @@ sisStipplePrepare (DrawablePtr pDrawable, GCPtr pGC)
     for (y = 0; y < 8; y++)
     {
 	bits = stip[stipY<<1];
-	FbRotLeft(bits, rot);
+	bits = FbRotLeft(bits, rot);
 	SisInvertBits32(bits);
 	sis->u.general.mask[y] = (CARD8) bits;
 	stipY++;

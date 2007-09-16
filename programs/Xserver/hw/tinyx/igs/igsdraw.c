@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/tinyx/igs/igsdraw.c,v 1.2 2005/10/14 15:16:28 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/tinyx/igs/igsdraw.c,v 1.3tsi Exp $
  *
  * Copyright © 2000 Keith Packard
  *
@@ -175,7 +175,7 @@ igsSetPattern (ScreenPtr    pScreen,
 	for (y = 0; y < 8; y++)
 	{
 	    bits = pix[stipY * pixStride];
-	    FbRotLeft (bits, stipX);
+	    bits = FbRotLeft (bits, stipX);
 	    tmp[y] = (CARD8) bits;
 	    stipY++;
 	    if (stipY == pPixmap->drawable.height)
