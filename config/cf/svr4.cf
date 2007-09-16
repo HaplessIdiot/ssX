@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.54tsi Exp $
+XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.55tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -130,9 +130,6 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.54tsi Exp $
 #endif
 #ifndef LexCmd
 #define	LexCmd	/usr/ccs/bin/lex
-#endif
-#ifndef MakeCmd
-#define	MakeCmd	/usr/ccs/bin/make
 #endif
 #ifndef YaccCmd
 #define	YaccCmd	/usr/ccs/bin/yacc
