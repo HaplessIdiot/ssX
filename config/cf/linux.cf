@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.244tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.245tsi Exp $
 
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
@@ -229,10 +229,11 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 # ifndef HasBasename
 #  define HasBasename		NO
 # endif
-  /* Proliferation of C99isms makes -ansi unpalatable... */
-# if !defined(DefaultCCOptions) && !defined(UseInstalled) && HasGcc
-#  define DefaultCCOptions	GccWarningOptions
-# endif
+#endif
+
+/* Proliferation of C99isms makes -ansi unpalatable... */
+#if !defined(DefaultCCOptions) && !defined(UseInstalled) && HasGcc
+# define DefaultCCOptions	GccWarningOptions
 #endif
 
 #ifndef InstallXloadSetGID
