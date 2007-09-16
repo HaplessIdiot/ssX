@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.41tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.42 2006/07/23 20:51:48 tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -220,7 +220,7 @@ XCOMM xf86site.def
 /*
  * Heck, build a server that can load modules too...
  */
-#define DoLoadableServer        Yes
+#define DoLoadableServer        YES
 #endif
 
 XCOMM math.h uses _REENTRANT in FreeBSD, so we define it here too
