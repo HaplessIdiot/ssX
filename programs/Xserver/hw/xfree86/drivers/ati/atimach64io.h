@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64io.h,v 1.19 2006/01/05 18:55:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64io.h,v 1.20tsi Exp $ */
 /*
  * Copyright 2000 through 2007 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -296,7 +296,9 @@ extern void ATIMach64AccessTVReg  FunctionPrototype((ATIPtr, const CARD8));
  */
 
 #if defined(GCCUSESGAS) && \
-    (defined(i386) || defined(__i386) || defined(__i386__))
+    (defined(i386) || defined(__i386) || defined(__i386__) || \
+     defined(amd64) || defined(__amd64) || defined(__amd64__) || \
+     defined(x86_64) || defined(__x86_64) || defined(__x86_64__))
 
 #define ATIMove32(_pDst, _pSrc, _nCount) \
     do                                   \
