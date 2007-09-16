@@ -1,4 +1,5 @@
 XFree86 4.7.99.2 (?? September 2007)
+   6. Fix stipples in Xigs and Xsis530 servers (Marc La France).
    5. Fix bug in Xdmx's handling of USB devices (Marc La France).
    4. Darwin build fix, for the case where an X11 implementation has yet to be
       installed (Marc La France, problem reported by Yves de Champlain).
@@ -20605,4 +20606,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3909 2007/09/16 01:49:13 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3910 2007/09/16 01:54:23 tsi Exp $
