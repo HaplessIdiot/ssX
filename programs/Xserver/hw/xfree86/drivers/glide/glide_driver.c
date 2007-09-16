@@ -1,4 +1,4 @@
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.34tsi Exp $ */
 /* 
    XFree86 driver for Glide(tm). (Mainly for Voodoo 1 and 2 cards)
 
@@ -45,7 +45,6 @@
    * Support static loading.  
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.33tsi Exp $ */
 
 #include "xf86Cursor.h"
 #include "colormapst.h"
@@ -63,7 +62,7 @@
 #include "xf86cmap.h"
 #include "shadowfb.h"
 
-#include <glide.h>
+#include "glide.h"      /* Now a local header file */
 
 #define TRUE 1
 #define FALSE 0
@@ -78,9 +77,8 @@ typedef signed char        s8;
 typedef unsigned char      u8;
 typedef signed short int   s16;
 typedef unsigned short int u16;
-typedef signed long int    s32;
-typedef unsigned long int  u32;
-typedef u8                 bool;
+typedef signed int         s32;
+typedef unsigned int       u32;
  
 /* Card-specific driver information */
 
@@ -95,9 +93,6 @@ typedef FxBool (*pgrSstWinOpen_t)(FxU32, GrScreenResolution_t, GrScreenRefresh_t
 typedef void (*pgrRenderBuffer_t)(GrBuffer_t);
 typedef void (*pgrClipWindow_t)(FxU32, FxU32, FxU32, FxU32);
 typedef void (*pgrBufferClear_t)(GrColor_t, GrAlpha_t, FxU16);
-typedef FxBool (*pgrLfbLock_t)(GrLock_t, GrBuffer_t, GrLfbWriteMode_t, GrOriginLocation_t, 
-                               FxBool, GrLfbInfo_t*);
-typedef FxBool (*pgrLfbUnlock_t)(GrLock_t, GrBuffer_t);
 typedef void (*pgrGlideShutdown_t)(void);
 
 
@@ -131,8 +126,6 @@ static pgrSstWinOpen_t     pgrSstWinOpen;
 static pgrRenderBuffer_t   pgrRenderBuffer;
 static pgrClipWindow_t     pgrClipWindow;
 static pgrBufferClear_t    pgrBufferClear;
-static pgrLfbLock_t        pgrLfbLock;
-static pgrLfbUnlock_t      pgrLfbUnlock;
 static pgrGlideShutdown_t  pgrGlideShutdown;
 static pgrLfbWriteRegion_t pgrLfbWriteRegion;
 
@@ -417,7 +410,7 @@ GLIDEProbe(DriverPtr drv, int flags)
 	    pScrn->EnterVT	 = GLIDEEnterVT;
 	    pScrn->LeaveVT	 = GLIDELeaveVT;
 	    pScrn->FreeScreen    = GLIDEFreeScreen;
-	    pScrn->driverPrivate = (void*)sst;
+	    pScrn->driverPrivate = (void *)(unsigned long)sst;
 	    /*
 	     * XXX This is a hack because don't have the PCI info.  Set it as
 	     * an ISA entity with no resources.
@@ -454,7 +447,7 @@ GLIDEPreInit(ScrnInfoPtr pScrn, int flags)
   if (pScrn->numEntities != 1)
     return FALSE;
 
-  sst = (int)(pScrn->driverPrivate);
+  sst = (int)(unsigned long)pScrn->driverPrivate;
   pScrn->driverPrivate = NULL;
 
   /* Set pScrn->monitor */
@@ -957,12 +950,6 @@ GLIDEModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
   pgrClipWindow(0, 0, 1024, 768);
   pgrBufferClear(0, 0, GR_ZDEPTHVALUE_FARTHEST);
 
-  if (!r)
-  {
-    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Could not lock glide frame buffer\n");
-    return FALSE;
-  }
-
   pGlide->Blanked = FALSE;
   pGlide->GlideInitiated = TRUE;
   return TRUE;
@@ -1003,8 +990,6 @@ LoadGlide(void)
   GLIDE_FIND_FUNC(grRenderBuffer);
   GLIDE_FIND_FUNC(grClipWindow);
   GLIDE_FIND_FUNC(grBufferClear);
-  GLIDE_FIND_FUNC(grLfbLock);
-  GLIDE_FIND_FUNC(grLfbUnlock);
   GLIDE_FIND_FUNC(grGlideShutdown);
   GLIDE_FIND_FUNC(grLfbWriteRegion);
   return TRUE;

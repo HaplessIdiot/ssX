@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.30 2004/10/19 04:27:49 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.31tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -145,7 +145,7 @@ XCOMM nothing
     DRVDOBJS = $(TDFXDOBJS) $(MESADOBJS) $(DRMDOBJS)
     DRVPOBJS = $(TDFXPOBJS) $(MESAPOBJS) $(DRMPOBJS)
 
-OTHERREQUIREDLIBS = -lglide3 -ldl
+OTHERREQUIREDLIBS = DlLibrary
 
 #elif GlxBuiltInI810
 
