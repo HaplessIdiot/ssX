@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.135tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.136tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -4085,10 +4085,6 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
 
     if(info->MMIO) RADEONUnmapMMIO(pScrn);
     info->MMIO = NULL;
-
-    xf86DrvMsg(pScrn->scrnIndex, X_NOTICE,
-	       "For information on using the multimedia capabilities\n of this"
-	       " adapter, please see http://gatos.sf.net.\n");
 
     return TRUE;
 
