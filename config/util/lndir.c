@@ -1,4 +1,4 @@
-/* $XFree86: xc/config/util/lndir.c,v 3.25tsi Exp $ */
+/* $XFree86: xc/config/util/lndir.c,v 3.26tsi Exp $ */
 /* Create shadow link tree (after X11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 
@@ -525,7 +525,7 @@ main (int ac, char *av[])
     char *prog_name = av[0];
     char *fn = NULL, *tn;
     struct stat fs, ts;
-    int ret = 0;
+    int ret = 0, len;
 
     while (++av, --ac) {
 	if ((strcmp(*av, "-silent") == 0) ||
@@ -592,8 +592,8 @@ main (int ac, char *av[])
 
     if (clean_only) {
 	if (cleandir(tn) == -1)
-	    exit(1);
-	exit(0);
+	    return 1;
+	return 0;
     }
 
     /* from directory */
@@ -606,11 +606,18 @@ main (int ac, char *av[])
 #endif
 	quit (2, "%s: Not a directory", fn);
 
+    /* Strip off from directory's trailing self references */
+    len = strlen(fn);
+    while ((--len > 1) &&
+	   ((fn[len] == '/') ||
+	    ((fn[len] == '.') && (fn[len - 1] == '/'))))
+	fn[len] = '\0';
+
     ret = dodir (fn, &fs, &ts, 0);
 
     if (ret == 0 && clean)
 	if (cleandir(tn) < 0)
 	    ret = 1;
 
-    exit(ret);
+    return ret;
 }
