@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.19tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.20tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -76,10 +76,11 @@ XAAValidateGC(
     }
 
     if(pGC->depth != 32) {
-	if(pGC->bgPixel == -1) /* -1 is reserved for transparency */
-	    pGC->bgPixel = 0x7fffffff; 
-	if(pGC->fgPixel == -1) /* -1 is reserved for transparency */
-	    pGC->fgPixel = 0x7fffffff; 
+	/* (unsigned int)(-1) is reserved for transparency */
+	if(pGC->bgPixel == (unsigned int)(-1))
+	    pGC->bgPixel = (unsigned int)(-1) >> 1; 
+	if(pGC->fgPixel == (unsigned int)(-1))
+	    pGC->fgPixel = (unsigned int)(-1) >> 1; 
     }
 
     if((pDraw->type == DRAWABLE_PIXMAP) && !IS_OFFSCREEN_PIXMAP(pDraw)){
