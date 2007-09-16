@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.192 2005/11/10 15:37:02 tsi Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.193tsi Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -298,34 +298,6 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.192 2005/11/10 15:37:02 tsi Exp $
  *
 #define UseSeparateConfDir NO
  */
-
-/* 
- * To enable building the glide driver, you need to define 
- * HasGlide2 to YES and set the Glide2IncDir variable. 
- * HasGlide2 is per default NO.
- *
-#define HasGlide2 YES
- */
-
-/*
- * Set the path to your Glide include files.
- *
-#define Glide2IncDir /usr/include/glide
- */
-
-/* 
- * Have glide 3?
- *
-#define HasGlide3 YES
- */
-
-/*
- * Set the path to your Glide 3 include files.
- *
-#define Glide3IncDir /usr/include/glide3
- */
-
-
 
 /*
  * Unless you're a developer you shouldn't need to change anything

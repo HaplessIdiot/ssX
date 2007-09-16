@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.516tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.517tsi Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -446,14 +446,11 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.516tsi Exp $
 				siliconmotion vga dummy fbdev vesa
 # endif
 
-/* DRI tdfx driver needs Glide, which is not available for AMD64 */
-# define TdfxDriDriver		/**/
-
 # define DevelDRIDrivers	/**/
 
 # ifndef DriDrivers
 #  define DriDrivers		gamma i810 mga r128 radeon r200 \
-				TdfxDriDriver DevelDRIDrivers
+				tdfx DevelDRIDrivers
 # endif
 #endif /*AMD64Arcitecture*/
 
@@ -908,11 +905,6 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.516tsi Exp $
 				DevelDrivers vga \
 				XF86OSCardDrivers XF86ExtraCardDrivers
 # endif
-# if HasGlide3
-#  define TdfxDriDriver		tdfx
-# else
-#  define TdfxDriDriver		/**/
-# endif
 # ifndef DriDrivers
 #  define DriDrivers		gamma tdfx mga r128 radeon r200
 # endif
@@ -1065,10 +1057,7 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.516tsi Exp $
 #endif
 
 /* The glide driver only works for the loadable server at the moment */
-#ifndef HasGlide2
-#define HasGlide2 NO
-#endif
-#if HasGlide2 && DoLoadableServer
+#if DoLoadableServer
 #define GlideDriver glide
 #else
 #define GlideDriver /**/
