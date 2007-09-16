@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/Imakefile,v 3.54tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/Imakefile,v 3.55 2005/10/14 15:17:03 tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -160,7 +160,6 @@ LinkSourceFile(xf86Axp.c,../shared)
 #endif
 DependTarget()
 
-InstallDriverSDKNonExecFile(agpgart.h,$(DRIVERSDKINCLUDEDIR)/linux)
 #if 0
 InstallDriverSDKDynamicModule(lnx_jstk.o,$(DRIVERSDKMODULEDIR))
 #endif
