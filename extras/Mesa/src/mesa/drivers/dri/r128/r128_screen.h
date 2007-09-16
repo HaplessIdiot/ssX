@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_screen.h,v 1.7 2002/12/16 16:18:53 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r128/r128_screen.h,v 1.1.1.2tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -38,11 +38,10 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifdef GLX_DIRECT_RENDERING
 
-#include "r128_sarea.h"
 #include "xmlconfig.h"
 
 typedef struct {
-   drmHandle handle;			/* Handle to the DRM region */
+   drm_handle_t handle;			/* Handle to the DRM region */
    drmSize size;			/* Size of the DRM region */
    unsigned char *map;			/* Mapping of the DRM region */
 } r128RegionRec, *r128RegionPtr;
@@ -53,7 +52,7 @@ typedef struct {
    GLint cpp;
    GLint IsPCI;				/* Current card is a PCI card */
    GLint AGPMode;
-   unsigned int irq;			/* IRQ number (0 means none) */
+   int irq;				/* IRQ number (0 means none) */
 
    GLuint frontOffset;
    GLuint frontPitch;

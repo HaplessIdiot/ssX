@@ -1,3 +1,4 @@
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/mga/mga_xmesa.h,v 1.2tsi Exp $ */
 /*
  * Copyright 2000-2001 VA Linux Systems, Inc.
  * All Rights Reserved.
@@ -24,7 +25,6 @@
  * Authors:
  *    Keith Whitwell <keith@tungstengraphics.com>
  */
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/mga/mga_xmesa.h,v 1.1.1.2tsi Exp $ */
 
 #ifndef _MGA_INIT_H_
 #define _MGA_INIT_H_
@@ -47,7 +47,7 @@ typedef struct mga_screen_private_s {
 
    int cpp;			/* for front and back buffers */
    GLint agpMode;
-   unsigned int irq;		/* IRQ number (0 means none) */
+   int irq;			/* IRQ number (0 means none) */
    GLboolean  linecomp_sane;    /* GL_TRUE if line comp. programmed correctly
 				 * by the DDX driver.
 				 */

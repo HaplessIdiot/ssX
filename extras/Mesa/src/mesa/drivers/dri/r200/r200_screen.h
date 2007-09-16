@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_screen.h,v 1.1 2002/10/30 12:51:52 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_screen.h,v 1.1.1.2tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -38,14 +38,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifdef GLX_DIRECT_RENDERING
 
-#include "dri_util.h"
 #include "xf86drm.h"
-#include "radeon_common.h"
-#include "radeon_sarea.h"
+#include "drm.h"
+#include "radeon_drm.h"
+#include "dri_util.h"
 #include "xmlconfig.h"
 
 typedef struct {
-   drmHandle handle;			/* Handle to the DRM region */
+   drm_handle_t handle;			/* Handle to the DRM region */
    drmSize size;			/* Size of the DRM region */
    drmAddress map;			/* Mapping of the DRM region */
 } r200RegionRec, *r200RegionPtr;
@@ -53,6 +53,7 @@ typedef struct {
 
 /* chipset features */
 #define R200_CHIPSET_TCL	(1 << 0)
+#define R200_CHIPSET_REAL_R200  (1 << 1)
 
 
 #define R200_NR_TEX_HEAPS 2
@@ -63,7 +64,7 @@ typedef struct {
    int cpp;
    int IsPCI;				/* Current card is a PCI card */
    int AGPMode;
-   unsigned int irq;			/* IRQ number (0 means none) */
+   int irq;				/* IRQ number (0 means none) */
 
    unsigned int fbLocation;
    unsigned int frontOffset;
@@ -86,7 +87,7 @@ typedef struct {
 
    drmBufMapPtr buffers;
 
-   __volatile__ CARD32 *scratch;
+   __volatile__ u_int32_t *scratch;
 
    __DRIscreenPrivate *driScreen;
    unsigned int sarea_priv_offset;
@@ -95,6 +96,7 @@ typedef struct {
    unsigned int gart_base;
 
    GLboolean drmSupportsCubeMaps;       /* need radeon kernel module >=1.7 */
+   GLboolean drmSupportsBlendColor;     /* need radeon kernel module >= 1.11 */
 
    /* Configuration cache with default values for all contexts */
    driOptionCache optionCache;

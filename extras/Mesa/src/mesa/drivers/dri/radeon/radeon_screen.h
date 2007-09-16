@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_screen.h,v 1.1.1.2tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_screen.h,v 1.2tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -65,7 +65,7 @@ typedef struct {
    int cpp;
    int IsPCI;				/* Current card is a PCI card */
    int AGPMode;
-   unsigned int irq;			/* IRQ number (0 means none) */
+   int irq;				/* IRQ number (0 means none) */
 
    unsigned int fbLocation;
    unsigned int frontOffset;
