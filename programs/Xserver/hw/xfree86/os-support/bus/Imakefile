@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Imakefile,v 1.37tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Imakefile,v 1.38tsi Exp $
 
 #include <Server.tmpl>
 
@@ -163,5 +163,7 @@ LFS_DEFINES = `getconf LFS_CFLAGS`
 SpecialCObjectRule(sparcPci,NullParameter,$(LFS_DEFINES))
 
 #endif
+
+InstallDriverSDKNonExecFile(xf86Pci.h,$(DRIVERSDKINCLUDEDIR))
 
 DependTarget()

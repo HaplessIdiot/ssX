@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.167 2006/06/21 04:03:17 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.168tsi Exp $
 
 #include <Server.tmpl>
 
@@ -224,11 +224,6 @@ NormalLibraryObjectRule()
 NormalLibraryTarget(xf86,$(OBJS))
 
 LinkFile(xf86IniExt.c,$(SERVERSRC)/mi/miinitext.c)
-LinkSourceFile(xf86Version.h,..)
-LinkSourceFile(xf86Pci.h,$(XF86OSSRC)/bus)
-#ifdef SparcArchitecture
-LinkSourceFile(xf86Sbus.h,$(XF86OSSRC)/bus)
-#endif
 
 #if HasPerl
 MODEDEFSRCS = ../etc/vesamodes ../etc/extramodes
@@ -259,12 +254,10 @@ InstallDriverSDKNonExecFile(fourcc.h,$(DRIVERSDKINCLUDEDIR))
 InstallDriverSDKNonExecFile(xf86.h,$(DRIVERSDKINCLUDEDIR))
 InstallDriverSDKNonExecFile(xf86Module.h,$(DRIVERSDKINCLUDEDIR))
 InstallDriverSDKNonExecFile(xf86Opt.h,$(DRIVERSDKINCLUDEDIR))
-InstallDriverSDKNonExecFile(xf86Pci.h,$(DRIVERSDKINCLUDEDIR))
 InstallDriverSDKNonExecFile(xf86PciInfo.h,$(DRIVERSDKINCLUDEDIR))
 InstallDriverSDKNonExecFile(xf86Priv.h,$(DRIVERSDKINCLUDEDIR))
 InstallDriverSDKNonExecFile(xf86Privstr.h,$(DRIVERSDKINCLUDEDIR))
 InstallDriverSDKNonExecFile(xf86Resources.h,$(DRIVERSDKINCLUDEDIR))
-InstallDriverSDKNonExecFile(xf86Version.h,$(DRIVERSDKINCLUDEDIR))
 InstallDriverSDKNonExecFile(xf86Xinput.h,$(DRIVERSDKINCLUDEDIR))
 InstallDriverSDKNonExecFile(xf86cmap.h,$(DRIVERSDKINCLUDEDIR))
 InstallDriverSDKNonExecFile(xf86fbman.h,$(DRIVERSDKINCLUDEDIR))

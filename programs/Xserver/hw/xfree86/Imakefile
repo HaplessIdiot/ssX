@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.92 2006/03/02 03:00:35 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.93tsi Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -274,6 +274,7 @@ InstallNamedNonExec($(XF98CONFIG),XF86Config.98,$(LIBDIR))
 InstallNamedNonExec(Options,Options,$(LIBDIR))
 
 InstallDriverSDKNamedNonExec($(XF86CONFIG),XF86Config.eg,$(DRIVERSDKDIR))
+InstallDriverSDKNonExecFile(xf86Version.h,$(DRIVERSDKINCLUDEDIR))
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
