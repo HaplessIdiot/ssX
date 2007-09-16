@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_swtcl.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_swtcl.c,v 1.6tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -941,7 +941,7 @@ do {							\
 
 #define LOCAL_VARS(n)							\
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);			\
-   GLuint color[n], spec[n];						\
+   GLuint color[n] = {0, }, spec[n] = {0, };				\
    GLuint coloroffset = (rmesa->swtcl.vertex_size == 4 ? 3 : 4);	\
    GLboolean havespec = (rmesa->swtcl.vertex_size > 4);			\
    (void) color; (void) spec; (void) coloroffset; (void) havespec;

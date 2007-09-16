@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.25tsi Exp $ */
 /*
   Copyright (c) 2002-2003 by Juliusz Chroboczek
 
@@ -19,7 +20,6 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.24 2005/02/07 01:01:16 tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -447,9 +447,7 @@ t1Weight(char *weight)
 	}    
     }
     weightL[i] = '\0';
-    if(!weightL)
-        return NULL;
-    else return weightL;
+    return weightL;
 }
 
 static int

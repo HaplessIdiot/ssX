@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.261tsi Exp $ */
 /*
  * MGA Millennium (MGA2064W) with Ti3026 RAMDAC driver v.1.1
  *
@@ -44,7 +45,6 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.260tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -3654,28 +3654,19 @@ MGASwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
  
 	    fgets(sCmdIn, 255, fdIn);
  
-	    if(sCmdIn)
-	    {
+	    MGAExecuteEscCmd(xf86Screens[scrnIndex], sCmdIn, sCmdOut, mode);
  
-		MGAExecuteEscCmd(xf86Screens[scrnIndex], sCmdIn, sCmdOut, mode);
- 
-		/* Remove file and close file descriptor */
-		remove("/tmp/mgaDriverIn");
-		fclose(fdIn);
-		MWB(
-		    /* Write output data to output file for
-		       calling application */
-		    fputs(sCmdOut, fdOut);
-		    fclose(fdOut);
-		    )
-		mode->Flags &= 0x7FFFFFFF;
-		return TRUE;
-	    }
-	    else
-	    {
-		mode->Flags &= 0x7FFFFFFF;
-		return FALSE;
-	    }
+	    /* Remove file and close file descriptor */
+	    remove("/tmp/mgaDriverIn");
+	    fclose(fdIn);
+	    MWB(
+		/* Write output data to output file for
+		   calling application */
+		fputs(sCmdOut, fdOut);
+		fclose(fdOut);
+		)
+	    mode->Flags &= 0x7FFFFFFF;
+	    return TRUE;
 	}
 	else
 	{

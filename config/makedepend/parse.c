@@ -1,3 +1,4 @@
+/* $XFree86: xc/config/makedepend/parse.c,v 1.18tsi Exp $ */
 /*
 
 Copyright (c) 1993, 1994, 1998 The Open Group
@@ -23,7 +24,6 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/parse.c,v 1.17tsi Exp $ */
 
 #include "def.h"
 
@@ -516,7 +516,7 @@ define(char *def, struct inclist *file)
     if (!*val) /* define statements without a value will get a value of 1 */
 	val = "1";
 
-    if (args && (strlen(args)>0))
+    if (strlen(args) > 0)
 	define2(def, args, val, file);
     else
 	define2(def, NULL, val, file);

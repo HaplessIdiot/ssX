@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xtrap/xtrapstats.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/xtrap/xtrapstats.c,v 1.2tsi Exp $ */
 /*
  * @DEC_COPYRIGHT@
  */
@@ -75,7 +75,7 @@ main(int argc, char *argv[])
     /* Connect to Server */
     appW = XtAppInitialize(&app,"XTrap",NULL,(Cardinal)0L,
         (int *)&argc, (String *)argv, (String *)NULL,(ArgList)&tmp,
-        (Cardinal)NULL);
+        (Cardinal)0);
     dpy = XtDisplay(appW);
 #ifdef DEBUG
     XSynchronize(dpy, True);

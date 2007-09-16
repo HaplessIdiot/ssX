@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xtrap/xtrapproto.c,v 1.4 2003/05/27 22:27:13 tsi Exp $ */
+/* $XFree86: xc/programs/xtrap/xtrapproto.c,v 1.5tsi Exp $ */
 /*
  * @DEC_COPYRIGHT@
  */
@@ -67,7 +67,7 @@ main(int argc, char *argv[])
     /* Connect to Server */
     appW = XtAppInitialize(&app,"XTrap",NULL,(Cardinal)0L,
         (int *)&argc, (String *)argv, (String *)NULL,(ArgList)&tmp,
-        (Cardinal)NULL);
+        (Cardinal)0);
     dpy = XtDisplay(appW);
     printf("Display:  %s \n", DisplayString(dpy));
     if ((tc = XECreateTC(dpy,0L, NULL)) == False)

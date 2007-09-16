@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.22tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.23tsi Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -732,7 +732,7 @@ InitStringFeedbackClassDeviceStruct(DeviceIntPtr dev,
     for (i=0; i<num_symbols_supported; i++)
 	*(feedc->ctrl.symbols_supported+i) = *symbols++;
     for (i=0; i<max_symbols; i++)
-	*(feedc->ctrl.symbols_displayed+i) = (KeySym) NULL;
+	*(feedc->ctrl.symbols_displayed+i) = (KeySym) 0;
     feedc->ctrl.id = 0;
     if ( (feedc->next = dev->stringfeed) )
 	feedc->ctrl.id = dev->stringfeed->ctrl.id + 1;

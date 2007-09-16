@@ -1,3 +1,4 @@
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/mga/mgatris.c,v 1.1.1.2tsi Exp $ */
 /*
  * Copyright 2000-2001 VA Linux Systems, Inc.
  * All Rights Reserved.
@@ -24,7 +25,6 @@
  * Authors:
  *    Keith Whitwell <keith@tungstengraphics.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatris.c,v 1.10 2002/10/30 12:51:36 alanh Exp $ */
 
 #include "mtypes.h"
 #include "macros.h"
@@ -328,10 +328,10 @@ mga_fallback_point( mgaContextPtr mmesa,
 #define MGA_MAX_TRIFUNC     0x20
 
 static struct {
-   points_func	        points;
-   line_func		line;
-   triangle_func	triangle;
-   quad_func		quad;
+   tnl_points_func	        points;
+   tnl_line_func		line;
+   tnl_triangle_func	triangle;
+   tnl_quad_func		quad;
 } rast_tab[MGA_MAX_TRIFUNC];
 
 #define DO_FALLBACK (IND & MGA_FALLBACK_BIT)
@@ -394,7 +394,7 @@ do {						\
 
 #define LOCAL_VARS(n)					\
    mgaContextPtr mmesa = MGA_CONTEXT(ctx);		\
-   GLuint color[n], spec[n];				\
+   GLuint color[n] = {0, }, spec[n] = {0, };		\
    (void) color; (void) spec;
 
 
