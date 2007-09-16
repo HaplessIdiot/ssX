@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_screen.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_screen.c,v 1.7tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -303,7 +303,7 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
       drm_radeon_getparam_t gp;
 
       gp.param = RADEON_PARAM_GART_BUFFER_OFFSET;
-      gp.value = &screen->gart_buffer_offset;
+      gp.value = (int *)&screen->gart_buffer_offset;
 
       ret = drmCommandWriteRead( sPriv->fd, DRM_RADEON_GETPARAM,
 				 &gp, sizeof(gp));
@@ -315,7 +315,7 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
 
       if (sPriv->drmMinor >= 6) {
 	 gp.param = RADEON_PARAM_GART_BASE;
-	 gp.value = &screen->gart_base;
+	 gp.value = (int *)&screen->gart_base;
 
 	 ret = drmCommandWriteRead( sPriv->fd, DRM_RADEON_GETPARAM,
 				    &gp, sizeof(gp));

@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_ioctl.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_ioctl.c,v 1.5tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -642,7 +642,7 @@ static void r200Clear( GLcontext *ctx, GLbitfield mask, GLboolean all,
       int clear;
 
       gp.param = RADEON_PARAM_LAST_CLEAR;
-      gp.value = (int *)&clear;
+      gp.value = &clear;
       ret = drmCommandWriteRead( rmesa->dri.fd,
 		      DRM_RADEON_GETPARAM, &gp, sizeof(gp) );
 
