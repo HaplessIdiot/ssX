@@ -33,6 +33,9 @@ lib/libXRes.so.1.0
 lib/libXTrap.so
 lib/libXTrap.so.6
 lib/libXTrap.so.6.4
+lib/libXau.so
+lib/libXau.so.6
+lib/libXau.so.6.0
 lib/libXaw.so
 lib/libXaw.so.6
 lib/libXaw.so.6.1
@@ -41,6 +44,9 @@ lib/libXaw.so.7.1
 lib/libXcursor.so
 lib/libXcursor.so.1
 lib/libXcursor.so.1.0
+lib/libXdmcp.so
+lib/libXdmcp.so.6
+lib/libXdmcp.so.6.0
 lib/libXext.so
 lib/libXext.so.6
 lib/libXext.so.6.4
