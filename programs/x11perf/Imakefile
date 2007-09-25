@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/x11perf/Imakefile,v 3.13tsi Exp $
+XCOMM $XFree86: xc/programs/x11perf/Imakefile,v 3.14tsi Exp $
 
 #ifndef X11perfcompLib
 #define X11perfcompLib $(LIBDIR)/x11perfcomp
@@ -9,14 +9,16 @@ XCOMM $XFree86: xc/programs/x11perf/Imakefile,v 3.13tsi Exp $
 #endif
 #if BuildRenderLibrary
     XRENDERDEFS = -DXRENDER
+    XRENDERINCS = $(XRENDERINCLUDES)
+#if !BuildXftLibrary
     XRENDERDEPS = $(DEPXRENDERLIB)
     XRENDERLIBS = $(XRENDERLIB)
-    XRENDERINCS = $(XRENDERINCLUDES)
+#endif
 #endif
 #if BuildXftLibrary
         XFTDEFS = -DXFT
-        XFTDEPS = XftClientDepLibs
-        XFTLIBS = XftClientLibs
+        XFTDEPS = XftClientDepLibs $(DEPXRENDERLIB)
+        XFTLIBS = XftClientLibs $(XRENDERLIB)
         XFTINCS = $(XFTINCLUDES)
 #endif
         DEFINES = $(SIGNAL_DEFINES) $(SHMDEFS) $(XFTDEFS) $(XRENDERDEFS)
