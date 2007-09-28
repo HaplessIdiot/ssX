@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/lib/Xft/xftswap.c,v 1.1tsi Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -28,7 +28,7 @@
 int
 XftNativeByteOrder (void)
 {
-    int	    whichbyte = 1;
+    static const int whichbyte = 1;
 
     if (*((char *) &whichbyte))
 	return LSBFirst;
@@ -117,6 +117,11 @@ XftSwapImage (XImage *image)
 		       image->height * image->bytes_per_line >> 1);
 	break;
     default:
-	break;
+	return;
     }
+
+    if (MSBFirst == image->byte_order)
+	image->byte_order = LSBFirst;
+    else
+	image->byte_order = MSBFirst;
 }
