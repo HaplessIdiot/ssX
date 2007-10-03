@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.99tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.100 Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -1605,6 +1605,8 @@ SaveBIOSMemSize(ScrnInfoPtr pScrn)
 #if HAVE_GET_PUT_BIOSMEMSIZE
    if ((pI830->saveBIOSMemSize = GetBIOSMemSize(pScrn)) != -1)
       return TRUE;
+
+   pI830->saveBIOSMemSize = 0;
 #endif
 
    if (IS_I830(pI830) || IS_845G(pI830)) {
@@ -2739,6 +2741,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
 		 = TweakMemorySize(pScrn, pI830->newBIOSMemSize, TRUE)) != 1) 
 	     pI830->overrideBIOSMemSize = TRUE;
 	 else {
+	     pI830->saveBIOSMemSize = 0;
 	     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 			"BIOS view of memory size can't be changed "
 			"(this is not an error).\n");
