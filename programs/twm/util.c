@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/util.c,v 1.15tsi Exp $ */
+/* $XFree86: xc/programs/twm/util.c,v 1.16 2007/10/10 00:31:39 tsi Exp $ */
 /*****************************************************************************/
 /*
 
@@ -488,8 +488,6 @@ InsertRGBColormap (Atom a, XStandardColormap *maps, int nmaps, Bool replace)
     }
     sc->nmaps = nmaps;
     sc->maps = maps;
-
-    return;
 }
 
 void
@@ -509,7 +507,6 @@ RemoveRGBColormap (Atom a)
 	if (Scr->StdCmapInfo.tail == sc) Scr->StdCmapInfo.tail = prev;
 	if (Scr->StdCmapInfo.mru == sc) Scr->StdCmapInfo.mru = NULL;
     }
-    return;
 }
 
 void
@@ -530,7 +527,6 @@ LocateStandardColormaps(void)
 	}
     }
     if (atoms) XFree ((char *) atoms);
-    return;
 }
 
 void
@@ -1135,5 +1131,4 @@ Bell(int type, int percent, Window win)
 #else
     XBell(dpy, percent);
 #endif
-    return;
 }

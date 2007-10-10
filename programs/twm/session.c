@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/session.c,v 3.12 2007/10/10 00:31:39 tsi Exp $ */
+/* $XFree86: xc/programs/twm/session.c,v 3.13 2007/10/10 00:56:11 tsi Exp $ */
 /******************************************************************************
 
 Copyright 1994, 1998  The Open Group
@@ -467,7 +467,7 @@ ReadWinConfigEntry (FILE *configFile, unsigned short version,
 	if (!read_byte (configFile, &byte))
 	    goto give_up;
 	entry->width_ever_changed_by_user = byte;
-if (!read_byte (configFile, &byte))
+	if (!read_byte (configFile, &byte))
 	    goto give_up;
 	entry->height_ever_changed_by_user = byte;
     }

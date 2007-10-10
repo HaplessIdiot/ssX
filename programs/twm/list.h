@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/list.h,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/twm/list.h,v 1.7 2007/10/10 00:31:39 tsi Exp $ */
 /*****************************************************************************/
 /*
 
@@ -79,4 +79,3 @@ extern char * LookInNameList ( name_list *list_head, char *name );
 
 
 #endif /* _LIST_ */
-

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/icons.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/twm/icons.c,v 1.10 2007/10/10 00:31:39 tsi Exp $ */
 /*
  *
 Copyright 1989, 1998  The Open Group
@@ -136,7 +136,6 @@ PlaceIcon(TwmWindow *tmp_win, int def_x, int def_y, int *final_x, int *final_y)
 	*final_x = def_x;
 	*final_y = def_y;
     }
-    return;
 }
 
 static IconEntry *
