@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/twm/util.h,v 1.8tsi Exp $ */
 /*****************************************************************************/
 /*
 
@@ -48,7 +49,6 @@ in this Software without prior written authorization from The Open Group.
 /**    TORTIOUS ACTION, ARISING OUT OF OR IN  CONNECTION  WITH  THE  USE    **/
 /**    OR PERFORMANCE OF THIS SOFTWARE.                                     **/
 /*****************************************************************************/
-/* $XFree86: xc/programs/twm/util.h,v 1.7 2001/12/14 20:01:11 dawes Exp $ */
 
 
 /***********************************************************************
@@ -62,15 +62,15 @@ in this Software without prior written authorization from The Open Group.
 #ifndef _UTIL_
 #define _UTIL_
 
-extern void MoveOutline ( Window root, int x, int y, int width, int height, 
+extern void MoveOutline ( Window root, int x, int y, int width, int height,
 			  int bw, int th );
 extern void Zoom ( Window wf, Window wt );
 extern char * ExpandFilename ( char *name );
 extern void GetUnknownIcon ( char *name );
-extern Pixmap FindBitmap ( char *name, unsigned int *widthp, 
+extern Pixmap FindBitmap ( char *name, unsigned int *widthp,
 			   unsigned int *heightp );
 extern Pixmap GetBitmap ( char *name );
-extern void InsertRGBColormap ( Atom a, XStandardColormap *maps, int nmaps, 
+extern void InsertRGBColormap ( Atom a, XStandardColormap *maps, int nmaps,
 			       Bool replace );
 extern void RemoveRGBColormap ( Atom a );
 extern void LocateStandardColormaps ( void );
@@ -78,12 +78,12 @@ extern void GetColor ( int kind, Pixel *what, char *name );
 extern void GetColorValue ( int kind, XColor *what, char *name );
 extern void GetFont ( MyFont *font );
 extern int MyFont_TextWidth( MyFont *font, char *string, int len);
-extern void MyFont_DrawImageString( Display *dpy, Drawable d, MyFont *font, 
-				    GC gc, int x, int y, char * string, 
+extern void MyFont_DrawImageString( Display *dpy, Drawable d, MyFont *font,
+				    GC gc, int x, int y, char * string,
 				    int len);
-extern void MyFont_DrawString( Display *dpy, Drawable d, MyFont *font, 
+extern void MyFont_DrawString( Display *dpy, Drawable d, MyFont *font,
 			       GC gc, int x, int y, char * string, int len);
-extern void MyFont_ChangeGC( unsigned long fix_fore, unsigned long fix_back, 
+extern void MyFont_ChangeGC( unsigned long fix_fore, unsigned long fix_back,
 			     MyFont *fix_font);
 extern Status I18N_FetchName( Display *dpy, Window win, char **winname);
 extern Status I18N_GetIconName( Display *dpy, Window win, char **iconname);

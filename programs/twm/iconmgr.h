@@ -1,5 +1,6 @@
+/* $XFree86: xc/programs/twm/iconmgr.h,v 1.7tsi Exp $ */
 /*
- * 
+ *
 Copyright 1989, 1998  The Open Group
 
 Permission to use, copy, modify, distribute, and sell this software and its
@@ -22,7 +23,6 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  * */
-/* $XFree86: xc/programs/twm/iconmgr.h,v 1.6 2001/12/14 20:01:08 dawes Exp $ */
 
 /***********************************************************************
  *

@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/twm/list.h,v 1.6tsi Exp $ */
 /*****************************************************************************/
 /*
 
@@ -48,7 +49,6 @@ in this Software without prior written authorization from The Open Group.
 /**    TORTIOUS ACTION, ARISING OUT OF OR IN  CONNECTION  WITH  THE  USE    **/
 /**    OR PERFORMANCE OF THIS SOFTWARE.                                     **/
 /*****************************************************************************/
-/* $XFree86: xc/programs/twm/list.h,v 1.5 2001/12/14 20:01:08 dawes Exp $ */
 
 
 /**********************************************************************
@@ -71,9 +71,9 @@ typedef struct name_list_struct name_list;
 extern void AddToList ( name_list **list_head, char *name, char *ptr );
 extern void FreeList ( name_list **list );
 
-extern int GetColorFromList ( name_list *list_head, char *name, 
+extern int GetColorFromList ( name_list *list_head, char *name,
 			      XClassHint *class, Pixel *ptr );
-extern char * LookInList ( name_list *list_head, char *name, 
+extern char * LookInList ( name_list *list_head, char *name,
 			   XClassHint *class );
 extern char * LookInNameList ( name_list *list_head, char *name );
 

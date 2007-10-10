@@ -1,5 +1,6 @@
+/* $XFree86: xc/programs/twm/screen.h,v 1.8tsi Exp $ */
 /*
- * 
+ *
 Copyright 1989, 1998  The Open Group
 
 Permission to use, copy, modify, distribute, and sell this software and its
@@ -30,7 +31,6 @@ in this Software without prior written authorization from The Open Group.
  * 11-3-88 Dave Payne, Apple Computer			File created
  *
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/screen.h,v 1.7 2004/06/08 01:17:02 dawes Exp $ */
 
 #ifndef _SCREEN_
 #define _SCREEN_
@@ -98,7 +98,7 @@ typedef struct ScreenInfo
     MouseButton WindowFunction;
 
     struct {
-      Colormaps *cmaps; 	/* current list of colormap windows */
+      Colormaps *cmaps;		/* current list of colormap windows */
       int maxCmaps;		/* maximum number of installed colormaps */
       unsigned long first_req;	/* seq # for first XInstallColormap() req in
 				   pass thru loading a colortable list */

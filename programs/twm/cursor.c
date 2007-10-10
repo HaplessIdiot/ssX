@@ -1,5 +1,6 @@
+/* $XFree86: xc/programs/twm/cursor.c,v 1.6tsi Exp $ */
 /*
- * 
+ *
 Copyright 1989, 1998  The Open Group
 
 Permission to use, copy, modify, distribute, and sell this software and its
@@ -22,7 +23,6 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  * */
-/* $XFree86: xc/programs/twm/cursor.c,v 1.5 2001/12/14 20:01:06 dawes Exp $ */
 
 /***********************************************************************
  *
@@ -123,10 +123,8 @@ static struct _CursorName {
 {"xterm",		XC_xterm,		None},
 };
 
-void 
-NewFontCursor (cp, str)
-    Cursor *cp;
-    char *str;
+void
+NewFontCursor (Cursor *cp, char *str)
 {
     int i;
 
@@ -141,14 +139,12 @@ NewFontCursor (cp, str)
 	    return;
 	}
     }
-    fprintf (stderr, "%s:  unable to find font cursor \"%s\"\n", 
+    fprintf (stderr, "%s:  unable to find font cursor \"%s\"\n",
 	     ProgramName, str);
 }
 
 void
-NewBitmapCursor(cp, source, mask)
-    Cursor *cp;
-    char *source, *mask;
+NewBitmapCursor(Cursor *cp, char *source, char *mask)
 {
     int hotx, hoty;
     int sx, sy, mx, my;
@@ -166,7 +162,7 @@ NewBitmapCursor(cp, source, mask)
     XGetGeometry(dpy, mpm, &JunkRoot, &mx, &my, &mw, &mh, &JunkBW,&JunkDepth);
     if (sw != mw || sh != mh)
     {
-	fprintf (stderr, 
+	fprintf (stderr,
 		 "%s:  cursor bitmaps \"%s\" and \"%s\" not the same size\n",
 		 ProgramName, source, mask);
 	return;

@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/twm/gc.c,v 1.7tsi Exp $ */
 /*****************************************************************************/
 /*
 
@@ -48,7 +49,6 @@ in this Software without prior written authorization from The Open Group.
 /**    TORTIOUS ACTION, ARISING OUT OF OR IN  CONNECTION  WITH  THE  USE    **/
 /**    OR PERFORMANCE OF THIS SOFTWARE.                                     **/
 /*****************************************************************************/
-/* $XFree86: xc/programs/twm/gc.c,v 1.6 2001/12/14 20:01:07 dawes Exp $ */
 
 
 /**********************************************************************
@@ -75,7 +75,7 @@ in this Software without prior written authorization from The Open Group.
  */
 
 void
-CreateGCs()
+CreateGCs(void)
 {
     static ScreenInfo *prevScr = NULL;
     XGCValues	    gcv;
@@ -88,31 +88,33 @@ CreateGCs()
 
     /* create GC's */
 
-    gcm = 0;
-    gcm |= GCFunction;	    gcv.function = GXxor;
-    gcm |= GCLineWidth;	    gcv.line_width = 0;
-    gcm |= GCForeground;    gcv.foreground = Scr->XORvalue;
-    gcm |= GCSubwindowMode; gcv.subwindow_mode = IncludeInferiors;
+    gcm = GCFunction | GCLineWidth | GCForeground | GCSubwindowMode;
+    gcv.function = GXxor;
+    gcv.line_width = 0;
+    gcv.foreground = Scr->XORvalue;
+    gcv.subwindow_mode = IncludeInferiors;
 
     Scr->DrawGC = XCreateGC(dpy, Scr->Root, gcm, &gcv);
 
-    gcm = 0;
-    gcm |= GCForeground;    gcv.foreground = Scr->MenuC.fore;
-    gcm |= GCBackground;    gcv.background = Scr->MenuC.back;
-    if (!use_fontset)
-	{gcm |= GCFont;	    gcv.font =  Scr->MenuFont.font->fid;}
+    gcm = GCForeground | GCBackground;
+    gcv.foreground = Scr->MenuC.fore;
+    gcv.background = Scr->MenuC.back;
+    if (!use_fontset) {
+	gcm |= GCFont;
+	gcv.font = Scr->MenuFont.font->fid;
+    }
 
     Scr->MenuGC = XCreateGC(dpy, Scr->Root, gcm, &gcv);
 
-    gcm = 0;
-    gcm |= GCPlaneMask;	    gcv.plane_mask = AllPlanes;
+    gcm = GCPlaneMask | GCGraphicsExposures | GCLineWidth;
+    gcv.plane_mask = AllPlanes;
     /*
      * Prevent GraphicsExpose and NoExpose events.  We'd only get NoExpose
      * events anyway;  they cause BadWindow errors from XGetWindowAttributes
      * call in FindScreenInfo (events.c) (since drawable is a pixmap).
      */
-    gcm |= GCGraphicsExposures;  gcv.graphics_exposures = False;
-    gcm |= GCLineWidth;	    gcv.line_width = 0;
+    gcv.graphics_exposures = False;
+    gcv.line_width = 0;
 
     Scr->NormalGC = XCreateGC(dpy, Scr->Root, gcm, &gcv);
 }

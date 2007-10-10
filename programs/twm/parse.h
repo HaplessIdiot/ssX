@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/parse.h,v 1.12 2005/05/19 01:02:44 dawes Exp $ */
+/* $XFree86: xc/programs/twm/parse.h,v 1.13tsi Exp $ */
 /*****************************************************************************/
 /*
 
@@ -68,7 +68,7 @@ extern void assign_var_savecolor ( void );
 extern int do_single_keyword ( int keyword );
 extern int do_string_keyword ( int keyword, char *s );
 extern int do_number_keyword ( int keyword, int num );
-extern name_list **do_colorlist_keyword ( int keyword, int colormode, 
+extern name_list **do_colorlist_keyword ( int keyword, int colormode,
 					  char *s );
 extern int do_color_keyword ( int keyword, int colormode, char *s );
 void put_pixel_on_root ( Pixel pixel );
@@ -79,7 +79,7 @@ extern int ParseTwmrc ( char *filename );
 extern int parse_keyword ( char *s, int *nump );
 extern void TwmOutput ( int c );
 extern void twmUnput ( int c );
-extern void do_squeeze_entry ( name_list **list, char *name, int justify, 
+extern void do_squeeze_entry ( name_list **list, char *name, int justify,
 			       int num, int denom );
 
 
@@ -135,7 +135,7 @@ extern int mods;
 #define F_SHOWLIST		44
 #define F_HIDELIST		45
 #define F_CHANGELABEL		46
-#define F_TOTALZOOM  		47
+#define F_TOTALZOOM		47
 
 #define F_MENU			101	/* string */
 #define F_WARPNEXT		112	/* string */

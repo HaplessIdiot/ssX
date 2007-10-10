@@ -1,5 +1,6 @@
+/* $XFree86: xc/programs/twm/icons.c,v 1.9tsi Exp $ */
 /*
- * 
+ *
 Copyright 1989, 1998  The Open Group
 
 Permission to use, copy, modify, distribute, and sell this software and its
@@ -22,7 +23,6 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  * */
-/* $XFree86: xc/programs/twm/icons.c,v 1.8 2004/06/08 01:17:02 dawes Exp $ */
 
 /**********************************************************************
  *
@@ -50,12 +50,9 @@ static IconEntry * prevIconEntry ( IconEntry *ie, IconRegion *ir );
 static void mergeEntries ( IconEntry *old, IconEntry *ie );
 
 static void
-splitEntry (ie, grav1, grav2, w, h)
-    IconEntry   *ie;
-    int         grav1, grav2;
-    int         w, h;
+splitEntry (IconEntry *ie, int grav1, int grav2, int w, int h)
 {
-    IconEntry	*new;
+    IconEntry *new;
 
     switch (grav1) {
     case D_NORTH:
@@ -110,10 +107,7 @@ roundUp (int v, int multiple)
 }
 
 void
-PlaceIcon(tmp_win, def_x, def_y, final_x, final_y)
-    TwmWindow *tmp_win;
-    int def_x, def_y;
-    int *final_x, *final_y;
+PlaceIcon(TwmWindow *tmp_win, int def_x, int def_y, int *final_x, int *final_y)
 {
     IconRegion	*ir;
     IconEntry	*ie;
@@ -146,9 +140,7 @@ PlaceIcon(tmp_win, def_x, def_y, final_x, final_y)
 }
 
 static IconEntry *
-FindIconEntry (tmp_win, irp)
-    TwmWindow   *tmp_win;
-    IconRegion	**irp;
+FindIconEntry (TwmWindow *tmp_win, IconRegion **irp)
 {
     IconRegion	*ir;
     IconEntry	*ie;
@@ -165,8 +157,7 @@ FindIconEntry (tmp_win, irp)
 }
 
 void
-IconUp (tmp_win)
-    TwmWindow   *tmp_win;
+IconUp (TwmWindow *tmp_win)
 {
     int		x, y;
     int		defx, defy;
@@ -206,9 +197,7 @@ IconUp (tmp_win)
 }
 
 static IconEntry *
-prevIconEntry (ie, ir)
-    IconEntry	*ie;
-    IconRegion	*ir;
+prevIconEntry (IconEntry *ie, IconRegion *ir)
 {
     IconEntry	*ip;
 
@@ -224,8 +213,7 @@ prevIconEntry (ie, ir)
  */
 
 static void
-mergeEntries (old, ie)
-    IconEntry	*old, *ie;
+mergeEntries (IconEntry *old, IconEntry *ie)
 {
     if (old->y == ie->y) {
 	ie->w = old->w + ie->w;
@@ -239,8 +227,7 @@ mergeEntries (old, ie)
 }
 
 void
-IconDown (tmp_win)
-    TwmWindow   *tmp_win;
+IconDown (TwmWindow *tmp_win)
 {
     IconEntry	*ie, *ip, *in;
     IconRegion	*ir;
@@ -254,21 +241,21 @@ IconDown (tmp_win)
 	for (;;) {
 	    if (ip && ip->used == 0 &&
 	       ((ip->x == ie->x && ip->w == ie->w) ||
-	        (ip->y == ie->y && ip->h == ie->h)))
+		(ip->y == ie->y && ip->h == ie->h)))
 	    {
-	    	ip->next = ie->next;
-	    	mergeEntries (ie, ip);
-	    	free ((char *) ie);
+		ip->next = ie->next;
+		mergeEntries (ie, ip);
+		free ((char *) ie);
 		ie = ip;
-	    	ip = prevIconEntry (ip, ir);
+		ip = prevIconEntry (ip, ir);
 	    } else if (in && in->used == 0 &&
 	       ((in->x == ie->x && in->w == ie->w) ||
-	        (in->y == ie->y && in->h == ie->h)))
+		(in->y == ie->y && in->h == ie->h)))
 	    {
-	    	ie->next = in->next;
-	    	mergeEntries (in, ie);
-	    	free ((char *) in);
-	    	in = ie->next;
+		ie->next = in->next;
+		mergeEntries (in, ie);
+		free ((char *) in);
+		in = ie->next;
 	    } else
 		break;
 	}
@@ -276,10 +263,7 @@ IconDown (tmp_win)
 }
 
 void
-AddIconRegion(geom, grav1, grav2, stepx, stepy)
-char *geom;
-int grav1, grav2;
-int stepx, stepy;
+AddIconRegion(char *geom, int grav1, int grav2, int stepx, int stepy)
 {
     IconRegion *ir;
     int mask;
@@ -322,8 +306,7 @@ int stepx, stepy;
 
 #ifdef comment
 void
-FreeIconEntries (ir)
-    IconRegion	*ir;
+FreeIconEntries (IconRegion *ir)
 {
     IconEntry	*ie, *tmp;
 
@@ -335,7 +318,7 @@ FreeIconEntries (ir)
 }
 
 void
-FreeIconRegions()
+FreeIconRegions(void)
 {
     IconRegion *ir, *tmp;
 
@@ -352,9 +335,7 @@ FreeIconRegions()
 #endif
 
 void
-CreateIconWindow(tmp_win, def_x, def_y)
-    TwmWindow *tmp_win;
-    int def_x, def_y;
+CreateIconWindow(TwmWindow *tmp_win, int def_x, int def_y)
 {
     unsigned long event_mask;
     unsigned long valuemask;		/* mask for create windows */
@@ -369,7 +350,7 @@ CreateIconWindow(tmp_win, def_x, def_y)
     tmp_win->forced = FALSE;
     tmp_win->icon_not_ours = FALSE;
 
-    /* now go through the steps to get an icon window,  if ForceIcon is 
+    /* now go through the steps to get an icon window,  if ForceIcon is
      * set, then no matter what else is defined, the bitmap from the
      * .twmrc file is used
      */
@@ -379,7 +360,7 @@ CreateIconWindow(tmp_win, def_x, def_y)
 	Pixmap bm;
 
 	icon_name = LookInNameList(Scr->IconNames, tmp_win->full_name);
-        if (icon_name == NULL)
+	if (icon_name == NULL)
 	    icon_name = LookInList(Scr->IconNames, tmp_win->full_name,
 				   &tmp_win->class);
 
@@ -417,9 +398,9 @@ CreateIconWindow(tmp_win, def_x, def_y)
     if (pm == None && tmp_win->wmhints &&
 	tmp_win->wmhints->flags & IconPixmapHint)
     {
-    
+
 	XGetGeometry(dpy,   tmp_win->wmhints->icon_pixmap,
-             &JunkRoot, &JunkX, &JunkY,
+	     &JunkRoot, &JunkX, &JunkY,
 	     (unsigned int *)&tmp_win->icon_width, (unsigned int *)&tmp_win->icon_height, &JunkBW, &JunkDepth);
 
 	pm = XCreatePixmap(dpy, Scr->Root,
@@ -430,7 +411,7 @@ CreateIconWindow(tmp_win, def_x, def_y)
 	    0,0, tmp_win->icon_width, tmp_win->icon_height, 0, 0, 1 );
     }
 
-    /* if we still haven't got an icon, let's look in the Icon list 
+    /* if we still haven't got an icon, let's look in the Icon list
      * if ForceIcon is not set
      */
     if (pm == None && !Scr->ForceIcon)
@@ -439,7 +420,7 @@ CreateIconWindow(tmp_win, def_x, def_y)
 	Pixmap bm;
 
 	icon_name = LookInNameList(Scr->IconNames, tmp_win->full_name);
-        if (icon_name == NULL)
+	if (icon_name == NULL)
 	    icon_name = LookInList(Scr->IconNames, tmp_win->full_name,
 				   &tmp_win->class);
 
@@ -555,7 +536,7 @@ CreateIconWindow(tmp_win, def_x, def_y)
 					    &attributes);
     }
 
-    /* I need to figure out where to put the icon window now, because 
+    /* I need to figure out where to put the icon window now, because
      * getting here means that I am going to make the icon visible
      */
     if (tmp_win->wmhints &&
@@ -585,5 +566,4 @@ CreateIconWindow(tmp_win, def_x, def_y)
     XSaveContext(dpy, tmp_win->icon_w, ScreenContext, (caddr_t)Scr);
     XDefineCursor(dpy, tmp_win->icon_w, Scr->IconCursor);
     if (pm) XFreePixmap (dpy, pm);
-    return;
 }

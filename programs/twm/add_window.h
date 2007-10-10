@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/twm/add_window.h,v 1.7tsi Exp $ */
 /*****************************************************************************/
 /*
 
@@ -48,7 +49,6 @@ in this Software without prior written authorization from The Open Group.
 /**    TORTIOUS ACTION, ARISING OUT OF OR IN  CONNECTION  WITH  THE  USE    **/
 /**    OR PERFORMANCE OF THIS SOFTWARE.                                     **/
 /*****************************************************************************/
-/* $XFree86: xc/programs/twm/add_window.h,v 1.6 2001/12/14 20:01:06 dawes Exp $ */
 
 
 /**********************************************************************
@@ -78,7 +78,7 @@ extern void GrabButtons ( TwmWindow *tmp_win );
 extern void GrabKeys ( TwmWindow *tmp_win );
 extern int MappedNotOverride ( Window w );
 extern void SetHighlightPixmap ( char *filename );
-extern int AddingX;	
+extern int AddingX;
 extern int AddingY;
 extern int AddingW;
 extern int AddingH;

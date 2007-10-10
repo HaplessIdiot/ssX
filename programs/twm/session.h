@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/session.h,v 1.1 1999/02/20 14:55:52 hohndel Exp $ */
+/* $XFree86: xc/programs/twm/session.h,v 1.2tsi Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.
  * All rights reserved.
@@ -70,7 +70,7 @@ extern int write_byte ( FILE *file, unsigned char b );
 extern int write_counted_string ( FILE *file, char *string );
 extern int write_short ( FILE *file, short s );
 extern int write_ushort ( FILE *file, unsigned short s );
- 
+
 extern SmcConn smcConn;
 
 #endif
