@@ -1,4 +1,5 @@
 %{
+/* $XFree86: xc/programs/twm/lex.l,v 3.16tsi Exp $ */
 /*****************************************************************************/
 /*
 
@@ -57,7 +58,6 @@ in this Software without prior written authorization from The Open Group.
  * 12-Nov-87 Thomas E. LaStrange		File created
  *
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/lex.l,v 3.15 2005/03/25 02:22:59 dawes Exp $ */
 
 /* #include <stdio.h> */		/* lex already includes stdio.h */
 #include "twm.h"
@@ -103,15 +103,15 @@ number				[0-9]+
 "-"				{ return MINUS; }
 "|"				{ return OR; }
 
-[a-zA-Z\.]+			{ int token = parse_keyword ((char *)yytext, 
+[a-zA-Z\.]+			{ int token = parse_keyword ((char *)yytext,
 							     &yylval.num);
 				  if (token == ERRORTOKEN) {
 				      twmrc_error_prefix();
 				      fprintf (stderr,
-				       "ignoring unknown keyword:  %s\n", 
+				       "ignoring unknown keyword:  %s\n",
 					       yytext);
 				      ParseError = 1;
-				  } else 
+				  } else
 				    return token;
 				}
 
@@ -126,7 +126,7 @@ number				[0-9]+
 [\r\n\t ]			{;}
 .				{
 				  twmrc_error_prefix();
-				  fprintf (stderr, 
+				  fprintf (stderr,
 					   "ignoring character \"%s\"\n",
 					   yytext);
 				  ParseError = 1;

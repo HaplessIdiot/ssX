@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/twm/list.c,v 1.10tsi Exp $ */
 /*****************************************************************************/
 /*
 
@@ -48,7 +49,6 @@ in this Software without prior written authorization from The Open Group.
 /**    TORTIOUS ACTION, ARISING OUT OF OR IN  CONNECTION  WITH  THE  USE    **/
 /**    OR PERFORMANCE OF THIS SOFTWARE.                                     **/
 /*****************************************************************************/
-/* $XFree86: xc/programs/twm/list.c,v 1.9 2003/04/21 11:46:13 herrb Exp $ */
 
 
 /**********************************************************************
@@ -80,23 +80,20 @@ struct name_list_struct
  *
  *  Inputs:
  *	list	- the address of the pointer to the head of a list
- *	name	- a pointer to the name of the window 
+ *	name	- a pointer to the name of the window
  *	ptr	- pointer to list dependent data
  *
  *  Special Considerations
- *	If the list does not use the ptr value, a non-null value 
+ *	If the list does not use the ptr value, a non-null value
  *	should be placed in it.  LookInList returns this ptr value
- *	and procedures calling LookInList will check for a non-null 
+ *	and procedures calling LookInList will check for a non-null
  *	return value as an indication of success.
  *
  ***********************************************************************
  */
 
 void
-AddToList(list_head, name, ptr)
-name_list **list_head;
-char *name;
-char *ptr;
+AddToList(name_list **list_head, char *name, char *ptr)
 {
     name_list *nptr;
 
@@ -115,7 +112,7 @@ char *ptr;
     nptr->name = name;
     nptr->ptr = (ptr == NULL) ? (char *)TRUE : ptr;
     *list_head = nptr;
-}    
+}
 
 /***********************************************************************
  *
@@ -123,7 +120,7 @@ char *ptr;
  *	LookInList - look through a list for a window name, or class
  *
  *  Returned Value:
- *	the ptr field of the list structure or NULL if the name 
+ *	the ptr field of the list structure or NULL if the name
  *	or class was not found in the list
  *
  *  Inputs:
@@ -135,10 +132,7 @@ char *ptr;
  */
 
 char *
-LookInList(list_head, name, class)
-name_list *list_head;
-char *name;
-XClassHint *class;
+LookInList(name_list *list_head, char *name, XClassHint *class)
 {
     name_list *nptr;
 
@@ -163,9 +157,7 @@ XClassHint *class;
 }
 
 char *
-LookInNameList(list_head, name)
-name_list *list_head;
-char *name;
+LookInNameList(name_list *list_head, char *name)
 {
     return (LookInList(list_head, name, NULL));
 }
@@ -190,11 +182,9 @@ char *name;
  ***********************************************************************
  */
 
-int GetColorFromList(list_head, name, class, ptr)
-name_list *list_head;
-char *name;
-XClassHint *class;
-Pixel *ptr;
+int
+GetColorFromList(name_list *list_head, char *name, XClassHint *class,
+		 Pixel *ptr)
 {
     int save;
     name_list *nptr;
@@ -242,8 +232,8 @@ Pixel *ptr;
  ***********************************************************************
  */
 
-void FreeList(list)
-name_list **list;
+void
+FreeList(name_list **list)
 {
     name_list *nptr;
     name_list *tmp;

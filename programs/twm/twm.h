@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/twm/twm.h,v 3.15tsi Exp $ */
 /*****************************************************************************/
 /**       Copyright 1988 by Evans & Sutherland Computer Corporation,        **/
 /**                          Salt Lake City, Utah                           **/
@@ -57,7 +58,6 @@ from The Open Group.
  * 28-Oct-87 Thomas E. LaStrange	File created
  * 10-Oct-90 David M. Sternlicht        Storeing saved colors on root
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/twm.h,v 3.14 2005/03/28 02:51:13 dawes Exp $ */
 
 #ifndef _TWM_
 #define _TWM_
@@ -189,7 +189,7 @@ typedef struct _SqueezeInfo {
  * ICCCM property.
  */
 typedef struct TwmColormap
-{	
+{
     Colormap c;			/* Colormap id */
     int state;			/* install(ability) state */
     unsigned long install_req;	/* request number which installed it */
@@ -220,7 +220,7 @@ typedef struct Colormaps
 				       ((cm)->number_cwins - 1) / 2)
 
 /* for each window that is on the display, one of these structures
- * is allocated and linked into a list 
+ * is allocated and linked into a list
  */
 typedef struct TwmWindow
 {
@@ -408,7 +408,7 @@ extern void twmrc_error_prefix ( void );
 #if !defined(YYBISON) && !(defined(YYBYACC) && defined(__NetBSD__))
 extern int yyparse ( void );
 #endif
-extern int yylex ( void ); 
+extern int yylex ( void );
 extern void yyerror ( char *s );
 extern int doinput ( char *buf, int size );
 extern void RemoveDQuote ( char *str );
