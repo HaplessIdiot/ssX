@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/session.c,v 3.11tsi Exp $ */
+/* $XFree86: xc/programs/twm/session.c,v 3.12 2007/10/10 00:31:39 tsi Exp $ */
 /******************************************************************************
 
 Copyright 1994, 1998  The Open Group
@@ -895,7 +895,7 @@ SaveYourselfPhase2CB (SmcConn smcConn, SmPointer clientData)
 
 void
 SaveYourselfCB (SmcConn smcConn, SmPointer clientData, int saveType,
-	        Bool shutdown, int interactStyle, Bool fast)
+		Bool shutdown, int interactStyle, Bool fast)
 {
     if (!SmcRequestSaveYourselfPhase2 (smcConn, SaveYourselfPhase2CB, NULL))
     {
