@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/add_window.c,v 1.16tsi Exp $ */
+/* $XFree86: xc/programs/twm/add_window.c,v 1.17 2007/10/10 00:31:39 tsi Exp $ */
 /*****************************************************************************/
 /*
 
@@ -1209,7 +1209,6 @@ ComputeCommonTitleOffsets (void)
       Scr->TBInfo.rightoff += (Scr->ButtonIndent +
 			       ((Scr->TBInfo.nright * buttonwidth) -
 				Scr->TBInfo.pad));
-    return;
 }
 
 void
@@ -1227,7 +1226,6 @@ ComputeWindowTitleOffsets (TwmWindow *tmp_win, int width, Bool squeeze)
 		  Scr->FramePadding);
 	if (rx < tmp_win->rightx) tmp_win->rightx = rx;
     }
-    return;
 }
 
 
@@ -1361,7 +1359,6 @@ CreateWindowTitlebarButtons (TwmWindow *tmp_win)
     XMapSubwindows(dpy, tmp_win->title_w);
     if (tmp_win->hilite_w)
       XUnmapWindow(dpy, tmp_win->hilite_w);
-    return;
 }
 
 
@@ -1598,8 +1595,6 @@ FetchWmColormapWindows (TwmWindow *tmp)
 	else
 	  XFree ((char *) cmap_windows);
     }
-
-    return;
 }
 
 

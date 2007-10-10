@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/events.c,v 1.16tsi Exp $ */
+/* $XFree86: xc/programs/twm/events.c,v 1.17 2007/10/10 00:31:39 tsi Exp $ */
 /*****************************************************************************/
 /*
 
@@ -720,7 +720,6 @@ free_window_names (TwmWindow *tmp, Bool nukefull, Bool nukename, Bool nukeicon)
     if (nukefull && tmp->full_name) free (tmp->full_name);
     if (nukename && tmp->name) free (tmp->name);
     if (nukeicon && tmp->icon_name) free (tmp->icon_name);
-    return;
 }
 
 
@@ -2374,7 +2373,6 @@ HandleLeaveNotify(void)
 	    }
 	}
 	XSync (dpy, 0);
-	return;
     }
 }
 
@@ -2860,4 +2858,3 @@ dumpevent (XEvent *e)
     }
 }
 #endif /* TRACE */
-

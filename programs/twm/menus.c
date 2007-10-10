@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/menus.c,v 1.25tsi Exp $ */
+/* $XFree86: xc/programs/twm/menus.c,v 1.26 2007/10/10 00:31:39 tsi Exp $ */
 /*****************************************************************************/
 /*
 
@@ -2887,7 +2887,6 @@ WarpToScreen (int n, int inc)
 		   &dumint, &dumint, &dummask);
 
     XWarpPointer (dpy, None, newscr->Root, 0, 0, 0, 0, x, y);
-    return;
 }
 
 

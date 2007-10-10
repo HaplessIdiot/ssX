@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/add_window.h,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/twm/add_window.h,v 1.8 2007/10/10 00:31:39 tsi Exp $ */
 /*****************************************************************************/
 /*
 
@@ -84,4 +84,3 @@ extern int AddingW;
 extern int AddingH;
 
 #endif /* _ADD_WINDOW_ */
-
