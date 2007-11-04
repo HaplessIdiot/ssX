@@ -1,4 +1,13 @@
 XFree86 4.7.99.5 (xx November 2007)
+  15. Do not free all Mesa buffers upon GLX extension closedown.  Instead these
+      will be freed later, when FreeAllResources() is called to also free the
+      drawable privates that reference these buffers.  Fixes Bugzilla #1685
+      (Marc La France).
+  14. Fix Mesa to complain (on stderr), rather than segfault, when an attempt
+      is made to free an unknown buffer (Marc La France).
+  13. Fix initialisation of __GLXscreenInfo structures (Marc La France).
+  12. Fix memory leak and code formatting in RADEONProbe() function
+      (Marc La France).
 
 XFree86 4.7.99.4 (23 October 2007)
 
@@ -20619,4 +20628,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3918 2007/10/09 11:03:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3919 2007/10/23 11:03:23 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/x11/xm_api.c,v 1.4 2004/06/11 08:04:20 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/x11/xm_api.c,v 1.5tsi Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  6.1
@@ -96,7 +96,7 @@ _glthread_Mutex _xmesa_lock;
 /*
  * Lookup tables for HPCR pixel format:
  */
-static short hpcr_rgbTbl[3][256] = {
+static const short hpcr_rgbTbl[3][256] = {
 {
  16,  16,  17,  17,  18,  18,  19,  19,  20,  20,  21,  21,  22,  22,  23,  23,
  24,  24,  25,  25,  26,  26,  27,  27,  28,  28,  29,  29,  30,  30,  31,  31,
@@ -1044,7 +1044,7 @@ static void setup_truecolor( XMesaVisual v, XMesaBuffer buffer,
     * Compute component-to-pixel lookup tables and dithering kernel
     */
    {
-      static GLubyte kernel[16] = {
+      static const GLubyte kernel[16] = {
           0*16,  8*16,  2*16, 10*16,
          12*16,  4*16, 14*16,  6*16,
           3*16, 11*16,  1*16,  9*16,
@@ -2012,7 +2012,17 @@ XMesaBuffer XMesaCreatePBuffer( XMesaVisual v, XMesaColormap cmap,
  */
 void XMesaDestroyBuffer( XMesaBuffer b )
 {
+   XMesaBuffer buf;
    int client = 0;
+
+   for (buf = XMesaBufferList;  ;  buf = buf->Next) {
+	if (!buf) {
+	    _mesa_problem(NULL, "XMesaBDestroyBuffer(%p) - attempt to free"
+			  " an unknown buffer\n", b);
+	    return;
+	}
+	if (buf == b) break;
+   }
 
 #ifdef XFree86Server
    if (b->frontbuffer)
@@ -2589,15 +2599,6 @@ void XMesaGarbageCollect( void )
 #endif
       }
    }
-}
-
-
-void XMesaReset( void )
-{
-    while (XMesaBufferList)
-	XMesaDestroyBuffer(XMesaBufferList);
-
-    XMesaBufferList = NULL;
 }
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.33 2006/03/02 03:00:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.34tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -300,10 +300,12 @@ RADEONProbe(DriverPtr drv, int flags)
 	foundScreen = TRUE;
     } else {
 	for (i = 0; i < numUsed; i++) {
-	    ScrnInfoPtr    pScrn = NULL;
-	    EntityInfoPtr  pEnt;
-	    pEnt = xf86GetEntityInfo(usedChips[i]);
-	    if ((pScrn = xf86ConfigPciEntity(pScrn, 0, usedChips[i],
+	    ScrnInfoPtr   pScrn;
+	    EntityInfoPtr pEnt;
+	    DevUnion     *pPriv;
+	    RADEONEntPtr  pRADEONEnt;
+
+	    if ((pScrn = xf86ConfigPciEntity(NULL, 0, usedChips[i],
 					     RADEONPciChipsets, 0, 0, 0,
 					     0, 0))) {
 #ifdef XFree86LOADER
@@ -338,38 +340,34 @@ RADEONProbe(DriverPtr drv, int flags)
 
 	    pEnt = xf86GetEntityInfo(usedChips[i]);
 
-            /* create a RADEONEntity for all chips, even with
-               old single head Radeon, need to use pRADEONEnt
-               for new monitor detection routines
-            */
-            {
-		DevUnion   *pPriv;
-		RADEONEntPtr pRADEONEnt;
+            /*
+	     * Create a RADEONEntity for all chips, even with old single head
+	     * Radeon, need to use pRADEONEnt for new monitor detection
+	     * routines.
+             */
+	    xf86SetEntitySharable(usedChips[i]);
 
-		xf86SetEntitySharable(usedChips[i]);
+	    if (gRADEONEntityIndex == -1)
+		gRADEONEntityIndex = xf86AllocateEntityPrivateIndex();
 
-		if (gRADEONEntityIndex == -1)
-		    gRADEONEntityIndex = xf86AllocateEntityPrivateIndex();
+	    pPriv = xf86GetEntityPrivate(pEnt->index, gRADEONEntityIndex);
 
-		pPriv = xf86GetEntityPrivate(pEnt->index,
-					     gRADEONEntityIndex);
+	    if (!pPriv->ptr) {
+		int j;
+		int instance = xf86GetNumEntityInstances(pEnt->index);
 
-		if (!pPriv->ptr) {
-		    int j;
-		    int instance = xf86GetNumEntityInstances(pEnt->index);
+		for (j = 0; j < instance; j++)
+		    xf86SetEntityInstanceForScreen(pScrn, pEnt->index, j);
 
-		    for (j = 0; j < instance; j++)
-			xf86SetEntityInstanceForScreen(pScrn, pEnt->index, j);
-
-		    pPriv->ptr = xnfcalloc(sizeof(RADEONEntRec), 1);
-		    pRADEONEnt = pPriv->ptr;
-		    pRADEONEnt->HasSecondary = FALSE;
-		    pRADEONEnt->IsSecondaryRestored = FALSE;
-		} else {
-		    pRADEONEnt = pPriv->ptr;
-		    pRADEONEnt->HasSecondary = TRUE;
-		}
+		pPriv->ptr = xnfcalloc(sizeof(RADEONEntRec), 1);
+		pRADEONEnt = pPriv->ptr;
+		pRADEONEnt->HasSecondary = FALSE;
+		pRADEONEnt->IsSecondaryRestored = FALSE;
+	    } else {
+		pRADEONEnt = pPriv->ptr;
+		pRADEONEnt->HasSecondary = TRUE;
 	    }
+
 	    xfree(pEnt);
 	}
     }

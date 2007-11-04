@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/GL/apple/aglGlx.c,v 1.4tsi Exp $ */
 /*
  * GLX implementation that uses Apple's AGL.framework for OpenGL
  *
@@ -32,7 +33,6 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/GL/apple/aglGlx.c,v 1.2 2003/09/16 00:36:11 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include <AGL/agl.h>
@@ -118,6 +118,7 @@ static __GLXscreenInfo __glDDXScreenInfo = {
     NULL,                 /* Set up pVisualPriv in probe */
     0,                    /* Set up numVisuals in probe */
     0,                    /* Set up numUsableVisuals in probe */
+    NULL,                 /* GLextensions is overwritten by __glXScreenInit */
     "Vendor String",      /* GLXvendor is overwritten by __glXScreenInit */
     "Version String",     /* GLXversion is overwritten by __glXScreenInit */
     "Extensions String",  /* GLXextensions is overwritten by __glXScreenInit */
