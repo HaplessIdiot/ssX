@@ -1468,7 +1468,6 @@ XMesaGetString
 XMesaLoseCurrent
 XMesaMakeCurrent
 XMesaMakeCurrent2
-XMesaReset
 XMesaSetFXmode
 XMesaSetVisualDisplay
 XMesaSwapBuffers
@@ -1480,4 +1479,4 @@ xmesa_get_line_func
 xmesa_get_points_func
 xmesa_get_triangle_func
 
-/* $XFree86: xc/programs/Xserver/GL/mesa/src/GLcore-def.cpp,v 1.1 2000/08/10 17:40:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/mesa/GLcore/GLcore-def.cpp,v 1.1tsi Exp $ */
