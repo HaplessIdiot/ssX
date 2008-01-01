@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.115tsi Exp $ */
 /*
 
 Copyright 1987, 1998  The Open Group
@@ -48,7 +49,6 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.114tsi Exp $ */
 /*
  * Copyright (c) 1996-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1886,24 +1886,26 @@ Fopen(const char *file, const char *type)
     ErrorF("Popen: `%s', fp = %p\n", command, iop);
 #endif
 
-    return iop;
 #else
     int ruid, euid;
 
     ruid = getuid();
     euid = geteuid();
     
-    if (seteuid(ruid) == -1) {
-	    return NULL;
-    }
+    if (seteuid(ruid) == -1)
+	return NULL;
+
     iop = fopen(file, type);
 
     if (seteuid(euid) == -1) {
+	if (iop)
 	    fclose(iop);
-	    return NULL;
+	return NULL;
     }
-    return iop;
+
 #endif /* HAS_SAVED_IDS_AND_SETEUID */
+
+    return iop;
 }
 
 int

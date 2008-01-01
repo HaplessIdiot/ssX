@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsPrint.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsPrint.c,v 1.12tsi Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -241,13 +241,16 @@ PsEndJob(
     FILE *file;
 
     file = fopen(priv->jobFileName, "r");
-    if (!file || (fstat(fileno(file), &buffer) < 0))
+    if (!file)
 	r = BadAlloc;
-    else
+    else if (fstat(fileno(file), &buffer) < 0) {
+	fclose(file);
+	r = BadAlloc;
+    } else {
 	r = XpSendDocumentData(priv->getDocClient, file, buffer.st_size,
 			       priv->getDocBufSize);
-    if (file)
 	fclose(file);
+    }
 
     (void) XpFinishDocData(priv->getDocClient);
 

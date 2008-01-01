@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xprint/Init.c,v 1.18tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/Init.c,v 1.19tsi Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -716,53 +716,66 @@ BuildPrinterDb(void)
 	char line[256];
 	FILE *fp = fopen(configFileName, "r");
 
-	while(fgets(line, 256, fp) != (char *)NULL)
+	if(!fp)
 	{
-	    char *tok, *ptr;
-	    if((tok = strtok(line, " \t\012")) != (char *)NULL)
-	    {
-		if(tok[0] == (char)'#') continue;
-		if(strcmp(tok, "Printer") == 0)
-		{
-		    while((tok = strtok((char *)NULL, " \t")) != (char *)NULL)
-		    {
-		        if ((ptr = MbStrchr(tok, '\012')) != 0)
-		            *ptr = (char)'\0';
-			AddPrinterDbName(tok);
-		    }
-		}
-		else if(strcmp(tok, "Map") == 0)
-		{
-		    char *name, *qualifier;
-
-		    if((tok = strtok((char *)NULL, " \t\012")) == (char *)NULL)
-			continue;
-		    name = strdup(tok);
-		    if((tok = strtok((char *)NULL, " \t\012")) == (char *)NULL)
-		    {
-			xfree(name);
-			continue;
-		    }
-		    qualifier = strdup(tok);
-		    AddNameMap(name, qualifier);
-		}
-		else if(strcmp(tok, "Augment_Printer_List") == 0)
-		{
-		    if((tok = strtok((char *)NULL, " \t\012")) == (char *)NULL)
-			continue;
-
-		    if(strcmp(tok, "%default%") == 0)
-			continue;
-		    defaultAugment = FALSE;
-		    if(strcmp(tok, "%none%") == 0)
-			continue;
-		    AugmentPrinterDb(tok);
-		}
-		else
-		    break; /* XXX Generate an error? */
-	    }
+	    ErrorF("Xp Extension: Can't open file %s\n", configFileName);
+	    configFileName = (char *)NULL;
 	}
-	fclose(fp);
+	else
+	{
+	    while(fgets(line, 256, fp) != (char *)NULL)
+	    {
+		char *tok, *ptr;
+		if((tok = strtok(line, " \t\012")) != (char *)NULL)
+		{
+		    if(tok[0] == (char)'#')
+			continue;
+		    if(strcmp(tok, "Printer") == 0)
+		    {
+			while((tok = strtok((char *)NULL, " \t")) !=
+			      (char *)NULL)
+			{
+			    if ((ptr = MbStrchr(tok, '\012')) != 0)
+				*ptr = (char)'\0';
+			    AddPrinterDbName(tok);
+			}
+		    }
+		    else if(strcmp(tok, "Map") == 0)
+		    {
+			char *name, *qualifier;
+
+			if((tok = strtok((char *)NULL, " \t\012")) ==
+			   (char *)NULL)
+			    continue;
+			name = strdup(tok);
+			if((tok = strtok((char *)NULL, " \t\012")) ==
+			   (char *)NULL)
+			{
+			    xfree(name);
+			    continue;
+			}
+			qualifier = strdup(tok);
+			AddNameMap(name, qualifier);
+		    }
+		    else if(strcmp(tok, "Augment_Printer_List") == 0)
+		    {
+			if((tok = strtok((char *)NULL, " \t\012")) ==
+			   (char *)NULL)
+			    continue;
+
+			if(strcmp(tok, "%default%") == 0)
+			    continue;
+			defaultAugment = FALSE;
+			if(strcmp(tok, "%none%") == 0)
+			    continue;
+			AugmentPrinterDb(tok);
+		    }
+		    else
+			break; /* XXX Generate an error? */
+		}
+	    }
+	    fclose(fp);
+	}
     }
 
     if(defaultAugment == TRUE)

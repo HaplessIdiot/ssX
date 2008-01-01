@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsText.c,v 1.14tsi Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -72,7 +73,6 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsText.c,v 1.13 2003/10/29 22:11:55 tsi Exp $ */
 
 #include "Ps.h"
 #include "gcstruct.h"
@@ -83,15 +83,12 @@ in this Software without prior written authorization from The Open Group.
 static int readFontName(char *fileName, char *file_name, char *dlfnam)
 {
     FILE        *file;
-    struct stat statb;
     char        buf[256];
     char 	*front, *fn;
 
     file = fopen(fileName, "r");
     if(file)
     {
-        if (fstat (fileno(file), &statb) == -1)
-            return 0;
 	while(fgets(buf, 255, file))
 	{
 	    if((fn = strstr(buf, " -")))
@@ -110,9 +107,9 @@ static int readFontName(char *fileName, char *file_name, char *dlfnam)
 	        }
 	    }
 	}
+	fclose(file);
     }
     file_name[0] = '\0';
-    fclose(file);
     return 0;
 }
 
