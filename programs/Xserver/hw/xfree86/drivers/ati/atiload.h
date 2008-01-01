@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.h,v 1.13 2006/03/19 19:06:34 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.h,v 1.14tsi Exp $ */
 /*
- * Copyright 2000 through 2007 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
+ * Copyright 2000 through 2008 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -44,6 +44,8 @@ extern ModuleDescPtr ATILoadVBEModule  FunctionPrototype((ScrnInfoPtr));
 extern ModuleDescPtr ATILoadSubModules FunctionPrototype((ScrnInfoPtr, ATIPtr));
 
 #else /* XFree86LOADER */
+
+#include <X11/Xdefs.h>
 
 #define ATILoadSubModule(pScreenInfo, Module, SymbolList) ((pointer)1)
 #define ATILoadVBEModule(pScreenInfo)                     ((pointer)1)
