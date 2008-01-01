@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclPrint.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclPrint.c,v 1.9tsi Exp $ */
 /*******************************************************************
 **
 **    *********************************************************
@@ -129,9 +129,6 @@ PclEndJob(
     PclContextPrivPtr priv = (PclContextPrivPtr)
       pCon->devPrivates[PclContextPrivateIndex].ptr;
 
-#ifdef CCP_DEBUG
-    FILE *xpoutput;
-#endif
     FILE *fp;
     int retVal;
     char *fileName, *trailer;
@@ -198,16 +195,6 @@ PclEndJob(
      */
     rewind( priv->pJobFile );
     stat( priv->jobFileName, &statBuf );
-    
-#ifdef CCP_DEBUG
-    unlink( "/users/prince/XpOutput" );
-    xpoutput = fopen( "/users/prince/XpOutput", "w" );
-    
-    rewind( priv->pJobFile );
-    TransferBytes( priv->pJobFile, xpoutput,
-		      (int)statBuf.st_size );
-    fclose( xpoutput );
-#endif
     
     XpSubmitJob( priv->jobFileName, pCon );
     fclose( priv->pJobFile );
