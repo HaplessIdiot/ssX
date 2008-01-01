@@ -1,23 +1,26 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/dmx/config/Imakefile,v 1.3tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/dmx/config/Imakefile,v 1.4tsi Exp $
 
 #include <Server.tmpl>
 
 YFLAGS = -d
 
-LIBSRCS = parser.c scanner.c dmxparse.c dmxprint.c dmxcompat.c dmxconfig.c
-LIBOBJS = parser.o scanner.o dmxparse.o dmxprint.o dmxcompat.o dmxconfig.o
+LIBSRCS = parser.c scanner.c dmxparse.c dmxconfig.c
+LIBOBJS = parser.o scanner.o dmxparse.o dmxconfig.o
 
 CONFIGSRCS = xdmxconfig.c dmxlog.c Canvas.c
 CONFIGOBJS = xdmxconfig.o dmxlog.o Canvas.o
 
-COMPATSRCS = vdltodmx.c
-COMPATOBJS = vdltodmx.o
+COMPATSRCS = vdltodmx.c dmxcompat.c
+COMPATOBJS = vdltodmx.o dmxcompat.o
 
 TESTSRCS = dmxtodmx.c
 TESTOBJS = dmxtodmx.o
 
-SRCS = $(LIBSRCS) $(CONFIGSRCS) $(COMPATSRCS) $(TESTSRCS)
-OBJS = $(LIBOBJS) $(CONFIGOBJS) $(COMPATOBJS) $(TESTOBJS)
+PRINTSRCS = dmxprint.c
+PRINTOBJS = dmxprint.o
+
+SRCS = $(LIBSRCS) $(CONFIGSRCS) $(COMPATSRCS) $(TESTSRCS) $(PRINTSRCS)
+OBJS = $(LIBOBJS) $(CONFIGOBJS) $(COMPATOBJS) $(TESTOBJS) $(PRINTOBJS)
 
 EXES = xdmxconfig vdltodmx dmxtodmx
 
@@ -37,18 +40,18 @@ YaccFile(parser,$(YFLAGS))
 NormalLibraryObjectRule()
 NormalLibraryTarget(dmxconfig,$(LIBOBJS))
 
-NormalProgramTarget(xdmxconfig,$(CONFIGOBJS),\
+NormalProgramTarget(xdmxconfig,$(CONFIGOBJS) $(PRINTOBJS),\
 	 	    libdmxconfig.a XawClientDepLibs $(DEPXTOOLLIB),\
 	            $(LOCAL_LIBRARIES) XawClientLibs $(XTOOLLIB),NullParameter)
 AllTarget(ProgramTargetName(xdmxconfig))
 InstallProgram(xdmxconfig,$(BINDIR))
 
-NormalProgramTarget(vdltodmx,$(COMPATOBJS),libdmxconfig.a,\
+NormalProgramTarget(vdltodmx,$(COMPATOBJS) $(PRINTOBJS),libdmxconfig.a,\
                     $(LOCAL_LIBRARIES),NullParameter)
 AllTarget(ProgramTargetName(vdltodmx))
 InstallProgram(vdltodmx,$(BINDIR))
 
-NormalProgramTarget(dmxtodmx,$(TESTOBJS),libdmxconfig.a,\
+NormalProgramTarget(dmxtodmx,$(TESTOBJS) $(PRINTOBJS),libdmxconfig.a,\
                     $(LOCAL_LIBRARIES),NullParameter)
 AllTarget(ProgramTargetName(dmxtodmx))
 InstallProgram(dmxtodmx,$(BINDIR))

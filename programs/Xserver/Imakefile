@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.330tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.331tsi Exp $
 
 /*
  * Copyright (c) 1994-2007 by The XFree86 Project, Inc.
@@ -212,13 +212,13 @@ XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.330tsi Exp $
 
         STATICEXTS = $(XKBEXT) $(XINPUTEXT) $(LBXEXT) $(SITEEXTS) $(RANDRLIB) \
 		     $(RENDERLIB)
-           MISCEXT = Xext/LibraryTargetName(ext)
+           MISCEXT = $(MISCDIR)/LibraryTargetName(ext)
       LOADABLEEXTS = $(MISCEXT) $(DBEEXT) $(RECORDEXT) $(GLXEXT) $(XTRAPEXT)
         EXTENSIONS = $(LOADABLEEXTS) $(STATICEXTS)
 
-           EXTDIRS = Xext $(XKBDIR) $(XIDIR) $(GLXDIR) $(LBXDIRS) $(DBEDIR) \
-		     $(RECORDDIR) $(RANDRDIR) $(RENDERDIR) $(XTRAPDIR) \
-		     $(SITEEXTDIRS)
+           EXTDIRS = $(MISCDIR) $(XKBDIR) $(XIDIR) $(GLXDIR) $(LBXDIRS) \
+		     $(DBEDIR) $(RECORDDIR) $(RANDRDIR) $(RENDERDIR) \
+		     $(XTRAPDIR) $(SITEEXTDIRS)
            STDDIRS = include mi $(XPDDXDIR) $(XPFBDIRS)
 
 #if BuildLBX || GzipFontCompression
@@ -352,7 +352,7 @@ XCOMM
      STACKTRACELIB = $(TOP)/util/memleak/LibraryTargetName(stacktrace)
 #endif
 #if DoLoadableServer
-          BASEEXTS = Xext/LibraryTargetName(exts)
+          BASEEXTS = $(MISCDIR)/LibraryTargetName(exts)
     XF86EXTENSIONS = $(BASEEXTS) $(STATICEXTS)
           XF86LIBS = $(MEMDEBUGLIB) $(XF86INIT) $(XF86COMLIB) $(XF86PARSLIB) \
 		     $(XF86OSLIB) $(STACKTRACELIB)
