@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.98tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.99tsi Exp $ */
 /*
  * Copyright (c) 1997-2007 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1348,17 +1348,18 @@ xf86PrintResList(int verb, resPtr list)
 		switch (list->res_type & ResExtMask) {
 		case ResBlock:
 		    xf86ErrorFVerb(verb,
-				   "\t[%d] %d\t%ld\t0x%08lx - 0x%08lx (0x%lx)",
+				   "\t[%3d] %3d %3ld 0x%08lx - 0x%08lx (0x%08lx)",
 				   i, list->entityIndex,
 				   (list->res_type & ResDomain) >> 24,
 				   list->block_begin, list->block_end,
 				   list->block_end - list->block_begin + 1);
 		    break;
 		case ResSparse:
-		    xf86ErrorFVerb(verb, "\t[%d] %d\t%ld\t0x%08lx - 0x%08lx",
+		    xf86ErrorFVerb(verb,
+				   "\t[%3d] %3d %3ld 0x%08lx - 0x%08lx",
 				   i, list->entityIndex,
 				   (list->res_type & ResDomain) >> 24,
-				   list->sparse_base,list->sparse_mask);
+				   list->sparse_base, list->sparse_mask);
 		    break;
 		default:
 		    list = list->next;
