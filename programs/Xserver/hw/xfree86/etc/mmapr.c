@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapr.c,v 1.17 2006/12/24 21:11:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapr.c,v 1.18tsi Exp $ */
 /*
- * Copyright 2002 through 2007 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
+ * Copyright 2002 through 2008 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that

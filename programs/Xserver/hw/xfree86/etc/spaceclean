@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# Copyright 2005 through 2006 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
+# Copyright 2005 through 2008 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
 #
 # Permission to use, copy, modify, distribute, and sell this software and its
 # documentation for any purpose is hereby granted without fee, provided that
@@ -38,7 +38,7 @@
 #       - This script assumes tab stops at every eight characters.
 #
 
-echo '$XFree86: tsi 1.0 $' | \
+echo '$XFree86: xc/programs/Xserver/hw/xfree86/etc/spaceclean,v 1.1tsi Exp $' | \
  awk "{print \""`basename $0`":  Version \" \$3}"
 
 if [ -n "${DEBUG}" ]; then

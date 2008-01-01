@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64accel.c,v 1.11 2006/11/26 16:42:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64accel.c,v 1.12tsi Exp $ */
 /*
- * Copyright 2003 through 2007 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
+ * Copyright 2003 through 2008 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
