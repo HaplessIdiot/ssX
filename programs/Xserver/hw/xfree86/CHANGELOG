@@ -1,4 +1,6 @@
 XFree86 4.7.99.9 (xx January 2008)
+  16. Fix file descriptor leaks in Xprt, and various attempts to close streams
+      that were not opened successfully (Marc La France).
 
 XFree86 4.7.99.8 (23 December 2007)
 
@@ -20636,4 +20638,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3923 2007/12/09 12:03:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3924 2007/12/23 12:02:57 dawes Exp $
