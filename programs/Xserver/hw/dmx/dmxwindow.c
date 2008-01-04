@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/dmxwindow.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxwindow.c,v 1.3tsi Exp $ */
 /*
  * Copyright 2001-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -1045,6 +1045,29 @@ static void dmxDoSetShape(WindowPtr pWindow)
     } else {
 	XShapeCombineMask(dmxScreen->beDisplay, pWinPriv->window,
 			  ShapeClip, 0, 0, None, ShapeSet);
+    }
+
+    /* Now, set the input shape */
+    if (wInputShape(pWindow)) {
+	pBox = REGION_RECTS(wInputShape(pWindow));
+	nRect = nBox = REGION_NUM_RECTS(wInputShape(pWindow));
+	pRectFirst = pRect = xalloc(nRect * sizeof(*pRect));
+	while (nBox--) {
+	    pRect->x      = pBox->x1;
+	    pRect->y      = pBox->y1;
+	    pRect->width  = pBox->x2 - pBox->x1;
+	    pRect->height = pBox->y2 - pBox->y1;
+	    pBox++;
+	    pRect++;
+	}
+	XShapeCombineRectangles(dmxScreen->beDisplay, pWinPriv->window,
+				ShapeInput, 0, 0,
+				pRectFirst, nRect,
+				ShapeSet, YXBanded);
+	xfree(pRectFirst);
+    } else {
+	XShapeCombineMask(dmxScreen->beDisplay, pWinPriv->window,
+			  ShapeInput, 0, 0, None, ShapeSet);
     }
 
     if (XShapeInputSelected(dmxScreen->beDisplay, pWinPriv->window)) {

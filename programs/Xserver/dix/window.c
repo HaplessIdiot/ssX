@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.40tsi Exp $ */
 /*
 
 Copyright 1987, 1998  The Open Group
@@ -68,8 +69,6 @@ SOFTWARE.
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.39tsi Exp $ */
 
 #include "misc.h"
 #include "scrnintstr.h"
@@ -406,6 +405,7 @@ CreateRootWindow(ScreenPtr pScreen)
 #ifdef SHAPE
     pWin->optional->boundingShape = NULL;
     pWin->optional->clipShape = NULL;
+    pWin->optional->inputShape = NULL;
 #endif
 #ifdef XINPUT
     pWin->optional->inputMasks = NULL;
@@ -791,6 +791,8 @@ FreeWindowResources(WindowPtr pWin)
 	REGION_DESTROY(pScreen, wBoundingShape (pWin));
     if (wClipShape (pWin))
 	REGION_DESTROY(pScreen, wClipShape (pWin));
+    if (wInputShape (pWin))
+	REGION_DESTROY(pScreen, wInputShape (pWin));
 #endif
     if (pWin->borderIsPixel == FALSE)
 	(*pScreen->DestroyPixmap)(pWin->border.pixmap);
@@ -3097,7 +3099,12 @@ PointInWindowIsVisible(WindowPtr pWin, int x, int y)
     if (!pWin->realized)
 	return (FALSE);
     if (POINT_IN_REGION(pWin->drawable.pScreen, &pWin->borderClip,
-						  x, y, &box))
+						  x, y, &box)
+	&& (!wInputShape(pWin) ||
+	    POINT_IN_REGION(pWin->drawable.pScreen,
+			    wInputShape(pWin),
+			    x - pWin->drawable.x, 
+			    y - pWin->drawable.y, &box)))
 	return(TRUE);
     return(FALSE);
 }
@@ -3472,6 +3479,8 @@ CheckWindowOptionalNeed(WindowPtr w)
 	return;
     if (optional->clipShape != NULL)
 	return;
+    if (optional->inputShape != NULL)
+	return;
 #endif
 #ifdef XINPUT
     if (optional->inputMasks != NULL)
@@ -3517,6 +3526,7 @@ MakeWindowOptional(WindowPtr pWin)
 #ifdef SHAPE
     optional->boundingShape = NULL;
     optional->clipShape = NULL;
+    optional->inputShape = NULL;
 #endif
 #ifdef XINPUT
     optional->inputMasks = NULL;
