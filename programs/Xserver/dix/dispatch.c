@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.36tsi Exp $ */
 /************************************************************
 
 Copyright 1987, 1989, 1998  The Open Group
@@ -66,8 +67,6 @@ SOFTWARE.
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-
-/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.35tsi Exp $ */
 
 #ifdef PANORAMIX_DEBUG
 #include <stdio.h>
@@ -1230,6 +1229,12 @@ ProcTranslateCoords(ClientPtr client)
 		&& (!wBoundingShape(pWin) ||
 		    POINT_IN_REGION(pWin->drawable.pScreen, 
 					&pWin->borderSize, x, y, &box))
+		
+		&& (!wInputShape(pWin) ||
+		    POINT_IN_REGION(pWin->drawable.pScreen,
+				    wInputShape(pWin),
+				    x - pWin->drawable.x,
+				    y - pWin->drawable.y, &box))
 #endif
 		)
             {

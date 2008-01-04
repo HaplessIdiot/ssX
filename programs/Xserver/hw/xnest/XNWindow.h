@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xnest/XNWindow.h,v 1.5tsi Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -11,7 +12,6 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/XNWindow.h,v 1.4 2003/11/16 05:05:20 dawes Exp $ */
 
 #ifndef XNESTWINDOW_H
 #define XNESTWINDOW_H
@@ -28,6 +28,7 @@ typedef struct {
 #ifdef SHAPE
   RegionPtr bounding_shape;
   RegionPtr clip_shape;
+  RegionPtr input_shape;
 #endif /* SHAPE */
 } xnestPrivWin;
 

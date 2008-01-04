@@ -1,3 +1,4 @@
+/* $XFree86: xc/include/extensions/shapestr.h,v 1.3tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -24,8 +25,6 @@ in this Software without prior written authorization from The Open Group.
 
 ********************************************************/
 
-/* $XFree86$ */
-
 #ifndef _SHAPESTR_H_
 #define _SHAPESTR_H_
 
@@ -42,7 +41,7 @@ in this Software without prior written authorization from The Open Group.
 #define SHAPENAME "SHAPE"
 
 #define SHAPE_MAJOR_VERSION	1	/* current version numbers */
-#define SHAPE_MINOR_VERSION	0
+#define SHAPE_MINOR_VERSION	1
 
 typedef struct _ShapeQueryVersion {
 	CARD8	reqType;		/* always ShapeReqCode */

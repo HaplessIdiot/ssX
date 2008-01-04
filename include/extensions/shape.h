@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/shape.h,v 1.4 2003/11/17 22:20:03 dawes Exp $ */
+/* $XFree86: xc/include/extensions/shape.h,v 1.5tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -48,6 +48,7 @@ in this Software without prior written authorization from The Open Group.
 
 #define ShapeBounding			0
 #define ShapeClip			1
+#define ShapeInput			2
 
 #define ShapeNotifyMask			(1L << 0)
 #define ShapeNotify			0

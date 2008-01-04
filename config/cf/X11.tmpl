@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.297tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.298tsi Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -2128,7 +2128,7 @@ ProjectUnsharedLibReferences(XONLY,X11,$(XLIBSRC),XBuildLibDir)
        XEXTLIBSRC = $(LIBSRC)/Xext
 #if SharedLibXext
 #ifndef SharedXextRev
-#define SharedXextRev 6.4
+#define SharedXextRev 6.5
 #endif
 SharedLibReferences(EXTENSION,Xext,$(XEXTLIBSRC),SOXEXTREV,SharedXextRev)
 #else

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xnest/Window.c,v 3.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Window.c,v 3.9tsi Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -540,6 +540,37 @@ xnestShapeWindow(WindowPtr pWin)
       
       XShapeCombineMask(xnestDisplay, xnestWindow(pWin),
 			ShapeClip, 0, 0, None, ShapeSet);
+    }
+  }
+  
+  if (!xnestRegionEqual(xnestWindowPriv(pWin)->input_shape,
+			wInputShape(pWin))) {
+    
+    if (wInputShape(pWin)) {
+      REGION_COPY(pWin->drawable.pScreen, 
+			xnestWindowPriv(pWin)->input_shape, wInputShape(pWin));
+      
+      reg = XCreateRegion();
+      pBox = REGION_RECTS(xnestWindowPriv(pWin)->input_shape);
+      for (i = 0; 
+	   i < REGION_NUM_RECTS(xnestWindowPriv(pWin)->input_shape);
+	   i++) {
+        rect.x = pBox[i].x1;
+        rect.y = pBox[i].y1;
+        rect.width = pBox[i].x2 - pBox[i].x1;
+        rect.height = pBox[i].y2 - pBox[i].y1;
+        XUnionRectWithRegion(&rect, reg, reg);
+      }
+      XShapeCombineRegion(xnestDisplay, xnestWindow(pWin),
+			  ShapeInput, 0, 0, reg, ShapeSet);
+      XDestroyRegion(reg);
+    }
+    else {
+      REGION_EMPTY(pWin->drawable.pScreen, 
+				     xnestWindowPriv(pWin)->input_shape);
+      
+      XShapeCombineMask(xnestDisplay, xnestWindow(pWin),
+			ShapeInput, 0, 0, None, ShapeSet);
     }
   }
 }

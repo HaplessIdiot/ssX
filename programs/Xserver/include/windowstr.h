@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/windowstr.h,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/include/windowstr.h,v 1.9tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -85,6 +85,7 @@ typedef struct _WindowOpt {
 #ifdef SHAPE
     RegionPtr		boundingShape;	   /* default: NULL */
     RegionPtr		clipShape;	   /* default: NULL */
+    RegionPtr		inputShape;	   /* default: NULL */
 #endif
 #ifdef XINPUT
     struct _OtherInputMasks *inputMasks;   /* default: NULL */
@@ -175,6 +176,7 @@ extern Mask	    DontPropagateMasks[];
 #ifdef SHAPE
 #define wBoundingShape(w)	wUseDefault(w, boundingShape, NULL)
 #define wClipShape(w)		wUseDefault(w, clipShape, NULL)
+#define wInputShape(w)		wUseDefault(w, inputShape, NULL)
 #endif
 #define wClient(w)		(clients[CLIENT_ID((w)->drawable.id)])
 #define wBorderWidth(w)		((int) (w)->borderWidth)
