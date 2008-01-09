@@ -1,4 +1,6 @@
-XFree86 4.7.99.9 (xx January 2008)
+XFree86 4.7.99.10 (xx January 2008)
+
+XFree86 4.7.99.9 (9 January 2008)
   17. Update SHAPE extension to Keith Packard's 1.1 version.  Adds input
       regions to windows that scope the area within which pointer movements are
       reported to the client.  Fixes build issue in certain sawfish window
@@ -20643,4 +20645,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3925 2008/01/01 02:02:34 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3926 2008/01/04 17:50:11 tsi Exp $
