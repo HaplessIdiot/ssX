@@ -1,4 +1,6 @@
-XFree86 4.7.99.10 (xx January 2008)
+XFree86 4.7.99.11 (xx February 2008)
+
+XFree86 4.7.99.10 (23 January 2008)
 
 XFree86 4.7.99.9 (9 January 2008)
   17. Update SHAPE extension to Keith Packard's 1.1 version.  Adds input
@@ -20645,4 +20647,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3926 2008/01/04 17:50:11 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3927 2008/01/09 12:03:08 dawes Exp $
