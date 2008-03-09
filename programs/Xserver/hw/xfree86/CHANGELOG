@@ -1,4 +1,6 @@
-XFree86 4.7.99.13 (xx March 2008)
+XFree86 4.7.99.14 (xx March 2008)
+
+XFree86 4.7.99.13 (9 March 2008)
 
 XFree86 4.7.99.12 (23 February 2008)
 
@@ -20651,4 +20653,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3929 2008/02/09 12:03:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3930 2008/02/23 12:02:53 dawes Exp $
