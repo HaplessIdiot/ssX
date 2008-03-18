@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xi/grabdev.c,v 3.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/grabdev.c,v 3.4tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -80,9 +80,7 @@ int
 SProcXGrabDevice(client)
     register ClientPtr client;
     {
-    register char n;
-    register long *p;
-    register int i;
+    char n;
 
     REQUEST(xGrabDeviceReq);
     swaps(&stuff->length, n);
@@ -90,12 +88,11 @@ SProcXGrabDevice(client)
     swapl(&stuff->grabWindow, n);
     swapl(&stuff->time, n);
     swaps(&stuff->event_count, n);
-    p = (long *) &stuff[1];
-    for (i=0; i<stuff->event_count; i++)
-        {
-        swapl(p, n);
-	p++;
-        }
+
+    if (stuff->length != (sizeof(xGrabDeviceReq) >> 2) + stuff->event_count)
+	return BadLength;
+
+    SwapLongs((CARD32 *)(&stuff[1]), stuff->event_count);
 
     return(ProcXGrabDevice(client));
     }

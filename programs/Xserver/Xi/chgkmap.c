@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xi/chgkmap.c,v 3.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/chgkmap.c,v 3.4tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -74,22 +74,17 @@ SOFTWARE.
 
 int
 SProcXChangeDeviceKeyMapping(client)
-    register ClientPtr client;
+    ClientPtr client;
     {
-    register char n;
-    register long *p;
-    register int i, count;
+    char n;
+    unsigned int count;
 
     REQUEST(xChangeDeviceKeyMappingReq);
     swaps(&stuff->length, n);
     REQUEST_AT_LEAST_SIZE(xChangeDeviceKeyMappingReq);
-    p = (long *) &stuff[1];
     count = stuff->keyCodes * stuff->keySymsPerKeyCode;
-    for (i = 0; i < count; i++)
-        {
-        swapl(p, n);
-	p++;
-        }
+    REQUEST_FIXED_SIZE(xChangeDeviceKeyMappingReq, count * sizeof(CARD32));
+    SwapLongs((CARD32 *)(&stuff[1]), count);
     return(ProcXChangeDeviceKeyMapping(client));
     }
 
@@ -106,9 +101,13 @@ ProcXChangeDeviceKeyMapping(client)
     int	ret;
     unsigned len;
     DeviceIntPtr dev;
+    unsigned int count;
 
     REQUEST(xChangeDeviceKeyMappingReq);
     REQUEST_AT_LEAST_SIZE(xChangeDeviceKeyMappingReq);
+
+    count = stuff->keyCodes * stuff->keySymsPerKeyCode;
+    REQUEST_FIXED_SIZE(xChangeDeviceKeyMappingReq, count * sizeof(CARD32));
 
     dev = LookupDeviceIntRec (stuff->deviceid);
     if (dev == NULL)

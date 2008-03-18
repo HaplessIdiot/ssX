@@ -1,3 +1,4 @@
+/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.25tsi Exp $ */
 /*
 
 Copyright 1990, 1998  The Open Group
@@ -25,7 +26,6 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.24 2006/07/23 19:44:49 tsi Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -582,6 +582,9 @@ pcfReadFont(FontPtr pFont, FontFilePtr file,
     pFont->info.lastRow = pcfGetINT16(file, format);
     pFont->info.defaultCh = pcfGetINT16(file, format);
     if (IS_EOF(file)) goto Bail;
+    if ((pFont->info.firstCol > pFont->info.lastCol) ||
+	(pFont->info.firstRow > pFont->info.lastRow) ||
+	((pFont->info.lastCol - pFont->info.firstCol) > 255)) goto Bail;
 
     nencoding = (pFont->info.lastCol - pFont->info.firstCol + 1) *
 	(pFont->info.lastRow - pFont->info.firstRow + 1);
@@ -720,6 +723,9 @@ pcfReadFontInfo(FontInfoPtr pFontInfo, FontFilePtr file)
     pFontInfo->lastRow = pcfGetINT16(file, format);
     pFontInfo->defaultCh = pcfGetINT16(file, format);
     if (IS_EOF(file)) goto Bail;
+    if ((pFontInfo->firstCol > pFontInfo->lastCol) ||
+	(pFontInfo->firstRow > pFontInfo->lastRow) ||
+	((pFontInfo->lastCol - pFontInfo->firstCol) > 255)) goto Bail;
 
     nencoding = (pFontInfo->lastCol - pFontInfo->firstCol + 1) *
 	(pFontInfo->lastRow - pFontInfo->firstRow + 1);

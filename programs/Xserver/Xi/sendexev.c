@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xi/sendexev.c,v 3.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/sendexev.c,v 3.4tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -80,9 +80,8 @@ int
 SProcXSendExtensionEvent(client)
     register ClientPtr client;
     {
-    register char n;
-    register long *p;
-    register int i;
+    char n;
+    int i;
     xEvent eventT;
     xEvent *eventP;
     EventSwapPtr proc;
@@ -92,22 +91,23 @@ SProcXSendExtensionEvent(client)
     REQUEST_AT_LEAST_SIZE(xSendExtensionEventReq);
     swapl(&stuff->destination, n);
     swaps(&stuff->count, n);
+    if (stuff->length !=
+	((sizeof(xSendExtensionEventReq) >> 2) + stuff->count +
+	 (stuff->num_events * (sizeof(xEvent) >> 2))))
+	return BadLength;
+
     eventP = (xEvent *) &stuff[1];
     for (i=0; i<stuff->num_events; i++,eventP++)
         {
 	proc = EventSwapVector[eventP->u.u.type & 0177];
- 	if (proc == NotImplemented)   /* no swapping proc; invalid event type? */
+ 	if (proc == NotImplemented) /* no swapping proc; invalid event type? */
 	    return (BadValue);
 	(*proc)(eventP, &eventT);
 	*eventP = eventT;
 	}
 
-    p = (long *) (((xEvent *) &stuff[1]) + stuff->num_events);
-    for (i=0; i<stuff->count; i++)
-        {
-        swapl(p, n);
-	p++;
-        }
+    SwapLongs((CARD32 *)((xEvent *)(&stuff[1]) + stuff->num_events),
+	      stuff->count);
     return(ProcXSendExtensionEvent(client));
     }
 
