@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.38 2005/10/14 15:15:52 tsi Exp $
+XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.39tsi Exp $
 
 #ifdef BuilderEMailAddr
 BUILDERADDR = BuilderEMailAddr
@@ -33,6 +33,11 @@ BUGMSG = -DBUILDERADDR='$(BUILDERADDR)'
 
 #ifndef JoystickSupport
 #define JoystickSupport		NO
+#endif
+
+#if UseStackTrace && HasGcc
+/* Make stack traces more accurate */
+CCOPTIONS = ServerCCOptions -fno-omit-frame-pointer
 #endif
 
 /*

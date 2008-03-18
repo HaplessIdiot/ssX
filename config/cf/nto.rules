@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/nto.rules,v 1.9 2004/03/12 15:05:51 tsi Exp $ 
+XCOMM $XFree86: xc/config/cf/nto.rules,v 1.10tsi Exp $ 
 XCOMM Rules for QNX/Neutrino
 XCOMM Note that some of these will disappear when we stop cross-compiling
 
@@ -171,7 +171,13 @@ install::								@@\
 #ifndef ServerTargetWithFlags
 #define	ServerTargetWithFlags(server,subdirs,objects,libs,syslibs,flags) @@\
 AllTarget(ProgramTargetName(server))					@@\
-ProgramTargetName(server): subdirs objects libs				@@\
+									@@\
+Concat(server,DEPS) = objects libs					@@\
+									@@\
+$(Concat(server,DEPS)):: subdirs					@@\
+	$(_NULLCMD_)							@@\
+									@@\
+ProgramTargetName(server): objects libs					@@\
 	MoveToBakFile($@)						@@\
 	LinkRule($@,$(LDOPTIONS),objects,libs $(LDLIBS) syslibs) 	@@\
 									@@\
