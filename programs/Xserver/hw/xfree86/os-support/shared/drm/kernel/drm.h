@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/drm/kernel/drm.h,v 1.0tsi Exp $ */
 /**
  * \file drm.h 
  * Header for the Direct Rendering Manager
@@ -42,7 +43,6 @@
 #endif
 
 #if defined(__linux__)
-#include <linux/config.h>
 #include <asm/ioctl.h>		/* For _IO* macros */
 #define DRM_IOCTL_NR(n)		_IOC_NR(n)
 #define DRM_IOC_VOID		_IOC_NONE
