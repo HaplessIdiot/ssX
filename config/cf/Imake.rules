@@ -1,6 +1,6 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.153tsi Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.154tsi Exp $
 /*
  * Copyright (c) 1994-2006 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1139,7 +1139,12 @@ CplusplusProgramTargetHelper(program,SRCS10,OBJS10,DEPLIBS10,locallib,syslib)
 #ifndef ServerTargetWithFlags
 #define	ServerTargetWithFlags(server,subdirs,objects,libs,syslibs,flags) @@\
 AllTarget(ProgramTargetName(server))					@@\
-ProgramTargetName(server): subdirs /* objects libs */			@@\
+Concat(server,DEPS) = objects libs					@@\
+									@@\
+$(Concat(server,DEPS)):: subdirs					@@\
+	$(_NULLCMD_)							@@\
+									@@\
+ProgramTargetName(server): objects libs					@@\
 	MoveToBakFile($@)						@@\
 	LinkRule($@,$(LDOPTIONS),objects,libs $(LDLIBS) syslibs) @@\
 									@@\

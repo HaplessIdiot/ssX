@@ -1,4 +1,9 @@
 XFree86 4.7.99.14 (xx March 2008)
+  19. When building an XFree86 loader server with stack backtrace support, use
+      GCC's -fno-omit-frame-pointer flag to improve the accuracy of stack
+      traces (Marc La France).
+  18. Fix (portably this time) X server links to ensure dependant subdirs are
+      tranversed before the server linked  (Marc La France).
 
 XFree86 4.7.99.13 (9 March 2008)
 
@@ -20653,4 +20658,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3930 2008/02/23 12:02:53 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3931 2008/03/09 12:03:27 dawes Exp $

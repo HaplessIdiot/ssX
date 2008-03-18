@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/Win32.rules,v 1.7 2006/01/09 14:56:12 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Win32.rules,v 1.8tsi Exp $
 
 #define HasSharedLibraries YES
 #define NeedLibInsideFlag YES
@@ -506,7 +506,11 @@ LintLibReferences(varname,libname,libsource)
 XVARdef0 = objects							@@\
 									@@\
 AllTarget(ProgramTargetName(server))					@@\
-ProgramTargetName(server): subdirs $(XVARuse0:.o=.obj) libs		@@\
+									@@\
+$(XVARuse0:.o=.obj) libs:: subdirs					@@\
+	$(_NULLCMD_)							@@\
+									@@\
+ProgramTargetName(server): $(XVARuse0:.o=.obj) libs			@@\
 	MoveToBakFile($@)						@@\
 	LinkRule($@,$(LDOPTIONS),$(XVARuse0:.o=.obj),libs $(LDLIBS) syslibs) @@\
 									@@\
