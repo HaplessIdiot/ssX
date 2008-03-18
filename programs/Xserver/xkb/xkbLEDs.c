@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/xkb/xkbLEDs.c,v 3.10tsi Exp $ */
 /************************************************************
 Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -23,7 +24,6 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbLEDs.c,v 3.9tsi Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -59,6 +59,9 @@ unsigned	update=	0;
 XkbSrvLedInfoPtr	sli;
 
     sli= XkbFindSrvLedInfo(dev,XkbDfltXIClass,XkbDfltXIId,0);
+
+    if (!sli)
+	return update;
 
     if (state_changes&(XkbModifierStateMask|XkbGroupStateMask))
 	update|= sli->usesEffective;
