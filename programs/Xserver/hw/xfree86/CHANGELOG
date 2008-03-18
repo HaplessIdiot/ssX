@@ -1,4 +1,6 @@
 XFree86 4.7.99.14 (xx March 2008)
+  20. Remove unnecessary #include of <linux/config.h> from our Linux DRM
+      source  (Bugzilla #1689, Marc La France).
   19. When building an XFree86 loader server with stack backtrace support, use
       GCC's -fno-omit-frame-pointer flag to improve the accuracy of stack
       traces (Marc La France).
@@ -20658,4 +20660,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3931 2008/03/09 12:03:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3932 2008/03/18 19:36:52 tsi Exp $
