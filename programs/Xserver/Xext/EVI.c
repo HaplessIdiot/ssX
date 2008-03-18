@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/Xext/EVI.c,v 3.13tsi Exp $ */
 /************************************************************
 Copyright (c) 1997 by Silicon Graphics Computer Systems, Inc.
 Permission to use, copy, modify, and distribute this
@@ -20,7 +21,6 @@ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
 OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/EVI.c,v 3.12tsi Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xproto.h>
@@ -31,6 +31,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/extensions/XEVIstr.h>
 #include "EVIstruct.h"
 #include "modinit.h"
+#include "scrnintstr.h"
 
 #ifdef EVI
 #if 0
@@ -85,10 +86,18 @@ ProcEVIGetVisualInfo(ClientPtr client)
 {
     REQUEST(xEVIGetVisualInfoReq);
     xEVIGetVisualInfoReply rep;
-    int n, n_conflict, n_info, sz_info, sz_conflict;
+    int i, n, n_conflict, n_info, sz_info, sz_conflict;
     VisualID32 *conflict;
+    CARD32 total_visuals = 0;
     xExtendedVisualInfo *eviInfo;
     int status;
+
+    /* Prevent REQUEST_FIXED_SIZE overflows */
+    for (i = 0;  i < screenInfo.numScreens;  i++)
+	total_visuals += screenInfo.screens[i]->numVisuals;
+    if (stuff->n_visual > total_visuals)
+	return BadValue;
+
     REQUEST_FIXED_SIZE(xEVIGetVisualInfoReq, stuff->n_visual * sz_VisualID32);
     status = eviPriv->getVisualInfo((VisualID32 *)&stuff[1], (int)stuff->n_visual,
 		&eviInfo, &n_info, &conflict, &n_conflict);

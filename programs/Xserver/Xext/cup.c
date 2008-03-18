@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/Xext/cup.c,v 1.14tsi Exp $ */
 /*
 
 Copyright 1997, 1998  The Open Group
@@ -23,7 +24,6 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/cup.c,v 1.13tsi Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -195,6 +195,9 @@ ProcGetReservedColormapEntries(ClientPtr client)
     int n;
 
     REQUEST_SIZE_MATCH (xXcupGetReservedColormapEntriesReq);
+
+    if (stuff->screen > screenInfo.numScreens)
+	return BadValue;
 
 #ifndef HAVE_SPECIAL_DESKTOP_COLORS
     citems[CUP_BLACK_PIXEL].pixel = 

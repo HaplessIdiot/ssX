@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/Xext/sampleEVI.c,v 3.7tsi Exp $ */
 /************************************************************
 Copyright (c) 1997 by Silicon Graphics Computer Systems, Inc.
 Permission to use, copy, modify, and distribute this
@@ -20,7 +21,6 @@ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
 OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/sampleEVI.c,v 3.6tsi Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xproto.h>
@@ -40,24 +40,37 @@ sampleGetVisualInfo(
     VisualID32 **conflict_rn,
     int *n_conflict_rn)
 {
-    int max_sz_evi = n_visual * sz_xExtendedVisualInfo * screenInfo.numScreens;
+    CARD32 max_sz_evi;
     VisualID32 *temp_conflict;
     xExtendedVisualInfo *evi;
     int max_visuals = 0, max_sz_conflict, sz_conflict = 0;
     int visualI, scrI, sz_evi = 0, conflictI, n_conflict;
-    *evi_rn = evi = (xExtendedVisualInfo *)xalloc(max_sz_evi);
-    if (!*evi_rn)
-         return BadAlloc;
+
+    if ((CARD32)n_visual >
+	(((CARD32)(-1L) / sz_xExtendedVisualInfo) / screenInfo.numScreens))
+	return BadAlloc;
+
     for (scrI = 0; scrI < screenInfo.numScreens; scrI++) {
         if (screenInfo.screens[scrI]->numVisuals > max_visuals)
             max_visuals = screenInfo.screens[scrI]->numVisuals;
     }
-    max_sz_conflict = n_visual * sz_VisualID32 * screenInfo.numScreens * max_visuals;
+
+    if ((CARD32)n_visual > (((CARD32)(-1L) / sz_VisualID32) / max_visuals))
+	return BadAlloc;
+
+    max_sz_evi = n_visual * sz_xExtendedVisualInfo * screenInfo.numScreens;
+    *evi_rn = evi = (xExtendedVisualInfo *)xalloc(max_sz_evi);
+    if (!*evi_rn)
+         return BadAlloc;
+
+    max_sz_conflict =
+	n_visual * sz_VisualID32 * screenInfo.numScreens * max_visuals;
     temp_conflict = (VisualID32 *)xalloc(max_sz_conflict);
     if (!temp_conflict) {
         xfree(*evi_rn);
         return BadAlloc;
     }
+
     for (scrI = 0; scrI < screenInfo.numScreens; scrI++) {
         for (visualI = 0; visualI < n_visual; visualI++) {
 	    evi[sz_evi].core_visual_id = visual[visualI];

@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.21tsi Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -69,7 +70,6 @@ in this Software without prior written authorization from The Open Group.
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.20 2005/10/14 15:16:11 tsi Exp $ */
 
 #include "dixstruct.h"
 #include "extnsionst.h"
@@ -1642,7 +1642,7 @@ SecurityLoadPropertyAccessList(void)
 	return;
 
 #ifndef __UNIXOS2__
-    f = fopen(SecurityPolicyFile, "r");
+    f = Fopen(SecurityPolicyFile, "r");
 #else
     f = fopen((char*)__XOS2RedirRoot(SecurityPolicyFile), "r");
 #endif    
@@ -1728,7 +1728,7 @@ SecurityLoadPropertyAccessList(void)
     }
 #endif /* PROPDEBUG */
 
-    fclose(f);
+    Fclose(f);
 } /* SecurityLoadPropertyAccessList */
 
 

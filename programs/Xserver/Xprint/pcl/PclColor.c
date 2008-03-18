@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclColor.c,v 1.11tsi Exp $ */
 /*******************************************************************
 **
 **    *********************************************************
@@ -44,7 +45,6 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclColor.c,v 1.10 2003/10/29 22:11:00 tsi Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -677,7 +677,7 @@ unsigned char *PclReadMap(char *name, int *dim)
     unsigned char *data;
     long size;
 
-    if ((fp=fopen(name, "r")) == NULL) {
+    if ((fp=Fopen(name, "r")) == NULL) {
 	return(NULL);
     }
 
@@ -717,7 +717,7 @@ unsigned char *PclReadMap(char *name, int *dim)
 	return(NULL);
     }
 
-    fclose(fp);
+    Fclose(fp);
     return(data);
 }
 

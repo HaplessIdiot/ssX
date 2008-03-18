@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.48tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.49tsi Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -609,6 +609,8 @@ ProcXF86MiscPassMessage(ClientPtr client)
     size+= (stuff->vallen  + 3) >> 2;
     if (client->req_len < size)
 	return BadLength;
+    if (stuff->screen > screenInfo.numScreens)
+	return BadValue;
     if (stuff->typelen) {
 	if (!(msgtype = xalloc(stuff->typelen)))
 	    return BadAlloc;

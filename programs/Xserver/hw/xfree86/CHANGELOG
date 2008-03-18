@@ -1,4 +1,7 @@
 XFree86 4.7.99.14 (xx March 2008)
+  21. Adapt from X.Org fixes for the CVE-2007-5760, CVE-2007-5958,
+      CVE-2007-6427, CVE-2007-6428, CVE-2007-6429 and CVE-2008-0006 security
+      advisories.
   20. Remove unnecessary #include of <linux/config.h> from our Linux DRM
       source  (Bugzilla #1689, Marc La France).
   19. When building an XFree86 loader server with stack backtrace support, use
@@ -20660,4 +20663,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3932 2008/03/18 19:36:52 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3933 2008/03/18 19:41:54 tsi Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.35tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.36tsi Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -348,6 +348,12 @@ doOpenFont(ClientPtr client, OFclosurePtr c)
 	goto bail;
     if (!pfont) {
 	err = BadFontName;
+	goto bail;
+    }
+    if ((pfont->info.firstCol > pfont->info.lastCol) ||
+	(pfont->info.firstRow > pfont->info.lastRow) ||
+	((pfont->info.lastCol - pfont->info.firstCol) > 255)) {
+	err = AllocError;
 	goto bail;
     }
     if (!pfont->fpe)
