@@ -1,4 +1,6 @@
-XFree86 4.7.99.14 (xx March 2008)
+XFree86 4.7.99.15 (xx April 2008)
+
+XFree86 4.7.99.14 (23 March 2008)
   22. Fix null pointer defereference in XKB when LEDs don't exist
       (Peter Hutterer, via X.Org bug #13961).
   21. Adapt from X.Org fixes for the CVE-2007-5760, CVE-2007-5958,
@@ -20665,4 +20667,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3934 2008/03/18 19:50:46 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3935 2008/03/18 20:24:04 tsi Exp $
