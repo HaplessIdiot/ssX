@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.165tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.166 2008/03/26 18:39:11 tsi Exp $ */
 
 /*
  * Copyright (c) 1995-2003 by The XFree86 Project, Inc.
@@ -106,7 +106,7 @@
 #define PCI_VENDOR_NEOMAGIC		0x10C8
 #define PCI_VENDOR_NVIDIA		0x10DE
 #define PCI_VENDOR_IMS			0x10E0
-#define PCI_VENDOR_INTEGRAPHICS 	0x10EA
+#define PCI_VENDOR_INTEGRAPHICS		0x10EA
 #define PCI_VENDOR_CREATIVE		0x1102
 #define PCI_VENDOR_ALLIANCE		0x1142
 #define PCI_VENDOR_RENDITION		0x1163
@@ -239,10 +239,10 @@
 #define PCI_CHIP_R300_NE		0x4E45
 #define PCI_CHIP_R300_NF		0x4E46
 #define PCI_CHIP_R300_NG		0x4E47
-#define PCI_CHIP_R350_NH                0x4E48  
-#define PCI_CHIP_R350_NI                0x4E49  
-#define PCI_CHIP_R360_NJ                0x4E4A  
-#define PCI_CHIP_R350_NK                0x4E4B  
+#define PCI_CHIP_R350_NH                0x4E48
+#define PCI_CHIP_R350_NI                0x4E49
+#define PCI_CHIP_R360_NJ                0x4E4A
+#define PCI_CHIP_R350_NK                0x4E4B
 #define PCI_CHIP_RV350_NP               0x4E50
 #define PCI_CHIP_RV350_NQ               0x4E51
 #define PCI_CHIP_RV350_NR               0x4E52
@@ -347,7 +347,7 @@
 #define PCI_CHIP_RV280_5961		0x5961
 #define PCI_CHIP_RV280_5962		0x5962
 #define PCI_CHIP_RV280_5964		0x5964
-#define PCI_CHIP_RV280_5965 		0x5965
+#define PCI_CHIP_RV280_5965		0x5965
 #define PCI_CHIP_RN50_5969		0x5969
 #define PCI_CHIP_RS482_5974             0x5974
 #define PCI_CHIP_RS482_5975             0x5975
@@ -520,8 +520,8 @@
 #define PCI_CHIP_SIS330			0x0330
 #define PCI_CHIP_SIS630			0x6300
 #define PCI_CHIP_SIS540			0x5300
-#define PCI_CHIP_SIS550			0x5315 
-#define PCI_CHIP_SIS650			0x6325 
+#define PCI_CHIP_SIS550			0x5315
+#define PCI_CHIP_SIS650			0x6325
 #define PCI_CHIP_SIS730			0x7300
 
 /* Hewlett-Packard */
