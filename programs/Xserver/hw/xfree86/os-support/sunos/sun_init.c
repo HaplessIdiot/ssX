@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.11 2008/03/26 19:04:52 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -118,7 +118,7 @@ xf86OpenConsole(void)
 		    FreeVTslot = 1;
 
 	    if (!FreeVTslot ||
-	        (ioctl(fd, VT_OPENQRY, &xf86Info.vtno) < 0) ||
+		(ioctl(fd, VT_OPENQRY, &xf86Info.vtno) < 0) ||
 		(xf86Info.vtno == -1))
 		FatalError("xf86OpenConsole: Cannot find a free VT\n");
 
@@ -223,7 +223,7 @@ xf86CloseConsole(void)
 	/*
 	 * Wipe out framebuffers, given we have nothing to restore them with.
 	 */
-        for (tmp = 0;  ;  tmp++) {
+	for (tmp = 0;  ;  tmp++) {
 	    struct fbgattr fbattr;
 	    char *fbdev;
 	    int fd;

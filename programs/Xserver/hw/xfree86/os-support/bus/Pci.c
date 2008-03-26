@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.99tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.100 2008/03/26 18:57:50 tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -628,7 +628,7 @@ do_rom:
 	      mask2 = mask1 | (mask1 - 1);
 	      /* Allow for both 16-bit and 32-bit bases */
 	      if ((mask2 == (CARD16)(-1)) || (mask2 == (CARD32)(-1)))
-	        destructive = TRUE;
+		destructive = TRUE;
 	    }
 	  }
 	}
@@ -667,7 +667,7 @@ do_rom:
 	    mask64 |= mask64 - 1;
 	    /* Allow for both 32-bit and 64-bit bases */
 	    if ((mask64 == (CARD32)(-1)) ||
-	        (mask64 == (unsigned long long)(-1LL)))
+		(mask64 == (unsigned long long)(-1LL)))
 	      destructive = TRUE;
 	  }
 	}
@@ -1309,7 +1309,7 @@ xf86scanpci(int flags)
 		    }
 
 		    /* Setup for per-device configuration space size */
-	            sec_bus =
+		    sec_bus =
 			PCI_SECONDARY_BUS_EXTRACT(devp->pci_pp_bus_register,
 						  tag);
 		    pciBusInfo[devp->busnum]->pciMaxOffset =
