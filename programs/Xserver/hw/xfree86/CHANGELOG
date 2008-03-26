@@ -1,4 +1,8 @@
 XFree86 4.7.99.15 (xx April 2008)
+  23. In favour of the majority case, assume x86 and x86_64 systems cannot
+      hard-fail master aborts.  On an experimental basis, also assume the same
+      of alpha systems.  This adds support for such systems that don't include
+      a PCI-to-ISA bridge.  (Marc La France)
 
 XFree86 4.7.99.14 (23 March 2008)
   22. Fix null pointer defereference in XKB when LEDs don't exist
@@ -20667,4 +20671,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3935 2008/03/18 20:24:04 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3936 2008/03/23 12:03:00 dawes Exp $

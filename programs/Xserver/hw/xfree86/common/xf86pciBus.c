@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.91tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.92tsi Exp $ */
 /*
  * Copyright (c) 1997-2007 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -3265,7 +3265,7 @@ xf86CheckPciVideo(pciVideoPtr pvp, Bool *pActivate)
      * At this point the adapter's compliance with PCI enablement/disablement
      * cannot be safely determined.
      */
-    *pActivate = TRUE;
+    *pActivate = CAN_HARDFAIL_MASTER_ABORTS;
 
     return TRUE;
 }
@@ -3488,7 +3488,7 @@ xf86CheckPciSparseIO(int domain, IOADDRESS Base, int count, memType mask,
      * Notify caller that probing the requested resources might generate
      * hard-failed master aborts.
      */
-    *pUnRouted = TRUE;
+    *pUnRouted = CAN_HARDFAIL_MASTER_ABORTS;
 
     return TRUE;
 }
@@ -3512,7 +3512,7 @@ xf86DomainHasBIOSSegments(int domain)
 	    return TRUE;
     }
 
-    return FALSE;
+    return !CAN_HARDFAIL_MASTER_ABORTS;
 }
 
 /*
