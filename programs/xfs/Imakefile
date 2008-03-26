@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/xfs/Imakefile,v 3.26 2003/08/25 04:06:01 dawes Exp $
+XCOMM $XFree86: xc/programs/xfs/Imakefile,v 3.27tsi Exp $
 
 #undef ServerDefines
 #include <Server.tmpl>
@@ -33,10 +33,6 @@ FSLIBDIR = $(LIBDIR)/fs
 FSERRORS = $(LOGDIRECTORY)/xfs.log
 DEFAULTFONTPATH = DefaultFSFontPath
 SITE_CONFIG = -DDEFAULTFONTPATH=$(DEFAULTFONTPATH) -DFSERRORS=$(FSERRORS)
-
-$(OSLIB):	$(OSDIR)
-
-$(DIFSLIB):	$(DIFSDIR)
 
 all:: config
 
