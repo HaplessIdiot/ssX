@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.78tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.79 2008/03/26 17:28:11 tsi Exp $ */
 /*
  * Copyright 1997 through 2008 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1705,8 +1705,8 @@ ATIProbe
                 {
                     xf86MsgVerb(X_INFO, 2,
                         ATI_NAME ":  Unshared Mach64 at I/O base 0x%04X not"
-                        " probed in domain %d due to a potential master"
-                        " abort.\n", Mach64SparseIOBases[i], Domain);
+                        " probed in domain %d due to a potential hard-failed"
+                        " master abort.\n", Mach64SparseIOBases[i], Domain);
 
                     ATISetSparseIOBases(ProbeFlags, Domain,
                         Mach64SparseIOBases[i], 4, Allowed);
