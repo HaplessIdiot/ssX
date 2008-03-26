@@ -1,4 +1,5 @@
 XFree86 4.7.99.15 (xx April 2008)
+  32. Zero out all SPARC SunOS framebuffers on server exit (Marc La France).
   32. Temporarily ignore 64-bit PCI memory address spaces on SPARC
       (Marc La France).
   31. For fault isolation purposes, on SPARC, bracket all PCI configuration
@@ -20688,4 +20689,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3940 2008/03/26 18:39:08 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3941 2008/03/26 18:57:48 tsi Exp $
