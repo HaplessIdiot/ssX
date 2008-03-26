@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.55tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.56tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -244,9 +244,16 @@
 #define PCI_CFGMECH1_MAXDEV	32
 
 /*
+ * CAN_HARDFAIL_MASTER_ABORTS can be #define'd to a Bool function or some
+ * other boolean expression should the need arise.
+ */
+#undef CAN_HARDFAIL_MASTER_ABORTS
+
+/*
  * Select architecture specific PCI init function
  */
 #if defined(__alpha__)
+# define CAN_HARDFAIL_MASTER_ABORTS FALSE	/* Uncertain */
 # if defined(linux)
 #  define ARCH_PCI_INIT axpPciInit
 #  define INCLUDE_XF86_MAP_PCI_MEM
@@ -260,18 +267,21 @@
 #  define INCLUDE_XF86_NO_DOMAIN
 # endif
 #elif defined(__arm__)
+# define CAN_HARDFAIL_MASTER_ABORTS TRUE	/* Unknown */
 # if defined(linux)
 #  define ARCH_PCI_INIT linuxPciInit
 #  define INCLUDE_XF86_MAP_PCI_MEM
 #  define INCLUDE_XF86_NO_DOMAIN
 # endif
 #elif defined(__hppa__)
+# define CAN_HARDFAIL_MASTER_ABORTS TRUE	/* Unknown */
 # if defined(linux)
 #  define ARCH_PCI_INIT linuxPciInit
 #  define INCLUDE_XF86_MAP_PCI_MEM
 #  define INCLUDE_XF86_NO_DOMAIN
 # endif
 #elif defined(__ia64__)
+# define CAN_HARDFAIL_MASTER_ABORTS TRUE	/* Broken */
 # if defined(linux)
 #  define ARCH_PCI_INIT linuxPciInit
 #  define INCLUDE_XF86_MAP_PCI_MEM
@@ -283,6 +293,7 @@
 # endif
 # define XF86SCANPCI_WRAPPER ia64ScanPCIWrapper
 #elif defined(__i386__) || defined(i386)
+# define CAN_HARDFAIL_MASTER_ABORTS FALSE	/* Sane (so far) */
 # define ARCH_PCI_INIT ix86PciInit
 # define INCLUDE_XF86_MAP_PCI_MEM
 # define INCLUDE_XF86_NO_DOMAIN
@@ -290,18 +301,21 @@
 #  define ARCH_PCI_OS_INIT linuxPciInit
 # endif
 #elif defined(__mc68000__)
+# define CAN_HARDFAIL_MASTER_ABORTS TRUE	/* Unknown */
 # if defined(linux)
 #  define ARCH_PCI_INIT linuxPciInit
 #  define INCLUDE_XF86_MAP_PCI_MEM
 #  define INCLUDE_XF86_NO_DOMAIN
 # endif
 #elif defined(__mips__)
+# define CAN_HARDFAIL_MASTER_ABORTS TRUE	/* Unknown */
 # if defined(linux)
 #  define ARCH_PCI_INIT linuxPciInit
 #  define INCLUDE_XF86_MAP_PCI_MEM
 #  define INCLUDE_XF86_NO_DOMAIN
 # endif
 #elif defined(__powerpc__)
+# define CAN_HARDFAIL_MASTER_ABORTS TRUE	/* Broken */
 # if defined(linux)
 #  define ARCH_PCI_INIT linuxPciInit
 #  define INCLUDE_XF86_MAP_PCI_MEM
@@ -322,18 +336,21 @@
 #  define INCLUDE_XF86_NO_DOMAIN
 # endif
 #elif defined(__s390__)
+# define CAN_HARDFAIL_MASTER_ABORTS TRUE	/* Unknown */
 # if defined(linux)
 #  define ARCH_PCI_INIT linuxPciInit
 #  define INCLUDE_XF86_MAP_PCI_MEM
 #  define INCLUDE_XF86_NO_DOMAIN
 # endif
 #elif defined(__sh__)
+# define CAN_HARDFAIL_MASTER_ABORTS TRUE	/* Unknown */
 # if defined(linux)
 #  define ARCH_PCI_INIT linuxPciInit
 #  define INCLUDE_XF86_MAP_PCI_MEM
 #  define INCLUDE_XF86_NO_DOMAIN
 # endif
 #elif defined(__sparc__) || defined(sparc)
+# define CAN_HARDFAIL_MASTER_ABORTS TRUE	/* Broken */
 # if defined(linux)
 #  define ARCH_PCI_INIT linuxPciInit
 #  define INCLUDE_XF86_MAP_PCI_MEM
@@ -355,6 +372,7 @@
 # endif
 # define ARCH_PCI_PCI_BRIDGE sparcPciPciBridge
 #elif defined(__amd64__) || defined(__x86_64__)
+# define CAN_HARDFAIL_MASTER_ABORTS FALSE	/* Likely */
 # if defined(__FreeBSD__)
 #  define ARCH_PCI_INIT freebsdPciInit
 # else
@@ -369,6 +387,10 @@
 
 #ifndef ARCH_PCI_INIT
 #error No PCI support available for this architecture/OS combination
+#endif
+
+#ifndef CAN_HARDFAIL_MASTER_ABORTS
+#define CAN_HARDFAIL_MASTER_ABORTS TRUE		/* Assume the worst */
 #endif
 
 extern void ARCH_PCI_INIT(void);
