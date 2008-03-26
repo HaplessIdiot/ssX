@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.99tsi Exp $ */
 /*
  * Copyright 2000 by Egbert Eich
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -23,7 +24,6 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.98tsi Exp $ */
 
 #include <X11/X.h>
 #include "os.h"
@@ -340,6 +340,8 @@ dump_config(pciConfigPtr pcr, int verbose)
     /* Print the rest */
     for (;  i < limit;  i += 4) {
 	CARD32 pcireg = pciReadLong(pcr->tag, i);
+	if ((pcireg == (CARD32)(-1L)) && (i == 256))
+	    break;
 	if (!(i & 15))
 	    printf("    0x%03x: ", i);
 	if (!(i & 7))
@@ -657,13 +659,15 @@ print_header_type_1(pciConfigPtr pcr)
 	       pcr->pci_br_rom & 0x1 ? "" : "not ");
     }
 
-    printf("  %sFAST_B2B %sSEC_BUS_RST %sM_ABRT %sVGA_EN %sISA_EN"
+    printf("  %sFAST_B2B %sSEC_BUS_RST %sM_ABRT %sVGA16 %sVGA_EN %sISA_EN"
 	   " %sSERR_EN %sPERR_EN\n",
 	   (pcr->pci_bridge_control & PCI_PCI_BRIDGE_FAST_B2B_EN) ?
 		"" : "NO_",
 	   (pcr->pci_bridge_control & PCI_PCI_BRIDGE_SECONDARY_RESET) ?
 		"" : "NO_",
 	   (pcr->pci_bridge_control & PCI_PCI_BRIDGE_MASTER_ABORT_EN) ?
+		"" : "NO_",
+	   (pcr->pci_bridge_control & PCI_PCI_BRIDGE_VGA16_EN) ?
 		"" : "NO_",
 	   (pcr->pci_bridge_control & PCI_PCI_BRIDGE_VGA_EN) ?
 		"" : "NO_",
@@ -737,13 +741,15 @@ print_header_type_2(pciConfigPtr pcr)
 	}
     }
 
-    printf("  %s16BIT_INT %sSEC_BUS_RST %sM_ABRT %sVGA_EN %sISA_EN"
+    printf("  %s16BIT_INT %sSEC_BUS_RST %sM_ABRT %sVGA16 %sVGA_EN %sISA_EN"
 	   " %sSERR_EN %sPERR_EN %sPOST_WRITES\n",
 	   (pcr->pci_bridge_control & PCI_CB_BRIDGE_CTL_16BIT_INT) ?
 		"" : "NO_",
 	   (pcr->pci_bridge_control & PCI_PCI_BRIDGE_SECONDARY_RESET) ?
 		"" : "NO_",
 	   (pcr->pci_bridge_control & PCI_PCI_BRIDGE_MASTER_ABORT_EN) ?
+		"" : "NO_",
+	   (pcr->pci_bridge_control & PCI_PCI_BRIDGE_VGA16_EN) ?
 		"" : "NO_",
 	   (pcr->pci_bridge_control & PCI_PCI_BRIDGE_VGA_EN) ?
 		"" : "NO_",

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.30tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.31tsi Exp $ */
 /*
  * Copyright (C) 2001-2007 The XFree86 Project, Inc.
  * All rights reserved.
@@ -117,7 +117,7 @@ typedef struct _sparcDomainRec {
     pointer pci, io;
     int bus_min, bus_max;
     int tagMultiplier, maxOffset;
-    unsigned char dfn_mask[256 / 8];
+    unsigned char *bdf_mask;
 } sparcDomainRec, *sparcDomainPtr;
 
 #define SetBitInMap(bit, map) \
@@ -142,23 +142,84 @@ static int            pciNumDomains = 1;
     *(volatile type *)(pointer)((char *)((domain)->pci) + \
 	((PCI_TAG_NO_DOMAIN(tag) * (domain)->tagMultiplier) | (off)))
 
+/*
+ * Functions to wrap PciReg accesses with membar's for fault isolation
+ * purposes.
+ */
+
+static __inline__ CARD8
+GetPciByte(sparcDomainPtr pDomain, PCITAG tag, int off)
+{
+    volatile CARD8 result;			/* Must be volatile */
+
+    barrier();
+    result = PciReg(pDomain, tag, off, CARD8);
+    barrier();
+    return result;
+}
+
+static __inline__ CARD16
+GetPciWord(sparcDomainPtr pDomain, PCITAG tag, int off)
+{
+    volatile CARD16 result;			/* Must be volatile */
+
+    barrier();
+    result = PciReg(pDomain, tag, off, CARD16);
+    barrier();
+    return result;
+}
+
+static __inline__ CARD32
+GetPciLong(sparcDomainPtr pDomain, PCITAG tag, int off)
+{
+    volatile CARD32 result;			/* Must be volatile */
+
+    barrier();
+    result = PciReg(pDomain, tag, off, CARD32);
+    barrier();
+    return result;
+}
+
+static __inline__ void
+PutPciByte(sparcDomainPtr pDomain, PCITAG tag, int off, CARD8 val)
+{
+    barrier();
+    PciReg(pDomain, tag, off, CARD8) = val;
+    barrier();
+}
+
+static __inline__ void
+PutPciWord(sparcDomainPtr pDomain, PCITAG tag, int off, CARD16 val)
+{
+    barrier();
+    PciReg(pDomain, tag, off, CARD16) = val;
+    barrier();
+}
+
+static __inline void
+PutPciLong(sparcDomainPtr pDomain, PCITAG tag, int off, CARD32 val)
+{
+    barrier();
+    PciReg(pDomain, tag, off, CARD32) = val;
+    barrier();
+}
+
 /* Generic SPARC PCI access functions */
 static CARD32
 sparcPciCfgRead32(PCITAG tag, int off)
 {
-    pciBusInfo_t    *pBusInfo;
-    sparcDomainPtr  pDomain;
-    volatile CARD32 result = (CARD32)(-1);	/* Must be volatile */
-    int             bus;
+    pciBusInfo_t   *pBusInfo;
+    sparcDomainPtr pDomain;
+    CARD32         result = (CARD32)(-1);
+    int            bus;
 
     if ((off >= 0) && !(off & 3) &&
 	((bus = PCI_BUS_FROM_TAG(tag)) < pciNumBuses) &&
 	(pBusInfo = pciBusInfo[bus]) && (pDomain = pBusInfo->pciBusPriv) &&
 	(off < pDomain->maxOffset) &&
 	(bus >= pDomain->bus_min) && (bus < pDomain->bus_max) &&
-	((bus > pDomain->bus_min) ||
-	 IsBitSetInMap(PCI_DFN_FROM_TAG(tag), pDomain->dfn_mask))) {
-	result = PciReg(pDomain, tag, off, CARD32);
+	IsBitSetInMap(PCI_BDF_FROM_TAG(tag), pDomain->bdf_mask)) {
+	result = GetPciLong(pDomain, tag, off);
 
 	result = PCI_CPU(result);
     }
@@ -178,12 +239,11 @@ sparcPciCfgWrite32(PCITAG tag, int off, CARD32 val)
 	!(pBusInfo = pciBusInfo[bus]) || !(pDomain = pBusInfo->pciBusPriv) ||
 	(off >= pDomain->maxOffset) ||
 	(bus < pDomain->bus_min) || (bus >= pDomain->bus_max) ||
-	((bus == pDomain->bus_min) &&
-	 !IsBitSetInMap(PCI_DFN_FROM_TAG(tag), pDomain->dfn_mask)))
+	!IsBitSetInMap(PCI_BDF_FROM_TAG(tag), pDomain->bdf_mask))
 	return;
 
     val = PCI_CPU(val);
-    PciReg(pDomain, tag, off, CARD32) = val;
+    PutPciLong(pDomain, tag, off, val);
 }
 
 static void
@@ -213,10 +273,10 @@ static pciBusFuncs_t sparcPCIFunctions =
 static CARD32
 sabrePciCfgRead32(PCITAG tag, int off)
 {
-    pciBusInfo_t    *pBusInfo;
-    sparcDomainPtr  pDomain;
-    volatile CARD32 result;			/* Must be volatile */
-    int             bus;
+    pciBusInfo_t   *pBusInfo;
+    sparcDomainPtr pDomain;
+    CARD32         result;
+    int            bus;
 
     if (PCI_BDEV_FROM_TAG(tag))
 	return sparcPciCfgRead32(tag, off);
@@ -228,15 +288,15 @@ sabrePciCfgRead32(PCITAG tag, int off)
 	return (CARD32)(-1);
 
     if (off < 8) {
-	result = (PciReg(pDomain, tag, off, CARD16) << 16) |
-		  PciReg(pDomain, tag, off + 2, CARD16);
+	result = (GetPciWord(pDomain, tag, off) << 16) |
+		  GetPciWord(pDomain, tag, off + 2);
 	return PCI_CPU(result);
     }
 
-    result = (PciReg(pDomain, tag, off + 3, CARD8) << 24) |
-	     (PciReg(pDomain, tag, off + 2, CARD8) << 16) |
-	     (PciReg(pDomain, tag, off + 1, CARD8) <<  8) |
-	     (PciReg(pDomain, tag, off    , CARD8)      );
+    result = (GetPciByte(pDomain, tag, off + 3) << 24) |
+	     (GetPciByte(pDomain, tag, off + 2) << 16) |
+	     (GetPciByte(pDomain, tag, off + 1) <<  8) |
+	     (GetPciByte(pDomain, tag, off    )      );
     return result;
 }
 
@@ -257,13 +317,13 @@ sabrePciCfgWrite32(PCITAG tag, int off, CARD32 val)
 	     (bus == pDomain->bus_min)) {
 	if (off < 8) {
 	    val = PCI_CPU(val);
-	    PciReg(pDomain, tag, off    , CARD16) = val >> 16;
-	    PciReg(pDomain, tag, off + 2, CARD16) = val;
+	    PutPciWord(pDomain, tag, off    , val >> 16);
+	    PutPciWord(pDomain, tag, off + 2, val);
 	} else {
-	    PciReg(pDomain, tag, off    , CARD8) = val;
-	    PciReg(pDomain, tag, off + 1, CARD8) = val >> 8;
-	    PciReg(pDomain, tag, off + 2, CARD8) = val >> 16;
-	    PciReg(pDomain, tag, off + 3, CARD8) = val >> 24;
+	    PutPciByte(pDomain, tag, off    , val);
+	    PutPciByte(pDomain, tag, off + 1, val >>  8);
+	    PutPciByte(pDomain, tag, off + 2, val >> 16);
+	    PutPciByte(pDomain, tag, off + 3, val >> 24);
 	}
     }
 }
@@ -296,54 +356,69 @@ static struct {
 static int nAddressSizes = 0;
 
 /*
- * Extract base size information from "assigned-addresses" properties.
+ * Scan the PROM device tree rooted at 'node', accumulating a bit map of PCI
+ * devices that exist, and retrieving base size information.
  */
 
 static void
-sparcAssignedAddresses(sparcDomainPtr pDomain, int node)
+sparcScanPciTree(sparcDomainPtr pDomain, int node)
 {
     char *prop_val;
     int prop_len;
 
-    /* Retrieve and validate "assigned-addresses" property */
-    prop_val = promGetProperty("assigned-addresses", &prop_len);
-    if (prop_val && !(prop_len % 20)) {
-	prop_len /= 20;
-	for (;  prop_len--;  prop_val += 20) {
-	    if (((unsigned char)prop_val[1] < pDomain->bus_min) ||
-		((unsigned char)prop_val[1] > pDomain->bus_max) ||
-		(prop_val[3] & 0x3) || (prop_val[3] < PCI_MAP_REG_START) ||
-		((CARD32 *)prop_val)[1] || ((CARD32 *)prop_val)[3] ||
-		(((CARD32 *)prop_val)[4] < 4) ||
-		(((CARD32 *)prop_val)[4] & (((CARD32 *)prop_val)[4] - 1)) ||
-		(((CARD32 *)prop_val)[2] & (((CARD32 *)prop_val)[4] - 1)))
-		continue;
-
-	    if ((prop_val[3] >= PCI_MAP_REG_END) &&
-		(prop_val[3] != PCI_MAP_ROM_REG) &&
-		(prop_val[3] != PCI_PCI_BRIDGE_ROM_REG))
-		continue;
-
-	    prop_val[0] = pciNumDomains;
-	    pAddressSizes = xnfrealloc(pAddressSizes,
-		sizeof(*pAddressSizes) * (nAddressSizes + 1));
-	    pAddressSizes[nAddressSizes].tag = ((CARD32 *)prop_val)[0];
-	    for (pAddressSizes[nAddressSizes].size = -1;
-		 ((CARD32 *)prop_val)[4];
-		 ((CARD32 *)prop_val)[4] >>= 1)
-		pAddressSizes[nAddressSizes].size++;
-	    nAddressSizes++;
+    for (node = promGetChild(node);  node;  node = promGetSibling(node)) {
+	/* Retrieve and validate "reg" property */
+	prop_val = promGetProperty("reg", &prop_len);
+	if (prop_val && !(prop_len % 20)) {
+	    /*
+	     * It's unnecessary to scan the entire "reg" property, but I'll do
+	     * so anyway.
+	     */
+	    prop_len /= 20;
+	    for (;  prop_len--;  prop_val += 20)
+		SetBitInMap(PCI_BDF_FROM_TAG(*(CARD32 *)prop_val),
+		    pDomain->bdf_mask);
 	}
-    }
 
-    /* Retrieve and validate "class-code" property */
-    prop_val = promGetProperty("class-code", &prop_len);
-    if (prop_val && (prop_len == 4) &&
-	(prop_val[0] == 0) && (prop_val[1] == PCI_CLASS_BRIDGE) &&
-	((prop_val[2] == PCI_SUBCLASS_BRIDGE_PCI) ||
-	 (prop_val[2] == PCI_SUBCLASS_BRIDGE_CARDBUS)))
-	for (node = promGetChild(node);  node;  node = promGetSibling(node))
-	    sparcAssignedAddresses(pDomain, node);
+	/* Retrieve and validate "assigned-addresses" property */
+	prop_val = promGetProperty("assigned-addresses", &prop_len);
+	if (prop_val && !(prop_len % 20)) {
+	    prop_len /= 20;
+	    for (;  prop_len--;  prop_val += 20) {
+		if (((unsigned char)prop_val[1] < pDomain->bus_min) ||
+		    ((unsigned char)prop_val[1] > pDomain->bus_max) ||
+		    (prop_val[3] & 0x3) || (prop_val[3] < PCI_MAP_REG_START) ||
+		    ((CARD32 *)prop_val)[1] || ((CARD32 *)prop_val)[3] ||
+		    (((CARD32 *)prop_val)[4] < 4) ||
+		    (((CARD32 *)prop_val)[4] & (((CARD32 *)prop_val)[4] - 1)) ||
+		    (((CARD32 *)prop_val)[2] & (((CARD32 *)prop_val)[4] - 1)))
+		    continue;
+
+		if ((prop_val[3] >= PCI_MAP_REG_END) &&
+		    (prop_val[3] != PCI_MAP_ROM_REG) &&
+		    (prop_val[3] != PCI_PCI_BRIDGE_ROM_REG))
+		    continue;
+
+		prop_val[0] = pciNumDomains;
+		pAddressSizes = xnfrealloc(pAddressSizes,
+		    sizeof(*pAddressSizes) * (nAddressSizes + 1));
+		pAddressSizes[nAddressSizes].tag = ((CARD32 *)prop_val)[0];
+		for (pAddressSizes[nAddressSizes].size = -1;
+		     ((CARD32 *)prop_val)[4];
+		     ((CARD32 *)prop_val)[4] >>= 1)
+		    pAddressSizes[nAddressSizes].size++;
+		nAddressSizes++;
+	    }
+	}
+
+	/* Retrieve and validate "class-code" property */
+	prop_val = promGetProperty("class-code", &prop_len);
+	if (prop_val && (prop_len == 4) &&
+	    (prop_val[0] == 0) && (prop_val[1] == PCI_CLASS_BRIDGE) &&
+	    ((prop_val[2] == PCI_SUBCLASS_BRIDGE_PCI) ||
+	     (prop_val[2] == PCI_SUBCLASS_BRIDGE_CARDBUS)))
+		sparcScanPciTree(pDomain, node);
+    }
 }
 
 /* Return the PCI allocation sizes derived above */
@@ -381,7 +456,7 @@ xf86GetPciSizeFromOS(PCITAG tag, int Index, int *bits)
 void
 sparcPciInit(void)
 {
-    int node, node2;
+    int node;
 
     if (!xf86LinearVidMem())
 	return;
@@ -405,7 +480,7 @@ sparcPciInit(void)
 	pciBusFuncs_p      pFunctions;
 	char               *prop_val;
 	int                prop_len, bus;
-	char               shared_pci;
+	char               shared_pci, pciex;
 
 	prop_val = promGetProperty("name", &prop_len);
 	if (!prop_val || (prop_len < 3))
@@ -441,6 +516,12 @@ sparcPciInit(void)
 	    shared_pci = 1;
 
 	xf86Msg(X_INFO, "PCI host bridge found (\"%s\")\n", prop_val);
+
+	prop_val = promGetProperty("device_type", &prop_len);
+	if (prop_val && !strcmp("pciex", prop_val))
+	    pciex = 1;
+	else
+	    pciex = 0;
 
 	/* Get "bus-range" property */
 	prop_val = promGetProperty("bus-range", &prop_len);
@@ -504,8 +585,6 @@ sparcPciInit(void)
 		break;
 
 	   case 2:	/* 32-bit memory space */
-	   case 3:	/* 64-bit memory space */
-	   default:	/* Muffle compiler */
 		if ((domain.mem_addr == phys_addr) &&
 		    (domain.mem_size == phys_size))
 		    break;
@@ -515,6 +594,10 @@ sparcPciInit(void)
 		domain.mem_addr = phys_addr;
 		domain.mem_size = phys_size;
 		break;
+
+	   case 3:	/* 64-bit memory space */
+	   default:	/* Muffle compiler */
+		break;	/* Ignore, for now */
 	   }
 	}
 
@@ -550,6 +633,11 @@ sparcPciInit(void)
 
 	domain.pci = (char *)domain.pci - (phys_addr - pci_addr);
 
+	/* Allocate bus/device/function bit map */
+	domain.bdf_mask = (unsigned char *)xnfcalloc(1,
+	    (domain.bus_max - domain.bus_min + 1) << 5) -
+	    (domain.bus_min << 5);
+
 	xf86MsgVerb(X_INFO, 4, "Adding PCI domain %d:\n", pciNumDomains);
 	xf86MsgVerb(X_INFO, 4,
 	    "PCI Configuration space: 0x%016llx, size: 0x%09llx\n",
@@ -581,6 +669,7 @@ sparcPciInit(void)
 	pciBusInfo[bus]->numDevices = 32;
 	pciBusInfo[bus]->funcs = pFunctions;
 	pciBusInfo[bus]->pciBusPriv = pDomain;
+	pciBusInfo[bus]->pciMaxOffset = domain.maxOffset;
 	while (++bus < pciNumBuses) {
 	    pciBusInfo[bus] = xnfalloc(sizeof(pciBusInfo_t));
 	    *(pciBusInfo[bus]) = *(pciBusInfo[bus - 1]);
@@ -652,30 +741,30 @@ sparcPciInit(void)
 	 * VGA, or if a PCI device actually implements PCI disablement.
 	 *
 	 * ---  TSI @ UQV  2001.09.19
+	 *
+	 * This has been changed to generate a bit map for all of an
+	 * interface's buses, because it appears that probing for a PCI Express
+	 * switch's downstream ports cannot be done without generating
+	 * interrupts that are untrappable from userland.  In effect, PCI
+	 * Express has entrenched the hard-failing of unsupported requests
+	 * (which include its equivalent to master aborts).
+	 *
+	 * ---  TSI @ UQV  2008.01.31
 	 */
-	for (node2 = promGetChild(node);
-	     node2;
-	     node2 = promGetSibling(node2)) {
-	    /* Get "reg" property */
-	    prop_val = promGetProperty("reg", &prop_len);
-	    if (prop_val && !(prop_len % 20)) {
+	sparcScanPciTree(&domain, node);
 
-		/*
-		 * It's unnecessary to scan the entire "reg" property, but I'll
-		 * do so anyway.
-		 */
-		prop_len /= 20;
-		for (;  prop_len--;  prop_val += 20)
-		    SetBitInMap(PCI_DFN_FROM_TAG(*(CARD32 *)prop_val),
-			pDomain->dfn_mask);
-	    }
+	/*
+	 * Assume the host bridge is device 0, function 0 on its bus.  Note
+	 * that this is valid for PCI Express as well, because the spec
+	 * requires that the other end of the link from a root port, or any
+	 * of a switch's downstream ports, be device 0, function 0.
+	 */
+	SetBitInMap(domain.bus_min << 8, pDomain->bdf_mask);
 
-	    /* Scan "assigned-addresses" properties for resource sizes */
-	    sparcAssignedAddresses(&domain, node2);
-	}
-
-	/* Assume the host bridge is device 0, function 0 on its bus */
-	SetBitInMap(0, pDomain->dfn_mask);
+	if ((domain.bus_min < domain.bus_max) &&
+	    (!pciex || (xf86Info.estimateSizesAggressively > 0)))
+	    memset(domain.bdf_mask + ((domain.bus_min + 1) << 5), 0xff,
+		(domain.bus_max - domain.bus_min) << 5);
 
 	pciNumDomains++;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.47tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.48tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -351,6 +351,13 @@
 #define PCI_IF_SERIAL_USB_DEVICE			0xfe
 #define PCI_SUBCLASS_SERIAL_FIBRECHANNEL	0x04
 #define PCI_SUBCLASS_SERIAL_SMBUS		0x05
+#define PCI_SUBCLASS_SERIAL_INFINIBAND		0x06
+#define PCI_SUBCLASS_SERIAL_IPMI		0x07
+#define PCI_IF_SERIAL_IPMI_SMIC				0x00
+#define PCI_IF_SERIAL_IPMI_KYBD				0x01
+#define PCI_IF_SERIAL_IPMI_BLOCK			0x02
+#define PCI_SUBCLASS_SERIAL_SERCOS		0x08
+#define PCI_SUBCLASS_SERIAL_CANBUS		0x09
 
 /* 0x0d wireless controller subclasses */
 #define PCI_SUBCLASS_WIRELESS_IRDA		0x00
@@ -358,6 +365,8 @@
 #define PCI_SUBCLASS_WIRELESS_RF		0x10
 #define PCI_SUBCLASS_WIRELESS_BLUETOOTH		0x11
 #define PCI_SUBCLASS_WIRELESS_BROADBAND		0x12
+#define PCI_SUBCLASS_WIRELESS_802_11A		0x20
+#define PCI_SUBCLASS_WIRELESS_802_11B		0x21
 #define PCI_SUBCLASS_WIRELESS_MISC		0x80
 
 /* 0x0e intelligent I/O controller subclasses */
@@ -430,7 +439,7 @@
 /* Pointer to first capability */
 #define PCI_CAP_PTR			0x34
 
-/* Interrupt configration register */
+/* Interrupt configuration register */
 #define PCI_INTERRUPT_REG		0x3c
 #define PCI_INTERRUPT_PIN_MASK		0x0000ff00
 #define PCI_INTERRUPT_PIN_EXTRACT(x)	\
@@ -465,19 +474,20 @@
 #define PCI_PPB_MEMLIMIT_EXTRACT(x)	(((x) <<  0) & 0xFFFF0000)
 
 #define PCI_PCI_BRIDGE_CONTROL_REG	0x3E
-#define PCI_PCI_BRIDGE_PARITY_EN	0x01
-#define PCI_PCI_BRIDGE_SERR_EN		0x02
-#define PCI_PCI_BRIDGE_ISA_EN		0x04
-#define PCI_PCI_BRIDGE_VGA_EN		0x08
-#define PCI_PCI_BRIDGE_MASTER_ABORT_EN	0x20
-#define PCI_PCI_BRIDGE_SECONDARY_RESET	0x40
-#define PCI_PCI_BRIDGE_FAST_B2B_EN	0x80
+#define PCI_PCI_BRIDGE_PARITY_EN	0x0001
+#define PCI_PCI_BRIDGE_SERR_EN		0x0002
+#define PCI_PCI_BRIDGE_ISA_EN		0x0004
+#define PCI_PCI_BRIDGE_VGA_EN		0x0008
+#define PCI_PCI_BRIDGE_VGA16_EN		0x0010
+#define PCI_PCI_BRIDGE_MASTER_ABORT_EN	0x0020
+#define PCI_PCI_BRIDGE_SECONDARY_RESET	0x0040
+#define PCI_PCI_BRIDGE_FAST_B2B_EN	0x0080
 /* header type 2 extensions */
-#define PCI_CB_BRIDGE_CTL_CB_RESET	0x40	/* CardBus reset */
-#define PCI_CB_BRIDGE_CTL_16BIT_INT	0x80	/* Enable interrupt for 16-bit cards */
-#define PCI_CB_BRIDGE_CTL_PREFETCH_MEM0	0x100
-#define PCI_CB_BRIDGE_CTL_PREFETCH_MEM1	0x200
-#define PCI_CB_BRIDGE_CTL_POST_WRITES	0x400
+#define PCI_CB_BRIDGE_CTL_CB_RESET	0x0040	/* CardBus reset */
+#define PCI_CB_BRIDGE_CTL_16BIT_INT	0x0080	/* Enable interrupt for 16-bit cards */
+#define PCI_CB_BRIDGE_CTL_PREFETCH_MEM0	0x0100
+#define PCI_CB_BRIDGE_CTL_PREFETCH_MEM1	0x0200
+#define PCI_CB_BRIDGE_CTL_POST_WRITES	0x0400
 
 #define PCI_CB_CAP_PTR			0x14
 #define PCI_CB_SEC_STATUS_REG		0x16	/* Secondary status */
@@ -514,8 +524,14 @@
 #define PCI_CAP_MSI_ID		0x05	/* Message Signaled Interrupts */
 #define PCI_CAP_CHSWP_ID	0x06	/* CompactPCI HotSwap */
 #define PCI_CAP_PCIX_ID		0x07	/* PCI-X */
+#define PCI_CAP_HT_ID		0x08	/* HyperTransport */
+#define PCI_CAP_VENDOR_ID	0x09	/* Vendor-specific */
+#define PCI_CAP_DEBUG_ID	0x0a	/* Debug port */
+#define PCI_CAP_CCRC		0x0b	/* CompactPCI central resource cntrl */
 #define PCI_CAP_SHPC_ID		0x0c	/* Standard Hot-Plug Controller */
-#define PCI_CAP_EXPRESS_ID	0x10	/* PCI Express */
+#define PCI_CAP_AGP8_ID		0x0e	/* AGP 8x */
+#define PCI_CAP_SECURE_ID	0x0f	/* Secure device */
+#define PCI_CAP_PCIE_ID		0x10	/* PCI Express */
 #define PCI_CAP_MSIX_ID		0x11	/* MSI-X */
 
 /* Capability header */
@@ -526,6 +542,64 @@
 #define PCI_CAP_PM_REG		0x02	/* 16 bits of R/O Flags */
 #define PCI_CAP_PM_CSR		0x04	/* Control & Status */
 #define PCI_CAP_PM_MODE_MASK	0x03	/* Current mode (D0 to D3) */
+
+/* PCI-X Capability (incomplete) */
+#define PCI_CAP_PCIX_STAT	0x02	/* PCI-X status register */
+#define PCI_CAP_PCIX_STAT_MODE	0x03C0	/* Secondary mode & frequency */
+#define PCI_CAP_PCIX_STAT_PCIX2_MIN 8	/* Min. of above for PCI-X mode 2 */
+
+/* PCI Express Capability (incomplete) */
+#define PCI_CAP_PCIE_REG	0x02	/* 16 bits of R/O information */
+#define PCI_CAP_PCIE_DEVTYPE	0x00F0	/* PCI Express device type */
+#define PCI_CAP_PCIE_DEVTYPE_END      0x0 /* Endpoint with no I/O */
+#define PCI_CAP_PCIE_DEVTYPE_END_IO   0x1 /* Endpoint with I/O */
+#define PCI_CAP_PCIE_DEVTYPE_ROOT     0x4 /* Root port */
+#define PCI_CAP_PCIE_DEVTYPE_UP       0x5 /* Upstream port of switch */
+#define PCI_CAP_PCIE_DEVTYPE_DOWN     0x6 /* Downstream port of switch */
+#define PCI_CAP_PCIE_DEVTYPE_PCIE_PCI 0x7 /* PCI Express to PCI/PCI-X bridge */
+#define PCI_CAP_PCIE_DEVTYPE_PCI_PCIE 0x8 /* PCI/PCI-X to PCI Express bridge */
+#define PCI_CAP_PCIE_DEV_CAP	0x04	/* 32 more bits of R/O information */
+#define PCI_CAP_PCIE_DEV_CTL	0x08	/* Device control */
+#define PCI_CAP_PCIE_CR_EN	0x0001	/* Correctable error reporting en */
+#define PCI_CAP_PCIE_NFR_EN	0x0002	/* Non-fatal error reporting enable */
+#define PCI_CAP_PCIE_FR_EN	0x0004	/* Fatal error reporting enable */
+#define PCI_CAP_PCIE_URR_EN	0x0008	/* Unsupported request reporting en */
+
+/* PCI Express extended capability IDs */
+#define PCIE_CAP_AER_ID		0x0001	/* Advanced Error Reporting */
+#define PCIE_CAP_VC_ID		0x0002	/* Virtual Channel */
+#define PCIE_CAP_DSN_ID		0x0003	/* Device Serial Number */
+#define PCIE_CAP_PB_ID		0x0004	/* Power Budgeting */
+
+#define PCIE_CAP_HEADER		0x000	/* Capability Header */
+#define PCIE_CAP_ID		0x0000FFFF	/* Capability ID */
+#define PCIE_CAP_VERSION	0x000F0000	/* Capability Version */
+#define PCIE_CAP_NEXT		0xFFF00000	/* Next capability pointer */
+
+#define PCIE_CAP_FIRST		0x100	/* First capability pointer */
+
+/* Advanced Error Reporting Capability (incomplete) */
+#define PCIE_CAP_AER_UE_STATUS	0x004	/* Uncorrectable Error status */
+#define PCIE_CAP_AER_UE_MASK	0x008	/* Uncorrectable Error mask */
+#define PCIE_CAP_AER_UE_SEV	0x00c	/* Uncorrectable Error severity */
+/* The following bit valid for all three of the preceeding (incomplete) */
+#define PCIE_CAP_AER_UE_URE	0x00100000	/* Unsupported Request Error */
+#define PCIE_CAP_AER_CE_STATUS	0x010	/* Correctable Error status */
+#define PCIE_CAP_AER_CE_MASK	0x014	/* Correctable Error mask */
+#define PCIE_CAP_AER_CTL	0x018	/* AER control */
+#define PCIE_CAP_AER_HEADERLOG	0x01c	/* 4 Header Log registers */
+/* These exist only in PCI Express to PCI/PCI-X bridges */
+#define PCIE_CAP_AER_SUE_STATUS	0x02c	/* UE Secondary status */
+#define PCIE_CAP_AER_SUE_MASK	0x030	/* UE Secondary mask */
+#define PCIE_CAP_AER_SUE_SEV	0x034	/* UE Secondary severity */
+/* The following bits valid for all three of the preceeding (incomplete) */
+#define PCIE_CAP_AER_SUE_MA_SPLIT 0x0002 /* Master Abort on split status */
+#define PCIE_CAP_AER_SUE_MA	  0x0008 /* Master Abort */
+#define PCIE_CAP_AER_SUE_SAD	  0x1000 /* SERR# Assertion detected */
+#define PCIE_CAP_AER_SUE_MASTER_ABORT /* Convenience macro */ \
+	(PCIE_CAP_AER_SUE_MA | \
+	 PCIE_CAP_AER_SUE_MA_SPLIT | \
+	 PCIE_CAP_AER_SUE_SAD)
 
 /*
  * Typedefs, etc...
@@ -605,7 +679,8 @@ typedef struct pci_cfg_regs {
 	    CARD32 cg_rsrvd1;			/* 0x10 */
 #if X_BYTE_ORDER == X_BIG_ENDIAN
 	    CARD16 secondary_status;		/* 0x16 */
-	    CARD16 cg_rsrvd2;			/* 0x14 */
+	    CARD8 cg_rsrvd2;			/* 0x15 */
+	    CARD8 cg_capptr;			/* 0x14 */
 
 	    union {
 		CARD32 cg_bus_reg;
@@ -617,7 +692,8 @@ typedef struct pci_cfg_regs {
 		} cgbr;
 	    } cgbr;
 #else
-	    CARD16 cg_rsrvd2;			/* 0x14 */
+	    CARD8 cg_capptr;			/* 0x14 */
+	    CARD8 cg_rsrvd2;			/* 0x15 */
 	    CARD16 secondary_status;		/* 0x16 */
 
 	    union {
@@ -726,11 +802,11 @@ typedef struct pci_cfg_regs {
 		} b_u_io;
 	    } uio_rom;
 #if X_BYTE_ORDER == X_BIG_ENDIAN
-	    CARD8 capptr;		/* Offset 0x34 */
 	    CARD8 rsvd3[3];		/* Offset 0x35 - 0x37 */
+	    CARD8 capptr;		/* Offset 0x34 */
 #else
-	    CARD8 rsvd3[3];		/* Offset 0x35 - 0x37 */
 	    CARD8 capptr;		/* Offset 0x34 */
+	    CARD8 rsvd3[3];		/* Offset 0x35 - 0x37 */
 #endif
 	    union {
 		CARD32 rsvd4;		/* Offset 0x38 - 0x3b */
@@ -794,6 +870,14 @@ typedef struct pci_device {
     CARD32    listed_class;
     pointer   businfo;		/* pointer to secondary's bus info structure */
     Bool      fakeDevice;	/* Device added by system chipset support */
+    CARD16    pcie_cap_ptr;	/* PCI Express capability pointer */
+    CARD16    pcie_dev_ctl;	/* PCI Express device control */
+    CARD16    pcie_devtype;	/* PCI Express device type */
+    CARD16    aer_cap_ptr;	/* Advanced Error Reporting capability ptr */
+    CARD32    aer_ue_mask;	/* Uncorrectable Error mask */
+    CARD32    aer_ue_severity;	/* Uncorrectable Error severity */
+    CARD32    aer_sue_mask;	/* Uncorrectable Error Secondary mask */
+    CARD32    aer_sue_severity;	/* Uncorrectable Error Secondary severity */
 } pciDevice, *pciConfigPtr;
 
 typedef enum {
@@ -824,6 +908,7 @@ typedef enum {
 #define pci_header_type		      cfgspc.regs.bhlc.bhlc.header_type
 #define pci_bist		      cfgspc.regs.bhlc.bhlc.bist
 #define pci_cb_secondary_status	      cfgspc.regs.cx.cg.secondary_status
+#define pci_cb_capptr		      cfgspc.regs.cx.cg.cg_capptr
 #define pci_cb_bus_register           cfgspc.regs.cx.cg.cgbr.cg_bus_reg
 #define pci_cb_primary_bus_number     cfgspc.regs.cx.cg.cgbr.cgbr.primary_bus_number
 #define pci_cb_cardbus_bus_number     cfgspc.regs.cx.cg.cgbr.cgbr.cardbus_bus_number

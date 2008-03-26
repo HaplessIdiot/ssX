@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.98tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.99tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -324,6 +324,7 @@ pciReadLong(PCITAG tag, int offset)
   pciInit();
 
   if ((bus >= 0) && ((bus < pciNumBuses) || inProbe) && pciBusInfo[bus] &&
+	(offset < pciBusInfo[bus]->pciMaxOffset) &&
 	pciBusInfo[bus]->funcs->pciReadLong) {
     CARD32 rv = (*pciBusInfo[bus]->funcs->pciReadLong)(tag, offset);
 
@@ -372,6 +373,7 @@ pciWriteLong(PCITAG tag, int offset, CARD32 val)
   pciInit();
 
   if ((bus >= 0) && (bus < pciNumBuses) && pciBusInfo[bus] &&
+	(offset < pciBusInfo[bus]->pciMaxOffset) &&
 	pciBusInfo[bus]->funcs->pciWriteLong)
 	  (*pciBusInfo[bus]->funcs->pciWriteLong)(tag, offset, val);
 }
@@ -762,12 +764,20 @@ pciMfDev(int busnum, int devnum)
     CARD32 id0, id1, val;
 
     /* Detect a multi-function device that complies to the PCI 2.0 spec */
+    /* Unfortunately, some devices don't have a zero function */
+    while (1) {
+	tag0 = PCI_MAKE_TAG(busnum, devnum, pciFuncNum);
+	id0 = pciReadLong(tag0, PCI_ID_REG);
+	if ((CARD16)(id0 + 1) > (CARD16)1UL) {
+	    if (pciFuncNum > 0)
+		return TRUE;
+	    break;
+	}
+	if (++pciFuncNum >= 8)
+	    return FALSE;
+    }
 
-    tag0 = PCI_MAKE_TAG(busnum, devnum, 0);
-    id0  = pciReadLong(tag0, PCI_ID_REG);
-    if ((CARD16)(id0 + 1) <= (CARD16)1UL)
-	return FALSE;
-
+    pciFuncNum = 1;
     val = pciReadLong(tag0, PCI_HEADER_MISC) & 0x00ff0000;
     if ((val != 0x00ff0000) && (val & PCI_HEADER_MULTIFUNCTION))
 	return TRUE;
@@ -775,7 +785,7 @@ pciMfDev(int busnum, int devnum)
     /*
      * Now, to find non-compliant devices...
      * If there is a valid ID for function 1 and the ID for func 0 and 1
-     * are different, or the base0 values of func 0 and 1 are differend,
+     * are different, or the base0 values of func 0 and 1 are different,
      * then assume there is a multi-function device.
      */
     tag1 = PCI_MAKE_TAG(busnum, devnum, 1);
@@ -830,6 +840,8 @@ pciGenFindNext(void)
 	    for (pciBusNum = 0;  !pciBusInfo[pciBusNum];  ++pciBusNum);
 	    pciFuncNum = 0;
 	    pciDevNum = 0;
+	    if (pciBusInfo[pciBusNum]->pciMaxOffset == 0)
+		pciBusInfo[pciBusNum]->pciMaxOffset = 256;
 	    previousBus = pciBusNum; /* make sure previousBus exists */
 	} else {
 #ifdef PCI_MFDEV_SUPPORT
@@ -844,15 +856,14 @@ pciGenFindNext(void)
 		/*
 		 * Is current dev a multifunction device?
 		 */
-		if (!speculativeProbe && pciMfDev(pciBusNum, pciDevNum))
-		    /* Probe for other functions */
-		    pciFuncNum = 1;
-		else
+		if (!pciMfDev(pciBusNum, pciDevNum)) {
 		    /*
 		     * No more functions this device. Next
 		     * device please
 		     */
-		    pciDevNum ++;
+		    pciDevNum++;
+		    pciFuncNum = 0;
+		}
 	    } else if (++pciFuncNum >= 8) {
 		/* No more functions for this device. Next device please */
 		pciFuncNum = 0;
@@ -920,24 +931,25 @@ pciGenFindNext(void)
 	if ((CARD16)(devid + 1U) <= (CARD16)1UL)
 	    continue; /* Nobody home.  Next device please */
 
-	/*
-	 * Some devices mis-decode configuration cycles in such a way as to
-	 * create phantom buses.
-	 */
-	if (speculativeProbe && (pciDevNum == 0) && (pciFuncNum == 0) &&
-	    (PCI_BUS_NO_DOMAIN(pciBusNum) > 0)) {
-	    for (;;) {
-		if (++pciDevNum >= pciBusInfo[pciBusNum]->numDevices)
-		    goto NextSpeculativeBus;
-		inProbe = TRUE;
-		tmp = pciReadLong(PCI_MAKE_TAG(pciBusNum, pciDevNum, 0),
-				  PCI_ID_REG);
-		inProbe = FALSE;
-		if (devid != tmp)
-		    break;
-	    }
+	if ((pciDevNum == 0) && (pciFuncNum == 0)) {
+	    /*
+	     * Some devices mis-decode configuration cycles in such a way as to
+	     * create phantom buses.
+	     */
+	    if (speculativeProbe && (PCI_BUS_NO_DOMAIN(pciBusNum) > 0)) {
+		for (;;) {
+		    if (++pciDevNum >= pciBusInfo[pciBusNum]->numDevices)
+			goto NextSpeculativeBus;
+		    inProbe = TRUE;
+		    tmp = pciReadLong(PCI_MAKE_TAG(pciBusNum, pciDevNum, 0),
+				      PCI_ID_REG);
+		    inProbe = FALSE;
+		    if (devid != tmp)
+			break;
+		}
 
-	    pciDevNum = 0;
+		pciDevNum = 0;
+	    }
 	}
 
 	if (pciNumBuses <= pciBusNum)
@@ -987,6 +999,9 @@ pciGenFindNext(void)
 		    *pciBusInfo[sec_bus] = *pciBusInfo[pri_bus];
 		}
 
+		pciBusInfo[sec_bus]->pciMaxOffset =
+		   pciBusInfo[pri_bus]->pciMaxOffset;
+
 		/* ...but not everything same as parent */
 		pciBusInfo[sec_bus]->primary_bus = pri_bus;
 		pciBusInfo[sec_bus]->secondary = TRUE;
@@ -1006,14 +1021,14 @@ pciGenFindNext(void)
 			capptr = pciReadByte(pciDeviceTag, PCI_CB_CAP_PTR);
 
 		    while (capptr &= ~0x03) {
-			if (pciReadByte(pciDeviceTag, capptr + PCI_CAP_ID) !=
-			    PCI_CAP_PM_ID) {
-			    capptr = pciReadByte(pciDeviceTag,
-						 capptr + PCI_CAP_NEXT);
+			CARD32 PciReg = pciReadLong(pciDeviceTag, capptr);
+
+			if ((CARD8)PciReg != PCI_CAP_PM_ID) {
+			    capptr = (CARD8)(PciReg >> 8);
 			    continue;
 			}
 
-			if (pciReadWord(pciDeviceTag, capptr + PCI_CAP_PM_CSR) &
+			if (pciReadLong(pciDeviceTag, capptr + PCI_CAP_PM_CSR) &
 			    PCI_CAP_PM_MODE_MASK)
 			    pciBusInfo[sec_bus]->numDevices = 0;
 
@@ -1154,6 +1169,23 @@ xf86scanpci(int flags)
 	if (devp->pci_header_type == 0xff)
 	    devp->pci_header_type = 0;
 
+#ifdef OLD_FORMAT
+	xf86MsgVerb(X_INFO, 2, "PCI: BusID 0x%.2x,0x%02x,0x%1x "
+		    "ID 0x%04x,0x%04x Rev 0x%02x Class 0x%02x,0x%02x\n",
+		    devp->busnum, devp->devnum, devp->funcnum,
+		    devp->pci_vendor, devp->pci_device, devp->pci_rev_id,
+		    devp->pci_base_class, devp->pci_sub_class);
+#else
+	xf86MsgVerb(X_INFO, 2, "PCI: %.2x:%02x:%1x: chip %04x,%04x"
+		    " card %04x,%04x rev %02x class %02x,%02x,%02x hdr %02x\n",
+		    devp->busnum, devp->devnum, devp->funcnum,
+		    devp->pci_vendor, devp->pci_device,
+		    devp->pci_subsys_vendor, devp->pci_subsys_card,
+		    devp->pci_rev_id, devp->pci_base_class,
+		    devp->pci_sub_class, devp->pci_prog_if,
+		    devp->pci_header_type);
+#endif
+
 	switch (devp->pci_header_type & 0x7f) {
 	case 0:
 	    /* Get base address sizes for type 0 headers */
@@ -1172,14 +1204,7 @@ xf86scanpci(int flags)
 	    devp->basesize[6] =  /* Yep, the 6 & 7 are correct */
 		pciGetBaseSize(devp, 7, FALSE, &devp->minBasesize);
 
-	    /* Allow master aborts to complete normally on secondary buses */
-	    if (!(devp->pci_bridge_control & PCI_PCI_BRIDGE_MASTER_ABORT_EN))
-		break;
-	    pciWriteWord(tag, PCI_PCI_BRIDGE_CONTROL_REG,
-		devp->pci_bridge_control &
-		     ~(PCI_PCI_BRIDGE_MASTER_ABORT_EN |
-		       PCI_PCI_BRIDGE_SECONDARY_RESET));
-	    break;
+	    goto bridge_control;
 
 	case 2:
 	    /* Read more config space for this device */
@@ -1190,35 +1215,234 @@ xf86scanpci(int flags)
 	    devp->basesize[0] =
 		pciGetBaseSize(devp, 0, FALSE, &devp->minBasesize);
 
+	bridge_control:
+	    /*
+	     * Note that, for PCI-X and PCI Express, the diddling of various
+	     * error bits that is done below is ultimately ineffective at
+	     * preventing interrupts.  What it does do though is change the
+	     * kind of interrupt that occurs.  On Solaris at least, this makes
+	     * the difference between being SIGKILL'ed rather than crashing the
+	     * system.
+	     */
+
 	    /* Allow master aborts to complete normally on secondary buses */
-	    if (!(devp->pci_bridge_control & PCI_PCI_BRIDGE_MASTER_ABORT_EN))
-		break;
-	    pciWriteWord(tag, PCI_PCI_BRIDGE_CONTROL_REG,
-		devp->pci_bridge_control &
-		     ~(PCI_PCI_BRIDGE_MASTER_ABORT_EN |
-		       PCI_PCI_BRIDGE_SECONDARY_RESET));
-	    break;
+	    if (devp->pci_bridge_control & PCI_PCI_BRIDGE_MASTER_ABORT_EN) {
+		pciWriteWord(tag, PCI_PCI_BRIDGE_CONTROL_REG,
+		    devp->pci_bridge_control &
+			~(PCI_PCI_BRIDGE_MASTER_ABORT_EN |
+			  PCI_PCI_BRIDGE_SECONDARY_RESET));
+		if (pciReadWord(tag, PCI_PCI_BRIDGE_CONTROL_REG) &
+		    PCI_PCI_BRIDGE_MASTER_ABORT_EN)
+		    xf86Msg(X_WARNING, "Could not disable hard-failing of"
+			    " master aborts through PCI bridge"
+			    " %.2x:%02x:%02x\n",
+			    devp->busnum, devp->devnum, devp->funcnum);
+	    }
+
+	    /*
+	     * Unsupported request responses are the PCI Express equivalent to
+	     * master aborts.
+	     */
+	    if (devp->pci_status_command & PCI_STAT_CAPABILITY) {
+		CARD16 capptr;
+
+		if ((devp->pci_header_type & 0x7f) == 1)
+		    capptr = devp->pci_capptr;
+		else
+		    capptr = devp->pci_cb_capptr;
+
+		/* Look for PCI Express capability */
+		while (capptr &= ~0xff03) {
+		    CARD32 PciReg = pciReadLong(tag, capptr);
+		    int sec_bus;
+
+		    if ((CARD8)PciReg != PCI_CAP_PCIE_ID) {
+			capptr = (CARD8)(PciReg >> 8);
+			continue;
+		    }
+
+		    devp->pcie_cap_ptr = capptr;
+		    devp->pcie_devtype = (PciReg >> 20) & 0x0f;
+
+		    capptr += PCI_CAP_PCIE_DEV_CTL;
+		    PciReg = pciReadLong(tag, capptr);
+		    devp->pcie_dev_ctl = (CARD16)PciReg;
+
+		    /*
+		     * Disable reporting of unsupported requests.  Grr, because
+		     * these are _also_ reported as non-fatal errors, we must
+		     * disable the port's SERR enable and its ability to
+		     * forward same from downstream.
+		     */
+		    if (PciReg & (PCI_CAP_PCIE_URR_EN | PCI_CAP_PCIE_NFR_EN))
+		    {
+			pciWriteLong(tag, capptr, PciReg &
+			    ~(PCI_CAP_PCIE_URR_EN | PCI_CAP_PCIE_NFR_EN));
+			if (pciReadLong(tag, capptr) &
+			    (PCI_CAP_PCIE_URR_EN | PCI_CAP_PCIE_NFR_EN))
+			    xf86Msg(X_WARNING, "Could not disable reporting of"
+				    " unsupported requests through PCI bridge"
+				    " %.2x:%02x:%02x\n",
+				    devp->busnum, devp->devnum, devp->funcnum);
+		    }
+		    if (devp->pci_status_command & PCI_CMD_SERR_ENABLE) {
+			pciWriteLong(tag, PCI_CMD_STAT_REG,
+			    devp->pci_status_command & ~PCI_CMD_SERR_ENABLE);
+			if (pciReadLong(tag, PCI_CMD_STAT_REG) &
+			    PCI_CMD_SERR_ENABLE)
+			    xf86Msg(X_WARNING, "Could not disable SERR on PCI"
+				    " bridge %.2x:%02x:%02x\n",
+				    devp->busnum, devp->devnum, devp->funcnum);
+		    }
+		    if (devp->pci_bridge_control & PCI_PCI_BRIDGE_SERR_EN) {
+			pciWriteWord(tag, PCI_PCI_BRIDGE_CONTROL_REG,
+			    devp->pci_bridge_control &
+				~(PCI_PCI_BRIDGE_MASTER_ABORT_EN |
+				  PCI_PCI_BRIDGE_SERR_EN |
+				  PCI_PCI_BRIDGE_SECONDARY_RESET));
+			if (pciReadWord(tag, PCI_PCI_BRIDGE_CONTROL_REG) &
+			    PCI_PCI_BRIDGE_SERR_EN)
+			    xf86Msg(X_WARNING, "Could not disable SERR"
+				    " forwarding through PCI bridge"
+				    " %.2x:%02x:%02x\n",
+				    devp->busnum, devp->devnum, devp->funcnum);
+		    }
+
+		    /* Setup for per-device configuration space size */
+	            sec_bus =
+			PCI_SECONDARY_BUS_EXTRACT(devp->pci_pp_bus_register,
+						  tag);
+		    pciBusInfo[devp->busnum]->pciMaxOffset =
+			pciBusInfo[sec_bus]->pciMaxOffset = 4096;
+		    if (devp->pcie_devtype == PCI_CAP_PCIE_DEVTYPE_PCIE_PCI) {
+			pciBusInfo[sec_bus]->pciMaxOffset = 256;
+
+			if ((devp->pci_header_type & 0x7f) == 1)
+			    capptr = devp->pci_capptr;
+			else
+			    capptr = devp->pci_cb_capptr;
+
+			/* Look for PCI-X capability */
+			while (capptr & ~0xff03) {
+			    PciReg = pciReadLong(tag, capptr);
+			    if ((CARD8)PciReg != PCI_CAP_PCIX_ID) {
+				capptr = (CARD8)(PciReg >> 8);
+				continue;
+			    }
+
+			    if ((PciReg & (PCI_CAP_PCIX_STAT_MODE << 16)) >=
+				(PCI_CAP_PCIX_STAT_PCIX2_MIN << 22))
+				pciBusInfo[sec_bus]->pciMaxOffset = 4096;
+
+			    break;
+			}
+		    }
+
+		    /* Look for Advanced Error Reporting capability */
+		    capptr = PCIE_CAP_FIRST;
+		    while (capptr &= ~0xf003) {
+			PciReg = pciReadLong(tag, capptr);
+
+			if ((CARD16)(PciReg + 1) <= (CARD16)1UL)
+			    break;	/* Nothing there or not accessible */
+
+			if ((CARD16)(PciReg) != PCIE_CAP_AER_ID) {
+			    capptr = PciReg >> 20;
+			    continue;
+			}
+
+			devp->aer_cap_ptr = capptr;
+
+			/* Ensure unsupported request errors are not reported */
+			devp->aer_ue_mask =
+			    pciReadLong(tag, capptr + PCIE_CAP_AER_UE_MASK);
+			if (!(devp->aer_ue_mask & PCIE_CAP_AER_UE_URE)) {
+			    pciWriteLong(tag, capptr + PCIE_CAP_AER_UE_MASK,
+				devp->aer_ue_mask | PCIE_CAP_AER_UE_URE);
+			    if (!(pciReadLong(tag,
+					 capptr + PCIE_CAP_AER_UE_MASK) &
+				  PCIE_CAP_AER_UE_URE))
+				xf86Msg(X_WARNING, "Could not disable extended"
+					" reporting of unsupported requests"
+					" through PCI bridge %.2x:%02x:%02x\n",
+					devp->busnum,
+					devp->devnum,
+					devp->funcnum);
+			}
+
+			/* Make unsupported request errors non-fatal */
+			devp->aer_ue_severity =
+			    pciReadLong(tag, capptr + PCIE_CAP_AER_UE_SEV);
+			if (devp->aer_ue_severity & PCIE_CAP_AER_UE_URE) {
+			    pciWriteLong(tag, capptr + PCIE_CAP_AER_UE_SEV,
+				devp->aer_ue_severity & ~PCIE_CAP_AER_UE_URE);
+			    if (pciReadLong(tag, capptr + PCIE_CAP_AER_UE_SEV)
+				& PCIE_CAP_AER_UE_URE)
+				xf86Msg(X_WARNING, "Could not make unsupported"
+					" requests non-fatal through PCI"
+					" bridge %.2x:%02x:%02x\n",
+					devp->busnum,
+					devp->devnum,
+					devp->funcnum);
+			}
+
+			/* Deal with PCI Express to PCI/PCI-X bridges */
+			if (devp->pcie_devtype != PCI_CAP_PCIE_DEVTYPE_PCIE_PCI)
+			    break;
+
+			/*
+			 * Mask out master aborts from the PCI/PCI-X interface.
+			 */
+			devp->aer_sue_mask =
+			   pciReadLong(tag, capptr + PCIE_CAP_AER_SUE_MASK);
+			if ((devp->aer_sue_mask &
+			     PCIE_CAP_AER_SUE_MASTER_ABORT) !=
+			    PCIE_CAP_AER_SUE_MASTER_ABORT) {
+			    pciWriteLong(tag, capptr + PCIE_CAP_AER_SUE_MASK,
+				devp->aer_sue_mask |
+				    PCIE_CAP_AER_SUE_MASTER_ABORT);
+			    if ((pciReadLong(tag,
+					     capptr + PCIE_CAP_AER_SUE_MASK) &
+				 PCIE_CAP_AER_SUE_MASTER_ABORT) !=
+				PCIE_CAP_AER_SUE_MASTER_ABORT)
+				xf86Msg(X_WARNING, "Could not disable"
+					" hard-failing of secondary master"
+					" aborts through PCI bridge"
+					"%.2x:%02x:%02x\n",
+					devp->busnum,
+					devp->devnum,
+					devp->funcnum);
+			}
+
+			/* Make master aborts non-fatal */
+			devp->aer_sue_severity =
+			    pciReadLong(tag, capptr + PCIE_CAP_AER_SUE_SEV);
+			if (devp->aer_sue_severity &
+			    PCIE_CAP_AER_SUE_MASTER_ABORT) {
+			    pciWriteLong(tag, capptr + PCIE_CAP_AER_SUE_SEV,
+				devp->aer_sue_severity &
+				    ~PCIE_CAP_AER_SUE_MASTER_ABORT);
+			    if (pciReadLong(tag,
+					    capptr + PCIE_CAP_AER_SUE_SEV) &
+				PCIE_CAP_AER_SUE_MASTER_ABORT)
+				xf86Msg(X_WARNING, "Could not make master"
+					" aborts non-fatal through PCI bridge"
+					"%.2x:%02x:%02x\n",
+					devp->busnum,
+					devp->devnum,
+					devp->funcnum);
+			}
+
+			break;
+		    }
+
+		    break;
+		}
+	    }
 
 	default:
 	    break;
 	}
-
-#ifdef OLD_FORMAT
-	xf86MsgVerb(X_INFO, 2, "PCI: BusID 0x%.2x,0x%02x,0x%1x "
-		    "ID 0x%04x,0x%04x Rev 0x%02x Class 0x%02x,0x%02x\n",
-		    devp->busnum, devp->devnum, devp->funcnum,
-		    devp->pci_vendor, devp->pci_device, devp->pci_rev_id,
-		    devp->pci_base_class, devp->pci_sub_class);
-#else
-	xf86MsgVerb(X_INFO, 2, "PCI: %.2x:%02x:%1x: chip %04x,%04x"
-		    " card %04x,%04x rev %02x class %02x,%02x,%02x hdr %02x\n",
-		    devp->busnum, devp->devnum, devp->funcnum,
-		    devp->pci_vendor, devp->pci_device,
-		    devp->pci_subsys_vendor, devp->pci_subsys_card,
-		    devp->pci_rev_id, devp->pci_base_class,
-		    devp->pci_sub_class, devp->pci_prog_if,
-		    devp->pci_header_type);
-#endif
 
 	pci_devp[idx++] = devp;
 	tag = pciFindNext();
@@ -1269,10 +1493,35 @@ xf86scanpci(int flags)
 		ARCH_PCI_PCI_BRIDGE(devp);
 #endif
 	    }
-	    if (!(devp->pci_bridge_control & PCI_PCI_BRIDGE_MASTER_ABORT_EN))
-		break;
+
+	    if (devp->aer_cap_ptr != 0) {
+		if (devp->pcie_devtype == PCI_CAP_PCIE_DEVTYPE_PCIE_PCI) {
+		    pciWriteLong(devp->tag,
+			devp->aer_cap_ptr + PCIE_CAP_AER_SUE_MASK,
+			devp->aer_sue_mask);
+		    pciWriteLong(devp->tag,
+			devp->aer_cap_ptr + PCIE_CAP_AER_SUE_SEV,
+			devp->aer_sue_severity);
+		}
+		pciWriteLong(devp->tag,
+		    devp->aer_cap_ptr + PCIE_CAP_AER_UE_MASK,
+		    devp->aer_ue_mask);
+		pciWriteLong(devp->tag,
+		    devp->aer_cap_ptr + PCIE_CAP_AER_UE_SEV,
+		    devp->aer_ue_severity);
+	    }
+
+	    if (devp->pcie_cap_ptr != 0) {
+		pciWriteWord(devp->tag,
+		    devp->pcie_cap_ptr + PCI_CAP_PCIE_DEV_CTL,
+		    devp->pcie_dev_ctl);
+		pciWriteLong(devp->tag, PCI_CMD_STAT_REG,
+		    devp->pci_status_command);
+	    }
+
 	    pciWriteWord(devp->tag, PCI_PCI_BRIDGE_CONTROL_REG,
 		devp->pci_bridge_control & ~PCI_PCI_BRIDGE_SECONDARY_RESET);
+
 	    break;
 
 	default:
