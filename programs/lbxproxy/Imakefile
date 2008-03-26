@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/lbxproxy/Imakefile,v 1.15tsi Exp $
+XCOMM $XFree86: xc/programs/lbxproxy/Imakefile,v 1.16tsi Exp $
 
 #include <Server.tmpl>
 #define       IHaveSubdirs
@@ -18,10 +18,6 @@ OTHERLIBS = $(ICELIB) $(XLIB) -lbsd $(ZLIB)
 OTHERLIBS = $(ICELIB) $(XLIB) $(ZLIB)
 #endif
 #endif
-
-os/LibraryTargetName(os):	os
-
-di/LibraryTargetName(dilbx):	di
 
 ServerTarget(lbxproxy,$(SUBDIRS),di/main.o,$(LBXLIBS),$(OTHERLIBS))
 
