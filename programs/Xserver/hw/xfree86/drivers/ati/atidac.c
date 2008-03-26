@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.25tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.26tsi Exp $ */
 /*
  * Copyright 1997 through 2008 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -437,7 +437,7 @@ ATILoadPalette
 
         CARD8 fChanged[SizeOf(pATI->NewHW.lut) / 3];
 
-        (void)memset(fChanged, SizeOf(fChanged), 0);
+        (void)memset(fChanged, 0, SizeOf(fChanged));
 
         minShift = redShift;
         if (minShift > greenShift)

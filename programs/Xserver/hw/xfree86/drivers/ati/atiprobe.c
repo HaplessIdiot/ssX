@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.77tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.78tsi Exp $ */
 /*
  * Copyright 1997 through 2008 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1494,14 +1494,29 @@ ATIProbe
 
                 if (ProbeFlag != DoProbe)
                 {
-                    if (ProbeFlag == BadRouting)
-                        xf86MsgVerb(X_INFO, 2,
-                            ATI_NAME ":  Unshared VGA not probed in domain %d"
-                            " due to unsuitable PCI routing.\n", Domain);
-                    else
-                        xf86MsgVerb(X_INFO, 2,
-                            ATI_NAME ":  Unshared VGA not probed in domain %d"
-                            " due to an I/O conflict.\n", Domain);
+                    switch (ProbeFlag)
+                    {
+                        case BadRouting:
+                            xf86MsgVerb(X_INFO, 2,
+                                ATI_NAME ":  Unshared VGA not probed in domain"
+                                " %d due to unsuitable PCI routing.\n",
+                                Domain);
+                            break;
+
+                        case Allowed:
+                            xf86MsgVerb(X_INFO, 2,
+                                ATI_NAME ":  Unshared VGA not probed in domain"
+                                " %d due to a potential hard-failed master"
+                                " abort.\n", Domain);
+                            break;
+
+                        default:
+                            xf86MsgVerb(X_INFO, 2,
+                                ATI_NAME ":  Unshared VGA not probed in domain"
+                                " %d due to an I/O conflict.\n", Domain);
+                            break;
+                    }
+
                     break;
                 }
 
@@ -1560,14 +1575,30 @@ ATIProbe
 
                 if (ProbeFlag != DoProbe)
                 {
-                    if (ProbeFlag == BadRouting)
-                        xf86MsgVerb(X_INFO, 2,
-                            ATI_NAME ":  Unshared 8514/A not probed in domain"
-                            " %d due to unsuitable PCI routing.\n", Domain);
-                    else
-                        xf86MsgVerb(X_INFO, 2,
-                            ATI_NAME ":  Unshared 8514/A not probed in domain"
-                            " %d due to an I/O conflict.\n", Domain);
+                    switch (ProbeFlag)
+                    {
+                        case BadRouting:
+                            xf86MsgVerb(X_INFO, 2,
+                                ATI_NAME ":  Unshared 8514/A not probed in"
+                                " domain %d due to unsuitable PCI routing.\n",
+                                Domain);
+                            break;
+
+                        case Allowed:
+                            xf86MsgVerb(X_INFO, 2,
+                                ATI_NAME ":  Unshared 8514/A not probed in"
+                                " domain %d due to a potential hard-failed"
+                                " master abort.\n", Domain);
+                            break;
+
+                        default:
+                            xf86MsgVerb(X_INFO, 2,
+                                ATI_NAME ":  Unshared 8514/A not probed in"
+                                " domain %d due to an I/O conflict.\n",
+                                Domain);
+                            break;
+                    }
+
                     break;
                 }
 
@@ -1627,16 +1658,33 @@ ATIProbe
 
                 if (ProbeFlag != DoProbe)
                 {
-                    if (ProbeFlag == BadRouting)
-                        xf86MsgVerb(X_INFO, 2,
-                            ATI_NAME ":  Unshared Mach64 at I/O base 0x%04X"
-                            " not probed in domain %d due to unsuitable PCI"
-                            " routing.\n", Mach64SparseIOBases[i], Domain);
-                    else
-                        xf86MsgVerb(X_INFO, 2,
-                            ATI_NAME ":  Unshared Mach64 at I/O base 0x%04X"
-                            " not probed in domain %d due to I/O conflict.\n",
-                            Mach64SparseIOBases[i], Domain);
+                    switch (ProbeFlag)
+                    {
+                        case BadRouting:
+                            xf86MsgVerb(X_INFO, 2,
+                                ATI_NAME ":  Unshared Mach64 at I/O base"
+                                " 0x%04X not probed in domain %d due to"
+                                " unsuitable PCI routing.\n",
+                                Mach64SparseIOBases[i], Domain);
+                            break;
+
+                        case Allowed:
+                            xf86MsgVerb(X_INFO, 2,
+                                ATI_NAME ":  Unshared Mach64 at I/O base"
+                                " 0x%04X not probed in domain %d due to"
+                                " a potential hard-failed master abort.\n",
+                                Mach64SparseIOBases[i], Domain);
+                            break;
+
+                        default:
+                            xf86MsgVerb(X_INFO, 2,
+                                ATI_NAME ":  Unshared Mach64 at I/O base"
+                                " 0x%04X not probed in domain %d due to I/O"
+                                " conflict.\n",
+                                Mach64SparseIOBases[i], Domain);
+                            break;
+                    }
+
                     continue;
                 }
 
