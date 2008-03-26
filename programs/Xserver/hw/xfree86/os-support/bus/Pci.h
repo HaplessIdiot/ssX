@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.56tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.57tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -168,6 +168,7 @@
 #define PCI_FUNC_FROM_TAG(tag) (((tag) & 0x00000700u) >> 8)
 
 #define PCI_DFN_FROM_TAG(tag)  (((tag) & 0x0000ff00u) >> 8)
+#define PCI_BDF_FROM_TAG(tag)  (((tag) & 0x00ffff00u) >> 8)
 #define PCI_BDEV_FROM_TAG(tag) ((tag) & 0x00fff800u)
 
 #define PCI_DOM_FROM_BUS(bus)  (((bus) >> 8) & (PCI_DOM_MASK))

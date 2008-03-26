@@ -1,4 +1,13 @@
 XFree86 4.7.99.15 (xx April 2008)
+  32. Temporarily ignore 64-bit PCI memory address spaces on SPARC
+      (Marc La France).
+  31. For fault isolation purposes, on SPARC, bracket all PCI configuration
+      space accesses with MEMBAR's  (Marc La France).
+  30. Add PCI-X and PCI Express to the mix of PCI variants that are supported
+      in a single system.  Includes, but is not limited to, support for Sun's
+      Ultra 25 and Ultra 45 systems.  (Marc La France).
+  29. Remove assumption that all PCI entities have a function 0
+      (Marc La France).
   28. Update to 2008-03-26 pci.ids snapshot.  Also add some more recent PCI
       Radeon IDs.  (Marc La France)
   27. Fix integer wrap-arounds in XAA's wide line code path (Paul Mackerras).
@@ -20679,4 +20688,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3939 2008/03/26 17:45:59 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3940 2008/03/26 18:39:08 tsi Exp $
