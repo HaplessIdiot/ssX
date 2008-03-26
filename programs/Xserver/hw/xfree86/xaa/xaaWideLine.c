@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaWideLine.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaWideLine.c,v 1.12tsi Exp $ */
 
 /*
 
@@ -15,7 +15,8 @@ Original mi code written by Keith Packard.
 */
 
 #ifndef XFree86LOADER
-#if defined(_XOPEN_SOURCE) || defined(__QNXNTO__)
+#if defined(_XOPEN_SOURCE) || defined(__QNXNTO__) || \
+    (defined(sun) && defined(__SVR4))
 #include <math.h>
 #else
 #define _XOPEN_SOURCE	/* to get prototype for hypot on some systems */
@@ -823,20 +824,6 @@ XAAPolylinesWideSolid (
 	return;
     }
 
-    if (mode == CoordModePrevious) {
-	pPts->x += xorg;
-	pPts->y += yorg;
-    } else if(xorg | yorg) {
-	register int n = npt;
-	register DDXPointPtr pts = pPts;
-
-	while(n--) {
-	   pts->x += xorg;
-	   pts->y += yorg;
-	   pts++;
-	}
-    }
-
     x2 = pPts->x;
     y2 = pPts->y;
     if (npt > 1) {
@@ -874,6 +861,8 @@ XAAPolylinesWideSolid (
               infoRec->ClipBox->x2 - 1, infoRec->ClipBox->y2 - 1);		
     }
 
+    x2 += xorg;
+    y2 += yorg;
     while (--npt) {
 	x1 = x2;
 	y1 = y2;
@@ -883,6 +872,9 @@ XAAPolylinesWideSolid (
 	if (mode == CoordModePrevious) {
 	    x2 += x1;
 	    y2 += y1;
+	} else {
+	    x2 += xorg;
+	    y2 += yorg;
 	}
 	if ((x1 != x2) || (y1 != y2)) {
 	    somethingDrawn = TRUE;

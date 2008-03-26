@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEText.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEText.c,v 1.8tsi Exp $ */
 
 /********************************************************************
 
@@ -249,6 +249,7 @@ XAAGlyphBltTEColorExpansion(
 	RightEdge = min(Right, pbox->x2);
 
 	if(RightEdge > LeftEdge) {	/* we have something to draw */
+	    unsigned int *fallbackBits = NULL;
 	    ytop = max(Top, pbox->y1);
 	    ybot = min(Bottom, pbox->y2);
 	    
@@ -261,9 +262,22 @@ XAAGlyphBltTEColorExpansion(
 		int count;
 		glyphs = (unsigned int**)(infoRec->PreAllocMem);
 
-		for(count = 0; count < nglyph; count++) 
+		for(count = 0; count < nglyph; count++) {
  			glyphs[count] = (unsigned int*) 
 				FONTGLYPHBITS(gBase,*ppci++);
+			if (!glyphs[count]) {
+			    /* Glyphs with NULL bits do exist in the wild.
+			       Replace with blank bits in that case */
+			    
+			    if (!fallbackBits) {
+				int fontHeight = Bottom - Top + 1;
+				fallbackBits = xcalloc (glyphWidth * fontHeight, 1);
+				if (!fallbackBits)
+				    return;
+			    }
+			    glyphs[count] = fallbackBits;
+			}
+		}
 
 		/* our new unrolled TE code only writes DWORDS at a time 
 		   so it can read up to 6 characters past the last one 
@@ -276,12 +290,15 @@ XAAGlyphBltTEColorExpansion(
 		glyphs[count + 5] = glyphs[0];
 	    }
 
-   /* x, y, w, h, skipleft, skiptop, glyphp, glyphWidth, fg, bg, rop, pm */
+    /* x, y, w, h, skipleft, skiptop, glyphp, glyphWidth, fg, bg, rop, pm */
 
 	    (*infoRec->TEGlyphRenderer)( pScrn, 
 		LeftEdge, ytop, RightEdge - LeftEdge, ybot - ytop, 
 		skippix, ytop - Top, glyphs + skipglyphs, glyphWidth, 
-		fg, bg, rop, planemask); 
+		fg, bg, rop, planemask);
+
+	    if (fallbackBits)
+		xfree (fallbackBits);
 	}
 
 	nbox--; pbox++;
