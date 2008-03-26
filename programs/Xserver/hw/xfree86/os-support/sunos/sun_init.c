@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.9 2006/01/12 02:41:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.10tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -94,7 +94,8 @@ xf86OpenConsole(void)
 		    strerror(errno));
 
 	    if (ioctl(fd, VT_GETSTATE, &vtinfo) < 0)
-		FatalError("xf86OpenConsole: Cannot determine current VT\n");
+		FatalError("xf86OpenConsole: Cannot determine current VT"
+			   " (%s)\n", strerror(errno));
 
 	    xf86StartVT = vtinfo.v_active;
 
@@ -146,13 +147,16 @@ xf86OpenConsole(void)
 	 * Now get the VT
 	 */
 	if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno) != 0)
-	    xf86Msg(X_WARNING, "xf86OpenConsole: VT_ACTIVATE failed\n");
+	    xf86Msg(X_WARNING, "xf86OpenConsole: VT_ACTIVATE failed (%s)\n",
+		    strerror(errno));
 
 	if (ioctl(xf86Info.consoleFd, VT_WAITACTIVE, xf86Info.vtno) != 0)
-	    xf86Msg(X_WARNING, "xf86OpenConsole: VT_WAITACTIVE failed\n");
+	    xf86Msg(X_WARNING, "xf86OpenConsole: VT_WAITACTIVE failed (%s)\n",
+		    strerror(errno));
 
 	if (ioctl(xf86Info.consoleFd, VT_GETMODE, &VT) < 0)
-	    FatalError("xf86OpenConsole: VT_GETMODE failed\n");
+	    FatalError("xf86OpenConsole: VT_GETMODE failed (%s)\n",
+		       strerror(errno));
 
 	signal(SIGUSR1, xf86VTRequest);
 
@@ -161,10 +165,14 @@ xf86OpenConsole(void)
 	VT.acqsig = SIGUSR1;
 
 	if (ioctl(xf86Info.consoleFd, VT_SETMODE, &VT) < 0)
-	    FatalError("xf86OpenConsole: VT_SETMODE VT_PROCESS failed\n");
+	    FatalError("xf86OpenConsole: VT_SETMODE VT_PROCESS failed (%s)\n",
+		       strerror(errno));
 
+#ifdef KDSETMODE
 	if (ioctl(xf86Info.consoleFd, KDSETMODE, KD_GRAPHICS) < 0)
-	    FatalError("xf86OpenConsole: KDSETMODE KD_GRAPHICS failed\n");
+	    FatalError("xf86OpenConsole: KDSETMODE KD_GRAPHICS failed (%s)\n",
+		       strerror(errno));
+#endif
 #else
 #ifdef KDSETMODE
 	/* This may fail. */
@@ -179,10 +187,12 @@ xf86OpenConsole(void)
 	 * Now re-get the VT
 	 */
 	if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno) != 0)
-	    xf86Msg(X_WARNING, "xf86OpenConsole: VT_ACTIVATE failed\n");
+	    xf86Msg(X_WARNING, "xf86OpenConsole: VT_ACTIVATE failed (%s)\n",
+		    strerror(errno));
 
 	if (ioctl(xf86Info.consoleFd, VT_WAITACTIVE, xf86Info.vtno) != 0)
-	    xf86Msg(X_WARNING, "xf86OpenConsole: VT_WAITACTIVE failed\n");
+	    xf86Msg(X_WARNING, "xf86OpenConsole: VT_WAITACTIVE failed (%s)\n",
+		    strerror(errno));
 
 	/*
 	 * If the server doesn't have the VT when the reset occurs,
@@ -211,33 +221,49 @@ xf86CloseConsole(void)
 
     if (!xf86DoProbe && !xf86DoConfigure) {
 	/*
-	 * Wipe out framebuffer just like the non-SI Xsun server does.  This
-	 * could be improved by saving framebuffer contents in
-	 * xf86OpenConsole() above and restoring them here.  Also, it's unclear
-	 * at this point whether this should be done for all framebuffers in
-	 * the system, rather than only the console.
+	 * Wipe out framebuffers, given we have nothing to restore them with.
 	 */
-	struct fbgattr fbattr;
+        for (tmp = 0;  ;  tmp++) {
+	    struct fbgattr fbattr;
+	    char *fbdev;
+	    int fd;
 
-	if ((ioctl(xf86Info.consoleFd, FBIOGATTR, &fbattr) < 0) &&
-	    (ioctl(xf86Info.consoleFd, FBIOGTYPE, &fbattr.fbtype) < 0)) {
-	    xf86Msg(X_WARNING,
-		    "xf86CloseConsole():  unable to retrieve framebuffer"
-		    " attributes (%s)\n", strerror(errno));
-	} else {
-	    pointer fbdata;
-
-	    fbdata = mmap(NULL, fbattr.fbtype.fb_size,
-			  PROT_READ | PROT_WRITE, MAP_SHARED,
-			  xf86Info.consoleFd, 0);
-	    if (fbdata == MAP_FAILED) {
+	    fbdev = NULL;
+	    xasprintf(&fbdev, "/dev/fb%d", tmp);
+	    if (!fbdev) {
 		xf86Msg(X_WARNING,
-			"xf86CloseConsole():  unable to mmap framebuffer"
-			" (%s)\n", strerror(errno));
-	    } else {
-		(void)memset(fbdata, 0, fbattr.fbtype.fb_size);
-		(void)munmap(fbdata, fbattr.fbtype.fb_size);
+			"Cannot allocate space for framebuffer name\n");
+		break;
 	    }
+
+	    fd = open(fbdev, O_RDWR | O_NDELAY, 0);
+	    if (fd < 0) {
+		xfree(fbdev);
+		break;
+	    }
+
+	    if ((ioctl(fd, FBIOGATTR, &fbattr) < 0) &&
+		(ioctl(fd, FBIOGTYPE, &fbattr.fbtype) < 0)) {
+		xf86Msg(X_WARNING,
+			"xf86CloseConsole: Unable to retrieve %s attributes"
+			" (%s)\n", fbdev, strerror(errno));
+	    } else {
+		pointer fbdata;
+
+		fbdata = mmap(NULL, fbattr.fbtype.fb_size,
+			      PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+		if (fbdata == MAP_FAILED) {
+		    xf86Msg(X_WARNING,
+			    "xf86CloseConsole: Unable to mmap %s (%s)\n",
+			    fbdev, strerror(errno));
+		} else {
+		    (void)memset(fbdata, 0, fbattr.fbtype.fb_size);
+		    (void)munmap(fbdata, fbattr.fbtype.fb_size);
+		}
+	    }
+
+	    close(fd);
+	    xfree(fbdev);
 	}
     }
 
