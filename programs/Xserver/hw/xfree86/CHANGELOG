@@ -1,4 +1,6 @@
 XFree86 4.7.99.15 (xx April 2008)
+  28. Update to 2008-03-26 pci.ids snapshot.  Also add some more recent PCI
+      Radeon IDs.  (Marc La France)
   27. Fix integer wrap-arounds in XAA's wide line code path (Paul Mackerras).
   26. Fix XAA segfault when dealing with certain TE fonts with null glyphs
       (Soran Sandmann Pedersen).
@@ -20677,4 +20679,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3938 2008/03/26 17:28:09 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3939 2008/03/26 17:45:59 tsi Exp $
