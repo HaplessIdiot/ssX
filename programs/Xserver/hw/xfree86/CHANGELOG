@@ -4,6 +4,10 @@ XFree86 4.7.99.15 (xx April 2008)
       (Marc La France).
   31. For fault isolation purposes, on SPARC, bracket all PCI configuration
       space accesses with MEMBAR's  (Marc La France).
+  30.5.  Change PCI scan to mitigate the effects of PCI Express Unsupported 
+      requests (its idea of PCI's master aborts).  On Solaris/SPARC at least,
+      this tones down a system freeze to a SIGKILL of the PCI scan.
+      (Marc La France).
   30. Add PCI-X and PCI Express to the mix of PCI variants that are supported
       in a single system.  Includes, but is not limited to, support for Sun's
       Ultra 25 and Ultra 45 systems.  (Marc La France).
@@ -20689,4 +20693,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3941 2008/03/26 18:57:48 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3942 2008/03/26 19:04:50 tsi Exp $
