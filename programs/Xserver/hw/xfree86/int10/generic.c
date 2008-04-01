@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.30tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.31tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -51,7 +51,7 @@ int10MemRec genericMem = {
 static void MapVRam(xf86Int10InfoPtr pInt);
 static void UnmapVRam(xf86Int10InfoPtr pInt);
 #ifdef _PC
-#define GET_HIGH_BASE(x) (((V_BIOS + size + getpagesize() - 1)/getpagesize()) \
+#define GET_HIGH_BASE(x) (((V_BIOS + (x) + getpagesize() - 1)/getpagesize()) \
                              * getpagesize())
 #endif
 
@@ -132,13 +132,12 @@ xf86ExtendedInitInt10(int entityIndex, int Flags)
      * 64kB at a time.
      */
     (void)memset((char *)base + V_BIOS, 0, SYS_BIOS - V_BIOS);
-#if 0
-    for (cs = V_BIOS;  cs < SYS_BIOS;  cs += V_BIOS_SIZE)
-	if (xf86ReadBIOS(cs, 0, (unsigned char *)base + cs, V_BIOS_SIZE) <
+    if (xf86DomainHasBIOSSegments(xf86GetPciDomain(pInt->Tag)))
+	for (cs = V_BIOS;  cs < SYS_BIOS;  cs += V_BIOS_SIZE)
+	    if (xf86ReadBIOS(cs, 0, (unsigned char *)base + cs, V_BIOS_SIZE) <
 		V_BIOS_SIZE)
-	    xf86DrvMsg(screen, X_WARNING,
-		       "Unable to retrieve all of segment 0x%06X.\n", cs);
-#endif
+		xf86DrvMsg(screen, X_WARNING,
+			   "Unable to retrieve all of segment 0x%06X.\n", cs);
     INTPriv(pInt)->highMemory = V_BIOS;
     
     xf86int10ParseBiosLocation(options,&bios);
@@ -234,6 +233,8 @@ xf86ExtendedInitInt10(int entityIndex, int Flags)
 	    }
 	} else
 	    location_type = pEnt->location.type;
+
+	xfree(pEnt);
 	
 	switch (location_type) {
 	case BUS_PCI:
@@ -252,13 +253,12 @@ xf86ExtendedInitInt10(int entityIndex, int Flags)
 	    break;
 	case BUS_ISA:
 	    vbiosMem = (unsigned char *)sysMem + bios_location;
-#if 0
-	    (void)memset(vbiosMem, 0, V_BIOS_SIZE);
-	    if (xf86ReadBIOS(bios_location, 0, vbiosMem, V_BIOS_SIZE)
-		< V_BIOS_SIZE)
-		xf86DrvMsg(screen, X_WARNING,
-		    "Unable to retrieve all of segment 0x%x.\n",bios_location);
-#endif
+	    if (xf86DomainHasBIOSSegments(xf86GetPciDomain(pInt->Tag)))
+		if (xf86ReadBIOS(bios_location, 0, vbiosMem, V_BIOS_SIZE) <
+		    V_BIOS_SIZE)
+		    xf86DrvMsg(screen, X_WARNING,
+			       "Unable to retrieve all of segment 0x%x.\n",
+			       bios_location);
 	    if (!int10_check_bios(screen, bios_location >> 4, vbiosMem)) {
 	        xf86DrvMsg(screen,X_ERROR,"Cannot read V_BIOS (4)\n");
 		goto error1;
@@ -266,7 +266,6 @@ xf86ExtendedInitInt10(int entityIndex, int Flags)
 	default:
 	    goto error1;
 	}
-	xfree(pEnt);
 	pInt->BIOSseg = V_BIOS >> 4;
 	pInt->num = 0xe6;
 	LockLegacyVGA(pInt, &vga);
@@ -289,17 +288,19 @@ xf86ExtendedInitInt10(int entityIndex, int Flags)
      */
     vbiosMem = (char *)base + V_BIOS;
     (void)memset(vbiosMem, 0, 2 * V_BIOS_SIZE);
-    if (xf86ReadDomainMemory(pInt->Tag, V_BIOS, V_BIOS_SIZE, vbiosMem) <
-	V_BIOS_SIZE)
-	xf86DrvMsg(screen, X_WARNING,
-	    "Unable to retrieve all of segment 0x0C0000.\n");
-    else if ((((unsigned char *)vbiosMem)[0] == 0x55) &&
-	     (((unsigned char *)vbiosMem)[1] == 0xAA) &&
-	     (((unsigned char *)vbiosMem)[2] > 0x80))
-    if (xf86ReadDomainMemory(pInt->Tag, V_BIOS + V_BIOS_SIZE, V_BIOS_SIZE,
+    if (xf86DomainHasBIOSSegments(xf86GetPciDomain(pInt->Tag))) {
+	if (xf86ReadDomainMemory(pInt->Tag, V_BIOS, V_BIOS_SIZE, vbiosMem) <
+	    V_BIOS_SIZE)
+	    xf86DrvMsg(screen, X_WARNING,
+		"Unable to retrieve all of segment 0x0C0000.\n");
+	else if ((((unsigned char *)vbiosMem)[0] == 0x55) &&
+		 (((unsigned char *)vbiosMem)[1] == 0xAA) &&
+		 (((unsigned char *)vbiosMem)[2] > 0x80))
+	if (xf86ReadDomainMemory(pInt->Tag, V_BIOS + V_BIOS_SIZE, V_BIOS_SIZE,
 	    (unsigned char *)vbiosMem + V_BIOS_SIZE) < V_BIOS_SIZE)
-	xf86DrvMsg(screen, X_WARNING,
-	    "Unable to retrieve all of segment 0x0D0000.\n");
+	    xf86DrvMsg(screen, X_WARNING,
+		"Unable to retrieve all of segment 0x0D0000.\n");
+    }
 
     /*
      * If this adapter is the primary, use its post-init BIOS (if we can find
