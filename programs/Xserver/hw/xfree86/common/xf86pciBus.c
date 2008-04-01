@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.92tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.93tsi Exp $ */
 /*
  * Copyright (c) 1997-2007 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1526,7 +1526,10 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, unsigned long type)
     }
     /* @@@ fake BIOS allocated resource */
     range.type |= ResBios;
-    Acc = xf86AddResToList(Acc, &range,-1);
+    w = xf86AddResToList(NULL, &range, -1);
+    xf86MsgVerb(X_INFO, 3, "Resource relocated to:\n");
+    xf86PrintResList(3, w);
+    Acc = xf86JoinResLists(w, Acc);
 
     return TRUE;
 

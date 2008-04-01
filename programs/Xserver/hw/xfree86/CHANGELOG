@@ -1,5 +1,9 @@
 XFree86 4.7.99.15 (xx April 2008)
-  32. Zero out all SPARC SunOS framebuffers on server exit (Marc La France).
+  35. Fix PCI resource relocation to avoid nullifying resources
+      (Marc La France).
+  34. In int10, do attempt to populate shadow system BIOS segments if there's
+      a risk of hard-failed master aborts (Marc La France).
+  33. Zero out all SPARC SunOS framebuffers on server exit (Marc La France).
   32. Temporarily ignore 64-bit PCI memory address spaces on SPARC
       (Marc La France).
   31. For fault isolation purposes, on SPARC, bracket all PCI configuration
@@ -20693,4 +20697,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3942 2008/03/26 19:04:50 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3943 2008/03/27 16:22:40 tsi Exp $
