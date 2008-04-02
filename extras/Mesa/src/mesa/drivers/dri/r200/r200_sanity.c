@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_sanity.c,v 1.1.1.2 2004/12/10 15:05:57 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_sanity.c,v 1.2tsi Exp $ */
 /**************************************************************************
 
 Copyright 2002 ATI Technologies Inc., Ontario, Canada, and
@@ -41,7 +41,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "r200_context.h"
 #include "r200_ioctl.h"
 #include "r200_sanity.h"
-#include "radeon_reg.h"
 #include "r200_reg.h"
 
 /* Set this '1' to get more verbiage.

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.h,v 1.5 2003/09/28 20:15:55 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.h,v 1.6tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -54,12 +54,11 @@
 
 #define RADEON_DEFAULT_CP_TIMEOUT     10000  /* usecs */
 
-#define RADEON_AGP_MAX_MODE           4
+#define RADEON_PCIGART_TABLE_SIZE     32768
+
+#define RADEON_AGP_MAX_MODE           8
 
 #define RADEON_CARD_TYPE_RADEON       1
-
-/* Buffer are aligned on 4096 byte boundaries */
-#define RADEON_BUFFER_ALIGN           0x00000fff
 
 #define RADEONCP_USE_RING_BUFFER(m)					\
     (((m) == RADEON_CSQ_PRIBM_INDDIS) ||				\
