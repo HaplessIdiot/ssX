@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.33tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.34tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -243,7 +243,7 @@ static Bool R128InitVisualConfigs(ScreenPtr pScreen)
 		}
 		pConfigs[i].auxBuffers         = 0;
 		pConfigs[i].level              = 0;
-		if (accum || stencil) {
+		if (accum) {
 		   pConfigs[i].visualRating    = GLX_SLOW_CONFIG;
 		} else {
 		   pConfigs[i].visualRating    = GLX_NONE;
@@ -525,7 +525,7 @@ static Bool R128DRIAgpInit(R128InfoPtr info, ScreenPtr pScreen)
 	       "[agp] ring handle = 0x%08lx\n", info->ringHandle);
 
     if (drmMap(info->drmFD, info->ringHandle, info->ringMapSize,
-	       (drmAddressPtr)&info->ring) < 0) {
+	       &info->ring) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR, "[agp] Could not map ring\n");
 	return FALSE;
     }
@@ -544,7 +544,7 @@ static Bool R128DRIAgpInit(R128InfoPtr info, ScreenPtr pScreen)
 	       info->ringReadPtrHandle);
 
     if (drmMap(info->drmFD, info->ringReadPtrHandle, info->ringReadMapSize,
-	       (drmAddressPtr)&info->ringReadPtr) < 0) {
+	       &info->ringReadPtr) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
 		   "[agp] Could not map ring read ptr\n");
 	return FALSE;
@@ -564,7 +564,7 @@ static Bool R128DRIAgpInit(R128InfoPtr info, ScreenPtr pScreen)
 	       info->bufHandle);
 
     if (drmMap(info->drmFD, info->bufHandle, info->bufMapSize,
-	       (drmAddressPtr)&info->buf) < 0) {
+	       &info->buf) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
 		   "[agp] Could not map vertex/indirect buffers\n");
 	return FALSE;
@@ -584,7 +584,7 @@ static Bool R128DRIAgpInit(R128InfoPtr info, ScreenPtr pScreen)
 	       info->agpTexHandle);
 
     if (drmMap(info->drmFD, info->agpTexHandle, info->agpTexMapSize,
-	       (drmAddressPtr)&info->agpTex) < 0) {
+	       &info->agpTex) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
 		   "[agp] Could not map AGP texture map\n");
 	return FALSE;
@@ -669,7 +669,7 @@ static Bool R128DRIPciInit(R128InfoPtr info, ScreenPtr pScreen)
 	       "[pci] ring handle = 0x%08lx\n", info->ringHandle);
 
     if (drmMap(info->drmFD, info->ringHandle, info->ringMapSize,
-	       (drmAddressPtr)&info->ring) < 0) {
+	       &info->ring) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR, "[pci] Could not map ring\n");
 	return FALSE;
     }
@@ -691,7 +691,7 @@ static Bool R128DRIPciInit(R128InfoPtr info, ScreenPtr pScreen)
 	       info->ringReadPtrHandle);
 
     if (drmMap(info->drmFD, info->ringReadPtrHandle, info->ringReadMapSize,
-	       (drmAddressPtr)&info->ringReadPtr) < 0) {
+	       &info->ringReadPtr) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
 		   "[pci] Could not map ring read ptr\n");
 	return FALSE;
@@ -714,7 +714,7 @@ static Bool R128DRIPciInit(R128InfoPtr info, ScreenPtr pScreen)
 	       info->bufHandle);
 
     if (drmMap(info->drmFD, info->bufHandle, info->bufMapSize,
-	       (drmAddressPtr)&info->buf) < 0) {
+	       &info->buf) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
 		   "[pci] Could not map vertex/indirect buffers\n");
 	return FALSE;
@@ -1297,6 +1297,7 @@ void R128DRICloseScreen(ScreenPtr pScreen)
     if (info->irq) {
 	drmCtlUninstHandler(info->drmFD);
 	info->irq = 0;
+	info->gen_int_cntl = 0;
     }
 
 				/* De-allocate vertex buffers */

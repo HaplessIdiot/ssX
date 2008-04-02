@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_version.h,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_version.h,v 1.11tsi Exp $ */
 /*
  * Copyright 2000 through 2008 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -38,8 +38,8 @@
 #define R128_DRIVER_NAME   "r128"
 
 #define R128_VERSION_MAJOR 4
-#define R128_VERSION_MINOR 0
-#define R128_VERSION_PATCH 1
+#define R128_VERSION_MINOR 1
+#define R128_VERSION_PATCH 0
 
 #ifndef R128_VERSION_EXTRA
 #define R128_VERSION_EXTRA ""
