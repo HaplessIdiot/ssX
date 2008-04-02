@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_reg.h,v 1.2 2002/12/16 16:18:54 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_reg.h,v 1.1.1.2tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -30,6 +30,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _R200_REG_H_
 #define _R200_REG_H_
 
+#include "radeon_reg.h"
+
 #define R200_PP_MISC                      0x1c14 
 #define     R200_REF_ALPHA_MASK        0x000000ff
 #define     R200_ALPHA_TEST_FAIL       (0 << 8)
@@ -58,6 +60,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define     R200_FOG_USE_DIFFUSE_ALPHA (2 << 25)
 #define     R200_FOG_USE_SPEC_ALPHA    (3 << 25)
 #define     R200_FOG_USE_VTX_FOG       (4 << 25)
+#define     R200_FOG_USE_MASK          (7 << 25)
 #define R200_RE_SOLID_COLOR               0x1c1c 
 #define R200_RB3D_BLENDCNTL               0x1c20
 #define     R200_COMB_FCN_MASK                    (7  << 12)
@@ -69,39 +72,26 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define     R200_COMB_FCN_MAX                     (5  << 12)
 #define     R200_COMB_FCN_RSUB_CLAMP              (6  << 12)
 #define     R200_COMB_FCN_RSUB_NOCLAMP            (7  << 12)
-#define     R200_SRC_BLEND_GL_ZERO                (32 << 16)
-#define     R200_SRC_BLEND_GL_ONE                 (33 << 16)
-#define     R200_SRC_BLEND_GL_SRC_COLOR           (34 << 16)
-#define     R200_SRC_BLEND_GL_ONE_MINUS_SRC_COLOR (35 << 16)
-#define     R200_SRC_BLEND_GL_DST_COLOR           (36 << 16)
-#define     R200_SRC_BLEND_GL_ONE_MINUS_DST_COLOR (37 << 16)
-#define     R200_SRC_BLEND_GL_SRC_ALPHA           (38 << 16)
-#define     R200_SRC_BLEND_GL_ONE_MINUS_SRC_ALPHA (39 << 16)
-#define     R200_SRC_BLEND_GL_DST_ALPHA           (40 << 16)
-#define     R200_SRC_BLEND_GL_ONE_MINUS_DST_ALPHA (41 << 16)
-#define     R200_SRC_BLEND_GL_SRC_ALPHA_SATURATE  (42 << 16)
-#define     R200_SRC_BLEND_GL_CONST_COLOR           (43 << 16)
-#define     R200_SRC_BLEND_GL_ONE_MINUS_CONST_COLOR (44 << 16)
-#define     R200_SRC_BLEND_GL_CONST_ALPHA           (45 << 16)
-#define     R200_SRC_BLEND_GL_ONE_MINUS_CONST_ALPHA (46 << 16)
-#define     R200_SRC_BLEND_MASK                     (63 << 16)
-#define     R200_DST_BLEND_GL_ZERO                (32 << 24)
-#define     R200_DST_BLEND_GL_ONE                 (33 << 24)
-#define     R200_DST_BLEND_GL_SRC_COLOR           (34 << 24)
-#define     R200_DST_BLEND_GL_ONE_MINUS_SRC_COLOR (35 << 24)
-#define     R200_DST_BLEND_GL_DST_COLOR           (36 << 24)
-#define     R200_DST_BLEND_GL_ONE_MINUS_DST_COLOR (37 << 24)
-#define     R200_DST_BLEND_GL_SRC_ALPHA           (38 << 24)
-#define     R200_DST_BLEND_GL_ONE_MINUS_SRC_ALPHA (39 << 24)
-#define     R200_DST_BLEND_GL_DST_ALPHA           (40 << 24)
-#define     R200_DST_BLEND_GL_ONE_MINUS_DST_ALPHA (41 << 24)
-#define     R200_DST_BLEND_GL_CONST_COLOR         (43 << 24)
-#define     R200_DST_BLEND_GL_ONE_MINUS_CONST_COLOR (44 << 24)
-#define     R200_DST_BLEND_GL_CONST_ALPHA           (45 << 24)
-#define     R200_DST_BLEND_GL_ONE_MINUS_CONST_ALPHA (46 << 24)
-#define     R200_DST_BLEND_MASK                     (63 << 24)
-#define R200_RB3D_DEPTHOFFSET             0x1c24 
-#define R200_RB3D_DEPTHPITCH              0x1c28 
+#define       R200_BLEND_GL_ZERO                  (32)
+#define       R200_BLEND_GL_ONE                   (33)
+#define       R200_BLEND_GL_SRC_COLOR             (34)
+#define       R200_BLEND_GL_ONE_MINUS_SRC_COLOR   (35)
+#define       R200_BLEND_GL_DST_COLOR             (36)
+#define       R200_BLEND_GL_ONE_MINUS_DST_COLOR   (37)
+#define       R200_BLEND_GL_SRC_ALPHA             (38)
+#define       R200_BLEND_GL_ONE_MINUS_SRC_ALPHA   (39)
+#define       R200_BLEND_GL_DST_ALPHA             (40)
+#define       R200_BLEND_GL_ONE_MINUS_DST_ALPHA   (41)
+#define       R200_BLEND_GL_SRC_ALPHA_SATURATE    (42) /* src factor only */
+#define       R200_BLEND_GL_CONST_COLOR           (43)
+#define       R200_BLEND_GL_ONE_MINUS_CONST_COLOR (44)
+#define       R200_BLEND_GL_CONST_ALPHA           (45)
+#define       R200_BLEND_GL_ONE_MINUS_CONST_ALPHA (46)
+#define       R200_BLEND_MASK                     (63)
+#define     R200_SRC_BLEND_SHIFT                  (16)
+#define     R200_DST_BLEND_SHIFT                  (24)
+#define R200_RB3D_DEPTHOFFSET             0x1c24
+#define R200_RB3D_DEPTHPITCH              0x1c28
 #define     R200_DEPTHPITCH_MASK         0x00001ff8
 #define     R200_DEPTH_ENDIAN_NO_SWAP    (0 << 18)
 #define     R200_DEPTH_ENDIAN_WORD_SWAP  (1 << 18)
@@ -501,6 +491,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define     R200_OUTPUT_TEX_4                   (1<<20)
 #define     R200_OUTPUT_TEX_5                   (1<<21)
 #define     R200_OUTPUT_TEX_MASK                (0x3f<<16)
+#define     R200_OUTPUT_DISCRETE_FOG            (1<<24)
 #define     R200_OUTPUT_PT_SIZE                 (1<<25)
 #define     R200_FORCE_INORDER_PROC             (1<<31)
 #define R200_SE_TCL_INPUT_VTX_VECTOR_ADDR_0  0x2254
@@ -1039,6 +1030,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define     R200_TXC_ARG_A_TFACTOR1_ALPHA      (27)
 #define     R200_TXC_ARG_A_MASK			(31 << 0)
 #define     R200_TXC_ARG_A_SHIFT			0
+#ifndef R200_TXC_ARG_B_ZERO	/* Might be in radeon_reg.h */
 #define     R200_TXC_ARG_B_ZERO                (0<<5)
 #define     R200_TXC_ARG_B_CURRENT_COLOR       (2<<5)
 #define     R200_TXC_ARG_B_CURRENT_ALPHA       (3<<5)
@@ -1062,8 +1054,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define     R200_TXC_ARG_B_R5_ALPHA            (21<<5)
 #define     R200_TXC_ARG_B_TFACTOR1_COLOR      (26<<5)
 #define     R200_TXC_ARG_B_TFACTOR1_ALPHA      (27<<5)
+#endif
 #define     R200_TXC_ARG_B_MASK			(31 << 5)
 #define     R200_TXC_ARG_B_SHIFT			5
+#ifndef R200_TXC_ARG_C_ZERO	/* Might be in radeon_reg.h */
 #define     R200_TXC_ARG_C_ZERO                (0<<10)
 #define     R200_TXC_ARG_C_CURRENT_COLOR       (2<<10)
 #define     R200_TXC_ARG_C_CURRENT_ALPHA       (3<<10)
@@ -1087,6 +1081,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define     R200_TXC_ARG_C_R5_ALPHA            (21<<10)
 #define     R200_TXC_ARG_C_TFACTOR1_COLOR      (26<<10)
 #define     R200_TXC_ARG_C_TFACTOR1_ALPHA      (27<<10)
+#endif
 #define     R200_TXC_ARG_C_MASK			(31 << 10)
 #define     R200_TXC_ARG_C_SHIFT			10
 #define     R200_TXC_COMP_ARG_A                    (1 << 16)
@@ -1184,6 +1179,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define     R200_TXA_ARG_A_TFACTOR1_BLUE     (27)
 #define     R200_TXA_ARG_A_MASK			(31 << 0)
 #define     R200_TXA_ARG_A_SHIFT			0
+#ifndef R200_TXA_ARG_B_ZERO	/* Might be in radeon_reg.h */
 #define     R200_TXA_ARG_B_ZERO              (0<<5)
 #define     R200_TXA_ARG_B_CURRENT_ALPHA     (2<<5) /* guess */
 #define     R200_TXA_ARG_B_CURRENT_BLUE      (3<<5) /* guess */
@@ -1207,8 +1203,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define     R200_TXA_ARG_B_R5_BLUE           (21<<5)
 #define     R200_TXA_ARG_B_TFACTOR1_ALPHA    (26<<5)
 #define     R200_TXA_ARG_B_TFACTOR1_BLUE     (27<<5)
+#endif
 #define     R200_TXA_ARG_B_MASK			(31 << 5)
 #define     R200_TXA_ARG_B_SHIFT			5
+#ifndef R200_TXA_ARG_C_ZERO	/* Might be in radeon_reg.h */
 #define     R200_TXA_ARG_C_ZERO              (0<<10)
 #define     R200_TXA_ARG_C_CURRENT_ALPHA     (2<<10) /* guess */
 #define     R200_TXA_ARG_C_CURRENT_BLUE      (3<<10) /* guess */
@@ -1232,6 +1230,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define     R200_TXA_ARG_C_R5_BLUE           (21<<10)
 #define     R200_TXA_ARG_C_TFACTOR1_ALPHA    (26<<10)
 #define     R200_TXA_ARG_C_TFACTOR1_BLUE     (27<<10)
+#endif
 #define     R200_TXA_ARG_C_MASK			(31 << 10)
 #define     R200_TXA_ARG_C_SHIFT			10
 #define     R200_TXA_COMP_ARG_A                    (1 << 16)
@@ -1320,6 +1319,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define R200_PP_TXABLEND_7                0x2f78
 #define R200_PP_TXABLEND2_7               0x2f7c
 /* gap */
+#define R200_RB3D_BLENDCOLOR               0x3218 /* ARGB 8888 */
 #define R200_RB3D_ABLENDCNTL               0x321C /* see BLENDCTL */
 #define R200_RB3D_CBLENDCNTL               0x3220 /* see BLENDCTL */
 

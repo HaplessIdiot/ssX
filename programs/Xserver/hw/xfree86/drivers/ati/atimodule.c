@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.c,v 1.24tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.c,v 1.25tsi Exp $ */
 /*
  * Copyright 1997 through 2008 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -149,6 +149,7 @@ const char *atiExportedSymbols[] = {
     "R128Chipsets",
     "RADEONChipsets",
     "atiModuleData",
+    "gR128EntityIndex",
     "gRADEONEntityIndex",
     NULL
 };

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_cmdbuf.c,v 1.1 2002/10/30 12:51:51 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_cmdbuf.c,v 1.1.1.2tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -44,7 +44,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "r200_ioctl.h"
 #include "r200_tcl.h"
 #include "r200_sanity.h"
-#include "radeon_reg.h"
+#include "r200_reg.h"
 
 static void print_state_atom( struct r200_state_atom *state )
 {
@@ -58,112 +58,139 @@ static void print_state_atom( struct r200_state_atom *state )
 
 }
 
-static void r200_emit_state_list( r200ContextPtr rmesa, 
-				    struct r200_state_atom *list )
+/* The state atoms will be emitted in the order they appear in the atom list,
+ * so this step is important.
+ */
+void r200SetUpAtomList( r200ContextPtr rmesa )
 {
-   struct r200_state_atom *state, *tmp;
-   char *dest;
-   int i, size;
+   int i, mtu;
 
-   size = 0;
-   foreach_s( state, tmp, list ) {
-      if (state->check( rmesa->glCtx, state->idx )) {
-/*	 dest = r200AllocCmdBuf( rmesa, state->cmd_size * 4, __FUNCTION__);
-	 memcpy( dest, state->cmd, state->cmd_size * 4);*/
-         size += state->cmd_size;
-         state->dirty = GL_TRUE;
-	 move_to_head( &(rmesa->hw.clean), state );
-	 if (R200_DEBUG & DEBUG_STATE) 
-	    print_state_atom( state );
-      }
-      else if (R200_DEBUG & DEBUG_STATE)
-	 fprintf(stderr, "skip state %s\n", state->name);
-   }
+   mtu = rmesa->glCtx->Const.MaxTextureUnits;
 
-   if (!size)
-      return;
+   make_empty_list(&rmesa->hw.atomlist);
+   rmesa->hw.atomlist.name = "atom-list";
 
-   dest = r200AllocCmdBuf( rmesa, size * 4, __FUNCTION__);
+   insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.ctx );
+   insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.set );
+   insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.lin );
+   insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.msk );
+   insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.vpt );
+   insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.vtx );
+   insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.vap );
+   insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.vte );
+   insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.msc );
+   insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.cst );
+   insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.zbs );
+   insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.tcl );
+   insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.msl );
+   insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.tcg );
+   insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.grd );
+   insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.fog );
+   insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.tam );
+   insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.tf );
+   for (i = 0; i < mtu; ++i)
+       insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.tex[i] );
+   for (i = 0; i < mtu; ++i)
+       insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.cube[i] );
+   for (i = 0; i < 6; ++i)
+       insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.pix[i] );
 
-#define EMIT_ATOM(ATOM) \
-do { \
-   if (rmesa->hw.ATOM.dirty) { \
-      rmesa->hw.ATOM.dirty = GL_FALSE; \
-      memcpy( dest, rmesa->hw.ATOM.cmd, rmesa->hw.ATOM.cmd_size * 4); \
-      dest += rmesa->hw.ATOM.cmd_size * 4; \
-   } \
-} while (0)
-
-   EMIT_ATOM (ctx);
-   EMIT_ATOM (set);
-   EMIT_ATOM (lin);
-   EMIT_ATOM (msk);
-   EMIT_ATOM (vpt);
-   EMIT_ATOM (vtx);
-   EMIT_ATOM (vap);
-   EMIT_ATOM (vte);
-   EMIT_ATOM (msc);
-   EMIT_ATOM (cst);
-   EMIT_ATOM (zbs);
-   EMIT_ATOM (tcl);
-   EMIT_ATOM (msl);
-   EMIT_ATOM (tcg);
-   EMIT_ATOM (grd);
-   EMIT_ATOM (fog);
-   EMIT_ATOM (tam);
-   EMIT_ATOM (tf);
-   for (i = 0; i < 2; ++i) {
-       EMIT_ATOM (tex[i]);
-   }
-   for (i = 0; i < 2; ++i) {
-       EMIT_ATOM (cube[i]);
-   }
-   for (i = 0; i < 5; ++i)
-       EMIT_ATOM (mat[i]);
-   EMIT_ATOM (eye);
-   EMIT_ATOM (glt);
-   for (i = 0; i < 2; ++i) {
-      EMIT_ATOM (mtl[i]);
-   }
    for (i = 0; i < 8; ++i)
-       EMIT_ATOM (lit[i]);
+       insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.lit[i] );
+   for (i = 0; i < 3 + mtu; ++i)
+       insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.mat[i] );
+   insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.eye );
+   insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.glt );
+   for (i = 0; i < 2; ++i)
+      insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.mtl[i] );
    for (i = 0; i < 6; ++i)
-       EMIT_ATOM (ucp[i]);
-   for (i = 0; i < 6; ++i)
-       EMIT_ATOM (pix[i]);
-
-#undef EMIT_ATOM
-
+       insert_at_tail( &rmesa->hw.atomlist, &rmesa->hw.ucp[i] );
 }
 
+static void r200SaveHwState( r200ContextPtr rmesa )
+{
+   struct r200_state_atom *atom;
+   char * dest = rmesa->backup_store.cmd_buf;
+
+   if (R200_DEBUG & DEBUG_STATE)
+      fprintf(stderr, "%s\n", __FUNCTION__);
+
+   rmesa->backup_store.cmd_used = 0;
+
+   foreach( atom, &rmesa->hw.atomlist ) {
+      if ( atom->check( rmesa->glCtx, atom->idx ) ) {
+	 int size = atom->cmd_size * 4;
+	 memcpy( dest, atom->cmd, size);
+	 dest += size;
+	 rmesa->backup_store.cmd_used += size;
+	 if (R200_DEBUG & DEBUG_STATE)
+	    print_state_atom( atom );
+      }
+   }
+
+   assert( rmesa->backup_store.cmd_used <= R200_CMD_BUF_SZ );
+   if (R200_DEBUG & DEBUG_STATE)
+      fprintf(stderr, "Returning to r200EmitState\n");
+}
 
 void r200EmitState( r200ContextPtr rmesa )
 {
-   struct r200_state_atom *state, *tmp;
+   char *dest;
+   int mtu;
+   struct r200_state_atom *atom;
 
    if (R200_DEBUG & (DEBUG_STATE|DEBUG_PRIMS))
       fprintf(stderr, "%s\n", __FUNCTION__);
 
-   /* Somewhat overkill:
-    */
-   if ( rmesa->lost_context) {
-      if (R200_DEBUG & (DEBUG_STATE|DEBUG_PRIMS|DEBUG_IOCTL))
-	 fprintf(stderr, "%s - lost context\n", __FUNCTION__); 
-
-      foreach_s( state, tmp, &(rmesa->hw.clean) ) 
-	 move_to_tail(&(rmesa->hw.dirty), state );
-
-      rmesa->lost_context = 0;
+   if (rmesa->save_on_next_emit) {
+      r200SaveHwState(rmesa);
+      rmesa->save_on_next_emit = GL_FALSE;
    }
-/*   else {
-      move_to_tail( &rmesa->hw.dirty, &rmesa->hw.mtl[0] );*/
-      /* odd bug? -- isosurf, cycle between reflect & lit */
-/*   }*/
 
-   r200_emit_state_list( rmesa, &rmesa->hw.dirty );
+   if (!rmesa->hw.is_dirty && !rmesa->hw.all_dirty)
+      return;
+
+   mtu = rmesa->glCtx->Const.MaxTextureUnits;
+
+   /* To avoid going across the entire set of states multiple times, just check
+    * for enough space for the case of emitting all state, and inline the
+    * r200AllocCmdBuf code here without all the checks.
+    */
+   r200EnsureCmdBufSpace( rmesa, rmesa->hw.max_state_size );
+
+   /* we need to calculate dest after EnsureCmdBufSpace
+      as we may flush the buffer - airlied */
+   dest = rmesa->store.cmd_buf + rmesa->store.cmd_used;
+   if (R200_DEBUG & DEBUG_STATE) {
+      foreach( atom, &rmesa->hw.atomlist ) {
+	 if ( atom->dirty || rmesa->hw.all_dirty ) {
+	    if ( atom->check( rmesa->glCtx, atom->idx ) )
+	       print_state_atom( atom );
+	    else
+	       fprintf(stderr, "skip state %s\n", atom->name);
+	 }
+      }
+   }
+
+   foreach( atom, &rmesa->hw.atomlist ) {
+      if ( rmesa->hw.all_dirty )
+	 atom->dirty = GL_TRUE;
+      if ( atom->dirty ) {
+	 if ( atom->check( rmesa->glCtx, atom->idx ) ) {
+	    int size = atom->cmd_size * 4;
+	    memcpy( dest, atom->cmd, size);
+	    dest += size;
+	    rmesa->store.cmd_used += size;
+	    atom->dirty = GL_FALSE;
+	 }
+      }
+   }
+
+   assert( rmesa->store.cmd_used <= R200_CMD_BUF_SZ );
+
+   rmesa->hw.is_dirty = GL_FALSE;
+   rmesa->hw.all_dirty = GL_FALSE;
 }
-
-
 
 /* Fire a section of the retained (indexed_verts) buffer as a regular
  * primtive.  
@@ -172,7 +199,7 @@ extern void r200EmitVbufPrim( r200ContextPtr rmesa,
 				GLuint primitive,
 				GLuint vertex_nr )
 {
-   drmRadeonCmdHeader *cmd;
+   drm_radeon_cmd_header_t *cmd;
 
    assert(!(primitive & R200_VF_PRIM_WALK_IND));
    
@@ -182,7 +209,7 @@ extern void r200EmitVbufPrim( r200ContextPtr rmesa,
       fprintf(stderr, "%s cmd_used/4: %d prim %x nr %d\n", __FUNCTION__,
 	      rmesa->store.cmd_used/4, primitive, vertex_nr);
    
-   cmd = (drmRadeonCmdHeader *)r200AllocCmdBuf( rmesa, 3 * sizeof(*cmd),
+   cmd = (drm_radeon_cmd_header_t *)r200AllocCmdBuf( rmesa, VBUF_BUFSZ,
 						  __FUNCTION__ );
    cmd[0].i = 0;
    cmd[0].header.cmd_type = RADEON_CMD_PACKET3_CLIP;
@@ -225,7 +252,7 @@ GLushort *r200AllocEltsOpenEnded( r200ContextPtr rmesa,
 				    GLuint primitive,
 				    GLuint min_nr )
 {
-   drmRadeonCmdHeader *cmd;
+   drm_radeon_cmd_header_t *cmd;
    GLushort *retval;
 
    if (R200_DEBUG & DEBUG_IOCTL)
@@ -235,8 +262,7 @@ GLushort *r200AllocEltsOpenEnded( r200ContextPtr rmesa,
    
    r200EmitState( rmesa );
    
-   cmd = (drmRadeonCmdHeader *)r200AllocCmdBuf( rmesa, 
-						12 + min_nr*2,
+   cmd = (drm_radeon_cmd_header_t *)r200AllocCmdBuf( rmesa, ELTS_BUFSZ(min_nr),
 						__FUNCTION__ );
    cmd[0].i = 0;
    cmd[0].header.cmd_type = RADEON_CMD_PACKET3_CLIP;
@@ -268,13 +294,13 @@ void r200EmitVertexAOS( r200ContextPtr rmesa,
 			  GLuint vertex_size,
 			  GLuint offset )
 {
-   drmRadeonCmdHeader *cmd;
+   drm_radeon_cmd_header_t *cmd;
 
    if (R200_DEBUG & (DEBUG_PRIMS|DEBUG_IOCTL))
       fprintf(stderr, "%s:  vertex_size 0x%x offset 0x%x \n",
 	      __FUNCTION__, vertex_size, offset);
 
-   cmd = (drmRadeonCmdHeader *)r200AllocCmdBuf( rmesa, 5 * sizeof(int),
+   cmd = (drm_radeon_cmd_header_t *)r200AllocCmdBuf( rmesa, VERT_AOS_BUFSZ,
 						  __FUNCTION__ );
 
    cmd[0].header.cmd_type = RADEON_CMD_PACKET3;
@@ -290,19 +316,18 @@ void r200EmitAOS( r200ContextPtr rmesa,
 		    GLuint nr,
 		    GLuint offset )
 {
-   drmRadeonCmdHeader *cmd;
-   int sz = 3 + ((nr/2)*3) + ((nr&1)*2);
+   drm_radeon_cmd_header_t *cmd;
+   int sz = AOS_BUFSZ(nr);
    int i;
    int *tmp;
 
    if (R200_DEBUG & DEBUG_IOCTL)
       fprintf(stderr, "%s nr arrays: %d\n", __FUNCTION__, nr);
 
-   cmd = (drmRadeonCmdHeader *)r200AllocCmdBuf( rmesa, sz * sizeof(int),
-						  __FUNCTION__ );
+   cmd = (drm_radeon_cmd_header_t *)r200AllocCmdBuf( rmesa, sz, __FUNCTION__ );
    cmd[0].i = 0;
    cmd[0].header.cmd_type = RADEON_CMD_PACKET3;
-   cmd[1].i = R200_CP_CMD_3D_LOAD_VBPNTR | ((sz-3) << 16);
+   cmd[1].i = R200_CP_CMD_3D_LOAD_VBPNTR | (((sz / sizeof(int)) - 3) << 16);
    cmd[2].i = nr;
    tmp = &cmd[0].i;
    cmd += 3;
@@ -340,7 +365,7 @@ void r200EmitBlit( r200ContextPtr rmesa,
 		   GLint dstx, GLint dsty,
 		   GLuint w, GLuint h )
 {
-   drmRadeonCmdHeader *cmd;
+   drm_radeon_cmd_header_t *cmd;
 
    if (R200_DEBUG & DEBUG_IOCTL)
       fprintf(stderr, "%s src %x/%x %d,%d dst: %x/%x %d,%d sz: %dx%d\n",
@@ -356,7 +381,7 @@ void r200EmitBlit( r200ContextPtr rmesa,
    assert( w < (1<<16) );
    assert( h < (1<<16) );
 
-   cmd = (drmRadeonCmdHeader *)r200AllocCmdBuf( rmesa, 8 * sizeof(int),
+   cmd = (drm_radeon_cmd_header_t *)r200AllocCmdBuf( rmesa, 8 * sizeof(int),
 						  __FUNCTION__ );
 
 
@@ -383,11 +408,11 @@ void r200EmitBlit( r200ContextPtr rmesa,
 void r200EmitWait( r200ContextPtr rmesa, GLuint flags )
 {
    if (rmesa->dri.drmMinor >= 6) {
-      drmRadeonCmdHeader *cmd;
+      drm_radeon_cmd_header_t *cmd;
 
       assert( !(flags & ~(RADEON_WAIT_2D|RADEON_WAIT_3D)) );
       
-      cmd = (drmRadeonCmdHeader *)r200AllocCmdBuf( rmesa, 1 * sizeof(int),
+      cmd = (drm_radeon_cmd_header_t *)r200AllocCmdBuf( rmesa, 1 * sizeof(int),
 						   __FUNCTION__ );
       cmd[0].i = 0;
       cmd[0].wait.cmd_type = RADEON_CMD_WAIT;

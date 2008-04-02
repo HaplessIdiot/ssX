@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_texmem.c,v 1.5 2002/12/17 00:32:56 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_texmem.c,v 1.1.1.4tsi Exp $ */
 /**************************************************************************
 
 Copyright (C) Tungsten Graphics 2002.  All Rights Reserved.  
@@ -43,8 +43,7 @@ SOFTWARE.
 #include "context.h"
 #include "colormac.h"
 #include "macros.h"
-#include "simple_list.h"
-#include "radeon_reg.h" /* gets definition for usleep */
+#include "r200_reg.h" /* gets definition for usleep */
 #include "r200_context.h"
 #include "r200_state.h"
 #include "r200_ioctl.h"
@@ -73,10 +72,8 @@ r200DestroyTexObj( r200ContextPtr rmesa, r200TexObjPtr t )
       for ( i = 0 ; i < rmesa->glCtx->Const.MaxTextureUnits ; i++ ) {
 	 if ( t == rmesa->state.texture.unit[i].texobj ) {
 	    rmesa->state.texture.unit[i].texobj = NULL;
-	    remove_from_list( &rmesa->hw.tex[i] );
-	    make_empty_list( &rmesa->hw.tex[i] );
-	    remove_from_list( &rmesa->hw.cube[i] );
-	    make_empty_list( &rmesa->hw.cube[i] );
+	    rmesa->hw.tex[i].dirty = GL_FALSE;
+	    rmesa->hw.cube[i].dirty = GL_FALSE;
 	 }
       }
    }
@@ -231,7 +228,7 @@ static void r200UploadRectSubImage( r200ContextPtr rmesa,
 	 tex = (char *)texImage->Data + done * src_pitch;
 
 	 memset(&region, 0, sizeof(region));
-	 r200AllocDmaRegion( rmesa, &region, lines * dstPitch, 64 );
+	 r200AllocDmaRegion( rmesa, &region, lines * dstPitch, 1024 );
 
 	 /* Copy texdata to dma:
 	  */
@@ -240,10 +237,10 @@ static void r200UploadRectSubImage( r200ContextPtr rmesa,
 		    __FUNCTION__, src_pitch, dstPitch);
 
 	 if (src_pitch == dstPitch) {
-	    memcpy( region.address, tex, lines * src_pitch );
+	    memcpy( region.address + region.start, tex, lines * src_pitch );
 	 } 
 	 else {
-	    char *buf = region.address;
+	    char *buf = region.address + region.start;
 	    int i;
 	    for (i = 0 ; i < lines ; i++) {
 	       memcpy( buf, tex, src_pitch );
@@ -286,8 +283,8 @@ static void uploadSubImage( r200ContextPtr rmesa, r200TexObjPtr t,
    GLuint offset;
    GLint imageWidth, imageHeight;
    GLint ret;
-   drmRadeonTexture tex;
-   drmRadeonTexImage tmp;
+   drm_radeon_texture_t tex;
+   drm_radeon_tex_image_t tmp;
    const int level = hwlevel + t->base.firstLevel;
 
    if ( R200_DEBUG & DEBUG_TEXTURE ) {
@@ -304,26 +301,7 @@ static void uploadSubImage( r200ContextPtr rmesa, r200TexObjPtr t,
       return;
    }
 
-   switch (face) {
-   case 0:
-      texImage = t->base.tObj->Image[level];
-      break;
-   case 1:
-      texImage = t->base.tObj->NegX[level];
-      break;
-   case 2:
-      texImage = t->base.tObj->PosY[level];
-      break;
-   case 3:
-      texImage = t->base.tObj->NegY[level];
-      break;
-   case 4:
-      texImage = t->base.tObj->PosZ[level];
-      break;
-   case 5:
-      texImage = t->base.tObj->NegZ[level];
-      break;
-   }
+   texImage = t->base.tObj->Image[face][level];
 
    if ( !texImage ) {
       if ( R200_DEBUG & DEBUG_TEXTURE )
@@ -380,7 +358,7 @@ static void uploadSubImage( r200ContextPtr rmesa, r200TexObjPtr t,
 
    t->image[face][hwlevel].data = texImage->Data;
 
-   /* Init the DRM_RADEON_TEXTURE command / drmRadeonTexture struct.
+   /* Init the DRM_RADEON_TEXTURE command / drm_radeon_texture_t struct.
     * NOTE: we're always use a 1KB-wide blit and I8 texture format.
     * We used to use 1, 2 and 4-byte texels and used to use the texture
     * width to dictate the blit width - but that won't work for compressed
@@ -402,12 +380,20 @@ static void uploadSubImage( r200ContextPtr rmesa, r200TexObjPtr t,
    tex.image = &tmp;
 
    /* copy (x,y,width,height,data) */
-   memcpy( &tmp, &t->image[face][hwlevel], sizeof(drmRadeonTexImage) );
+   memcpy( &tmp, &t->image[face][hwlevel], sizeof(tmp) );
 
+   /* Adjust the base offset to account for the Y-offset.  This is done,
+    * instead of just letting the Y-offset automatically take care of it,
+    * because it is possible, for very large textures, for the Y-offset
+    * to exceede the [-8192,+8191] range.
+    */
+   tex.offset += tmp.y * 1024;
+   tmp.y = 0;
+    
    LOCK_HARDWARE( rmesa );
    do {
       ret = drmCommandWriteRead( rmesa->dri.fd, DRM_RADEON_TEXTURE,
-                                 &tex, sizeof(drmRadeonTexture) );
+                                 &tex, sizeof(drm_radeon_texture_t) );
       if (ret) {
 	 if (R200_DEBUG & DEBUG_IOCTL)
 	    fprintf(stderr, "DRM_RADEON_TEXTURE:  again!\n");

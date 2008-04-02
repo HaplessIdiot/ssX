@@ -1,4 +1,11 @@
 XFree86 4.7.99.15 (xx April 2008)
+  37. Radeon driver changes:
+      - Merge in various changes from X.Org, via OpenBSD's xenocara repository.
+        Among other things, this adds support for newer Radeon's.
+      - Don't use vgaHW if the video mode on server entry is found to be an
+        accelerator (i.e. non-VGA) video mode (Marc La France).
+      - Avoid hard-failed master aborts while attempting to read video BIOS
+        (Marc La France).
   36. Rage 128 driver changes:
       - Add support for dual head on Rage 128 Mobility's (X.Org, via OpenBSD's
         xenocara repository).
@@ -20704,4 +20711,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3944 2008/04/01 17:18:20 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3945 2008/04/02 20:47:56 tsi Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_sarea.h,v 1.6 2003/09/28 20:15:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_sarea.h,v 1.7tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -222,10 +222,11 @@ typedef struct {
 				/* last time texture was uploaded */
     unsigned int texAge[RADEON_NR_TEX_HEAPS];
 
-    int ctxOwner;		/* last context to upload state */
+    drm_context_t ctxOwner;	/* last context to upload state */
     int pfAllowPageFlip;	/* set by the 2d driver, read by the client */
     int pfCurrentPage;		/* set by kernel, read by others */
     int crtc2_base;		/* for pageflipping with CloneMode */
+    int tiling_enabled;		/* set by drm, read by 2d + 3d clients */
 } RADEONSAREAPriv, *RADEONSAREAPrivPtr;
 
 #endif
