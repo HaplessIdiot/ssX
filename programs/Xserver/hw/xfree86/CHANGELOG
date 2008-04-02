@@ -1,4 +1,11 @@
 XFree86 4.7.99.15 (xx April 2008)
+  36. Rage 128 driver changes:
+      - Add support for dual head on Rage 128 Mobility's (X.Org, via OpenBSD's
+        xenocara repository).
+      - Don't use vgaHW if the video mode on server entry is found to be an
+        accelerator (i.e. non-VGA) video mode (Marc La France).
+      - Avoid hard-failed master aborts while attempting to read video BIOS
+        (Marc La France).
   35. Fix PCI resource relocation to avoid nullifying resources
       (Marc La France).
   34. In int10, do attempt to populate shadow system BIOS segments if there's
@@ -20697,4 +20704,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3943 2008/03/27 16:22:40 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3944 2008/04/01 17:18:20 tsi Exp $

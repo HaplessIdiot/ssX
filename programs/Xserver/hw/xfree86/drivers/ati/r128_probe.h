@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_probe.h,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_probe.h,v 1.11tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -40,6 +40,21 @@
 #include "atiproto.h"
 
 #include "xf86str.h"
+
+typedef struct
+{
+    Bool IsDRIEnabled;
+
+    Bool HasSecondary;
+    Bool BypassSecondary;
+    /*These two registers are used to make sure the CRTC2 is
+      retored before CRTC_EXT, otherwise it could lead to blank screen.*/
+    Bool IsSecondaryRestored;
+    Bool RestorePrimary;
+
+    ScrnInfoPtr pSecondaryScrn;    
+    ScrnInfoPtr pPrimaryScrn;
+} R128EntRec, *R128EntPtr;
 
 /* r128_probe.c */
 extern const OptionInfoRec * R128AvailableOptions

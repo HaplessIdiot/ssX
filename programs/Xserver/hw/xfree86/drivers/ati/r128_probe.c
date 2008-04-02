@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_probe.c,v 1.19 2006/03/02 03:00:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_probe.c,v 1.20tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -180,6 +180,8 @@ PciChipsets R128PciChipsets[] = {
     { -1,                 -1,                 RES_UNDEFINED }
 };
 
+int gR128EntityIndex = -1;
+
 /* Return the options for supported chipset 'n'; NULL otherwise */
 const OptionInfoRec *
 R128AvailableOptions(int chipid, int busid)
@@ -216,7 +218,6 @@ R128Probe(DriverPtr drv, int flags)
     int           numDevSections, nATIGDev, nR128GDev;
     int           *usedChips;
     GDevPtr       *devSections, *ATIGDevs, *R128GDevs;
-    EntityInfoPtr pEnt;
     Bool          foundScreen = FALSE;
     int           i;
 
@@ -262,10 +263,11 @@ R128Probe(DriverPtr drv, int flags)
     if (flags & PROBE_DETECT)
 	foundScreen = TRUE;
     else for (i = 0; i < numUsed; i++) {
-	pEnt = xf86GetEntityInfo(usedChips[i]);
+	ScrnInfoPtr pScrn;
+	EntityInfoPtr pEnt;
 
-	if (pEnt->active) {
-	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv, 0);
+	if ((pScrn = xf86ConfigPciEntity(NULL, 0, usedChips[i],
+	     R128PciChipsets, 0, 0, 0, 0, 0))) {
 
 #ifdef XFree86LOADER
 	    ModuleDescPtr pModule;
@@ -293,13 +295,47 @@ R128Probe(DriverPtr drv, int flags)
 	    pScrn->LeaveVT       = R128LeaveVT;
 	    pScrn->FreeScreen    = R128FreeScreen;
 	    pScrn->ValidMode     = R128ValidMode;
+	    pScrn->Probe         = R128Probe;
 
 	    foundScreen          = TRUE;
 
-	    xf86ConfigActivePciEntity(pScrn, usedChips[i], R128PciChipsets,
-				      0, 0, 0, 0, 0);
+	    pEnt = xf86GetEntityInfo(usedChips[i]);
+
+	    /* mobility cards support Dual-Head, mark the entity as sharable */
+	    if (pEnt->chipset == PCI_CHIP_RAGE128LE ||
+		pEnt->chipset == PCI_CHIP_RAGE128LF ||
+		pEnt->chipset == PCI_CHIP_RAGE128MF ||
+		pEnt->chipset == PCI_CHIP_RAGE128ML) {
+		static int instance = 0;
+		DevUnion* pPriv;
+
+		xf86SetEntitySharable(usedChips[i]);
+		xf86SetEntityInstanceForScreen(pScrn,
+		    pScrn->entityList[0], instance);
+
+		if (gR128EntityIndex < 0)
+		{
+		    gR128EntityIndex = xf86AllocateEntityPrivateIndex();
+		    pPriv = xf86GetEntityPrivate(pScrn->entityList[0],
+			    gR128EntityIndex);
+
+		    if (!pPriv->ptr)
+		    {
+			R128EntPtr pR128Ent;
+			pPriv->ptr = xnfcalloc(sizeof(R128EntRec), 1);
+			pR128Ent = pPriv->ptr;
+			pR128Ent->IsDRIEnabled = FALSE;
+			pR128Ent->BypassSecondary = FALSE;
+			pR128Ent->HasSecondary = FALSE;
+			pR128Ent->IsSecondaryRestored = FALSE;
+		    }
+		}
+
+		instance++;
+	    }
+
+	    xfree(pEnt);
 	}
-	xfree(pEnt);
     }
 
     xfree(usedChips);
