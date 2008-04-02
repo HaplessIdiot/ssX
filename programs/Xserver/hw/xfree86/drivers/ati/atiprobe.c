@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.79 2008/03/26 17:28:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.80 2008/03/26 17:29:49 tsi Exp $ */
 /*
  * Copyright 1997 through 2008 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -2309,7 +2309,7 @@ ATIProbe
                 BIOSBase = ((BIOS[1] << 8) | BIOS[0]) << 4;
 
             /* Look for its BIOS */
-            for(;  ;  BIOSBase += 0x00000200U)
+            for (;  ;  BIOSBase += 0x00000200U)
             {
                 if (!BIOSBase)
                     goto SkipBiosSegment;
