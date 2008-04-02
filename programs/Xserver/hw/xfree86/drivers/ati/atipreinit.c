@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.93tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.94 2008/01/01 00:40:01 tsi Exp $ */
 /*
  * Copyright 1999 through 2008 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -2913,7 +2913,7 @@ ATIPreInit
     }
     else
     {
-        switch(pATI->DAC)
+        switch (pATI->DAC)
         {
             case ATI_DAC_STG1700:
             case ATI_DAC_STG1702:

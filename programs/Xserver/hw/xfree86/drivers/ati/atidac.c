@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.26tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.27 2008/03/26 17:28:11 tsi Exp $ */
 /*
  * Copyright 1997 through 2008 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -447,7 +447,7 @@ ATILoadPalette
 
         for (i = 0;  i < nColours;  i++)
         {
-            if((Index = Indices[i]) < 0)
+            if ((Index = Indices[i]) < 0)
                 continue;
 
             if (Index <= reds)
