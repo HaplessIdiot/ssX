@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.137tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.138tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -6029,7 +6029,8 @@ static void RADEONRestoreMemMapRegisters(ScrnInfoPtr pScrn,
 		    "Timeout trying to update memory controller settings !\n");
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 			   "MC_STATUS = 0x%08x (on entry = 0x%08x)\n",
-			   INREG(RADEON_MC_STATUS), (unsigned int)old_mc_status);
+			   (unsigned int)INREG(RADEON_MC_STATUS),
+			   (unsigned int)old_mc_status);
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		    "You will probably crash now ... \n");
 		/* Nothing we can do except maybe try to kill the server,
@@ -6120,10 +6121,10 @@ static void RADEONAdjustMemMapRegisters(ScrnInfoPtr pScrn, RADEONSavePtr save)
 		       "DRI init changed memory map, adjusting ...\n");
 	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 		       "  MC_FB_LOCATION  was: 0x%08x is: 0x%08x\n",
-		       info->mc_fb_location, fb);
+		       (unsigned int)info->mc_fb_location, fb);
 	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 		       "  MC_AGP_LOCATION was: 0x%08x is: 0x%08x\n",
-		       info->mc_agp_location, agp);
+		       (unsigned int)info->mc_agp_location, agp);
 	    info->mc_fb_location = fb;
 	    info->mc_agp_location = agp;
 	    info->fbLocation = (save->mc_fb_location & 0xffff) << 16;

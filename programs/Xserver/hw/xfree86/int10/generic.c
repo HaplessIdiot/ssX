@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.31tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.32tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -77,7 +77,7 @@ xf86ExtendedInitInt10(int entityIndex, int Flags)
     
 #ifdef _PC
     int size;
-    CARD32 cs;
+    unsigned int cs;
 #endif
 
     screen = (xf86FindScreenForEntity(entityIndex))->scrnIndex;
