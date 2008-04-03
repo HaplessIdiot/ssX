@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.40tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.41tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -651,7 +651,7 @@ RADEONHostDataBlit(
 	break;
     default:
 	xf86DrvMsg( pScrn->scrnIndex, X_ERROR,
-		    "%s: Unsupported cpp %d!\n", __func__, cpp );
+		    "RADEONHostDataBlit: Unsupported cpp %d!\n", cpp );
 	return NULL;
     }
 
