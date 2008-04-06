@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/sgi.cf,v 1.27tsi Exp $
+XCOMM $XFree86: xc/config/cf/sgi.cf,v 1.28tsi Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -109,14 +109,18 @@ XCOMM operating system: OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVer
 #define ServerSymbolTables
 #endif
 
+#ifndef sgiCommonCCOptions
+#define sgiCommonCCOptions -xansi -D__mips__ -woff 3970 -Wl,-woff,47
+#endif
+
 /* this is for floating point, ANSI cpp */
 #if OSMajorVersion < 5
 /* Extra libraries provide : yp, sysV malloc, shared libc, and widechar */
 # define ExtraLibraries -lsun -lmalloc -lc_s -lw
-# define sgiCCOptions -xansi -D__STDC__=1 -float -D__mips__ -Wl,-woff,47
+# define sgiCCOptions -D__STDC__=1 -float sgiCommonCCOptions
 #else
 # if OSMajorVersion < 6
-#  define sgiCCOptions -xansi -D__mips__ -Wl,-woff,47
+#  define sgiCCOptions sgiCommonCCOptions
 # else
 #  define CppCmd cc -E -cckr
 #  define HasDlopen YES
@@ -124,12 +128,12 @@ XCOMM operating system: OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVer
 #  ifdef Mips64Architecture
 /* set Mips64Architecture in host.def. Usually don't need it but we
  * (the X Consortium) want a  64-bit big-endian machine to test on. */
-#   define sgiCCOptions -xansi -mips3 -64 -D__mips__ -Wl,-woff,47
+#   define sgiCCOptions -mips3 -64 sgiCommonCCOptions
 #  elif defined(MipsN32Architecture)
 /* Set MipsN32Architecture to build "new" 32-bit objs with a 32-bit kernel. */
-#   define sgiCCOptions -xansi -mips3 -n32 -D__mips__ -Wl,-woff,47
+#   define sgiCCOptions -mips3 -n32 sgiCommonCCOptions
 #  else
-#   define sgiCCOptions -xansi -32 -D__mips__ -Wl,-woff,47
+#   define sgiCCOptions -32 sgiCommonCCOptions
 #  endif
 #  if OSMinorVersion == 2
 /* if you haven't installed patch 1361, 1403, or 1645 on IRIX 6.2 then you
@@ -317,8 +321,12 @@ clean::									@@\
 
 #endif /* !HasGcc */
 
+#ifndef XF86Server
+#define XF86Server NO
+#endif
+
 #ifndef DoLoadableServer
-#define DoLoadableServer YES
+#define DoLoadableServer XF86Server
 #endif
 
 #include <xfree86.cf>

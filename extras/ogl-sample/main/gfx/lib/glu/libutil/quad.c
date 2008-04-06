@@ -1,3 +1,4 @@
+/* $XFree86: xc/extras/ogl-sample/main/gfx/lib/glu/libutil/quad.c,v 1.4tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -32,7 +33,6 @@
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 **
 */
-/* $XFree86: xc/extras/ogl-sample/main/gfx/lib/glu/libutil/quad.c,v 1.3tsi Exp $ */
 
 #include "gluos.h"
 #include "gluint.h"
@@ -90,7 +90,7 @@ static void gluQuadricError(GLUquadric *qobj, GLenum which)
 
 void GLAPIENTRY
 gluQuadricCallback(GLUquadric *qobj, GLenum which,
-		GLvoid (GLAPIENTRY *fn)(GLvoid))
+		GLvoid (GLAPIENTRY *fn)(void))
 {
     switch (which) {
       case GLU_ERROR:

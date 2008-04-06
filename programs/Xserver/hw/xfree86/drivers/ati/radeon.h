@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.48tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.49tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -292,9 +292,10 @@ typedef enum {
  * Errata workarounds
  */
 typedef enum {
-       CHIP_ERRATA_R300_CG             = 0x00000001,
-       CHIP_ERRATA_PLL_DUMMYREADS      = 0x00000002,
-       CHIP_ERRATA_PLL_DELAY           = 0x00000004
+	CHIP_ERRATA_NONE           = 0,
+	CHIP_ERRATA_R300_CG        = 0x00000001,
+	CHIP_ERRATA_PLL_DUMMYREADS = 0x00000002,
+	CHIP_ERRATA_PLL_DELAY      = 0x00000004
 } RADEONErrata;
 
 typedef enum {
