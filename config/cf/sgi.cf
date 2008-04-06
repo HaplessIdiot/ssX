@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/sgi.cf,v 1.28tsi Exp $
+XCOMM $XFree86: xc/config/cf/sgi.cf,v 1.29tsi Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -110,7 +110,10 @@ XCOMM operating system: OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVer
 #endif
 
 #ifndef sgiCommonCCOptions
-#define sgiCommonCCOptions -xansi -D__mips__ -woff 3970 -Wl,-woff,47
+#define sgiCommonCCOptions \
+	-xansi -D__mips__ \
+	-woff 3968,3970 \
+	-Wl,-woff,47
 #endif
 
 /* this is for floating point, ANSI cpp */
