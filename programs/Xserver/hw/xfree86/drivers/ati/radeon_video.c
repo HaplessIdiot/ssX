@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.33tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.34tsi Exp $ */
 
 #include "radeon.h"
 #include "radeon_macros.h"
@@ -705,7 +705,6 @@ static void RADEONSetTransform (ScrnInfoPtr pScrn,
     float	    CAdjRCb, CAdjRCr;
     float	    CAdjGCb, CAdjGCr;
     float	    CAdjBCb, CAdjBCr;
-    float	    RedAdj,GreenAdj,BlueAdj;
     float	    OvLuma, OvROff, OvGOff, OvBOff;
     float	    OvRCb, OvRCr;
     float	    OvGCb, OvGCr;
@@ -748,9 +747,6 @@ static void RADEONSetTransform (ScrnInfoPtr pScrn,
 
     CAdjLuma = cont * trans[ref].RefLuma;
     CAdjOff = cont * trans[ref].RefLuma * bright * 1023.0;
-    RedAdj = cont * trans[ref].RefLuma * red_intensity * 1023.0;
-    GreenAdj = cont * trans[ref].RefLuma * green_intensity * 1023.0;
-    BlueAdj = cont * trans[ref].RefLuma * blue_intensity * 1023.0;
 
     CAdjRCb = sat * -OvHueSin * trans[ref].RefRCr;
     CAdjRCr = sat * OvHueCos * trans[ref].RefRCr;
@@ -2113,7 +2109,7 @@ RADEONPutImage(
    unsigned char *dst_start;
    int new_size, offset, s2offset, s3offset;
    int srcPitch, srcPitch2, dstPitch;
-   int top, left, npixels, nlines, bpp;
+   int top, left, npixels, nlines;
    int video_offset;
    BoxRec dstBox;
    CARD32 tmp;
@@ -2166,8 +2162,6 @@ RADEONPutImage(
 	dstBox.y1 -= pScrn->frameY0;
 	dstBox.y2 -= pScrn->frameY0;
    }
-
-   bpp = pScrn->bitsPerPixel >> 3;
 
    switch(id) {
    case FOURCC_RGB24:

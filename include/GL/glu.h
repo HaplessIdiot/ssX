@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/GL/glu.h,v 1.2 2001/04/03 02:18:39 dawes Exp $ */
+/* $XFree86: xc/include/GL/glu.h,v 1.3tsi Exp $ */
 
 /*
 ** License Applicability. Except to the extent portions of this file are
@@ -259,7 +259,7 @@ typedef struct GLUtesselator GLUtriangulatorObj;
 #ifdef __cplusplus
 typedef GLvoid (*_GLUfuncptr)();
 #else
-typedef GLvoid (*_GLUfuncptr)(GLvoid);
+typedef GLvoid (*_GLUfuncptr)(void);
 #endif
 
 extern void gluBeginCurve (GLUnurbs* nurb);

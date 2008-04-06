@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.138tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.139tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -2854,7 +2854,7 @@ static Bool RADEONPreInitChipType(ScrnInfoPtr pScrn)
 
 				/* Read registers used to determine options */
     /* Check chip errata */
-    info->ChipErrata = 0;
+    info->ChipErrata = CHIP_ERRATA_NONE;
 
     if (info->ChipFamily == CHIP_FAMILY_R300 &&
 	(INREG(RADEON_CONFIG_CNTL) & RADEON_CFG_ATI_REV_ID_MASK)

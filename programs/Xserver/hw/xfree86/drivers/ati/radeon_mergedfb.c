@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_mergedfb.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_mergedfb.c,v 1.1tsi Exp $ */
 /*
  * Copyright 2003 Alex Deucher.
  *
@@ -48,7 +48,9 @@
 #include "radeon_mergedfb.h"
 
 /* pseudo xinerama support */
+#if 0
 static unsigned char	RADEONXineramaReqCode = 0;
+#endif
 int			RADEONXineramaPixWidth = 0;
 int			RADEONXineramaPixHeight = 0;
 int			RADEONXineramaNumScreens = 0;
@@ -605,7 +607,6 @@ void
 RADEONUpdateXineramaScreenInfo(ScrnInfoPtr pScrn1)
 {
     RADEONInfoPtr  info   = RADEONPTR(pScrn1);
-    ScrnInfoPtr pScrn2 = NULL;
     int crt1scrnnum = 0, crt2scrnnum = 1;
     /* Upper case to avoid shadow warnings */
     int X1=0, X2=0, Y1=0, Y2=0, H1=0, H2=0, W1=0, W2=0;
@@ -628,8 +629,6 @@ RADEONUpdateXineramaScreenInfo(ScrnInfoPtr pScrn1)
        crt1scrnnum = 1;
        crt2scrnnum = 0;
     }
-
-    pScrn2 = info->CRT2pScrn;
 
     /* Attention: Usage of RandR may lead into virtual X and Y values
      * actually smaller than our MetaModes! To avoid this, we calculate
@@ -1309,7 +1308,9 @@ RADEONXineramaExtensionInit(ScrnInfoPtr pScrn)
 
 	  if(!info->XineramaExtEntry) break;
 
+#if 0
 	  RADEONXineramaReqCode = (unsigned char)info->XineramaExtEntry->base;
+#endif
 
 	  if(!(RADEONXineramadataPtr = (RADEONXineramaData *)
 		xcalloc(RADEONXineramaNumScreens, sizeof(RADEONXineramaData)))) break;

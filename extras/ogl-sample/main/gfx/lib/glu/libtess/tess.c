@@ -1,3 +1,4 @@
+/* $XFree86: xc/extras/ogl-sample/main/gfx/lib/glu/libtess/tess.c,v 1.3tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -36,7 +37,6 @@
 ** Author: Eric Veach, July 1994.
 **
 */
-/* $XFree86: xc/extras/ogl-sample/main/gfx/lib/glu/libtess/tess.c,v 1.2 2001/04/03 02:18:40 dawes Exp $ */
 
 #include "gluos.h"
 #include <stddef.h>
@@ -275,7 +275,7 @@ gluTessNormal( GLUtesselator *tess, GLdouble x, GLdouble y, GLdouble z )
 
 void GLAPIENTRY
 gluTessCallback( GLUtesselator *tess, GLenum which,
-		GLvoid (GLAPIENTRY *fn)(GLvoid))
+		GLvoid (GLAPIENTRY *fn)(void))
 {
   switch( which ) {
   case GLU_TESS_BEGIN:
