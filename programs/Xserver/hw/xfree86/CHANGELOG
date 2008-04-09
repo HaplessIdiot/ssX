@@ -1,4 +1,6 @@
-XFree86 4.7.99.15 (xx April 2008)
+XFree86 4.7.99.16 (xx April 2008)
+
+XFree86 4.7.99.15 (9 April 2008)
   37. Radeon driver changes:
       - Merge in various changes from X.Org, via OpenBSD's xenocara repository.
         Among other things, this adds support for newer Radeon's.
@@ -20711,4 +20713,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3945 2008/04/02 20:47:56 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3946 2008/04/02 21:02:29 tsi Exp $
