@@ -1,4 +1,6 @@
-XFree86 4.7.99.16 (xx April 2008)
+XFree86 4.7.99.17 (xx May 2008)
+
+XFree86 4.7.99.16 (23 April 2008)
 
 XFree86 4.7.99.15 (9 April 2008)
   37. Radeon driver changes:
@@ -20713,4 +20715,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3946 2008/04/02 21:02:29 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3947 2008/04/09 11:03:40 dawes Exp $
