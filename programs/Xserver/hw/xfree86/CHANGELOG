@@ -1,4 +1,7 @@
 XFree86 4.7.99.17 (xx May 2008)
+  40. Rework the handling of unassigned PCI resources in the server to ensure
+      they are reassigned while the server is running and restore them to their
+      unassigned state on server exit  (Marc La France).
   39. Change the scanpci and pcitweak utilities to simulate a completed master
       abort instead of reading PCI register 0xb8 of Sun's Simba PCI-to-PCI
       bridges, as reads of this register cause a PCI interrupt acknowledge
@@ -20725,4 +20728,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3949 2008/04/24 19:41:05 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3950 2008/04/24 20:10:08 tsi Exp $

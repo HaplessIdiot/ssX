@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.100 2008/03/26 18:57:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.101tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -1550,13 +1550,6 @@ xf86scanpci(int flags)
 #endif
 
     return pci_devp;
-}
-
-CARD32
-pciCheckForBrokenBase(PCITAG Tag,int basereg)
-{
-    pciWriteLong(Tag, PCI_MAP_REG_START + (basereg << 2), 0xffffffff);
-    return pciReadLong(Tag, PCI_MAP_REG_START + (basereg << 2));
 }
 
 #if defined(INCLUDE_XF86_MAP_PCI_MEM)
