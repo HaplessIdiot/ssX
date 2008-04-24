@@ -1,4 +1,9 @@
 XFree86 4.7.99.17 (xx May 2008)
+  39. Change the scanpci and pcitweak utilities to simulate a completed master
+      abort instead of reading PCI register 0xb8 of Sun's Simba PCI-to-PCI
+      bridges, as reads of this register cause a PCI interrupt acknowledge
+      cycle on the secondary bus for an interrupt that did not actually occur.
+      Note that no other code touches this register.  (Marc La France).
   38. Avoid screen corruption that occurs upon /dev/console output while the
       X server is running on SunOS, by redirecting this output into a file.
       The file is copied back to /dev/console on server exit.  Note that screen
@@ -20720,4 +20725,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3948 2008/04/23 11:04:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3949 2008/04/24 19:41:05 tsi Exp $
