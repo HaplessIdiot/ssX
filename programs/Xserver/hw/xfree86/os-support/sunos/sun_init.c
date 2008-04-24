@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.11 2008/03/26 19:04:52 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.12tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -27,6 +27,9 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
+#include <sys/stropts.h>
+#include <sys/strredir.h>
+
 static Bool KeepTty = FALSE;
 static Bool Protect0 = FALSE;
 #ifdef HAS_USL_VTS
@@ -35,6 +38,97 @@ static int xf86StartVT = -1;
 #endif
 
 static char fb_dev[PATH_MAX] = "/dev/console";
+
+#ifdef NOREDIRECT
+#undef SRIOCSREDIR
+#endif
+
+#ifdef SRIOCSREDIR
+static char *redirfn = NULL;
+static FILE *redirfd = NULL;
+static Bool  redired = FALSE;
+static int   pipe_fds[2] = {-1, -1};
+
+static void
+xf86CopyRedirectedConsole(void)
+{
+    long length;
+    char buffer[16];	/* Increase size for efficiency */
+
+    while ((length = read(pipe_fds[1], buffer, sizeof(buffer))) > 0) {
+	redired = TRUE;
+	fwrite(buffer, 1, length, redirfd);
+    }
+}
+
+static void
+xf86ReadRedirectedConsole(pointer pData, int error, pointer pMask)
+{
+    if ((error >= 0) && pMask && FD_ISSET(pipe_fds[1], (fd_set *)pMask))
+	xf86CopyRedirectedConsole();
+
+    fflush(redirfd);
+}
+
+static void
+xf86RedirectConsole(void)
+{
+    int consolefd;
+
+    /* fb_dev can be overridden */
+    if ((consolefd = open("/dev/console", O_RDWR | O_NDELAY)) < 0)
+	return;
+
+    xasprintf(&redirfn, "%s.console", xf86FilePaths->logFile);
+    if (!redirfn) {
+	xf86Msg(X_WARNING, "xf86RedirectConsole:  could not allocate console"
+		" redirection file name (%s)\n", strerror(errno));
+	goto done;
+    }
+
+    if (!(redirfd = fopen(redirfn, "w"))) {
+	xf86Msg(X_WARNING, "xf86RedirectConsole:  could not open \"%s\""
+		" (%s)\n", redirfn, strerror(errno));
+	goto openfail;
+    }
+
+    if (pipe(pipe_fds) < 0) {
+	xf86Msg(X_WARNING, "xf86RedirectConsole:  could not create pipe for"
+		" console redirection (%s)\n", strerror(errno));
+	goto pipefail;
+    }
+
+    if (fcntl(pipe_fds[1], F_SETFL, O_NDELAY) < 0) {
+	xf86Msg(X_WARNING, "xf86RedirectConsole:  fcntl /dev/console O_NDELAY"
+		" failure (%s)\n", strerror(errno));
+	goto cntlfail;
+    }
+
+    if (ioctl(consolefd, SRIOCSREDIR, pipe_fds[0]) < 0) {
+	xf86Msg(X_WARNING, "xf86RedirectConsole:  ioctl /dev/console"
+		" SRIOCSREDIR failure (%s)\n", strerror(errno));
+	goto cntlfail;
+    }
+
+    AddEnabledDevice(pipe_fds[1]);
+    RegisterBlockAndWakeupHandlers((BlockHandlerProcPtr)NoopDDA,
+				   xf86ReadRedirectedConsole, NULL);
+    goto done;
+
+cntlfail:
+    close(pipe_fds[0]);
+    close(pipe_fds[1]);
+    pipe_fds[0] = pipe_fds[1] = -1;
+pipefail:
+    fclose(redirfd);
+    redirfd = NULL;
+openfail:
+    xfree(redirfn);
+    redirfn = NULL;
+done:
+    close(consolefd);
+}
+#endif /* SRIOCSREDIR */
 
 void
 xf86OpenConsole(void)
@@ -179,6 +273,9 @@ xf86OpenConsole(void)
 	ioctl(xf86Info.consoleFd, KDSETMODE, KD_GRAPHICS);
 #endif
 #endif
+#ifdef SRIOCSREDIR
+	xf86RedirectConsole();
+#endif
     }
 #ifdef HAS_USL_VTS
     else /* serverGeneration != 1 */
@@ -300,6 +397,48 @@ xf86CloseConsole(void)
     ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86StartVT);
 
 #endif /* HAS_USL_VTS */
+
+#ifdef SRIOCSREDIR
+    if (pipe_fds[1] >= 0) {
+	/* Catch the last little bit, if any */
+	xf86CopyRedirectedConsole();
+
+	close(pipe_fds[0]);
+	close(pipe_fds[1]);
+	pipe_fds[0] = -1;
+
+	fclose(redirfd);
+
+	if (redired) {
+	    /* Copy data back to /dev/console */
+	    if ((pipe_fds[1] = open(redirfn, O_RDONLY)) < 0) {
+		xf86Msg(X_WARNING, "xf86CloseConsole:  could not reopen \"%s\""
+			" (%s)\n", redirfn, strerror(errno));
+	    } else {
+		if (!(redirfd = fopen("/dev/console", "w"))) {
+		    xf86Msg(X_WARNING, "xf86CloseConsole:  could not reopen"
+			    " \"/dev/console\" (%s)\n", strerror(errno));
+		} else {
+		    putc('\n', redirfd);
+		    xf86CopyRedirectedConsole();
+
+		    fclose(redirfd);
+		}
+
+		close(pipe_fds[1]);
+	    }
+
+	    redired = FALSE;
+	}
+
+	pipe_fds[1] = -1;
+	redirfd = NULL;
+
+	unlink(redirfn);
+	xfree(redirfn);
+	redirfn = NULL;
+    }
+#endif
 
     close(xf86Info.consoleFd);
 
