@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.13tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -48,6 +48,7 @@ static char *redirfn = NULL;
 static FILE *redirfd = NULL;
 static Bool  redired = FALSE;
 static int   pipe_fds[2] = {-1, -1};
+static Bool  redirectConsole = TRUE;
 
 static void
 xf86CopyRedirectedConsole(void)
@@ -274,7 +275,8 @@ xf86OpenConsole(void)
 #endif
 #endif
 #ifdef SRIOCSREDIR
-	xf86RedirectConsole();
+	if (redirectConsole)
+	    xf86RedirectConsole();
 #endif
     }
 #ifdef HAS_USL_VTS
@@ -482,6 +484,17 @@ xf86ProcessArgument(int argc, const char **argv, int i)
 	Protect0 = TRUE;
 	return 1;
     }
+
+#ifdef SRIOCSREDIR
+    /*
+     * Disable /dev/console redirection (for testing purposes).
+     */
+    if (!strcmp(argv[i], "-noredirect"))
+    {
+	redirectConsole = FALSE;
+	return 1;
+    }
+#endif
 
 #ifdef HAS_USL_VTS
 

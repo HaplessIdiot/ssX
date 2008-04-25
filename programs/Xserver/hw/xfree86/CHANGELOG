@@ -1,4 +1,6 @@
 XFree86 4.7.99.17 (xx May 2008)
+  41. On SunOS, add a command line flag to disable the server's /dev/console
+      redirection  (Marc La France).
   40. Rework the handling of unassigned PCI resources in the server to ensure
       they are reassigned while the server is running and restore them to their
       unassigned state on server exit  (Marc La France).
@@ -20728,4 +20730,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3950 2008/04/24 20:10:08 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3951 2008/04/24 20:54:52 tsi Exp $
