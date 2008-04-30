@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.h,v 1.33tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.h,v 1.34tsi Exp $ */
 /*
  * Copyright 1997 through 2008 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -80,35 +80,7 @@ typedef enum
     ATI_CHIP_RAGE128MOBILITY3,  /* Rage128 */
     ATI_CHIP_RAGE128MOBILITY4,  /* Rage128 */
     ATI_CHIP_Rage128,           /* Last among Rage128's */
-    ATI_CHIP_RADEON,            /* Radeon */
-    ATI_CHIP_RADEONVE,          /* Radeon VE */
-    ATI_CHIP_RADEONMOBILITY6,   /* Radeon M6 */
-    ATI_CHIP_RS100,             /* IGP320 */
-    ATI_CHIP_RS200,             /* IGP340 */
-    ATI_CHIP_RS250,             /* Radeon 7000 IGP */
-    ATI_CHIP_RV200,             /* RV200 */
-    ATI_CHIP_RADEONMOBILITY7,   /* Radeon M7 */
-    ATI_CHIP_R200,              /* R200 */
-    ATI_CHIP_RV250,             /* RV250 */
-    ATI_CHIP_RADEONMOBILITY9,   /* Radeon M9 */
-    ATI_CHIP_RS300,             /* Radeon 9100 IGP */
-    ATI_CHIP_RS350,             /* Radeon 9200 IGP */
-    ATI_CHIP_RV280,             /* RV250 */
-    ATI_CHIP_RADEONMOBILITY9PLUS,   /* Radeon M9+ */
-    ATI_CHIP_R300,              /* R300 */
-    ATI_CHIP_RV350,             /* RV350/M10/M11 */
-    ATI_CHIP_R350,              /* R350 */
-    ATI_CHIP_R360,              /* R360 */
-    ATI_CHIP_RV370,             /* RV370/M22 */
-    ATI_CHIP_RV380,             /* RV380/M24 */
-    ATI_CHIP_R420,              /* R420/M18 */
-    ATI_CHIP_R423,              /* R423/M28? */
-    ATI_CHIP_R430,              /* R430 */
-    ATI_CHIP_R480,              /* R480/M28? */
-    ATI_CHIP_R481,              /* R481 */
-    ATI_CHIP_RV410,             /* RV410, M26 */
-    ATI_CHIP_RS400,             /* RS400, RS410, RS480, RS482, ... */
-    ATI_CHIP_Radeon,            /* Last among Radeon's */
+    ATI_CHIP_Radeon,            /* Radeon */
     ATI_CHIP_HDTV               /* HDTV */
 } ATIChipType;
 

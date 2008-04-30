@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.139tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.140tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -2630,8 +2630,18 @@ static Bool RADEONPreInitChipType(ScrnInfoPtr pScrn)
     case PCI_CHIP_R200_BB:
     case PCI_CHIP_R200_BC:
     case PCI_CHIP_R200_QH:
+    case PCI_CHIP_R200_QI:
+    case PCI_CHIP_R200_QJ:
+    case PCI_CHIP_R200_QK:
     case PCI_CHIP_R200_QL:
     case PCI_CHIP_R200_QM:
+    case PCI_CHIP_R200_QN:
+    case PCI_CHIP_R200_QO:
+    case PCI_CHIP_R200_Qh:
+    case PCI_CHIP_R200_Qi:
+    case PCI_CHIP_R200_Qj:
+    case PCI_CHIP_R200_Qk:
+    case PCI_CHIP_R200_Ql:
 	info->ChipFamily = CHIP_FAMILY_R200;
 	break;
 
@@ -2644,9 +2654,12 @@ static Bool RADEONPreInitChipType(ScrnInfoPtr pScrn)
 	break;
 
     case PCI_CHIP_RV250_Ld:
+    case PCI_CHIP_RV250_Le:
     case PCI_CHIP_RV250_Lf:
     case PCI_CHIP_RV250_Lg:
 	info->IsMobility = TRUE;
+    case PCI_CHIP_RV250_Id:
+    case PCI_CHIP_RV250_Ie:
     case PCI_CHIP_RV250_If:
     case PCI_CHIP_RV250_Ig:
 	info->ChipFamily = CHIP_FAMILY_RV250;
@@ -2696,8 +2709,9 @@ static Bool RADEONPreInitChipType(ScrnInfoPtr pScrn)
     case PCI_CHIP_RV360_AR:
     case PCI_CHIP_RV350_AS:
     case PCI_CHIP_RV350_AT:
-    case PCI_CHIP_RV350_AV:
     case PCI_CHIP_RV350_4155:
+    case PCI_CHIP_RV350_AV:
+    case PCI_CHIP_RV350_AW:
 	info->ChipFamily = CHIP_FAMILY_RV350;
 	break;
 

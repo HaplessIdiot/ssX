@@ -1,4 +1,6 @@
 XFree86 4.7.99.17 (xx May 2008)
+  42. Add a few more Radeon PCI IDs (prompted by Loic Mahe).  Also, remove the
+      tracking of these from the "ati" module.  (Marc La France)
   41. On SunOS, add a command line flag to disable the server's /dev/console
       redirection  (Marc La France).
   40. Rework the handling of unassigned PCI resources in the server to ensure
@@ -34,8 +36,8 @@ XFree86 4.7.99.15 (9 April 2008)
         (Marc La France).
   35. Fix PCI resource relocation to avoid nullifying resources
       (Marc La France).
-  34. In int10, do attempt to populate shadow system BIOS segments if there's
-      a risk of hard-failed master aborts (Marc La France).
+  34. In int10, do not attempt to populate shadow system BIOS segments if
+      there's a risk of hard-failed master aborts (Marc La France).
   33. Zero out all SPARC SunOS framebuffers on server exit (Marc La France).
   32. Temporarily ignore 64-bit PCI memory address spaces on SPARC
       (Marc La France).
@@ -20730,4 +20732,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3951 2008/04/24 20:54:52 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3952 2008/04/25 14:15:39 tsi Exp $
