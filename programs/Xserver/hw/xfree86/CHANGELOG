@@ -1,4 +1,7 @@
 XFree86 4.7.99.17 (xx May 2008)
+  43. Mitigate brokenness in /dev/console redirection on Solaris.  Should this
+      redirection fail, redirect the server's stderr to the log to avoid screen
+      corruption due to the server's own console output.  (Marc La France).
   42. Add a few more Radeon PCI IDs (prompted by Loic Mahe).  Also, remove the
       tracking of these from the "ati" module.  (Marc La France)
   41. On SunOS, add a command line flag to disable the server's /dev/console
@@ -20732,4 +20735,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3952 2008/04/25 14:15:39 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3953 2008/04/30 15:43:44 tsi Exp $

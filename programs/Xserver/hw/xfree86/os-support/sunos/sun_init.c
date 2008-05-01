@@ -1,8 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.14tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Copyright 1999 by David Holland <davidh@iquest.net>
+ * Copyright 2008 by Marc Aurele La France (TSI @ UQV), <tsi@xfree86.org>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -69,8 +70,21 @@ xf86ReadRedirectedConsole(pointer pData, int error, pointer pMask)
 	xf86CopyRedirectedConsole();
 
     fflush(redirfd);
+    fsync(fileno(redirfd));
 }
 
+/*
+ * This attempts to redirect /dev/console output (from anything in the system)
+ * while the server is running into a file.  This file is copied back into
+ * /dev/console on server exit.  If this redirection fails, we at least
+ * redirect the server's own output into the log.
+ *
+ * This is being done to help avoid screen corruption while the server is
+ * running.
+ *
+ * Note that /dev/wscons output will still corrupt the screen, but there
+ * doesn't seem to be anything that can be done about that.
+ */
 static void
 xf86RedirectConsole(void)
 {
@@ -106,9 +120,35 @@ xf86RedirectConsole(void)
     }
 
     if (ioctl(consolefd, SRIOCSREDIR, pipe_fds[0]) < 0) {
-	xf86Msg(X_WARNING, "xf86RedirectConsole:  ioctl /dev/console"
-		" SRIOCSREDIR failure (%s)\n", strerror(errno));
-	goto cntlfail;
+	if (errno != EBUSY) {
+	    xf86Msg(X_WARNING, "xf86RedirectConsole:  ioctl /dev/console"
+		    " SRIOCSREDIR failure (%s)\n", strerror(errno));
+	    goto cntlfail;
+	}
+
+	/*
+	 * At this point, something else in the system (likely a shell) has
+	 * a read hung on /dev/console (or is flooding it).  On the premise
+	 * (but not certainty) that the server's stderr is also /dev/console,
+	 * redirect that output into the log, closing that reference to
+	 * /dev/console.  At the very least, this means that server messages
+	 * will not corrupt the screen (although /dev/console output by
+	 * something other than the server will still do so).
+	 *
+	 * One downside of doing this is that, should the server fail for any
+	 * reason, failure messages will only appear in the log.
+	 */
+	LogSetParameter(XLOG_STDERR, 1);
+
+	/*
+	 * Try again, just in case /dev/console redirection isn't as broken as
+	 * I believe it to be.
+	 */
+	if (ioctl(consolefd, SRIOCSREDIR, pipe_fds[0]) < 0) {
+	    xf86Msg(X_WARNING, "xf86RedirectConsole:  ioctl /dev/console"
+		    " SRIOCSREDIR failure (%s)\n", strerror(errno));
+	    goto cntlfail;
+	}
     }
 
     AddEnabledDevice(pipe_fds[1]);
