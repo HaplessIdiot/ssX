@@ -1,4 +1,5 @@
 XFree86 4.7.99.17 (xx May 2008)
+  45. Remove two unused functions from xf4bpp (Miod Vallat, Marc La France).
   44. Fix additional incorrect assumptions regarding unassigned PCI resources
       (Marc La France).
   43. Mitigate brokenness in /dev/console redirection on Solaris.  Should this
@@ -20737,4 +20738,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3954 2008/05/01 16:13:20 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3955 2008/05/01 17:11:30 tsi Exp $
