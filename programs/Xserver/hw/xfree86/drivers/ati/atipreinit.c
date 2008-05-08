@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.95tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.96tsi Exp $ */
 /*
  * Copyright 1999 through 2008 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -721,7 +721,11 @@ ATIPreInit
     if ((pVideo = pATI->PCIInfo))
     {
         if (pVideo->ioBase[1])
+        {
             pATI->CPIOBase = pVideo->ioBase[1] + pATI->DomainIOBase;
+            if (pATI->IODecoding == MEMORY_IO)
+                pATI->IODecoding = BLOCK_IO;
+        }
 
         /* Set MMIO address from PCI configuration space, if available */
         if ((pATI->Block0Base = pVideo->memBase[2]))
