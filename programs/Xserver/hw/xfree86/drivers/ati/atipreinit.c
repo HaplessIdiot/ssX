@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.94 2008/01/01 00:40:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.95tsi Exp $ */
 /*
  * Copyright 1999 through 2008 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -2416,7 +2416,8 @@ ATIPreInit
 
                 ServerVideoRAM = pATI->VideoRAM;
 
-                if (pATI->Cursor > ATI_CURSOR_SOFTWARE)
+                if ((pATI->Cursor > ATI_CURSOR_SOFTWARE) &&
+                    (pATI->NewHW.crtc == ATI_CRTC_MACH64))
                 {
                     /*
                      * Allocate a 1 kB cursor image area at the top of the
@@ -2639,8 +2640,8 @@ ATIPreInit
     if ((pATI->Cursor > ATI_CURSOR_SOFTWARE) && !pATI->CursorBase)
     {
         xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
-            "Unable to store hardware cursor image.  Reverting to software"
-            " cursor.\n");
+            "Hardware cursor not supported in this configuration.  Reverting"
+            " to software cursor.\n");
         pATI->Cursor = ATI_CURSOR_SOFTWARE;
     }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64io.h,v 1.21tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64io.h,v 1.22tsi Exp $ */
 /*
  * Copyright 2000 through 2008 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -303,7 +303,7 @@ extern void ATIMach64AccessTVReg  FunctionPrototype((ATIPtr, const CARD8));
 #define ATIMove32(_pDst, _pSrc, _nCount) \
     do                                   \
     {                                    \
-        long d0, d1, d2;                 \
+        int d0, d1, d2;                  \
         __asm__ __volatile__             \
         (                                \
             "cld\n\t"                    \
