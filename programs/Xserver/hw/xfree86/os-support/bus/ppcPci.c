@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ppcPci.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ppcPci.c,v 1.10 2005/03/29 17:54:00 tsi Exp $ */
 /*
  * ppcPci.c - PowerPC PCI access functions
  *
@@ -227,10 +227,13 @@ void buserr(int sig)
 static CARD32
 pciCfgMech1Read(PCITAG tag, int offset)
 {
-  unsigned long rv = 0xffffffff;
+  CARD32 rv = 0xffffffff;
 #ifdef DEBUGPCI
   ErrorF("pciCfgMech1Read(tag=%08lx,offset=%08x)\n", tag, offset);
 #endif
+
+  if ((offset < 0) || (offset >= 256))
+	return rv;
 
   signal(SIGBUS, buserr);
   buserr_detected = 0;
@@ -258,6 +261,9 @@ pciCfgMech1Write(PCITAG tag, int offset, CARD32 val)
         tag, offset, (unsigned long)val);
 #endif
 
+  if ((offset < 0) || (offset >= 256))
+	return;
+
   signal(SIGBUS, SIG_IGN);
 
   outl(0xCF8, PCI_EN | tag | (offset & 0xfc));
@@ -274,8 +280,12 @@ pciCfgMech1Write(PCITAG tag, int offset, CARD32 val)
 static void
 pciCfgMech1SetBits(PCITAG tag, int offset, CARD32 mask, CARD32 val)
 {
-    unsigned long rv = 0xffffffff;
+    CARD32 rv;
 
+    if ((offset < 0) || (offset >= 256))
+	return;
+
+    rv = 0xffffffff;
     signal(SIGBUS, buserr);
 
     outl(0xCF8, PCI_EN | tag | (offset & 0xfc));

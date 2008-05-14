@@ -1,4 +1,6 @@
 XFree86 4.7.99.18 (xx May 2008)
+  49. Avoid unpredictable behaviour on PCI-X and/or PCI Express capable ix86,
+      x86_64 and PowerPC systems  (Marc La France).
 
 XFree86 4.7.99.17 (9 May 2008)
   48. Fix ATIPreInit() glitch that caused it to ignore the posiibility that the
@@ -20746,4 +20748,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3958 2008/05/08 20:59:18 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3959 2008/05/09 11:07:05 dawes Exp $
