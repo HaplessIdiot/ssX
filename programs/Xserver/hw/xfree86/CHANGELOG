@@ -1,4 +1,8 @@
 XFree86 4.7.99.18 (xx May 2008)
+  51. Change atimisc to not disable the MMIO area at the tail end of the linear
+      aperture if it is found to be enabled on entry.  Fixes a hang on
+      Solaris/sparc upon /dev/console or /dev/wscons output while the server is
+      running (Marc La France).
   50. Change the aperture driver for Solaris to makr its mappings as non-
       cacheable and as having sideeffects  (Marc La France).
   49. Avoid unpredictable behaviour on PCI-X and/or PCI Express capable ix86,
@@ -20750,4 +20754,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3960 2008/05/14 15:40:46 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3961 2008/05/15 17:25:39 tsi Exp $

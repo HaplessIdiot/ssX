@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.96tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.97tsi Exp $ */
 /*
  * Copyright 1999 through 2008 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -2320,6 +2320,19 @@ ATIPreInit
     else if ((pATI->NewHW.crtc == ATI_CRTC_MACH64) ||
              (pATI->Chip >= ATI_CHIP_264CT))
     {
+        if (pATI->Chip >= ATI_CHIP_264VTB)
+        {
+            pATIHW->bus_cntl = inr(BUS_CNTL);
+
+            /*
+             * If the MMIO area at the end of the linear aperture is found
+             * enabled on entry, keep it enabled, on the premise that something
+             * other than the server is referencing it.
+             */
+            if (!(pATIHW->bus_cntl & BUS_APER_REG_DIS))
+                pATI->MMIOInLinear = TRUE;
+        }
+
         if (pATI->depth >= 8)
         {
             /* Get adapter's linear aperture configuration */
