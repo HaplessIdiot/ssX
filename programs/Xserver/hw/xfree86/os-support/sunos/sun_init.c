@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.14tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.15 2008/05/01 16:13:23 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -588,6 +588,10 @@ void xf86UseMsg()
     ErrorF("                       (if not using XKB)\n");
     ErrorF("-ar2 <float>           Set autorepeat interval time (sec)\n");
     ErrorF("                       (if not using XKB)\n");
+#endif
+#ifdef SRIOCSREDIR
+    ErrorF("-noredirect            Don't redirect /dev/console output\n");
+    ErrorF("                       while the X server is running\n");
 #endif
     ErrorF("-keeptty               Don't detach controlling tty\n");
     ErrorF("                       (for debugging only)\n");
