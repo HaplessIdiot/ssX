@@ -1,6 +1,6 @@
 XFree86 4.7.99.20 (xx June 2008)
   53. Fix bug that caused the PCI scan to ignore bus segments that are known to
-      before the scan starts  (Marc La France).
+      exist before the scan starts  (Marc La France).
 
 XFree86 4.7.99.19 (9 June 2008)
 
@@ -12,7 +12,7 @@ XFree86 4.7.99.18 (23 May 2008)
       aperture if it is found to be enabled on entry.  Fixes a hang on
       Solaris/sparc upon /dev/console or /dev/wscons output while the server is
       running (Marc La France).
-  50. Change the aperture driver for Solaris to makr its mappings as non-
+  50. Change the aperture driver for Solaris to mark its mappings as non-
       cacheable and as having sideeffects  (Marc La France).
   49. Avoid unpredictable behaviour on PCI-X and/or PCI Express capable ix86,
       x86_64 and PowerPC systems  (Marc La France).
@@ -20763,4 +20763,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3965 2008/06/09 11:02:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3966 2008/06/19 16:37:45 tsi Exp $
