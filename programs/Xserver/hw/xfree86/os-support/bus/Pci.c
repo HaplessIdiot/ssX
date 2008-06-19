@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.101tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.102tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -911,7 +911,8 @@ pciGenFindNext(void)
 	    *pciBusInfo[pciBusNum] = *pciBusInfo[previousBus];
 
 	    speculativeProbe = TRUE;
-	}
+	} else if (pciBusInfo[pciBusNum]->pciMaxOffset == 0)
+	    pciBusInfo[pciBusNum]->pciMaxOffset = 256;
 
 	/*
 	 * At this point, pciBusNum, pciDevNum, and pciFuncNum have been

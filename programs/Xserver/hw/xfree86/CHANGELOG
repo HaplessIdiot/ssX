@@ -1,4 +1,6 @@
 XFree86 4.7.99.20 (xx June 2008)
+  53. Fix bug that caused the PCI scan to ignore bus segments that are known to
+      before the scan starts  (Marc La France).
 
 XFree86 4.7.99.19 (9 June 2008)
 
@@ -20761,4 +20763,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3964 2008/05/23 11:03:20 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3965 2008/06/09 11:02:59 dawes Exp $
