@@ -1,4 +1,7 @@
 XFree86 4.7.99.20 (xx June 2008)
+  54. Fix possible reference to freed memory in HP ZX1 PCI chipset scan and
+      emulate configuration space more closely for its fake bridges
+      (Marc La France).
   53. Fix bug that caused the PCI scan to ignore bus segments that are known to
       exist before the scan starts  (Marc La France).
 
@@ -20763,4 +20766,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3966 2008/06/19 16:37:45 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3967 2008/06/19 16:54:46 tsi Exp $
