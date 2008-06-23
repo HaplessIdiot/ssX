@@ -1,4 +1,6 @@
 XFree86 4.7.99.21 (xx July 2008)
+  55. A less kludgy implementation of the Simba hack introduced in CHANGELOG
+      #39  (Marc La France).
 
 XFree86 4.7.99.20 (23 June 2008)
   54. Fix possible reference to freed memory in HP ZX1 PCI chipset scan and
@@ -20768,4 +20770,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3968 2008/06/21 18:11:55 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3969 2008/06/23 11:03:04 dawes Exp $
