@@ -1,4 +1,6 @@
-XFree86 4.7.99.21 (xx July 2008)
+XFree86 4.7.99.22 (xx July 2008)
+
+XFree86 4.7.99.21 (9 July 2008)
   56. Allow 32-bit PCI I/O addresses on Linux/PowerPC (Marc La France).
   55. A less kludgy implementation of the Simba hack introduced in CHANGELOG
       #39  (Marc La France).
@@ -20771,4 +20773,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3970 2008/06/23 14:42:19 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3971 2008/07/01 18:16:41 tsi Exp $
