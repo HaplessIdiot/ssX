@@ -1,4 +1,6 @@
 XFree86 4.7.99.22 (xx July 2008)
+  57. Immunise VBESetGetPalletteData() against attempts to set null pallette
+      data.  (Dick Wesseling, Bugzilla #1691).
 
 XFree86 4.7.99.21 (9 July 2008)
   56. Allow 32-bit PCI I/O addresses on Linux/PowerPC (Marc La France).
@@ -20773,4 +20775,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3971 2008/07/01 18:16:41 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3972 2008/07/09 11:03:39 dawes Exp $
