@@ -1,4 +1,6 @@
-XFree86 4.7.99.22 (xx July 2008)
+XFree86 4.7.99.23 (xx August 2008)
+
+XFree86 4.7.99.22 (23 July 2008)
   57. Immunise VBESetGetPalletteData() against attempts to set null pallette
       data.  (Dick Wesseling, Bugzilla #1691).
 
@@ -20775,4 +20777,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3972 2008/07/09 11:03:39 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3973 2008/07/16 17:01:41 tsi Exp $
