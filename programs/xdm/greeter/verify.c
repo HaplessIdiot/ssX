@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.29tsi Exp $ */
 /*
 
 Copyright 1988, 1998  The Open Group
@@ -25,7 +26,6 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.28 2004/10/21 06:06:43 herrb Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -160,7 +160,7 @@ static int PAM_conv (int num_msg,
 			/* PAM frees resp */
 			break;
 		case PAM_TEXT_INFO:
-			/* ignore the informational mesage */
+			/* ignore the informational message */
 			break;
 		default:
 			/* unknown or PAM_ERROR_MSG */
@@ -189,7 +189,7 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 	auth_session_t	*as;
 	char		*style, *shell, *home, *s, **argv;
 	char		path[MAXPATHLEN];
-	int		authok;
+	int		authok, password_length;
 
 	/* User may have specified an authentication style. */
 	if ((style = strchr(greet->name, ':')) != NULL)
@@ -230,10 +230,20 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 		return 0;
 	}
 
+	password_length = strlen(greet->password);
+
 	/* Set up state for no challenge, just check a response. */
 	auth_setstate(as, 0);
 	auth_setdata(as, "", 1);
-	auth_setdata(as, greet->password, strlen(greet->password) + 1);
+	auth_setdata(as, greet->password, password_length + 1);
+
+	/*
+	 * Zap password now, unless still needed by StartClient().  Otherwise,
+	 * unzapped copies will end up in our forked children.
+	 */
+#if !defined(SECURE_RPC) && !defined(K5AUTH)
+	bzero(greet->password, password_length);
+#endif
 
 	/* Build path of the auth script and call it */
 	snprintf(path, sizeof(path), _PATH_AUTHPROG "%s", style);
@@ -243,7 +253,9 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 
 	if ((authok & AUTH_ALLOW) == 0) {
 		Debug("password verify failed\n");
-		bzero(greet->password, strlen(greet->password));
+#if defined(SECURE_RPC) || defined(K5AUTH)
+		bzero(greet->password, password_length);
+#endif
 		auth_close(as);
 		login_close(lc);
 		return 0;
@@ -251,7 +263,9 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 	/* Run the approval script */
 	if (!auth_approval(as, lc, greet->name, "auth-xdm")) {
 		Debug("login not approved\n");
-		bzero(greet->password, strlen(greet->password));
+#if defined(SECURE_RPC) || defined(K5AUTH)
+		bzero(greet->password, password_length);
+#endif
 		auth_close(as);
 		login_close(lc);
 		return 0;
@@ -259,14 +273,16 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 	auth_close(as);
 	login_close(lc);
 	/* Check empty passwords against allowNullPasswd */
-	if (!greet->allow_null_passwd && strlen(greet->password) == 0) {
+	if (!greet->allow_null_passwd && password_length == 0) {
 		Debug("empty password not allowed\n");
 		return 0;
 	}
 	/* Only accept root logins if allowRootLogin resource is set */
 	if (p->pw_uid == 0 && !greet->allow_root_login) {
 		Debug("root logins not allowed\n");
-		bzero(greet->password, strlen(greet->password));
+#if defined(SECURE_RPC) || defined(K5AUTH)
+		bzero(greet->password, password_length);
+#endif
 		return 0;
 	}
 
@@ -279,7 +295,9 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 			/* did not found the shell in /etc/shells 
 			   -> failure */
 			Debug("shell not in /etc/shells\n");
-			bzero(greet->password, strlen(greet->password));
+#if defined(SECURE_RPC) || defined(K5AUTH)
+			bzero(greet->password, password_length);
+#endif
 			endusershell();
 			return 0;
 		}

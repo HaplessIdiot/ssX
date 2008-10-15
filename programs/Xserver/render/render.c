@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/render.c,v 1.35tsi Exp $
+ * $XFree86: xc/programs/Xserver/render/render.c,v 1.36tsi Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -1457,8 +1457,9 @@ ProcRenderCreateCursor (ClientPtr client)
     pScreen = pSrc->pDrawable->pScreen;
     width = pSrc->pDrawable->width;
     height = pSrc->pDrawable->height;
-    if ( stuff->x > width 
-      || stuff->y > height )
+    if (height && width > ((unsigned int)(-1) / (height * sizeof(CARD32))))
+	return (BadAlloc);
+    if ((stuff->x > width) || (stuff->y > height))
 	return (BadMatch);
     argbbits = xalloc (width * height * sizeof (CARD32));
     if (!argbbits)

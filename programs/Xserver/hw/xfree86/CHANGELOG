@@ -1,4 +1,35 @@
 XFree86 4.7.99.28 (xx October 2008)
+  67. When using BSD authentication in xdm, wipe out the password as soon as
+      possible to prevent it from showing up in the address space of
+      subsequently forked child processes (Matthieu Herrb).
+  66. Ensure XVidModeGetMonitor() always returns dynamically allocated data, as
+      documented in its man page (Marc La France).
+  65. Fix potential crash in DBE (Dave Arlie).
+  64. Import X.Org fixes for CVE-2008-1377, CVE-2008-1379, CVE-2008-2360 and
+      CVE-2008-2361 security advisories.
+  63. Various x86emu changes:
+      - Fix various halfword overflow issues (Scitech).
+      - Add RDTSC emulation (Aaron Plattner).
+      - Fix JNL emulation (David Wong).
+      - Add emulation of CPUID, levels 0 & 1.  If the host architecture
+        supports CPUID, pass that implementation's results to the emulation.
+        If running on a 386 or 486 that does not support CPUID, provide a
+        reasonable simulation (instead of SIGILL'ing).  On all other host
+        architectures, the emulator will report itself as a 486DX
+        (Marc La France).
+      - Add BTS emulation (Felix Kuehling).
+      - Fix BSF & BSR emulations (Aaron Plattner).
+      - Fix MUL and IMUL emulations in the 64-bit case (Matthias Hopf).
+  62. xf86sym.c build fix when RandR is disabled (Pat Kane, Bugzilla #1693).
+  61. Spruce up implementation of pthread_key_create(), pthread_key_delete()
+      pthread_getspecific() and pthread_setspecific() stubs in libXThrStub
+      library.  Inspired by a change found in OpenBSD repository
+      (Marc La France).
+  60. When opening display, if LOCALCONN fails, fall back to UNIXCOMM, then
+      TCPCONN (Alex Chen).
+  59. Improve uniqueness of XDM-AUTHORIZATION-1 cookies.  (Egbert Eich).
+  58. Fix possible segfault when using XDM-AUTHORIZATION-1 keys for remote
+      clients over IPv6.  (Christian Weisgerber)
 
 XFree86 4.7.99.27 (9 October 2008)
 
@@ -20787,4 +20818,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3978 2008/09/23 11:07:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3979tsi Exp $

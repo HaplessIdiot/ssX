@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.34 2002/12/22 00:46:51 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.35tsi Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -966,11 +966,11 @@ XF86VidModeGetMonitor(dpy, screen, monitor)
     if (rep.vendorLength)
 	_XReadPad(dpy, monitor->vendor, rep.vendorLength);
     else
-	monitor->vendor = "";
+	monitor->vendor = strdup("");
     if (rep.modelLength)
 	_XReadPad(dpy, monitor->model, rep.modelLength);
     else
-	monitor->model = "";
+	monitor->model = strdup("");
 	
     UnlockDisplay(dpy);
     SyncHandle();
