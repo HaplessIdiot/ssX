@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/vm86/linux_vm86.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/vm86/linux_vm86.c,v 1.5tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -268,10 +268,10 @@ vm86_rep(struct vm86_struct *ptr)
 {
     int __res;
 
-#ifdef __PIC__
+#if defined(__PIC__) && !defined(__amd64__) && !defined(__x86_64__)
     /*
-     * When compiling with -fPIC, we can't use asm constraint "b" because
-     * %ebx is already taken by gcc.
+     * When compiling with -fPIC on i386, we can't use asm constraint "b"
+     * because %ebx is already taken by gcc to hold the GOT address.
      */
     __asm__ __volatile__
     (
