@@ -15,7 +15,7 @@ XFree86 4.7.99.28 (xx October 2008)
         supports CPUID, pass that implementation's results to the emulation.
         If running on a 386 or 486 that does not support CPUID, provide a
         reasonable simulation (instead of SIGILL'ing).  On all other host
-        architectures, the emulator will report itself as a 486DX
+        architectures, the emulator will report itself as a 486DX4
         (Marc La France).
       - Add BTS emulation (Felix Kuehling).
       - Fix BSF & BSR emulations (Aaron Plattner).
@@ -73,7 +73,7 @@ XFree86 4.7.99.18 (23 May 2008)
       x86_64 and PowerPC systems  (Marc La France).
 
 XFree86 4.7.99.17 (9 May 2008)
-  48. Fix ATIPreInit() glitch that caused it to ignore the posiibility that the
+  48. Fix ATIPreInit() glitch that caused it to ignore the possibility that the
       common layer had relocated a Mach64's PCI block I/O base
       (Marc La France).
   47. Disable Mach64 hardware cursors when the unaccelerated VGA CRTC is used
@@ -20818,4 +20818,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3979tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3980 2008/10/15 20:59:12 tsi Exp $
