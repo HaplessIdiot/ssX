@@ -1,4 +1,6 @@
-XFree86 4.7.99.28 (xx October 2008)
+XFree86 4.7.99.29 (xx November 2008)
+
+XFree86 4.7.99.28 (23 October 2008)
   67. When using BSD authentication in xdm, wipe out the password as soon as
       possible to prevent it from showing up in the address space of
       subsequently forked child processes (Matthieu Herrb).
@@ -20818,4 +20820,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3980 2008/10/15 20:59:12 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3981 2008/10/15 21:19:18 tsi Exp $
