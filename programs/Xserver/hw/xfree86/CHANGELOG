@@ -1,4 +1,6 @@
-XFree86 4.7.99.29 (xx November 2008)
+XFree86 4.7.99.30 (xx November 2008)
+
+XFree86 4.7.99.29 (9 November 2008)
   68. Move CloseWellKnownConnections() calls into OsCleanup(TRUE) calls.
       Catches yet another server exit case where sockets were not being closed
       (Marc La France).
@@ -20823,4 +20825,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3982 2008/10/23 11:03:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3983 2008/10/31 19:10:32 tsi Exp $
