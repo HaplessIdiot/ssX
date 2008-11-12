@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.141tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.142 2008/05/21 22:23:57 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -179,8 +179,9 @@ typedef enum {
     OPTION_LVDS_PROBE_PLL,
     OPTION_CONSTANTDPI,
 #ifdef __powerpc__
-    OPTION_IBOOKHACKS
+    OPTION_IBOOKHACKS,
 #endif
+    OPTION_LAST
 } RADEONOpts;
 
 const OptionInfoRec RADEONOptions[] = {
