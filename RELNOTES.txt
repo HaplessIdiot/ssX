@@ -1,18 +1,18 @@
-                      Release Notes for XFree86® 4.7.0
+                      Release Notes for XFree86® 4.8.0
 
                           The XFree86 Project, Inc
 
-                                 August 2007
+                                December 2008
 
                                   Abstract
 
       This document contains information about the various features and
-     their current status in the XFree86 4.7.0 release.
+     their current status in the XFree86 4.8.0 release.
 
 1.  Introduction to the 4.x Release Series
 
 XFree86 4.0 was the first official release of the XFree86 4 series.  The cur-
-rent release (4.7.0) is the latest in that series.  The XFree86 4.x series
+rent release (4.8.0) is the latest in that series.  The XFree86 4.x series
 represents a significant redesign of the XFree86 X server, with a strong
 focus on modularity and configurability.
 
@@ -72,13 +72,12 @@ Before downloading any of the binary distributions for this release, read
 through the Installation Document as it can point out which particular binary
 you should download.
 
-The next section describes what is new in the latest version (4.7.0) compared
-with the previous full release (4.6.0).  There are many new features in this
-release and we unfortunately do not have enough space to cover them all here.
+The next section describes what is new in the latest version (4.8.0) compared
+with the previous full release (4.7.0).
 
-3.  Summary of new features in 4.7.0.
+3.  Summary of new features in 4.8.0.
 
-This is a sampling of the new features in XFree86 4.7.0.  A more complete
+This is a sampling of the new features in XFree86 4.8.0.  A more complete
 list of changes can be found in the CHANGELOG that is part of the XFree86
 source tree.  It can also be viewed online at our CVSweb server
 <URL:http://cvsweb.xfree86.org/cvsweb/xc/pro-
@@ -89,261 +88,117 @@ grams/Xserver/hw/xfree86/CHANGELOG?rev=HEAD>.
 A number of reported security issues have been addressed in this release.
 They include:
 
-   o CVE-2006-0747.
+   o CVE-2007-5760.
 
-   o CVE-2006-1861.
+   o CVE-2007-5958.
 
-   o CVE-2006-2661.
+   o CVE-2007-6427.
 
-   o CVE-2006-6101.
+   o CVE-2007-6428.
 
-   o CVE-2006-6102.
+   o CVE-2007-6429.
 
-   o CVE-2006-6103.
+   o CVE-2008-0006.
 
-   o CVE-2007-1003.
+   o CVE-2008-1377.
 
-   o CVE-2007-1351.
+   o CVE-2008-1379.
 
-   o CVE-2007-1352.
+   o CVE-2008-2360.
 
-   o CVE-2007-1667.
-
-   o CVE-2007-2754.
-
-In addition, a number of potential integer overflow problems in the Type 1
-font rendering code have been corrected.
+   o CVE-2008-2361.
 
 3.2  Video Driver Enhancements
 
 3.2.1  ati, atimisc, r128 and radeon
 
-   o Fix bug that caused the version check between the ati and atimisc mod-
-     ules to fail.
+   o Mach64 block transfers and XVideo support have been significantly sped
+     up on x86_64 platforms.
 
-   o The atimisc module's saving and restoring of the mode on server entry
-     has been made more reliable on 64-bit systems.
+   o A bug in atimisc's colourmap handling has been fixed.
 
-   o Fix bug that prevented detection of non-PCI adapters on systems that do
-     not provide accurate PCI resource sizes.
+   o Support has been added for dual head on Rage 128 Mobility's.
 
-   o Fix the radeon driver's saving and restoring of the mode on server
-     entry.
+   o Add support for newer RADEONs.
 
-3.2.2  chips
+   o Fixed a memory leak in the RADEON driver.
 
-   o Fix some of this driver's endianness problems.
+   o A Solaris hang has been corrected that occurred on UltraSPARCs with
+     either a Mach64 or RADEON adapter as the system console.
 
-3.2.3  i128
+3.2.2  i830
 
-   o Resurrect support for Ti3026 RAMDACs found on the original I128
-     adapters.  Note that there are still issues with depth 8 visuals and
-     hardware cursors.
+   o Fix bug that occurs when the amount of video memory initially reported
+     by the BIOS is zero.
 
-3.2.4  mga
+3.3  XKB updates
 
-   o Add support for Matrox MGA G200e SE adapters.
+   o Fix a segfault in XKB that occrred when the system has no LEDs.
 
-   o Fix determination of the mode on server entry.  Also, save and restore
-     it on VC switches.
+3.4  SHAPE Extension
 
-3.2.5  newport
+   o This extension has been updated to version 1.1.  This adds input regions
+     to windows that scope the area within which pointer movements are
+     reported to the client.
 
-   o Add support for the DPMS extension.
+3.5  X Servers
 
-3.2.6  nv
+3.5.1  XFree86 core server and modules
 
-   o Add support for new hardware.
+   o A number of bugs in the PCI-X and PCI Express support introduced in the
+     previous release have been addressed.
 
-3.2.7  pnozz
+3.5.2  TinyX
 
-   o This accelerated driver supports the Weitek POWER 9100 SBUS adapters
-     found in some SPARC laptops.
+   o Fix stipples in the Xigs and Xsis530 servers.
 
-3.2.8  sunbw2, suncg14, suncg3, sunleo, suntcx
+3.5.3  Xprt
 
-   o These drivers, intended for various SPARC SBUS and UPA adapters, can now
-     blank and unblank the screen correctly.
+   o A number of file descriptor leaks and double-closes have been fixed in
+     the Xprt server.
 
-3.2.9  sunffb
+3.5.4  Xdmx
 
-   o Prevent turning off the FPU on OpenBSD.
+   o Improved Xdmx's handling of USB devices.
 
-   o Fix bug that prevented use of this driver on SunOS and Solaris.
+3.5.5  GLX and Mesa
 
-   o Workaround for VRAM corruption when unblanking FFB1 adapters.
+   o Fix segfaults that could occur because buffers were being freeing too
+     early during X server termination.
 
-3.2.10  trident
+3.5.6  XAA
 
-   o Resave the mode on server entry when switching back to the server's vir-
-     tual console.
+   o Fix handling of ceertain TE fonts with null glyphs that caused segfaults
+     in XAA.
 
-3.3  Input Driver Enhancements
+   o A number of 64-bit and integer wraparound bugs have been corrected.
 
-3.3.1  mouse
+3.6  OS Support Updates
 
-   o Do not disable 3-button mouse emulation even when the mouse is found to
-     actually have a third button.  This helps laptops, and the like, running
-     systems that combine a touchpad and an external mouse into one device.
+   o On SunOS/sparc or Solaris/sparc, the server now clears all framebuffers
+     on exit.
 
-3.4  XKB updates
+   o To avoid screen corruption on SunOS and Solaris, the server now redi-
+     rects /dev/console output while it is running, and copies that data back
+     to /dev/console on server exit.  This behaviour can be disabled through
+     a command line flag.
 
-   o Add an XKB geometry for Dell Inspiron 8000 notebook keyboard.
+3.7  Xft Library
 
-   o Add an XKB geometry for Enermax Aurora keyboards.
+   o A byte-swapping issue in libXft's handling of XImages has been
+     addressed.
 
-   o Add XKB keycodes for MacIntosh USB keyboards.
+3.8  xdm
 
-   o Add XKB definitions for X860x0 keyboards.
-
-   o Update Macintosh french keymap.
-
-   o Allow signed coordinates in XKB shape definitions.
-
-3.5  X Server and Extension Updates
-
-3.5.1  Loader
-
-   o Fixed support for R_ALPHA_GPRELHIGH relocations.
-
-   o Added support for R_ALPHA_BRSGP relocations.
-
-   o Fixed handling of archives on non-Linux SPARC.
-
-   o Fixed support for R_SPARC_LO10 and R_SPARC_OLO10 relocations.
-
-   o Added support for most ELF SPARC relocation types.
-
-   o Added an emulation of rand(3) calls.
-
-3.5.2  XFree86 core server and modules
-
-   o Update -configure to detect when wscons support should be used for the
-     keyboard on OpenBSD.
-
-   o Added preliminary support for PCI domains on OpenBSD/sparc64.  This cur-
-     rently requires a kernel change.
-
-   o On the *BSD's, added support for absolute mouse position events and hor-
-     izontal scroll wheels.
-
-   o Fixed a bug that caused an entire batch of mouse events to be rejected
-     when one of an unknown type was encountered.
-
-   o Don't error out on unknown wskbd types on the *BSD's.
-
-   o Fixed memory leaks in option processing.
-
-   o Fixed area granularity handling in the framebuffer manager.
-
-   o Reworked the sizing of PCI resources.  More specifically, reduced the X
-     server's reliance on the OS to provide such information.
-
-   o Added support for SBUS and UPA adapters on NetBSD and OpenBSD.
-
-   o Added support for Solaris/amd64.
-
-   o Added support for UltraSPARC IV systems, including support for PCI
-     Express.
-
-   o Added support for DrangonFly, a variant of FreeBSD.
-
-   o Added support for x86_64 architectures on the *BSD's.
-
-   o Fixed page size determination in various server-related utilities.
-
-   o Made the mmapr and mmapw utilities understand wscons mapping modes on
-     the *BSD's.
-
-3.5.3  TinyX
-
-   o Added an option to the TinyX servers to prevent them from probing serial
-     ports on Linux.
-
-3.5.4  Xsun
-
-   o Changes to port the various Xsun servers to NetBSD/sparc have been
-     merged in.
-
-3.5.5  XDarwin
-
-   o This X server has been heavily upgraded by integrating a wide selection
-     of changes from its now defunct X.Org implementation.
-
-3.5.6  Xvfb
-
-   o Fixed segfaults in Xvfb's command line parsing.
-
-3.5.7  cfb
-
-   o Fix a number of bugs in cfb24, even though it is no longer used by any
-     driver provided in the distribution.
-
-   o Fix stipple handling on sparc64.
-
-3.5.8  fb
-
-   o A problem that prevented the use of the GLX extension in some cases has
-     been corrected.
-
-   o Fix fbCompose() for ABGR framebuffers.
-
-3.5.9  Render
-
-   o Endianness fix for RenderSetPictureClipRectangles request.
-
-3.6  Library, Client and Utility Updates
-
-3.6.1  restest
-
-   o This XRes extension client, originally written by Mark Vojkovich, has
-     been integrated, after rewriting it to prevent deadlocks that could
-     occur when displaying its results in an X session.
-
-3.6.2  xclock
-
-   o Make an analog xclock, when using Render, update the minute hand at most
-     every minute instead of every update interval.  This makes it consistent
-     with non-Render mode.
-
-3.6.3  xdm
-
-   o Fixed a number of memory leaks.
-
-   o Fixed bug that prevented an IPv6-aware xdm from accepting chooser con-
-     nections.
-
-3.6.4  xwd
-
-   o This utility has been extended to allow selection of a rectangular
-     region to dump.
-
-3.6.5  xterm
-
-   o Xterm patches upto and including #215 have been integrated.
-
-   o Change xterm, on various platforms, to not require that the OS define a
-     utmp group.
-
-3.7  I18n and Fonts
-
-   o Eliminated a number of issues related to the use of external fontconfig
-     and freetype2 libraries.
-
-   o Updated the Serbian locale naming to reflect the country's name change
-     from "Yugoslavia" to "Serbia and MonteNegro".
-
-3.8  OS Support Updates
-
-   o Added support for PAM on Solaris and Darwin.
-
-   o Added support for OpenPAM on FreeBSD and NetBSD.
+   o When using BSD authentication in xdm, wipe out the password as soon as
+     possible to prevent it from appearing in the address space of subse-
+     quently forked child processes.
 
 4.  Drivers
 
 4.1  Video Drivers
 
-XFree86 4.7.0 includes the following video drivers:
+XFree86 4.8.0 includes the following video drivers:
 
  +--------------+--------------------------+--------------------------------+
  |Driver Name   | Description              | Further Information            |
@@ -405,7 +260,7 @@ listed above. Further information can be found in README.Darwin.
 
 4.2  Input Drivers
 
-XFree86 4.7.0 includes the following input drivers:
+XFree86 4.8.0 includes the following input drivers:
 
    +------------+----------------------------------+---------------------+
    |Driver Name | Description                      | Further Information |
@@ -447,10 +302,10 @@ Currently no known problems are documented.
 
 XFree86 4.x has a single X server binary called XFree86.  This binary can
 either have one or more video and input drivers linked in statically, or more
-usually, dynamically, and in that manner load the video drivers, input driv-
-ers, and other modules that are needed.
+usually, dynamically, and in that manner load the video drivers, input
+drivers, and other modules that are needed.
 
-XFree86 4.7.0 has X server support for most UNIX® and UNIX-like operating
+XFree86 4.8.0 has X server support for most UNIX® and UNIX-like operating
 systems on Intel/x86 platforms, plus support for Linux and some BSD OSs on
 Alpha, PowerPC, IA-64, AMD64, SPARC, and Mips platforms, and for Darwin on
 PowerPC.  Support for additional architectures and operating systems is in
@@ -546,7 +401,7 @@ Known problems:
 
 6.7  DGA version 2
 
-DGA 2.0 is included in 4.7.0.  Documentation for the client libraries can be
+DGA 2.0 is included in 4.8.0.  Documentation for the client libraries can be
 found in the XDGA(3) man page.  A good degree of backwards compatibility with
 version 1.0 is provided.
 
@@ -601,7 +456,7 @@ anti-aliased text and geometric objects as well as perform translucent image
 overlays and other image operations not possible with the core X rendering
 system.
 
-XFree86 4.7.0 provides a partial implementation of Render sufficient for
+XFree86 4.8.0 provides a partial implementation of Render sufficient for
 drawing anti-aliased text and image composition.  Still to be implemented are
 geometric primitives and affine transformation of images.
 
@@ -636,7 +491,7 @@ the Xft(3) man page.
 
 6.11.2  FreeType support in Xft
 
-XFree86 4.7.0 includes sources for FreeType version 2.1.8, and, by default,
+XFree86 4.8.0 includes sources for FreeType version 2.1.8, and, by default,
 it is built and installed automatically.
 
 6.11.3  Application Support For Anti-Aliased Text
@@ -825,7 +680,7 @@ site <URL:http://www.urwpp.de>.
 
 7.  Credits
 
-This section lists the credits for the XFree86 4.7.0 release.  For a more
+This section lists the credits for the XFree86 4.8.0 release.  For a more
 detailed breakdown, refer to the CHANGELOG file in the XFree86 source tree,
 the cvs-commit archives <URL:http://www.mail-archive.com/cvs-com-
 mit@xfree86.org/maillist.html>, or the 'cvs log' information for individual
@@ -834,42 +689,23 @@ source files.
       New Features, Enhancements and Updates:
 
                   Security Updates:
-                        Josh Bressens, Chris Evans, Matthieu Herrb, Marc La
-                        France, Sean Larsson, Victor Stinner, iDefense.
+                        X.Org, Matthieu Herrb.
 
-                  NVIDIA driver updates and new hardware support:
-                        Mark Vojkovich
-
-                  Improved SPARC support:
+                  Improved SPARC, PCI-X and PCI Express support:
                         Marc La France.
-
-                  Xterm enhancements and updates:
-                        Thomas Dickey.
-
-                  DragonFly support:
-                        David H. Dawes.
 
       Integration:
 
                   General Integration of Submissions:
                         Marc La France, David H. Dawes.
 
-      Release Engineering:
-            David H. Dawes.
-
       Patches and other submissions (in alphabetical order):
-            Andrew Aitchison, Marc Balmer, Etienne Bersac, Martin Bochnig,
-            Peter Breitenlohner, Josh Bressers, James Chacon, Yves de Cham-
-            plain, Alan Coopersmith, David Dawes, Eike Dehling, Thomas
-            Dickey, Matthias Drochner, Jay Estabrook, Chris Evans, Will L G,
-            Andriy Gapon, Charles M. Hannum, Frank J. R. Hanstick, Ben Har-
-            ris, Matthieu Herrb, Iain Hibbert, Martin Husemann, iDefense,
-            Milos Komarcevic, Marc La France, Sean Larrson, Michael Lorenz,
-            Jie Luo, Loic Mahe, Minoura Makoto, Martin Mares, Luke Mewburn,
-            NetBSD, Dmitry Pervushin, Alexander Pohoyda, Ty Sarna, SciFi,
-            Christopher Sekiya, Jamey Sharp, Victor Stinner, Frank van der
-            Linden, Shin Takemura, Mark Vojkovich, Nathan J. Williams, X.Org,
-            Christos Zoulos.
+            David Arlie, Alan Brown, Alex Chen, Yves de Champlain, Egbert
+            Eich, Matthieu Herrb, Matthias Hopf, Peter Hutterer, Pat Kane,
+            David Krause, Felix Kuehling, Marc La France, John Lumby, Paul
+            Mackerras, Keith Packard, Soran Sandmann Pedersen, Aaron Plat-
+            tner, Scitech, Miod Vallat, Christian Weisgerber, Dick Wesseling,
+            David Wong, X.Org.
 
       Webmaster:
             Georgina O. Economou
@@ -896,7 +732,7 @@ its contributors
 This product includes software developed by X-Oz Technologies (http://www.x-
 oz.com/).
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.143 tsi Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.144 tsi Exp $
 
 
-$XFree86$
+$XFree86: xc/RELNOTES.txt,v 1.10tsi Exp $
