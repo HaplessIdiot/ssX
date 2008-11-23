@@ -1,4 +1,6 @@
-XFree86 4.7.99.30 (xx November 2008)
+XFree86 4.7.99.31 (xx December 2008)
+
+XFree86 4.7.99.30 (23 November 2008)
 
 XFree86 4.7.99.29 (9 November 2008)
   68. Move CloseWellKnownConnections() calls into OsCleanup(TRUE) calls.
@@ -20825,4 +20827,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3983 2008/10/31 19:10:32 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3984 2008/11/09 12:03:02 dawes Exp $
