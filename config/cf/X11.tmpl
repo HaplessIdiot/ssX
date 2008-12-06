@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.298tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.299tsi Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -4958,7 +4958,7 @@ file.pdf: file.tex							@@\
 #ifdef HTMLroffCmd
 #define MakeDepSimpleHtmlDoc(file,deps,srcs)				@@\
 HtmlTarget(file): deps							@@\
-	$(HTMLROFF) $(MSMACROS) $(XDOCMACROS) Concat(-P-I,file) srcs \		@@\
+	$(HTMLROFF) $(MSMACROS) Concat(-P-I,file) $(XDOCMACROS) srcs \	@@\
 		2> index.raw > file.nhtml \				@@\
 	  && PostProcessTroffHTML(file.nhtml,$@)
 #else
