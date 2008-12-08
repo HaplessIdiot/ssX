@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.181tsi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.182tsi Exp $
 XCOMM ----------------------------------------------------------------------
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -1537,7 +1537,7 @@ TCLIBDIR = TclLibDir
 #endif
 #ifdef HTMLroffCmd
 #ifndef DocFilesToClean
-#define DocFilesToClean grohtml*.png *-auto-*.png
+#define DocFilesToClean groff-html-*.png grohtml*.png *-auto-*.png
 #endif
 #endif
 #ifndef MsMacros
