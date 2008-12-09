@@ -32,7 +32,7 @@ lib/libXaw.dylib
 lib/libXcursor.1.0.dylib
 lib/libXcursor.1.dylib
 lib/libXcursor.dylib
-lib/libXext.6.4.dylib
+lib/libXext.6.5.dylib
 lib/libXext.6.dylib
 lib/libXext.dylib
 lib/libXfont.1.5.dylib

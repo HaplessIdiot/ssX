@@ -41,7 +41,7 @@ lib/libXaw.so
 lib/libXcursor.so.1.0
 lib/libXcursor.so.1
 lib/libXcursor.so
-lib/libXext.so.6.4
+lib/libXext.so.6.5
 lib/libXext.so.6
 lib/libXext.so
 lib/libXfont.so.1.5
