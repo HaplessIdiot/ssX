@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/module/Imakefile,v 1.4tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/module/Imakefile,v 1.5 2005/10/14 15:17:09 tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -63,7 +63,9 @@ LinkFile(xf86PciData.c,../xf86ScanPci.c)
 
 ModuleObjectRule()
 
-SpecialCObjectRule(xf86PciData,NullParameter,-DPCIDATA)
+/* Some compilers have problems optimising these files with large data. */
+SpecialCObjectRule(xf86ScanPci,NullParameter,-O0)
+SpecialCObjectRule(xf86PciData,NullParameter,-O0 -DPCIDATA)
 
 LibraryModuleTarget(scanpci,xf86ScanPci.o,.)
 
