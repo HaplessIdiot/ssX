@@ -1,3 +1,18 @@
+XFree86 4.8.99.1 (?? January 2009)
+   4. Enable HasLibPthread for FreeBSD 7 and later because libc_r is no
+      longer present, and was deprecated since some earlier release (6.x?)
+      (David Dawes).
+   3. Disable optimisation when building the scanpci/pcidata modules which
+      contain a large amount of statically initialised data.  Optimisation
+      is disabled because it provokes an internal compiler error on FreeBSD
+      7.0 (David Dawes).
+   2. Update Xinstall.sh version for 4.8.0, and recognise some newer platforms
+      and their bindists (David Dawes).
+   1. Elf has been the only supported format on FreeBSD for a long time.
+      The objformat utility has been deprecated for a long time, and was
+      finally removed in FreeBSD 7.  Don't call it from imake for FreeBSD
+      5.x and later (David Dawes).
+
 XFree86 4.8.0 (15 December 2008)
   70. 4.8.0 release.
 
@@ -237,7 +252,7 @@ XFree86 4.7.99.2 (23 September 2007)
       libraries.  What remains are run-time only dependencies in the 2D glide
       driver (Glide2) and the tdfx DRI driver (Glide3)  (Marc La France).
 
-XFree86 4.7.99.1 (9 August 2007)
+XFree86 4.7.99.1 (9 September 2007)
 
 XFree86 4.7.0 (12 August 2007)
  167. 4.7.0 release.
@@ -20831,4 +20846,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3987 2008/12/09 12:02:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3988 2008/12/14 17:32:59 tsi Exp $
