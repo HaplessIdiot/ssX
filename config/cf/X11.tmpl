@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.300tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.301tsi Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -126,6 +126,18 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.300tsi Exp $
 # else
 #  define UseInstalledOnCrossCompile NO
 # endif
+#endif
+
+#ifndef StaticUtils
+#define StaticUtils	NO
+#endif
+#if StaticUtils
+#undef BuildLibraries
+#undef ForceNormalLib
+#undef BuildClients
+#define BuildLibraries		YES
+#define ForceNormalLib		YES
+#define BuildClients		YES
 #endif
 
 #ifndef HasXServer
@@ -2006,10 +2018,6 @@ XCOMM X Window System make variables; these need to be coordinated with rules
 #endif
 
     VENDORMANDEFS = VendorManDefs
-
-#ifndef StaticUtils
-#define StaticUtils	NO
-#endif
 
 #if HasSharedLibraries
 #ifndef DontUseLibPathVar

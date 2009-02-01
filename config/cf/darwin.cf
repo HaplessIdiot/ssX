@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.59tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.60tsi Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -315,19 +315,12 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 /* no XFree86-VidMode extension */
 #define BuildXF86VidModeExt     NO
 
-/* No longer works after security update 2007-004 */
+/* No longer works after "security" update 2007-004 */
 #if OSMajorVersion < 9
 #define BuildLibPathVar         DYLD_LIBRARY_PATH
 #else
 #undef  DontUseLibPathVar
 #define DontUseLibPathVar	YES
-#undef  BuildClients
-#define BuildClients		YES
-#undef  BuildLibraries
-#define BuildLibraries		YES
-/* So we can statically link certain utilities */
-#undef  ForceNormalLib
-#define ForceNormalLib		YES
 #undef  StaticUtils
 #define StaticUtils		YES
 #endif
@@ -413,4 +406,3 @@ NamedTargetSubdirs(resymlink,dirs,"resymlinking",NullParameter,resymlink)
 
 /* include all the XFree86 rules */
 #include <xfree86.cf>
-
