@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/apple/indirect.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/apple/indirect.c,v 1.5tsi Exp $ */
 /*
  * GLX implementation that uses Apple's OpenGL.framework
  * (Indirect rendering path)
@@ -453,7 +453,7 @@ static CGLPixelFormatObj makeFormat(__GLcontextModes *mode)
     int i;
     CGLPixelFormatAttribute attr[64]; // currently uses max of 30
     CGLPixelFormatObj result;
-    long n_formats;
+    GLint n_formats;
     CGLError gl_err;
     
     GLAQUA_DEBUG_MSG("makeFormat\n");

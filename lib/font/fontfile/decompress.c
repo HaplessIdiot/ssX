@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/font/fontfile/decompress.c,v 1.8 2006/01/09 14:59:33 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/decompress.c,v 1.9tsi Exp $ */
 
 /*-
  * Copyright (c) 2005
@@ -77,7 +77,7 @@
 
 #include "fontmisc.h"
 #include <bufio.h>
-#ifdef __UNIXOS2__
+#if defined(__UNIXOS2__) || defined(__DARWIN__)
 #include <sys/types.h>
 #endif
 

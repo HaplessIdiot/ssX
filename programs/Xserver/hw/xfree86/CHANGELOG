@@ -1,4 +1,7 @@
-XFree86 4.8.99.1 (?? January 2009)
+XFree86 4.8.99.1 (?? February 2009)
+   5. Various header-related build fixes for MacOSX 10.5 (Jaguar).  It is at
+      time unknown whether or not these negatively impact the build on older
+      versions of Darwin  (Marc La France).
    4. Enable HasLibPthread for FreeBSD 7 and later because libc_r is no
       longer present, and was deprecated since some earlier release (6.x?)
       (David Dawes).
@@ -20846,4 +20849,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3988 2008/12/14 17:32:59 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3989 2008/12/27 04:17:11 dawes Exp $

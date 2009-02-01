@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/apple/dri_driver.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/lib/GL/apple/dri_driver.c,v 1.6tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -738,7 +738,7 @@ driCreatePixelFormat(Display *dpy, __DRIscreenPrivate *psp,
     int i;
     CGLPixelFormatAttribute attr[64]; // currently uses max of 30
     CGLPixelFormatObj result;
-    long n_formats;
+    GLint n_formats;
 
     i = 0;
 
