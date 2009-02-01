@@ -1,7 +1,14 @@
-XCOMM $XFree86: xc/programs/bdftopcf/Imakefile,v 3.10tsi Exp $
+XCOMM $XFree86: xc/programs/bdftopcf/Imakefile,v 3.11tsi Exp $
 
 #if GzipFontCompression
+#if StaticUtils && BuildZlib
+ZLIB = $(BUILDLIBDIR)/LibraryTargetName(z)
+#else
 ZLIB = GzipLibrary
+#endif
+#endif
+#if StaticUtils
+FONTLIB = $(BUILDLIBDIR)/LibraryTargetName(Xfont)
 #endif
 LOCAL_LIBRARIES = $(FONTLIB)
 SYS_LIBRARIES = $(ZLIB) MathLibrary

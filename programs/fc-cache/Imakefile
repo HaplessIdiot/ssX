@@ -1,14 +1,30 @@
-XCOMM $XFree86: xc/programs/fc-cache/Imakefile,v 1.1 2003/06/09 15:11:16 dawes Exp $
+XCOMM $XFree86: xc/programs/fc-cache/Imakefile,v 1.2tsi Exp $
 
-FONTCONFIGDIR = $(TOP)/extras/fontconfig
+  FONTCONFIGDIR = $(TOP)/extras/fontconfig
 
-INCLUDES=$(FREETYPE2INCLUDES) -I$(FONTCONFIGDIR)
+       INCLUDES = $(FREETYPE2INCLUDES) -I$(FONTCONFIGDIR)
 
-LOCAL_LIBRARIES=FontconfigClientLibs
-        DEPLIBS=FontconfigClientDepLibs
+#if StaticUtils
+# if BuildFontconfigLibrary
+  FONTCONFIGLIB = $(BUILDLIBDIR)/LibraryTargetName(fontconfig)
+# endif
+# if BuildFreetype2Library
+#  if defined(DarwinArchitecture) && DarwinQuartzSupport
+     FRAMEWORKS = -framework CoreServices -framework ApplicationServices
+#  endif
+   FREETYPE2LIB = $(BUILDLIBDIR)/LibraryTargetName(freetype) $(FRAMEWORKS)
+# endif
+# if BuildExpatLibrary
+       EXPATLIB = $(BUILDLIBDIR)/LibraryTargetName(expat)
+# endif
+LOCAL_LIBRARIES = $(FONTCONFIGLIB) $(FREETYPE2LIB) $(EXPATLIB)
+#else
+LOCAL_LIBRARIES = FontconfigClientLibs
+#endif
+        DEPLIBS = FontconfigClientDepLibs
 
-SRCS=fc-cache.c
-OBJS=fc-cache.o
+           SRCS = fc-cache.c
+           OBJS = fc-cache.o
 
 ComplexProgramTarget(fc-cache)
 LinkBuildBinary(ProgramTargetName(fc-cache))

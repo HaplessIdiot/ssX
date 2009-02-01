@@ -1,19 +1,24 @@
-XCOMM $XFree86: xc/programs/xkbcomp/Imakefile,v 3.25tsi Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/Imakefile,v 3.26tsi Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
-#if CrossCompiling
-         CROSS = cross
+#if StaticUtils
+     XKBFILELIB = $(BUILDLIBDIR)/LibraryTargetName(xkbfile)
+       XONLYLIB = $(BUILDLIBDIR)/LibraryTargetName(X11)
 #endif
-          SRCS = xkbcomp.c xkbscan.c expr.c vmod.c indicators.c misc.c \
-		 keymap.c keycodes.c keytypes.c compat.c action.c alias.c \
-		 symbols.c geometry.c xkbpath.c listing.c \
-		 xkbparse.c parseutils.c utils.c
-          OBJS = xkbcomp.o xkbscan.o expr.o vmod.o indicators.o misc.o alias.o \
-		 keymap.o keycodes.o keytypes.o compat.o action.o \
-		 symbols.o geometry.o xkbpath.o listing.o \
-		 xkbparse.o parseutils.o utils.o
+
+#if CrossCompiling
+          CROSS = cross
+#endif
+           SRCS = xkbcomp.c xkbscan.c expr.c vmod.c indicators.c misc.c \
+		  keymap.c keycodes.c keytypes.c compat.c action.c alias.c \
+		  symbols.c geometry.c xkbpath.c listing.c \
+		  xkbparse.c parseutils.c utils.c
+           OBJS = xkbcomp.o xkbscan.o expr.o vmod.o indicators.o misc.o \
+		  keymap.o keycodes.o keytypes.o compat.o action.o alias.o \
+		  symbols.o geometry.o xkbpath.o listing.o \
+		  xkbparse.o parseutils.o utils.o
         DEPLIBS = $(DEPXKBFILELIB) $(DEPXONLYLIB)
 LOCAL_LIBRARIES = $(XKBFILELIB) $(XONLYLIB)
         SUBDIRS = compat compiled $(CROSS) geometry keycodes keymap rules \
