@@ -706,6 +706,8 @@ __glXDRIscreenCreateDrawable(__GLXscreen *screen,
     private->base.destroy       = __glXDRIdrawableDestroy;
     private->base.swapBuffers   = __glXDRIdrawableSwapBuffers;
     private->base.copySubBuffer = __glXDRIdrawableCopySubBuffer;
+    private->base.waitX		= NULL;
+    private->base.waitGL	= NULL;
 
     __glXenterServer(GL_FALSE);
     retval = DRICreateDrawable(screen->pScreen, serverClient,
@@ -965,6 +967,8 @@ __glXDRIscreenProbe(ScreenPtr pScreen)
     const __DRIconfig **driConfigs;
     const __DRIextension **extensions;
     int i;
+
+    memset(&framebuffer, 0, sizeof(framebuffer));
 
     if (!xf86LoaderCheckSymbol("DRIQueryDirectRenderingCapable") ||
 	!DRIQueryDirectRenderingCapable(pScreen, &isCapable) ||
