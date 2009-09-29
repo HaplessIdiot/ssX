@@ -38,7 +38,8 @@ Bool
 XAACreateGC(GCPtr pGC)
 {
     ScreenPtr    pScreen = pGC->pScreen;
-    XAAGCPtr     pGCPriv = (XAAGCPtr)(pGC->devPrivates[XAAGetGCIndex()].ptr);
+    XAAGCPtr     pGCPriv = (XAAGCPtr)dixLookupPrivate(&pGC->devPrivates,
+						      XAAGetGCKey());
     Bool         ret;
 
     XAA_SCREEN_PROLOGUE(pScreen,CreateGC);
@@ -87,7 +88,8 @@ XAAValidateGC(
 	    pGC->fgPixel = 0x7fffffff;
     }
 
-    if((pDraw->type == DRAWABLE_PIXMAP) && !IS_OFFSCREEN_PIXMAP(pDraw)){
+    if((pDraw->type == DRAWABLE_PIXMAP) && 
+       !IS_OFFSCREEN_PIXMAP(pDraw) && !PIXMAP_IS_SCREEN((PixmapPtr)pDraw, pGC)) {
 	pGCPriv->flags = OPS_ARE_PIXMAP;
         pGCPriv->changes |= changes;
 
