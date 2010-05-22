@@ -25,6 +25,7 @@
 
 #define _XSHM_SERVER_
 #include <X11/extensions/shmstr.h>
+#include <X11/extensions/shmproto.h>
 
 #include "screenint.h"
 #include "pixmap.h"
@@ -32,9 +33,6 @@
 
 void
 ShmRegisterFuncs(ScreenPtr pScreen, ShmFuncsPtr funcs);
-
-void
-ShmSetPixmapFormat(ScreenPtr pScreen, int format);
 
 void
 ShmRegisterFbFuncs(ScreenPtr pScreen);
