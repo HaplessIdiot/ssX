@@ -43,11 +43,21 @@
 #include "xf86Opt.h"
 #include "xf86Pci.h"
 
-/*
- * memType is of the size of the addressable memory (machine size)
- * usually unsigned long.
+#include <pciaccess.h>
+
+/**
+ * Integer type that is of the size of the addressable memory (machine size).
+ * On most platforms \c uintptr_t will suffice.  However, on some mixed
+ * 32-bit / 64-bit platforms, such as 32-bit binaries on 64-bit PowerPC, this
+ * must be 64-bits.
  */
-typedef unsigned long memType;
+#include <inttypes.h>
+#if defined(__powerpc__)
+typedef uint64_t memType;
+#else
+typedef uintptr_t memType;
+#endif
+
 
 /* Video mode flags */
 
@@ -115,6 +125,7 @@ typedef enum {
     MODE_ONE_HEIGHT,    /* only one height is supported */
     MODE_ONE_SIZE,      /* only one resolution is supported */
     MODE_NO_REDUCED,    /* monitor doesn't accept reduced blanking */
+    MODE_BANDWIDTH,	/* mode requires too much memory bandwidth */
     MODE_BAD = -2,	/* unspecified reason */
     MODE_ERROR	= -1	/* error condition */
 } ModeStatus;
@@ -132,6 +143,7 @@ typedef enum {
 # define M_T_DEFAULT 0x10	/* (VESA) default modes */
 # define M_T_USERDEF 0x20	/* One of the modes from the config file */
 # define M_T_DRIVER  0x40	/* Supplied by the driver (EDID, etc) */
+# define M_T_USERPREF 0x80	/* mode preferred by the user config */
 
 /* Video mode */
 typedef struct _DisplayModeRec {
@@ -229,20 +241,6 @@ typedef struct x_ClockRange {
     int			PrivFlags;
 } ClockRange, *ClockRangePtr;
 
-/* Need to store the strategy with clockRange for VidMode extension */
-typedef struct x_ClockRanges {
-    struct x_ClockRanges *next;
-    int			minClock;
-    int			maxClock;
-    int			clockIndex;	/* -1 for programmable clocks */
-    Bool		interlaceAllowed;
-    Bool		doubleScanAllowed;
-    int			ClockMulFactor;
-    int			ClockDivFactor;
-    int			PrivFlags;
-    int			strategy;
-} ClockRanges, *ClockRangesPtr;
-
 /*
  * The driverFunc. xorgDriverFuncOp specifies the action driver should
  * perform. If requested option is not supported function should return
@@ -287,6 +285,7 @@ typedef struct {
 /* GET_REQUIRED_HW_INTERFACES */
 #define HW_IO 1
 #define HW_MMIO 2
+#define HW_SKIP_CONSOLE 4
 #define NEED_IO_ENABLED(x) (x & HW_IO)
 
 typedef CARD32 xorgHWFlags;
@@ -307,6 +306,9 @@ typedef struct {
     int			refCount;
 } DriverRec1;
 
+struct _SymTabRec;
+struct _PciChipsets;
+
 typedef struct _DriverRec {
     int			driverVersion;
     char *		driverName;
@@ -316,27 +318,16 @@ typedef struct _DriverRec {
     pointer		module;
     int			refCount;
     xorgDriverFuncProc  *driverFunc;
+
+    const struct pci_id_match * supported_devices;
+    Bool (*PciProbe)( struct _DriverRec * drv, int entity_num,
+        struct pci_device * dev, intptr_t match_data );
 } DriverRec, *DriverPtr;
 
 /*
  *  AddDriver flags
  */
 #define HaveDriverFuncs 1
-
-
-/*
- * The optional module list struct. This allows modules exporting helping
- * functions to configuration tools, the Xserver, or any other
- * application/module interested in such information.
- */
-typedef struct _ModuleInfoRec {
-    int			moduleVersion;
-    char *		moduleName;
-    pointer		module;
-    int			refCount;
-    const OptionInfoRec * (*AvailableOptions)(void *unused);
-    pointer		unused[8];	/* leave some space for more fields */
-} ModuleInfoRec, *ModuleInfoPtr;
 
 /*
  * These are the private bus types.  New types can be added here.  Types
@@ -347,7 +338,6 @@ typedef struct _ModuleInfoRec {
 /* Tolerate prior #include <linux/input.h> */
 #if defined(linux) && defined(_INPUT_H)
 #undef BUS_NONE
-#undef BUS_ISA
 #undef BUS_PCI
 #undef BUS_SBUS
 #undef BUS_last
@@ -355,21 +345,13 @@ typedef struct _ModuleInfoRec {
 
 typedef enum {
     BUS_NONE,
-    BUS_ISA,
     BUS_PCI,
     BUS_SBUS,
+    BUS_ISA,
     BUS_last    /* Keep last */
 } BusType;
 
-typedef struct {
-    int		bus;
-    int		device;
-    int		func;
-} PciBusId;
-
-typedef struct {
-    unsigned int dummy;
-} IsaBusId;
+struct pci_device;
 
 typedef struct {
     int		fbNum;
@@ -378,8 +360,7 @@ typedef struct {
 typedef struct _bus {
     BusType type;
     union {
-	IsaBusId isa;
-	PciBusId pci;
+	struct pci_device *pci;
 	SbusBusId sbus;
     } id;
 } BusRec, *BusPtr;
@@ -421,37 +402,13 @@ typedef struct {
    int                          screen;         /* For multi-CRTC cards */
 } GDevRec, *GDevPtr;
 
-typedef int (*FindIsaDevProc)(GDevPtr dev);
-
 typedef struct {
    char *			identifier;
    char *			driver;
    pointer		 	commonOptions;
    pointer			extraOptions;
+   InputAttributes              *attrs;
 } IDevRec, *IDevPtr;
-
-typedef struct {
-    int			vendor;
-    int			chipType;
-    int			chipRev;
-    int			subsysVendor;
-    int			subsysCard;
-    int			bus;
-    int			device;
-    int			func;
-    int			class;
-    int			subclass;
-    int			interface;
-    memType  	        memBase[6];
-    memType  	        ioBase[6];
-    int			size[6];
-    unsigned char	type[6];
-    memType   	        biosBase;
-    int			biosSize;
-    pointer		thisCard;
-    Bool                validSize;
-    Bool                validate;
-} pciVideoRec, *pciVideoPtr;
 
 typedef struct {
     int			frameX0;
@@ -547,7 +504,7 @@ typedef struct _confdrirec {
 
 /* These values should be adjusted when new fields are added to ScrnInfoRec */
 #define NUM_RESERVED_INTS		16
-#define NUM_RESERVED_POINTERS		15
+#define NUM_RESERVED_POINTERS		14
 #define NUM_RESERVED_FUNCS		11
 
 typedef pointer (*funcPointer)(void);
@@ -586,156 +543,7 @@ typedef enum {
     PM_NONE
 } pmWait;
 
-/*
- * The IO access enabler struct. This contains the address for
- * the IOEnable/IODisable funcs for their specific bus along
- * with a pointer to data needed by them
- */
-typedef struct _AccessRec {
-    void (*AccessDisable)(void *arg);
-    void (*AccessEnable)(void *arg);
-    void *arg;
-} xf86AccessRec, *xf86AccessPtr;
-
-typedef struct {
-    xf86AccessPtr mem;
-    xf86AccessPtr io;
-    xf86AccessPtr io_mem;
-} xf86SetAccessFuncRec, *xf86SetAccessFuncPtr;
-
-/*  bus-access-related types */
-typedef enum {
-    NONE,
-    IO,
-    MEM_IO,
-    MEM
-} resType;
-
-typedef struct _EntityAccessRec {
-    xf86AccessPtr fallback;
-    xf86AccessPtr pAccess;
-    resType rt;
-    pointer  busAcc;
-    struct _EntityAccessRec *next;
-} EntityAccessRec, *EntityAccessPtr;
-
-typedef struct _CurrAccRec {
-    EntityAccessPtr pMemAccess;
-    EntityAccessPtr pIoAccess;
-} xf86CurrentAccessRec, *xf86CurrentAccessPtr;
-
-/* new RAC */
-
-/* Resource Type values */
-#define ResNone		((unsigned long)(-1))
-
-#define ResMem		0x0001
-#define ResIo		0x0002
-#define ResIrq		0x0003
-#define ResDma		0x0004
-#define ResPciCfg	0x000e	/* PCI Configuration space */
-#define ResPhysMask	0x000F
-
-#define ResExclusive	0x0010
-#define ResShared	0x0020
-#define ResAny		0x0040
-#define ResAccMask	0x0070
-#define ResUnused	0x0080
-
-#define ResUnusedOpr	0x0100
-#define ResDisableOpr	0x0200
-#define ResOprMask	0x0300
-
-#define ResBlock	0x0400
-#define ResSparse	0x0800
-#define ResExtMask	0x0C00
-
-#define ResEstimated	0x001000
-#define ResInit 	0x002000
-#define ResBios		0x004000
-#define ResMiscMask	0x00F000
-
-#define ResBus		0x010000
-#define ResOverlap	0x020000
-
-#if defined(__alpha__) && defined(linux)
-# define ResDomain	0x1ff000000ul
-#else
-# define ResDomain	0xff000000ul
-#endif
-#define ResTypeMask	(ResPhysMask | ResDomain)	/* For conflict check */
-
-#define ResEnd		ResNone
-
-#define ResExcMemBlock		(ResMem | ResExclusive | ResBlock)
-#define ResExcIoBlock		(ResIo | ResExclusive | ResBlock)
-#define ResShrMemBlock		(ResMem | ResShared | ResBlock)
-#define ResShrIoBlock		(ResIo | ResShared | ResBlock)
-#define ResExcUusdMemBlock	(ResMem | ResExclusive | ResUnused | ResBlock)
-#define ResExcUusdIoBlock	(ResIo | ResExclusive | ResUnused | ResBlock)
-#define ResShrUusdMemBlock	(ResMem | ResShared | ResUnused | ResBlock)
-#define ResShrUusdIoBlock	(ResIo | ResShared | ResUnused | ResBlock)
-#define ResExcUusdMemSparse	(ResMem | ResExclusive | ResUnused | ResSparse)
-#define ResExcUusdIoSparse	(ResIo | ResExclusive | ResUnused | ResSparse)
-#define ResShrUusdMemSparse	(ResMem | ResShared | ResUnused | ResSparse)
-#define ResShrUusdIoSparse	(ResIo | ResShared | ResUnused | ResSparse)
-
-#define ResExcMemSparse		(ResMem | ResExclusive | ResSparse)
-#define ResExcIoSparse		(ResIo | ResExclusive | ResSparse)
-#define ResShrMemSparse		(ResMem | ResShared | ResSparse)
-#define ResShrIoSparse		(ResIo | ResShared | ResSparse)
-#define ResUusdMemSparse	(ResMem | ResUnused | ResSparse)
-#define ResUusdIoSparse		(ResIo | ResUnused | ResSparse)
-
-#define ResIsMem(r)		(((r)->type & ResPhysMask) == ResMem)
-#define ResIsIo(r)		(((r)->type & ResPhysMask) == ResIo)
-#define ResIsExclusive(r)	(((r)->type & ResAccMask) == ResExclusive)
-#define ResIsShared(r)		(((r)->type & ResAccMask) == ResShared)
-#define ResIsUnused(r)		(((r)->type & ResAccMask) == ResUnused)
-#define ResIsBlock(r)		(((r)->type & ResExtMask) == ResBlock)
-#define ResIsSparse(r)		(((r)->type & ResExtMask) == ResSparse)
-#define ResIsEstimated(r)	(((r)->type & ResMiscMask) == ResEstimated)
-#define ResCanOverlap(r)	(ResIsEstimated(r) || ((r)->type & ResOverlap))
-
-typedef struct {
-    unsigned long type;     /* shared, exclusive, unused etc. */
-    memType a;
-    memType b;
-} resRange, *resList;
-
-#define RANGE_TYPE(type, domain) \
-               (((unsigned long)(domain) << 24) | ((type) & ~ResBus))
-#define RANGE(r,u,v,t) {\
-                       (r).a = (u);\
-                       (r).b = (v);\
-                       (r).type = (t);\
-                       }
-
-#define rBase a
-#define rMask b
-#define rBegin a
-#define rEnd b
-
-/* resource record */
-typedef struct _resRec *resPtr;
-typedef struct _resRec {
-    resRange    val;
-    int		entityIndex;	/* who owns the resource */
-    resPtr	next;
-} resRec;
-
-#define sparse_base	val.rBase
-#define sparse_mask	val.rMask
-#define block_begin	val.rBegin
-#define block_end	val.rEnd
-#define res_type	val.type
-
-typedef struct {
-    int numChipset;
-    resRange *resList;
-} IsaChipsets;
-
-typedef struct {
+typedef struct _PciChipsets {
     /**
      * Key used to match this device with its name in an array of
      * \c SymTabRec.
@@ -760,11 +568,13 @@ typedef struct {
      */
     int PCIid;
 
-    /**
-     * Resources associated with this type of device.
-     */
-    resRange *resList;
+/* dummy place holders for drivers to build against old/new servers */
+#define RES_UNDEFINED NULL
+#define RES_EXCLUSIVE_VGA NULL
+#define RES_SHARED_VGA NULL
+    void *dummy;
 } PciChipsets;
+
 
 /* Entity properties */
 typedef void (*EntityProc)(int entityIndex,pointer private);
@@ -774,7 +584,6 @@ typedef struct _entityInfo {
     BusRec location;
     int chipset;
     Bool active;
-    resPtr resources;
     GDevPtr device;
     DriverPtr driver;
 } EntityInfoRec, *EntityInfoPtr;
@@ -785,18 +594,6 @@ typedef enum {
     SETUP,
     OPERATING
 } xf86State;
-
-typedef enum {
-    NOTIFY_SETUP_TRANSITION,
-    NOTIFY_SETUP,
-    NOTIFY_OPERATING,
-    NOTIFY_OPERATING_TRANSITION,
-    NOTIFY_ENABLE,
-    NOTIFY_ENTER,
-    NOTIFY_LEAVE
-} xf86NotifyState;
-
-typedef void (*xf86StateChangeNotificationCallbackFunc)(xf86NotifyState state,pointer);
 
 /* DGA */
 
@@ -859,7 +656,6 @@ typedef int  xf86SetDGAModeProc           (int, int, DGADevicePtr);
 typedef int  xf86ChangeGammaProc          (int, Gamma);
 typedef void xf86PointerMovedProc         (int, int, int);
 typedef Bool xf86PMEventProc              (int, pmEvent, Bool);
-typedef int  xf86HandleMessageProc     (int, const char*, const char*, char**);
 typedef void xf86DPMSSetProc		  (ScrnInfoPtr, int, int);
 typedef void xf86LoadPaletteProc   (ScrnInfoPtr, int, int *, LOCO *, VisualPtr);
 typedef void xf86SetOverscanProc          (ScrnInfoPtr, int);
@@ -967,12 +763,6 @@ typedef struct _ScrnInfoRec {
 
     int			chipID;
     int			chipRev;
-    int			racMemFlags;
-    int			racIoFlags;
-    pointer		access;
-    xf86CurrentAccessPtr CurrentAccess;
-    resType		resourceType;
-    pointer		busAccess;
 
     /* Allow screens to be enabled/disabled individually */
     Bool		vtSema;
@@ -982,7 +772,7 @@ typedef struct _ScrnInfoRec {
     Bool		silkenMouse;
 
     /* Storage for clockRanges and adjustFlags for use with the VidMode ext */
-    ClockRangesPtr	clockRanges;
+    ClockRangePtr	clockRanges;
     int			adjustFlags;
 
     /*
@@ -993,6 +783,8 @@ typedef struct _ScrnInfoRec {
     int			reservedInt[NUM_RESERVED_INTS];
 
     int *		entityInstanceList;
+    struct pci_device   *vgaDev;
+
     pointer		reservedPtr[NUM_RESERVED_POINTERS];
 
     /*
@@ -1014,7 +806,6 @@ typedef struct _ScrnInfoRec {
     xf86ChangeGammaProc			*ChangeGamma;
     xf86PointerMovedProc		*PointerMoved;
     xf86PMEventProc			*PMEvent;
-    xf86HandleMessageProc		*HandleMessage;
     xf86DPMSSetProc			*DPMSSet;
     xf86LoadPaletteProc			*LoadPalette;
     xf86SetOverscanProc			*SetOverscan;
@@ -1064,7 +855,7 @@ typedef struct {
    );
 } DGAFunctionRec, *DGAFunctionPtr;
 
-typedef struct {
+typedef struct _SymTabRec {
     int			token;		/* id of the token */
     const char *	name;		/* token name */
 } SymTabRec, *SymTabPtr;
@@ -1098,14 +889,6 @@ typedef void (*InputHandlerProc)(int fd, pointer data);
 #define CLK_REG_SAVE		-1
 #define CLK_REG_RESTORE		-2
 
-/* xf86Debug.c */
-#ifdef BUILDDEBUG
-typedef struct {
-    long sec;
-    long usec;
-} xf86TsRec, *xf86TsPtr;
-#endif
-
 /*
  * misc constants
  */
@@ -1119,13 +902,6 @@ typedef struct {
 #define OVERLAY_8_16_DUALFB	0x00000004
 #define OVERLAY_8_32_PLANAR	0x00000008
 
-#if 0
-#define LD_RESOLV_IFDONE		0	/* only check if no more
-						   delays pending */
-#define LD_RESOLV_NOW			1	/* finish one delay step */
-#define LD_RESOLV_FORCE			2	/* force checking... */
-#endif
-
 /* Values of xf86Info.mouseFlags */
 #define MF_CLEAR_DTR       1
 #define MF_CLEAR_RTS       2
@@ -1135,36 +911,9 @@ typedef enum {
     ACTION_TERMINATE		= 0,	/* Terminate Server */
     ACTION_NEXT_MODE		= 10,	/* Switch to next video mode */
     ACTION_PREV_MODE,
-    ACTION_DISABLEGRAB		= 20,	/* Cancel server/pointer/kbd grabs */
-    ACTION_CLOSECLIENT,			/* Kill client holding grab */
     ACTION_SWITCHSCREEN		= 100,	/* VT switch */
     ACTION_SWITCHSCREEN_NEXT,
     ACTION_SWITCHSCREEN_PREV,
-    ACTION_MESSAGE		= 9999  /* Generic message passing */
 } ActionEvent;
-
-/* xf86Versions.c */
-/*
- * Never change existing values, and always assign values explicitly.
- * NUM_BUILTIN_IFS must always be the last entry.
- */
-typedef enum {
-    BUILTIN_IF_OSMOUSE = 0,
-    BUILTIN_IF_OSKBD = 1,
-    NUM_BUILTIN_IFS
-} BuiltinInterface;
-
-/*
- * These are intentionally the same as the module version macros.
- * It is possible to register a module as providing a specific interface,
- * in which case the module's version is used.  This feature isn't
- * really ready for use yet though.
- */
-
-#define BUILTIN_INTERFACE_VERSION_NUMERIC(maj, min, patch) \
-	((((maj) & 0xFF) << 24) | (((min) & 0xFF) << 16) | (patch & 0xFFFF))
-#define GET_BUILTIN_INTERFACE_MAJOR_VERSION(vers)	(((vers) >> 24) & 0xFF)
-#define GET_BUILTIN_INTERFACE_MINOR_VERSION(vers)	(((vers) >> 16) & 0xFF)
-#define GET_BUILTIN_INTERFACE_PATCH_VERSION(vers)	((vers) & 0xFFFF)
 
 #endif /* _XF86STR_H */
