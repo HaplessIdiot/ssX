@@ -35,23 +35,27 @@
  * Silicon Graphics, Inc.
  */
 
-#include <damage.h>
-
 /* We just need to avoid clashing with DRAWABLE_{WINDOW,PIXMAP} */
 enum {
     GLX_DRAWABLE_WINDOW,
     GLX_DRAWABLE_PIXMAP,
-    GLX_DRAWABLE_PBUFFER
+    GLX_DRAWABLE_PBUFFER,
+    GLX_DRAWABLE_ANY
 };
 
 struct __GLXdrawable {
     void (*destroy)(__GLXdrawable *private);
-    GLboolean (*swapBuffers)(__GLXdrawable *);
+    GLboolean (*swapBuffers)(ClientPtr client, __GLXdrawable *);
     void      (*copySubBuffer)(__GLXdrawable *drawable,
 			       int x, int y, int w, int h);
+    void      (*waitX)(__GLXdrawable *);
+    void      (*waitGL)(__GLXdrawable *);
+
+    int refcnt; /* number of resources handles referencing this */
 
     DrawablePtr pDraw;
     XID drawId;
+    XID otherId; /* for glx1.3 we need to track the original Drawable as well */
 
     /*
     ** Either GLX_DRAWABLE_PIXMAP, GLX_DRAWABLE_WINDOW or
@@ -65,6 +69,7 @@ struct __GLXdrawable {
     __GLXconfig *config;
 
     GLenum target;
+    GLenum format;
 
     /*
     ** Event mask
