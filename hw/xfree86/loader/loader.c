@@ -50,22 +50,18 @@
 #include <xorg-config.h>
 #endif
 
+/*#ifdef HAVE_DIX_CONFIG_H*/
+#include <dix-config.h>
+/*#endif*/
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#if defined(UseMMAP) || (defined(linux) && defined(__ia64__))
-#include <sys/mman.h>
-#endif
 #include <unistd.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
-#if defined(linux) && \
-    (defined(__alpha__) || defined(__powerpc__) || defined(__ia64__) \
-    || defined(__amd64__))
-#include <malloc.h>
-#endif
 #include <stdarg.h>
 
 #include "os.h"
@@ -74,47 +70,40 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "compiler.h"
-#include "sym.h"
 
-#if defined(Lynx) && defined(sun)
-/* Cross build machine doesn;t have strerror() */
-#define strerror(err) "strerror unsupported"
+#ifdef HAVE_DLFCN_H
+
+#include <dlfcn.h>
+#include <X11/Xos.h>
+
+#if defined(DL_LAZY)
+#define DLOPEN_LAZY DL_LAZY
+#elif defined(RTLD_LAZY)
+#define DLOPEN_LAZY RTLD_LAZY
+#elif defined(__FreeBSD__)
+#define DLOPEN_LAZY 1
+#else
+#define DLOPEN_LAZY 0
 #endif
 
-/*
- * handles are used to identify files that are loaded. Even archives
- * are counted as a single file.
- */
-#define MAX_HANDLE 256
-#define HANDLE_FREE 0
-#define HANDLE_USED 1
-static char freeHandles[MAX_HANDLE];
-static int refCount[MAX_HANDLE];
+#if defined(LD_GLOBAL)
+#define DLOPEN_GLOBAL LD_GLOBAL
+#elif defined(RTLD_GLOBAL)
+#define DLOPEN_GLOBAL RTLD_GLOBAL
+#else
+#define DLOPEN_GLOBAL 0
+#endif
 
-/*
- * modules are used to identify compilation units (ie object modules).
- * Archives contain multiple modules, each of which is treated seperately.
- */
-static int moduleseq = 0;
+#else
+#error i have no dynamic linker and i must scream
+#endif
 
-/* Prototypes for static functions. */
-static loaderPtr _LoaderListPush(void);
-static loaderPtr _LoaderListPop(int);
+extern void *xorg_symbols[];
 
 void
 LoaderInit(void)
 {
-    const char *osname = NULL;
-
-    char *ld_bind_now = getenv("LD_BIND_NOW");
-    if (ld_bind_now && *ld_bind_now) {
-        xf86Msg(X_ERROR, "LD_BIND_NOW is set, dlloader will NOT work!\n");
-    }
-
-    xf86MsgVerb(X_INFO, 2, "Loader magic: %p\n", (void *)
-		((long)dixLookupTab ^ (long)extLookupTab
-	        ^ (long)fontLookupTab ^ (long)miLookupTab
-		^ (long)xfree86LookupTab));
+    xf86MsgVerb(X_INFO, 2, "Loader magic: %p\n", (void *)xorg_symbols);
     xf86MsgVerb(X_INFO, 2, "Module ABI versions:\n");
     xf86ErrorFVerb(2, "\t%s: %d.%d\n", ABI_CLASS_ANSIC,
 		   GET_ABI_MAJOR(LoaderVersionInfo.ansicVersion),
@@ -128,231 +117,59 @@ LoaderInit(void)
     xf86ErrorFVerb(2, "\t%s : %d.%d\n", ABI_CLASS_EXTENSION,
 		   GET_ABI_MAJOR(LoaderVersionInfo.extensionVersion),
 		   GET_ABI_MINOR(LoaderVersionInfo.extensionVersion));
-    xf86ErrorFVerb(2, "\t%s : %d.%d\n", ABI_CLASS_FONT,
-		   GET_ABI_MAJOR(LoaderVersionInfo.fontVersion),
-		   GET_ABI_MINOR(LoaderVersionInfo.fontVersion));
 
-    LoaderGetOS(&osname, NULL, NULL, NULL);
-    if (osname)
-	xf86MsgVerb(X_INFO, 2, "Loader running on %s\n", osname);
-
-#if defined(__UNIXWARE__) && !defined(__GNUC__)
-    /* For UnixWare we need to load the C Runtime libraries which are
-     * normally auto-linked by the compiler. Otherwise we are bound to
-     * see unresolved symbols when trying to use the type "long long".
-     * Obviously, this does not apply if the GNU C compiler is used.
-     */
-    {
-	int errmaj, errmin, wasLoaded; /* place holders */
-	char *xcrtpath = DEFAULT_MODULE_PATH "/libcrt.a";
-	char *uwcrtpath = "/usr/ccs/lib/libcrt.a";
-	char *path;
-	struct stat st;
-
-	if(stat(xcrtpath, &st) < 0)
-	    path = uwcrtpath; /* fallback: try to get libcrt.a from the uccs */
-	else
-	    path = xcrtpath; /* get the libcrt.a we compiled with */
-	LoaderOpen (path, "libcrt", 0, &errmaj, &errmin, &wasLoaded);
-    }
-#endif
-}
-
-static loaderPtr listHead = (loaderPtr) 0;
-
-static loaderPtr
-_LoaderListPush()
-{
-    loaderPtr item = calloc(1, sizeof(struct _loader));
-
-    item->next = listHead;
-    listHead = item;
-
-    return item;
-}
-
-static loaderPtr
-_LoaderListPop(int handle)
-{
-    loaderPtr item = listHead;
-    loaderPtr *bptr = &listHead;	/* pointer to previous node */
-
-    while (item) {
-	if (item->handle == handle) {
-	    *bptr = item->next;	/* remove this from the list */
-	    return item;
-	}
-	bptr = &(item->next);
-	item = item->next;
-    }
-
-    return 0;
-}
-
-/* These four are just ABI stubs */
-_X_EXPORT void
-LoaderRefSymbols(const char *sym0, ...)
-{
-}
-
-_X_EXPORT void
-LoaderRefSymLists(const char **list0, ...)
-{
-}
-
-_X_EXPORT void
-LoaderReqSymLists(const char **list0, ...)
-{
-}
-
-_X_EXPORT void
-LoaderReqSymbols(const char *sym0, ...)
-{
 }
 
 /* Public Interface to the loader. */
 
-int
-LoaderOpen(const char *module, const char *cname, int handle,
-	   int *errmaj, int *errmin, int *wasLoaded, int flags)
+void *
+LoaderOpen(const char *module, int *errmaj, int *errmin)
 {
-    loaderPtr tmp;
-    int new_handle;
+    void *ret;
 
 #if defined(DEBUG)
     ErrorF("LoaderOpen(%s)\n", module);
 #endif
 
-    /*
-     * Check to see if the module is already loaded.
-     * Only if we are loading it into an existing namespace.
-     * If it is to be loaded into a new namespace, don't check.
-     * Note: We only have one namespace.
-     */
-    if (handle >= 0) {
-	tmp = listHead;
-	while (tmp) {
-#ifdef DEBUGLIST
-	    ErrorF("strcmp(%x(%s),{%x} %x(%s))\n", module, module,
-		   &(tmp->name), tmp->name, tmp->name);
-#endif
-	    if (!strcmp(module, tmp->name)) {
-		refCount[tmp->handle]++;
-		if (wasLoaded)
-		    *wasLoaded = 1;
-		xf86MsgVerb(X_INFO, 2, "Reloading %s\n", module);
-		return tmp->handle;
-	    }
-	    tmp = tmp->next;
-	}
-    }
-
-    /*
-     * OK, it's a new one. Add it.
-     */
     xf86Msg(X_INFO, "Loading %s\n", module);
-    if (wasLoaded)
-	*wasLoaded = 0;
 
-    /*
-     * Find a free handle.
-     */
-    new_handle = 1;
-    while (freeHandles[new_handle] && new_handle < MAX_HANDLE)
-	new_handle++;
-
-    if (new_handle == MAX_HANDLE) {
-	xf86Msg(X_ERROR, "Out of loader space\n");	/* XXX */
-	if (errmaj)
-	    *errmaj = LDR_NOSPACE;
-	if (errmin)
-	    *errmin = LDR_NOSPACE;
-	return -1;
-    }
-
-    freeHandles[new_handle] = HANDLE_USED;
-    refCount[new_handle] = 1;
-
-    tmp = _LoaderListPush();
-    tmp->name = malloc(strlen(module) + 1);
-    strcpy(tmp->name, module);
-    tmp->cname = malloc(strlen(cname) + 1);
-    strcpy(tmp->cname, cname);
-    tmp->handle = new_handle;
-    tmp->module = moduleseq++;
-
-    if ((tmp->private = DLLoadModule(tmp, flags)) == NULL) {
-	xf86Msg(X_ERROR, "Failed to load %s\n", module);
-	_LoaderListPop(new_handle);
-	freeHandles[new_handle] = HANDLE_FREE;
+    if (!(ret = dlopen(module, DLOPEN_LAZY | DLOPEN_GLOBAL))) {
+	xf86Msg(X_ERROR, "Failed to load %s: %s\n", module, dlerror());
 	if (errmaj)
 	    *errmaj = LDR_NOLOAD;
 	if (errmin)
 	    *errmin = LDR_NOLOAD;
-	return -1;
+	return NULL;
     }
 
-    return new_handle;
+    return ret;
 }
 
-int
-LoaderHandleOpen(int handle)
+void *
+LoaderSymbol(const char *name)
 {
-    if (handle < 0 || handle >= MAX_HANDLE)
-	return -1;
+    static void *global_scope = NULL;
+    void *p;
 
-    if (freeHandles[handle] != HANDLE_USED)
-	return -1;
+    p = dlsym(RTLD_DEFAULT, name);
+    if (p != NULL)
+	return p;
 
-    refCount[handle]++;
-    return handle;
+    if (!global_scope)
+	global_scope = dlopen(NULL, DLOPEN_LAZY | DLOPEN_GLOBAL);
+
+    if (global_scope)
+	return dlsym(global_scope, name);
+
+    return NULL;
 }
 
-_X_EXPORT void *
-LoaderSymbol(const char *sym)
+void
+LoaderUnload(const char *name, void *handle)
 {
-    return (DLFindSymbol(sym));
-}
-
-/* more stub */
-_X_EXPORT int
-LoaderCheckUnresolved(int delay_flag)
-{
-    return 0;
-}
-
-int
-LoaderUnload(int handle)
-{
-    loaderRec fakeHead;
-    loaderPtr tmp = &fakeHead;
-
-    if (handle < 0 || handle >= MAX_HANDLE)
-	return -1;
-
-    /*
-     * check the reference count, only free it if it goes to zero
-     */
-    if (--refCount[handle])
-	return 0;
-    /*
-     * find the loaderRecs associated with this handle.
-     */
-
-    while ((tmp = _LoaderListPop(handle)) != NULL) {
-	if (strchr(tmp->name, ':') == NULL) {
-	    /* It is not a member of an archive */
-	    xf86Msg(X_INFO, "Unloading %s\n", tmp->name);
-	}
-	DLUnloadModule(tmp->private);
-	free(tmp->name);
-	free(tmp->cname);
-	free(tmp);
-    }
-
-    freeHandles[handle] = HANDLE_FREE;
-
-    return 0;
+    xf86Msg(X_INFO, "Unloading %s\n", name);
+    if (handle)
+	dlclose(handle);
 }
 
 unsigned long LoaderOptions = 0;
@@ -363,7 +180,13 @@ LoaderSetOptions(unsigned long opts)
     LoaderOptions |= opts;
 }
 
-_X_EXPORT int
+Bool
+LoaderShouldIgnoreABI(void)
+{
+    return (LoaderOptions & LDR_OPT_ABI_MISMATCH_NONFATAL) != 0;
+}
+
+int
 LoaderGetABIVersion(const char *abiclass)
 {
     struct {
