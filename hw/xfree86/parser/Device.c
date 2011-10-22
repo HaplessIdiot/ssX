@@ -353,28 +353,8 @@ xf86freeDeviceList (XF86ConfDevicePtr ptr)
 
 		prev = ptr;
 		ptr = ptr->list.next;
-		xf86conffree (prev);
+		free (prev);
 	}
-}
-
-int
-xf86validateDevice (XF86ConfigPtr p)
-{
-	XF86ConfDevicePtr device = p->conf_device_lst;
-
-	if (!device) {
-		xf86validationError ("At least one Device section is required.");
-		return (FALSE);
-	}
-
-	while (device) {
-		if (!device->dev_driver) {
-			xf86validationError (UNDEFINED_DRIVER_MSG, device->dev_identifier);
-			return (FALSE);
-		}
-	device = device->list.next;
-	}
-	return (TRUE);
 }
 
 XF86ConfDevicePtr
@@ -383,20 +363,22 @@ xf86findDevice (const char *ident, XF86ConfDevicePtr p)
 	while (p)
 	{
 		if (xf86nameCompare (ident, p->dev_identifier) == 0)
-			return (p);
+			return p;
 
 		p = p->list.next;
 	}
-	return (NULL);
+	return NULL;
 }
 
-char *
-xf86configStrdup (const char *s)
+XF86ConfDevicePtr
+xf86findDeviceByDriver (const char *driver, XF86ConfDevicePtr p)
 {
-	char *tmp;
-	if (!s) return NULL;
-	tmp = xf86confmalloc (sizeof (char) * (strlen (s) + 1));
-	if (tmp)
-		strcpy (tmp, s);
-	return (tmp);
+	while (p)
+	{
+		if (xf86nameCompare (driver, p->dev_driver) == 0)
+			return p;
+
+		p = p->list.next;
+	}
+	return NULL;
 }
