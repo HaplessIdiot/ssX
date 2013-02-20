@@ -57,7 +57,7 @@ xf86VTSwitchPending()
 {
 #if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
 	if (xf86Info.consType == SYSCONS || xf86Info.consType == PCVT) {
-		return(xf86Info.vtRequestsPending ? TRUE : FALSE);
+		return xf86Info.vtRequestsPending ? TRUE : FALSE;
 	}
 #endif
 	return FALSE;
@@ -68,11 +68,15 @@ xf86VTSwitchAway()
 {
 #if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
 	if (xf86Info.consType == SYSCONS || xf86Info.consType == PCVT) {
+#ifdef WSCONS_SUPPORT
+		xf86Msg(X_ERROR, "KD_TEXT\n");
+		ioctl(xf86Info.consoleFd, KDSETMODE, KD_TEXT);
+#endif
 		xf86Info.vtRequestsPending = FALSE;
 		if (ioctl(xf86Info.consoleFd, VT_RELDISP, 1) < 0)
-			return(FALSE);
+			return FALSE;
 		else
-			return(TRUE);
+			return TRUE;
 	}
 #endif
 	return FALSE;
@@ -83,12 +87,25 @@ xf86VTSwitchTo()
 {
 #if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
 	if (xf86Info.consType == SYSCONS || xf86Info.consType == PCVT) {
+#ifdef WSCONS_SUPPORT
+		xf86Msg(X_ERROR, "KD_GRAPHICS\n");
+		ioctl(xf86Info.consoleFd, KDSETMODE, KD_GRAPHICS);
+#endif
 		xf86Info.vtRequestsPending = FALSE;
 		if (ioctl(xf86Info.consoleFd, VT_RELDISP, VT_ACKACQ) < 0)
-			return(FALSE);
+			return FALSE;
 		else
-			return(TRUE);
+			return TRUE;
 	}
 #endif
-	return(TRUE);
+	return TRUE;
+}
+
+Bool
+xf86VTActivate(int vtno)
+{
+	if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, vtno) < 0) {
+		return FALSE;
+	}
+	return TRUE;
 }
