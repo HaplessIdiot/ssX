@@ -109,7 +109,7 @@ x68kRegisterPixmapFormats(ScreenInfo *pScreenInfo)
  * function "x68kConfig"
  *
  *  purpose:  process general configuration by reading "X68kConfig" file
- *            /usr/X11R6/lib/X11/ is the default location of this file
+ *            <X11_LIBDIR> is the default location of this file
  *  argument: nothing
  *  returns:  the number of screens
  *-----------------------------------------------------------------------*/
