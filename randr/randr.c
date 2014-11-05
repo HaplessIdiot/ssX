@@ -25,8 +25,6 @@
  *	    Keith Packard, Intel Corporation
  */
 
-#define NEED_REPLIES
-#define NEED_EVENTS
 #ifdef HAVE_DIX_CONFIG_H
 #include <dix-config.h>
 #endif
@@ -56,9 +54,9 @@ static int SProcRRDispatch (ClientPtr pClient);
 int	RREventBase;
 int	RRErrorBase;
 RESTYPE RRClientType, RREventType; /* resource types for event masks */
-int	RRClientPrivateIndex;
+DevPrivateKeyRec RRClientPrivateKeyRec;
 
-int	rrPrivIndex = -1;
+DevPrivateKeyRec rrPrivKeyRec;
 
 static void
 RRClientCallback (CallbackListPtr	*list,
@@ -86,11 +84,6 @@ RRClientCallback (CallbackListPtr	*list,
     }
 }
 
-static void
-RRResetProc (ExtensionEntry *extEntry)
-{
-}
-    
 static Bool
 RRCloseScreen (int i, ScreenPtr pScreen)
 {
@@ -103,7 +96,9 @@ RRCloseScreen (int i, ScreenPtr pScreen)
     for (j = pScrPriv->numOutputs - 1; j >= 0; j--)
 	RROutputDestroy (pScrPriv->outputs[j]);
     
-    xfree (pScrPriv);
+    free(pScrPriv->crtcs);
+    free(pScrPriv->outputs);
+    free(pScrPriv);
     RRNScreens -= 1;	/* ok, one fewer screen with RandR running */
     return (*pScreen->CloseScreen) (i, pScreen);    
 }
@@ -120,11 +115,11 @@ SRRScreenChangeNotifyEvent(xRRScreenChangeNotifyEvent *from,
     cpswapl(from->root, to->root);
     cpswapl(from->window, to->window);
     cpswaps(from->sizeID, to->sizeID);
+    cpswaps(from->subpixelOrder, to->subpixelOrder);
     cpswaps(from->widthInPixels, to->widthInPixels);
     cpswaps(from->heightInPixels, to->heightInPixels);
     cpswaps(from->widthInMillimeters, to->widthInMillimeters);
     cpswaps(from->heightInMillimeters, to->heightInMillimeters);
-    cpswaps(from->subpixelOrder, to->subpixelOrder);
 }
 
 static void
@@ -138,8 +133,8 @@ SRRCrtcChangeNotifyEvent(xRRCrtcChangeNotifyEvent *from,
     cpswapl(from->window, to->window);
     cpswapl(from->crtc, to->crtc);
     cpswapl(from->mode, to->mode);
-    cpswapl(from->window, to->window);
     cpswaps(from->rotation, to->rotation);
+    /* pad1 */
     cpswaps(from->x, to->x);
     cpswaps(from->y, to->y);
     cpswaps(from->width, to->width);
@@ -160,6 +155,8 @@ SRROutputChangeNotifyEvent(xRROutputChangeNotifyEvent *from,
     cpswapl(from->crtc, to->crtc);
     cpswapl(from->mode, to->mode);
     cpswaps(from->rotation, to->rotation);
+    to->connection = from->connection;
+    to->subpixelOrder = from->subpixelOrder;
 }
 
 static void
@@ -173,6 +170,11 @@ SRROutputPropertyNotifyEvent(xRROutputPropertyNotifyEvent *from,
     cpswapl(from->output, to->output);
     cpswapl(from->atom, to->atom);
     cpswapl(from->timestamp, to->timestamp);
+    to->state = from->state;
+    /* pad1 */
+    /* pad2 */
+    /* pad3 */
+    /* pad4 */
 }
 
 static void
@@ -211,10 +213,11 @@ Bool RRInit (void)
 	    return FALSE;
 	RRGeneration = serverGeneration;
     }
+    if (!dixRegisterPrivateKey(&rrPrivKeyRec, PRIVATE_SCREEN, 0))
+	return FALSE;
+
     return TRUE;
 }
-
-static int RRScreenGeneration;
 
 Bool RRScreenInit(ScreenPtr pScreen)
 {
@@ -223,14 +226,7 @@ Bool RRScreenInit(ScreenPtr pScreen)
     if (!RRInit ())
 	return FALSE;
 
-    if (RRScreenGeneration != serverGeneration)
-    {
-	if ((rrPrivIndex = AllocateScreenPrivateIndex()) < 0)
-	    return FALSE;
-	RRScreenGeneration = serverGeneration;
-    }
-
-    pScrPriv = (rrScrPrivPtr) xcalloc (1, sizeof (rrScrPrivRec));
+    pScrPriv = (rrScrPrivPtr) calloc(1, sizeof (rrScrPrivRec));
     if (!pScrPriv)
 	return FALSE;
 
@@ -293,7 +289,8 @@ RRFreeClient (pointer data, XID id)
 
     pRREvent = (RREventPtr) data;
     pWin = pRREvent->window;
-    pHead = (RREventPtr *) LookupIDByType(pWin->drawable.id, RREventType);
+    dixLookupResourceByType((pointer *)&pHead, pWin->drawable.id,
+			    RREventType, serverClient, DixDestroyAccess);
     if (pHead) {
 	pPrev = 0;
 	for (pCur = *pHead; pCur && pCur != pRREvent; pCur=pCur->next)
@@ -306,7 +303,7 @@ RRFreeClient (pointer data, XID id)
 	    	*pHead = pRREvent->next;
 	}
     }
-    xfree ((pointer) pRREvent);
+    free((pointer) pRREvent);
     return 1;
 }
 
@@ -320,9 +317,9 @@ RRFreeEvents (pointer data, XID id)
     for (pCur = *pHead; pCur; pCur = pNext) {
 	pNext = pCur->next;
 	FreeResource (pCur->clientResource, RRClientType);
-	xfree ((pointer) pCur);
+	free((pointer) pCur);
     }
-    xfree ((pointer) pHead);
+    free((pointer) pHead);
     return 1;
 }
 
@@ -333,23 +330,22 @@ RRExtensionInit (void)
 
     if (RRNScreens == 0) return;
 
-    RRClientPrivateIndex = AllocateClientPrivateIndex ();
-    if (!AllocateClientPrivate (RRClientPrivateIndex,
-				sizeof (RRClientRec) +
-				screenInfo.numScreens * sizeof (RRTimesRec)))
+    if (!dixRegisterPrivateKey(&RRClientPrivateKeyRec, PRIVATE_CLIENT,
+			       sizeof (RRClientRec) +
+			       screenInfo.numScreens * sizeof (RRTimesRec)))
 	return;
     if (!AddCallback (&ClientStateCallback, RRClientCallback, 0))
 	return;
 
-    RRClientType = CreateNewResourceType(RRFreeClient);
+    RRClientType = CreateNewResourceType(RRFreeClient, "RandRClient");
     if (!RRClientType)
 	return;
-    RREventType = CreateNewResourceType(RRFreeEvents);
+    RREventType = CreateNewResourceType(RRFreeEvents, "RandREvent");
     if (!RREventType)
 	return;
     extEntry = AddExtension (RANDR_NAME, RRNumberEvents, RRNumberErrors,
 			     ProcRRDispatch, SProcRRDispatch,
-			     RRResetProc, StandardMinorOpcode);
+			     NULL, StandardMinorOpcode);
     if (!extEntry)
 	return;
     RRErrorBase = extEntry->errorBase;
@@ -358,6 +354,11 @@ RRExtensionInit (void)
 	SRRScreenChangeNotifyEvent;
     EventSwapVector[RREventBase + RRNotify] = (EventSwapPtr)
 	SRRNotifyEvent;
+
+    RRModeInitErrorValue();
+    RRCrtcInitErrorValue();
+    RROutputInitErrorValue();
+
 #ifdef PANORAMIX
     RRXineramaExtensionInit();
 #endif
@@ -372,7 +373,8 @@ TellChanged (WindowPtr pWin, pointer value)
     rrScrPriv(pScreen);
     int				i;
 
-    pHead = (RREventPtr *) LookupIDByType (pWin->drawable.id, RREventType);
+    dixLookupResourceByType((pointer *)&pHead, pWin->drawable.id,
+			    RREventType, serverClient, DixReadAccess);
     if (!pHead)
 	return WT_WALKCHILDREN;
 
@@ -440,6 +442,14 @@ RRTellChanged (ScreenPtr pScreen)
     }
 }
 
+void
+RRSetChanged(ScreenPtr pScreen)
+{
+	rrScrPriv(pScreen);
+
+	pScrPriv->changed = TRUE;
+}
+
 /*
  * Return the first output which is connected to an active CRTC
  * Used in emulating 1.0 behaviour
@@ -451,6 +461,9 @@ RRFirstOutput (ScreenPtr pScreen)
     RROutputPtr		    output;
     int	i, j;
     
+    if (pScrPriv->primaryOutput && pScrPriv->primaryOutput->crtc)
+	return pScrPriv->primaryOutput;
+
     for (i = 0; i < pScrPriv->numCrtcs; i++)
     {
 	RRCrtcPtr   crtc = pScrPriv->crtcs[i];
