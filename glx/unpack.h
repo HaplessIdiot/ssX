@@ -47,7 +47,7 @@
 ** Fetch a double from potentially unaligned memory.
 */
 #ifdef __GLX_ALIGN64
-#define __GLX_MEM_COPY(dst,src,n)	if (src && dst) memcpy(dst,src,n)
+#define __GLX_MEM_COPY(dst,src,n)	memmove(dst,src,n)
 #define __GLX_GET_DOUBLE(dst,src)	__GLX_MEM_COPY(&dst,src,8)
 #else
 #define __GLX_GET_DOUBLE(dst,src)	(dst) = *((GLdouble*)(src))
@@ -83,10 +83,11 @@ extern xGLXSingleReply __glXReply;
 ** pointer.
 */
 #define __GLX_GET_ANSWER_BUFFER(res,cl,size,align)			 \
-    if ((size) > sizeof(answerBuffer)) {				 \
+    if (size < 0) return BadLength;                                      \
+    else if ((size) > sizeof(answerBuffer)) {				 \
 	int bump;							 \
 	if ((cl)->returnBufSize < (size)+(align)) {			 \
-	    (cl)->returnBuf = (GLbyte*)Xrealloc((cl)->returnBuf,	 \
+	    (cl)->returnBuf = (GLbyte*)realloc((cl)->returnBuf,	 	 \
 						(size)+(align));         \
 	    if (!(cl)->returnBuf) {					 \
 		return BadAlloc;					 \

@@ -25,6 +25,7 @@
 #endif
 
 #include "xfixesint.h"
+#include "xace.h"
 
 static RESTYPE		SelectionClientType, SelectionWindowType;
 static Bool		SelectionCallbackRegistered = FALSE;
@@ -77,14 +78,13 @@ XFixesSelectionCallback (CallbackListPtr *callbacks, pointer data, pointer args)
     for (e = selectionEvents; e; e = e->next)
     {
 	if (e->selection == selection->selection && 
-	    (e->eventMask & eventMask) &&
-	    !e->pClient->clientGone)
+	    (e->eventMask & eventMask))
 	{
 	    xXFixesSelectionNotifyEvent	ev;
 
+	    memset(&ev, 0, sizeof(xXFixesSelectionNotifyEvent));
 	    ev.type = XFixesEventBase + XFixesSelectionNotify;
 	    ev.subtype = subtype;
-	    ev.sequenceNumber = e->pClient->sequence;
 	    ev.window = e->pWindow->drawable.id;
 	    if (subtype == XFixesSetSelectionOwnerNotify)
 		ev.owner = selection->window;
@@ -131,7 +131,13 @@ XFixesSelectSelectionInput (ClientPtr	pClient,
 			    WindowPtr	pWindow,
 			    CARD32	eventMask)
 {
+    pointer val;
+    int rc;
     SelectionEventPtr	*prev, e;
+
+    rc = XaceHook(XACE_SELECTION_ACCESS, pClient, selection, DixGetAttrAccess);
+    if (rc != Success)
+	return rc;
 
     for (prev = &selectionEvents; (e = *prev); prev = &e->next)
     {
@@ -152,7 +158,7 @@ XFixesSelectSelectionInput (ClientPtr	pClient,
     }
     if (!e)
     {
-	e = (SelectionEventPtr) xalloc (sizeof (SelectionEventRec));
+	e = (SelectionEventPtr) malloc(sizeof (SelectionEventRec));
 	if (!e)
 	    return BadAlloc;
 
@@ -166,11 +172,14 @@ XFixesSelectSelectionInput (ClientPtr	pClient,
 	 * Add a resource hanging from the window to
 	 * catch window destroy
 	 */
-	if (!LookupIDByType(pWindow->drawable.id, SelectionWindowType))
+	rc = dixLookupResourceByType (&val, pWindow->drawable.id,
+				      SelectionWindowType, serverClient,
+				      DixGetAttrAccess);
+	if (rc != Success)
 	    if (!AddResource (pWindow->drawable.id, SelectionWindowType,
 			      (pointer) pWindow))
 	    {
-		xfree (e);
+		free(e);
 		return BadAlloc;
 	    }
 
@@ -196,13 +205,13 @@ ProcXFixesSelectSelectionInput (ClientPtr client)
     int		rc;
 
     REQUEST_SIZE_MATCH (xXFixesSelectSelectionInputReq);
-    rc = dixLookupWindow(&pWin, stuff->window, client, DixReadAccess);
+    rc = dixLookupWindow(&pWin, stuff->window, client, DixGetAttrAccess);
     if (rc != Success)
         return rc;
     if (stuff->eventMask & ~SelectionAllEvents)
     {
 	client->errorValue = stuff->eventMask;
-	return( BadValue );
+	return BadValue;
     }
     return XFixesSelectSelectionInput (client, stuff->selection,
 				       pWin, stuff->eventMask);
@@ -214,11 +223,12 @@ SProcXFixesSelectSelectionInput (ClientPtr client)
     register int n;
     REQUEST(xXFixesSelectSelectionInputReq);
 
+    REQUEST_SIZE_MATCH(xXFixesSelectSelectionInputReq);
     swaps(&stuff->length, n);
     swapl(&stuff->window, n);
     swapl(&stuff->selection, n);
     swapl(&stuff->eventMask, n);
-    return ProcXFixesSelectSelectionInput(client);
+    return (*ProcXFixesVector[stuff->xfixesReqType])(client);
 }
     
 void
@@ -245,7 +255,7 @@ SelectionFreeClient (pointer data, XID id)
 	if (e == old)
 	{
 	    *prev = e->next;
-	    xfree (e);
+	    free(e);
 	    CheckSelectionCallback ();
 	    break;
 	}
@@ -273,7 +283,9 @@ SelectionFreeWindow (pointer data, XID id)
 Bool
 XFixesSelectionInit (void)
 {
-    SelectionClientType = CreateNewResourceType(SelectionFreeClient);
-    SelectionWindowType = CreateNewResourceType(SelectionFreeWindow);
+    SelectionClientType = CreateNewResourceType(SelectionFreeClient,
+						"XFixesSelectionClient");
+    SelectionWindowType = CreateNewResourceType(SelectionFreeWindow,
+						"XFixesSelectionWindow");
     return SelectionClientType && SelectionWindowType;
 }

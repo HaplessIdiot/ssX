@@ -42,14 +42,19 @@
  *
  * @return BadValue if at least one invalid bit is set or Success otherwise.
  */
-int XICheckInvalidMaskBits(unsigned char *mask, int len)
+int XICheckInvalidMaskBits(ClientPtr client, unsigned char *mask, int len)
 {
     if (len >= XIMaskLen(XI2LASTEVENT))
     {
         int i;
         for (i = XI2LASTEVENT + 1; i < len * 8; i++)
+        {
             if (BitIsOn(mask, i))
+            {
+                client->errorValue = i;
                 return BadValue;
+            }
+        }
     }
 
     return Success;
@@ -60,6 +65,7 @@ SProcXISelectEvents(ClientPtr client)
 {
     char n;
     int i;
+    int len;
     xXIEventMask* evmask;
 
     REQUEST(xXISelectEventsReq);
@@ -68,11 +74,18 @@ SProcXISelectEvents(ClientPtr client)
     swapl(&stuff->win, n);
     swaps(&stuff->num_masks, n);
 
+    len = stuff->length - bytes_to_int32(sizeof(xXISelectEventsReq));
     evmask = (xXIEventMask*)&stuff[1];
     for (i = 0; i < stuff->num_masks; i++)
     {
+        if (len < bytes_to_int32(sizeof(xXIEventMask)))
+            return BadLength;
+        len -= bytes_to_int32(sizeof(xXIEventMask));
         swaps(&evmask->deviceid, n);
         swaps(&evmask->mask_len, n);
+        if (len < evmask->mask_len)
+            return BadLength;
+        len -= evmask->mask_len;
         evmask = (xXIEventMask*)(((char*)&evmask[1]) + evmask->mask_len * 4);
     }
 
@@ -126,7 +139,10 @@ ProcXISelectEvents(ClientPtr client)
         {
             unsigned char *bits = (unsigned char*)&evmask[1];
             if (BitIsOn(bits, XI_HierarchyChanged))
+            {
+                client->errorValue = XI_HierarchyChanged;
                 return BadValue;
+            }
         }
 
         /* Raw events may only be selected on root windows */
@@ -138,10 +154,13 @@ ProcXISelectEvents(ClientPtr client)
                 BitIsOn(bits, XI_RawButtonPress) ||
                 BitIsOn(bits, XI_RawButtonRelease) ||
                 BitIsOn(bits, XI_RawMotion))
+            {
+                client->errorValue = XI_RawKeyPress;
                 return BadValue;
+            }
         }
 
-        if (XICheckInvalidMaskBits((unsigned char*)&evmask[1],
+        if (XICheckInvalidMaskBits(client, (unsigned char*)&evmask[1],
                                    evmask->mask_len * 4) != Success)
             return BadValue;
 

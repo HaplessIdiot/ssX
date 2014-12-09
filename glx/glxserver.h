@@ -55,26 +55,6 @@
 #define GL_GLEXT_PROTOTYPES /* we want prototypes */
 #include <GL/gl.h>
 #include <GL/glxproto.h>
-#include <GL/glxint.h>
-
-/* For glxscreens.h */
-typedef struct __GLXdrawable __GLXdrawable;
-typedef struct __GLXcontext __GLXcontext;
-
-#include "glxscreens.h"
-#include "glxdrawable.h"
-#include "glxcontext.h"
-
-
-#define GLX_SERVER_MAJOR_VERSION 1
-#define GLX_SERVER_MINOR_VERSION 2
-
-#ifndef True
-#define True 1
-#endif
-#ifndef False
-#define False 0
-#endif
 
 /*
 ** GLX resources.
@@ -84,6 +64,19 @@ typedef XID GLXPixmap;
 typedef XID GLXDrawable;
 
 typedef struct __GLXclientStateRec __GLXclientState;
+typedef struct __GLXdrawable __GLXdrawable;
+typedef struct __GLXcontext __GLXcontext;
+
+#include "glxscreens.h"
+#include "glxdrawable.h"
+#include "glxcontext.h"
+
+#ifndef True
+#define True 1
+#endif
+#ifndef False
+#define False 0
+#endif
 
 extern __GLXscreen *glxGetScreen(ScreenPtr pScreen);
 extern __GLXclientState *glxGetClient(ClientPtr pClient);
@@ -93,10 +86,7 @@ extern __GLXclientState *glxGetClient(ClientPtr pClient);
 void GlxExtensionInit(void);
 
 void GlxSetVisualConfigs(int nconfigs, 
-                         __GLXvisualConfig *configs, void **privates);
-
-struct _glapi_table;
-void GlxSetRenderTables (struct _glapi_table *table);
+                         void *configs, void **privates);
 
 void __glXScreenInitVisuals(__GLXscreen *screen);
 
@@ -168,13 +158,6 @@ struct __GLXclientStateRec {
     GLbyte *largeCmdBuf;
     GLint largeCmdBufSize;
 
-    /*
-    ** Keep a list of all the contexts that are current for this client's
-    ** threads.
-    */
-    __GLXcontext **currentContexts;
-    GLint numCurrentContexts;
-
     /* Back pointer to X client record */
     ClientPtr client;
 
@@ -200,7 +183,7 @@ typedef int (*__GLXprocPtr)(__GLXclientState *, char *pc);
 /*
  * Tables for computing the size of each rendering command.
  */
-typedef int (*gl_proto_size_func)(const GLbyte *, Bool);
+typedef int (*gl_proto_size_func)(const GLbyte *, Bool, int);
 
 typedef struct {
     int bytes;
@@ -250,10 +233,56 @@ extern void glxSwapQueryServerStringReply(ClientPtr client,
  * Routines for computing the size of variably-sized rendering commands.
  */
 
+static _X_INLINE int
+safe_add(int a, int b)
+{
+    if (a < 0 || b < 0)
+        return -1;
+
+    if (INT_MAX - a < b)
+        return -1;
+
+    return a + b;
+}
+
+static _X_INLINE int
+safe_mul(int a, int b)
+{
+    if (a < 0 || b < 0)
+        return -1;
+
+    if (a == 0 || b == 0)
+        return 0;
+
+    if (a > INT_MAX / b)
+        return -1;
+
+    return a * b;
+}
+
+static _X_INLINE int
+safe_pad(int a)
+{
+    int ret;
+
+    if (a < 0)
+        return -1;
+
+    if ((ret = safe_add(a, 3)) < 0)
+        return -1;
+
+    return ret & (GLuint)~3;
+}
+
 extern int __glXTypeSize(GLenum enm);
 extern int __glXImageSize(GLenum format, GLenum type,
     GLenum target, GLsizei w, GLsizei h, GLsizei d,
     GLint imageHeight, GLint rowLength, GLint skipImages, GLint skipRows,
     GLint alignment);
+
+extern unsigned glxMajorVersion;
+extern unsigned glxMinorVersion;
+
+extern int __glXEventBase;
 
 #endif /* !__GLX_server_h__ */
