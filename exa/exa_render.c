@@ -30,7 +30,6 @@
 
 #include "exa_priv.h"
 
-#ifdef RENDER
 #include "mipict.h"
 
 #if DEBUG_TRACE_FALL
@@ -51,6 +50,15 @@ static void exaCompositeFallbackPictDesc(PicturePtr pict, char *string, int n)
     case PICT_a8r8g8b8:
 	snprintf(format, 20, "ARGB8888");
 	break;
+    case PICT_x8r8g8b8:
+	snprintf(format, 20, "XRGB8888");
+	break;
+    case PICT_b8g8r8a8:
+	snprintf(format, 20, "BGRA8888");
+	break;
+    case PICT_b8g8r8x8:
+	snprintf(format, 20, "BGRX8888");
+	break;
     case PICT_r5g6b5:
 	snprintf(format, 20, "RGB565  ");
 	break;
@@ -68,11 +76,17 @@ static void exaCompositeFallbackPictDesc(PicturePtr pict, char *string, int n)
 	break;
     }
 
-    loc = exaGetOffscreenPixmap(pict->pDrawable, &temp, &temp) ? 's' : 'm';
+    if (pict->pDrawable) {
+	loc = exaGetOffscreenPixmap(pict->pDrawable, &temp, &temp) ? 's' : 'm';
 
-    snprintf(size, 20, "%dx%d%s", pict->pDrawable->width,
-	     pict->pDrawable->height, pict->repeat ?
-	     " R" : "");
+	snprintf(size, 20, "%dx%d%s", pict->pDrawable->width,
+		 pict->pDrawable->height, pict->repeat ?
+		 " R" : "");
+    } else {
+	loc = '-';
+
+	snprintf(size, 20, "%s", pict->repeat ? " R" : "");
+    }
 
     snprintf(string, n, "%p:%c fmt %s (%s)", pict->pDrawable, loc, format, size);
 }
@@ -111,7 +125,7 @@ exaPrintCompositeFallback(CARD8 op,
 }
 #endif /* DEBUG_TRACE_FALL */
 
-static Bool
+Bool
 exaOpReadsDestination (CARD8 op)
 {
     /* FALSE (does not read destination) is the list of ops in the protocol
@@ -135,32 +149,26 @@ exaGetPixelFromRGBA(CARD32	*pixel,
 		    CARD16	green,
 		    CARD16	blue,
 		    CARD16	alpha,
-		    CARD32	format)
+		    PictFormatPtr pFormat)
 {
     int rbits, bbits, gbits, abits;
     int rshift, bshift, gshift, ashift;
 
     *pixel = 0;
 
-    if (!PICT_FORMAT_COLOR(format))
+    if (!PICT_FORMAT_COLOR(pFormat->format) &&
+	PICT_FORMAT_TYPE(pFormat->format) != PICT_TYPE_A)
 	return FALSE;
 
-    rbits = PICT_FORMAT_R(format);
-    gbits = PICT_FORMAT_G(format);
-    bbits = PICT_FORMAT_B(format);
-    abits = PICT_FORMAT_A(format);
+    rbits = PICT_FORMAT_R(pFormat->format);
+    gbits = PICT_FORMAT_G(pFormat->format);
+    bbits = PICT_FORMAT_B(pFormat->format);
+    abits = PICT_FORMAT_A(pFormat->format);
 
-    if (PICT_FORMAT_TYPE(format) == PICT_TYPE_ARGB) {
-	bshift = 0;
-	gshift = bbits;
-	rshift = gshift + gbits;
-	ashift = rshift + rbits;
-    } else {  /* PICT_TYPE_ABGR */
-	rshift = 0;
-	gshift = rbits;
-	bshift = gshift + gbits;
-	ashift = bshift + bbits;
-    }
+    rshift = pFormat->direct.red;
+    gshift = pFormat->direct.green;
+    bshift = pFormat->direct.blue;
+    ashift = pFormat->direct.alpha;
 
     *pixel |=  ( blue >> (16 - bbits)) << bshift;
     *pixel |=  (  red >> (16 - rbits)) << rshift;
@@ -176,12 +184,13 @@ exaGetRGBAFromPixel(CARD32	pixel,
 		    CARD16	*green,
 		    CARD16	*blue,
 		    CARD16	*alpha,
-		    CARD32	format)
+		    PictFormatPtr pFormat,
+		    PictFormatShort format)
 {
     int rbits, bbits, gbits, abits;
     int rshift, bshift, gshift, ashift;
 
-    if (!PICT_FORMAT_COLOR(format))
+    if (!PICT_FORMAT_COLOR(format) && PICT_FORMAT_TYPE(format) != PICT_TYPE_A)
 	return FALSE;
 
     rbits = PICT_FORMAT_R(format);
@@ -189,34 +198,42 @@ exaGetRGBAFromPixel(CARD32	pixel,
     bbits = PICT_FORMAT_B(format);
     abits = PICT_FORMAT_A(format);
 
-    if (PICT_FORMAT_TYPE(format) == PICT_TYPE_ARGB) {
+    if (pFormat) {
+	rshift = pFormat->direct.red;
+	gshift = pFormat->direct.green;
+	bshift = pFormat->direct.blue;
+	ashift = pFormat->direct.alpha;
+    } else if (format == PICT_a8r8g8b8) {
+	rshift = 16;
+	gshift = 8;
 	bshift = 0;
-	gshift = bbits;
-	rshift = gshift + gbits;
-	ashift = rshift + rbits;
-    } else {  /* PICT_TYPE_ABGR */
-	rshift = 0;
-	gshift = rbits;
-	bshift = gshift + gbits;
-	ashift = bshift + bbits;
-    }
+	ashift = 24;
+    } else
+	FatalError("EXA bug: exaGetRGBAFromPixel() doesn't match "
+		   "createSourcePicture()\n");
 
-    *red = ((pixel >> rshift ) & ((1 << rbits) - 1)) << (16 - rbits);
-    while (rbits < 16) {
-	*red |= *red >> rbits;
-	rbits <<= 1;
-    }
+    if (rbits) {
+	*red = ((pixel >> rshift ) & ((1 << rbits) - 1)) << (16 - rbits);
+	while (rbits < 16) {
+	    *red |= *red >> rbits;
+	    rbits <<= 1;
+	}
 
-    *green = ((pixel >> gshift ) & ((1 << gbits) - 1)) << (16 - gbits);
-    while (gbits < 16) {
-	*green |= *green >> gbits;
-	gbits <<= 1;
-    }
+	*green = ((pixel >> gshift ) & ((1 << gbits) - 1)) << (16 - gbits);
+	while (gbits < 16) {
+	    *green |= *green >> gbits;
+	    gbits <<= 1;
+	}
 
-    *blue = ((pixel >> bshift ) & ((1 << bbits) - 1)) << (16 - bbits);
-    while (bbits < 16) {
-	*blue |= *blue >> bbits;
-	bbits <<= 1;
+	*blue = ((pixel >> bshift ) & ((1 << bbits) - 1)) << (16 - bbits);
+	while (bbits < 16) {
+	    *blue |= *blue >> bbits;
+	    bbits <<= 1;
+	}
+    } else {
+	*red = 0x0000;
+	*green = 0x0000;
+	*blue = 0x0000;
     }
 
     if (abits) {
@@ -247,70 +264,371 @@ exaTryDriverSolidFill(PicturePtr	pSrc,
     int nbox;
     int dst_off_x, dst_off_y;
     PixmapPtr pSrcPix, pDstPix;
+    ExaPixmapPrivPtr pDstExaPix;
     CARD32 pixel;
     CARD16 red, green, blue, alpha;
-    ExaMigrationRec pixmaps[1];
+
+    pDstPix = exaGetDrawablePixmap (pDst->pDrawable);
+    pDstExaPix = ExaGetPixmapPriv(pDstPix);
+
+    /* Check whether the accelerator can use the destination pixmap.
+     */
+    if (pDstExaPix->accel_blocked)
+    {
+	return -1;
+    }
 
     xDst += pDst->pDrawable->x;
     yDst += pDst->pDrawable->y;
-    xSrc += pSrc->pDrawable->x;
-    ySrc += pSrc->pDrawable->y;
+    if (pSrc->pDrawable) {
+	xSrc += pSrc->pDrawable->x;
+	ySrc += pSrc->pDrawable->y;
+    }
 
     if (!miComputeCompositeRegion (&region, pSrc, NULL, pDst,
 				   xSrc, ySrc, 0, 0, xDst, yDst,
 				   width, height))
 	return 1;
 
-    pSrcPix = exaGetDrawablePixmap (pSrc->pDrawable);
-    pixel = exaGetPixmapFirstPixel (pSrcPix);
+    exaGetDrawableDeltas (pDst->pDrawable, pDstPix, &dst_off_x, &dst_off_y);
 
-    pixmaps[0].as_dst = TRUE;
-    pixmaps[0].as_src = FALSE;
-    pixmaps[0].pPix = exaGetDrawablePixmap (pDst->pDrawable);
-    exaDoMigration(pixmaps, 1, TRUE);
+    RegionTranslate(&region, dst_off_x, dst_off_y);
 
-    pDstPix = exaGetOffscreenPixmap (pDst->pDrawable, &dst_off_x, &dst_off_y);
-    if (!pDstPix) {
-	REGION_UNINIT(pDst->pDrawable->pScreen, &region);
-	return 0;
-    }
+    if (pSrc->pDrawable) {
+	pSrcPix = exaGetDrawablePixmap (pSrc->pDrawable);
+	pixel = exaGetPixmapFirstPixel (pSrcPix);
+    } else
+	pixel = pSrc->pSourcePict->solidFill.color;
 
     if (!exaGetRGBAFromPixel(pixel, &red, &green, &blue, &alpha,
-			 pSrc->format))
+			     pSrc->pFormat, pSrc->format) ||
+	!exaGetPixelFromRGBA(&pixel, red, green, blue, alpha,
+			     pDst->pFormat))
     {
-	REGION_UNINIT(pDst->pDrawable->pScreen, &region);
+	RegionUninit(&region);
 	return -1;
     }
 
-    if (!exaGetPixelFromRGBA(&pixel, red, green, blue, alpha,
-			pDst->format))
-    {
-	REGION_UNINIT(pDst->pDrawable->pScreen, &region);
-	return -1;
+    if (pExaScr->do_migration) {
+	ExaMigrationRec pixmaps[1];
+
+	pixmaps[0].as_dst = TRUE;
+	pixmaps[0].as_src = FALSE;
+	pixmaps[0].pPix = pDstPix;
+	pixmaps[0].pReg = &region;
+	exaDoMigration(pixmaps, 1, TRUE);
+    }
+
+    if (!exaPixmapHasGpuCopy(pDstPix)) {
+	RegionUninit(&region);
+	return 0;
     }
 
     if (!(*pExaScr->info->PrepareSolid) (pDstPix, GXcopy, 0xffffffff, pixel))
     {
-	REGION_UNINIT(pDst->pDrawable->pScreen, &region);
+	RegionUninit(&region);
 	return -1;
     }
 
-    nbox = REGION_NUM_RECTS(&region);
-    pbox = REGION_RECTS(&region);
+    nbox = RegionNumRects(&region);
+    pbox = RegionRects(&region);
 
     while (nbox--)
     {
-	(*pExaScr->info->Solid) (pDstPix,
-				 pbox->x1 + dst_off_x, pbox->y1 + dst_off_y,
-				 pbox->x2 + dst_off_x, pbox->y2 + dst_off_y);
+	(*pExaScr->info->Solid) (pDstPix, pbox->x1, pbox->y1, pbox->x2, pbox->y2);
 	pbox++;
     }
 
     (*pExaScr->info->DoneSolid) (pDstPix);
     exaMarkSync(pDst->pDrawable->pScreen);
 
-    REGION_UNINIT(pDst->pDrawable->pScreen, &region);
+    RegionUninit(&region);
     return 1;
+}
+
+static int
+exaTryDriverCompositeRects(CARD8	       op,
+			   PicturePtr	       pSrc,
+			   PicturePtr	       pMask,
+			   PicturePtr	       pDst,
+			   int                 nrect,
+			   ExaCompositeRectPtr rects)
+{
+    ExaScreenPriv (pDst->pDrawable->pScreen);
+    int src_off_x = 0, src_off_y = 0, mask_off_x = 0, mask_off_y = 0;
+    int dst_off_x, dst_off_y;
+    PixmapPtr pSrcPix = NULL, pMaskPix = NULL, pDstPix;
+    ExaPixmapPrivPtr pSrcExaPix = NULL, pMaskExaPix = NULL, pDstExaPix;
+
+    if (!pExaScr->info->PrepareComposite)
+	return -1;
+
+    if (pSrc->pDrawable) {
+	pSrcPix = exaGetDrawablePixmap(pSrc->pDrawable);
+	pSrcExaPix = ExaGetPixmapPriv(pSrcPix);
+    }
+
+    if (pMask && pMask->pDrawable) {
+	pMaskPix = exaGetDrawablePixmap(pMask->pDrawable);
+	pMaskExaPix = ExaGetPixmapPriv(pMaskPix);
+    }
+
+    pDstPix = exaGetDrawablePixmap(pDst->pDrawable);
+    pDstExaPix = ExaGetPixmapPriv(pDstPix);
+
+    /* Check whether the accelerator can use these pixmaps.
+     * FIXME: If it cannot, use temporary pixmaps so that the drawing
+     * happens within limits.
+     */
+    if (pDstExaPix->accel_blocked ||
+	(pSrcExaPix && pSrcExaPix->accel_blocked) ||
+	(pMaskExaPix && pMaskExaPix->accel_blocked))
+    {
+	return -1;
+    }
+
+    if (pExaScr->info->CheckComposite &&
+	!(*pExaScr->info->CheckComposite) (op, pSrc, pMask, pDst))
+    {
+	return -1;
+    }
+
+    if (pExaScr->do_migration) {
+	ExaMigrationRec pixmaps[3];
+	int i = 0;
+
+	pixmaps[i].as_dst = TRUE;
+	pixmaps[i].as_src = exaOpReadsDestination(op);
+	pixmaps[i].pPix = pDstPix;
+	pixmaps[i].pReg = NULL;
+	i++;
+
+	if (pSrcPix) {
+	    pixmaps[i].as_dst = FALSE;
+	    pixmaps[i].as_src = TRUE;
+	    pixmaps[i].pPix = pSrcPix;
+	    pixmaps[i].pReg = NULL;
+	    i++;
+	}
+
+	if (pMaskPix) {
+	    pixmaps[i].as_dst = FALSE;
+	    pixmaps[i].as_src = TRUE;
+	    pixmaps[i].pPix = pMaskPix;
+	    pixmaps[i].pReg = NULL;
+	    i++;
+	}
+
+	exaDoMigration(pixmaps, i, TRUE);
+    }
+
+    pDstPix = exaGetOffscreenPixmap (pDst->pDrawable, &dst_off_x, &dst_off_y);
+    if (!pDstPix)
+	return 0;
+
+    if (pSrcPix) {
+	pSrcPix = exaGetOffscreenPixmap (pSrc->pDrawable, &src_off_x, &src_off_y);
+	if (!pSrcPix)
+	    return 0;
+    }
+
+    if (pMaskPix) {
+	pMaskPix = exaGetOffscreenPixmap (pMask->pDrawable, &mask_off_x, &mask_off_y);
+	if (!pMaskPix)
+	    return 0;
+    }
+
+    if (!(*pExaScr->info->PrepareComposite) (op, pSrc, pMask, pDst, pSrcPix,
+					     pMaskPix, pDstPix))
+	return -1;
+
+    while (nrect--)
+    {
+	INT16 xDst = rects->xDst + pDst->pDrawable->x;
+	INT16 yDst = rects->yDst + pDst->pDrawable->y;
+	INT16 xMask = rects->xMask;
+	INT16 yMask = rects->yMask;
+	INT16 xSrc = rects->xSrc;
+	INT16 ySrc = rects->ySrc;
+	RegionRec region;
+	BoxPtr pbox;
+	int nbox;
+
+	if (pMaskPix) {
+	    xMask += pMask->pDrawable->x;
+	    yMask += pMask->pDrawable->y;
+	}
+
+	if (pSrcPix) {
+	    xSrc += pSrc->pDrawable->x;
+	    ySrc += pSrc->pDrawable->y;
+	}
+
+	if (!miComputeCompositeRegion (&region, pSrc, pMask, pDst,
+				       xSrc, ySrc, xMask, yMask, xDst, yDst,
+				       rects->width, rects->height))
+	    goto next_rect;
+
+	RegionTranslate(&region, dst_off_x, dst_off_y);
+
+	nbox = RegionNumRects(&region);
+	pbox = RegionRects(&region);
+
+	xMask = xMask + mask_off_x - xDst - dst_off_x;
+	yMask = yMask + mask_off_y - yDst - dst_off_y;
+	xSrc = xSrc + src_off_x - xDst - dst_off_x;
+	ySrc = ySrc + src_off_y - yDst - dst_off_y;
+
+	while (nbox--)
+	{
+	    (*pExaScr->info->Composite) (pDstPix,
+					 pbox->x1 + xSrc,
+					 pbox->y1 + ySrc,
+					 pbox->x1 + xMask,
+					 pbox->y1 + yMask,
+					 pbox->x1,
+					 pbox->y1,
+					 pbox->x2 - pbox->x1,
+					 pbox->y2 - pbox->y1);
+	    pbox++;
+	}
+
+    next_rect:
+	RegionUninit(&region);
+
+	rects++;
+    }
+
+    (*pExaScr->info->DoneComposite) (pDstPix);
+    exaMarkSync(pDst->pDrawable->pScreen);
+
+    return 1;
+}
+
+/**
+ * Copy a number of rectangles from source to destination in a single
+ * operation. This is specialized for glyph rendering: we don't have the
+ * special-case fallbacks found in exaComposite() - if the driver can support
+ * it, we use the driver functionality, otherwise we fall back straight to
+ * software.
+ */
+void
+exaCompositeRects(CARD8	              op,
+		  PicturePtr	      pSrc,
+		  PicturePtr	      pMask,
+		  PicturePtr	      pDst,
+		  int                 nrect,
+		  ExaCompositeRectPtr rects)
+{
+    ExaScreenPriv (pDst->pDrawable->pScreen);
+    int n;
+    ExaCompositeRectPtr r;
+    int ret;
+
+    /* If we get a mask, that means we're rendering to the exaGlyphs
+     * destination directly, so the damage layer takes care of this.
+     */
+    if (!pMask) {
+	RegionRec region;
+	int x1 = MAXSHORT;
+	int y1 = MAXSHORT;
+	int x2 = MINSHORT;
+	int y2 = MINSHORT;
+	BoxRec box;
+    
+	/* We have to manage the damage ourselves, since CompositeRects isn't
+	 * something in the screen that can be managed by the damage extension,
+	 * and EXA depends on damage to track what needs to be migrated between
+	 * the gpu and the cpu.
+	 */
+
+	/* Compute the overall extents of the composited region - we're making
+	 * the assumption here that we are compositing a bunch of glyphs that
+	 * cluster closely together and damaging each glyph individually would
+	 * be a loss compared to damaging the bounding box.
+	 */
+	n = nrect;
+	r = rects;
+	while (n--) {
+	    int rect_x2 = r->xDst + r->width;
+	    int rect_y2 = r->yDst + r->height;
+
+	    if (r->xDst < x1) x1 = r->xDst;
+	    if (r->yDst < y1) y1 = r->yDst;
+	    if (rect_x2 > x2) x2 = rect_x2;
+	    if (rect_y2 > y2) y2 = rect_y2;
+
+	    r++;
+	}
+
+	if (x2 <= x1 || y2 <= y1)
+	    return;
+
+	box.x1 = x1;
+	box.x2 = x2 < MAXSHORT ? x2 : MAXSHORT;
+	box.y1 = y1;
+	box.y2 = y2 < MAXSHORT ? y2 : MAXSHORT;
+
+ 	/* The pixmap migration code relies on pendingDamage indicating
+	 * the bounds of the current rendering, so we need to force 
+	 * the actual damage into that region before we do anything, and
+	 * (see use of DamagePendingRegion in exaCopyDirty)
+	 */
+
+	RegionInit(&region, &box, 1);
+    
+	DamageRegionAppend(pDst->pDrawable, &region);
+
+	RegionUninit(&region);
+    }
+    
+    /************************************************************/
+    
+    ValidatePicture (pSrc);
+    if (pMask)
+	ValidatePicture (pMask);
+    ValidatePicture (pDst);
+
+    ret = exaTryDriverCompositeRects(op, pSrc, pMask, pDst, nrect, rects);
+
+    if (ret != 1) {
+	if (ret == -1 && op == PictOpOver && pMask && pMask->componentAlpha &&
+	    (!pExaScr->info->CheckComposite ||
+	     ((*pExaScr->info->CheckComposite)(PictOpOutReverse, pSrc, pMask,
+					       pDst) &&
+	      (*pExaScr->info->CheckComposite)(PictOpAdd, pSrc, pMask, pDst)))) {
+	    ret = exaTryDriverCompositeRects(PictOpOutReverse, pSrc, pMask,
+					     pDst, nrect, rects);
+	    if (ret == 1) {
+		op = PictOpAdd;
+		ret = exaTryDriverCompositeRects(op, pSrc, pMask, pDst, nrect,
+						 rects);
+	    }
+	}
+
+	if (ret != 1) {
+	    n = nrect;
+	    r = rects;
+	    while (n--) {
+		ExaCheckComposite (op, pSrc, pMask, pDst,
+				   r->xSrc, r->ySrc,
+				   r->xMask, r->yMask,
+				   r->xDst, r->yDst,
+				   r->width, r->height);
+		r++;
+	    }
+	}
+    }
+    
+    /************************************************************/
+
+    if (!pMask) {
+	/* Now we have to flush the damage out from pendingDamage => damage 
+	 * Calling DamageRegionProcessPending has that effect.
+	 */
+
+	DamageRegionProcessPending(pDst->pDrawable);
+    }
 }
 
 static int
@@ -332,25 +650,29 @@ exaTryDriverComposite(CARD8		op,
     BoxPtr pbox;
     int nbox;
     int src_off_x, src_off_y, mask_off_x, mask_off_y, dst_off_x, dst_off_y;
-    PixmapPtr pSrcPix, pMaskPix = NULL, pDstPix;
-    struct _Pixmap scratch;
-    ExaMigrationRec pixmaps[3];
+    PixmapPtr pSrcPix = NULL, pMaskPix = NULL, pDstPix;
+    ExaPixmapPrivPtr pSrcExaPix = NULL, pMaskExaPix = NULL, pDstExaPix;
 
-    pSrcPix = exaGetDrawablePixmap(pSrc->pDrawable);
+    if (pSrc->pDrawable) {
+	pSrcPix = exaGetDrawablePixmap(pSrc->pDrawable);
+	pSrcExaPix = ExaGetPixmapPriv(pSrcPix);
+    }
+
     pDstPix = exaGetDrawablePixmap(pDst->pDrawable);
-    if (pMask)
-	pMaskPix = exaGetDrawablePixmap(pMask->pDrawable);
+    pDstExaPix = ExaGetPixmapPriv(pDstPix);
 
-    /* Bail if we might exceed coord limits by rendering from/to these.  We
-     * should really be making some scratch pixmaps with offsets and coords
-     * adjusted to deal with this, but it hasn't been done yet.
+    if (pMask && pMask->pDrawable) {
+	pMaskPix = exaGetDrawablePixmap(pMask->pDrawable);
+        pMaskExaPix = ExaGetPixmapPriv(pMaskPix);
+    }
+
+    /* Check whether the accelerator can use these pixmaps.
+     * FIXME: If it cannot, use temporary pixmaps so that the drawing
+     * happens within limits.
      */
-    if (pSrcPix->drawable.width > pExaScr->info->maxX ||
-	pSrcPix->drawable.height > pExaScr->info->maxY ||
-	pDstPix->drawable.width > pExaScr->info->maxX ||
-	pDstPix->drawable.height > pExaScr->info->maxY || 
-	(pMask && (pMaskPix->drawable.width > pExaScr->info->maxX ||
-		   pMaskPix->drawable.height > pExaScr->info->maxY)))
+    if (pDstExaPix->accel_blocked ||
+	(pSrcExaPix && pSrcExaPix->accel_blocked) ||
+	(pMaskExaPix && (pMaskExaPix->accel_blocked)))
     {
 	return -1;
     }
@@ -358,92 +680,107 @@ exaTryDriverComposite(CARD8		op,
     xDst += pDst->pDrawable->x;
     yDst += pDst->pDrawable->y;
 
-    if (pMask) {
+    if (pMaskPix) {
 	xMask += pMask->pDrawable->x;
 	yMask += pMask->pDrawable->y;
     }
 
-    xSrc += pSrc->pDrawable->x;
-    ySrc += pSrc->pDrawable->y;
+    if (pSrcPix) {
+	xSrc += pSrc->pDrawable->x;
+	ySrc += pSrc->pDrawable->y;
+    }
+
+    if (pExaScr->info->CheckComposite &&
+	!(*pExaScr->info->CheckComposite) (op, pSrc, pMask, pDst))
+    {
+	return -1;
+    }
 
     if (!miComputeCompositeRegion (&region, pSrc, pMask, pDst,
 				   xSrc, ySrc, xMask, yMask, xDst, yDst,
 				   width, height))
 	return 1;
 
-    if (pExaScr->info->CheckComposite &&
-	!(*pExaScr->info->CheckComposite) (op, pSrc, pMask, pDst))
-    {
-	REGION_UNINIT(pDst->pDrawable->pScreen, &region);
-	return -1;
+    exaGetDrawableDeltas (pDst->pDrawable, pDstPix, &dst_off_x, &dst_off_y);
+
+    RegionTranslate(&region, dst_off_x, dst_off_y);
+
+    if (pExaScr->do_migration) {
+	ExaMigrationRec pixmaps[3];
+	int i = 0;
+
+	pixmaps[i].as_dst = TRUE;
+	pixmaps[i].as_src = exaOpReadsDestination(op);
+	pixmaps[i].pPix = pDstPix;
+	pixmaps[i].pReg = pixmaps[0].as_src ? NULL : &region;
+	i++;
+
+	if (pSrcPix) {
+	    pixmaps[i].as_dst = FALSE;
+	    pixmaps[i].as_src = TRUE;
+	    pixmaps[i].pPix = pSrcPix;
+	    pixmaps[i].pReg = NULL;
+	    i++;
+	}
+
+	if (pMaskPix) {
+	    pixmaps[i].as_dst = FALSE;
+	    pixmaps[i].as_src = TRUE;
+	    pixmaps[i].pPix = pMaskPix;
+	    pixmaps[i].pReg = NULL;
+	    i++;
+	}
+
+	exaDoMigration(pixmaps, i, TRUE);
     }
 
-    pixmaps[0].as_dst = TRUE;
-    pixmaps[0].as_src = exaOpReadsDestination(op);
-    pixmaps[0].pPix = exaGetDrawablePixmap (pDst->pDrawable);
-    pixmaps[1].as_dst = FALSE;
-    pixmaps[1].as_src = TRUE;
-    pixmaps[1].pPix = exaGetDrawablePixmap (pSrc->pDrawable);
-    if (pMask) {
-	pixmaps[2].as_dst = FALSE;
-	pixmaps[2].as_src = TRUE;
-	pixmaps[2].pPix = exaGetDrawablePixmap (pMask->pDrawable);
-	exaDoMigration(pixmaps, 3, TRUE);
-    } else {
-	exaDoMigration(pixmaps, 2, TRUE);
+    if (pSrcPix) {
+	pSrcPix = exaGetOffscreenPixmap (pSrc->pDrawable, &src_off_x, &src_off_y);
+	if (!pSrcPix) {
+	    RegionUninit(&region);
+	    return 0;
+	}
     }
 
-    pSrcPix = exaGetOffscreenPixmap (pSrc->pDrawable, &src_off_x, &src_off_y);
-    if (pMask)
+    if (pMaskPix) {
 	pMaskPix = exaGetOffscreenPixmap (pMask->pDrawable, &mask_off_x,
 					  &mask_off_y);
-    pDstPix = exaGetOffscreenPixmap (pDst->pDrawable, &dst_off_x, &dst_off_y);
-
-    if (!pDstPix) {
-	REGION_UNINIT(pDst->pDrawable->pScreen, &region);
-	return 0;
+	if (!pMaskPix) {
+	    RegionUninit(&region);
+	    return 0;
+	}
     }
 
-    if (!pSrcPix && (!pMask || pMaskPix) && pExaScr->info->UploadToScratch) {
-	pSrcPix = exaGetDrawablePixmap (pSrc->pDrawable);
-	if ((*pExaScr->info->UploadToScratch) (pSrcPix, &scratch))
-	    pSrcPix = &scratch;
-    } else if (pSrcPix && pMask && !pMaskPix && pExaScr->info->UploadToScratch) {
-	pMaskPix = exaGetDrawablePixmap (pMask->pDrawable);
-	if ((*pExaScr->info->UploadToScratch) (pMaskPix, &scratch))
-	    pMaskPix = &scratch;
-    }
-
-    if (!pSrcPix || (pMask && !pMaskPix)) {
-	REGION_UNINIT(pDst->pDrawable->pScreen, &region);
+    if (!exaPixmapHasGpuCopy(pDstPix)) {
+	RegionUninit(&region);
 	return 0;
     }
 
     if (!(*pExaScr->info->PrepareComposite) (op, pSrc, pMask, pDst, pSrcPix,
 					     pMaskPix, pDstPix))
     {
-	REGION_UNINIT(pDst->pDrawable->pScreen, &region);
+	RegionUninit(&region);
 	return -1;
     }
 
-    nbox = REGION_NUM_RECTS(&region);
-    pbox = REGION_RECTS(&region);
+    nbox = RegionNumRects(&region);
+    pbox = RegionRects(&region);
 
-    xMask -= xDst;
-    yMask -= yDst;
+    xMask = xMask + mask_off_x - xDst - dst_off_x;
+    yMask = yMask + mask_off_y - yDst - dst_off_y;
 
-    xSrc -= xDst;
-    ySrc -= yDst;
+    xSrc = xSrc + src_off_x - xDst - dst_off_x;
+    ySrc = ySrc + src_off_y - yDst - dst_off_y;
 
     while (nbox--)
     {
 	(*pExaScr->info->Composite) (pDstPix,
-				     pbox->x1 + xSrc + src_off_x,
-				     pbox->y1 + ySrc + src_off_y,
-				     pbox->x1 + xMask + mask_off_x,
-				     pbox->y1 + yMask + mask_off_y,
-				     pbox->x1 + dst_off_x,
-				     pbox->y1 + dst_off_y,
+				     pbox->x1 + xSrc,
+				     pbox->y1 + ySrc,
+				     pbox->x1 + xMask,
+				     pbox->y1 + yMask,
+				     pbox->x1,
+				     pbox->y1,
 				     pbox->x2 - pbox->x1,
 				     pbox->y2 - pbox->y1);
 	pbox++;
@@ -451,7 +788,7 @@ exaTryDriverComposite(CARD8		op,
     (*pExaScr->info->DoneComposite) (pDstPix);
     exaMarkSync(pDst->pDrawable->pScreen);
 
-    REGION_UNINIT(pDst->pDrawable->pScreen, &region);
+    RegionUninit(&region);
     return 1;
 }
 
@@ -519,9 +856,6 @@ exaTryMagicTwoPassCompositeHelper(CARD8 op,
 				  CARD16 height)
 {
     ExaScreenPriv (pDst->pDrawable->pScreen);
-    DrawablePtr pDstDraw = pDst->pDrawable;
-    PixmapPtr pDstPixmap = exaGetDrawablePixmap(pDstDraw);
-    int xoff, yoff;
 
     assert(op == PictOpOver);
 
@@ -539,12 +873,6 @@ exaTryMagicTwoPassCompositeHelper(CARD8 op,
      */
     exaComposite(PictOpOutReverse, pSrc, pMask, pDst, xSrc, ySrc, xMask, yMask,
 		 xDst, yDst, width, height);
-
-    exaGetDrawableDeltas(pDstDraw, pDstPixmap, &xoff, &yoff);
-    xoff += pDstDraw->x;
-    yoff += pDstDraw->y;
-    exaPixmapDirty(pDstPixmap, xDst + xoff, yDst + yoff, xDst + xoff + width,
-		   yDst + yoff + height);
 
     /* Then, add in the source value times the destination alpha factors (1.0).
      */
@@ -572,67 +900,48 @@ exaComposite(CARD8	op,
     int ret = -1;
     Bool saveSrcRepeat = pSrc->repeat;
     Bool saveMaskRepeat = pMask ? pMask->repeat : 0;
-    ExaMigrationRec pixmaps[3];
-    int npixmaps = 1;
-    PixmapPtr pSrcPixmap = NULL;
+    RegionRec region;
 
-    pixmaps[0].as_dst = TRUE;
-    pixmaps[0].as_src = exaOpReadsDestination(op);
-    pixmaps[0].pPix = exaGetDrawablePixmap (pDst->pDrawable);
-
-    if (pSrc->pDrawable) {
-	pSrcPixmap = exaGetDrawablePixmap (pSrc->pDrawable);
-	pixmaps[npixmaps].as_dst = FALSE;
-	pixmaps[npixmaps].as_src = TRUE;
-	pixmaps[npixmaps].pPix = pSrcPixmap;
-	npixmaps++;
-    }
-
-    if (pMask && pMask->pDrawable) {
-	pixmaps[npixmaps].as_dst = FALSE;
-	pixmaps[npixmaps].as_src = TRUE;
-	pixmaps[npixmaps].pPix = exaGetDrawablePixmap (pMask->pDrawable);
-	npixmaps++;
-    }
-
-    /* We currently don't support acceleration of gradients, or other pictures
-     * with a NULL pDrawable.
-     */
-    if (pExaScr->swappedOut ||
-	pSrc->pDrawable == NULL || (pMask != NULL && pMask->pDrawable == NULL))
-    {
+    if (pExaScr->swappedOut)
 	goto fallback;
-    }
 
     /* Remove repeat in source if useless */
-    if (pSrc->repeat && !pSrc->transform && xSrc >= 0 &&
+    if (pSrc->pDrawable && pSrc->repeat && !pSrc->transform && xSrc >= 0 &&
 	(xSrc + width) <= pSrc->pDrawable->width && ySrc >= 0 &&
 	(ySrc + height) <= pSrc->pDrawable->height)
 	    pSrc->repeat = 0;
 
-    if (!pMask)
+    if (!pMask && !pSrc->alphaMap && !pDst->alphaMap &&
+	(op == PictOpSrc || (op == PictOpOver && !PICT_FORMAT_A(pSrc->format))))
     {
-      if ((op == PictOpSrc &&
-	   ((pSrc->format == pDst->format) ||
-	    (pSrc->format==PICT_a8r8g8b8 && pDst->format==PICT_x8r8g8b8) ||
-	    (pSrc->format==PICT_a8b8g8r8 && pDst->format==PICT_x8b8g8r8))) ||
-	  (op == PictOpOver && !pSrc->alphaMap && !pDst->alphaMap &&
-	   pSrc->format == pDst->format &&
-	   (pSrc->format==PICT_x8r8g8b8 || pSrc->format==PICT_x8b8g8r8)))
+	if (pSrc->pDrawable ?
+	    (pSrc->pDrawable->width == 1 && pSrc->pDrawable->height == 1 &&
+	     pSrc->repeat) :
+	    (pSrc->pSourcePict->type == SourcePictTypeSolidFill))
 	{
-	    if (pSrc->pDrawable->width == 1 &&
-		pSrc->pDrawable->height == 1 &&
-		pSrc->repeat)
+	    ret = exaTryDriverSolidFill(pSrc, pDst, xSrc, ySrc, xDst, yDst,
+					width, height);
+	    if (ret == 1)
+		goto done;
+	} else if (pSrc->pDrawable && !pSrc->transform &&
+	    ((op == PictOpSrc &&
+	      (pSrc->format == pDst->format ||
+	       (PICT_FORMAT_COLOR(pDst->format) &&
+		PICT_FORMAT_COLOR(pSrc->format) &&
+		pDst->format == PICT_FORMAT(PICT_FORMAT_BPP(pSrc->format),
+					    PICT_FORMAT_TYPE(pSrc->format),
+					    0,
+					    PICT_FORMAT_R(pSrc->format),
+					    PICT_FORMAT_G(pSrc->format),
+					    PICT_FORMAT_B(pSrc->format))))) ||
+	     (op == PictOpOver && pSrc->format == pDst->format &&
+	      !PICT_FORMAT_A(pSrc->format))))
+	{
+	    if (!pSrc->repeat && xSrc >= 0 && ySrc >= 0 &&
+		(xSrc + width <= pSrc->pDrawable->width) &&
+		(ySrc + height <= pSrc->pDrawable->height))
 	    {
-		ret = exaTryDriverSolidFill(pSrc, pDst, xSrc, ySrc, xDst, yDst,
-					    width, height);
-		if (ret == 1)
-		    goto done;
-	    }
-	    else if (pSrcPixmap && !pSrc->repeat && !pSrc->transform)
-	    {
-		RegionRec	region;
-
+		Bool ret;
 		xDst += pDst->pDrawable->x;
 		yDst += pDst->pDrawable->y;
 		xSrc += pSrc->pDrawable->x;
@@ -643,19 +952,27 @@ exaComposite(CARD8	op,
 					       yDst, width, height))
 		    goto done;
 
+		ret = exaHWCopyNtoN(pSrc->pDrawable, pDst->pDrawable, NULL,
+			     RegionRects(&region), RegionNumRects(&region),
+			     xSrc - xDst, ySrc - yDst, FALSE, FALSE);
+		RegionUninit(&region);
 
-		exaCopyNtoN (pSrc->pDrawable, pDst->pDrawable, NULL,
-			     REGION_RECTS(&region), REGION_NUM_RECTS(&region),
-			     xSrc - xDst, ySrc - yDst,
-			     FALSE, FALSE, 0, NULL);
-		REGION_UNINIT(pDst->pDrawable->pScreen, &region);
+		/* Reset values to their original values. */
+		xDst -= pDst->pDrawable->x;
+		yDst -= pDst->pDrawable->y;
+		xSrc -= pSrc->pDrawable->x;
+		ySrc -= pSrc->pDrawable->y;
+
+		if (!ret)
+		    goto fallback;
+
 		goto done;
 	    }
-	    else if (pSrcPixmap && !pSrc->transform &&
-		     pSrc->repeatType == RepeatNormal)
+
+	    if (pSrc->repeat && pSrc->repeatType == RepeatNormal &&
+		pSrc->pDrawable->type == DRAWABLE_PIXMAP)
 	    {
-		RegionRec region;
-		DDXPointRec srcOrg;
+		DDXPointRec patOrg;
 
 		/* Let's see if the driver can do the repeat in one go */
 		if (pExaScr->info->PrepareComposite && !pSrc->alphaMap &&
@@ -679,29 +996,36 @@ exaComposite(CARD8	op,
 					       width, height))
 		    goto done;
 
-		srcOrg.x = (xSrc - xDst) % pSrcPixmap->drawable.width;
-		srcOrg.y = (ySrc - yDst) % pSrcPixmap->drawable.height;
+		/* pattern origin is the point in the destination drawable
+		 * corresponding to (0,0) in the source */
+		patOrg.x = xDst - xSrc;
+		patOrg.y = yDst - ySrc;
 
-		ret = exaFillRegionTiled(pDst->pDrawable, &region, pSrcPixmap,
-					 &srcOrg, FB_ALLONES, GXcopy);
+		ret = exaFillRegionTiled(pDst->pDrawable, &region,
+					 (PixmapPtr)pSrc->pDrawable,
+					 &patOrg, FB_ALLONES, GXcopy, CT_NONE);
 
-		REGION_UNINIT(pDst->pDrawable->pScreen, &region);
+		RegionUninit(&region);
 
 		if (ret)
 		    goto done;
+
+		/* Let's be correct and restore the variables to their original state. */
+		xDst -= pDst->pDrawable->x;
+		yDst -= pDst->pDrawable->y;
+		xSrc -= pSrc->pDrawable->x;
+		ySrc -= pSrc->pDrawable->y;
 	    }
 	}
     }
 
     /* Remove repeat in mask if useless */
-    if (pMask && pMask->repeat && !pMask->transform && xMask >= 0 &&
-	(xMask + width) <= pMask->pDrawable->width && yMask >= 0 &&
-	(yMask + height) <= pMask->pDrawable->height)
+    if (pMask && pMask->pDrawable && pMask->repeat && !pMask->transform &&
+	xMask >= 0 && (xMask + width) <= pMask->pDrawable->width &&
+	yMask >= 0 && (yMask + height) <= pMask->pDrawable->height)
 	    pMask->repeat = 0;
 
     if (pExaScr->info->PrepareComposite &&
-	(!pSrc->repeat || pSrc->repeatType == RepeatNormal) &&
-	(!pMask || !pMask->repeat || pMask->repeatType == RepeatNormal) &&
 	!pSrc->alphaMap && (!pMask || !pMask->alphaMap) && !pDst->alphaMap)
     {
 	Bool isSrcSolid;
@@ -714,9 +1038,10 @@ exaComposite(CARD8	op,
 	/* For generic masks and solid src pictures, mach64 can do Over in two
 	 * passes, similar to the component-alpha case.
 	 */
-	isSrcSolid = pSrc->pDrawable->width == 1 &&
-		     pSrc->pDrawable->height == 1 &&
-		     pSrc->repeat;
+	isSrcSolid = pSrc->pDrawable ?
+	    (pSrc->pDrawable->width == 1 && pSrc->pDrawable->height == 1 &&
+	     pSrc->repeat) :
+	    (pSrc->pSourcePict->type == SourcePictTypeSolidFill);
 
 	/* If we couldn't do the Composite in a single pass, and it was a
 	 * component-alpha Over, see if we can do it in two passes with
@@ -738,7 +1063,6 @@ fallback:
     exaPrintCompositeFallback (op, pSrc, pMask, pDst);
 #endif
 
-    exaDoMigration(pixmaps, npixmaps, FALSE);
     ExaCheckComposite (op, pSrc, pMask, pDst, xSrc, ySrc,
 		      xMask, yMask, xDst, yDst, width, height);
 
@@ -747,14 +1071,13 @@ done:
     if (pMask)
 	pMask->repeat = saveMaskRepeat;
 }
-#endif
 
 /**
  * Same as miCreateAlphaPicture, except it uses ExaCheckPolyFillRect instead
  * of PolyFillRect to initialize the pixmap after creating it, to prevent
  * the pixmap from being migrated.
  *
- * See the comments about exaTrapezoids.
+ * See the comments about exaTrapezoids and exaTriangles.
  */
 static PicturePtr
 exaCreateAlphaPicture (ScreenPtr     pScreen,
@@ -783,7 +1106,7 @@ exaCreateAlphaPicture (ScreenPtr     pScreen,
     }
 
     pPixmap = (*pScreen->CreatePixmap) (pScreen, width, height,
-					pPictFormat->depth);
+					pPictFormat->depth, 0);
     if (!pPixmap)
 	return 0;
     pGC = GetScratchGC (pPixmap->drawable.depth, pScreen);
@@ -826,36 +1149,34 @@ exaTrapezoids (CARD8 op, PicturePtr pSrc, PicturePtr pDst,
 {
     ScreenPtr		pScreen = pDst->pDrawable->pScreen;
     PictureScreenPtr    ps = GetPictureScreen(pScreen);
+    BoxRec		bounds;
 
-    /*
-     * Check for solid alpha add
-     */
-    if (op == PictOpAdd && miIsSolidAlpha (pSrc))
-    {
-	for (; ntrap; ntrap--, traps++)
-	    (*ps->RasterizeTrapezoid) (pDst, traps, 0, 0);
-    }
-    else if (maskFormat)
-    {
+    if (maskFormat) {
 	PicturePtr	pPicture;
-	BoxRec		bounds;
 	INT16		xDst, yDst;
 	INT16		xRel, yRel;
+
+	miTrapezoidBounds (ntrap, traps, &bounds);
+
+	if (bounds.y1 >= bounds.y2 || bounds.x1 >= bounds.x2)
+	    return;
 
 	xDst = traps[0].left.p1.x >> 16;
 	yDst = traps[0].left.p1.y >> 16;
 
-	miTrapezoidBounds (ntrap, traps, &bounds);
-	if (bounds.y1 >= bounds.y2 || bounds.x1 >= bounds.x2)
-	    return;
 	pPicture = exaCreateAlphaPicture (pScreen, pDst, maskFormat,
 	                                  bounds.x2 - bounds.x1,
 	                                  bounds.y2 - bounds.y1);
 	if (!pPicture)
 	    return;
+
+	exaPrepareAccess(pPicture->pDrawable, EXA_PREPARE_DEST);
 	for (; ntrap; ntrap--, traps++)
+          if (xTrapezoidValid(traps))
 	    (*ps->RasterizeTrapezoid) (pPicture, traps,
 				       -bounds.x1, -bounds.y1);
+	exaFinishAccess(pPicture->pDrawable, EXA_PREPARE_DEST);
+
 	xRel = bounds.x1 + xSrc - xDst;
 	yRel = bounds.y1 + ySrc - yDst;
 	CompositePicture (op, pSrc, pPicture, pDst,
@@ -863,9 +1184,7 @@ exaTrapezoids (CARD8 op, PicturePtr pSrc, PicturePtr pDst,
 			  bounds.x2 - bounds.x1,
 			  bounds.y2 - bounds.y1);
 	FreePicture (pPicture, 0);
-    }
-    else
-    {
+    } else {
 	if (pDst->polyEdge == PolyEdgeSharp)
 	    maskFormat = PictureMatchFormat (pScreen, 1, PICT_a1);
 	else
@@ -875,411 +1194,64 @@ exaTrapezoids (CARD8 op, PicturePtr pSrc, PicturePtr pDst,
     }
 }
 
-#define NeedsComponent(f) (PICT_FORMAT_A(f) != 0 && PICT_FORMAT_RGB(f) != 0)
-
 /**
- * exaRasterizeTrapezoid is just a wrapper around the software implementation.
+ * exaTriangles is essentially a copy of miTriangles that uses
+ * exaCreateAlphaPicture instead of miCreateAlphaPicture.
  *
- * The trapezoid specification is basically too hard to be done in hardware (at
- * the very least, without programmability), so we just do the appropriate
- * Prepare/FinishAccess for it before using fbtrap.c.
+ * The problem with miCreateAlphaPicture is that it calls PolyFillRect
+ * to initialize the contents after creating the pixmap, which
+ * causes the pixmap to be moved in for acceleration. The subsequent
+ * call to AddTriangles won't be accelerated however, which forces the pixmap
+ * to be moved out again.
+ *
+ * exaCreateAlphaPicture avoids this roundtrip by using ExaCheckPolyFillRect
+ * to initialize the contents.
  */
 void
-exaRasterizeTrapezoid (PicturePtr pPicture, xTrapezoid  *trap,
-		       int x_off, int y_off)
+exaTriangles (CARD8 op, PicturePtr pSrc, PicturePtr pDst,
+	      PictFormatPtr maskFormat, INT16 xSrc, INT16 ySrc,
+	      int ntri, xTriangle *tris)
 {
-    DrawablePtr pDraw = pPicture->pDrawable;
-    ExaMigrationRec pixmaps[1];
-    int xoff, yoff;
+    ScreenPtr		pScreen = pDst->pDrawable->pScreen;
+    PictureScreenPtr    ps = GetPictureScreen(pScreen);
+    BoxRec		bounds;
 
-    pixmaps[0].as_dst = TRUE;
-    pixmaps[0].as_src = TRUE;
-    pixmaps[0].pPix = exaGetDrawablePixmap (pDraw);
-    exaDoMigration(pixmaps, 1, FALSE);
+    if (maskFormat) {
+	PicturePtr	pPicture;
+	INT16		xDst, yDst;
+	INT16		xRel, yRel;
 
-    exaPrepareAccess(pDraw, EXA_PREPARE_DEST);
-    fbRasterizeTrapezoid(pPicture, trap, x_off, y_off);
-    exaGetDrawableDeltas(pDraw, pixmaps[0].pPix, &xoff, &yoff);
-    exaPixmapDirty(pixmaps[0].pPix, pDraw->x + xoff, pDraw->y + yoff,
-		   pDraw->x + xoff + pDraw->width,
-		   pDraw->y + yoff + pDraw->height);
-    exaFinishAccess(pDraw, EXA_PREPARE_DEST);
-}
+	miTriangleBounds (ntri, tris, &bounds);
 
-/**
- * exaAddTriangles does migration and syncing before dumping down to the
- * software implementation.
- */
-void
-exaAddTriangles (PicturePtr pPicture, INT16 x_off, INT16 y_off, int ntri,
-		 xTriangle *tris)
-{
-    DrawablePtr pDraw = pPicture->pDrawable;
-    ExaMigrationRec pixmaps[1];
-    int xoff, yoff;
-
-    pixmaps[0].as_dst = TRUE;
-    pixmaps[0].as_src = TRUE;
-    pixmaps[0].pPix = exaGetDrawablePixmap (pDraw);
-    exaDoMigration(pixmaps, 1, FALSE);
-
-    exaPrepareAccess(pDraw, EXA_PREPARE_DEST);
-    fbAddTriangles(pPicture, x_off, y_off, ntri, tris);
-    exaGetDrawableDeltas(pDraw, pixmaps[0].pPix, &xoff, &yoff);
-    exaPixmapDirty(pixmaps[0].pPix, pDraw->x + xoff, pDraw->y + yoff,
-		   pDraw->x + xoff + pDraw->width,
-		   pDraw->y + yoff + pDraw->height);
-    exaFinishAccess(pDraw, EXA_PREPARE_DEST);
-}
-
-/**
- * Returns TRUE if the glyphs in the lists intersect.  Only checks based on
- * bounding box, which appears to be good enough to catch most cases at least.
- */
-static Bool
-exaGlyphsIntersect(int nlist, GlyphListPtr list, GlyphPtr *glyphs)
-{
-    int x1, x2, y1, y2;
-    int n;
-    GlyphPtr glyph;
-    int x, y;
-    BoxRec extents;
-    Bool first = TRUE;
-    
-    x = 0;
-    y = 0;
-    while (nlist--) {
-	x += list->xOff;
-	y += list->yOff;
-	n = list->len;
-	list++;
-	while (n--) {
-	    glyph = *glyphs++;
-
-	    if (glyph->info.width == 0 || glyph->info.height == 0) {
-		x += glyph->info.xOff;
-		y += glyph->info.yOff;
-		continue;
-	    }
-
-	    x1 = x - glyph->info.x;
-	    if (x1 < MINSHORT)
-		x1 = MINSHORT;
-	    y1 = y - glyph->info.y;
-	    if (y1 < MINSHORT)
-		y1 = MINSHORT;
-	    x2 = x1 + glyph->info.width;
-	    if (x2 > MAXSHORT)
-		x2 = MAXSHORT;
-	    y2 = y1 + glyph->info.height;
-	    if (y2 > MAXSHORT)
-		y2 = MAXSHORT;
-
-	    if (first) {
-		extents.x1 = x1;
-		extents.y1 = y1;
-		extents.x2 = x2;
-		extents.y2 = y2;
-		first = FALSE;
-	    } else {
-		if (x1 < extents.x2 && x2 > extents.x1 &&
-		    y1 < extents.y2 && y2 > extents.y1)
-		{
-		    return TRUE;
-		}
-
-		if (x1 < extents.x1)
-		    extents.x1 = x1;
-		if (x2 > extents.x2)
-		    extents.x2 = x2;
-		if (y1 < extents.y1)
-		    extents.y1 = y1;
-		if (y2 > extents.y2)
-		    extents.y2 = y2;
-	    }
-	    x += glyph->info.xOff;
-	    y += glyph->info.yOff;
-	}
-    }
-
-    return FALSE;
-}
-
-/* exaGlyphs is a slight variation on miGlyphs, to support acceleration.  The
- * issue is that miGlyphs' use of ModifyPixmapHeader makes it impossible to
- * migrate these pixmaps.  So, instead we create a pixmap at the beginning of
- * the loop and upload each glyph into the pixmap before compositing.
- */
-void
-exaGlyphs (CARD8	op,
-	  PicturePtr	pSrc,
-	  PicturePtr	pDst,
-	  PictFormatPtr	maskFormat,
-	  INT16		xSrc,
-	  INT16		ySrc,
-	  int		nlist,
-	  GlyphListPtr	list,
-	  GlyphPtr	*glyphs)
-{
-    ExaScreenPriv (pDst->pDrawable->pScreen);
-    PixmapPtr	pPixmap = NULL;
-    PicturePtr	pPicture;
-    PixmapPtr   pMaskPixmap = NULL;
-    PixmapPtr   pDstPixmap = exaGetDrawablePixmap(pDst->pDrawable);
-    PicturePtr  pMask;
-    ScreenPtr   pScreen = pDst->pDrawable->pScreen;
-    int		width = 0, height = 0;
-    int		x, y, x1, y1, xoff, yoff;
-    int		xDst = list->xOff, yDst = list->yOff;
-    int		n;
-    int		error;
-    BoxRec	extents;
-    CARD32	component_alpha;
-
-    /* If we have a mask format but it's the same as all the glyphs and
-     * the glyphs don't intersect, we can avoid accumulating the glyphs in the
-     * temporary picture.
-     */
-    if (maskFormat != NULL) {
-	Bool sameFormat = TRUE;
-	int i;
-
-	for (i = 0; i < nlist; i++) {
-	    if (maskFormat->format != list[i].format->format) {
-		sameFormat = FALSE;
-		break;
-	    }
-	}
-	if (sameFormat) {
-	    if (!exaGlyphsIntersect(nlist, list, glyphs)) {
-		maskFormat = NULL;
-	    }
-	}
-    }
-
-    /* If the driver doesn't support accelerated composite, there's no point in
-     * going to this extra work.  Assume that any driver that supports Composite
-     * will be able to support component alpha using the two-pass helper.
-     */
-    if (!pExaScr->info->PrepareComposite)
-    {
-	miGlyphs(op, pSrc, pDst, maskFormat, xSrc, ySrc, nlist, list, glyphs);
-	return;
-    }
-
-    if (maskFormat)
-    {
-	GCPtr	    pGC;
-	xRectangle  rect;
-	
-	miGlyphExtents (nlist, list, glyphs, &extents);
-
-	extents.x1 = max(extents.x1, 0);
-	extents.y1 = max(extents.y1, 0);
-	extents.x2 = min(extents.x2, pDst->pDrawable->width);
-	extents.y2 = min(extents.y2, pDst->pDrawable->height);
-
-	if (extents.x2 <= extents.x1 || extents.y2 <= extents.y1)
-	    return;
-	width = extents.x2 - extents.x1;
-	height = extents.y2 - extents.y1;
-	pMaskPixmap = (*pScreen->CreatePixmap) (pScreen, width, height,
-						maskFormat->depth);
-	if (!pMaskPixmap)
-	    return;
-	component_alpha = NeedsComponent(maskFormat->format);
-	pMask = CreatePicture (0, &pMaskPixmap->drawable,
-			       maskFormat, CPComponentAlpha, &component_alpha,
-			       serverClient, &error);
-	if (!pMask)
-	{
-	    (*pScreen->DestroyPixmap) (pMaskPixmap);
-	    return;
-	}
-	ValidatePicture(pMask);
-	pGC = GetScratchGC (pMaskPixmap->drawable.depth, pScreen);
-	ValidateGC (&pMaskPixmap->drawable, pGC);
-	rect.x = 0;
-	rect.y = 0;
-	rect.width = width;
-	rect.height = height;
-	(*pGC->ops->PolyFillRect) (&pMaskPixmap->drawable, pGC, 1, &rect);
-	exaPixmapDirty(pMaskPixmap, 0, 0, width, height);
-	FreeScratchGC (pGC);
-	x = -extents.x1;
-	y = -extents.y1;
-    }
-    else
-    {
-	pMask = pDst;
-	x = 0;
-	y = 0;
-    }
-
-    exaGetDrawableDeltas(pDst->pDrawable, pDstPixmap, &xoff, &yoff);
-
-    while (nlist--)
-    {
-	GCPtr pGC = NULL;
-	int maxwidth = 0, maxheight = 0, i;
-	ExaMigrationRec pixmaps[1];
-	PixmapPtr pScratchPixmap = NULL;
-
-	x += list->xOff;
-	y += list->yOff;
-	n = list->len;
-	for (i = 0; i < n; i++) {
-	    if (glyphs[i]->info.width > maxwidth)
-		maxwidth = glyphs[i]->info.width;
-	    if (glyphs[i]->info.height > maxheight)
-		maxheight = glyphs[i]->info.height;
-	}
-	if (maxwidth == 0 || maxheight == 0) {
-	    while (n--)
-	    {
-		GlyphPtr glyph;
-
-		glyph = *glyphs++;
-		x += glyph->info.xOff;
-		y += glyph->info.yOff;
-	    }
-	    list++;
-	    continue;
-	}
-
-	/* Create the (real) temporary pixmap to store the current glyph in */
-	pPixmap = (*pScreen->CreatePixmap) (pScreen, maxwidth, maxheight,
-					    list->format->depth);
-	if (!pPixmap)
+	if (bounds.y1 >= bounds.y2 || bounds.x1 >= bounds.x2)
 	    return;
 
-	/* Create a temporary picture to wrap the temporary pixmap, so it can be
-	 * used as a source for Composite.
-	 */
-	component_alpha = NeedsComponent(list->format->format);
-	pPicture = CreatePicture (0, &pPixmap->drawable, list->format,
-				  CPComponentAlpha, &component_alpha, 
-				  serverClient, &error);
-	if (!pPicture) {
-	    (*pScreen->DestroyPixmap) (pPixmap);
+	xDst = tris[0].p1.x >> 16;
+	yDst = tris[0].p1.y >> 16;
+
+	pPicture = exaCreateAlphaPicture (pScreen, pDst, maskFormat,
+					  bounds.x2 - bounds.x1,
+					  bounds.y2 - bounds.y1);
+	if (!pPicture)
 	    return;
-	}
-	ValidatePicture(pPicture);
 
-	/* Give the temporary pixmap an initial kick towards the screen, so
-	 * it'll stick there.
-	 */
-	pixmaps[0].as_dst = TRUE;
-	pixmaps[0].as_src = TRUE;
-	pixmaps[0].pPix = pPixmap;
-	exaDoMigration (pixmaps, 1, pExaScr->info->PrepareComposite != NULL);
+	exaPrepareAccess(pPicture->pDrawable, EXA_PREPARE_DEST);
+	(*ps->AddTriangles) (pPicture, -bounds.x1, -bounds.y1, ntri, tris);
+	exaFinishAccess(pPicture->pDrawable, EXA_PREPARE_DEST);
 
-	while (n--)
-	{
-	    GlyphPtr glyph = *glyphs++;
-	    pointer glyphdata = (pointer) (glyph + 1);
-	    DrawablePtr pCmpDrw = (maskFormat ? pMask : pDst)->pDrawable;
+	xRel = bounds.x1 + xSrc - xDst;
+	yRel = bounds.y1 + ySrc - yDst;
+	CompositePicture (op, pSrc, pPicture, pDst,
+			  xRel, yRel, 0, 0, bounds.x1, bounds.y1,
+			  bounds.x2 - bounds.x1, bounds.y2 - bounds.y1);
+	FreePicture (pPicture, 0);
+    } else {
+	if (pDst->polyEdge == PolyEdgeSharp)
+	    maskFormat = PictureMatchFormat (pScreen, 1, PICT_a1);
+	else
+	    maskFormat = PictureMatchFormat (pScreen, 8, PICT_a8);
 
-	    x1 = x - glyph->info.x;
-	    y1 = y - glyph->info.y;
-
-	    if (x1 >= pCmpDrw->width || y1 >= pCmpDrw->height ||
-		glyph->info.width == 0 || glyph->info.height == 0 ||
-		(x1 + glyph->info.width) <= 0 || (y1 + glyph->info.height) <= 0)
-		goto nextglyph;
-
-	    (*pScreen->ModifyPixmapHeader) (pScratchPixmap, 
-					    glyph->info.width,
-					    glyph->info.height,
-					    0, 0, -1, glyphdata);
-
-	    /* Copy the glyph data into the proper pixmap instead of a fake.
-	     * First we try to use UploadToScreen, if we can, then we fall back
-	     * to a plain exaCopyArea in case of failure.
-	     */
-	    if (pExaScr->info->UploadToScreen &&
-		exaPixmapIsOffscreen(pPixmap) &&
-		(*pExaScr->info->UploadToScreen) (pPixmap, 0, 0,
-					glyph->info.width,
-					glyph->info.height,
-					glyphdata,
-					PixmapBytePad(glyph->info.width,
-						      list->format->depth)))
-	    {
-		exaMarkSync (pScreen);
-	    } else {
-		/* Set up the scratch pixmap/GC for doing a CopyArea. */
-		if (pScratchPixmap == NULL) {
-		    /* Get a scratch pixmap to wrap the original glyph data */
-		    pScratchPixmap = GetScratchPixmapHeader (pScreen,
-							glyph->info.width,
-							glyph->info.height, 
-							list->format->depth,
-							list->format->depth, 
-							-1, glyphdata);
-		    if (!pScratchPixmap) {
-			FreePicture(pPicture, 0);
-			(*pScreen->DestroyPixmap) (pPixmap);
-			return;
-		    }
-	
-		    /* Get a scratch GC with which to copy the glyph data from
-		     * scratch to temporary
-		     */
-		    pGC = GetScratchGC (list->format->depth, pScreen);
-		    ValidateGC (&pPixmap->drawable, pGC);
-		} else {
-		    (*pScreen->ModifyPixmapHeader) (pScratchPixmap, 
-						    glyph->info.width,
-						    glyph->info.height,
-						    0, 0, -1, glyphdata);
-		    pScratchPixmap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-		}
-
-		exaCopyArea (&pScratchPixmap->drawable, &pPixmap->drawable, pGC,
-			     0, 0, glyph->info.width, glyph->info.height, 0, 0);
-	    }
-
-	    exaPixmapDirty (pPixmap, 0, 0,
-			    glyph->info.width, glyph->info.height);
-
-	    if (maskFormat)
-	    {
-		exaComposite (PictOpAdd, pPicture, NULL, pMask, 0, 0, 0, 0,
-			      x1, y1, glyph->info.width, glyph->info.height);
-		exaPixmapDirty(pMaskPixmap, x1, y1, x1 + glyph->info.width,
-			       y1 + glyph->info.height);
-	    }
-	    else
-	    {
-		exaComposite (op, pSrc, pPicture, pDst,
-			      xSrc + x1 - xDst, ySrc + y1 - yDst,
-			      0, 0, x1, y1, glyph->info.width,
-			      glyph->info.height);
-		x1 += pDst->pDrawable->x + xoff;
-		y1 += pDst->pDrawable->y + yoff;
-		exaPixmapDirty(pDstPixmap, x1, y1, x1 + glyph->info.width,
-			       y1 + glyph->info.height);
-	    }
-nextglyph:
-	    x += glyph->info.xOff;
-	    y += glyph->info.yOff;
-	}
-	list++;
-	if (pGC != NULL)
-	    FreeScratchGC (pGC);
-	FreePicture ((pointer) pPicture, 0);
-	(*pScreen->DestroyPixmap) (pPixmap);
-	if (pScratchPixmap != NULL)
-	    FreeScratchPixmapHeader (pScratchPixmap);
-    }
-    if (maskFormat)
-    {
-	x = extents.x1;
-	y = extents.y1;
-	exaComposite (op, pSrc, pMask, pDst, xSrc + x - xDst, ySrc + y - yDst,
-		      0, 0, x, y, width, height);
-	FreePicture ((pointer) pMask, (XID) 0);
-	(*pScreen->DestroyPixmap) (pMaskPixmap);
+	for (; ntri; ntri--, tris++)
+	    exaTriangles (op, pSrc, pDst, maskFormat, xSrc, ySrc, 1, tris);
     }
 }
