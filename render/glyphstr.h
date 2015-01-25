@@ -30,6 +30,7 @@
 #include "screenint.h"
 #include "regionstr.h"
 #include "miscstruct.h"
+#include "privates.h"
 
 #define GlyphFormat1	0
 #define GlyphFormat4	1
@@ -39,12 +40,15 @@
 #define GlyphFormatNum	5
 
 typedef struct _Glyph {
-    CARD32	refcnt;
-    DevUnion	*devPrivates;
-    CARD32	size;	/* info + bitmap */
-    xGlyphInfo	info;
-    /* bits follow */
+    CARD32	    refcnt;
+    PrivateRec	*devPrivates;
+    unsigned char   sha1[20];
+    CARD32	    size; /* info + bitmap */
+    xGlyphInfo	    info;
+    /* per-screen pixmaps follow */
 } GlyphRec, *GlyphPtr;
+
+#define GlyphPicture(glyph) ((PicturePtr *) ((glyph) + 1))
 
 typedef struct _GlyphRef {
     CARD32	signature;
@@ -67,22 +71,17 @@ typedef struct _GlyphHash {
 
 typedef struct _GlyphSet {
     CARD32	    refcnt;
-    PictFormatPtr   format;
     int		    fdepth;
+    PictFormatPtr   format;
     GlyphHashRec    hash;
-    int             maxPrivate;
-    pointer         *devPrivates;
+    PrivateRec      *devPrivates;
 } GlyphSetRec, *GlyphSetPtr;
 
-#define GlyphSetGetPrivate(pGlyphSet,n)					\
-	((n) > (pGlyphSet)->maxPrivate ?				\
-	 (pointer) 0 :							\
-	 (pGlyphSet)->devPrivates[n])
+#define GlyphSetGetPrivate(pGlyphSet,k)					\
+    dixLookupPrivate(&(pGlyphSet)->devPrivates, k)
 
-#define GlyphSetSetPrivate(pGlyphSet,n,ptr)				\
-	((n) > (pGlyphSet)->maxPrivate ?				\
-	 _GlyphSetSetNewPrivate(pGlyphSet, n, ptr) :			\
-	 ((((pGlyphSet)->devPrivates[n] = (ptr)) != 0) || TRUE))
+#define GlyphSetSetPrivate(pGlyphSet,k,ptr)				\
+    dixSetPrivate(&(pGlyphSet)->devPrivates, k, ptr)
 
 typedef struct _GlyphList {
     INT16	    xOff;
@@ -91,75 +90,55 @@ typedef struct _GlyphList {
     PictFormatPtr   format;
 } GlyphListRec, *GlyphListPtr;
 
-GlyphHashSetPtr
-FindGlyphHashSet (CARD32 filled);
-
-int
-AllocateGlyphSetPrivateIndex (void);
-
-void
-ResetGlyphSetPrivateIndex (void);
-
-Bool
-_GlyphSetSetNewPrivate (GlyphSetPtr glyphSet, int n, pointer ptr);
-
-void
-ResetGlyphPrivates (void);
-
-int
-AllocateGlyphPrivateIndex (void);
-
-Bool
-AllocateGlyphPrivate (ScreenPtr pScreen,
-		      int	index2,
-		      unsigned	amount);
-
-Bool
-GlyphInit (ScreenPtr pScreen);
-
-Bool
-GlyphFinishInit (ScreenPtr pScreen);
-
-void
+extern _X_EXPORT void
 GlyphUninit (ScreenPtr pScreen);
 
-GlyphHashSetPtr
+extern _X_EXPORT GlyphHashSetPtr
 FindGlyphHashSet (CARD32 filled);
 
-GlyphRefPtr
-FindGlyphRef (GlyphHashPtr hash, CARD32 signature, Bool match, GlyphPtr compare);
+extern _X_EXPORT GlyphRefPtr
+FindGlyphRef (GlyphHashPtr	hash,
+	      CARD32		signature,
+	      Bool		match,
+	      unsigned char	sha1[20]);
 
-CARD32
-HashGlyph (GlyphPtr glyph);
+extern _X_EXPORT GlyphPtr
+FindGlyphByHash (unsigned char sha1[20], int format);
 
-void
+extern _X_EXPORT int
+HashGlyph (xGlyphInfo    *gi,
+	   CARD8	 *bits,
+	   unsigned long size,
+	   unsigned char sha1[20]);
+
+extern _X_EXPORT void
 FreeGlyph (GlyphPtr glyph, int format);
 
-void
+extern _X_EXPORT void
 AddGlyph (GlyphSetPtr glyphSet, GlyphPtr glyph, Glyph id);
 
-Bool
+extern _X_EXPORT Bool
 DeleteGlyph (GlyphSetPtr glyphSet, Glyph id);
 
-GlyphPtr
+extern _X_EXPORT GlyphPtr
 FindGlyph (GlyphSetPtr glyphSet, Glyph id);
 
-GlyphPtr
+extern _X_EXPORT GlyphPtr
 AllocateGlyph (xGlyphInfo *gi, int format);
 
-Bool
+extern _X_EXPORT Bool
 AllocateGlyphHash (GlyphHashPtr hash, GlyphHashSetPtr hashSet);
 
-Bool
+extern _X_EXPORT Bool
 ResizeGlyphHash (GlyphHashPtr hash, CARD32 change, Bool global);
 
-Bool
+extern _X_EXPORT Bool
 ResizeGlyphSet (GlyphSetPtr glyphSet, CARD32 change);
 
-GlyphSetPtr
+extern _X_EXPORT GlyphSetPtr
 AllocateGlyphSet (int fdepth, PictFormatPtr format);
 
-int
+extern _X_EXPORT int
 FreeGlyphSet (pointer   value,
 	      XID       gid);
 

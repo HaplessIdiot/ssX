@@ -39,16 +39,16 @@ struct _rrTransform {
     int		    height;
 };
 
-void
+extern _X_EXPORT void
 RRTransformInit (RRTransformPtr transform);
 
-void
+extern _X_EXPORT void
 RRTransformFini (RRTransformPtr transform);
 
-Bool
+extern _X_EXPORT Bool
 RRTransformEqual (RRTransformPtr a, RRTransformPtr b);
 
-Bool
+extern _X_EXPORT Bool
 RRTransformSetFilter (RRTransformPtr	dst,
 		      PictFilterPtr	filter,
 		      xFixed		*params,
@@ -56,10 +56,17 @@ RRTransformSetFilter (RRTransformPtr	dst,
 		      int		width,
 		      int		height);
 
-Bool
+extern _X_EXPORT Bool
 RRTransformCopy (RRTransformPtr dst, RRTransformPtr src);
 
-Bool
+/*
+ * Compute the complete transformation matrix including
+ * client-specified transform, rotation/reflection values and the crtc 
+ * offset.
+ *
+ * Return TRUE if the resulting transform is not a simple translation.
+ */
+extern _X_EXPORT Bool
 RRTransformCompute (int			    x,
 		    int			    y,
 		    int			    width,
