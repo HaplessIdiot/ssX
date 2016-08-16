@@ -341,7 +341,6 @@ x68kCfbFinishScreenInit(
     
     pScreen->CloseScreen = fbCloseScreen;
     pScreen->SaveScreen = x68kSaveScreen;
-    miInitializeBackingStore (pScreen);
 
     return TRUE;
 }
