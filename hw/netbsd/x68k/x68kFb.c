@@ -53,12 +53,12 @@ x68kFbCommonOpen(X68kScreenRec *pPriv, const char *device)
     
     /* open frame buffer */
     if ( ( pPriv->fd = open(device, O_RDWR, 0)) < 0) {
-        Error( "Can't open frame buffer" );
+        ErrorF( "Can't open frame buffer" );
         return FALSE;
     }
     /* get frame buffer infomation */
     if ( ioctl( pPriv->fd, GRFIOCGINFO, &gi ) == -1 ) {
-        Error( "Can't get grfinfo" );
+        ErrorF( "Can't get grfinfo" );
         return FALSE;
     }
     pPriv->mapsize = gi.gd_regsize + gi.gd_fbsize;
@@ -67,7 +67,7 @@ x68kFbCommonOpen(X68kScreenRec *pPriv, const char *device)
     pPriv->reg = (FbReg *)mmap(0, pPriv->mapsize, PROT_READ | PROT_WRITE,
                                MAP_FILE | MAP_SHARED, pPriv->fd, 0 );
     if ( pPriv->reg == (FbReg *)-1) {
-        Error( "Can't map frame buffer" );
+        ErrorF( "Can't map frame buffer" );
         return FALSE;
     }
     pPriv->fb = (uint8_t *)((uint32_t)pPriv->reg + gi.gd_regsize);
@@ -104,7 +104,7 @@ x68kFbCommonClose(X68kScreenRec *pPriv)
     
     /* unmap and close frame buffer */
     if ( munmap(__UNVOLATILE(pPriv->reg), pPriv->mapsize) == -1 )
-        Error("Can't unmap frame buffer");
+        ErrorF("Can't unmap frame buffer");
     close(pPriv->fd);
 }
 
