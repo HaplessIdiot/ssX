@@ -292,13 +292,10 @@ x68kKbdEnqueueEvent(DeviceIntPtr pDev, Firm_event *fe)
 {
     BYTE		keycode;
     int			type;
-    int			i, nevents;
 
     type = ((fe->value == VKEY_UP) ? KeyRelease : KeyPress);
     keycode = (fe->id & 0x7f) + MIN_KEYCODE;
-    nevents = GetKeyboardEvents(x68kEvents, pDev, type, keycode);
-    for (i = 0; i < nevents; i++)
-	mieqEnqueue(pDev, &x68kEvents[i]);
+    QueueKeyboardEvents(pDev, type, keycode);
 }
 
 /*-

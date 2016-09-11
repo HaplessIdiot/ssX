@@ -150,9 +150,6 @@ Bool x68kGraphOpen(X68kScreenRec *);
 Bool x68kGraphInit(ScreenPtr, int, char *[]);
 void x68kGraphClose(X68kScreenRec *);
 
-/* in x68kInit.c */
-extern InternalEvent *x68kEvents;
-
 /* in x68kIo.c */
 void x68kSigIOHandler(int);
 

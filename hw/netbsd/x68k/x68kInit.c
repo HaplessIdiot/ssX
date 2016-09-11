@@ -77,8 +77,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "x68k.h"
 #include "mi.h"
 
-InternalEvent *x68kEvents = NULL;
-
 static int nscreens;
 
 void
@@ -146,6 +144,7 @@ InitInput(int argc, char *argv[])
 void
 CloseInput(void)
 {
+    mieqFini();
 }
 
 /*-------------------------------------------------------------------------
