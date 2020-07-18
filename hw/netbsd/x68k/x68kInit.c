@@ -126,8 +126,13 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char *argv[])
 void
 InitInput(int argc, char *argv[]) 
 {
-    x68kPointerDevice = AddInputDevice(serverClient, x68kMouseProc, TRUE);
-    x68kKeyboardDevice = AddInputDevice(serverClient, x68kKbdProc, TRUE);
+    int rc;
+
+    rc = AllocDevicePair(serverClient, "x68k",
+			 &x68kPointerDevice, &x68kKeyboardDevice,
+			 x68kMouseProc,x68kKbdProc, FALSE);
+    if (rc != Success)
+	FatalError("Failed to init x68k default input devices.\n");
 
     if ( !mieqInit() )
         FatalError("mieqInit failed\n");
