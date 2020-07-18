@@ -71,6 +71,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "Xos.h"
 #include "x68k.h"
 #include "mi.h"
+#include "extinit.h"
 
 static int nscreens;
 
@@ -78,6 +79,13 @@ void
 OsVendorInit(void)
 {
 }
+
+#ifdef GLXEXT
+void
+GlxExtensionInit(void)
+{
+}
+#endif
 
 /*-------------------------------------------------------------------------
  * function "InitOutput"                                [ called by DIX ]
