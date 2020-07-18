@@ -87,6 +87,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/Xatom.h>
 #include "xserver-properties.h"
 
+static void x68kMouseHandlerNotify(int, int, void *);
 static Bool x68kCursorOffScreen(ScreenPtr *, int *, int *);
 static void x68kCrossScreen(ScreenPtr, int);
 static void x68kWarpCursor(DeviceIntPtr, ScreenPtr, int, int);
@@ -101,6 +102,11 @@ miPointerScreenFuncRec x68kPointerScreenFuncs = {
 DeviceIntPtr x68kPointerDevice = NULL;
 
 static X68kMousePriv x68kMousePriv;
+
+static void
+x68kMouseHandlerNotify(int fd __unused, int ready __unused, void *data __unused)
+{
+}
 
 /*-
  *-----------------------------------------------------------------------
@@ -162,13 +168,14 @@ x68kMouseProc(DeviceIntPtr device, int what)
                 return !Success;
             }
 	    x68kMousePriv.bmask = 0;
-	    AddEnabledDevice(x68kMousePriv.fd);
+	    SetNotifyFd(x68kMousePriv.fd, x68kMouseHandlerNotify,
+		X_NOTIFY_READ, NULL);
 	    pMouse->on = TRUE;
 	    break;
 
 	case DEVICE_OFF:
 	    pMouse->on = FALSE;
-	    RemoveEnabledDevice(x68kMousePriv.fd);
+	    RemoveNotifyFd(x68kMousePriv.fd);
 	    break;
 
 	case DEVICE_CLOSE:
