@@ -21,7 +21,6 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-
 #ifndef _FB_H_
 #define _FB_H_
 
@@ -37,14 +36,10 @@
 #include "miscstruct.h"
 #include "servermd.h"
 #include "windowstr.h"
+#include "privates.h"
 #include "mi.h"
 #include "migc.h"
-#include "mibstore.h"
-#ifdef RENDER
 #include "picturestr.h"
-#else
-#include "picture.h"
-#endif
 
 #ifdef FB_ACCESS_WRAPPER
 
@@ -88,91 +83,39 @@
 #define FB_SHIFT    LOG2_BITMAP_PAD
 #endif
 
-#if FB_SHIFT < LOG2_BITMAP_PAD
-    error FB_SHIFT must be >= LOG2_BITMAP_PAD
-#endif
-    
 #define FB_UNIT	    (1 << FB_SHIFT)
-#define FB_HALFUNIT (1 << (FB_SHIFT-1))
 #define FB_MASK	    (FB_UNIT - 1)
 #define FB_ALLONES  ((FbBits) -1)
-    
 #if GLYPHPADBYTES != 4
 #error "GLYPHPADBYTES must be 4"
 #endif
-#if GETLEFTBITS_ALIGNMENT != 1
-#error "GETLEFTBITS_ALIGNMENT must be 1"
-#endif
-/* whether to bother to include 24bpp support */
-#ifndef FBNO24BIT
-#define FB_24BIT
-#endif
-
-/*
- * Unless otherwise instructed, fb includes code to advertise 24bpp
- * windows with 32bpp image format for application compatibility
- */
-
-#ifdef FB_24BIT
-#ifndef FBNO24_32
-#define FB_24_32BIT
-#endif
-#endif
-
 #define FB_STIP_SHIFT	LOG2_BITMAP_PAD
 #define FB_STIP_UNIT	(1 << FB_STIP_SHIFT)
 #define FB_STIP_MASK	(FB_STIP_UNIT - 1)
 #define FB_STIP_ALLONES	((FbStip) -1)
-    
 #define FB_STIP_ODDSTRIDE(s)	(((s) & (FB_MASK >> FB_STIP_SHIFT)) != 0)
 #define FB_STIP_ODDPTR(p)	((((long) (p)) & (FB_MASK >> 3)) != 0)
-    
 #define FbStipStrideToBitsStride(s) (((s) >> (FB_SHIFT - FB_STIP_SHIFT)))
 #define FbBitsStrideToStipStride(s) (((s) << (FB_SHIFT - FB_STIP_SHIFT)))
-    
 #define FbFullMask(n)   ((n) == FB_UNIT ? FB_ALLONES : ((((FbBits) 1) << n) - 1))
-    
-#if FB_SHIFT == 6
-# ifdef WIN32
-typedef unsigned __int64    FbBits;
-# else
-#  if defined(__alpha__) || defined(__alpha) || \
-      defined(ia64) || defined(__ia64__) || \
-      defined(__sparc64__) || defined(_LP64) || \
-      defined(__s390x__) || \
-      defined(amd64) || defined (__amd64__) || \
-      defined (__powerpc64__) || \
-      (defined(sgi) && (_MIPS_SZLONG == 64))
-typedef unsigned long	    FbBits;
-#  else
-typedef unsigned long long  FbBits;
-#  endif
-# endif
-#endif
 
 #if FB_SHIFT == 5
-typedef CARD32		    FbBits;
-#endif
-
-#if FB_SHIFT == 4
-typedef CARD16		    FbBits;
+typedef CARD32 FbBits;
+#else
+#error "Unsupported FB_SHIFT"
 #endif
 
 #if LOG2_BITMAP_PAD == FB_SHIFT
-typedef FbBits		    FbStip;
-#else
-# if LOG2_BITMAP_PAD == 5
-typedef CARD32		    FbStip;
-# endif
+typedef FbBits FbStip;
 #endif
 
-typedef int		    FbStride;
-
+typedef int FbStride;
 
 #ifdef FB_DEBUG
-extern void fbValidateDrawable(DrawablePtr d);
-extern void fbInitializeDrawable(DrawablePtr d);
-extern void fbSetBits (FbStip *bits, int stride, FbStip data);
+extern _X_EXPORT void fbValidateDrawable(DrawablePtr d);
+extern _X_EXPORT void fbInitializeDrawable(DrawablePtr d);
+extern _X_EXPORT void fbSetBits(FbStip * bits, int stride, FbStip data);
+
 #define FB_HEAD_BITS   (FbStip) (0xbaadf00d)
 #define FB_TAIL_BITS   (FbStip) (0xbaddf0ad)
 #else
@@ -225,7 +168,6 @@ extern void fbSetBits (FbStip *bits, int stride, FbStip data);
 #define FbStipMask(x,w)	(FbStipRight(FB_STIP_ALLONES,(x) & FB_STIP_MASK) & \
 			 FbStipLeft(FB_STIP_ALLONES,(FB_STIP_UNIT - ((x)+(w))) & FB_STIP_MASK))
 
-
 #define FbMaskBits(x,w,l,n,r) { \
     n = (w); \
     r = FbRightMask((x)+n); \
@@ -240,16 +182,6 @@ extern void fbSetBits (FbStip *bits, int stride, FbStip data);
     } \
     n >>= FB_SHIFT; \
 }
-
-#ifdef FBNOPIXADDR
-#define FbMaskBitsBytes(x,w,copy,l,lb,n,r,rb) FbMaskBits(x,w,l,n,r)
-#define FbDoLeftMaskByteRRop(dst,lb,l,and,xor) { \
-    *dst = FbDoMaskRRop(*dst,and,xor,l); \
-}
-#define FbDoRightMaskByteRRop(dst,rb,r,and,xor) { \
-    *dst = FbDoMaskRRop(*dst,and,xor,r); \
-}
-#else
 
 #define FbByteMaskInvalid   0x10
 
@@ -303,122 +235,8 @@ extern void fbSetBits (FbStip *bits, int stride, FbStip data);
     n >>= FB_SHIFT; \
 }
 
-#if FB_SHIFT == 6
-#define FbDoLeftMaskByteRRop6Cases(dst,xor) \
-    case (sizeof (FbBits) - 7) | (1 << (FB_SHIFT - 3)): \
-	FbStorePart(dst,sizeof (FbBits) - 7,CARD8,xor); \
-	break; \
-    case (sizeof (FbBits) - 7) | (2 << (FB_SHIFT - 3)): \
-	FbStorePart(dst,sizeof (FbBits) - 7,CARD8,xor); \
-	FbStorePart(dst,sizeof (FbBits) - 6,CARD8,xor); \
-	break; \
-    case (sizeof (FbBits) - 7) | (3 << (FB_SHIFT - 3)): \
-	FbStorePart(dst,sizeof (FbBits) - 7,CARD8,xor); \
-	FbStorePart(dst,sizeof (FbBits) - 6,CARD16,xor); \
-	break; \
-    case (sizeof (FbBits) - 7) | (4 << (FB_SHIFT - 3)): \
-	FbStorePart(dst,sizeof (FbBits) - 7,CARD8,xor); \
-	FbStorePart(dst,sizeof (FbBits) - 6,CARD16,xor); \
-	FbStorePart(dst,sizeof (FbBits) - 4,CARD8,xor); \
-	break; \
-    case (sizeof (FbBits) - 7) | (5 << (FB_SHIFT - 3)): \
-	FbStorePart(dst,sizeof (FbBits) - 7,CARD8,xor); \
-	FbStorePart(dst,sizeof (FbBits) - 6,CARD16,xor); \
-	FbStorePart(dst,sizeof (FbBits) - 4,CARD16,xor); \
-	break; \
-    case (sizeof (FbBits) - 7) | (6 << (FB_SHIFT - 3)): \
-	FbStorePart(dst,sizeof (FbBits) - 7,CARD8,xor); \
-	FbStorePart(dst,sizeof (FbBits) - 6,CARD16,xor); \
-	FbStorePart(dst,sizeof (FbBits) - 4,CARD16,xor); \
-	FbStorePart(dst,sizeof (FbBits) - 2,CARD8,xor); \
-	break; \
-    case (sizeof (FbBits) - 7): \
-	FbStorePart(dst,sizeof (FbBits) - 7,CARD8,xor); \
-	FbStorePart(dst,sizeof (FbBits) - 6,CARD16,xor); \
-	FbStorePart(dst,sizeof (FbBits) - 4,CARD32,xor); \
-	break; \
-    case (sizeof (FbBits) - 6) | (1 << (FB_SHIFT - 3)): \
-	FbStorePart(dst,sizeof (FbBits) - 6,CARD8,xor); \
-	break; \
-    case (sizeof (FbBits) - 6) | (2 << (FB_SHIFT - 3)): \
-	FbStorePart(dst,sizeof (FbBits) - 6,CARD16,xor); \
-	break; \
-    case (sizeof (FbBits) - 6) | (3 << (FB_SHIFT - 3)): \
-	FbStorePart(dst,sizeof (FbBits) - 6,CARD16,xor); \
-	FbStorePart(dst,sizeof (FbBits) - 4,CARD8,xor); \
-	break; \
-    case (sizeof (FbBits) - 6) | (4 << (FB_SHIFT - 3)): \
-	FbStorePart(dst,sizeof (FbBits) - 6,CARD16,xor); \
-	FbStorePart(dst,sizeof (FbBits) - 4,CARD16,xor); \
-	break; \
-    case (sizeof (FbBits) - 6) | (5 << (FB_SHIFT - 3)): \
-	FbStorePart(dst,sizeof (FbBits) - 6,CARD16,xor); \
-	FbStorePart(dst,sizeof (FbBits) - 4,CARD16,xor); \
-	FbStorePart(dst,sizeof (FbBits) - 2,CARD8,xor); \
-	break; \
-    case (sizeof (FbBits) - 6): \
-	FbStorePart(dst,sizeof (FbBits) - 6,CARD16,xor); \
-	FbStorePart(dst,sizeof (FbBits) - 4,CARD32,xor); \
-	break; \
-    case (sizeof (FbBits) - 5) | (1 << (FB_SHIFT - 3)): \
-	FbStorePart(dst,sizeof (FbBits) - 5,CARD8,xor); \
-	break; \
-    case (sizeof (FbBits) - 5) | (2 << (FB_SHIFT - 3)): \
-	FbStorePart(dst,sizeof (FbBits) - 5,CARD8,xor); \
-	FbStorePart(dst,sizeof (FbBits) - 4,CARD8,xor); \
-	break; \
-    case (sizeof (FbBits) - 5) | (3 << (FB_SHIFT - 3)): \
-	FbStorePart(dst,sizeof (FbBits) - 5,CARD8,xor); \
-	FbStorePart(dst,sizeof (FbBits) - 4,CARD16,xor); \
-	break; \
-    case (sizeof (FbBits) - 5) | (4 << (FB_SHIFT - 3)): \
-	FbStorePart(dst,sizeof (FbBits) - 5,CARD8,xor); \
-	FbStorePart(dst,sizeof (FbBits) - 4,CARD16,xor); \
-	FbStorePart(dst,sizeof (FbBits) - 2,CARD8,xor); \
-	break; \
-    case (sizeof (FbBits) - 5): \
-	FbStorePart(dst,sizeof (FbBits) - 5,CARD8,xor); \
-	FbStorePart(dst,sizeof (FbBits) - 4,CARD32,xor); \
-	break; \
-    case (sizeof (FbBits) - 4) | (1 << (FB_SHIFT - 3)): \
-	FbStorePart(dst,sizeof (FbBits) - 4,CARD8,xor); \
-	break; \
-    case (sizeof (FbBits) - 4) | (2 << (FB_SHIFT - 3)): \
-	FbStorePart(dst,sizeof (FbBits) - 4,CARD16,xor); \
-	break; \
-    case (sizeof (FbBits) - 4) | (3 << (FB_SHIFT - 3)): \
-	FbStorePart(dst,sizeof (FbBits) - 4,CARD16,xor); \
-	FbStorePart(dst,sizeof (FbBits) - 2,CARD8,xor); \
-	break; \
-    case (sizeof (FbBits) - 4): \
-	FbStorePart(dst,sizeof (FbBits) - 4,CARD32,xor); \
-	break;
-
-#define FbDoRightMaskByteRRop6Cases(dst,xor) \
-    case 4: \
-	FbStorePart(dst,0,CARD32,xor); \
-	break; \
-    case 5: \
-	FbStorePart(dst,0,CARD32,xor); \
-	FbStorePart(dst,4,CARD8,xor); \
-	break; \
-    case 6: \
-	FbStorePart(dst,0,CARD32,xor); \
-	FbStorePart(dst,4,CARD16,xor); \
-	break; \
-    case 7: \
-	FbStorePart(dst,0,CARD32,xor); \
-	FbStorePart(dst,4,CARD16,xor); \
-	FbStorePart(dst,6,CARD8,xor); \
-	break;
-#else
-#define FbDoLeftMaskByteRRop6Cases(dst,xor)
-#define FbDoRightMaskByteRRop6Cases(dst,xor)
-#endif
-
 #define FbDoLeftMaskByteRRop(dst,lb,l,and,xor) { \
     switch (lb) { \
-    FbDoLeftMaskByteRRop6Cases(dst,xor) \
     case (sizeof (FbBits) - 3) | (1 << (FB_SHIFT - 3)): \
 	FbStorePart(dst,sizeof (FbBits) - 3,CARD8,xor); \
 	break; \
@@ -443,7 +261,6 @@ extern void fbSetBits (FbStip *bits, int stride, FbStip data);
     } \
 }
 
-
 #define FbDoRightMaskByteRRop(dst,rb,r,and,xor) { \
     switch (rb) { \
     case 1: \
@@ -456,12 +273,10 @@ extern void fbSetBits (FbStip *bits, int stride, FbStip data);
 	FbStorePart(dst,0,CARD16,xor); \
 	FbStorePart(dst,2,CARD8,xor); \
 	break; \
-    FbDoRightMaskByteRRop6Cases(dst,xor) \
     default: \
 	WRITE(dst, FbDoMaskRRop (READ(dst), and, xor, r)); \
     } \
 }
-#endif
 
 #define FbMaskStip(x,w,l,n,r) { \
     n = (w); \
@@ -490,76 +305,34 @@ extern void fbSetBits (FbStip *bits, int stride, FbStip data);
  * The term "lane" comes from the hardware term "byte-lane" which
  */
 
-#define FbLaneCase1(n,a,o)  ((n) == 0x01 ? (void) \
-			     WRITE((CARD8 *) ((a)+FbPatternOffset(o,CARD8)), \
-			      fgxor) : (void) 0)
-#define FbLaneCase2(n,a,o)  ((n) == 0x03 ? (void) \
-			     WRITE((CARD16 *) ((a)+FbPatternOffset(o,CARD16)), \
-			      fgxor) : \
-			     ((void)FbLaneCase1((n)&1,a,o), \
-				    FbLaneCase1((n)>>1,a,(o)+1)))
-#define FbLaneCase4(n,a,o)  ((n) == 0x0f ? (void) \
-			     WRITE((CARD32 *) ((a)+FbPatternOffset(o,CARD32)), \
-			      fgxor) : \
-			     ((void)FbLaneCase2((n)&3,a,o), \
-				    FbLaneCase2((n)>>2,a,(o)+2)))
-#define FbLaneCase8(n,a,o)  ((n) == 0x0ff ? (void) (*(FbBits *) ((a)+(o)) = fgxor) : \
-			     ((void)FbLaneCase4((n)&15,a,o), \
-				    FbLaneCase4((n)>>4,a,(o)+4)))
+#define FbLaneCase1(n,a,o)						\
+    if ((n) == 0x01) {							\
+	WRITE((CARD8 *) ((a)+FbPatternOffset(o,CARD8)), fgxor);		\
+    }
 
-#if FB_SHIFT == 6
-#define FbLaneCase(n,a)   FbLaneCase8(n,(CARD8 *) (a),0)
-#endif
+#define FbLaneCase2(n,a,o)						\
+    if ((n) == 0x03) {							\
+	WRITE((CARD16 *) ((a)+FbPatternOffset(o,CARD16)), fgxor);	\
+    } else {								\
+	FbLaneCase1((n)&1,a,o)						\
+	FbLaneCase1((n)>>1,a,(o)+1)					\
+    }
 
-#if FB_SHIFT == 5
+#define FbLaneCase4(n,a,o)						\
+    if ((n) == 0x0f) {							\
+	WRITE((CARD32 *) ((a)+FbPatternOffset(o,CARD32)), fgxor);	\
+    } else {								\
+	FbLaneCase2((n)&3,a,o)						\
+	FbLaneCase2((n)>>2,a,(o)+2)					\
+    }
+
 #define FbLaneCase(n,a)   FbLaneCase4(n,(CARD8 *) (a),0)
-#endif
-
-/* Rotate a filled pixel value to the specified alignement */
-#define FbRot24(p,b)	    (FbScrRight(p,b) | FbScrLeft(p,24-(b)))
-#define FbRot24Stip(p,b)    (FbStipRight(p,b) | FbStipLeft(p,24-(b)))
-
-/* step a filled pixel value to the next/previous FB_UNIT alignment */
-#define FbNext24Pix(p)	(FbRot24(p,(24-FB_UNIT%24)))
-#define FbPrev24Pix(p)	(FbRot24(p,FB_UNIT%24))
-#define FbNext24Stip(p)	(FbRot24(p,(24-FB_STIP_UNIT%24)))
-#define FbPrev24Stip(p)	(FbRot24(p,FB_STIP_UNIT%24))
-
-/* step a rotation value to the next/previous rotation value */
-#if FB_UNIT == 64
-#define FbNext24Rot(r)        ((r) == 16 ? 0 : (r) + 8)
-#define FbPrev24Rot(r)        ((r) == 0 ? 16 : (r) - 8)
-
-#if IMAGE_BYTE_ORDER == MSBFirst
-#define FbFirst24Rot(x)		(((x) + 8) % 24)
-#else
-#define FbFirst24Rot(x)		((x) % 24)
-#endif
-
-#endif
-
-#if FB_UNIT == 32
-#define FbNext24Rot(r)        ((r) == 0 ? 16 : (r) - 8)
-#define FbPrev24Rot(r)        ((r) == 16 ? 0 : (r) + 8)
-
-#if IMAGE_BYTE_ORDER == MSBFirst
-#define FbFirst24Rot(x)		(((x) + 16) % 24)
-#else
-#define FbFirst24Rot(x)		((x) % 24)
-#endif
-#endif
-
-#define FbNext24RotStip(r)        ((r) == 0 ? 16 : (r) - 8)
-#define FbPrev24RotStip(r)        ((r) == 16 ? 0 : (r) + 8)
-
-/* Whether 24-bit specific code is needed for this filled pixel value */
-#define FbCheck24Pix(p)	((p) == FbNext24Pix(p))
 
 /* Macros for dealing with dashing */
 
 #define FbDashDeclare	\
     unsigned char	*__dash, *__firstDash, *__lastDash
-    
+
 #define FbDashInit(pGC,pPriv,dashOffset,dashlen,even) {	    \
     (even) = TRUE;					    \
     __firstDash = (pGC)->dash;				    \
@@ -598,28 +371,16 @@ extern void fbSetBits (FbStip *bits, int stride, FbStip data);
     }							    \
 }
 
-/* XXX fb*PrivateIndex should be static, but it breaks the ABI */
-
-extern int	fbGCPrivateIndex;
-extern int	fbGetGCPrivateIndex(void);
-#ifndef FB_NO_WINDOW_PIXMAPS
-extern int	fbWinPrivateIndex;
-extern int	fbGetWinPrivateIndex(void);
-#endif
-extern const GCOps	fbGCOps;
-extern const GCFuncs	fbGCFuncs;
-
-#ifdef FB_24_32BIT
-#define FB_SCREEN_PRIVATE
-#endif
+extern _X_EXPORT const GCOps fbGCOps;
+extern _X_EXPORT const GCFuncs fbGCFuncs;
 
 /* Framebuffer access wrapper */
-typedef FbBits (*ReadMemoryProcPtr)(const void *src, int size);
-typedef void (*WriteMemoryProcPtr)(void *dst, FbBits value, int size);
-typedef void (*SetupWrapProcPtr)(ReadMemoryProcPtr  *pRead,
-                                 WriteMemoryProcPtr *pWrite,
-                                 DrawablePtr         pDraw);
-typedef void (*FinishWrapProcPtr)(DrawablePtr pDraw);
+typedef FbBits(*ReadMemoryProcPtr) (const void *src, int size);
+typedef void (*WriteMemoryProcPtr) (void *dst, FbBits value, int size);
+typedef void (*SetupWrapProcPtr) (ReadMemoryProcPtr * pRead,
+                                  WriteMemoryProcPtr * pWrite,
+                                  DrawablePtr pDraw);
+typedef void (*FinishWrapProcPtr) (DrawablePtr pDraw);
 
 #ifdef FB_ACCESS_WRAPPER
 
@@ -638,59 +399,47 @@ typedef void (*FinishWrapProcPtr)(DrawablePtr pDraw);
 
 #endif
 
-
-#ifdef FB_SCREEN_PRIVATE
-extern int	fbScreenPrivateIndex;
-extern int	fbGetScreenPrivateIndex(void);
+extern _X_EXPORT DevPrivateKey
+fbGetScreenPrivateKey(void);
 
 /* private field of a screen */
 typedef struct {
-    unsigned char	win32bpp;	/* window bpp for 32-bpp images */
-    unsigned char	pix32bpp;	/* pixmap bpp for 32-bpp images */
 #ifdef FB_ACCESS_WRAPPER
-    SetupWrapProcPtr	setupWrap;	/* driver hook to set pixmap access wrapping */
-    FinishWrapProcPtr	finishWrap;	/* driver hook to clean up pixmap access wrapping */
+    SetupWrapProcPtr setupWrap; /* driver hook to set pixmap access wrapping */
+    FinishWrapProcPtr finishWrap;       /* driver hook to clean up pixmap access wrapping */
 #endif
+    DevPrivateKeyRec    gcPrivateKeyRec;
+    DevPrivateKeyRec    winPrivateKeyRec;
 } FbScreenPrivRec, *FbScreenPrivPtr;
 
 #define fbGetScreenPrivate(pScreen) ((FbScreenPrivPtr) \
-				     (pScreen)->devPrivates[fbGetScreenPrivateIndex()].ptr)
-#endif
+				     dixLookupPrivate(&(pScreen)->devPrivates, fbGetScreenPrivateKey()))
 
 /* private field of GC */
 typedef struct {
-    FbBits		and, xor;	/* reduced rop values */
-    FbBits		bgand, bgxor;	/* for stipples */
-    FbBits		fg, bg, pm;	/* expanded and filled */
-    unsigned int	dashLength;	/* total of all dash elements */
-    unsigned char    	oneRect;	/* clip list is single rectangle */
-    unsigned char    	evenStipple;	/* stipple is even */
-    unsigned char    	bpp;		/* current drawable bpp */
+    FbBits and, xor;            /* reduced rop values */
+    FbBits bgand, bgxor;        /* for stipples */
+    FbBits fg, bg, pm;          /* expanded and filled */
+    unsigned int dashLength;    /* total of all dash elements */
 } FbGCPrivRec, *FbGCPrivPtr;
 
+#define fbGetGCPrivateKey(pGC)  (&fbGetScreenPrivate((pGC)->pScreen)->gcPrivateKeyRec)
+
 #define fbGetGCPrivate(pGC)	((FbGCPrivPtr)\
-	(pGC)->devPrivates[fbGetGCPrivateIndex()].ptr)
+				 dixLookupPrivate(&(pGC)->devPrivates, fbGetGCPrivateKey(pGC)))
 
 #define fbGetCompositeClip(pGC) ((pGC)->pCompositeClip)
 #define fbGetExpose(pGC)	((pGC)->fExpose)
-#define fbGetFreeCompClip(pGC)	((pGC)->freeCompClip)
-#define fbGetRotatedPixmap(pGC)	((pGC)->pRotatedPixmap)
 
 #define fbGetScreenPixmap(s)	((PixmapPtr) (s)->devPrivate)
-#ifdef FB_NO_WINDOW_PIXMAPS
-#define fbGetWindowPixmap(d)	fbGetScreenPixmap(((DrawablePtr) (d))->pScreen)
-#else
-#define fbGetWindowPixmap(pWin)	((PixmapPtr)\
-	((WindowPtr) (pWin))->devPrivates[fbGetWinPrivateIndex()].ptr)
-#endif
 
-#ifdef ROOTLESS
+#define fbGetWinPrivateKey(pWin)        (&fbGetScreenPrivate(((DrawablePtr) (pWin))->pScreen)->winPrivateKeyRec)
+
+#define fbGetWindowPixmap(pWin)	((PixmapPtr)\
+				 dixLookupPrivate(&((WindowPtr)(pWin))->devPrivates, fbGetWinPrivateKey(pWin)))
+
 #define __fbPixDrawableX(pPix)	((pPix)->drawable.x)
 #define __fbPixDrawableY(pPix)	((pPix)->drawable.y)
-#else
-#define __fbPixDrawableX(pPix)	0
-#define __fbPixDrawableY(pPix)	0
-#endif
 
 #ifdef COMPOSITE
 #define __fbPixOffXWin(pPix)	(__fbPixDrawableX(pPix) - (pPix)->screen_x)
@@ -702,38 +451,41 @@ typedef struct {
 #define __fbPixOffXPix(pPix)	(__fbPixDrawableX(pPix))
 #define __fbPixOffYPix(pPix)	(__fbPixDrawableY(pPix))
 
-#define fbGetDrawable(pDrawable, pointer, stride, bpp, xoff, yoff) { \
-    PixmapPtr   _pPix; \
-    if ((pDrawable)->type != DRAWABLE_PIXMAP) { \
-	_pPix = fbGetWindowPixmap(pDrawable); \
-	(xoff) = __fbPixOffXWin(_pPix); \
-	(yoff) = __fbPixOffYWin(_pPix); \
-    } else { \
-	_pPix = (PixmapPtr) (pDrawable); \
-	(xoff) = __fbPixOffXPix(_pPix); \
-	(yoff) = __fbPixOffYPix(_pPix); \
-    } \
-    fbPrepareAccess(pDrawable); \
-    (pointer) = (FbBits *) _pPix->devPrivate.ptr; \
-    (stride) = ((int) _pPix->devKind) / sizeof (FbBits); (void)(stride); \
-    (bpp) = _pPix->drawable.bitsPerPixel;  (void)(bpp); \
+#define fbGetDrawablePixmap(pDrawable, pixmap, xoff, yoff) {			\
+    if ((pDrawable)->type != DRAWABLE_PIXMAP) { 				\
+	(pixmap) = fbGetWindowPixmap(pDrawable);				\
+	(xoff) = __fbPixOffXWin(pixmap); 					\
+	(yoff) = __fbPixOffYWin(pixmap); 					\
+    } else { 									\
+	(pixmap) = (PixmapPtr) (pDrawable);					\
+	(xoff) = __fbPixOffXPix(pixmap); 					\
+	(yoff) = __fbPixOffYPix(pixmap); 					\
+    } 										\
+    fbPrepareAccess(pDrawable); 						\
 }
 
-#define fbGetStipDrawable(pDrawable, pointer, stride, bpp, xoff, yoff) { \
-    PixmapPtr   _pPix; \
-    if ((pDrawable)->type != DRAWABLE_PIXMAP) { \
-	_pPix = fbGetWindowPixmap(pDrawable); \
-	(xoff) = __fbPixOffXWin(_pPix); \
-	(yoff) = __fbPixOffYWin(_pPix); \
-    } else { \
-	_pPix = (PixmapPtr) (pDrawable); \
-	(xoff) = __fbPixOffXPix(_pPix); \
-	(yoff) = __fbPixOffYPix(_pPix); \
-    } \
-    fbPrepareAccess(pDrawable); \
-    (pointer) = (FbStip *) _pPix->devPrivate.ptr; \
-    (stride) = ((int) _pPix->devKind) / sizeof (FbStip); (void)(stride); \
-    (bpp) = _pPix->drawable.bitsPerPixel; (void)(bpp); \
+#define fbGetPixmapBitsData(pixmap, pointer, stride, bpp) {			\
+    (pointer) = (FbBits *) (pixmap)->devPrivate.ptr; 			       	\
+    (stride) = ((int) (pixmap)->devKind) / sizeof (FbBits); (void)(stride);	\
+    (bpp) = (pixmap)->drawable.bitsPerPixel;  (void)(bpp); 			\
+}
+
+#define fbGetPixmapStipData(pixmap, pointer, stride, bpp) {			\
+    (pointer) = (FbStip *) (pixmap)->devPrivate.ptr; 			       	\
+    (stride) = ((int) (pixmap)->devKind) / sizeof (FbStip); (void)(stride);	\
+    (bpp) = (pixmap)->drawable.bitsPerPixel;  (void)(bpp); 			\
+}
+
+#define fbGetDrawable(pDrawable, pointer, stride, bpp, xoff, yoff) { 		\
+    PixmapPtr   _pPix; 								\
+    fbGetDrawablePixmap(pDrawable, _pPix, xoff, yoff); 				\
+    fbGetPixmapBitsData(_pPix, pointer, stride, bpp);				\
+}
+
+#define fbGetStipDrawable(pDrawable, pointer, stride, bpp, xoff, yoff) { 	\
+    PixmapPtr   _pPix; 								\
+    fbGetDrawablePixmap(pDrawable, _pPix, xoff, yoff);				\
+    fbGetPixmapStipData(_pPix, pointer, stride, bpp);				\
 }
 
 /*
@@ -742,8 +494,7 @@ typedef struct {
  */
 
 #define fbWindowEnabled(pWin) \
-    REGION_NOTEMPTY((pWin)->drawable.pScreen, \
-		    &WindowTable[(pWin)->drawable.pScreen->myNum]->borderClip)
+    RegionNotEmpty(&(pWin)->borderClip)
 
 #define fbDrawableEnabled(pDrawable) \
     ((pDrawable)->type == DRAWABLE_PIXMAP ? \
@@ -754,715 +505,338 @@ typedef struct {
  * Accelerated tiles are power of 2 width <= FB_UNIT
  */
 #define FbEvenTile(w)	    ((w) <= FB_UNIT && FbPowerOfTwo(w))
-/*
- * Accelerated stipples are power of 2 width and <= FB_UNIT/dstBpp
- * with dstBpp a power of 2 as well
- */
-#define FbEvenStip(w,bpp)   ((w) * (bpp) <= FB_UNIT && FbPowerOfTwo(w) && FbPowerOfTwo(bpp))
-
-/*
- * fb24_32.c
- */
-void
-fb24_32GetSpans(DrawablePtr	pDrawable, 
-		int		wMax, 
-		DDXPointPtr	ppt, 
-		int		*pwidth, 
-		int		nspans, 
-		char		*pchardstStart);
-
-void
-fb24_32SetSpans (DrawablePtr	    pDrawable,
-		 GCPtr		    pGC,
-		 char		    *src,
-		 DDXPointPtr	    ppt,
-		 int		    *pwidth,
-		 int		    nspans,
-		 int		    fSorted);
-
-void
-fb24_32PutZImage (DrawablePtr	pDrawable,
-		  RegionPtr	pClip,
-		  int		alu,
-		  FbBits	pm,
-		  int		x,
-		  int		y,
-		  int		width,
-		  int		height,
-		  CARD8		*src,
-		  FbStride	srcStride);
-    
-void
-fb24_32GetImage (DrawablePtr     pDrawable,
-		 int             x,
-		 int             y,
-		 int             w,
-		 int             h,
-		 unsigned int    format,
-		 unsigned long   planeMask,
-		 char            *d);
-
-void
-fb24_32CopyMtoN (DrawablePtr pSrcDrawable,
-		 DrawablePtr pDstDrawable,
-		 GCPtr       pGC,
-		 BoxPtr      pbox,
-		 int         nbox,
-		 int         dx,
-		 int         dy,
-		 Bool        reverse,
-		 Bool        upsidedown,
-		 Pixel       bitplane,
-		 void        *closure);
-
-PixmapPtr
-fb24_32ReformatTile(PixmapPtr pOldTile, int bitsPerPixel);
-    
-Bool
-fb24_32CreateScreenResources(ScreenPtr pScreen);
-
-Bool
-fb24_32ModifyPixmapHeader (PixmapPtr   pPixmap,
-			   int         width,
-			   int         height,
-			   int         depth,
-			   int         bitsPerPixel,
-			   int         devKind,
-			   pointer     pPixData);
 
 /*
  * fballpriv.c
  */
-Bool
-fbAllocatePrivates(ScreenPtr pScreen, int *pGCIndex);
-    
+extern _X_EXPORT Bool
+fbAllocatePrivates(ScreenPtr pScreen);
+
 /*
  * fbarc.c
  */
 
-void
-fbPolyArc (DrawablePtr	pDrawable,
-	   GCPtr	pGC,
-	   int		narcs,
-	   xArc		*parcs);
+extern _X_EXPORT void
+fbPolyArc(DrawablePtr pDrawable, GCPtr pGC, int narcs, xArc * parcs);
 
 /*
  * fbbits.c
  */
 
-void	
-fbBresSolid8(DrawablePtr    pDrawable,
-	     GCPtr	    pGC,
-	     int	    dashOffset,
-	     int	    signdx,
-	     int	    signdy,
-	     int	    axis,
-	     int	    x,
-	     int	    y,
-	     int	    e,
-	     int	    e1,
-	     int	    e3,
-	     int	    len);
+extern _X_EXPORT void
 
-void	
-fbBresDash8 (DrawablePtr    pDrawable,
-	     GCPtr	    pGC,
-	     int	    dashOffset,
-	     int	    signdx,
-	     int	    signdy,
-	     int	    axis,
-	     int	    x,
-	     int	    y,
-	     int	    e,
-	     int	    e1,
-	     int	    e3,
-	     int	    len);
+fbBresSolid8(DrawablePtr pDrawable,
+             GCPtr pGC,
+             int dashOffset,
+             int signdx,
+             int signdy,
+             int axis, int x, int y, int e, int e1, int e3, int len);
 
-void	
-fbDots8 (FbBits	    *dst,
-	 FbStride   dstStride,
-	 int	    dstBpp,
-	 BoxPtr	    pBox,
-	 xPoint	    *pts,
-	 int	    npt,
-	 int	    xorg,
-	 int	    yorg,
-	 int	    xoff,
-	 int	    yoff,
-	 FbBits	    and,
-	 FbBits	    xor);
+extern _X_EXPORT void
 
-void	
-fbArc8 (FbBits	    *dst,
-	FbStride    dstStride,
-	int	    dstBpp,
-	xArc	    *arc,
-	int	    dx,
-	int	    dy,
-	FbBits	    and,
-	FbBits	    xor);
+fbBresDash8(DrawablePtr pDrawable,
+            GCPtr pGC,
+            int dashOffset,
+            int signdx,
+            int signdy, int axis, int x, int y, int e, int e1, int e3, int len);
 
-void
-fbGlyph8 (FbBits    *dstLine,
-	  FbStride  dstStride,
-	  int	    dstBpp,
-	  FbStip    *stipple,
-	  FbBits    fg,
-	  int	    height,
-	  int	    shift);
+extern _X_EXPORT void
 
-void
-fbPolyline8 (DrawablePtr    pDrawable,
-	     GCPtr	    pGC,
-	     int	    mode,
-	     int	    npt,
-	     DDXPointPtr    ptsOrig);
+fbDots8(FbBits * dst,
+        FbStride dstStride,
+        int dstBpp,
+        BoxPtr pBox,
+        xPoint * pts,
+        int npt,
+        int xorg, int yorg, int xoff, int yoff, FbBits and, FbBits xor);
 
-void
-fbPolySegment8 (DrawablePtr pDrawable,
-		GCPtr	    pGC,
-		int	    nseg,
-		xSegment    *pseg);
+extern _X_EXPORT void
 
-void	
-fbBresSolid16(DrawablePtr   pDrawable,
-	      GCPtr	    pGC,
-	      int	    dashOffset,
-	      int	    signdx,
-	      int	    signdy,
-	      int	    axis,
-	      int	    x,
-	      int	    y,
-	      int	    e,
-	      int	    e1,
-	      int	    e3,
-	      int	    len);
+fbArc8(FbBits * dst,
+       FbStride dstStride,
+       int dstBpp, xArc * arc, int dx, int dy, FbBits and, FbBits xor);
 
-void	
-fbBresDash16(DrawablePtr    pDrawable,
-	     GCPtr	    pGC,
-	     int	    dashOffset,
-	     int	    signdx,
-	     int	    signdy,
-	     int	    axis,
-	     int	    x,
-	     int	    y,
-	     int	    e,
-	     int	    e1,
-	     int	    e3,
-	     int	    len);
+extern _X_EXPORT void
 
-void	
-fbDots16(FbBits	    *dst,
-	 FbStride   dstStride,
-	 int	    dstBpp,
-	 BoxPtr	    pBox,
-	 xPoint	    *pts,
-	 int	    npt,
-	 int	    xorg,
-	 int	    yorg,
-	 int	    xoff,
-	 int	    yoff,
-	 FbBits	    and,
-	 FbBits	    xor);
+fbGlyph8(FbBits * dstLine,
+         FbStride dstStride,
+         int dstBpp, FbStip * stipple, FbBits fg, int height, int shift);
 
-void	
-fbArc16(FbBits	    *dst,
-	FbStride    dstStride,
-	int	    dstBpp,
-	xArc	    *arc,
-	int	    dx,
-	int	    dy,
-	FbBits	    and,
-	FbBits	    xor);
+extern _X_EXPORT void
 
-void
-fbGlyph16(FbBits    *dstLine,
-	  FbStride  dstStride,
-	  int	    dstBpp,
-	  FbStip    *stipple,
-	  FbBits    fg,
-	  int	    height,
-	  int	    shift);
+fbPolyline8(DrawablePtr pDrawable,
+            GCPtr pGC, int mode, int npt, DDXPointPtr ptsOrig);
 
-void
-fbPolyline16 (DrawablePtr   pDrawable,
-	      GCPtr	    pGC,
-	      int	    mode,
-	      int	    npt,
-	      DDXPointPtr   ptsOrig);
+extern _X_EXPORT void
+ fbPolySegment8(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment * pseg);
 
-void
-fbPolySegment16 (DrawablePtr	pDrawable,
-		 GCPtr		pGC,
-		 int		nseg,
-		 xSegment	*pseg);
+extern _X_EXPORT void
 
+fbBresSolid16(DrawablePtr pDrawable,
+              GCPtr pGC,
+              int dashOffset,
+              int signdx,
+              int signdy,
+              int axis, int x, int y, int e, int e1, int e3, int len);
 
-void	
-fbBresSolid24(DrawablePtr   pDrawable,
-	      GCPtr	    pGC,
-	      int	    dashOffset,
-	      int	    signdx,
-	      int	    signdy,
-	      int	    axis,
-	      int	    x,
-	      int	    y,
-	      int	    e,
-	      int	    e1,
-	      int	    e3,
-	      int	    len);
+extern _X_EXPORT void
 
-void	
-fbBresDash24(DrawablePtr    pDrawable,
-	     GCPtr	    pGC,
-	     int	    dashOffset,
-	     int	    signdx,
-	     int	    signdy,
-	     int	    axis,
-	     int	    x,
-	     int	    y,
-	     int	    e,
-	     int	    e1,
-	     int	    e3,
-	     int	    len);
+fbBresDash16(DrawablePtr pDrawable,
+             GCPtr pGC,
+             int dashOffset,
+             int signdx,
+             int signdy,
+             int axis, int x, int y, int e, int e1, int e3, int len);
 
-void	
-fbDots24(FbBits	    *dst,
-	 FbStride   dstStride,
-	 int	    dstBpp,
-	 BoxPtr	    pBox,
-	 xPoint	    *pts,
-	 int	    npt,
-	 int	    xorg,
-	 int	    yorg,
-	 int	    xoff,
-	 int	    yoff,
-	 FbBits	    and,
-	 FbBits	    xor);
+extern _X_EXPORT void
 
-void	
-fbArc24(FbBits	    *dst,
-	FbStride    dstStride,
-	int	    dstBpp,
-	xArc	    *arc,
-	int	    dx,
-	int	    dy,
-	FbBits	    and,
-	FbBits	    xor);
+fbDots16(FbBits * dst,
+         FbStride dstStride,
+         int dstBpp,
+         BoxPtr pBox,
+         xPoint * pts,
+         int npt,
+         int xorg, int yorg, int xoff, int yoff, FbBits and, FbBits xor);
 
-void
-fbGlyph24(FbBits    *dstLine,
-	  FbStride  dstStride,
-	  int	    dstBpp,
-	  FbStip    *stipple,
-	  FbBits    fg,
-	  int	    height,
-	  int	    shift);
+extern _X_EXPORT void
 
-void
-fbPolyline24 (DrawablePtr   pDrawable,
-	      GCPtr	    pGC,
-	      int	    mode,
-	      int	    npt,
-	      DDXPointPtr   ptsOrig);
+fbArc16(FbBits * dst,
+        FbStride dstStride,
+        int dstBpp, xArc * arc, int dx, int dy, FbBits and, FbBits xor);
 
-void
-fbPolySegment24 (DrawablePtr	pDrawable,
-		 GCPtr		pGC,
-		 int		nseg,
-		 xSegment	*pseg);
+extern _X_EXPORT void
 
+fbGlyph16(FbBits * dstLine,
+          FbStride dstStride,
+          int dstBpp, FbStip * stipple, FbBits fg, int height, int shift);
 
-void	
-fbBresSolid32(DrawablePtr   pDrawable,
-	      GCPtr	    pGC,
-	      int	    dashOffset,
-	      int	    signdx,
-	      int	    signdy,
-	      int	    axis,
-	      int	    x,
-	      int	    y,
-	      int	    e,
-	      int	    e1,
-	      int	    e3,
-	      int	    len);
+extern _X_EXPORT void
 
-void	
-fbBresDash32(DrawablePtr    pDrawable,
-	     GCPtr	    pGC,
-	     int	    dashOffset,
-	     int	    signdx,
-	     int	    signdy,
-	     int	    axis,
-	     int	    x,
-	     int	    y,
-	     int	    e,
-	     int	    e1,
-	     int	    e3,
-	     int	    len);
+fbPolyline16(DrawablePtr pDrawable,
+             GCPtr pGC, int mode, int npt, DDXPointPtr ptsOrig);
 
-void	
-fbDots32(FbBits	    *dst,
-	 FbStride   dstStride,
-	 int	    dstBpp,
-	 BoxPtr	    pBox,
-	 xPoint	    *pts,
-	 int	    npt,
-	 int	    xorg,
-	 int	    yorg,
-	 int	    xoff,
-	 int	    yoff,
-	 FbBits	    and,
-	 FbBits	    xor);
+extern _X_EXPORT void
+ fbPolySegment16(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment * pseg);
 
-void	
-fbArc32(FbBits	    *dst,
-	FbStride    dstStride,
-	int	    dstBpp,
-	xArc	    *arc,
-	int	    dx,
-	int	    dy,
-	FbBits	    and,
-	FbBits	    xor);
+extern _X_EXPORT void
 
-void
-fbGlyph32(FbBits    *dstLine,
-	  FbStride  dstStride,
-	  int	    dstBpp,
-	  FbStip    *stipple,
-	  FbBits    fg,
-	  int	    height,
-	  int	    shift);
-void
-fbPolyline32 (DrawablePtr   pDrawable,
-	      GCPtr	    pGC,
-	      int	    mode,
-	      int	    npt,
-	      DDXPointPtr   ptsOrig);
+fbBresSolid32(DrawablePtr pDrawable,
+              GCPtr pGC,
+              int dashOffset,
+              int signdx,
+              int signdy,
+              int axis, int x, int y, int e, int e1, int e3, int len);
 
-void
-fbPolySegment32 (DrawablePtr	pDrawable,
-		 GCPtr		pGC,
-		 int		nseg,
-		 xSegment	*pseg);
+extern _X_EXPORT void
+
+fbBresDash32(DrawablePtr pDrawable,
+             GCPtr pGC,
+             int dashOffset,
+             int signdx,
+             int signdy,
+             int axis, int x, int y, int e, int e1, int e3, int len);
+
+extern _X_EXPORT void
+
+fbDots32(FbBits * dst,
+         FbStride dstStride,
+         int dstBpp,
+         BoxPtr pBox,
+         xPoint * pts,
+         int npt,
+         int xorg, int yorg, int xoff, int yoff, FbBits and, FbBits xor);
+
+extern _X_EXPORT void
+
+fbArc32(FbBits * dst,
+        FbStride dstStride,
+        int dstBpp, xArc * arc, int dx, int dy, FbBits and, FbBits xor);
+
+extern _X_EXPORT void
+
+fbGlyph32(FbBits * dstLine,
+          FbStride dstStride,
+          int dstBpp, FbStip * stipple, FbBits fg, int height, int shift);
+extern _X_EXPORT void
+
+fbPolyline32(DrawablePtr pDrawable,
+             GCPtr pGC, int mode, int npt, DDXPointPtr ptsOrig);
+
+extern _X_EXPORT void
+ fbPolySegment32(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment * pseg);
 
 /*
  * fbblt.c
  */
-void
-fbBlt (FbBits   *src, 
-       FbStride	srcStride,
-       int	srcX,
-       
-       FbBits   *dst,
-       FbStride dstStride,
-       int	dstX,
-       
-       int	width, 
-       int	height,
-       
-       int	alu,
-       FbBits	pm,
-       int	bpp,
-       
-       Bool	reverse,
-       Bool	upsidedown);
+extern _X_EXPORT void
 
-void
-fbBlt24 (FbBits	    *srcLine,
-	 FbStride   srcStride,
-	 int	    srcX,
+fbBlt(FbBits * src,
+      FbStride srcStride,
+      int srcX,
+      FbBits * dst,
+      FbStride dstStride,
+      int dstX,
+      int width,
+      int height, int alu, FbBits pm, int bpp, Bool reverse, Bool upsidedown);
 
-	 FbBits	    *dstLine,
-	 FbStride   dstStride,
-	 int	    dstX,
+extern _X_EXPORT void
+ fbBltStip(FbStip * src, FbStride srcStride,    /* in FbStip units, not FbBits units */
+           int srcX, FbStip * dst, FbStride dstStride,  /* in FbStip units, not FbBits units */
+           int dstX, int width, int height, int alu, FbBits pm, int bpp);
 
-	 int	    width, 
-	 int	    height,
-
-	 int	    alu,
-	 FbBits	    pm,
-
-	 Bool	    reverse,
-	 Bool	    upsidedown);
-    
-void
-fbBltStip (FbStip   *src,
-	   FbStride srcStride,	    /* in FbStip units, not FbBits units */
-	   int	    srcX,
-	   
-	   FbStip   *dst,
-	   FbStride dstStride,	    /* in FbStip units, not FbBits units */
-	   int	    dstX,
-
-	   int	    width, 
-	   int	    height,
-
-	   int	    alu,
-	   FbBits   pm,
-	   int	    bpp);
-    
 /*
  * fbbltone.c
  */
-void
-fbBltOne (FbStip   *src,
-	  FbStride srcStride,
-	  int	   srcX,
-	  FbBits   *dst,
-	  FbStride dstStride,
-	  int	   dstX,
-	  int	   dstBpp,
+extern _X_EXPORT void
 
-	  int	   width,
-	  int	   height,
+fbBltOne(FbStip * src,
+         FbStride srcStride,
+         int srcX,
+         FbBits * dst,
+         FbStride dstStride,
+         int dstX,
+         int dstBpp,
+         int width,
+         int height, FbBits fgand, FbBits fbxor, FbBits bgand, FbBits bgxor);
 
-	  FbBits   fgand,
-	  FbBits   fbxor,
-	  FbBits   bgand,
-	  FbBits   bgxor);
- 
-#ifdef FB_24BIT
-void
-fbBltOne24 (FbStip    *src,
-	  FbStride  srcStride,	    /* FbStip units per scanline */
-	  int	    srcX,	    /* bit position of source */
-	  FbBits    *dst,
-	  FbStride  dstStride,	    /* FbBits units per scanline */
-	  int	    dstX,	    /* bit position of dest */
-	  int	    dstBpp,	    /* bits per destination unit */
+extern _X_EXPORT void
 
-	  int	    width,	    /* width in bits of destination */
-	  int	    height,	    /* height in scanlines */
-
-	  FbBits    fgand,	    /* rrop values */
-	  FbBits    fgxor,
-	  FbBits    bgand,
-	  FbBits    bgxor);
-#endif
-
-void
-fbBltPlane (FbBits	    *src,
-	    FbStride	    srcStride,
-	    int		    srcX,
-	    int		    srcBpp,
-
-	    FbStip	    *dst,
-	    FbStride	    dstStride,
-	    int		    dstX,
-	    
-	    int		    width,
-	    int		    height,
-	    
-	    FbStip	    fgand,
-	    FbStip	    fgxor,
-	    FbStip	    bgand,
-	    FbStip	    bgxor,
-	    Pixel	    planeMask);
+fbBltPlane(FbBits * src,
+           FbStride srcStride,
+           int srcX,
+           int srcBpp,
+           FbStip * dst,
+           FbStride dstStride,
+           int dstX,
+           int width,
+           int height,
+           FbStip fgand,
+           FbStip fgxor, FbStip bgand, FbStip bgxor, Pixel planeMask);
 
 /*
- * fbbstore.c
+ * fbcmap_mi.c
  */
-void
-fbSaveAreas(PixmapPtr	pPixmap,
-	    RegionPtr	prgnSave,
-	    int		xorg,
-	    int		yorg,
-	    WindowPtr	pWin);
+extern _X_EXPORT int
+ fbListInstalledColormaps(ScreenPtr pScreen, Colormap * pmaps);
 
-void
-fbRestoreAreas(PixmapPtr    pPixmap,
-	       RegionPtr    prgnRestore,
-	       int	    xorg,
-	       int	    yorg,
-	       WindowPtr    pWin);
+extern _X_EXPORT void
+ fbInstallColormap(ColormapPtr pmap);
 
-/*
- * fbcmap.c
- */
-int
-fbListInstalledColormaps(ScreenPtr pScreen, Colormap *pmaps);
+extern _X_EXPORT void
+ fbUninstallColormap(ColormapPtr pmap);
 
-void
-fbInstallColormap(ColormapPtr pmap);
+extern _X_EXPORT void
 
-void
-fbUninstallColormap(ColormapPtr pmap);
+fbResolveColor(unsigned short *pred,
+               unsigned short *pgreen,
+               unsigned short *pblue, VisualPtr pVisual);
 
-void
-fbResolveColor(unsigned short	*pred, 
-	       unsigned short	*pgreen, 
-	       unsigned short	*pblue,
-	       VisualPtr	pVisual);
+extern _X_EXPORT Bool
+ fbInitializeColormap(ColormapPtr pmap);
 
-Bool
-fbInitializeColormap(ColormapPtr pmap);
+extern _X_EXPORT Bool
+ mfbCreateColormap(ColormapPtr pmap);
 
-int
-fbExpandDirectColors (ColormapPtr   pmap, 
-		      int	    ndef,
-		      xColorItem    *indefs,
-		      xColorItem    *outdefs);
+extern _X_EXPORT int
 
-Bool
-fbCreateDefColormap(ScreenPtr pScreen);
+fbExpandDirectColors(ColormapPtr pmap,
+                     int ndef, xColorItem * indefs, xColorItem * outdefs);
 
-void
-fbClearVisualTypes(void);
+extern _X_EXPORT Bool
+ fbCreateDefColormap(ScreenPtr pScreen);
 
-Bool
-fbHasVisualTypes (int depth);
+extern _X_EXPORT void
+ fbClearVisualTypes(void);
 
-Bool
-fbSetVisualTypes (int depth, int visuals, int bitsPerRGB);
+extern _X_EXPORT Bool
+ fbSetVisualTypes(int depth, int visuals, int bitsPerRGB);
 
-Bool
-fbSetVisualTypesAndMasks (int depth, int visuals, int bitsPerRGB,
-			  Pixel redMask, Pixel greenMask, Pixel blueMask);
+extern _X_EXPORT Bool
+fbSetVisualTypesAndMasks(int depth, int visuals, int bitsPerRGB,
+                         Pixel redMask, Pixel greenMask, Pixel blueMask);
 
-Bool
-fbInitVisuals (VisualPtr    *visualp, 
-	       DepthPtr	    *depthp,
-	       int	    *nvisualp,
-	       int	    *ndepthp,
-	       int	    *rootDepthp,
-	       VisualID	    *defaultVisp,
-	       unsigned long	sizes,
-	       int	    bitsPerRGB);
+extern _X_EXPORT Bool
+
+fbInitVisuals(VisualPtr * visualp,
+              DepthPtr * depthp,
+              int *nvisualp,
+              int *ndepthp,
+              int *rootDepthp,
+              VisualID * defaultVisp, unsigned long sizes, int bitsPerRGB);
 
 /*
  * fbcopy.c
  */
 
-typedef void	(*fbCopyProc) (DrawablePtr  pSrcDrawable,
-			       DrawablePtr  pDstDrawable,
-			       GCPtr	    pGC,
-			       BoxPtr	    pDstBox,
-			       int	    nbox,
-			       int	    dx,
-			       int	    dy,
-			       Bool	    reverse,
-			       Bool	    upsidedown,
-			       Pixel	    bitplane,
-			       void	    *closure);
+extern _X_EXPORT void
 
-void
-fbCopyNtoN (DrawablePtr	pSrcDrawable,
-	    DrawablePtr	pDstDrawable,
-	    GCPtr	pGC,
-	    BoxPtr	pbox,
-	    int		nbox,
-	    int		dx,
-	    int		dy,
-	    Bool	reverse,
-	    Bool	upsidedown,
-	    Pixel	bitplane,
-	    void	*closure);
+fbCopyNtoN(DrawablePtr pSrcDrawable,
+           DrawablePtr pDstDrawable,
+           GCPtr pGC,
+           BoxPtr pbox,
+           int nbox,
+           int dx,
+           int dy,
+           Bool reverse, Bool upsidedown, Pixel bitplane, void *closure);
 
-void
-fbCopy1toN (DrawablePtr	pSrcDrawable,
-	    DrawablePtr	pDstDrawable,
-	    GCPtr	pGC,
-	    BoxPtr	pbox,
-	    int		nbox,
-	    int		dx,
-	    int		dy,
-	    Bool	reverse,
-	    Bool	upsidedown,
-	    Pixel	bitplane,
-	    void	*closure);
+extern _X_EXPORT void
 
-void
-fbCopyNto1 (DrawablePtr	pSrcDrawable,
-	    DrawablePtr	pDstDrawable,
-	    GCPtr	pGC,
-	    BoxPtr	pbox,
-	    int		nbox,
-	    int		dx,
-	    int		dy,
-	    Bool	reverse,
-	    Bool	upsidedown,
-	    Pixel	bitplane,
-	    void	*closure);
+fbCopy1toN(DrawablePtr pSrcDrawable,
+           DrawablePtr pDstDrawable,
+           GCPtr pGC,
+           BoxPtr pbox,
+           int nbox,
+           int dx,
+           int dy,
+           Bool reverse, Bool upsidedown, Pixel bitplane, void *closure);
 
-void
-fbCopyRegion (DrawablePtr   pSrcDrawable,
-	      DrawablePtr   pDstDrawable,
-	      GCPtr	    pGC,
-	      RegionPtr	    pDstRegion,
-	      int	    dx,
-	      int	    dy,
-	      fbCopyProc    copyProc,
-	      Pixel	    bitPlane,
-	      void	    *closure);
+extern _X_EXPORT void
 
-RegionPtr
-fbDoCopy (DrawablePtr	pSrcDrawable,
-	  DrawablePtr	pDstDrawable,
-	  GCPtr		pGC,
-	  int		xIn, 
-	  int		yIn,
-	  int		widthSrc, 
-	  int		heightSrc,
-	  int		xOut, 
-	  int		yOut,
-	  fbCopyProc	copyProc,
-	  Pixel		bitplane,
-	  void		*closure);
-	  
-RegionPtr
-fbCopyArea (DrawablePtr	pSrcDrawable,
-	    DrawablePtr	pDstDrawable,
-	    GCPtr	pGC,
-	    int		xIn, 
-	    int		yIn,
-	    int		widthSrc, 
-	    int		heightSrc,
-	    int		xOut, 
-	    int		yOut);
+fbCopyNto1(DrawablePtr pSrcDrawable,
+           DrawablePtr pDstDrawable,
+           GCPtr pGC,
+           BoxPtr pbox,
+           int nbox,
+           int dx,
+           int dy,
+           Bool reverse, Bool upsidedown, Pixel bitplane, void *closure);
 
-RegionPtr
-fbCopyPlane (DrawablePtr    pSrcDrawable,
-	     DrawablePtr    pDstDrawable,
-	     GCPtr	    pGC,
-	     int	    xIn, 
-	     int	    yIn,
-	     int	    widthSrc, 
-	     int	    heightSrc,
-	     int	    xOut, 
-	     int	    yOut,
-	     unsigned long  bitplane);
+extern _X_EXPORT RegionPtr
+
+fbCopyArea(DrawablePtr pSrcDrawable,
+           DrawablePtr pDstDrawable,
+           GCPtr pGC,
+           int xIn, int yIn, int widthSrc, int heightSrc, int xOut, int yOut);
+
+extern _X_EXPORT RegionPtr
+
+fbCopyPlane(DrawablePtr pSrcDrawable,
+            DrawablePtr pDstDrawable,
+            GCPtr pGC,
+            int xIn,
+            int yIn,
+            int widthSrc,
+            int heightSrc, int xOut, int yOut, unsigned long bitplane);
 
 /*
  * fbfill.c
  */
-void
-fbFill (DrawablePtr pDrawable,
-	GCPtr	    pGC,
-	int	    x,
-	int	    y,
-	int	    width,
-	int	    height);
+extern _X_EXPORT void
+ fbFill(DrawablePtr pDrawable, GCPtr pGC, int x, int y, int width, int height);
 
-void
-fbSolidBoxClipped (DrawablePtr	pDrawable,
-		   RegionPtr	pClip,
-		   int		xa,
-		   int		ya,
-		   int		xb,
-		   int		yb,
-		   FbBits	and,
-		   FbBits	xor);
+extern _X_EXPORT void
+
+fbSolidBoxClipped(DrawablePtr pDrawable,
+                  RegionPtr pClip,
+                  int xa, int ya, int xb, int yb, FbBits and, FbBits xor);
 
 /*
  * fbfillrect.c
  */
-void
-fbPolyFillRect(DrawablePtr  pDrawable, 
-	       GCPtr	    pGC, 
-	       int	    nrectInit,
-	       xRectangle   *prectInit);
+extern _X_EXPORT void
+
+fbPolyFillRect(DrawablePtr pDrawable,
+               GCPtr pGC, int nrectInit, xRectangle *prectInit);
 
 #define fbPolyFillArc miPolyFillArc
 
@@ -1471,156 +845,106 @@ fbPolyFillRect(DrawablePtr  pDrawable,
 /*
  * fbfillsp.c
  */
-void
-fbFillSpans (DrawablePtr    pDrawable,
-	     GCPtr	    pGC,
-	     int	    nInit,
-	     DDXPointPtr    pptInit,
-	     int	    *pwidthInit,
-	     int	    fSorted);
+extern _X_EXPORT void
 
+fbFillSpans(DrawablePtr pDrawable,
+            GCPtr pGC,
+            int nInit, DDXPointPtr pptInit, int *pwidthInit, int fSorted);
 
 /*
  * fbgc.c
  */
 
-Bool
-fbCreateGC(GCPtr pGC);
+extern _X_EXPORT Bool
+ fbCreateGC(GCPtr pGC);
 
-void
-fbPadPixmap (PixmapPtr pPixmap);
-    
-void
-fbValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable);
+extern _X_EXPORT void
+ fbPadPixmap(PixmapPtr pPixmap);
+
+extern _X_EXPORT void
+ fbValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable);
 
 /*
  * fbgetsp.c
  */
-void
-fbGetSpans(DrawablePtr	pDrawable, 
-	   int		wMax, 
-	   DDXPointPtr	ppt, 
-	   int		*pwidth, 
-	   int		nspans, 
-	   char		*pchardstStart);
+extern _X_EXPORT void
+
+fbGetSpans(DrawablePtr pDrawable,
+           int wMax,
+           DDXPointPtr ppt, int *pwidth, int nspans, char *pchardstStart);
 
 /*
  * fbglyph.c
  */
 
-Bool
-fbGlyphIn (RegionPtr	pRegion,
-	   int		x,
-	   int		y,
-	   int		width,
-	   int		height);
-    
-void
-fbPolyGlyphBlt (DrawablePtr	pDrawable,
-		GCPtr		pGC,
-		int		x, 
-		int		y,
-		unsigned int	nglyph,
-		CharInfoPtr	*ppci,
-		pointer		pglyphBase);
+extern _X_EXPORT void
 
-void
-fbImageGlyphBlt (DrawablePtr	pDrawable,
-		 GCPtr		pGC,
-		 int		x,
-		 int		y,
-		 unsigned int	nglyph,
-		 CharInfoPtr	*ppci,
-		 pointer	pglyphBase);
+fbPolyGlyphBlt(DrawablePtr pDrawable,
+               GCPtr pGC,
+               int x,
+               int y,
+               unsigned int nglyph, CharInfoPtr * ppci, void *pglyphBase);
+
+extern _X_EXPORT void
+
+fbImageGlyphBlt(DrawablePtr pDrawable,
+                GCPtr pGC,
+                int x,
+                int y,
+                unsigned int nglyph, CharInfoPtr * ppci, void *pglyphBase);
 
 /*
  * fbimage.c
  */
 
-void
-fbPutImage (DrawablePtr	pDrawable,
-	    GCPtr	pGC,
-	    int		depth,
-	    int		x,
-	    int		y,
-	    int		w,
-	    int		h,
-	    int		leftPad,
-	    int		format,
-	    char	*pImage);
+extern _X_EXPORT void
 
-void
-fbPutZImage (DrawablePtr	pDrawable,
-	     RegionPtr		pClip,
-	     int		alu,
-	     FbBits		pm,
-	     int		x,
-	     int		y,
-	     int		width,
-	     int		height,
-	     FbStip		*src,
-	     FbStride		srcStride);
+fbPutImage(DrawablePtr pDrawable,
+           GCPtr pGC,
+           int depth,
+           int x, int y, int w, int h, int leftPad, int format, char *pImage);
 
-void
-fbPutXYImage (DrawablePtr	pDrawable,
-	      RegionPtr		pClip,
-	      FbBits		fg,
-	      FbBits		bg,
-	      FbBits		pm,
-	      int		alu,
-	      Bool		opaque,
-	      
-	      int		x,
-	      int		y,
-	      int		width,
-	      int		height,
+extern _X_EXPORT void
 
-	      FbStip		*src,
-	      FbStride		srcStride,
-	      int		srcX);
+fbPutZImage(DrawablePtr pDrawable,
+            RegionPtr pClip,
+            int alu,
+            FbBits pm,
+            int x,
+            int y, int width, int height, FbStip * src, FbStride srcStride);
 
-void
-fbGetImage (DrawablePtr	    pDrawable,
-	    int		    x,
-	    int		    y,
-	    int		    w,
-	    int		    h,
-	    unsigned int    format,
-	    unsigned long   planeMask,
-	    char	    *d);
+extern _X_EXPORT void
+
+fbPutXYImage(DrawablePtr pDrawable,
+             RegionPtr pClip,
+             FbBits fg,
+             FbBits bg,
+             FbBits pm,
+             int alu,
+             Bool opaque,
+             int x,
+             int y,
+             int width, int height, FbStip * src, FbStride srcStride, int srcX);
+
+extern _X_EXPORT void
+
+fbGetImage(DrawablePtr pDrawable,
+           int x,
+           int y,
+           int w, int h, unsigned int format, unsigned long planeMask, char *d);
 /*
  * fbline.c
  */
 
-void
-fbZeroLine (DrawablePtr	pDrawable,
-	    GCPtr	pGC,
-	    int		mode,
-	    int		npt,
-	    DDXPointPtr	ppt);
+extern _X_EXPORT void
+fbPolyLine(DrawablePtr pDrawable,
+           GCPtr pGC, int mode, int npt, DDXPointPtr ppt);
 
-void
-fbZeroSegment (DrawablePtr  pDrawable,
-	       GCPtr	    pGC,
-	       int	    nseg,
-	       xSegment	    *pSegs);
+extern _X_EXPORT void
+ fbFixCoordModePrevious(int npt, DDXPointPtr ppt);
 
-void
-fbPolyLine (DrawablePtr	pDrawable,
-	    GCPtr	pGC,
-	    int		mode,
-	    int		npt,
-	    DDXPointPtr	ppt);
-
-void
-fbFixCoordModePrevious (int npt,
-			DDXPointPtr ppt);
-
-void
-fbPolySegment (DrawablePtr  pDrawable,
-	       GCPtr	    pGC,
-	       int	    nseg,
-	       xSegment	    *pseg);
+extern _X_EXPORT void
+ fbPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment * pseg);
 
 #define fbPolyRectangle	miPolyRectangle
 
@@ -1628,496 +952,209 @@ fbPolySegment (DrawablePtr  pDrawable,
  * fbpict.c
  */
 
-Bool
-fbPictureInit (ScreenPtr pScreen,
-	       PictFormatPtr formats,
-	       int nformats);
+extern _X_EXPORT Bool
+ fbPictureInit(ScreenPtr pScreen, PictFormatPtr formats, int nformats);
+
+extern _X_EXPORT void
+fbDestroyGlyphCache(void);
 
 /*
  * fbpixmap.c
  */
 
-PixmapPtr
-fbCreatePixmapBpp (ScreenPtr pScreen, int width, int height, int depth, int bpp);
+extern _X_EXPORT PixmapPtr
+fbCreatePixmap(ScreenPtr pScreen, int width, int height, int depth,
+               unsigned usage_hint);
 
-PixmapPtr
-fbCreatePixmap (ScreenPtr pScreen, int width, int height, int depth);
+extern _X_EXPORT Bool
+ fbDestroyPixmap(PixmapPtr pPixmap);
 
-Bool
-fbDestroyPixmap (PixmapPtr pPixmap);
-
-RegionPtr
-fbPixmapToRegion(PixmapPtr pPix);
+extern _X_EXPORT RegionPtr
+ fbPixmapToRegion(PixmapPtr pPix);
 
 /*
  * fbpoint.c
  */
 
-void
-fbDots (FbBits	    *dstOrig,
-	FbStride    dstStride,
-	int	    dstBpp,
-	BoxPtr	    pBox,
-	xPoint	    *pts,
-	int	    npt,
-	int	    xorg,
-	int	    yorg,
-	int	    xoff,
-	int	    yoff,
-	FbBits	    andOrig,
-	FbBits	    xorOrig);
+extern _X_EXPORT void
 
-void
-fbPolyPoint (DrawablePtr    pDrawable,
-	     GCPtr	    pGC,
-	     int	    mode,
-	     int	    npt,
-	     xPoint	    *pptInit);
+fbPolyPoint(DrawablePtr pDrawable,
+            GCPtr pGC, int mode, int npt, xPoint * pptInit);
 
 /*
  * fbpush.c
  */
-void
-fbPushPattern (DrawablePtr  pDrawable,
-	       GCPtr	    pGC,
-	       
-	       FbStip	    *src,
-	       FbStride	    srcStride,
-	       int	    srcX,
 
-	       int	    x,
-	       int	    y,
+extern _X_EXPORT void
 
-	       int	    width,
-	       int	    height);
+fbPushImage(DrawablePtr pDrawable,
+            GCPtr pGC,
+            FbStip * src,
+            FbStride srcStride, int srcX, int x, int y, int width, int height);
 
-void
-fbPushFill (DrawablePtr	pDrawable,
-	    GCPtr	pGC,
+extern _X_EXPORT void
 
-	    FbStip	*src,
-	    FbStride	srcStride,
-	    int		srcX,
-	    
-	    int		x,
-	    int		y,
-	    int		width,
-	    int		height);
-
-void
-fbPush1toN (DrawablePtr	pSrcDrawable,
-	    DrawablePtr	pDstDrawable,
-	    GCPtr	pGC,
-	    BoxPtr	pbox,
-	    int		nbox,
-	    int		dx,
-	    int		dy,
-	    Bool	reverse,
-	    Bool	upsidedown,
-	    Pixel	bitplane,
-	    void	*closure);
-
-void
-fbPushImage (DrawablePtr    pDrawable,
-	     GCPtr	    pGC,
-	     
-	     FbStip	    *src,
-	     FbStride	    srcStride,
-	     int	    srcX,
-
-	     int	    x,
-	     int	    y,
-	     int	    width,
-	     int	    height);
-
-void
-fbPushPixels (GCPtr	    pGC,
-	      PixmapPtr	    pBitmap,
-	      DrawablePtr   pDrawable,
-	      int	    dx,
-	      int	    dy,
-	      int	    xOrg,
-	      int	    yOrg);
-
+fbPushPixels(GCPtr pGC,
+             PixmapPtr pBitmap,
+             DrawablePtr pDrawable, int dx, int dy, int xOrg, int yOrg);
 
 /*
  * fbscreen.c
  */
 
-Bool
-fbCloseScreen (int indx, ScreenPtr pScreen);
+extern _X_EXPORT Bool
+ fbCloseScreen(ScreenPtr pScreen);
 
-Bool
-fbRealizeFont(ScreenPtr pScreen, FontPtr pFont);
+extern _X_EXPORT Bool
+ fbRealizeFont(ScreenPtr pScreen, FontPtr pFont);
 
-Bool
-fbUnrealizeFont(ScreenPtr pScreen, FontPtr pFont);
+extern _X_EXPORT Bool
+ fbUnrealizeFont(ScreenPtr pScreen, FontPtr pFont);
 
-void
-fbQueryBestSize (int class, 
-		 unsigned short *width, unsigned short *height,
-		 ScreenPtr pScreen);
+extern _X_EXPORT void
 
-PixmapPtr
-_fbGetWindowPixmap (WindowPtr pWindow);
+fbQueryBestSize(int class,
+                unsigned short *width, unsigned short *height,
+                ScreenPtr pScreen);
 
-void
-_fbSetWindowPixmap (WindowPtr pWindow, PixmapPtr pPixmap);
+extern _X_EXPORT PixmapPtr
+ _fbGetWindowPixmap(WindowPtr pWindow);
 
-Bool
-fbSetupScreen(ScreenPtr	pScreen, 
-	      pointer	pbits,		/* pointer to screen bitmap */
-	      int	xsize, 		/* in pixels */
-	      int	ysize,
-	      int	dpix,		/* dots per inch */
-	      int	dpiy,
-	      int	width,		/* pixel width of frame buffer */
-	      int	bpp);		/* bits per pixel of frame buffer */
+extern _X_EXPORT void
+ _fbSetWindowPixmap(WindowPtr pWindow, PixmapPtr pPixmap);
 
-Bool
-wfbFinishScreenInit(ScreenPtr	pScreen,
-		    pointer	pbits,
-		    int		xsize,
-		    int		ysize,
-		    int		dpix,
-		    int		dpiy,
-		    int		width,
-		    int		bpp,
-		    SetupWrapProcPtr setupWrap,
-		    FinishWrapProcPtr finishWrap);
+extern _X_EXPORT Bool
+ fbSetupScreen(ScreenPtr pScreen, void *pbits,        /* pointer to screen bitmap */
+               int xsize,       /* in pixels */
+               int ysize, int dpix,     /* dots per inch */
+               int dpiy, int width,     /* pixel width of frame buffer */
+               int bpp);        /* bits per pixel of frame buffer */
 
-Bool
-wfbScreenInit(ScreenPtr	pScreen,
-	      pointer	pbits,
-	      int	xsize,
-	      int	ysize,
-	      int	dpix,
-	      int	dpiy,
-	      int	width,
-	      int	bpp,
-	      SetupWrapProcPtr setupWrap,
-	      FinishWrapProcPtr finishWrap);
+#ifdef FB_ACCESS_WRAPPER
+extern _X_EXPORT Bool
+wfbFinishScreenInit(ScreenPtr pScreen,
+                    void *pbits,
+                    int xsize,
+                    int ysize,
+                    int dpix,
+                    int dpiy,
+                    int width,
+                    int bpp,
+                    SetupWrapProcPtr setupWrap, FinishWrapProcPtr finishWrap);
 
-Bool
-fbFinishScreenInit(ScreenPtr	pScreen,
-		   pointer	pbits,
-		   int		xsize,
-		   int		ysize,
-		   int		dpix,
-		   int		dpiy,
-		   int		width,
-		   int		bpp);
+extern _X_EXPORT Bool
+wfbScreenInit(ScreenPtr pScreen,
+              void *pbits,
+              int xsize,
+              int ysize,
+              int dpix,
+              int dpiy,
+              int width,
+              int bpp,
+              SetupWrapProcPtr setupWrap, FinishWrapProcPtr finishWrap);
+#endif
 
-Bool
-fbScreenInit(ScreenPtr	pScreen,
-	     pointer	pbits,
-	     int	xsize,
-	     int	ysize,
-	     int	dpix,
-	     int	dpiy,
-	     int	width,
-	     int	bpp);
+extern _X_EXPORT Bool
+fbFinishScreenInit(ScreenPtr pScreen,
+                   void *pbits,
+                   int xsize,
+                   int ysize, int dpix, int dpiy, int width, int bpp);
 
-void
-fbInitializeBackingStore (ScreenPtr pScreen);
-    
+extern _X_EXPORT Bool
+
+fbScreenInit(ScreenPtr pScreen,
+             void *pbits,
+             int xsize, int ysize, int dpix, int dpiy, int width, int bpp);
+
 /*
  * fbseg.c
  */
-typedef void	FbBres (DrawablePtr	pDrawable,
-			GCPtr		pGC,
-			int		dashOffset,
-			int		signdx,
-			int		signdy,
-			int		axis,
-			int		x,
-			int		y,
-			int		e,
-			int		e1,
-			int		e3,
-			int		len);
+typedef void FbBres(DrawablePtr pDrawable,
+                    GCPtr pGC,
+                    int dashOffset,
+                    int signdx,
+                    int signdy,
+                    int axis, int x, int y, int e, int e1, int e3, int len);
 
-FbBres fbBresSolid, fbBresDash, fbBresFill, fbBresFillDash;
+extern _X_EXPORT void
+fbSegment(DrawablePtr pDrawable,
+          GCPtr pGC,
+          int xa, int ya, int xb, int yb, Bool drawLast, int *dashOffset);
+
 /*
  * fbsetsp.c
  */
 
-void
-fbSetSpans (DrawablePtr	    pDrawable,
-	    GCPtr	    pGC,
-	    char	    *src,
-	    DDXPointPtr	    ppt,
-	    int		    *pwidth,
-	    int		    nspans,
-	    int		    fSorted);
-
-FbBres *
-fbSelectBres (DrawablePtr   pDrawable,
-	      GCPtr	    pGC);
-
-void
-fbBres (DrawablePtr	pDrawable,
-	GCPtr		pGC,
-	int		dashOffset,
-	int		signdx,
-	int		signdy,
-	int		axis,
-	int		x,
-	int		y,
-	int		e,
-	int		e1,
-	int		e3,
-	int		len);
-
-void
-fbSegment (DrawablePtr	pDrawable,
-	   GCPtr	pGC,
-	   int		xa,
-	   int		ya,
-	   int		xb,
-	   int		yb,
-	   Bool		drawLast,
-	   int		*dashOffset);
-
+extern _X_EXPORT void
+fbSetSpans(DrawablePtr pDrawable,
+           GCPtr pGC,
+           char *src, DDXPointPtr ppt, int *pwidth, int nspans, int fSorted);
 
 /*
  * fbsolid.c
  */
 
-void
-fbSolid (FbBits	    *dst,
-	 FbStride   dstStride,
-	 int	    dstX,
-	 int	    bpp,
+extern _X_EXPORT void
 
-	 int	    width,
-	 int	    height,
-
-	 FbBits	    and,
-	 FbBits	    xor);
-
-#ifdef FB_24BIT
-void
-fbSolid24 (FbBits   *dst,
-	   FbStride dstStride,
-	   int	    dstX,
-
-	   int	    width,
-	   int	    height,
-
-	   FbBits   and,
-	   FbBits   xor);
-#endif
-
-/*
- * fbstipple.c
- */
-
-void
-fbTransparentSpan (FbBits   *dst,
-		   FbBits   stip,
-		   FbBits   fgxor,
-		   int	    n);
-
-void
-fbEvenStipple (FbBits   *dst,
-	       FbStride dstStride,
-	       int	dstX,
-	       int	dstBpp,
-
-	       int	width,
-	       int	height,
-
-	       FbStip   *stip,
-	       FbStride	stipStride,
-	       int	stipHeight,
-
-	       FbBits   fgand,
-	       FbBits   fgxor,
-	       FbBits   bgand,
-	       FbBits   bgxor,
-
-	       int	xRot,
-	       int	yRot);
-
-void
-fbOddStipple (FbBits	*dst,
-	      FbStride	dstStride,
-	      int	dstX,
-	      int	dstBpp,
-
-	      int	width,
-	      int	height,
-
-	      FbStip	*stip,
-	      FbStride	stipStride,
-	      int	stipWidth,
-	      int	stipHeight,
-
-	      FbBits	fgand,
-	      FbBits	fgxor,
-	      FbBits	bgand,
-	      FbBits	bgxor,
-
-	      int	xRot,
-	      int	yRot);
-
-void
-fbStipple (FbBits   *dst,
-	   FbStride dstStride,
-	   int	    dstX,
-	   int	    dstBpp,
-
-	   int	    width,
-	   int	    height,
-
-	   FbStip   *stip,
-	   FbStride stipStride,
-	   int	    stipWidth,
-	   int	    stipHeight,
-	   Bool	    even,
-
-	   FbBits   fgand,
-	   FbBits   fgxor,
-	   FbBits   bgand,
-	   FbBits   bgxor,
-
-	   int	    xRot,
-	   int	    yRot);
-
-/*
- * fbtile.c
- */
-
-void
-fbEvenTile (FbBits	*dst,
-	    FbStride	dstStride,
-	    int		dstX,
-
-	    int		width,
-	    int		height,
-
-	    FbBits	*tile,
-	    FbStride	tileStride,
-	    int		tileHeight,
-
-	    int		alu,
-	    FbBits	pm,
-	    int		xRot,
-	    int		yRot);
-
-void
-fbOddTile (FbBits	*dst,
-	   FbStride	dstStride,
-	   int		dstX,
-
-	   int		width,
-	   int		height,
-
-	   FbBits	*tile,
-	   FbStride	tileStride,
-	   int		tileWidth,
-	   int		tileHeight,
-
-	   int		alu,
-	   FbBits	pm,
-	   int		bpp,
-	   
-	   int		xRot,
-	   int		yRot);
-
-void
-fbTile (FbBits	    *dst,
-	FbStride    dstStride,
-	int	    dstX,
-
-	int	    width,
-	int	    height,
-
-	FbBits	    *tile,
-	FbStride    tileStride,
-	int	    tileWidth,
-	int	    tileHeight,
-	
-	int	    alu,
-	FbBits	    pm,
-	int	    bpp,
-	
-	int	    xRot,
-	int	    yRot);
+fbSolid(FbBits * dst,
+        FbStride dstStride,
+        int dstX, int bpp, int width, int height, FbBits and, FbBits xor);
 
 /*
  * fbutil.c
  */
-FbBits
-fbReplicatePixel (Pixel p, int bpp);
-
-void
-fbReduceRasterOp (int rop, FbBits fg, FbBits pm, FbBits *andp, FbBits *xorp);
+extern _X_EXPORT FbBits fbReplicatePixel(Pixel p, int bpp);
 
 #ifdef FB_ACCESS_WRAPPER
-extern ReadMemoryProcPtr wfbReadMemory;
-extern WriteMemoryProcPtr wfbWriteMemory;
+extern _X_EXPORT ReadMemoryProcPtr wfbReadMemory;
+extern _X_EXPORT WriteMemoryProcPtr wfbWriteMemory;
 #endif
 
 /*
  * fbwindow.c
  */
 
-Bool
-fbCreateWindow(WindowPtr pWin);
+extern _X_EXPORT Bool
+ fbCreateWindow(WindowPtr pWin);
 
-Bool
-fbDestroyWindow(WindowPtr pWin);
+extern _X_EXPORT Bool
+ fbDestroyWindow(WindowPtr pWin);
 
-Bool
-fbMapWindow(WindowPtr pWindow);
+extern _X_EXPORT Bool
+ fbRealizeWindow(WindowPtr pWindow);
 
-Bool
-fbPositionWindow(WindowPtr pWin, int x, int y);
+extern _X_EXPORT Bool
+ fbPositionWindow(WindowPtr pWin, int x, int y);
 
-Bool 
-fbUnmapWindow(WindowPtr pWindow);
-    
-void
-fbCopyWindowProc (DrawablePtr	pSrcDrawable,
-		  DrawablePtr	pDstDrawable,
-		  GCPtr		pGC,
-		  BoxPtr	pbox,
-		  int		nbox,
-		  int		dx,
-		  int		dy,
-		  Bool		reverse,
-		  Bool		upsidedown,
-		  Pixel		bitplane,
-		  void		*closure);
+extern _X_EXPORT Bool
+ fbUnrealizeWindow(WindowPtr pWindow);
 
-void 
-fbCopyWindow(WindowPtr	    pWin, 
-	     DDXPointRec    ptOldOrg, 
-	     RegionPtr	    prgnSrc);
+extern _X_EXPORT void
 
-Bool
-fbChangeWindowAttributes(WindowPtr pWin, unsigned long mask);
+fbCopyWindowProc(DrawablePtr pSrcDrawable,
+                 DrawablePtr pDstDrawable,
+                 GCPtr pGC,
+                 BoxPtr pbox,
+                 int nbox,
+                 int dx,
+                 int dy,
+                 Bool reverse, Bool upsidedown, Pixel bitplane, void *closure);
 
-void
-fbFillRegionSolid (DrawablePtr	pDrawable,
-		   RegionPtr	pRegion,
-		   FbBits	and,
-		   FbBits	xor);
+extern _X_EXPORT void
+ fbCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc);
 
-void
-fbFillRegionTiled (DrawablePtr	pDrawable,
-		   RegionPtr	pRegion,
-		   PixmapPtr	pTile);
+extern _X_EXPORT Bool
+ fbChangeWindowAttributes(WindowPtr pWin, unsigned long mask);
 
-void
-fbPaintWindow(WindowPtr pWin, RegionPtr pRegion, int what);
+extern _X_EXPORT void
 
+fbFillRegionSolid(DrawablePtr pDrawable,
+                  RegionPtr pRegion, FbBits and, FbBits xor);
 
-pixman_image_t *image_from_pict (PicturePtr pict,
-				 Bool       has_clip);
-void free_pixman_pict (PicturePtr, pixman_image_t *);
+extern _X_EXPORT pixman_image_t *image_from_pict(PicturePtr pict,
+                                                 Bool has_clip,
+                                                 int *xoff, int *yoff);
 
-#endif /* _FB_H_ */
+extern _X_EXPORT void free_pixman_pict(PicturePtr, pixman_image_t *);
 
+#endif                          /* _FB_H_ */

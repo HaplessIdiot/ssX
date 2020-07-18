@@ -1,39 +1,31 @@
-/************************************************************
-Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
-
-                    All Rights Reserved
-
-Permission  to  use,  copy,  modify,  and  distribute   this
-software  and  its documentation for any purpose and without
-fee is hereby granted, provided that the above copyright no-
-tice  appear  in all copies and that both that copyright no-
-tice and this permission notice appear in  supporting  docu-
-mentation,  and  that the names of Sun or X Consortium
-not be used in advertising or publicity pertaining to 
-distribution  of  the software  without specific prior 
-written permission. Sun and X Consortium make no 
-representations about the suitability of this software for 
-any purpose. It is provided "as is" without any express or 
-implied warranty.
-
-SUN DISCLAIMS ALL WARRANTIES WITH REGARD TO  THIS  SOFTWARE,
-INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FIT-
-NESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SUN BE  LI-
-ABLE  FOR  ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
-ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,  DATA  OR
-PROFITS,  WHETHER  IN  AN  ACTION OF CONTRACT, NEGLIGENCE OR
-OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
-THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-********************************************************/
-
+/*
+ * Copyright (c) 1987, Oracle and/or its affiliates. All rights reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice (including the next
+ * paragraph) shall be included in all copies or substantial portions of the
+ * Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 /**
  * This version of fbcmap.c is implemented in terms of mi functions.
  * These functions used to be in fbcmap.c and depended upon the symbol
  * XFree86Server being defined.
  */
-
 
 #ifdef HAVE_DIX_CONFIG_H
 #include <dix-config.h>
@@ -44,7 +36,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "micmap.h"
 
 int
-fbListInstalledColormaps(ScreenPtr pScreen, Colormap *pmaps)
+fbListInstalledColormaps(ScreenPtr pScreen, Colormap * pmaps)
 {
     return miListInstalledColormaps(pScreen, pmaps);
 }
@@ -62,10 +54,8 @@ fbUninstallColormap(ColormapPtr pmap)
 }
 
 void
-fbResolveColor(unsigned short   *pred,
-	       unsigned short   *pgreen,
-	       unsigned short   *pblue,
-	       VisualPtr	pVisual)
+fbResolveColor(unsigned short *pred,
+               unsigned short *pgreen, unsigned short *pblue, VisualPtr pVisual)
 {
     miResolveColor(pred, pgreen, pblue, pVisual);
 }
@@ -76,11 +66,44 @@ fbInitializeColormap(ColormapPtr pmap)
     return miInitializeColormap(pmap);
 }
 
+Bool
+mfbCreateColormap(ColormapPtr pmap)
+{
+    ScreenPtr	pScreen;
+    unsigned short  red0, green0, blue0;
+    unsigned short  red1, green1, blue1;
+    Pixel pix;
+
+    pScreen = pmap->pScreen;
+    if (pScreen->whitePixel == 0)
+    {
+	red0 = green0 = blue0 = ~0;
+	red1 = green1 = blue1 = 0;
+    }
+    else
+    {
+	red0 = green0 = blue0 = 0;
+	red1 = green1 = blue1 = ~0;
+    }
+
+    /* this is a monochrome colormap, it only has two entries, just fill
+     * them in by hand.  If it were a more complex static map, it would be
+     * worth writing a for loop or three to initialize it */
+
+    /* this will be pixel 0 */
+    pix = 0;
+    if (AllocColor(pmap, &red0, &green0, &blue0, &pix, 0) != Success)
+	return FALSE;
+
+    /* this will be pixel 1 */
+    if (AllocColor(pmap, &red1, &green1, &blue1, &pix, 0) != Success)
+	return FALSE;
+    return TRUE;
+}
+
 int
-fbExpandDirectColors (ColormapPtr   pmap,
-		      int	    ndef,
-		      xColorItem    *indefs,
-		      xColorItem    *outdefs)
+fbExpandDirectColors(ColormapPtr pmap,
+                     int ndef, xColorItem * indefs, xColorItem * outdefs)
 {
     return miExpandDirectColors(pmap, ndef, indefs, outdefs);
 }
@@ -98,9 +121,17 @@ fbClearVisualTypes(void)
 }
 
 Bool
-fbSetVisualTypes (int depth, int visuals, int bitsPerRGB)
+fbSetVisualTypes(int depth, int visuals, int bitsPerRGB)
 {
     return miSetVisualTypes(depth, visuals, bitsPerRGB, -1);
+}
+
+Bool
+fbSetVisualTypesAndMasks(int depth, int visuals, int bitsPerRGB,
+                         Pixel redMask, Pixel greenMask, Pixel blueMask)
+{
+    return miSetVisualTypesAndMasks(depth, visuals, bitsPerRGB, -1,
+                                    redMask, greenMask, blueMask);
 }
 
 /*
@@ -109,15 +140,13 @@ fbSetVisualTypes (int depth, int visuals, int bitsPerRGB)
  * the set which can be used with this version of fb.
  */
 Bool
-fbInitVisuals (VisualPtr    *visualp, 
-	       DepthPtr	    *depthp,
-	       int	    *nvisualp,
-	       int	    *ndepthp,
-	       int	    *rootDepthp,
-	       VisualID	    *defaultVisp,
-	       unsigned long	sizes,
-	       int	    bitsPerRGB)
+fbInitVisuals(VisualPtr * visualp,
+              DepthPtr * depthp,
+              int *nvisualp,
+              int *ndepthp,
+              int *rootDepthp,
+              VisualID * defaultVisp, unsigned long sizes, int bitsPerRGB)
 {
     return miInitVisuals(visualp, depthp, nvisualp, ndepthp, rootDepthp,
-			 defaultVisp, sizes, bitsPerRGB, -1);
+                         defaultVisp, sizes, bitsPerRGB, -1);
 }
