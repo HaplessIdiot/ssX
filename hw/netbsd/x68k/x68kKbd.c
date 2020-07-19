@@ -382,12 +382,10 @@ x68kKbdCtrl(DeviceIntPtr pDev, KeybdCtrl *ctrl)
 {
     X68kKbdPrivPtr pPriv = (X68kKbdPrivPtr)pDev->public.devicePrivate;
 
-#ifdef XKB
     if (pPriv->leds != ctrl->leds) {
         x68kSetLeds(pPriv, (u_char)ctrl->leds);
 	pPriv->leds = ctrl->leds;
     }
-#endif
 }
 
 /*-------------------------------------------------------------------------
