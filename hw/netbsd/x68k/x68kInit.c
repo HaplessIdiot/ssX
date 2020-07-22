@@ -68,7 +68,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 *******************************************************/
 
-#include "Xos.h"
+#include <X11/Xos.h>
 #include "x68k.h"
 #include "mi.h"
 #include "extinit.h"

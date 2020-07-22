@@ -43,12 +43,12 @@
 #include <machine/grfioctl.h>
 
 /* generic X */
-#include <X.h>
-#include <Xmd.h>
+#include <X11/X.h>
+#include <X11/Xmd.h>
 #define XK_KATAKANA
-#include <keysym.h>
+#include <X11/keysym.h>
 #define NEED_EVENTS
-#include <Xproto.h>
+#include <X11/Xproto.h>
 
 /* dix */
 #include <misc.h>
