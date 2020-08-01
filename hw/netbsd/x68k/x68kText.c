@@ -58,7 +58,7 @@ x68kTextOpen(X68kScreenRec *pPriv)
 
     tpal0 = pPriv->reg->tpal[0];
     tpal15 = pPriv->reg->tpal[15];
-    
+
     pPriv->reg->tpal[0] = 0;
     pPriv->reg->tpal[15] = 0xFFFE;
 
@@ -115,7 +115,7 @@ x68kTextInit(ScreenPtr pScreen, int argc, char *argv[])
     if ( !miCreateDefColormap(pScreen) )
         return FALSE;
     pScreen->SaveScreen = x68kSaveScreen;
-    
+
     return TRUE;
 }
 

@@ -42,7 +42,7 @@ typedef struct {
     u_short r16, r17, r18, r19, r20, r21, r22, r23;
     u_short ctrl;
 } X68kCrtc;
-    
+
 /*
  * video controller
  */
