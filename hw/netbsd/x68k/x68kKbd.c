@@ -91,7 +91,7 @@ static void x68kKbdHandlerNotify(int, int, void *);
 static void x68kInitModMap(KeySymsRec *, CARD8 *);
 static void x68kInitKbdNames(XkbRMLVOSet *, X68kKbdPrivPtr);
 static void x68kKbdRingBell(DeviceIntPtr, int, int);
-static void x68kKbdBell(int, DeviceIntPtr, pointer, int);
+static void x68kKbdBell(int, DeviceIntPtr, void *, int);
 static void x68kKbdCtrl(DeviceIntPtr, KeybdCtrl *);
 static void x68kSetLeds(X68kKbdPrivPtr, u_char);
 
@@ -119,7 +119,7 @@ x68kKbdProc(DeviceIntPtr pDev,	/* Keyboard to manipulate */
 
     switch (what) {
         case DEVICE_INIT:
-            pKeyboard->devicePrivate = (pointer)&x68kKbdPriv;
+            pKeyboard->devicePrivate = (void *)&x68kKbdPriv;
             if( (x68kKbdPriv.fd = open("/dev/kbd", O_RDONLY)) == -1 ) {
                 ErrorF("Can't open keyboard device");
                 return !Success;
@@ -336,7 +336,7 @@ x68kKbdRingBell(DeviceIntPtr pDev, int volume, int duration)
 }
 
 static void
-x68kKbdBell(int volume, DeviceIntPtr pDev, pointer ctrl, int unused)
+x68kKbdBell(int volume, DeviceIntPtr pDev, void *ctrl, int unused)
 {
     KeybdCtrl*      kctrl = (KeybdCtrl*) ctrl;
 

@@ -131,7 +131,7 @@ x68kMouseProc(DeviceIntPtr device, int what)
 
     switch (what) {
 	case DEVICE_INIT:
-            pMouse->devicePrivate = (pointer) &x68kMousePriv;
+            pMouse->devicePrivate = (void *) &x68kMousePriv;
             if( (x68kMousePriv.fd = open("/dev/mouse", O_RDONLY)) == -1 ) {
                 ErrorF("Can't open mouse device");
                 return !Success;
