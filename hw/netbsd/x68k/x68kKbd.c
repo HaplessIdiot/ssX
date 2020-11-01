@@ -185,10 +185,8 @@ x68kInitModMap(KeySymsRec *KeySyms, CARD8 *x68kModMap)
         KeySyms->minKeyCode += MIN_KEYCODE;
         KeySyms->maxKeyCode += MIN_KEYCODE;
     }
-#if 0
     if (KeySyms->maxKeyCode > MAX_KEYCODE)
-        KeySyms->maxKeyCode += MAX_KEYCODE;
-#endif
+        KeySyms->maxKeyCode = MAX_KEYCODE;
     for (i = KeySyms->minKeyCode;
          i < KeySyms->maxKeyCode; i++) {
         switch (KeySyms->map[(i-KeySyms->minKeyCode)*4]) {
