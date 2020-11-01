@@ -75,9 +75,35 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 static int nscreens;
 
+/* default log file paths */
+#ifndef DEFAULT_LOGDIR
+#define DEFAULT_LOGDIR "/var/log"
+#endif
+#ifndef DEFAULT_LOGPREFIX
+#define DEFAULT_LOGPREFIX "X68K."
+#endif
+
 void
 OsVendorInit(void)
 {
+    static int inited;
+
+    if (!inited) {
+	const char *logfile;
+	char *lf;
+
+#define LOGSUFFIX ".log"
+#define LOGOLDSUFFIX ".old"
+	logfile = DEFAULT_LOGDIR "/" DEFAULT_LOGPREFIX;
+	if (asprintf(&lf, "%s%%s" LOGSUFFIX, logfile) == -1)
+	    FatalError("Cannot allocate space for the log file name\n");
+	LogInit(lf, LOGOLDSUFFIX);
+#undef LOGSUFFIX
+#undef LOGOLDSUFFIX
+	free(lf);
+
+	inited = 1;
+    }
 }
 
 #ifdef GLXEXT
@@ -178,6 +204,7 @@ AbortDDX(enum ExitCode error)
         fb = x68kGetFbProcRec(i);
         (*fb->close)(screen);
     }
+    LogClose(error);
 }
 
 /*-------------------------------------------------------------------------
