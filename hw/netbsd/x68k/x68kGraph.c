@@ -264,9 +264,9 @@ x68kCfbFinishScreenInit(
 
         ndepths = 1;
         nvisuals = 1;
-        depths = (DepthPtr)malloc( sizeof(DepthRec) );
-        visuals = (VisualPtr)malloc( sizeof(VisualRec) );
-        vid = (VisualID *)malloc( sizeof(VisualID) );
+        depths = malloc( sizeof(DepthRec) );
+        visuals = malloc( sizeof(VisualRec) );
+        vid = malloc( sizeof(VisualID) );
         if( !depths || !visuals || !vid ) {
             free( depths );
             free( visuals );
@@ -296,9 +296,9 @@ x68kCfbFinishScreenInit(
 
         ndepths = 1;
         nvisuals = 1;
-        depths = (DepthPtr)malloc( sizeof(DepthRec) );
-        visuals = (VisualPtr)malloc( sizeof(VisualRec) );
-        vid = (VisualID *)malloc( sizeof(VisualID) );
+        depths = malloc( sizeof(DepthRec) );
+        visuals = malloc( sizeof(VisualRec) );
+        vid = malloc( sizeof(VisualID) );
         if( !depths || !visuals || !vid ) {
             free( depths );
             free( visuals );
