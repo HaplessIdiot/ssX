@@ -79,7 +79,7 @@ typedef struct _X68kScreenRec {
     int scr_height;             /* screen height       */
     int dpi;                    /* dots per inch       */
     uint8_t *fb;                /* frame buffer VA     */
-    volatile FbReg *reg;        /* control register VA */
+    FbReg *reg;                 /* control register VA */
     X68kFbReg x68kreg;          /* control register    */
     int mapsize;                /* size of mapped memory */
     ColormapPtr installedMap;   /* installed colormap    */

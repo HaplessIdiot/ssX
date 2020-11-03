@@ -113,7 +113,7 @@ x68kFbCommonClose(X68kScreenRec *pPriv)
     x68kRegSetup(pPriv);
 
     /* unmap and close frame buffer */
-    if ( munmap(__UNVOLATILE(pPriv->reg), pPriv->mapsize) == -1 )
+    if ( munmap(pPriv->reg, pPriv->mapsize) == -1 )
         ErrorF("Can't unmap frame buffer");
     close(pPriv->fd);
 }
