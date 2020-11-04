@@ -39,9 +39,9 @@
  *  returns:  (Bool): TRUE  if succeeded
  *                    FALSE otherwise
  *-----------------------------------------------------------------------*/
-static u_short r21;
-static u_short tpal0;
-static u_short tpal15;
+static uint16_t r21;
+static uint16_t tpal0;
+static uint16_t tpal15;
 
 Bool
 x68kTextOpen(X68kScreenRec *pPriv)
