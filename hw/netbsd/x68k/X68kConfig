@@ -81,7 +81,7 @@
       1050    4    0)
 
 ;
-; 1024x762x4bit StaticGray
+; 1024x768x4bit StaticGray
 ; CRTC-R20 = 0x041a(1050) VIDEOC-R0 = 0x0004
 ;
 (ModeDef NeedsMultiScan Graphic 4 StaticGray  1024 768
