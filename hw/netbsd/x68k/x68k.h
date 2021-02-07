@@ -64,6 +64,7 @@
 #include <mipointer.h>
 
 #include "x68kReg.h"
+#include "mouseEmu3btn.h"
 
 /*
  * X68k dependent screen record
@@ -106,6 +107,7 @@ typedef struct _X68kFbProcRec {
 typedef struct _X68kMousePriv {
     int fd;
     int bmask;
+    MouseEmu3btn emu3btn;
 } X68kMousePriv, *X68kMousePrivPtr;
 
 typedef struct _X68kKbdPriv {
