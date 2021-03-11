@@ -195,7 +195,7 @@ x68kGraphInit(ScreenPtr pScreen, int argc, char *argv[])
 
     /* store private record into screen */
     if (!dixRegisterPrivateKey(&x68kScreenPrivateKeyRec, PRIVATE_SCREEN, 0)) {
-        ErrorF("dixRegisterPrivateKey failed");
+        ErrorF("dixRegisterPrivateKey failed\n");
         return FALSE;
     }
     x68kSetScreenPrivate(pScreen, pPriv);
