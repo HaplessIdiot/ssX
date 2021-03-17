@@ -160,8 +160,9 @@ x68kKbdProc(DeviceIntPtr pDev,	/* Keyboard to manipulate */
             RemoveNotifyFd(x68kKbdPriv.fd);
             pKeyboard->on = FALSE;
             break;
-        default:
-            FatalError("Unknown keyboard operation\n");
+
+        case DEVICE_ABORT:
+            break;
     }
     return Success;
 }

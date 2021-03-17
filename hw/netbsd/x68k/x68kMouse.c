@@ -195,6 +195,8 @@ x68kMouseProc(DeviceIntPtr device, int what)
 		ErrorF("x68kMouseProc ioctl VUIDSFORMAT\n");
 	    break;
 
+	case DEVICE_ABORT:
+	    break;
     }
     return Success;
 }
