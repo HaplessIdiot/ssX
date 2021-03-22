@@ -51,6 +51,7 @@
 #include <X11/Xproto.h>
 
 /* dix */
+#include <dix-config.h>
 #include <misc.h>
 #include <scrnintstr.h>
 #include <screenint.h>
