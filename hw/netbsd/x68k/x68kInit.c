@@ -188,7 +188,7 @@ CloseInput(void)
  *  argument: ExitCode
  *  returns:  nothing
  *-----------------------------------------------------------------------*/
-void
+static void
 AbortDDX(enum ExitCode error)
 {
     int i;

@@ -403,10 +403,4 @@ x68kSetLeds(X68kKbdPrivPtr pPriv, uint8_t data)
         ErrorF("Failed to set keyboard lights\n");
 }
 
-Bool
-LegalModifier(unsigned int key, DeviceIntPtr pDev)
-{
-    return TRUE;
-}
-
 /* EOF x68kKbd.c */
