@@ -43,15 +43,19 @@
 #include "xf86Parser.h"
 #include "xf86Xinput.h"
 #include "xf86InPriv.h"
+#include "xf86Config.h"
 
 /* Globals that video drivers may access */
 
-_X_EXPORT int xf86ScreenIndex = -1;	/* Index of ScrnInfo in pScreen.devPrivates */
-int xf86CreateRootWindowIndex = -1;	/* Index into pScreen.devPrivates */
-_X_EXPORT ScrnInfoPtr *xf86Screens = NULL;	/* List of ScrnInfos */
-_X_EXPORT int xf86PixmapIndex = 0;
-_X_EXPORT const unsigned char byte_reversed[256] =
-{
+DevPrivateKeyRec xf86CreateRootWindowKeyRec;
+DevPrivateKeyRec xf86ScreenKeyRec;
+
+ScrnInfoPtr *xf86Screens = NULL;        /* List of ScrnInfos */
+ScrnInfoPtr *xf86GPUScreens = NULL;        /* List of ScrnInfos */
+
+int xf86DRMMasterFd = -1;  /* Command line argument for DRM master file descriptor */
+
+const unsigned char byte_reversed[256] = {
     0x00, 0x80, 0x40, 0xc0, 0x20, 0xa0, 0x60, 0xe0,
     0x10, 0x90, 0x50, 0xd0, 0x30, 0xb0, 0x70, 0xf0,
     0x08, 0x88, 0x48, 0xc8, 0x28, 0xa8, 0x68, 0xe8,
@@ -89,90 +93,88 @@ _X_EXPORT const unsigned char byte_reversed[256] =
 /* Globals that input drivers may access */
 InputInfoPtr xf86InputDevs = NULL;
 
-
 /* Globals that video drivers may not access */
 
 xf86InfoRec xf86Info = {
-	-1,		/* consoleFd */
-	-1,		/* vtno */
-	NULL,		/* vtinit */
-	FALSE,		/* vtSysreq */
-	SKWhenNeeded,	/* ddxSpecialKeys */
-	NULL,		/* pMouse */
-#ifdef XINPUT
-	NULL,		/* mouseLocal */
+    .consoleFd = -1,
+    .vtno = -1,
+    .lastEventTime = -1,
+    .vtRequestsPending = FALSE,
+#ifdef __sun
+    .vtPendingNum = -1,
 #endif
-	-1,		/* lastEventTime */
-	FALSE,		/* vtRequestsPending */
-	FALSE,		/* inputPending */
-	FALSE,		/* dontVTSwitch */
-	FALSE,		/* dontZap */
-	FALSE,		/* dontZoom */
-	FALSE,		/* notrapSignals */
-	FALSE,		/* caughtSignal */
-	FALSE,		/* sharedMonitor */
-	NULL,		/* currentScreen */
+    .dontVTSwitch = FALSE,
+    .autoVTSwitch = TRUE,
+    .ShareVTs = FALSE,
+    .dontZap = FALSE,
+    .dontZoom = FALSE,
+    .currentScreen = NULL,
 #ifdef CSRG_BASED
-	-1,		/* screenFd */
-	-1,		/* consType */
+    .consType = -1,
 #endif
-	FALSE,		/* allowMouseOpenFail */
-	TRUE,		/* vidModeEnabled */
-	FALSE,		/* vidModeAllowNonLocal */
-	TRUE,		/* miscModInDevEnabled */
-	FALSE,		/* miscModInDevAllowNonLocal */
-	PCIOsConfig,	/* pciFlags */
-	Pix24DontCare,	/* pixmap24 */
-	X_DEFAULT,	/* pix24From */
-#if defined(i386) || defined(__i386__)
-	FALSE,		/* pc98 */
+    .allowMouseOpenFail = FALSE,
+    .vidModeEnabled = TRUE,
+    .vidModeAllowNonLocal = FALSE,
+    .miscModInDevEnabled = TRUE,
+    .miscModInDevAllowNonLocal = FALSE,
+    .pmFlag = TRUE,
+#if defined(CONFIG_HAL) || defined(CONFIG_UDEV) || defined(CONFIG_WSCONS)
+    .forceInputDevices = FALSE,
+    .autoAddDevices = TRUE,
+    .autoEnableDevices = TRUE,
+#else
+    .forceInputDevices = TRUE,
+    .autoAddDevices = FALSE,
+    .autoEnableDevices = FALSE,
 #endif
-	TRUE,		/* pmFlag */
-	LogNone,	/* syncLog */
-	0,		/* estimateSizesAggressively */
-	FALSE,		/* kbdCustomKeycodes */
-	FALSE,		/* disableRandR */
-	X_DEFAULT	/* randRFrom */
+#if defined(CONFIG_UDEV_KMS)
+    .autoAddGPU = TRUE,
+#else
+    .autoAddGPU = FALSE,
+#endif
+    .autoBindGPU = TRUE,
 };
+
 const char *xf86ConfigFile = NULL;
-const char *xf86InputDeviceList = NULL;
+const char *xf86ConfigDir = NULL;
 const char *xf86ModulePath = DEFAULT_MODULE_PATH;
 MessageType xf86ModPathFrom = X_DEFAULT;
-const char *xf86LogFile = DEFAULT_LOGPREFIX;
+const char *xf86LogFile = DEFAULT_LOGDIR "/" DEFAULT_LOGPREFIX;
 MessageType xf86LogFileFrom = X_DEFAULT;
 Bool xf86LogFileWasOpened = FALSE;
-serverLayoutRec xf86ConfigLayout = {NULL, };
-_X_EXPORT confDRIRec xf86ConfigDRI = {0, };
+serverLayoutRec xf86ConfigLayout = { NULL, };
+confDRIRec xf86ConfigDRI = { 0, };
+
 XF86ConfigPtr xf86configptr = NULL;
 Bool xf86Resetting = FALSE;
 Bool xf86Initialising = FALSE;
-Bool xf86DoProbe = FALSE;
 Bool xf86DoConfigure = FALSE;
+Bool xf86ProbeIgnorePrimary = FALSE;
+Bool xf86DoShowOptions = FALSE;
 DriverPtr *xf86DriverList = NULL;
 int xf86NumDrivers = 0;
 InputDriverPtr *xf86InputDriverList = NULL;
 int xf86NumInputDrivers = 0;
-ModuleInfoPtr *xf86ModuleInfoList = NULL;
-int xf86NumModuleInfos = 0;
 int xf86NumScreens = 0;
+int xf86NumGPUScreens = 0;
 
 const char *xf86VisualNames[] = {
-	"StaticGray",
-	"GrayScale",
-	"StaticColor",
-	"PseudoColor",
-	"TrueColor",
-	"DirectColor"
+    "StaticGray",
+    "GrayScale",
+    "StaticColor",
+    "PseudoColor",
+    "TrueColor",
+    "DirectColor"
 };
 
 /* Parameters set only from the command line */
-char *xf86ServerName = "no-name";
 Bool xf86fpFlag = FALSE;
-Bool xf86coFlag = FALSE;
 Bool xf86sFlag = FALSE;
 Bool xf86bsEnableFlag = FALSE;
 Bool xf86bsDisableFlag = FALSE;
 Bool xf86silkenMouseDisableFlag = FALSE;
+Bool xf86xkbdirFlag = FALSE;
+
 #ifdef HAVE_ACPI
 Bool xf86acpiDisableFlag = FALSE;
 #endif
@@ -180,27 +182,20 @@ char *xf86LayoutName = NULL;
 char *xf86ScreenName = NULL;
 char *xf86PointerName = NULL;
 char *xf86KeyboardName = NULL;
-Bool xf86ProbeOnly = FALSE;
 int xf86Verbose = DEFAULT_VERBOSE;
 int xf86LogVerbose = DEFAULT_LOG_VERBOSE;
 int xf86FbBpp = -1;
-Pix24Flags xf86Pix24 = Pix24DontCare;
 int xf86Depth = -1;
-rgb xf86Weight = {0, 0, 0};
+rgb xf86Weight = { 0, 0, 0 };
+
 Bool xf86FlipPixels = FALSE;
-Gamma xf86Gamma = {0.0, 0.0, 0.0};
-Bool xf86ShowUnresolved = DEFAULT_UNRESOLVED;
-Bool xf86BestRefresh = DEFAULT_BEST_REFRESH;
+Gamma xf86Gamma = { 0.0, 0.0, 0.0 };
+
 Bool xf86AllowMouseOpenFail = FALSE;
+Bool xf86AutoBindGPUDisabled = FALSE;
+
 #ifdef XF86VIDMODE
 Bool xf86VidModeDisabled = FALSE;
 Bool xf86VidModeAllowNonLocal = FALSE;
 #endif
-#ifdef XF86MISC
-Bool xf86MiscModInDevDisabled = FALSE;
-Bool xf86MiscModInDevAllowNonLocal = FALSE;
-#endif
-RootWinPropPtr *xf86RegisteredPropertiesTable = NULL;
-_X_EXPORT Bool xf86inSuspend = FALSE;
 Bool xorgHWAccess = FALSE;
-PciBusId xf86IsolateDevice;
