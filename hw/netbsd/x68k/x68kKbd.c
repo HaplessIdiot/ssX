@@ -391,11 +391,16 @@ x68kKbdBell(int volume, DeviceIntPtr device, void *ctrl, int unused)
 void
 DDXRingBell(int volume, int pitch, int duration)
 {
-    DeviceIntPtr	pKeyboard;
+    DeviceIntPtr device;
+    DevicePtr pKeyboard;
 
-    pKeyboard = x68kKeyboardDevice;
-    if (pKeyboard != NULL)
-	x68kKbdRingBell(pKeyboard, volume, duration);
+    device = x68kKeyboardDevice;
+    if (device != NULL) {
+	pKeyboard = &device->public;
+	if (pKeyboard->on) {
+	    x68kKbdRingBell(device, volume, duration);
+	}
+    }
 }
 
 /*-
