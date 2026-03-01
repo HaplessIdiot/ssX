@@ -29,6 +29,6 @@ This fork is a tribute to the hackers who did the real work in the trenches:
 ---
 
 ### Repository Info
-* **Upstream:** XFree86 4.x via NetBSD `xsrc` (2015 Epoch).
+* **Upstream:** XFree86 4.x via NetBSD `xsrc`
 * **Focus:** 2D Acceleration, Stability, and Low-Latency Input.
 * **Contribution:** Send us clean code. We value technical merit and hardware support over "Contributor Covenants" and corporate boilerplate BS
