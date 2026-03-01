@@ -15,7 +15,7 @@ Super Sonic X is an enshrining of that work. We recognize NetBSD as the final, t
 
 ### Standing on the Shoulders of Giants
 This fork is a tribute to the hackers who did the real work in the trenches:
-* **The NetBSD `xsrc` Maintainers:** For keeping the fire burning until 2015.
+* **The NetBSD `xsrc` Maintainers:** For keeping the fire burning.
 * **Alan Coopersmith & Friends:** For the architectural brilliance that defined the X11 era.
 * **The Original XFree86 Team:** For building the foundation that still outperforms modern "composed" stacks on real-world 2D hardware.
 
