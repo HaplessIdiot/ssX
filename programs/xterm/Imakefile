@@ -7,7 +7,7 @@ XCOMM Xterm assumes that bcopy can handle overlapping arguments.  If your
 XCOMM bcopy (or memcpy) cannot, write a routine called bcopy and link it in
 XCOMM or add -Dbcopy=mybcopy to the DEFINES list below.
 XCOMM
-XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.79 2007/07/03 15:19:53 tsi Exp $
+XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.78tsi Exp $
 XCOMM
 
 /* Uncomment SCROLLBAR_RIGHT if you want the scroll bar to be on the right */
@@ -195,10 +195,6 @@ module.o: ; $(CC) -c defines $(CFLAGS) module.c
 OBSOLETE_INCLUDES = -I.
 #endif
 
-#ifdef XtermFeatureOptions
-XTERM_FEATURE_OPTIONS = XtermFeatureOptions
-#endif
-
    MAIN_DEFINES = $(UTMPDEF) $(TTYGROUPDEF) $(PUCCPTYDDEF) $(CSGIDFLAGS) \
 		  -DOSMAJORVERSION=$(OSMAJORVERSION) \
 		  -DOSMINORVERSION=$(OSMINORVERSION)
@@ -207,8 +203,7 @@ XTERM_FEATURE_OPTIONS = XtermFeatureOptions
    PATH_DEFINES = -DPROJECTROOT=$(PROJECTROOT)
         DEFINES = $(XKB_DEFINES) $(TERMCAPDEFINES) $(FEATURE_DEFINES) \
                   $(SCROLLBAR_RIGHT) $(UTF8_OPTION) $(XRFDEF) $(PATH_DEFINES) \
-                  $(XTERM_FEATURE_OPTIONS) $(PUTENVDEF) \
-                  $(IMAKEDEFINES) $(TRACEDEF)
+                  $(PUTENVDEF) $(IMAKEDEFINES) $(TRACEDEF)
        INCLUDES = $(OBSOLETE_INCLUDES) $(XRFINCLUDES)
 
 #ifdef OS2Architecture

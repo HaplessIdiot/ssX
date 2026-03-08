@@ -1,8 +1,7 @@
-XCOMM $XConsortium: Imakefile /main/1 1996/01/23 06:59:52 kaleb $
+XCOMM $XFree86: xc/programs/xkbcomp/symbols/nec/Imakefile,v 3.3tsi Exp $
 
-     DATAFILES = jp
+    DATAFILES = jp
 
 all::
 
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/symbols/nec)
-DependTarget()

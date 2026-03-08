@@ -1,4 +1,3 @@
-/* $XFree86: xc/programs/Xserver/record/record.c,v 1.15tsi Exp $ */
 /*
 
 Copyright 1995, 1998  The Open Group
@@ -31,6 +30,7 @@ This work benefited from earlier work done by Martha Zimet of NCD
 and Jim Haggerty of Metheus.
 
 */
+/* $XFree86: xc/programs/Xserver/record/record.c,v 1.14tsi Exp $ */
 
 #define NEED_EVENTS
 #include "dixstruct.h"
@@ -2662,7 +2662,7 @@ SProcRecordQueryVersion(ClientPtr client)
 } /* SProcRecordQueryVersion */
 
 
-static int
+static void
 SwapCreateRegister(xRecordRegisterClientsReq *stuff)
 {
     register char n;
@@ -2673,19 +2673,11 @@ SwapCreateRegister(xRecordRegisterClientsReq *stuff)
     swapl(&stuff->nClients, n);
     swapl(&stuff->nRanges, n);
     pClientID = (XID *)&stuff[1];
-    if (stuff->nClients >
-	(stuff->length - (sz_xRecordRegisterClientsReq >> 2)))
-	return BadLength;
     for (i = 0; i < stuff->nClients; i++, pClientID++)
     {
 	swapl(pClientID, n);
     }
-    if (stuff->nRanges >
-	(stuff->length - stuff->nClients -
-	 (sz_xRecordRegisterClientsReq >> 2)))
-	return BadLength;
     RecordSwapRanges((xRecordRange *)pClientID, stuff->nRanges);
-    return Success;
 } /* SwapCreateRegister */
 
 
@@ -2693,13 +2685,11 @@ static int
 SProcRecordCreateContext(ClientPtr client)
 {
     REQUEST(xRecordCreateContextReq);
-    int			status;
     register char 	n;
 
     swaps(&stuff->length, n);
     REQUEST_AT_LEAST_SIZE(xRecordCreateContextReq);
-    if ((status = SwapCreateRegister((pointer)stuff)) != Success)
-	return status;
+    SwapCreateRegister((pointer)stuff);
     return ProcRecordCreateContext(client);
 } /* SProcRecordCreateContext */
 
@@ -2708,13 +2698,11 @@ static int
 SProcRecordRegisterClients(ClientPtr client)
 {
     REQUEST(xRecordRegisterClientsReq);
-    int			status;
     register char 	n;
 
     swaps(&stuff->length, n);
     REQUEST_AT_LEAST_SIZE(xRecordRegisterClientsReq);
-    if ((status = SwapCreateRegister((pointer)stuff)) != Success)
-	return status;
+    SwapCreateRegister((pointer)stuff);
     return ProcRecordRegisterClients(client);
 } /* SProcRecordRegisterClients */
 

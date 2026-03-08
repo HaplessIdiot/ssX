@@ -1,15 +1,15 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/etc/2key.c,v 3.5 1999/05/07 02:56:17 dawes Exp $
  *
  * Enable/disable the 2-key VT switching sequences for Esix SVR4
  * Note that is program *only* works for Esix SVR4.  To use this program
  * to turn off the 2-key switching for the VT the X server is running on,
- * add the line 'VTInit "2key off"' to your Xconfig file.
+ * add the line 'VTInit "2key off"' to your XF86Config file.
  *
  * Usage:
  *         2key on|off
  *
- * David Dawes <dawes@physics.su.oz.au>  October 1992
+ * David Dawes <dawes@xfree86.org>  October 1992
  *
  */
 

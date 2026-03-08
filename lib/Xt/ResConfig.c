@@ -1,26 +1,57 @@
-/* $TOG: ResConfig.c /main/4 1997/10/21 18:08:34 barstow $ */
 /*
- * 1.1 src/gos/2d/XTOP/lib/Xt/custom_proto.c, xtoolkit, gos42G 6/2/92 11:17:42
- *
- * COMPONENT_NAME:  XTOOLKIT
- *
- * FUNCTIONS: 
- *	_XtResourceConfiguationEH
- *	_search_widget_tree, _search_child, _locate_children,
- * 	_get_part, _get_last_part, _match_resource_to_widget,
- *	_set_and_search, _apply_values_to_children, _set_resource_values,
- *
- * ORIGINS:  27
- *
- * IBM CONFIDENTIAL -- (IBM Confidential Restricted when
- * combined with the aggregated modules for this product)
- * OBJECT CODE ONLY SOURCE MATERIALS
- * (C) COPYRIGHT International Business Machines Corp. 1992 
- * All Rights Reserved
- *
- * US Government Users Restricted Rights - Use, duplication or
- * disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
- */
+
+Copyright 1987, 1988, 1998  The Open Group
+
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of The Open Group shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from The Open Group.
+
+*/
+/*****************************************************************
+
+(C) COPYRIGHT International Business Machines Corp. 1992,1997
+    All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software.
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+THE IBM CORPORATION BE LIABLE FOR ANY CLAIM, DAMAGES, INCLUDING,
+BUT NOT LIMITED TO CONSEQUENTIAL OR INCIDENTAL DAMAGES, OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of the IBM Corporation shall
+not be used in advertising or otherwise to promote the sale, use or other
+dealings in this Software without prior written authorization from the IBM
+Corporation.
+
+******************************************************************/
+/* $XFree86: xc/lib/Xt/ResConfig.c,v 3.11tsi Exp $ */
 
 #include "Intrinsic.h"
 #include "IntrinsicI.h"
@@ -30,16 +61,14 @@
 #include "StringDefs.h"
 #include "ResConfigP.h"
 #include <X11/Xatom.h>
-
-#ifdef DEBUG
 #include <stdio.h>
-#endif
+#include <stdlib.h>
 
 #define MAX_BUFFER 512
 
-static void _search_child();
-static void _set_and_search();
-static int _locate_children();
+static void _search_child(Widget, char *, char *, char *, char *, char, char *);
+static void _set_and_search(Widget, char *, char *, char *, char *, char , char *);
+static int _locate_children(Widget, Widget **);
 
 #if defined(sun) && !defined(SVR4)
 # define Strtoul(a,b,c) (unsigned long)strtol(a,b,c)
@@ -51,7 +80,7 @@ static int _locate_children();
 /*
  * NAME: _set_resource_values
  *
- * FUNCTION: 
+ * FUNCTION:
  *	This function sets the value on the widget.  It must first determine
  *	if the last part is a valid resource for that widget.  (eg.
  *	labelString is a valid resource for label but not for bulletin board)
@@ -73,11 +102,11 @@ static int _locate_children();
  * ERRORS: none
  */
 static void
-_set_resource_values (w, resource, value, last_part)
-	Widget w;
-	char *resource;
-	char *value;
-	char *last_part;
+_set_resource_values (
+	Widget w,
+	char *resource,
+	char *value,
+	char *last_part)
 {
 	XrmDatabase 	db = NULL;
 	char		*resource_name = NULL;
@@ -89,18 +118,18 @@ _set_resource_values (w, resource, value, last_part)
 	char		*temp;
 	XtResourceList	resources_return = NULL;
 	Cardinal 	num_resources_return = 0;
-	int		res_index;
+	Cardinal	res_index;
 	Boolean		found_resource = False;
 	Display		*dpy;
 	XrmDatabase	tmp_db;
-	
+
 	if (!XtIsWidget (w))
 		dpy = XtDisplay (w->core.parent);
 	else
 		dpy = XtDisplay (w);
 	tmp_db = XtDatabase(dpy);
 
-	/* 
+	/*
 	 * get a list of all the valid resources for this widget
 	 */
 	XtGetResourceList (w->core.widget_class,
@@ -126,7 +155,7 @@ _set_resource_values (w, resource, value, last_part)
 	 * then exit this function
 	 */
 	if (!found_resource
-		|| !resources_return[res_index].resource_name 
+		|| !resources_return[res_index].resource_name
 		|| !resources_return[res_index].resource_class) {
 		XtFree ((char *) resources_return);
 		return;
@@ -139,12 +168,12 @@ _set_resource_values (w, resource, value, last_part)
 	 * 	    .App.XmPushButton.Foreground
 	 */
 	while (cur != NULL) {
-		/* 
+		/*
 		 * create resource name string
 		 */
 		if (resource_name) {
 			temp = XtMalloc (sizeof(char) *
-				(2 + strlen(cur->core.name) 
+				(2 + strlen(cur->core.name)
 			   	+ strlen(resource_name)));
 			sprintf (temp, ".%s%s", cur->core.name, resource_name);
 			XtFree (resource_name);
@@ -158,23 +187,23 @@ _set_resource_values (w, resource, value, last_part)
 		}
 		resource_name = temp;
 
-		/* 
+		/*
 		 * create resource class string
 		 */
 		if ((XtIsTopLevelShell (cur)) && (XtParent (cur) == NULL)) {
-			ApplicationShellWidget	top = 
+			ApplicationShellWidget	top =
 				(ApplicationShellWidget) (cur);
 
 			if (resource_class) {
 				temp = XtMalloc (sizeof(char) *
 					(2 + strlen(top->application.class)
 					+ strlen(resource_class)));
-				sprintf (temp, ".%s%s", 
+				sprintf (temp, ".%s%s",
 					top->application.class, resource_class);
 			} else {
 				temp = XtMalloc (sizeof(char) *
 					(2 + strlen(top->application.class)));
-				sprintf (temp, ".%s", 
+				sprintf (temp, ".%s",
 					top->application.class);
 			}
 		} else {
@@ -183,7 +212,7 @@ _set_resource_values (w, resource, value, last_part)
 					(2 + strlen(
 					cur->core.widget_class->core_class.class_name)
 					+ strlen(resource_class)));
-				sprintf (temp, ".%s%s", 
+				sprintf (temp, ".%s%s",
 					cur->core.widget_class->core_class.class_name,
 					resource_class);
 			} else {
@@ -195,7 +224,7 @@ _set_resource_values (w, resource, value, last_part)
 			}
 		}
 		if (resource_class != NULL)
-			XtFree (resource_class); 
+			XtFree (resource_class);
 		resource_class = temp;
 
 		cur = XtParent(cur);
@@ -228,26 +257,26 @@ _set_resource_values (w, resource, value, last_part)
 	fprintf (stderr, "resource_class = %s\n", resource_class);
 #endif
 
-	/* 
+	/*
 	 * put the resource and its value in a resource database and
 	 * then query it back out again using the specific name and
-	 * class resource strings that were built above.  This is 
+	 * class resource strings that were built above.  This is
 	 * necessary to maintain a precedence similar to the .Xdefaults
 	 * file
 	 */
 	XrmPutStringResource (&db, resource, value);
 	XrmMergeDatabases (db, &tmp_db);
-	XrmGetResource (tmp_db, resource_name, resource_class, 
+	XrmGetResource (tmp_db, resource_name, resource_class,
 		&return_type, &return_value);
-	if (return_type)	
+	if (return_type)
 		resource_value = XtNewString (return_value.addr);
 	else
 		resource_value = XtNewString (value);
 
 #ifdef DEBUG
-	fprintf (stderr, 
+	fprintf (stderr,
 		"Apply:\n\twidget = %s\n\tlast_part = %s\n\tvalue = %s\n",
-		(w->core.name == NULL) ? "NULL" : w->core.name, 
+		(w->core.name == NULL) ? "NULL" : w->core.name,
 		resources_return[res_index].resource_name,
 		resource_value);
 #endif
@@ -256,14 +285,14 @@ _set_resource_values (w, resource, value, last_part)
 	 * type String the the same type as the resource (last_part).
 	 * Then set the value.
 	 */
-	XtVaSetValues (w, 
+	XtVaSetValues (w,
 		XtVaTypedArg, resources_return[res_index].resource_name,
-		XtRString, resource_value, 
+		XtRString, resource_value,
 		strlen (resource_value) + 1,
 		NULL);
 
 	XtFree ((char *) resources_return);
-	XtFree (resource_name); 
+	XtFree (resource_name);
 	XtFree (resource_class);
 	XtFree (resource_value);
 }
@@ -271,7 +300,7 @@ _set_resource_values (w, resource, value, last_part)
 /*
  * NAME: _apply_values_to_children
  *
- * FUNCTION: 
+ * FUNCTION:
  *	Once the resource string matches the value must be applied to
  *	all children if applicable. (eg. App*Form.background must apply
  *	background to all children of the Form widget)
@@ -281,7 +310,7 @@ _set_resource_values (w, resource, value, last_part)
  *	remainder	the part of the resource string left over
  *	resource	the resource string to be matched
  *	value		the value to be set
- *	last_token	the last * or . before the final resoruce part	
+ *	last_token	the last * or . before the final resoruce part
  *	last_part	the last resource part (e.g. *background)
  *
  * RETURN VALUES: void
@@ -289,13 +318,13 @@ _set_resource_values (w, resource, value, last_part)
  * ERRORS: none
  */
 static void
-_apply_values_to_children (w, remainder, resource, value, last_token, last_part)
-	Widget w;
-	char *remainder;
-	char *resource;
-	char *value;
-	char last_token;
-	char *last_part;
+_apply_values_to_children (
+	Widget w,
+	char *remainder,
+	char *resource,
+	char *value,
+	char last_token,
+	char *last_part)
 {
 	int 	i;
 	int	num_children;
@@ -310,19 +339,19 @@ _apply_values_to_children (w, remainder, resource, value, last_token, last_part)
 
 #ifdef DEBUG
 		if (XtIsWidget (children[i]) && XtIsWidget (w))
-			fprintf (stderr, "searching child %s of parent %s\n", 
+			fprintf (stderr, "searching child %s of parent %s\n",
 				children[i]->core.name, w->core.name);
 		else
 			fprintf (stderr,"searching child (NULL) of parent %s\n",
 				w->core.name);
-		if (!XtIsWidget (children[i])) 
+		if (!XtIsWidget (children[i]))
 			fprintf (stderr, "children[%d] is NOT a widget\n", i);
 		if (!XtIsWidget (w))
 			fprintf (stderr, "w is NOT a widget\n");
 #endif
 
 		_set_resource_values (children[i], resource, value, last_part);
-		_apply_values_to_children (children[i], remainder, 
+		_apply_values_to_children (children[i], remainder,
 				resource, value, last_token, last_part);
 	}
 
@@ -332,8 +361,8 @@ _apply_values_to_children (w, remainder, resource, value, last_token, last_part)
 /*
  * NAME: _search_child
  *
- * FUNCTION: 
- *	descends through each child of the tree	
+ * FUNCTION:
+ *	descends through each child of the tree
  *
  * PARAMETERS:
  *	w		the widget whose children are to be searched
@@ -341,7 +370,7 @@ _apply_values_to_children (w, remainder, resource, value, last_token, last_part)
  *	remainder	the remaining part of the resource string
  *	resource	the resource string to be matched
  *	value		the value to be applied
- *	last_token	the last * or . before the final resoruce part	
+ *	last_token	the last * or . before the final resoruce part
  *	last_part	the last resource part (e.g. *background)
  *
  * RETURN VALUES: none
@@ -349,14 +378,14 @@ _apply_values_to_children (w, remainder, resource, value, last_token, last_part)
  * ERRORS: none
  */
 static void
-_search_child (w, indx, remainder, resource, value, last_token, last_part)
-	Widget w;
-	char *indx;
-	char *remainder;
-	char *resource;
-	char *value;
-	char last_token;
-	char *last_part;
+_search_child (
+	Widget w,
+	char *indx,
+	char *remainder,
+	char *resource,
+	char *value,
+	char last_token,
+	char *last_part)
 {
 	int 	i;
 	int	num_children;
@@ -367,7 +396,7 @@ _search_child (w, indx, remainder, resource, value, last_token, last_part)
 	 */
 	num_children = _locate_children (w, &children);
 	for (i=0; i<num_children; i++) {
-		_set_and_search (children[i], indx, remainder, resource, 
+		_set_and_search (children[i], indx, remainder, resource,
 			value, last_token, last_part);
 	}
 
@@ -377,16 +406,16 @@ _search_child (w, indx, remainder, resource, value, last_token, last_part)
 /*
  * NAME: _get_part
  *
- * FUNCTION: 
- * 	This routine will return the token and following part of the resource 
- * 	when given the current index it will update the index accordingly 
+ * FUNCTION:
+ * 	This routine will return the token and following part of the resource
+ * 	when given the current index it will update the index accordingly
  *
  * PARAMETERS:
  *	remainder	the part of the resource string left over
  *	indx		the index into the resource string
  *	part		the parsed off part of the resource string
  *
- * RETURN VALUES: 
+ * RETURN VALUES:
  *	char		the token (* or . or ?) preceding the resource part
  *	indx		the index into the resource string
  *	part		the parsed off part of the resource string
@@ -395,23 +424,23 @@ _search_child (w, indx, remainder, resource, value, last_token, last_part)
  */
 /* ARGSUSED */
 static char
-_get_part (remainder, indx, part)
-	char *remainder;
-	char **indx;
-	char **part;
+_get_part (
+	char *remainder,
+	char **indx,
+	char **part)
 {
 	char	buffer[MAX_BUFFER];
-	char	*buf_ptr; 
+	char	*buf_ptr;
 	char	token = **indx;
 	int	i = 0;
 
-	/* 
+	/*
 	 * copy the remainder part into the buffer
 	 */
 	buf_ptr = buffer;
 	(*indx)++;			/* get rid of the token		*/
 	while (**indx && (**indx != '.') && (**indx != '*')) {
-		*buf_ptr++ = *(*indx)++;		
+		*buf_ptr++ = *(*indx)++;
 		if (++i >= MAX_BUFFER - 1)
 			break;
 	}
@@ -428,22 +457,22 @@ _get_part (remainder, indx, part)
 /*
  * NAME: _match_resource_to_widget
  *
- * FUNCTION: 
+ * FUNCTION:
  *	This function matches the resource part to the widget name or class
  *
  * PARAMETERS:
  *	w		the widget to match
  *	part		the parsed off part of the resource string
  *
- * RETURN VALUES: 
+ * RETURN VALUES:
  *	Boolean		true if a match occurs
  *
  * ERRORS: none
  */
 static Boolean
-_match_resource_to_widget (w, part)
-	Widget w;
-	char *part;
+_match_resource_to_widget (
+	Widget w,
+	char *part)
 {
 	/*
 	 * Match any widget at this level if the ? is used
@@ -476,7 +505,7 @@ _match_resource_to_widget (w, part)
 /*
  * NAME: _set_and_search
  *
- * FUNCTION: 
+ * FUNCTION:
  * 	The algorithm to search the widget tree and apply a resource string
  *
  * PARAMETERS:
@@ -485,7 +514,7 @@ _match_resource_to_widget (w, part)
  *	remainder	the part of the resource string left over
  *	resource	the resource string to be matched
  *	value		the value to be set
- *	last_token	the last * or . before the final resoruce part	
+ *	last_token	the last * or . before the final resoruce part
  *	last_part	the last resource part (e.g. *background)
  *
  * RETURN VALUES: none
@@ -497,19 +526,19 @@ _match_resource_to_widget (w, part)
  * 	if (resource segment and current widget match)
  *		if '.'
  *			if at end of resource string
- *				set values (	.=over all children 
+ *				set values (	.=over all children
  *						*=this widget only)
  *			else
- *				descend the widget tree 
+ *				descend the widget tree
  *				and parse off resource segment
  *			exit the loop
  *		if '*'
  *			if at end of resource string
- *				set values (	.=over all children 
+ *				set values (	.=over all children
  *						*=this widget only)
  *			descend and parse
  *	else
- *		if '.' 
+ *		if '.'
  *			continue looping
  *		if '*'
  *			descend but don't parse
@@ -520,14 +549,14 @@ _match_resource_to_widget (w, part)
  *	set on a resource against the rules of the resource database manager
  */
 static void
-_set_and_search (w, indx, remainder, resource, value, last_token, last_part)
-	Widget w;
-	char *indx;
-	char *remainder;
-	char *resource;
-	char *value;
-	char last_token;
-	char *last_part;
+_set_and_search (
+	Widget w,
+	char *indx,
+	char *remainder,
+	char *resource,
+	char *value,
+	char last_token,
+	char *last_part)
 {
 	char	*part;
 	char	*local_index = indx;
@@ -536,18 +565,18 @@ _set_and_search (w, indx, remainder, resource, value, last_token, last_part)
 	/*
 	 * parse off one part, return token and the new index
 	 */
-	token = _get_part (remainder, &local_index, &part); 
+	token = _get_part (remainder, &local_index, &part);
 
 	if (_match_resource_to_widget (w, part)) {
 		if (token == '.') {
 			if (local_index == NULL) {
 				if (last_token == '.') {
-					_set_resource_values (w, resource, 
+					_set_resource_values (w, resource,
 						value, last_part);
 				} else if (last_token == '*') {
-					_set_resource_values (w, resource, 
+					_set_resource_values (w, resource,
 						value, last_part);
-					_apply_values_to_children (w, 
+					_apply_values_to_children (w,
 						remainder, resource, value,
 						last_token, last_part);
 				}
@@ -555,16 +584,16 @@ _set_and_search (w, indx, remainder, resource, value, last_token, last_part)
 				_search_child (w, local_index, remainder,
 					resource, value, last_token, last_part);
 			return;
-		}	
+		}
 		if (token == '*') {
 			if (local_index == NULL) {
 				if (last_token == '.') {
-					_set_resource_values (w, resource, 
+					_set_resource_values (w, resource,
 						value, last_part);
 				} else if (last_token == '*') {
-					_set_resource_values (w, resource, 
+					_set_resource_values (w, resource,
 						value, last_part);
-					_apply_values_to_children ( w, 
+					_apply_values_to_children ( w,
 						remainder, resource, value,
 						last_token, last_part);
 				}
@@ -578,7 +607,7 @@ _set_and_search (w, indx, remainder, resource, value, last_token, last_part)
 		if (token == '*') {
 			_search_child (w, indx, remainder, resource, value,
 				last_token, last_part);
-		}	
+		}
 	}
 
 	XtFree (part);
@@ -587,7 +616,7 @@ _set_and_search (w, indx, remainder, resource, value, last_token, last_part)
 /*
  * NAME: _get_last_part
  *
- * FUNCTION: 
+ * FUNCTION:
  * 	This routine will parse off the last segment of a resource string
  * 	and its token and return them.  the remainder of resource is also
  * 	returned.  strcoll is used to guarantee no problems with
@@ -597,7 +626,7 @@ _set_and_search (w, indx, remainder, resource, value, last_token, last_part)
  *	remainder	the part of the resource string left over
  *	part		the parsed off part of the resource string
  *
- * RETURN VALUES: 
+ * RETURN VALUES:
  *	char		the token (* or . or ?) preceding the resource part
  *	remainder	the part of the resource string left over
  *	part		the parsed off part of the resource string
@@ -605,9 +634,9 @@ _set_and_search (w, indx, remainder, resource, value, last_token, last_part)
  * ERRORS: none
  */
 static char
-_get_last_part (remainder, part)
-	char *remainder;
-	char **part;
+_get_last_part (
+	char *remainder,
+	char **part)
 {
 	char	*loose, *tight;
 
@@ -629,17 +658,18 @@ _get_last_part (remainder, part)
 		return ('*');
 	}
 
+	*part = 0;
 	return ('0');	/* error - return 0 */
 }
 
 /*
  * NAME: _search_widget_tree
  *
- * FUNCTION: 
+ * FUNCTION:
  *	This function tries to match a resource string to the widgets
  *	it applies to.  The functions it invokes to do this then set
  *	the value for that resource to each widget.
- *	
+ *
  *	The resource string has to be parsed into the following format:
  *		resource = App*Form*button1.background
  *		remainder = *Form*button1
@@ -662,14 +692,14 @@ _get_last_part (remainder, part)
  * ERRORS: none
  */
 static void
-_search_widget_tree (w, resource, value)
-	Widget w;
-	char *resource;
-	char *value;
+_search_widget_tree (
+	Widget w,
+	char *resource,
+	char *value)
 {
 	Widget	parent = w;
 	char	*last_part;
-	char	*remainder;
+	char	*remainder = NULL;
 	char	last_token;
 	char	*indx, *copy;
 	char	*loose, *tight;
@@ -688,7 +718,7 @@ _search_widget_tree (w, resource, value)
 	else
 		fprintf (stderr, "widget = NULL parent = NULL\n");
 #endif
-	
+
 	/*
 	 * parse off the Class name that was prepended to this string in
 	 * a customizing tool
@@ -705,8 +735,8 @@ _search_widget_tree (w, resource, value)
 		remainder = XtNewString (tight);
 	else if ((tight == NULL) || (loose_len > tight_len))
 		remainder = XtNewString (loose);
-	
-	/* 
+
+	/*
 	 * Parse last segment off of resource string, (eg. background, font,
 	 * etc.)
 	 */
@@ -717,7 +747,7 @@ _search_widget_tree (w, resource, value)
 	if (strcmp (remainder, "") == 0) {
 		_set_resource_values (w, resource, value, last_part);
 		if (last_token == '*')
-			_apply_values_to_children (parent, remainder, resource, 
+			_apply_values_to_children (parent, remainder, resource,
 				value, last_token, last_part);
 	/*
 	 * all other resource strings are recursively applied to the widget tree.
@@ -731,10 +761,10 @@ _search_widget_tree (w, resource, value)
 			remainder = copy;
 		}
 		indx = remainder;
-		_set_and_search (parent, indx, remainder, resource, value, 
+		_set_and_search (parent, indx, remainder, resource, value,
 			last_token, last_part);
 	}
-		
+
 	XtFree (remainder);
 	XtFree (last_part);
 }
@@ -742,7 +772,7 @@ _search_widget_tree (w, resource, value)
 /*
  * NAME: _locate_children
  *
- * FUNCTION: 
+ * FUNCTION:
  *	returns a list of all of a widget's children
  *
  * PARAMETERS:
@@ -751,23 +781,23 @@ _search_widget_tree (w, resource, value)
  *	normal		flag for normal children
  *	popup		flag for popup children
  *
- * RETURN VALUES: 
+ * RETURN VALUES:
  *	int		the number of children
  *	children	the list of children found
  *
  * ERRORS: none
  */
 static int
-_locate_children (parent, children)
-	Widget parent;
-	Widget **children;
+_locate_children (
+	Widget parent,
+	Widget **children)
 {
 	CompositeWidget comp = (CompositeWidget) parent;
-	int	i;
+	Cardinal	i;
 	int	num_children = 0;
 	int	current = 0;
 
-	/* 
+	/*
 	 * count the number of children
 	 */
 	if (XtIsWidget (parent))
@@ -779,7 +809,7 @@ _locate_children (parent, children)
 		return (0);
 	}
 
-	*children = (Widget *) 
+	*children = (Widget *)
 		XtMalloc ((Cardinal) sizeof(Widget) * num_children);
 
 	if (XtIsComposite (parent)) {
@@ -803,7 +833,7 @@ _locate_children (parent, children)
 /*
  * NAME: dump_widget_tree
  *
- * FUNCTION: 
+ * FUNCTION:
  *	recursively printout entire widget tree
  *
  * PARAMETERS:
@@ -815,9 +845,9 @@ _locate_children (parent, children)
  * ERRORS: none
  */
 static void
-dump_widget_tree (w, indent)
-	Widget w;
-	int	indent;
+dump_widget_tree (
+	Widget w,
+	int	indent)
 {
 	int 	i,j;
 	int	num_children;
@@ -827,10 +857,10 @@ dump_widget_tree (w, indent)
 	 * Recursively search through the children
 	 */
 	num_children = _locate_children (w, &children);
-	indent += 2; 
+	indent += 2;
 	for (i=0; i<num_children; i++) {
 		if (children[i] != NULL) {
-			for (j=0; j<indent; j++) 
+			for (j=0; j<indent; j++)
 				fprintf (stderr, " ");
 			if (XtIsWidget (children[i])) {
 				fprintf (stderr, "(%s)\t",children[i]->core.name);
@@ -852,10 +882,10 @@ dump_widget_tree (w, indent)
 /*
  * NAME: _XtResourceConfiguationEH
  *
- * FUNCTION: 
+ * FUNCTION:
  *	This function is the event handler for the on-the-fly communication
- *	with a resource customization tool.  This event handler must be 
- *      registered for the toplevel shell of each app.  This is best done 
+ *	with a resource customization tool.  This event handler must be
+ *      registered for the toplevel shell of each app.  This is best done
  *      in the _XtCreatePopupShell and _XtAppCreateShell functions in Xt's
  *	Create.c source file.
  *
@@ -880,10 +910,10 @@ dump_widget_tree (w, indent)
  */
 /* ARGSUSED */
 void
-_XtResourceConfigurationEH (w, client_data, event)
-	Widget w; 
-	XtPointer client_data;
-	XEvent *event;
+_XtResourceConfigurationEH (
+	Widget w,
+	XtPointer client_data,
+	XEvent *event)
 {
 	Atom		actual_type;
 	int		actual_format;
@@ -900,10 +930,12 @@ _XtResourceConfigurationEH (w, client_data, event)
 	XtPerDisplay	pd;
 
 #ifdef DEBUG
-	fprintf (stderr, "in _XtResourceConfiguationEH atom = %d\n",event->xproperty.atom);
-	fprintf (stderr, "    window = %x\n", XtWindow (w));
+	fprintf (stderr, "in _XtResourceConfiguationEH atom = %ld\n",
+		 event->xproperty.atom);
+	fprintf (stderr, "    window = %lx\n", (unsigned long)XtWindow (w));
 	if (XtIsWidget (w))
-		fprintf (stderr, "    widget = %x   name = %s\n", w, w->core.name);
+		fprintf (stderr, "    widget = %lx   name = %s\n",
+			 (unsigned long)w, w->core.name);
 #endif
 
 	pd = _XtGetPerDisplay (XtDisplay (w));
@@ -926,7 +958,7 @@ _XtResourceConfigurationEH (w, client_data, event)
 		else
 			fprintf (stderr, "NULL name\n");
 		dump_widget_tree(w, indent);
-		
+
 		fprintf (stderr, "answer ping\n");
 #endif
 	}
@@ -935,7 +967,7 @@ _XtResourceConfigurationEH (w, client_data, event)
 	 * This event handler ignores any property notify events that
 	 * are not RCM_INIT or RCM_DATA
 	 */
-	if (event->xproperty.atom != pd->rcm_data) 
+	if (event->xproperty.atom != pd->rcm_data)
 		return;
 
 	/*
@@ -949,7 +981,7 @@ _XtResourceConfigurationEH (w, client_data, event)
 		pd->rcm_data, 0L, 8192L,
 		TRUE, XA_STRING,
 		&actual_type, &actual_format, &nitems, &leftover,
-		&data ) == Success && actual_type == XA_STRING 
+		&data ) == Success && actual_type == XA_STRING
 			   && actual_format == 8) {
 	/*
 	 *      data format is:
@@ -961,7 +993,7 @@ _XtResourceConfigurationEH (w, client_data, event)
 	 *      resource and value fields.
 	 */
 		if (data) {
-			resource_len = Strtoul (data, &data_ptr, 10);
+			resource_len = Strtoul ((void *)data, &data_ptr, 10);
 			data_ptr++;
 
 			data_ptr[resource_len] = '\0';
@@ -969,7 +1001,7 @@ _XtResourceConfigurationEH (w, client_data, event)
 			resource = XtNewString (data_ptr);
 			value = XtNewString (&data_ptr[resource_len + 1]);
 #ifdef DEBUG
-			fprintf (stderr, "resource_len=%d\n",resource_len);
+			fprintf (stderr, "resource_len=%ld\n",resource_len);
 			fprintf (stderr, "resource = %s\t value = %s\n",
 					resource, value);
 #endif

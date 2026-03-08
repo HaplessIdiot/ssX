@@ -1,4 +1,4 @@
-/* $TOG: EVI.c /main/1 1997/11/24 16:48:29 kaleb $ */
+/* $XFree86: xc/programs/Xserver/Xext/EVI.c,v 3.13tsi Exp $ */
 /************************************************************
 Copyright (c) 1997 by Silicon Graphics Computer Systems, Inc.
 Permission to use, copy, modify, and distribute this
@@ -21,20 +21,28 @@ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
 OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
-#include "X.h"
-#include "Xproto.h"
+
+#include <X11/X.h>
+#include <X11/Xproto.h>
 #include "dixstruct.h"
 #include "extnsionst.h"
 #include "dix.h"
 #define _XEVI_SERVER_
-#include "XEVIstr.h"
+#include <X11/extensions/XEVIstr.h>
 #include "EVIstruct.h"
+#include "modinit.h"
+#include "scrnintstr.h"
+
+#ifdef EVI
+#if 0
 static unsigned char XEVIReqCode = 0;
+#endif
 static EviPrivPtr eviPriv;
+
 static int
 ProcEVIQueryVersion(ClientPtr client)
 {
-    REQUEST(xEVIQueryVersionReq);
+    /* REQUEST(xEVIQueryVersionReq); */
     xEVIQueryVersionReply rep;
     register int n;
     REQUEST_SIZE_MATCH (xEVIQueryVersionReq);
@@ -57,9 +65,9 @@ ProcEVIQueryVersion(ClientPtr client)
    int l1 = l; 						\
    xExtendedVisualInfo *eviInfo1 = eviInfo;		\
    while (l1-- > 0) {					\
-       swapl(eviInfo1->core_visual_id, n);		\
-       swapl(eviInfo1->transparency_value, n);		\
-       swaps(eviInfo1->num_colormap_conflicts, n);	\
+       swapl(&eviInfo1->core_visual_id, n);		\
+       swapl(&eviInfo1->transparency_value, n);		\
+       swaps(&eviInfo1->num_colormap_conflicts, n);	\
        eviInfo1++;					\
    }							\
 }
@@ -68,19 +76,28 @@ ProcEVIQueryVersion(ClientPtr client)
     int l1 = l;						\
     VisualID32 *visual1 = visual;				\
     while (l1-- > 0) {					\
-       swapl(*visual1, n);				\
+       swapl(visual1, n);				\
        visual1++;					\
     }							\
 }
+
 static int
 ProcEVIGetVisualInfo(ClientPtr client)
 {
     REQUEST(xEVIGetVisualInfoReq);
     xEVIGetVisualInfoReply rep;
-    int n, n_conflict, n_info, sz_info, sz_conflict;
+    int i, n, n_conflict, n_info, sz_info, sz_conflict;
     VisualID32 *conflict;
+    CARD32 total_visuals = 0;
     xExtendedVisualInfo *eviInfo;
     int status;
+
+    /* Prevent REQUEST_FIXED_SIZE overflows */
+    for (i = 0;  i < screenInfo.numScreens;  i++)
+	total_visuals += screenInfo.screens[i]->numVisuals;
+    if (stuff->n_visual > total_visuals)
+	return BadValue;
+
     REQUEST_FIXED_SIZE(xEVIGetVisualInfoReq, stuff->n_visual * sz_VisualID32);
     status = eviPriv->getVisualInfo((VisualID32 *)&stuff[1], (int)stuff->n_visual,
 		&eviInfo, &n_info, &conflict, &n_conflict);
@@ -107,6 +124,7 @@ ProcEVIGetVisualInfo(ClientPtr client)
     eviPriv->freeVisualInfo(eviInfo, conflict);
     return (client->noClientException);
 }
+
 static int
 ProcEVIDispatch(ClientPtr client)
 {
@@ -120,15 +138,16 @@ ProcEVIDispatch(ClientPtr client)
 	return BadRequest;
     }
 }
+
 static int
-SProcEVIQueryVersion(client)
-ClientPtr client;
+SProcEVIQueryVersion(ClientPtr client)
 {
    REQUEST(xEVIQueryVersionReq);
    int n;
    swaps(&stuff->length, n);
    return ProcEVIQueryVersion(client);
 }
+
 static int
 SProcEVIGetVisualInfo(ClientPtr client)
 {
@@ -137,6 +156,7 @@ SProcEVIGetVisualInfo(ClientPtr client)
     swaps(&stuff->length, n);
     return ProcEVIGetVisualInfo(client);
 }
+
 static int
 SProcEVIDispatch(ClientPtr client)
 {
@@ -151,12 +171,14 @@ SProcEVIDispatch(ClientPtr client)
 	return BadRequest;
     }
 }
+
 /*ARGSUSED*/
 static void
 EVIResetProc(ExtensionEntry *extEntry)
 {
     eviDDXReset();
 }
+
 /****************
  * XEVIExtensionInit
  *
@@ -165,15 +187,22 @@ EVIResetProc(ExtensionEntry *extEntry)
  *
  ****************/
 void
-EVIExtensionInit(void)
+EVIExtensionInit(INITARGS)
 {
-    ExtensionEntry *extEntry, *AddExtension();
-    if (extEntry = AddExtension(EVINAME, 0, 0,
+#if 0
+    ExtensionEntry *extEntry;
+
+    if ((extEntry = AddExtension(EVINAME, 0, 0,
 				ProcEVIDispatch,
 				SProcEVIDispatch,
-				EVIResetProc, StandardMinorOpcode))
-    {
+				EVIResetProc, StandardMinorOpcode))) {
 	XEVIReqCode = (unsigned char)extEntry->base;
+#else
+    if (AddExtension(EVINAME, 0, 0,
+		     ProcEVIDispatch, SProcEVIDispatch,
+		     EVIResetProc, StandardMinorOpcode)) {
+#endif
 	eviPriv = eviDDXInit();
     }
 }
+#endif

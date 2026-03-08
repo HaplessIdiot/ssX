@@ -1,4 +1,5 @@
-/* Id: lnx_jstk.c,v 1.1 1995/12/20 14:06:09 lepied Exp */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_jstk.c,v 3.13 1998/07/25 16:56:43 dawes Exp $ */
+
 /*
  * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>       
  *                                                                            
@@ -22,18 +23,27 @@
  *
  */
 
-/* $XFree86$ */
-
-static const char rcs_id[] = "Id: lnx_jstk.c,v 1.1 1995/12/20 14:06:09 lepied Exp";
-
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
+#define inline __inline__
 #include <linux/joystick.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 
-extern int errno;
+#ifdef XFree86LOADER
+#include "xf86.h"
+#include "xf86_ansic.h"
+#endif
+
+#if !defined(JSIOCGTIMELIMIT)
+/* make 2.1.x joystick.h backward compatable */
+#define JSIOCGTIMELIMIT		JS_GET_TIMELIMIT
+#define JSIOCSTIMELIMIT		JS_SET_TIMELIMIT
+#define js_status		JS_DATA_TYPE
+#endif
+
 
 /***********************************************************************
  *
@@ -45,24 +55,48 @@ extern int errno;
  */
 
 int
-xf86JoystickOn(char * name, int *timeout)
+xf86JoystickOn(char *name, int *timeout, int *centerX, int *centerY)
 {
-  int   status;
-  
+  int			fd;
+  struct js_status	js;
+    
+#ifdef DEBUG
   ErrorF("xf86JoystickOn %s\n", name);
-  
-  if ((status = open(name, O_RDWR | O_NDELAY)) < 0)
+#endif
+
+  if ((fd = open(name, O_RDWR | O_NDELAY, 0)) < 0)
     {
-      ErrorF("Cannot open joystick '%s' (%s)\n", name,
-            strerror(errno));
+      xf86Msg(X_WARNING, "Cannot open joystick '%s' (%s)\n", name,
+		strerror(errno));
       return -1;
     }
 
-  *timeout = 50;
-  
-  ErrorF("xf86JoystickOn Timeout value = %d\n", *timeout);
+  if (*timeout == 0) {
+    if (ioctl (fd, JSIOCGTIMELIMIT, timeout) == -1) {
+      Error("joystick JSIOCGTIMELIMIT ioctl");
+    }
+    else {
+      xf86Msg(X_CONFIG, "Joystick: timeout value = %d\n", *timeout);
+    }
+  }
+  else {
+    if (ioctl(fd, JSIOCSTIMELIMIT, timeout) == -1) {
+      Error("joystick JSIOCSTIMELIMIT ioctl");
+    }
+  }
 
-  return status;
+  /* Assume the joystick is centred when this is called */
+  read(fd, &js, JS_RETURN);
+  if (*centerX < 0) {
+    *centerX = js.x;
+    xf86Msg(X_CONFIG, "Joystick: CenterX set to %d\n", *centerX);
+  }
+  if (*centerY < 0) {
+    *centerY = js.y;
+    xf86Msg(X_CONFIG, "Joystick: CenterY set to %d\n", *centerY);
+  }
+
+  return fd;
 }
 
 /***********************************************************************
@@ -90,9 +124,7 @@ xf86JoystickInit()
  */
 
 int
-xf86JoystickOff(fd, doclose)
-int *fd;
-int doclose;
+xf86JoystickOff(int *fd, int doclose)
 {
   int   oldfd;
   
@@ -113,14 +145,10 @@ int doclose;
  */
 
 int
-xf86JoystickGetState(fd, x, y, buttons)
-int     fd;
-int     *x;
-int     *y;
-int     *buttons;
+xf86JoystickGetState(int fd, int *x, int *y, int *buttons)
 {
-  struct JS_DATA_TYPE   js;
-  int                   status;
+  struct js_status	js;
+  int			status;
   
   status = read(fd, &js, JS_RETURN);
  
@@ -136,5 +164,17 @@ int     *buttons;
   
   return 1;
 }
+
+#ifdef XFree86LOADER
+/*
+ * Entry point for XFree86 Loader
+ */
+void
+linux_jstkModuleInit(pointer *data, INT32 *magic)
+{
+    *magic = MAGIC_DONE;
+    *data = NULL;
+}
+#endif
 
 /* end of lnx_jstk.c */

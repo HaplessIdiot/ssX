@@ -1,19 +1,6 @@
-XCOMM $XFree86: xc/programs/xcursorgen/Imakefile,v 1.7tsi Exp $
-
+XCOMM $XFree86: xc/programs/xcursorgen/Imakefile,v 1.6 2002/12/07 20:43:43 herrb Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
-
-#if StaticUtils
-     XCURSORLIB = $(BUILDLIBDIR)/LibraryTargetName(Xcursor)
-     XRENDERLIB = $(BUILDLIBDIR)/LibraryTargetName(Xrender)
-           XLIB = $(BUILDLIBDIR)/LibraryTargetName(Xext) \
-		  $(BUILDLIBDIR)/LibraryTargetName(X11)
-#endif
-#if StaticUtils && BuildZlib
-           ZLIB = $(BUILDLIBDIR)/LibraryTargetName(z)
-#else
-           ZLIB = GzipLibrary
-#endif
 
         SUBDIRS = redglass whiteglass handhelds
   DEFAULT_THEME = DefaultCursorTheme
@@ -22,7 +9,7 @@ XCOMM $XFree86: xc/programs/xcursorgen/Imakefile,v 1.7tsi Exp $
        INCLUDES = $(LIBPNGINC)
         DEPLIBS = $(DEPXLIB)
 LOCAL_LIBRARIES = $(XCURSORLIB) $(XRENDERLIB) $(XLIB) $(LIBPNGLIB) \
-		  MathLibrary $(ZLIB)
+		  MathLibrary GzipLibrary
            SRCS = xcursorgen.c
            OBJS = xcursorgen.o
 

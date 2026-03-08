@@ -1,4 +1,3 @@
-/* $XFree86: xc/extras/x86emu/src/x86emu/x86emu/prim_ops.h,v 1.0tsi Exp $ */
 /****************************************************************************
 *
 *						Realmode X86 Emulator Library
@@ -135,8 +134,7 @@ u16     mem_access_word (int addr);
 void    push_word (u16 w);
 void    push_long (u32 w);
 u16     pop_word (void);
-u32     pop_long (void);
-void    cpuid (void);
+u32		pop_long (void);
 
 #if  defined(__HAVE_INLINE_ASSEMBLER__) && !defined(PRIM_OPS_NO_REDEFINE_ASM)
 

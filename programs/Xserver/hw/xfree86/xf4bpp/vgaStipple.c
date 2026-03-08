@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaStipple.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaStipple.c,v 1.6 2003/11/03 05:11:57 tsi Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -582,6 +582,41 @@ switch ( rasterOp ) {
 }
 
 return ( color & VGA_ALLPLANES ) | data_rotate_value | invert_existing_data ;
+}
+
+static void
+vgaDrawMonoImage(WindowPtr pWin, unsigned char *data, int x, int y,
+		 int w, int h, unsigned long int fg, int alu,
+		 unsigned long int planes)
+{
+unsigned long regState ;
+
+if ( !xf86Screens[((DrawablePtr)pWin)->pScreen->myNum]->vtSema ) {
+	xf4bppOffDrawMonoImage( pWin, data, x, y, w, h, fg, alu, planes );
+	return;
+}
+
+if ( ( alu == GXnoop ) || !( planes &= VGA_ALLPLANES ) )
+	return ;
+
+#ifndef	PC98_EGC
+if ( ( regState = vgaCalcMonoMode( alu, fg ) ) & DO_RECURSE ) {
+	vgaDrawMonoImage( pWin, data, x, y, w, h,
+			  VGA_ALLPLANES, GXinvert, planes ) ;
+	regState &= ~DO_RECURSE ;
+}
+#else
+regState = vgaCalcMonoMode(alu, (char)fg);
+#endif
+
+
+vgaSetMonoRegisters( (DrawablePtr)pWin, planes, regState ) ;
+
+DoMonoSingle( pWin, w, x, y, (const unsigned char *) data, h,
+	      w, ( ( w + 31 ) & ~31 ) >> 3, h, 0, 0 ) ;
+
+
+return ;
 }
 
 void

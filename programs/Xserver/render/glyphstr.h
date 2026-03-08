@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/glyphstr.h,v 1.6tsi Exp $
+ * $XFree86: xc/programs/Xserver/render/glyphstr.h,v 1.5tsi Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -88,6 +88,8 @@ typedef struct _GlyphList {
     CARD8	    len;
     PictFormatPtr   format;
 } GlyphListRec, *GlyphListPtr;
+
+extern GlyphHashRec	globalGlyphs[GlyphFormatNum];
 
 GlyphHashSetPtr
 FindGlyphHashSet (CARD32 filled);

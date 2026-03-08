@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.332tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.331tsi Exp $
 
 /*
  * Copyright (c) 1994-2007 by The XFree86 Project, Inc.
@@ -1569,7 +1569,7 @@ install::
 	$(MV) $(DESTDIR)$(BINDIR)/XDarwinApp \
 		$(DESTDIR)$(XDARWINAPPDIR)/MacOS/XDarwin
 	-(cd $(DESTDIR)$(BINDIR); $(RM) XDarwinQuartz; \
-		$(LN) $(XDARWINAPPDIR)/MacOS/XDarwin XDarwinQuartz)
+		$(LN) $(DESTDIR)$(XDARWINAPPDIR)/MacOS/XDarwin XDarwinQuartz)
 
 /*
  * Display mode bundles for Quartz
@@ -1584,7 +1584,7 @@ BundleProgramTarget(xpr, \
 	$(XPRDIRS), \
 	$(QUARTZDIR)/xpr/xprScreen.o, \
 	$(XPRLIBS), \
-	$(XPLUGINLIB) -framework ApplicationServices)
+	-framework ApplicationServices $(XPLUGINLIB))
 #endif
 
             CRDIRS = $(QUARTZDIR)/cr $(ROOTLESSDIR) $(ROOTLESSDIR)/safeAlpha
@@ -1619,7 +1619,7 @@ BundleProgramTarget(glxAGL, \
 	GL, \
 	GL/glx/glxext.o, \
 	GL/glx/libglx.a GL/apple/libAGLcore.a, \
-	-framework AGL -framework OpenGL $(NATIVE_GLDEP))
+	-framework AGL -framework OpenGL)
 
 #if BuildAppleDRI
 BundleProgramTarget(glxCGL, \
@@ -1627,7 +1627,7 @@ BundleProgramTarget(glxCGL, \
 	GL, \
 	GL/glx/glxext.o, \
 	GL/glx/libglx.a GL/apple/libCGLcore.a, \
-	$(XPLUGINLIB) -framework OpenGL $(NATIVE_GLDEP))
+	-framework OpenGL $(XPLUGINLIB))
 #endif
 
 BundleProgramTarget(glxMesa, \

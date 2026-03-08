@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.35tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.34tsi Exp $ */
 /*
  * linux specific part of the int10 module
  * Copyright 1999 Egbert Eich
@@ -609,10 +609,10 @@ vm86_tst(void)
 {
     int __res;
 
-#if defined(__PIC__) && !defined(__amd64__) && !defined(__x86_64__)
+#ifdef __PIC__
     /*
-     * When compiling with -fPIC on i386, we can't use asm constraint "b"
-     * because %ebx is already taken by gcc to hold the GOT address.
+     * When compiling with -fPIC, we can't use asm constraint "b" because
+     * %ebx is already taken by gcc.
      */
     __asm__ __volatile__
     (

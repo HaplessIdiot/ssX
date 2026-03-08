@@ -1,4 +1,3 @@
-/* $XFree86: xc/lib/Xp/XpJob.c,v 1.7tsi Exp $ */
 /******************************************************************************
  ******************************************************************************
  **
@@ -34,6 +33,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
+/* $XFree86: xc/lib/Xp/XpJob.c,v 1.6 2002/10/16 00:37:32 dawes Exp $ */
 
 #if defined(sun) && defined(i386) && defined(SVR4) && !defined(__EXTENSIONS__)
 #define __EXTENSIONS__
@@ -44,9 +44,6 @@
 #include <X11/Xos.h>
 #include "XpExtUtil.h"
 #include <limits.h>
-#ifdef XTHREADS
-#include <X11/Xthreads.h>
-#endif
 #ifndef WIN32
 #define X_INCLUDE_PWD_H
 #define XOS_USE_XLIB_LOCKING

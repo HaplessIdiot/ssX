@@ -1,4 +1,3 @@
-/* $TOG: XEVI.h /main/1 1997/11/24 16:48:01 kaleb $ */
 /************************************************************
 Copyright (c) 1997 by Silicon Graphics Computer Systems, Inc.
 Permission to use, copy, modify, and distribute this
@@ -21,6 +20,8 @@ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
 OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
+/* $XFree86: xc/include/extensions/XEVI.h,v 3.5 2003/11/17 22:20:02 dawes Exp $ */
+
 #ifndef _XEVI_H_
 #define _XEVI_H_
 #include <X11/Xfuncproto.h>
@@ -43,25 +44,19 @@ typedef struct {
 } ExtendedVisualInfo;
 _XFUNCPROTOBEGIN
 Bool XeviQueryExtension(
-#if NeedFunctionPrototypes
     Display*            /* dpy */
-#endif
 );
 Status XeviQueryVersion(
-#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int*		/* majorVersion */,
     int*		/* minorVersion */
-#endif
 );
 Status XeviGetVisualInfo(
-#if NeedFunctionPrototypes
     Display*		 	/* dpy */,
     VisualID*			/* visual_query */,
     int				/* nVisual_query */,
     ExtendedVisualInfo**	/* extendedVisualInfo_return */,
     int*			/* nInfo_return */
-#endif
 );
 _XFUNCPROTOEND
 #endif

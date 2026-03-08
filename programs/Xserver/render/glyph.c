@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/glyph.c,v 1.7tsi Exp $
+ * $XFree86: xc/programs/Xserver/render/glyph.c,v 1.6 2001/10/28 03:34:19 tsi Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -74,9 +74,9 @@ static GlyphHashSetRec glyphHashSets[] = {
 
 #define NGLYPHHASHSETS	(sizeof(glyphHashSets)/sizeof(glyphHashSets[0]))
 
-static const CARD8	glyphDepths[GlyphFormatNum] = { 1, 4, 8, 16, 32 };
+const CARD8	glyphDepths[GlyphFormatNum] = { 1, 4, 8, 16, 32 };
 
-static GlyphHashRec	globalGlyphs[GlyphFormatNum];
+GlyphHashRec	globalGlyphs[GlyphFormatNum];
 
 GlyphHashSetPtr
 FindGlyphHashSet (CARD32 filled)
@@ -328,14 +328,10 @@ FindGlyph (GlyphSetPtr glyphSet, Glyph id)
 GlyphPtr
 AllocateGlyph (xGlyphInfo *gi, int fdepth)
 {
-    int		size, padded_width;
+    int		size;
     GlyphPtr	glyph;
 
-    padded_width = PixmapBytePad(gi->width, glyphDepths[fdepth]);
-    if (gi->height && (padded_width >
-	 ((((unsigned int)(-1)) - sizeof(GlyphRec)) / gi->height)))
-	return 0;
-    size = gi->height * padded_width;
+    size = gi->height * PixmapBytePad (gi->width, glyphDepths[fdepth]);
     glyph = (GlyphPtr) xalloc (size + sizeof (GlyphRec));
     if (!glyph)
 	return 0;

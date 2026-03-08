@@ -1,27 +1,12 @@
-XCOMM $XFree86: xc/config/cf/darwinLib.tmpl,v 1.21tsi Exp $
+XCOMM $XFree86: xc/config/cf/darwinLib.tmpl,v 1.20 2003/11/18 19:04:54 torrey Exp $
 /*
  * Darwin/Mac OS X shared library template
  */
 
-#if defined(DarwinArchitecture) && BuildAppleDRI
-/* Next two must be absolute paths, no symlinks allowed in any component */
-NATIVE_GL = /System/Library/Frameworks/OpenGL.framework
-NATIVE_GLLIB = $(NATIVE_GL)/Versions/A/Libraries/libGL.dylib
-#if OSMajorVersion > 8		/* 9.what? */
-NATIVE_GLDEP = -dylib_file $(NATIVE_GLLIB):$(NATIVE_GLLIB)
-#endif
-#endif
-
-#ifndef FixupGLXLibReferences
-#define FixupGLXLibReferences()						@@\
-GLXLIB = LoaderLibPrefix -lGL $(NATIVE_GLDEP)
-#endif
-
 #ifndef FixupLibReferences
 #define FixupLibReferences()						@@\
 XMULIBONLY = -lXmu							@@\
-XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)				@@\
-FixupGLXLibReferences()
+XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #endif
 
 #ifndef XawClientLibs
@@ -32,15 +17,15 @@ FixupGLXLibReferences()
 #if !defined(SharedX11Reqs)
 #define SharedX11Reqs
 #endif
-#define SharedXlibi18nReqs  $(LDPRELIB) $(XLIBONLY)
+#define SharedXlibi18nReqs $(LDPRELIB) $(XLIBONLY)
 
 #define SharedXfontReqs     $(LDPRELIB) $(FONTSTUBLIB) GzipLibrary $(FREETYPE2LIB) -flat_namespace
 
 #define SharedAppleWMReqs   $(LDPRELIB) $(XLIB)
 #define SharedFontencReqs   $(LDPRELIB) GzipLibrary
 #define SharedGLReqs        $(LDPRELIB) $(XLIB)
-#define SharedGLUReqs       $(LDPRELIB) $(GLXLIB) $(XLIB)
-#define SharedOSMesaReqs    $(LDPRELIB) $(GLXLIB) $(XLIB)
+#define SharedGLUReqs       $(LDPRELIB) $(XLIB) $(GLXLIB)
+#define SharedOSMesaReqs    $(LDPRELIB) $(XLIB) $(GLXLIB)
 #define SharedSMReqs        $(LDPRELIB) $(ICELIB)
 #define SharedXawReqs       $(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XPMLIB) $(XLIB)
 #define SharedXaw6Reqs      $(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XLIB)

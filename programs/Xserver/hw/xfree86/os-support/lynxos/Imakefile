@@ -1,25 +1,55 @@
-XCOMM $XConsortium: $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/Imakefile,v 3.26tsi Exp $
 #include <Server.tmpl>
 
-SRCS = lynx_init.c lynx_video.c IO_utils.c lynx_io.c lynx_mmap.c mapVT_noop.c \
-       VTsw_usl.c std_kbdEv.c sysv_tty.c std_mouse.c std_mseEv.c ioperm_noop.c
+#if !defined(PpcArchitecture)
+#if HasMTRRSupport
+MTRRDEFINES = -DHAS_MTRR_SUPPORT
+#endif
+IOPERM_SRCS=ioperm_noop.c
+IOPERM_OBJS=ioperm_noop.o
+#endif
 
-OBJS = lynx_init.o lynx_video.o IO_utils.o lynx_io.o lynx_mmap.o mapVT_noop.o \
-       VTsw_usl.o std_kbdEv.o sysv_tty.o std_mouse.o std_mseEv.o ioperm_noop.o
+#if defined(PpcArchitecture)
+PPC_SRCS=lynx_noinline.c lynx_ppc.c
+PPC_OBJS=lynx_noinline.o lynx_ppc.o
+#endif
 
-INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
-           -I$(INCLUDESRC)
+MOUSESRC = lynx_mouse.c
+MOUSEOBJ = lynx_mouse.o
+
+SRCS = lynx_init.c lynx_video.c lynx_io.c lynx_mmap.c \
+       VTsw_usl.c std_kbdEv.c posix_tty.c $(MOUSESRC) \
+       $(IOPERM_SRCS) $(PPC_SRCS) libc_wrapper.c stdResource.c stdPci.c \
+       vidmem.c sigio.c pm_noop.c kmod_noop.c agp_noop.c
+
+OBJS = lynx_init.o lynx_video.o lynx_io.o lynx_mmap.o \
+       VTsw_usl.o std_kbdEv.o posix_tty.o $(MOUSEOBJ) \
+       $(IOPERM_OBJS) $(PPC_OBJS) libc_wrapper.o stdResource.o stdPci.o \
+       vidmem.o sigio.o pm_noop.o kmod_noop.o agp_noop.o
+
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/include \
+           -I$(ENV_PREFIX)/sys/lynx.os
+
+RESDEFINES = -DUSESTDRES
+
+DEFINES = $(RESDEFINES) $(MTRRDEFINES)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 
-ObjectFromSpecialSource(ioperm_noop,../shared/ioperm_noop,/**/)
-ObjectFromSpecialSource(IO_utils,../shared/IO_utils,/**/)
-ObjectFromSpecialSource(mapVT_noop,../shared/mapVT_noop,/**/)
-ObjectFromSpecialSource(VTsw_usl,../shared/VTsw_usl,/**/)
-ObjectFromSpecialSource(std_kbdEv,../shared/std_kbdEv,/**/)
-ObjectFromSpecialSource(sysv_tty,../shared/sysv_tty,/**/)
-ObjectFromSpecialSource(std_mouse,../shared/std_mouse,/**/)
-ObjectFromSpecialSource(std_mseEv,../shared/std_mseEv,/**/)
+#if !defined(PpcArchitecture)
+LinkSourceFile(ioperm_noop.c,../shared)
+#endif
+LinkSourceFile(VTsw_usl.c,../shared)
+LinkSourceFile(std_kbdEv.c,../shared)
+LinkSourceFile(posix_tty.c,../shared)
+LinkSourceFile(libc_wrapper.c,../shared)
+LinkSourceFile(stdResource.c,../shared)
+LinkSourceFile(stdPci.c,../shared)
+LinkSourceFile(vidmem.c,../shared)
+LinkSourceFile(sigio.c,../shared)
+LinkSourceFile(pm_noop.c,../shared)
+LinkSourceFile(kmod_noop.c,../shared)
+LinkSourceFile(agp_noop.c,../shared)
 
 DependTarget()

@@ -1,4 +1,3 @@
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.74tsi Exp $ */
 /*
 
 Copyright 1993, 1994, 1998  The Open Group
@@ -27,6 +26,7 @@ other dealings in this Software without prior written authorization
 from the copyright holders.
 
 */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.73tsi Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -86,7 +86,7 @@ from the copyright holders.
 #endif 
 
 #ifndef NO_TCP_H
-#if defined(__osf__) || defined(linux) || defined(__DARWIN__)
+#if defined(__osf__) || defined(linux)
 #include <sys/param.h>
 #endif /* osf */
 #if defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__) 

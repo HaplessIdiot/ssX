@@ -23,17 +23,22 @@
 
 /* Modified for FreeBSD by David Dawes <dawes@XFree86.org> */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_jstk.c,v 3.7 1998/07/25 16:56:34 dawes Exp $ */
 
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 #include <machine/joystick.h>
 #include <fcntl.h>
 
-#define JS_RETURN sizeof(struct joystick)
+#ifdef XFree86LOADER
+#include "misc.h"
+#include "xf86_libc.h"
+#endif
+#include "xf86.h"
 
-extern int errno;
+#define JS_RETURN sizeof(struct joystick)
 
 /***********************************************************************
  *
@@ -56,16 +61,16 @@ xf86JoystickOn(char * name, int *timeout, int *centerX, int *centerY)
   ErrorF("xf86JoystickOn: %s\n", name);
 #endif
   
-  if ((status = open(name, O_RDWR | O_NDELAY)) < 0)
+  if ((status = open(name, O_RDWR | O_NDELAY, 0)) < 0)
     {
-      ErrorF("xf86JoystickOn: Cannot open joystick '%s' (%s)\n", name,
-            strerror(errno));
+      xf86Msg(X_WARNING, "xf86JoystickOn: Cannot open joystick '%s' (%s)\n",
+	      name, strerror(errno));
       return -1;
     }
 
-  if (*timeout == 0) {
+  if (*timeout <= 0) {
     /* Use the current setting */
-    ioctl(status, JOY_GETTIMEOUT, &timeinmicros);
+    ioctl(status, JOY_GETTIMEOUT, (char *)&timeinmicros);
     *timeout = timeinmicros / 1000;
     if (*timeout == 0)
       *timeout = 1;
@@ -78,7 +83,7 @@ xf86JoystickOn(char * name, int *timeout, int *centerX, int *centerY)
   }
   
   if (changed)
-    ErrorF("xf86JoystickOn: Timeout value changed to %d\n", *timeout);
+    xf86Msg(X_PROBED, "Joystick: timeout value = %d\n", *timeout);
 
   timeinmicros = *timeout * 1000;
 
@@ -86,11 +91,11 @@ xf86JoystickOn(char * name, int *timeout, int *centerX, int *centerY)
   read(status, &js, JS_RETURN);
   if (*centerX < 0) {
     *centerX = js.x;
-    ErrorF("xf86JoystickOn: CenterX set to %d\n", *centerX);
+    xf86Msg(X_PROBED, "Joystick: CenterX set to %d\n", *centerX);
   }
   if (*centerY < 0) {
     *centerY = js.y;
-    ErrorF("xf86JoystickOn: CenterY set to %d\n", *centerY);
+    xf86Msg(X_PROBED, "Joystick: CenterY set to %d\n", *centerY);
   }
 
   return status;
@@ -121,9 +126,7 @@ xf86JoystickInit()
  */
 
 int
-xf86JoystickOff(fd, doclose)
-int *fd;
-int doclose;
+xf86JoystickOff(int *fd, int doclose)
 {
   int   oldfd;
   
@@ -144,11 +147,7 @@ int doclose;
  */
 
 int
-xf86JoystickGetState(fd, x, y, buttons)
-int     fd;
-int     *x;
-int     *y;
-int     *buttons;
+xf86JoystickGetState(int fd, int *x, int *y, int *buttons)
 {
   struct joystick	js;
   int                   status;
@@ -172,4 +171,15 @@ int     *buttons;
   return 1;
 }
 
+#ifdef XFree86LOADER
+/*
+ * Entry point for XFree86 Loader
+ */
+void
+bsd_jstkModuleInit(pointer *data, INT32 *magic)
+{
+    *magic = MAGIC_DONE;
+    *data = NULL;
+}
+#endif
 /* end of bsd_jstk.c */

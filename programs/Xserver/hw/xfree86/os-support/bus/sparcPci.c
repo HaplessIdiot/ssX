@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.32tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.31tsi Exp $ */
 /*
  * Copyright (C) 2001-2007 The XFree86 Project, Inc.
  * All rights reserved.
@@ -1005,10 +1005,7 @@ xf86LocatePciMemoryArea(PCITAG Tag, char **devName, unsigned int *devOffset,
 
 #if defined(ARCH_PCI_PCI_BRIDGE)
 
-#define APB_DEVICE_ID		(DEVID(VENDOR_SUN, CHIP_SIMBA))
-
 /* Definitions specific to Sun's APB P2P bridge (a.k.a. Simba) */
-#define APB_INT_ACK		0xB8
 #define APB_IO_ADDRESS_MAP	0xDE
 #define APB_MEM_ADDRESS_MAP	0xDF
 
@@ -1098,29 +1095,13 @@ simbaCheckBus(CARD16 pcicommand, int bus)
     }
 }
 
-static CARD32 (*wrappedPciReadLong)(PCITAG, int) = NULL;
-
-/*
- * Wrapper function to avoid the interrupt acknowledge cycle that is generated
- * on a Simba's secondary bus when its INT_ACK register is read.
- */
-static CARD32
-simbaPciCfgRead32(PCITAG tag, int offset)
-{
-    if ((offset != APB_INT_ACK) ||
-	((*wrappedPciReadLong)(tag, PCI_ID_REG) != APB_DEVICE_ID))
-	return (*wrappedPciReadLong)(tag, offset);
-
-    return PCI_NOT_FOUND;
-}
-
 static pciConfigPtr
 simbaVerifyBus(int bus)
 {
     pciConfigPtr pPCI;
     if ((bus < 0) || (bus >= pciNumBuses) ||
 	!pciBusInfo[bus] || !(pPCI = pciBusInfo[bus]->bridge) ||
-	(pPCI->pci_device_vendor != APB_DEVICE_ID))
+	(pPCI->pci_device_vendor != DEVID(VENDOR_SUN, CHIP_SIMBA)))
 	return NULL;
 
     return pPCI;
@@ -1296,22 +1277,16 @@ void ARCH_PCI_PCI_BRIDGE(pciConfigPtr pPCI)
     pciBusInfo_t *pBusInfo;
     CARD16 pcicommand;
 
-    if (pPCI->pci_device_vendor != APB_DEVICE_ID)
+    if (pPCI->pci_device_vendor != DEVID(VENDOR_SUN, CHIP_SIMBA))
 	return;
 
     pBusInfo = pPCI->businfo;
 
-    if (pBusInfo->funcs != &simbaBusFuncs) {
-	simbaBusFuncs = *(pBusInfo->funcs);
+    simbaBusFuncs = *(pBusInfo->funcs);
+    simbaBusFuncs.pciControlBridge = simbaControlBridge;
+    simbaBusFuncs.pciGetBridgeResources = simbaGetBridgeResources;
 
-	wrappedPciReadLong = simbaBusFuncs.pciReadLong;
-	simbaBusFuncs.pciReadLong = simbaPciCfgRead32;
-
-	simbaBusFuncs.pciControlBridge = simbaControlBridge;
-	simbaBusFuncs.pciGetBridgeResources = simbaGetBridgeResources;
-
-	pBusInfo->funcs = &simbaBusFuncs;
-    }
+    pBusInfo->funcs = &simbaBusFuncs;
 
     if (!simbavgaRoutingAllow)
 	return;

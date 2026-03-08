@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/offscreen.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/offscreen.c,v 1.5 2001/08/01 00:44:56 tsi Exp $ */
 /*
  * Copyright 1993 Gerrit Jan Akkerman 
  *
@@ -294,6 +294,25 @@ DoMono
 			}
 		}
 	}
+}
+
+void
+xf4bppOffDrawMonoImage( pWin, data, x, y, w, h, fg, alu, planes )
+WindowPtr pWin; /* GJA */
+unsigned char *data;
+int x, y, w, h ;
+unsigned long int fg ;
+int alu ;
+unsigned long int planes;
+{
+
+	if ( ( alu == GXnoop ) || !( planes &= VGA_ALLPLANES ) )
+		return ;
+
+	DoMono( pWin, w, x, y, (const unsigned char *) data, h,
+		      w, ( ( w + 31 ) & ~31 ) >> 3, h, 0, 0, alu,
+		      (int)planes, (int)fg) ;
+
 }
 
 void

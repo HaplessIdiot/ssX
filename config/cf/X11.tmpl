@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.301tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.298tsi Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -126,18 +126,6 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.301tsi Exp $
 # else
 #  define UseInstalledOnCrossCompile NO
 # endif
-#endif
-
-#ifndef StaticUtils
-#define StaticUtils	NO
-#endif
-#if StaticUtils
-#undef BuildLibraries
-#undef ForceNormalLib
-#undef BuildClients
-#define BuildLibraries		YES
-#define ForceNormalLib		YES
-#define BuildClients		YES
 #endif
 
 #ifndef HasXServer
@@ -1949,6 +1937,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
      INSTAPPFLAGS = $(INSTDATFLAGS)	/* XXX - this should go away - XXX */
 
 #if UseInstalledX11
+              RGB = $(BINDIR)/rgb
             FONTC = $(BINDIR)/bdftopcf
       MKFONTSCALE = $(BINDIR)/mkfontscale
         MKFONTDIR = $(BINDIR)/mkfontdir
@@ -1958,6 +1947,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
      UCSMAPPREFIX = $(FONTDIR)/util/map-
        XCURSORGEN = $(BINDIR)/xcursorgen
 #else
+              RGB = $(CLIENTENVSETUP) $(XBUILDBINDIR)/rgb
 # if !CrossCompiling
             FONTC = $(CLIENTENVSETUP) $(PRELOADFONTSETUP) $(XBUILDBINDIR)/bdftopcf
       MKFONTSCALE = $(CLIENTENVSETUP) $(PRELOADFREETYPESETUP) $(XBUILDBINDIR)/mkfontscale
@@ -4968,7 +4958,7 @@ file.pdf: file.tex							@@\
 #ifdef HTMLroffCmd
 #define MakeDepSimpleHtmlDoc(file,deps,srcs)				@@\
 HtmlTarget(file): deps							@@\
-	$(HTMLROFF) $(MSMACROS) Concat(-P-I,file) $(XDOCMACROS) srcs \	@@\
+	$(HTMLROFF) $(MSMACROS) $(XDOCMACROS) Concat(-P-I,file) srcs \		@@\
 		2> index.raw > file.nhtml \				@@\
 	  && PostProcessTroffHTML(file.nhtml,$@)
 #else

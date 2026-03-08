@@ -1,4 +1,3 @@
-/* $XFree86: xc/extras/x86emu/src/x86emu/ops.c,v 1.11tsi Exp $ */
 /****************************************************************************
 *
 *						Realmode X86 Emulator Library
@@ -70,6 +69,8 @@
 * "add" would represent a nightmare in maintenance.
 *
 ****************************************************************************/
+
+/* $XFree86: xc/extras/x86emu/src/x86emu/ops.c,v 1.10 2004/11/10 04:03:17 dawes Exp $ */
 
 #include "x86emu/x86emui.h"
 
@@ -9420,16 +9421,9 @@ Handles opcode 0xd5
 ****************************************************************************/
 static void x86emuOp_aad(u8 X86EMU_UNUSED(op1))
 {
-    u8 a;
-
     START_OF_INSTR();
     DECODE_PRINTF("AAD\n");
-    a = fetch_byte_imm();
-    if (a != 10) {
-        DECODE_PRINTF("ERROR DECODING AAM\n");
-        TRACE_REGS();
-        HALT_SYS();
-    }
+    (void) fetch_byte_imm();
     TRACE_AND_STEP();
     M.x86.R_AX = aad_word(M.x86.R_AX);
     DECODE_CLEAR_SEGOVR();

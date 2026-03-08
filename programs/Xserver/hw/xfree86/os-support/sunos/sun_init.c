@@ -1,9 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.15 2008/05/01 16:13:23 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.11 2008/03/26 19:04:52 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Copyright 1999 by David Holland <davidh@iquest.net>
- * Copyright 2008 by Marc Aurele La France (TSI @ UQV), <tsi@xfree86.org>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -28,9 +27,6 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
-#include <sys/stropts.h>
-#include <sys/strredir.h>
-
 static Bool KeepTty = FALSE;
 static Bool Protect0 = FALSE;
 #ifdef HAS_USL_VTS
@@ -39,137 +35,6 @@ static int xf86StartVT = -1;
 #endif
 
 static char fb_dev[PATH_MAX] = "/dev/console";
-
-#ifdef NOREDIRECT
-#undef SRIOCSREDIR
-#endif
-
-#ifdef SRIOCSREDIR
-static char *redirfn = NULL;
-static FILE *redirfd = NULL;
-static Bool  redired = FALSE;
-static int   pipe_fds[2] = {-1, -1};
-static Bool  redirectConsole = TRUE;
-
-static void
-xf86CopyRedirectedConsole(void)
-{
-    long length;
-    char buffer[16];	/* Increase size for efficiency */
-
-    while ((length = read(pipe_fds[1], buffer, sizeof(buffer))) > 0) {
-	redired = TRUE;
-	fwrite(buffer, 1, length, redirfd);
-    }
-}
-
-static void
-xf86ReadRedirectedConsole(pointer pData, int error, pointer pMask)
-{
-    if ((error >= 0) && pMask && FD_ISSET(pipe_fds[1], (fd_set *)pMask))
-	xf86CopyRedirectedConsole();
-
-    fflush(redirfd);
-    fsync(fileno(redirfd));
-}
-
-/*
- * This attempts to redirect /dev/console output (from anything in the system)
- * while the server is running into a file.  This file is copied back into
- * /dev/console on server exit.  If this redirection fails, we at least
- * redirect the server's own output into the log.
- *
- * This is being done to help avoid screen corruption while the server is
- * running.
- *
- * Note that /dev/wscons output will still corrupt the screen, but there
- * doesn't seem to be anything that can be done about that.
- */
-static void
-xf86RedirectConsole(void)
-{
-    int consolefd;
-
-    /* fb_dev can be overridden */
-    if ((consolefd = open("/dev/console", O_RDWR | O_NDELAY)) < 0)
-	return;
-
-    xasprintf(&redirfn, "%s.console", xf86FilePaths->logFile);
-    if (!redirfn) {
-	xf86Msg(X_WARNING, "xf86RedirectConsole:  could not allocate console"
-		" redirection file name (%s)\n", strerror(errno));
-	goto done;
-    }
-
-    if (!(redirfd = fopen(redirfn, "w"))) {
-	xf86Msg(X_WARNING, "xf86RedirectConsole:  could not open \"%s\""
-		" (%s)\n", redirfn, strerror(errno));
-	goto openfail;
-    }
-
-    if (pipe(pipe_fds) < 0) {
-	xf86Msg(X_WARNING, "xf86RedirectConsole:  could not create pipe for"
-		" console redirection (%s)\n", strerror(errno));
-	goto pipefail;
-    }
-
-    if (fcntl(pipe_fds[1], F_SETFL, O_NDELAY) < 0) {
-	xf86Msg(X_WARNING, "xf86RedirectConsole:  fcntl /dev/console O_NDELAY"
-		" failure (%s)\n", strerror(errno));
-	goto cntlfail;
-    }
-
-    if (ioctl(consolefd, SRIOCSREDIR, pipe_fds[0]) < 0) {
-	if (errno != EBUSY) {
-	    xf86Msg(X_WARNING, "xf86RedirectConsole:  ioctl /dev/console"
-		    " SRIOCSREDIR failure (%s)\n", strerror(errno));
-	    goto cntlfail;
-	}
-
-	/*
-	 * At this point, something else in the system (likely a shell) has
-	 * a read hung on /dev/console (or is flooding it).  On the premise
-	 * (but not certainty) that the server's stderr is also /dev/console,
-	 * redirect that output into the log, closing that reference to
-	 * /dev/console.  At the very least, this means that server messages
-	 * will not corrupt the screen (although /dev/console output by
-	 * something other than the server will still do so).
-	 *
-	 * One downside of doing this is that, should the server fail for any
-	 * reason, failure messages will only appear in the log.
-	 */
-	LogSetParameter(XLOG_STDERR, 1);
-
-	/*
-	 * Try again, just in case /dev/console redirection isn't as broken as
-	 * I believe it to be.
-	 */
-	if (ioctl(consolefd, SRIOCSREDIR, pipe_fds[0]) < 0) {
-	    xf86Msg(X_WARNING, "xf86RedirectConsole:  ioctl /dev/console"
-		    " SRIOCSREDIR failure (%s)\n", strerror(errno));
-	    goto cntlfail;
-	}
-    }
-
-    AddEnabledDevice(pipe_fds[1]);
-    RegisterBlockAndWakeupHandlers((BlockHandlerProcPtr)NoopDDA,
-				   xf86ReadRedirectedConsole, NULL);
-    goto done;
-
-cntlfail:
-    close(pipe_fds[0]);
-    close(pipe_fds[1]);
-    pipe_fds[0] = pipe_fds[1] = -1;
-pipefail:
-    fclose(redirfd);
-    redirfd = NULL;
-openfail:
-    xfree(redirfn);
-    redirfn = NULL;
-done:
-    close(consolefd);
-}
-#endif /* SRIOCSREDIR */
 
 void
 xf86OpenConsole(void)
@@ -314,10 +179,6 @@ xf86OpenConsole(void)
 	ioctl(xf86Info.consoleFd, KDSETMODE, KD_GRAPHICS);
 #endif
 #endif
-#ifdef SRIOCSREDIR
-	if (redirectConsole)
-	    xf86RedirectConsole();
-#endif
     }
 #ifdef HAS_USL_VTS
     else /* serverGeneration != 1 */
@@ -440,48 +301,6 @@ xf86CloseConsole(void)
 
 #endif /* HAS_USL_VTS */
 
-#ifdef SRIOCSREDIR
-    if (pipe_fds[1] >= 0) {
-	/* Catch the last little bit, if any */
-	xf86CopyRedirectedConsole();
-
-	close(pipe_fds[0]);
-	close(pipe_fds[1]);
-	pipe_fds[0] = -1;
-
-	fclose(redirfd);
-
-	if (redired) {
-	    /* Copy data back to /dev/console */
-	    if ((pipe_fds[1] = open(redirfn, O_RDONLY)) < 0) {
-		xf86Msg(X_WARNING, "xf86CloseConsole:  could not reopen \"%s\""
-			" (%s)\n", redirfn, strerror(errno));
-	    } else {
-		if (!(redirfd = fopen("/dev/console", "w"))) {
-		    xf86Msg(X_WARNING, "xf86CloseConsole:  could not reopen"
-			    " \"/dev/console\" (%s)\n", strerror(errno));
-		} else {
-		    putc('\n', redirfd);
-		    xf86CopyRedirectedConsole();
-
-		    fclose(redirfd);
-		}
-
-		close(pipe_fds[1]);
-	    }
-
-	    redired = FALSE;
-	}
-
-	pipe_fds[1] = -1;
-	redirfd = NULL;
-
-	unlink(redirfn);
-	xfree(redirfn);
-	redirfn = NULL;
-    }
-#endif
-
     close(xf86Info.consoleFd);
 
 #if defined(__SOL8__) || defined(__sparc__)
@@ -524,17 +343,6 @@ xf86ProcessArgument(int argc, const char **argv, int i)
 	Protect0 = TRUE;
 	return 1;
     }
-
-#ifdef SRIOCSREDIR
-    /*
-     * Disable /dev/console redirection (for testing purposes).
-     */
-    if (!strcmp(argv[i], "-noredirect"))
-    {
-	redirectConsole = FALSE;
-	return 1;
-    }
-#endif
 
 #ifdef HAS_USL_VTS
 
@@ -588,10 +396,6 @@ void xf86UseMsg()
     ErrorF("                       (if not using XKB)\n");
     ErrorF("-ar2 <float>           Set autorepeat interval time (sec)\n");
     ErrorF("                       (if not using XKB)\n");
-#endif
-#ifdef SRIOCSREDIR
-    ErrorF("-noredirect            Don't redirect /dev/console output\n");
-    ErrorF("                       while the X server is running\n");
 #endif
     ErrorF("-keeptty               Don't detach controlling tty\n");
     ErrorF("                       (for debugging only)\n");

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Sbus.h,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Sbus.h,v 1.12tsi Exp $ */
 /*
  * Platform specific SBUS and OpenPROM access declarations.
  *
@@ -63,7 +63,6 @@
 
 # define FBIOSCURSOR		WSDISPLAYIO_SCURSOR
 # define FBIOGCURSOR		WSDISPLAYIO_GCURSOR
-# define FBIOSCURPOS		WSDISPLAYIO_SCURPOS
 
 # define FB_CUR_SETCUR		WSDISPLAY_CURSOR_DOCUR
 # define FB_CUR_SETPOS		WSDISPLAY_CURSOR_DOPOS

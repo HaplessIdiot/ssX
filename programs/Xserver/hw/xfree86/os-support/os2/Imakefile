@@ -1,26 +1,42 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:29:39 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/Imakefile,v 3.0 1994/05/08 05:23:44 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/Imakefile,v 3.25tsi Exp $
+
 #include <Server.tmpl>
 
 BIOS_MOD = os2_bios
-INOUT_SRC= os2_inout.s
-INOUT_OBJ= os2_inout.o
 
-SRCS = os2_init.c os2_video.c os2_io.c $(BIOS_MOD).c mapVT_noop.c \
-       ioperm_noop.c VTsw_noop.c os2_mouse.c os2_KbdEv.c $(INOUT_SRC)
+SRCS = os2_init.c os2_video.c os2_io.c $(BIOS_MOD).c \
+       os2_ioperm.c os2_VTsw.c os2_mouse.c os2_KbdEv.c os2_stubs.c \
+       os2_select.c os2_diag.c libc_wrapper.c stdResource.c stdPci.c \
+       vidmem.c sigiostubs.c pm_noop.c kmod_noop.c agp_noop.c os2_serial.c \
+       os2_kbd.c
 
-OBJS = os2_init.o os2_video.o os2_io.o $(BIOS_MOD).o mapVT_noop.o \
-       ioperm_noop.o VTsw_noop.o os2_mouse.o os2_kbdEv.o $(INOUT_OBJ)
+OBJS = os2_init.o os2_video.o os2_io.o $(BIOS_MOD).o \
+       os2_ioperm.o os2_VTsw.o os2_mouse.o os2_kbdEv.o os2_stubs.o \
+       os2_select.o os2_diag.o libc_wrapper.o stdResource.o stdPci.o \
+       vidmem.o sigiostubs.o pm_noop.o kmod_noop.o agp_noop.o os2_serial.o \
+       os2_kbd.o
 
-INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
-           -I$(INCLUDESRC)
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/include \
+           -I$(SERVERSRC)/mi
+
+RESDEFINES = -DUSESTDRES
+
+DEFINES = $(EXT_DEFINES) $(RESDEFINES)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 NormalAsmObjectRule()
 
-ObjectFromSpecialSource(mapVT_noop,../shared/mapVT_noop,/**/)
-ObjectFromSpecialSource(ioperm_noop,../shared/ioperm_noop,/**/)
-ObjectFromSpecialSource(VTsw_noop,../shared/VTsw_noop,/**/)
+SpecialCObjectRule(os2_kbdEv,$(ICONFIGFILES),NullParameter)
+
+LinkSourceFile(VTsw_noop.c,../shared)
+LinkSourceFile(libc_wrapper.c,../shared)
+LinkSourceFile(stdResource.c,../shared)
+LinkSourceFile(stdPci.c,../shared)
+LinkSourceFile(vidmem.c,../shared)
+LinkSourceFile(sigiostubs.c,../shared)
+LinkSourceFile(pm_noop.c,../shared)
+LinkSourceFile(kmod_noop.c,../shared)
+LinkSourceFile(agp_noop.c,../shared)
 
 DependTarget()

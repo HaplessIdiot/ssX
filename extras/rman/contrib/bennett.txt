@@ -3,7 +3,7 @@
 ***************
 *** 1,5 ****
 --- 1,9 ----
-  static char rcsid[] = "$Header$";
+  static char rcsid[] = "$Header: /vol1/history/xf86/xc/extras/rman/contrib/bennett.txt,v 1.1 2000/03/21 00:47:35 dawes Exp $";
   
 + /* ELS: SearchDirs by "Edward L. Sutter" <els@sage.sage.att.com> */
 + /* AB:  HTMLHeader and HTMLFooter by Anne Bennett <anne@alcor.concordia.ca> */

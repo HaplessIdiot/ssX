@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.27 2004/10/15 03:08:32 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.26tsi Exp $ */
 /*
  * ix86Pci.c - x86 PCI driver
  *
@@ -570,9 +570,6 @@ ix86PciReadLongCFG1(PCITAG Tag, int reg)
     ErrorF("ix86PciReadLong 0x%lx, %d\n", Tag, reg);
 #endif
 
-    if ((reg < 0) || (reg >= 256))
-	return PCI_NOT_FOUND;
-
     addr = PCI_ADDR_FROM_TAG_CFG1(Tag,reg);
     outl(PCI_CFGMECH1_ADDRESS_REG, addr);
     data = inl(PCI_CFGMECH1_DATA_REG);
@@ -594,9 +591,6 @@ ix86PciReadLongCFG2(PCITAG Tag, int reg)
 #ifdef DEBUGPCI
     ErrorF("ix86PciReadLong 0x%lx, %d\n", Tag, reg);
 #endif
-
-    if ((reg < 0) || (reg >= 256))
-	return PCI_NOT_FOUND;
 
     forward  = PCI_FORWARD_FROM_TAG(Tag);
     enable   = PCI_ENABLE_FROM_TAG(Tag);
@@ -627,9 +621,6 @@ ix86PciWriteLongCFG1(PCITAG Tag, int reg, CARD32 data)
 {
     CARD32    addr;
 
-    if ((reg < 0) || (reg >= 256))
-	return;
-
     addr = PCI_ADDR_FROM_TAG_CFG1(Tag,reg);
     outl(PCI_CFGMECH1_ADDRESS_REG, addr);
     outl(PCI_CFGMECH1_DATA_REG, data);
@@ -641,9 +632,6 @@ ix86PciWriteLongCFG2(PCITAG Tag, int reg, CARD32 data)
 {
     CARD32    addr;
     CARD8 forward, enable;
-
-    if ((reg < 0) || (reg >= 256))
-	return;
 
     forward  = PCI_FORWARD_FROM_TAG(Tag);
     enable   = PCI_ENABLE_FROM_TAG(Tag);
@@ -672,9 +660,6 @@ ix86PciSetBitsLongCFG1(PCITAG Tag, int reg, CARD32 mask, CARD32 val)
     ErrorF("ix86PciSetBitsLong 0x%lx, %d\n", Tag, reg);
 #endif
 
-    if ((reg < 0) || (reg >= 256))
-	return;
-
     addr = PCI_ADDR_FROM_TAG_CFG1(Tag,reg);
     outl(PCI_CFGMECH1_ADDRESS_REG, addr);
     data = inl(PCI_CFGMECH1_DATA_REG);
@@ -692,9 +677,6 @@ ix86PciSetBitsLongCFG2(PCITAG Tag, int reg, CARD32 mask, CARD32 val)
 #ifdef DEBUGPCI
     ErrorF("ix86PciSetBitsLong 0x%lx, %d\n", Tag, reg);
 #endif
-
-    if ((reg < 0) || (reg >= 256))
-	return;
 
     forward  = PCI_FORWARD_FROM_TAG(Tag);
     enable   = PCI_ENABLE_FROM_TAG(Tag);

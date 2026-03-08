@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.142 2008/05/21 22:23:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.139tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -179,9 +179,8 @@ typedef enum {
     OPTION_LVDS_PROBE_PLL,
     OPTION_CONSTANTDPI,
 #ifdef __powerpc__
-    OPTION_IBOOKHACKS,
+    OPTION_IBOOKHACKS
 #endif
-    OPTION_LAST
 } RADEONOpts;
 
 const OptionInfoRec RADEONOptions[] = {
@@ -2277,13 +2276,14 @@ static void RADEONInitMemoryMap(ScrnInfoPtr pScrn)
     if (!info->FBDev) {
 	if (info->IsIGP)
 	    info->mc_fb_location = INREG(RADEON_NB_TOM);
-#ifdef XF86DRI
 	else
+#ifdef XF86DRI
 	/* Old DRI has restrictions on the memory map */
 	if ( info->directRenderingEnabled &&
 	     info->pKernelDRMVersion->version_minor < 10 )
 	    info->mc_fb_location = (mem_size - 1) & 0xffff0000U;
 	else
+#endif
 	{
 	    CARD32 aper0_base = INREG(RADEON_CONFIG_APER_0_BASE);
 
@@ -2305,16 +2305,13 @@ static void RADEONInitMemoryMap(ScrnInfoPtr pScrn)
 	    info->mc_fb_location = (aper0_base >> 16) |
 		    ((aper0_base + mem_size - 1) & 0xffff0000U);
 	}
-#endif
     }
     info->fbLocation = (info->mc_fb_location & 0xffff) << 16;
 
-#ifdef XF86DRI
     /* Just disable the damn AGP apertures for now, it may be
      * re-enabled later by the DRM
      */
     info->mc_agp_location = 0xffffffc0;
-#endif
 
     RADEONTRACE(("RADEONInitMemoryMap() : \n"));
     RADEONTRACE(("  mem_size         : 0x%08lx\n", mem_size));
@@ -2633,18 +2630,8 @@ static Bool RADEONPreInitChipType(ScrnInfoPtr pScrn)
     case PCI_CHIP_R200_BB:
     case PCI_CHIP_R200_BC:
     case PCI_CHIP_R200_QH:
-    case PCI_CHIP_R200_QI:
-    case PCI_CHIP_R200_QJ:
-    case PCI_CHIP_R200_QK:
     case PCI_CHIP_R200_QL:
     case PCI_CHIP_R200_QM:
-    case PCI_CHIP_R200_QN:
-    case PCI_CHIP_R200_QO:
-    case PCI_CHIP_R200_Qh:
-    case PCI_CHIP_R200_Qi:
-    case PCI_CHIP_R200_Qj:
-    case PCI_CHIP_R200_Qk:
-    case PCI_CHIP_R200_Ql:
 	info->ChipFamily = CHIP_FAMILY_R200;
 	break;
 
@@ -2657,12 +2644,9 @@ static Bool RADEONPreInitChipType(ScrnInfoPtr pScrn)
 	break;
 
     case PCI_CHIP_RV250_Ld:
-    case PCI_CHIP_RV250_Le:
     case PCI_CHIP_RV250_Lf:
     case PCI_CHIP_RV250_Lg:
 	info->IsMobility = TRUE;
-    case PCI_CHIP_RV250_Id:
-    case PCI_CHIP_RV250_Ie:
     case PCI_CHIP_RV250_If:
     case PCI_CHIP_RV250_Ig:
 	info->ChipFamily = CHIP_FAMILY_RV250;
@@ -2712,9 +2696,8 @@ static Bool RADEONPreInitChipType(ScrnInfoPtr pScrn)
     case PCI_CHIP_RV360_AR:
     case PCI_CHIP_RV350_AS:
     case PCI_CHIP_RV350_AT:
-    case PCI_CHIP_RV350_4155:
     case PCI_CHIP_RV350_AV:
-    case PCI_CHIP_RV350_AW:
+    case PCI_CHIP_RV350_4155:
 	info->ChipFamily = CHIP_FAMILY_RV350;
 	break;
 

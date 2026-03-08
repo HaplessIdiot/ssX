@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.45tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.44tsi Exp $ */
 /*
  * Copyright 1997 through 2008 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -78,7 +78,35 @@ const char *ATIChipNames[] =
     "ATI Rage 128 Mobility M3",
     "ATI Rage 128 Mobility M4",
     "ATI unknown Rage 128"
-    "ATI Radeon",
+    "ATI Radeon 7200",
+    "ATI Radeon 7000 (VE)",
+    "ATI Radeon Mobility M6",
+    "ATI Radeon IGP320",
+    "ATI Radeon IGP330/340/350",
+    "ATI Radeon 7000 IGP",
+    "ATI Radeon 7500",
+    "ATI Radeon Mobility M7",
+    "ATI Radeon 8500/9100",
+    "ATI Radeon 9000",
+    "ATI Radeon Mobility M9",
+    "ATI Radeon 9100 IGP",
+    "ATI Radeon 9200 IGP",
+    "ATI Radeon 9200",
+    "ATI Radeon Mobility M9+",
+    "ATI Radeon 9700/9500",
+    "ATI Radeon 9600/9550",
+    "ATI Radeon 9800",
+    "ATI Radeon 9800XT",
+    "ATI Radeon X300/X550/M22",
+    "ATI Radeon X600/X550/M24",
+    "ATI Radeon X800/M18 AGP",
+    "ATI Radeon X800/M28 PCIE",
+    "ATI Radeon X800XL PCIE",
+    "ATI Radeon X850 PCIE",
+    "ATI Radeon X850 AGP",
+    "ATI Radeon X700",
+    "ATI Xpress 200"
+    "ATI unknown Radeon",
     "ATI Rage HDTV"
 };
 
@@ -592,11 +620,220 @@ ATIChipID
         case NewChipID('M', 'L'):
             return ATI_CHIP_RAGE128MOBILITY4;
 
+        case NewChipID('Q', 'D'):
+        case NewChipID('Q', 'E'):
+        case NewChipID('Q', 'F'):
+        case NewChipID('Q', 'G'):
+            return ATI_CHIP_RADEON;
+
+        case NewChipID('Q', 'Y'):
+        case NewChipID('Q', 'Z'):
+        case NewChipID('Q', '^'):
+            return ATI_CHIP_RADEONVE;
+
+        case NewChipID('L', 'Y'):
+        case NewChipID('L', 'Z'):
+            return ATI_CHIP_RADEONMOBILITY6;
+
+        case NewChipID('A', '6'):
+        case NewChipID('C', '6'):
+             return ATI_CHIP_RS100;
+
+        case NewChipID('A', '7'):
+        case NewChipID('C', '7'):
+             return ATI_CHIP_RS200;
+
+        case NewChipID('D', '7'):
+        case NewChipID('B', '7'):
+             return ATI_CHIP_RS250;
+
+        case NewChipID('L', 'W'):
+        case NewChipID('L', 'X'):
+            return ATI_CHIP_RADEONMOBILITY7;
+
+        case NewChipID('Q', 'H'):
+        case NewChipID('Q', 'I'):
+        case NewChipID('Q', 'J'):
+        case NewChipID('Q', 'K'):
+        case NewChipID('Q', 'L'):
+        case NewChipID('Q', 'M'):
+        case NewChipID('Q', 'N'):
+        case NewChipID('Q', 'O'):
+        case NewChipID('Q', 'h'):
+        case NewChipID('Q', 'i'):
+        case NewChipID('Q', 'j'):
+        case NewChipID('Q', 'k'):
+        case NewChipID('Q', 'l'):
+        case NewChipID('B', 'B'):
+            return ATI_CHIP_R200;
+
+        case NewChipID('Q', 'W'):
+        case NewChipID('Q', 'X'):
+            return ATI_CHIP_RV200;
+
+        case NewChipID('I', 'f'):
+        case NewChipID('I', 'g'):
+            return ATI_CHIP_RV250;
+
+        case NewChipID('L', 'd'):
+        case NewChipID('L', 'f'):
+        case NewChipID('L', 'g'):
+            return ATI_CHIP_RADEONMOBILITY9;
+
+        case NewChipID('X', '4'):
+        case NewChipID('X', '5'):
+             return ATI_CHIP_RS300;
+
+        case NewChipID('x', '4'):
+        case NewChipID('x', '5'):
+             return ATI_CHIP_RS350;
+
+        case NewChipID('Y', '\''):
+        case NewChipID('Y', 'a'):
+        case NewChipID('Y', 'b'):
+        case NewChipID('Y', 'd'):
+        case NewChipID('Y', 'e'):
+            return ATI_CHIP_RV280;
+
+        case NewChipID('\\', 'a'):
+        case NewChipID('\\', 'c'):
+            return ATI_CHIP_RADEONMOBILITY9PLUS;
+
+        case NewChipID('A', 'D'):
+        case NewChipID('A', 'E'):
+        case NewChipID('A', 'F'):
+        case NewChipID('A', 'G'):
+        case NewChipID('N', 'D'):
+        case NewChipID('N', 'E'):
+        case NewChipID('N', 'F'):
+        case NewChipID('N', 'G'):
+            return ATI_CHIP_R300;
+
+        case NewChipID('A', 'H'):
+        case NewChipID('A', 'I'):
+        case NewChipID('A', 'J'):
+        case NewChipID('A', 'K'):
+        case NewChipID('N', 'H'):
+        case NewChipID('N', 'I'):
+        case NewChipID('N', 'K'):
+            return ATI_CHIP_R350;
+
+        case NewChipID('A', 'P'):
+        case NewChipID('A', 'Q'):
+        case NewChipID('A', 'R'):
+        case NewChipID('A', 'S'):
+        case NewChipID('A', 'T'):
+        case NewChipID('A', 'U'):
+        case NewChipID('A', 'V'):
+        case NewChipID('N', 'P'):
+        case NewChipID('N', 'Q'):
+        case NewChipID('N', 'R'):
+        case NewChipID('N', 'S'):
+        case NewChipID('N', 'T'):
+        case NewChipID('N', 'V'):
+            return ATI_CHIP_RV350;
+
+        case NewChipID('N', 'J'):
+            return ATI_CHIP_R360;
+
+        case NewChipID('[', '\''):
+        case NewChipID('[', 'b'):
+        case NewChipID('[', 'c'):
+        case NewChipID('[', 'd'):
+        case NewChipID('[', 'e'):
+        case NewChipID('T', '\''):
+        case NewChipID('T', 'b'):
+        case NewChipID('T', 'd'):
+	    return ATI_CHIP_RV370;
+
+        case NewChipID('>', 'P'):
+        case NewChipID('>', 'T'):
+        case NewChipID('1', 'P'):
+        case NewChipID('1', 'R'):
+        case NewChipID('1', 'T'):
+	    return ATI_CHIP_RV380;
+
+        case NewChipID('J', 'H'):
+        case NewChipID('J', 'I'):
+        case NewChipID('J', 'J'):
+        case NewChipID('J', 'K'):
+        case NewChipID('J', 'L'):
+        case NewChipID('J', 'M'):
+        case NewChipID('J', 'N'):
+        case NewChipID('J', 'O'):
+        case NewChipID('J', 'P'):
+        case NewChipID('J', 'T'):
+	    return ATI_CHIP_R420;
+
+        case NewChipID('U', 'H'):
+        case NewChipID('U', 'I'):
+        case NewChipID('U', 'J'):
+        case NewChipID('U', 'K'):
+        case NewChipID('U', 'P'):
+        case NewChipID('U', 'Q'):
+        case NewChipID('U', 'R'):
+        case NewChipID('U', 'T'):
+        case NewChipID(']', 'W'):
+        /*
+         * These are m28, not 100% certain they are r423 could be r480 but not
+         * r430 as their pci id names indicate...
+         */
+        case NewChipID(']', 'H'):
+        case NewChipID(']', 'I'):
+        case NewChipID(']', 'J'):
+	    return ATI_CHIP_R423;
+
+        case NewChipID('U', 'L'):
+        case NewChipID('U', 'M'):
+        case NewChipID('U', 'N'):
+        case NewChipID('U', 'O'):
+	    return ATI_CHIP_R430;
+
+        case NewChipID(']', 'L'):
+        case NewChipID(']', 'M'):
+        case NewChipID(']', 'N'):
+        case NewChipID(']', 'O'):
+        case NewChipID(']', 'P'):
+        case NewChipID(']', 'R'):
+	    return ATI_CHIP_R480;
+
+        case NewChipID('K', 'I'):
+        case NewChipID('K', 'J'):
+        case NewChipID('K', 'K'):
+        case NewChipID('K', 'L'):
+	    return ATI_CHIP_R481;
+
+        case NewChipID('^', 'H'):
+        case NewChipID('^', 'J'):
+        case NewChipID('^', 'K'):
+        case NewChipID('^', 'L'):
+        case NewChipID('^', 'M'):
+        case NewChipID('^', 'O'):
+        case NewChipID('V', 'J'):
+        case NewChipID('V', 'K'):
+        case NewChipID('V', 'O'):
+        case NewChipID('V', 'R'):
+        case NewChipID('V', 'S'):
+	    return ATI_CHIP_RV410;
+
+        case NewChipID('Z', 'A'):
+        case NewChipID('Z', 'B'):
+        case NewChipID('Z', 'a'):
+        case NewChipID('Z', 'b'):
+        case NewChipID('Y', 'T'):
+        case NewChipID('Y', 'U'):
+        case NewChipID('Y', 't'):
+        case NewChipID('Y', 'u'):
+	    return ATI_CHIP_RS400;
+
         case NewChipID('H', 'D'):
             return ATI_CHIP_HDTV;
 
         default:
-            /* Treat anything else as a Radeon */
+            /*
+             * Treat anything else as an unknown Radeon.  Please keep the above
+             * up-to-date however, as it serves as a central chip list.
+             */
             return ATI_CHIP_Radeon;
     }
 }

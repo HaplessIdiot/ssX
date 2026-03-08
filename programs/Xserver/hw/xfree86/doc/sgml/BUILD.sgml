@@ -1,338 +1,374 @@
-<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN" [
+<!ENTITY % defs SYSTEM "defs.ent"> %defs;
+]>
 
 <article>
-<title>Installation Guide for XFree86 3.2
-<author>David Dawes
-<Date>24 October 1996
+<title>Building XFree86&reg; from a Source Distribution
+<author>David Dawes, Matthieu Herrb
+<Date>16 March 2005
+
+<ident>
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.19 2005/03/16 17:12:47 dawes Exp $
+</ident>
 
 <abstract>
 This document describes how to build XFree86 from the <bf>source</bf>
-distribution.  It covers building from the full source distribution as
-well as from the cut-down source distribution available for building
-only the X servers.  It is designed to
-be used in conjunction with the OS-specific README files.  This document
-does <bf>not</bf> describe how to install or upgrade a binary
-distribution.  That information is contained either in the
-<htmlurl name=RELNOTES url=RELNOTES.html>, OS-specific
-README files, or in separate documentation accompanying the various binary
-distributions.
+distribution and is designed to be used in conjunction with the operating
+system (OS) specific README files.
 </abstract>
 
 <toc>
 
-    
-<sect>Building XFree86 From a Source Distribution
-
 <p>
 <quote>
-<bf/NOTE:/  Refer to the appropriate OS-specific README file before attempting
-       to build XFree86.  These files contain additional information that 
-       you may need to successfully build under your OS.
+<bf>NOTE:</bf> Refer to the appropriate OS-specific README file before
+       attempting to build XFree86.  These files often contain additional
+       information that you need to successfully build for your OS.
 </quote>
 
 
-We highly recommend using GCC-2 to build XFree86.  Do not use version
-2.6.0 or 2.4.x versions prior to 2.4.5 due to bugs that cause either
-build or execution failures.
-Use of GCC's -m486 option will yield
-approximately 5&percnt; better performance on a 486, with no degradation (other
-than larger binaries) on a 386.  (gcc-2 is available from prep.ai.mit.edu
-and other sites archiving GNU source.)
+We recommend using gcc to build XFree86, but XFree86 generally builds
+with the native compiler for each OS platform.
 
-<enum>
-<item>You need the following:
+<sect>How to get the XFree86 &relvers; source
+<p>
 
-    <itemize>
-    <item>X Consortium X11R6.1 distribution with fix 01 applied.
+The recommended way of getting the XFree86 &relvers; source is to
+obtain it directly from the XFree86 CVS repository.  There are several
+ways of doing that, and they are described at our <url name="CVS web page"
+url="http://www.xfree86.org/cvs/">.
 
-    <item><tt/R6.1pl1-3.2.diff.gz/, <tt/cfont32.tgz/
+The CVS tag for this release is "<tt>&reltag;</tt>".  <![ %fullrel; [
+The tag for the maintenance branch for this release is
+"<tt>&relbranchtag;</tt>".]]>
 
-    <item>Optionally the X Consortium X11R6.1 contrib distribution.
+<![ %notsnapshot; [
+Another method of getting the XFree86 &relvers; source is to
+either download the &fullrelvers; source tarballs from the XFree86 ftp
+site<![ %updaterel; [ and the source patch that updates &fullrelvers; to
+&relvers]]>.  The procedure for this is as follows:
+<itemize>
+  <item>The XFree86 &fullrelvers; source is contained in the files:
 
-    <item><tt/contrib-3.2.diff.gz/ (an optional patch for
-              some of the X Consortium's ``contrib'' distribution)
+	<quote><tt>
+	XFree86-&fullrelvers;-src-1.tgz<newline>
+	XFree86-&fullrelvers;-src-2.tgz<newline>
+	XFree86-&fullrelvers;-src-3.tgz<newline>
+	XFree86-&fullrelvers;-src-4.tgz<newline>
+	XFree86-&fullrelvers;-src-5.tgz<newline>
+	XFree86-&fullrelvers;-src-6.tgz<newline>
+	XFree86-&fullrelvers;-src-7.tgz<newline>
+	</tt></quote>
 
-    <item>If you want to only build the XFree86 X servers, you only need
-           the X32servonly.tgz file which is the ``ServersOnly''
-           cut-down source distribution.
+	These can be found at <htmlurl
+	name="ftp://ftp.xfree86.org/pub/XFree86/&fullrelvers;/source/"
+	url="ftp://ftp.xfree86.org/pub/XFree86/&fullrelvers;/source/">.
+	<tt>XFree86-&fullrelvers;-src-4.tgz</tt> and
+	<tt>XFree86-&fullrelvers;-src-5.tgz</tt> contains the fonts.
+	<tt>XFree86-&fullrelvers;-src-6.tgz</tt> contains the documentation
+	source.
+	<tt>XFree86-&fullrelvers;-src-7.tgz</tt> contains the
+	hardcopy documentation.
+	<tt>XFree86-&fullrelvers;-src-1.tgz</tt>,
+	<tt>XFree86-&fullrelvers;-src-2.tgz</tt> and
+	<tt>XFree86-&fullrelvers;-src-3.tgz</tt> contains everything
+	else.
 
-    <item>The full XFree86 source tree requires about 130MB.  An additional
-      130MB (more for OSs without shared libraries) is required to build
-      everything.  About 55-65MB (for OSs with shared libraries) is required
-      to install the full distribution.  It is possible to reduce the space
-      required by removing some parts which are not essential to the build
-      process:
+	If you do not need either the documentation or the fonts, then
+	you need only <tt>XFree86-&fullrelvers;-src-1.tgz</tt>,
+	<tt>XFree86-&fullrelvers;-src-2.tgz</tt> and
+	<tt>XFree86-&fullrelvers;-src-3.tgz</tt>.
 
-<tscreen><verb>
- xc/test                      16MB
- xc/doc/hardcopy              11MB
- xc/doc/specs                 27MB
-</verb></tscreen>
+  <item>Extract each of these files by running the following from a directory
+	on a filesystem containing enough space (the full source requires
+	around 270MB, with a similar amount being required for the
+	compiled binaries):
+	<quote><tt>
+	gzip -d &lt; XFree86-&fullrelvers;-src-1.tgz | tar vxf -<newline>
+	gzip -d &lt; XFree86-&fullrelvers;-src-2.tgz | tar vxf -<newline>
+	gzip -d &lt; XFree86-&fullrelvers;-src-3.tgz | tar vxf -<newline>
+	gzip -d &lt; XFree86-&fullrelvers;-src-4.tgz | tar vxf -<newline>
+	gzip -d &lt; XFree86-&fullrelvers;-src-5.tgz | tar vxf -<newline>
+	gzip -d &lt; XFree86-&fullrelvers;-src-6.tgz | tar vxf -<newline>
+	gzip -d &lt; XFree86-&fullrelvers;-src-7.tgz | tar vxf -<newline>
+	</tt></quote>
 
-      If you don't need to build the fonts, <tt>xc/fonts</tt> can be
-      removed saving 30MB.  If you don't want to build PEX or XIE you
-      can remove:
-<tscreen><verb>
- xc/programs/Xserver/XIE       3MB
- xc/programs/Xserver/PEX5      2MB
-</verb></tscreen>
+<![ %updaterel; [
+  <item>A patch relative to &fullrelvers is available at
+	<htmlurl
+	name="ftp://ftp.xfree86.org/pub/XFree86/&relvers;/patches/"
+	url="ftp://ftp.xfree86.org/pub/XFree86/&relvers;/patches/">.
+	The patch file is <tt>&fullrelvers;-&relvers;.diff.gz</tt>.
 
-      A few more MB can be freed by removing the non-XFree86 directories under
- <tt>xc/programs/Xserver/hw/</tt>.
+	The patch is applied by running:
+	<quote><tt>
+	cd <em>the directory containing the xc directory</em><newline>
+	gzip -d &lt; &fullrelvers;-&relvers;.diff.gz | patch -s -p0 -E 
+	</tt>
+	</quote>
+	Look for the patching instructions in the "How to get XFree86"
+	section of the <htmlurl name="README" url="README.html"> of 
+	this release.
+]]>
+</itemize>
 
-    <item>It is possible to configure a cut-down source tree for building only
-      the XFree86 servers.  Building from a cut-down source tree requires
-      about 50-55MB of disk space.
+<![ %fullrel; [
+Alternatively, if you already have a pristine copy of the XFree86
+&prevfullrelvers; source, you can download patches from
+<htmlurl name="ftp://ftp.xfree86.org/pub/XFree86/&relvers;/patches/"
+url="ftp://ftp.xfree86.org/pub/XFree86/&relvers;/patches/"> that will allow
+you to convert it to &relvers;.  Information about which patch files to
+download and how to apply them can be found in the "How to get XFree86"
+section of the <htmlurl name="README" url="README.html"> for this release.
+]]>
+]]>
 
-    <item>The <tt/contrib-3.2.diff.gz/ patch provides patches
-    to a small part of the X Consortium's R6.1 contrib distribution.  It
-    mostly covers those clients which were in the core distribution of
-    X11R5 but were moved to the contrib distribution for X11R6.  To
-    use this patch, you need to have the following files/directories
-    from the final X Consortium R6.1 contrib release.
+<![ %snapshot; [
+<p>
+Another method is that you download the source for the XFree86 &relvers;
+snapshot as a tarball from <htmlurl
+name="ftp://ftp.xfree86.org/pub/XFree86/develsnaps/XFree86-&relvers;.tar.bz2"
+url="ftp://ftp.xfree86.org/pub/XFree86/develsnaps/XFree86-&relvers;.tar.bz2">.
+This tarball can be extracted by running:
 
-<tscreen><verb>
-          contrib/Imakefile
-          contrib/programs/Imakefile
-          contrib/programs/ico
-          contrib/programs/listres
-          contrib/programs/showfont
-          contrib/programs/viewres
-          contrib/programs/xbiff
-          contrib/programs/xcalc
-          contrib/programs/xditview
-          contrib/programs/xedit
-          contrib/programs/xev
-          contrib/programs/xeyes
-          contrib/programs/xfontsel
-          contrib/programs/xgc
-          contrib/programs/xload
-          contrib/programs/xman
-          contrib/programs/xmessage
-</verb></tscreen>
-     </itemize>
-        
-<item>If you are starting from the stock X Consortium R6.1 PL01 source
-   distribution, go to the
-   directory above your <tt/xc/ directory, and run:
+	<quote><tt>
+	bzip2 -d &lt; XFree86-&relvers;.tar.bz2 | tar vxf -<newline>
+	</tt></quote>
 
-<tscreen><verb>
-      gzip -d < R6.1pl1-3.2.diff.gz | patch -p -E
-      gzip -d < cfont32.tgz | tar vxf -
-</verb></tscreen>
+]]>
 
-   If you are installing in an unmodified tree there shouldn't be any
-   problems.  Check for any patch rejections and resolve them. If
-   you've modified some files (e.g. <tt/xf86site.def/, <tt/site.def/)
-   you should rename them, and restore the standard versions before
-   patching. If you don't have backups of the originals, individual
-   files can be easily obtained from <htmlurl url="ftp://ftp.x.org/pub/R6.1/xc"
-   name="ftp://ftp.x.org/pub/R6.1/xc">.
+Each of the methods outlined above will produce one main source directory
+called <tt>xc</tt>.
 
-   If you are patching a tree that you've previously used, make sure you run
-   ``<tt/make clean/'' from the <tt/xc/ directory before applying the diffs.
 
-   If you are using the patch for the contrib code, go to the directory
-   above your <tt/contrib/ directory, and run:
+<sect>Configuring the source before building
+<p>
+In most cases it should not be necessary to configure anything before
+building.
 
-<tscreen><verb>
-      gzip -d < contrib-3.2.diff.gz | patch -p -E
-</verb></tscreen>
+If you do want to make configuration changes, you should start by going
+to the <tt>xc/config/cf</tt> directory, and copying the file
+<tt>xf86site.def</tt> to <tt>host.def</tt>.  After that, read thoroughly
+the the <tt>host.def</tt> file, which is heavily commented, and set
+your configuration parameters. Usually you can find the default settings
+by checking the <tt>.cf</tt> file(s) relevant to your OS.
+
+A good rule of thumb is to only change that you understand, as it is
+very easy to create build problems by changing the default configuration
+unnecessarily.  Before making too many modifications, check the
+configuration parameters specified in the <tt>xc/config/cf/README</tt>
+file.
 
 <!--
-<item>If you are starting from the XFree86 3.1.1 source distribution,
-   go to the directory above your <tt/xc/ directory, and run:
-
-<tscreen><verb>
-      gzip -d < 3.1.1-3.1.2.diff.gz | patch -p -E
-      gzip -d < cfont312.tgz | tar vxf -
-</verb></tscreen>
-
-   If you are installing in an unmodified tree there shouldn't be any
-   problems.  Check for any patch rejections and resolve them.  If
-   you've modified some files (e.g. <tt/xf86site.def/, <tt/site.def/)
-   you should rename them, and restore the standard versions before
-   patching. If you don't have backups of the originals, individual
-   files for version 3.1.2 can be easily obtained from
-   <url url="ftp://ftp.xfree86.org/pub/XFree86/3.1.2/untarred"
-   name="ftp://ftp.xfree86.org/pub/XFree86/3.1.2/untarred">.
-
-   If you are patching a tree that you've previously used, make sure you run
-   ``<tt/make clean/'' from the <tt/xc/ directory before applying the diffs.
-
-   If you are using the patch for the contrib code, go to the directory
-   above your <tt/contrib/ directory, and run:
-
-<tscreen><verb>
-      gzip -d < contrib-3.1.1-3.1.2.diff.gz | patch -p -E
-</verb></tscreen>
+Another spot to check is a section <ref name="below" id="config_params">
+ with information about configuration settings.
 -->
 
-<item>Read through <tt>config/cf/xf86site.def</tt>.  Set the various
-   parameters to suit your configuration.  If it is your first build,
-   you should set <bf/BuildFonts/ to YES.
+<![ %notsnapshot; [
+If you are using just the <tt>XFree86-&fullrelvers;-src-1.tgz</tt>,
+<tt>XFree86-&fullrelvers;-src-2.tgz</tt> and
+<tt>XFree86-&fullrelvers;-src-3.tgz</tt> parts of the source dist, you
+will need to define <bf>BuildFonts</bf> to <bf>NO</bf>.
+]]>
 
-   If you are using a cut-down source tree for building only the X servers,
-   set <bf/BuildServersOnly/ to <bf/YES/, and <bf/XnestServer/ to <bf/NO/.
-
-   Set the defines to specify which server(s) you want to build:
-
-<tscreen><verb>
- Colour SVGA server (XF86_SVGA):           XF86SVGAServer
- 16 colour (S)VGA server (XF86_VGA16):     XF86VGA16Server
- ET4000/W32 accelerated server (XF86_W32): XF86W32Server
- Monochrome server  (XF86_Mono):           XF86MonoServer
- S3 accelerated server (XF86_S3):          XF86S3Server
- S3 ViRGE accelerated server (XF86_S3V):   XF86S3VServer
- 8514/A accelerated server (XF86_8514):    XF86I8514Server
- Mach8 accelerated server (XF86_Mach8):    XF86Mach8Server
- Mach32 accelerated server (XF86_Mach32):  XF86Mach32Server
- Mach64 accelerated server (XF86_Mach64):  XF86Mach64Server
- P9000 accelerated server (XF86_P9000):    XF86P9000Server
- AGX accelerated server (XF86_AGX):        XF86AGXServer
- I128 server (XF86_I128):                  XF86I128Server
-</verb></tscreen>
-       
-   To build a dual headed Mono+VGA2 server, set <bf/XF86MonoDualServer/ to
-   <bf/YES/.
-
-   To build a dual headed Mono+VGA16 server, set
-   <bf/XF86VGA16DualServer/ to <bf/YES/.
-
-   Set <bf/ServerToInstall/ to the server you want linked to <tt/X/.  If
-   this isn't specified, it will default to the first one in the above
-   list which is being built.
-   
-   The drivers you wish to include in the server are also selected in
-   <tt/xf86site.def/.  The drivers used for the SVGA server are set by
-   the <bf/XF86SvgaDrivers/ parameter.  This should be a list of the
-   driver directory names (in lower case).  The ordering determines
-   the order in which the drivers are probed at startup.  The default
-   is to include all supplied drivers.  Similarly the following
-   parameters specify drivers for the other servers:
-<tscreen><verb>
- XF86Vga16Drivers            XF86_VGA16
- XF86Vga2Drivers             XF86_Mono (vga2 drivers)
- XF86MonoDrivers             XF86_Mono, XF86_VGA16 (other mono drivers)
-</verb></tscreen>
-
-   The SVGA, VGA16 and VGA2 screens each have ``generic'' drivers, and these
-   should always be last in the list because their probe will succeed for
-   any VGA card.
-
-<item>If you want to be able to format the XFree86 documentation
-   (which is now in LinuxDoc/SGML form), you will need to get and install
-   linuxdoc-sgml-1.2.tar.gz plus the patches which can be found on
-   <htmlurl name="ftp://ftp.xfree86.org/pub/XFree86/3.2/Linuxdoc"
-    url="ftp://ftp.xfree86.org/pub/XFree86/3.2/Linuxdoc">.  Check
-   in the <tt/xf86site.def/ file and uncomment the appropriate Linuxdoc
-   options.
-   
-<item>Before building the distribution, read through the OS-specific
-   <tt/README/ file in <tt>xc/programs/Xserver/hw/xfree86/doc</tt> that is
-   relevant to you.  Once those OS-specific details have been taken
-   care of, go the <tt/xc/ directory and run ``<tt/make World/'' with the
-   <bf/BOOTSTRAPCFLAGS/ set as described in the OS-specific README.  It
-   is advisable to redirect stdout and stderr to <tt/World.Log/ so that you
-   can track down problems that might occur during the build.
-   If you are using one of the cut-down source distributions, you should
-   run ``<tt/make -f Makefile.ini World/'' because they will usually not
-   include the top level Makefile.
-
-<item>If all goes well, that will finish successfully in anything
-   from two to twelve hours depending on your system.
-   You should check <tt/World.Log/ to see
-   if there were any problems.  If there weren't any then you can install
-   the binaries.  When using the full source distribution, the installation
-   should be done from the <tt/xc/ directory.  When using the ServersOnly
-   distribution, the install should be done from the
-   <tt>xc/programs/Xserver</tt> directory
-   To do
-   the install, run ``<tt/make
-   install/'' and ``<tt/make install.man/''.  Make sure you have enough
-   space in <tt>/usr/X11R6</tt> for the install to succeed.  If you want
-   to install on a filesystem other than <tt>/usr</tt>, make a symbolic
-   link to <tt>/usr/X11R6</tt> before installing.
-
-   To install the binary LinkKit (in <tt>/usr/X11R6/lib/Server</tt>),
-   run the following from the <tt/xc/ directory (when using either the
-   full source distribution or the ServersOnly distribution):
-<tscreen><verb>
-     make install.linkkit
-</verb></tscreen>
-
-<item>To build the subset of the contrib release supported by
-   XFree86, make sure that you have first built and installed the core
-   distribution.  Then go to the <tt/contrib/ directory and run
-   ``<tt/xmkmf -a; make/''.  When that is completed, run
-   ``<tt/make install/'' and ``<tt/make install.man/'' to install it.
-</enum>
-
-<!--
-<sect> Using and Configuring XFree86
+<sect>Using a shadow directory of symbolic links for the build
 <p>
-<enum>
-<item>Add <tt>/usr/X11R6/bin</tt> to your <bf/PATH/ and
-   <tt>/usr/X11R6/man</tt> to your <bf/MANPATH/.
+We recommend that you use a shadow directory of symbolic links to do the
+build of XFree86, because it allows you to keep the source directory
+unmodified during the build process.  It has the following benefits:
 
-<item>Set up an <tt/XF86Config/ file.  The default locations for this
-   file are: <tt>/etc/XF86Config</tt>,
-   <tt>/usr/X11R6/lib/X11/XF86Config.</tt><em/hostname/, and
-   <tt>/usr/X11R6/lib/X11/XF86Config</tt>.  The recommended way to generate
-   an <tt/XF86Config/ file is to use the <tt/xf86config/ utility.  Also,
-   there is a sample file
-   installed as <tt>/usr/X11R6/lib/X11/XF86Config.eg</tt>, which
-   can be used as a starting point.
+<itemize>
+<item>Foreign files not under CVS's control are not touched. 
 
-   For details about the <tt/XF86Config/ file format, refer to the
-   <em>XF86Config(4/5)</em> manual page.
-   
-<item>If you use a <tt>&dollar;{HOME}/.xserverrc</tt> file with xinit, make
-   sure that the script exec's the server (e.g ``<tt>exec
-   /usr/X11R6/bin/XF86_SVGA</tt>'' rather than just
-   ``<tt>/usr/X11R6/bin/XF86_SVGA</tt>'').  If you don't do this, the
-   server may be slow to start, and may not exit when your last client finishes.
-</enum>
--->
+<item>Greater flexibility in building XFree86 for several different
+Operating Systems or hardware architectures from the same sources; shared
+by read-only NFS mounts.
 
-<sect>Reconfiguring the server (source distribution)
+<item>Different configuration options can be created by putting a real
+copy of the <tt>host.def</tt> file in each build tree and by customizing
+it separately in each build tree, and then customizing it separately.
+
+</itemize>
+
 <p>
-To build a different set of servers or servers with a different set of
-drivers installed:
-<enum>
-<item>Make sure the source for any new drivers is in the correct place (e.g.,
-   driver source for the SVGA server should be in a subdirectory of
-   <tt>xc/programs/Xserver/hw/xfree86/vga256/drivers</tt>).
+To make a shadow directory of symbolic links, use the following steps:
+<itemize>
+<item>create the directory at the top of the build tree. This is often
+created at the same level that the <tt>xc</tt> directory. 
+<quote><tt>
+cd <em>the directory containing the xc directory</em><newline>
+mkdir build
+</tt></quote>
+<item>use the "<tt>lndir</tt>" command to make the shadow tree:
+<quote><tt>
+cd build<newline>
+lndir ../xc
+</tt></quote>
+Note: You can refer to the <tt>xc</tt> directory by referencing it with an absolute
+path also.
+<p>
+See the <htmlurl name="lndir(1)"
+url="http://www.xfree86.org/&relvers;/lndir.1.html"> manual page for
+details.
+</itemize>
+If the <tt>lndir</tt> command is not already available on your system, you can
+build it manually from the XFree86 sources by running the following
+commands: 
+<quote><tt>
+cd xc/config/util<newline>
+make -f Makefile.ini lndir<newline>
+cp lndir <em>some directory in your PATH</em>
+</tt></quote>
 
-<item>Change the settings of the server defines (eg <bf/XF86SVGAServer/ as
-   described above) in <tt/xf86site.def/ to specify which servers you
-   wish to build.  Also, change the driver lists to suit your needs.
+Occasionally there may be stale links in the build tree.  This happens 
+when files in the source tree are either removed or renamed.  These stale links
+can be cleaned by running the "<tt>cleanlinks</tt>" script from the build
+directory (see the <htmlurl name="cleanlinks(1)" url="cleanlinks.1.html">
+manual page for further details). 
+
+Rarely will there be changes that require the build
+tree to be re-created from scratch.  If you think that this may be the case,
+look for build problems, which could indicate that this is the problem.  The best 
+solution in this scenario is to remove the build tree,and then re-create it 
+using the steps outlined above.
+
+<sect>Building and installing the distribution
+<p>
+Before building the distribution, read through your  OS-specific
+documentation in <tt>README</tt> file in
+<tt>xc/programs/Xserver/hw/xfree86/doc</tt>.  After that go to your build
+directory  which will either be the <tt>xc</tt> directory or the shadow
+tree which was create previously, and run "<tt>make World"</tt>.
+
+It is also advisable to that you redirect standard output <em>stdout</em>
+and standard error output <em>stderr</em> to <tt>World.Log</tt>,  so that
+you can track down problems that  might occur during the build.
+
+<p> 
+With Bourne-like shells (examples include the Bash, the Korn, and
+<tt>zsh</tt> shells) use the following command:
+<quote><tt>
+make World &gt; World.log 2&gt;&amp;1
+</tt></quote>
+for C-shell variants (<tt>csh</tt>, <tt>tcsh</tt>, etc), use:
+<quote><tt>
+make World &gt;&amp; World.log
+</tt></quote>
+
+You can then follow the progress of the build by running:
+<quote><tt>
+tail -f World.log
+</tt></quote>
+in a terminal window. 
+
+<p>
+When the build is finished, you should check the <tt>World.Log</tt> file to
+see if there were any problems.  If there were not, then install the binaries.  
+By default "make World" stops when the first error is found.  To restart that 
+same build process after correcting the various problems, run just 'make'.  
+
+If Imakefiles or part of the build configuration were changed as part of 
+correcting the problem, then either re-run "make World", or run "make Everything".
+
+If instead, you want "make World" to continue past errors, then instead execute 
+it as follows:
+
+for Bourne-like shells:
+<quote><tt>
+make WORLDOPTS=-k World &gt; World.log 2&gt;&amp;1
+</tt></quote>
+for C-shell variants:
+<quote><tt>
+make WORLDOPTS=-k World &gt;&amp; World.log
+</tt></quote>
+
+For installation, run "<tt>make install</tt>" and "<tt>make install.man</tt>"
+and ensure that there is enough space in the <tt>/usr/X11R6</tt> directory.
+
+If instead you want to install XFree86 on a filesystem other than
+<tt>/usr</tt>, make a symbolic link to <tt>/usr/X11R6</tt> before running the 
+install process. 
+
+
+<sect>Reconfiguring the server (using the source distribution)
+<p>
+If you would like to build several different sets of servers or server(s)
+with a various sets of drivers then you should follow this procedure:
+
+<enum>
+<item>Ensure that the source for any new drivers is in the correct place (e.g.,
+all driver source should be in a subdirectory of
+<tt>xc/programs/Xserver/hw/xfree86/drivers</tt>).
+
+<item>Change the settings of the server definitions 
+in <tt>host.def</tt> to specify which servers you
+wish to build.  Also, change the driver lists to suit your needs.
 
 <item>From <tt>xc/programs/Xserver</tt>, run:
 <tscreen><verb>
-     make Makefile
-     make Makefiles
-     make depend
-     make
+	make Makefile
+	make Makefiles
+	make includes
+	make depend
+	make
 </verb></tscreen>
 </enum>
 
-<sect>Reconfiguring the server (binary distribution)
-<p>
-  If you have installed the server Binary LinkKit, it is possible to
-reconfigure the drivers and some of the extensions in the servers.  For
-details of how to do this, please refer to the <htmlurl url="LinkKit.html"
-name="README.LinkKit"> file.
-
-<verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.20 1997/01/25 03:21:54 dawes Exp $
-
-
-
+<sect>Other useful make targets
+<p>There are some other useful targets defined in the top level
+<tt>Makefile</tt> of XFree86: 
+<descrip>
+<tag>Everything</tag>
+After a <tt>make World</tt>, <tt>make Everything</tt> replicates <tt>make
+World</tt> except for the cleaning of the source tree. <tt>make
+Everything</tt> very quickly rebuilds the tree after a source patch, but
+there are times when it is better to force a full build by using <tt>make
+World</tt>.
 
 
-$XConsortium: INSTALL.sgml /main/10 1996/10/28 05:43:13 kaleb $
+<tag>clean</tag>
+This does a partial cleaning of the source tree. Removes
+object files and generated manual pages, but leaves the Makefiles and
+the generated dependencies files in place. After a <tt>make clean</tt>
+you need to re-run 
+<tscreen><verb>
+        make includes
+        make depend
+        make
 </verb>
+</tscreen>
+to rebuild the XFree86. 
+
+<tag>distclean</tag>
+This does a full cleaning of the source tree,
+removing all generated files. After a <tt>make distclean</tt>,
+<tt>make World</tt> is the only option to rebuild XFree86. 
+
+<tag>includes</tag>
+This generates all generated header files and in-tree
+symbolic links  needed by the build. These files are removed by a
+<tt>make clean</tt>. 
+
+<tag>depend</tag>
+This recomputes the dependencies for the various targets
+in all Makefiles. Depending on the operating system, the dependencies
+are stored in the Makefile, or as a separate file, called
+<tt>.depend</tt>. This target needs the generated include files
+produced by <tt>make includes</tt>. 
+
+<tag>VerifyOS</tag>
+This displays the detected operating system version. If
+the numbers shown do not match your system, you probably need to set
+them manually in <tt>host.def</tt> and report the problem to
+<email>XFree86@XFree86.org</email>.
+</descrip>
+
+<!--
+<sect>Various Configuration settings<label id="config_params">
+<p>
+
+Fill in this section.
+-->
 
 </article>
 

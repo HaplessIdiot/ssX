@@ -1,7 +1,7 @@
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.161 2007/01/04 03:33:41 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.160tsi Exp $
 
 /*
- * Copyright (c) 1994-2008 by The XFree86 Project, Inc.
+ * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -145,19 +145,11 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 /*
  * Multi-thread safe libs 
  */	
-/*
- * 2.2.7 and later has libc_r (POSIX threads)
- * 7.0 no longer has libc_r, and it was deprecated prior to that.  Use
- * libthr or libpthread instead.  We'll use libpthread.
- */
+/* 2.2.7 and later has libc_r (POSIX threads) */
 #if OSMajorVersion == 2 && OSMinorVersion == 2 && OSTeenyVersion >= 7 || \
     OSMajorVersion >= 3
 # ifndef HasLibPthread
-#  if OSMajorVersion >= 7
-#   define HasLibPthread	YES
-#  else
-#   define HasLibPthread	NO
-#  endif
+#  define HasLibPthread		NO
 # endif
 # define HasPosixThreads	YES
 # define ThreadedX		YES
@@ -169,7 +161,6 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # define MTSafeAPIDefines	-DXUSE_MTSAFE_API -DXNO_MTSAFE_PWDAPI
 # if HasLibPthread
 #  define ThreadsLibraries	-lpthread
-#  define NeedThreadStubLibrary  YES
 # else
 #  define NeedThreadStubLibrary  YES
 #  if OSRelVersion >= 500043

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/zx1PCI.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/zx1PCI.c,v 1.11tsi Exp $ */
 /*
  * Copyright (C) 2002-2003 The XFree86 Project, Inc.
  * All rights reserved.
@@ -216,7 +216,6 @@ static int           zx1_fakebus = -1;
 static Bool          zx1_hasvga = FALSE;
 
 static pointer pZX1IoRes[8], pZX1MemRes[8];	/* Rope resources */
-static pciConfigPtr pFakePciBridge[8];
 
 static unsigned int sbaid;
 
@@ -243,11 +242,6 @@ static unsigned int sbaid;
 static CARD64 bot[MAX_RANGE], top[MAX_RANGE], msk[MAX_RANGE], siz[MAX_RANGE];
 static INT8 *pDecode[MAX_RANGE];
 static int nRange = 0;
-
-/* Forward declarations */
-static CARD32 zx1FakeReadLong(PCITAG tag, int offset);
-static void   zx1FakeWriteLong(PCITAG tag, int offset, CARD32 val);
-static void   zx1FakeSetBits(PCITAG tag, int offset, CARD32 mask, CARD32 bits);
 
 /* Track a resource range and assign a granularity to it */
 static void
@@ -449,6 +443,31 @@ GetZX1BridgeResources(int bus,
 }
 
 /* The fake bus */
+static CARD32
+zx1FakeReadLong(PCITAG tag, int offset)
+{
+    FatalError("zx1FakeReadLong(0x%lX, 0x%X) called\n",
+	       (unsigned long)tag, offset);
+}
+
+static void
+zx1FakeWriteLong(PCITAG tag, int offset, CARD32 val)
+{
+    FatalError("zx1FakeWriteLong(0x%lX, 0x%X, 0x%08X) called\n",
+	       (unsigned long)tag, offset, val);
+}
+
+static void
+zx1FakeSetBits(PCITAG tag, int offset, CARD32 mask, CARD32 bits)
+{
+    CARD32 val;
+
+    val = zx1FakeReadLong(tag, offset);
+    val &= ~mask;
+    val |= bits;
+    zx1FakeWriteLong(tag, offset, val);
+}
+
 static pciBusFuncs_t zx1FakeBusFuncs = {
     zx1FakeReadLong,
     zx1FakeWriteLong,
@@ -468,41 +487,6 @@ static pciBusInfo_t zx1FakeBus = {
     NULL,		/* pciBusPriv -- none */
     NULL,		/* bridge -- dynamically set */
 };
-
-static CARD32
-zx1FakeReadLong(PCITAG tag, int offset)
-{
-    pciConfigPtr pPCI;
-
-    if ((offset < 0) || (offset & 3) || (offset >= zx1FakeBus.pciMaxOffset))
-	return PCI_NOT_FOUND;
-
-    if (!(pPCI = zx1FakeBus.bridge) || (tag != pPCI->tag)) {
-	if (!(pPCI = pFakePciBridge[PCI_DEV_FROM_TAG(tag) & 0x07]) ||
-	    (tag != pPCI->tag))
-	    return PCI_NOT_FOUND;
-    }
-
-    return pPCI->cfgspc.dwords[offset >> 2];
-}
-
-static void
-zx1FakeWriteLong(PCITAG tag, int offset, CARD32 val)
-{
-    ErrorF("zx1FakeWriteLong(0x%lX, 0x%X, 0x%08X) called\n",
-	   (unsigned long)tag, offset, val);
-}
-
-static void
-zx1FakeSetBits(PCITAG tag, int offset, CARD32 mask, CARD32 bits)
-{
-    CARD32 val;
-
-    val = zx1FakeReadLong(tag, offset);
-    val &= ~mask;
-    val |= bits;
-    zx1FakeWriteLong(tag, offset, val);
-}
 
 /*
  * This checks for, and validates, the presence of the ZX1 chipset, and sets
@@ -990,12 +974,6 @@ xf86PostScanZX1(void)
     (void)memset(zx1_busnmpt, FALSE, sizeof(zx1_busnmpt));
     pBusInfo = pciBusInfo[0];
 
-    /* Bus 0 might be deleted below;  Save some of its data */
-    zx1BusFuncs = *(pBusInfo->funcs);
-    zx1FakeBus.configMech = pBusInfo->configMech;
-    zx1FakeBus.numDevices = pBusInfo->numDevices;
-    zx1FakeBus.pciMaxOffset = pBusInfo->pciMaxOffset;
-
     /*
      * Certain Linux kernels add fake PCI devices.  Remove them to prevent any
      * possible interference with our PCI validation.
@@ -1083,10 +1061,13 @@ xf86PostScanZX1(void)
     }
 
     /* Set up our extra bus functions */
+    zx1BusFuncs = *(pBusInfo->funcs);
     zx1BusFuncs.pciControlBridge = ControlZX1Bridge;
     zx1BusFuncs.pciGetBridgeResources = GetZX1BridgeResources;
 
     /* Set up our own fake bus to act as the root segment */
+    zx1FakeBus.configMech = pBusInfo->configMech;
+    zx1FakeBus.numDevices = pBusInfo->numDevices;
     zx1FakeBus.primary_bus = zx1_fakebus;
     pciBusInfo[zx1_fakebus] = &zx1FakeBus;
 
@@ -1098,7 +1079,6 @@ xf86PostScanZX1(void)
     pPCI->busnum = zx1_fakebus;
  /* pPCI->devnum = pPCI->funcnum = 0; */
     pPCI->pci_device_vendor = sbaid;
-    pPCI->pci_status_command = PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE;
     pPCI->pci_base_class = PCI_CLASS_BRIDGE;
  /* pPCI->pci_sub_class = PCI_SUBCLASS_BRIDGE_HOST; */
     pPCI->fakeDevice = TRUE;
@@ -1122,7 +1102,6 @@ xf86PostScanZX1(void)
 
     /* Add a fake PCI-to-PCI bridge to represent each active rope */
     for (i = 0;  i < 8;  i++) {
-	pFakePciBridge[i] = NULL;
 	if ((zx1_ropemap[i] != i) || (zx1_busno[i] > zx1_subno[i]) ||
 	    !(pBusInfo = pciBusInfo[zx1_busno[i]]))
 	    continue;
@@ -1135,16 +1114,13 @@ xf86PostScanZX1(void)
      /* pPCI->funcnum = 0; */
 	pPCI->tag = PCI_MAKE_TAG(zx1_fakebus, pPCI->devnum, 0);
 	pPCI->pci_device_vendor = zx1_pciids[i];
-	pPCI->pci_status_command = PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE;
 	pPCI->pci_base_class = PCI_CLASS_BRIDGE;
 	pPCI->pci_sub_class = PCI_SUBCLASS_BRIDGE_PCI;
 	pPCI->pci_header_type = 1;
 	pPCI->pci_primary_bus_number = zx1_fakebus;
 	pPCI->pci_secondary_bus_number = zx1_busno[i];
 	pPCI->pci_subordinate_bus_number = zx1_subno[i];
-
 	pPCI->fakeDevice = TRUE;
-	pFakePciBridge[i] = pPCI;
 
 	pBusInfo->bridge = pPCI;
 	pBusInfo->secondary = TRUE;

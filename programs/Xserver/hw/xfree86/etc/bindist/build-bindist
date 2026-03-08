@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/bindist/build-bindist,v 1.9 2008/12/10 16:32:03 tsi Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/bindist/build-bindist,v 1.7tsi Exp $
 #
 
 Usage()
@@ -46,23 +46,15 @@ esac
 FROMDIR=$1
 TODIR=$2
 
-case "$FROMDIR" in
-/*)
-  ;;
-*)
+if [ "$(echo $FROMDIR | cut -b 1)" != "/" ]; then
   echo $FROMDIR is not an absolute path
   exit 2
-  ;;
-esac
+fi
 
-case "$TODIR" in
-/*)
-  ;;
-*)
+if [ "$(echo $TODIR | cut -b 1)" != "/" ]; then
   echo $TODIR is not an absolute path
   exit 2
-  ;;
-esac
+fi
 
 if [ ! -d $FROMDIR ]; then
   echo No such dir $FROMDIR

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.32tsi Exp $
+XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.31tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -249,9 +249,10 @@ XCOMM No built-in drivers. This is the usual case.
     DRIDOBJS = $(APPLEOBJS:%.o=$(GLXLIBSRC)/apple/debugger/%.o)
     DRIPOBJS = $(APPLEOBJS:%.o=$(GLXLIBSRC)/apple/profiled/%.o)
 
-/* NATIVE_GLLIB is set in darwinLib.tmpl */
+NATIVE_GL = /System/Library/Frameworks/OpenGL.framework
 
-OTHERREQUIREDLIBS = XpluginLibrary $(NATIVE_GLLIB) -sub_library libGL \
+OTHERREQUIREDLIBS = \
+	XpluginLibrary $(NATIVE_GL)/Libraries/libGL.dylib -sub_library libGL \
 	-framework ApplicationServices -framework CoreFoundation \
 	-framework OpenGL
 #endif

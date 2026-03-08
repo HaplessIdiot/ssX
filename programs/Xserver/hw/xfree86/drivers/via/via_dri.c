@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_dri.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_dri.c,v 1.9 2004/02/08 17:57:10 tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -727,8 +727,10 @@ static Bool VIADRIKernelInit(ScreenPtr pScreen, VIAPtr pVia)
     drmInfo.sarea_priv_offset   = sizeof(XF86DRISAREARec);
     drmInfo.fb_offset           = pVia->FrameBufferBase;
     drmInfo.mmio_offset         = pVia->registerHandle;
-    if (!pVia->IsPCI)
-	drmInfo.agpAddr = pVia->agpAddr;
+    if (pVia->IsPCI)
+	drmInfo.agpAddr = (CARD32)NULL;
+    else
+	drmInfo.agpAddr = (CARD32)pVia->agpAddr;
 
 	if ((drmCommandWrite(pVia->drmFD, DRM_VIA_MAP_INIT,&drmInfo,
 			     sizeof(drmViaInit))) < 0)

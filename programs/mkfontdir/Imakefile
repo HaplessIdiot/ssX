@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/mkfontdir/Imakefile,v 3.15tsi Exp $
+XCOMM $XFree86: xc/programs/mkfontdir/Imakefile,v 3.14tsi Exp $
 
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
@@ -47,20 +47,11 @@ XCOMM $XFree86: xc/programs/mkfontdir/Imakefile,v 3.15tsi Exp $
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if StaticUtils
-       LOCAL_LIBRARIES = $(BUILDLIBDIR)/LibraryTargetName(Xfont) \
-			 $(BUILDLIBDIR)/LibraryTargetName(fntstubs)
-#else
        LOCAL_LIBRARIES = $(FONTLIB)
-#endif
                DEPLIBS = $(DEPFONTLIB)
               INCLUDES = -I$(FONTLIBSRC)/include
 #if GzipFontCompression
-#if StaticUtils && BuildZlib
-                  ZLIB = $(BUILDLIBDIR)/LibraryTargetName(z)
-#else
                   ZLIB = GzipLibrary
-#endif
               ZDEFINES = -DX_GZIP_FONT_COMPRESSION
 #endif
          SYS_LIBRARIES = MathLibrary $(ZLIB)

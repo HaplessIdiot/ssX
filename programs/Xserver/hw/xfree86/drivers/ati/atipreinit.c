@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.97tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.94 2008/01/01 00:40:01 tsi Exp $ */
 /*
  * Copyright 1999 through 2008 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -721,11 +721,7 @@ ATIPreInit
     if ((pVideo = pATI->PCIInfo))
     {
         if (pVideo->ioBase[1])
-        {
             pATI->CPIOBase = pVideo->ioBase[1] + pATI->DomainIOBase;
-            if (pATI->IODecoding == MEMORY_IO)
-                pATI->IODecoding = BLOCK_IO;
-        }
 
         /* Set MMIO address from PCI configuration space, if available */
         if ((pATI->Block0Base = pVideo->memBase[2]))
@@ -2320,19 +2316,6 @@ ATIPreInit
     else if ((pATI->NewHW.crtc == ATI_CRTC_MACH64) ||
              (pATI->Chip >= ATI_CHIP_264CT))
     {
-        if (pATI->Chip >= ATI_CHIP_264VTB)
-        {
-            pATIHW->bus_cntl = inr(BUS_CNTL);
-
-            /*
-             * If the MMIO area at the end of the linear aperture is found
-             * enabled on entry, keep it enabled, on the premise that something
-             * other than the server is referencing it.
-             */
-            if (!(pATIHW->bus_cntl & BUS_APER_REG_DIS))
-                pATI->MMIOInLinear = TRUE;
-        }
-
         if (pATI->depth >= 8)
         {
             /* Get adapter's linear aperture configuration */
@@ -2433,8 +2416,7 @@ ATIPreInit
 
                 ServerVideoRAM = pATI->VideoRAM;
 
-                if ((pATI->Cursor > ATI_CURSOR_SOFTWARE) &&
-                    (pATI->NewHW.crtc == ATI_CRTC_MACH64))
+                if (pATI->Cursor > ATI_CURSOR_SOFTWARE)
                 {
                     /*
                      * Allocate a 1 kB cursor image area at the top of the
@@ -2657,8 +2639,8 @@ ATIPreInit
     if ((pATI->Cursor > ATI_CURSOR_SOFTWARE) && !pATI->CursorBase)
     {
         xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
-            "Hardware cursor not supported in this configuration.  Reverting"
-            " to software cursor.\n");
+            "Unable to store hardware cursor image.  Reverting to software"
+            " cursor.\n");
         pATI->Cursor = ATI_CURSOR_SOFTWARE;
     }
 

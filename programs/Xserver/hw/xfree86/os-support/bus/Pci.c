@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.102tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.100 2008/03/26 18:57:50 tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -911,8 +911,7 @@ pciGenFindNext(void)
 	    *pciBusInfo[pciBusNum] = *pciBusInfo[previousBus];
 
 	    speculativeProbe = TRUE;
-	} else if (pciBusInfo[pciBusNum]->pciMaxOffset == 0)
-	    pciBusInfo[pciBusNum]->pciMaxOffset = 256;
+	}
 
 	/*
 	 * At this point, pciBusNum, pciDevNum, and pciFuncNum have been
@@ -1551,6 +1550,13 @@ xf86scanpci(int flags)
 #endif
 
     return pci_devp;
+}
+
+CARD32
+pciCheckForBrokenBase(PCITAG Tag,int basereg)
+{
+    pciWriteLong(Tag, PCI_MAP_REG_START + (basereg << 2), 0xffffffff);
+    return pciReadLong(Tag, PCI_MAP_REG_START + (basereg << 2));
 }
 
 #if defined(INCLUDE_XF86_MAP_PCI_MEM)

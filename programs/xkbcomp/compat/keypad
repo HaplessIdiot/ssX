@@ -1,4 +1,4 @@
-// $TOG: keypad /main/1 1997/06/10 06:54:31 kaleb $
+// $XFree86$
 
 // Interpretations needed to implement the numeric keypad
 // as an overlay instead of a modifier.

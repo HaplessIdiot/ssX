@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.19tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.18 2005/10/14 15:17:10 tsi Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -988,9 +988,6 @@ VBESetGetPaletteData(vbeInfoPtr pVbe, Bool set, int first, int num,
     Output:
 	AX    := VBE Return Status
      */
-
-    if (set && !data)
-	return NULL;
 
     pVbe->pInt10->num = 0x10;
     pVbe->pInt10->ax = 0x4f09;

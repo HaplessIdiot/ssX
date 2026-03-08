@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/xf4bpp.h,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/xf4bpp.h,v 1.10tsi Exp $ */
 
 
 #ifndef __XF4BPP_H__
@@ -478,6 +478,17 @@ void xf4bppOffFillSolid(
     const int,
     int,
     const int
+);
+void xf4bppOffDrawMonoImage(
+    WindowPtr,
+    unsigned char *,
+    int,
+    int,
+    int,
+    int,
+    unsigned long int,
+    int,
+    unsigned long int
 );
 void xf4bppOffFillStipple(
     WindowPtr,

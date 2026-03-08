@@ -1059,16 +1059,16 @@ Specifies the connection to the X server.
 .IP \fIcolormap\fP 1i
 Specifies the colormap.
 .ds St
-.\" $Header$
+.\" $Header: /vol1/history/xf86/xc/doc/specs/X11/CH06,v 1.1 1994/04/27 07:23:16 dawes Exp $
 .IP \fIcolor_string\fP 1i
 Specifies the color string\*(St.
-.\" $Header$
+.\" $Header: /vol1/history/xf86/xc/doc/specs/X11/CH06,v 1.1 1994/04/27 07:23:16 dawes Exp $
 .IP \fIcolor_exact_return\fP 1i
 Returns the color specification parsed from the color string
 or parsed from the corresponding string found in a color name database.
 .IP \fIcolor_screen_return\fP 1i
 Returns the color that can be reproduced on the screen.
-.\" $Header$
+.\" $Header: /vol1/history/xf86/xc/doc/specs/X11/CH06,v 1.1 1994/04/27 07:23:16 dawes Exp $
 .IP \fIresult_format\fP 1i
 Specifies the color format for the returned color
 specifications (color_screen_return and color_exact_return arguments).
@@ -1213,11 +1213,11 @@ Status XcmsAllocColor\^(\^\fIdisplay\fP\^, \fIcolormap\fP\^, \fIcolor_in_out\fP\
 Specifies the connection to the X server.
 .IP \fIcolormap\fP 1i
 Specifies the colormap.
-.\" $Header$
+.\" $Header: /vol1/history/xf86/xc/doc/specs/X11/CH06,v 1.1 1994/04/27 07:23:16 dawes Exp $
 .IP \fIcolor_in_out\fP 1i
 Specifies the color to allocate and returns the pixel and color 
 that is actually used in the colormap.
-.\" $Header$
+.\" $Header: /vol1/history/xf86/xc/doc/specs/X11/CH06,v 1.1 1994/04/27 07:23:16 dawes Exp $
 .IP \fIresult_format\fP 1i
 Specifies the color format for the returned color specification.
 .LP
@@ -1346,18 +1346,18 @@ Specifies the connection to the X server.
 .IP \fIcolormap\fP 1i
 Specifies the colormap.
 .ds St \ whose color definition structure is to be returned
-.\" $Header$
+.\" $Header: /vol1/history/xf86/xc/doc/specs/X11/CH06,v 1.1 1994/04/27 07:23:16 dawes Exp $
 .IP \fIcolor_string\fP 1i
 Specifies the color string\*(St.
-.\" $Header$
+.\" $Header: /vol1/history/xf86/xc/doc/specs/X11/CH06,v 1.1 1994/04/27 07:23:16 dawes Exp $
 .IP \fIcolor_screen_return\fP 1i
 Returns the pixel value of the color cell and color specification 
 that actually is stored for that cell.
-.\" $Header$
+.\" $Header: /vol1/history/xf86/xc/doc/specs/X11/CH06,v 1.1 1994/04/27 07:23:16 dawes Exp $
 .IP \fIcolor_exact_return\fP 1i
 Returns the color specification parsed from the color string
 or parsed from the corresponding string found in a color name database.
-.\" $Header$
+.\" $Header: /vol1/history/xf86/xc/doc/specs/X11/CH06,v 1.1 1994/04/27 07:23:16 dawes Exp $
 .IP \fIresult_format\fP 1i
 Specifies the color format for the returned color
 specifications (color_screen_return and color_exact_return arguments).
@@ -2211,7 +2211,7 @@ Specifies the pixel member that indicates the color cell to query.
 The color specification stored for the color cell is returned in this
 .PN XcmsColor
 structure.
-.\" $Header$
+.\" $Header: /vol1/history/xf86/xc/doc/specs/X11/CH06,v 1.1 1994/04/27 07:23:16 dawes Exp $
 .IP \fIresult_format\fP 1i
 Specifies the color format for the returned color specification.
 .LP
@@ -2267,7 +2267,7 @@ The color specifications for the color cells are returned in these structures.
 Specifies the number of 
 .PN XcmsColor
 structures in the color specification array.
-.\" $Header$
+.\" $Header: /vol1/history/xf86/xc/doc/specs/X11/CH06,v 1.1 1994/04/27 07:23:16 dawes Exp $
 .IP \fIresult_format\fP 1i
 Specifies the color format for the returned color specification.
 .LP

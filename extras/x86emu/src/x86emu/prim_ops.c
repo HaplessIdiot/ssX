@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/x86emu/src/x86emu/prim_ops.c,v 1.3tsi Exp $ */
+/* $XFree86$ */
 /****************************************************************************
 *
 *						Realmode X86 Emulator Library
@@ -2104,7 +2104,7 @@ Implements the IMUL instruction and side effects.
 void imul_long_direct(u32 *res_lo, u32* res_hi,u32 d, u32 s)
 {
 #ifdef	__HAS_LONG_LONG__
-	s64 res = (s64)(s32)d * (s32)s;
+	s64 res = (s32)d * (s32)s;
 
 	*res_lo = (u32)res;
 	*res_hi = (u32)(res >> 32);
@@ -2196,7 +2196,7 @@ Implements the MUL instruction and side effects.
 void mul_long(u32 s)
 {
 #ifdef	__HAS_LONG_LONG__
-	u64 res = (u64)M.x86.R_EAX * s;
+	u64 res = (u32)M.x86.R_EAX * (u32)s;
 
 	M.x86.R_EAX = (u32)res;
 	M.x86.R_EDX = (u32)(res >> 32);
@@ -2930,161 +2930,3 @@ void div_long (u32 s)
 { div_long_asm(&M.x86.R_EFLG,&M.x86.R_EAX,&M.x86.R_EDX,M.x86.R_EAX,M.x86.R_EDX,s); }
 
 #endif
-
-/*
- * CPUID emulation.  For now, only levels 0 and 1 are supported.  If the host
- * architecture supports CPUID, pass that implementation's results to the
- * emulation.  If running on a 386 or 486 that does not support CPUID, provide
- * a reasonable simulation (instead of SIGILL'ing).  On all other host
- * architectures, the emulator will report itself as a 486DX4.
- *
- * Note that, in level 0's case, the "GenuineIntel" string is in EBX:EDX:ECX,
- * not in EBX:ECX:EDX as one might have expected.
- */
-
-#if defined(__i386__) || defined(__amd64__) || defined(__x86_64__)
-/* No need to worry about PIC on x86_64 */
-#if defined(__PIC__) && !defined(__amd64__) && !defined(__x86_64__)
-#define CPUID()                 \
-    __asm__ __volatile__        \
-    (                           \
-        "pushl %%ebx\n\t"       \
-        "cpuid\n\t"             \
-        "movl %%ebx, %1\n\t"    \
-        "popl %%ebx"            \
-        : "=a" (M.x86.R_EAX),   \
-          "=r" (M.x86.R_EBX),   \
-          "=c" (M.x86.R_ECX),   \
-          "=d" (M.x86.R_EDX)    \
-        : "a"  (M.x86.R_EAX),   \
-          "c"  (M.x86.R_ECX)    \
-        : "cc"                  \
-    )
-#else
-#define CPUID()                 \
-    __asm__ __volatile__        \
-    (                           \
-        "cpuid"                 \
-        : "=a" (M.x86.R_EAX),   \
-          "=b" (M.x86.R_EBX),   \
-          "=c" (M.x86.R_ECX),   \
-          "=d" (M.x86.R_EDX)    \
-        : "a"  (M.x86.R_EAX),   \
-          "c"  (M.x86.R_ECX)    \
-        : "cc"                  \
-    )
-#endif
-#endif
-
-void
-cpuid(void)
-{
-    if (M.x86.R_EAX > 1) {
-        M.x86.R_EAX = M.x86.R_EBX = M.x86.R_ECX = M.x86.R_EDX = 0;
-    } else {
-
-#if defined(__amd64__) || defined(__x86_64__)
-
-        u32 level = M.x86.R_EAX;
-
-        CPUID();
-        if (level == 0) {
-            /* Upto level one supported */
-            if (M.x86.R_EAX > 1)
-                M.x86.R_EAX = 1;
-        } else {
-            /* Only TSC and VME */
-            M.x86.R_EDX &= 0x00000012;
-        }
-
-#else /* !x86_64 */
-
-#if defined(__i386__)
-
-        u32 level = M.x86.R_EAX;
-        u32 ecx, eflags;
-
-        /*
-         * Determine if the AC & ID bits in EFLAGS can be modified.  Might as
-         * well use EBX as the needed work register and not care about PIC.
-         */
-        __asm__ __volatile__
-        (
-            "pushl %%ebx\n\t"           /* Save work register */
-            "pushfl\n\t"                /* Get EFLAGS */
-            "popl %%eax\n\t"
-            "movl %%eax,%%ebx\n\t"      /* Save original */
-            "xorl $0x240000,%%eax\n\t"  /* Toggle AC & ID bits */
-            "pushl %%eax\n\t"           /* Copy to EFLAGS */
-            "popfl\n\t"
-            "pushfl\n\t"                /* Get new EFLAGS */
-            "popl %%eax\n\t"
-            "xorl %%ebx,%%eax\n\t"      /* Logical difference */
-            "pushl %%ebx\n\t"           /* Restore original EFLAGS */
-            "popfl\n\t"
-            "popl %%ebx"                /* Restore work register */
-            : "=a" (eflags)
-        );
-
-        if ((eflags & 0x240000) != 0x240000) {
-            /* 386 or pre-DX4 486;  Simulate CPUID */
-            if (level == 0) {
-                M.x86.R_EAX = 0;        /* No level supported */
-                /* "GenuineIntel" byte-swapped (but not really...) */
-                M.x86.R_EBX = 0x756e6547;       /* "uneG" */
-                M.x86.R_EDX = 0x49656e69;       /* "Ieni" */
-                M.x86.R_ECX = 0x6c65746e;       /* "letn" */
-            } else {
-                if (!(eflags & 0x040000))
-                    M.x86.R_EAX = 0x00000300;
-                else
-                    M.x86.R_EAX = 0x00000400;
-                M.x86.R_EBX = M.x86.R_ECX = M.x86.R_EDX = 0;
-            }
-        } else {
-            /* 486DX4 or later */
-            ecx = M.x86.R_ECX;
-            M.x86.R_EAX = 0;
-            CPUID();
-            if (level == 0) {
-                /* Upto level one supported */
-                if (M.x86.R_EAX > 1)
-                    M.x86.R_EAX = 1;
-            } else {
-                if (M.x86.R_EAX == 0) {
-                    /* Level one not supported;  Simulate it */
-                    M.x86.R_EAX = 0x00000400;
-                    M.x86.R_EBX = M.x86.R_ECX = M.x86.R_EDX = 0;
-                } else {
-                    M.x86.R_EAX = 1;
-                    M.x86.R_ECX = ecx;
-                    CPUID();
-                    /* Only TSC and VME */
-                    M.x86.R_EDX &= 0x00000012;
-                }
-            }
-        }
-
-#else /* !amd64 && !i386 */
-
-        /* Emulate a 486DX4 */
-        if (M.x86.R_EAX == 0) {
-            M.x86.R_EAX = 1;            /* Upto one level supported */
-            /* "GenuineIntel" byte-swapped (but not really...) */
-            M.x86.R_EBX = 0x756e6547;   /* "uneG" */
-            M.x86.R_EDX = 0x49656e69;   /* "Ieni" */
-            M.x86.R_ECX = 0x6c65746e;   /* "letn" */
-        } else {
-            M.x86.R_EAX = 0x00000480;
-            M.x86.R_EBX = 0x00000000;
-            M.x86.R_ECX = 0x00000000;
-            M.x86.R_EDX = 0x00000002;   /* VME only */
-        }
-
-#endif
-
-#endif
-
-    }
-
-}
