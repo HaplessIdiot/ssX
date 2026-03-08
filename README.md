@@ -22,7 +22,7 @@ This fork is a tribute to the hackers who did the real work in the trenches:
 ---
 
 ### The Mission
-* **No Corporate Bureaucracy:** We don't answer to Corporate. We answer to the hardware.
+* **No Corporate Bureaucracy:** We don't answer to Freedesktop.org or IBM/Red Hat. We answer to the hardware.
 * **XAA Restoration:** Bringing back first-class acceleration for chips that don't do "Glamor."
 * **Lean & Mean:** If a feature requires a massive dependency tree just to draw a window, it doesn't belong here.
 
