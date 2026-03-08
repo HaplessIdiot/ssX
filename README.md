@@ -7,7 +7,7 @@ We are restoring the classic 2D rendering pipeline and preserving **XAA (XFree86
 ---
 
 ### The NetBSD Foundation
-This project is built upon the monumental, often-overlooked work of the **NetBSD Project**. While the mainstream Linux ecosystem abandoned XFree86 in the mid-2000s, the NetBSD developers maintained, secured, and refined this codebase within their `xsrc` tree. 
+This project is built upon the monumental, often-overlooked work of the **NetBSD Project**. While the mainstream Linux ecosystem abandoned XFree86 in the mid-2000s, the NetBSD developers maintained, secured, and refined this codebase within their `xsrc` tree until **2015**. 
 
 Super Sonic X is an enshrining of that work. We recognize NetBSD as the final, true stewards of the XFree86 architecture. Without their decade of "quiet" maintenance, this codebase would have been lost to bit-rot. **We carry their torch forward.**
 
