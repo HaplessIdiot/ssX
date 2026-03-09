@@ -17,12 +17,9 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          # 1. Clear cache and force a full system upgrade. 
-          # This prevents the 'glibc removal' suicide by syncing the base image first.
           dnf clean all
           dnf --refresh -y upgrade --best --allowerasing
           
-          # 2. Install the toolchain and X11 development headers.
           dnf install -y \
             task-c-devel \
             clang \
@@ -38,9 +35,14 @@ jobs:
             x11-proto-devel \
             x11-xtrans-devel \
             x11-util-macros \
+            xkbcomp \
+            lib64xkbcomp-devel \
+            lib64bsd-devel \
+            lib64dbus-devel \
             lib64nettle-devel \
             lib64pixman-devel \
             lib64x11-devel \
+            lib64xcb-devel \
             lib64xext-devel \
             lib64xfixes-devel \
             lib64xdamage-devel \
