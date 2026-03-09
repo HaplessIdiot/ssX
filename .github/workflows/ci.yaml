@@ -14,18 +14,17 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          # 1. Faster DNF: Skip refresh if metadata is recent, and limit parallel downloads
           echo "max_parallel_downloads=10" >> /etc/dnf/dnf.conf
           dnf install -y --setopt=protected_packages=bash,glibc,dnf \
             task-c-devel clang clang-tools llvm lld meson ninja pkgconfig bison flex python3-mako \
             xkbcomp xkbcomp-devel x11-font-util lib64udev-devel \
             lib64xau-devel lib64xdmcp-devel \
+            lib64gbm-devel lib64mesa-devel \
             'pkgconfig(xproto)' 'pkgconfig(xtrans)' 'pkgconfig(xkbfile)' \
             'pkgconfig(xfont2)' 'pkgconfig(nettle)' 'pkgconfig(libbsd)' \
             'pkgconfig(dbus-1)' 'pkgconfig(xkbcommon)' 'pkgconfig(pixman-1)' \
             'pkgconfig(epoxy)' 'pkgconfig(pciaccess)' 'pkgconfig(libdrm)' \
-            'pkgconfig(xshmfence)' \
-            'pkgconfig(resourceproto)'
+            'pkgconfig(xshmfence)' 'pkgconfig(resourceproto)'
 
       - name: Create .clang-tidy configuration
         run: |
