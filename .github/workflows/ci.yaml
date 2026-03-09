@@ -52,14 +52,18 @@ jobs:
           export CC=clang
           export CXX=clang++
           rm -rf builddir
-          # Applying the "Lean Build" flags to ignore Apple/Windows bitrot
+          
+          # Using the exact keys and types from your meson_options.txt
           meson setup builddir --buildtype=debug \
-            -Dapplewm=false \
-            -Dxwin=false \
-            -Dxnest=false \
+            -Dxorg=true \
+            -Dglamor=true \
             -Ddri3=true \
-            -Dglamor=true || (cat builddir/meson-logs/meson-log.txt && exit 1)
-
+            -Dxephyr=false \
+            -Dxwayland=false \
+            -Dxnest=false \
+            -Dxwin=false \
+            -Ddmx=false || (cat builddir/meson-logs/meson-log.txt && exit 1)
+      
       - name: Run clang-tidy
         run: |
           # The -p builddir uses the compile_commands.json Meson just made
