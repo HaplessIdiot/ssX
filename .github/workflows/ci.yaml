@@ -28,6 +28,7 @@ jobs:
             pkgconfig \
             x11-proto-devel \
             x11-xtrans-devel \
+            lib64nettle-devel \
             lib64x11-devel \
             lib64xext-devel \
             lib64xfixes-devel \
