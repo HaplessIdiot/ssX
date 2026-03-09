@@ -11,19 +11,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install clang-tidy
-        run: sudo apt-get update && sudo apt-get install -y clang-tidy
-
-      - name: Configure (CMake)
+      - name: Install dependencies
         run: |
-          mkdir build
-          cd build
-          cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
-          cd ..
-          cp build/compile_commands.json .
+          sudo apt-get update
+          sudo apt-get install -y clang-tidy meson ninja-build
+
+      - name: Configure with Meson
+        run: |
+          meson setup builddir --buildtype=debug -Dcpp_args="-Wall" --wipe
+          # Meson automatically generates compile_commands.json
+          ln -sf builddir/compile_commands.json .
 
       - name: Run clang-tidy
-        run: clang-tidy **/*.cpp --export-fixes=clang-tidy-fixes.yaml || true
+        run: |
+          clang-tidy $(find . -name "*.cpp") --export-fixes=clang-tidy-fixes.yaml || true
 
       - name: Upload clang-tidy results
         uses: actions/upload-artifact@v4
