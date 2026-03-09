@@ -9,7 +9,7 @@ on:
 jobs:
   analyze:
     name: Analyze C/C++
-    runs-on: ubuntu-latest
+    runs-on: self-hosted  # Use my 5800X3D rig instead of the slow GitHub VM
     permissions:
       security-events: write
       contents: read
