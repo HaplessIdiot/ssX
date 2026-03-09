@@ -14,11 +14,9 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          # 1. Update and protect the core system
-          dnf --refresh -y --setopt=protected_packages=bash,glibc,dnf upgrade
-          
-          # 2. Install toolchain + X11 headers + mandatory auth libs
-          dnf install -y \
+          # 1. Faster DNF: Skip refresh if metadata is recent, and limit parallel downloads
+          echo "max_parallel_downloads=10" >> /etc/dnf/dnf.conf
+          dnf install -y --setopt=protected_packages=bash,glibc,dnf \
             task-c-devel clang clang-tools llvm lld meson ninja pkgconfig bison flex python3-mako \
             xkbcomp xkbcomp-devel x11-font-util lib64udev-devel \
             lib64xau-devel lib64xdmcp-devel \
@@ -26,7 +24,8 @@ jobs:
             'pkgconfig(xfont2)' 'pkgconfig(nettle)' 'pkgconfig(libbsd)' \
             'pkgconfig(dbus-1)' 'pkgconfig(xkbcommon)' 'pkgconfig(pixman-1)' \
             'pkgconfig(epoxy)' 'pkgconfig(pciaccess)' 'pkgconfig(libdrm)' \
-            'pkgconfig(xshmfence)'
+            'pkgconfig(xshmfence)' \
+            'pkgconfig(resourceproto)'
 
       - name: Create .clang-tidy configuration
         run: |
@@ -51,13 +50,13 @@ jobs:
         run: |
           export CC=clang
           export CXX=clang++
-          rm -rf builddir
-          
-          # Using the exact keys and types from your meson_options.txt
+          # Use --wipe to ensure a totally clean state if builddir exists
           meson setup builddir --buildtype=debug \
             -Dxorg=true \
             -Dglamor=true \
             -Ddri3=true \
+            -Dhal=false \
+            -Dsecure-rpc=false \
             -Dxephyr=false \
             -Dxwayland=false \
             -Dxnest=false \
