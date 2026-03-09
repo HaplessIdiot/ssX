@@ -52,6 +52,7 @@ jobs:
           
           # Fix for missing Xwayland template in legacy ssX codebase
           touch include/xwayland-config.h.meson.in
+          touch include/site.h
           
           rm -rf builddir
           meson setup builddir --buildtype=debug \
