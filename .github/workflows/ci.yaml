@@ -54,6 +54,9 @@ jobs:
           touch include/xwayland-config.h.meson.in
           touch include/site.h
           
+          # Relax the GL version check (overriding Libglvnd vs Mesa version mismatch)
+          sed -i "s/dependency('gl', version: '>= 9.2.0')/dependency('gl')/g" glx/meson.build
+          
           rm -rf builddir
           meson setup builddir --buildtype=debug \
             -Dxorg=true \
