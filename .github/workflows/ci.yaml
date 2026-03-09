@@ -35,7 +35,7 @@ jobs:
             lib64xrandr-devel \
             lib64xkbfile-devel \
             lib64xfont2-devel \
-            lib64pixman-1-devel \
+            lib64pixman-devel \
             lib64xshmfence-devel \
             lib64epoxy-devel
 
