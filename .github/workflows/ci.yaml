@@ -49,7 +49,11 @@ jobs:
         run: |
           export CC=clang
           export CXX=clang++
-          # Use --wipe to ensure a totally clean state if builddir exists
+          
+          # Fix for missing Xwayland template in legacy ssX codebase
+          touch include/xwayland-config.h.meson.in
+          
+          rm -rf builddir
           meson setup builddir --buildtype=debug \
             -Dxorg=true \
             -Dglamor=true \
@@ -61,7 +65,7 @@ jobs:
             -Dxnest=false \
             -Dxwin=false \
             -Ddmx=false || (cat builddir/meson-logs/meson-log.txt && exit 1)
-      
+            
       - name: Run clang-tidy
         run: |
           # The -p builddir uses the compile_commands.json Meson just made
