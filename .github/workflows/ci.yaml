@@ -14,17 +14,28 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-tidy meson ninja-build
+          sudo apt-get install -y \
+            clang-tidy \
+            meson \
+            ninja-build \
+            pkg-config \
+            xorgproto \
+            libx11-dev \
+            libxext-dev \
+            libxfixes-dev \
+            libxdamage-dev \
+            libxrender-dev \
+            libxrandr-dev \
+            libxkbfile-dev
 
       - name: Configure with Meson
         run: |
-          meson setup builddir --buildtype=debug -Dcpp_args="-Wall" --wipe
-          # Meson automatically generates compile_commands.json
+          meson setup builddir --buildtype=debug --wipe
           ln -sf builddir/compile_commands.json .
 
       - name: Run clang-tidy
         run: |
-          clang-tidy $(find . -name "*.cpp") --export-fixes=clang-tidy-fixes.yaml || true
+          clang-tidy $(find . -name "*.c") --export-fixes=clang-tidy-fixes.yaml || true
 
       - name: Upload clang-tidy results
         uses: actions/upload-artifact@v4
