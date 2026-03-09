@@ -17,7 +17,7 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          dnf install -y \
+         dnf install -y \
             task-c-devel \
             clang \
             clang-tools \
@@ -26,9 +26,13 @@ jobs:
             meson \
             ninja \
             pkgconfig \
+            bison \
+            flex \
+            python3-mako \
             x11-proto-devel \
             x11-xtrans-devel \
             lib64nettle-devel \
+            lib64pixman-devel \
             lib64x11-devel \
             lib64xext-devel \
             lib64xfixes-devel \
@@ -37,9 +41,12 @@ jobs:
             lib64xrandr-devel \
             lib64xkbfile-devel \
             lib64xfont2-devel \
-            lib64pixman-devel \
             lib64xshmfence-devel \
-            lib64epoxy-devel
+            lib64epoxy-devel \
+            lib64pciaccess-devel \
+            lib64drm-devel \
+            lib64udev-devel \
+            lib64xorg-x11_-devel
 
       - name: Configure with Meson
         run: |
