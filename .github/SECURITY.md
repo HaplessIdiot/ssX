@@ -17,7 +17,7 @@ Include the following information:
 
 3. **System and environment details**
    - OS version
-   - XLibre version or commit hash
+   - ssX version or commit hash
    - Display manager, drivers, or hardware specifics
 
 4. **Supporting data**
