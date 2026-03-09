@@ -19,7 +19,7 @@ jobs:
             task-c-devel clang clang-tools llvm lld meson ninja pkgconfig bison flex python3-mako \
             xkbcomp xkbcomp-devel x11-font-util lib64udev-devel \
             lib64xau-devel lib64xdmcp-devel \
-            lib64gbm-devel lib64mesa-devel \
+            mesa-common-devel lib64gbm-devel lib64GL-devel lib64EGL_mesa-devel \
             'pkgconfig(xproto)' 'pkgconfig(xtrans)' 'pkgconfig(xkbfile)' \
             'pkgconfig(xfont2)' 'pkgconfig(nettle)' 'pkgconfig(libbsd)' \
             'pkgconfig(dbus-1)' 'pkgconfig(xkbcommon)' 'pkgconfig(pixman-1)' \
