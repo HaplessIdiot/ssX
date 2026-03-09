@@ -17,12 +17,12 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          # 1. Update the metadata and the base system first
-          dnf clean all
-          dnf --refresh -y upgrade --best --allowerasing
+          # 1. Force the repo to use the modern 'Rolling' or 'Cooker' metadata
+          # and prevent DNF from removing the shell or glibc.
+          dnf --refresh -y --setopt=protected_packages=bash,glibc,dnf upgrade
           
-          # 2. Install the toolchain and dependencies using pkgconfig provides
-          # This ensures dnf finds the right package regardless of the naming scheme
+          # 2. Install using pkgconfig() syntax. 
+          # This is the most robust way to find headers in OpenMandriva.
           dnf install -y \
             task-c-devel \
             clang \
@@ -47,9 +47,10 @@ jobs:
             'pkgconfig(epoxy)' \
             'pkgconfig(pciaccess)' \
             'pkgconfig(libdrm)' \
-            xkbcomp \
-            lib64xkbcomp-devel \
+            'pkgconfig(xkbcomp)' \
+            xkbcomp-devel \
             lib64udev-devel
+            
       - name: Create .clang-tidy configuration
         run: |
           cat <<EOF > .clang-tidy
