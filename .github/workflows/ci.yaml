@@ -56,6 +56,11 @@ jobs:
           
           # Relax the GL version check (overriding Libglvnd vs Mesa version mismatch)
           sed -i "s/dependency('gl', version: '>= 9.2.0')/dependency('gl')/g" glx/meson.build
+
+          # Strip missing WNMD logic from the Present extension
+          if [ -f "present/meson.build" ]; then
+            sed -i "/'present_wnmd.c',/d" present/meson.build
+          fi
           
           rm -rf builddir
           meson setup builddir --buildtype=debug \
