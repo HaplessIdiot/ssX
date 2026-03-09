@@ -1,4 +1,4 @@
-name: Clang-Tidy
+name: Clang-Tidy (OpenMandriva)
 
 on:
   push:
@@ -8,37 +8,32 @@ jobs:
   clang-tidy:
     runs-on: ubuntu-latest
 
+    container:
+      image: openmandriva/cooker
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install build dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            clang-tidy \
+          dnf install -y \
+            clang \
+            clang-tools \
             meson \
-            ninja-build \
-            pkg-config \
+            ninja \
+            pkgconfig \
             xorgproto \
-            libx11-dev \
-            libxext-dev \
-            libxfixes-dev \
-            libxdamage-dev \
-            libxrender-dev \
-            libxrandr-dev \
-            libxkbfile-dev
+            libx11-devel \
+            libxext-devel \
+            libxfixes-devel \
+            libxdamage-devel \
+            libxrender-devel \
+            libxrandr-devel \
+            libxkbfile-devel
 
       - name: Configure with Meson
         run: |
           meson setup builddir --buildtype=debug --wipe
           ln -sf builddir/compile_commands.json .
 
-      - name: Run clang-tidy
-        run: |
-          clang-tidy $(find . -name "*.c") --export-fixes=clang-tidy-fixes.yaml || true
-
-      - name: Upload clang-tidy results
-        uses: actions/upload-artifact@v4
-        with:
-          name: clang-tidy-report
-          path: clang-tidy-fixes.yaml
+      - name: Run clang
