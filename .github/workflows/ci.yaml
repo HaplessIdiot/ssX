@@ -17,9 +17,12 @@ jobs:
 
       - name: Install build dependencies
         run: |
+          # 1. Update the metadata and the base system first
           dnf clean all
           dnf --refresh -y upgrade --best --allowerasing
           
+          # 2. Install the toolchain and dependencies using pkgconfig provides
+          # This ensures dnf finds the right package regardless of the naming scheme
           dnf install -y \
             task-c-devel \
             clang \
@@ -32,31 +35,21 @@ jobs:
             bison \
             flex \
             python3-mako \
-            x11-proto-devel \
-            x11-xtrans-devel \
-            x11-util-macros \
+            'pkgconfig(xproto)' \
+            'pkgconfig(xtrans)' \
+            'pkgconfig(xkbfile)' \
+            'pkgconfig(xfont2)' \
+            'pkgconfig(nettle)' \
+            'pkgconfig(libbsd)' \
+            'pkgconfig(dbus-1)' \
+            'pkgconfig(xkbcommon)' \
+            'pkgconfig(pixman-1)' \
+            'pkgconfig(epoxy)' \
+            'pkgconfig(pciaccess)' \
+            'pkgconfig(libdrm)' \
             xkbcomp \
             lib64xkbcomp-devel \
-            lib64bsd-devel \
-            lib64dbus-devel \
-            lib64nettle-devel \
-            lib64pixman-devel \
-            lib64x11-devel \
-            lib64xcb-devel \
-            lib64xext-devel \
-            lib64xfixes-devel \
-            lib64xdamage-devel \
-            lib64xrender-devel \
-            lib64xrandr-devel \
-            lib64xkbfile-devel \
-            lib64xkbcommon-devel \
-            lib64xfont2-devel \
-            lib64xshmfence-devel \
-            lib64epoxy-devel \
-            lib64pciaccess-devel \
-            lib64drm-devel \
             lib64udev-devel
-
       - name: Create .clang-tidy configuration
         run: |
           cat <<EOF > .clang-tidy
