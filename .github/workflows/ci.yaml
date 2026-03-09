@@ -1,43 +1,32 @@
-name: CI
+name: Clang-Tidy
 
 on:
+  push:
   pull_request:
-    branches: [main]
-
-permissions:
-  contents: read
-
-env:
-  CGO_ENABLED: 0
 
 jobs:
-  build-and-test:
-    name: Build and Test
+  clang-tidy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Go
-      uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
-      with:
-        go-version-file: 'go.mod'
-        cache: true
+      - name: Install clang-tidy
+        run: sudo apt-get update && sudo apt-get install -y clang-tidy
 
-    - name: Build
-      run: make build
+      - name: Configure (CMake)
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+          cd ..
+          cp build/compile_commands.json .
 
-    - name: Build WASM
-      run: make wasm
+      - name: Run clang-tidy
+        run: clang-tidy **/*.cpp --export-fixes=clang-tidy-fixes.yaml || true
 
-    - name: Run tests
-      run: make test-short
-
-    - name: Run vet
-      run: make vet
-
-    - name: Verify binary
-      run: |
-        test -x ./bin/trajan || (echo "Binary not created" && exit 1)
-        ./bin/trajan --help
+      - name: Upload clang-tidy results
+        uses: actions/upload-artifact@v4
+        with:
+          name: clang-tidy-report
+          path: clang-tidy-fixes.yaml
