@@ -47,4 +47,4 @@ If nothing is specified, only the latest major versions are supported.
 
 ---
 
-We appreciate your help in keeping XLibre safe for everyone. Let’s build something resilient, secure, and libre.
+We appreciate your help in keeping ssX safe for everyone. Let’s build something resilient, secure, and sonic.
