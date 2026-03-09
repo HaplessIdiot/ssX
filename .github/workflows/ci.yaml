@@ -23,23 +23,25 @@ jobs:
             meson \
             ninja \
             pkgconfig \
-            xorgproto \
-            libx11-devel \
-            libxext-devel \
-            libxfixes-devel \
-            libxdamage-devel \
-            libxrender-devel \
-            libxrandr-devel \
-            libxkbfile-devel
+            x11-proto-devel \
+            lib64x11-devel \
+            lib64xext-devel \
+            lib64xfixes-devel \
+            lib64xdamage-devel \
+            lib64xrender-devel \
+            lib64xrandr-devel \
+            lib64xkbfile-devel
 
       - name: Configure with Meson
         run: |
-          meson setup builddir --buildtype=debug --wipe
-          ln -sf builddir/compile_commands.json .
+          # Ensure the build directory is generated
+          meson setup builddir --buildtype=debug
 
       - name: Run clang-tidy
         run: |
-          clang-tidy $(find . -name "*.c") --export-fixes=clang-tidy-fixes.yaml || true
+          # -p points to the directory containing compile_commands.json
+          # We use a glob for the source files
+          run-clang-tidy -p builddir -fix -format -header-filter=.* || true
 
       - name: Upload clang-tidy results
         uses: actions/upload-artifact@v4
