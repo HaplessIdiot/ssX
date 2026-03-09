@@ -1,10 +1,7 @@
 name: "CodeQL Advanced (Display Server Optimized)"
 
 on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+  workflow_dispatch:
 
 jobs:
   analyze:
