@@ -27,9 +27,12 @@
 
 #ifdef HAVE_XORG_CONFIG_H
 #include <xorg-config.h>
+#else
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 #endif
 
-#include <libxcvt/libxcvt.h>
 #include "xf86Modes.h"
 #include "xf86Priv.h"
 
@@ -77,14 +80,14 @@ int
 xf86ModeWidth(const DisplayModeRec * mode, Rotation rotation)
 {
     switch (rotation & 0xf) {
-    case RR_Rotate_0:
-    case RR_Rotate_180:
-        return mode->HDisplay;
-    case RR_Rotate_90:
-    case RR_Rotate_270:
-        return mode->VDisplay;
-    default:
-        return 0;
+        case RR_Rotate_0:
+        case RR_Rotate_180:
+            return mode->HDisplay;
+        case RR_Rotate_90:
+        case RR_Rotate_270:
+            return mode->VDisplay;
+        default:
+            return 0;
     }
 }
 
@@ -92,14 +95,14 @@ int
 xf86ModeHeight(const DisplayModeRec * mode, Rotation rotation)
 {
     switch (rotation & 0xf) {
-    case RR_Rotate_0:
-    case RR_Rotate_180:
-        return mode->VDisplay;
-    case RR_Rotate_90:
-    case RR_Rotate_270:
-        return mode->HDisplay;
-    default:
-        return 0;
+        case RR_Rotate_0:
+        case RR_Rotate_180:
+            return mode->VDisplay;
+        case RR_Rotate_90:
+        case RR_Rotate_270:
+            return mode->HDisplay;
+        default:
+            return 0;
     }
 }
 
@@ -279,10 +282,10 @@ xf86ModesEqual(const DisplayModeRec * pMode1, const DisplayModeRec * pMode2)
         pMode1->VTotal == pMode2->VTotal &&
         pMode1->VScan == pMode2->VScan && pMode1->Flags == pMode2->Flags) {
         return TRUE;
-    }
-    else {
-        return FALSE;
-    }
+        }
+        else {
+            return FALSE;
+        }
 }
 
 static void
@@ -324,7 +327,7 @@ xf86PrintModeline(int scrnIndex, DisplayModePtr mode)
     char tmp[256];
     char *flags = xnfcalloc(1, 1);
 
-#define TBITS 6
+    #define TBITS 6
     const char tchar[TBITS + 1] = "UezdPb";
 
     int tbit[TBITS] = {
@@ -333,7 +336,7 @@ xf86PrintModeline(int scrnIndex, DisplayModePtr mode)
     };
     char type[TBITS + 2];       /* +1 for leading space */
 
-#undef TBITS
+    #undef TBITS
     int tlen = 0;
 
     if (mode->type) {
@@ -374,10 +377,10 @@ xf86PrintModeline(int scrnIndex, DisplayModePtr mode)
         add(&flags, "+csync");
     if (mode->Flags & V_NCSYNC)
         add(&flags, "-csync");
-#if 0
+    #if 0
     if (mode->Flags & V_CLKDIV2)
         add(&flags, "vclk/2");
-#endif
+    #endif
     xf86DrvMsg(scrnIndex, X_INFO,
                "Modeline \"%s\"x%.01f  %6.2f  %i %i %i %i  %i %i %i %i%s"
                " (%.01f kHz%s)\n",
@@ -432,11 +435,11 @@ xf86ValidateModesSize(ScrnInfoPtr pScrn, DisplayModePtr modeList,
 
     for (mode = modeList; mode != NULL; mode = mode->next) {
         if ((xf86ModeWidth(mode, RR_Rotate_0) > maxPitch ||
-             xf86ModeWidth(mode, RR_Rotate_0) > maxX ||
-             xf86ModeHeight(mode, RR_Rotate_0) > maxY) &&
+            xf86ModeWidth(mode, RR_Rotate_0) > maxX ||
+            xf86ModeHeight(mode, RR_Rotate_0) > maxY) &&
             (xf86ModeWidth(mode, RR_Rotate_90) > maxPitch ||
-             xf86ModeWidth(mode, RR_Rotate_90) > maxX ||
-             xf86ModeHeight(mode, RR_Rotate_90) > maxY)) {
+            xf86ModeWidth(mode, RR_Rotate_90) > maxX ||
+            xf86ModeHeight(mode, RR_Rotate_90) > maxY)) {
             if (xf86ModeWidth(mode, RR_Rotate_0) > maxPitch ||
                 xf86ModeWidth(mode, RR_Rotate_90) > maxPitch)
                 mode->status = MODE_BAD_WIDTH;
@@ -448,10 +451,10 @@ xf86ValidateModesSize(ScrnInfoPtr pScrn, DisplayModePtr modeList,
             if (xf86ModeHeight(mode, RR_Rotate_0) > maxY ||
                 xf86ModeHeight(mode, RR_Rotate_90) > maxY)
                 mode->status = MODE_VIRTUAL_Y;
-        }
+            }
 
-        if (mode->next == modeList)
-            break;
+            if (mode->next == modeList)
+                break;
     }
 }
 
@@ -476,7 +479,7 @@ xf86ValidateModesSync(ScrnInfoPtr pScrn, DisplayModePtr modeList, MonPtr mon)
                 && xf86ModeHSync(mode) <=
                 mon->hsync[i].hi * (1 + SYNC_TOLERANCE)) {
                 bad = FALSE;
-            }
+                }
         }
         if (bad)
             mode->status = MODE_HSYNC;
@@ -488,7 +491,7 @@ xf86ValidateModesSync(ScrnInfoPtr pScrn, DisplayModePtr modeList, MonPtr mon)
                 xf86ModeVRefresh(mode) <=
                 mon->vrefresh[i].hi * (1 + SYNC_TOLERANCE)) {
                 bad = FALSE;
-            }
+                }
         }
         if (bad)
             mode->status = MODE_VSYNC;
@@ -520,8 +523,8 @@ xf86ValidateModesClocks(ScrnInfoPtr pScrn, DisplayModePtr modeList,
             if (mode->Clock >= min[i] * (1 - SYNC_TOLERANCE) &&
                 mode->Clock <= max[i] * (1 + SYNC_TOLERANCE)) {
                 good = TRUE;
-                break;
-            }
+            break;
+                }
         }
         if (!good)
             mode->status = MODE_CLOCK_RANGE;
@@ -554,10 +557,10 @@ xf86ValidateModesUserConfig(ScrnInfoPtr pScrn, DisplayModePtr modeList)
 
         for (i = 0; pScrn->display->modes[i] != NULL; i++) {
             if (strncmp(pScrn->display->modes[i], mode->name,
-                        strlen(pScrn->display->modes[i])) == 0) {
+                strlen(pScrn->display->modes[i])) == 0) {
                 good = TRUE;
-                break;
-            }
+            break;
+                }
         }
         if (!good)
             mode->status = MODE_BAD;
@@ -732,14 +735,14 @@ xf86GetMonitorModes(ScrnInfoPtr pScrn, XF86ConfMonitorPtr conf_monitor)
         if (!modes_link->ml_modes)
             modes_link->ml_modes = xf86findModes(modes_link->ml_modes_str,
                                                  xf86configptr->conf_modes_lst);
-        if (modes_link->ml_modes)
-            modes = xf86ModesAdd(modes,
-                                 xf86GetConfigModes(modes_link->ml_modes->
-                                                    mon_modeline_lst));
-    }
+            if (modes_link->ml_modes)
+                modes = xf86ModesAdd(modes,
+                                     xf86GetConfigModes(modes_link->ml_modes->
+                                     mon_modeline_lst));
+         }
 
-    return xf86ModesAdd(modes,
-                        xf86GetConfigModes(conf_monitor->mon_modeline_lst));
+         return xf86ModesAdd(modes,
+                             xf86GetConfigModes(conf_monitor->mon_modeline_lst));
 }
 
 /**
@@ -776,7 +779,7 @@ xf86PruneDuplicateModes(DisplayModePtr modes)
 {
     DisplayModePtr m, n, o;
 
- top:
+    top:
     for (m = modes; m; m = m->next) {
         for (n = m->next; n; n = o) {
             o = n->next;
@@ -792,39 +795,4 @@ xf86PruneDuplicateModes(DisplayModePtr modes)
     }
 
     return modes;
-}
-
-/*
- * Generate a CVT standard mode from HDisplay, VDisplay and VRefresh.
- */
-DisplayModePtr
-xf86CVTMode(int HDisplay, int VDisplay, float VRefresh, Bool Reduced,
-            Bool Interlaced)
-{
-    struct libxcvt_mode_info *libxcvt_mode_info;
-    DisplayModeRec *Mode = xnfcalloc(1, sizeof(DisplayModeRec));
-    char *tmp;
-
-    libxcvt_mode_info =
-        libxcvt_gen_mode_info(HDisplay, VDisplay, VRefresh, Reduced, Interlaced);
-
-    XNFasprintf(&tmp, "%dx%d", HDisplay, VDisplay);
-    Mode->name = tmp;
-    
-    Mode->VDisplay   = libxcvt_mode_info->vdisplay;
-    Mode->HDisplay   = libxcvt_mode_info->hdisplay;
-    Mode->Clock      = libxcvt_mode_info->dot_clock;
-    Mode->HSyncStart = libxcvt_mode_info->hsync_start;
-    Mode->HSyncEnd   = libxcvt_mode_info->hsync_end;
-    Mode->HTotal     = libxcvt_mode_info->htotal;
-    Mode->VSyncStart = libxcvt_mode_info->vsync_start;
-    Mode->VSyncEnd   = libxcvt_mode_info->vsync_end;
-    Mode->VTotal     = libxcvt_mode_info->vtotal;
-    Mode->VRefresh   = libxcvt_mode_info->vrefresh;
-    Mode->Flags      = libxcvt_mode_info->mode_flags;
-    xf86SetModeDefaultName(Mode);
-
-    free(libxcvt_mode_info);
-
-    return Mode;
 }

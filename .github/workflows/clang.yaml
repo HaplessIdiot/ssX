@@ -18,7 +18,7 @@ jobs:
           dnf install -y --setopt=protected_packages=bash,glibc,dnf \
             task-c-devel clang clang-tools llvm lld meson ninja pkgconfig bison flex python3-mako \
             xkbcomp xkbcomp-devel x11-font-util lib64udev-devel \
-            lib64xau-devel lib64xdmcp-devel \
+            lib64xau-devel lib64xdmcp-devel gawk \
             mesa-common-devel lib64gbm-devel lib64GL-devel lib64EGL_mesa-devel \
             'pkgconfig(xproto)' 'pkgconfig(xtrans)' 'pkgconfig(xkbfile)' \
             'pkgconfig(xfont2)' 'pkgconfig(nettle)' 'pkgconfig(libbsd)' \
