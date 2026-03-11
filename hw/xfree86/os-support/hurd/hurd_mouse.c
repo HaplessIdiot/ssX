@@ -21,7 +21,6 @@
  *
  */
 
-#define NEED_EVENTS
 #ifdef HAVE_XORG_CONFIG_H
 #include <xorg-config.h>
 #endif
@@ -44,6 +43,7 @@
 #include <sys/file.h>
 #include <assert.h>
 #include <mach.h>
+#include <hurd.h>
 #include <sys/ioctl.h>
 
 #define DEFAULT_MOUSE_DEV	"/dev/mouse"
