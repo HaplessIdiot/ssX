@@ -87,8 +87,8 @@
 int VIACheckTVExist(VIABIOSInfoPtr pBIOSInfo)
 {
     I2CDevPtr       dev;
-    unsigned char   W_Buffer[1];
-    unsigned char   R_Buffer[1];
+    unsigned char   W_Buffer[2];
+    unsigned char   R_Buffer[2];
 
     DEBUG(xf86DrvMsg(pBIOSInfo->scrnIndex, X_INFO, "VIACheckTVExist\n"));
     /* Check For TV2/TV3 */
@@ -1684,8 +1684,8 @@ unsigned char VIAGetPanelSizeFromDDCv1(VIABIOSInfoPtr pBIOSInfo)
 unsigned char VIAGetPanelSizeFromDDCv2(VIABIOSInfoPtr pBIOSInfo)
 {
     int             data = 0;
-    unsigned char   W_Buffer[1];
-    unsigned char   R_Buffer[1];
+    unsigned char   W_Buffer[2];
+    unsigned char   R_Buffer[2];
 
     DEBUG(xf86DrvMsg(pBIOSInfo->scrnIndex, X_INFO, "VIAGetPanelSizeFromDDCv2\n"));
     if (pBIOSInfo->Chipset == VIA_CLE266) {
