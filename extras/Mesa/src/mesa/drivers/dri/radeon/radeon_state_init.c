@@ -56,7 +56,7 @@ void radeonPrintDirty( radeonContextPtr rmesa, const char *msg )
 {
    struct radeon_state_atom *l;
 
-   fprintf(stderr, msg);
+   fprintf(stderr, "%s", msg);
    fprintf(stderr, ": ");
 
    foreach(l, &rmesa->hw.atomlist) {
