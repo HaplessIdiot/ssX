@@ -56,10 +56,6 @@ jobs:
             sed -i "s/subdir('vbe')//g" hw/xfree86/meson.build
           fi
           
-          # Fix for missing Xwayland template in legacy ssX codebase
-          touch include/xwayland-config.h.meson.in
-          touch include/site.h
-          
           # Relax GL version check
           sed -i "s/dependency('gl', version: '>= 9.2.0')/dependency('gl')/g" glx/meson.build
 
@@ -76,7 +72,6 @@ jobs:
             -Dhal=false \
             -Dsecure-rpc=false \
             -Dxephyr=false \
-            -Dxwayland=false \
             -Dxnest=false \
             -Dxwin=false \
             -Ddmx=false || (cat builddir/meson-logs/meson-log.txt && exit 1)
