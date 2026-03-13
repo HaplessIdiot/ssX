@@ -85,6 +85,7 @@ xf86vidmodeproto_dep = dependency('xf86vidmodeproto', version: '>= 2.2.99.1', re
 windowswmproto_dep = dependency('windowswmproto', required: false)
 applewmproto_dep = dependency('applewmproto', version: '>= 1.4', required: false)
 xshmfence_dep = dependency('xshmfence', version: '>= 1.1', required: false)
+libdrm_amdgpu_dep = dependency('libdrm_amdgpu', version: '>= 2.4.110', required: false)
 
 pixman_dep = dependency('pixman-1')
 libbsd_dep = dependency('libbsd', required: false)

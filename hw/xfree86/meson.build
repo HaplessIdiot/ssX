@@ -134,6 +134,9 @@ endif
 if build_modesetting
    subdir('drivers/modesetting')
 endif
+if build_xorg
+   subdir('drivers/amdgpu')
+endif
 
 if get_option('suid_wrapper')
     executable('Xorg.wrap',
