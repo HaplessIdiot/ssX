@@ -303,10 +303,10 @@ InitOutput(ScreenInfo * pScreenInfo, int argc, char **argv)
         LogPrintMarkers();
         if (xf86LogFile) {
             time_t t;
-            const char *ct;
+            char ct[26];
 
             t = time(NULL);
-            ct = ctime(&t);
+            ctime_r(&t, ct);
             xf86MsgVerb(xf86LogFileFrom, 0, "Log file: \"%s\", Time: %s",
                         xf86LogFile, ct);
         }
