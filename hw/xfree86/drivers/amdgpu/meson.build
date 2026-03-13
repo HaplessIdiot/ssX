@@ -15,18 +15,14 @@ srcs = [
   'drmmode_display.c',
 ]
 
-# Check for DRM header location (Linux uses drm/ subdirectory, BSD may not)
-drm_args = []
-drm_incdir = libdrm_dep.get_variable(pkgconfig: 'includedir')
-if meson.get_compiler('c').has_header('drm_fourcc.h') and \
-   meson.get_compiler('c').has_header('amdgpu_drm.h')
-  # Headers found without drm/ subdirectory (BSD)
-elif meson.get_compiler('c').has_header('drm/drm_fourcc.h') and \
-     meson.get_compiler('c').has_header('drm/amdgpu_drm.h')
-  # Headers found with drm/ subdirectory (Linux)
-  drm_args = ['-I' + drm_incdir]
+# We know where our headers are. No need for the Archon's logic.
+if meson.get_compiler('c').has_header('drm_fourcc.h')
+    message('Found DRM headers in root include path.')
+    drm_args = []
 else
-  error('libdrm headers not found - libdrm required')
+    # Check if libdrm_dep actually has the path we need
+    drm_incdir = libdrm_dep.get_variable(pkgconfig: 'includedir')
+    drm_args = ['-I' + drm_incdir]
 endif
 
 # Check for GFX12 tile version support in libdrm
@@ -58,7 +54,7 @@ amdgpu_drv_libs = [
   videoproto_dep,
   xextproto_dep,
   xf86driproto_dep,
-  xorg_dep,
+  xorg_deps,
   xproto_dep
 ]
 if libudev_dep.found()
@@ -68,7 +64,8 @@ endif
 shared_module(
   'amdgpu_drv',
   srcs,
-  include_directories: include_directories('..'),
+  # Add '.' to ensure it looks in the current driver folder for local headers
+  include_directories: [include_directories('..'), include_directories('.')],
   dependencies: amdgpu_drv_libs,
   c_args: drm_args + gfx12_args,
   install: true,
