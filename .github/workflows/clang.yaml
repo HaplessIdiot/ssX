@@ -50,10 +50,6 @@ jobs:
           export CC=clang
           export CXX=clang++
           
-          # Fix for missing Xwayland template in legacy ssX codebase
-          touch include/xwayland-config.h.meson.in
-          touch include/site.h
-          
           # Relax the GL version check (overriding Libglvnd vs Mesa version mismatch)
           sed -i "s/dependency('gl', version: '>= 9.2.0')/dependency('gl')/g" glx/meson.build
 
@@ -70,7 +66,6 @@ jobs:
             -Dhal=false \
             -Dsecure-rpc=false \
             -Dxephyr=false \
-            -Dxwayland=false \
             -Dxnest=false \
             -Dxwin=false \
             -Ddmx=false || (cat builddir/meson-logs/meson-log.txt && exit 1)

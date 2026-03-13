@@ -163,29 +163,6 @@ if (host_machine.system() != 'darwin' and
 endif
 xorgsdkdir = join_paths(get_option('prefix'), get_option('includedir'), 'xorg')
 
-build_xwayland = false
-if (host_machine.system() != 'darwin' and
-    host_machine.system() != 'windows')
-    if get_option('xwayland') != 'false'
-        xwayland_required = get_option('xwayland') == 'true'
-
-        xwayland_dep = [
-            dependency('wayland-client', version: '>= 1.3.0', required: xwayland_required),
-            dependency('wayland-protocols', version: '>= 1.10', required: xwayland_required),
-            dependency('libdrm', version: '>= 2.4.89', required: xwayland_required),
-            dependency('epoxy', required: xwayland_required),
-        ]
-
-        build_xwayland = true
-        # check for all the deps being found, to handle 'auto' mode.
-        foreach d: xwayland_dep
-            if not d.found()
-                build_xwayland = false
-            endif
-        endforeach
-    endif
-endif
-
 build_xnest = false
 if (host_machine.system() != 'darwin' and
     host_machine.system() != 'windows')
@@ -272,7 +249,7 @@ endif
 module_dir = join_paths(get_option('libdir'), get_option('module_dir'))
 
 if glamor_option == 'auto'
-    build_glamor = build_xorg or build_xwayland
+    build_glamor = build_xorg
 else
     build_glamor = get_option('glamor') == 'true'
 endif
@@ -284,20 +261,7 @@ if build_glamor
     epoxy_dep = dependency('epoxy', required: false)
 endif
 
-eglstream_option = get_option('xwayland_eglstream')
-if build_xwayland and build_glamor
-    eglstream_dep = dependency('wayland-eglstream-protocols', required:false)
-    if eglstream_option == 'auto'
-        build_eglstream = eglstream_dep.found()
-    else
-        build_eglstream = eglstream_option == 'true'
-        if build_eglstream and not eglstream_dep.found()
-            error('glamor EGLStream support requested, but wayland-eglstream-protocols not found')
-        endif
-    endif
-else
-    build_eglstream = false
-endif
+build_eglstream = false
 
 # XXX: Add more sha1 options, because Linux is about choice
 sha1_dep = nettle_dep

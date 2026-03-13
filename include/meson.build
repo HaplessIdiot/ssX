@@ -363,14 +363,6 @@ configure_file(output : 'xwin-config.h',
                input : 'xwin-config.h.meson.in',
                configuration : xwin_data)
 
-xwayland_data = configuration_data()
-xwayland_data.set('XWL_HAS_GLAMOR', build_glamor and (gbm_dep.found() or build_eglstream))
-xwayland_data.set('XWL_HAS_EGLSTREAM', build_eglstream)
-
-configure_file(output : 'xwayland-config.h',
-               input : 'xwayland-config.h.meson.in',
-               configuration : xwayland_data)
-
 if build_xorg
     install_data(
         [
@@ -426,7 +418,6 @@ if build_xorg
             'scrnintstr.h',
             'selection.h',
             'servermd.h',
-            'site.h',
             'validate.h',
             'displaymode.h',
             'window.h',
