@@ -247,9 +247,7 @@ static void DefaultMsg (
 	    (void) fprintf (stderr, "%s%s",
 			    error ? XTERROR_PREFIX : XTWARNING_PREFIX,
 			    error ? "Error: " : "Warning: ");
-	    (void) fprintf (stderr, buffer,
-			    par[0], par[1], par[2], par[3], par[4],
-			    par[5], par[6], par[7], par[8], par[9]);
+	    (void) fprintf (stderr, "%s", buffer);
 	    (void) fprintf (stderr, "%c", '\n');
 	    if (i != *num_params)
 		(*fn) ( "Some arguments in previous message were lost" );
