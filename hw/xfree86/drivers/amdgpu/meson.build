@@ -15,14 +15,14 @@ srcs = [
   'drmmode_display.c',
 ]
 
-# We know where our headers are. No need for the Archon's logic.
-if meson.get_compiler('c').has_header('drm_fourcc.h')
-    message('Found DRM headers in root include path.')
-    drm_args = []
+# Force check in current directory (.) and the standard include path
+if meson.get_compiler('c').has_header('drm_fourcc.h', args: '-I.')
+  message('Direct header access confirmed.')
+  drm_args = ['-I.'] # Tell the compiler to look here during build
 else
-    # Check if libdrm_dep actually has the path we need
-    drm_incdir = libdrm_dep.get_variable(pkgconfig: 'includedir')
-    drm_args = ['-I' + drm_incdir]
+  # Fallback to the system libdrm path if it exists
+  drm_incdir = libdrm_dep.get_variable(pkgconfig: 'includedir')
+  drm_args = ['-I' + drm_incdir]
 endif
 
 # Check for GFX12 tile version support in libdrm
@@ -57,8 +57,9 @@ amdgpu_drv_libs = [
   xorg_deps,
   xproto_dep
 ]
-if libudev_dep.found()
-  amdgpu_drv_libs += libudev_dep
+# Change libudev_dep to udev_dep to match the ssX master config
+if udev_dep.found()
+  amdgpu_drv_libs += udev_dep
 endif
 
 shared_module(
