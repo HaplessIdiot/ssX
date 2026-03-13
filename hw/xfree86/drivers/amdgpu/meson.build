@@ -15,33 +15,29 @@ srcs = [
   'drmmode_display.c',
 ]
 
-# Force check in current directory (.) and the standard include path
-if meson.get_compiler('c').has_header('drm_fourcc.h', args: '-I.')
-  message('Direct header access confirmed.')
-  drm_args = ['-I.'] # Tell the compiler to look here during build
+# NO MORE drm_ PREFIX. Check for the flat header in current dir.
+if meson.get_compiler('c').has_header('fourcc.h', args: '-I.')
+  message('Flat fourcc.h confirmed in local tree.')
+  drm_args = ['-I.']
 else
-  # Fallback to the system libdrm path if it exists
+  # Fallback just in case your libdrm provides it flat elsewhere
   drm_incdir = libdrm_dep.get_variable(pkgconfig: 'includedir')
   drm_args = ['-I' + drm_incdir]
 endif
 
-# Check for GFX12 tile version support in libdrm
+# Check for GFX12 tile version support using the FLAT header
 gfx12_args = []
 gfx12_test = '''
-#include <drm_fourcc.h>
+#include <fourcc.h>
 int main() {
     int x = AMD_FMT_MOD_TILE_VER_GFX12;
-    x = AMD_FMT_MOD_TILE_GFX12_256B_2D;
-    x = AMD_FMT_MOD_TILE_GFX12_4K_2D;
-    x = AMD_FMT_MOD_TILE_GFX12_64K_2D;
-    x = AMD_FMT_MOD_TILE_GFX12_256K_2D;
     return 0;
 }
 '''
-if meson.get_compiler('c').compiles(gfx12_test, dependencies: [libdrm_dep])
+if meson.get_compiler('c').compiles(gfx12_test, dependencies: [libdrm_dep], args: drm_args)
   gfx12_args = ['-DHAVE_AMD_FMT_MOD_TILE_GFX12']
 else
-  message('Some GFX12 tile constants missing - disabling GFX12 support')
+  message('GFX12 constants not found in fourcc.h - skipping GFX12')
 endif
 
 amdgpu_drv_libs = [
@@ -57,7 +53,7 @@ amdgpu_drv_libs = [
   xorg_deps,
   xproto_dep
 ]
-# Change libudev_dep to udev_dep to match the ssX master config
+
 if udev_dep.found()
   amdgpu_drv_libs += udev_dep
 endif
@@ -65,11 +61,11 @@ endif
 shared_module(
   'amdgpu_drv',
   srcs,
-  # Add '.' to ensure it looks in the current driver folder for local headers
   include_directories: [include_directories('..'), include_directories('.')],
   dependencies: amdgpu_drv_libs,
   c_args: drm_args + gfx12_args,
   install: true,
-  install_dir: join_paths(moduledir, 'drivers'),
+  # FIXED: ssX uses xorg_module_dir
+  install_dir: join_paths(xorg_module_dir, 'drivers'),
   name_prefix: '',
 )
