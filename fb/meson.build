@@ -7,12 +7,12 @@ srcs_fb = [
     'fbutil.c', 'fbwindow.c',
 ]
 
-# RESTORED: The SDK headers required for external drivers
 hdrs_fb = [
     'fb.h', 'fboverlay.h', 'fbpict.h', 'fbrop.h', 'wfbrename.h'
 ]
 
-# Internal Static Library
+# Internal Static Library - KEEP 'pic: true' here
+# This is required because this static code will be baked into the main Xorg binary
 libxserver_fb = static_library('libxserver_fb',
     srcs_fb,
     include_directories: inc,
@@ -20,20 +20,20 @@ libxserver_fb = static_library('libxserver_fb',
     pic: true,
 )
 
-# PROMOTED: Proper library to kill the 'shadow' deprecation
+# Shared Library - REMOVE 'pic: true'
+# shared_library is PIC by default; Meson 1.10.0 is rejecting the redundant keyword
 fb_lib = shared_library('fb',
     srcs_fb,
     include_directories: inc,
     dependencies: common_dep,
     install: true,
     install_dir: join_paths(get_option('module_dir'), 'lib'),
-    override_options: ['b_lundef=false'],
-    pic: true
+    override_options: ['b_lundef=false']
 )
 
 wfb_args = '-DFB_ACCESS_WRAPPER'
 
-# WFB Internal Static
+# WFB Internal Static - KEEP 'pic: true'
 libxserver_wfb = static_library('libxserver_wfb',
     srcs_fb,
     c_args: wfb_args,
@@ -43,7 +43,7 @@ libxserver_wfb = static_library('libxserver_wfb',
     build_by_default: false,
 )
 
-# WFB Proper Library
+# WFB Shared Library - REMOVE 'pic: true'
 wfb_lib = shared_library('wfb',
     srcs_fb,
     c_args: wfb_args,
@@ -51,13 +51,10 @@ wfb_lib = shared_library('wfb',
     dependencies: common_dep,
     install: true,
     install_dir: join_paths(get_option('module_dir'), 'lib'),
-    override_options: ['b_lundef=false'],
-    pic: true
+    override_options: ['b_lundef=false']
 )
 
-# RESTORED: Install headers to the SDK directory
 install_data(hdrs_fb, install_dir: xorgsdkdir)
 
-# Export for shadow/monolith consumers
 set_variable('fb_lib', fb_lib)
 set_variable('wfb_lib', wfb_lib)
