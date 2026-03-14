@@ -46,67 +46,46 @@
  * authorization from the copyright holder(s) and author(s).
  */
 
+#ifndef _LOADERPROCS_H
+#define _LOADERPROCS_H
+
 #ifdef HAVE_XORG_CONFIG_H
 #include <xorg-config.h>
 #endif
 
-#ifndef _LOADERPROCS_H
-#define _LOADERPROCS_H
-
-#undef IN_LOADER
-#define IN_LOADER
 #include "xf86Module.h"
-#include <X11/fonts/fontmod.h>
 
 typedef struct module_desc {
     struct module_desc *child;
     struct module_desc *sib;
     struct module_desc *parent;
-    struct module_desc *demand_next;
-    char *name;
-    char *filename;
-    char *identifier;
-    XID client_id;
-    int in_use;
-    int handle;
+    void *handle;
     ModuleSetupProc SetupProc;
     ModuleTearDownProc TearDownProc;
-    void *TearDownData;		/* returned from SetupProc */
-    const char *path;
+    void *TearDownData;         /* returned from SetupProc */
     const XF86ModuleVersionInfo *VersionInfo;
 } ModuleDesc, *ModuleDescPtr;
 
 /* External API for the loader */
 
 void LoaderInit(void);
+void LoaderClose(void);
 
-ModuleDescPtr LoadDriver(const char *, const char *, int, pointer, int *,
-			 int *);
-ModuleDescPtr LoadModule(const char *, const char *, const char **,
-			 const char **, pointer, const XF86ModReqInfo *,
-			 int *, int *);
-ModuleDescPtr LoadSubModule(ModuleDescPtr, const char *,
-			    const char **, const char **, pointer,
-			    const XF86ModReqInfo *, int *, int *);
-ModuleDescPtr LoadSubModuleLocal(ModuleDescPtr, const char *,
-				 const char **, const char **,
-				 pointer, const XF86ModReqInfo *,
-				 int *, int *);
+ModuleDescPtr LoadModule(const char *, void *, const XF86ModReqInfo *, int *);
 ModuleDescPtr DuplicateModule(ModuleDescPtr mod, ModuleDescPtr parent);
-void LoadFont(FontModule *);
-void UnloadModule(ModuleDescPtr);
-void UnloadSubModule(ModuleDescPtr);
 void UnloadDriver(ModuleDescPtr);
-void LoaderSetPath(const char *path);
-void LoaderSortExtensions(void);
 
-int LoaderUnload(int);
+void LoaderSetPath(const char *driver, const char *path);
+void LoaderInitPath(void);
+void LoaderClosePath(void);
+
+void LoaderUnload(const char *, void *);
 unsigned long LoaderGetModuleVersion(ModuleDescPtr mod);
 
-void LoaderResetOptions(void);
-void LoaderSetOptions(unsigned long);
+void LoaderSetIgnoreAllABI(void);
+Bool LoaderGetAndFlagIgnoreABI(const char *);
+void LoaderSetIgnoreABI(const char *);
 
-/* Options for LoaderSetOptions */
-#define LDR_OPT_ABI_MISMATCH_NONFATAL		0x0001
+const char **LoaderListDir(const char *, const char **);
 
-#endif /* _LOADERPROCS_H */
+#endif                          /* _LOADERPROCS_H */
