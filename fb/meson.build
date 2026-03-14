@@ -7,11 +7,12 @@ srcs_fb = [
     'fbutil.c', 'fbwindow.c',
 ]
 
+# RESTORED: The SDK headers required for external drivers
 hdrs_fb = [
     'fb.h', 'fboverlay.h', 'fbpict.h', 'fbrop.h', 'wfbrename.h'
 ]
 
-# 1. The Internal Static Library (Keep this for core linkage)
+# Internal Static Library
 libxserver_fb = static_library('libxserver_fb',
     srcs_fb,
     include_directories: inc,
@@ -19,23 +20,20 @@ libxserver_fb = static_library('libxserver_fb',
     pic: true,
 )
 
-# 2. The FB "Module" (Now built as a proper library to stop the shadow warning)
-# We use library() instead of shared_module()
-fb_lib = library('fb',
+# PROMOTED: Proper library to kill the 'shadow' deprecation
+fb_lib = shared_library('fb',
     srcs_fb,
     include_directories: inc,
     dependencies: common_dep,
     install: true,
     install_dir: join_paths(get_option('module_dir'), 'lib'),
-    # This is the secret sauce: tell the linker to allow undefined symbols
-    # which is standard for Xorg modules but usually bugs out shared_library()
     override_options: ['b_lundef=false'],
     pic: true
 )
 
 wfb_args = '-DFB_ACCESS_WRAPPER'
 
-# 3. The WFB Static Library
+# WFB Internal Static
 libxserver_wfb = static_library('libxserver_wfb',
     srcs_fb,
     c_args: wfb_args,
@@ -45,8 +43,8 @@ libxserver_wfb = static_library('libxserver_wfb',
     build_by_default: false,
 )
 
-# 4. The WFB "Module" 
-wfb_lib = library('wfb',
+# WFB Proper Library
+wfb_lib = shared_library('wfb',
     srcs_fb,
     c_args: wfb_args,
     include_directories: inc,
@@ -57,8 +55,9 @@ wfb_lib = library('wfb',
     pic: true
 )
 
+# RESTORED: Install headers to the SDK directory
 install_data(hdrs_fb, install_dir: xorgsdkdir)
 
-# Export these for the shadow module and the Monolith
+# Export for shadow/monolith consumers
 set_variable('fb_lib', fb_lib)
 set_variable('wfb_lib', wfb_lib)
