@@ -24,8 +24,13 @@ if host_machine.system() == 'openbsd'
 endif
 
 if build_xorg
-    install_data('10-quirks.conf',
-                 install_dir: join_paths(get_option('datadir'), 'X11/xorg.conf.d'))
+    # Existing quirks + your new sovereign input rules
+    install_data([
+            '10-quirks.conf',
+            '10-evdev.conf' # Add this from your evdev driver directory
+        ],
+        install_dir: join_paths(get_option('datadir'), 'X11/xorg.conf.d')
+    )
 endif
 
 libxserver_config = static_library('libxserver_config',
