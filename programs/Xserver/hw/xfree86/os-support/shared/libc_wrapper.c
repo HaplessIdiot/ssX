@@ -726,7 +726,7 @@ xf86printf(const char *format, ...)
 	va_list args;
 	va_start(args, format);
 
-	ret = printf(format,args);
+	ret = vprintf(format, args);
 	va_end(args);
 	return ret;
 }
