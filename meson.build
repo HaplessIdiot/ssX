@@ -592,28 +592,32 @@ if build_xorg
     sdkconfig.set('sdkdir', join_paths('${prefix}', get_option('includedir'), 'xorg'))
     sdkconfig.set('sysconfigdir', join_paths('${datarootdir}', 'X11/xorg.conf.d'))
 
-    sdkconfig.set('abi_ansic',
+sdkconfig.set('abi_ansic',
         run_command(awk, '-F', '[(,)]',
                     '/^#define ABI_ANSIC.*SET/ { printf "%d.%d", $2, $3 }',
-                    files('hw/xfree86/common/xf86Module.h')
+                    files('hw/xfree86/common/xf86Module.h'),
+                    check: true
         ).stdout()
     )
     sdkconfig.set('abi_videodrv',
         run_command(awk, '-F', '[(,)]',
                     '/^#define ABI_VIDEODRV.*SET/ { printf "%d.%d", $2, $3 }',
                     files('hw/xfree86/common/xf86Module.h')
+                    check: true
         ).stdout()
     )
     sdkconfig.set('abi_xinput',
         run_command(awk, '-F', '[(,)]',
                     '/^#define ABI_XINPUT.*SET/ { printf "%d.%d", $2, $3 }',
                     files('hw/xfree86/common/xf86Module.h')
+                    check: true
         ).stdout()
     )
     sdkconfig.set('abi_extension',
         run_command(awk, '-F', '[(,)]',
                     '/^#define ABI_EXTENSION.*SET/ { printf "%d.%d", $2, $3 }',
                     files('hw/xfree86/common/xf86Module.h')
+                    check: true
         ).stdout()
     )
 
@@ -624,6 +628,11 @@ if build_xorg
     # XXX this isn't trying very hard, but hard enough.
     sdkconfig.set('PACKAGE_VERSION', meson.project_version())
     sdkconfig.set('SDK_REQUIRED_MODULES', ' '.join(sdk_required_modules))
+    # THE FIX: Map pixman cflags so the .pc file isn't empty
+    sdkconfig.set('PIXMAN_CFLAGS', '-I' + pixman_dep.get_pkgconfig_variable('includedir'))
+
+    # If you want to be extra thorough for ssX optimization:
+    sdkconfig.set('XORG_INCS', '-I' + join_paths(get_option('prefix'), get_option('includedir'), 'xorg'))
     sdkconfig.set('symbol_visibility', '-fvisibility=hidden')
     sdkconfig.set('XORG_DRIVER_LIBS', '')
 
