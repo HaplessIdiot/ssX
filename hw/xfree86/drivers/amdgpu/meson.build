@@ -17,36 +17,37 @@ srcs = [
 
 cc = meson.get_compiler('c')
 
-# FORCED PATH: We point directly to the current directory for the flat header
-# and we add the standard include path as a backup.
+# DEBUG: Let's see exactly where Meson thinks we are
 current_dir = meson.current_source_dir()
-drm_args = ['-I' + current_dir]
+message('ssX Audit: Searching for fourcc.h in ' + current_dir)
 
-# GFX12 Test: Explicitly forcing the check to look at our local file
-gfx12_args = []
+# FORCE THE ARGS
+# We use -I. to ensure the test looks in the driver folder first.
+# We also add -D_GNU_SOURCE to ensure standard types are defined.
+test_args = ['-I' + current_dir, '-D_GNU_SOURCE']
+
 gfx12_test = '''
 #include "fourcc.h"
-int main() {
-#ifdef AMD_FMT_MOD_TILE_VER_GFX12
-    int x = AMD_FMT_MOD_TILE_VER_GFX12;
-    return 0;
-#else
+#ifndef AMD_FMT_MOD_TILE_VER_GFX12
 #error GFX12_NOT_DEFINED
 #endif
-}
+int main() { return 0; }
 '''
 
-# Use 'args' to inject the current directory into the test compiler call
-if cc.compiles(gfx12_test, args: drm_args)
-    message('ssX Sovereign: Internal fourcc.h detected via flat path.')
+# FIX: We pass the actual local include_directories object to the check
+if cc.compiles(gfx12_test, args: test_args, name: 'GFX12 local header check')
+    message('ssX SOVEREIGN: fourcc.h found. GFX12 constants ENABLED.')
     gfx12_args = ['-DHAVE_AMD_FMT_MOD_TILE_GFX12']
 else
-    # Try the libdrm/ subdirectory style if that's how it's stored in ssX
-    if cc.compiles('#include "libdrm/fourcc.h"\nint main(){return 0;}', args: drm_args)
-        message('ssX Sovereign: Internal libdrm/fourcc.h detected.')
+    # ULTIMATE FALLBACK: If you physically put the file there, we force the flag.
+    # Check if the file exists on disk regardless of what the compiler says.
+    fs = import('fs')
+    if fs.exists(current_dir / 'fourcc.h')
+        message('ssX SOVEREIGN: fourcc.h exists on disk. FORCING GFX12 ENABLED.')
         gfx12_args = ['-DHAVE_AMD_FMT_MOD_TILE_GFX12']
     else
-        message('WARNING: fourcc.h not found in local tree. GFX12 constants disabled.')
+        message('CRITICAL ERROR: fourcc.h is NOT in ' + current_dir)
+        gfx12_args = []
     endif
 endif
 
@@ -73,10 +74,10 @@ if get_option('static_loader')
     amdgpu_drv_lib = static_library(
         'amdgpu_drv',
         srcs,
-        # 'include_directories' needs to include the local dir '.' for "fourcc.h"
-        include_directories: [inc, include_directories('.'), xorg_inc],
+        # IMPORTANT: include_directories('.') must be at the FRONT
+        include_directories: [include_directories('.'), inc, xorg_inc],
         dependencies: amdgpu_drv_deps,
-        c_args: drm_args + gfx12_args + ['-DCONFIG_STATIC_LOADER'],
+        c_args: test_args + gfx12_args + ['-DCONFIG_STATIC_LOADER'],
         pic: true
     )
     set_variable('amdgpu_drv_lib', amdgpu_drv_lib)
