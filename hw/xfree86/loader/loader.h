@@ -67,7 +67,23 @@ typedef struct {
     int fontVersion;
 } ModuleVersions;
 extern const ModuleVersions LoaderVersionInfo;
+/* LoadModule proc flags; LD_FLAG_GLOBAL adds symbols to global 
+ * namespace, default is to keep symbols local to module. */
+#define LD_FLAG_GLOBAL 1
 
+typedef struct _loader *loaderPtr;
+
+/* Each module loaded has a loaderRec */
+typedef struct _loader {
+    int handle;         /* Unique id: for static, this maps to the builtin index */
+    int module;         /* Unique id to identify compilation units */
+    char *name;         /* e.g., "amdgpu" */
+    char *cname;        /* Canonical name for symbol lookup */
+    void *private;      /* Format specific data (keep as NULL for static) */
+    loaderPtr next;     /* Linked list of "loaded" (linked) components */
+} loaderRec;
+
+extern unsigned long LoaderOptions;
 extern Bool LoaderIgnoreAllABI;
 extern Bool LoaderIgnoreABI;
 extern Bool is_nvidia_proprietary;
