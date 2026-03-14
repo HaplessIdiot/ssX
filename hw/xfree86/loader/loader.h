@@ -88,7 +88,17 @@ extern Bool LoaderIgnoreAllABI;
 extern Bool LoaderIgnoreABI;
 extern Bool is_nvidia_proprietary;
 
-/* Internal Functions */
-void *LoaderOpen(const char *, int *);
+/* --- SSX SOVEREIGN INTERFACE --- */
+/* We keep the prototypes simple. The implementation handles the toggle. */
+void *LoaderOpen(const char *module, int *errmaj);
+void *LoaderSymbol(const char *name);
+void *LoaderSymbolFromModule(void *handle, const char *name);
+void LoaderUnload(const char *name, void *handle);
+
+/* Internal Lookup Wrappers */
+#ifdef CONFIG_STATIC_LOADER
+char *_LoaderHandleToName(int handle);
+int LoaderHandleOpen(int handle);
+#endif
 
 #endif                          /* _LOADER_H */
