@@ -1,17 +1,17 @@
-/* 
- * 
+/*
+ *
  * Copyright (c) 1997  Metro Link Incorporated
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"), 
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
@@ -19,11 +19,11 @@
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * Except as contained in this notice, the name of the Metro Link shall not be
  * used in advertising or otherwise to promote the sale, use or other dealings
  * in this Software without prior written authorization from Metro Link.
- * 
+ *
  */
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
@@ -52,7 +52,6 @@
  * authorization from the copyright holder(s) and author(s).
  */
 
-
 #ifdef HAVE_XORG_CONFIG_H
 #include <xorg-config.h>
 #endif
@@ -60,23 +59,21 @@
 #ifndef _xf86_tokens_h
 #define _xf86_tokens_h
 
-/* Undefine symbols that some OSs might define */
-#undef IOBASE
-
-/* 
+/*
  * Each token should have a unique value regardless of the section
  * it is used in.
  */
 
 typedef enum {
     /* errno-style tokens */
-    EOF_TOKEN		= -4,
-    LOCK_TOKEN		= -3,
-    ERROR_TOKEN		= -2,
+    OBSOLETE_TOKEN = -5,
+    EOF_TOKEN = -4,
+    LOCK_TOKEN = -3,
+    ERROR_TOKEN = -2,
 
     /* value type tokens */
-    NUMBER		= 1,
-    STRING,
+    NUMBER = 1,
+    XF86_TOKEN_STRING,
 
     /* Tokens that can appear in many sections */
     SECTION,
@@ -87,23 +84,17 @@ typedef enum {
     VENDOR,
     DASH,
     COMMA,
+    MATCHSEAT,
     OPTION,
     COMMENT,
 
-    /* Frequency units */
-    HRZ,
-    KHZ,
-    MHZ,
-
     /* File tokens */
     FONTPATH,
-    RGBPATH,
     MODULEPATH,
-    INPUTDEVICES,
     LOGFILEPATH,
+    XKBDIR,
 
     /* Server Flag tokens.  These are deprecated in favour of generic Options */
-    NOTRAPSIGNALS,
     DONTZAP,
     DONTZOOM,
     DISABLEVIDMODE,
@@ -127,9 +118,6 @@ typedef enum {
     GAMMA,
     USEMODES,
 
-    /* Modes tokens */
-    /* no new ones */
-
     /* Mode tokens */
     DOTCLOCK,
     HTIMINGS,
@@ -143,12 +131,13 @@ typedef enum {
     /* Screen tokens */
     OBSDRIVER,
     MDEVICE,
+    GDEVICE,
     MONITOR,
     SCREENNO,
     DEFAULTDEPTH,
     DEFAULTBPP,
     DEFAULTFBBPP,
-    
+
     /* VideoAdaptor tokens */
     VIDEOADAPTOR,
 
@@ -165,20 +154,19 @@ typedef enum {
     TT_HSKEW,
     TT_BCAST,
     TT_VSCAN,
-    TT_CUSTOM,
 
     /* Module tokens */
     LOAD,
     LOAD_DRIVER,
     DISABLE,
-    
+
     /* Device tokens */
     DRIVER,
     CHIPSET,
     CLOCKS,
     VIDEORAM,
     BOARD,
-    IOBASE,
+    XF86_TOKEN_IOBASE,
     RAMDAC,
     DACSPEED,
     BIOSBASE,
@@ -188,42 +176,7 @@ typedef enum {
     CHIPREV,
     CARD,
     BUSID,
-    TEXTCLOCKFRQ,
     IRQ,
-
-    /* Keyboard tokens */
-    AUTOREPEAT,
-    XLEDS,
-    KPROTOCOL,
-    XKBKEYMAP,
-    XKBCOMPAT,
-    XKBTYPES,
-    XKBKEYCODES,
-    XKBGEOMETRY,
-    XKBSYMBOLS,
-    XKBDISABLE,
-    PANIX106,
-    XKBRULES,
-    XKBMODEL,
-    XKBLAYOUT,
-    XKBVARIANT,
-    XKBOPTIONS,
-    /* The next two have become ServerFlags options */
-    VTINIT,
-    VTSYSREQ,
-    /* Obsolete keyboard tokens */
-    SERVERNUM,
-    LEFTALT,
-    RIGHTALT,
-    SCROLLLOCK_TOK,
-    RIGHTCTL,
-    /* arguments for the above obsolete tokens */
-    CONF_KM_META,
-    CONF_KM_COMPOSE,
-    CONF_KM_MODESHIFT,
-    CONF_KM_MODELOCK,
-    CONF_KM_SCROLLLOCK,
-    CONF_KM_CONTROL,
 
     /* Pointer tokens */
     EMULATE3,
@@ -255,7 +208,7 @@ typedef enum {
     DEPTH,
     BPP,
     WEIGHT,
-    
+
     /* Layout Tokens */
     SCREEN,
     INACTIVE,
@@ -274,7 +227,37 @@ typedef enum {
 
     /* DRI Tokens */
     GROUP,
-    BUFFERS
+
+    /* InputClass Tokens */
+    MATCH_PRODUCT,
+    MATCH_VENDOR,
+    MATCH_DEVICE_PATH,
+    MATCH_OS,
+    MATCH_PNPID,
+    MATCH_USBID,
+    MATCH_DRIVER,
+    MATCH_TAG,
+    MATCH_LAYOUT,
+    MATCH_IS_KEYBOARD,
+    MATCH_IS_POINTER,
+    MATCH_IS_JOYSTICK,
+    MATCH_IS_TABLET,
+    MATCH_IS_TABLET_PAD,
+    MATCH_IS_TOUCHPAD,
+    MATCH_IS_TOUCHSCREEN,
+
+    NOMATCH_PRODUCT,
+    NOMATCH_VENDOR,
+    NOMATCH_DEVICE_PATH,
+    NOMATCH_OS,
+    NOMATCH_PNPID,
+    NOMATCH_USBID,
+    NOMATCH_DRIVER,
+    NOMATCH_TAG,
+    NOMATCH_LAYOUT,
+
+    /* OutputClass Tokens */
+    MODULE,
 } ParserTokens;
 
-#endif /* _xf86_tokens_h */
+#endif                          /* _xf86_tokens_h */

@@ -67,6 +67,9 @@
 #include "xf86Optrec.h"
 #include "list.h"
 
+#include <sys/types.h>
+#include <regex.h>
+
 #define HAVE_PARSER_DECLS
 
 typedef struct {
@@ -304,9 +307,29 @@ typedef struct {
 
 typedef struct {
     struct xorg_list entry;
-    char **values;
+    struct xorg_list patterns;
     Bool is_negated;
 } xf86MatchGroup;
+
+typedef enum {
+    MATCH_IS_INVALID,
+    MATCH_EXACT,
+    MATCH_EXACT_NOCASE,
+    MATCH_AS_SUBSTRING,
+    MATCH_AS_SUBSTRING_NOCASE,
+    MATCH_AS_FILENAME,
+    MATCH_AS_PATHNAME,
+    MATCH_SUBSTRINGS_SEQUENCE,
+    MATCH_REGEX
+} xf86MatchMode;
+
+typedef struct {
+    struct xorg_list entry;
+    xf86MatchMode mode;
+    Bool is_negated;
+    char *str;
+    regex_t *regex;
+} xf86MatchPattern;
 
 typedef struct {
     GenericListRec list;
@@ -336,8 +359,10 @@ typedef struct {
     GenericListRec list;
     char *identifier;
     char *driver;
+    char *modules;
     char *modulepath;
     struct xorg_list match_driver;
+    struct xorg_list match_layout;
     XF86OptionPtr option_lst;
     char *comment;
 } XF86ConfOutputClassRec, *XF86ConfOutputClassPtr;
@@ -442,21 +467,8 @@ typedef struct {
 /*
  * prototypes for public functions
  */
-extern void xf86initConfigFiles(void);
-extern char *xf86openConfigFile(const char *path, const char *cmdline,
-                                const char *projroot);
-extern char *xf86openConfigDirFiles(const char *path, const char *cmdline,
-                                    const char *projroot);
-extern void xf86setBuiltinConfig(const char *config[]);
-extern XF86ConfigPtr xf86readConfigFile(void);
-extern void xf86closeConfigFile(void);
-extern XF86ConfigPtr xf86allocateConfig(void);
-extern void xf86freeConfig(XF86ConfigPtr p);
-extern int xf86writeConfigFile(const char *, XF86ConfigPtr);
 extern _X_EXPORT XF86ConfDevicePtr xf86findDevice(const char *ident,
                                                   XF86ConfDevicePtr p);
-extern _X_EXPORT XF86ConfDevicePtr xf86findDeviceByDriver(const char *driver,
-                                                          XF86ConfDevicePtr p);
 extern _X_EXPORT XF86ConfLayoutPtr xf86findLayout(const char *name,
                                                   XF86ConfLayoutPtr list);
 extern _X_EXPORT XF86ConfMonitorPtr xf86findMonitor(const char *ident,
@@ -474,14 +486,10 @@ extern _X_EXPORT XF86ConfInputPtr xf86findInputByDriver(const char *driver,
 extern _X_EXPORT XF86ConfVideoAdaptorPtr xf86findVideoAdaptor(const char *ident,
                                                               XF86ConfVideoAdaptorPtr
                                                               p);
-extern int xf86layoutAddInputDevices(XF86ConfigPtr config,
-                                     XF86ConfLayoutPtr layout);
-
 extern _X_EXPORT GenericListPtr xf86addListItem(GenericListPtr head,
                                                 GenericListPtr c_new);
 extern _X_EXPORT int xf86itemNotSublist(GenericListPtr list_1,
                                         GenericListPtr list_2);
-
 extern _X_EXPORT int xf86pathIsAbsolute(const char *path);
 extern _X_EXPORT int xf86pathIsSafe(const char *path);
 extern _X_EXPORT char *xf86addComment(char *cur, const char *add);
