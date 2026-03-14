@@ -3,4 +3,5 @@ if build_xorg
     subdir('amdgpu')
     subdir('intel')
     subdir('modesetting')
+    subdir('evdev')
 endif
