@@ -52,6 +52,7 @@ jobs:
           
           rm -rf builddir
           meson setup builddir --buildtype=debug \
+            -Dstatic_loader=true \
             -Dxorg=true \
             -Dglamor=true \
             -Ddri3=true \
