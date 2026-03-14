@@ -50,20 +50,6 @@ jobs:
           export CC=gcc
           export CXX=g++
           
-          # Fix the "Include dir vbe does not exist" error
-          if [ ! -d "hw/xfree86/vbe" ]; then
-            sed -i "/include_directories('vbe')/d" hw/xfree86/meson.build
-            sed -i "s/subdir('vbe')//g" hw/xfree86/meson.build
-          fi
-          
-          # Relax GL version check
-          sed -i "s/dependency('gl', version: '>= 9.2.0')/dependency('gl')/g" glx/meson.build
-
-          # Strip missing WNMD logic
-          if [ -f "present/meson.build" ]; then
-            sed -i "/'present_wnmd.c',/d" present/meson.build
-          fi
-          
           rm -rf builddir
           meson setup builddir --buildtype=debug \
             -Dxorg=true \
