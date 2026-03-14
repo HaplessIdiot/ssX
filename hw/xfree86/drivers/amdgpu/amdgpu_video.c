@@ -1,22 +1,32 @@
+/* ... Copyright headers ... */
 #include "config.h"
 #include <xorg-server.h>
 
+/* Standard Libs */
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 
+/* Local ssX amdgpu headers */
 #include "amdgpu_drv.h"
 #include "amdgpu_glamor.h"
 #include "amdgpu_probe.h"
 #include "amdgpu_video.h"
 #include "amdgpu_pixmap.h"
 
+/* Xorg Core */
 #include "xf86.h"
 #include "dixstruct.h"
 
+/* Extensions & Local DRM Headers */
 #include <X11/extensions/dpmsconst.h>
 #include <X11/extensions/Xv.h>
+
+/* * SSX_SOVEREIGN: Using quoted include for fourcc.h 
+ * This ensures the -I flag pointing to current_source_dir() 
+ * is used to find our specific GFX12 constants.
+ */
 #include "fourcc.h"
 
 #define OFF_DELAY       250	/* milliseconds */
