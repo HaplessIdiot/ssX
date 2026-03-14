@@ -602,21 +602,21 @@ sdkconfig.set('abi_ansic',
     sdkconfig.set('abi_videodrv',
         run_command(awk, '-F', '[(,)]',
                     '/^#define ABI_VIDEODRV.*SET/ { printf "%d.%d", $2, $3 }',
-                    files('hw/xfree86/common/xf86Module.h')
+                    files('hw/xfree86/common/xf86Module.h'),
                     check: true
         ).stdout()
     )
     sdkconfig.set('abi_xinput',
         run_command(awk, '-F', '[(,)]',
                     '/^#define ABI_XINPUT.*SET/ { printf "%d.%d", $2, $3 }',
-                    files('hw/xfree86/common/xf86Module.h')
+                    files('hw/xfree86/common/xf86Module.h'),
                     check: true
         ).stdout()
     )
     sdkconfig.set('abi_extension',
         run_command(awk, '-F', '[(,)]',
                     '/^#define ABI_EXTENSION.*SET/ { printf "%d.%d", $2, $3 }',
-                    files('hw/xfree86/common/xf86Module.h')
+                    files('hw/xfree86/common/xf86Module.h'),
                     check: true
         ).stdout()
     )
