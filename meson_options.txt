@@ -94,3 +94,7 @@ option('mitshm', type: 'combo', choices: ['true', 'false', 'auto'], value: 'auto
 option('dri1', type: 'combo', choices: ['true', 'false', 'auto'], value: 'auto', description: 'Build DRI1 extension (default: auto)')
 option('dri2', type: 'combo', choices: ['true', 'false', 'auto'], value: 'auto', description: 'Build DRI2 extension (default: auto)')
 option('dri3', type: 'combo', choices: ['true', 'false', 'auto'], value: 'auto', description: 'Build DRI3 extension (default: auto)')
+
+option('sna', type: 'boolean', value: true, description: 'Enable SNA acceleration')
+option('uxa', type: 'boolean', value: true, description: 'Enable UXA acceleration')
+option('backlight', type: 'boolean', value: true, description: 'Enable backlight control')
