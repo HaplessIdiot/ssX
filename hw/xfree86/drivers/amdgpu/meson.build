@@ -17,34 +17,37 @@ srcs = [
 
 cc = meson.get_compiler('c')
 
-# FIX 1: Robust Header Detection
-# We check the dependency directly rather than guessing paths.
-# If you have custom headers in the local dir, they will be found via include_directories.
-if cc.has_header('libdrm/fourcc.h', dependencies: libdrm_dep)
-    message('ssX: libdrm/fourcc.h confirmed via dependency')
-    drm_args = []
-else
-    # Fallback for flat inclusion if your source tree is non-standard
-    drm_args = ['-I' + meson.current_source_dir()]
-endif
+# FORCED PATH: We point directly to the current directory for the flat header
+# and we add the standard include path as a backup.
+current_dir = meson.current_source_dir()
+drm_args = ['-I' + current_dir]
 
-# Check for GFX12 tile version support
+# GFX12 Test: Explicitly forcing the check to look at our local file
 gfx12_args = []
 gfx12_test = '''
-#include <libdrm/fourcc.h>
-#ifndef AMD_FMT_MOD_TILE_VER_GFX12
-#define AMD_FMT_MOD_TILE_VER_GFX12 12
-#endif
+#include "fourcc.h"
 int main() {
+#ifdef AMD_FMT_MOD_TILE_VER_GFX12
     int x = AMD_FMT_MOD_TILE_VER_GFX12;
     return 0;
+#else
+#error GFX12_NOT_DEFINED
+#endif
 }
 '''
 
-if cc.compiles(gfx12_test, dependencies: [libdrm_dep])
+# Use 'args' to inject the current directory into the test compiler call
+if cc.compiles(gfx12_test, args: drm_args)
+    message('ssX Sovereign: Internal fourcc.h detected via flat path.')
     gfx12_args = ['-DHAVE_AMD_FMT_MOD_TILE_GFX12']
 else
-    message('GFX12 constants not found - driver will target legacy GFX paths')
+    # Try the libdrm/ subdirectory style if that's how it's stored in ssX
+    if cc.compiles('#include "libdrm/fourcc.h"\nint main(){return 0;}', args: drm_args)
+        message('ssX Sovereign: Internal libdrm/fourcc.h detected.')
+        gfx12_args = ['-DHAVE_AMD_FMT_MOD_TILE_GFX12']
+    else
+        message('WARNING: fourcc.h not found in local tree. GFX12 constants disabled.')
+    endif
 endif
 
 amdgpu_drv_deps = [
@@ -65,21 +68,19 @@ if udev_dep.found()
     amdgpu_drv_deps += udev_dep
 endif
 
-# FIX 2: THE STATIC/DYNAMIC SWITCH
+# THE STATIC/DYNAMIC SWITCH
 if get_option('static_loader')
-    # Build as a static library to be baked into Xorg
     amdgpu_drv_lib = static_library(
         'amdgpu_drv',
         srcs,
+        # 'include_directories' needs to include the local dir '.' for "fourcc.h"
         include_directories: [inc, include_directories('.'), xorg_inc],
         dependencies: amdgpu_drv_deps,
         c_args: drm_args + gfx12_args + ['-DCONFIG_STATIC_LOADER'],
-        pic: true # Position Independent Code is required for linking into the server
+        pic: true
     )
-    # Export this variable so the root meson.build can see it
     set_variable('amdgpu_drv_lib', amdgpu_drv_lib)
 else
-    # Standard Shared Module behavior
     shared_module(
         'amdgpu_drv',
         srcs,
