@@ -29,8 +29,8 @@ if build_xorg
     nvidia_conf = configuration_data()
     nvidia_conf.set('libdir', join_paths(get_option('prefix'),get_option('libdir')))
     configure_file(
-        input: '10-nvidia.conf.in',
-        output: '10-nvidia.conf',
+        input: '10-nvidiaoverride.conf.in',
+        output: '10-nvidiaoverride.conf',
         configuration: nvidia_conf,
         install_dir: join_paths(get_option('datadir'), 'X11/xorg.conf.d'),
     )
