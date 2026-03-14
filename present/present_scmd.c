@@ -21,13 +21,19 @@
  */
 #include <dix-config.h>
 
+#ifdef HAVE_XORG_CONFIG_H
+#include <xorg-config.h>
+#endif
+
 #include "dix/screenint_priv.h"
 #include "present/present_priv.h"
 #include "randr/randrstr_priv.h"
 
 #include <misync.h>
 #include <misyncstr.h>
-
+#ifdef MONOTONIC_CLOCK
+#include <time.h>
+#endif
 /*
  * Screen flip mode
  *
@@ -43,6 +49,13 @@ static struct xorg_list present_flip_queue;
 
 static void
 present_execute(present_vblank_ptr vblank, uint64_t ust, uint64_t crtc_msc);
+
+static void
+present_scmd_create_event_id(present_window_priv_ptr window_priv,
+                             present_vblank_ptr vblank)
+{
+    vblank->event_id = ++present_event_id;
+}
 
 static inline PixmapPtr
 present_flip_pending_pixmap(ScreenPtr screen)
@@ -241,6 +254,31 @@ present_queue_vblank(ScreenPtr screen,
         ret = (*screen_priv->info->queue_vblank) (crtc, event_id, msc);
     }
     return ret;
+}
+static uint64_t
+present_window_to_crtc_msc(WindowPtr window, RRCrtcPtr crtc, uint64_t window_msc, uint64_t new_msc)
+{
+    present_window_priv_ptr     window_priv = present_get_window_priv(window, TRUE);
+
+    if (crtc != window_priv->crtc) {
+        uint64_t        old_ust, old_msc;
+
+        if (window_priv->crtc == PresentCrtcNeverSet) {
+            window_priv->msc_offset = 0;
+        } else {
+            /* The old CRTC may have been turned off, in which case
+             * we'll just use whatever previous MSC we'd seen from this CRTC
+             */
+
+            if (present_get_ust_msc(window->drawable.pScreen, window_priv->crtc, &old_ust, &old_msc) != Success)
+                old_msc = window_priv->msc;
+
+            window_priv->msc_offset += new_msc - old_msc;
+        }
+        window_priv->crtc = crtc;
+    }
+
+    return window_msc + window_priv->msc_offset;
 }
 
 /*
@@ -934,7 +972,8 @@ present_scmd_init_mode_hooks(present_screen_priv_ptr screen_priv)
     screen_priv->clear_window_flip  =   &present_scmd_clear_window_flip;
 
     screen_priv->present_pixmap     =   &present_scmd_pixmap;
-
+    screen_priv->create_event_id    =   &present_scmd_create_event_id;
+    
     screen_priv->queue_vblank       =   &present_queue_vblank;
     screen_priv->flush              =   &present_flush;
     screen_priv->re_execute         =   &present_re_execute;
