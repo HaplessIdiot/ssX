@@ -62,6 +62,7 @@
 extern void *intelModuleData;
 extern void *amdgpuModuleData;
 extern void *evdevModuleData;
+extern void *modesettingModuleData;
 
 typedef struct {
     const char *name;
