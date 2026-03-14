@@ -573,7 +573,7 @@ DoScreenDefines(Display *display, int scrno, String *defs)
     AddNum(defs, "PLANES", DisplayPlanes(display, scrno));
     AddNum(defs, "BITS_PER_RGB", visual->bits_per_rgb);
     AddDef(defs, "CLASS", ClassNames[visual->class]);
-    sprintf(name, "CLASS_%s", ClassNames[visual->class]);
+    snprintf(name, sizeof(name), "CLASS_%s", ClassNames[visual->class]);
     AddNum(defs, name, (int)visual->visualid);
     switch(visual->class) {
 	case StaticColor:
@@ -590,7 +590,7 @@ DoScreenDefines(Display *display, int scrno, String *defs)
 		break;
 	}
 	if (j < 0) {
-	    sprintf(name, "CLASS_%s_%d",
+	    snprintf(name, sizeof(name), "CLASS_%s_%d",
 		    ClassNames[vinfos[i].class], vinfos[i].depth);
 	    AddNum(defs, name, (int)vinfos[i].visualid);
 	}
