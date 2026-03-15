@@ -15,68 +15,81 @@ srcs = [
   'drmmode_display.c',
 ]
 
-# FIX 1: Use an absolute path for the compiler to find your flat headers.
-# Relative paths in 'has_header' often fail in sub-sub-directories.
 cc = meson.get_compiler('c')
+
+# DEBUG: Let's see exactly where Meson thinks we are
 current_dir = meson.current_source_dir()
+message('ssX Audit: Searching for fourcc.h in ' + current_dir)
 
-if cc.has_header('fourcc.h', args: '-I' + current_dir)
-  message('Sovereign Check: fourcc.h confirmed at ' + current_dir)
-  drm_args = ['-I' + current_dir]
-else
-  # Fallback to the system libdrm path if it exists
-  drm_incdir = libdrm_dep.get_variable(pkgconfig: 'includedir')
-  drm_args = ['-I' + drm_incdir]
-endif
+# FORCE THE ARGS
+# We use -I. to ensure the test looks in the driver folder first.
+# We also add -D_GNU_SOURCE to ensure standard types are defined.
+test_args = ['-I' + current_dir, '-D_GNU_SOURCE']
 
-# Check for GFX12 tile version support using the FLAT header path
-gfx12_args = []
 gfx12_test = '''
-#include <fourcc.h>
-int main() {
-    int x = AMD_FMT_MOD_TILE_VER_GFX12;
-    return 0;
-}
+#include "fourcc.h"
+#ifndef AMD_FMT_MOD_TILE_VER_GFX12
+#error GFX12_NOT_DEFINED
+#endif
+int main() { return 0; }
 '''
-if cc.compiles(gfx12_test, dependencies: [libdrm_dep], args: drm_args)
-  gfx12_args = ['-DHAVE_AMD_FMT_MOD_TILE_GFX12']
+
+# FIX: We pass the actual local include_directories object to the check
+if cc.compiles(gfx12_test, args: test_args, name: 'GFX12 local header check')
+    message('ssX SOVEREIGN: fourcc.h found. GFX12 constants ENABLED.')
+    gfx12_args = ['-DHAVE_AMD_FMT_MOD_TILE_GFX12']
 else
-  message('GFX12 constants not found - driver will target legacy GFX paths')
+    # ULTIMATE FALLBACK: If you physically put the file there, we force the flag.
+    # Check if the file exists on disk regardless of what the compiler says.
+    fs = import('fs')
+    if fs.exists(current_dir / 'fourcc.h')
+        message('ssX SOVEREIGN: fourcc.h exists on disk. FORCING GFX12 ENABLED.')
+        gfx12_args = ['-DHAVE_AMD_FMT_MOD_TILE_GFX12']
+    else
+        message('CRITICAL ERROR: fourcc.h is NOT in ' + current_dir)
+        gfx12_args = []
+    endif
 endif
 
-amdgpu_drv_libs = [
-  fontsproto_dep,
-  gbm_dep,
-  libdrm_amdgpu_dep,
-  libdrm_dep,
-  randrproto_dep,
-  renderproto_dep,
-  videoproto_dep,
-  xextproto_dep,
-  xf86driproto_dep,
-  xorg_deps, # plural to match ssX master
-  xproto_dep
+amdgpu_drv_deps = [
+    fontsproto_dep,
+    gbm_dep,
+    libdrm_amdgpu_dep,
+    libdrm_dep,
+    randrproto_dep,
+    renderproto_dep,
+    videoproto_dep,
+    xextproto_dep,
+    xf86driproto_dep,
+    xorg_deps,
+    xproto_dep
 ]
 
 if udev_dep.found()
-  amdgpu_drv_libs += udev_dep
+    amdgpu_drv_deps += udev_dep
 endif
 
-# FIX 2: Manually reconstruct the module path because 'xorg_module_dir' is out of scope.
-# This pulls from the '-Dmodule_dir' option you set at the root.
-module_path = get_option('module_dir')
-if module_path == ''
-  # Standard fallback if not explicitly set
-  module_path = join_paths(get_option('libdir'), 'xorg/modules')
+# THE STATIC/DYNAMIC SWITCH
+if get_option('static_loader')
+    amdgpu_drv_lib = static_library(
+        'amdgpu_drv',
+        srcs,
+        # IMPORTANT: include_directories('.') must be at the FRONT
+        include_directories: [include_directories('.'), inc, xorg_inc],
+        dependencies: amdgpu_drv_deps,
+        c_args: test_args + gfx12_args + ['-DCONFIG_STATIC_LOADER'],
+        pic: true
+    )
+    set_variable('amdgpu_drv_lib', amdgpu_drv_lib)
+else
+    shared_module(
+        'amdgpu_drv',
+        srcs,
+        include_directories: [inc, include_directories('.'), xorg_inc],
+        dependencies: amdgpu_drv_deps,
+        c_args: drm_args + gfx12_args,
+        install: true,
+        install_dir: join_paths(get_option('module_dir'), 'drivers'),
+        name_prefix: '',
+    )
 endif
-
-shared_module(
-  'amdgpu_drv',
-  srcs,
-  include_directories: [include_directories('..'), include_directories('.')],
-  dependencies: amdgpu_drv_libs,
-  c_args: drm_args + gfx12_args,
-  install: true,
-  install_dir: join_paths(module_path, 'drivers'),
-  name_prefix: '',
-)

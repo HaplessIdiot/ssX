@@ -19,6 +19,8 @@ option('builder_string', type: 'string', description: 'Additional builder string
 option('log_dir', type: 'string')
 option('module_dir', type: 'string', value: 'xorg/modules',
        description: 'X.Org modules directory (absolute or relative to the directory specified by the libdir option)')
+option('static_loader', type: 'boolean', value: true,
+       description: 'Build ssX with a monolithic static loader (bypasses dlopen for internal drivers)')
 option('default_font_path', type: 'string')
 
 option('glx', type: 'boolean', value: true)

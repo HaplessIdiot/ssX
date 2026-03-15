@@ -1,7 +1,6 @@
 name: Clang-Tidy on Clang + LLVM (OpenMandriva)
 on:
   push:
-  pull_request:
 
 jobs:
   clang-tidy:
@@ -52,6 +51,7 @@ jobs:
           
           rm -rf builddir
           meson setup builddir --buildtype=debug \
+            -Dstatic_loader=true \
             -Dxorg=true \
             -Dglamor=true \
             -Ddri3=true \
@@ -61,6 +61,12 @@ jobs:
             -Dxnest=false \
             -Dxwin=false \
             -Ddmx=false || (cat builddir/meson-logs/meson-log.txt && exit 1)
+      
+      - name: Build ssX Monolith
+        run: |
+          # ninja -C builddir executes the build
+          # -j$(nproc) ensures we use all available CI cores
+          ninja -C builddir -v -j$(nproc)
             
       - name: Run clang-tidy
         run: |

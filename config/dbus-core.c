@@ -48,21 +48,43 @@ static struct dbus_core_info bus_info;
 
 static CARD32 reconnect_timer(OsTimerPtr timer, CARD32 time, pointer arg);
 
+/*
+ * wakeup_handler: called after select() returns.
+ *
+ * The modern ServerWakeupHandlerProcPtr signature dropped the read_mask
+ * argument. We check the fd directly via select with a zero timeout instead.
+ */
 static void
-wakeup_handler(pointer data, int err, pointer read_mask)
+wakeup_handler(void *data, int err)
 {
     struct dbus_core_info *info = data;
 
-    if (info->connection && FD_ISSET(info->fd, (fd_set *) read_mask)) {
-        do {
-            dbus_connection_read_write_dispatch(info->connection, 0);
-        } while (dbus_connection_get_dispatch_status(info->connection) ==
-                  DBUS_DISPATCH_DATA_REMAINS);
+    if (info->connection && info->fd != -1) {
+        fd_set read_mask;
+        struct timeval zero = { 0, 0 };
+
+        FD_ZERO(&read_mask);
+        FD_SET(info->fd, &read_mask);
+
+        if (select(info->fd + 1, &read_mask, NULL, NULL, &zero) > 0 &&
+            FD_ISSET(info->fd, &read_mask)) {
+            do {
+                dbus_connection_read_write_dispatch(info->connection, 0);
+            } while (dbus_connection_get_dispatch_status(info->connection) ==
+                      DBUS_DISPATCH_DATA_REMAINS);
+        }
     }
 }
 
+/*
+ * block_handler: called before select().
+ *
+ * The modern ServerBlockHandlerProcPtr signature is (void *data, void *timeout)
+ * where timeout is an opaque pointer — was (pointer, struct timeval **, pointer).
+ * This handler has no work to do so both old and new bodies are empty.
+ */
 static void
-block_handler(pointer data, struct timeval **tv, pointer read_mask)
+block_handler(void *data, void *timeout)
 {
 }
 

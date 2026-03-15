@@ -1,7 +1,7 @@
 project('xserver', 'c',
         default_options: [
             'buildtype=debugoptimized',
-            'c_std=gnu99',
+            'c_std=gnu89',
         ],
         version: '1.20.3',
         meson_version: '>= 0.42.0',
@@ -13,37 +13,29 @@ add_global_arguments('-fno-strict-aliasing', language : 'c')
 add_global_arguments('-fvisibility=hidden', language : 'c')
 
 add_global_link_arguments('-fvisibility=hidden', language : 'c')
+add_global_arguments('-include', meson.source_root() + '/include/os.h', language : 'c')
+
+if get_option('static_loader')
+    add_project_arguments('-DCONFIG_STATIC_LOADER', language: 'c')
+endif
 
 if cc.get_id() == 'gcc' or cc.get_id() == 'clang'
     test_wflags = [
         '-Wall',
         '-Wpointer-arith',
         '-Wmissing-declarations',
-        '-Wformat=2',
-        '-Wstrict-prototypes',
-        '-Wmissing-prototypes',
-        '-Wnested-externs',
-        '-Wbad-function-cast',
-        '-Wold-style-definition',
         '-Wunused',
         '-Wuninitialized',
-        '-Wshadow',
         '-Wmissing-noreturn',
-        '-Wmissing-format-attribute',
         '-Wredundant-decls',
-        '-Werror=implicit',
         '-Werror=nonnull',
         '-Werror=init-self',
         '-Werror=main',
-        '-Werror=missing-braces',
         '-Werror=sequence-point',
         '-Werror=return-type',
         '-Werror=trigraphs',
         '-Werror=array-bounds',
-        '-Werror=write-strings',
         '-Werror=address',
-        '-Werror=int-to-pointer-cast',
-        '-Werror=pointer-to-int-cast',
     ]
 else
     test_wflags = []
@@ -85,7 +77,10 @@ xf86vidmodeproto_dep = dependency('xf86vidmodeproto', version: '>= 2.2.99.1', re
 windowswmproto_dep = dependency('windowswmproto', required: false)
 applewmproto_dep = dependency('applewmproto', version: '>= 1.4', required: false)
 xshmfence_dep = dependency('xshmfence', version: '>= 1.1', required: false)
-libdrm_amdgpu_dep = dependency('libdrm_amdgpu', version: '>= 2.4.110', required: false)
+libdrm_amdgpu_dep = dependency('libdrm_amdgpu', 
+    version: '>= 2.4.110', 
+    required: get_option('static_loader')
+)
 
 pixman_dep = dependency('pixman-1')
 libbsd_dep = dependency('libbsd', required: false)
@@ -585,28 +580,32 @@ if build_xorg
     sdkconfig.set('sdkdir', join_paths('${prefix}', get_option('includedir'), 'xorg'))
     sdkconfig.set('sysconfigdir', join_paths('${datarootdir}', 'X11/xorg.conf.d'))
 
-    sdkconfig.set('abi_ansic',
+sdkconfig.set('abi_ansic',
         run_command(awk, '-F', '[(,)]',
                     '/^#define ABI_ANSIC.*SET/ { printf "%d.%d", $2, $3 }',
-                    files('hw/xfree86/common/xf86Module.h')
+                    files('hw/xfree86/common/xf86Module.h'),
+                    check: true
         ).stdout()
     )
     sdkconfig.set('abi_videodrv',
         run_command(awk, '-F', '[(,)]',
                     '/^#define ABI_VIDEODRV.*SET/ { printf "%d.%d", $2, $3 }',
-                    files('hw/xfree86/common/xf86Module.h')
+                    files('hw/xfree86/common/xf86Module.h'),
+                    check: true
         ).stdout()
     )
     sdkconfig.set('abi_xinput',
         run_command(awk, '-F', '[(,)]',
                     '/^#define ABI_XINPUT.*SET/ { printf "%d.%d", $2, $3 }',
-                    files('hw/xfree86/common/xf86Module.h')
+                    files('hw/xfree86/common/xf86Module.h'),
+                    check: true
         ).stdout()
     )
     sdkconfig.set('abi_extension',
         run_command(awk, '-F', '[(,)]',
                     '/^#define ABI_EXTENSION.*SET/ { printf "%d.%d", $2, $3 }',
-                    files('hw/xfree86/common/xf86Module.h')
+                    files('hw/xfree86/common/xf86Module.h'),
+                    check: true
         ).stdout()
     )
 
@@ -617,6 +616,11 @@ if build_xorg
     # XXX this isn't trying very hard, but hard enough.
     sdkconfig.set('PACKAGE_VERSION', meson.project_version())
     sdkconfig.set('SDK_REQUIRED_MODULES', ' '.join(sdk_required_modules))
+    # THE FIX: Map pixman cflags so the .pc file isn't empty
+    sdkconfig.set('PIXMAN_CFLAGS', '-I' + pixman_dep.get_pkgconfig_variable('includedir'))
+
+    # If you want to be extra thorough for ssX optimization:
+    sdkconfig.set('XORG_INCS', '-I' + join_paths(get_option('prefix'), get_option('includedir'), 'xorg'))
     sdkconfig.set('symbol_visibility', '-fvisibility=hidden')
     sdkconfig.set('XORG_DRIVER_LIBS', '')
 

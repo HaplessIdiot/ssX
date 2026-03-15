@@ -85,6 +85,20 @@ typedef struct _NewClientRec *NewClientPtr;
 #define xnfallocarray(num, size) XNFreallocarray(NULL, (num), (size))
 #define xnfreallocarray(ptr, num, size) XNFreallocarray((ptr), (num), (size))
 #endif
+/* Compat shims for vintage xalloc/xfree/xrealloc API removed in xserver ~1.13.
+ * Defined here because os.h is force-included globally via -include. */
+#ifndef xalloc
+#define xalloc(size)          malloc(size)
+#endif
+#ifndef xcalloc
+#define xcalloc(n, size)      calloc((n), (size))
+#endif
+#ifndef xrealloc
+#define xrealloc(ptr, size)   realloc((ptr), (size))
+#endif
+#ifndef xfree
+#define xfree(ptr)            free(ptr)
+#endif
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -101,6 +115,7 @@ extern _X_EXPORT void (*OsVendorVErrorFProc) (const char *,
                                               va_list args)
 _X_ATTRIBUTE_PRINTF(1, 0);
 #endif
+
 
 extern _X_EXPORT Bool WaitForSomething(Bool clients_are_ready);
 
@@ -158,6 +173,10 @@ static inline void RemoveNotifyFd(int fd)
 {
     (void) SetNotifyFd(fd, NULL, X_NOTIFY_NONE, NULL);
 }
+
+/* General socket registration for the select() loop */
+extern _X_EXPORT void AddGeneralSocket(int fd);
+extern _X_EXPORT void RemoveGeneralSocket(int fd);
 
 extern _X_EXPORT int OnlyListenToOneClient(ClientPtr /*client */ );
 
@@ -270,6 +289,9 @@ Xstrdup(const char *s);
  */
 extern _X_EXPORT char *
 XNFstrdup(const char *s);
+
+extern _X_EXPORT char **
+xstrtokenize(const char *str, const char *separators);
 
 /* Include new X*asprintf API */
 #include "Xprintf.h"
@@ -727,5 +749,7 @@ typedef _sigset_t sigset_t;
 
 extern _X_EXPORT int
 xthread_sigmask(int how, const sigset_t *set, sigset_t *oldest);
+
+
 
 #endif                          /* OS_H */

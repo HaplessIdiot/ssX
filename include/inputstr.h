@@ -51,6 +51,7 @@ SOFTWARE.
 
 #include "input.h"
 #include "window.h"
+#include <pixman.h>
 #include "dixstruct.h"
 
 #define BitIsOn(ptr, bit) (((BYTE *) (ptr))[(bit)>>3] & (1 << ((bit) & 7)))
@@ -331,6 +332,8 @@ typedef struct _DeviceIntRec {
     DevUnion		*devPrivates;
     int			nPrivates;
     DeviceUnwrapProc    unwrapProc;
+	struct pixman_f_transform transform;
+    struct pixman_f_transform scale_and_transform;
 } DeviceIntRec;
 
 typedef struct {

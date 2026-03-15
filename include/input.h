@@ -63,6 +63,8 @@ SOFTWARE.
 #define POINTER_ABSOLUTE (1 << 2)
 #define POINTER_ACCELERATE (1 << 3)
 
+#define MAX_BUTTONS     256
+#define MAX_VALUATORS   36
 #define MAP_LENGTH	256
 #define DOWN_LENGTH	32	/* 256/8 => number of bytes to hold 256 bits */
 #define NullGrab ((GrabPtr)NULL)
@@ -157,6 +159,29 @@ typedef struct {
     Mask        led_mask;
     unsigned char id;
 } LedCtrl;
+
+/*
+ * InputAttributes - device metadata used by the hotplug backends (udev, hal).
+ * Added to support config/udev.c and config/hal.c which require this API.
+ */
+#include <stdint.h>
+
+#define ATTR_KEYBOARD       (1<<0)
+#define ATTR_POINTER        (1<<1)
+#define ATTR_JOYSTICK       (1<<2)
+#define ATTR_TABLET         (1<<3)
+#define ATTR_TOUCHPAD       (1<<4)
+#define ATTR_TOUCHSCREEN    (1<<5)
+
+typedef struct _InputAttributes {
+    char       *product;
+    char       *vendor;
+    char       *device;
+    char       *pnp_id;
+    char       *usb_id;
+    char      **tags;       /* null-terminated array of tag strings */
+    uint32_t    flags;
+} InputAttributes;
 
 extern int AllocateDevicePrivateIndex(void);
 extern Bool AllocateDevicePrivate(DeviceIntPtr device, int index);
@@ -446,6 +471,7 @@ extern DeviceIntPtr LookupDeviceIntRec(
 /* Implemented by the DDX. */
 extern int NewInputDeviceRequest(
     InputOption *options,
+    InputAttributes *attrs,
     DeviceIntPtr *dev);
 extern void DeleteInputDeviceRequest(
     DeviceIntPtr dev);

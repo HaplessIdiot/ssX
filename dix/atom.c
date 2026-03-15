@@ -75,7 +75,7 @@ static NodePtr *nodeTable;
 void FreeAtom(NodePtr patom);
 
 _X_EXPORT Atom 
-MakeAtom(char *string, unsigned len, Bool makeit)
+MakeAtom(const char *string, unsigned len, Bool makeit)
 {
     NodePtr * np;
     unsigned i;
@@ -114,7 +114,7 @@ MakeAtom(char *string, unsigned len, Bool makeit)
 	    return BAD_RESOURCE;
 	if (lastAtom < XA_LAST_PREDEFINED)
 	{
-	    nd->string = string;
+	    nd->string = (char *) string;
 	}
 	else
 	{
@@ -157,7 +157,7 @@ ValidAtom(Atom atom)
     return (atom != None) && (atom <= lastAtom);
 }
 
-_X_EXPORT char *
+_X_EXPORT const char *
 NameForAtom(Atom atom)
 {
     NodePtr node;
@@ -209,5 +209,3 @@ InitAtoms(void)
     if (lastAtom != XA_LAST_PREDEFINED)
 	AtomError ();
 }
-
-    

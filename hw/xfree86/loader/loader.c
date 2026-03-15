@@ -55,14 +55,34 @@
 #include "list.h"
 #include "loader.h"
 #include "loaderProcs.h"
-
-#ifdef HAVE_DLFCN_H
-
-#include <dlfcn.h>
 #include <X11/Xos.h>
 
+#ifdef CONFIG_STATIC_LOADER
+/* --- SSX STATIC SYMBOL TABLE --- */
+extern void *intelModuleData;
+extern void *amdgpuModuleData;
+extern void *evdevModuleData;
+extern void *modesettingModuleData;
+
+typedef struct {
+    const char *name;
+    void *address;
+} SymTabRec;
+
+static SymTabRec static_symbols[] = {
+    { "intelModuleData",  &intelModuleData },
+    { "amdgpuModuleData", &amdgpuModuleData },
+    { "modesettingModuleData",  &modesettingModuleData },
+    { "evdevModuleData",  &evdevModuleData },
+    { NULL, NULL }
+};
+#else
+/* Standard Dynamic Loading */
+#ifdef HAVE_DLFCN_H
+#include <dlfcn.h>
 #else
 #error i have no dynamic linker and i must scream
+#endif
 #endif
 
 #ifndef XORG_NO_SDKSYMS
@@ -126,6 +146,11 @@ LoaderClose(void)
 void *
 LoaderOpen(const char *module, int *errmaj)
 {
+#ifdef CONFIG_STATIC_LOADER
+    /* In static mode, we treat the module name string as the 'handle' */
+    LogMessage(X_INFO, "ssX Static Loader: Internalizing %s\n", module);
+    return (void *)module; 
+#else
     void *ret;
 
 #if defined(DEBUG)
@@ -142,11 +167,22 @@ LoaderOpen(const char *module, int *errmaj)
     }
 
     return ret;
+#endif
 }
 
 void *
 LoaderSymbol(const char *name)
 {
+#ifdef CONFIG_STATIC_LOADER
+    int i;
+    /* Walk our sovereign static table first */
+    for (i = 0; static_symbols[i].name != NULL; i++) {
+        if (strcmp(static_symbols[i].name, name) == 0) {
+            return static_symbols[i].address;
+        }
+    }
+    return NULL;
+#else
     static void *global_scope = NULL;
     void *p;
 
@@ -161,23 +197,35 @@ LoaderSymbol(const char *name)
         return dlsym(global_scope, name);
 
     return NULL;
+#endif
 }
 
 void *
 LoaderSymbolFromModule(void *handle, const char *name)
 {
-    ModuleDescPtr mod = handle;
-    return dlsym(mod->handle, name);
+#ifdef CONFIG_STATIC_LOADER
+    /* In static mode, there is no distinction between module scopes */
+    return LoaderSymbol(name);
+#else
+    /* handle is expected to be a ModuleDescPtr in standard Xorg */
+    ModuleDescPtr mod = (ModuleDescPtr)handle;
+    if (mod && mod->handle)
+        return dlsym(mod->handle, name);
+    return NULL;
+#endif
 }
 
 void
 LoaderUnload(const char *name, void *handle)
 {
     LogMessageVerb(X_INFO, 1, "Unloading %s\n", name);
+#ifndef CONFIG_STATIC_LOADER
     if (handle)
         dlclose(handle);
+#else
+    /* No-op: Static modules cannot be removed from the memory map */
+#endif
 }
-
 /*
  * The functions below are necessary to load some modules, e.g., nvidia proprietary drivers,
  * regardless of their ABI versions

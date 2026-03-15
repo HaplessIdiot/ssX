@@ -165,7 +165,7 @@ struct _DeviceChangedEvent
     } keys;
 };
 
-#if XFreeXDGA
+#ifdef XFreeXDGA
 /**
  * DGAEvent, used by DGA to intercept and emulate input events.
  */

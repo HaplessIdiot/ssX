@@ -67,12 +67,38 @@ typedef struct {
     int fontVersion;
 } ModuleVersions;
 extern const ModuleVersions LoaderVersionInfo;
+/* LoadModule proc flags; LD_FLAG_GLOBAL adds symbols to global 
+ * namespace, default is to keep symbols local to module. */
+#define LD_FLAG_GLOBAL 1
 
+typedef struct _loader *loaderPtr;
+
+/* Each module loaded has a loaderRec */
+typedef struct _loader {
+    int handle;         /* Unique id: for static, this maps to the builtin index */
+    int module;         /* Unique id to identify compilation units */
+    char *name;         /* e.g., "amdgpu" */
+    char *cname;        /* Canonical name for symbol lookup */
+    void *private;      /* Format specific data (keep as NULL for static) */
+    loaderPtr next;     /* Linked list of "loaded" (linked) components */
+} loaderRec;
+
+extern unsigned long LoaderOptions;
 extern Bool LoaderIgnoreAllABI;
 extern Bool LoaderIgnoreABI;
 extern Bool is_nvidia_proprietary;
 
-/* Internal Functions */
-void *LoaderOpen(const char *, int *);
+/* --- SSX SOVEREIGN INTERFACE --- */
+/* We keep the prototypes simple. The implementation handles the toggle. */
+void *LoaderOpen(const char *module, int *errmaj);
+void *LoaderSymbol(const char *name);
+void *LoaderSymbolFromModule(void *handle, const char *name);
+void LoaderUnload(const char *name, void *handle);
+
+/* Internal Lookup Wrappers */
+#ifdef CONFIG_STATIC_LOADER
+char *_LoaderHandleToName(int handle);
+int LoaderHandleOpen(int handle);
+#endif
 
 #endif                          /* _LOADER_H */
