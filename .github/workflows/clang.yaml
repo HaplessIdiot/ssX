@@ -1,7 +1,6 @@
 name: Clang-Tidy on Clang + LLVM (OpenMandriva)
 on:
   push:
-  pull_request:
 
 jobs:
   clang-tidy:
