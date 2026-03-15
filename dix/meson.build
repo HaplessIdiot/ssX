@@ -35,13 +35,13 @@ srcs_dix = [
 
 libxserver_dix = static_library('libxserver_dix',
     srcs_dix,
-    include_directories: inc,
+    include_directories: [inc, dix_inc],
     dependencies: common_dep,
 )
 
 libxserver_main = static_library('libxserver_main',
     'stubmain.c',
-    include_directories: inc,
+    include_directories: [inc, dix_inc],
     dependencies: common_dep,
 )
 
@@ -50,8 +50,4 @@ install_data(
     install_dir: serverconfigdir,
 )
 
-include_directories(
-  'include',
-  'dix',
-  'Xext'
-)
+dix_inc = include_directories('.', '../Xext', '../include')
