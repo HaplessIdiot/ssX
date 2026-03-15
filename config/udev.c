@@ -29,6 +29,7 @@
 
 #include <libudev.h>
 #include <ctype.h>
+#include <stdio.h>
 
 #include "input.h"
 #include "inputstr.h"
@@ -103,12 +104,16 @@ device_added(struct udev_device *udev_device)
             LOG_PROPERTY(ppath, "NAME", name);
         }
 
-        attrs.pnp_id = udev_device_get_sysattr_value(parent, "id");
+        /* udev returns const char* — cast away const for our char* fields.
+         * These pointers are valid for the lifetime of the udev_device. */
+        attrs.pnp_id = (char *) udev_device_get_sysattr_value(parent, "id");
         LOG_SYSATTR(ppath, "id", attrs.pnp_id);
 
         /* construct USB ID in lowercase hex - "0000:ffff" */
         if (product && sscanf(product, "%*x/%4x/%4x/%*x", &usb_vendor, &usb_model) == 2) {
-            attrs.usb_id = Xprintf("%04x:%04x", usb_vendor, usb_model);
+            /* asprintf replaces deprecated Xprintf */
+            if (asprintf(&attrs.usb_id, "%04x:%04x", usb_vendor, usb_model) == -1)
+                attrs.usb_id = NULL;
             if (attrs.usb_id)
                 LOG_PROPERTY(path, "PRODUCT", product);
         }
@@ -116,18 +121,20 @@ device_added(struct udev_device *udev_device)
     if (!name)
         name = "(unnamed)";
     else
-        attrs.product = name;
+        attrs.product = (char *) name;
     add_option(&options, "name", name);
 
     add_option(&options, "path", path);
     add_option(&options, "device", path);
-    attrs.device = path;
+    attrs.device = (char *) path;
 
     tags_prop = udev_device_get_property_value(udev_device, "ID_INPUT.tags");
     LOG_PROPERTY(path, "ID_INPUT.tags", tags_prop);
     attrs.tags = xstrtokenize(tags_prop, ",");
 
-    config_info = Xprintf("udev:%s", syspath);
+    /* asprintf replaces deprecated Xprintf */
+    if (asprintf(&config_info, "udev:%s", syspath) == -1)
+        config_info = NULL;
     if (!config_info)
         goto unwind;
 
@@ -159,7 +166,7 @@ device_added(struct udev_device *udev_device)
                 add_option(&options, "xkb_options", value);
         } else if (!strcmp(key, "ID_VENDOR")) {
             LOG_PROPERTY(path, key, value);
-            attrs.vendor = value;
+            attrs.vendor = (char *) value;
         } else if (!strcmp(key, "ID_INPUT_KEY")) {
             LOG_PROPERTY(path, key, value);
             attrs.flags |= ATTR_KEYBOARD;
@@ -220,8 +227,8 @@ device_removed(struct udev_device *device)
     char *value;
     const char *syspath = udev_device_get_syspath(device);
 
-    value = Xprintf("udev:%s", syspath);
-    if (!value)
+    /* asprintf replaces deprecated Xprintf */
+    if (asprintf(&value, "udev:%s", syspath) == -1)
         return;
 
     remove_devices("udev", value);
@@ -229,17 +236,31 @@ device_removed(struct udev_device *device)
     free(value);
 }
 
+/*
+ * wakeup_handler: called after select() returns.
+ *
+ * The modern ServerWakeupHandlerProcPtr dropped the read_mask argument.
+ * We check the udev fd directly with a zero-timeout select() instead.
+ */
 static void
-wakeup_handler(pointer data, int err, pointer read_mask)
+wakeup_handler(void *data, int err)
 {
     int udev_fd = udev_monitor_get_fd(udev_monitor);
     struct udev_device *udev_device;
     const char *action;
+    fd_set read_mask;
+    struct timeval zero = { 0, 0 };
 
     if (err < 0)
         return;
 
-    if (FD_ISSET(udev_fd, (fd_set *)read_mask)) {
+    FD_ZERO(&read_mask);
+    FD_SET(udev_fd, &read_mask);
+
+    if (select(udev_fd + 1, &read_mask, NULL, NULL, &zero) <= 0)
+        return;
+
+    if (FD_ISSET(udev_fd, &read_mask)) {
         udev_device = udev_monitor_receive_device(udev_monitor);
         if (!udev_device)
             return;
@@ -254,8 +275,14 @@ wakeup_handler(pointer data, int err, pointer read_mask)
     }
 }
 
+/*
+ * block_handler: called before select().
+ *
+ * Modern ServerBlockHandlerProcPtr is (void *data, void *timeout).
+ * Body is intentionally empty.
+ */
 static void
-block_handler(pointer data, struct timeval **tv, pointer read_mask)
+block_handler(void *data, void *timeout)
 {
 }
 
