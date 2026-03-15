@@ -13,6 +13,7 @@ add_global_arguments('-fno-strict-aliasing', language : 'c')
 add_global_arguments('-fvisibility=hidden', language : 'c')
 
 add_global_link_arguments('-fvisibility=hidden', language : 'c')
+add_global_arguments('-include', meson.source_root() + '/include/os.h', language : 'c')
 
 if get_option('static_loader')
     add_project_arguments('-DCONFIG_STATIC_LOADER', language: 'c')
