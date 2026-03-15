@@ -55,6 +55,11 @@ SOFTWARE.
 #include "geext.h"
 #include "events.h"
 #include <X11/extensions/XI.h>
+/* Forward declarations for types used below that may not yet be
+ * visible depending on include order. gesture.h and grabmask are
+ * pulled in later in the input subsystem include chain. */
+typedef struct _GestureInfo GestureInfo, *GestureInfoPtr;
+typedef union _GrabMask GrabMask;
 
 #define EARLIER -1
 #define SAMETIME 0
