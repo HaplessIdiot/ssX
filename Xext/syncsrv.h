@@ -51,14 +51,26 @@ PERFORMANCE OF THIS SOFTWARE.
 #ifndef _SYNCSRV_H_
 #define _SYNCSRV_H_
 
-#define CARD64 XSyncValue /* XXX temporary! need real 64 bit values for Alpha */
+/* Include the headers that define XSyncValue, XSyncCounter, and XSyncAlarm */
+#include <X11/extensions/syncproto.h>
+#include <X11/extensions/Xsync.h>
+
+/* Fix for Alpha/64-bit: 
+ * Instead of mapping CARD64 to the XSyncValue struct, we use a native 64-bit type.
+ * In a gnu89 environment, 'long long' is the most reliable 64-bit type.
+ */
+#if defined(__alpha__) || defined(__alpha) || defined(_XSERVER64)
+typedef long CARD64;
+#else
+typedef long long CARD64;
+#endif
 
 typedef struct _SyncCounter {
-    ClientPtr		client;	/* Owning client. 0 for system counters */
-    XSyncCounter	id;		/* resource ID */
-    CARD64		value;		/* counter value */
-    struct _SyncTriggerList *pTriglist;	/* list of triggers */
-    Bool		beingDestroyed; /* in process of going away */
+    ClientPtr           client; /* Owning client. 0 for system counters */
+    XSyncCounter        id;     /* resource ID */
+    CARD64              value;  /* counter value */
+    struct _SyncTriggerList *pTriglist; /* list of triggers */
+    Bool                beingDestroyed; /* in process of going away */
     struct _SysCounterInfo *pSysCounterInfo; /* NULL if not a system counter */
 } SyncCounter;
 
