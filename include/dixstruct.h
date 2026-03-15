@@ -29,6 +29,7 @@ SOFTWARE.
 #include "cursor.h"
 #include "gc.h"
 #include "pixmap.h"
+#include "list.h"
 #include <X11/Xmd.h>
 
 /*
@@ -140,6 +141,7 @@ typedef struct _Client {
     long    smart_stop_tick;
     long    smart_check_tick;
 #endif
+    struct xorg_list ready;     /* for dispatch scheduling */
 }           ClientRec;
 
 #ifdef SMART_SCHEDULE
