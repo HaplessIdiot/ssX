@@ -33,6 +33,12 @@ srcs_dix = [
     'window.c',
 ]
 
+dix_inc = [
+    include_directories('.'),          # The current 'dix' folder
+    include_directories('../include'), # The root 'include' folder
+    include_directories('../Xext')    # The root 'Xext' folder
+]
+
 libxserver_dix = static_library('libxserver_dix',
     srcs_dix,
     include_directories: [inc, dix_inc],
@@ -50,4 +56,3 @@ install_data(
     install_dir: serverconfigdir,
 )
 
-dix_inc = include_directories('.', '../Xext', '../include')
