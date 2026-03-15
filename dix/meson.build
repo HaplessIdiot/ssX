@@ -49,3 +49,9 @@ install_data(
     'protocol.txt',
     install_dir: serverconfigdir,
 )
+
+include_directories(
+  'include',
+  'dix',
+  'Xext'
+)
