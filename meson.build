@@ -458,6 +458,7 @@ inc = include_directories(
     'randr',
     'render',
     'xfixes',
+    'programs/Xserver/include',
 )
 
 glx_inc = include_directories('glx')

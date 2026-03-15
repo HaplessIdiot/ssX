@@ -33,15 +33,21 @@ srcs_dix = [
     'window.c',
 ]
 
+dix_inc = [
+    include_directories('.'),          # The current 'dix' folder
+    include_directories('../include'), # The root 'include' folder
+    include_directories('../Xext')    # The root 'Xext' folder
+]
+
 libxserver_dix = static_library('libxserver_dix',
     srcs_dix,
-    include_directories: inc,
+    include_directories: [inc, dix_inc],
     dependencies: common_dep,
 )
 
 libxserver_main = static_library('libxserver_main',
     'stubmain.c',
-    include_directories: inc,
+    include_directories: [inc, dix_inc],
     dependencies: common_dep,
 )
 
@@ -49,3 +55,4 @@ install_data(
     'protocol.txt',
     install_dir: serverconfigdir,
 )
+

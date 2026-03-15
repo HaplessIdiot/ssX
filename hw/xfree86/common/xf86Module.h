@@ -82,19 +82,18 @@ typedef enum {
  * changed.  The minor revision mask is 0x0000FFFF and the major revision
  * mask is 0xFFFF0000.
  */
-#define ABI_ANSIC_VERSION	SET_ABI_VERSION(0, 3)
-#define ABI_VIDEODRV_VERSION	SET_ABI_VERSION(2, 0)
-#define ABI_XINPUT_VERSION	SET_ABI_VERSION(2, 0)
-#define ABI_EXTENSION_VERSION	SET_ABI_VERSION(0, 3)
-#define ABI_FONT_VERSION	SET_ABI_VERSION(0, 5)
+#define ABI_ANSIC_VERSION      SET_ABI_VERSION(0, 4)
+#define ABI_VIDEODRV_VERSION   SET_ABI_VERSION(28, 0)
+#define ABI_XINPUT_VERSION     SET_ABI_VERSION(26, 0)
+#define ABI_EXTENSION_VERSION  SET_ABI_VERSION(10, 0)
+#define ABI_FONT_VERSION       SET_ABI_VERSION(1, 0)
 
 #define MODINFOSTRING1	0xef23fdc5
 #define MODINFOSTRING2	0x10dc023a
 
 #ifndef MODULEVENDORSTRING
-#define MODULEVENDORSTRING	"X.Org Foundation"
+#define MODULEVENDORSTRING "Super Sonic X Server"
 #endif
-
 /* Error return codes for errmaj.  New codes must only be added at the end. */
 typedef enum {
     LDR_NOERROR = 0,

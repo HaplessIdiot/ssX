@@ -234,7 +234,7 @@ union _InternalEvent {
         } any;
         DeviceEvent device_event;
         DeviceChangedEvent changed_event;
-#if XFreeXDGA
+#ifdef XFreeXDGA
         DGAEvent dga_event;
 #endif
         RawDeviceEvent raw_event;

@@ -8,6 +8,9 @@
 
 #include "panoramiX.h"
 
+/* ssX: Forward declaration for PanoramiXData - needs restoration from git */
+typedef struct _PanoramiXData PanoramiXData;
+
 extern int PanoramiXNumScreens;
 extern PanoramiXData *panoramiXdataPtr;
 extern int PanoramiXPixWidth;

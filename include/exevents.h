@@ -31,6 +31,10 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define EXEVENTS_H
 
 #include <X11/extensions/XIproto.h>
+#include "input.h"
+#include "client.h"
+#include "window.h"
+#include "dixaccess.h"
 
 extern void RegisterOtherDevice (
 	DeviceIntPtr           /* device */);
