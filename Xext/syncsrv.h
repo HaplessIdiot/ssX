@@ -51,32 +51,63 @@ PERFORMANCE OF THIS SOFTWARE.
 #ifndef _SYNCSRV_H_
 #define _SYNCSRV_H_
 
-/* Include the headers that define XSyncValue, XSyncCounter, and XSyncAlarm */
-#include <X11/extensions/syncproto.h>
-#include <X11/extensions/Xsync.h>
+#include <X11/Xproto.h>
+#include <stdint.h>
 
-/* Fix for Alpha/64-bit: 
- * Instead of mapping CARD64 to the XSyncValue struct, we use a native 64-bit type.
- * In a gnu89 environment, 'long long' is the most reliable 64-bit type.
+/* --- Primitives Fix ---
+ * We define these only if they haven't been seen yet
+ * to stop the 'Unknown type name' errors.
  */
+#ifndef _XTYPEDEF_POINTER
+typedef void *pointer;
+#define _XTYPEDEF_POINTER
+#endif
+
+#ifndef _XTYPEDEF_XID
+typedef unsigned long XID;
+#define _XTYPEDEF_XID
+#endif
+
+#ifndef Bool
+#define Bool int
+#define TRUE 1
+#define FALSE 0
+#endif
+
+/* --- LOCAL XSYNC REPLACEMENTS --- */
+typedef XID XSyncCounter;
+typedef XID XSyncAlarm;
+
+/* --- CARD64 / XSyncValue FIX ---
+ * To avoid 'redefinition with different types', we check if CARD64 exists.
+ * If your Xmd.h defines CARD64 as 'unsigned long', we use that to keep
+ * the compiler from complaining.
+ */
+#ifndef CARD64
 #if defined(__alpha__) || defined(__alpha) || defined(_XSERVER64)
 typedef long CARD64;
 #else
-typedef long long CARD64;
+typedef int64_t CARD64;
+#endif
+#endif
+
+typedef CARD64 XSyncValue;
+
+/* --- The rest of the file follows --- */
+
+#ifndef _CLIENT_PTR
+typedef struct _Client *ClientPtr;
+#define _CLIENT_PTR
 #endif
 
 typedef struct _SyncCounter {
-    ClientPtr           client; /* Owning client. 0 for system counters */
-    XSyncCounter        id;     /* resource ID */
-    CARD64              value;  /* counter value */
-    struct _SyncTriggerList *pTriglist; /* list of triggers */
-    Bool                beingDestroyed; /* in process of going away */
-    struct _SysCounterInfo *pSysCounterInfo; /* NULL if not a system counter */
+    ClientPtr           client;
+    XSyncCounter        id;
+    CARD64              value;
+    struct _SyncTriggerList *pTriglist;
+    Bool                beingDestroyed;
+    struct _SysCounterInfo *pSysCounterInfo;
 } SyncCounter;
-
-/*
- * The System Counter interface
- */
 
 typedef enum {
     XSyncCounterNeverChanges,
@@ -86,40 +117,38 @@ typedef enum {
 } SyncCounterType;
 
 typedef struct _SysCounterInfo {
-    char	*name;
-    CARD64	resolution;
-    CARD64	bracket_greater;
-    CARD64	bracket_less;
-    SyncCounterType counterType;  /* how can this counter change */
+    char    *name;
+    CARD64  resolution;
+    CARD64  bracket_greater;
+    CARD64  bracket_less;
+    SyncCounterType counterType;
     void        (*QueryValue)(
-			      pointer /*pCounter*/,
-			      CARD64 * /*freshvalue*/
-);
-    void	(*BracketValues)(
-				 pointer /*pCounter*/,
-				 CARD64 * /*lessthan*/,
-				 CARD64 * /*greaterthan*/
-);
+        pointer /*pCounter*/,
+        CARD64 * /*freshvalue*/
+    );
+    void    (*BracketValues)(
+        pointer /*pCounter*/,
+        CARD64 * /*lessthan*/,
+        CARD64 * /*greaterthan*/
+    );
 } SysCounterInfo;
-
-
 
 typedef struct _SyncTrigger {
     SyncCounter *pCounter;
-    CARD64	wait_value;	/* wait value */
-    unsigned int value_type;     /* Absolute or Relative */
-    unsigned int test_type;	/* transition or Comparision type */
-    CARD64	test_value;	/* trigger event threshold value */
-    Bool	(*CheckTrigger)(
-				struct _SyncTrigger * /*pTrigger*/,
-				CARD64 /*newval*/
-				);
-    void	(*TriggerFired)(
-				struct _SyncTrigger * /*pTrigger*/
-				);
-    void	(*CounterDestroyed)(
-				struct _SyncTrigger * /*pTrigger*/
-				    );
+    CARD64  wait_value;
+    unsigned int value_type;
+    unsigned int test_type;
+    CARD64  test_value;
+    Bool    (*CheckTrigger)(
+        struct _SyncTrigger * /*pTrigger*/,
+        CARD64 /*newval*/
+    );
+    void    (*TriggerFired)(
+        struct _SyncTrigger * /*pTrigger*/
+    );
+    void    (*CounterDestroyed)(
+        struct _SyncTrigger * /*pTrigger*/
+    );
 } SyncTrigger;
 
 typedef struct _SyncTriggerList {
@@ -128,62 +157,51 @@ typedef struct _SyncTriggerList {
 } SyncTriggerList;
 
 typedef struct _SyncAlarmClientList {
-    ClientPtr	client;
-    XID		delete_id;
+    ClientPtr   client;
+    XID         delete_id;
     struct _SyncAlarmClientList *next;
 } SyncAlarmClientList;
 
 typedef struct _SyncAlarm {
     SyncTrigger trigger;
-    ClientPtr	client;
-    XSyncAlarm 	alarm_id;
-    CARD64	delta;
-    int		events;
-    int		state;
+    ClientPtr   client;
+    XSyncAlarm  alarm_id;
+    CARD64      delta;
+    int         events;
+    int         state;
     SyncAlarmClientList *pEventClients;
 } SyncAlarm;
 
 typedef struct {
-    ClientPtr	client;
-    CARD32 	delete_id;
-    int		num_waitconditions;
+    ClientPtr   client;
+    uint32_t    delete_id; /* Using uint32_t to be safe */
+    int         num_waitconditions;
 } SyncAwaitHeader;
 
 typedef struct {
     SyncTrigger trigger;
-    CARD64	event_threshold;
+    CARD64      event_threshold;
     SyncAwaitHeader *pHeader;
 } SyncAwait;
 
 typedef union {
     SyncAwaitHeader header;
-    SyncAwait	    await;
+    SyncAwait       await;
 } SyncAwaitUnion;
 
-
+/* Prototypes */
 extern pointer SyncCreateSystemCounter(
-    char *	/* name */,
-    CARD64  	/* inital_value */,
-    CARD64  	/* resolution */,
+    char * /* name */,
+    CARD64 inital_value,
+    CARD64 resolution,
     SyncCounterType /* change characterization */,
-    void        (* /*QueryValue*/ ) (
-        pointer /* pCounter */,
-        CARD64 * /* pValue_return */), /* XXX prototype */
-    void        (* /*BracketValues*/) (
-        pointer /* pCounter */, 
-        CARD64 * /* pbracket_less */,
-        CARD64 * /* pbracket_greater */)
+    void (*QueryValue)(pointer, CARD64 *),
+                                       void (*BracketValues)(pointer, CARD64 *, CARD64 *)
 );
 
-extern void SyncChangeCounter(
-    SyncCounter *	/* pCounter*/,
-    CARD64  		/* new_value */
-);
-
-extern void SyncDestroySystemCounter(
-    pointer pCounter
-);
+extern void SyncChangeCounter(SyncCounter *pCounter, CARD64 new_value);
+extern void SyncDestroySystemCounter(pointer pCounter);
 extern void InitServertime(void);
-
 extern void SyncExtensionInit(void);
+
 #endif /* _SYNCSRV_H_ */
