@@ -332,6 +332,8 @@ typedef struct _DeviceIntRec {
     DevUnion		*devPrivates;
     int			nPrivates;
     DeviceUnwrapProc    unwrapProc;
+	struct pixman_f_transform transform;
+    struct pixman_f_transform scale_and_transform;
 } DeviceIntRec;
 
 typedef struct {
