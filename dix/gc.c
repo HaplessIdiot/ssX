@@ -524,7 +524,8 @@ dixChangeGC(ClientPtr client, GC *pGC, BITS32 mask, CARD32 *pC32, ChangeGCValPtr
 _X_EXPORT int
 ChangeGC(GC *pGC, BITS32 mask, XID *pval)
 {
-    return (dixChangeGC(NullClient, pGC, mask, pval, NULL));
+    /* ssX: Cast to CARD32* for compatibility on 64-bit systems */
+    return (dixChangeGC(NullClient, pGC, mask, (CARD32 *)pval, NULL));
 }
 
 /* DoChangeGC(pGC, mask, pval, fPointer)
@@ -554,7 +555,8 @@ DoChangeGC(GC *pGC, BITS32 mask, XID *pval, int fPointer)
     /* XXX might be a problem on 64 bit big-endian servers */
 	return dixChangeGC(NullClient, pGC, mask, NULL, (ChangeGCValPtr)pval);
     else
-	return dixChangeGC(NullClient, pGC, mask, pval, NULL);
+	/* ssX: Cast to CARD32* for compatibility on 64-bit systems */
+	return dixChangeGC(NullClient, pGC, mask, (CARD32 *)pval, NULL);
 }
 
 
