@@ -51,6 +51,7 @@ SOFTWARE.
 
 #include "input.h"
 #include "window.h"
+#include <pixman.h>
 #include "dixstruct.h"
 
 #define BitIsOn(ptr, bit) (((BYTE *) (ptr))[(bit)>>3] & (1 << ((bit) & 7)))
