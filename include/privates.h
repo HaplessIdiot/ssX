@@ -19,11 +19,21 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * STUFF FOR PRIVATES
  *****************************************************************/
 
-typedef int *DevPrivateKey;
-
 /* DevPrivateKeyRec - used by older XAA code for private key storage */
-/* This is the same as DevPrivateKey for compatibility */
-typedef DevPrivateKey DevPrivateKeyRec;
+typedef struct _DevPrivateKeyRec {
+    int offset;
+    int size;
+    Bool initialized;
+    Bool allocated;
+    int type;
+    struct _DevPrivateKeyRec *next;
+} DevPrivateKeyRec, *DevPrivateKey;
+
+typedef struct _DevPrivateSetRec {
+    DevPrivateKey key;
+    unsigned offset;
+    int created;
+} DevPrivateSetRec, *DevPrivateSet;
 
 struct _Private;
 typedef struct _Private PrivateRec;

@@ -222,6 +222,9 @@ typedef struct _LastDeviceInfo {
         int value;
         int type;
     } scroll[MAX_VALUATORS];
+    /* ssX: Touch support */
+    int num_touches;
+    void *touches_data;
     int touches;                          /* number of active touches */
 } LastDeviceInfo, *LastDeviceInfoPtr;
 
