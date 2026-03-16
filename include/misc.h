@@ -198,16 +198,7 @@ typedef struct _xReq *xReqPtr;
 #define SwapRestL(stuff) \
     SwapLongs((CARD32 *)(stuff + 1), LengthRestL(stuff))
 
-/* byte swap a 32-bit value (in-place, single argument) */
-#define swapl(x) { \
-		 char n = ((char *) (x))[0];\
-		 ((char *) (x))[0] = ((char *) (x))[3];\
-		 ((char *) (x))[3] = n;\
-		 n = ((char *) (x))[1];\
-		 ((char *) (x))[1] = ((char *) (x))[2];\
-		 ((char *) (x))[2] = n; }
-
-/* byte swap a 32-bit value (two argument version - original) */
+/* byte swap a 32-bit value */
 #define swapl(x, n) { \
 		 n = ((char *) (x))[0];\
 		 ((char *) (x))[0] = ((char *) (x))[3];\
@@ -221,11 +212,6 @@ typedef struct _xReq *xReqPtr;
 		 n = ((char *) (x))[0];\
 		 ((char *) (x))[0] = ((char *) (x))[1];\
 		 ((char *) (x))[1] = n; }
-
-/* Convert bytes to 32-bit units (for X protocol) */
-#define bytes_to_int32(x) (((x) + 3) >> 2)
-#define bits_to_bytes(x) (((x) + 7) >> 3)
-#define pad_to_int32(x) (((x) + 3) & ~3)
 
 /* copy 32-bit value from src to dst byteswapping on the way */
 #define cpswapl(src, dst) { \
