@@ -252,7 +252,8 @@ EnableLimitedSchedulingLatency(void);
 void
 DisableLimitedSchedulingLatency(void);
 
-/* Server handler proc types - use void* for compatibility with system Xdefs.h */
+/* Server handler proc types */
+/* Note: BlockHandlerProcPtr is defined by system X11 headers, but we define our own for compatibility */
 typedef void (*ServerBlockHandlerProcPtr) (void *blockData,
                                            void *timeout,
                                            void *pReadmask);
@@ -261,8 +262,7 @@ typedef void (*ServerWakeupHandlerProcPtr) (void *blockData,
                                             int result,
                                             void *pReadmask);
 
-/* BlockHandlerProcPtr and WakeupHandlerProcPtr - legacy typedefs for compatibility */
-typedef ServerBlockHandlerProcPtr BlockHandlerProcPtr;
+/* WakeupHandlerProcPtr - not defined by system headers, so we define our own */
 typedef ServerWakeupHandlerProcPtr WakeupHandlerProcPtr;
 
 extern _X_EXPORT Bool RegisterBlockAndWakeupHandlers(ServerBlockHandlerProcPtr blockHandler,

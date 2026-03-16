@@ -51,6 +51,7 @@ SOFTWARE.
 
 #include "input.h"
 #include "window.h"
+#include "cursorstr.h"
 #include <pixman.h>
 #include "dixstruct.h"
 
@@ -60,6 +61,26 @@ SOFTWARE.
 	(CLIENT_BITS((obj)->resource) == (client)->clientAsMask)
 
 #define MAX_DEVICES	20
+
+/* Device type constants for device->type */
+#define MASTER_POINTER 1
+#define MASTER_KEYBOARD 2
+#define SLAVE 3
+
+/* Maximum number of event types */
+#define MAXEVENTS 128
+
+/* Additional device type constants */
+#define MASTER_ATTACHED 4
+#define POINTER_OR_FLOAT 5
+#define KEYBOARD_OR_FLOAT 6
+
+/* SpriteInfo - for tracking pointer sprite and device pairing */
+typedef struct _SpriteInfo {
+    SpritePtr sprite;
+    Bool spriteOwner;
+    DeviceIntPtr paired;
+} SpriteInfoRec, *SpriteInfoPtr;
 
 /* Legacy device grab tracking */
 typedef struct _DeviceGrabRec {
@@ -86,6 +107,7 @@ typedef struct _InputClients {
     InputClientsPtr	next;
     XID			resource; /* id for putting into resource manager */
     Mask		mask[EMASKSIZE];
+    void		*xi2mask; /* XI2 event mask */
 } InputClients;
 
 typedef struct _OtherInputMasks {
@@ -93,6 +115,7 @@ typedef struct _OtherInputMasks {
     Mask		inputEvents[EMASKSIZE];
     Mask		dontPropagateMask[EMASKSIZE];
     InputClientsPtr	inputClients;
+    void		*xi2mask; /* XI2 event mask */
 } OtherInputMasks;
 
 /*
@@ -180,12 +203,15 @@ typedef struct _ButtonClassRec {
     unsigned short	state;
     Mask		motionMask;
     CARD8		down[DOWN_LENGTH];
+    CARD8		postdown[DOWN_LENGTH];	/* buttons posted to client */
     CARD8		map[MAP_LENGTH];
+    Atom		labels[MAX_BUTTONS];
 #ifdef XKB
     union _XkbAction    *xkb_acts;
 #else
     void                *pad0;
 #endif
+    unsigned int	sourceid;
 } ButtonClassRec, *ButtonClassPtr;
 
 typedef struct _FocusClassRec {
@@ -347,6 +373,11 @@ typedef struct _DeviceIntRec {
     struct pixman_f_transform relative_transform;
 	struct pixman_f_transform transform;
     struct pixman_f_transform scale_and_transform;
+    /* Master/slave device tracking */
+    DeviceIntPtr master;         /* master device if this is a slave */
+    DeviceIntPtr lastSlave;      /* last attached slave device */
+    /* Sprite for cursor tracking */
+    SpriteInfoPtr spriteInfo;
 } DeviceIntRec;
 
 typedef struct {

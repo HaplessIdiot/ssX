@@ -103,8 +103,10 @@ typedef FSID AccContext;
 typedef struct timeval **OSTimePtr;
 
 
-typedef void (* BlockHandlerProcPtr)(pointer /* blockData */,
-				     OSTimePtr /* pTimeout */,
-				     pointer /* pReadmask */);
+/* Old BlockHandlerProcPtr definition - now in dix.h
+ t y*pedef void (* BlockHandlerProcPtr)(pointer blockData,
+ OSTimePtr pTimeout,
+pointer pReadmask);
+*/
 
 #endif

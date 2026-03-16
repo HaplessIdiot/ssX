@@ -63,6 +63,21 @@ SOFTWARE.
 #define POINTER_ABSOLUTE (1 << 2)
 #define POINTER_ACCELERATE (1 << 3)
 
+/* Event type flags */
+#define BUTTON_PROCESSED  1
+#define KEY_PROCESSED     1
+#define BUTTON_POSTED     2
+#define KEY_POSTED        2
+
+/* Scroll type flags for valuators */
+#define SCROLL_TYPE_NONE 0
+#define SCROLL_TYPE_VERTICAL 1
+#define SCROLL_TYPE_HORIZONTAL 2
+#define SCROLL_FLAG_DONT_EMULATE 1
+#define SCROLL_FLAG_PREFERRED 2
+
+/* Note: Event types are defined in eventstr.h as an enum */
+
 #define MAX_BUTTONS     256
 #define MAX_VALUATORS   36
 
@@ -73,6 +88,7 @@ SOFTWARE.
 #define valuator_mask_get_unaccelerated(m, i) (0)
 #define valuator_mask_get_double(m, i) (0.0)
 #define SetBit(b, i) ((b)[(i)>>3] |= (1 << ((i) & 7)))
+#define ClearBit(b, i) ((b)[(i)>>3] &= ~(1 << ((i) & 7)))
 
 #define MAP_LENGTH	256
 #define DOWN_LENGTH	32	/* 256/8 => number of bytes to hold 256 bits */
@@ -489,5 +505,13 @@ extern void DDXRingBell(
     int volume,
     int pitch,
     int duration);
+
+/* Master device functions */
+extern DeviceIntPtr GetMaster(DeviceIntPtr dev, int which);
+extern DeviceIntPtr GetPairedDevice(DeviceIntPtr dev);
+extern int AttachDevice(ClientPtr client, DeviceIntPtr dev, DeviceIntPtr master);
+extern int AllocDevicePair(ClientPtr client, const char *name,
+                           DeviceIntPtr *ptr, DeviceIntPtr *keybd,
+                           DeviceProc ptr_proc, DeviceProc keybd_proc, Bool master);
 
 #endif /* INPUT_H */
