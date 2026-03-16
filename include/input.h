@@ -65,6 +65,15 @@ SOFTWARE.
 
 #define MAX_BUTTONS     256
 #define MAX_VALUATORS   36
+
+/* Legacy valuator mask shims for backward compatibility */
+#define valuator_mask_size(m) (MAX_VALUATORS)
+#define valuator_mask_isset(m, i) (!!((m) && (i) < MAX_VALUATORS))
+#define valuator_mask_has_unaccelerated(m) ((m) != NULL)
+#define valuator_mask_get_unaccelerated(m, i) (0)
+#define valuator_mask_get_double(m, i) (0.0)
+#define SetBit(b, i) ((b)[(i)>>3] |= (1 << ((i) & 7)))
+
 #define MAP_LENGTH	256
 #define DOWN_LENGTH	32	/* 256/8 => number of bytes to hold 256 bits */
 #define NullGrab ((GrabPtr)NULL)

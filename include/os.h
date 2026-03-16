@@ -48,6 +48,7 @@ SOFTWARE.
 #define OS_H
 
 #include "misc.h"
+#include "version-config.h"
 #include <stdarg.h>
 #include <stdint.h>
 #if defined(HAVE_REALLOCARRAY)

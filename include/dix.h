@@ -228,6 +228,10 @@ extern _X_EXPORT int dixLookupClient(ClientPtr *result,
                                      XID id,
                                      ClientPtr client, Mask access_mode);
 
+extern _X_EXPORT int dixLookupDevice(DeviceIntPtr *result,
+                                    int id,
+                                    ClientPtr client, Mask access_mode);
+
 extern _X_EXPORT void NoopDDA(void);
 
 extern _X_EXPORT int AlterSaveSetForClient(ClientPtr /*client */ ,
@@ -238,9 +242,9 @@ extern _X_EXPORT int AlterSaveSetForClient(ClientPtr /*client */ ,
 
 extern _X_EXPORT void DeleteWindowFromAnySaveSet(WindowPtr /*pWin */ );
 
-extern _X_EXPORT void BlockHandler(void *timeout);
+extern _X_EXPORT void BlockHandler(void *timeout, void *pReadmask);
 
-extern _X_EXPORT void WakeupHandler(int result);
+extern _X_EXPORT void WakeupHandler(int result, void *pReadmask);
 
 void
 EnableLimitedSchedulingLatency(void);
@@ -248,11 +252,18 @@ EnableLimitedSchedulingLatency(void);
 void
 DisableLimitedSchedulingLatency(void);
 
+/* Server handler proc types - use void* for compatibility with system Xdefs.h */
 typedef void (*ServerBlockHandlerProcPtr) (void *blockData,
-                                           void *timeout);
+                                           void *timeout,
+                                           void *pReadmask);
 
 typedef void (*ServerWakeupHandlerProcPtr) (void *blockData,
-                                            int result);
+                                            int result,
+                                            void *pReadmask);
+
+/* BlockHandlerProcPtr and WakeupHandlerProcPtr - legacy typedefs for compatibility */
+typedef ServerBlockHandlerProcPtr BlockHandlerProcPtr;
+typedef ServerWakeupHandlerProcPtr WakeupHandlerProcPtr;
 
 extern _X_EXPORT Bool RegisterBlockAndWakeupHandlers(ServerBlockHandlerProcPtr blockHandler,
                                                      ServerWakeupHandlerProcPtr wakeupHandler,

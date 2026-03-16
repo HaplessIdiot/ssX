@@ -61,6 +61,15 @@ SOFTWARE.
 
 #define MAX_DEVICES	20
 
+/* Legacy device grab tracking */
+typedef struct _DeviceGrabRec {
+    GrabPtr grab;
+    Bool fromPassiveGrab;
+    TimeStamp timestamp;
+    WindowPtr window;
+    int state;
+} DeviceGrabRec;
+
 #define EMASKSIZE	MAX_DEVICES
 
 extern int CoreDevicePrivatesIndex;
@@ -147,6 +156,7 @@ typedef struct _AxisInfo {
 } AxisInfo, *AxisInfoPtr;
 
 typedef struct _ValuatorClassRec {
+    int                     accelScheme; /* legacy acceleration tracking */
     ValuatorMotionProcPtr GetMotionProc;
     int		 	  numMotionEvents;
     int                   first_motion;
@@ -281,6 +291,8 @@ typedef struct _LedFeedbackClassRec {
 typedef struct _DeviceIntRec {
     DeviceRec	public;
     DeviceIntPtr next;
+    int                 *last; /* legacy tracking for previous coordinate states */
+    DeviceGrabRec       deviceGrab; /* legacy device grab tracking */
     TimeStamp	grabTime;
     Bool	startup;		/* true if needs to be turned on at
 				          server intialization time */
@@ -332,6 +344,7 @@ typedef struct _DeviceIntRec {
     DevUnion		*devPrivates;
     int			nPrivates;
     DeviceUnwrapProc    unwrapProc;
+    struct pixman_f_transform relative_transform;
 	struct pixman_f_transform transform;
     struct pixman_f_transform scale_and_transform;
 } DeviceIntRec;

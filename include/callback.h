@@ -71,19 +71,13 @@ typedef struct _CallbackFuncs {
     DeleteCallbackListProcPtr   deleteCallbackList;
 } CallbackFuncsRec, *CallbackFuncsPtr;
 
-/* Compatibility: legacy code expects these member names - add as additional members */
+/* Compatibility: legacy code expects these member names */
 typedef struct _CallbackFuncsLegacy {
     CallCallbacksProcPtr        AddCallback;
     DeleteCallbackListProcPtr   DeleteCallback;
     CallCallbacksProcPtr        CallCallbacks;
     DeleteCallbackListProcPtr   DeleteCallbackList;
 } CallbackFuncsLegacyRec, *CallbackFuncsLegacyPtr;
-
-/* Union to allow both old and new code to work */
-typedef union _CallbackFuncsUnion {
-    CallbackFuncsRec newStyle;
-    CallbackFuncsLegacyRec oldStyle;
-} CallbackFuncsUnion;
 
 extern _X_EXPORT Bool AddCallback(
     CallbackListPtr * /*pcbl*/,

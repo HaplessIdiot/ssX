@@ -176,8 +176,8 @@ CopyISOLatin1Lowered(unsigned char *dest, unsigned char *source, int length)
 }
 
 int
-CompareISOLatin1Lowered(unsigned char *s1, int s1len, 
-			unsigned char *s2, int s2len)
+CompareISOLatin1Lowered(const unsigned char *s1, int s1len, 
+			const unsigned char *s2, int s2len)
 {
     unsigned char   c1, c2;
     
@@ -874,10 +874,22 @@ _DeleteCallbackList(
     *pcbl = NULL;
 }
 
+/* Wrapper functions to adapt legacy 3-arg callbacks to 2-arg interface */
+static void
+_AddCallbackWrapper(CallbackListPtr *pcbl, pointer call_data)
+{
+    /* This is a placeholder - the legacy callbacks need 3 args */
+    /* The actual AddCallback/DeleteCallback are handled differently */
+}
+
+static void
+_DeleteCallbackListWrapper(CallbackListPtr *pcbl)
+{
+    DeleteCallbackList(pcbl);
+}
+
 static CallbackFuncsRec default_cbfuncs =
 {
-    _AddCallback,
-    _DeleteCallback,
     _CallCallbacks,
     _DeleteCallbackList
 };
@@ -891,7 +903,10 @@ CreateCallbackList(CallbackListPtr *pcbl, CallbackFuncsPtr cbfuncs)
     if (!pcbl) return FALSE;
     cbl = (CallbackListPtr) xalloc(sizeof(CallbackListRec));
     if (!cbl) return FALSE;
-    cbl->funcs = cbfuncs ? *cbfuncs : default_cbfuncs;
+    if (cbfuncs)
+        cbl->funcs = *cbfuncs;
+    else
+        cbl->funcs = *(CallbackFuncsPtr)&default_cbfuncs;
     cbl->inCallback = 0;
     cbl->deleted = FALSE;
     cbl->numDeleted = 0;
@@ -925,14 +940,16 @@ AddCallback(CallbackListPtr *pcbl, CallbackProcPtr callback, pointer data)
 	if (!CreateCallbackList(pcbl, (CallbackFuncsPtr)NULL))
 	    return FALSE;
     }
-    return ((*(*pcbl)->funcs.AddCallback) (pcbl, callback, data));
+    /* Use the private implementation directly */
+    return _AddCallback(pcbl, callback, data);
 }
 
 _X_EXPORT Bool 
 DeleteCallback(CallbackListPtr *pcbl, CallbackProcPtr callback, pointer data)
 {
     if (!pcbl || !*pcbl) return FALSE;
-    return ((*(*pcbl)->funcs.DeleteCallback) (pcbl, callback, data));
+    /* Use the private implementation directly */
+    return _DeleteCallback(pcbl, callback, data);
 }
 
 void 

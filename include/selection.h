@@ -61,7 +61,23 @@ typedef struct _Selection {
     Window window;
     WindowPtr pWin;
     ClientPtr client;
+    DevPrivateList *devPrivates;
+    struct _Selection *next;
 } Selection;
+
+/* Selection callback kinds */
+typedef enum {
+    SelectionSetOwner,
+    SelectionWindowDestroy,
+    SelectionClientClose
+} SelectionCallbackKind;
+
+/* Selection callback info */
+typedef struct {
+    Selection *pSel;
+    ClientPtr client;
+    SelectionCallbackKind kind;
+} SelectionInfoRec;
 
 #endif /* SELECTION_H */
 
