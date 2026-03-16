@@ -28,11 +28,12 @@ typedef DevPrivateKey DevPrivateKeyRec;
 struct _Private;
 typedef struct _Private PrivateRec;
 
-/* Define DevUnion for compatibility */
-typedef union _DevUnion {
+/* DevPrivateList - list of private pointers for an object */
+typedef struct _DevPrivateList {
+    DevPrivateKey key;
     pointer val;
-    int num;
-} DevUnion;
+    struct _DevPrivateList *next;
+} DevPrivateList;
 
 /* Define ConfigNotifyProcPtr - used by DRI3 and others */
 typedef int (*ConfigNotifyProcPtr) (ScreenPtr screen, 
@@ -54,31 +55,6 @@ dixLookupPrivateCompat(PrivateRec **privates, DevPrivateKey key)
 #define PRIVATE_FONT 5
 #define PRIVATE_CURSOR 6
 #define PRIVATE_DEVICE 7
-
-/* Compatibility macros for swap functions - single argument versions */
-/* These macros wrap the two-argument versions from misc.h for single-argument use */
-static char dummy_swap_var;
-#define swaps(x) swaps(x, dummy_swap_var)
-#define swapl(x) swapl(x, dummy_swap_var)
-
-/* XACE access types - commonly used */
-#define DixCreateAccess 1
-#define DixGetAttrAccess 2
-#define DixSetAttrAccess 3
-#define DixManageAccess 4
-#define DixDestroyAccess 5
-#define DixReadAccess 6
-#define DixWriteAccess 7
-#define DixGetFocusAccess 8
-#define DixSetFocusAccess 9
-#define DixAddAccess 10
-#define DixRemoveAccess 11
-#define DixReceiveAccess 12
-#define XACE_SERVER_ACCESS 1
-
-/* Client struct compatibility - add missing members */
-#define ignoreCount 0
-#define local 1
 
 /* Compatibility function for registering private keys - used by DRI3, randr, etc. */
 /* Returns TRUE if successful */
