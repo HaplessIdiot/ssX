@@ -67,8 +67,8 @@ typedef void (*DeleteCallbackListProcPtr)(
     CallbackListPtr * /*pcbl*/);
 
 typedef struct _CallbackFuncs {
-    CallCallbacksProcPtr        callCallbacks;
-    DeleteCallbackListProcPtr   deleteCallbackList;
+    CallCallbacksProcPtr        CallCallbacks;
+    DeleteCallbackListProcPtr   DeleteCallbackList;
 } CallbackFuncsRec, *CallbackFuncsPtr;
 
 /* Compatibility: legacy code expects these member names */

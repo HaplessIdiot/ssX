@@ -89,6 +89,17 @@ typedef struct _DeviceGrabRec {
     TimeStamp timestamp;
     WindowPtr window;
     int state;
+    /* Additional members needed for XI2 compatibility */
+    TimeStamp grabTime;
+    void (*ActivateGrab)(DeviceIntPtr device, GrabPtr grab, TimeStamp time, Bool autoGrab);
+    void (*DeactivateGrab)(DeviceIntPtr device);
+    struct {
+        Bool frozen;
+        int state;
+        GrabPtr other;
+        xEvent *event;
+        int evcount;
+    } sync;
 } DeviceGrabRec;
 
 #define EMASKSIZE	MAX_DEVICES
@@ -166,7 +177,7 @@ typedef struct _KeyClassRec {
 #ifdef XKB
     struct _XkbSrvInfo *xkbInfo;
 #else
-    void               *pad0;
+    void               *xkbInfo;  /* Backward compat - always available */
 #endif
 } KeyClassRec, *KeyClassPtr;
 
@@ -176,10 +187,46 @@ typedef struct _AxisInfo {
     int		max_resolution;
     int		min_value;
     int		max_value;
+    int             mode;           /* Relative or Absolute */
+    Atom            label;          /* axis label */
+    union {
+        struct {
+            int increment;
+            int type;           /* SCROLL_TYPE_* */
+        } scroll;
+    } scroll;
 } AxisInfo, *AxisInfoPtr;
 
+/* Forward declarations - defined in ptrveloc.h */
+typedef void (*AccelSchemeProcPtr)(DeviceIntPtr /*pDev*/, int /*first_valuator*/,
+                                    int /*num_valuators*/, int */*valuators*/, int /*evtime*/);
+typedef Bool (*AccelInitProcPtr)(DeviceIntPtr /*dev*/, void */*scheme*/);
+typedef void (*AccelCleanupProcPtr)(DeviceIntPtr /*dev*/);
+
+/* Valuator acceleration scheme record */
+typedef struct _ValuatorAccelerationRec {
+    int number;
+    AccelSchemeProcPtr AccelSchemeProc;
+    void *accelData;
+    AccelInitProcPtr AccelInitProc;
+    AccelCleanupProcPtr AccelCleanupProc;
+} ValuatorAccelerationRec, *ValuatorAccelerationPtr;
+
+/* Legacy last device info for tracking previous coordinates */
+typedef struct _LastDeviceInfo {
+    int valuators[MAX_VALUATORS];          /* previous valuator values */
+    float remainder[2];                    /* fractional remainders for acceleration */
+    int numValuators;
+    /* XI2 compatibility members */
+    struct {
+        int value;
+        int type;
+    } scroll[MAX_VALUATORS];
+    int touches;                          /* number of active touches */
+} LastDeviceInfo, *LastDeviceInfoPtr;
+
 typedef struct _ValuatorClassRec {
-    int                     accelScheme; /* legacy acceleration tracking */
+    ValuatorAccelerationRec accelScheme;
     ValuatorMotionProcPtr GetMotionProc;
     int		 	  numMotionEvents;
     int                   first_motion;
@@ -317,9 +364,10 @@ typedef struct _LedFeedbackClassRec {
 typedef struct _DeviceIntRec {
     DeviceRec	public;
     DeviceIntPtr next;
-    int                 *last; /* legacy tracking for previous coordinate states */
+    LastDeviceInfo       last; /* legacy tracking for previous coordinate states */
     DeviceGrabRec       deviceGrab; /* legacy device grab tracking */
     TimeStamp	grabTime;
+    void               *idle_counter;  /* XI2 idle counter */
     Bool	startup;		/* true if needs to be turned on at
 				          server intialization time */
     DeviceProc	deviceProc;		/* proc(DevicePtr, DEVICE_xx). It is

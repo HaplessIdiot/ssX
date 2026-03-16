@@ -79,6 +79,12 @@ extern _X_EXPORT int SetFontPath(ClientPtr /*client */ ,
                                  int /*npaths */ ,
                                  unsigned char * /*paths */ );
 
+/* Backward-compatible wrapper for legacy code - takes just npaths and paths */
+static inline int SetFontPathCompat(int npaths, unsigned char *paths)
+{
+    return SetFontPath(NULL, npaths, paths);
+}
+
 extern _X_EXPORT int SetDefaultFontPath(const char * /*path */ );
 
 extern _X_EXPORT int GetFontPath(ClientPtr client,

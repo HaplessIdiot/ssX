@@ -39,6 +39,12 @@ typedef struct _DevPrivateList {
 typedef int (*ConfigNotifyProcPtr) (ScreenPtr screen, 
                                     int x, int y, int w, int h, int bw);
 
+/*
+ * Look up a private pointer.
+ */
+pointer
+dixLookupPrivate(PrivateRec **privates, const DevPrivateKey key);
+
 /* Add compatibility wrapper for dixLookupPrivate that accepts DevUnion** */
 static inline pointer
 dixLookupPrivateCompat(PrivateRec **privates, DevPrivateKey key)
@@ -59,9 +65,9 @@ dixLookupPrivateCompat(PrivateRec **privates, DevPrivateKey key)
 /* Compatibility function for registering private keys - used by DRI3, randr, etc. */
 /* Returns TRUE if successful */
 static inline int
-dixRegisterPrivateKey(DevPrivateKey key, int private_id, unsigned size)
+dixRegisterPrivateKey(DevPrivateKey *key, int private_id, unsigned size)
 {
-    *key = private_id;
+    *key = (DevPrivateKey)(intptr_t)private_id;
     return 1;
 }
 
@@ -79,12 +85,6 @@ extern pointer *
 dixAllocatePrivate(PrivateRec **privates, const DevPrivateKey key);
 
 /*
- * Look up a private pointer.
- */
-pointer
-dixLookupPrivate(PrivateRec **privates, const DevPrivateKey key);
-
-/*
  * Look up the address of a private pointer.
  */
 pointer *
@@ -95,6 +95,14 @@ dixLookupPrivateAddr(PrivateRec **privates, const DevPrivateKey key);
  */
 int
 dixSetPrivate(PrivateRec **privates, const DevPrivateKey key, pointer val);
+
+/* Add compatibility wrapper for dixSetPrivate that accepts DevUnion** */
+static inline int
+dixSetPrivateCompat(PrivateRec **privates, DevPrivateKey key, pointer val)
+{
+    return dixSetPrivate(privates, key, val);
+}
+#define dixSetPrivate(d, k, v) dixSetPrivateCompat((PrivateRec**)(d), (DevPrivateKey)(k), (pointer)(v))
 
 /*
  * Register callbacks to be called on private allocation/freeing.

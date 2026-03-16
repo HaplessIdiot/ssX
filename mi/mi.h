@@ -62,6 +62,50 @@ typedef struct _miDash *miDashPtr;
 #define EVEN_DASH	0
 #define ODD_DASH	~0
 
+/* micopy.c */
+
+/* miCopyProc - type for copy functions */
+typedef void (*miCopyProc)(
+    DrawablePtr /*pSrcDrawable*/,
+    DrawablePtr /*pDstDrawable*/,
+    GCPtr /*pGC*/,
+    BoxPtr /*pbox*/,
+    int /*nbox*/,
+    int /*dx*/,
+    int /*dy*/,
+    Bool /*reverse*/,
+    Bool /*upsidedown*/,
+    Pixel /*bitPlane*/,
+    void * /*closure*/
+);
+
+extern void miCopyRegion(
+    DrawablePtr /*pSrcDrawable*/,
+    DrawablePtr /*pDstDrawable*/,
+    GCPtr /*pGC*/,
+    RegionPtr /*pDstRegion*/,
+    int /*dx*/,
+    int /*dy*/,
+    miCopyProc /*copyProc*/,
+    Pixel /*bitPlane*/,
+    void * /*closure*/
+);
+
+extern RegionPtr miDoCopy(
+    DrawablePtr /*pSrcDrawable*/,
+    DrawablePtr /*pDstDrawable*/,
+    GCPtr /*pGC*/,
+    int /*xIn*/,
+    int /*yIn*/,
+    int /*widthSrc*/,
+    int /*heightSrc*/,
+    int /*xOut*/,
+    int /*yOut*/,
+    miCopyProc /*copyProc*/,
+    Pixel /*bitPlane*/,
+    void * /*closure*/
+);
+
 /* miarc.c */
 
 extern void miPolyArc(

@@ -414,3 +414,260 @@ Bool PixmapSyncDirtyHelper(PixmapDirtyUpdatePtr dirty)
     pScreen->SourceValidate = SourceValidate;
     return TRUE;
 }
+    /* have the secondary pixmap take a reference on the primary pixmap
+       later we destroy them both at the same time */
+    pixmap->refcnt++;
+
+    spix->primary_pixmap = pixmap;
+
+    ret = secondary->SetSharedPixmapBacking(spix, handle);
+    if (ret == FALSE) {
+        secondary->DestroyPixmap(spix);
+        return NULL;
+    }
+
+    return spix;
+}
+
+static void
+PixmapDirtyDamageDestroy(DamagePtr damage, void *closure)
+{
+    PixmapDirtyUpdatePtr dirty = closure;
+
+    dirty->damage = NULL;
+}
+
+Bool
+PixmapStartDirtyTracking(DrawablePtr src,
+                         PixmapPtr secondary_dst,
+                         int x, int y, int dst_x, int dst_y,
+                         Rotation rotation)
+{
+    ScreenPtr screen = src->pScreen;
+    PixmapDirtyUpdatePtr dirty_update;
+    RegionPtr damageregion;
+    RegionRec dstregion;
+    BoxRec box;
+
+    dirty_update = calloc(1, sizeof(PixmapDirtyUpdateRec));
+    if (!dirty_update)
+        return FALSE;
+
+    dirty_update->src = src;
+    dirty_update->secondary_dst = secondary_dst;
+    dirty_update->x = x;
+    dirty_update->y = y;
+    dirty_update->dst_x = dst_x;
+    dirty_update->dst_y = dst_y;
+    dirty_update->rotation = rotation;
+    dirty_update->damage = DamageCreate(NULL, PixmapDirtyDamageDestroy,
+                                        DamageReportNone, TRUE, screen,
+                                        dirty_update);
+
+    if (rotation != RR_Rotate_0) {
+        RRTransformCompute(x, y,
+                           secondary_dst->drawable.width,
+                           secondary_dst->drawable.height,
+                           rotation,
+                           NULL,
+                           &dirty_update->transform,
+                           &dirty_update->f_transform,
+                           &dirty_update->f_inverse);
+    }
+    if (!dirty_update->damage) {
+        free(dirty_update);
+        return FALSE;
+    }
+
+    /* Damage destination rectangle so that the destination pixmap contents
+     * will get fully initialized
+     */
+    box.x1 = dirty_update->x;
+    box.y1 = dirty_update->y;
+    if (dirty_update->rotation == RR_Rotate_90 ||
+        dirty_update->rotation == RR_Rotate_270) {
+        box.x2 = dirty_update->x + secondary_dst->drawable.height;
+        box.y2 = dirty_update->y + secondary_dst->drawable.width;
+    } else {
+        box.x2 = dirty_update->x + secondary_dst->drawable.width;
+        box.y2 = dirty_update->y + secondary_dst->drawable.height;
+    }
+    RegionInit(&dstregion, &box, 1);
+    damageregion = DamageRegion(dirty_update->damage);
+    RegionUnion(damageregion, damageregion, &dstregion);
+    RegionUninit(&dstregion);
+
+    DamageRegister(src, dirty_update->damage);
+    xorg_list_add(&dirty_update->ent, &screen->pixmap_dirty_list);
+    return TRUE;
+}
+
+Bool
+PixmapStopDirtyTracking(DrawablePtr src, PixmapPtr secondary_dst)
+{
+    ScreenPtr screen = src->pScreen;
+    PixmapDirtyUpdatePtr ent, safe;
+
+    xorg_list_for_each_entry_safe(ent, safe, &screen->pixmap_dirty_list, ent) {
+        if (ent->src == src && ent->secondary_dst == secondary_dst) {
+            if (ent->damage)
+                DamageDestroy(ent->damage);
+            xorg_list_del(&ent->ent);
+            free(ent);
+        }
+    }
+    return TRUE;
+}
+
+static void
+PixmapDirtyCopyArea(PixmapPtr dst,
+                    PixmapDirtyUpdatePtr dirty,
+                    RegionPtr dirty_region)
+{
+    DrawablePtr src = dirty->src;
+    ScreenPtr pScreen = src->pScreen;
+    int n;
+    BoxPtr b;
+    GCPtr pGC;
+
+    n = RegionNumRects(dirty_region);
+    b = RegionRects(dirty_region);
+
+    pGC = GetScratchGC(src->depth, pScreen);
+    if (pScreen->root) {
+        ChangeGCVal subWindowMode;
+
+        subWindowMode.val = IncludeInferiors;
+        ChangeGC(NullClient, pGC, GCSubwindowMode, &subWindowMode);
+    }
+    ValidateGC(&dst->drawable, pGC);
+
+    while (n--) {
+        BoxRec dst_box;
+        int w, h;
+
+        dst_box = *b;
+        w = dst_box.x2 - dst_box.x1;
+        h = dst_box.y2 - dst_box.y1;
+
+        pGC->ops->CopyArea(src, &dst->drawable, pGC,
+                           dirty->x + dst_box.x1, dirty->y + dst_box.y1, w, h,
+                           dirty->dst_x + dst_box.x1,
+                           dirty->dst_y + dst_box.y1);
+        b++;
+    }
+    FreeScratchGC(pGC);
+}
+
+static void
+PixmapDirtyCompositeRotate(PixmapPtr dst_pixmap,
+                           PixmapDirtyUpdatePtr dirty,
+                           RegionPtr dirty_region)
+{
+    ScreenPtr pScreen = dirty->src->pScreen;
+    PictFormatPtr format = PictureWindowFormat(pScreen->root);
+    PicturePtr src, dst;
+    XID include_inferiors = IncludeInferiors;
+    int n = RegionNumRects(dirty_region);
+    BoxPtr b = RegionRects(dirty_region);
+    int error;
+
+    src = CreatePicture(None,
+                        dirty->src,
+                        format,
+                        CPSubwindowMode,
+                        &include_inferiors, serverClient, &error);
+    if (!src)
+        return;
+
+    dst = CreatePicture(None,
+                        &dst_pixmap->drawable,
+                        format, 0L, NULL, serverClient, &error);
+    if (!dst)
+        return;
+
+    error = SetPictureTransform(src, &dirty->transform);
+    if (error)
+        return;
+    while (n--) {
+        BoxRec dst_box;
+
+        dst_box = *b;
+        dst_box.x1 += dirty->x;
+        dst_box.x2 += dirty->x;
+        dst_box.y1 += dirty->y;
+        dst_box.y2 += dirty->y;
+        pixman_f_transform_bounds(&dirty->f_inverse, &dst_box);
+
+        CompositePicture(PictOpSrc,
+                         src, NULL, dst,
+                         dst_box.x1,
+                         dst_box.y1,
+                         0, 0,
+                         dst_box.x1,
+                         dst_box.y1,
+                         dst_box.x2 - dst_box.x1,
+                         dst_box.y2 - dst_box.y1);
+        b++;
+    }
+
+    FreePicture(src, None);
+    FreePicture(dst, None);
+}
+
+/*
+ * this function can possibly be improved and optimised, by clipping
+ * instead of iterating
+ * Drivers are free to implement their own version of this.
+ */
+Bool PixmapSyncDirtyHelper(PixmapDirtyUpdatePtr dirty)
+{
+    ScreenPtr pScreen = dirty->src->pScreen;
+    RegionPtr region = DamageRegion(dirty->damage);
+    PixmapPtr dst;
+    SourceValidateProcPtr SourceValidate;
+    RegionRec pixregion;
+    BoxRec box;
+
+    dst = dirty->secondary_dst->primary_pixmap;
+    if (!dst)
+        dst = dirty->secondary_dst;
+
+    box.x1 = 0;
+    box.y1 = 0;
+    if (dirty->rotation == RR_Rotate_90 ||
+        dirty->rotation == RR_Rotate_270) {
+        box.x2 = dst->drawable.height;
+        box.y2 = dst->drawable.width;
+    } else {
+        box.x2 = dst->drawable.width;
+        box.y2 = dst->drawable.height;
+    }
+    RegionInit(&pixregion, &box, 1);
+
+    /*
+     * SourceValidate is used by the software cursor code
+     * to pull the cursor off of the screen when reading
+     * bits from the frame buffer. Bypassing this function
+     * leaves the software cursor in place
+     */
+    SourceValidate = pScreen->SourceValidate;
+    pScreen->SourceValidate = miSourceValidate;
+
+    RegionTranslate(&pixregion, dirty->x, dirty->y);
+    RegionIntersect(&pixregion, &pixregion, region);
+
+    if (RegionNil(&pixregion)) {
+        RegionUninit(&pixregion);
+        return FALSE;
+    }
+
+    RegionTranslate(&pixregion, -dirty->x, -dirty->y);
+
+    if (!pScreen->root || dirty->rotation == RR_Rotate_0)
+        PixmapDirtyCopyArea(dst, dirty, &pixregion);
+    else
+        PixmapDirtyCompositeRotate(dst, dirty, &pixregion);
+    pScreen->SourceValidate = SourceValidate;
+    return TRUE;
+}

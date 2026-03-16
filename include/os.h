@@ -582,6 +582,9 @@ enum ExitCode {
 
 extern _X_EXPORT void
 ddxGiveUp(enum ExitCode error);
+
+/* Backward-compatible wrapper for legacy code */
+#define ddxGiveUp() ddxGiveUp(EXIT_ERR_ABORT)
 extern _X_EXPORT void
 ddxInputThreadInit(void);
 extern _X_EXPORT int
@@ -751,6 +754,13 @@ typedef _sigset_t sigset_t;
 extern _X_EXPORT int
 xthread_sigmask(int how, const sigset_t *set, sigset_t *oldest);
 
+/* Memory allocation macros for X server internals */
+#ifndef ALLOCATE_LOCAL
+#define ALLOCATE_LOCAL(size) malloc(size)
+#endif
 
+#ifndef DEALLOCATE_LOCAL
+#define DEALLOCATE_LOCAL(ptr) free(ptr)
+#endif
 
 #endif                          /* OS_H */

@@ -3,6 +3,9 @@
 
 #include "window.h"	/* for WindowPtr */
 
+/* Legacy constants for ssX - MAXDEVICES is critical for input handling */
+#define MAXDEVICES 256
+
 /* Legacy default constants for ssX */
 #define DEFAULT_KEYBOARD_CLICK 0
 #define DEFAULT_BELL 50
@@ -32,6 +35,8 @@ extern int monitorResolution;
 extern Bool loadableFonts;
 extern int defaultColorVisualClass;
 
+/* Client array - pointer to dynamically allocated array */
+typedef struct _Client *ClientPtr;
 extern Bool Must_have_memory;
 extern WindowPtr *WindowTable;
 extern int GrabInProgress;

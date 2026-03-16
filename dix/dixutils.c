@@ -414,8 +414,8 @@ NoopDDA(void)
 }
 
 typedef struct _BlockHandler {
-    BlockHandlerProcPtr BlockHandler;
-    WakeupHandlerProcPtr WakeupHandler;
+    ServerBlockHandlerProcPtr BlockHandler;
+    ServerWakeupHandlerProcPtr WakeupHandler;
     pointer blockData;
     Bool    deleted;
 } BlockHandlerRec, *BlockHandlerPtr;
@@ -499,8 +499,8 @@ WakeupHandler(int result, pointer pReadmask)
  * get called until next time
  */
 _X_EXPORT Bool
-RegisterBlockAndWakeupHandlers (BlockHandlerProcPtr blockHandler, 
-                                WakeupHandlerProcPtr wakeupHandler, 
+RegisterBlockAndWakeupHandlers (ServerBlockHandlerProcPtr blockHandler, 
+                                ServerWakeupHandlerProcPtr wakeupHandler, 
                                 pointer blockData)
 {
     BlockHandlerPtr new;
@@ -523,8 +523,8 @@ RegisterBlockAndWakeupHandlers (BlockHandlerProcPtr blockHandler,
 }
 
 _X_EXPORT void
-RemoveBlockAndWakeupHandlers (BlockHandlerProcPtr blockHandler, 
-                              WakeupHandlerProcPtr wakeupHandler, 
+RemoveBlockAndWakeupHandlers (ServerBlockHandlerProcPtr blockHandler, 
+                              ServerWakeupHandlerProcPtr wakeupHandler, 
                               pointer blockData)
 {
     int	    i;

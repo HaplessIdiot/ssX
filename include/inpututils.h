@@ -31,10 +31,17 @@
 
 #include "input.h"
 
+/* Only define _ValuatorMask if not already defined by input.h 
+ * Note: input.h defines ValuatorMask (typedef), we define _ValuatorMask (struct)
+ * They are different - input.h uses the simpler version for compatibility
+ */
+#ifndef _VALUATOR_MASK_STRUCT_DEFINED
 struct _ValuatorMask {
     int8_t      last_bit; /* highest bit set in mask */
     uint8_t     mask[(MAX_VALUATORS + 7)/8];
     int         valuators[MAX_VALUATORS]; /* valuator data */
 };
+#define _VALUATOR_MASK_STRUCT_DEFINED
+#endif
 
 #endif

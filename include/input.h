@@ -487,6 +487,24 @@ extern int GetMotionHistory(
     unsigned long stop,
     ScreenPtr pScreen);
 
+/* Legacy compatibility wrapper for GetMotionHistory */
+static inline int GetMotionHistoryCompat(DeviceIntPtr pDev, xTimecoord **buff, 
+                                         unsigned long start, unsigned long stop,
+                                         ScreenPtr pScreen)
+{
+    return GetMotionHistory(pDev, *buff, start, stop, pScreen);
+}
+#define GetMotionHistory(pDev, buff, start, stop, pScreen) GetMotionHistoryCompat(pDev, &(buff), start, stop, pScreen)
+
+/* Valuator mask for XI2 compatibility - simple wrapper */
+typedef struct _ValuatorMask {
+    int num_valuators;
+    int valuators[MAX_VALUATORS];
+} ValuatorMask;
+
+/* Valuator mode helper functions */
+extern int valuator_get_mode(DeviceIntPtr dev, int num);
+
 extern void SwitchCoreKeyboard(DeviceIntPtr pDev);
 extern void SwitchCorePointer(DeviceIntPtr pDev);
 
@@ -505,6 +523,9 @@ extern void DDXRingBell(
     int volume,
     int pitch,
     int duration);
+
+extern InputAttributes *DuplicateInputAttributes(InputAttributes *attrs);
+extern void FreeInputAttributes(InputAttributes *attrs);
 
 /* Master device functions */
 extern DeviceIntPtr GetMaster(DeviceIntPtr dev, int which);

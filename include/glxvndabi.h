@@ -61,6 +61,10 @@
 
 #include <scrnintstr.h>
 #include <extnsionst.h>
+#include <resource.h>
+#include <dix.h>
+#include <dixstruct.h>
+#include "xace.h"
 #include <GL/glxproto.h>
 
 /*!

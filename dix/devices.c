@@ -374,9 +374,9 @@ EnableDevice(DeviceIntPtr dev, BOOL sendevent)
         if (IsMaster(dev)) {
             /* Sprites appear on first root window, so we can hardcode it */
             if (dev->spriteInfo->spriteOwner) {
-                InitializeSprite(dev, screenInfo.screens[0]->root);
+                InitializeSprite(dev, WindowTable[0]);
                 /* mode doesn't matter */
-                EnterWindow(dev, screenInfo.screens[0]->root, NotifyAncestor);
+                EnterWindow(dev, WindowTable[0], NotifyAncestor);
             }
             else {
                 other = NextFreePointerDevice();
@@ -2695,7 +2695,7 @@ AttachDevice(ClientPtr client, DeviceIntPtr dev, DeviceIntPtr master)
         if (dev->spriteInfo->sprite)
             currentRoot = GetCurrentRootWindow(dev);
         else                    /* new device auto-set to floating */
-            currentRoot = screenInfo.screens[0]->root;
+            currentRoot = WindowTable[0];
 
         /* we need to init a fake sprite */
         screen = currentRoot->drawable.pScreen;

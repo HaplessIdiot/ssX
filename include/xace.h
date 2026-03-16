@@ -19,6 +19,12 @@
 #define XACE_PROPERTY_ACCESS     3
 #define XACE_SELECTION_ACCESS    4
 #define XACE_DRAWABLE_ACCESS    5
+#define XACE_SCREEN_ACCESS       6
+#define XACE_WINDOW_ACCESS       7
+#define XACE_PIXMAP_ACCESS       8
+#define XACE_CURSOR_ACCESS       9
+#define XACE_GC_ACCESS          10
+#define XACE_FONT_ACCESS        11
 
 /* Access masks used by DixAccess checks */
 #define DixReadAccess           (1 << 0)
@@ -29,6 +35,11 @@
 #define DixCreateAccess         (1 << 5)
 #define DixManageAccess         (1 << 6)
 #define DixDestroyAccess        (1 << 7)
+#define DixRemoveAccess         (1 << 13)
+#define DixListPropAccess       (1 << 9)
+#define DixGetFocusAccess      (1 << 10)
+#define DixSetFocusAccess      (1 << 11)
+#define DixGrabAccess          (1 << 12)
 
 
 /* XACE is enabled in ssX build */
@@ -40,14 +51,10 @@
 #define XACE_RESOURCE_ACCESS    2
 #define XACE_DEVICE_ACCESS_HOOK 3
 
-/* Forward declarations */
+/* Forward declarations - use Xdefs.h definitions to avoid conflicts */
 typedef struct _Selection Selection;
-typedef struct _Client ClientPtr;
 typedef struct _DevPrivateList DevPrivateList;
 typedef unsigned long Mask;
-
-/* Callback list pointer type */
-typedef struct _CallbackList *CallbackListPtr;
 
 /* Selection access hook */
 typedef int (*XaceHookSelectionAccessProc)(ClientPtr client, Selection **ppSel, Mask access_mode);
@@ -58,5 +65,9 @@ XaceHookSelectionAccess(ClientPtr client, Selection **ppSel, Mask access_mode)
 {
     return Success;
 }
+
+/* Main XACE hook - stub implementation for ssX
+ * This is a compatibility shim that always returns Success */
+#define XaceHook(hook_type, client, access_mode) Success
 
 #endif /* _XACE_SSX_H */
