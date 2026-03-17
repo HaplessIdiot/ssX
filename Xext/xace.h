@@ -89,12 +89,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 extern CallbackListPtr XaceHooks[XACE_NUM_HOOKS];
 
-/* Entry point for hook functions.  Called by Xserver.
- */
-extern int XaceHook(
-    int /*hook*/,
-    ... /*appropriate args for hook*/
-    ); 
+/* Note: XaceHook is defined in include/xace.h as an inline function
+ * when XACE is enabled. Don't declare it here to avoid conflicts. */
 
 /* Register a callback for a given hook.
  */
@@ -124,13 +120,8 @@ extern void XaceCensorImage(
 
 /* Define calls away when XACE is not being built. */
 
-#ifdef __GNUC__
-#define XaceHook(args...) XaceAllowOperation
-#define XaceCensorImage(args...) { ; }
-#else
-#define XaceHook(...) XaceAllowOperation
-#define XaceCensorImage(...) { ; }
-#endif
+#define XaceHook(...) (Success)
+#define XaceCensorImage(...) do { } while(0)
 
 #endif /* XACE */
 

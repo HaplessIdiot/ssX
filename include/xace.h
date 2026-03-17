@@ -67,7 +67,12 @@ XaceHookSelectionAccess(ClientPtr client, Selection **ppSel, Mask access_mode)
 }
 
 /* Main XACE hook - stub implementation for ssX
- * This is a compatibility shim that always returns Success */
-#define XaceHook(hook_type, client, access_mode) Success
+ * This is a compatibility shim that always returns Success.
+ * Note: Don't define as macro to avoid conflicts with Xext/xace.h function decl.
+ * Use inline function instead. */
+static inline int ssx_XaceHook(int hook_type, void *client, int access_mode) {
+    return Success;
+}
+#define XaceHook ssx_XaceHook
 
 #endif /* _XACE_SSX_H */

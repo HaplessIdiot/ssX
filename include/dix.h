@@ -54,12 +54,80 @@ SOFTWARE.
 #include "cursor.h"
 #include "geext.h"
 #include "events.h"
+#include "eventstr.h"
 #include <X11/extensions/XI.h>
 /* Forward declarations for types used below that may not yet be
  * visible depending on include order. gesture.h and grabmask are
  * pulled in later in the input subsystem include chain. */
 typedef struct _GestureInfo GestureInfo, *GestureInfoPtr;
 typedef union _GrabMask GrabMask;
+
+/* Input types - defined in inputstr.h */
+
+/* ssX: Add forward declarations for TouchPointInfoPtr if not already defined */
+#ifndef _TOUCHPOINTINFOPTR
+typedef struct _TouchPointInfoRec *TouchPointInfoPtr;
+#define _TOUCHPOINTINFOPTR
+#endif
+
+/* Input levels for event delivery - use ssX prefix to avoid XI2 macro conflicts */
+typedef enum {
+    ssX_HierarchyChanged = -1,
+    ssX_DeviceChanged = 0,
+    ssX_KeyPress = 1,
+    ssX_KeyRelease = 2,
+    ssX_ButtonPress = 3,
+    ssX_ButtonRelease = 4,
+    ssX_Motion = 5,
+    ssX_Enter = 6,
+    ssX_Leave = 7,
+    ssX_FocusIn = 8,
+    ssX_FocusOut = 9,
+    ssX_KeymapNotify = 10,
+    ssX_Expose = 11,
+    ssX_GraphicsExpose = 12,
+    ssX_NoExpose = 13,
+    ssX_VisibilityNotify = 14,
+    ssX_CreateNotify = 15,
+    ssX_DestroyNotify = 16,
+    ssX_UnmapNotify = 17,
+    ssX_MapNotify = 18,
+    ssX_MapRequest = 19,
+    ssX_ConfigureNotify = 20,
+    ssX_ConfigureRequest = 21,
+    ssX_GravityNotify = 22,
+    ssX_ReparentNotify = 23,
+    ssX_CirculateNotify = 24,
+    ssX_CirculateRequest = 25,
+    ssX_PropertyNotify = 26,
+    ssX_SelectionClear = 27,
+    ssX_SelectionRequest = 28,
+    ssX_SelectionNotify = 29,
+    ssX_ColormapNotify = 30,
+    ssX_MappingNotify = 31,
+    ssX_ClientMessage = 32,
+    ssX_Message = 33,
+    ssX_TouchBegin = 34,
+    ssX_TouchUpdate = 35,
+    ssX_TouchEnd = 36,
+    ssX_TouchOwnership = 37,
+    ssX_RawKeyPress = 38,
+    ssX_RawKeyRelease = 39,
+    ssX_RawButtonPress = 40,
+    ssX_RawButtonRelease = 41,
+    ssX_RawMotion = 42,
+    ssX_RawTouchBegin = 43,
+    ssX_RawTouchUpdate = 44,
+    ssX_RawTouchEnd = 45,
+    ssX_GestureTouchBegin = 46,
+    ssX_GestureTouchUpdate = 47,
+    ssX_GestureTouchEnd = 48,
+    ssX_GesturePanSwipe = 49,
+    ssX_GesturePinchZoom = 50,
+    ssX_DeviceAdded = 51,
+    ssX_DeviceRemoved = 52,
+    ssX_PropertyEvent = 53
+} InputLevel;
 
 #define EARLIER -1
 #define SAMETIME 0
@@ -80,7 +148,7 @@ typedef union _GrabMask GrabMask;
 
 #define REQUEST_AT_LEAST_SIZE(req)                                      \
     do {                                                                \
-        if ((sizeof(req) >> 2) > client->req_len)                       \
+        if ((sizeof(req) >> 2) > client->req_len)                      \
             return(BadLength);                                          \
     } while (0)
 

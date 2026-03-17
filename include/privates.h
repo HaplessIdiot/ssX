@@ -27,7 +27,10 @@ typedef struct _DevPrivateKeyRec {
     Bool allocated;
     int type;
     struct _DevPrivateKeyRec *next;
-} DevPrivateKeyRec, *DevPrivateKey;
+} DevPrivateKeyRec;
+
+/* DevPrivateKey is a pointer to DevPrivateKeyRec - for XFree86/XAA compatibility */
+typedef DevPrivateKeyRec *DevPrivateKey;
 
 typedef struct _DevPrivateSetRec {
     DevPrivateKey key;
@@ -168,5 +171,18 @@ dixRegisterPrivateOffset(RESTYPE type, int offset);
  * when making a call to one of the devPrivates functions
  */
 #define DEVPRIV_AT(ptr, offset) ((PrivateRec **)((char *)ptr + offset))
+
+/*
+ * Screen-specific private allocation functions
+ * These are used by the pixmap code
+ */
+extern unsigned int
+dixScreenSpecificPrivatesSize(ScreenPtr pScreen, int private_id);
+
+extern void
+dixInitScreenPrivates(ScreenPtr pScreen, void *p1, void *p2, int private_id);
+
+extern void
+dixFiniPrivates(void *p, int private_id);
 
 #endif /* PRIVATES_H */

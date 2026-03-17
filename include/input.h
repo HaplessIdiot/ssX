@@ -78,6 +78,9 @@ SOFTWARE.
 
 /* Note: Event types are defined in eventstr.h as an enum */
 
+/* ssX: Forward declare InternalEvent - actual definition in eventstr.h */
+typedef union _InternalEvent InternalEvent;
+
 #define MAX_BUTTONS     256
 #define MAX_VALUATORS   36
 
@@ -223,18 +226,23 @@ typedef struct _InputOption {
 
 extern void InitCoreDevices(void);
 
-extern DeviceIntPtr AddInputDevice(
+extern int AddInputDevice(
+    ClientPtr /*client*/,
     DeviceProc /*deviceProc*/,
-    Bool /*autoStart*/);
+    Bool /*autoStart*/,
+    DeviceIntPtr * /*pDev*/);
 
 extern Bool EnableDevice(
-    DeviceIntPtr /*device*/);
+    DeviceIntPtr /*device*/,
+    BOOL /*sendevent*/);
 
 extern Bool ActivateDevice(
-    DeviceIntPtr /*device*/);
+    DeviceIntPtr /*device*/,
+    BOOL /*sendevent*/);
 
 extern Bool DisableDevice(
-    DeviceIntPtr /*device*/);
+    DeviceIntPtr /*device*/,
+    BOOL /*sendevent*/);
 
 extern int InitAndStartDevices(void);
 

@@ -27,6 +27,8 @@
 #ifndef _DAMAGE_H_
 #define _DAMAGE_H_
 
+#include "region.h"
+
 typedef struct _damage	*DamagePtr;
 
 typedef enum _damageReportLevel {
@@ -36,6 +38,9 @@ typedef enum _damageReportLevel {
     DamageReportNonEmpty,
     DamageReportNone
 } DamageReportLevel;
+
+/* Compatibility macro for legacy DDX code */
+#define DamageReportNone ((DamageReportLevel)0)
 
 typedef void (*DamageReportFunc) (DamagePtr pDamage, RegionPtr pRegion, void *closure);
 typedef void (*DamageDestroyFunc) (DamagePtr pDamage, void *closure);

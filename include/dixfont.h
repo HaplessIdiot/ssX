@@ -109,4 +109,12 @@ extern _X_EXPORT void GetGlyphs(FontPtr /*font */ ,
                                 unsigned long * /*glyphcount */ ,
                                 CharInfoPtr * /*glyphs */ );
 
+/* ssX: Legacy glyph extent query - forward declaration */
+/* Note: ExtentInfoRec is already defined in X11/fonts/fontstruct.h */
+
+extern _X_EXPORT void QueryGlyphExtents(FontPtr /*pFont */,
+                                        CharInfoPtr * /*ppci */,
+                                        unsigned long /*nglyph */,
+                                        ExtentInfoRec * /*info */);
+
 #endif                          /* DIXFONT_H */

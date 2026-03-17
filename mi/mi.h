@@ -55,6 +55,10 @@ SOFTWARE.
 #include <X11/fonts/font.h>
 #include "input.h"
 #include "cursor.h"
+#include "colormap.h"
+
+/* Compatibility macro - pCompositeClip is accessed directly from GC */
+#define miGetCompositeClip(pGC) ((pGC)->pCompositeClip)
 
 #define MiBits	CARD32
 
@@ -617,5 +621,8 @@ extern void miPolyFillArc(
     int /*narcs*/,
     xArc * /*parcs*/
 );
+
+/* Compatibility stub for legacy DDX code */
+#define miSourceValidate(pDraw, x, y, w, h, subWindowMode) /* no-op */
 
 #endif /* MI_H */

@@ -177,7 +177,7 @@ typedef struct _KeyClassRec {
 #ifdef XKB
     struct _XkbSrvInfo *xkbInfo;
 #else
-    void               *xkbInfo;  /* Backward compat - always available */
+    struct _XkbSrvInfo *xkbInfo;  /* Backward compat - always available */
 #endif
 } KeyClassRec, *KeyClassPtr;
 
@@ -213,6 +213,11 @@ typedef struct _ValuatorAccelerationRec {
 } ValuatorAccelerationRec, *ValuatorAccelerationPtr;
 
 /* Legacy last device info for tracking previous coordinates */
+/* Forward declaration - actual definition below */
+#ifndef _DEFINED_DDXTouchPointInfoPtr
+typedef struct _DDXTouchPointInfoRec *DDXTouchPointInfoPtr;
+#define _DEFINED_DDXTouchPointInfoPtr 1
+#endif
 typedef struct _LastDeviceInfo {
     int valuators[MAX_VALUATORS];          /* previous valuator values */
     float remainder[2];                    /* fractional remainders for acceleration */
@@ -224,8 +229,9 @@ typedef struct _LastDeviceInfo {
     } scroll[MAX_VALUATORS];
     /* ssX: Touch support */
     int num_touches;
-    void *touches_data;
-    int touches;                          /* number of active touches */
+    DDXTouchPointInfoPtr *touches;  /* array of active touch points */
+    /* Master/slave tracking for XI2 */
+    DeviceIntPtr slave;
 } LastDeviceInfo, *LastDeviceInfoPtr;
 
 typedef struct _ValuatorClassRec {
@@ -352,6 +358,50 @@ typedef struct _LedFeedbackClassRec {
 #endif
 } LedFeedbackClassRec;
 
+/* Touch class - for touchscreen/touchpad support */
+typedef struct _DDXTouchPointInfoRec {
+    int x, y;
+    WindowPtr win;
+    Bool active;
+    int ddx_id;
+    TimeStamp timestamp;
+    /* Additional fields for touch tracking */
+    void *private;
+    /* ssX: XI2 compatibility */
+    XID client_id;
+    Bool emulate_pointer;
+} DDXTouchPointInfoRec, *DDXTouchPointInfoPtr;
+
+typedef struct _TouchPointInfoRec {
+    int id;
+    int ddx_id;
+    Bool active;
+    Bool emulated_ptr;
+    TimeStamp start;
+    WindowPtr win;
+    WindowPtr emulatedWin;
+    int num_listeners;
+    struct {
+        DeviceIntPtr *listeners;
+        int num_listeners;
+    } listeners;
+    int remaining_reason;
+    DDXTouchPointInfoPtr ddx_info;
+    /* ssX: XI2 compatibility */
+    void *valuators;
+    void *sprite;
+} TouchPointInfoRec, *TouchPointInfoPtr;
+
+typedef struct _TouchClassRec {
+    TouchPointInfoPtr *touches;
+    int num_touches;
+    int max_touches;
+    /* Touch mode - relative or absolute */
+    int mode;
+    /* For tracking touch ownership */
+    TimeStamp *first_touch;
+} TouchClassRec, *TouchClassPtr;
+
 /* states for devices */
 
 #define NOT_GRABBED		0
@@ -412,6 +462,7 @@ typedef struct _DeviceIntRec {
     StringFeedbackPtr	stringfeed;
     BellFeedbackPtr	bell;
     LedFeedbackPtr	leds;
+    TouchClassPtr	touch;		/* Touch device class */
 #ifdef XKB
     struct _XkbInterest *xkb_interest;
 #else

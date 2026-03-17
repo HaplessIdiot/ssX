@@ -29,7 +29,7 @@
 
 #include <dix-config.h>
 
-#include "dix/request_priv.h"
+#include "request_priv.h"
 
 #include "hashtable.h"
 #include "vndserver_priv.h"
