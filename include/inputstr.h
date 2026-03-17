@@ -214,10 +214,18 @@ typedef struct _ValuatorAccelerationRec {
 
 /* Legacy last device info for tracking previous coordinates */
 /* Forward declaration - actual definition below */
+/* Forward declarations - only if not already defined */
+/* ssX: Use _TOUCHPOINTINFOPTR guard to match dix.h definition */
+#ifndef _TOUCHPOINTINFOPTR
+typedef struct _TouchPointInfoRec *TouchPointInfoPtr;
+#define _TOUCHPOINTINFOPTR
+#endif
+
 #ifndef _DEFINED_DDXTouchPointInfoPtr
 typedef struct _DDXTouchPointInfoRec *DDXTouchPointInfoPtr;
 #define _DEFINED_DDXTouchPointInfoPtr 1
 #endif
+
 typedef struct _LastDeviceInfo {
     int valuators[MAX_VALUATORS];          /* previous valuator values */
     float remainder[2];                    /* fractional remainders for acceleration */
@@ -359,6 +367,9 @@ typedef struct _LedFeedbackClassRec {
 } LedFeedbackClassRec;
 
 /* Touch class - for touchscreen/touchpad support */
+/* Only define struct if not already defined */
+#ifndef _DDXTOUCHPOINTINFOREC_DEFINED
+#define _DDXTOUCHPOINTINFOREC_DEFINED
 typedef struct _DDXTouchPointInfoRec {
     int x, y;
     WindowPtr win;
@@ -370,8 +381,18 @@ typedef struct _DDXTouchPointInfoRec {
     /* ssX: XI2 compatibility */
     XID client_id;
     Bool emulate_pointer;
-} DDXTouchPointInfoRec, *DDXTouchPointInfoPtr;
+} DDXTouchPointInfoRec;
+#endif
 
+/* Pointer type - only define if not already defined */
+/* ssX: DDXTouchPointInfoPtr already defined above with _DEFINED_DDXTouchPointInfoPtr guard */
+#ifndef _DDXTOUCHPOINTINFOPTR_TYPEDEF
+#define _DDXTOUCHPOINTINFOPTR_TYPEDEF
+/* Pointer typedef deferred to forward declaration above */
+#endif
+
+#ifndef _TOUCHPOINTINFOREC_DEFINED
+#define _TOUCHPOINTINFOREC_DEFINED
 typedef struct _TouchPointInfoRec {
     int id;
     int ddx_id;
@@ -390,7 +411,8 @@ typedef struct _TouchPointInfoRec {
     /* ssX: XI2 compatibility */
     void *valuators;
     void *sprite;
-} TouchPointInfoRec, *TouchPointInfoPtr;
+} TouchPointInfoRec;
+/* ssX: TouchPointInfoPtr already defined above with _TOUCHPOINTINFOPTR guard */
 
 typedef struct _TouchClassRec {
     TouchPointInfoPtr *touches;

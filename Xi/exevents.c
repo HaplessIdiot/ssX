@@ -1273,12 +1273,3 @@ SendEventToAllWindows(DeviceIntPtr dev, Mask mask, xEvent * ev, int count)
     }
 }
 
-/**
- * Determine if the client should receive XI device events for this device.
- * For now, always return TRUE - clients with device selected events get notified.
- */
-Bool
-XIShouldNotify(ClientPtr client, DeviceIntPtr dev)
-{
-    return TRUE;
-}

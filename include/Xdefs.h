@@ -51,7 +51,7 @@ typedef int Bool;
 #endif
 
 #ifndef _XTYPEDEF_POINTER
-#  define _XTYPEDEF_POINTER 1
+#define _XTYPEDEF_POINTER
 typedef void *pointer;
 #endif
 

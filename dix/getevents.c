@@ -744,7 +744,7 @@ add_to_scroll_valuator(DeviceIntPtr dev, ValuatorMask *mask, int valuator, doubl
         v = 0;
 
         /* reset last.scroll to avoid a button storm */
-        valuator_mask_set_double(dev->last.scroll, valuator, 0);
+        valuator_mask_set_double(SSX_LAST_SCROLL(dev), valuator, 0);
     }
     else
         v += value;
@@ -850,7 +850,7 @@ scale_from_screen(DeviceIntPtr dev, ValuatorMask *mask, int flags)
     if (valuator_mask_isset(mask, 0)) {
         scaled = valuator_mask_get_double(mask, 0);
         if (flags & POINTER_SCREEN)
-            scaled += scr->x;
+            scaled += GET_SCREEN_X(scr);
         scaled = rescaleValuatorAxis(scaled,
                                      NULL, dev->valuator->axes + 0,
                                      screenInfo.x, screenInfo.width);
@@ -859,7 +859,7 @@ scale_from_screen(DeviceIntPtr dev, ValuatorMask *mask, int flags)
     if (valuator_mask_isset(mask, 1)) {
         scaled = valuator_mask_get_double(mask, 1);
         if (flags & POINTER_SCREEN)
-            scaled += scr->y;
+            scaled += GET_SCREEN_Y(scr);
         scaled = rescaleValuatorAxis(scaled,
                                      NULL, dev->valuator->axes + 1,
                                      screenInfo.y, screenInfo.height);

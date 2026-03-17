@@ -129,6 +129,10 @@ typedef enum {
     ssX_PropertyEvent = 53
 } InputLevel;
 
+/* Input level enum values for event delivery - must match ssX event types above */
+#define LEVEL_RAW 0
+#define LEVEL_DEVICE 1
+
 #define EARLIER -1
 #define SAMETIME 0
 #define LATER 1

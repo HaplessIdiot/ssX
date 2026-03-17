@@ -11,6 +11,10 @@
 #include <X11/extensions/XI2proto.h>
 #include <X11/extensions/XI2.h>
 
+/* Only define these if not already defined by the system headers */
+#ifndef _XI2PROPERTY_VALUE_DEFINED
+#define _XI2PROPERTY_VALUE_DEFINED
+
 /* Property value structure - complete definition for ssX */
 typedef struct _XI2PropertyValue {
     int type;
@@ -24,8 +28,15 @@ typedef struct _XI2PropertyValue {
     } data;
 } XI2PropertyValue;
 
-/* Property value pointer type */
-typedef XI2PropertyValue *XIPropertyValuePtr;
+/* Property value pointer type - use XI2 version to avoid conflict */
+typedef XI2PropertyValue *XI2PropertyValuePtr;
+
+/* Legacy alias for code using old name */
+#ifndef XIPropertyValuePtr
+typedef XI2PropertyValuePtr XIPropertyValuePtr;
+#endif
+
+#endif /* _XI2PROPERTY_VALUE_DEFINED */
 
 /* Known property atoms - these are initialized by XIInitKnownProperties() */
 #define XI_PROP_ENABLED "Device Enabled"
