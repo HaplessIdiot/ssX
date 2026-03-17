@@ -164,7 +164,7 @@ DarwinPrintBanner(void)
 { 
   // this should change depending on which specific server we are building
   ErrorF("Xquartz starting:\n");
-  ErrorF("X.Org X Server %s\nBuild Date: %s\n", XSERVER_VERSION, BUILD_DATE );
+  ErrorF("Super Sonic X Server %s\nBuild Date: %s\n", XSERVER_VERSION, BUILD_DATE );
 }
 
 
