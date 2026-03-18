@@ -39,9 +39,6 @@ typedef enum _damageReportLevel {
     DamageReportNone
 } DamageReportLevel;
 
-/* Compatibility macro for legacy DDX code */
-#define DamageReportNone ((DamageReportLevel)0)
-
 typedef void (*DamageReportFunc) (DamagePtr pDamage, RegionPtr pRegion, void *closure);
 typedef void (*DamageDestroyFunc) (DamagePtr pDamage, void *closure);
 

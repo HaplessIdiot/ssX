@@ -84,6 +84,7 @@ SOFTWARE.
 #include "xserver-properties.h"
 #include "xichangehierarchy.h"  /* For XISendDeviceHierarchyEvent */
 #include "syncsrv.h"
+#include "extensions/xi2proto.h"  /* For XIPropertyValuePtr */
 
 /** @file
  * This file handles input device-related stuff.

@@ -70,14 +70,7 @@ SOFTWARE.
 #define SQSECANT 108.856472512142   /* 1/sin^2(11/2) - for 11o miter cutoff */
 
 /* Point with sub-pixel positioning. */
-typedef struct _SppPoint {
-    double x, y;
-} SppPointRec, *SppPointPtr;
-
-typedef struct _SppArc {
-    double x, y, width, height;
-    double angle1, angle2;
-} SppArcRec, *SppArcPtr;
+/* Note: SppPointRec, SppPointPtr, SppArcRec, SppArcPtr are defined in mifpoly.h */
 
 static double miDsin(double a);
 static double miDcos(double a);

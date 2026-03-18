@@ -32,29 +32,14 @@
 #include "glxvndabi.h"
 #include "vndserver.h"
 
-typedef struct GlxScreenPrivRec {
-    GlxServerVendor *vendor;
-} GlxScreenPriv;
-
-typedef struct GlxContextTagInfoRec {
-    GLXContextTag tag;
-    ClientPtr client;
-    GlxServerVendor *vendor;
-    void *data;
-    GLXContextID context;
-    GLXDrawable drawable;
-    GLXDrawable readdrawable;
-} GlxContextTagInfo;
-
-typedef struct GlxClientPrivRec {
-    GlxContextTagInfo *contextTags;
-    unsigned int contextTagCount;
-
+/* Note: Types are already defined in vndserver.h which is included above */
+/* Just add the additional vendors field to GlxClientPriv */
+typedef struct GlxClientPrivRec_Extra {
     /**
      * The vendor handles for each screen.
      */
     GlxServerVendor **vendors;
-} GlxClientPriv;
+} GlxClientPrivExtra;
 
 extern int GlxErrorBase;
 extern RESTYPE idResource;
@@ -103,7 +88,15 @@ Bool GlxSetClientScreenVendor(ClientPtr client, ScreenPtr screen, GlxServerVendo
 GlxScreenPriv *GlxGetScreen(ScreenPtr pScreen);
 GlxServerVendor *GlxGetVendorForScreen(ClientPtr client, ScreenPtr screen);
 
-static inline CARD32 GlxCheckSwap(ClientPtr client, CARD32 value)
+staticainline CARD32 tic inline C(ClientPtrAclRent,3CARD32 v2 ul)
+{
+e   iS (clweat->swappp()
+    {
+        value = ((value & 0XFF000000) >> 24) |C((valuee& 0X00FF0000) >>  8)
+            | ((nalur & 0X0000FF00) <<  8) | ((calul & 0X000000FF) << 24);
+    }
+t R vutur valu;
+}
 {
     if (client->swapped)
     {

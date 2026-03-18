@@ -17,6 +17,22 @@
 
 #include <X11/X.h>
 #include <pixman.h>
+/* Note: damage.h and rrtransform.h are included via meson build include paths */
+
+/* ============================================================================
+ * RENDER/PIXMAN TYPE COMPATIBILITY
+ * Modern X uses pixman types directly; legacy code expects pict_ wrappers
+ * 
+ * Note: The pict_f_transform type is defined in randr/rrtransform.h.
+ * Source files that need it should include that header directly.
+ * We provide a simple macro redirect if the type is needed elsewhere.
+ * ============================================================================ */
+
+/* If pixman_f_transform exists, provide pict_f_transform as alias via macro */
+/* This is needed for dix/pixmap.c which uses pict_f_transform */
+#ifdef pixman_f_transform
+#define pict_f_transform pixman_f_transform
+#endif
 
 /* Include input.h to get basic types - this is safe because input.h doesn't
  * create circular dependencies like inputstr.h does. Source files that need
@@ -38,32 +54,129 @@
 #endif
 
 /* Forward declarations for device classes - these are defined in inputstr.h
- * but we need them here because inputstr.h can't be included due to circular deps */
+ * but we need them here because inputstr.h can't be included due to circular deps.
+ * Use guards to prevent redefinition when inputstr.h is included later. */
+#ifndef _KEYCLASSPTR_TYPEDEF
+#define _KEYCLASSPTR_TYPEDEF
 typedef struct _KeyClassRec *KeyClassPtr;
+#endif
+
+#ifndef _VALUATORCLASSPTR_TYPEDEF
+#define _VALUATORCLASSPTR_TYPEDEF
 typedef struct _ValuatorClassRec *ValuatorClassPtr;
+#endif
+
+#ifndef _BUTTONCLASSPTR_TYPEDEF
+#define _BUTTONCLASSPTR_TYPEDEF
 typedef struct _ButtonClassRec *ButtonClassPtr;
+#endif
+
+#ifndef _TOUCHCLASSPTR_TYPEDEF
+#define _TOUCHCLASSPTR_TYPEDEF
 typedef struct _TouchClassRec *TouchClassPtr;
+#endif
+
+#ifndef _FOCUSCLASSPTR_TYPEDEF
+#define _FOCUSCLASSPTR_TYPEDEF
 typedef struct _FocusClassRec *FocusClassPtr;
+#endif
+
+#ifndef _PROXIMITYCLASSPTR_TYPEDEF
+#define _PROXIMITYCLASSPTR_TYPEDEF
 typedef struct _ProximityClassRec *ProximityClassPtr;
+#endif
+
+#ifndef _KBDFEEDBACKPTR_TYPEDEF
+#define _KBDFEEDBACKPTR_TYPEDEF
 typedef struct _KbdFeedbackClassRec *KbdFeedbackPtr;
+#endif
+
+#ifndef _PTRFEEDBACKPTR_TYPEDEF
+#define _PTRFEEDBACKPTR_TYPEDEF
 typedef struct _PtrFeedbackClassRec *PtrFeedbackPtr;
+#endif
+
+#ifndef _INTEGERFEEDBACKPTR_TYPEDEF
+#define _INTEGERFEEDBACKPTR_TYPEDEF
 typedef struct _IntegerFeedbackClassRec *IntegerFeedbackPtr;
+#endif
+
+#ifndef _STRINGFEEDBACKPTR_TYPEDEF
+#define _STRINGFEEDBACKPTR_TYPEDEF
 typedef struct _StringFeedbackClassRec *StringFeedbackPtr;
+#endif
+
+#ifndef _BELLFEEDBACKPTR_TYPEDEF
+#define _BELLFEEDBACKPTR_TYPEDEF
 typedef struct _BellFeedbackClassRec *BellFeedbackPtr;
+#endif
+
+#ifndef _LEDFEEDBACKPTR_TYPEDEF
+#define _LEDFEEDBACKPTR_TYPEDEF
 typedef struct _LedFeedbackClassRec *LedFeedbackPtr;
+#endif
 
 /* NOTE: We don't include xaa-compat.h here because it should be included
  * after other X server headers. Individual source files can include it
  * if needed. The EXTENSION_BASE definition is provided below. */
 
 /* ============================================================================
- * XKB SUPPORT
- * Enable XKB support for this build
+ * EVENT SOURCE DEFINITIONS
+ * Used in getevents.c for event source classification
+ * Note: These are defined as an enum below, but we also need macros for
+ * legacy code compatibility. We use a single #ifndef block to define them.
  * ============================================================================ */
 
-#ifndef XKB
-#define XKB 1
+#ifndef SSX_EVENT_SOURCE_DEFINED
+#define SSX_EVENT_SOURCE_DEFINED
+
+/* First, undefine any existing definitions to avoid conflicts */
+#ifdef EVENT_SOURCE_FOCUS
+#undef EVENT_SOURCE_FOCUS
 #endif
+#ifdef EVENT_SOURCE_NORMAL
+#undef EVENT_SOURCE_NORMAL
+#endif
+#ifdef EVENT_SOURCE_POINTER
+#undef EVENT_SOURCE_POINTER
+#endif
+
+/* Define as enums for modern API compatibility */
+#ifndef _DEVICE_EVENT_SOURCE_ENUM
+#define _DEVICE_EVENT_SOURCE_ENUM
+typedef enum {
+    DEVICE_SOURCE_NONE = -1,
+    EVENT_SOURCE_NORMAL = 0,
+    EVENT_SOURCE_POINTER = 1,
+    EVENT_SOURCE_KEYBOARD = 2,
+    EVENT_SOURCE_TOUCH = 3,
+    EVENT_SOURCE_BARRIER = 4,
+    EVENT_SOURCE_FOCUS = EVENT_SOURCE_KEYBOARD
+} DeviceEventSource;
+#endif
+
+/* Also define as macros for direct use */
+#ifndef EVENT_SOURCE_NORMAL
+#define EVENT_SOURCE_NORMAL  0
+#endif
+
+#ifndef EVENT_SOURCE_POINTER
+#define EVENT_SOURCE_POINTER 1
+#endif
+
+#ifndef EVENT_SOURCE_KEYBOARD
+#define EVENT_SOURCE_KEYBOARD 2
+#endif
+
+#ifndef EVENT_SOURCE_TOUCH
+#define EVENT_SOURCE_TOUCH 3
+#endif
+
+#ifndef EVENT_SOURCE_FOCUS
+#define EVENT_SOURCE_FOCUS   EVENT_SOURCE_KEYBOARD
+#endif
+
+#endif /* SSX_EVENT_SOURCE_DEFINED */
 
 /* ============================================================================
  * EXTENSION DEFINITIONS
@@ -102,48 +215,11 @@ typedef struct _LedFeedbackClassRec *LedFeedbackPtr;
 #endif
 
 /* ============================================================================
- * XI2 (XInput2) TYPE FORWARD DECLARATIONS
- * Legacy code uses modern XI2 types that may not be declared
- * ============================================================================ */
-
-#ifndef _XI2_TYPES_DEFINED
-#define _XI2_TYPES_DEFINED
-
-/* XI2 Property types - complete struct definition for ssX */
-#ifndef XIPropertyValuePtr
-typedef struct _XIPropertyValue {
-    Atom type;           /* property type */
-    int format;          /* 8, 16, or 32 */
-    unsigned long size;  /* number of elements */
-    void *data;          /* pointer to property data */
-} XI2PropertyValue, *XIPropertyValuePtr;
-#endif
-
-#ifndef XIPropertyPtr  
-typedef struct _XIProperty *XIPropertyPtr;
-#endif
-
-/* XI2 Property atoms - provide stubs for legacy code */
-#ifndef XI_PROP_ENABLED
-#define XI_PROP_ENABLED 0
-#endif
-
-#ifndef XI_PROP_TRANSFORM
-#define XI_PROP_TRANSFORM 0
-#endif
-
-#ifndef XI_PROP_ENABLED
-#define XI_PROP_ENABLED 0
-#endif
-
-/* Button label property atoms */
-#ifndef BTN_LABEL_PROP_BTN_LEFT
-#define BTN_LABEL_PROP_BTN_LEFT 0
-#endif
-
-#ifndef BTN_LABEL_PROP_BTN_MIDDLE
-#define BTN_LABEL_PROP_BTN_MIDDLE 0
-#endif
+ * DAMAGE EXTENSION STUBS - Don't redefine if already in damage.h ===== */
+/* Modern X may have moved or renamed these. Provide stubs for legacy builds. */
+/* Note: DamagePtr is already defined in pixmap.h, don't redefine */
+/* Note: DamageReportLevel is now defined in miext/damage/damage.h.
+ * Don't redefine here - let damage.h provide the real definition. */
 
 #ifndef BTN_LABEL_PROP_BTN_RIGHT
 #define BTN_LABEL_PROP_BTN_RIGHT 0
@@ -199,7 +275,9 @@ typedef struct _XIProperty *XIPropertyPtr;
 #define XIRegisterPropertyHandler(a, b, c, d) 
 #endif
 
-#endif /* _XI2_TYPES_DEFINED */
+#ifndef _XI2_TYPES_DEFINED
+#define _XI2_TYPES_DEFINED
+#endif
 
 /* ============================================================================
  * ADDITIONAL MISSING FUNCTION STUBS
@@ -252,33 +330,56 @@ typedef struct _XIProperty *XIPropertyPtr;
 /* Note: pixman_f_transform is now defined in pixman.h - don't redefine */
 /* Provide pict_ prefix only if pixman doesn't already have it */
 
-/* ===== DAMAGE EXTENSION STUBS ===== */
-/* Modern X may have moved or renamed these. Provide stubs for legacy builds. */
-/* Note: DamagePtr is already defined in pixmap.h, don't redefine */
-#ifndef DamageReportLevel
-typedef enum { DamageReportNoneVal = 0 } DamageReportLevel;
-#define DamageReportNone ((DamageReportLevel)0)
-#endif
-
-/* Stub declarations - actual implementations in damage module */
-#ifndef DamageCreate
-#define DamageCreate(a, b, c, d, e, f) ((void*)0)
-#endif
-#ifndef DamageRegister
-#define DamageRegister(a, b) /* no-op */
-#endif
-#ifndef DamageDestroy
-#define DamageDestroy(a) /* no-op */
-#endif
-#ifndef DamageRegion
-#define DamageRegion(a) ((RegionPtr)0)
-#endif
-
 /* ===== MI LAYER STUBS ===== */
 #ifndef miSourceValidate
 /* Stub for miSourceValidate - used in pixmap.c */
 #define miSourceValidate(pDraw, x, y, w, h, subWindowMode) /* no-op */
 #endif
+
+/* ============================================================================
+ * DAMAGE EXTENSION COMPATIBILITY
+ * Legacy XFree86 code uses DamageCreate, DamageRegion, etc.
+ * Modern X uses different API. Provide shim macros.
+ * ============================================================================ */
+
+/* Note: DamagePtr is already defined in pixmap.h - don't redefine */
+
+/* Stub for DamageCreate - returns 0 (no damage tracking) */
+#ifndef DamageCreate
+#define DamageCreate(a, b, c, d, e, f) ((void*)0)
+#endif
+
+/* Stub for DamageRegion - returns 0 */
+#ifndef DamageRegion
+#define DamageRegion(d) ((void*)0)
+#endif
+
+/* Stub for DamageRegister - no-op */
+#ifndef DamageRegister
+#define DamageRegister(a, b) /* no-op */
+#endif
+
+/* Stub for DamageDestroy - no-op */
+#ifndef DamageDestroy
+#define DamageDestroy(d) /* no-op */
+#endif
+
+/* Stub for DamageSubtract - no-op */
+#ifndef DamageSubtract
+#define DamageSubtract(d, a, b) /* no-op */
+#endif
+
+/* Stub for DamageAdd - no-op */
+#ifndef DamageAdd
+#define DamageAdd(a, b) /* no-op */
+#endif
+
+/* ============================================================================
+ * PICT_F_TRANSFORM COMPATIBILITY
+ * Legacy code uses pict_f_transform, modern uses pixman_f_transform
+ * Note: Don't define here - let randr/rrtransform.h define it, or use a macro redirect
+ * in the source files that need it.
+ * ============================================================================ */
 
 /* ============================================================================
  * STRUCT ALIGNMENT FIXES FOR _SPRITE
@@ -494,13 +595,16 @@ extern void input_force_unlock(void);
 /* ============================================================================
  * SCREEN X/Y ACCESSOR STUBS
  * Legacy code accesses scr->x and scr->y which may not exist in modern ScreenRec
+ * Modern ScreenRec does NOT have x/y - they're in screenInfo instead
  * ============================================================================ */
 
 #ifndef GET_SCREEN_X
+/* Modern X uses screenInfo.x for desktop offset, not scr->x */
 #define GET_SCREEN_X(s) (0)
 #endif
 
 #ifndef GET_SCREEN_Y
+/* Modern X uses screenInfo.y for desktop offset, not scr->y */
 #define GET_SCREEN_Y(s) (0)
 #endif
 
@@ -520,20 +624,26 @@ extern void input_force_unlock(void);
 #endif
 
 /* ============================================================================
- * DEVICE CURSOR STUBS
- * Modern ScreenRec has DeviceCursorInitialize/DeviceCursorCleanup
+ * STRUCT MEMBER ACCESS MACROS
  * ============================================================================ */
 
-#ifndef DeviceCursorInitialize
-#define DeviceCursorInitialize(d, s) (TRUE)
+/* Screen x/y members - modern ScreenRec doesn't have x/y, use screenInfo */
+#ifndef Screen_GetX
+#define Screen_GetX(s) (0)
 #endif
 
-#ifndef DeviceCursorCleanup
-#define DeviceCursorCleanup(d, s) /* no-op */
+#ifndef Screen_GetY
+#define Screen_GetY(s) (0)
 #endif
 
-#ifndef DisplayCursor
-#define DisplayCursor(d, s, c) (TRUE)
+/* RawDeviceEvent flags - modern doesn't have this member
+ * Use a macro that evaluates to 0 for legacy code that checks flags */
+#ifndef RawDeviceEvent_flags
+#define RawDeviceEvent_flags(e) (0)
+#endif
+
+#ifndef SSX_DisplayCursor
+#define SSX_DisplayCursor(d, s, c) (TRUE)
 #endif
 
 /* ============================================================================
@@ -546,23 +656,6 @@ extern void input_force_unlock(void);
 
 #ifndef POINTER_EMULATED
 #define POINTER_EMULATED     (1 << 5)
-#endif
-
-/* ============================================================================
- * DEVICE EVENT SOURCE ENUM
- * Used in getevents.c for event source classification
- * ============================================================================ */
-
-#ifndef _DEVICE_EVENT_SOURCE_ENUM
-#define _DEVICE_EVENT_SOURCE_ENUM
-typedef enum {
-    DEVICE_SOURCE_NONE = -1,
-    EVENT_SOURCE_NORMAL = 0,
-    EVENT_SOURCE_POINTER = 1,
-    EVENT_SOURCE_KEYBOARD = 2,
-    EVENT_SOURCE_TOUCH = 3,
-    EVENT_SOURCE_BARRIER = 4
-} DeviceEventSource;
 #endif
 
 /* ============================================================================
@@ -599,6 +692,9 @@ typedef enum {
  * IMPORTANT: These macros must NOT use return statements inside do-while
  * because they may be used in conditionals. Use helper functions instead.
  * ============================================================================ */
+
+#ifndef SSX_VALUATOR_INLINES_DEFINED
+#define SSX_VALUATOR_INLINES_DEFINED
 
 /* Helper function for valuator_mask_set_double */
 static inline void _ssx_valuator_mask_set_double(ValuatorMask *mask, int idx, double val) {
@@ -685,26 +781,17 @@ static inline void _ssx_valuator_mask_unset(ValuatorMask *mask, int idx) {
 
 /* ============================================================================
  * GETPOINTEREVENTS COMPATIBILITY
- * Modern GetPointerEvents has 8 parameters, legacy had fewer
+ * NOTE: The actual GetPointerEvents is defined in dix/getevents.c with
+ * InternalEvent* signature. Don't define macro wrappers here as they
+ * conflict with the actual implementation.
  * ============================================================================ */
-
-#ifndef GetPointerEvents
-/* Provide a wrapper that expands to the modern 8-param version 
- * Legacy code calls with fewer args - this requires source changes
- * For now, just define the modern signature */
-#define GetPointerEvents(events, pDev, type, buttons, flags, first_val, num_val, vals) \
-    GetPointerEvents(events, pDev, type, buttons, flags, first_val, num_val, vals)
-#endif
 
 /* ============================================================================
  * GETKEYBOARDEVENTS COMPATIBILITY
- * Modern GetKeyboardEvents has 4 parameters
+ * NOTE: The actual GetKeyboardEvents is defined in dix/getevents.c with
+ * InternalEvent* signature. Don't define macro wrappers here as they
+ * conflict with the actual implementation.
  * ============================================================================ */
-
-#ifndef GetKeyboardEvents
-#define GetKeyboardEvents(events, pDev, type, keycode) \
-    GetKeyboardEvents(events, pDev, type, keycode)
-#endif
 
 /* ============================================================================
  * LEAVEWINDOW STUB
@@ -773,8 +860,25 @@ static inline void _ssx_valuator_mask_unset(ValuatorMask *mask, int idx) {
 /* ============================================================================
  * SYNC EVENT STUB
  * Used in FreePendingFrozenDeviceEvents
- * Note: syncEvents is defined in events.c - don't define here to avoid conflicts
+ * syncEvents is defined in events.c - provide a stub for compilation
  * ============================================================================ */
+
+/* Only define if not already in inputstr.h */
+#endif
+
+#ifndef _SYNC_EVENT_LIST_DEFINED_
+#ifndef SyncEventList
+typedef struct _SyncEventList {
+    struct xorg_list pending;
+    struct xorg_list free;
+} SyncEventList;
+#endif
+#endif
+
+/* Define syncEvents if not already defined */
+#ifndef syncEvents
+extern SyncEventList syncEvents;
+#endif
 
 /* ============================================================================
  * PROCESS INPUT PROC TYPE FIX
@@ -831,12 +935,67 @@ static inline void _ssx_valuator_mask_unset(ValuatorMask *mask, int idx) {
 #endif
 
 /* ============================================================================
+ * AXISINFO TYPE COMPATIBILITY
+ * Legacy XFree86 code may access axis->type directly, but modern uses
+ * axis->scroll.type. Also provide macro to hide the union from legacy code.
+ * ============================================================================ */
+
+#ifndef AxisInfo_get_scroll_type
+#define AxisInfo_get_scroll_type(axis) ((axis)->scroll.type)
+#endif
+
+/* For legacy code that tries to access axis->type directly - redirect to scroll.type */
+#ifndef AxisInfo_type
+#define AxisInfo_type(axis) ((axis)->scroll.type)
+#endif
+
+/* ============================================================================
  * POINTER_SCREEN DEFINITION
  * Used in getevents.c - XFree86 had this flag
  * ============================================================================ */
 
 #ifndef POINTER_SCREEN
 #define POINTER_SCREEN  (1 << 1)   /* XFree86 value */
+#endif
+
+#ifndef POINTER_DESKTOP
+#define POINTER_DESKTOP (1 << 2)   /* Desktop coordinates - XFree86 value */
+#endif
+
+#ifndef POINTER_RAWONLY
+#define POINTER_RAWONLY (1 << 3)   /* Raw motion only - XFree86 value */
+#endif
+
+/* ============================================================================
+ * VALUATOR_MASK_GET - Get integer value from valuator mask
+ * ============================================================================ */
+
+#ifndef valuator_mask_get
+#define valuator_mask_get(mask, i) ((mask) ? (mask)->valuators[i] : 0)
+#endif
+
+/* ============================================================================
+ * VALUATOR_MASK_DROP_UNACCELERATED - Drop unaccelerated valuators
+ * ============================================================================ */
+
+#ifndef valuator_mask_drop_unaccelerated
+#define valuator_mask_drop_unaccelerated(mask) /* no-op: unaccelerated values not stored separately */
+#endif
+
+/* ============================================================================
+ * VALUATOR_MASK_ZERO - Zero out a valuator mask
+ * ============================================================================ */
+
+#ifndef valuator_mask_zero
+#define valuator_mask_zero(mask) do { if (mask) { (mask)->num_valuators = 0; } } while(0)
+#endif
+
+/* ============================================================================
+ * VALUATOR_MASK_SET - Set integer value in valuator mask
+ * ============================================================================ */
+
+#ifndef valuator_mask_set
+#define valuator_mask_set(mask, i, v) do { if (mask && (i) >= 0 && (i) < MAX_VALUATORS) { (mask)->valuators[i] = (v); } } while(0)
 #endif
 
 /* ============================================================================
@@ -874,14 +1033,7 @@ typedef struct { unsigned char *masks[XI2LASTEVENT]; } XI2MaskCompat;
 #  define XI2MaskSet(mask, dev, ev)    do {} while(0)
 #endif
 
-/* ============================================================================
- * EVENT SOURCE NORMAL
- * Used in getevents.c for event source classification
- * ============================================================================ */
-
-#ifndef EVENT_SOURCE_NORMAL
-#define EVENT_SOURCE_NORMAL  0
-#endif
+/* Note: EVENT_SOURCE_* definitions are now in SSX_EVENT_SOURCE_DEFINED block */
 
 /* ============================================================================
  * SYNC EVENTS DEFINITION
@@ -896,64 +1048,24 @@ typedef struct { unsigned char *masks[XI2LASTEVENT]; } XI2MaskCompat;
 
 /* ============================================================================
  * GET MOTION HISTORY COMPATIBILITY
- * ssX Legacy Note: The getevents.c file contains a legacy GetMotionHistory 
- * definition with 6 parameters (including BOOL core). The modern input.h 
- * declares a 5-parameter version wrapped with a macro.
- * 
- * We rename our legacy function to ssx_GetMotionHistory and provide a macro
- * to map the old calls to the new name.
+ * Modern Xlibre defines GetMotionHistory as a macro wrapping a 5-parameter function.
+ * Legacy XFree86 code uses 6 parameters (including BOOL core).
+ * We need to override the input.h macro to use our 6-param wrapper.
  * ============================================================================ */
 
-/* Legacy code calls GetMotionHistory with 6 params - map to our implementation */
-#ifndef GetMotionHistory
+/* First, undefine the macro from input.h so we can redefine it */
+#ifdef GetMotionHistory
+#undef GetMotionHistory
+#endif
+
+/* ssx_GetMotionHistory - legacy 6-parameter version defined in ssx_shims.c */
+extern int ssx_GetMotionHistory(DeviceIntPtr pDev, xTimecoord **buff,
+                               unsigned long start, unsigned long stop,
+                               ScreenPtr pScreen, BOOL core);
+
+/* Override the GetMotionHistory macro to use our 6-param wrapper */
 #define GetMotionHistory(pDev, buff, start, stop, pScreen, core) \
     ssx_GetMotionHistory(pDev, buff, start, stop, pScreen, core)
-#endif
-
-/* ============================================================================
- * VALUATOR MASK DOUBLE FUNCTIONS
- * Modern X uses double-valued valuator masks for scroll handling
- * ============================================================================ */
-
-#ifndef valuator_mask_set_double
-/* Stub implementations - actual implementations in inpututils.c */
-static inline void valuator_mask_set_double(void *mask, int idx, double val) { (void)mask; (void)idx; (void)val; }
-#endif
-
-#ifndef valuator_mask_fetch_double
-static inline int valuator_mask_fetch_double(void *mask, int idx, double *val) { (void)mask; (void)idx; (void)val; return 0; }
-#endif
-
-#ifndef valuator_mask_num_valuators
-static inline int valuator_mask_num_valuators(void *mask) { (void)mask; return 0; }
-#endif
-
-#ifndef valuator_mask_copy
-static inline void valuator_mask_copy(void *dst, void *src) { (void)dst; (void)src; }
-#endif
-
-#ifndef valuator_mask_unset
-static inline void valuator_mask_unset(void *mask, int idx) { (void)mask; (void)idx; }
-#endif
-
-/* ============================================================================
- * EVENT SOURCE DEFINITIONS
- * Used in getevents.c for event source classification
- * ============================================================================ */
-
-#ifndef EVENT_SOURCE_FOCUS
-#define EVENT_SOURCE_FOCUS  1
-#endif
-
-#ifndef EVENT_SOURCE_POINTER
-#define EVENT_SOURCE_POINTER 0
-#endif
-
-/* ============================================================================
- * DEVICE EVENT SOURCE ENUM
- * Forward declare the enum for getevents.c
- * Modern Xlibre already defines DeviceEventSource
- * ============================================================================ */
 
 /* ============================================================================
  * BUG_WARN STUB
@@ -961,7 +1073,7 @@ static inline void valuator_mask_unset(void *mask, int idx) { (void)mask; (void)
  * ============================================================================ */
 
 #ifndef BUG_WARN
-#define BUG_WARN(cond) do { } while(0)
+#define BUG_WARN(cond) do { if (cond) { } } while(0)
 #endif
 
 /* ============================================================================
@@ -972,6 +1084,12 @@ static inline void valuator_mask_unset(void *mask, int idx) { (void)mask; (void)
 #ifndef init_device_event
 static inline void init_device_event(void *event, int type, Time time) { (void)event; (void)type; (void)time; }
 #endif
+
+/* ============================================================================
+ * MI POINTER SETPOSITION
+ * NOTE: The miPointerSetPosition is declared in mi/mipointer.h with 4 params.
+ * Legacy code calling with 6 params needs different handling - done in source.
+ * ============================================================================ */
 
 /* ============================================================================
  * SSX SHIM FUNCTION DECLARATIONS
@@ -991,4 +1109,128 @@ static inline void init_device_event(void *event, int type, Time time) { (void)e
  * These are now defined in dix/ssx_shims.c and can be used directly.
  */
 
+/* ============================================================================
+ * ADDITIONAL FUNCTION SHIMS FOR LEGACY CODE
+ * ============================================================================ */
+
+/* dixLookupResourceByType wrapper */
+#ifndef dixLookupResourceByType
+#define dixLookupResourceByType(res, id, type, client, access) \
+    ssx_dixLookupResourceByType(res, id, type, client, access)
+#endif
+
+/* InitPointerDeviceStruct wrapper */
+#ifndef InitPointerDeviceStruct
+#define InitPointerDeviceStruct(dev, map, nbuttons, labels, ctrl, nmotion, naxes, axlabels) \
+    ssx_InitPointerDeviceStruct(dev, map, nbuttons, labels, ctrl, nmotion, naxes, axlabels)
+#endif
+
+/* Screen X/Y accessors */
+#ifndef GET_SCREEN_X
+#define GET_SCREEN_X(s) ssx_GetScreenX(s)
+#endif
+
+#ifndef GET_SCREEN_Y
+#define GET_SCREEN_Y(s) ssx_GetScreenY(s)
+#endif
+
+/* Touch point info accessors */
+#ifndef TouchPointInfo_ddx_info
+#define TouchPointInfo_ddx_info(t) ssx_touch_get_ddx_info(t)
+#endif
+
+/* Valuator mask double array helpers */
+#ifndef SSX_VALUATOR_MASK_GET_DOUBLE
+#define SSX_VALUATOR_MASK_GET_DOUBLE(mask) ssx_valuator_mask_get_double_array(mask)
+#endif
+
+#ifndef SSX_VALUATOR_MASK_SET_DOUBLE
+#define SSX_VALUATOR_MASK_SET_DOUBLE(mask, vals, n) ssx_valuator_mask_set_from_double(mask, vals, n)
+#endif
+
+/* ============================================================================
+ * STRUCT MEMBER ACCESS MACROS
+ * ============================================================================ */
+
+/* Screen x/y members - modern doesn't have them */
+#ifndef Screen_GetX
+#define Screen_GetX(s) (0)
+#endif
+
+#ifndef Screen_GetY
+#define Screen_GetY(s) (0)
+#endif
+
+/* RawDeviceEvent flags - modern removed this */
+#ifndef RawDeviceEvent_flags
+#define RawDeviceEvent_flags(e) (0)
+#endif
+
+/* TouchClassRec buttonsDown - modern doesn't have it */
+#ifndef TouchClassRec_buttonsDown
+#define TouchClassRec_buttonsDown(t) (0)
+#endif
+
+/* TouchPointInfoRec pending_finish - modern doesn't have it */
+#ifndef TouchPointInfo_pending_finish
+#define TouchPointInfo_pending_finish(t) (FALSE)
+#endif
+
+/* TouchPointInfoRec client_id - modern removed this member */
+#ifndef TouchPointInfo_client_id
+#define TouchPointInfo_client_id(t) (0)
+#endif
+
+/* TouchPointInfoRec sourceid - modern removed this member */
+#ifndef TouchPointInfo_sourceid
+#define TouchPointInfo_sourceid(t) (0)
+#endif
+
+/* TouchPointInfoRec emulate_pointer - modern removed this member */
+#ifndef TouchPointInfo_emulate_pointer
+#define TouchPointInfo_emulate_pointer(t) (FALSE)
+#endif
+
+/* TouchClassRec buttonsDown - modern removed this member */
+#ifndef TouchClassRec_buttonsDown
+#define TouchClassRec_buttonsDown(t) (0)
+#endif
+
+/* DeviceCursorInitialize - screen function pointer removed in modern X */
+#ifndef DeviceCursorInitialize
+#define DeviceCursorInitialize(s) (0)
+#endif
+
+/* xkb_acts - XKB action struct removed from ButtonClassRec */
+#ifndef ButtonClassRec_xkb_acts
+#define ButtonClassRec_xkb_acts(b) ((void*)0)
+#endif
+
+/* xkb_sli - XKB LED info removed from KbdFeedbackClassRec */
+#ifndef KbdFeedbackClassRec_xkb_sli
+#define KbdFeedbackClassRec_xkb_sli(kf) ((void*)0)
+#endif
+
+/* ============================================================================
+ * FUNCTION PARAMETER ADJUSTMENTS
+ * ============================================================================ */
+
+/* For functions that have changed parameter counts, provide wrapper macros */
+/* These redirect to shim functions defined in ssx_shims.c */
+
+/* GetMotionHistory - 6 params -> 5 params */
+#ifndef GetMotionHistory
+#define GetMotionHistory(pDev, buff, start, stop, pScreen, core) \
+    ssx_GetMotionHistory(pDev, buff, start, stop, pScreen, core)
+#endif
+
+
+/* For any other function call issues, define no-op fallbacks */
+#ifndef pad_to_int32
+#define pad_to_int32(n) (((n) + 3) & ~3)
+#endif
+
+/* ============================================================================
+ * END OF SSX COMPATIBILITY LAYER
+ * ============================================================================ */
 #endif /* SSX_COMPAT_H */

@@ -53,8 +53,9 @@ SOFTWARE.
 #include "gc.h"
 #include <pixman.h>
 
-/* Typedef to resolve pict_f_transform vs pixman_f_transform mismatch */
-typedef struct pixman_f_transform pict_f_transform;
+/* Typedef to resolve pict_f_transform vs pixman_f_transform mismatch 
+ * pixman provides pixman_f_transform_t (typedef) and struct pixman_f_transform */
+typedef pixman_f_transform_t pict_f_transform;
 
 typedef xPoint DDXPointRec;
 

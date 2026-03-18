@@ -282,7 +282,7 @@ CreateClassesChangedEvent(InternalEvent *event,
             dce->valuators[i].resolution = slave->valuator->axes[i].resolution;
             dce->valuators[i].mode = slave->valuator->axes[i].mode;
             dce->valuators[i].name = slave->valuator->axes[i].label;
-            dce->valuators[i].scroll = slave->valuator->axes[i].scroll;
+            dce->valuators[i].scroll = slave->valuator->axes[i].scroll.type;
             dce->valuators[i].value = slave->valuator->axisVal[i];
         }
     }
@@ -827,8 +827,17 @@ moveRelative(DeviceIntPtr dev, int flags, ValuatorMask *mask)
 static void
 accelPointer(DeviceIntPtr dev, ValuatorMask *valuators, CARD32 ms)
 {
-    if (dev->valuator->accelScheme.AccelSchemeProc)
-        dev->valuator->accelScheme.AccelSchemeProc(dev, valuators, ms);
+    if (dev->valuator->accelScheme.AccelSchemeProc) {
+        /* Legacy XFree86 XAA used different signature - pass valuators as int array */
+        int vals[MAX_VALUATORS];
+        int i;
+        for (i = 0; i < valuator_mask_num_valuators(valuators); i++) {
+            double v;
+            if (valuator_mask_fetch_double(valuators, i, &v))
+                vals[i] = (int)v;
+        }
+        dev->valuator->accelScheme.AccelSchemeProc(dev, 0, valuator_mask_num_valuators(valuators), vals, ms);
+    }
 }
 
 /**

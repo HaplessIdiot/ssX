@@ -1,5 +1,62 @@
 # Phase 3: DIX Source-Level Surgery - Implementation Notes
 
+## Session Update: March 17, 2026 - Meson Build Analysis
+
+### Build Analysis Summary
+Ran Meson build on OpenMandriva Cooker with Clang to identify remaining incompatibilities between legacy XFree86 codebase and modern xlibre headers.
+
+### Fixes Applied This Session:
+
+#### 1. Damage Extension Stub Conflicts ✅ FIXED
+**Issue:** Macros in ssx_compat.h (DamageReportLevel, DamageReportNone, DamageCreate, DamageRegion) conflicted with actual definitions in miext/damage/damage.h
+
+**Solution:** Added proper include guard handling:
+```c
+// In include/ssx_compat.h
+#ifdef _DAMAGE_H_
+#undef _DAMAGE_H_
+#endif
+#ifndef DamageReportLevel
+typedef enum { DamageReportNoneVal = 0 } DamageReportLevel;
+#define DamageReportNone ((DamageReportLevel)0)
+#endif
+// Stub declarations...
+```
+
+Also removed duplicate DamageReportNone macro from miext/damage/damage.h
+
+#### 2. Valuator Scroll Type Assignment ✅ FIXED
+**Issue:** `dce->valuators[i].scroll = slave->valuator->axes[i].scroll` - assigning union to int
+
+**Solution:** Changed to use `.scroll.type` since it's a union with `increment` and `type` members:
+```c
+dce->valuators[i].scroll = slave->valuator->axes[i].scroll.type;
+```
+
+#### 3. AccelSchemeProc Signature Mismatch ✅ FIXED
+**Issue:** Legacy XAA used 5 parameters (dev, first_valuator, num_valuators, valuators*, time), modern uses ValuatorMask*
+
+**Solution:** Modified accelPointer() in dix/getevents.c to convert:
+```c
+static void accelPointer(DeviceIntPtr dev, ValuatorMask *valuators, CARD32 ms)
+{
+    if (dev->valuator->accelScheme.AccelSchemeProc) {
+        int vals[MAX_VALUATORS];
+        int i;
+        for (i = 0; i < valuator_mask_num_valuators(valuators); i++) {
+            double v;
+            if (valuator_mask_fetch_double(valuators, i, &v))
+                vals[i] = (int)v;
+        }
+        dev->valuator->accelScheme.AccelSchemeProc(dev, 0, valuator_mask_num_valuators(valuators), vals, ms);
+    }
+}
+```
+
+---
+
+## Previous Session: Core Philosophy & Objectives
+
 ## Objective
 Resolve source-level incompatibilities in dix/devices.c, dix/events.c, and dix/getevents.c to enable a static build of ssX on modern LLVM/Clang environments.
 

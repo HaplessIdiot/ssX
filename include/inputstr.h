@@ -55,7 +55,9 @@ SOFTWARE.
 #include <pixman.h>
 #include "dixstruct.h"
 
+#ifndef BitIsOn
 #define BitIsOn(ptr, bit) (((BYTE *) (ptr))[(bit)>>3] & (1 << ((bit) & 7)))
+#endif
 
 #define SameClient(obj,client) \
 	(CLIENT_BITS((obj)->resource) == (client)->clientAsMask)
@@ -179,7 +181,10 @@ typedef struct _KeyClassRec {
 #else
     struct _XkbSrvInfo *xkbInfo;  /* Backward compat - always available */
 #endif
-} KeyClassRec, *KeyClassPtr;
+} KeyClassRec;
+#ifndef KeyClassPtr
+#define KeyClassPtr KeyClassRec *
+#endif
 
 typedef struct _AxisInfo {
     int		resolution;
@@ -259,7 +264,10 @@ typedef struct _ValuatorClassRec {
                                          * client; see dix/devices.c */
     int                   dxremaind, dyremaind; /* for acceleration */
     CARD8	 	  mode;
-} ValuatorClassRec, *ValuatorClassPtr;
+} ValuatorClassRec;
+#ifndef ValuatorClassPtr
+#define ValuatorClassPtr ValuatorClassRec *
+#endif
 
 typedef struct _ButtonClassRec {
     CARD8		numButtons;
@@ -276,7 +284,10 @@ typedef struct _ButtonClassRec {
     void                *pad0;
 #endif
     unsigned int	sourceid;
-} ButtonClassRec, *ButtonClassPtr;
+} ButtonClassRec;
+#ifndef ButtonClassPtr
+#define ButtonClassPtr ButtonClassRec *
+#endif
 
 typedef struct _FocusClassRec {
     WindowPtr	win;
@@ -285,11 +296,17 @@ typedef struct _FocusClassRec {
     WindowPtr	*trace;
     int		traceSize;
     int		traceGood;
-} FocusClassRec, *FocusClassPtr;
+} FocusClassRec;
+#ifndef FocusClassPtr
+#define FocusClassPtr FocusClassRec *
+#endif
 
 typedef struct _ProximityClassRec {
     char	pad;
-} ProximityClassRec, *ProximityClassPtr;
+} ProximityClassRec;
+#ifndef ProximityClassPtr
+#define ProximityClassPtr ProximityClassRec *
+#endif
 
 typedef struct _AbsoluteClassRec {
     /* Calibration. */
@@ -311,12 +328,35 @@ typedef struct _AbsoluteClassRec {
     XID		following;
 } AbsoluteClassRec, *AbsoluteClassPtr;
 
+#ifndef _KBDFEEDBACKPTR_TYPEDEF
+#define _KBDFEEDBACKPTR_TYPEDEF
 typedef struct _KbdFeedbackClassRec *KbdFeedbackPtr;
+#endif
+
+#ifndef _PTRFEEDBACKPTR_TYPEDEF
+#define _PTRFEEDBACKPTR_TYPEDEF
 typedef struct _PtrFeedbackClassRec *PtrFeedbackPtr;
+#endif
+
+#ifndef _INTEGERFEEDBACKPTR_TYPEDEF
+#define _INTEGERFEEDBACKPTR_TYPEDEF
 typedef struct _IntegerFeedbackClassRec *IntegerFeedbackPtr;
+#endif
+
+#ifndef _STRINGFEEDBACKPTR_TYPEDEF
+#define _STRINGFEEDBACKPTR_TYPEDEF
 typedef struct _StringFeedbackClassRec *StringFeedbackPtr;
+#endif
+
+#ifndef _BELLFEEDBACKPTR_TYPEDEF
+#define _BELLFEEDBACKPTR_TYPEDEF
 typedef struct _BellFeedbackClassRec *BellFeedbackPtr;
+#endif
+
+#ifndef _LEDFEEDBACKPTR_TYPEDEF
+#define _LEDFEEDBACKPTR_TYPEDEF
 typedef struct _LedFeedbackClassRec *LedFeedbackPtr;
+#endif
 
 typedef struct _KbdFeedbackClassRec {
     BellProcPtr		BellProc;
@@ -413,6 +453,7 @@ typedef struct _TouchPointInfoRec {
     void *sprite;
 } TouchPointInfoRec;
 /* ssX: TouchPointInfoPtr already defined above with _TOUCHPOINTINFOPTR guard */
+#endif
 
 typedef struct _TouchClassRec {
     TouchPointInfoPtr *touches;
@@ -422,7 +463,10 @@ typedef struct _TouchClassRec {
     int mode;
     /* For tracking touch ownership */
     TimeStamp *first_touch;
-} TouchClassRec, *TouchClassPtr;
+} TouchClassRec;
+#ifndef TouchClassPtr
+#define TouchClassPtr TouchClassRec *
+#endif
 
 /* states for devices */
 

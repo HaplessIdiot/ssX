@@ -27,9 +27,12 @@ typedef void *GLXContext;
 
 /* Legacy XFree86 convention: GLXContextTag is CARD32 for wire protocol */
 /* Only define if not already defined - GL/glxproto.h may have already defined it */
+/* Note: GL/glxproto.h defines GLXContextTag as CARD32, which may differ from unsigned int */
 #ifndef GLXCONTEXTTAG_DEFINED
 #define GLXCONTEXTTAG_DEFINED
+#ifndef GLXContextTag
 typedef unsigned int GLXContextTag;
+#endif
 #endif
 
 /* RESTYPE is server-specific - include resource.h before this header */
